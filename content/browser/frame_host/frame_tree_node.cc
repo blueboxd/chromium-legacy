@@ -742,7 +742,7 @@ void FrameTreeNode::PruneChildFrameNavigationEntries(
 }
 
 void FrameTreeNode::SetOpenerFeaturePolicyState(
-    const blink::FeaturePolicy::FeatureState& feature_state) {
+    const blink::FeaturePolicyFeatureState& feature_state) {
   DCHECK(IsMainFrame());
   if (base::FeatureList::IsEnabled(features::kFeaturePolicyForSandbox)) {
     replication_state_.opener_feature_state = feature_state;

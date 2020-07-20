@@ -523,9 +523,9 @@ class ArcAppModelBuilderTest
       EXPECT_TRUE(image.HasRepresentation(scale));
       const gfx::ImageSkiaRep& representation = image.GetRepresentation(scale);
       EXPECT_FALSE(representation.is_null());
-      EXPECT_EQ(base::Ceil(icon_dimension * scale),
+      EXPECT_EQ(base::ClampCeil(icon_dimension * scale),
                 representation.pixel_width());
-      EXPECT_EQ(base::Ceil(icon_dimension * scale),
+      EXPECT_EQ(base::ClampCeil(icon_dimension * scale),
                 representation.pixel_height());
     }
   }

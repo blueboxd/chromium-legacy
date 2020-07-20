@@ -267,7 +267,8 @@ bool MetafileSkia::GetData(void* dst_buffer, uint32_t dst_buffer_size) const {
 gfx::Rect MetafileSkia::GetPageBounds(unsigned int page_number) const {
   if (page_number < data_->pages.size()) {
     SkSize size = data_->pages[page_number].size;
-    return gfx::Rect(base::Round(size.width()), base::Round(size.height()));
+    return gfx::Rect(base::ClampRound(size.width()),
+                     base::ClampRound(size.height()));
   }
   return gfx::Rect();
 }

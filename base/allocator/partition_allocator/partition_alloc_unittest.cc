@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/allocator/partition_allocator/address_space_randomization.h"
+#include "base/allocator/partition_allocator/checked_ptr_support.h"
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
@@ -2489,7 +2490,8 @@ TEST_F(PartitionAllocTest, AlignedAllocations) {
   }
 }
 
-#if ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_MTE_CHECKED_PTR
+#if ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_MTE_CHECKED_PTR || \
+    ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR
 
 TEST_F(PartitionAllocTest, TagBasic) {
   size_t alloc_size = 64 - kExtraAllocSize;
@@ -2512,9 +2514,16 @@ TEST_F(PartitionAllocTest, TagBasic) {
   EXPECT_EQ(char_ptr1 + page->bucket->slot_size, char_ptr2);
   EXPECT_EQ(char_ptr2 + page->bucket->slot_size, char_ptr3);
 
+#if !ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR
   constexpr PartitionTag kTag1 = static_cast<PartitionTag>(0xBADA);
   constexpr PartitionTag kTag2 = static_cast<PartitionTag>(0xDB8A);
   constexpr PartitionTag kTag3 = static_cast<PartitionTag>(0xA3C4);
+#else
+  // The in-memory tag will always be kFixedTagValue no matter what we set.
+  constexpr PartitionTag kTag1 = static_cast<PartitionTag>(kFixedTagValue);
+  constexpr PartitionTag kTag2 = static_cast<PartitionTag>(kFixedTagValue);
+  constexpr PartitionTag kTag3 = static_cast<PartitionTag>(kFixedTagValue);
+#endif
   PartitionTagSetValue(ptr1, page->bucket->slot_size, kTag1);
   PartitionTagSetValue(ptr2, page->bucket->slot_size, kTag2);
   PartitionTagSetValue(ptr3, page->bucket->slot_size, kTag3);
@@ -2544,11 +2553,8 @@ TEST_F(PartitionAllocTest, TagBasic) {
   EXPECT_EQ(ptr2, new_ptr2);
   EXPECT_EQ(kTag3, PartitionTagGetValue(ptr3));
 
-  request_size =
-      page->bucket->slot_size - kExtraAllocSize + kInSlotTagBufferSize;
-#if ENABLE_TAG_FOR_MTE_CHECKED_PTR
-  request_size += kGenericSmallestBucket;
-#endif
+  // Add 1B to ensure the object is rellocated to a larger slot.
+  request_size = page->bucket->slot_size - kExtraAllocSize + 1;
   new_ptr2 = allocator.root()->Realloc(ptr2, request_size, type_name);
   EXPECT_TRUE(new_ptr2);
   EXPECT_NE(ptr2, new_ptr2);

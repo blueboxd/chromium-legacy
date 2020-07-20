@@ -1258,7 +1258,8 @@ void BrowserThemePack::ReadColorsFromJSON(
           double alpha;
           int alpha_int;
           if (color_list->GetDouble(3, &alpha) && alpha >= 0 && alpha <= 1) {
-            color = SkColorSetARGB(base::Round<U8CPU>(alpha * 255), r, g, b);
+            color =
+                SkColorSetARGB(base::ClampRound<U8CPU>(alpha * 255), r, g, b);
           } else if (color_list->GetInteger(3, &alpha_int) &&
                      (alpha_int == 0 || alpha_int == 1)) {
             color = SkColorSetARGB(alpha_int ? 255 : 0, r, g, b);

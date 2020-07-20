@@ -98,6 +98,8 @@ class PasswordStoreDefault : public PasswordStore {
   void RemoveFieldInfoByTimeImpl(base::Time remove_begin,
                                  base::Time remove_end) override;
 
+  bool IsEmpty() override;
+
   // Implements PasswordStoreSync interface.
   bool BeginTransaction() override;
   void RollbackTransaction() override;

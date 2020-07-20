@@ -93,7 +93,6 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   views::BoxLayout* lower_container_layout_ = nullptr;
   views::ImageView* big_image_ = nullptr;
   views::Link* learn_more_link_ = nullptr;
-  base::TimeTicks setup_start_tick_;
 
   State state_ = State::kConfirmInstall;
   InstallingState installing_state_ = InstallingState::kInactive;

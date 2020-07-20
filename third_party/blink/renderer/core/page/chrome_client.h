@@ -34,7 +34,7 @@
 #include "cc/trees/paint_holding_commit_trigger.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy_features.h"
 #include "third_party/blink/public/common/page/web_drag_operation.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
@@ -202,7 +202,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
                      const AtomicString& frame_name,
                      const WebWindowFeatures&,
                      network::mojom::blink::WebSandboxFlags,
-                     const FeaturePolicy::FeatureState&,
+                     const FeaturePolicyFeatureState&,
                      const SessionStorageNamespaceId&);
   virtual void Show(NavigationPolicy) = 0;
 
@@ -533,7 +533,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
                                      const AtomicString& frame_name,
                                      const WebWindowFeatures&,
                                      network::mojom::blink::WebSandboxFlags,
-                                     const FeaturePolicy::FeatureState&,
+                                     const FeaturePolicyFeatureState&,
                                      const SessionStorageNamespaceId&) = 0;
 
  private:

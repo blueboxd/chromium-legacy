@@ -558,13 +558,10 @@ const base::Feature kLinkDisabledNewSpecBehavior{
 // they don't miss the first paint if they can be loaded fast enough (e.g.,
 // from the disk cache)
 const base::Feature kFontPreloadingDelaysRendering{
-    "FontPreloadingDelaysRendering", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Set to be over 90th-percentile of HttpCache.AccessToDone.Used on all
-// platforms, and also to allow some time for IPC and scheduling.
-// TODO(xiaochengh): Tune it for the best performance.
+    "FontPreloadingDelaysRendering", base::FEATURE_ENABLED_BY_DEFAULT};
+// 50ms is the overall best performing value in our experiments.
 const base::FeatureParam<int> kFontPreloadingDelaysRenderingParam{
-    &kFontPreloadingDelaysRendering, "delay-in-ms", 100};
+    &kFontPreloadingDelaysRendering, "delay-in-ms", 50};
 
 const base::Feature kFlexGaps{"FlexGaps", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kFlexNG{"FlexNG", base::FEATURE_ENABLED_BY_DEFAULT};

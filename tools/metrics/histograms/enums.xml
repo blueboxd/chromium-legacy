@@ -2888,6 +2888,7 @@ Unknown properties are collapsed to zero. -->
   <int value="0" label="Impression"/>
   <int value="1" label="Launch"/>
   <int value="2" label="Abandon"/>
+  <int value="3" label="Ignore"/>
 </enum>
 
 <enum name="AppListUserEventError">
@@ -4291,6 +4292,7 @@ Unknown properties are collapsed to zero. -->
   <int value="21" label="User navigation to a different domain in BROWSE mode"/>
   <int value="22" label="User clicked back button"/>
   <int value="23" label="User clicked back button during onboarding"/>
+  <int value="24" label="User navigatioin in RUNNING state"/>
 </enum>
 
 <enum name="AutofillAssistantFeatureModuleInstallation">
@@ -53204,6 +53206,12 @@ Called by update_net_trust_anchors.py.-->
 <enum name="PassiveForcedListenerResultType">
   <int value="0" label="PreventDefaultNotCalled"/>
   <int value="1" label="DocumentLevelTouchPreventDefaultCalled"/>
+</enum>
+
+<enum name="PasswordAccountStoreClearedOnStartup">
+  <int value="0" label="User is opted in, so no need to clear"/>
+  <int value="1" label="User is not opted in, and store was already empty"/>
+  <int value="2" label="User is not opted in, and store had to be cleared"/>
 </enum>
 
 <enum name="PasswordAddLoginSyncError">

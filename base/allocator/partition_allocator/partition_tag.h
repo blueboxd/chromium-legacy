@@ -7,9 +7,11 @@
 
 #include <string.h>
 
+#include "base/allocator/partition_allocator/checked_ptr_support.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/allocator/partition_allocator/partition_tag_bitmap.h"
+#include "base/base_export.h"
 #include "base/notreached.h"
 #include "build/build_config.h"
 
@@ -149,7 +151,53 @@ ALWAYS_INLINE void PartitionTagClearValue(void* ptr, size_t size) {
   memset(PartitionTagPointer(ptr), 0, tag_region_size);
 }
 
-#else  // !ENABLE_TAG_FOR_CHECKED_PTR2 && !ENABLE_TAG_FOR_MTE_CHECKED_PTR
+#elif ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR
+
+using PartitionTag = uint8_t;
+
+static constexpr PartitionTag kFixedTagValue = 0xAD;
+
+struct PartitionTagWrapper {
+  // Add padding before and after the tag, to avoid cacheline false sharing.
+  // Assume cacheline is 64B.
+  uint8_t unused1[64];
+  PartitionTag partition_tag;
+  uint8_t unused2[64];
+};
+extern BASE_EXPORT PartitionTagWrapper g_checked_ptr_single_tag;
+
+static constexpr size_t kInSlotTagBufferSize = 0;
+
+ALWAYS_INLINE size_t PartitionTagSizeAdjustAdd(size_t size) {
+  return size;
+}
+
+ALWAYS_INLINE size_t PartitionTagSizeAdjustSubtract(size_t size) {
+  return size;
+}
+
+ALWAYS_INLINE PartitionTag* PartitionTagPointer(void*) {
+  return &g_checked_ptr_single_tag.partition_tag;
+}
+
+ALWAYS_INLINE void* PartitionTagPointerAdjustSubtract(void* ptr) {
+  return ptr;
+}
+
+ALWAYS_INLINE void* PartitionTagPointerAdjustAdd(void* ptr) {
+  return ptr;
+}
+
+ALWAYS_INLINE void PartitionTagSetValue(void*, size_t, PartitionTag) {}
+
+ALWAYS_INLINE PartitionTag PartitionTagGetValue(void* ptr) {
+  return *PartitionTagPointer(ptr);
+}
+
+ALWAYS_INLINE void PartitionTagClearValue(void* ptr, size_t) {}
+
+#else  // !ENABLE_TAG_FOR_CHECKED_PTR2 && !ENABLE_TAG_FOR_MTE_CHECKED_PTR &&
+       // !ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR
 
 using PartitionTag = uint16_t;
 
@@ -185,7 +233,8 @@ ALWAYS_INLINE PartitionTag PartitionTagGetValue(void*) {
 
 ALWAYS_INLINE void PartitionTagClearValue(void* ptr, size_t) {}
 
-#endif  // !ENABLE_TAG_FOR_CHECKED_PTR2
+#endif  // !ENABLE_TAG_FOR_CHECKED_PTR2 && !ENABLE_TAG_FOR_MTE_CHECKED_PTR &&
+        // !ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR
 
 }  // namespace internal
 }  // namespace base

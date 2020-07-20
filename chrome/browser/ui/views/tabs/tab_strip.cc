@@ -563,7 +563,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
 
     double ratio = double{tab_strip_->GetInactiveTabWidth()} /
                    TabStyle::GetStandardWidth();
-    return base::Round(ratio * kHorizontalMoveThreshold);
+    return base::ClampRound(ratio * kHorizontalMoveThreshold);
   }
 
   int GetInsertionIndexForDraggedBounds(

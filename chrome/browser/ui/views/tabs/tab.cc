@@ -908,7 +908,7 @@ void Tab::MaybeAdjustLeftForPinnedTab(gfx::Rect* bounds,
   // than the pinned width.
   bounds->set_x(
       bounds->x() +
-      base::Round(
+      base::ClampRound(
           (1 - static_cast<float>(ideal_delta) /
                    static_cast<float>(kPinnedTabExtraWidthToRenderAsNormal)) *
           (ideal_x - bounds->x())));

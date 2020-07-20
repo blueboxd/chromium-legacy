@@ -41,7 +41,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy_features.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -212,7 +212,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
       const blink::WebString& frame_name,
       blink::WebNavigationPolicy policy,
       network::mojom::WebSandboxFlags sandbox_flags,
-      const blink::FeaturePolicy::FeatureState& opener_feature_state,
+      const blink::FeaturePolicyFeatureState& opener_feature_state,
       const blink::SessionStorageNamespaceId& session_storage_namespace_id)
       override;
   blink::WebPagePopup* CreatePopup(blink::WebLocalFrame* creator) override;

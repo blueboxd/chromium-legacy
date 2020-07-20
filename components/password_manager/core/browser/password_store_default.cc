@@ -296,6 +296,12 @@ void PasswordStoreDefault::RemoveFieldInfoByTimeImpl(base::Time remove_begin,
     login_db_->field_info_table().RemoveRowsByTime(remove_begin, remove_end);
 }
 
+bool PasswordStoreDefault::IsEmpty() {
+  if (!login_db_)
+    return true;
+  return login_db_->IsEmpty();
+}
+
 bool PasswordStoreDefault::BeginTransaction() {
   if (login_db_)
     return login_db_->BeginTransaction();

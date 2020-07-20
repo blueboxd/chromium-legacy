@@ -38,6 +38,10 @@ using FeaturePolicyFeatureList =
 BLINK_COMMON_EXPORT const FeaturePolicyFeatureList&
 GetFeaturePolicyFeatureList();
 
+// TODO(iclelland): Generate, instead of this map, a set of bool flags, one
+// for each feature, as all features are supposed to be represented here.
+using FeaturePolicyFeatureState = std::map<mojom::FeaturePolicyFeature, bool>;
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_FEATURE_POLICY_FEATURE_POLICY_FEATURES_H_

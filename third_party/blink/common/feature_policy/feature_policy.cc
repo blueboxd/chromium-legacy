@@ -112,7 +112,7 @@ std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromParentPolicy(
 
 // static
 std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateWithOpenerPolicy(
-    const FeatureState& inherited_policies,
+    const FeaturePolicyFeatureState& inherited_policies,
     const url::Origin& origin) {
   std::unique_ptr<FeaturePolicy> new_policy = base::WrapUnique(
       new FeaturePolicy(origin, GetFeaturePolicyFeatureList()));
@@ -210,8 +210,8 @@ void FeaturePolicy::SetHeaderPolicy(const ParsedFeaturePolicy& parsed_header) {
   }
 }
 
-FeaturePolicy::FeatureState FeaturePolicy::GetFeatureState() const {
-  FeatureState feature_state;
+FeaturePolicyFeatureState FeaturePolicy::GetFeatureState() const {
+  FeaturePolicyFeatureState feature_state;
   for (const auto& pair : GetFeaturePolicyFeatureList())
     feature_state[pair.first] = GetFeatureValueForOrigin(pair.first, origin_);
   return feature_state;

@@ -1137,10 +1137,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
       render_frame_submission_observer.LastRenderFrameMetadata()
           .page_scale_factor;
   gfx::Point position_in_widget(
-      base::Ceil((bounds.x() - root_view->GetViewBounds().x() + 5) *
-                 scale_factor),
-      base::Ceil((bounds.y() - root_view->GetViewBounds().y() + 5) *
-                 scale_factor));
+      base::ClampCeil((bounds.x() - root_view->GetViewBounds().x() + 5) *
+                      scale_factor),
+      base::ClampCeil((bounds.y() - root_view->GetViewBounds().y() + 5) *
+                      scale_factor));
   SetWebEventPositions(&scroll_event, position_in_widget, root_view);
   scroll_event.delta_units = ui::ScrollGranularity::kScrollByPrecisePixel;
   scroll_event.delta_x = 0.0f;
@@ -1659,8 +1659,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   // Due to the CSS scaling of the iframe, the position in the child view's
   // coordinates is (96, 96) and not (48, 48) (or approximately these values
   // if there's rounding due to the scale factor).
-  const gfx::Point position_in_root(base::Ceil(150 * scale_factor),
-                                    base::Ceil(150 * scale_factor));
+  const gfx::Point position_in_root(base::ClampCeil(150 * scale_factor),
+                                    base::ClampCeil(150 * scale_factor));
 
   auto expect_gsb_with_position =
       base::BindRepeating([](const gfx::Point& expected_position,
@@ -3459,11 +3459,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 
   gfx::Point point_in_a_frame(2, 2);
   gfx::Point point_in_b_frame(
-      base::Ceil((b_bounds.x() - a_bounds.x() + 25) * scale_factor),
-      base::Ceil((b_bounds.y() - a_bounds.y() + 25) * scale_factor));
+      base::ClampCeil((b_bounds.x() - a_bounds.x() + 25) * scale_factor),
+      base::ClampCeil((b_bounds.y() - a_bounds.y() + 25) * scale_factor));
   gfx::Point point_in_d_frame(
-      base::Ceil((d_bounds.x() - a_bounds.x() + 25) * scale_factor),
-      base::Ceil((d_bounds.y() - a_bounds.y() + 25) * scale_factor));
+      base::ClampCeil((d_bounds.x() - a_bounds.x() + 25) * scale_factor),
+      base::ClampCeil((d_bounds.y() - a_bounds.y() + 25) * scale_factor));
 
   blink::WebMouseEvent mouse_event(
       blink::WebInputEvent::Type::kMouseMove,
@@ -3716,9 +3716,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   // relative offset of its direct parent within the root frame, for use in
   // targeting the input event.
   gfx::Rect bounds = rwhv_child->GetViewBounds();
-  int child_frame_target_x = base::Ceil(
+  int child_frame_target_x = base::ClampCeil(
       (bounds.x() - root_view->GetViewBounds().x() + 5) * scale_factor);
-  int child_frame_target_y = base::Ceil(
+  int child_frame_target_y = base::ClampCeil(
       (bounds.y() - root_view->GetViewBounds().y() + 5) * scale_factor);
 
   scoped_refptr<SetMouseCaptureInterceptor> child_interceptor =
@@ -4158,9 +4158,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
       render_frame_submission_observer.LastRenderFrameMetadata()
           .page_scale_factor;
   gfx::Rect bounds = child_view->GetViewBounds();
-  int child_frame_target_x = base::Ceil(
+  int child_frame_target_x = base::ClampCeil(
       (bounds.x() - root_view->GetViewBounds().x() + 5) * scale_factor);
-  int child_frame_target_y = base::Ceil(
+  int child_frame_target_y = base::ClampCeil(
       (bounds.y() - root_view->GetViewBounds().y() + 5) * scale_factor);
   mouse_event.SetType(blink::WebInputEvent::Type::kMouseMove);
   mouse_event.SetModifiers(blink::WebInputEvent::kLeftButtonDown);
@@ -5412,8 +5412,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   const float scale_factor =
       render_frame_submission_observer.LastRenderFrameMetadata()
           .page_scale_factor;
-  const gfx::Point point_in_child(base::Ceil(100 * scale_factor),
-                                  base::Ceil(100 * scale_factor));
+  const gfx::Point point_in_child(base::ClampCeil(100 * scale_factor),
+                                  base::ClampCeil(100 * scale_factor));
 
   content::TestPageScaleObserver scale_observer(shell()->web_contents());
   SendTouchpadPinchSequenceWithExpectedTarget(rwhv_parent, point_in_child,
@@ -5654,8 +5654,8 @@ void CreateContextMenuTestHelper(
   gfx::Rect bounds = rwhv_child->GetViewBounds();
 
   gfx::Point point(
-      base::Ceil((bounds.x() - root_bounds.x() + 5) * scale_factor),
-      base::Ceil((bounds.y() - root_bounds.y() + 5) * scale_factor));
+      base::ClampCeil((bounds.x() - root_bounds.x() + 5) * scale_factor),
+      base::ClampCeil((bounds.y() - root_bounds.y() + 5) * scale_factor));
 
   // Target right-click event to child frame.
   blink::WebMouseEvent click_event(
@@ -6937,7 +6937,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestDataGenerationBrowserTest,
   DCHECK(hit_test_data.size() >= 3);
   EXPECT_TRUE(expected_transformed_region.ApproximatelyEqual(
       AxisAlignedLayoutRectFromHitTest(hit_test_data[2]),
-      base::Round(device_scale_factor) + 2));
+      base::ClampRound(device_scale_factor) + 2));
   EXPECT_TRUE(
       expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
   EXPECT_EQ(expected_flags, hit_test_data[2].flags);

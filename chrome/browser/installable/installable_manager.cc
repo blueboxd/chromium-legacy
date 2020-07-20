@@ -720,7 +720,7 @@ void InstallableManager::OnDidCheckHasServiceWorker(
   }
 
   InstallableMetrics::RecordCheckServiceWorkerTime(
-      check_service_worker_start_time - base::TimeTicks::Now());
+      base::TimeTicks::Now() - check_service_worker_start_time);
   InstallableMetrics::RecordCheckServiceWorkerStatus(
       InstallableMetrics::ConvertFromServiceWorkerCapability(capability));
 
@@ -742,7 +742,7 @@ void InstallableManager::OnDidCheckOfflineCapability(
   }
 
   InstallableMetrics::RecordCheckServiceWorkerTime(
-      check_service_worker_start_time - base::TimeTicks::Now());
+      base::TimeTicks::Now() - check_service_worker_start_time);
   InstallableMetrics::RecordCheckServiceWorkerStatus(
       InstallableMetrics::ConvertFromOfflineCapability(capability));
 

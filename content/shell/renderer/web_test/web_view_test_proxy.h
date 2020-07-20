@@ -69,7 +69,7 @@ class WebViewTestProxy : public RenderViewImpl {
                              const blink::WebString& frame_name,
                              blink::WebNavigationPolicy policy,
                              network::mojom::WebSandboxFlags sandbox_flags,
-                             const blink::FeaturePolicy::FeatureState&,
+                             const blink::FeaturePolicyFeatureState&,
                              const blink::SessionStorageNamespaceId&
                                  session_storage_namespace_id) override;
   void PrintPage(blink::WebLocalFrame* frame) override;

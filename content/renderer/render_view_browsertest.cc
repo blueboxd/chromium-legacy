@@ -1102,7 +1102,7 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
       GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
       blink::kWebNavigationPolicyNewForegroundTab,
       network::mojom::WebSandboxFlags::kNone,
-      blink::FeaturePolicy::FeatureState(),
+      blink::FeaturePolicyFeatureState(),
       blink::AllocateSessionStorageNamespaceId());
   RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
   auto popup_navigation_info = std::make_unique<blink::WebNavigationInfo>();

@@ -419,7 +419,7 @@ void ServiceWorkerRegisterJob::ContinueWithNewRegistration(
   }
 
   set_registration(std::move(new_registration));
-  AddRegistrationToMatchingProviderHosts(registration());
+  AddRegistrationToMatchingContainerHosts(registration());
   UpdateAndContinue();
 }
 
@@ -766,7 +766,7 @@ void ServiceWorkerRegisterJob::ResolvePromise(
   callbacks_.clear();
 }
 
-void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(
+void ServiceWorkerRegisterJob::AddRegistrationToMatchingContainerHosts(
     ServiceWorkerRegistration* registration) {
   DCHECK(registration);
   // Include bfcached clients because they need to have the correct

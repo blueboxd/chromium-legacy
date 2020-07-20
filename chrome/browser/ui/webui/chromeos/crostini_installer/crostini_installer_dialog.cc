@@ -13,7 +13,11 @@
 #include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_ui.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 namespace {
 // The dialog content area size. Note that the height is less than the design
@@ -51,7 +55,7 @@ void CrostiniInstallerDialog::Show(Profile* profile,
 CrostiniInstallerDialog::CrostiniInstallerDialog(
     Profile* profile,
     OnLoadedCallback on_loaded_callback)
-    : SystemWebDialogDelegate(GetUrl(), /*title=*/base::string16()),
+    : SystemWebDialogDelegate(GetUrl(), /*title=*/{}),
       profile_(profile),
       on_loaded_callback_(std::move(on_loaded_callback)) {}
 
@@ -115,6 +119,9 @@ void CrostiniInstallerDialog::OnCloseContents(content::WebContents* source,
 }
 
 void CrostiniInstallerDialog::OnWebContentsFinishedLoad() {
+  DCHECK(dialog_window());
+  dialog_window()->SetTitle(l10n_util::GetStringFUTF16(
+      IDS_CROSTINI_INSTALLER_TITLE, ui::GetChromeOSDeviceName()));
   if (!on_loaded_callback_.is_null()) {
     DCHECK(installer_ui_);
     std::move(on_loaded_callback_).Run(installer_ui_);

@@ -1991,8 +1991,7 @@ class WebAppInstallForceListPolicyTest : public ExtensionPolicyTest {
     list.Append(std::move(item));
 
     PolicyMap policies;
-    SetPolicy(&policies, key::kWebAppInstallForceList,
-              base::Value::ToUniquePtrValue(std::move(list)));
+    SetPolicy(&policies, key::kWebAppInstallForceList, std::move(list));
     provider_.UpdateChromePolicy(policies);
   }
 

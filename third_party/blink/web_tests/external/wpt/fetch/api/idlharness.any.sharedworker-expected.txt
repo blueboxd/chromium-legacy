@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 139 tests; 135 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 139 tests; 137 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface mixin WindowOrWorkerGlobalScope: original interface mixin defined
@@ -60,7 +60,7 @@ FAIL Request interface: attribute isReloadNavigation assert_true: The prototype 
 PASS Request interface: attribute isHistoryNavigation
 PASS Request interface: attribute signal
 PASS Request interface: operation clone()
-FAIL Request interface: attribute body assert_true: The prototype object must have a property "body" expected true got false
+PASS Request interface: attribute body
 PASS Request interface: attribute bodyUsed
 PASS Request interface: operation arrayBuffer()
 PASS Request interface: operation blob()
@@ -85,7 +85,7 @@ FAIL Request interface: new Request('about:blank') must inherit property "isRelo
 PASS Request interface: new Request('about:blank') must inherit property "isHistoryNavigation" with the proper type
 PASS Request interface: new Request('about:blank') must inherit property "signal" with the proper type
 PASS Request interface: new Request('about:blank') must inherit property "clone()" with the proper type
-FAIL Request interface: new Request('about:blank') must inherit property "body" with the proper type assert_inherits: property "body" not found in prototype chain
+PASS Request interface: new Request('about:blank') must inherit property "body" with the proper type
 PASS Request interface: new Request('about:blank') must inherit property "bodyUsed" with the proper type
 PASS Request interface: new Request('about:blank') must inherit property "arrayBuffer()" with the proper type
 PASS Request interface: new Request('about:blank') must inherit property "blob()" with the proper type

@@ -6,11 +6,13 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/autofill/core/browser/webdata/mock_autofill_webdata_service.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
@@ -40,8 +42,11 @@ class WebViewSyncClientTest : public PlatformTest {
         profile_password_store_(
             base::MakeRefCounted<password_manager::TestPasswordStore>()),
         account_password_store_(
-            base::MakeRefCounted<password_manager::TestPasswordStore>(
-                /*is_account_store=*/true)),
+            base::FeatureList::IsEnabled(
+                password_manager::features::kEnablePasswordsAccountStorage)
+                ? base::MakeRefCounted<password_manager::TestPasswordStore>(
+                      /*is_account_store=*/true)
+                : nullptr),
         client_(profile_web_data_service_.get(),
                 account_web_data_service_.get(),
                 profile_password_store_.get(),
@@ -54,12 +59,16 @@ class WebViewSyncClientTest : public PlatformTest {
     pref_service_.registry()->RegisterBooleanPref(
         prefs::kSavingBrowserHistoryDisabled, true);
     profile_password_store_->Init(&pref_service_, base::DoNothing());
-    account_password_store_->Init(&pref_service_, base::DoNothing());
+    if (account_password_store_) {
+      account_password_store_->Init(&pref_service_, base::DoNothing());
+    }
   }
 
   ~WebViewSyncClientTest() override {
     profile_password_store_->ShutdownOnUIThread();
-    account_password_store_->ShutdownOnUIThread();
+    if (account_password_store_) {
+      account_password_store_->ShutdownOnUIThread();
+    }
   }
 
   web::WebTaskEnvironment task_environment_;

@@ -254,7 +254,7 @@ Page* ChromeClientImpl::CreateWindowDelegate(
     const AtomicString& name,
     const WebWindowFeatures& features,
     network::mojom::blink::WebSandboxFlags sandbox_flags,
-    const FeaturePolicy::FeatureState& opener_feature_state,
+    const FeaturePolicyFeatureState& opener_feature_state,
     const SessionStorageNamespaceId& session_storage_namespace_id) {
   if (!web_view_->Client())
     return nullptr;

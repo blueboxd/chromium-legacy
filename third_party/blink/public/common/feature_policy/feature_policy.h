@@ -122,10 +122,6 @@ bool BLINK_COMMON_EXPORT operator==(const ParsedFeaturePolicyDeclaration& lhs,
 
 class BLINK_COMMON_EXPORT FeaturePolicy {
  public:
-  // TODO(iclelland): Generate, instead of this map, a set of bool flags, one
-  // for each feature, as all features are supposed to be represented here.
-  using FeatureState = std::map<mojom::FeaturePolicyFeature, bool>;
-
   // Represents a collection of origins which make up an allowlist in a feature
   // policy. This collection may be set to match every origin (corresponding to
   // the "*" syntax in the policy string, in which case the Contains() method
@@ -174,7 +170,7 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
       const url::Origin& origin);
 
   static std::unique_ptr<FeaturePolicy> CreateWithOpenerPolicy(
-      const FeatureState& inherited_policies,
+      const FeaturePolicyFeatureState& inherited_policies,
       const url::Origin& origin);
 
   bool IsFeatureEnabled(mojom::FeaturePolicyFeature feature) const;
@@ -201,7 +197,7 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
 
   // Returns the current state of feature policies for |origin_|. This includes
   // the |inherited_policies_| as well as the header policies.
-  FeatureState GetFeatureState() const;
+  FeaturePolicyFeatureState GetFeatureState() const;
 
   const url::Origin& GetOriginForTest() const { return origin_; }
 
@@ -236,12 +232,12 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
 
   // Records whether or not each feature was enabled for this frame by its
   // parent frame.
-  FeatureState inherited_policies_;
+  FeaturePolicyFeatureState inherited_policies_;
 
   // Temporary member to support metrics. These are the values which would be
   // stored in |inherited_policies_| under the proposal in
   // https://crbug.com/937131.
-  FeatureState proposed_inherited_policies_;
+  FeaturePolicyFeatureState proposed_inherited_policies_;
 
   const FeaturePolicyFeatureList& feature_list_;
 

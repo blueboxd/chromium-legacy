@@ -52,10 +52,12 @@ base::UnguessableToken TokenFromString(const std::string& str) {
 
 namespace chromeos {
 
-VmPermissionServiceProvider::VmInfo::VmInfo(std::string owner_id,
-                                            std::string name,
-                                            VmType type)
-    : owner_id_(std::move(owner_id)), name_(std::move(name)), type_(type) {}
+VmPermissionServiceProvider::VmInfo::VmInfo(std::string vm_owner_id,
+                                            std::string vm_name,
+                                            VmType vm_type)
+    : owner_id(std::move(vm_owner_id)),
+      name(std::move(vm_name)),
+      type(vm_type) {}
 
 VmPermissionServiceProvider::VmInfo::~VmInfo() = default;
 
@@ -67,7 +69,7 @@ VmPermissionServiceProvider::VmMap::iterator
 VmPermissionServiceProvider::FindVm(const std::string& owner_id,
                                     const std::string& name) {
   return std::find_if(vms_.begin(), vms_.end(), [&](const auto& vm) {
-    return vm.second->owner_id_ == owner_id && vm.second->name_ == name;
+    return vm.second->owner_id == owner_id && vm.second->name == name;
   });
 }
 
@@ -225,7 +227,8 @@ void VmPermissionServiceProvider::SetPermissions(
     return;
   }
 
-  std::set<VmInfo::PermissionType> new_permissions(iter->second->permissions_);
+  base::flat_map<VmInfo::PermissionType, bool> new_permissions(
+      iter->second->permission_to_enabled_map);
   for (const auto& p : request.permissions()) {
     VmInfo::PermissionType kind;
     if (p.kind() == vm_permission_service::Permission::CAMERA) {
@@ -241,15 +244,11 @@ void VmPermissionServiceProvider::SetPermissions(
       return;
     }
 
-    if (p.allowed()) {
-      new_permissions.insert(kind);
-    } else {
-      new_permissions.erase(kind);
-    }
+    new_permissions[kind] = p.allowed();
   }
 
   // Commit final version of permissions.
-  iter->second->permissions_ = std::move(new_permissions);
+  iter->second->permission_to_enabled_map = std::move(new_permissions);
 
   std::move(response_sender).Run(std::move(response));
 }
@@ -291,10 +290,9 @@ void VmPermissionServiceProvider::GetPermissions(
   }
 
   vm_permission_service::GetPermissionsResponse payload;
-  for (auto permission : iter->second->permissions_) {
+  for (auto permission : iter->second->permission_to_enabled_map) {
     auto* p = payload.add_permissions();
-    p->set_allowed(true);
-    switch (permission) {
+    switch (permission.first) {
       case VmInfo::PermissionCamera:
         p->set_kind(vm_permission_service::Permission::CAMERA);
         break;
@@ -302,6 +300,7 @@ void VmPermissionServiceProvider::GetPermissions(
         p->set_kind(vm_permission_service::Permission::MICROPHONE);
         break;
     }
+    p->set_allowed(permission.second);
   }
 
   dbus::MessageWriter writer(response.get());
@@ -310,8 +309,8 @@ void VmPermissionServiceProvider::GetPermissions(
 }
 
 void VmPermissionServiceProvider::UpdateVmPermissions(VmInfo* vm) {
-  vm->permissions_.clear();
-  switch (vm->type_) {
+  vm->permission_to_enabled_map.clear();
+  switch (vm->type) {
     case VmInfo::PluginVm:
       UpdatePluginVmPermissions(vm);
       break;
@@ -323,7 +322,7 @@ void VmPermissionServiceProvider::UpdateVmPermissions(VmInfo* vm) {
 void VmPermissionServiceProvider::UpdatePluginVmPermissions(VmInfo* vm) {
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   if (!profile || chromeos::ProfileHelper::GetUserIdHashFromProfile(profile) !=
-                      vm->owner_id_) {
+                      vm->owner_id) {
     return;
   }
 
@@ -332,16 +331,16 @@ void VmPermissionServiceProvider::UpdatePluginVmPermissions(VmInfo* vm) {
       plugin_vm::PluginVmManagerFactory::GetForProfile(profile);
   if (base::FeatureList::IsEnabled(
           chromeos::features::kPluginVmShowCameraPermissions) &&
-      prefs->GetBoolean(prefs::kVideoCaptureAllowed) &&
-      PluginVmManager->GetPermission(plugin_vm::PermissionType::kCamera)) {
-    vm->permissions_.insert(VmInfo::PermissionCamera);
+      prefs->GetBoolean(prefs::kVideoCaptureAllowed)) {
+    vm->permission_to_enabled_map[VmInfo::PermissionCamera] =
+        PluginVmManager->GetPermission(plugin_vm::PermissionType::kCamera);
   }
 
   if (base::FeatureList::IsEnabled(
           chromeos::features::kPluginVmShowMicrophonePermissions) &&
-      prefs->GetBoolean(prefs::kAudioCaptureAllowed) &&
-      PluginVmManager->GetPermission(plugin_vm::PermissionType::kMicrophone)) {
-    vm->permissions_.insert(VmInfo::PermissionMicrophone);
+      prefs->GetBoolean(prefs::kAudioCaptureAllowed)) {
+    vm->permission_to_enabled_map[VmInfo::PermissionMicrophone] =
+        PluginVmManager->GetPermission(plugin_vm::PermissionType::kMicrophone);
   }
 }
 

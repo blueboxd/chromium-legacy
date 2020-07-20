@@ -534,7 +534,7 @@ TestRenderFrameHost::CreateWebBluetoothServiceForTesting() {
 void TestRenderFrameHost::SendFramePolicy(
     network::mojom::WebSandboxFlags sandbox_flags,
     const blink::ParsedFeaturePolicy& fp_header,
-    const blink::DocumentPolicy::FeatureState& dp_header) {
+    const blink::DocumentPolicyFeatureState& dp_header) {
   DidSetFramePolicyHeaders(sandbox_flags, fp_header, dp_header);
 }
 

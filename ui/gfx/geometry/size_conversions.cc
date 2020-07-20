@@ -9,15 +9,15 @@
 namespace gfx {
 
 Size ToFlooredSize(const SizeF& size) {
-  return Size(base::Floor(size.width()), base::Floor(size.height()));
+  return Size(base::ClampFloor(size.width()), base::ClampFloor(size.height()));
 }
 
 Size ToCeiledSize(const SizeF& size) {
-  return Size(base::Ceil(size.width()), base::Ceil(size.height()));
+  return Size(base::ClampCeil(size.width()), base::ClampCeil(size.height()));
 }
 
 Size ToRoundedSize(const SizeF& size) {
-  return Size(base::Round(size.width()), base::Round(size.height()));
+  return Size(base::ClampRound(size.width()), base::ClampRound(size.height()));
 }
 
 }  // namespace gfx

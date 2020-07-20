@@ -58,7 +58,7 @@ IN_PROC_BROWSER_TEST_P(SameSiteCookiesPolicyTest,
   PolicyMap policies;
   // Set a policy to allow Legacy access for all cookies.
   SetPolicy(&policies, key::kLegacySameSiteCookieBehaviorEnabled,
-            std::make_unique<base::Value>(1));
+            base::Value(1));
   UpdateProviderPolicy(policies);
 
   GURL url(kURL);
@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_P(SameSiteCookiesPolicyTest,
   PolicyMap policies;
   // Set a policy to block Legacy access for all cookies.
   SetPolicy(&policies, key::kLegacySameSiteCookieBehaviorEnabled,
-            std::make_unique<base::Value>(2));
+            base::Value(2));
   UpdateProviderPolicy(policies);
 
   GURL url(kURL);
@@ -203,8 +203,8 @@ IN_PROC_BROWSER_TEST_P(SameSiteCookiesPolicyTest,
   GURL other_domain_url("http://other-domain.example");
 
   // Set a policy to allow Legacy cookie access for one domain only.
-  auto policy_value = std::make_unique<base::Value>(base::Value::Type::LIST);
-  policy_value->Append(legacy_allowed_domain_url.host());
+  base::Value policy_value(base::Value::Type::LIST);
+  policy_value.Append(legacy_allowed_domain_url.host());
 
   PolicyMap policies;
   // Set a policy to allow Legacy access for the given domain only.

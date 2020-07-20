@@ -32,8 +32,8 @@
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/mojom/base/text_direction.mojom-blink-forward.h"
-#include "third_party/blink/public/common/feature_policy/document_policy.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/feature_policy/document_policy_features.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy_features.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
@@ -253,7 +253,7 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // non-empty feature state which is taken from the the original opener of the
   // frame. This is similar to how sandbox flags are propagated to the opened
   // new browsing contexts.
-  const FeaturePolicy::FeatureState& OpenerFeatureState() const {
+  const FeaturePolicyFeatureState& OpenerFeatureState() const {
     return opener_feature_state_;
   }
 
@@ -261,18 +261,18 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // |opener_feature_state| is set, it can no longer be modified (due to the
   // fact that the original opener which passed down the FeatureState cannot be
   // modified either).
-  void SetOpenerFeatureState(const FeaturePolicy::FeatureState& state) {
+  void SetOpenerFeatureState(const FeaturePolicyFeatureState& state) {
     DCHECK(state.empty() || IsMainFrame());
     DCHECK(opener_feature_state_.empty());
     opener_feature_state_ = state;
   }
 
-  const DocumentPolicy::FeatureState& GetRequiredDocumentPolicy() const {
+  const DocumentPolicyFeatureState& GetRequiredDocumentPolicy() const {
     return required_document_policy_;
   }
 
   void SetRequiredDocumentPolicy(
-      const DocumentPolicy::FeatureState& required_document_policy) {
+      const DocumentPolicyFeatureState& required_document_policy) {
     required_document_policy_ = required_document_policy;
   }
 
@@ -378,14 +378,14 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
 
   // Feature policy state inherited from an opener. It is always empty for child
   // frames.
-  FeaturePolicy::FeatureState opener_feature_state_;
+  FeaturePolicyFeatureState opener_feature_state_;
 
   // The required document policy for any subframes of this frame.
   // Note: current frame's document policy might not conform to
   // |required_document_policy_| here, as the Require-Document-Policy HTTP
   // header can specify required document policy which only takes effect for
   // subtree frames.
-  DocumentPolicy::FeatureState required_document_policy_;
+  DocumentPolicyFeatureState required_document_policy_;
 
   Member<WindowAgentFactory> window_agent_factory_;
 

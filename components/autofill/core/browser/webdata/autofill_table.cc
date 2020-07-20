@@ -669,7 +669,7 @@ bool AutofillTable::RemoveFormElementsAddedBetween(
                                          ? date_last_used_time_t
                                          : delete_begin_time_t - 1;
       updated_entry.count =
-          1 + base::Round(
+          1 + base::ClampRound(
                   1.0 * (count - 1) *
                   (updated_entry.date_last_used - updated_entry.date_created) /
                   (date_last_used_time_t - date_created_time_t));

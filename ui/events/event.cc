@@ -639,8 +639,8 @@ MouseWheelEvent::MouseWheelEvent(const PlatformEvent& native_event)
 
 MouseWheelEvent::MouseWheelEvent(const ScrollEvent& scroll_event)
     : MouseEvent(scroll_event),
-      offset_(base::Round(scroll_event.x_offset()),
-              base::Round(scroll_event.y_offset())) {
+      offset_(base::ClampRound(scroll_event.x_offset()),
+              base::ClampRound(scroll_event.y_offset())) {
   SetType(ET_MOUSEWHEEL);
 }
 

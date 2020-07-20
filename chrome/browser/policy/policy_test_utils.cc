@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/policy_test_utils.h"
 
 #include "base/bind_helpers.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
@@ -211,20 +212,16 @@ void PolicyTest::PerformClick(int x, int y) {
 
 void PolicyTest::SetPolicy(PolicyMap* policies,
                            const char* key,
-                           std::unique_ptr<base::Value> value) {
-  if (value) {
-    policies->Set(key, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                  POLICY_SOURCE_CLOUD, std::move(value), nullptr);
-  } else {
-    policies->Erase(key);
-  }
+                           base::Optional<base::Value> value) {
+  policies->Set(key, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                POLICY_SOURCE_CLOUD, std::move(value), nullptr);
 }
 
 void PolicyTest::ApplySafeSearchPolicy(
-    std::unique_ptr<base::Value> legacy_safe_search,
-    std::unique_ptr<base::Value> google_safe_search,
-    std::unique_ptr<base::Value> legacy_youtube,
-    std::unique_ptr<base::Value> youtube_restrict) {
+    base::Optional<base::Value> legacy_safe_search,
+    base::Optional<base::Value> google_safe_search,
+    base::Optional<base::Value> legacy_youtube,
+    base::Optional<base::Value> youtube_restrict) {
   PolicyMap policies;
   SetPolicy(&policies, key::kForceSafeSearch, std::move(legacy_safe_search));
   SetPolicy(&policies, key::kForceGoogleSafeSearch,

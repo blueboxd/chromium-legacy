@@ -80,7 +80,7 @@ double Tween::CalculateValue(Tween::Type type, double state) {
 namespace {
 
 uint8_t FloatToColorByte(float f) {
-  return base::Round<uint8_t>(f * 255.0f);
+  return base::ClampRound<uint8_t>(f * 255.0f);
 }
 
 uint8_t BlendColorComponents(uint8_t start,
@@ -170,8 +170,8 @@ int Tween::IntValueBetween(double value, int start, int target) {
 
 // static
 int Tween::LinearIntValueBetween(double value, int start, int target) {
-  // NOTE: Do not use base::Round()!  See comments on function declaration.
-  return base::Floor(0.5 + DoubleValueBetween(value, start, target));
+  // NOTE: Do not use base::ClampRound()!  See comments on function declaration.
+  return base::ClampFloor(0.5 + DoubleValueBetween(value, start, target));
 }
 
 // static

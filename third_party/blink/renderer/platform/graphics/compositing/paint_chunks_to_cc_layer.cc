@@ -541,7 +541,7 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
   if (!has_filter) {
     // TODO(ajuma): This should really be rounding instead of flooring the
     // alpha value, but that breaks slimming paint reftests.
-    auto alpha = base::Floor<uint8_t>(255 * effect.Opacity());
+    auto alpha = base::ClampFloor<uint8_t>(255 * effect.Opacity());
     if (has_other_effects) {
       PaintFlags flags;
       flags.setBlendMode(effect.BlendMode());

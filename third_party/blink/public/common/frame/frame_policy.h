@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_FRAME_FRAME_POLICY_H_
 
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
-#include "third_party/blink/public/common/feature_policy/document_policy.h"
+#include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 
 namespace blink {
@@ -27,7 +27,7 @@ struct BLINK_COMMON_EXPORT FramePolicy {
   FramePolicy();
   FramePolicy(network::mojom::WebSandboxFlags sandbox_flags,
               const ParsedFeaturePolicy& container_policy,
-              const DocumentPolicy::FeatureState& required_document_policy,
+              const DocumentPolicyFeatureState& required_document_policy,
               bool allowed_to_download = true,
               bool disallow_document_access = false);
   FramePolicy(const FramePolicy& lhs);
@@ -39,7 +39,7 @@ struct BLINK_COMMON_EXPORT FramePolicy {
   // - iframe 'policy' attribute
   // - 'Require-Document-Policy' http header
   // - |required_document_policy| of parent frame
-  DocumentPolicy::FeatureState required_document_policy;
+  DocumentPolicyFeatureState required_document_policy;
   // With FeaturePolicyForSandbox, as a policy affecting the document,
   // "downloads" is included in |container_policy|.
   // However, in certain cases where the initiator of the navigation is not the

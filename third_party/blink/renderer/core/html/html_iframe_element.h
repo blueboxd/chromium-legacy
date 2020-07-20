@@ -56,7 +56,7 @@ class CORE_EXPORT HTMLIFrameElement final
   const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
   ParsedFeaturePolicy ConstructContainerPolicy() const override;
-  DocumentPolicy::FeatureState ConstructRequiredPolicy() const override;
+  DocumentPolicyFeatureState ConstructRequiredPolicy() const override;
 
   mojom::blink::FrameOwnerElementType OwnerType() const final {
     return mojom::blink::FrameOwnerElementType::kIframe;

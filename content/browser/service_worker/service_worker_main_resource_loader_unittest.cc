@@ -408,9 +408,9 @@ class ServiceWorkerMainResourceLoaderTest : public testing::Test {
         GURL("https://example.com/service_worker.js"),
         blink::mojom::ScriptType::kClassic);
     std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
-    records.push_back(WriteToDiskCacheSync(storage(), version_->script_url(),
-                                           {} /* headers */, "I'm the body",
-                                           "I'm the meta data"));
+    records.push_back(WriteToDiskCacheSync(
+        GetStorageControl(), version_->script_url(), {} /* headers */,
+        "I'm the body", "I'm the meta data"));
     version_->script_cache_map()->SetResources(records);
     version_->set_fetch_handler_existence(
         ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -454,6 +454,10 @@ class ServiceWorkerMainResourceLoaderTest : public testing::Test {
 
   ServiceWorkerRegistry* registry() { return helper_->context()->registry(); }
   ServiceWorkerStorage* storage() { return helper_->context()->storage(); }
+  mojo::Remote<storage::mojom::ServiceWorkerStorageControl>&
+  GetStorageControl() {
+    return helper_->context()->GetStorageControl();
+  }
 
   // Starts a request. After calling this, the request is ongoing and the
   // caller can use functions like client_.RunUntilComplete() to wait for

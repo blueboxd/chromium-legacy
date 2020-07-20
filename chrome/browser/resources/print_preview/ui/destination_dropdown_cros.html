@@ -127,7 +127,8 @@
                   highlightedIndex_)]]">
             <printer-status-icon-cros icon-location="[[IconLocation.DROPDOWN]]"
                 printer-state="[[computePrinterState_(
-                    item.printerStatusReason)]]">
+                    item.printerStatusReason)]]"
+                class$="[[getHighlightedClass_(item.key, highlightedIndex_)]]">
             </printer-status-icon-cros>
             <span class="printer-display-name">[[item.displayName]]</span>
           </button>

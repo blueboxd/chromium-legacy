@@ -36,6 +36,7 @@
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/base/big_buffer.h"
+#include "third_party/blink/public/common/feature_policy/document_policy.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/mojom/loader/content_security_notifier.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-blink-forward.h"

@@ -24,11 +24,11 @@ namespace {
 // TODO(crbug/1094843): Use localised strings.
 const char kEnter[] = "Enter";
 
-const int kAnnotationLabelChildSpacing = 6;
-const int kArrowIconSize = 16;
-const int kDownIconHorizontalPadding = 4;
-const int kDownIconSize = 18;
-const int kEnterKeyHorizontalPadding = 4;
+const int kAnnotationLabelChildSpacing = 4;
+const int kArrowIconSize = 14;
+const int kDownIconHorizontalPadding = 2;
+const int kDownIconSize = 16;
+const int kEnterKeyHorizontalPadding = 2;
 
 // Creates the index label, and returns it (never returns nullptr).
 // The label text is not set in this function.
@@ -82,9 +82,13 @@ std::unique_ptr<views::View> CreateKeyContainer() {
   auto container = std::make_unique<views::View>();
   container->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal));
+  // TODO(crbug/1099044): Use color from ash_color_provider and move SetBorder
+  // to OnThemeChanged
+  const SkColor kKeyContainerBorderColor =
+      SkColorSetA(SK_ColorBLACK, 0x24);  // 14%
   container->SetBorder(views::CreateRoundedRectBorder(
       kAnnotationBorderThickness, kAnnotationCornerRadius, gfx::Insets(),
-      kSuggestionColor));
+      kKeyContainerBorderColor));
   return container;
 }
 
@@ -181,7 +185,7 @@ void SuggestionView::OnThemeChanged() {
                             GetNativeTheme()->GetSystemColor(
                                 ui::NativeTheme::kColorId_DefaultIconColor)));
   arrow_icon_->SetImage(
-      gfx::CreateVectorIcon(kForwardArrowTouchIcon, kArrowIconSize,
+      gfx::CreateVectorIcon(kKeyboardArrowRightIcon, kArrowIconSize,
                             GetNativeTheme()->GetSystemColor(
                                 ui::NativeTheme::kColorId_DefaultIconColor)));
   views::View::OnThemeChanged();

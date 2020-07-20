@@ -13,6 +13,7 @@
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/partition_alloc_buildflags.h"

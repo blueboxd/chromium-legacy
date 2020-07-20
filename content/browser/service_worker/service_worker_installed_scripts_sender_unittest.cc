@@ -43,7 +43,8 @@ class ExpectedScriptInfo {
         meta_data_(meta_data) {}
 
   storage::mojom::ServiceWorkerResourceRecordPtr WriteToDiskCache(
-      ServiceWorkerStorage* storage) const {
+      mojo::Remote<storage::mojom::ServiceWorkerStorageControl>& storage)
+      const {
     return ::content::WriteToDiskCacheWithIdSync(
         storage, script_url_, resource_id_, headers_, body_, meta_data_);
   }
@@ -202,7 +203,8 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, SendScripts) {
   {
     std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     for (const auto& info : kExpectedScriptInfoMap)
-      records.push_back(info.second.WriteToDiskCache(context()->storage()));
+      records.push_back(
+          info.second.WriteToDiskCache(context()->GetStorageControl()));
     version()->script_cache_map()->SetResources(records);
   }
 
@@ -260,7 +262,8 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, FailedToSendBody) {
   {
     std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     for (const auto& info : kExpectedScriptInfoMap)
-      records.push_back(info.second.WriteToDiskCache(context()->storage()));
+      records.push_back(
+          info.second.WriteToDiskCache(context()->GetStorageControl()));
     version()->script_cache_map()->SetResources(records);
   }
 
@@ -319,7 +322,8 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, FailedToSendMetaData) {
   {
     std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     for (const auto& info : kExpectedScriptInfoMap)
-      records.push_back(info.second.WriteToDiskCache(context()->storage()));
+      records.push_back(
+          info.second.WriteToDiskCache(context()->GetStorageControl()));
     version()->script_cache_map()->SetResources(records);
   }
 
@@ -363,7 +367,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, FailedToSendMetaData) {
 TEST_F(ServiceWorkerInstalledScriptsSenderTest, Histograms) {
   const GURL kMainScriptURL = version()->script_url();
   // Use script bodies small enough to be read by one
-  // ServiceWorkerResponseReader::ReadData(). The number of
+  // ServiceWorkerResourceReader::ReadData(). The number of
   // ServiceWorker.DiskCache.ReadResponseResult will be two per script (one is
   // reading the body and the other is saying EOD).
   std::map<GURL, ExpectedScriptInfo> kExpectedScriptInfoMap = {
@@ -390,7 +394,8 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, Histograms) {
   {
     std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     for (const auto& info : kExpectedScriptInfoMap)
-      records.push_back(info.second.WriteToDiskCache(context()->storage()));
+      records.push_back(
+          info.second.WriteToDiskCache(context()->GetStorageControl()));
     version()->script_cache_map()->SetResources(records);
   }
 
@@ -472,7 +477,8 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, RequestScriptBeforeStreaming) {
   {
     std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     for (const auto& info : kExpectedScriptInfoMap)
-      records.push_back(info.second.WriteToDiskCache(context()->storage()));
+      records.push_back(
+          info.second.WriteToDiskCache(context()->GetStorageControl()));
     version()->script_cache_map()->SetResources(records);
   }
 
@@ -562,7 +568,8 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, RequestScriptAfterStreaming) {
   {
     std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     for (const auto& info : kExpectedScriptInfoMap)
-      records.push_back(info.second.WriteToDiskCache(context()->storage()));
+      records.push_back(
+          info.second.WriteToDiskCache(context()->GetStorageControl()));
     version()->script_cache_map()->SetResources(records);
   }
 
@@ -633,7 +640,8 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, NoContext) {
         "I'm meta data for the main script"}}};
   std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
   for (const auto& info : kExpectedScriptInfoMap)
-    records.push_back(info.second.WriteToDiskCache(context()->storage()));
+    records.push_back(
+        info.second.WriteToDiskCache(context()->GetStorageControl()));
   version()->script_cache_map()->SetResources(records);
   auto sender =
       std::make_unique<ServiceWorkerInstalledScriptsSender>(version());

@@ -14,7 +14,7 @@ namespace blink {
 // static
 std::unique_ptr<DocumentPolicy> DocumentPolicy::CreateWithHeaderPolicy(
     const ParsedDocumentPolicy& header_policy) {
-  DocumentPolicy::FeatureState feature_defaults;
+  DocumentPolicyFeatureState feature_defaults;
   for (const auto& entry : GetDocumentPolicyFeatureInfoMap())
     feature_defaults.emplace(entry.first, entry.second.default_value);
   return CreateWithHeaderPolicy(header_policy.feature_state,
@@ -39,14 +39,14 @@ net::structured_headers::Item PolicyValueToItem(const PolicyValue& value) {
 
 // static
 base::Optional<std::string> DocumentPolicy::Serialize(
-    const FeatureState& policy) {
+    const DocumentPolicyFeatureState& policy) {
   return DocumentPolicy::SerializeInternal(policy,
                                            GetDocumentPolicyFeatureInfoMap());
 }
 
 // static
 base::Optional<std::string> DocumentPolicy::SerializeInternal(
-    const FeatureState& policy,
+    const DocumentPolicyFeatureState& policy,
     const DocumentPolicyFeatureInfoMap& feature_info_map) {
   net::structured_headers::Dictionary root;
 
@@ -74,10 +74,10 @@ base::Optional<std::string> DocumentPolicy::SerializeInternal(
 }
 
 // static
-DocumentPolicy::FeatureState DocumentPolicy::MergeFeatureState(
-    const DocumentPolicy::FeatureState& policy1,
-    const DocumentPolicy::FeatureState& policy2) {
-  DocumentPolicy::FeatureState result;
+DocumentPolicyFeatureState DocumentPolicy::MergeFeatureState(
+    const DocumentPolicyFeatureState& policy1,
+    const DocumentPolicyFeatureState& policy2) {
+  DocumentPolicyFeatureState result;
   auto i1 = policy1.begin();
   auto i2 = policy2.begin();
 
@@ -139,16 +139,17 @@ const base::Optional<std::string> DocumentPolicy::GetFeatureEndpoint(
   }
 }
 
-void DocumentPolicy::UpdateFeatureState(const FeatureState& feature_state) {
+void DocumentPolicy::UpdateFeatureState(
+    const DocumentPolicyFeatureState& feature_state) {
   for (const auto& feature_and_value : feature_state) {
     internal_feature_state_[static_cast<size_t>(feature_and_value.first)] =
         feature_and_value.second;
   }
 }
 
-DocumentPolicy::DocumentPolicy(const FeatureState& header_policy,
+DocumentPolicy::DocumentPolicy(const DocumentPolicyFeatureState& header_policy,
                                const FeatureEndpointMap& endpoint_map,
-                               const DocumentPolicy::FeatureState& defaults)
+                               const DocumentPolicyFeatureState& defaults)
     : endpoint_map_(endpoint_map) {
   // Fill the internal feature state with default value first,
   // and overwrite the value if it is specified in the header.
@@ -158,9 +159,9 @@ DocumentPolicy::DocumentPolicy(const FeatureState& header_policy,
 
 // static
 std::unique_ptr<DocumentPolicy> DocumentPolicy::CreateWithHeaderPolicy(
-    const FeatureState& header_policy,
+    const DocumentPolicyFeatureState& header_policy,
     const FeatureEndpointMap& endpoint_map,
-    const DocumentPolicy::FeatureState& defaults) {
+    const DocumentPolicyFeatureState& defaults) {
   std::unique_ptr<DocumentPolicy> new_policy = base::WrapUnique(
       new DocumentPolicy(header_policy, endpoint_map, defaults));
   return new_policy;
@@ -168,8 +169,8 @@ std::unique_ptr<DocumentPolicy> DocumentPolicy::CreateWithHeaderPolicy(
 
 // static
 bool DocumentPolicy::IsPolicyCompatible(
-    const DocumentPolicy::FeatureState& required_policy,
-    const DocumentPolicy::FeatureState& incoming_policy) {
+    const DocumentPolicyFeatureState& required_policy,
+    const DocumentPolicyFeatureState& incoming_policy) {
   for (const auto& required_entry : required_policy) {
     // feature value > threshold => enabled, where feature value is the value in
     // document policy and threshold is the value to test against.

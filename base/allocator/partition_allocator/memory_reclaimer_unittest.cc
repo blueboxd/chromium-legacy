@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/logging.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"

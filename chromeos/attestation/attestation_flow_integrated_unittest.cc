@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
@@ -16,6 +17,7 @@
 #include "base/test/task_environment.h"
 #include "base/timer/timer.h"
 #include "chromeos/attestation/attestation_flow_utils.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/attestation/attestation_client.h"
 #include "chromeos/dbus/attestation/interface.pb.h"
@@ -265,6 +267,40 @@ TEST_F(AttestationFlowIntegratedTest, GetCertificateAttestationTestAca) {
       .WillOnce(SaveArg<1>(&certificate));
 
   AttestationFlowIntegrated flow(::attestation::ACAType::TEST_ACA);
+  flow.GetCertificate(
+      static_cast<AttestationCertificateProfile>(request.certificate_profile()),
+      AccountId::FromUserEmail(request.username()), request.request_origin(),
+      /*generate_new_key=*/true, request.key_label(),
+      base::BindOnce(
+          &AttestationFlowIntegratedTest::QuitRunLoopCertificateCallback,
+          base::Unretained(this), callback.Get()));
+  Run();
+  EXPECT_FALSE(certificate.empty());
+}
+
+TEST_F(AttestationFlowIntegratedTest, GetCertificateAcaTypeFromCommandline) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitchASCII(chromeos::switches::kAttestationServer,
+                                  "test");
+  chromeos::AttestationClient::Get()
+      ->GetTestInterface()
+      ->ConfigureEnrollmentPreparations(true);
+
+  ::attestation::GetCertificateRequest request;
+  request.set_certificate_profile(
+      ::attestation::CertificateProfile::ENTERPRISE_USER_CERTIFICATE);
+  request.set_username("username@email.com");
+  request.set_key_label("label");
+  request.set_request_origin("origin");
+
+  AllowlistCertificateRequest(::attestation::ACAType::TEST_ACA, request);
+
+  base::MockCallback<AttestationFlowIntegrated::CertificateCallback> callback;
+  std::string certificate;
+  EXPECT_CALL(callback, Run(AttestationStatus::ATTESTATION_SUCCESS, _))
+      .WillOnce(SaveArg<1>(&certificate));
+
+  AttestationFlowIntegrated flow;
   flow.GetCertificate(
       static_cast<AttestationCertificateProfile>(request.certificate_profile()),
       AccountId::FromUserEmail(request.username()), request.request_origin(),

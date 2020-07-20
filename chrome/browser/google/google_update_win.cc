@@ -771,9 +771,9 @@ bool UpdateCheckDriver::IsIntermediateState(
           SUCCEEDED(current_state->get_totalBytesToDownload(&total_bytes)) &&
           total_bytes) {
         // 0-50 is downloading.
-        *progress = base::Floor((static_cast<double>(bytes_downloaded) /
-                                 static_cast<double>(total_bytes)) *
-                                50.0);
+        *progress = base::ClampFloor((static_cast<double>(bytes_downloaded) /
+                                      static_cast<double>(total_bytes)) *
+                                     50.0);
       }
       break;
     }

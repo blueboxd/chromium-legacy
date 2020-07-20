@@ -7043,7 +7043,7 @@ class TestNewWindowWebViewClient
                       const WebString&,
                       WebNavigationPolicy,
                       network::mojom::blink::WebSandboxFlags,
-                      const FeaturePolicy::FeatureState&,
+                      const FeaturePolicyFeatureState&,
                       const SessionStorageNamespaceId&) override {
     EXPECT_TRUE(false);
     return nullptr;

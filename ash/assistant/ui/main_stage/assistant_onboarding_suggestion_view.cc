@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
@@ -31,9 +32,13 @@ constexpr int kLabelLineHeight = 20;
 constexpr int kLabelSizeDelta = 2;
 constexpr int kPreferredHeightDip = 72;
 
+// Ink Drop.
+constexpr float kInkDropVisibleOpacity = 0.06f;
+constexpr float kInkDropHighlightOpacity = 0.08f;
+
 // Helpers ---------------------------------------------------------------------
 
-SkColor GetSuggestionBackgroundColor(int index) {
+SkColor GetBackgroundColor(int index) {
   constexpr SkColor kBackgroundColors[] = {gfx::kGoogleBlue050,
                                            gfx::kGoogleRed050,
                                            gfx::kGoogleYellow050,
@@ -45,7 +50,7 @@ SkColor GetSuggestionBackgroundColor(int index) {
   return kBackgroundColors[index];
 }
 
-SkColor GetSuggestionForegroundColor(int index) {
+SkColor GetForegroundColor(int index) {
   constexpr SkColor kForegroundColors[] = {gfx::kGoogleBlue800,
                                            gfx::kGoogleRed800,
                                            SkColorSetRGB(0xBF, 0x50, 0x00),
@@ -91,6 +96,26 @@ void AssistantOnboardingSuggestionView::ChildPreferredSizeChanged(
   PreferredSizeChanged();
 }
 
+void AssistantOnboardingSuggestionView::AddLayerBeneathView(ui::Layer* layer) {
+  // This method is called by InkDropHostView, a base class of Button, to add
+  // ink drop layers beneath |this| view. Unfortunately, this will cause ink
+  // drop layers to also paint below our background and, because our background
+  // is opaque, they will not be visible to the user. To work around this, we
+  // instead add ink drop layers beneath |ink_drop_container_| which *will*
+  // paint above our background.
+  ink_drop_container_->AddLayerBeneathView(layer);
+}
+
+void AssistantOnboardingSuggestionView::RemoveLayerBeneathView(
+    ui::Layer* layer) {
+  // This method is called by InkDropHostView, a base class of Button, to remove
+  // ink drop layers beneath |this| view. Because we instead added ink drop
+  // layers beneath |ink_drop_container_| to work around paint ordering issues,
+  // we inversely need to remove ink drop layers from |ink_drop_container_|
+  // here. See also comments in AddLayerBeneathView().
+  ink_drop_container_->RemoveLayerBeneathView(layer);
+}
+
 void AssistantOnboardingSuggestionView::ButtonPressed(views::Button* sender,
                                                       const ui::Event& event) {
   delegate_->OnSuggestionPressed(suggestion_id_);
@@ -110,15 +135,33 @@ void AssistantOnboardingSuggestionView::InitLayout(
   SetAccessibleName(base::UTF8ToUTF16(suggestion.text));
 
   // Background.
-  SetBackground(views::CreateRoundedRectBackground(
-      GetSuggestionBackgroundColor(index_), kCornerRadiusDip));
+  SetBackground(views::CreateRoundedRectBackground(GetBackgroundColor(index_),
+                                                   kCornerRadiusDip));
 
   // Focus.
   SetFocusBehavior(FocusBehavior::ALWAYS);
   focus_ring()->SetColor(gfx::kGoogleBlue300);
-  focus_ring()->SetPathGenerator(
-      std::make_unique<views::RoundRectHighlightPathGenerator>(
-          gfx::Insets(), kCornerRadiusDip));
+
+  // Ink Drop.
+  SetInkDropMode(InkDropMode::ON);
+  set_has_ink_drop_action_on_click(true);
+  set_ink_drop_base_color(GetForegroundColor(index_));
+  set_ink_drop_visible_opacity(kInkDropVisibleOpacity);
+  set_ink_drop_highlight_opacity(kInkDropHighlightOpacity);
+
+  // Installing this highlight path generator will set the desired shape for
+  // both ink drop effects as well as our focus ring.
+  views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
+                                                kCornerRadiusDip);
+
+  // By default, InkDropHostView, a base class of Button, will add ink drop
+  // layers beneath |this| view. Unfortunately, this will cause ink drop layers
+  // to paint below our background and, because our background is opaque, they
+  // will not be visible to the user. To work around this, we will instead be
+  // adding/removing ink drop layers as necessary to/from |ink_drop_container_|
+  // which *will* paint above our background.
+  ink_drop_container_ =
+      AddChildView(std::make_unique<views::InkDropContainerView>());
 
   // Layout.
   auto& layout =
@@ -134,6 +177,10 @@ void AssistantOnboardingSuggestionView::InitLayout(
   // view which lays out itself. Removing this would cause it *not* to paint.
   layout.SetChildViewIgnoredByLayout(focus_ring(), true);
 
+  // NOTE: Our |ink_drop_container_| serves only to hold reference to ink drop
+  // layers for painting purposes. It can be completely ignored by our |layout|.
+  layout.SetChildViewIgnoredByLayout(ink_drop_container_, true);
+
   // Icon.
   icon_ = AddChildView(std::make_unique<views::ImageView>());
   icon_->SetImageSize({kIconSizeDip, kIconSizeDip});
@@ -143,8 +190,8 @@ void AssistantOnboardingSuggestionView::InitLayout(
   if (assistant::util::IsResourceLinkType(url, ResourceLinkType::kIcon)) {
     // Handle local images.
     icon_->SetImage(assistant::util::CreateVectorIcon(
-        assistant::util::AppendOrReplaceColorParam(
-            url, GetSuggestionForegroundColor(index_)),
+        assistant::util::AppendOrReplaceColorParam(url,
+                                                   GetForegroundColor(index_)),
         kIconSizeDip));
   } else if (url.is_valid()) {
     // Handle remote images.
@@ -156,7 +203,7 @@ void AssistantOnboardingSuggestionView::InitLayout(
   // Label.
   label_ = AddChildView(std::make_unique<views::Label>());
   label_->SetAutoColorReadabilityEnabled(false);
-  label_->SetEnabledColor(GetSuggestionForegroundColor(index_));
+  label_->SetEnabledColor(GetForegroundColor(index_));
   label_->SetFontList(assistant::ui::GetDefaultFontList()
                           .DeriveWithSizeDelta(kLabelSizeDelta)
                           .DeriveWithWeight(gfx::Font::Weight::MEDIUM));

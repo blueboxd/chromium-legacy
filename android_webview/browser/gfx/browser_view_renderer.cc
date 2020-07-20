@@ -739,14 +739,14 @@ void BrowserViewRenderer::SetTotalRootLayerScrollOffset(
   // BrowserViewRenderer::ScrollTo.
   if (max_scroll_offset_unscaled_.x()) {
     scroll_offset.set_x(
-        base::Round((scroll_offset_unscaled.x() * max_offset.x()) /
-                    max_scroll_offset_unscaled_.x()));
+        base::ClampRound((scroll_offset_unscaled.x() * max_offset.x()) /
+                         max_scroll_offset_unscaled_.x()));
   }
 
   if (max_scroll_offset_unscaled_.y()) {
     scroll_offset.set_y(
-        base::Round((scroll_offset_unscaled.y() * max_offset.y()) /
-                    max_scroll_offset_unscaled_.y()));
+        base::ClampRound((scroll_offset_unscaled.y() * max_offset.y()) /
+                         max_scroll_offset_unscaled_.y()));
   }
 
   DCHECK_LE(0, scroll_offset.x());

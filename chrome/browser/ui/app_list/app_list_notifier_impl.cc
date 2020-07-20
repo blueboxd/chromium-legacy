@@ -159,7 +159,8 @@ void AppListNotifierImpl::DoStateTransition(Location location,
   // Notify of impression on kShown -> {kSeen, kIgnored, kLaunched}.
   if (old_state == State::kShown &&
       (new_state == State::kSeen || new_state == State::kLaunched ||
-       new_state == State::kIgnored)) {
+       new_state == State::kIgnored) &&
+      !results_[location].empty()) {
     for (auto& observer : observers_) {
       observer.OnImpression(location, results_[location], query_);
     }
@@ -173,7 +174,7 @@ void AppListNotifierImpl::DoStateTransition(Location location,
   }
 
   // Notify of ignore on * -> kIgnored.
-  if (new_state == State::kIgnored) {
+  if (new_state == State::kIgnored && !results_[location].empty()) {
     for (auto& observer : observers_) {
       observer.OnIgnore(location, results_[location], query_);
     }
@@ -181,7 +182,8 @@ void AppListNotifierImpl::DoStateTransition(Location location,
 
   // Notify of abandon on kSeen -> {kNone, kShown}.
   if (old_state == State::kSeen &&
-      (new_state == State::kNone || new_state == State::kShown)) {
+      (new_state == State::kNone || new_state == State::kShown) &&
+      !results_[location].empty()) {
     for (auto& observer : observers_) {
       observer.OnAbandon(location, results_[location], query_);
     }

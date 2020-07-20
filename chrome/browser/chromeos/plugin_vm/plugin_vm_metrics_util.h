@@ -13,10 +13,6 @@ extern const char kPluginVmImageDownloadedSizeHistogram[];
 extern const char kPluginVmLaunchResultHistogram[];
 extern const char kPluginVmSetupResultHistogram[];
 extern const char kPluginVmDlcUseResultHistogram[];
-// Histogram for recording successful setup time.
-// When error occurs and user hits retry button in setup dialog - time between
-// pressing retry button and setup being finished is recorded.
-extern const char kPluginVmSetupTimeHistogram[];
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.

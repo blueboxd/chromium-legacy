@@ -62,7 +62,7 @@ class DocumentPolicyParserTest
   }
 
   base::Optional<std::string> Serialize(
-      const DocumentPolicy::FeatureState& policy) {
+      const DocumentPolicyFeatureState& policy) {
     return DocumentPolicy::SerializeInternal(policy, feature_info_map);
   }
 
@@ -345,7 +345,7 @@ const ParseTestCase DocumentPolicyParserTest::kCases[] = {
     },
 };
 
-const std::pair<DocumentPolicy::FeatureState, std::string>
+const std::pair<DocumentPolicyFeatureState, std::string>
     kPolicySerializationTestCases[] = {
         {{{kBoolFeature, PolicyValue(false)},
           {kDoubleFeature, PolicyValue(1.0)}},
@@ -361,7 +361,7 @@ const std::pair<DocumentPolicy::FeatureState, std::string>
           {kDoubleFeature, PolicyValue(1.0)}},
          "f-bool, f-double=1.0"}};
 
-const DocumentPolicy::FeatureState kParsedPolicies[] = {
+const DocumentPolicyFeatureState kParsedPolicies[] = {
     {},  // An empty policy
     {{kBoolFeature, PolicyValue(false)}},
     {{kBoolFeature, PolicyValue(true)}},
@@ -389,7 +389,7 @@ TEST_F(DocumentPolicyParserTest, SerializeAndParse) {
 
 TEST_F(DocumentPolicyParserTest, SerializeResultShouldMatch) {
   for (const auto& test_case : kPolicySerializationTestCases) {
-    const DocumentPolicy::FeatureState& policy = test_case.first;
+    const DocumentPolicyFeatureState& policy = test_case.first;
     const std::string& expected = test_case.second;
     const auto result = Serialize(policy);
 

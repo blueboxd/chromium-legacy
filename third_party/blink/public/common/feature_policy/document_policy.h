@@ -63,16 +63,13 @@ namespace blink {
 
 class BLINK_COMMON_EXPORT DocumentPolicy {
  public:
-  using FeatureState =
-      base::flat_map<mojom::DocumentPolicyFeature, PolicyValue>;
-
   // Mapping of feature to endpoint group.
   // https://w3c.github.io/reporting/#endpoint-group
   using FeatureEndpointMap =
       base::flat_map<mojom::DocumentPolicyFeature, std::string>;
 
   struct ParsedDocumentPolicy {
-    FeatureState feature_state;
+    DocumentPolicyFeatureState feature_state;
     FeatureEndpointMap endpoint_map;
   };
 
@@ -98,34 +95,37 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
 
   // Returns true if the incoming policy is compatible with the given required
   // policy, i.e. incoming policy is at least as strict as required policy.
-  static bool IsPolicyCompatible(const FeatureState& required_policy,
-                                 const FeatureState& incoming_policy);
+  static bool IsPolicyCompatible(
+      const DocumentPolicyFeatureState& required_policy,
+      const DocumentPolicyFeatureState& incoming_policy);
 
   // Serialize document policy according to http_structured_header.
   // returns base::nullopt when http structured header serializer encounters
   // problems, e.g. double value out of the range supported.
-  static base::Optional<std::string> Serialize(const FeatureState& policy);
+  static base::Optional<std::string> Serialize(
+      const DocumentPolicyFeatureState& policy);
 
   static base::Optional<std::string> SerializeInternal(
-      const FeatureState& policy,
+      const DocumentPolicyFeatureState& policy,
       const DocumentPolicyFeatureInfoMap&);
 
   // Merge two FeatureState map. Take stricter value when there is conflict.
-  static FeatureState MergeFeatureState(const FeatureState& policy1,
-                                        const FeatureState& policy2);
+  static DocumentPolicyFeatureState MergeFeatureState(
+      const DocumentPolicyFeatureState& policy1,
+      const DocumentPolicyFeatureState& policy2);
 
  private:
   friend class DocumentPolicyTest;
 
-  DocumentPolicy(const FeatureState& header_policy,
+  DocumentPolicy(const DocumentPolicyFeatureState& header_policy,
                  const FeatureEndpointMap& endpoint_map,
-                 const FeatureState& defaults);
+                 const DocumentPolicyFeatureState& defaults);
   static std::unique_ptr<DocumentPolicy> CreateWithHeaderPolicy(
-      const FeatureState& header_policy,
+      const DocumentPolicyFeatureState& header_policy,
       const FeatureEndpointMap& endpoint_map,
-      const FeatureState& defaults);
+      const DocumentPolicyFeatureState& defaults);
 
-  void UpdateFeatureState(const FeatureState& feature_state);
+  void UpdateFeatureState(const DocumentPolicyFeatureState& feature_state);
 
   // Internal feature state is represented as an array to avoid overhead
   // in using container classes.

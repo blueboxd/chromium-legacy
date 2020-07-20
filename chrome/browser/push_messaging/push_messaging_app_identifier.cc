@@ -220,7 +220,7 @@ void PushMessagingAppIdentifier::PersistToPrefs(Profile* profile) const {
   PushMessagingAppIdentifier old =
       FindByServiceWorker(profile, origin_, service_worker_registration_id_);
   if (!old.is_null())
-    map->RemoveWithoutPathExpansion(old.app_id_, nullptr /* out_value */);
+    map->RemoveKey(old.app_id_);
 
   map->SetKey(app_id_, base::Value(MakePrefValue(
                            origin_, service_worker_registration_id_)));
@@ -232,7 +232,7 @@ void PushMessagingAppIdentifier::DeleteFromPrefs(Profile* profile) const {
   DictionaryPrefUpdate update(profile->GetPrefs(),
                               prefs::kPushMessagingAppIdentifierMap);
   base::DictionaryValue* map = update.Get();
-  map->RemoveWithoutPathExpansion(app_id_, nullptr /* out_value */);
+  map->RemoveKey(app_id_);
 }
 
 void PushMessagingAppIdentifier::DCheckValid() const {

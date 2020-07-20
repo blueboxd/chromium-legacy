@@ -328,7 +328,7 @@ void HTMLFrameOwnerElement::UpdateRequiredPolicy() {
     return;
 
   auto* frame = GetDocument().GetFrame();
-  DocumentPolicy::FeatureState new_required_policy =
+  DocumentPolicyFeatureState new_required_policy =
       frame
           ? DocumentPolicy::MergeFeatureState(
                 ConstructRequiredPolicy(), /* self_required_policy */

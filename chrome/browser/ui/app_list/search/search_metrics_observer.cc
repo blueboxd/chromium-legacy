@@ -32,7 +32,8 @@ enum class Action {
   kImpression = 0,
   kLaunch = 1,
   kAbandon = 2,
-  kMaxValue = kAbandon
+  kIgnore = 3,
+  kMaxValue = kIgnore
 };
 
 void LogError(Error error) {
@@ -125,6 +126,12 @@ void SearchMetricsObserver::OnLaunch(ash::AppListNotifier::Location location,
                   type.value());
   }
   LogOverallAction(location, query, Action::kLaunch);
+}
+
+void SearchMetricsObserver::OnIgnore(ash::AppListNotifier::Location location,
+                                     const std::vector<std::string>& results,
+                                     const base::string16& query) {
+  LogOverallAction(location, query, Action::kIgnore);
 }
 
 base::Optional<ash::SearchResultType> SearchMetricsObserver::GetType(

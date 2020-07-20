@@ -335,7 +335,7 @@ class AmbientAuthenticationTestWithPolicy
   void EnablePolicyWithValue(net::AmbientAuthAllowedProfileTypes value) {
     SetPolicy(&policies_,
               policy::key::kAmbientAuthenticationInPrivateModesEnabled,
-              std::make_unique<base::Value>(static_cast<int>(value)));
+              base::Value(static_cast<int>(value)));
     UpdateProviderPolicy(policies_);
   }
 
@@ -564,7 +564,7 @@ IN_PROC_BROWSER_TEST_P(
   // the feature flag.
   policy::PolicyMap policies;
   SetPolicy(&policies, policy::key::kBuiltinCertificateVerifierEnabled,
-            std::make_unique<base::Value>(true));
+            base::Value(true));
   UpdateProviderPolicy(policies);
 
   {
@@ -579,7 +579,7 @@ IN_PROC_BROWSER_TEST_P(
   }
 
   SetPolicy(&policies, policy::key::kBuiltinCertificateVerifierEnabled,
-            std::make_unique<base::Value>(false));
+            base::Value(false));
   UpdateProviderPolicy(policies);
 
   {
@@ -632,7 +632,7 @@ IN_PROC_BROWSER_TEST_P(
   // the feature flag.
   policy::PolicyMap policies;
   SetPolicy(&policies, policy::key::kBuiltinCertificateVerifierEnabled,
-            std::make_unique<base::Value>(true));
+            base::Value(true));
   UpdateProviderPolicy(policies);
 
   {
@@ -644,7 +644,7 @@ IN_PROC_BROWSER_TEST_P(
   }
 
   SetPolicy(&policies, policy::key::kBuiltinCertificateVerifierEnabled,
-            std::make_unique<base::Value>(false));
+            base::Value(false));
   UpdateProviderPolicy(policies);
 
   {

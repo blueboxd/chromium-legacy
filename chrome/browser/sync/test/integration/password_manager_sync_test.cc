@@ -5,7 +5,9 @@
 #include <memory>
 #include <string>
 
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
@@ -77,6 +79,8 @@ class PasswordManagerSyncTest : public SyncTest {
         {password_manager::features::kEnablePasswordsAccountStorage,
          password_manager::features::kFillOnAccountSelect},
         {});
+
+    DisableVerifier();
   }
 
   ~PasswordManagerSyncTest() override = default;
@@ -104,13 +108,17 @@ class PasswordManagerSyncTest : public SyncTest {
 
   // Also stores the AccountInfo for the signed-in account in
   // |signed_in_account_| as a side effect.
-  void SetupSyncTransportWithPasswordAccountStorage() {
+  void SetupSyncTransportWithoutPasswordAccountStorage() {
     ASSERT_TRUE(signed_in_account_.IsEmpty());
     // Setup Sync for a secondary account (i.e. in transport mode).
     signed_in_account_ = secondary_account_helper::SignInSecondaryAccount(
         GetProfile(0), &test_url_loader_factory_, "user@email.com");
     ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
     ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+  }
+
+  void SetupSyncTransportWithPasswordAccountStorage() {
+    SetupSyncTransportWithoutPasswordAccountStorage();
 
     // Let the user opt in to the account-scoped password storage, and wait for
     // it to become active.
@@ -653,6 +661,57 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
   // The opt-in should be gone as well.
   EXPECT_FALSE(password_manager::features_util::IsOptedInForAccountStorage(
       GetProfile(0)->GetPrefs(), GetSyncService(0)));
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
+                       PRE_ClearAccountStoreOnStartup) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  SetupSyncTransportWithoutPasswordAccountStorage();
+
+  ASSERT_FALSE(password_manager::features_util::IsOptedInForAccountStorage(
+      GetProfile(0)->GetPrefs(), GetSyncService(0)));
+
+  // Manually add a credential to the account store, without actually opting in.
+  // This simulates the case (for the following test) where the user revoked
+  // their opt-in, but the account store was *not* cleared correctly, e.g. due
+  // to a poorly-timed crash.
+  auto* account_store = passwords_helper::GetAccountPasswordStore(0);
+  account_store->AddLogin(CreateTestPasswordForm("accountuser", "accountpass"));
+
+  // Also add a credential to the profile store.
+  AddLocalCredential("localuser", "localpass");
+
+  ASSERT_THAT(GetAllLoginsFromProfilePasswordStore(),
+              ElementsAre(MatchesLogin("localuser", "localpass")));
+  ASSERT_THAT(GetAllLoginsFromAccountPasswordStore(),
+              ElementsAre(MatchesLogin("accountuser", "accountpass")));
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, ClearAccountStoreOnStartup) {
+  base::HistogramTester histograms;
+
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+
+  ASSERT_FALSE(password_manager::features_util::IsOptedInForAccountStorage(
+      GetProfile(0)->GetPrefs(), GetSyncService(0)));
+
+  // The "original" is defined in password_model_type_controller.cc.
+  const int kNotOptedInAndHadToClear = 2;
+
+  // Since there's no opt-in, the account-scoped store should have been cleared
+  // during startup, and the credential added by the PRE_ test should be gone.
+  EXPECT_THAT(GetAllLoginsFromAccountPasswordStore(), IsEmpty());
+  histograms.ExpectUniqueSample(
+      "PasswordManager.AccountStorage.ClearedOnStartup",
+      /*sample=*/kNotOptedInAndHadToClear, 1);
+
+  // Just as a sanity check: The credential in the profile-scoped store should
+  // still be there.
+  ASSERT_THAT(GetAllLoginsFromProfilePasswordStore(),
+              ElementsAre(MatchesLogin("localuser", "localpass")));
 }
 
 #endif  // !defined(OS_CHROMEOS)

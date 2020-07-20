@@ -15,7 +15,9 @@
 #include "base/bits.h"
 #include "base/feature_list.h"
 #include "base/notreached.h"
+#include "base/partition_alloc_buildflags.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 
 namespace base {
 
@@ -166,6 +168,22 @@ ALWAYS_INLINE internal::pool_handle GetNormalBucketPool() {
 #endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 }  // namespace internal
+
+ALWAYS_INLINE bool IsManagedByPartitionAllocDirectMap(const void* address) {
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+  return internal::PartitionAddressSpace::IsInDirectMapPool(address);
+#else
+  return false;
+#endif
+}
+
+ALWAYS_INLINE bool IsManagedByPartitionAllocNormalBuckets(const void* address) {
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+  return internal::PartitionAddressSpace::IsInNormalBucketPool(address);
+#else
+  return false;
+#endif
+}
 
 }  // namespace base
 

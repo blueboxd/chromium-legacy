@@ -51,6 +51,7 @@ class CrostiniUpgraderDialog : public SystemWebDialogDelegate {
   void OnDialogShown(content::WebUI* webui) override;
   void OnCloseContents(content::WebContents* source,
                        bool* out_close_dialog) override;
+  void OnWebContentsFinishedLoad() override;
 
   CrostiniUpgraderUI* upgrader_ui_ = nullptr;  // Not owned.
   Profile* profile_;                           // Not owned

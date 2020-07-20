@@ -99,10 +99,10 @@ void NineImagePainter::Paint(Canvas* canvas,
 
   // Since the drawing from the following Fill() calls assumes the mapped origin
   // is at (0,0), we need to translate the canvas to the mapped origin.
-  const int left_in_pixels = base::Round(bounds.x() * scale);
-  const int top_in_pixels = base::Round(bounds.y() * scale);
-  const int right_in_pixels = base::Round(bounds.right() * scale);
-  const int bottom_in_pixels = base::Round(bounds.bottom() * scale);
+  const int left_in_pixels = base::ClampRound(bounds.x() * scale);
+  const int top_in_pixels = base::ClampRound(bounds.y() * scale);
+  const int right_in_pixels = base::ClampRound(bounds.right() * scale);
+  const int bottom_in_pixels = base::ClampRound(bounds.bottom() * scale);
 
   const int width_in_pixels = right_in_pixels - left_in_pixels;
   const int height_in_pixels = bottom_in_pixels - top_in_pixels;

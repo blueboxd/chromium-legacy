@@ -566,7 +566,7 @@ IN_PROC_BROWSER_TEST_P(
   // override the feature flag.
   policy::PolicyMap policies;
   SetPolicy(&policies, policy::key::kBuiltinCertificateVerifierEnabled,
-            std::make_unique<base::Value>(true));
+            base::Value(true));
   UpdateProviderPolicy(policies);
 
   network_context_params_ptr =
@@ -577,7 +577,7 @@ IN_PROC_BROWSER_TEST_P(
       network::mojom::CertVerifierCreationParams::CertVerifierImpl::kBuiltin);
 
   SetPolicy(&policies, policy::key::kBuiltinCertificateVerifierEnabled,
-            std::make_unique<base::Value>(false));
+            base::Value(false));
   UpdateProviderPolicy(policies);
 
   network_context_params_ptr =

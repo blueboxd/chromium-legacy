@@ -12,9 +12,7 @@
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
-#include "chromeos/attestation/mock_attestation_flow.h"
-#include "chromeos/cryptohome/async_method_caller.h"
-#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
+#include "chromeos/attestation/fake_attestation_flow.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
@@ -161,10 +159,7 @@ void LocalPolicyTestServerMixin::SetFakeAttestationFlow() {
       ->browser_policy_connector_chromeos()
       ->GetDeviceCloudPolicyInitializer()
       ->SetAttestationFlowForTesting(
-          std::make_unique<chromeos::attestation::AttestationFlow>(
-              cryptohome::AsyncMethodCaller::GetInstance(),
-              chromeos::FakeCryptohomeClient::Get(),
-              std::make_unique<chromeos::attestation::FakeServerProxy>()));
+          std::make_unique<chromeos::attestation::FakeAttestationFlow>());
 }
 
 bool LocalPolicyTestServerMixin::SetDeviceStateRetrievalResponse(

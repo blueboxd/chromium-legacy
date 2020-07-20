@@ -193,17 +193,15 @@ class PluginVmInstallerTestBase : public testing::Test {
   }
 
   void SetPluginVmImagePref(std::string url, std::string hash) {
-    DictionaryPrefUpdate update(profile_->GetPrefs(),
-                                plugin_vm::prefs::kPluginVmImage);
+    DictionaryPrefUpdate update(profile_->GetPrefs(), prefs::kPluginVmImage);
     base::DictionaryValue* plugin_vm_image = update.Get();
     plugin_vm_image->SetKey("url", base::Value(url));
     plugin_vm_image->SetKey("hash", base::Value(hash));
   }
 
   void SetRequiredFreeDiskSpaceGBPref(int required_free_disk_space) {
-    profile_->GetPrefs()->SetInteger(
-        plugin_vm::prefs::kPluginVmRequiredFreeDiskSpaceGB,
-        required_free_disk_space);
+    profile_->GetPrefs()->SetInteger(prefs::kPluginVmRequiredFreeDiskSpaceGB,
+                                     required_free_disk_space);
   }
 
   base::FilePath CreateZipFile() {
@@ -416,6 +414,8 @@ TEST_F(PluginVmInstallerDownloadServiceTest, InsufficientDisk) {
   StartAndRunToCompletion();
   histogram_tester_->ExpectUniqueSample(
       kFailureReasonHistogram, FailureReason::INSUFFICIENT_DISK_SPACE, 1);
+  histogram_tester_->ExpectUniqueSample(kPluginVmSetupResultHistogram,
+                                        PluginVmSetupResult::kError, 1);
 }
 
 TEST_F(PluginVmInstallerDownloadServiceTest, InsufficientDiskWhenSetInPolicy) {
@@ -441,6 +441,9 @@ TEST_F(PluginVmInstallerDownloadServiceTest, VmExists) {
   ExpectObserverEventsUntil(InstallingState::kCheckingForExistingVm);
   EXPECT_CALL(*observer_, OnVmExists());
   StartAndRunToCompletion();
+
+  histogram_tester_->ExpectUniqueSample(
+      kPluginVmSetupResultHistogram, PluginVmSetupResult::kVmAlreadyExists, 1);
 }
 
 TEST_F(PluginVmInstallerDownloadServiceTest, CancelOnVmExistsCheck) {
@@ -454,6 +457,10 @@ TEST_F(PluginVmInstallerDownloadServiceTest, CancelOnVmExistsCheck) {
   run_loop.Run();
   installer_->Cancel();
   task_environment_.RunUntilIdle();
+
+  histogram_tester_->ExpectUniqueSample(
+      kPluginVmSetupResultHistogram,
+      PluginVmSetupResult::kUserCancelledCheckingForExistingVm, 1);
 }
 
 TEST_F(PluginVmInstallerDownloadServiceTest, DownloadPluginVmImageParamsTest) {
@@ -517,6 +524,8 @@ TEST_F(PluginVmInstallerDownloadServiceTest,
 
   histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSizeHistogram,
                                         kDownloadedPluginVmImageSizeInMb, 2);
+  histogram_tester_->ExpectUniqueSample(kPluginVmSetupResultHistogram,
+                                        PluginVmSetupResult::kSuccess, 2);
 }
 
 TEST_F(PluginVmInstallerDownloadServiceTest,
@@ -541,6 +550,10 @@ TEST_F(PluginVmInstallerDownloadServiceTest,
 
   histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSizeHistogram,
                                         kDownloadedPluginVmImageSizeInMb, 1);
+  histogram_tester_->ExpectBucketCount(kPluginVmSetupResultHistogram,
+                                       PluginVmSetupResult::kError, 1);
+  histogram_tester_->ExpectBucketCount(kPluginVmSetupResultHistogram,
+                                       PluginVmSetupResult::kSuccess, 1);
 }
 
 TEST_F(PluginVmInstallerDownloadServiceTest, CancelledDownloadTest) {
@@ -555,6 +568,9 @@ TEST_F(PluginVmInstallerDownloadServiceTest, CancelledDownloadTest) {
 
   histogram_tester_->ExpectTotalCount(kPluginVmImageDownloadedSizeHistogram, 0);
   histogram_tester_->ExpectTotalCount(kFailureReasonHistogram, 0);
+  histogram_tester_->ExpectUniqueSample(
+      kPluginVmSetupResultHistogram,
+      PluginVmSetupResult::kUserCancelledDownloadingPluginVmImage, 1);
 }
 
 TEST_F(PluginVmInstallerDownloadServiceTest, ImportNonExistingImageTest) {
@@ -581,6 +597,10 @@ TEST_F(PluginVmInstallerDownloadServiceTest, CancelledImportTest) {
   EXPECT_CALL(*observer_, OnCancelFinished());
   installer_->Cancel();
   task_environment_.RunUntilIdle();
+
+  histogram_tester_->ExpectUniqueSample(
+      kPluginVmSetupResultHistogram,
+      PluginVmSetupResult::kUserCancelledImportingPluginVmImage, 1);
 }
 
 TEST_F(PluginVmInstallerDownloadServiceTest, EmptyPluginVmImageUrlTest) {

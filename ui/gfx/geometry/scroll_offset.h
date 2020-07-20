@@ -106,7 +106,7 @@ inline ScrollOffset operator-(const ScrollOffset& lhs,
 }
 
 inline Vector2d ScrollOffsetToFlooredVector2d(const ScrollOffset& v) {
-  return Vector2d(base::Floor(v.x()), base::Floor(v.y()));
+  return Vector2d(base::ClampFloor(v.x()), base::ClampFloor(v.y()));
 }
 
 inline Vector2dF ScrollOffsetToVector2dF(const ScrollOffset& v) {

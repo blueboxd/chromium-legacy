@@ -10,10 +10,14 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/allocator/partition_allocator/checked_ptr_support.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_tag.h"
+#include "base/logging.h"
+#include "base/partition_alloc_buildflags.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::Test;
@@ -628,7 +632,7 @@ namespace internal {
 static constexpr size_t kTagOffsetForTest = 2;
 
 struct CheckedPtr2OrMTEImplPartitionAllocSupportForTest {
-  static bool EnabledForPtr(void* ptr) { return true; }
+  static bool EnabledForPtr(void* ptr) { return !!ptr; }
 
   static ALWAYS_INLINE void* TagPointer(void* ptr) {
     return static_cast<char*>(ptr) - kTagOffsetForTest;
@@ -643,8 +647,8 @@ using CheckedPtr2OrMTEImplForTest =
     CheckedPtr2OrMTEImpl<CheckedPtr2OrMTEImplPartitionAllocSupportForTest>;
 
 TEST(CheckedPtr2OrMTEImpl, WrapNull) {
-  ASSERT_EQ(CheckedPtr2OrMTEImpl<>::GetWrappedNullPtr(), 0u);
-  ASSERT_EQ(CheckedPtr2OrMTEImpl<>::WrapRawPtr(nullptr), 0u);
+  ASSERT_EQ(CheckedPtr2OrMTEImplForTest::GetWrappedNullPtr(), 0u);
+  ASSERT_EQ(CheckedPtr2OrMTEImplForTest::WrapRawPtr(nullptr), 0u);
 }
 
 TEST(CheckedPtr2OrMTEImpl, SafelyUnwrapNull) {
@@ -745,8 +749,7 @@ void HandleOOM(size_t unused_size) {
 // Don't enable it when MEMORY_TOOL_REPLACES_ALLOCATOR is defined, because it
 // makes PartitionAlloc take a different path that doesn't provide tags, thus no
 // crash on UaF, thus missing the EXPECT_DEATH_IF_SUPPORTED expectation.
-#if BUILDFLAG(USE_PARTITION_ALLOC) &&                                  \
-    (ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_MTE_CHECKED_PTR) && \
+#if BUILDFLAG(USE_PARTITION_ALLOC) && ENABLE_CHECKED_PTR2_OR_MTE_IMPL && \
     !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 
 TEST(CheckedPtr2OrMTEImpl, CrashOnUseAfterFree) {
@@ -760,6 +763,8 @@ TEST(CheckedPtr2OrMTEImpl, CrashOnUseAfterFree) {
   PartitionAllocator<ThreadSafe> allocator;
   allocator.init();
   void* raw_ptr = allocator.root()->Alloc(sizeof(int), "int");
+  // Use the actual CheckedPtr implementation, not a test substitute, to
+  // exercise real PartitionAlloc paths.
   CheckedPtr<int> ptr = static_cast<int*>(raw_ptr);
   *ptr = 42;
   EXPECT_TRUE(*ptr == 42);

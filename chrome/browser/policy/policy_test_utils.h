@@ -62,12 +62,12 @@ class PolicyTest : public InProcessBrowserTest {
 
   void SetPolicy(PolicyMap* policies,
                  const char* key,
-                 std::unique_ptr<base::Value> value);
+                 base::Optional<base::Value> value);
 
-  void ApplySafeSearchPolicy(std::unique_ptr<base::Value> legacy_safe_search,
-                             std::unique_ptr<base::Value> google_safe_search,
-                             std::unique_ptr<base::Value> legacy_youtube,
-                             std::unique_ptr<base::Value> youtube_restrict);
+  void ApplySafeSearchPolicy(base::Optional<base::Value> legacy_safe_search,
+                             base::Optional<base::Value> google_safe_search,
+                             base::Optional<base::Value> legacy_youtube,
+                             base::Optional<base::Value> youtube_restrict);
 
 #if defined(OS_CHROMEOS)
   void TestScreenshotFile(bool enabled);

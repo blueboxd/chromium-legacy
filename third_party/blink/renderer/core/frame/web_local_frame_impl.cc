@@ -1707,7 +1707,7 @@ WebLocalFrame* WebLocalFrame::CreateMainFrame(
     WebFrame* opener,
     const WebString& name,
     network::mojom::blink::WebSandboxFlags sandbox_flags,
-    const FeaturePolicy::FeatureState& opener_feature_state) {
+    const FeaturePolicyFeatureState& opener_feature_state) {
   return WebLocalFrameImpl::CreateMainFrame(
       web_view, client, interface_registry, frame_token, opener, name,
       sandbox_flags, opener_feature_state);
@@ -1733,7 +1733,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
     WebFrame* opener,
     const WebString& name,
     network::mojom::blink::WebSandboxFlags sandbox_flags,
-    const FeaturePolicy::FeatureState& opener_feature_state) {
+    const FeaturePolicyFeatureState& opener_feature_state) {
   auto* frame = MakeGarbageCollected<WebLocalFrameImpl>(
       util::PassKey<WebLocalFrameImpl>(),
       mojom::blink::TreeScopeType::kDocument, client, interface_registry,
@@ -1768,7 +1768,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
   web_frame->SetOpener(previous_web_frame->Opener());
   network::mojom::blink::WebSandboxFlags sandbox_flags =
       network::mojom::blink::WebSandboxFlags::kNone;
-  FeaturePolicy::FeatureState feature_state;
+  FeaturePolicyFeatureState feature_state;
   if (!previous_frame->Owner()) {
     // Provisional main frames need to force sandbox flags.  This is necessary
     // to inherit sandbox flags when a sandboxed frame does a window.open()
@@ -1878,7 +1878,7 @@ void WebLocalFrameImpl::InitializeCoreFrame(
     const AtomicString& name,
     WindowAgentFactory* window_agent_factory,
     network::mojom::blink::WebSandboxFlags sandbox_flags,
-    const FeaturePolicy::FeatureState& opener_feature_state) {
+    const FeaturePolicyFeatureState& opener_feature_state) {
   SetCoreFrame(MakeGarbageCollected<LocalFrame>(
       local_frame_client_.Get(), page, owner, GetFrameToken(),
       window_agent_factory, interface_registry_));

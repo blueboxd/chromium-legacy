@@ -414,7 +414,8 @@ class HorizontalShadowSource : public CanvasImageSource {
   static int GetHeightForShadows(const std::vector<ShadowValue>& shadows) {
     int height = 0;
     for (const auto& shadow : shadows) {
-      height = std::max(height, shadow.y() + base::Ceil(shadow.blur() / 2));
+      height =
+          std::max(height, shadow.y() + base::ClampCeil(shadow.blur() / 2));
     }
     return height;
   }

@@ -312,7 +312,7 @@ void AddAdditionalRequestHeaders(
   }
 
   if (base::FeatureList::IsEnabled(features::kDocumentPolicyNegotiation)) {
-    const blink::DocumentPolicy::FeatureState& required_policy =
+    const blink::DocumentPolicyFeatureState& required_policy =
         frame_tree_node->effective_frame_policy().required_document_policy;
     if (!required_policy.empty()) {
       base::Optional<std::string> policy_header =

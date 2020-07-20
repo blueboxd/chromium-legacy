@@ -208,8 +208,8 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
       // GRIT fell back to the 100% image, so rescale it to the correct size.
       image = skia::ImageOperations::Resize(
           image, skia::ImageOperations::RESIZE_LANCZOS3,
-          base::Ceil(image.width() * scale),
-          base::Ceil(image.height() * scale));
+          base::ClampCeil(image.width() * scale),
+          base::ClampCeil(image.height() * scale));
     } else {
       scale = GetScaleForScaleFactor(scale_factor);
     }

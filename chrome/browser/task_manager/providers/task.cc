@@ -93,13 +93,13 @@ void Task::Refresh(const base::TimeDelta& update_interval,
 
   int64_t current_cycle_read_byte_count =
       cumulative_bytes_read_ - last_refresh_cumulative_bytes_read_;
-  network_read_rate_ = base::Round<int64_t>(current_cycle_read_byte_count /
-                                            update_interval.InSecondsF());
+  network_read_rate_ = base::ClampRound<int64_t>(current_cycle_read_byte_count /
+                                                 update_interval.InSecondsF());
 
   int64_t current_cycle_sent_byte_count =
       cumulative_bytes_sent_ - last_refresh_cumulative_bytes_sent_;
-  network_sent_rate_ = base::Round<int64_t>(current_cycle_sent_byte_count /
-                                            update_interval.InSecondsF());
+  network_sent_rate_ = base::ClampRound<int64_t>(current_cycle_sent_byte_count /
+                                                 update_interval.InSecondsF());
 
   last_refresh_cumulative_bytes_read_ = cumulative_bytes_read_;
   last_refresh_cumulative_bytes_sent_ = cumulative_bytes_sent_;

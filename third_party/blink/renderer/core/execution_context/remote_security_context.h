@@ -37,7 +37,7 @@ class CORE_EXPORT RemoteSecurityContext final : public SecurityContext {
       const ParsedFeaturePolicy& parsed_header,
       const ParsedFeaturePolicy& container_policy,
       const FeaturePolicy* parent_feature_policy,
-      const FeaturePolicy::FeatureState* opener_feature_state);
+      const FeaturePolicyFeatureState* opener_feature_state);
 };
 
 }  // namespace blink

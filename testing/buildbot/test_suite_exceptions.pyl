@@ -2527,6 +2527,12 @@
       'android-pie-x86-rel',
       'VR Linux',
       'android-code-coverage-native', # crbug/1018431
+      # These tests fail on Win7, and given that We don't support VR there,
+      # these tests are unnecessary there.
+      # chromium.win
+      'Win 7 Tests x64 (1)',
+      'Win7 Tests (1)',
+      'Win7 Tests (dbg)(1)',
     ],
   },
   'wayland_client_perftests': {

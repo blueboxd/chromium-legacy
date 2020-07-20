@@ -113,8 +113,8 @@ void Windows10CaptionButton::OnPaintBackground(gfx::Canvas* canvas) {
       // Theme buttons have slightly increased opacity to make them stand out
       // against a visually-busy frame image.
       constexpr float kAlphaScale = 1.3f;
-      hovered_alpha = base::Round<SkAlpha>(hovered_alpha * kAlphaScale);
-      pressed_alpha = base::Round<SkAlpha>(pressed_alpha * kAlphaScale);
+      hovered_alpha = base::ClampRound<SkAlpha>(hovered_alpha * kAlphaScale);
+      pressed_alpha = base::ClampRound<SkAlpha>(pressed_alpha * kAlphaScale);
     }
   }
 

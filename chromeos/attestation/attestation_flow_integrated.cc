@@ -8,12 +8,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "chromeos/attestation/attestation_flow_utils.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/attestation/attestation_client.h"
@@ -33,9 +35,24 @@ constexpr base::TimeDelta kReadyTimeout = base::TimeDelta::FromSeconds(60);
 // attestation.
 constexpr base::TimeDelta kRetryDelay = base::TimeDelta::FromMilliseconds(300);
 
-// Default ACA type when not specified during construction.
-constexpr ::attestation::ACAType kDefaultAcaType =
-    ::attestation::ACAType::DEFAULT_ACA;
+// Values for the attestation server switch.
+constexpr char kAttestationServerDefault[] = "default";
+constexpr char kAttestationServerTest[] = "test";
+
+::attestation::ACAType GetConfiguredACAType() {
+  std::string value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          chromeos::switches::kAttestationServer);
+  if (value.empty() || value == kAttestationServerDefault) {
+    return ::attestation::ACAType::DEFAULT_ACA;
+  }
+  if (value == kAttestationServerTest) {
+    return ::attestation::ACAType::TEST_ACA;
+  }
+  LOG(WARNING) << "Invalid attestation server value: " << value
+               << "; using default.";
+  return ::attestation::ACAType::DEFAULT_ACA;
+}
 
 bool IsPreparedWith(const ::attestation::GetEnrollmentPreparationsReply& reply,
                     ::attestation::ACAType aca_type) {
@@ -67,7 +84,7 @@ base::Optional<::attestation::CertificateProfile> ProfileToAttestationProtoEnum(
 }  // namespace
 
 AttestationFlowIntegrated::AttestationFlowIntegrated()
-    : AttestationFlowIntegrated(kDefaultAcaType) {}
+    : AttestationFlowIntegrated(GetConfiguredACAType()) {}
 
 // This constructor passes |nullptr|s to the base class
 // |AttestationFlow| because we don't use cryptohome client and server

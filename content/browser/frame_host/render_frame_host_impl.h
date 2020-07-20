@@ -1941,8 +1941,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidSetFramePolicyHeaders(
       network::mojom::WebSandboxFlags sandbox_flags,
       const blink::ParsedFeaturePolicy& feature_policy_header,
-      const blink::DocumentPolicy::FeatureState& document_policy_header)
-      override;
+      const blink::DocumentPolicyFeatureState& document_policy_header) override;
   void CancelInitialHistoryLoad() override;
   void UpdateEncoding(const std::string& encoding) override;
   void FrameSizeChanged(const gfx::Size& frame_size) override;

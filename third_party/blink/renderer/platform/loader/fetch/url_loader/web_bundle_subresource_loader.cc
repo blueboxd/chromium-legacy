@@ -405,7 +405,8 @@ void CreateFactoryOnBackground(
 }  // namespace
 
 void CreateWebBundleSubresourceLoaderFactory(
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver,
+    CrossVariantMojoReceiver<network::mojom::URLLoaderFactoryInterfaceBase>
+        factory_receiver,
     mojo::ScopedDataPipeConsumerHandle bundle_body) {
   auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
       {base::TaskPriority::USER_VISIBLE,

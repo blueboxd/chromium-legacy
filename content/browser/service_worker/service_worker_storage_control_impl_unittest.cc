@@ -100,37 +100,6 @@ ReadResponseHeadResult ReadResponseHead(
   return result;
 }
 
-class MockServiceWorkerDataPipeStateNotifier
-    : public storage::mojom::ServiceWorkerDataPipeStateNotifier {
- public:
-  MockServiceWorkerDataPipeStateNotifier() = default;
-
-  mojo::PendingRemote<storage::mojom::ServiceWorkerDataPipeStateNotifier>
-  BindNewPipeAndPassRemote() {
-    return receiver_.BindNewPipeAndPassRemote();
-  }
-
-  int32_t WaitUntilComplete() {
-    if (!complete_status_.has_value()) {
-      loop_.Run();
-      DCHECK(complete_status_.has_value());
-    }
-    return *complete_status_;
-  }
-
- private:
-  void OnComplete(int32_t status) override {
-    complete_status_ = status;
-    if (loop_.running())
-      loop_.Quit();
-  }
-
-  base::Optional<int32_t> complete_status_;
-  base::RunLoop loop_;
-  mojo::Receiver<storage::mojom::ServiceWorkerDataPipeStateNotifier> receiver_{
-      this};
-};
-
 ReadDataResult ReadResponseData(
     storage::mojom::ServiceWorkerResourceReader* reader,
     int data_size) {

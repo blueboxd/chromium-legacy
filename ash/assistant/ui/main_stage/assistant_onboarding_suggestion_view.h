@@ -17,6 +17,7 @@ struct AssistantSuggestion;
 
 namespace views {
 class ImageView;
+class InkDropContainerView;
 class Label;
 }  // namespace views
 
@@ -45,6 +46,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOnboardingSuggestionView
   const char* GetClassName() const override;
   int GetHeightForWidth(int width) const override;
   void ChildPreferredSizeChanged(views::View* child) override;
+  void AddLayerBeneathView(ui::Layer* layer) override;
+  void RemoveLayerBeneathView(ui::Layer* layer) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -63,8 +66,10 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOnboardingSuggestionView
   const base::UnguessableToken suggestion_id_;
   const int index_;
 
-  views::ImageView* icon_ = nullptr;  // Owned by view hierarchy.
-  views::Label* label_ = nullptr;     // Owned by view hierarchy.
+  // Owned by view hierarchy.
+  views::ImageView* icon_ = nullptr;
+  views::Label* label_ = nullptr;
+  views::InkDropContainerView* ink_drop_container_ = nullptr;
 
   base::WeakPtrFactory<AssistantOnboardingSuggestionView> weak_factory_{this};
 };

@@ -201,10 +201,6 @@ class DownloadManagerService
       const JavaParamRef<jstring>& jdownload_guid,
       jboolean download_started);
 
-  void UseExistingProfileKeyForTesting() {
-    use_existing_profile_key_for_testing_ = true;
-  }
-
  private:
   // For testing.
   friend class DownloadManagerServiceTest;
@@ -297,8 +293,6 @@ class DownloadManagerService
   ResumeCallback resume_callback_for_testing_;
 
   ScopedObserver<Profile, ProfileObserver> observed_profiles_{this};
-
-  bool use_existing_profile_key_for_testing_{false};
 
   std::map<ProfileKey*, download::SimpleDownloadManagerCoordinator*>
       coordinators_;

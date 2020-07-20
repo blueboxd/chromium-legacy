@@ -122,9 +122,9 @@ SkAlpha GetCaptionOpacity(CC::ClosedCaptionOpacity caption_opacity) {
     case CC::ClosedCaptionOpacity_ZeroPercent:
       return SK_AlphaTRANSPARENT;
     case CC::ClosedCaptionOpacity_TwentyFivePercent:
-      return base::Round<SkAlpha>(SK_AlphaOPAQUE * 0.25);
+      return base::ClampRound<SkAlpha>(SK_AlphaOPAQUE * 0.25);
     case CC::ClosedCaptionOpacity_SeventyFivePercent:
-      return base::Round<SkAlpha>(SK_AlphaOPAQUE * 0.75);
+      return base::ClampRound<SkAlpha>(SK_AlphaOPAQUE * 0.75);
     case CC::ClosedCaptionOpacity_OneHundredPercent:
     case CC::ClosedCaptionOpacity_Default:
     default:

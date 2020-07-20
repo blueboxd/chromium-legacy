@@ -86,7 +86,7 @@ double ComputeDomainMixingRatio(const DomainVisits& domain_visits) {
 
 void EmitDomainMixingMetric(const DomainVisits& domain_visits, int num_days) {
   double domain_mixing_ratio = ComputeDomainMixingRatio(domain_visits);
-  int percentage = base::Round(100 * domain_mixing_ratio);
+  int percentage = base::ClampRound(100 * domain_mixing_ratio);
   switch (num_days) {
     case kOneDay:
       UMA_HISTOGRAM_PERCENTAGE("DomainMixing.OneDay", percentage);

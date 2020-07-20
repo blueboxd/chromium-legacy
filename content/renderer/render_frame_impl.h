@@ -672,7 +672,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidSetFramePolicyHeaders(
       network::mojom::WebSandboxFlags flags,
       const blink::ParsedFeaturePolicy& fp_header,
-      const blink::DocumentPolicy::FeatureState& dp_header) override;
+      const blink::DocumentPolicyFeatureState& dp_header) override;
   void DidMatchCSS(
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors)

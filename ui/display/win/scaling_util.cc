@@ -77,7 +77,7 @@ int ScaleOffset(int unscaled_length, float scale_factor, int unscaled_offset) {
   float scaled_length = static_cast<float>(unscaled_length) / scale_factor;
   float percent =
       static_cast<float>(unscaled_offset) / static_cast<float>(unscaled_length);
-  return base::Floor(scaled_length * percent);
+  return base::ClampFloor(scaled_length * percent);
 }
 
 }  // namespace

@@ -1249,10 +1249,10 @@ void TabDragController::Attach(TabDragContext* attached_context,
   std::vector<TabSlotView*> tabs_to_source(views);
   tabs_to_source.erase(tabs_to_source.begin() + source_view_index_ + 1,
                        tabs_to_source.end());
-  int new_x =
-      TabStrip::GetSizeNeededForViews(tabs_to_source) -
-      views[source_view_index_]->width() +
-      base::Round(offset_to_width_ratio_ * views[source_view_index_]->width());
+  int new_x = TabStrip::GetSizeNeededForViews(tabs_to_source) -
+              views[source_view_index_]->width() +
+              base::ClampRound(offset_to_width_ratio_ *
+                               views[source_view_index_]->width());
   mouse_offset_.set_x(new_x);
 
   // Transfer ownership of us to the new tabstrip as well as making sure the
@@ -1992,9 +1992,10 @@ void TabDragController::AdjustBrowserAndTabBoundsForDrag(
     // Reposition the restored window such that the tab that was dragged remains
     // under the mouse cursor.
     gfx::Rect tab_bounds = (*drag_bounds)[source_view_index_];
-    gfx::Point offset(base::Round(tab_bounds.width() * offset_to_width_ratio_) +
-                          tab_bounds.x(),
-                      0);
+    gfx::Point offset(
+        base::ClampRound(tab_bounds.width() * offset_to_width_ratio_) +
+            tab_bounds.x(),
+        0);
     views::View::ConvertPointToWidget(attached_context_->AsView(), &offset);
     gfx::Rect bounds = GetAttachedBrowserWidget()->GetWindowBoundsInScreen();
     bounds.set_x(point_in_screen.x() - offset.x());

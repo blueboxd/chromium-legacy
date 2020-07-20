@@ -4,12 +4,18 @@
 
 #include "base/memory/checked_ptr.h"
 
+#include "base/allocator/partition_allocator/checked_ptr_support.h"
+#include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/partition_alloc_buildflags.h"
+#include "build/build_config.h"
+#include "build/buildflag.h"
 
 namespace base {
 namespace internal {
 
-#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) && \
+    BUILDFLAG(USE_PARTITION_ALLOC) && ENABLE_CHECKED_PTR2_OR_MTE_IMPL
 
 BASE_EXPORT bool CheckedPtr2OrMTEImplPartitionAllocSupport::EnabledForPtr(
     void* ptr) {
@@ -29,7 +35,10 @@ BASE_EXPORT bool CheckedPtr2OrMTEImplPartitionAllocSupport::EnabledForPtr(
   // the same result regardless, anyway.
   // TODO(bartekn): Figure out the thread-safety mismatch.
   return IsManagedByPartitionAllocNormalBuckets(ptr)
-#if ENABLE_TAG_FOR_CHECKED_PTR2
+  // Checking offset is not needed for ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR,
+  // but call it anyway for apples-to-apples comparison with
+  // ENABLE_TAG_FOR_CHECKED_PTR2.
+#if ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR
          && PartitionAllocGetSlotOffset<ThreadSafe>(ptr) == 0
 #endif
       ;

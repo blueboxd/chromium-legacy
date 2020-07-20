@@ -83,7 +83,7 @@ base::string16 TimeFormat::DetailedWithMonthAndYear(
   const Formatter* formatter = g_container.Get().Get(format, length);
   if (delta < kMinute - kHalfSecond) {
     // Anything up to 59.500 seconds is formatted as seconds.
-    const int seconds = base::Round(delta.InSecondsF());
+    const int seconds = base::ClampRound(delta.InSecondsF());
     formatter->Format(Formatter::UNIT_SEC, seconds, &time_string);
   } else if (delta < kHour - (cutoff < base::Time::kMinutesPerHour
                                   ? kHalfMinute
@@ -97,7 +97,7 @@ base::string16 TimeFormat::DetailedWithMonthAndYear(
     } else {
       const int minutes = (delta + kHalfSecond).InMinutes();
       const int seconds =
-          base::Round(delta.InSecondsF()) % base::Time::kSecondsPerMinute;
+          base::ClampRound(delta.InSecondsF()) % base::Time::kSecondsPerMinute;
       formatter->Format(Formatter::TWO_UNITS_MIN_SEC,
                         minutes, seconds, &time_string);
     }

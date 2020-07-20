@@ -397,9 +397,9 @@ public class AssistantStepProgressBar {
 
             if (i == step && step == mCurrentStep + 1) {
                 // In case we advance to a new step, start the enable animation on the current
-                // icon. Start the pulsating animation with a delay such that it only starts after
-                // the other animations have run.
-                mIcons[i].startPulsingAnimation(/* delayed= */ true);
+                // icon. If not for the first step, start the pulsating animation with a delay such
+                // that it only starts after the other animations have run.
+                mIcons[i].startPulsingAnimation(/* delayed= */ mCurrentStep != -1);
             } else {
                 mIcons[i].setPulsingAnimationEnabled(i == step);
             }

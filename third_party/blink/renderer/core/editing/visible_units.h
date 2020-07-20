@@ -41,9 +41,9 @@ class IntPoint;
 class IntRect;
 class LocalFrame;
 
-// |WordSide| is used as a parameter of |StartOfWord()| and |EndOfWord()|
-// to control a returning position when they are called for a position before
-// word boundary.
+// |WordSide| is used as a parameter of |StartOfWordPosition()| and
+// |EndOfWord()| to control a returning position when they are called for a
+// position before word boundary.
 enum WordSide {
   kNextWordIfOnBoundary = false,
   kPreviousWordIfOnBoundary = true
@@ -114,18 +114,11 @@ PreviousPositionOf(const VisiblePositionInFlatTree&,
                    EditingBoundaryCrossingRule = kCanCrossEditingBoundary);
 
 // words
-// TODO(yoichio): Replace |startOfWord| to |startOfWordPosition| because
-// returned Position should be canonicalized with |previousBoundary()| by
-// TextItetator.
 CORE_EXPORT Position StartOfWordPosition(const Position&,
                                          WordSide = kNextWordIfOnBoundary);
-CORE_EXPORT VisiblePosition StartOfWord(const VisiblePosition&,
-                                        WordSide = kNextWordIfOnBoundary);
 CORE_EXPORT PositionInFlatTree
 StartOfWordPosition(const PositionInFlatTree&,
                     WordSide = kNextWordIfOnBoundary);
-CORE_EXPORT VisiblePositionInFlatTree
-StartOfWord(const VisiblePositionInFlatTree&, WordSide = kNextWordIfOnBoundary);
 CORE_EXPORT VisiblePosition EndOfWord(const VisiblePosition&,
                                       WordSide = kNextWordIfOnBoundary);
 CORE_EXPORT Position EndOfWordPosition(const Position&,

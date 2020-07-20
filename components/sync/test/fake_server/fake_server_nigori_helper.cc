@@ -28,8 +28,12 @@ bool GetServerNigori(FakeServer* fake_server,
 
 void SetNigoriInFakeServer(const sync_pb::NigoriSpecifics& nigori,
                            FakeServer* fake_server) {
-  std::string nigori_entity_id =
-      fake_server->GetTopLevelPermanentItemId(syncer::NIGORI);
+  std::vector<sync_pb::SyncEntity> nigoris =
+      fake_server->GetPermanentSyncEntitiesByModelType(syncer::NIGORI);
+  ASSERT_EQ(nigoris.size(), 1u);
+  // Note: GetTopLevelPermanentItemId() is not safe to use here, see
+  // crbug.com/1104225.
+  std::string nigori_entity_id = nigoris[0].id_string();
   ASSERT_NE(nigori_entity_id, "");
   sync_pb::EntitySpecifics nigori_entity_specifics;
   *nigori_entity_specifics.mutable_nigori() = nigori;

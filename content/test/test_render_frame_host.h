@@ -168,7 +168,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // Send a message with the sandbox flags and feature policy
   void SendFramePolicy(network::mojom::WebSandboxFlags sandbox_flags,
                        const blink::ParsedFeaturePolicy& fp_header,
-                       const blink::DocumentPolicy::FeatureState& dp_header);
+                       const blink::DocumentPolicyFeatureState& dp_header);
 
   // Creates a WebBluetooth Service with a dummy InterfaceRequest.
   WebBluetoothServiceImpl* CreateWebBluetoothServiceForTesting();

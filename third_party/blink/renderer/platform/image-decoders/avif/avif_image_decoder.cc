@@ -182,10 +182,10 @@ inline void WritePixel(float max_channel,
                        float alpha,
                        bool premultiply_alpha,
                        uint32_t* rgba_dest) {
-  uint8_t r = base::Round<uint8_t>(pixel.x() * 255.0f);
-  uint8_t g = base::Round<uint8_t>(pixel.y() * 255.0f);
-  uint8_t b = base::Round<uint8_t>(pixel.z() * 255.0f);
-  uint8_t a = base::Round<uint8_t>(alpha * 255.0f);
+  uint8_t r = base::ClampRound<uint8_t>(pixel.x() * 255.0f);
+  uint8_t g = base::ClampRound<uint8_t>(pixel.y() * 255.0f);
+  uint8_t b = base::ClampRound<uint8_t>(pixel.z() * 255.0f);
+  uint8_t a = base::ClampRound<uint8_t>(alpha * 255.0f);
   if (premultiply_alpha)
     blink::ImageFrame::SetRGBAPremultiply(rgba_dest, r, g, b, a);
   else

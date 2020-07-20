@@ -323,6 +323,12 @@ class PasswordStore : protected PasswordStoreSync,
                              base::Time remove_end,
                              base::OnceClosure completion);
 
+  // Deletes and re-creates the whole PasswordStore, unless it is already empty
+  // anyway. If |completion| is not null, it will be posted to the
+  // |main_task_runner_| once the process is complete. The bool parameter
+  // indicates whether any data was actually cleared.
+  void ClearStore(base::OnceCallback<void(bool)> completion);
+
   // Adds an observer to be notified when the password store data changes.
   void AddObserver(Observer* observer);
 
@@ -568,6 +574,10 @@ class PasswordStore : protected PasswordStoreSync,
   virtual void RemoveFieldInfoByTimeImpl(base::Time remove_begin,
                                          base::Time remove_end) = 0;
 
+  // Synchronous implementation provided by subclasses to check whether the
+  // store is empty.
+  virtual bool IsEmpty() = 0;
+
   // PasswordStoreSync:
   PasswordStoreChangeList AddLoginSync(const autofill::PasswordForm& form,
                                        AddLoginError* error) override;
@@ -734,6 +744,8 @@ class PasswordStore : protected PasswordStoreSync,
   void RemoveFieldInfoByTimeInternal(base::Time remove_begin,
                                      base::Time remove_end,
                                      base::OnceClosure completion);
+
+  void ClearStoreInternal(base::OnceCallback<void(bool)> completion);
 
   // Finds all PasswordForms with a signon_realm that is equal to, or is a
   // PSL-match to that of |form|, and takes care of notifying the consumer with

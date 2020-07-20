@@ -1669,19 +1669,19 @@ TEST(SafeNumerics, CeilInt) {
   constexpr int kIntMax = std::numeric_limits<int>::max();
   constexpr int kIntMin = std::numeric_limits<int>::min();
 
-  EXPECT_EQ(kIntMax, Ceil(kInfinity));
-  EXPECT_EQ(kIntMax, Ceil(kMax));
-  EXPECT_EQ(kIntMax, Ceil(kMax + 100.0f));
-  EXPECT_EQ(0, Ceil(kNaN));
+  EXPECT_EQ(kIntMax, ClampCeil(kInfinity));
+  EXPECT_EQ(kIntMax, ClampCeil(kMax));
+  EXPECT_EQ(kIntMax, ClampCeil(kMax + 100.0f));
+  EXPECT_EQ(0, ClampCeil(kNaN));
 
-  EXPECT_EQ(-100, Ceil(-100.5f));
-  EXPECT_EQ(0, Ceil(0.0f));
-  EXPECT_EQ(101, Ceil(100.5f));
+  EXPECT_EQ(-100, ClampCeil(-100.5f));
+  EXPECT_EQ(0, ClampCeil(0.0f));
+  EXPECT_EQ(101, ClampCeil(100.5f));
 
-  EXPECT_EQ(kIntMin, Ceil(-kInfinity));
-  EXPECT_EQ(kIntMin, Ceil(kMin));
-  EXPECT_EQ(kIntMin, Ceil(kMin - 100.0f));
-  EXPECT_EQ(0, Ceil(-kNaN));
+  EXPECT_EQ(kIntMin, ClampCeil(-kInfinity));
+  EXPECT_EQ(kIntMin, ClampCeil(kMin));
+  EXPECT_EQ(kIntMin, ClampCeil(kMin - 100.0f));
+  EXPECT_EQ(0, ClampCeil(-kNaN));
 }
 
 TEST(SafeNumerics, FloorInt) {
@@ -1693,19 +1693,19 @@ TEST(SafeNumerics, FloorInt) {
   constexpr int kIntMax = std::numeric_limits<int>::max();
   constexpr int kIntMin = std::numeric_limits<int>::min();
 
-  EXPECT_EQ(kIntMax, Floor(kInfinity));
-  EXPECT_EQ(kIntMax, Floor(kMax));
-  EXPECT_EQ(kIntMax, Floor(kMax + 100.0f));
-  EXPECT_EQ(0, Floor(kNaN));
+  EXPECT_EQ(kIntMax, ClampFloor(kInfinity));
+  EXPECT_EQ(kIntMax, ClampFloor(kMax));
+  EXPECT_EQ(kIntMax, ClampFloor(kMax + 100.0f));
+  EXPECT_EQ(0, ClampFloor(kNaN));
 
-  EXPECT_EQ(-101, Floor(-100.5f));
-  EXPECT_EQ(0, Floor(0.0f));
-  EXPECT_EQ(100, Floor(100.5f));
+  EXPECT_EQ(-101, ClampFloor(-100.5f));
+  EXPECT_EQ(0, ClampFloor(0.0f));
+  EXPECT_EQ(100, ClampFloor(100.5f));
 
-  EXPECT_EQ(kIntMin, Floor(-kInfinity));
-  EXPECT_EQ(kIntMin, Floor(kMin));
-  EXPECT_EQ(kIntMin, Floor(kMin - 100.0f));
-  EXPECT_EQ(0, Floor(-kNaN));
+  EXPECT_EQ(kIntMin, ClampFloor(-kInfinity));
+  EXPECT_EQ(kIntMin, ClampFloor(kMin));
+  EXPECT_EQ(kIntMin, ClampFloor(kMin - 100.0f));
+  EXPECT_EQ(0, ClampFloor(-kNaN));
 }
 
 TEST(SafeNumerics, RoundInt) {
@@ -1717,23 +1717,23 @@ TEST(SafeNumerics, RoundInt) {
   constexpr int kIntMax = std::numeric_limits<int>::max();
   constexpr int kIntMin = std::numeric_limits<int>::min();
 
-  EXPECT_EQ(kIntMax, Round(kInfinity));
-  EXPECT_EQ(kIntMax, Round(kMax));
-  EXPECT_EQ(kIntMax, Round(kMax + 100.0f));
-  EXPECT_EQ(0, Round(kNaN));
+  EXPECT_EQ(kIntMax, ClampRound(kInfinity));
+  EXPECT_EQ(kIntMax, ClampRound(kMax));
+  EXPECT_EQ(kIntMax, ClampRound(kMax + 100.0f));
+  EXPECT_EQ(0, ClampRound(kNaN));
 
-  EXPECT_EQ(-100, Round(-100.1f));
-  EXPECT_EQ(-101, Round(-100.5f));
-  EXPECT_EQ(-101, Round(-100.9f));
-  EXPECT_EQ(0, Round(0.0f));
-  EXPECT_EQ(100, Round(100.1f));
-  EXPECT_EQ(101, Round(100.5f));
-  EXPECT_EQ(101, Round(100.9f));
+  EXPECT_EQ(-100, ClampRound(-100.1f));
+  EXPECT_EQ(-101, ClampRound(-100.5f));
+  EXPECT_EQ(-101, ClampRound(-100.9f));
+  EXPECT_EQ(0, ClampRound(0.0f));
+  EXPECT_EQ(100, ClampRound(100.1f));
+  EXPECT_EQ(101, ClampRound(100.5f));
+  EXPECT_EQ(101, ClampRound(100.9f));
 
-  EXPECT_EQ(kIntMin, Round(-kInfinity));
-  EXPECT_EQ(kIntMin, Round(kMin));
-  EXPECT_EQ(kIntMin, Round(kMin - 100.0f));
-  EXPECT_EQ(0, Round(-kNaN));
+  EXPECT_EQ(kIntMin, ClampRound(-kInfinity));
+  EXPECT_EQ(kIntMin, ClampRound(kMin));
+  EXPECT_EQ(kIntMin, ClampRound(kMin - 100.0f));
+  EXPECT_EQ(0, ClampRound(-kNaN));
 }
 
 TEST(SafeNumerics, Int64) {
@@ -1745,31 +1745,31 @@ TEST(SafeNumerics, Int64) {
   constexpr int64_t kInt64Max = std::numeric_limits<int64_t>::max();
   constexpr int64_t kInt64Min = std::numeric_limits<int64_t>::min();
 
-  EXPECT_EQ(kInt64Max, Floor<int64_t>(kInfinity));
-  EXPECT_EQ(kInt64Max, Ceil<int64_t>(kInfinity));
-  EXPECT_EQ(kInt64Max, Round<int64_t>(kInfinity));
-  EXPECT_EQ(kInt64Max, Floor<int64_t>(kMax));
-  EXPECT_EQ(kInt64Max, Ceil<int64_t>(kMax));
-  EXPECT_EQ(kInt64Max, Round<int64_t>(kMax));
-  EXPECT_EQ(kInt64Max, Floor<int64_t>(kMax + 100.0));
-  EXPECT_EQ(kInt64Max, Ceil<int64_t>(kMax + 100.0));
-  EXPECT_EQ(kInt64Max, Round<int64_t>(kMax + 100.0));
-  EXPECT_EQ(0, Floor<int64_t>(kNaN));
-  EXPECT_EQ(0, Ceil<int64_t>(kNaN));
-  EXPECT_EQ(0, Round<int64_t>(kNaN));
+  EXPECT_EQ(kInt64Max, ClampFloor<int64_t>(kInfinity));
+  EXPECT_EQ(kInt64Max, ClampCeil<int64_t>(kInfinity));
+  EXPECT_EQ(kInt64Max, ClampRound<int64_t>(kInfinity));
+  EXPECT_EQ(kInt64Max, ClampFloor<int64_t>(kMax));
+  EXPECT_EQ(kInt64Max, ClampCeil<int64_t>(kMax));
+  EXPECT_EQ(kInt64Max, ClampRound<int64_t>(kMax));
+  EXPECT_EQ(kInt64Max, ClampFloor<int64_t>(kMax + 100.0));
+  EXPECT_EQ(kInt64Max, ClampCeil<int64_t>(kMax + 100.0));
+  EXPECT_EQ(kInt64Max, ClampRound<int64_t>(kMax + 100.0));
+  EXPECT_EQ(0, ClampFloor<int64_t>(kNaN));
+  EXPECT_EQ(0, ClampCeil<int64_t>(kNaN));
+  EXPECT_EQ(0, ClampRound<int64_t>(kNaN));
 
-  EXPECT_EQ(kInt64Min, Floor<int64_t>(-kInfinity));
-  EXPECT_EQ(kInt64Min, Ceil<int64_t>(-kInfinity));
-  EXPECT_EQ(kInt64Min, Round<int64_t>(-kInfinity));
-  EXPECT_EQ(kInt64Min, Floor<int64_t>(kMin));
-  EXPECT_EQ(kInt64Min, Ceil<int64_t>(kMin));
-  EXPECT_EQ(kInt64Min, Round<int64_t>(kMin));
-  EXPECT_EQ(kInt64Min, Floor<int64_t>(kMin - 100.0));
-  EXPECT_EQ(kInt64Min, Ceil<int64_t>(kMin - 100.0));
-  EXPECT_EQ(kInt64Min, Round<int64_t>(kMin - 100.0));
-  EXPECT_EQ(0, Floor<int64_t>(-kNaN));
-  EXPECT_EQ(0, Ceil<int64_t>(-kNaN));
-  EXPECT_EQ(0, Round<int64_t>(-kNaN));
+  EXPECT_EQ(kInt64Min, ClampFloor<int64_t>(-kInfinity));
+  EXPECT_EQ(kInt64Min, ClampCeil<int64_t>(-kInfinity));
+  EXPECT_EQ(kInt64Min, ClampRound<int64_t>(-kInfinity));
+  EXPECT_EQ(kInt64Min, ClampFloor<int64_t>(kMin));
+  EXPECT_EQ(kInt64Min, ClampCeil<int64_t>(kMin));
+  EXPECT_EQ(kInt64Min, ClampRound<int64_t>(kMin));
+  EXPECT_EQ(kInt64Min, ClampFloor<int64_t>(kMin - 100.0));
+  EXPECT_EQ(kInt64Min, ClampCeil<int64_t>(kMin - 100.0));
+  EXPECT_EQ(kInt64Min, ClampRound<int64_t>(kMin - 100.0));
+  EXPECT_EQ(0, ClampFloor<int64_t>(-kNaN));
+  EXPECT_EQ(0, ClampCeil<int64_t>(-kNaN));
+  EXPECT_EQ(0, ClampRound<int64_t>(-kNaN));
 }
 
 #if defined(__clang__)

@@ -438,7 +438,7 @@ gfx::Size TextTexture::LayOutText() {
 
   // Note, there is no padding here whatsoever.
   if (parameters.shadows_enabled) {
-    const int offset = base::Floor(parameters.shadow_size);
+    const int offset = base::ClampFloor(parameters.shadow_size);
     texture_offset_ = gfx::Vector2d(offset, offset);
   }
 

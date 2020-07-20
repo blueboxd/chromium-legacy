@@ -15,7 +15,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/css/page_size_type.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy_features.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
@@ -106,8 +106,8 @@ class WebLocalFrame : public WebFrame {
       WebFrame* opener = nullptr,
       const WebString& name = WebString(),
       network::mojom::WebSandboxFlags = network::mojom::WebSandboxFlags::kNone,
-      const FeaturePolicy::FeatureState& opener_feature_state =
-          FeaturePolicy::FeatureState());
+      const FeaturePolicyFeatureState& opener_feature_state =
+          FeaturePolicyFeatureState());
 
   // Used to create a provisional local frame. Currently, it's possible for a
   // provisional navigation not to commit (i.e. it might turn into a download),

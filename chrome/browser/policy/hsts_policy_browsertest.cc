@@ -28,7 +28,7 @@ class HSTSPolicyTest : public PolicyTest {
     std::vector<base::Value> bypass_list;
     bypass_list.emplace_back(base::Value("example"));
     SetPolicy(&policies, key::kHSTSPolicyBypassList,
-              std::make_unique<base::ListValue>(bypass_list));
+              base::ListValue(bypass_list));
     provider_.UpdateChromePolicy(policies);
   }
 };

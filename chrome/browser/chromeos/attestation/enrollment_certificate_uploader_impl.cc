@@ -11,9 +11,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "chromeos/attestation/attestation_flow.h"
-#include "chromeos/cryptohome/async_method_caller.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/attestation/attestation_flow_integrated.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -37,8 +35,8 @@ void DBusPrivacyCACallback(
     on_success.Run(data);
     return;
   }
-  LOG(ERROR) << "Cryptohome DBus method or server called failed with status: "
-             << status << ": " << from_here.ToString();
+  LOG(ERROR) << "Attestation DBus method failed with status: " << status << ": "
+             << from_here.ToString();
   if (!on_failure.is_null())
     on_failure.Run(status);
 }
@@ -51,15 +49,12 @@ namespace attestation {
 EnrollmentCertificateUploaderImpl::EnrollmentCertificateUploaderImpl(
     policy::CloudPolicyClient* policy_client)
     : EnrollmentCertificateUploaderImpl(policy_client,
-                                        nullptr, /* cryptohome_client */
                                         nullptr /* attestation_flow */) {}
 
 EnrollmentCertificateUploaderImpl::EnrollmentCertificateUploaderImpl(
     policy::CloudPolicyClient* policy_client,
-    CryptohomeClient* cryptohome_client,
     AttestationFlow* attestation_flow)
     : policy_client_(policy_client),
-      cryptohome_client_(cryptohome_client),
       attestation_flow_(attestation_flow),
       retry_limit_(kRetryLimit),
       retry_delay_(kRetryDelay) {
@@ -90,15 +85,8 @@ void EnrollmentCertificateUploaderImpl::Start() {
     return;
   }
 
-  if (!cryptohome_client_)
-    cryptohome_client_ = CryptohomeClient::Get();
-
   if (!attestation_flow_) {
-    std::unique_ptr<ServerProxy> attestation_ca_client(
-        new AttestationCAClient());
-    default_attestation_flow_.reset(new AttestationFlow(
-        cryptohome::AsyncMethodCaller::GetInstance(), cryptohome_client_,
-        std::move(attestation_ca_client)));
+    default_attestation_flow_ = std::make_unique<AttestationFlowIntegrated>();
     attestation_flow_ = default_attestation_flow_.get();
   }
 

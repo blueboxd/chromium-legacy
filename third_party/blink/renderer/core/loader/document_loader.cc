@@ -880,7 +880,7 @@ DocumentPolicy::ParsedDocumentPolicy DocumentLoader::CreateDocumentPolicy() {
   if (!was_blocked_by_document_policy_) {
     // Require-Document-Policy header only affects subtree of current document,
     // but not the current document.
-    const DocumentPolicy::FeatureState header_required_policy =
+    const DocumentPolicyFeatureState header_required_policy =
         DocumentPolicyParser::Parse(
             response_.HttpHeaderField(http_names::kRequireDocumentPolicy),
             require_header_logger)

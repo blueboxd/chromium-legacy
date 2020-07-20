@@ -30,7 +30,7 @@ Insets GetInsets(const ShadowValues& shadows, bool include_inner_blur) {
     double blur = shadow.blur();
     if (!include_inner_blur)
       blur /= 2;
-    int blur_length = base::Round(blur);
+    int blur_length = base::ClampRound(blur);
 
     left = std::max(left, blur_length - shadow.x());
     top = std::max(top, blur_length - shadow.y());

@@ -200,7 +200,7 @@ class MockFrameHost : public mojom::FrameHost {
   void DidSetFramePolicyHeaders(
       network::mojom::WebSandboxFlags sandbox_flags,
       const blink::ParsedFeaturePolicy& feature_policy_header,
-      const blink::DocumentPolicy::FeatureState& document_policy_header)
+      const blink::DocumentPolicyFeatureState& document_policy_header)
       override {}
 
   void CancelInitialHistoryLoad() override {}

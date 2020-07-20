@@ -465,6 +465,12 @@ void PasswordStore::RemoveFieldInfoByTime(base::Time remove_begin,
                               std::move(completion)));
 }
 
+void PasswordStore::ClearStore(base::OnceCallback<void(bool)> completion) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  ScheduleTask(base::BindOnce(&PasswordStore::ClearStoreInternal, this,
+                              std::move(completion)));
+}
+
 void PasswordStore::AddObserver(Observer* observer) {
   observers_->AddObserver(observer);
 }
@@ -1091,6 +1097,18 @@ void PasswordStore::RemoveFieldInfoByTimeInternal(
   RemoveFieldInfoByTimeImpl(remove_begin, remove_end);
   if (completion)
     main_task_runner_->PostTask(FROM_HERE, std::move(completion));
+}
+
+void PasswordStore::ClearStoreInternal(
+    base::OnceCallback<void(bool)> completion) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  bool should_clear = !IsEmpty();
+  if (should_clear)
+    DeleteAndRecreateDatabaseFile();
+  if (completion) {
+    main_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(std::move(completion), should_clear));
+  }
 }
 
 std::vector<std::unique_ptr<autofill::PasswordForm>>

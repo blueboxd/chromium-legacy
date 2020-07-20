@@ -645,17 +645,18 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, LegacySafeSearch) {
     // Override the default SafeSearch setting using policies.
     ApplySafeSearchPolicy(
         legacy_safe_search == 0
-            ? nullptr
-            : std::make_unique<base::Value>(legacy_safe_search == 1),
+            ? base::nullopt
+            : base::make_optional<base::Value>(legacy_safe_search == 1),
         google_safe_search == 0
-            ? nullptr
-            : std::make_unique<base::Value>(google_safe_search == 1),
+            ? base::nullopt
+            : base::make_optional<base::Value>(google_safe_search == 1),
         legacy_youtube == 0
-            ? nullptr
-            : std::make_unique<base::Value>(legacy_youtube == 1),
+            ? base::nullopt
+            : base::make_optional<base::Value>(legacy_youtube == 1),
         youtube_restrict == 0
-            ? nullptr  // subtracting 1 gives 0,1,2, see above
-            : std::make_unique<base::Value>(youtube_restrict - 1));
+            ? base::nullopt  // subtracting 1 gives
+                             // 0,1,2, see above
+            : base::make_optional<base::Value>(youtube_restrict - 1));
 
     // The legacy ForceSafeSearch policy should only have an effect if none of
     // the other 3 policies are defined.
@@ -728,12 +729,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceGoogleSafeSearch) {
   // ForceGoogleSafeSearch policy.
   for (int safe_search = 0; safe_search < 3; safe_search++) {
     // Override the Google safe search policy.
-    ApplySafeSearchPolicy(nullptr,          // ForceSafeSearch
-                          safe_search == 0  // ForceGoogleSafeSearch
-                              ? nullptr
-                              : std::make_unique<base::Value>(safe_search == 1),
-                          nullptr,   // ForceYouTubeSafetyMode
-                          nullptr);  // ForceYouTubeRestrict
+    ApplySafeSearchPolicy(
+        base::nullopt,    // ForceSafeSearch
+        safe_search == 0  // ForceGoogleSafeSearch
+            ? base::nullopt
+            : base::make_optional<base::Value>(safe_search == 1),
+        base::nullopt,   // ForceYouTubeSafetyMode
+        base::nullopt);  // ForceYouTubeRestrict
     // Verify that the safe search pref behaves the way we expect.
     PrefService* prefs = browser()->profile()->GetPrefs();
     EXPECT_EQ(safe_search != 0,
@@ -818,10 +820,10 @@ class PolicyTestGoogle : public PolicyTest {
 };
 
 IN_PROC_BROWSER_TEST_F(PolicyTestGoogle, ForceGoogleSafeSearch) {
-  ApplySafeSearchPolicy(nullptr,  // ForceSafeSearch
-                        std::make_unique<base::Value>(true),
-                        nullptr,   // ForceYouTubeSafetyMode
-                        nullptr);  // ForceYouTubeRestrict
+  ApplySafeSearchPolicy(base::nullopt,  // ForceSafeSearch
+                        base::Value(true),
+                        base::nullopt,   // ForceYouTubeSafetyMode
+                        base::nullopt);  // ForceYouTubeRestrict
 
   GURL url = https_server()->GetURL("www.google.com",
                                     "/server-redirect?http://google.com/");
@@ -832,10 +834,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTestGoogle, ForceYouTubeRestrict) {
   for (int youtube_restrict_mode = safe_search_util::YOUTUBE_RESTRICT_OFF;
        youtube_restrict_mode < safe_search_util::YOUTUBE_RESTRICT_COUNT;
        ++youtube_restrict_mode) {
-    ApplySafeSearchPolicy(nullptr,  // ForceSafeSearch
-                          nullptr,  // ForceGoogleSafeSearch
-                          nullptr,  // ForceYouTubeSafetyMode
-                          std::make_unique<base::Value>(youtube_restrict_mode));
+    ApplySafeSearchPolicy(base::nullopt,  // ForceSafeSearch
+                          base::nullopt,  // ForceGoogleSafeSearch
+                          base::nullopt,  // ForceYouTubeSafetyMode
+                          base::Value(youtube_restrict_mode));
     {
       // First check frame requests.
       GURL youtube_url(https_server()->GetURL("youtube.com", "/empty.html"));
@@ -864,7 +866,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTestGoogle, AllowedDomainsForApps) {
       PolicyMap policies;
       allowed_domain = "foo.com";
       SetPolicy(&policies, key::kAllowedDomainsForApps,
-                std::make_unique<base::Value>(allowed_domain));
+                base::Value(allowed_domain));
       UpdateProviderPolicy(policies);
     }
 

@@ -3580,7 +3580,7 @@ void RenderFrameHostImpl::DidChangeName(const std::string& name,
 void RenderFrameHostImpl::DidSetFramePolicyHeaders(
     network::mojom::WebSandboxFlags sandbox_flags,
     const blink::ParsedFeaturePolicy& feature_policy_header,
-    const blink::DocumentPolicy::FeatureState& document_policy_header) {
+    const blink::DocumentPolicyFeatureState& document_policy_header) {
   // TODO(https://crbug.com/1093268): Investigate why this IPC can be received
   // before the navigation commit. This can be triggered when loading an error
   // page using the test:

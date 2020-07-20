@@ -491,7 +491,7 @@ void GM2TabStyle::PaintTab(gfx::Canvas* canvas) const {
 
     const float throb_value = GetThrobValue();
     if (throb_value > 0) {
-      canvas->SaveLayerAlpha(base::Round<uint8_t>(throb_value * 0xff),
+      canvas->SaveLayerAlpha(base::ClampRound<uint8_t>(throb_value * 0xff),
                              tab_->GetLocalBounds());
       PaintTabBackground(canvas, TabActive::kActive, active_tab_fill_id,
                          active_tab_y_inset);

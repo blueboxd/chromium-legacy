@@ -833,10 +833,10 @@ void RenderWidgetHostViewEventHandler::ModifyEventMovementAndCoords(
     // to keep the movement calculation as "floor(cur_pos) - floor(last_pos)".
     // Remove the floor here when movement_x/y is changed to double.
     if (!(ui_mouse_event.flags() & ui::EF_UNADJUSTED_MOUSE)) {
-      event->movement_x = base::Floor(event->PositionInScreen().x()) -
-                          base::Floor(global_mouse_position_.x());
-      event->movement_y = base::Floor(event->PositionInScreen().y()) -
-                          base::Floor(global_mouse_position_.y());
+      event->movement_x = base::ClampFloor(event->PositionInScreen().x()) -
+                          base::ClampFloor(global_mouse_position_.x());
+      event->movement_y = base::ClampFloor(event->PositionInScreen().y()) -
+                          base::ClampFloor(global_mouse_position_.y());
     }
 
     global_mouse_position_ = event->PositionInScreen();

@@ -86,30 +86,30 @@ gfx::Rect PipPositioner::GetSnapFractionAppliedBounds(
       *(window_state->window()->GetProperty(ash::kPipSnapFractionKey));
 
   if (snap_fraction < 1.) {
-    int offset =
-        movement_area.x() +
-        base::Round(snap_fraction * (movement_area.width() - bounds.width()));
+    int offset = movement_area.x() +
+                 base::ClampRound(snap_fraction *
+                                  (movement_area.width() - bounds.width()));
     return gfx::Rect(offset, movement_area.y(), bounds.width(),
                      bounds.height());
   } else if (snap_fraction < 2.) {
     snap_fraction -= 1.;
-    int offset =
-        movement_area.y() +
-        base::Round(snap_fraction * (movement_area.height() - bounds.height()));
+    int offset = movement_area.y() +
+                 base::ClampRound(snap_fraction *
+                                  (movement_area.height() - bounds.height()));
     return gfx::Rect(movement_area.right() - bounds.width(), offset,
                      bounds.width(), bounds.height());
   } else if (snap_fraction < 3.) {
     snap_fraction -= 2.;
     int offset = movement_area.x() +
-                 base::Round((1. - snap_fraction) *
-                             (movement_area.width() - bounds.width()));
+                 base::ClampRound((1. - snap_fraction) *
+                                  (movement_area.width() - bounds.width()));
     return gfx::Rect(offset, movement_area.bottom() - bounds.height(),
                      bounds.width(), bounds.height());
   } else {
     snap_fraction -= 3.;
     int offset = movement_area.y() +
-                 base::Round((1. - snap_fraction) *
-                             (movement_area.height() - bounds.height()));
+                 base::ClampRound((1. - snap_fraction) *
+                                  (movement_area.height() - bounds.height()));
     return gfx::Rect(movement_area.x(), offset, bounds.width(),
                      bounds.height());
   }

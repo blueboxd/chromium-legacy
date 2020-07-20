@@ -515,7 +515,8 @@ gfx::Vector2d AXPlatformNodeWin::CalculateUIAScrollPoint(
   DCHECK(hwnd);
   const float scale_factor =
       display::win::ScreenWin::GetScaleFactorForHWND(hwnd);
-  const int small_change = base::Round(kSmallScrollIncrement * scale_factor);
+  const int small_change =
+      base::ClampRound(kSmallScrollIncrement * scale_factor);
 
   const int x_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMin);
   const int x_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
@@ -1988,8 +1989,9 @@ IFACEMETHODIMP AXPlatformNodeWin::SetScrollPercent(double horizontal_percent,
   const double y_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin);
   const double y_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
   const int x =
-      base::Round(horizontal_percent / 100.0 * (x_max - x_min) + x_min);
-  const int y = base::Round(vertical_percent / 100.0 * (y_max - y_min) + y_min);
+      base::ClampRound(horizontal_percent / 100.0 * (x_max - x_min) + x_min);
+  const int y =
+      base::ClampRound(vertical_percent / 100.0 * (y_max - y_min) + y_min);
   const gfx::Point scroll_to(x, y);
 
   AXActionData action_data;

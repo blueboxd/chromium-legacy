@@ -73,8 +73,8 @@ void Canvas::SizeStringInt(const base::string16& text,
   float factional_height = static_cast<float>(*height);
   SizeStringFloat(text, font_list, &fractional_width, &factional_height,
                   line_height, flags);
-  *width = base::Ceil(fractional_width);
-  *height = base::Ceil(factional_height);
+  *width = base::ClampCeil(fractional_width);
+  *height = base::ClampCeil(factional_height);
 }
 
 // static

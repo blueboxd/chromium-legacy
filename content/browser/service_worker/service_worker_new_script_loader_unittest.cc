@@ -239,7 +239,7 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
   // Returns false if the entry for |url| doesn't exist in the storage.
   bool VerifyStoredResponse(const GURL& url) {
     return ServiceWorkerUpdateCheckTestUtils::VerifyStoredResponse(
-        LookupResourceId(url), context()->storage(),
+        LookupResourceId(url), context()->GetStorageControl(),
         mock_server_.Get(url).body);
   }
 

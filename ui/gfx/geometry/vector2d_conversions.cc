@@ -9,15 +9,17 @@
 namespace gfx {
 
 Vector2d ToFlooredVector2d(const Vector2dF& vector2d) {
-  return Vector2d(base::Floor(vector2d.x()), base::Floor(vector2d.y()));
+  return Vector2d(base::ClampFloor(vector2d.x()),
+                  base::ClampFloor(vector2d.y()));
 }
 
 Vector2d ToCeiledVector2d(const Vector2dF& vector2d) {
-  return Vector2d(base::Ceil(vector2d.x()), base::Ceil(vector2d.y()));
+  return Vector2d(base::ClampCeil(vector2d.x()), base::ClampCeil(vector2d.y()));
 }
 
 Vector2d ToRoundedVector2d(const Vector2dF& vector2d) {
-  return Vector2d(base::Round(vector2d.x()), base::Round(vector2d.y()));
+  return Vector2d(base::ClampRound(vector2d.x()),
+                  base::ClampRound(vector2d.y()));
 }
 
 }  // namespace gfx

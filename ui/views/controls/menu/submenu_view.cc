@@ -540,7 +540,7 @@ bool SubmenuView::OnScroll(float dx, float dy) {
   const gfx::Rect& full_bounds = bounds();
   int x = vis_bounds.x();
   float y_f = vis_bounds.y() - dy - roundoff_error_;
-  int y = base::Round(y_f);
+  int y = base::ClampRound(y_f);
   roundoff_error_ = y - y_f;
   // clamp y to [0, full_height - vis_height)
   y = std::min(y, full_bounds.height() - vis_bounds.height() - 1);

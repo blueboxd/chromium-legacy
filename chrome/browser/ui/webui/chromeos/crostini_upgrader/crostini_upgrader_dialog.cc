@@ -13,6 +13,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader_ui.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 // The dialog content area size. Note that the height is less than the design
@@ -53,7 +56,7 @@ CrostiniUpgraderDialog::CrostiniUpgraderDialog(
     Profile* profile,
     base::OnceClosure launch_closure,
     bool only_run_launch_closure_on_restart)
-    : SystemWebDialogDelegate{GetUrl(), /*title=*/{}},
+    : SystemWebDialogDelegate(GetUrl(), /*title=*/{}),
       profile_(profile),
       only_run_launch_closure_on_restart_(only_run_launch_closure_on_restart),
       launch_closure_{std::move(launch_closure)} {
@@ -168,6 +171,12 @@ void CrostiniUpgraderDialog::OnCloseContents(content::WebContents* source,
 void CrostiniUpgraderDialog::EmitUpgradeDialogEventHistogram(
     crostini::UpgradeDialogEvent event) {
   base::UmaHistogramEnumeration("Crostini.UpgradeDialogEvent", event);
+}
+
+void CrostiniUpgraderDialog::OnWebContentsFinishedLoad() {
+  DCHECK(dialog_window());
+  dialog_window()->SetTitle(
+      l10n_util::GetStringUTF16(IDS_CROSTINI_UPGRADER_TITLE));
 }
 
 }  // namespace chromeos

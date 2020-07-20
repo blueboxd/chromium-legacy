@@ -274,6 +274,32 @@
       </Synthetic>
     </Expand>
   </Type>
+  <Type Name="blink::NGFragmentItem">
+    <Expand>
+      <Item Name="Text" Condition="type_ == 0">text_</Item>
+      <Item Name="TextType" Condition="type_ == 0">(blink::NGTextType)sub_type_</Item>
+      <Item Name="GeneratedText" Condition="type_ == 1">generated_text_</Item>
+      <Item Name="Line" Condition="type_ == 2">line_</Item>
+      <Item Name="LineBoxType" Condition="type_ == 2">(NGPhysicalLineBoxFragment::NGLineBoxType)sub_type_</Item>
+      <Item Name="Box" Condition="type_ == 3">box_</Item>
+      <Item Name="layout_object_">layout_object_</Item>
+      <Item Name="rect_">rect_</Item>
+    </Expand>
+  </Type>
+  <Type Name="blink::NGFragmentItems">
+    <Expand>
+      <Item Name="text_content_">text_content_</Item>
+      <Synthetic Name="Items">
+        <DisplayString>{size_}</DisplayString>
+        <Expand>
+          <ArrayItems>
+            <Size>size_</Size>
+            <ValuePointer>items_</ValuePointer>
+          </ArrayItems>
+        </Expand>
+      </Synthetic>
+    </Expand>
+  </Type>
   <!-- Layout: TextRun -->
   <Type Name="blink::TextRun">
     <DisplayString Condition="is_8bit_">{data_.characters8,[len_]s}</DisplayString>

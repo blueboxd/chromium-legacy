@@ -20,6 +20,9 @@ struct DocumentPolicyFeatureInfo {
 using DocumentPolicyFeatureInfoMap =
     base::flat_map<mojom::DocumentPolicyFeature, DocumentPolicyFeatureInfo>;
 
+using DocumentPolicyFeatureState =
+    base::flat_map<mojom::DocumentPolicyFeature, PolicyValue>;
+
 using DocumentPolicyNameFeatureMap =
     base::flat_map<std::string, mojom::DocumentPolicyFeature>;
 

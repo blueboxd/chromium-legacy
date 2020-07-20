@@ -17,6 +17,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate_mock.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/mock_password_feature_manager.h"
@@ -28,6 +29,7 @@
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
@@ -59,6 +61,11 @@ constexpr char kUIDismissalReasonSaveMetric[] =
 constexpr char kUIDismissalReasonUpdateMetric[] =
     "PasswordManager.UpdateUIDismissalReason";
 
+std::unique_ptr<KeyedService> BuildTestSyncService(
+    content::BrowserContext* context) {
+  return std::make_unique<syncer::TestSyncService>();
+}
+
 }  // namespace
 
 class SaveUpdateWithAccountStoreBubbleControllerTest : public ::testing::Test {
@@ -86,6 +93,8 @@ class SaveUpdateWithAccountStoreBubbleControllerTest : public ::testing::Test {
             &password_manager::BuildPasswordStore<
                 content::BrowserContext,
                 testing::StrictMock<password_manager::MockPasswordStore>>));
+    ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
+        profile(), base::BindRepeating(&BuildTestSyncService));
     pending_password_.url = GURL(kSiteOrigin);
     pending_password_.signon_realm = kSiteOrigin;
     pending_password_.username_value = base::ASCIIToUTF16(kUsername);

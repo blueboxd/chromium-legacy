@@ -4076,7 +4076,7 @@ void RenderFrameImpl::DidChangeName(const blink::WebString& name) {
 void RenderFrameImpl::DidSetFramePolicyHeaders(
     network::mojom::WebSandboxFlags flags,
     const blink::ParsedFeaturePolicy& fp_header,
-    const blink::DocumentPolicy::FeatureState& dp_header) {
+    const blink::DocumentPolicyFeatureState& dp_header) {
   // If any of Feature Policy or Sandbox Flags or Document Policy are different
   // from the default (empty) values, then send them to the browser.
   if (!dp_header.empty() || !fp_header.empty() ||

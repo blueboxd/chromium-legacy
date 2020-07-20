@@ -37,6 +37,8 @@
 #include "content/public/browser/network_service_instance.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
+namespace plugin_vm {
+
 namespace {
 
 constexpr int64_t kBytesPerGigabyte = 1024 * 1024 * 1024;
@@ -44,6 +46,7 @@ constexpr int64_t kBytesPerGigabyte = 1024 * 1024 * 1024;
 constexpr int64_t kDownloadSizeFallbackEstimate = 15LL * kBytesPerGigabyte;
 
 constexpr char kFailureReasonHistogram[] = "PluginVm.SetupFailureReason";
+constexpr char kSetupTimeHistogram[] = "PluginVm.SetupTime";
 
 constexpr char kHomeDirectory[] = "/home";
 
@@ -77,9 +80,28 @@ bool DeleteFileWrapper(const base::FilePath& to_delete) {
   return base::DeleteFile(to_delete);
 }
 
-}  // namespace
+PluginVmSetupResult BucketForCancelledInstall(
+    PluginVmInstaller::InstallingState installing_state) {
+  switch (installing_state) {
+    case PluginVmInstaller::InstallingState::kInactive:
+      NOTREACHED();
+      FALLTHROUGH;
+    case PluginVmInstaller::InstallingState::kCheckingLicense:
+      return PluginVmSetupResult::kUserCancelledValidatingLicense;
+    case PluginVmInstaller::InstallingState::kCheckingDiskSpace:
+      return PluginVmSetupResult::kUserCancelledCheckingDiskSpace;
+    case PluginVmInstaller::InstallingState::kDownloadingDlc:
+      return PluginVmSetupResult::kUserCancelledDownloadingPluginVmDlc;
+    case PluginVmInstaller::InstallingState::kCheckingForExistingVm:
+      return PluginVmSetupResult::kUserCancelledCheckingForExistingVm;
+    case PluginVmInstaller::InstallingState::kDownloadingImage:
+      return PluginVmSetupResult::kUserCancelledDownloadingPluginVmImage;
+    case PluginVmInstaller::InstallingState::kImporting:
+      return PluginVmSetupResult::kUserCancelledImportingPluginVmImage;
+  }
+}
 
-namespace plugin_vm {
+}  // namespace
 
 PluginVmInstaller::~PluginVmInstaller() = default;
 
@@ -112,16 +134,21 @@ void PluginVmInstaller::Start() {
     return;
   }
 
+  setup_start_tick_ = base::TimeTicks::Now();
   progress_ = 0;
   CheckLicense();
 }
 
 void PluginVmInstaller::Cancel() {
   if (state_ != State::kInstalling) {
-    LOG(ERROR) << "Tried to cancel installation from unexpected state "
-               << GetStateName(state_);
+    RecordPluginVmSetupResultHistogram(
+        PluginVmSetupResult::kUserCancelledWithoutStarting);
     return;
   }
+
+  RecordPluginVmSetupResultHistogram(
+      BucketForCancelledInstall(installing_state_));
+
   state_ = State::kCancelling;
   switch (installing_state_) {
     case InstallingState::kCheckingLicense:
@@ -148,7 +175,7 @@ void PluginVmInstaller::CheckLicense() {
 
   // If the server has provided a license key, responsibility of validating is
   // passed to the Plugin VM application.
-  if (!plugin_vm::GetPluginVmLicenseKey().empty()) {
+  if (!GetPluginVmLicenseKey().empty()) {
     OnLicenseChecked(true);
     return;
   }
@@ -224,10 +251,10 @@ void PluginVmInstaller::OnUpdateVmState(bool default_vm_exists) {
   }
 
   if (default_vm_exists) {
+    RecordPluginVmSetupResultHistogram(PluginVmSetupResult::kVmAlreadyExists);
     if (observer_)
       observer_->OnVmExists();
-    profile_->GetPrefs()->SetBoolean(plugin_vm::prefs::kPluginVmImageExists,
-                                     true);
+    profile_->GetPrefs()->SetBoolean(prefs::kPluginVmImageExists, true);
     InstallFinished();
     return;
   }
@@ -672,8 +699,8 @@ void PluginVmInstaller::OnImported(
     return;
   }
 
-  profile_->GetPrefs()->SetBoolean(plugin_vm::prefs::kPluginVmImageExists,
-                                   true);
+  profile_->GetPrefs()->SetBoolean(prefs::kPluginVmImageExists, true);
+  RecordPluginVmSetupResultHistogram(PluginVmSetupResult::kSuccess);
   if (observer_) {
     if (creating_new_vm_)
       observer_->OnCreated();
@@ -753,10 +780,9 @@ PluginVmInstaller::PluginVmInstaller(Profile* profile)
           DownloadServiceFactory::GetForKey(profile->GetProfileKey())) {}
 
 GURL PluginVmInstaller::GetPluginVmImageDownloadUrl() {
-  const base::Value* url_ptr =
-      profile_->GetPrefs()
-          ->GetDictionary(plugin_vm::prefs::kPluginVmImage)
-          ->FindKey("url");
+  const base::Value* url_ptr = profile_->GetPrefs()
+                                   ->GetDictionary(prefs::kPluginVmImage)
+                                   ->FindKey("url");
   if (!url_ptr) {
     LOG(ERROR) << "Url to PluginVm image is not specified";
     return GURL();
@@ -845,7 +871,7 @@ bool PluginVmInstaller::VerifyDownload(
   }
   const base::Value* plugin_vm_image_hash_ptr =
       profile_->GetPrefs()
-          ->GetDictionary(plugin_vm::prefs::kPluginVmImage)
+          ->GetDictionary(prefs::kPluginVmImage)
           ->FindKey("hash");
   if (!plugin_vm_image_hash_ptr) {
     LOG(ERROR) << "Hash of PluginVm image is not specified";
@@ -903,11 +929,14 @@ void PluginVmInstaller::InstallFailed(FailureReason reason) {
   state_ = State::kIdle;
   installing_state_ = InstallingState::kInactive;
   base::UmaHistogramEnumeration(kFailureReasonHistogram, reason);
+  RecordPluginVmSetupResultHistogram(PluginVmSetupResult::kError);
   if (observer_)
     observer_->OnError(reason);
 }
 
 void PluginVmInstaller::InstallFinished() {
+  base::UmaHistogramLongTimes(kSetupTimeHistogram,
+                              base::TimeTicks::Now() - setup_start_tick_);
   state_ = State::kIdle;
   installing_state_ = InstallingState::kInactive;
 }

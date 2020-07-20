@@ -199,7 +199,7 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
   void DidSetFramePolicyHeaders(
       network::mojom::blink::WebSandboxFlags,
       const ParsedFeaturePolicy& fp_header,
-      const blink::DocumentPolicy::FeatureState& dp_header) override;
+      const blink::DocumentPolicyFeatureState& dp_header) override;
 
   std::unique_ptr<WebServiceWorkerProvider> CreateServiceWorkerProvider()
       override;

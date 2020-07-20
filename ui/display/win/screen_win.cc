@@ -928,8 +928,8 @@ int ScreenWin::GetSystemMetricsForScaleFactor(float scale_factor,
 
   // Windows 8.1 doesn't support GetSystemMetricsForDpi(), yet does support
   // per-process dpi awareness.
-  return base::Round(GetSystemMetrics(metric) * scale_factor /
-                     GetPrimaryDisplay().device_scale_factor());
+  return base::ClampRound(GetSystemMetrics(metric) * scale_factor /
+                          GetPrimaryDisplay().device_scale_factor());
 }
 
 void ScreenWin::RecordDisplayScaleFactors() const {

@@ -867,6 +867,7 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/webgpu/gpu_fence_descriptor.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_image_bitmap_copy_view.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_limits.idl",
+          "//third_party/blink/renderer/modules/webgpu/gpu_map_mode.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_object_descriptor_base.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_origin_2d_dict.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_origin_3d_dict.idl",

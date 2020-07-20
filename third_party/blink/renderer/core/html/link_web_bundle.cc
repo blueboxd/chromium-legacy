@@ -70,9 +70,7 @@ class WebBundleLoader : public GarbageCollected<WebBundleLoader>,
   void DidStartLoadingResponseBody(BytesConsumer& consumer) override {
     DCHECK(pending_factory_receiver_);
     CreateWebBundleSubresourceLoaderFactory(
-        mojo::PendingReceiver<network::mojom::URLLoaderFactory>(
-            pending_factory_receiver_.PassPipe()),
-        consumer.DrainAsDataPipe());
+        std::move(pending_factory_receiver_), consumer.DrainAsDataPipe());
     // TODO(crbug.com/1082020): Set |failed_| to true on metadata parse error,
     // so that "error" event is dispatched.
   }
@@ -88,8 +86,7 @@ class WebBundleLoader : public GarbageCollected<WebBundleLoader>,
       // with an empty bundle body so that requests to
       // |pending_factory_receiver_| are processed (and fail).
       CreateWebBundleSubresourceLoaderFactory(
-          mojo::PendingReceiver<network::mojom::URLLoaderFactory>(
-              pending_factory_receiver_.PassPipe()),
+          std::move(pending_factory_receiver_),
           mojo::ScopedDataPipeConsumerHandle());
     }
     failed_ = true;

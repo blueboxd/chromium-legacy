@@ -118,8 +118,9 @@ TEST_F(ScopedOverviewTransformWindowTest, TransformedRectIsCenteredWithInset) {
   // |bounds| starting before |bounds.x()| and ending after |bounds.right()|.
   EXPECT_LE(transformed_rect.x(), bounds.x());
   EXPECT_GE(transformed_rect.right(), bounds.right());
-  EXPECT_GE(transformed_rect.y() + base::Ceil(scale * inset) - header_height,
-            bounds.y());
+  EXPECT_GE(
+      transformed_rect.y() + base::ClampCeil(scale * inset) - header_height,
+      bounds.y());
   EXPECT_LE(transformed_rect.bottom(), bounds.bottom());
   EXPECT_NEAR(transformed_rect.x() - bounds.x(),
               bounds.right() - transformed_rect.right(), 1);

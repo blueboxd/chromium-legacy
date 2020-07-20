@@ -834,7 +834,8 @@ void FlexLayout::AllocateFlexSpace(
       const int flex_weight = flex_child.flex.weight();
       if (flex_weight > 0) {
         // Round up so we give slightly greater weight to earlier views.
-        flex_amount = base::Ceil(remaining * flex_weight / float{flex_total});
+        flex_amount =
+            base::ClampCeil(remaining * flex_weight / float{flex_total});
       }
       flex_total -= flex_weight;
 

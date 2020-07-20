@@ -56,8 +56,8 @@
 
 #include <atomic>
 
+#include "base/allocator/partition_allocator/checked_ptr_support.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
-#include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
@@ -71,10 +71,12 @@
 #include "base/bits.h"
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
+#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/partition_alloc_buildflags.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "base/synchronization/lock.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -688,24 +690,6 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::RecommitSystemPages(
 BASE_EXPORT void PartitionAllocGlobalInit(OomFunction on_out_of_memory);
 BASE_EXPORT void PartitionAllocGlobalUninitForTesting();
 
-ALWAYS_INLINE bool IsManagedByPartitionAllocDirectMap(const void* address) {
-#if BUILDFLAG(USE_PARTITION_ALLOC) && defined(ARCH_CPU_64_BITS) && \
-    !defined(OS_NACL)
-  return internal::PartitionAddressSpace::IsInDirectMapPool(address);
-#else
-  return false;
-#endif
-}
-
-ALWAYS_INLINE bool IsManagedByPartitionAllocNormalBuckets(const void* address) {
-#if BUILDFLAG(USE_PARTITION_ALLOC) && defined(ARCH_CPU_64_BITS) && \
-    !defined(OS_NACL)
-  return internal::PartitionAddressSpace::IsInNormalBucketPool(address);
-#else
-  return false;
-#endif
-}
-
 namespace internal {
 // Gets the PartitionPage object for the first partition page of the slot span
 // that contains |ptr|. It's used with intention to do obtain the slot size.
@@ -751,13 +735,27 @@ ALWAYS_INLINE size_t PartitionRoot<thread_safe>::GetSize(void* ptr) const {
   return size;
 }
 
+// This file may end up getting included even when PartitionAlloc isn't used,
+// but the .cc file won't be linked. Exclude the code that relies on it.
+#if BUILDFLAG(USE_PARTITION_ALLOC)
+
+namespace internal {
+// Avoid including partition_address_space.h from this .h file, by moving the
+// call to IfManagedByPartitionAllocNormalBuckets into the .cc file.
+#if DCHECK_IS_ON()
+BASE_EXPORT void DCheckIfManagedByPartitionAllocNormalBuckets(const void* ptr);
+#else
+ALWAYS_INLINE void DCheckIfManagedByPartitionAllocNormalBuckets(const void*) {}
+#endif
+}  // namespace internal
+
 // Gets the offset from the beginning of the allocated slot, adjusted for cookie
 // (if any).
 // CAUTION! Use only for normal buckets. Using on direct-mapped allocations may
 // lead to undefined behavior.
 template <bool thread_safe>
 ALWAYS_INLINE size_t PartitionAllocGetSlotOffset(void* ptr) {
-  PA_DCHECK(IsManagedByPartitionAllocNormalBuckets(ptr));
+  internal::DCheckIfManagedByPartitionAllocNormalBuckets(ptr);
   // The only allocations that don't use tag are allocated outside of GigaCage,
   // hence we'd never get here in the use_tag=false case.
   // TODO(bartekn): Add a DCHECK(page->root->allow_extras) to assert this, once
@@ -778,6 +776,8 @@ ALWAYS_INLINE size_t PartitionAllocGetSlotOffset(void* ptr) {
   size_t offset_in_slot = offset_in_slot_span % slot_size;
   return offset_in_slot;
 }
+
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC)
 
 template <bool thread_safe>
 ALWAYS_INLINE internal::PartitionBucket<thread_safe>*
@@ -823,9 +823,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlags(
   }
   size_t requested_size = size;
   size = internal::PartitionSizeAdjustAdd(allow_extras, size);
-#if ENABLE_TAG_FOR_CHECKED_PTR2
-  PA_CHECK(size >= requested_size);
-#endif
+  PA_CHECK(size >= requested_size);  // check for overflows
   auto* bucket = SizeToBucket(size);
   PA_DCHECK(bucket);
   {

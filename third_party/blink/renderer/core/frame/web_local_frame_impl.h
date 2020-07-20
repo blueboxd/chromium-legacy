@@ -347,8 +347,8 @@ class CORE_EXPORT WebLocalFrameImpl final
       WindowAgentFactory*,
       network::mojom::blink::WebSandboxFlags sandbox_flags =
           network::mojom::blink::WebSandboxFlags::kNone,
-      const FeaturePolicy::FeatureState& opener_feature_state =
-          FeaturePolicy::FeatureState());
+      const FeaturePolicyFeatureState& opener_feature_state =
+          FeaturePolicyFeatureState());
   LocalFrame* GetFrame() const { return frame_.Get(); }
 
   void WillBeDetached();
@@ -363,7 +363,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       WebFrame* opener,
       const WebString& name,
       network::mojom::blink::WebSandboxFlags,
-      const FeaturePolicy::FeatureState&);
+      const FeaturePolicyFeatureState&);
   static WebLocalFrameImpl* CreateProvisional(
       WebLocalFrameClient*,
       InterfaceRegistry*,

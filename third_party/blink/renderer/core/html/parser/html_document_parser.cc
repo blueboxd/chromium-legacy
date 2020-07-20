@@ -1394,7 +1394,7 @@ void HTMLDocumentParser::AppendCurrentInputStreamToPreloadScannerAndScan() {
   ScanAndPreload(preload_scanner_.get());
 }
 
-void HTMLDocumentParser::NotifyScriptLoaded(PendingScript* pending_script) {
+void HTMLDocumentParser::NotifyScriptLoaded() {
   TRACE_EVENT1("blink", "HTMLDocumentParser::NotifyScriptLoaded", "parser",
                (void*)this);
   DCHECK(script_runner_);
@@ -1412,7 +1412,7 @@ void HTMLDocumentParser::NotifyScriptLoaded(PendingScript* pending_script) {
     return;
   }
 
-  script_runner_->ExecuteScriptsWaitingForLoad(pending_script);
+  script_runner_->ExecuteScriptsWaitingForLoad();
   if (!IsPaused())
     ResumeParsingAfterPause();
 }

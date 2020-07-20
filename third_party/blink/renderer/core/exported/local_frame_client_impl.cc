@@ -965,7 +965,7 @@ void LocalFrameClientImpl::DidChangeName(const String& name) {
 void LocalFrameClientImpl::DidSetFramePolicyHeaders(
     network::mojom::blink::WebSandboxFlags sandbox_flags,
     const ParsedFeaturePolicy& feature_policy_header,
-    const DocumentPolicy::FeatureState& document_policy_header) {
+    const DocumentPolicyFeatureState& document_policy_header) {
   if (web_frame_->Client()) {
     web_frame_->Client()->DidSetFramePolicyHeaders(
         static_cast<network::mojom::blink::WebSandboxFlags>(sandbox_flags),

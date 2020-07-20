@@ -2059,7 +2059,7 @@ class ClientHintsEnterprisePolicyTest : public ClientHintsBrowserTest {
     policy::PolicyTest::SetUpInProcessBrowserTestFixture();
     policy::PolicyMap policies;
     SetPolicy(&policies, policy::key::kUserAgentClientHintsEnabled,
-              std::make_unique<base::Value>(false));
+              base::Value(false));
     provider_.UpdateChromePolicy(policies);
   }
 };

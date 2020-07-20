@@ -83,8 +83,9 @@ class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
     SetUpRegistration(kScriptURL);
 
     // Create the old script resource in storage.
-    WriteToDiskCacheWithIdSync(context()->storage(), kScriptURL, kOldResourceId,
-                               kOldHeaders, kOldData, std::string());
+    WriteToDiskCacheWithIdSync(context()->GetStorageControl(), kScriptURL,
+                               kOldResourceId, kOldHeaders, kOldData,
+                               std::string());
   }
 
   // Sets up ServiceWorkerRegistration and ServiceWorkerVersion. This should be
@@ -166,7 +167,8 @@ class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
 
     // The response should also be stored in the storage.
     EXPECT_TRUE(ServiceWorkerUpdateCheckTestUtils::VerifyStoredResponse(
-        LookupResourceId(kScriptURL), context()->storage(), expected_body));
+        LookupResourceId(kScriptURL), context()->GetStorageControl(),
+        expected_body));
 
     std::string response;
     EXPECT_TRUE(mojo::BlockingCopyToString(client_->response_body_release(),

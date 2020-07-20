@@ -39,7 +39,7 @@ TEST_F(MixerOutputStreamFuchsiaTest, Play1s) {
   auto started = base::TimeTicks::Now();
 
   int samples_to_play =
-      base::Floor(kSampleRate * kTestStreamDuration.InSecondsF());
+      base::ClampFloor(kSampleRate * kTestStreamDuration.InSecondsF());
   int pos = 0;
   while (pos < samples_to_play) {
     std::vector<float> buffer;

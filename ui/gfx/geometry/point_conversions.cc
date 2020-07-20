@@ -9,15 +9,15 @@
 namespace gfx {
 
 Point ToFlooredPoint(const PointF& point) {
-  return Point(base::Floor(point.x()), base::Floor(point.y()));
+  return Point(base::ClampFloor(point.x()), base::ClampFloor(point.y()));
 }
 
 Point ToCeiledPoint(const PointF& point) {
-  return Point(base::Ceil(point.x()), base::Ceil(point.y()));
+  return Point(base::ClampCeil(point.x()), base::ClampCeil(point.y()));
 }
 
 Point ToRoundedPoint(const PointF& point) {
-  return Point(base::Round(point.x()), base::Round(point.y()));
+  return Point(base::ClampRound(point.x()), base::ClampRound(point.y()));
 }
 
 }  // namespace gfx

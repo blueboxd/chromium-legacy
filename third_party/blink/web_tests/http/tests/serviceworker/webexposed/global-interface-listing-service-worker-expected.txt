@@ -1313,6 +1313,7 @@ interface ReportingObserver
     method takeRecords
 interface Request
     attribute @@toStringTag
+    getter body
     getter bodyUsed
     getter cache
     getter credentials

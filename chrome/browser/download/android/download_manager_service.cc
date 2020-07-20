@@ -673,11 +673,13 @@ download::DownloadItem* DownloadManagerService::GetDownload(
 void DownloadManagerService::OnPendingDownloadsLoaded() {
   is_pending_downloads_loaded_ = true;
 
-  ProfileKey* profile_key = use_existing_profile_key_for_testing_
-                                ? coordinators_.begin()->first
-                                : ProfileManager::GetActiveUserProfile()
-                                      ->GetOriginalProfile()
-                                      ->GetProfileKey();
+  auto result =
+      std::find_if(coordinators_.begin(), coordinators_.end(),
+                   [](const auto& it) { return !it.first->IsOffTheRecord(); });
+  CHECK(result != coordinators_.end())
+      << "A non-OffTheRecord coordinator should exist when "
+         "OnPendingDownloadsLoaded is triggered.";
+  ProfileKey* profile_key = result->first;
 
   // Kick-off the auto-resumption handler.
   content::DownloadManager::DownloadVector all_items;
@@ -810,7 +812,6 @@ void DownloadManagerService::CreateInterruptedDownloadForTest(
   download::InProgressDownloadManager* in_progress_manager =
       DownloadManagerUtils::GetInProgressDownloadManager(
           ProfileKeyStartupAccessor::GetInstance()->profile_key());
-  UseExistingProfileKeyForTesting();
   std::vector<GURL> url_chain;
   url_chain.emplace_back(ConvertJavaStringToUTF8(env, jurl));
   base::FilePath target_path(ConvertJavaStringToUTF8(env, jtarget_path));

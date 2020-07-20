@@ -168,7 +168,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   void DocumentElementAvailable() override;
 
   // HTMLParserScriptRunnerHost
-  void NotifyScriptLoaded(PendingScript*) final;
+  void NotifyScriptLoaded() final;
   HTMLInputStream& InputStream() final { return input_; }
   bool HasPreloadScanner() const final {
     return preload_scanner_.get() && !CanParseAsynchronously();

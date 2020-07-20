@@ -4037,8 +4037,8 @@ ExtensionFunction::ResponseAction AutotestPrivateMouseMoveFunction::Run() {
   ConvertPointToHost(root_window, &start_in_host);
 
   int64_t steps = std::max(
-      base::Floor<int64_t>(params->duration_in_ms /
-                           event_generator_->interval().InMillisecondsF()),
+      base::ClampFloor<int64_t>(params->duration_in_ms /
+                                event_generator_->interval().InMillisecondsF()),
       static_cast<int64_t>(1));
   int flags = env->mouse_button_flags();
   ui::EventType type = (flags == 0) ? ui::ET_MOUSE_MOVED : ui::ET_MOUSE_DRAGGED;

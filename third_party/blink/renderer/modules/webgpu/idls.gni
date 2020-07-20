@@ -18,6 +18,7 @@ modules_idl_files = [
   "gpu_device.idl",
   "gpu_device_lost_info.idl",
   "gpu_fence.idl",
+  "gpu_map_mode.idl",
   "gpu_out_of_memory_error.idl",
   "gpu_pipeline_layout.idl",
   "gpu_queue.idl",

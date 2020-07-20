@@ -4,6 +4,10 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+#include <memory>
+#include <utility>
+
 #include "base/numerics/safe_conversions.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/nine_patch_layer_impl.h"
@@ -25,8 +29,9 @@ namespace cc {
 namespace {
 
 gfx::Rect ToRoundedIntRect(const gfx::RectF& rect_f) {
-  return gfx::Rect(base::Round(rect_f.x()), base::Round(rect_f.y()),
-                   base::Round(rect_f.width()), base::Round(rect_f.height()));
+  return gfx::Rect(base::ClampRound(rect_f.x()), base::ClampRound(rect_f.y()),
+                   base::ClampRound(rect_f.width()),
+                   base::ClampRound(rect_f.height()));
 }
 
 void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,

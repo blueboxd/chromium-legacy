@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_CHROMEOS_DBUS_VM_VM_PERMISSION_SERVICE_PROVIDER_H_
 
 #include <memory>
-#include <set>
 #include <string>
 #include <unordered_map>
 #include <utility>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
@@ -107,11 +107,11 @@ class VmPermissionServiceProvider
     enum VmType { CrostiniVm = 0, PluginVm = 1 };
     enum PermissionType { PermissionCamera = 0, PermissionMicrophone = 1 };
 
-    const std::string owner_id_;
-    const std::string name_;
-    const VmType type_;
+    const std::string owner_id;
+    const std::string name;
+    const VmType type;
 
-    std::set<PermissionType> permissions_;
+    base::flat_map<PermissionType, bool> permission_to_enabled_map;
 
     VmInfo(std::string owner_id, std::string name, VmType type);
     ~VmInfo();

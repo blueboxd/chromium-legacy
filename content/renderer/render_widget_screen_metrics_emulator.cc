@@ -65,13 +65,13 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
     widget_size.set_width(emulation_params_.view_size.width);
   } else {
     widget_size.set_width(
-        base::Round(widget_size.width() / emulation_params_.scale));
+        base::ClampRound(widget_size.width() / emulation_params_.scale));
   }
   if (emulation_params_.view_size.height) {
     widget_size.set_height(emulation_params_.view_size.height);
   } else {
     widget_size.set_height(
-        base::Round(widget_size.height() / emulation_params_.scale));
+        base::ClampRound(widget_size.height() / emulation_params_.scale));
   }
 
   // For mobile emulation, the window size is changed to match the widget size,

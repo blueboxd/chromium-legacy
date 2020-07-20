@@ -193,6 +193,7 @@ class PluginVmInstaller : public KeyedService,
   download::DownloadService* download_service_ = nullptr;
   State state_ = State::kIdle;
   InstallingState installing_state_ = InstallingState::kInactive;
+  base::TimeTicks setup_start_tick_;
   std::string current_download_guid_;
   base::FilePath downloaded_image_;
   // Used to identify our running import with concierge:

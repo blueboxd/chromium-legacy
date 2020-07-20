@@ -86,7 +86,7 @@ class HTMLParserScriptRunner final
 
   // Invoked when the parsing-blocking script resource has loaded, to execute
   // parsing-blocking scripts.
-  void ExecuteScriptsWaitingForLoad(PendingScript*);
+  void ExecuteScriptsWaitingForLoad();
 
   // Invoked when all script-blocking resources (e.g., stylesheets) have loaded,
   // to execute parsing-blocking scripts.

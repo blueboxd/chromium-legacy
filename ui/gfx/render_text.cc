@@ -68,7 +68,7 @@ int CalculateFadeGradientWidth(const FontList& font_list, int display_width) {
   // Use a 1/3 of the display width if the display width is very short.
   const int narrow_width = font_list.GetExpectedTextWidth(3);
   const int gradient_width =
-      std::min(narrow_width, base::Round(display_width / 3.f));
+      std::min(narrow_width, base::ClampRound(display_width / 3.f));
   DCHECK_GE(gradient_width, 0);
   return gradient_width;
 }
@@ -116,7 +116,7 @@ sk_sp<cc::PaintShader> CreateFadeShader(const FontList& font_list,
   const SkAlpha kAlphaAtZeroWidth = 51;
   const SkAlpha alpha =
       (width_fraction < 1)
-          ? base::Round<SkAlpha>((1 - width_fraction) * kAlphaAtZeroWidth)
+          ? base::ClampRound<SkAlpha>((1 - width_fraction) * kAlphaAtZeroWidth)
           : 0;
   const SkColor fade_color = SkColorSetA(color, alpha);
 
@@ -905,7 +905,7 @@ VisualCursorDirection RenderText::GetVisualDirectionOfLogicalBeginning() {
 
 Size RenderText::GetStringSize() {
   const SizeF size_f = GetStringSizeF();
-  return Size(base::Ceil(size_f.width()), size_f.height());
+  return Size(base::ClampCeil(size_f.width()), size_f.height());
 }
 
 float RenderText::TotalLineWidth() {
@@ -923,7 +923,7 @@ float RenderText::GetContentWidthF() {
 }
 
 int RenderText::GetContentWidth() {
-  return base::Ceil(GetContentWidthF());
+  return base::ClampCeil(GetContentWidthF());
 }
 
 int RenderText::GetBaseline() {
@@ -1100,8 +1100,8 @@ Rect RenderText::GetCursorBounds(const SelectionModel& caret,
       x = xspan.GetMin();
       // Ceil the start and end of the |xspan| because the cursor x-coordinates
       // are always ceiled.
-      width =
-          base::Ceil(Clamp(xspan.GetMax())) - base::Ceil(Clamp(xspan.GetMin()));
+      width = base::ClampCeil(Clamp(xspan.GetMax())) -
+              base::ClampCeil(Clamp(xspan.GetMin()));
     }
   }
   return Rect(ToViewPoint(PointF(x, 0), caret_affinity),
@@ -1690,7 +1690,8 @@ Point RenderText::ToViewPoint(const PointF& point,
 
   const size_t num_lines = GetNumLines();
   if (num_lines == 1) {
-    return Point(base::Ceil(Clamp(point.x())), base::Round(point.y())) +
+    return Point(base::ClampCeil(Clamp(point.x())),
+                 base::ClampRound(point.y())) +
            GetLineOffset(0);
   }
 
@@ -1747,7 +1748,7 @@ Point RenderText::ToViewPoint(const PointF& point,
     }
   }
 
-  return Point(base::Ceil(Clamp(x)), base::Round(point.y())) +
+  return Point(base::ClampCeil(Clamp(x)), base::ClampRound(point.y())) +
          GetLineOffset(line);
 }
 
@@ -2027,8 +2028,8 @@ base::string16 RenderText::Elide(const base::string16& text,
     // |last_guess| is merely used to verify that we're not repeating guesses.
     const size_t last_guess = guess;
     if (hi_width != lo_width) {
-      guess = lo + base::Round<size_t>((available_width - lo_width) *
-                                       (hi - lo) / (hi_width - lo_width));
+      guess = lo + base::ClampRound<size_t>((available_width - lo_width) *
+                                            (hi - lo) / (hi_width - lo_width));
     }
     guess = base::ClampToRange(guess, lo, hi);
     DCHECK_NE(last_guess, guess);

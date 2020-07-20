@@ -777,8 +777,8 @@ void PageHandler::CaptureScreenshot(
   if (clip.isJust()) {
     double scale = dpfactor * clip.fromJust()->GetScale();
     widget_host->GetView()->SetSize(
-        gfx::Size(base::Round(clip.fromJust()->GetWidth() * scale),
-                  base::Round(clip.fromJust()->GetHeight() * scale)));
+        gfx::Size(base::ClampRound(clip.fromJust()->GetWidth() * scale),
+                  base::ClampRound(clip.fromJust()->GetHeight() * scale)));
   } else if (emulation_enabled) {
     widget_host->GetView()->SetSize(
         gfx::ScaleToFlooredSize(emulated_view_size, dpfactor));

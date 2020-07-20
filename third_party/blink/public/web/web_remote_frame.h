@@ -117,7 +117,7 @@ class WebRemoteFrame : public WebFrame {
   // down the FeatureState cannot be modified either).
   virtual void SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
       const ParsedFeaturePolicy& parsed_header,
-      const FeaturePolicy::FeatureState& opener_feature_state) = 0;
+      const FeaturePolicyFeatureState& opener_feature_state) = 0;
 
   // Adds |header| to the set of replicated CSP headers.
   virtual void AddReplicatedContentSecurityPolicyHeader(

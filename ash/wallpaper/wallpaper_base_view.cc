@@ -89,12 +89,12 @@ void WallpaperBaseView::OnPaint(gfx::Canvas* canvas) {
       gfx::Size cropped_size;
       if (vertical_ratio > horizontal_ratio) {
         cropped_size = gfx::Size(
-            base::Floor(static_cast<double>(width()) / vertical_ratio),
+            base::ClampFloor(static_cast<double>(width()) / vertical_ratio),
             wallpaper.height());
       } else {
         cropped_size = gfx::Size(
             wallpaper.width(),
-            base::Floor(static_cast<double>(height()) / horizontal_ratio));
+            base::ClampFloor(static_cast<double>(height()) / horizontal_ratio));
       }
 
       gfx::Rect wallpaper_cropped_rect(wallpaper.size());

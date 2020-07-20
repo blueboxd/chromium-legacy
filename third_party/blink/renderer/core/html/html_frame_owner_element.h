@@ -173,8 +173,8 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
 
   // Return a document policy required policy for this frame, based on the
   // frame attributes.
-  virtual DocumentPolicy::FeatureState ConstructRequiredPolicy() const {
-    return DocumentPolicy::FeatureState{};
+  virtual DocumentPolicyFeatureState ConstructRequiredPolicy() const {
+    return DocumentPolicyFeatureState{};
   }
 
   // Update the required policy and notify the frame loader client of any

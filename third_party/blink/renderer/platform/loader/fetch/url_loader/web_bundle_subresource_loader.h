@@ -6,7 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_URL_LOADER_WEB_BUNDLE_SUBRESOURCE_LOADER_H_
 
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-shared.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
@@ -14,7 +15,8 @@ namespace blink {
 // Creates a network::mojom::URLLoaderFactory that can load resources from a
 // WebBundle, and binds it to |factory_receiver|.
 PLATFORM_EXPORT void CreateWebBundleSubresourceLoaderFactory(
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver,
+    CrossVariantMojoReceiver<network::mojom::URLLoaderFactoryInterfaceBase>
+        factory_receiver,
     mojo::ScopedDataPipeConsumerHandle bundle_body);
 
 }  // namespace blink

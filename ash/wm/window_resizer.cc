@@ -326,7 +326,7 @@ gfx::Point WindowResizer::GetOriginForDrag(int delta_x,
                        float{details().initial_bounds_in_parent.x()}) /
                       details().initial_bounds_in_parent.width();
   int new_origin_x =
-      base::Round(event_location.x() - ratio * restore_bounds.width());
+      base::ClampRound(event_location.x() - ratio * restore_bounds.width());
   origin.set_x(new_origin_x);
 
   // Windows may not have a widget in tests.

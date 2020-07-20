@@ -58,17 +58,17 @@ int8_t eight_bit_value = saturated_cast<int8_t>(int_value);
 int int_value = saturated_cast<int>(floating_point_value);
 ```
 
-`Ceil`, `Floor`, and `Round` provide similar functionality to the versions in
-`std::`, but saturate and return an integral type.  An optional template
-parameter specifies the desired destination type (`int` if unspecified).  These
-should be used for most floating-to-integral conversions.
+`ClampCeil`, `ClampFloor`, and `ClampRound` provide similar functionality to the
+versions in `std::`, but saturate and return an integral type.  An optional
+template parameter specifies the desired destination type (`int` if
+unspecified).  These should be used for most floating-to-integral conversions.
 
 ```cpp
 // Basically saturated_cast<int>(std::round(floating_point_value)).
-int int_value = Round(floating_point_value);
+int int_value = ClampRound(floating_point_value);
 
 // A destination type can be explicitly specified.
-uint8_t byte_value = Floor<uint8_t>(floating_point_value);
+uint8_t byte_value = ClampFloor<uint8_t>(floating_point_value);
 ```
 
 ### Enforcing arithmetic type conversions at compile-time
@@ -195,10 +195,10 @@ performing a range of conversions, assignments, and tests.
 
 ### Other helper and conversion functions
 
-*   `Ceil<>()` - A convenience function that computes the ceil of its floating-
+*   `ClampCeil<>()` - A convenience function that computes the ceil of its floating-
     point arg, then saturates to the destination type (template parameter,
     defaults to `int`).
-*   `Floor<>()` - A convenience function that computes the floor of its
+*   `ClampFloor<>()` - A convenience function that computes the floor of its
     floating-point arg, then saturates to the destination type (template
     parameter, defaults to `int`).
 *   `IsTypeInRangeForNumericType<>()` - A convenience function that evaluates
@@ -211,7 +211,7 @@ performing a range of conversions, assignments, and tests.
 *   `IsValueNegative()` - A convenience function that will accept any
     arithmetic type as an argument and will return whether the value is less
     than zero. Unsigned types always return false.
-*   `Round<>()` - A convenience function that rounds its floating-point arg,
+*   `ClampRound<>()` - A convenience function that rounds its floating-point arg,
     then saturates to the destination type (template parameter, defaults to
     `int`).
 *   `SafeUnsignedAbs()` - Returns the absolute value of the supplied integer

@@ -15,22 +15,22 @@ namespace gfx {
 namespace {
 
 int FloorIgnoringError(float f, float error) {
-  int rounded = base::Round(f);
-  return std::abs(rounded - f) < error ? rounded : base::Floor(f);
+  int rounded = base::ClampRound(f);
+  return std::abs(rounded - f) < error ? rounded : base::ClampFloor(f);
 }
 
 int CeilIgnoringError(float f, float error) {
-  int rounded = base::Round(f);
-  return std::abs(rounded - f) < error ? rounded : base::Ceil(f);
+  int rounded = base::ClampRound(f);
+  return std::abs(rounded - f) < error ? rounded : base::ClampCeil(f);
 }
 
 }  // anonymous namespace
 
 Rect ToEnclosingRect(const RectF& r) {
-  int left = base::Floor(r.x());
-  int right = r.width() ? base::Ceil(r.right()) : left;
-  int top = base::Floor(r.y());
-  int bottom = r.height() ? base::Ceil(r.bottom()) : top;
+  int left = base::ClampFloor(r.x());
+  int right = r.width() ? base::ClampCeil(r.right()) : left;
+  int top = base::ClampFloor(r.y());
+  int bottom = r.height() ? base::ClampCeil(r.bottom()) : top;
 
   Rect result;
   result.SetByBounds(left, top, right, bottom);
@@ -50,8 +50,9 @@ Rect ToEnclosingRectIgnoringError(const RectF& r, float error) {
 
 Rect ToEnclosedRect(const RectF& rect) {
   Rect result;
-  result.SetByBounds(base::Ceil(rect.x()), base::Ceil(rect.y()),
-                     base::Floor(rect.right()), base::Floor(rect.bottom()));
+  result.SetByBounds(base::ClampCeil(rect.x()), base::ClampCeil(rect.y()),
+                     base::ClampFloor(rect.right()),
+                     base::ClampFloor(rect.bottom()));
   return result;
 }
 
@@ -72,10 +73,10 @@ Rect ToNearestRect(const RectF& rect) {
   float float_max_x = rect.right();
   float float_max_y = rect.bottom();
 
-  int min_x = base::Round(float_min_x);
-  int min_y = base::Round(float_min_y);
-  int max_x = base::Round(float_max_x);
-  int max_y = base::Round(float_max_y);
+  int min_x = base::ClampRound(float_min_x);
+  int min_y = base::ClampRound(float_min_y);
+  int max_x = base::ClampRound(float_max_x);
+  int max_y = base::ClampRound(float_max_y);
 
   // If these DCHECKs fail, you're using the wrong method, consider using
   // ToEnclosingRect or ToEnclosedRect instead.
@@ -96,10 +97,10 @@ bool IsNearestRectWithinDistance(const gfx::RectF& rect, float distance) {
   float float_max_x = rect.right();
   float float_max_y = rect.bottom();
 
-  int min_x = base::Round(float_min_x);
-  int min_y = base::Round(float_min_y);
-  int max_x = base::Round(float_max_x);
-  int max_y = base::Round(float_max_y);
+  int min_x = base::ClampRound(float_min_x);
+  int min_y = base::ClampRound(float_min_y);
+  int max_x = base::ClampRound(float_max_x);
+  int max_y = base::ClampRound(float_max_y);
 
   return (std::abs(min_x - float_min_x) < distance) &&
          (std::abs(min_y - float_min_y) < distance) &&
@@ -108,18 +109,18 @@ bool IsNearestRectWithinDistance(const gfx::RectF& rect, float distance) {
 }
 
 gfx::Rect ToRoundedRect(const gfx::RectF& rect) {
-  int left = base::Round(rect.x());
-  int top = base::Round(rect.y());
-  int right = base::Round(rect.right());
-  int bottom = base::Round(rect.bottom());
+  int left = base::ClampRound(rect.x());
+  int top = base::ClampRound(rect.y());
+  int right = base::ClampRound(rect.right());
+  int bottom = base::ClampRound(rect.bottom());
   gfx::Rect result;
   result.SetByBounds(left, top, right, bottom);
   return result;
 }
 
 Rect ToFlooredRectDeprecated(const RectF& rect) {
-  return Rect(base::Floor(rect.x()), base::Floor(rect.y()),
-              base::Floor(rect.width()), base::Floor(rect.height()));
+  return Rect(base::ClampFloor(rect.x()), base::ClampFloor(rect.y()),
+              base::ClampFloor(rect.width()), base::ClampFloor(rect.height()));
 }
 
 }  // namespace gfx

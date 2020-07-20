@@ -128,7 +128,7 @@ Page* ChromeClient::CreateWindow(
     const AtomicString& frame_name,
     const WebWindowFeatures& features,
     network::mojom::blink::WebSandboxFlags sandbox_flags,
-    const FeaturePolicy::FeatureState& opener_feature_state,
+    const FeaturePolicyFeatureState& opener_feature_state,
     const SessionStorageNamespaceId& session_storage_namespace_id) {
   if (!CanOpenUIElementIfDuringPageDismissal(
           frame->Tree().Top(), UIElementType::kPopup, g_empty_string)) {

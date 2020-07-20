@@ -98,6 +98,7 @@ class MockPasswordStore : public PasswordStore {
   MOCK_METHOD1(AddFieldInfoImpl, void(const FieldInfo&));
   MOCK_METHOD0(GetAllFieldInfoImpl, std::vector<FieldInfo>());
   MOCK_METHOD2(RemoveFieldInfoByTimeImpl, void(base::Time, base::Time));
+  MOCK_METHOD0(IsEmpty, bool());
 
   MOCK_CONST_METHOD0(IsAbleToSavePasswords, bool());
 

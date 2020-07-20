@@ -64,7 +64,7 @@ class TestPasswordStore : public PasswordStore {
   // Returns true if no passwords are stored in the store. Note that this is not
   // as simple as asking whether stored_passwords().empty(), because the map can
   // have entries of size 0.
-  bool IsEmpty() const;
+  bool IsEmpty() override;
 
   int fill_matching_logins_calls() const { return fill_matching_logins_calls_; }
 

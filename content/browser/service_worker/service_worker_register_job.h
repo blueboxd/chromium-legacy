@@ -157,7 +157,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
                       const std::string& status_message,
                       ServiceWorkerRegistration* registration);
 
-  void AddRegistrationToMatchingProviderHosts(
+  void AddRegistrationToMatchingContainerHosts(
       ServiceWorkerRegistration* registration);
 
   void OnPausedAfterDownload();

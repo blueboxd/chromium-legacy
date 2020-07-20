@@ -562,7 +562,7 @@ void PaintVectorIcon(Canvas* canvas,
   DCHECK(!icon.is_empty());
   for (size_t i = 0; i < icon.reps_size; ++i)
     DCHECK(icon.reps[i].path_size > 0);
-  const int px_size = base::Ceil(canvas->image_scale() * dip_size);
+  const int px_size = base::ClampCeil(canvas->image_scale() * dip_size);
   const VectorIconRep* rep = GetRepForPxSize(icon, px_size);
   PaintPath(canvas, rep->path, rep->path_size, dip_size, color);
 }

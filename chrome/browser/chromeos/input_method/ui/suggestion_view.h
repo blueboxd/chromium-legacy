@@ -24,7 +24,7 @@ struct SuggestionDetails;
 
 // Font-related constants
 constexpr char kFontStyle[] = "Roboto";
-constexpr int kSuggestionFontSize = 14;
+constexpr int kSuggestionFontSize = 13;
 constexpr int kAnnotationFontSize = 10;
 constexpr int kIndexFontSize = 10;
 

@@ -119,16 +119,16 @@ gfx::Rect ScaleBoundsToPixelSnappedToParent(
   int right = child_bounds.right();
   int bottom = child_bounds.bottom();
 
-  int new_x = base::Round(child_bounds.x() * device_scale_factor);
-  int new_y = base::Round(child_bounds.y() * device_scale_factor);
+  int new_x = base::ClampRound(child_bounds.x() * device_scale_factor);
+  int new_y = base::ClampRound(child_bounds.y() * device_scale_factor);
 
   int new_right = right == parent_size.width()
                       ? parent_size_in_pixel.width()
-                      : base::Round(right * device_scale_factor);
+                      : base::ClampRound(right * device_scale_factor);
 
   int new_bottom = bottom == parent_size.height()
                        ? parent_size_in_pixel.height()
-                       : base::Round(bottom * device_scale_factor);
+                       : base::ClampRound(bottom * device_scale_factor);
   return gfx::Rect(new_x, new_y, new_right - new_x, new_bottom - new_y);
 }
 
@@ -1004,8 +1004,8 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
         // Note: The origin is used just to identify the workspace on the client
         // side, and does not account the actual pixel size of other workspace
         // on the client side.
-        int x_px = base::Round(bounds.x() * default_dsf);
-        int y_px = base::Round(bounds.y() * default_dsf);
+        int x_px = base::ClampRound(bounds.x() * default_dsf);
+        int y_px = base::ClampRound(bounds.y() * default_dsf);
 
         float server_to_client_pixel_scale = default_dsf / device_scale_factor;
 
@@ -1513,14 +1513,18 @@ gfx::Insets GetWorkAreaInsetsInPixel(const display::Display& display,
   // client pixel, but that led to weird buffer size in overlay detection.
   // (crbug.com/920650). Investigate if we can fix it and use enclosed rect.
   return gfx::Insets(
-      base::Round(base::Ceil(insets_in_pixel.top() / device_scale_factor) *
-                  device_scale_factor),
-      base::Round(base::Ceil(insets_in_pixel.left() / device_scale_factor) *
-                  device_scale_factor),
-      base::Round(base::Ceil(insets_in_pixel.bottom() / device_scale_factor) *
-                  device_scale_factor),
-      base::Round(base::Ceil(insets_in_pixel.right() / device_scale_factor) *
-                  device_scale_factor));
+      base::ClampRound(
+          base::ClampCeil(insets_in_pixel.top() / device_scale_factor) *
+          device_scale_factor),
+      base::ClampRound(
+          base::ClampCeil(insets_in_pixel.left() / device_scale_factor) *
+          device_scale_factor),
+      base::ClampRound(
+          base::ClampCeil(insets_in_pixel.bottom() / device_scale_factor) *
+          device_scale_factor),
+      base::ClampRound(
+          base::ClampCeil(insets_in_pixel.right() / device_scale_factor) *
+          device_scale_factor));
 }
 
 gfx::Rect GetStableWorkArea(const display::Display& display) {

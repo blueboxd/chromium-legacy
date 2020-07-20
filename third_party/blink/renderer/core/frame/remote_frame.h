@@ -102,7 +102,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
   void SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
       const ParsedFeaturePolicy& parsed_header,
-      const FeaturePolicy::FeatureState&);
+      const FeaturePolicyFeatureState&);
 
   void SetReplicatedSandboxFlags(network::mojom::blink::WebSandboxFlags);
   void SetInsecureRequestPolicy(mojom::blink::InsecureRequestPolicy);

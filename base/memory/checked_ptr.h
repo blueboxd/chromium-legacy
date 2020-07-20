@@ -10,10 +10,20 @@
 
 #include <utility>
 
+#include "base/allocator/partition_allocator/checked_ptr_support.h"
 #include "base/allocator/partition_allocator/partition_tag.h"
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
+#include "base/partition_alloc_buildflags.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
+
+#define ENABLE_CHECKED_PTR2_OR_MTE_IMPL 0
+#if ENABLE_CHECKED_PTR2_OR_MTE_IMPL
+static_assert(ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_MTE_CHECKED_PTR ||
+                  ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR,
+              "CheckedPtr2OrMTEImpl can only by used if tags are enabled");
+#endif
 
 #define CHECKED_PTR2_USE_NO_OP_WRAPPER 0
 #define CHECKED_PTR2_USE_TRIVIAL_UNWRAPPER 0
@@ -92,6 +102,7 @@ static_assert(kTopBit << 1 == 0, "kTopBit should really be the top bit");
 static_assert((kTopBit & kGenerationMask) > 0,
               "kTopBit bit must be inside the generation region");
 
+#if BUILDFLAG(USE_PARTITION_ALLOC) && ENABLE_CHECKED_PTR2_OR_MTE_IMPL
 // This functionality is outside of CheckedPtr2OrMTEImpl, so that it can be
 // overridden by tests.
 struct CheckedPtr2OrMTEImplPartitionAllocSupport {
@@ -121,9 +132,9 @@ struct CheckedPtr2OrMTEImplPartitionAllocSupport {
   }
 #endif
 };
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC) && ENABLE_CHECKED_PTR2_OR_MTE_IMPL
 
-template <typename PartitionAllocSupport =
-              CheckedPtr2OrMTEImplPartitionAllocSupport>
+template <typename PartitionAllocSupport>
 struct CheckedPtr2OrMTEImpl {
   // This implementation assumes that pointers are 64 bits long and at least 16
   // top bits are unused. The latter is harder to verify statically, but this is
@@ -175,10 +186,10 @@ struct CheckedPtr2OrMTEImpl {
   static ALWAYS_INLINE void* SafelyUnwrapPtrForDereference(
       uintptr_t wrapped_ptr) {
 #if CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
-    // This variant cannot be used with MTECheckedPtr algorithm, because it
+    // This variant can only be used with CheckedPtr2 algorithm, because it
     // relies on the generation to exist at a constant offset before the
     // allocation.
-    static_assert(!ENABLE_TAG_FOR_MTE_CHECKED_PTR, "");
+    static_assert(ENABLE_TAG_FOR_CHECKED_PTR2, "");
 
     // Top bit tells if the protection is enabled. Use it to decide whether to
     // read the word before the allocation, which exists only if the protection
@@ -359,8 +370,9 @@ struct DereferencedPointerType<void> {};
 //    adding support for cases encountered so far).
 template <typename T,
 #if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL) && \
-    (ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_MTE_CHECKED_PTR)
-          typename Impl = internal::CheckedPtr2OrMTEImpl<>>
+    BUILDFLAG(USE_PARTITION_ALLOC) && ENABLE_CHECKED_PTR2_OR_MTE_IMPL
+          typename Impl = internal::CheckedPtr2OrMTEImpl<
+              internal::CheckedPtr2OrMTEImplPartitionAllocSupport>>
 #else
           typename Impl = internal::CheckedPtrNoOpImpl>
 #endif

@@ -268,10 +268,10 @@ TEST_F(SquareInkDropRippleCalculateTransformsTest, RippleIsPixelAligned) {
         float float_max_x = rect.right();
         float float_max_y = rect.bottom();
 
-        int min_x = base::Round(float_min_x);
-        int min_y = base::Round(float_min_y);
-        int max_x = base::Round(float_max_x);
-        int max_y = base::Round(float_max_y);
+        int min_x = base::ClampRound(float_min_x);
+        int min_y = base::ClampRound(float_min_y);
+        int max_x = base::ClampRound(float_max_x);
+        int max_y = base::ClampRound(float_max_y);
 
         EXPECT_LT(std::abs(min_x - float_min_x), 0.01f);
         EXPECT_LT(std::abs(min_y - float_min_y), 0.01f);

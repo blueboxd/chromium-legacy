@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/password_manager/core/browser/password_account_storage_settings_watcher.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/model_type_controller.h"
@@ -23,6 +24,8 @@ class SyncService;
 
 namespace password_manager {
 
+class PasswordStore;
+
 // A class that manages the startup and shutdown of password sync.
 class PasswordModelTypeController : public syncer::ModelTypeController,
                                     public syncer::SyncServiceObserver,
@@ -33,6 +36,7 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
           delegate_for_full_sync_mode,
       std::unique_ptr<syncer::ModelTypeControllerDelegate>
           delegate_for_transport_mode,
+      scoped_refptr<PasswordStore> account_password_store_for_cleanup,
       PrefService* pref_service,
       signin::IdentityManager* identity_manager,
       syncer::SyncService* sync_service,
@@ -60,6 +64,9 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
  private:
   void OnOptInStateMaybeChanged();
 
+  void MaybeClearStore(
+      scoped_refptr<PasswordStore> account_password_store_for_cleanup);
+
   PrefService* const pref_service_;
   signin::IdentityManager* const identity_manager_;
   syncer::SyncService* const sync_service_;
@@ -69,6 +76,8 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
 
   // Passed in to LoadModels(), and cached here for later use in Stop().
   syncer::SyncMode sync_mode_ = syncer::SyncMode::kFull;
+
+  base::WeakPtrFactory<PasswordModelTypeController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PasswordModelTypeController);
 };

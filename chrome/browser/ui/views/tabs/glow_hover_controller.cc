@@ -76,7 +76,7 @@ double GlowHoverController::GetAnimationValue() const {
 
 SkAlpha GlowHoverController::GetAlpha() const {
   return static_cast<SkAlpha>(animation_.CurrentValueBetween(
-      0, base::Round<SkAlpha>(255 * opacity_scale_)));
+      0, base::ClampRound<SkAlpha>(255 * opacity_scale_)));
 }
 
 bool GlowHoverController::ShouldDraw() const {

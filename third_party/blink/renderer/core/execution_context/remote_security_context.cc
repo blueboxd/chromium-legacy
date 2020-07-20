@@ -52,7 +52,7 @@ void RemoteSecurityContext::InitializeFeaturePolicy(
     const ParsedFeaturePolicy& parsed_header,
     const ParsedFeaturePolicy& container_policy,
     const FeaturePolicy* parent_feature_policy,
-    const FeaturePolicy::FeatureState* opener_feature_state) {
+    const FeaturePolicyFeatureState* opener_feature_state) {
   // Feature policy should either come from a parent in the case of an embedded
   // child frame, or from an opener if any when a new window is created by an
   // opener. A main frame without an opener would not have a parent policy nor

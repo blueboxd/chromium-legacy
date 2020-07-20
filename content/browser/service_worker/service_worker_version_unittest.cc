@@ -102,7 +102,7 @@ class ServiceWorkerVersionTest : public testing::Test {
     EXPECT_EQ(url::Origin::Create(scope_), version_->script_origin());
     std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
     records.push_back(WriteToDiskCacheWithIdSync(
-        helper_->context()->storage(), version_->script_url(), 10,
+        helper_->context()->GetStorageControl(), version_->script_url(), 10,
         {} /* headers */, "I'm a body", "I'm a meta data"));
     version_->script_cache_map()->SetResources(records);
     version_->SetMainScriptResponse(

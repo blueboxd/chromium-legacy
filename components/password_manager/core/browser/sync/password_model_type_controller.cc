@@ -6,7 +6,11 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/sync/base/model_type.h"
@@ -16,11 +20,36 @@
 
 namespace password_manager {
 
+namespace {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ClearedOnStartup {
+  kOptedInSoNoNeedToClear = 0,
+  kNotOptedInAndWasAlreadyEmpty = 1,
+  kNotOptedInAndHadToClear = 2,
+  kMaxValue = kNotOptedInAndHadToClear
+};
+
+void RecordClearedOnStartup(ClearedOnStartup state) {
+  base::UmaHistogramEnumeration(
+      "PasswordManager.AccountStorage.ClearedOnStartup", state);
+}
+
+void PasswordStoreClearDone(bool cleared) {
+  RecordClearedOnStartup(cleared
+                             ? ClearedOnStartup::kNotOptedInAndHadToClear
+                             : ClearedOnStartup::kNotOptedInAndWasAlreadyEmpty);
+}
+
+}  // namespace
+
 PasswordModelTypeController::PasswordModelTypeController(
     std::unique_ptr<syncer::ModelTypeControllerDelegate>
         delegate_for_full_sync_mode,
     std::unique_ptr<syncer::ModelTypeControllerDelegate>
         delegate_for_transport_mode,
+    scoped_refptr<PasswordStore> account_password_store_for_cleanup,
     PrefService* pref_service,
     signin::IdentityManager* identity_manager,
     syncer::SyncService* sync_service,
@@ -39,6 +68,22 @@ PasswordModelTypeController::PasswordModelTypeController(
               &PasswordModelTypeController::OnOptInStateMaybeChanged,
               base::Unretained(this))) {
   identity_manager_->AddObserver(this);
+
+  if (!base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage)) {
+    DCHECK(!account_password_store_for_cleanup);
+    // TODO(crbug.com/1079297): Delete the database file (if it exists); see
+    // password_store_factory_util.h.
+  } else {
+    DCHECK(account_password_store_for_cleanup);
+    // Note: Right now, we're still in the middle of SyncService initialization,
+    // so we can't check IsOptedInForAccountStorage() yet (SyncService might not
+    // have determined the syncing account yet). Post a task do to it after the
+    // initialization is complete.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&PasswordModelTypeController::MaybeClearStore,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  account_password_store_for_cleanup));
+  }
 }
 
 PasswordModelTypeController::~PasswordModelTypeController() {
@@ -140,6 +185,17 @@ void PasswordModelTypeController::OnOptInStateMaybeChanged() {
   // when the opt-in state changes, but DataTypePreconditionChanged() is cheap
   // if nothing actually changed, so some spurious calls don't hurt.
   sync_service_->DataTypePreconditionChanged(syncer::PASSWORDS);
+}
+
+void PasswordModelTypeController::MaybeClearStore(
+    scoped_refptr<PasswordStore> account_password_store_for_cleanup) {
+  DCHECK(account_password_store_for_cleanup);
+  if (features_util::IsOptedInForAccountStorage(pref_service_, sync_service_)) {
+    RecordClearedOnStartup(ClearedOnStartup::kOptedInSoNoNeedToClear);
+  } else {
+    account_password_store_for_cleanup->ClearStore(
+        base::BindOnce(&PasswordStoreClearDone));
+  }
 }
 
 }  // namespace password_manager

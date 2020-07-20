@@ -1200,7 +1200,7 @@ WebView* RenderViewImpl::CreateView(
     const WebString& frame_name,
     WebNavigationPolicy policy,
     network::mojom::WebSandboxFlags sandbox_flags,
-    const blink::FeaturePolicy::FeatureState& opener_feature_state,
+    const blink::FeaturePolicyFeatureState& opener_feature_state,
     const blink::SessionStorageNamespaceId& session_storage_namespace_id) {
   RenderFrameImpl* creator_frame = RenderFrameImpl::FromWebFrame(creator);
   mojom::CreateNewWindowParamsPtr params = mojom::CreateNewWindowParams::New();

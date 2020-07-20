@@ -294,11 +294,11 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
                         : network::mojom::blink::WebSandboxFlags::kNone;
   bool not_sandboxed = opener_frame.DomWindow()->GetSandboxFlags() ==
                        network::mojom::blink::WebSandboxFlags::kNone;
-  FeaturePolicy::FeatureState opener_feature_state =
+  FeaturePolicyFeatureState opener_feature_state =
       (not_sandboxed || propagate_sandbox) ? opener_frame.GetSecurityContext()
                                                  ->GetFeaturePolicy()
                                                  ->GetFeatureState()
-                                           : FeaturePolicy::FeatureState();
+                                           : FeaturePolicyFeatureState();
 
   SessionStorageNamespaceId new_namespace_id =
       AllocateSessionStorageNamespaceId();

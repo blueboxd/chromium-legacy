@@ -293,8 +293,7 @@ void HTMLIFrameElement::ParseAttribute(
   }
 }
 
-DocumentPolicy::FeatureState HTMLIFrameElement::ConstructRequiredPolicy()
-    const {
+DocumentPolicyFeatureState HTMLIFrameElement::ConstructRequiredPolicy() const {
   if (!RuntimeEnabledFeatures::DocumentPolicyNegotiationEnabled(
           GetExecutionContext()))
     return {};

@@ -89,7 +89,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                              const AtomicString& name,
                              const WebWindowFeatures&,
                              network::mojom::blink::WebSandboxFlags,
-                             const FeaturePolicy::FeatureState&,
+                             const FeaturePolicyFeatureState&,
                              const SessionStorageNamespaceId&) override;
   void Show(NavigationPolicy) override;
   void DidOverscroll(const gfx::Vector2dF& overscroll_delta,

@@ -339,15 +339,4 @@ Position StartOfWordPosition(const Position& position, WordSide side) {
       StartOfWordPosition(ToPositionInFlatTree(position), side));
 }
 
-VisiblePosition StartOfWord(const VisiblePosition& position, WordSide side) {
-  return CreateVisiblePosition(
-      StartOfWordPosition(position.DeepEquivalent(), side));
-}
-
-VisiblePositionInFlatTree StartOfWord(const VisiblePositionInFlatTree& position,
-                                      WordSide side) {
-  return CreateVisiblePosition(
-      StartOfWordPosition(position.DeepEquivalent(), side));
-}
-
 }  // namespace blink

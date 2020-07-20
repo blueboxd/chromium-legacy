@@ -251,8 +251,8 @@ float GetWantedDropTargetOpacity(
 
 gfx::Insets GetGridInsets(const gfx::Rect& grid_bounds) {
   const int horizontal_inset =
-      base::Floor(std::min(kOverviewInsetRatio * grid_bounds.width(),
-                           kOverviewInsetRatio * grid_bounds.height()));
+      base::ClampFloor(std::min(kOverviewInsetRatio * grid_bounds.width(),
+                                kOverviewInsetRatio * grid_bounds.height()));
   const int vertical_inset =
       horizontal_inset +
       kOverviewVerticalInset * (grid_bounds.height() - 2 * horizontal_inset);
@@ -1536,8 +1536,8 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
     }
   }
 
-  int width =
-      std::max(1, base::Floor(target_size.width() * scale) + 2 * kWindowMargin);
+  int width = std::max(
+      1, base::ClampFloor(target_size.width() * scale) + 2 * kWindowMargin);
   switch (grid_fill_mode) {
     case OverviewGridWindowFillMode::kLetterBoxed:
       width = kExtremeWindowRatioThreshold * height;
@@ -1574,7 +1574,7 @@ int OverviewGrid::CalculateWidthAndMaybeSetUnclippedBounds(OverviewItem* item,
     unclipped_size.set_height(height - 2 * kWindowMargin);
     // For horizontal clipping, shrink |width| so that the aspect ratio matches
     // that of |split_view_bounds|.
-    width = std::max(1, base::Floor(target_aspect_ratio * window_height) +
+    width = std::max(1, base::ClampFloor(target_aspect_ratio * window_height) +
                             2 * kWindowMargin);
   } else {
     // For vertical clipping, we want |height| to stay the same, so calculate

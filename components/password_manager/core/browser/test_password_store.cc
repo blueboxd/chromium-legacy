@@ -125,7 +125,7 @@ void TestPasswordStore::Clear() {
   stored_passwords_.clear();
 }
 
-bool TestPasswordStore::IsEmpty() const {
+bool TestPasswordStore::IsEmpty() {
   // The store is empty, if the sum of all stored passwords across all entries
   // in |stored_passwords_| is 0.
   size_t number_of_passwords = 0u;

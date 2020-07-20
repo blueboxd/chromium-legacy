@@ -33,7 +33,7 @@ bool MassageRotationIfMultipleOfNinetyDegrees(gfx::Transform* rotation,
   SkMatrix44& m = transform.matrix();
   float degrees_by_ninety = degrees / 90.0f;
 
-  int n = base::Round(degrees_by_ninety);
+  int n = base::ClampRound(degrees_by_ninety);
 
   n %= 4;
   if (n < 0)

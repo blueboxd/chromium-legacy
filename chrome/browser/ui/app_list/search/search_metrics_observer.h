@@ -40,6 +40,9 @@ class SearchMetricsObserver : ash::AppListNotifier::Observer {
                 const std::string& launched,
                 const std::vector<std::string>& shown,
                 const base::string16& query) override;
+  void OnIgnore(ash::AppListNotifier::Location location,
+                const std::vector<std::string>& results,
+                const base::string16& query) override;
 
  private:
   // Looks up the ChromeSearchResult object in SearchController that corresponds

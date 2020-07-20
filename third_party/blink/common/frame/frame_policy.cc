@@ -17,7 +17,7 @@ FramePolicy::FramePolicy()
 FramePolicy::FramePolicy(
     network::mojom::WebSandboxFlags sandbox_flags,
     const ParsedFeaturePolicy& container_policy,
-    const DocumentPolicy::FeatureState& required_document_policy,
+    const DocumentPolicyFeatureState& required_document_policy,
     bool allowed_to_download,
     bool disallow_document_access)
     : sandbox_flags(sandbox_flags),

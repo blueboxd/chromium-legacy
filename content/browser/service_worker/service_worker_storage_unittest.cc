@@ -61,7 +61,7 @@ namespace service_worker_storage_unittest {
 struct ReadResponseHeadResult {
   int result;
   network::mojom::URLResponseHeadPtr response_head;
-  scoped_refptr<net::IOBufferWithSize> metadata;
+  base::Optional<mojo_base::BigBuffer> metadata;
 };
 
 using RegistrationData = storage::mojom::ServiceWorkerRegistrationData;
@@ -185,15 +185,17 @@ int WriteBasicResponse(
   return WriteStringResponse(storage, id, headers, std::string(kHttpBody));
 }
 
-ReadResponseHeadResult ReadResponseHead(ServiceWorkerStorage* storage,
-                                        int64_t id) {
+ReadResponseHeadResult ReadResponseHead(
+    mojo::Remote<storage::mojom::ServiceWorkerStorageControl>& storage,
+    int64_t id) {
+  mojo::Remote<storage::mojom::ServiceWorkerResourceReader> reader;
+  storage->CreateResourceReader(id, reader.BindNewPipeAndPassReceiver());
+
   ReadResponseHeadResult out;
   base::RunLoop loop;
-  std::unique_ptr<ServiceWorkerResponseReader> reader =
-      storage->CreateResponseReader(id);
   reader->ReadResponseHead(base::BindLambdaForTesting(
       [&](int result, network::mojom::URLResponseHeadPtr response_head,
-          scoped_refptr<net::IOBufferWithSize> metadata) {
+          base::Optional<mojo_base::BigBuffer> metadata) {
         out.result = result;
         out.response_head = std::move(response_head);
         out.metadata = std::move(metadata);
@@ -203,50 +205,68 @@ ReadResponseHeadResult ReadResponseHead(ServiceWorkerStorage* storage,
   return out;
 }
 
-bool VerifyBasicResponse(ServiceWorkerStorage* storage,
-                         int64_t id,
-                         bool expected_positive_result) {
+bool VerifyBasicResponse(
+    mojo::Remote<storage::mojom::ServiceWorkerStorageControl>& storage,
+    int64_t id,
+    bool expected_positive_result) {
   const std::string kExpectedHttpBody("Hello");
-  std::unique_ptr<ServiceWorkerResponseReader> reader =
-      storage->CreateResponseReader(id);
   ReadResponseHeadResult out = ReadResponseHead(storage, id);
   if (expected_positive_result)
     EXPECT_LT(0, out.result);
   if (out.result <= 0)
     return false;
 
-  std::string received_body;
+  mojo::Remote<storage::mojom::ServiceWorkerResourceReader> reader;
+  storage->CreateResourceReader(id, reader.BindNewPipeAndPassReceiver());
+
   const int kBigEnough = 512;
-  scoped_refptr<net::IOBuffer> buffer =
-      base::MakeRefCounted<IOBuffer>(kBigEnough);
-  TestCompletionCallback cb;
-  reader->ReadData(buffer.get(), kBigEnough, cb.callback());
-  int rv = cb.WaitForResult();
+  MockServiceWorkerDataPipeStateNotifier notifier;
+  mojo::ScopedDataPipeConsumerHandle data_consumer;
+  base::RunLoop loop;
+  reader->ReadData(
+      kBigEnough, notifier.BindNewPipeAndPassRemote(),
+      base::BindLambdaForTesting([&](mojo::ScopedDataPipeConsumerHandle pipe) {
+        data_consumer = std::move(pipe);
+        loop.Quit();
+      }));
+  loop.Run();
+
+  std::string body = ReadDataPipe(std::move(data_consumer));
+  int rv = notifier.WaitUntilComplete();
+
   EXPECT_EQ(static_cast<int>(kExpectedHttpBody.size()), rv);
   if (rv <= 0)
     return false;
-  received_body.assign(buffer->data(), rv);
 
   bool status_match =
       std::string("HONKYDORY") == out.response_head->headers->GetStatusText();
-  bool data_match = kExpectedHttpBody == received_body;
+  bool data_match = kExpectedHttpBody == body;
 
   EXPECT_EQ(out.response_head->headers->GetStatusText(), "HONKYDORY");
-  EXPECT_EQ(received_body, kExpectedHttpBody);
+  EXPECT_EQ(body, kExpectedHttpBody);
   return status_match && data_match;
 }
 
-int WriteResponseMetadata(ServiceWorkerStorage* storage,
-                          int64_t id,
-                          const std::string& metadata) {
-  scoped_refptr<IOBuffer> body_buffer =
-      base::MakeRefCounted<WrappedIOBuffer>(metadata.data());
-  std::unique_ptr<ServiceWorkerResponseMetadataWriter> metadata_writer =
-      storage->CreateResponseMetadataWriter(id);
-  TestCompletionCallback cb;
-  metadata_writer->WriteMetadata(body_buffer.get(), metadata.length(),
-                                 cb.callback());
-  return cb.WaitForResult();
+int WriteResponseMetadata(
+    mojo::Remote<storage::mojom::ServiceWorkerStorageControl>& storage,
+    int64_t id,
+    const std::string& metadata) {
+  mojo_base::BigBuffer buffer(
+      base::as_bytes(base::make_span(metadata.data(), metadata.length())));
+
+  mojo::Remote<storage::mojom::ServiceWorkerResourceMetadataWriter>
+      metadata_writer;
+  storage->CreateResourceMetadataWriter(
+      id, metadata_writer.BindNewPipeAndPassReceiver());
+  int rv = 0;
+  base::RunLoop loop;
+  metadata_writer->WriteMetadata(std::move(buffer),
+                                 base::BindLambdaForTesting([&](int result) {
+                                   rv = result;
+                                   loop.Quit();
+                                 }));
+  loop.Run();
+  return rv;
 }
 
 int WriteMetadata(ServiceWorkerVersion* version,
@@ -266,13 +286,14 @@ int ClearMetadata(ServiceWorkerVersion* version, const GURL& url) {
   return cb.WaitForResult();
 }
 
-bool VerifyResponseMetadata(ServiceWorkerStorage* storage,
-                            int64_t id,
-                            const std::string& expected_metadata) {
-  std::unique_ptr<ServiceWorkerResponseReader> reader =
-      storage->CreateResponseReader(id);
+bool VerifyResponseMetadata(
+    mojo::Remote<storage::mojom::ServiceWorkerStorageControl>& storage,
+    int64_t id,
+    const std::string& expected_metadata) {
+  mojo::Remote<storage::mojom::ServiceWorkerResourceReader> reader;
+  storage->CreateResourceReader(id, reader.BindNewPipeAndPassReceiver());
   ReadResponseHeadResult out = ReadResponseHead(storage, id);
-  if (!out.metadata.get())
+  if (!out.metadata.has_value())
     return false;
   EXPECT_EQ(0, memcmp(expected_metadata.data(), out.metadata->data(),
                       expected_metadata.length()));
@@ -702,12 +723,12 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
 
   // Response reader and writer created by the disabled storage should fail to
   // access the disk cache.
-  ReadResponseHeadResult out = ReadResponseHead(storage(), kResourceId);
+  ReadResponseHeadResult out = ReadResponseHead(storage_control(), kResourceId);
   EXPECT_EQ(net::ERR_CACHE_MISS, out.result);
   EXPECT_EQ(net::ERR_FAILED,
             WriteBasicResponse(storage_control(), kResourceId));
   EXPECT_EQ(net::ERR_FAILED,
-            WriteResponseMetadata(storage(), kResourceId, "foo"));
+            WriteResponseMetadata(storage_control(), kResourceId, "foo"));
 
   const std::string kUserDataKey = "key";
   std::vector<std::string> user_data_out;
@@ -1320,8 +1341,8 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
     // And dump something in the disk cache for them.
     WriteBasicResponse(storage_control(), resource_id1_);
     WriteBasicResponse(storage_control(), resource_id2_);
-    EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
-    EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, true));
+    EXPECT_TRUE(VerifyBasicResponse(storage_control(), resource_id1_, true));
+    EXPECT_TRUE(VerifyBasicResponse(storage_control(), resource_id2_, true));
 
     // Storing the registration/version should take the resources ids out
     // of the uncommitted list.
@@ -1361,24 +1382,29 @@ TEST_F(ServiceWorkerResourceStorageTest,
   const char kMetadata2[] = "small";
   int64_t new_resource_id_ = GetNewResourceIdSync(storage());
   // Writing metadata to nonexistent resoirce ID must fail.
-  EXPECT_GE(0, WriteResponseMetadata(storage(), new_resource_id_, kMetadata1));
+  EXPECT_GE(0, WriteResponseMetadata(storage_control(), new_resource_id_,
+                                     kMetadata1));
 
   // Check metadata is written.
-  EXPECT_EQ(static_cast<int>(strlen(kMetadata1)),
-            WriteResponseMetadata(storage(), resource_id1_, kMetadata1));
-  EXPECT_TRUE(VerifyResponseMetadata(storage(), resource_id1_, kMetadata1));
-  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
+  EXPECT_EQ(
+      static_cast<int>(strlen(kMetadata1)),
+      WriteResponseMetadata(storage_control(), resource_id1_, kMetadata1));
+  EXPECT_TRUE(
+      VerifyResponseMetadata(storage_control(), resource_id1_, kMetadata1));
+  EXPECT_TRUE(VerifyBasicResponse(storage_control(), resource_id1_, true));
 
   // Check metadata is written and truncated.
-  EXPECT_EQ(static_cast<int>(strlen(kMetadata2)),
-            WriteResponseMetadata(storage(), resource_id1_, kMetadata2));
-  EXPECT_TRUE(VerifyResponseMetadata(storage(), resource_id1_, kMetadata2));
-  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
+  EXPECT_EQ(
+      static_cast<int>(strlen(kMetadata2)),
+      WriteResponseMetadata(storage_control(), resource_id1_, kMetadata2));
+  EXPECT_TRUE(
+      VerifyResponseMetadata(storage_control(), resource_id1_, kMetadata2));
+  EXPECT_TRUE(VerifyBasicResponse(storage_control(), resource_id1_, true));
 
   // Check metadata is deleted.
-  EXPECT_EQ(0, WriteResponseMetadata(storage(), resource_id1_, ""));
-  EXPECT_FALSE(VerifyResponseMetadata(storage(), resource_id1_, ""));
-  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
+  EXPECT_EQ(0, WriteResponseMetadata(storage_control(), resource_id1_, ""));
+  EXPECT_FALSE(VerifyResponseMetadata(storage_control(), resource_id1_, ""));
+  EXPECT_TRUE(VerifyBasicResponse(storage_control(), resource_id1_, true));
 }
 
 TEST_F(ServiceWorkerResourceStorageTest,
@@ -1399,19 +1425,21 @@ TEST_F(ServiceWorkerResourceStorageTest,
   // Check metadata is written.
   EXPECT_EQ(static_cast<int>(strlen(kMetadata1)),
             WriteMetadata(version, script_, kMetadata1));
-  EXPECT_TRUE(VerifyResponseMetadata(storage(), resource_id1_, kMetadata1));
-  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
+  EXPECT_TRUE(
+      VerifyResponseMetadata(storage_control(), resource_id1_, kMetadata1));
+  EXPECT_TRUE(VerifyBasicResponse(storage_control(), resource_id1_, true));
 
   // Check metadata is written and truncated.
   EXPECT_EQ(static_cast<int>(strlen(kMetadata2)),
             WriteMetadata(version, script_, kMetadata2));
-  EXPECT_TRUE(VerifyResponseMetadata(storage(), resource_id1_, kMetadata2));
-  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
+  EXPECT_TRUE(
+      VerifyResponseMetadata(storage_control(), resource_id1_, kMetadata2));
+  EXPECT_TRUE(VerifyBasicResponse(storage_control(), resource_id1_, true));
 
   // Check metadata is deleted.
   EXPECT_EQ(0, ClearMetadata(version, script_));
-  EXPECT_FALSE(VerifyResponseMetadata(storage(), resource_id1_, ""));
-  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
+  EXPECT_FALSE(VerifyResponseMetadata(storage_control(), resource_id1_, ""));
+  EXPECT_TRUE(VerifyBasicResponse(storage_control(), resource_id1_, true));
 }
 
 TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_NoLiveVersion) {
@@ -1428,8 +1456,8 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_NoLiveVersion) {
   loop.Run();
 
   EXPECT_TRUE(GetPurgeableResourceIdsFromDB().empty());
-  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
-  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage_control(), resource_id1_, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage_control(), resource_id2_, false));
 }
 
 TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
@@ -1440,8 +1468,8 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
             DeleteRegistration(registration_, scope_.GetOrigin()));
   EXPECT_EQ(2u, GetPurgeableResourceIdsFromDB().size());
 
-  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, false));
-  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, false));
+  EXPECT_TRUE(VerifyBasicResponse(storage_control(), resource_id1_, false));
+  EXPECT_TRUE(VerifyBasicResponse(storage_control(), resource_id2_, false));
 
   // Doom the version. The resources should be purged.
   base::RunLoop loop;
@@ -1450,8 +1478,8 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
   loop.Run();
   EXPECT_TRUE(GetPurgeableResourceIdsFromDB().empty());
 
-  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
-  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage_control(), resource_id1_, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage_control(), resource_id2_, false));
 }
 
 TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
@@ -1474,8 +1502,8 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
             DeleteRegistration(registration_, scope_.GetOrigin()));
   EXPECT_EQ(2u, GetPurgeableResourceIdsFromDB().size());
 
-  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
-  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, true));
+  EXPECT_TRUE(VerifyBasicResponse(storage_control(), resource_id1_, true));
+  EXPECT_TRUE(VerifyBasicResponse(storage_control(), resource_id2_, true));
 
   // Dooming the version should cause the resources to be deleted.
   base::RunLoop loop;
@@ -1486,8 +1514,8 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   loop.Run();
   EXPECT_TRUE(GetPurgeableResourceIdsFromDB().empty());
 
-  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
-  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage_control(), resource_id1_, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage_control(), resource_id2_, false));
 }
 
 TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
@@ -1512,8 +1540,8 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   std::vector<int64_t> verify_ids = GetPurgeableResourceIdsFromDB();
   EXPECT_EQ(2u, verify_ids.size());
 
-  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
-  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, true));
+  EXPECT_TRUE(VerifyBasicResponse(storage_control(), resource_id1_, true));
+  EXPECT_TRUE(VerifyBasicResponse(storage_control(), resource_id2_, true));
 
   // Also add an uncommitted resource.
   int64_t kStaleUncommittedResourceId = GetNewResourceIdSync(storage());
@@ -1522,8 +1550,8 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   verify_ids = GetUncommittedResourceIdsFromDB();
   EXPECT_EQ(1u, verify_ids.size());
   WriteBasicResponse(storage_control(), kStaleUncommittedResourceId);
-  EXPECT_TRUE(
-      VerifyBasicResponse(storage(), kStaleUncommittedResourceId, true));
+  EXPECT_TRUE(VerifyBasicResponse(storage_control(),
+                                  kStaleUncommittedResourceId, true));
 
   // Simulate browser shutdown. The purgeable and uncommitted resources are now
   // stale.
@@ -1546,11 +1574,11 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
 
   verify_ids = GetPurgeableResourceIdsFromDB();
   EXPECT_TRUE(verify_ids.empty());
-  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
-  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
-  EXPECT_FALSE(
-      VerifyBasicResponse(storage(), kStaleUncommittedResourceId, false));
-  EXPECT_TRUE(VerifyBasicResponse(storage(), kNewResourceId, true));
+  EXPECT_FALSE(VerifyBasicResponse(storage_control(), resource_id1_, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage_control(), resource_id2_, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage_control(),
+                                   kStaleUncommittedResourceId, false));
+  EXPECT_TRUE(VerifyBasicResponse(storage_control(), kNewResourceId, true));
 }
 
 TEST_F(ServiceWorkerResourceStorageDiskTest, DeleteAndStartOver) {
@@ -1663,8 +1691,8 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   EXPECT_EQ(2u, GetPurgeableResourceIdsFromDB().size());
   EXPECT_TRUE(GetPurgingResources().empty());
 
-  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, false));
-  EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, false));
+  EXPECT_TRUE(VerifyBasicResponse(storage_control(), resource_id1_, false));
+  EXPECT_TRUE(VerifyBasicResponse(storage_control(), resource_id2_, false));
 
   // Remove the controllee to allow the new version to become active, making the
   // old version redundant.
@@ -1679,8 +1707,8 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   // Its resources should be purged.
   loop.Run();
   EXPECT_TRUE(GetPurgeableResourceIdsFromDB().empty());
-  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
-  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage_control(), resource_id1_, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage_control(), resource_id2_, false));
 }
 
 TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration_NoLiveVersion) {
@@ -1717,8 +1745,8 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration_NoLiveVersion) {
   // The resources should be purged.
   loop.Run();
   EXPECT_TRUE(GetPurgeableResourceIdsFromDB().empty());
-  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
-  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage_control(), resource_id1_, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage_control(), resource_id2_, false));
 }
 
 // Test fixture that uses disk storage, rather than memory. Useful for tests

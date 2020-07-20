@@ -12,6 +12,7 @@
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/partition_alloc_buildflags.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"

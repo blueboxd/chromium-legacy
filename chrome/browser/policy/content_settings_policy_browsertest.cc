@@ -212,14 +212,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbDefault) {
 
   // Update policy to change the default permission value to 'block'.
   PolicyMap policies;
-  SetPolicy(&policies, key::kDefaultWebUsbGuardSetting,
-            std::make_unique<base::Value>(2));
+  SetPolicy(&policies, key::kDefaultWebUsbGuardSetting, base::Value(2));
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(context->CanRequestObjectPermission(kTestOrigin, kTestOrigin));
 
   // Update policy to change the default permission value to 'ask'.
-  SetPolicy(&policies, key::kDefaultWebUsbGuardSetting,
-            std::make_unique<base::Value>(3));
+  SetPolicy(&policies, key::kDefaultWebUsbGuardSetting, base::Value(3));
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(context->CanRequestObjectPermission(kTestOrigin, kTestOrigin));
 }
@@ -254,8 +252,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
   entry.SetKey("devices", std::move(devices_value));
   entry.SetKey("urls", std::move(urls_value));
 
-  auto policy_value = std::make_unique<base::Value>(base::Value::Type::LIST);
-  policy_value->Append(std::move(entry));
+  base::Value policy_value(base::Value::Type::LIST);
+  policy_value.Append(std::move(entry));
 
   SetPolicy(&policies, key::kWebUsbAllowDevicesForUrls,
             std::move(policy_value));
@@ -266,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
 
   // Remove the policy to ensure that it can be dynamically updated.
   SetPolicy(&policies, key::kWebUsbAllowDevicesForUrls,
-            std::make_unique<base::Value>(base::Value::Type::LIST));
+            base::Value(base::Value::Type::LIST));
   UpdateProviderPolicy(policies);
 
   EXPECT_FALSE(
@@ -286,11 +284,11 @@ class DisallowWildcardPolicyTest : public PolicyTest {
 
 IN_PROC_BROWSER_TEST_F(DisallowWildcardPolicyTest, PluginTest) {
   PolicyMap policies;
-  auto policy_value = std::make_unique<base::ListValue>();
-  policy_value->AppendString("[*.]google.com");
-  policy_value->AppendString("http://drive.google.com:443/home");
-  policy_value->AppendString("www.foo.com:*/*");
-  policy_value->AppendString("*://[*.]bar.com:*/*");
+  base::Value policy_value(base::Value::Type::LIST);
+  policy_value.Append("[*.]google.com");
+  policy_value.Append("http://drive.google.com:443/home");
+  policy_value.Append("www.foo.com:*/*");
+  policy_value.Append("*://[*.]bar.com:*/*");
   SetPolicy(&policies, key::kPluginsAllowedForUrls, std::move(policy_value));
   UpdateProviderPolicy(policies);
 

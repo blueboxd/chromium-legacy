@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_installer_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -47,31 +46,6 @@ PluginVmInstallerView* g_plugin_vm_installer_view = nullptr;
 constexpr gfx::Insets kButtonRowInsets(0, 64, 32, 64);
 constexpr int kWindowWidth = 768;
 constexpr int kWindowHeight = 636;
-
-plugin_vm::PluginVmSetupResult BucketForCancelledInstall(
-    plugin_vm::PluginVmInstaller::InstallingState installing_state) {
-  switch (installing_state) {
-    case plugin_vm::PluginVmInstaller::InstallingState::kInactive:
-      NOTREACHED();
-      FALLTHROUGH;
-    case plugin_vm::PluginVmInstaller::InstallingState::kCheckingLicense:
-      return plugin_vm::PluginVmSetupResult::kUserCancelledValidatingLicense;
-    case plugin_vm::PluginVmInstaller::InstallingState::kCheckingDiskSpace:
-      return plugin_vm::PluginVmSetupResult::kUserCancelledCheckingDiskSpace;
-    case plugin_vm::PluginVmInstaller::InstallingState::kDownloadingDlc:
-      return plugin_vm::PluginVmSetupResult::
-          kUserCancelledDownloadingPluginVmDlc;
-    case plugin_vm::PluginVmInstaller::InstallingState::kCheckingForExistingVm:
-      return plugin_vm::PluginVmSetupResult::
-          kUserCancelledCheckingForExistingVm;
-    case plugin_vm::PluginVmInstaller::InstallingState::kDownloadingImage:
-      return plugin_vm::PluginVmSetupResult::
-          kUserCancelledDownloadingPluginVmImage;
-    case plugin_vm::PluginVmInstaller::InstallingState::kImporting:
-      return plugin_vm::PluginVmSetupResult::
-          kUserCancelledImportingPluginVmImage;
-  }
-}
 
 }  // namespace
 
@@ -225,22 +199,9 @@ bool PluginVmInstallerView::Accept() {
 }
 
 bool PluginVmInstallerView::Cancel() {
-  switch (state_) {
-    case State::kConfirmInstall:
-      plugin_vm::RecordPluginVmSetupResultHistogram(
-          plugin_vm::PluginVmSetupResult::kUserCancelledWithoutStarting);
-      break;
-    case State::kInstalling:
-      plugin_vm::RecordPluginVmSetupResultHistogram(
-          BucketForCancelledInstall(installing_state_));
-      plugin_vm_installer_->Cancel();
-      break;
-    case State::kCreated:
-    case State::kImported:
-    case State::kError:
-      // Setup result has already been logged in these cases.
-      break;
-  }
+  // We call |Cancel()| if the user hasn't started installation to log to UMA.
+  if (state_ == State::kConfirmInstall || state_ == State::kInstalling)
+    plugin_vm_installer_->Cancel();
 
   return true;
 }
@@ -290,11 +251,6 @@ void PluginVmInstallerView::OnVmExists() {
   state_ = State::kImported;
   installing_state_ = InstallingState::kInactive;
   OnStateUpdated();
-
-  plugin_vm::RecordPluginVmSetupResultHistogram(
-      plugin_vm::PluginVmSetupResult::kVmAlreadyExists);
-  plugin_vm::RecordPluginVmSetupTimeHistogram(base::TimeTicks::Now() -
-                                              setup_start_tick_);
 }
 
 void PluginVmInstallerView::OnCreated() {
@@ -304,11 +260,6 @@ void PluginVmInstallerView::OnCreated() {
   state_ = State::kCreated;
   installing_state_ = InstallingState::kInactive;
   OnStateUpdated();
-
-  plugin_vm::RecordPluginVmSetupResultHistogram(
-      plugin_vm::PluginVmSetupResult::kSuccess);
-  plugin_vm::RecordPluginVmSetupTimeHistogram(base::TimeTicks::Now() -
-                                              setup_start_tick_);
 }
 
 void PluginVmInstallerView::OnImported() {
@@ -318,11 +269,6 @@ void PluginVmInstallerView::OnImported() {
   state_ = State::kImported;
   installing_state_ = InstallingState::kInactive;
   OnStateUpdated();
-
-  plugin_vm::RecordPluginVmSetupResultHistogram(
-      plugin_vm::PluginVmSetupResult::kSuccess);
-  plugin_vm::RecordPluginVmSetupTimeHistogram(base::TimeTicks::Now() -
-                                              setup_start_tick_);
 }
 
 void PluginVmInstallerView::OnError(
@@ -333,9 +279,6 @@ void PluginVmInstallerView::OnError(
   installing_state_ = InstallingState::kInactive;
   reason_ = reason;
   OnStateUpdated();
-
-  plugin_vm::RecordPluginVmSetupResultHistogram(
-      plugin_vm::PluginVmSetupResult::kError);
 }
 
 // TODO(timloh): Cancelling the installation immediately closes the dialog, but
@@ -633,9 +576,6 @@ void PluginVmInstallerView::SetBigImage() {
 }
 
 void PluginVmInstallerView::StartInstallation() {
-  // Setup always starts from this function, including retries.
-  setup_start_tick_ = base::TimeTicks::Now();
-
   state_ = State::kInstalling;
   installing_state_ = InstallingState::kCheckingLicense;
   progress_bar_->SetValue(0);

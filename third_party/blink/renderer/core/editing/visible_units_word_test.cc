@@ -17,9 +17,7 @@ class VisibleUnitsWordTest : public EditingTestBase {
       const std::string& selection_text,
       WordSide word_side = WordSide::kNextWordIfOnBoundary) {
     const Position position = SetSelectionTextToBody(selection_text).Base();
-    return GetCaretTextFromBody(
-        StartOfWord(CreateVisiblePosition(position), word_side)
-            .DeepEquivalent());
+    return GetCaretTextFromBody(StartOfWordPosition(position, word_side));
   }
 
   std::string DoEndOfWord(
@@ -194,60 +192,85 @@ TEST_P(ParameterizedVisibleUnitsWordTest, StartOfWordShadowDOM) {
   Node* five = shadow_root->getElementById("five")->firstChild();
   Node* space = shadow_root->getElementById("space")->firstChild();
 
-  EXPECT_EQ(
-      Position(one, 0),
-      StartOfWord(CreateVisiblePositionInDOMTree(*one, 0)).DeepEquivalent());
-  EXPECT_EQ(
-      PositionInFlatTree(space, 1),
-      StartOfWord(CreateVisiblePositionInFlatTree(*one, 0)).DeepEquivalent());
+  EXPECT_EQ(Position(one, 0),
+            CreateVisiblePosition(
+                StartOfWordPosition(
+                    CreateVisiblePositionInDOMTree(*one, 0).DeepEquivalent()))
+                .DeepEquivalent());
+  EXPECT_EQ(PositionInFlatTree(space, 1),
+            CreateVisiblePosition(
+                StartOfWordPosition(
+                    CreateVisiblePositionInFlatTree(*one, 0).DeepEquivalent()))
+                .DeepEquivalent());
+  EXPECT_EQ(Position(one, 0),
+            CreateVisiblePosition(
+                StartOfWordPosition(
+                    CreateVisiblePositionInDOMTree(*one, 1).DeepEquivalent()))
+                .DeepEquivalent());
 
-  EXPECT_EQ(
-      Position(one, 0),
-      StartOfWord(CreateVisiblePositionInDOMTree(*one, 1)).DeepEquivalent());
-  EXPECT_EQ(
-      PositionInFlatTree(space, 1),
-      StartOfWord(CreateVisiblePositionInFlatTree(*one, 1)).DeepEquivalent());
-
-  EXPECT_EQ(
-      Position(one, 0),
-      StartOfWord(CreateVisiblePositionInDOMTree(*two, 0)).DeepEquivalent());
-  EXPECT_EQ(
-      PositionInFlatTree(four, 0),
-      StartOfWord(CreateVisiblePositionInFlatTree(*two, 0)).DeepEquivalent());
-
-  EXPECT_EQ(
-      Position(four, 0),
-      StartOfWord(CreateVisiblePositionInDOMTree(*two, 1)).DeepEquivalent());
-  EXPECT_EQ(
-      PositionInFlatTree(four, 0),
-      StartOfWord(CreateVisiblePositionInFlatTree(*two, 1)).DeepEquivalent());
-
+  EXPECT_EQ(PositionInFlatTree(space, 1),
+            CreateVisiblePosition(
+                StartOfWordPosition(
+                    CreateVisiblePositionInFlatTree(*one, 1).DeepEquivalent()))
+                .DeepEquivalent());
+  EXPECT_EQ(Position(one, 0),
+            CreateVisiblePosition(
+                StartOfWordPosition(
+                    CreateVisiblePositionInDOMTree(*two, 0).DeepEquivalent()))
+                .DeepEquivalent());
+  EXPECT_EQ(PositionInFlatTree(four, 0),
+            CreateVisiblePosition(
+                StartOfWordPosition(
+                    CreateVisiblePositionInFlatTree(*two, 0).DeepEquivalent()))
+                .DeepEquivalent());
+  EXPECT_EQ(Position(four, 0),
+            CreateVisiblePosition(
+                StartOfWordPosition(
+                    CreateVisiblePositionInDOMTree(*two, 1).DeepEquivalent()))
+                .DeepEquivalent());
+  EXPECT_EQ(PositionInFlatTree(four, 0),
+            CreateVisiblePosition(
+                StartOfWordPosition(
+                    CreateVisiblePositionInFlatTree(*two, 1).DeepEquivalent()))
+                .DeepEquivalent());
   // DOM tree canonicalization moves the result to a wrong position.
-  EXPECT_EQ(
-      Position(two, 2),
-      StartOfWord(CreateVisiblePositionInDOMTree(*three, 1)).DeepEquivalent());
+  EXPECT_EQ(Position(two, 2),
+            CreateVisiblePosition(
+                StartOfWordPosition(
+                    CreateVisiblePositionInDOMTree(*three, 1).DeepEquivalent()))
+                .DeepEquivalent());
   EXPECT_EQ(
       PositionInFlatTree(three, 0),
-      StartOfWord(CreateVisiblePositionInFlatTree(*three, 1)).DeepEquivalent());
-
-  EXPECT_EQ(
-      Position(four, 0),
-      StartOfWord(CreateVisiblePositionInDOMTree(*four, 1)).DeepEquivalent());
-  EXPECT_EQ(
-      PositionInFlatTree(four, 0),
-      StartOfWord(CreateVisiblePositionInFlatTree(*four, 1)).DeepEquivalent());
-
-  EXPECT_EQ(
-      Position(one, 0),
-      StartOfWord(CreateVisiblePositionInDOMTree(*five, 1)).DeepEquivalent());
+      CreateVisiblePosition(
+          StartOfWordPosition(
+              CreateVisiblePositionInFlatTree(*three, 1).DeepEquivalent()))
+          .DeepEquivalent());
+  EXPECT_EQ(Position(four, 0),
+            CreateVisiblePosition(
+                StartOfWordPosition(
+                    CreateVisiblePositionInDOMTree(*four, 1).DeepEquivalent()))
+                .DeepEquivalent());
+  EXPECT_EQ(PositionInFlatTree(four, 0),
+            CreateVisiblePosition(
+                StartOfWordPosition(
+                    CreateVisiblePositionInFlatTree(*four, 1).DeepEquivalent()))
+                .DeepEquivalent());
+  EXPECT_EQ(Position(one, 0),
+            CreateVisiblePosition(
+                StartOfWordPosition(
+                    CreateVisiblePositionInDOMTree(*five, 1).DeepEquivalent()))
+                .DeepEquivalent());
   // Flat tree canonicalization moves result to downstream position
-  EXPECT_EQ(
-      PositionInFlatTree(space, 1),
-      StartOfWord(CreateVisiblePositionInFlatTree(*five, 1)).DeepEquivalent());
+  EXPECT_EQ(PositionInFlatTree(space, 1),
+            CreateVisiblePosition(
+                StartOfWordPosition(
+                    CreateVisiblePositionInFlatTree(*five, 1).DeepEquivalent()))
+                .DeepEquivalent());
 }
 
 TEST_P(ParameterizedVisibleUnitsWordTest, StartOfWordTextSecurity) {
-  // Note: |StartOfWord()| considers security characters as a sequence "x".
+  // Note: |StartOfWordPosition()| considers security characters
+  // as a sequence "x".
   InsertStyleElement("s {-webkit-text-security:disc;}");
   EXPECT_EQ("|abc<s>foo bar</s>baz", DoStartOfWord("|abc<s>foo bar</s>baz"));
   EXPECT_EQ("|abc<s>foo bar</s>baz", DoStartOfWord("abc|<s>foo bar</s>baz"));

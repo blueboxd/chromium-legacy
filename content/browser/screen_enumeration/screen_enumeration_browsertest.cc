@@ -72,7 +72,7 @@ base::ListValue GetExpectedScreens() {
     s.SetIntKey("pixelDepth", d.color_depth());
     s.SetBoolKey("primary", d.id() == screen->GetPrimaryDisplay().id());
     // Handle JS's pattern for specifying integer and floating point numbers.
-    int int_scale_factor = base::Ceil(d.device_scale_factor());
+    int int_scale_factor = base::ClampCeil(d.device_scale_factor());
     if (int_scale_factor == d.device_scale_factor())
       s.SetIntKey("scaleFactor", int_scale_factor);
     else

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/attestation/enrollment_certificate_uploader_impl.h"
+
 #include <stdint.h>
 
 #include <string>
@@ -14,11 +16,9 @@
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/attestation/attestation_key_payload.pb.h"
-#include "chrome/browser/chromeos/attestation/enrollment_certificate_uploader_impl.h"
 #include "chrome/browser/chromeos/attestation/fake_certificate.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chromeos/attestation/mock_attestation_flow.h"
-#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "content/public/test/browser_task_environment.h"
@@ -86,8 +86,8 @@ class EnrollmentCertificateUploaderTest : public ::testing::Test {
   }
 
   void Run(bool expected_status) {
-    EnrollmentCertificateUploaderImpl uploader(
-        &policy_client_, &cryptohome_client_, &attestation_flow_);
+    EnrollmentCertificateUploaderImpl uploader(&policy_client_,
+                                               &attestation_flow_);
     uploader.set_retry_limit(3);
     uploader.set_retry_delay(base::TimeDelta());
 
@@ -101,7 +101,6 @@ class EnrollmentCertificateUploaderTest : public ::testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
   ScopedCrosSettingsTestHelper settings_helper_;
-  FakeCryptohomeClient cryptohome_client_;
   StrictMock<MockAttestationFlow> attestation_flow_;
   StrictMock<policy::MockCloudPolicyClient> policy_client_;
 };
@@ -125,25 +124,6 @@ TEST_F(EnrollmentCertificateUploaderTest, GetCertificateBadRequestFailure) {
 
 TEST_F(EnrollmentCertificateUploaderTest, NewCertificate) {
   SetupMocks();
-  Run(true /* expected_status */);
-}
-
-TEST_F(EnrollmentCertificateUploaderTest, DBusFailureRetry) {
-  SetupMocks();
-  // Simulate a DBus failure.
-  cryptohome_client_.SetServiceIsAvailable(false);
-
-  // Emulate delayed service initialization.
-  // Run() instantiates an Observer, which synchronously calls
-  // TpmAttestationDoesKeyExist() and fails. During this call, we make the
-  // service available in the next run, so on retry, it will successfully
-  // return the result.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(
-                     [](FakeCryptohomeClient* cryptohome_client) {
-                       cryptohome_client->SetServiceIsAvailable(true);
-                     },
-                     base::Unretained(&cryptohome_client_)));
   Run(true /* expected_status */);
 }
 

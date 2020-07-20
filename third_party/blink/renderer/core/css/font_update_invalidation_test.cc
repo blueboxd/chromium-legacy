@@ -111,6 +111,7 @@ TEST_F(FontUpdateInvalidationTest,
 
   // First render the page with the custom font
   font_resource.Complete(ReadAhemWoff2());
+  test::RunPendingTasks();
   Compositor().BeginFrame();
 
   Element* target = GetDocument().getElementById("target");
@@ -208,6 +209,7 @@ TEST_F(FontUpdateInvalidationTest, FallbackBetweenPendingAndLoadedCustomFonts) {
   )HTML");
 
   fast_font_resource.Complete(ReadAhemWoff2());
+  test::RunPendingTasks();
 
   // While slow-font is pending and fast-font is already available, we should
   // use it to render the page.

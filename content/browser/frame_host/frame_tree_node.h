@@ -405,7 +405,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // be nontrivial if there is an opener which is restricted in some of the
   // feature policies.
   void SetOpenerFeaturePolicyState(
-      const blink::FeaturePolicy::FeatureState& feature_state);
+      const blink::FeaturePolicyFeatureState& feature_state);
 
   void SetAdFrameType(blink::mojom::AdFrameType ad_frame_type);
 

@@ -304,7 +304,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DidSetFramePolicyHeaders(
       network::mojom::blink::WebSandboxFlags,
       const ParsedFeaturePolicy& feature_policy_header,
-      const DocumentPolicy::FeatureState& document_policy_header) {}
+      const DocumentPolicyFeatureState& document_policy_header) {}
 
   virtual std::unique_ptr<WebServiceWorkerProvider>
   CreateServiceWorkerProvider() = 0;

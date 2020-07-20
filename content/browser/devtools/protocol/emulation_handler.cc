@@ -313,10 +313,10 @@ Response EmulationHandler::SetDeviceMetricsOverride(
     params.viewport_scale = viewport.fromJust()->GetScale() * dpfactor;
 
     // Resize the RenderWidgetHostView to the size of the overridden viewport.
-    width =
-        base::Round(viewport.fromJust()->GetWidth() * params.viewport_scale);
-    height =
-        base::Round(viewport.fromJust()->GetHeight() * params.viewport_scale);
+    width = base::ClampRound(viewport.fromJust()->GetWidth() *
+                             params.viewport_scale);
+    height = base::ClampRound(viewport.fromJust()->GetHeight() *
+                              params.viewport_scale);
   }
 
   bool size_changed = false;

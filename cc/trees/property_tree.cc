@@ -953,8 +953,8 @@ void EffectTree::TakeCopyRequestsAndTransformToSurface(
                  .AssignIfValid(&scale_to_y)) {
           continue;
         }
-        int scale_from_x = base::Round(scale_from_x_f);
-        int scale_from_y = base::Round(scale_from_y_f);
+        int scale_from_x = base::ClampRound(scale_from_x_f);
+        int scale_from_y = base::ClampRound(scale_from_y_f);
         if (scale_from_x <= 0 || scale_from_y <= 0 || scale_to_x <= 0 ||
             scale_to_y <= 0) {
           // Transformed scaling ratio became illegal. Drop the request to

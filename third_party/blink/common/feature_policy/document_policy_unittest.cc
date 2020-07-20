@@ -15,9 +15,9 @@ using DocumentPolicyTest = ::testing::Test;
 
 // Helper function to convert literal to FeatureState.
 template <class T>
-DocumentPolicy::FeatureState FeatureState(
+DocumentPolicyFeatureState FeatureState(
     std::vector<std::pair<int32_t, T>> literal) {
-  DocumentPolicy::FeatureState result;
+  DocumentPolicyFeatureState result;
   for (const auto& entry : literal) {
     result.insert({static_cast<mojom::DocumentPolicyFeature>(entry.first),
                    PolicyValue(entry.second)});
@@ -57,9 +57,9 @@ TEST_F(DocumentPolicyTest, IsPolicyCompatible) {
       default_policy_value > 1.0 ? 1.0 : default_policy_value / 2;
 
   EXPECT_FALSE(DocumentPolicy::IsPolicyCompatible(
-      DocumentPolicy::FeatureState{
+      DocumentPolicyFeatureState{
           {feature, PolicyValue(strict_policy_value)}}, /* required policy */
-      DocumentPolicy::FeatureState{}                    /* incoming policy */
+      DocumentPolicyFeatureState{}                      /* incoming policy */
       ));
 }
 

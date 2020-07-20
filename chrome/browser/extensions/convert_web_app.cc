@@ -199,7 +199,8 @@ std::string ConvertTimeToExtensionVersion(const base::Time& create_time) {
       (create_time_exploded.minute * base::Time::kMicrosecondsPerMinute) +
       (create_time_exploded.hour * base::Time::kMicrosecondsPerHour));
   double day_fraction = micros / base::Time::kMicrosecondsPerDay;
-  int stamp = base::Round(day_fraction * std::numeric_limits<uint16_t>::max());
+  int stamp =
+      base::ClampRound(day_fraction * std::numeric_limits<uint16_t>::max());
 
   return base::StringPrintf("%i.%i.%i.%i", create_time_exploded.year,
                             create_time_exploded.month,

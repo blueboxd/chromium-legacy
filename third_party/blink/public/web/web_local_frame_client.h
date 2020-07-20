@@ -255,7 +255,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidSetFramePolicyHeaders(
       network::mojom::WebSandboxFlags flags,
       const ParsedFeaturePolicy& feature_policy_header,
-      const DocumentPolicy::FeatureState& document_policy_header) {}
+      const DocumentPolicyFeatureState& document_policy_header) {}
 
   // Called when a watched CSS selector matches or stops matching.
   virtual void DidMatchCSS(

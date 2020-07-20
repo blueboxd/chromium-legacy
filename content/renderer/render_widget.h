@@ -326,6 +326,8 @@ class CONTENT_EXPORT RenderWidget
       const gfx::Range& replacement_range,
       int relative_cursor_pos) override;
   void ImeFinishComposingTextForPepper(bool keep_selection) override;
+  void UpdateVisualProperties(
+      const blink::VisualProperties& properties) override;
 
   // Returns the scale being applied to the document in blink by the device
   // emulator. Returns 1 if there is no emulation active. Use this to position
@@ -461,7 +463,6 @@ class CONTENT_EXPORT RenderWidget
 
   // RenderWidget IPC message handlers.
   void OnClose();
-  void OnUpdateVisualProperties(const blink::VisualProperties& properties);
   void OnCreatingNewAck();
   void OnEnableDeviceEmulation(const blink::WebDeviceEmulationParams& params);
   void OnDisableDeviceEmulation();
@@ -490,6 +491,7 @@ class CONTENT_EXPORT RenderWidget
                          const gfx::PointF& screen_point,
                          blink::WebDragOperation drag_operation);
   void OnOrientationChange();
+  void OnWaitNextFrameForTests(int routing_id);
 
   // Sets the "hidden" state of this widget.  All modification of is_hidden_
   // should use this method so that we can properly inform the RenderThread of

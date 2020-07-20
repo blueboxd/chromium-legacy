@@ -66,7 +66,7 @@ class CompositorFrameBuilder {
   CompositorFrame MakeInitCompositorFrame() const;
 
   base::Optional<CompositorFrame> frame_;
-  uint64_t next_render_pass_id_ = 1;
+  RenderPassId::Generator render_pass_id_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameBuilder);
 };

@@ -93,7 +93,7 @@ class CORE_EXPORT Request final : public ScriptWrappable,
     return Body::HasPendingActivity();
   }
 
-  FetchRequestData* PassRequestData(ScriptState*, ExceptionState&);
+  FetchRequestData* PassRequestData(ScriptState*);
   mojom::blink::FetchAPIRequestPtr CreateFetchAPIRequest() const;
   bool HasBody() const;
   BodyStreamBuffer* BodyBuffer() override { return request_->Buffer(); }

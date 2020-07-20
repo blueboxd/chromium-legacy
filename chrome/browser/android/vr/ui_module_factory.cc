@@ -32,9 +32,11 @@ std::unique_ptr<UiInterface> UiModuleFactory::Create(
   // TODO(https://crbug.com/1019853): When all VR native code moves into the
   // feature module, this factory will completely disappear. In the meantime,
   // make it tolerant of two different variants of the VR lib (one for Chrome,
-  // one for Monochrome).
+  // one for Monochrome). chrome_64_vr_partition is omitted since it is not
+  // shipped in 64-bit configuration.
   const std::vector<const std::string> library_name_possibilities = {
       "monochrome_vr_partition",
+      "monochrome_64_vr_partition",
       "chrome_vr_partition",
   };
 

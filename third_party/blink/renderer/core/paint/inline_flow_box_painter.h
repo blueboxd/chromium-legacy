@@ -53,7 +53,8 @@ class InlineFlowBoxPainter : public InlineBoxPainterBase {
                                    const PhysicalOffset& paint_offset);
   void PaintMask(const PaintInfo&, const PhysicalOffset& paint_offset);
 
-  PhysicalRect AdjustedPaintRect(const PhysicalOffset& paint_offset) const;
+  PhysicalRect AdjustedFrameRect(const PhysicalOffset& paint_offset) const;
+  IntRect VisualRect(const PhysicalRect& adjusted_frame_rect) const;
 
   // Expands the bounds of the current paint chunk for hit test, and records
   // special touch action if any. This should be called in the background paint

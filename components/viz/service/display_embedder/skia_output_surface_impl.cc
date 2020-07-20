@@ -494,10 +494,10 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(current_paint_);
   DCHECK(!deferred_framebuffer_draw_closure_);
-  // If current_render_pass_id_ is not 0, we are painting a render pass.
+  // If current_render_pass_id_ is not null, we are painting a render pass.
   // Otherwise we are painting a frame.
 
-  bool painting_render_pass = current_paint_->render_pass_id() != 0;
+  bool painting_render_pass = !current_paint_->render_pass_id().is_null();
 
   gpu::SyncToken sync_token(
       gpu::CommandBufferNamespace::VIZ_SKIA_OUTPUT_SURFACE,

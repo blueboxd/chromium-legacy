@@ -44,6 +44,15 @@
 // not been suppressed. Otherwise, returns nil.
 - (UIImage*)recentImageFromClipboard;
 
+// Uses the new iOS 14 pasteboard detection pattern API to asynchronously detect
+// if the clipboard contains a URL (that has not been suppressed) without
+// actually getting the contents.
+- (void)hasRecentURLFromClipboard:(void (^)(BOOL))callback;
+// Uses the new iOS 14 pasteboard detection pattern API to asynchronously get a
+// copied URL from the clipboard if it has not been suppressed. Passes nil to
+// the callback otherwise.
+- (void)recentURLFromClipboardAsync:(void (^)(NSURL*))callback;
+
 // Returns how old the content of the clipboard is.
 - (NSTimeInterval)clipboardContentAge;
 

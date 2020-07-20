@@ -476,7 +476,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Register a new handler for URL requests with the given scheme.
   // |user_gesture| is true if the registration is made in the context of a user
   // gesture.
-  virtual void RegisterProtocolHandler(WebContents* web_contents,
+  virtual void RegisterProtocolHandler(RenderFrameHost* requesting_frame,
                                        const std::string& protocol,
                                        const GURL& url,
                                        bool user_gesture) {}
@@ -484,7 +484,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Unregister the registered handler for URL requests with the given scheme.
   // |user_gesture| is true if the registration is made in the context of a user
   // gesture.
-  virtual void UnregisterProtocolHandler(WebContents* web_contents,
+  virtual void UnregisterProtocolHandler(RenderFrameHost* requesting_frame,
                                          const std::string& protocol,
                                          const GURL& url,
                                          bool user_gesture) {}

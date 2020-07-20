@@ -153,6 +153,12 @@ template("generate_runner_script") {
       args += [ "--use-vm" ]
     }
 
+    # If we have public Chromium builds, use public Chromium OS images when
+    # flashing the test device.
+    if (!is_chrome_branded) {
+      args += [ "--public-image" ]
+    }
+
     if (deploy_chrome) {
       args += [ "--deploy-chrome" ]
     }

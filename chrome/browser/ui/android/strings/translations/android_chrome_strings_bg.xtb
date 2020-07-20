@@ -577,6 +577,7 @@
 <translation id="5659593005791499971">Имейл</translation>
 <translation id="5665379678064389456">Създайте събитие в <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Отмяна на искането на уебсайта да не се допуска увеличаване на мащаба</translation>
+<translation id="5683547024293500885">Chrome не може да провери за актуализации</translation>
 <translation id="5686790454216892815">Името на файла е твърде дълго</translation>
 <translation id="5694049548840660018">Връщайте се лесно към началната си страница</translation>
 <translation id="569536719314091526">Страницата може да бъде преведена на който и да е език чрез бутона за още опции</translation>
@@ -589,6 +590,7 @@
 <translation id="5732819098735351888">Изтеглянето ще стартира при връзка с Wi-Fi мрежа.</translation>
 <translation id="5748802427693696783">Превключихте към стандартните раздели</translation>
 <translation id="5749068826913805084">Chrome се нуждае от достъп до хранилището, за да изтегля файлове.</translation>
+<translation id="5749237766298580851">Изключено <ph name="SEPARATOR" /> Не се препоръчва</translation>
 <translation id="5754350196967618083">Не може да се опресни Discover</translation>
 <translation id="5763382633136178763">Раздели в режим „инкогнито“</translation>
 <translation id="5763514718066511291">Докоснете, за да копирате URL адреса за това приложение</translation>

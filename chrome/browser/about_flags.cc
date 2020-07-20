@@ -80,7 +80,6 @@
 #include "components/download/public/common/download_features.h"
 #include "components/error_page/common/error_page_switches.h"
 #include "components/favicon/core/features.h"
-#include "components/feature_engagement/buildflags.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/feature_list.h"
 #include "components/feed/feed_feature_list.h"
@@ -5584,6 +5583,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"media-app", flag_descriptions::kMediaAppName,
      flag_descriptions::kMediaAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kMediaApp)},
+    {"os-settings-polymer3", flag_descriptions::kOsSettingsPolymer3Name,
+     flag_descriptions::kOsSettingsPolymer3Description, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kOsSettingsPolymer3)},
 #endif  // defined(OS_CHROMEOS)
 
     {"passive-mixed-content-warning",

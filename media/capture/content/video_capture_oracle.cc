@@ -5,6 +5,8 @@
 #include "media/capture/content/video_capture_oracle.h"
 
 #include <algorithm>
+#include <limits>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -79,7 +81,8 @@ constexpr base::TimeDelta VideoCaptureOracle::kDefaultMinCapturePeriod;
 constexpr base::TimeDelta VideoCaptureOracle::kDefaultMinSizeChangePeriod;
 
 VideoCaptureOracle::VideoCaptureOracle(bool enable_auto_throttling)
-    : auto_throttling_enabled_(enable_auto_throttling),
+    : capture_size_throttling_mode_(
+          enable_auto_throttling ? kThrottlingEnabled : kThrottlingDisabled),
       min_size_change_period_(kDefaultMinSizeChangePeriod),
       next_frame_number_(0),
       last_successfully_delivered_frame_number_(-1),
@@ -90,8 +93,8 @@ VideoCaptureOracle::VideoCaptureOracle(bool enable_auto_throttling)
           kBufferUtilizationEvaluationMicros)),
       estimated_capable_area_(base::TimeDelta::FromMicroseconds(
           kConsumerCapabilityEvaluationMicros)) {
-  VLOG(1) << "Auto-throttling is "
-          << (auto_throttling_enabled_ ? "enabled." : "disabled.");
+  VLOG(1) << "Capture size auto-throttling is now "
+          << (enable_auto_throttling ? "enabled." : "disabled.");
 }
 
 VideoCaptureOracle::~VideoCaptureOracle() = default;
@@ -111,9 +114,14 @@ void VideoCaptureOracle::SetCaptureSizeConstraints(
 }
 
 void VideoCaptureOracle::SetAutoThrottlingEnabled(bool enabled) {
-  if (auto_throttling_enabled_ == enabled)
+  const bool was_enabled =
+      (capture_size_throttling_mode_ != kThrottlingDisabled);
+  if (was_enabled == enabled)
     return;
-  auto_throttling_enabled_ = enabled;
+  capture_size_throttling_mode_ =
+      enabled ? kThrottlingEnabled : kThrottlingDisabled;
+  VLOG(1) << "Capture size auto-throttling is now "
+          << (enabled ? "enabled." : "disabled.");
 
   // When not auto-throttling, have the CaptureResolutionChooser target the max
   // resolution within constraints.
@@ -225,7 +233,7 @@ void VideoCaptureOracle::RecordCapture(double pool_utilization) {
   const base::TimeTicks timestamp = GetFrameTimestamp(next_frame_number_);
   content_sampler_.RecordSample(timestamp);
 
-  if (auto_throttling_enabled_) {
+  if (capture_size_throttling_mode_ == kThrottlingActive) {
     buffer_pool_utilization_.Update(pool_utilization, timestamp);
     AnalyzeAndAdjust(timestamp);
   }
@@ -238,7 +246,7 @@ void VideoCaptureOracle::RecordWillNotCapture(double pool_utilization) {
   VLOG(1) << "Client rejects proposal to capture frame (at #"
           << next_frame_number_ << ").";
 
-  if (auto_throttling_enabled_) {
+  if (capture_size_throttling_mode_ == kThrottlingActive) {
     DCHECK(std::isfinite(pool_utilization) && pool_utilization >= 0.0);
     const base::TimeTicks timestamp = GetFrameTimestamp(next_frame_number_);
     buffer_pool_utilization_.Update(pool_utilization, timestamp);
@@ -326,7 +334,7 @@ void VideoCaptureOracle::CancelAllCaptures() {
 
 void VideoCaptureOracle::RecordConsumerFeedback(int frame_number,
                                                 double resource_utilization) {
-  if (!auto_throttling_enabled_)
+  if (capture_size_throttling_mode_ == kThrottlingDisabled)
     return;
 
   if (!std::isfinite(resource_utilization)) {
@@ -336,6 +344,12 @@ void VideoCaptureOracle::RecordConsumerFeedback(int frame_number,
   }
   if (resource_utilization <= 0.0)
     return;  // Non-positive values are normal, meaning N/A.
+
+  if (capture_size_throttling_mode_ != kThrottlingActive) {
+    VLOG(1) << "Received consumer feedback at frame #" << frame_number
+            << "; activating capture size auto-throttling.";
+    capture_size_throttling_mode_ = kThrottlingActive;
+  }
 
   if (!IsFrameInRecentHistory(frame_number)) {
     VLOG(1) << "Very old frame feedback being ignored: frame #" << frame_number;
@@ -409,7 +423,7 @@ void VideoCaptureOracle::CommitCaptureSizeAndReset(
 }
 
 void VideoCaptureOracle::AnalyzeAndAdjust(const base::TimeTicks analyze_time) {
-  DCHECK(auto_throttling_enabled_);
+  DCHECK(capture_size_throttling_mode_ == kThrottlingActive);
 
   const int decreased_area = AnalyzeForDecreasedArea(analyze_time);
   if (decreased_area > 0) {

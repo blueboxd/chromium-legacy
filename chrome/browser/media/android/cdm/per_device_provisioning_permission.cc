@@ -177,6 +177,7 @@ void RequestPerDeviceProvisioningPermission(
   // The created PerDeviceProvisioningPermissionRequest deletes itself once
   // complete. See PerDeviceProvisioningPermissionRequest::RequestFinished().
   permission_request_manager->AddRequest(
+      render_frame_host,
       new PerDeviceProvisioningPermissionRequest(
           render_frame_host->GetLastCommittedOrigin(), std::move(callback)));
 }

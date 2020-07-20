@@ -94,9 +94,9 @@ class ViewTreeHostRootView::LayerTreeViewTreeFrameSinkHolder
         holder->last_local_surface_id_allocation_time_;
     frame.metadata.frame_token = ++holder->next_frame_token_;
     std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
-    pass->SetNew(1, gfx::Rect(holder->last_frame_size_in_pixels_),
-                 gfx::Rect(holder->last_frame_size_in_pixels_),
-                 gfx::Transform());
+    pass->SetNew(
+        viz::RenderPassId{1}, gfx::Rect(holder->last_frame_size_in_pixels_),
+        gfx::Rect(holder->last_frame_size_in_pixels_), gfx::Transform());
     frame.render_pass_list.push_back(std::move(pass));
     holder->frame_sink_->SubmitCompositorFrame(std::move(frame),
                                                /*hit_test_data_changed=*/true,
@@ -438,7 +438,7 @@ void ViewTreeHostRootView::SubmitCompositorFrame() {
   bool rv = rotate_transform_.GetInverse(&buffer_to_target_transform);
   DCHECK(rv);
 
-  const int kRenderPassId = 1;
+  const viz::RenderPassId kRenderPassId{1};
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   render_pass->SetNew(kRenderPassId, output_rect, damage_rect,
                       buffer_to_target_transform);

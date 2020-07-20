@@ -347,6 +347,14 @@ source_set("unit_tests_internal") {
   ]
 }
 
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "lookalike_url_constants.h",
+    "lookalike_url_constants.mm",
+  ]
+}
+
 source_set("eg_test_support+eg2") {
   defines = [ "CHROME_EARL_GREY_2" ]
   configs += [
@@ -355,7 +363,10 @@ source_set("eg_test_support+eg2") {
   ]
   testonly = true
 
-  sources = [ "progress_indicator_app_interface.h" ]
+  sources = [
+    "lookalike_url_app_interface.h",
+    "progress_indicator_app_interface.h",
+  ]
 
   deps = [
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
@@ -372,15 +383,23 @@ source_set("eg_app_support+eg2") {
   defines = [ "CHROME_EARL_GREY_2" ]
 
   sources = [
+    "lookalike_url_app_interface.h",
+    "lookalike_url_app_interface.mm",
     "progress_indicator_app_interface.h",
     "progress_indicator_app_interface.mm",
   ]
 
   deps = [
+    ":constants",
     "//base",
+    "//components/lookalikes/core",
+    "//ios/chrome/test/app:test_support",
+    "//ios/components/security_interstitials/lookalikes",
     "//ios/testing/earl_grey:eg_app_support+eg2",
     "//ios/third_party/earl_grey2:app_framework+link",
     "//ios/third_party/material_components_ios",
+    "//ios/web/public",
+    "//net",
   ]
 }
 
@@ -402,6 +421,7 @@ source_set("eg2_tests") {
     "forms_egtest.mm",
     "http_auth_egtest.mm",
     "js_print_egtest.mm",
+    "lookalike_url_egtest.mm",
     "navigation_egtest.mm",
     "progress_indicator_egtest.mm",
     "push_and_replace_state_navigation_egtest.mm",
@@ -414,6 +434,7 @@ source_set("eg2_tests") {
   ]
 
   deps = [
+    ":constants",
     ":eg_test_support+eg2",
     "//components/content_settings/core/common",
     "//components/strings",

@@ -100,7 +100,7 @@ class ImageContextImpl final : public ExternalUseClient::ImageContext {
   bool BindOrCopyTextureIfNecessary(gpu::TextureBase* texture_base,
                                     gfx::Size* size);
 
-  const RenderPassId render_pass_id_ = 0;
+  const RenderPassId render_pass_id_;
   const GrMipMapped mipmap_ = GrMipMapped::kNo;
 
   // Fallback in case we cannot produce a |representation_|.

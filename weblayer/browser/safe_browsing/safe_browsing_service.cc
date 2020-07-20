@@ -244,4 +244,8 @@ SafeBrowsingService::GetURLLoaderFactory() {
   return network_context_->GetURLLoaderFactory();
 }
 
+bool SafeBrowsingService::GetSafeBrowsingDisabled() {
+  return safe_browsing_disabled_;
+}
+
 }  // namespace weblayer

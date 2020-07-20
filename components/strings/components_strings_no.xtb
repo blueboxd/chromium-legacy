@@ -450,6 +450,7 @@ brukere av denne nettleseren.</translation>
 <translation id="2824775600643448204">Adresse- og søkefelt</translation>
 <translation id="2826760142808435982">Tilkoblingen er kryptert ved hjelp av <ph name="CIPHER" />, og bruker <ph name="KX" /> som mekanisme for nøkkelutveksling.</translation>
 <translation id="2835170189407361413">Slett skjemaet</translation>
+<translation id="2839501879576190149">Falskt nettsted i sikte</translation>
 <translation id="2847118875340931228">Åpne et inkognitovindu</translation>
 <translation id="2850739647070081192">Invite (konvolutt)</translation>
 <translation id="2856444702002559011">Det kan hende at angripere prøver å stjele informasjonen din fra <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (for eksempel passord, meldinger og kredittkortinformasjon). <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -810,6 +811,7 @@ brukere av denne nettleseren.</translation>
 <translation id="42981349822642051">Vis</translation>
 <translation id="4300675098767811073">Flere hull høyre</translation>
 <translation id="4302965934281694568">Chou3 (konvolutt)</translation>
+<translation id="4305666528087210886">Kunne ikke åpne filen</translation>
 <translation id="4305817255990598646">Bytt</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Blokkér (standard)</translation>
@@ -828,6 +830,7 @@ brukere av denne nettleseren.</translation>
 <translation id="4358461427845829800">Administrer betalingsmåter…</translation>
 <translation id="4359160567981085931">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chrome kan hjelpe deg. For å bytte passord og varsle Google om at kontoen din kanskje er i fare, klikk på Beskytt konto.</translation>
 <translation id="4367563149485757821">Number-12 (konvolutt)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Et databrudd på et nettsted eller i en app har avdekket det lagrede passordet ditt for <ph name="ORIGIN" />. Chrome anbefaler at du endrer passordet ditt på <ph name="ORIGIN" /> nå.}=1{Et databrudd på et nettsted eller i en app har avdekket det lagrede passordet ditt for <ph name="ORIGIN" /> og ett nettsted til. Chrome anbefaler at du sjekker de lagrede passordene dine nå.}other{Et databrudd på et nettsted eller i en app har avdekket det lagrede passordet ditt for <ph name="ORIGIN" /> og <ph name="SITES_COUNT" /> nettsteder til. Chrome anbefaler at du sjekker de lagrede passordene dine nå.}}</translation>
 <translation id="437058704415269440">Kontosaldo</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Forventet <ph name="VALUE_TYPE" />-verdi.</translation>
@@ -1298,6 +1301,7 @@ brukere av denne nettleseren.</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Potensielle gebyrer i sikte.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 annet forslag}other{# andre forslag}}</translation>
+<translation id="6387645831795005740">Noen ganger etterligner angripere nettsteder ved å gjøre små endringer som er vanskelige å se, i nettadressen.</translation>
 <translation id="6389470377220713856">Navn som er oppført på kortet</translation>
 <translation id="6390200185239044127">Halv Z-fals</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1510,6 +1514,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7372973238305370288">søkeresultat</translation>
 <translation id="7374733840632556089">Dette problemet oppstår på grunn av et sertifikat du eller noen andre har installert på enheten. Det er kjent at sertifikatet brukes til nettverksavlytting og -overvåking, og Chrome stoler ikke på det. Selv om det finnes legitime bruksområder for overvåking, f.eks. på skole- eller bedriftsnettverk, vil Chrome sørge for at du er klar over at det foregår, selv om du ikke kan stoppe det. Overvåking kan skje i alle nettlesere og applikasjoner som bruker nettet.</translation>
 <translation id="7375818412732305729">Filer legges ved</translation>
+<translation id="7376551888419889433">Når Chrome Enterprise Connectors merker sikkerhetshendelser, blir relevante data om hendelsene sendt til administratoren din. Dette kan omfatte nettadressene til sider du besøker i Chrome, filnavn, metadata og brukernavnet du bruker når du logger på enheten din og Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Mediekontroller</translation>
 <translation id="7378627244592794276">Nei takk</translation>
@@ -1906,6 +1911,7 @@ Mer informasjon:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Du forsøkte å nå <ph name="DOMAIN" />, men tjeneren oppga et ugyldig sertifikat.</translation>
 <translation id="9050666287014529139">Passordfrase</translation>
+<translation id="9062620674789239642">Den kan ha blitt flyttet, redigert eller slettet.</translation>
 <translation id="9065203028668620118">Endre</translation>
 <translation id="9065745800631924235"><ph name="TEXT" />-søk fra loggen</translation>
 <translation id="9069693763241529744">Blokkert av en utvidelse</translation>

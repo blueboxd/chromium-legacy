@@ -192,6 +192,7 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
     handle.set_url(url);
     tab_helper_->DidStartNavigation(&handle);
     handle.set_has_committed(true);
+    handle.set_redirect_chain({url});
     tab_helper_->DidFinishNavigation(&handle);
   }
 
@@ -203,6 +204,7 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
     handle.set_is_same_document(true);
     tab_helper_->DidStartNavigation(&handle);
     handle.set_has_committed(true);
+    handle.set_redirect_chain({GURL("https://test.com")});
     tab_helper_->DidFinishNavigation(&handle);
   }
 
@@ -1557,6 +1559,43 @@ TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Insecure) {
   NavigateAndVerifyPrefetchStatus(url,
                                   IsolatedPrerenderTabHelper::PrefetchStatus::
                                       kPrefetchNotEligibleSchemeIsNotHttps);
+  EXPECT_EQ(after_srp_prefetch_eligible_count(), 1U);
+  EXPECT_EQ(base::Optional<size_t>(0), after_srp_clicked_link_srp_position());
+}
+
+TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Insecure_Continued) {
+  NavigateSomewhere();
+
+  GURL url("http://insecure.com");
+
+  RunNoRedirectTest(url);
+
+  EXPECT_EQ(predicted_urls_count(), 1U);
+  EXPECT_EQ(prefetch_eligible_count(), 1U);
+  EXPECT_EQ(prefetch_attempted_count(), 1U);
+  EXPECT_EQ(prefetch_successful_count(), 0U);
+  EXPECT_EQ(prefetch_total_redirect_count(), 1U);
+  EXPECT_TRUE(navigation_to_prefetch_start().has_value());
+
+  GURL final_url("http://final.com/");
+
+  content::MockNavigationHandle handle(web_contents());
+  handle.set_url(final_url);
+  tab_helper()->DidStartNavigation(&handle);
+  handle.set_has_committed(true);
+  handle.set_redirect_chain({
+      GURL("https://start.test.com"),
+      url,
+      final_url,
+  });
+  tab_helper()->DidFinishNavigation(&handle);
+
+  ASSERT_TRUE(tab_helper()->after_srp_metrics().has_value());
+  ASSERT_TRUE(tab_helper()->after_srp_metrics()->prefetch_status_.has_value());
+  EXPECT_EQ(IsolatedPrerenderTabHelper::PrefetchStatus::
+                kPrefetchNotEligibleSchemeIsNotHttps,
+            tab_helper()->after_srp_metrics()->prefetch_status_.value());
+
   EXPECT_EQ(after_srp_prefetch_eligible_count(), 1U);
   EXPECT_EQ(base::Optional<size_t>(0), after_srp_clicked_link_srp_position());
 }

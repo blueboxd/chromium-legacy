@@ -22,7 +22,7 @@ class FeaturePromoDialogTest : public DialogBrowserTest {
                                 ->GetAppMenuButton();
     // We use one of the strings for the new tab feature promo since there is
     // currently no infrastructure for test-only string resources.
-    int placeholder_string = IDS_NEWTAB_PROMO_0;
+    int placeholder_string = IDS_REOPEN_TAB_PROMO;
     FeaturePromoBubbleView::CreateOwned(
         app_menu_button, views::BubbleBorder::TOP_RIGHT,
         FeaturePromoBubbleView::ActivationAction::ACTIVATE,

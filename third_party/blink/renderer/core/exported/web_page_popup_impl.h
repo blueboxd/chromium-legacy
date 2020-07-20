@@ -133,6 +133,8 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   bool SupportsBufferedTouchEvents() override { return true; }
   void FocusChanged(bool enabled) override;
   void ScheduleAnimation() override;
+  void UpdateVisualProperties(
+      const VisualProperties& visual_properties) override;
 
   // WebWidget implementation.
   // NOTE: The WebWidget may still be used after requesting the popup to be

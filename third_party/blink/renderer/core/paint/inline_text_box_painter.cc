@@ -120,27 +120,18 @@ static void ComputeOriginAndWidthForBox(const InlineTextBox& box,
 
 void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
                                  const PhysicalOffset& paint_offset) {
-  if (!ShouldPaintTextBox(paint_info))
+  // We can skip painting if the text box is empty and has no selection.
+  if (inline_text_box_.Truncation() == kCFullTruncation ||
+      !inline_text_box_.Len())
+    return;
+
+  const auto& style_to_use = inline_text_box_.GetLineLayoutItem().StyleRef(
+      inline_text_box_.IsFirstLineStyle());
+  if (style_to_use.Visibility() != EVisibility::kVisible)
     return;
 
   DCHECK(!ShouldPaintSelfOutline(paint_info.phase) &&
          !ShouldPaintDescendantOutlines(paint_info.phase));
-
-  LayoutRect logical_visual_overflow = inline_text_box_.LogicalOverflowRect();
-  LayoutUnit logical_start =
-      logical_visual_overflow.X() +
-      (inline_text_box_.IsHorizontal() ? paint_offset.left : paint_offset.top);
-  LayoutUnit logical_extent = logical_visual_overflow.Width();
-
-  if (inline_text_box_.IsHorizontal()) {
-    if (!paint_info.GetCullRect().IntersectsHorizontalRange(
-            logical_start, logical_start + logical_extent))
-      return;
-  } else {
-    if (!paint_info.GetCullRect().IntersectsVerticalRange(
-            logical_start, logical_start + logical_extent))
-      return;
-  }
 
   bool is_printing = paint_info.IsPrinting();
 
@@ -153,6 +144,14 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
     return;
   }
 
+  PhysicalRect physical_overflow = inline_text_box_.PhysicalOverflowRect();
+  if (!paint_info.IntersectsCullRect(physical_overflow, paint_offset) &&
+      !have_selection)
+    return;
+
+  physical_overflow.Move(paint_offset);
+  IntRect visual_rect = EnclosingIntRect(physical_overflow);
+
   // The text clip phase already has a DrawingRecorder. Text clips are initiated
   // only in BoxPainter::PaintFillLayer, which is already within a
   // DrawingRecorder.
@@ -161,14 +160,11 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
     if (DrawingRecorder::UseCachedDrawingIfPossible(
             paint_info.context, inline_text_box_, paint_info.phase))
       return;
-    recorder.emplace(paint_info.context, inline_text_box_, paint_info.phase);
+    recorder.emplace(paint_info.context, inline_text_box_, paint_info.phase,
+                     visual_rect);
   }
 
   GraphicsContext& context = paint_info.context;
-  const ComputedStyle& style_to_use =
-      inline_text_box_.GetLineLayoutItem().StyleRef(
-          inline_text_box_.IsFirstLineStyle());
-
   PhysicalOffset box_origin =
       inline_text_box_.PhysicalLocation() + paint_offset;
 
@@ -288,13 +284,30 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
     PaintDocumentMarkers(markers_to_paint, paint_info, box_origin, style_to_use,
                          font, DocumentMarkerPaintPhase::kBackground);
     if (have_selection) {
-      if (combined_text)
-        PaintSelection<InlineTextBoxPainter::PaintOptions::kCombinedText>(
-            context, box_rect, style_to_use, font, selection_style.fill_color,
-            combined_text);
-      else
-        PaintSelection<InlineTextBoxPainter::PaintOptions::kNormal>(
-            context, box_rect, style_to_use, font, selection_style.fill_color);
+      PhysicalRect selection_rect;
+      if (combined_text) {
+        selection_rect =
+            PaintSelection<InlineTextBoxPainter::PaintOptions::kCombinedText>(
+                context, box_rect, style_to_use, font,
+                selection_style.fill_color, combined_text);
+      } else {
+        selection_rect =
+            PaintSelection<InlineTextBoxPainter::PaintOptions::kNormal>(
+                context, box_rect, style_to_use, font,
+                selection_style.fill_color);
+      }
+
+      if (recorder && !box_rect.Contains(selection_rect)) {
+        if (should_rotate) {
+          // selection_rect is in the coordinates space of the rotation
+          // transform. Convert it to the non-rotated space for visual rect.
+          selection_rect.Move(-box_rect.offset);
+          std::swap(selection_rect.offset.left, selection_rect.offset.top);
+          std::swap(selection_rect.size.width, selection_rect.size.height);
+          selection_rect.Move(box_rect.offset);
+        }
+        recorder->UniteVisualRect(EnclosingIntRect(selection_rect));
+      }
     }
   }
 
@@ -437,16 +450,7 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   }
 
   if (!font.ShouldSkipDrawing())
-    PaintTimingDetector::NotifyTextPaint(inline_text_box_.VisualRect());
-}
-
-bool InlineTextBoxPainter::ShouldPaintTextBox(const PaintInfo& paint_info) {
-  // We can skip painting if the text box (including selection) is invisible.
-  if (inline_text_box_.Truncation() == kCFullTruncation ||
-      !inline_text_box_.Len() || inline_text_box_.VisualRect().IsEmpty())
-    return false;
-
-  return true;
+    PaintTimingDetector::NotifyTextPaint(visual_rect);
 }
 
 InlineTextBoxPainter::PaintOffsets
@@ -778,17 +782,18 @@ PhysicalRect InlineTextBoxPainter::GetSelectionRect(
 }
 
 template <InlineTextBoxPainter::PaintOptions options>
-void InlineTextBoxPainter::PaintSelection(GraphicsContext& context,
-                                          const PhysicalRect& box_rect,
-                                          const ComputedStyle& style,
-                                          const Font& font,
-                                          Color text_color,
-                                          LayoutTextCombine* combined_text) {
+PhysicalRect InlineTextBoxPainter::PaintSelection(
+    GraphicsContext& context,
+    const PhysicalRect& box_rect,
+    const ComputedStyle& style,
+    const Font& font,
+    Color text_color,
+    LayoutTextCombine* combined_text) {
   auto layout_item = inline_text_box_.GetLineLayoutItem();
   Color c = SelectionPaintingUtils::SelectionBackgroundColor(
       layout_item.GetDocument(), layout_item.StyleRef(), layout_item.GetNode());
   if (!c.Alpha())
-    return;
+    return PhysicalRect();
 
   PhysicalRect selection_rect =
       GetSelectionRect<options>(context, box_rect, style, font, combined_text);
@@ -801,6 +806,7 @@ void InlineTextBoxPainter::PaintSelection(GraphicsContext& context,
   GraphicsContextStateSaver state_saver(context);
 
   context.FillRect(FloatRect(selection_rect), c);
+  return selection_rect;
 }
 
 void InlineTextBoxPainter::ExpandToIncludeNewlineForSelection(

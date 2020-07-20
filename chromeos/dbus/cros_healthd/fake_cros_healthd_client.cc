@@ -62,6 +62,11 @@ void FakeCrosHealthdClient::SetProbeTelemetryInfoResponseForTesting(
   fake_service_.SetProbeTelemetryInfoResponseForTesting(info);
 }
 
+void FakeCrosHealthdClient::SetProbeProcessInfoResponseForTesting(
+    mojom::ProcessResultPtr& result) {
+  fake_service_.SetProbeProcessInfoResponseForTesting(result);
+}
+
 void FakeCrosHealthdClient::EmitAcInsertedEventForTesting() {
   // Flush the receiver, so any pending observers are registered before the
   // event is emitted.

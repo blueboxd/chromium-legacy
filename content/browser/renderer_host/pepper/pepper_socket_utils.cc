@@ -221,8 +221,8 @@ net::MutableNetworkTrafficAnnotationTag PepperTCPNetworkAnnotationTag() {
             }
           }
           chrome_policy {
-            ExtensionInstallBlacklist {
-              ExtensionInstallBlacklist: {
+            ExtensionInstallBlocklist {
+              ExtensionInstallBlocklist: {
                 entries: '*'
               }
             }
@@ -265,8 +265,8 @@ net::MutableNetworkTrafficAnnotationTag PepperUDPNetworkAnnotationTag() {
             }
           }
           chrome_policy {
-            ExtensionInstallBlacklist {
-              ExtensionInstallBlacklist: {
+            ExtensionInstallBlocklist {
+              ExtensionInstallBlocklist: {
                 entries: '*'
               }
             }

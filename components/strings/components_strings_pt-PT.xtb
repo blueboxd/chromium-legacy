@@ -450,6 +450,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="2824775600643448204">Barra de pesquisa e endereço</translation>
 <translation id="2826760142808435982">A ligação é encriptada e autenticada com <ph name="CIPHER" /> e utiliza <ph name="KX" /> como mecanismo de troca de chaves.</translation>
 <translation id="2835170189407361413">Limpar formulário</translation>
+<translation id="2839501879576190149">O site seguinte é falso</translation>
 <translation id="2847118875340931228">Abrir janela de navegação anónima</translation>
 <translation id="2850739647070081192">Invite (Envelope)</translation>
 <translation id="2856444702002559011">Os atacantes poderão estar a tentar roubar as suas informações de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (por exemplo, palavras-passe, mensagens ou cartões de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -810,6 +811,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="42981349822642051">Expandir</translation>
 <translation id="4300675098767811073">Perfuração múltipla à direita</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
+<translation id="4305666528087210886">Não foi possível aceder ao seu ficheiro</translation>
 <translation id="4305817255990598646">Mudar</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Bloquear (predefinição)</translation>
@@ -828,6 +830,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="4358461427845829800">Gerir métodos de pagamento…</translation>
 <translation id="4359160567981085931">Acabou de introduzir a sua palavra-passe num site fraudulento. O Chrome pode ajudar. Para alterar a sua palavra-passe e notificar a Google de que a sua conta pode estar em risco, clique em Proteger conta.</translation>
 <translation id="4367563149485757821">Number-12 (Envelope)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Uma violação de dados num site ou numa app expôs a sua palavra-passe guardada para <ph name="ORIGIN" />. O Chrome recomenda que altere a sua palavra-passe em <ph name="ORIGIN" /> agora.}=1{Uma violação de dados num site ou app expôs a sua palavra-passe guardada para <ph name="ORIGIN" /> e mais um site. O Chrome recomenda que verifique agora as palavras-passe guardadas.}other{Uma violação de dados num site ou app expôs a sua palavra-passe guardada para <ph name="ORIGIN" /> e mais <ph name="SITES_COUNT" /> sites. O Chrome recomenda que verifique agora as palavras-passe guardadas.}}</translation>
 <translation id="437058704415269440">Saldo da conta</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Valor <ph name="VALUE_TYPE" /> esperado.</translation>
@@ -914,7 +917,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="4780366598804516005">Caixa de correio 1</translation>
 <translation id="4780900888022378816">O seu dispositivo é gerido por <ph name="ENROLLMENT_DOMAIN" /> e a sua conta é gerida por <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Mudar para este separador</translation>
-<translation id="4791134497475588553">Aplicações do Linux instaladas e quando foram utilizadas pela última vez.</translation>
+<translation id="4791134497475588553">Apps do Linux instaladas e quando foram utilizadas pela última vez.</translation>
 <translation id="4796594887379589189">ID da conta da tarefa</translation>
 <translation id="4798078619018708837">Introduza a data de validade e o Código de Segurança/CVC de <ph name="CREDIT_CARD" /> para atualizar os detalhes do cartão. Depois de confirmar, os detalhes do cartão da sua Conta Google são partilhados com este site.</translation>
 <translation id="4800132727771399293">Verifique a data de validade e o Código de Segurança/CVC e tente novamente</translation>
@@ -1298,6 +1301,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Possíveis cobranças se prosseguir.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 outra sugestão}other{# outras sugestões}}</translation>
+<translation id="6387645831795005740">Por vezes, os atacantes imitam sites ao efetuarem alterações pequenas e difíceis de detetar no URL.</translation>
 <translation id="6389470377220713856">Nome no cartão</translation>
 <translation id="6390200185239044127">Dobrar metade em Z</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1511,6 +1515,7 @@ Detalhes adicionais:
 <translation id="7372973238305370288">resultado da pesquisa</translation>
 <translation id="7374733840632556089">Este problema ocorre devido a um certificado que o utilizador ou outra pessoa instalou no dispositivo. Sabe-se que o certificado é utilizado para monitorizar e intercetar redes e não é considerado fidedigno pelo Chrome. Embora existam alguns casos legítimos para a monitorização, como numa rede escolar ou da empresa, o Chrome pretende certificar-se de que o utilizador tem conhecimento da situação, mesmo que não seja possível interrompê-la. A monitorização pode ocorrer em qualquer navegador ou aplicação que aceda à Web.</translation>
 <translation id="7375818412732305729">É anexado um ficheiro</translation>
+<translation id="7376551888419889433">Quando os Chrome Enterprise Connectors sinalizam eventos de segurança, são enviados dados relevantes acerca dos eventos para o seu administrador. Estes podem incluir os URLs das páginas que visita no Chrome, os metadados ou os nomes de ficheiros e o nome de utilizador que utiliza para iniciar sessão no dispositivo e no Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Controlos de multimédia</translation>
 <translation id="7378627244592794276">Não</translation>
@@ -1907,6 +1912,7 @@ Detalhes adicionais:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Tentou aceder a <ph name="DOMAIN" />, mas o servidor apresentou um certificado inválido.</translation>
 <translation id="9050666287014529139">Frase de acesso</translation>
+<translation id="9062620674789239642">Pode ter sido movido, editado ou eliminado.</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9065745800631924235">Pesquisa de <ph name="TEXT" /> no histórico</translation>
 <translation id="9069693763241529744">Bloqueada por uma extensão</translation>

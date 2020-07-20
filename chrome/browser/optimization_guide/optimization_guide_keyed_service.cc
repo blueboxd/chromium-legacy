@@ -161,33 +161,6 @@ void OptimizationGuideKeyedService::RegisterOptimizationTargets(
   }
 }
 
-optimization_guide::OptimizationGuideDecision
-OptimizationGuideKeyedService::ShouldTargetNavigation(
-    content::NavigationHandle* navigation_handle,
-    optimization_guide::proto::OptimizationTarget optimization_target) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(navigation_handle->IsInMainFrame());
-
-  if (!prediction_manager_) {
-    // We are not initialized yet, just return unknown.
-    return optimization_guide::OptimizationGuideDecision::kUnknown;
-  }
-
-  optimization_guide::OptimizationTargetDecision optimization_target_decision =
-      prediction_manager_->ShouldTargetNavigation(
-          navigation_handle, optimization_target,
-          /*override_client_model_feature_values=*/{});
-
-  base::UmaHistogramExactLinear(
-      "OptimizationGuide.TargetDecision." +
-          GetStringNameForOptimizationTarget(optimization_target),
-      static_cast<int>(optimization_target_decision),
-      static_cast<int>(
-          optimization_guide::OptimizationTargetDecision::kMaxValue));
-  return GetOptimizationGuideDecisionFromOptimizationTargetDecision(
-      optimization_target_decision);
-}
-
 void OptimizationGuideKeyedService::ShouldTargetNavigationAsync(
     content::NavigationHandle* navigation_handle,
     optimization_guide::proto::OptimizationTarget optimization_target,

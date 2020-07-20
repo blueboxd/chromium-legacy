@@ -32,12 +32,11 @@ public class PlayerFrameScrollController {
     private final Runnable mOnScrollListener;
     private final Runnable mOnFlingListener;
 
-    PlayerFrameScrollController(OverScroller scroller, PlayerFrameViewport viewport,
-            Size contentSize, PlayerFrameMediatorDelegate mediatorDelegate,
+    PlayerFrameScrollController(OverScroller scroller, PlayerFrameMediatorDelegate mediatorDelegate,
             @Nullable Runnable onScrollListener, @Nullable Runnable onFlingListener) {
         mScroller = scroller;
-        mViewport = viewport;
-        mContentSize = contentSize;
+        mViewport = mediatorDelegate.getViewport();
+        mContentSize = mediatorDelegate.getContentSize();
         mMediatorDelegate = mediatorDelegate;
         mOnScrollListener = onScrollListener;
         mOnFlingListener = onFlingListener;

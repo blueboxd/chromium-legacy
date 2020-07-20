@@ -16,6 +16,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.payments.PaymentManifestVerifier.ManifestVerifyCallback;
+import org.chromium.components.payments.ErrorStrings;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.PackageManagerDelegate;
 import org.chromium.components.payments.PaymentFeatureList;
@@ -629,6 +630,20 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
      */
     private void onValidPaymentAppForPaymentMethodName(ResolveInfo resolveInfo, String methodName) {
         String packageName = resolveInfo.activityInfo.packageName;
+
+        SupportedDelegations appSupportedDelegations =
+                getAppsSupportedDelegations(resolveInfo.activityInfo);
+        // Allow-lists the Play Billing method for this feature in order for the Play Billing case
+        // to skip the sheet in this case.
+        if (PaymentFeatureList.isEnabled(PaymentFeatureList.ENFORCE_FULL_DELEGATION)
+                || methodName.equals(MethodStrings.GOOGLE_PLAY_BILLING)) {
+            if (!appSupportedDelegations.providesAll(
+                        mFactoryDelegate.getParams().getPaymentOptions())) {
+                Log.e(TAG, ErrorStrings.SKIP_APP_FOR_PARTIAL_DELEGATION.replace("$1", packageName));
+                return;
+            }
+        }
+
         AndroidPaymentApp app = mValidApps.get(packageName);
         if (app == null) {
             CharSequence label = mPackageManagerDelegate.getAppLabel(resolveInfo);
@@ -648,7 +663,7 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
                     packageName, resolveInfo.activityInfo.name,
                     mIsReadyToPayServices.get(packageName), label.toString(),
                     mPackageManagerDelegate.getAppIcon(resolveInfo), mIsIncognito,
-                    webAppIdCanDeduped, getAppsSupportedDelegations(resolveInfo.activityInfo));
+                    webAppIdCanDeduped, appSupportedDelegations);
             mValidApps.put(packageName, app);
         }
 

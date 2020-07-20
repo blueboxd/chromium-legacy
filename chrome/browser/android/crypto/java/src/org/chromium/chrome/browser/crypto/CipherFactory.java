@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.crypto;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 
+import androidx.annotation.AnyThread;
+
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.SecureRandomInitializer;
@@ -23,7 +25,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-import javax.annotation.concurrent.ThreadSafe;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.spec.IvParameterSpec;
@@ -49,7 +50,7 @@ import javax.crypto.spec.SecretKeySpec;
  * Explicitly ending the session destroys the {@link Bundle}, making the previous session's data
  * unreadable.
  */
-@ThreadSafe
+@AnyThread
 public class CipherFactory {
     private static final String TAG = "CipherFactory";
     static final int NUM_BYTES = 16;

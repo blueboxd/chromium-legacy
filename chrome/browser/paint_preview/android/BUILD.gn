@@ -37,6 +37,7 @@ android_library("java") {
     "//components/paint_preview/browser/android:java",
     "//components/paint_preview/player/android:java",
     "//content/public/android:content_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//ui/android:ui_java",
     "//url:gurl_java",
   ]

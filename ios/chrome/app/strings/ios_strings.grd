@@ -918,7 +918,11 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
         Search in Chrome
       </message>
       <message name="IDS_IOS_INTENTS_SEARCH_IN_CHROME_TITLE" desc="Siri Shortcut for search in chrome title [iOS only].">
-        Search in Chrome
+          Search in Chrome
+      </message>
+      <message name="IDS_IOS_INTENTS_SEARCH_IN_CHROME_PARAMETER_COMBINATION_TITLE" desc="Apple Shortcuts App's format for displaying the user search phrase input, shown by the Siri Shortcut app when the
+          user is adding or editing a Search in Chrome shortcut[iOS only].">
+          Search ${searchPhrase} in Chrome
       </message>
       <message name="IDS_IOS_JAVA_SCRIPT_DIALOG_BLOCKING_BUTTON_TEXT" desc="The text used for the button added to JavaScript dialogs to prevent a page from spamming the user with endless alerts. [Length:27em]">
         Suppress Dialogs

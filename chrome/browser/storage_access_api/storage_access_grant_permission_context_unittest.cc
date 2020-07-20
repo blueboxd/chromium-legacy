@@ -11,6 +11,7 @@
 #include "components/permissions/permission_request_id.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/permissions/test/mock_permission_prompt_factory.h"
+#include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 
@@ -61,8 +62,7 @@ class StorageAccessGrantPermissionContextTest
   void ExhaustImplicitGrants(
       const GURL& requesting_origin,
       StorageAccessGrantPermissionContext& permission_context) {
-    permissions::PermissionRequestID fake_id(
-        /*render_process_id=*/0, /*render_frame_id=*/0, /*request_id=*/0);
+    permissions::PermissionRequestID fake_id = CreateFakeID();
 
     permissions::PermissionRequestManager* manager =
         permissions::PermissionRequestManager::FromWebContents(web_contents());
@@ -83,9 +83,15 @@ class StorageAccessGrantPermissionContextTest
     }
   }
 
+  permissions::PermissionRequestID CreateFakeID() {
+    return permissions::PermissionRequestID(web_contents()->GetMainFrame(),
+                                            ++next_request_id_);
+  }
+
  private:
   std::unique_ptr<permissions::MockPermissionPromptFactory>
       mock_permission_prompt_factory_;
+  int next_request_id_ = 0;
 };
 
 TEST_F(StorageAccessGrantPermissionContextTest, InsecureOriginsAreAllowed) {
@@ -104,8 +110,7 @@ TEST_F(StorageAccessGrantPermissionContextTest,
   scoped_disable.InitAndDisableFeature(blink::features::kStorageAccessAPI);
 
   StorageAccessGrantPermissionContext permission_context(profile());
-  permissions::PermissionRequestID fake_id(
-      /*render_process_id=*/0, /*render_frame_id=*/0, /*request_id=*/0);
+  permissions::PermissionRequestID fake_id = CreateFakeID();
 
   ContentSetting result = CONTENT_SETTING_DEFAULT;
   permission_context.DecidePermission(
@@ -122,8 +127,7 @@ TEST_F(StorageAccessGrantPermissionContextTest,
   scoped_enable.InitAndEnableFeature(blink::features::kStorageAccessAPI);
 
   StorageAccessGrantPermissionContext permission_context(profile());
-  permissions::PermissionRequestID fake_id(
-      /*render_process_id=*/0, /*render_frame_id=*/0, /*request_id=*/0);
+  permissions::PermissionRequestID fake_id = CreateFakeID();
 
   const GURL requesting_origin(kAlternateURL);
   const GURL embedding_origin(kSecureURL);
@@ -170,8 +174,7 @@ TEST_F(StorageAccessGrantPermissionContextTest,
   scoped_enable.InitAndEnableFeature(blink::features::kStorageAccessAPI);
 
   StorageAccessGrantPermissionContext permission_context(profile());
-  permissions::PermissionRequestID fake_id(
-      /*render_process_id=*/0, /*render_frame_id=*/0, /*request_id=*/0);
+  permissions::PermissionRequestID fake_id = CreateFakeID();
 
   ContentSetting result = CONTENT_SETTING_DEFAULT;
   permission_context.DecidePermission(
@@ -219,8 +222,7 @@ TEST_F(StorageAccessGrantPermissionContextTest,
   histogram_tester.ExpectTotalCount(kGrantIsImplicitHistogram, 0);
 
   StorageAccessGrantPermissionContext permission_context(profile());
-  permissions::PermissionRequestID fake_id(
-      /*render_process_id=*/0, /*render_frame_id=*/0, /*request_id=*/0);
+  permissions::PermissionRequestID fake_id = CreateFakeID();
 
   const GURL requesting_origin_1(kAlternateURL);
   const GURL requesting_origin_2(kInsecureURL);
@@ -286,8 +288,7 @@ TEST_F(StorageAccessGrantPermissionContextTest, ExplicitGrantDenial) {
   histogram_tester.ExpectTotalCount(kPromptResultHistogram, 0);
 
   StorageAccessGrantPermissionContext permission_context(profile());
-  permissions::PermissionRequestID fake_id(
-      /*render_process_id=*/0, /*render_frame_id=*/0, /*request_id=*/0);
+  permissions::PermissionRequestID fake_id = CreateFakeID();
 
   const GURL requesting_origin_1(kAlternateURL);
   const GURL requesting_origin_2(kInsecureURL);
@@ -335,8 +336,7 @@ TEST_F(StorageAccessGrantPermissionContextTest, ExplicitGrantAccept) {
   histogram_tester.ExpectTotalCount(kPromptResultHistogram, 0);
 
   StorageAccessGrantPermissionContext permission_context(profile());
-  permissions::PermissionRequestID fake_id(
-      /*render_process_id=*/0, /*render_frame_id=*/0, /*request_id=*/0);
+  permissions::PermissionRequestID fake_id = CreateFakeID();
 
   const GURL requesting_origin_1(kAlternateURL);
   const GURL requesting_origin_2(kInsecureURL);

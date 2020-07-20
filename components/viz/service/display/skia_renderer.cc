@@ -2509,7 +2509,7 @@ void SkiaRenderer::CopyDrawnRenderPass(
   switch (draw_mode_) {
     case DrawMode::DDL: {
       // Root framebuffer uses id 0 in SkiaOutputSurface.
-      RenderPassId render_pass_id = 0;
+      RenderPassId render_pass_id;
       const auto* const render_pass = current_frame()->current_render_pass;
       if (render_pass != current_frame()->root_render_pass) {
         render_pass_id = render_pass->id;

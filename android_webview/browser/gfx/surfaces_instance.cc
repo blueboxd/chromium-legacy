@@ -143,7 +143,8 @@ void SurfacesInstance::DrawAndSwap(gfx::Size viewport,
   // Create a frame with a single SurfaceDrawQuad referencing the child
   // Surface and transformed using the given transform.
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
-  render_pass->SetNew(1, gfx::Rect(viewport), clip, gfx::Transform());
+  render_pass->SetNew(viz::RenderPassId{1}, gfx::Rect(viewport), clip,
+                      gfx::Transform());
   render_pass->has_transparent_background = false;
 
   viz::SharedQuadState* quad_state =
@@ -227,7 +228,7 @@ void SurfacesInstance::SetSolidColorRootFrame() {
   bool is_clipped = false;
   bool are_contents_opaque = true;
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
-  render_pass->SetNew(1, rect, rect, gfx::Transform());
+  render_pass->SetNew(viz::RenderPassId{1}, rect, rect, gfx::Transform());
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   quad_state->SetAll(gfx::Transform(), rect, rect, gfx::RRectF(), rect,

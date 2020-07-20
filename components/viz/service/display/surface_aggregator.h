@@ -219,7 +219,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // and return the combined damage rect.
   gfx::Rect PrewalkSurface(Surface* surface,
                            bool in_moved_pixel_surface,
-                           int parent_pass,
+                           RenderPassId parent_pass,
                            bool will_draw,
                            const gfx::Rect& damage_from_parent,
                            PrewalkResult* result);
@@ -326,9 +326,9 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // passes.
   int max_texture_size_ = 0;
   // The id for the final color conversion render pass.
-  RenderPassId color_conversion_render_pass_id_ = 0;
+  RenderPassId color_conversion_render_pass_id_;
   // The id for the optional render pass used to apply the display transform.
-  RenderPassId display_transform_render_pass_id_ = 0;
+  RenderPassId display_transform_render_pass_id_;
 
   base::flat_map<SurfaceId, int> surface_id_to_resource_child_id_;
 

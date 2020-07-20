@@ -15,6 +15,7 @@ class FilePath;
 
 namespace installer {
 class MasterPreferences;
+using InitialPreferences = MasterPreferences;
 }
 
 namespace first_run {
@@ -31,7 +32,7 @@ enum FirstRunState {
 
 // Sets up initial preferences by preferences passed by installer.
 void SetupInitialPrefsFromInstallPrefs(
-    const installer::MasterPreferences& install_prefs,
+    const installer::InitialPreferences& install_prefs,
     MasterPrefs* out_prefs);
 
 // Get the file path of the first run sentinel; returns false on failure.
@@ -54,7 +55,7 @@ bool IsOrganicFirstRun();
 // Shows the EULA dialog if required. Returns true if the EULA is accepted,
 // returns false if the EULA has not been accepted, in which case the browser
 // should exit.
-bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs);
+bool ShowPostInstallEULAIfNeeded(installer::InitialPreferences* install_prefs);
 
 // Returns the path for the initial preferences file.
 base::FilePath InitialPrefsPath();

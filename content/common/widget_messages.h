@@ -94,11 +94,6 @@ IPC_MESSAGE_ROUTED1(WidgetMsg_SetActive, bool /* active */)
 // are in progress.
 IPC_MESSAGE_ROUTED0(WidgetMsg_SetBounds_ACK)
 
-// Updates a RenderWidget's visual properties. This should include all
-// geometries and compositing inputs so that they are updated atomically.
-IPC_MESSAGE_ROUTED1(WidgetMsg_UpdateVisualProperties,
-                    blink::VisualProperties /* visual_properties */)
-
 // Informs the RenderWidget of its position on the user's screen, as well as
 // the position of the native window holding the RenderWidget.
 // TODO(danakj): These should be part of UpdateVisualProperties.
@@ -111,6 +106,12 @@ IPC_MESSAGE_ROUTED2(WidgetMsg_UpdateScreenRects,
 // IntersectionObserver API. Also see FrameHostMsg_UpdateViewportIntersection.
 IPC_MESSAGE_ROUTED1(WidgetMsg_SetViewportIntersection,
                     blink::ViewportIntersectionState /* intersection_state */)
+
+
+// Sent by the browser to synchronize with the next compositor frame by
+// requesting an ACK be queued. Used only for tests.
+IPC_MESSAGE_ROUTED1(WidgetMsg_WaitForNextFrameForTests,
+                    int /* main_frame_thread_observer_routing_id */)
 
 //
 // Renderer -> Browser Messages.
@@ -143,5 +144,8 @@ IPC_MESSAGE_ROUTED2(WidgetHostMsg_FrameSwapMessages,
 // Indicates that the render widget has been closed in response to a
 // Close message.
 IPC_MESSAGE_CONTROL1(WidgetHostMsg_Close_ACK, int /* old_route_id */)
+
+// Sent in reply to WidgetMsg_WaitForNextFrameForTests.
+IPC_MESSAGE_ROUTED0(WidgetHostMsg_WaitForNextFrameForTests_ACK)
 
 #endif  //  CONTENT_COMMON_WIDGET_MESSAGES_H_

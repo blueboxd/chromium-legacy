@@ -307,7 +307,7 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
 
       Menetapkan kebijakan akses mana yang digunakan untuk konfigurasi printer massal. Jika <ph name="PRINTERS_ALLOW_ALL" /> dipilih, semua printer akan ditampilkan. Jika <ph name="PRINTERS_BLOCKLIST" /> dipilih, <ph name="DEVICE_PRINTERS_BLOCKLIST" /> akan digunakan untuk membatasi akses ke printer tertentu. Jika <ph name="PRINTERS_ALLOWLIST" /> dipilih, <ph name="DEVICE_PRINTERS_ALLOWLIST" /> hanya akan menetapkan printer yang dapat dipilih.
 
-      Jika kebijakan ini tidak disetel, <ph name="PRINTERS_ALLOW_ALL" /> akan diasumsikan.
+      Jika kebijakan ini tidak disetel, <ph name="PRINTERS_ALLOW_ALL" /> akan diberlakukan.
       </translation>
 <translation id="1553532014072799546">Daftar yang Diizinkan terkait Batas Waktu per Aplikasi</translation>
 <translation id="1553956579506604198">Memblokir ekstensi eksternal sehingga tidak dapat diinstal</translation>
@@ -1902,7 +1902,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="3837424079837455272">Kebijakan ini mengontrol apakah pengguna baru dapat ditambahkan ke <ph name="PRODUCT_OS_NAME" /> atau tidak. Kebijakan ini tidak mencegah pengguna login ke akun Google lain dalam Android. Jika Anda ingin mencegah tindakan ini, konfigurasikan kebijakan <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> khusus Android sebagai bagian dari <ph name="ARC_POLICY_POLICY_NAME" />.</translation>
 <translation id="3838094946886335701">Jika menyetel kebijakan (sebagai direkomendasikan saja), Anda akan dapat mendaftarkan daftar pengendali protokol, yang digabungkan dengan yang didaftarkan pengguna, sehingga keduanya dapat digunakan. Setel properti "protokol" ke skema, seperti "mailto", dan setel properti "URL" ke pola URL aplikasi yang menangani skema yang ditentukan dalam kolom "protokol". Pola dapat mencakup placeholder "%s", yang diganti dengan URL yang ditangani.
 
-      Pengguna tidak dapat menghapus pengendali protokol yang didaftarkan dengan kebijakan. Namun, dengan menginstal pengendali default baru, pengguna dapat mengubah pengendali protokol yang diinstal dengan kebijakan.</translation>
+      Pengguna tidak dapat menghapus pengendali protokol yang didaftarkan oleh kebijakan. Namun, dengan menginstal pengendali default baru, pengguna dapat mengubah pengendali protokol yang diinstal oleh kebijakan.</translation>
 <translation id="3851039766298741586">Laporkan informasi tentang sesi kios aktif, misalnya
       ID dan versi aplikasi.
 
@@ -2402,7 +2402,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 
       Menetapkan kebijakan akses mana yang digunakan untuk konfigurasi printer massal. Jika <ph name="PRINTERS_ALLOW_ALL" /> dipilih, semua printer akan ditampilkan. Jika <ph name="PRINTERS_BLACKLIST" /> dipilih, <ph name="DEVICE_NATIVE_PRINTERS_BLACKLIST" /> akan digunakan untuk membatasi akses ke printer tertentu.  Jika <ph name="PRINTERS_WHITELIST" /> dipilih, <ph name="DEVICE_NATIVE_PRINTERS_WHITELIST" /> hanya akan menetapkan printer yang dapat dipilih.
 
-      Jika kebijakan ini tidak disetel, <ph name="PRINTERS_ALLOW_ALL" /> akan diasumsikan.
+      Jika kebijakan ini tidak disetel, <ph name="PRINTERS_ALLOW_ALL" /> akan diberlakukan.
 
       Kebijakan ini tidak digunakan lagi. Sebagai gantinya, gunakan <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
       </translation>
@@ -2420,13 +2420,13 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 
           Jika setelan ini dinonaktifkan atau tidak ditetapkan, host akses jarak jauh dapat dikaitkan dengan pengguna lokal mana pun.</translation>
 <translation id="4591366717022345234">Sediakan Quick Fix Build untuk pengguna</translation>
-<translation id="4592246263545654202">Menentukan apakah pengguna dapat membuka halaman dalam Mode samaran di <ph name="PRODUCT_NAME" /> atau tidak.
+<translation id="4592246263545654202">Menentukan apakah pengguna dapat membuka halaman dalam mode Samaran di <ph name="PRODUCT_NAME" /> atau tidak.
 
-      Jika 'Enabled' dipilih atau kebijakan tidak ditetapkan, halaman dapat dibuka dalam Mode samaran.
+      Jika 'Enabled' dipilih atau kebijakan tidak ditetapkan, halaman dapat dibuka dalam mode Samaran.
 
-      Jika 'Disabled' dipilih, halaman tidak dapat dibuka dalam Mode samaran.
+      Jika 'Disabled' dipilih, halaman tidak dapat dibuka dalam mode Samaran.
 
-      Jika 'Forced' dipilih, halaman dapat dibuka HANYA dalam Mode samaran. Perhatikan bahwa 'Paksa' tidak berfungsi pada Android di Chrome</translation>
+      Jika 'Forced' dipilih, halaman dapat dibuka HANYA dalam mode Samaran. Perhatikan bahwa 'Paksa' tidak berfungsi pada Android di Chrome</translation>
 <translation id="4600786265870346112">Aktifkan kursor besar</translation>
 <translation id="4604931264910482931">Konfigurasikan daftar hitam perpesanan asli</translation>
 <translation id="4614701085541180174">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs tempat sertifikat klien dipilih secara otomatis di layar login dalam frame yang menghosting alur SAML, jika situs tersebut meminta sertifikat. Contoh penggunaan adalah ketika mengonfigurasikan sertifikat di seluruh perangkat untuk ditampilkan ke SAML IdP.
@@ -2850,11 +2850,11 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan ini disetel, <ph name="PRODUCT_OS_NAME" /> akan mendownload file untuk konfigurasi printer dan menyediakan printer sesuai dengan <ph name="DEVICE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" />, dan <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
 
-      Kebijakan ini tidak memengaruhi kemampuan pengguna untuk mengonfigurasi printer di tiap perangkat.  Kebijakan ini ditujukan sebagai tambahan untuk konfigurasi printer yang diberikan oleh tiap pengguna.
+      Kebijakan ini tidak memengaruhi kemampuan pengguna untuk mengonfigurasi printer di tiap perangkat.  Kebijakan ini ditujukan sebagai tambahan untuk konfigurasi printer yang ditentukan oleh tiap pengguna.
 
       Kebijakan ini bersifat tambahan untuk <ph name="BULK_PRINTERS_POLICY" />.
 
-      Jika kebijakan ini tidak disetel, tidak akan ada perangkat printer dan kebijakan <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> akan diabaikan.
+      Jika kebijakan ini tidak disetel, tidak akan ada printer perangkat, dan kebijakan <ph name="DEVICE_PRINTERS_POLICY_PATTERN" /> yang lain akan diabaikan.
       </translation>
 <translation id="5273744932022326215">Mengaktifkan fitur aksesibilitas sorotan kursor di layar login.
 
@@ -3483,11 +3483,11 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Lihat deskripsi kebijakan '<ph name="URL_BLOCKLIST_POLICY_NAME" />' untuk format entri daftar ini.
 
-      Kebijakan ini dapat digunakan untuk membuka pengecualian daftar yang tidak diizinkan yang ketat. Misalnya, '*' dapat digunakan untuk memblokir semua permintaan, dan kebijakan ini dapat digunakan untuk mengizinkan akses ke daftar URL terbatas. Kebijakan ini juga dapat digunakan untuk membuka pengecualian pada skema tertentu, subdomain dari domain lain, port, atau jalur khusus.
+      Kebijakan ini dapat digunakan untuk membuka pengecualian daftar yang tidak diizinkan yang ketat. Misalnya, '*' dapat digunakan untuk memblokir semua permintaan, dan kebijakan ini dapat digunakan untuk mengizinkan akses ke URL yang ada dalam daftar terbatas. Kebijakan ini juga dapat digunakan untuk membuka pengecualian pada skema tertentu, subdomain dari domain lain, port, atau jalur khusus.
 
       Filter yang paling spesifik akan menentukan apakah URL diblokir atau diizinkan. Daftar yang diizinkan akan lebih diutamakan daripada daftar yang tidak diizinkan.
 
-      Kebijakan ini terbatas pada 1.000 entri; entri berikutnya akan diabaikan.
+      Kebijakan ini terbatas untuk 1.000 entri; entri berikutnya akan diabaikan.
 
       Kebijakan ini juga memungkinkan pengaktifan panggilan otomatis oleh browser aplikasi eksternal yang terdaftar sebagai pengendali protokol untuk protokol yang tercantum, seperti "tel:" atau "ssh:". Fungsi ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat, dan untuk instance macOS yang dikelola melalui MDM atau dihubungkan ke domain melalui MCX.
 
@@ -3511,7 +3511,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
        Hanya jika allowCorporateKeyUsage disetel ke True untuk suatu ekstensi, ekstensi tersebut dapat menggunakan kunci platform apa pun yang ditujukan untuk pemakaian dalam perusahaan, guna menandai data acak. Izin ini hanya boleh diberikan jika ekstensi dipercaya untuk mengamankan akses ke kunci dari para penyerang.</translation>
 <translation id="6205094657236844092">Menyetel kebijakan akan menentukan daftar aplikasi web yang diinstal otomatis, tanpa interaksi pengguna, dan yang tidak dapat di-uninstal atau dinonaktifkan pengguna.
 
-      Setiap item daftar kebijakan adalah objek yang berisi anggota wajib: <ph name="URL_LABEL" /> (URL aplikasi web yang akan diinstal) dan 2 anggota opsional: <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" /> (untuk cara aplikasi web terbuka—tab baru adalah default) dan <ph name="CREATE_DESKTOP_SHORTCUT_LABEL" /> (Benar (True), jika Anda ingin membuat pintasan desktop <ph name="LINUX_OS_NAME" /> dan Windows®).
+      Setiap item daftar kebijakan adalah objek yang berisi satu elemen wajib: <ph name="URL_LABEL" /> (URL aplikasi web yang akan diinstal) dan 2 elemen opsional: <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" /> (untuk cara aplikasi web terbuka—tab baru adalah default) dan <ph name="CREATE_DESKTOP_SHORTCUT_LABEL" /> (Berlaku jika Anda ingin membuat pintasan desktop <ph name="LINUX_OS_NAME" /> dan Windows®).
 
       Lihat <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> untuk memasang pin aplikasi ke rak <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="6208896993204286313">Melaporkan Informasi Kebijakan <ph name="PRODUCT_NAME" /></translation>
@@ -3593,7 +3593,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Menonaktifkan skema protokol yang tercantum di <ph name="PRODUCT_NAME" />.
 
-      URL yang menggunakan skema dari daftar ini tidak akan memuat dan tidak dapat dibuka.
+      URL yang menggunakan skema dari daftar ini tidak akan dimuat dan tidak dapat dibuka.
 
       Jika kebijakan ini tidak disetel atau daftar kosong, semua skema akan dapat diakses di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6342187235303612558">Memblokir pengguna agar tidak mengupload atau mendownload file yang saat ini tidak didukung untuk DLP atau pemindaian malware.</translation>
@@ -3650,7 +3650,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="645425387487868471">Aktifkan login paksa untuk <ph name="PRODUCT_NAME" /></translation>
 <translation id="646376229090051440">Memungkinkan Anda menyetel daftar protokol, dan daftar terkait pola asal yang diizinkan untuk setiap protokol, yang dapat meluncurkan aplikasi eksternal tanpa meminta izin pengguna. Pemisah di akhir tidak boleh disertakan saat mencantumkan protokol, jadi cantumkan "skype" bukan "skype:" atau "skype://".
 
-      Jika kebijakan ini disetel, protokol hanya akan diizinkan oleh kebijakan untuk meluncurkan aplikasi eksternal tanpa meminta izin jika protokol tersebut tercantum, dan asal situs yang mencoba meluncurkan protokol tersebut cocok dengan pola asal dalam daftar allowed_origins protokol. Jika salah satu kondisinya disetel ke salah (false), permintaan izin peluncuran protokol eksternal tidak akan dihilangkan oleh kebijakan.
+      Jika kebijakan ini disetel, protokol hanya akan diizinkan oleh kebijakan untuk meluncurkan aplikasi eksternal tanpa meminta izin jika protokol tersebut tercantum, dan asal situs yang mencoba meluncurkan protokol tersebut cocok dengan pola asal dalam daftar allowed_origins protokol. Jika salah satu kondisinya tidak terpenuhi, permintaan izin peluncuran protokol eksternal tidak akan dihilangkan oleh kebijakan.
 
       Jika kebijakan ini tidak disetel, secara default tidak ada protokol yang dapat diluncurkan tanpa meminta izin. Pengguna dapat memilih tidak dimintai izin per protokol/per situs kecuali kebijakan <ph name="EXTERNAL_PROTOCOL_DIALOG_SHOW_ALWAYS_OPEN_CHECKBOX_POLICY_NAME" /> disetel ke Nonaktif. Kebijakan ini tidak memengaruhi pengecualian permintaan izin per protokol/per situs yang disetel pengguna.
 
@@ -3674,7 +3674,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika kebijakan dinonaktifkan atau tidak disetel, lokal tersebut akan berupa lokal valid pertama yang dipilih dari:
       1) Lokal yang ditentukan pengguna (jika dikonfigurasi).
       2) Lokal sistem.
-      3) Lokal penggantian (en-US).</translation>
+      3) Lokal pengganti (en-US).</translation>
 <translation id="6495337487202227251">Perhatikan bahwa kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 85. Sebagai gantinya, gunakan <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
 
           Menentukan durasi waktu tanpa masukan pengguna setelah layar dikunci saat menggunakan daya baterai.
@@ -5236,11 +5236,11 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 
       Lihat deskripsi kebijakan '<ph name="URL_BLOCKLIST_POLICY_NAME" />' untuk format entri daftar ini.
 
-      Kebijakan ini dapat digunakan untuk membuka pengecualian daftar yang tidak diizinkan yang ketat. Misalnya, '*' dapat digunakan untuk memblokir semua permintaan, dan kebijakan ini dapat digunakan untuk mengizinkan akses ke daftar URL terbatas. Kebijakan ini juga dapat digunakan untuk membuka pengecualian pada skema tertentu, subdomain dari domain lain, port, atau jalur khusus.
+      Kebijakan ini dapat digunakan untuk membuka pengecualian daftar yang tidak diizinkan yang ketat. Misalnya, '*' dapat digunakan untuk memblokir semua permintaan, dan kebijakan ini dapat digunakan untuk mengizinkan akses ke URL yang ada dalam daftar terbatas. Kebijakan ini juga dapat digunakan untuk membuka pengecualian pada skema tertentu, subdomain dari domain lain, port, atau jalur khusus.
 
       Filter yang paling spesifik akan menentukan apakah URL diblokir atau diizinkan. Daftar yang diizinkan akan lebih diutamakan daripada daftar yang tidak diizinkan.
 
-      Kebijakan ini terbatas pada 1.000 entri; entri berikutnya akan diabaikan.
+      Kebijakan ini terbatas untuk 1.000 entri; entri berikutnya akan diabaikan.
 
       Kebijakan ini juga memungkinkan pengaktifan panggilan otomatis oleh browser aplikasi eksternal yang terdaftar sebagai pengendali protokol untuk protokol yang tercantum, seperti "tel:" atau "ssh:". Fungsi ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat, dan untuk instance macOS yang dikelola melalui MDM atau dihubungkan ke domain melalui MCX.
 

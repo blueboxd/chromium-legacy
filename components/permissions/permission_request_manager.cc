@@ -99,7 +99,13 @@ PermissionRequestManager::~PermissionRequestManager() {
   DCHECK(queued_requests_.empty());
 }
 
-void PermissionRequestManager::AddRequest(PermissionRequest* request) {
+void PermissionRequestManager::AddRequest(
+    content::RenderFrameHost* source_frame,
+    PermissionRequest* request) {
+  DCHECK(source_frame);
+  DCHECK_EQ(content::WebContents::FromRenderFrameHost(source_frame),
+            web_contents());
+
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDenyPermissionPrompts)) {
     request->PermissionDenied();

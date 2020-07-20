@@ -8,6 +8,7 @@
 <translation id="1046068652463704410">日本語入力（US キーボード用）</translation>
 <translation id="1047956942837015229"><ph name="COUNT" /> 件の項目を削除しています...</translation>
 <translation id="1049926623896334335">Word ドキュメント</translation>
+<translation id="1060368002126861100"><ph name="APP_NAME" /> でファイルを開くには、まず [Windows ファイル] フォルダにファイルを移動してください。</translation>
 <translation id="1062407476771304334">置換</translation>
 <translation id="1065449928621190041">フランス語（カナダ）のキーボード</translation>
 <translation id="1119069657431255176">bzip2 で圧縮された tar アーカイブ</translation>
@@ -221,6 +222,7 @@
 <translation id="3524311639100184459">注: これらのファイルは一時的なもので、ディスクの空き容量を増やすために自動的に削除されることがあります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">フォルダ</translation>
 <translation id="3549797760399244642">drive.google.com にアクセスします...</translation>
+<translation id="3553048479571901246"><ph name="APP_NAME" /> でファイルを開くには、まず [Windows ファイル] フォルダにファイルをコピーしてください。</translation>
 <translation id="357479282490346887">リトアニア語</translation>
 <translation id="3583509704582854624">英数入力（日本語キーボード用）</translation>
 <translation id="3603385196401704894">フランス語（カナダ）</translation>

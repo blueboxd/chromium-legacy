@@ -54,6 +54,10 @@ class COMPONENT_EXPORT(CROS_HEALTHD) FakeCrosHealthdClient
   // ProbeTelemetryInfo IPCs received.
   void SetProbeTelemetryInfoResponseForTesting(mojom::TelemetryInfoPtr& info);
 
+  // Set the ProcessResultPtr that will be used in the response to any
+  // ProbeProcessInfo IPCs received.
+  void SetProbeProcessInfoResponseForTesting(mojom::ProcessResultPtr& result);
+
   // Calls the power event OnAcInserted on all registered power observers.
   void EmitAcInsertedEventForTesting();
 

@@ -6,6 +6,7 @@ package org.chromium.components.paintpreview.player.frame;
 
 import android.content.Context;
 import android.graphics.Rect;
+import android.util.Size;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.OverScroller;
@@ -37,12 +38,24 @@ public class PlayerFrameCoordinator {
         PropertyModel model = new PropertyModel.Builder(PlayerFrameProperties.ALL_KEYS).build();
         OverScroller scroller = new OverScroller(context);
         scroller.setFriction(ViewConfiguration.getScrollFriction() / 2);
-        mMediator = new PlayerFrameMediator(model, compositorDelegate, new PlayerFrameViewport(),
-                scroller, gestureHandler, frameGuid, contentWidth, contentHeight, initialScrollX,
-                initialScrollY);
-        mView = new PlayerFrameView(context, canDetectZoom, mMediator);
+
+        mMediator = new PlayerFrameMediator(model, compositorDelegate, gestureHandler, frameGuid,
+                new Size(contentWidth, contentHeight), initialScrollX, initialScrollY);
+
+        PlayerFrameScaleController scaleController = null;
+        if (canDetectZoom) {
+            scaleController =
+                    new PlayerFrameScaleController(model.get(PlayerFrameProperties.SCALE_MATRIX),
+                            mMediator, gestureHandler::onScale);
+        }
+        PlayerFrameScrollController scrollController = new PlayerFrameScrollController(
+                scroller, mMediator, gestureHandler::onScroll, gestureHandler::onFling);
+        PlayerFrameGestureDetectorDelegate gestureDelegate = new PlayerFrameGestureDetectorDelegate(
+                scaleController, scrollController, mMediator);
+
+        mView = new PlayerFrameView(context, canDetectZoom, mMediator, gestureDelegate);
         if (overscrollHandler != null) {
-            mMediator.setOverscrollHandler(overscrollHandler);
+            scrollController.setOverscrollHandler(overscrollHandler);
         }
         PropertyModelChangeProcessor.create(model, mView, PlayerFrameViewBinder::bind);
     }

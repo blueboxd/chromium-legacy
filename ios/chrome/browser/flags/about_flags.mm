@@ -665,6 +665,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAddWebContentDropInteractionDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kAddWebContentDropInteraction)},
+    {"enable-fullpage-screenshot",
+     flag_descriptions::kEnableFullPageScreenshotName,
+     flag_descriptions::kEnableFullPageScreenshotDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kEnableFullPageScreenshot)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

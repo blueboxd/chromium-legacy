@@ -36,6 +36,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
@@ -364,6 +365,18 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
   void TearDown() override {
     ExtensionMessageBubbleController::set_should_ignore_learn_more_for_testing(
         false);
+    WaitForStorageCleanup();
+    // Clean up global state for the delegates. Since profiles are stored in
+    // global variables, they can be shared between tests and cause
+    // unpredicatable behavior.
+    DevModeBubbleDelegate(profile()).ClearProfileSetForTesting();
+    NtpOverriddenBubbleDelegate(profile()).ClearProfileSetForTesting();
+    ProxyOverriddenBubbleDelegate(profile()).ClearProfileSetForTesting();
+    for (auto type : {BUBBLE_TYPE_HOME_PAGE, BUBBLE_TYPE_SEARCH_ENGINE,
+                      BUBBLE_TYPE_STARTUP_PAGES}) {
+      SettingsApiBubbleDelegate(profile(), type).ClearProfileSetForTesting();
+    }
+    SuspiciousExtensionBubbleDelegate(profile()).ClearProfileSetForTesting();
     BrowserWithTestWindowTest::TearDown();
   }
 
@@ -396,6 +409,13 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
     EXPECT_FALSE(controller->ShouldShow());
   }
 
+  void WaitForStorageCleanup() {
+    content::StoragePartition* partition =
+        content::BrowserContext::GetDefaultStoragePartition(profile());
+    if (partition)
+      partition->WaitForDeletionTasksForTesting();
+  }
+
  protected:
   ExtensionService* service_;
 
@@ -412,9 +432,8 @@ class ExtensionMessageBubbleTestWithParam
 // Test that the bubble correctly treats dismissal due to deactivation.
 // Currently, the NTP bubble is the only one that has flexible behavior (toggled
 // by a feature).
-// TODO(https://crbug.com/836332): Re-enable once not flaky.
 TEST_P(ExtensionMessageBubbleTestWithParam,
-       DISABLED_BubbleCorrectlyReshowsOnDeactivationDismissal) {
+       BubbleCorrectlyReshowsOnDeactivationDismissal) {
   const bool kAcknowledgeOnDeactivate = GetParam();
   base::test::ScopedFeatureList feature_list;
   if (kAcknowledgeOnDeactivate) {
@@ -741,12 +760,8 @@ TEST_F(ExtensionMessageBubbleTest, ShowDevModeBubbleOncePerOriginalProfile) {
 
 // The feature this is meant to test is only implemented on Windows and Mac.
 #if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_SettingsApiControllerTest SettingsApiControllerTest
-#else
-#define MAYBE_SettingsApiControllerTest DISABLED_SettingsApiControllerTest
-#endif
 
-TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
+TEST_F(ExtensionMessageBubbleTest, SettingsApiControllerTest) {
 #if defined(OS_MACOSX)
   // On Mac, this API is limited to trunk.
   ScopedCurrentChannel scoped_channel(version_info::Channel::UNKNOWN);
@@ -888,11 +903,11 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
   }
 }
 
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+
 // Tests that a displayed extension bubble will be closed after its associated
 // enabled extension is uninstalled.
-// TODO(https://crbug.com/836332): Re-enable once not flaky.
-TEST_F(ExtensionMessageBubbleTest,
-       DISABLED_TestBubbleClosedAfterEnabledExtensionUninstall) {
+TEST_F(ExtensionMessageBubbleTest, BubbleClosedAfterEnabledExtensionUninstall) {
   Init();
   ASSERT_TRUE(LoadExtensionOverridingNtp("1", kId1, Manifest::UNPACKED));
 
@@ -924,9 +939,8 @@ TEST_F(ExtensionMessageBubbleTest,
 // Tests that a displayed extension bubble will be closed after its associated
 // disabled extension is uninstalled. Here a suspicious bubble controller is
 // tested, which can display bubbles for disabled extensions.
-// TODO(https://crbug.com/836332): Re-enable once not flaky.
 TEST_F(ExtensionMessageBubbleTest,
-       DISABLED_TestBubbleClosedAfterDisabledExtensionUninstall) {
+       BubbleClosedAfterDisabledExtensionUninstall) {
   Init();
   ASSERT_TRUE(LoadExtensionOverridingNtp("1", kId1, Manifest::COMMAND_LINE));
 
@@ -978,9 +992,7 @@ TEST_F(ExtensionMessageBubbleTest,
 // Tests that a bubble associated with multiple extensions remains shown after
 // one of its associated extensions is uninstalled. Also tests that the bubble
 // closes when all of its associated extensions are uninstalled.
-// Flaky: https://crbug.com/836332
-TEST_F(ExtensionMessageBubbleTest,
-       DISABLED_TestBubbleShownForMultipleExtensions) {
+TEST_F(ExtensionMessageBubbleTest, BubbleShownForMultipleExtensions) {
   FeatureSwitch::ScopedOverride force_dev_mode_highlighting(
       FeatureSwitch::force_dev_mode_highlighting(), true);
   Init();
@@ -1024,8 +1036,7 @@ TEST_F(ExtensionMessageBubbleTest,
 
 // The feature this is meant to test is only enacted on Windows, but it should
 // pass on all platforms.
-// TODO(https://crbug.com/836332): Re-enable once not flaky.
-TEST_F(ExtensionMessageBubbleTest, DISABLED_NtpOverriddenControllerTest) {
+TEST_F(ExtensionMessageBubbleTest, NtpOverriddenControllerTest) {
   Init();
   // Load two extensions overriding new tab page and one overriding something
   // unrelated (to check for interference). Extension 2 should still win
@@ -1138,9 +1149,7 @@ TEST_F(ExtensionMessageBubbleTest, DISABLED_NtpOverriddenControllerTest) {
 // an NTP overriding extension is installed for a single profile. Note that the
 // NTP bubble is only implemented on Windows and ChromeOs, but this test should
 // still pass on Linux and Mac.
-// TODO(https://crbug.com/836332): Re-enable once not flaky.
-TEST_F(ExtensionMessageBubbleTest,
-       DISABLED_ShowNtpBubblePerProfilePerExtensionTest) {
+TEST_F(ExtensionMessageBubbleTest, ShowNtpBubblePerProfilePerExtensionTest) {
   Init();
   ASSERT_TRUE(LoadExtensionOverridingNtp("1", kId1, Manifest::UNPACKED));
   std::unique_ptr<TestExtensionMessageBubbleController> controller(
@@ -1340,22 +1349,12 @@ TEST_F(ExtensionMessageBubbleTest, TestBubbleOutlivesBrowser) {
   controller.reset();
 }
 
-// Fails on linux-chromeos-rel: crbug.com/839371
-#if defined(OS_CHROMEOS)
-#define MAYBE_TestUninstallExtensionAfterBrowserDestroyed \
-  DISABLED_TestUninstallExtensionAfterBrowserDestroyed
-#else
-// TODO(https://crbug.com/836332): Re-enable once not flaky.
-#define MAYBE_TestUninstallExtensionAfterBrowserDestroyed \
-  DISABLED_TestUninstallExtensionAfterBrowserDestroyed
-#endif  // defined(OS_CHROMEOS)
-
 // Tests that when an extension -- associated with a bubble controller -- is
 // uninstalling after the browser is destroyed, the controller does not access
 // the associated browser object and therefore, no use-after-free occurs.
 // crbug.com/756316
 TEST_F(ExtensionMessageBubbleTest,
-       MAYBE_TestUninstallExtensionAfterBrowserDestroyed) {
+       TestUninstallExtensionAfterBrowserDestroyed) {
   FeatureSwitch::ScopedOverride force_dev_mode_highlighting(
       FeatureSwitch::force_dev_mode_highlighting(), true);
   Init();

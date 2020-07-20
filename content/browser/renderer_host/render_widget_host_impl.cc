@@ -95,7 +95,6 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/ipc/common/gpu_messages.h"
-#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/filename_util.h"
@@ -631,7 +630,6 @@ RenderWidgetHostImpl::BindNewFrameWidgetInterfaces() {
   blink_frame_widget_host_receiver_.reset();
   blink_frame_widget_.reset();
   frame_widget_input_handler_.reset();
-  widget_compositor_.reset();
   return std::make_pair(
       blink_frame_widget_host_receiver_.BindNewEndpointAndPassRemote(),
       blink_frame_widget_.BindNewEndpointAndPassReceiver());
@@ -646,7 +644,6 @@ void RenderWidgetHostImpl::BindFrameWidgetInterfaces(
   blink_frame_widget_host_receiver_.reset();
   blink_frame_widget_.reset();
   frame_widget_input_handler_.reset();
-  widget_compositor_.reset();
   blink_frame_widget_host_receiver_.Bind(std::move(frame_widget_host));
   blink_frame_widget_.Bind(std::move(frame_widget));
 }
@@ -932,14 +929,14 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   //
   // The plumbing goes:
   // 1. Browser:    parent RenderWidgetHost
-  // 2. IPC           -> WidgetMsg_UpdateVisualProperties
+  // 2. IPC           -> blink::mojom::Widget::UpdateVisualProperties
   // 3. Renderer A: parent RenderWidget
   //                  (sometimes blink involved)
   // 4. Renderer A: child  RenderFrameProxy
   // 5. IPC           -> FrameHostMsg_SynchronizeVisualProperties
   // 6. Browser:    child  CrossProcessFrameConnector
   // 7. Browser:    parent RenderWidgetHost (We're here if |is_child_frame|.)
-  // 8. IPC           -> WidgetMsg_UpdateVisualProperties
+  // 8. IPC           -> blink::mojom::Widget::UpdateVisualProperties
   // 9. Renderer B: child  RenderWidget
 
   // This property comes from the top-level main frame.
@@ -1064,6 +1061,11 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   if (!renderer_initialized_)
     return false;
 
+  // If we have not bound the blink widget interface put this request off.
+  // SynchronizeVisualProperties will get called after the channel is bound.
+  if (!blink_widget_)
+    return false;
+
   // Skip if the |delegate_| has already been detached because it's web contents
   // is being deleted, or if LocalSurfaceIdAllocation is suppressed, as we are
   // first updating our internal state from a child's request, before
@@ -1084,7 +1086,7 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   visual_properties->scroll_focused_node_into_view =
       scroll_focused_node_into_view;
 
-  Send(new WidgetMsg_UpdateVisualProperties(routing_id_, *visual_properties));
+  blink_widget_->UpdateVisualProperties(*visual_properties);
 
   bool width_changed =
       !old_visual_properties_ || old_visual_properties_->new_size.width() !=
@@ -2888,23 +2890,6 @@ bool RenderWidgetHostImpl::RemovePendingUserActivationIfAvailable() {
     return true;
   }
   return false;
-}
-
-void RenderWidgetHostImpl::InsertVisualStateCallback(
-    VisualStateCallback callback) {
-  if (!blink_frame_widget_) {
-    std::move(callback).Run(false);
-    return;
-  }
-
-  if (!widget_compositor_) {
-    blink_frame_widget_->BindWidgetCompositor(
-        widget_compositor_.BindNewPipeAndPassReceiver());
-  }
-
-  widget_compositor_->VisualStateRequest(base::BindOnce(
-      [](VisualStateCallback callback) { std::move(callback).Run(true); },
-      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false)));
 }
 
 const mojo::AssociatedRemote<blink::mojom::FrameWidget>&

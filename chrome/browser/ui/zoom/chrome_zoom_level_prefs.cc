@@ -140,7 +140,7 @@ void ChromeZoomLevelPrefs::OnZoomLevelChanged(
   }
 
   if (modification_is_removal) {
-    host_zoom_dictionary_weak->RemoveWithoutPathExpansion(change.host, nullptr);
+    host_zoom_dictionary_weak->RemoveKey(change.host);
   } else {
     base::DictionaryValue dict;
     dict.SetDouble(kZoomLevelPath, level);
@@ -212,7 +212,7 @@ void ChromeZoomLevelPrefs::ExtractPerHostZoomLevels(
     host_zoom_dictionaries->GetDictionary(partition_key_,
                                           &host_zoom_dictionary);
     for (const std::string& s : keys_to_remove)
-      host_zoom_dictionary->RemoveWithoutPathExpansion(s, nullptr);
+      host_zoom_dictionary->RemoveKey(s);
   }
 }
 

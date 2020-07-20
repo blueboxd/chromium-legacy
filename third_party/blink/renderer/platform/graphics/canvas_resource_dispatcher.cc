@@ -228,7 +228,7 @@ bool CanvasResourceDispatcher::PrepareFrame(
   frame->metadata.frame_token = ++next_frame_token_;
 
   const gfx::Rect bounds(size_.Width(), size_.Height());
-  constexpr int kRenderPassId = 1;
+  constexpr viz::RenderPassId kRenderPassId{1};
   constexpr bool is_clipped = false;
   auto pass = viz::RenderPass::Create(/*shared_quad_state_list_size=*/1u,
                                       /*quad_list_size=*/1u);

@@ -32,17 +32,31 @@ TEST(CookieInclusionStatusTest, IncludeStatus) {
 TEST(CookieInclusionStatusTest, ExcludeStatus) {
   int num_exclusion_reasons =
       static_cast<int>(CookieInclusionStatus::NUM_EXCLUSION_REASONS);
+  // Test exactly one exclusion reason and multiple (two) exclusion reasons.
   for (int i = 0; i < num_exclusion_reasons; ++i) {
-    auto reason = static_cast<CookieInclusionStatus::ExclusionReason>(i);
-    CookieInclusionStatus status(reason);
-    EXPECT_TRUE(status.IsValid());
-    EXPECT_FALSE(status.IsInclude());
-    EXPECT_TRUE(status.HasExclusionReason(reason));
+    auto reason1 = static_cast<CookieInclusionStatus::ExclusionReason>(i);
+    CookieInclusionStatus status_one_reason(reason1);
+    EXPECT_TRUE(status_one_reason.IsValid());
+    EXPECT_FALSE(status_one_reason.IsInclude());
+    EXPECT_TRUE(status_one_reason.HasExclusionReason(reason1));
+    EXPECT_TRUE(status_one_reason.HasOnlyExclusionReason(reason1));
+
     for (int j = 0; j < num_exclusion_reasons; ++j) {
       if (i == j)
         continue;
-      EXPECT_FALSE(status.HasExclusionReason(
-          static_cast<CookieInclusionStatus::ExclusionReason>(j)));
+      auto reason2 = static_cast<CookieInclusionStatus::ExclusionReason>(j);
+
+      EXPECT_FALSE(status_one_reason.HasExclusionReason(reason2));
+      EXPECT_FALSE(status_one_reason.HasOnlyExclusionReason(reason2));
+
+      CookieInclusionStatus status_two_reasons = status_one_reason;
+      status_two_reasons.AddExclusionReason(reason2);
+      EXPECT_TRUE(status_two_reasons.IsValid());
+      EXPECT_FALSE(status_two_reasons.IsInclude());
+      EXPECT_TRUE(status_two_reasons.HasExclusionReason(reason1));
+      EXPECT_TRUE(status_two_reasons.HasExclusionReason(reason2));
+      EXPECT_FALSE(status_two_reasons.HasOnlyExclusionReason(reason1));
+      EXPECT_FALSE(status_two_reasons.HasOnlyExclusionReason(reason2));
     }
   }
 }

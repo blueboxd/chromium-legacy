@@ -11,34 +11,43 @@ class PrefService;
 
 namespace updater {
 
-class ScopedPrefsLock;
-
-extern const char kPrefQualified[];
-extern const char kPrefSwapping[];
-extern const char kPrefActiveVersion[];
-
 class UpdaterPrefs {
  public:
-  UpdaterPrefs(std::unique_ptr<ScopedPrefsLock> lock,
-               std::unique_ptr<PrefService> prefs);
+  UpdaterPrefs() = default;
   UpdaterPrefs(const UpdaterPrefs&) = delete;
   UpdaterPrefs& operator=(const UpdaterPrefs&) = delete;
-  ~UpdaterPrefs();
+  virtual ~UpdaterPrefs() = default;
 
-  PrefService* GetPrefService() const;
+  virtual PrefService* GetPrefService() const = 0;
+};
 
- private:
-  std::unique_ptr<ScopedPrefsLock> lock_;
-  std::unique_ptr<PrefService> prefs_;
+class LocalPrefs : public UpdaterPrefs {
+ public:
+  LocalPrefs() = default;
+  ~LocalPrefs() override = default;
+
+  virtual bool GetQualified() const = 0;
+  virtual void SetQualified(bool value) = 0;
+};
+
+class GlobalPrefs : public UpdaterPrefs {
+ public:
+  GlobalPrefs() = default;
+  ~GlobalPrefs() override = default;
+
+  virtual std::string GetActiveVersion() const = 0;
+  virtual void SetActiveVersion(std::string value) = 0;
+  virtual bool GetSwapping() const = 0;
+  virtual void SetSwapping(bool value) = 0;
 };
 
 // Open the global prefs. These prefs are protected by a mutex, and shared by
 // all updaters on the system. Returns nullptr if the mutex cannot be acquired.
-std::unique_ptr<UpdaterPrefs> CreateGlobalPrefs();
+std::unique_ptr<GlobalPrefs> CreateGlobalPrefs();
 
 // Open the version-specific prefs. These prefs are not protected by any mutex
 // and not shared with other versions of the updater.
-std::unique_ptr<UpdaterPrefs> CreateLocalPrefs();
+std::unique_ptr<LocalPrefs> CreateLocalPrefs();
 
 // Commits prefs changes to storage. This function should only be called
 // when the changes must be written immediately, for instance, during program

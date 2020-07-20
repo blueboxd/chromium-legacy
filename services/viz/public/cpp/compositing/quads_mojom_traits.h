@@ -198,7 +198,7 @@ struct StructTraits<viz::mojom::DebugBorderQuadStateDataView, viz::DrawQuad> {
 
 template <>
 struct StructTraits<viz::mojom::RenderPassQuadStateDataView, viz::DrawQuad> {
-  static uint64_t render_pass_id(const viz::DrawQuad& input) {
+  static viz::RenderPassId render_pass_id(const viz::DrawQuad& input) {
     const viz::RenderPassDrawQuad* quad =
         viz::RenderPassDrawQuad::MaterialCast(&input);
     DCHECK(quad->render_pass_id);

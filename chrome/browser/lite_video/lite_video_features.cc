@@ -21,6 +21,11 @@ bool IsLiteVideoEnabled() {
   return base::FeatureList::IsEnabled(::features::kLiteVideo);
 }
 
+bool IsCoinflipExperimentEnabled() {
+  return base::GetFieldTrialParamByFeatureAsBool(::features::kLiteVideo,
+                                                 "is_coinflip_exp", false);
+}
+
 base::Optional<base::Value> GetLiteVideoOriginHintsFromFieldTrial() {
   if (!IsLiteVideoEnabled())
     return base::nullopt;

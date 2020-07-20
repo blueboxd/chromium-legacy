@@ -328,7 +328,6 @@ KNOWN_NON_IOS_LIBRARIES = set([
     os.path.join('third_party', 'ashmem'),
     os.path.join('third_party', 'blink'),
     os.path.join('third_party', 'bspatch'),
-    os.path.join('third_party', 'cacheinvalidation'),
     os.path.join('third_party', 'cld'),
     os.path.join('third_party', 'flot'),
     os.path.join('third_party', 'gtk+'),

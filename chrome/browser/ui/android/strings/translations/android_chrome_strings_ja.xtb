@@ -457,6 +457,7 @@
 <translation id="4749960740855309258">新しいタブを開く</translation>
 <translation id="4759238208242260848">ダウンロード</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 件のダウンロードが完了しました。}other{# 件のダウンロードが完了しました。}}</translation>
+<translation id="4766678251456904326">デバイスへのアカウントの追加</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{1 件のダウンロードがスケジュール設定されました。}other{# 件のダウンロードがスケジュール設定されました。}}</translation>
 <translation id="478981486571169252">Chrome での <ph name="SITE_NAME" /> のログイン ステータス、閲覧データ、サイトデータが表示されます。</translation>
 <translation id="4802417911091824046">パスフレーズ暗号化の対象に Google Pay のお支払い方法と住所は含まれません。

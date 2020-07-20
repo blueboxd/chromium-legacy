@@ -228,6 +228,11 @@ const char kEnableClipboardProviderImageSuggestionsName[] =
 const char kEnableClipboardProviderImageSuggestionsDescription[] =
     "Enable suggesting a search for the image copied to the clipboard";
 
+const char kEnableFullPageScreenshotName[] = "Enable fullpage screenshots";
+const char kEnableFullPageScreenshotDescription[] =
+    "Enables the option of capturing an entire webpage as a PDF when a "
+    "screenshot is taken.";
+
 const char kEnableIOSManagedSettingsUIName[] = "Enable IOS Managed Settings UI";
 const char kEnableIOSManagedSettingsUIDescription[] =
     "Enable showing a different UI when the setting is managed by an "

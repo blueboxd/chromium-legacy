@@ -3,37 +3,40 @@
      found in the LICENSE file. -->
 <style>
 
-#lessonTitle {
-	font-family: 'Roboto', sans-serif;
-	font-size: 30pt;
-	font-weight: bold;
+#content {
+  display: block;
+  font-family: Google Sans;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 24px;
+  text-align: center;
 }
 
-#lessonContent {
-	display: block;
-	font-family: 'Roboto', sans-serif;
-	font-size: 16pt;
-	line-height: 150%;
+#startPractice {
+  margin-bottom: 10px;
+  margin-inline-end: 10px;
+  margin-inline-start: 10px;
+  margin-top: 10px;
 }
 
 </style>
 
-<div id="lessonContainer" hidden>
-	<h1 id="lessonTitle" tabindex="-1">[[title]]</h1>
-	<div id="lessonContent">
-		<template is="dom-repeat" items="[[ content ]]" as="text">
-			<p>[[ text ]]</p>
-		</template>
-	</div>
-	<cr-dialog id="testAreaContainer" close-text="Exit test area" 
-			on-close="closeTestArea" show-close-button>
-		<div id="testAreaTitle" class="title" 
-			slot="title">[[testAreaTitle]]</div>
-		<div class="body" slot="body">
-			<p id="testAreaInstructions">[[testAreaInstructions]]</p>
-			<div id="testArea"></div>
-		</div>
-	</cr-dialog>
-	<cr-button id="showTestArea" on-click="showTestArea" 
-		hidden$="[[ shouldHideTestAreaButton_() ]]">Show test area</cr-button>
+<div id="container" hidden>
+  <h1 id="title" tabindex="-1">[[ title ]]</h1>
+  <div id="content">
+    <template is="dom-repeat" items="[[ content ]]" as="text">
+      <p>[[ text ]]</p>
+    </template>
+  </div>
+  <cr-dialog id="practice" close-text="Exit practice area"
+      on-close="endPractice" show-close-button>
+    <div class="title" slot="title">[[ practiceTitle ]]</div>
+    <div class="body" slot="body">
+      <p>[[ practiceInstructions ]]</p>
+      <div id="practiceContent"></div>
+    </div>
+  </cr-dialog>
+  <cr-button id="startPractice" on-click="startPractice"
+    hidden$="[[ shouldHidePracticeButton() ]]">Practice Area</cr-button>
 </div>

@@ -20,7 +20,6 @@
 #include "base/rand_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -235,6 +234,9 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
                               base::Unretained(this)),
           &sync_prefs_,
           sync_client_->GetTrustedVaultClient()),
+      backend_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       network_time_update_callback_(
           std::move(init_params.network_time_update_callback)),
       url_loader_factory_(std::move(init_params.url_loader_factory)),
@@ -506,37 +508,6 @@ void ProfileSyncService::OnDataTypeRequestsSyncStartup(ModelType type) {
   startup_controller_->OnDataTypeRequestsSyncStartup(type);
 }
 
-void ProfileSyncService::InitializeBackendTaskRunnerIfNeeded() {
-  if (backend_task_runner_) {
-    // Already started.
-    return;
-  }
-
-  if (base::FeatureList::IsEnabled(
-          switches::kProfileSyncServiceUsesThreadPool)) {
-    backend_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
-        {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-         base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
-  } else {
-    // The thread where all the sync operations happen. This thread is kept
-    // alive until browser shutdown and reused if sync is turned off and on
-    // again. It is joined during the shutdown process, but there is an abort
-    // mechanism in place to prevent slow HTTP requests from blocking browser
-    // shutdown.
-    auto sync_thread = std::make_unique<base::Thread>("Chrome_SyncThread");
-    base::Thread::Options options;
-    options.timer_slack = base::TIMER_SLACK_MAXIMUM;
-    bool success = sync_thread->StartWithOptions(options);
-    DCHECK(success);
-    backend_task_runner_ = sync_thread->task_runner();
-
-    // Transfer ownership of the thread to the stopper closure that gets
-    // executed at shutdown.
-    sync_thread_stopper_ =
-        base::BindOnce(&base::Thread::Stop, std::move(sync_thread));
-  }
-}
-
 void ProfileSyncService::StartUpSlowEngineComponents() {
   DCHECK(IsEngineAllowedToStart());
 
@@ -582,8 +553,6 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
     sync_prefs_.SetCacheGuid(GenerateCacheGUID());
     sync_prefs_.SetGaiaId(authenticated_account_info.gaia);
   }
-
-  InitializeBackendTaskRunnerIfNeeded();
 
   SyncEngine::InitParams params;
   params.sync_task_runner = backend_task_runner_;
@@ -656,10 +625,6 @@ void ProfileSyncService::Shutdown() {
   DCHECK(!observers_.might_have_observers());
 
   auth_manager_.reset();
-
-  if (sync_thread_stopper_) {
-    std::move(sync_thread_stopper_).Run();
-  }
 }
 
 void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
@@ -667,16 +632,12 @@ void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
     // If the engine hasn't started or is already shut down when a DISABLE_SYNC
     // happens, the data directory needs to be cleaned up here.
     if (reason == ShutdownReason::DISABLE_SYNC) {
-      // Clearing the Directory via Directory::DeleteDirectoryFiles() requires
-      // the |backend_task_runner_| initialized. It also means there's IO
-      // involved which may we considerable overhead if triggered consistently
-      // upon browser startup (which is the case for certain codepaths such as
-      // the user being signed out). To avoid that, SyncPrefs is used to
-      // determine whether it's worth it.
+      // Clearing the Directory via Directory::DeleteDirectoryFiles() means
+      // there's IO involved which may we considerable overhead if triggered
+      // consistently upon browser startup (which is the case for certain
+      // codepaths such as the user being signed out). To avoid that, SyncPrefs
+      // is used to determine whether it's worth it.
       if (!sync_prefs_.GetCacheGuid().empty()) {
-        InitializeBackendTaskRunnerIfNeeded();
-      }
-      if (backend_task_runner_) {
         backend_task_runner_->PostTask(
             FROM_HERE,
             base::BindOnce(&DeleteLegacyDirectoryFilesAndNigoriStorage,

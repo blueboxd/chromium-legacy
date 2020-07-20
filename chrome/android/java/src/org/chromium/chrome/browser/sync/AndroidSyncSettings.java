@@ -21,8 +21,12 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
-import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.sync.SyncContentResolverDelegate;
 import org.chromium.components.sync.SystemSyncContentResolverDelegate;
 
@@ -89,21 +93,22 @@ public class AndroidSyncSettings {
      */
     @VisibleForTesting
     public AndroidSyncSettings(SyncContentResolverDelegate syncContentResolverDelegate) {
-        this(syncContentResolverDelegate, null);
+        this(syncContentResolverDelegate, null, getSyncAccount());
     }
 
     /**
      * @param syncContentResolverDelegate an implementation of {@link SyncContentResolverDelegate}.
      * @param callback Callback that will be called after updating account is finished. Boolean
      *                 passed to the callback indicates whether syncability was changed.
+     * @param account The sync account if sync is enabled, null otherwise.
      */
     @VisibleForTesting
     public AndroidSyncSettings(SyncContentResolverDelegate syncContentResolverDelegate,
-            @Nullable Callback<Boolean> callback) {
+            @Nullable Callback<Boolean> callback, @Nullable Account account) {
         mContractAuthority = ContextUtils.getApplicationContext().getPackageName();
         mSyncContentResolverDelegate = syncContentResolverDelegate;
 
-        mAccount = ChromeSigninController.get().getSignedInUser();
+        mAccount = account;
         updateSyncability(callback);
         updateCachedSettings();
 
@@ -323,5 +328,15 @@ public class AndroidSyncSettings {
         for (AndroidSyncSettingsObserver observer : mObservers) {
             observer.androidSyncSettingsChanged();
         }
+    }
+
+    /**
+     * Returns the sync account in the last used regular profile.
+     */
+    private static @Nullable Account getSyncAccount() {
+        IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
+                Profile.getLastUsedRegularProfile());
+        return CoreAccountInfo.getAndroidAccountFrom(
+                identityManager.getPrimaryAccountInfo(ConsentLevel.SYNC));
     }
 }

@@ -1165,9 +1165,9 @@ const char kGlobalMediaControlsSeamlessTransferDescription[] =
     "also be enabled.";
 
 const char kGlobalMediaControlsOverlayControlsName[] =
-    "Enable overlay controls for Global Nedia Controls";
+    "Enable overlay controls for Global Media Controls";
 const char kGlobalMediaControlsOverlayControlsDescription[] =
-    "Allowing controls to be dragged out from Global Media Controls dialog."
+    "Allowing controls to be dragged out from Global Media Controls dialog. "
     "Requires #global-media-controls to also be enabled.";
 
 const char kGpuRasterizationName[] = "GPU rasterization";
@@ -3958,6 +3958,10 @@ const char kMeteredShowToggleDescription[] =
     "Shows a Metered toggle in the Network settings UI for WiFI and Cellular. "
     "The toggle allows users to set whether a network should be considered "
     "metered for purposes of bandwith usage (e.g. for automatic updates).";
+
+const char kOsSettingsPolymer3Name[] = "Enable OS Settings Polymer3";
+const char kOsSettingsPolymer3Description[] =
+    "Flips chrome://os-settings to show Polymer3 version.";
 
 const char kPrintServerUiName[] = "Print Server UI";
 const char kPrintServerUiDescription[] =

@@ -11,6 +11,10 @@
 
 class Browser;
 
+namespace content {
+class RenderFrameHost;
+}
+
 namespace views {
 class Widget;
 }  // namespace views
@@ -27,10 +31,11 @@ class PermissionRequestManagerTestApi {
 
   permissions::PermissionRequestManager* manager() { return manager_; }
 
-  // Add a "simple" permission request. One that uses PermissionRequestImpl,
-  // such as for ContentSettingsType including MIDI_SYSEX, PUSH_MESSAGING,
-  // NOTIFICATIONS, GEOLOCATON, or PLUGINS.
-  void AddSimpleRequest(ContentSettingsType type);
+  // Add a "simple" permission request originating from the given frame. One
+  // that uses PermissionRequestImpl, such as for ContentSettingsType including
+  // MIDI_SYSEX, PUSH_MESSAGING, NOTIFICATIONS, GEOLOCATON, or PLUGINS.
+  void AddSimpleRequest(content::RenderFrameHost* source_frame,
+                        ContentSettingsType type);
 
   // Return the Widget for the permission prompt bubble, or nullptr if
   // there is no prompt currently showing.

@@ -450,6 +450,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="2824775600643448204">Adresse og søgelinje</translation>
 <translation id="2826760142808435982">Forbindelsen er krypteret og godkendt ved hjælp af <ph name="CIPHER" />, og den anvender <ph name="KX" /> som primær udvekslingsmekanisme.</translation>
 <translation id="2835170189407361413">Ryd formular</translation>
+<translation id="2839501879576190149">Falsk website forude</translation>
 <translation id="2847118875340931228">Åbn inkognitovindue</translation>
 <translation id="2850739647070081192">Invite (Envelope)</translation>
 <translation id="2856444702002559011">Brugere med ondsindede hensigter kan forsøge at stjæle dine oplysninger fra <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (f.eks. adgangskoder, beskeder eller kreditkort). <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -810,6 +811,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="42981349822642051">Udvid</translation>
 <translation id="4300675098767811073">Flere huller i højre side</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
+<translation id="4305666528087210886">Din fil kunne ikke tilgås</translation>
 <translation id="4305817255990598646">Skift</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Bloker (standardindstilling)</translation>
@@ -828,6 +830,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="4358461427845829800">Administrer betalingsmetoder...</translation>
 <translation id="4359160567981085931">Du har lige angivet din adgangskode på et vildledende website. Chrome kan hjælpe. Klik på Beskyt konto for at ændre din adgangskode og underrette Google om, at din konto muligvis er kompromitteret.</translation>
 <translation id="4367563149485757821">Number-12 (Envelope)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Din gemte adgangskode til <ph name="ORIGIN" /> er blevet afsløret som følge af et brud på datasikkerheden på et website eller i en app. Chrome anbefaler, at du ændrer din adgangskode på <ph name="ORIGIN" /> med det samme.}=1{Din gemte adgangskode til <ph name="ORIGIN" /> og ét andet website er blevet afsløret som følge af et brud på datasikkerheden på et website eller i en app. Chrome anbefaler, at du tjekker dine gemte adgangskoder med det samme.}one{Din gemte adgangskode til <ph name="ORIGIN" /> og <ph name="SITES_COUNT" /> andet website er blevet afsløret som følge af et brud på datasikkerheden på et website eller i en app. Chrome anbefaler, at du tjekker dine gemte adgangskoder med det samme.}other{Din gemte adgangskode til <ph name="ORIGIN" /> og <ph name="SITES_COUNT" /> andre websites er blevet afsløret som følge af et brud på datasikkerheden på et website eller i en app. Chrome anbefaler, at du tjekker dine gemte adgangskoder med det samme.}}</translation>
 <translation id="437058704415269440">Kontosaldo</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Forventet <ph name="VALUE_TYPE" />-værdi.</translation>
@@ -1298,6 +1301,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Potentielle debiteringer forude</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 andet forslag}one{# andet forslag}other{# andre forslag}}</translation>
+<translation id="6387645831795005740">Hackere efterligner nogle gange websites ved at lave små ændringer af webadressen, som er svære at se.</translation>
 <translation id="6389470377220713856">Navn på kort</translation>
 <translation id="6390200185239044127">Z-fals halvt</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1511,6 +1515,7 @@ Yderligere oplysninger:
 <translation id="7372973238305370288">søgeresultat</translation>
 <translation id="7374733840632556089">Dette problem opstår på grund af et certifikat, som du eller en anden har installeret på din enhed. Certifikatet anvendes ofte til at overvåge og opfange netværk, og Chrome har ikke tillid til det. Der findes legitime årsager til at overvåge, f.eks. på skole- og virksomhedsnetværk, men Chrome vil sikre, at du er bevidst om det, når det sker, også selvom du ikke kan stoppe det. Overvågning kan finde sted i enhver browser eller app, der har adgang til nettet.</translation>
 <translation id="7375818412732305729">En fil vedhæftes</translation>
+<translation id="7376551888419889433">Når sikkerhedshændelser rapporteres af Chrome Enterprise Connectors, sendes der relevante data om hændelserne til din administrator. Disse data kan omfatte webadresserne til de sider, du besøger i Chrome, filnavne eller metadata samt det brugernavn, du brugte til at logge ind på din enhed og i Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Mediestyring</translation>
 <translation id="7378627244592794276">Nej</translation>
@@ -1908,6 +1913,7 @@ Yderligere oplysninger:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Du har forsøgt at nå <ph name="DOMAIN" />, men serveren præsenterede et ugyldigt certifikat.</translation>
 <translation id="9050666287014529139">Adgangssætning</translation>
+<translation id="9062620674789239642">Den kan være blevet flyttet, redigeret eller slettet.</translation>
 <translation id="9065203028668620118">Rediger</translation>
 <translation id="9065745800631924235">Søgningen <ph name="TEXT" /> i historikken</translation>
 <translation id="9069693763241529744">Blokeret af en udvidelse</translation>

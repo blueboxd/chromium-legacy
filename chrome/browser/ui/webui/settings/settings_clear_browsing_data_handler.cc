@@ -30,7 +30,6 @@
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/history_notice_utils.h"
 #include "components/browsing_data/core/pref_names.h"
-#include "components/feature_engagement/buildflags.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -39,11 +38,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/text/bytes_formatting.h"
-
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-#include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker.h"
-#include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker_factory.h"
-#endif
 
 using BrowsingDataType = browsing_data::BrowsingDataType;
 
@@ -376,12 +370,6 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
   browsing_data_important_sites_util::Remove(
       remove_mask, origin_mask, time_period, std::move(filter_builder), remover,
       std::move(callback));
-
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-  feature_engagement::IncognitoWindowTrackerFactory::GetInstance()
-      ->GetForProfile(profile_)
-      ->OnBrowsingDataCleared();
-#endif
 }
 
 void ClearBrowsingDataHandler::OnClearingTaskFinished(

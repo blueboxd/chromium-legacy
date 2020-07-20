@@ -169,6 +169,13 @@ source_set("views_examples_proc") {
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
   }
+  if (is_chromeos) {
+    sources += [
+      "examples_views_delegate_chromeos.cc",
+      "examples_views_delegate_chromeos.h",
+    ]
+    deps += [ "//ui/wm:test_support" ]
+  }
 }
 
 executable("views_examples") {

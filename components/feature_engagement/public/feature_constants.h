@@ -7,7 +7,6 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
-#include "components/feature_engagement/buildflags.h"
 
 namespace feature_engagement {
 
@@ -25,12 +24,6 @@ extern const base::Feature kIPHGlobalMediaControlsFeature;
 extern const base::Feature kIPHPasswordsAccountStorageFeature;
 extern const base::Feature kIPHReopenTabFeature;
 extern const base::Feature kIPHWebUITabStripFeature;
-
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-extern const base::Feature kIPHBookmarkFeature;
-extern const base::Feature kIPHIncognitoWindowFeature;
-extern const base::Feature kIPHNewTabFeature;
-#endif  // BUILDFLAG(ENABLE_LEGACY_DESKTOP_IPH)
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 

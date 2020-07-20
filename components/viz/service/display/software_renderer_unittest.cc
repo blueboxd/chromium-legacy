@@ -5,6 +5,9 @@
 #include "components/viz/service/display/software_renderer.h"
 
 #include <stdint.h>
+#include <memory>
+#include <unordered_map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -142,7 +145,7 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
 
   InitializeRenderer(std::make_unique<SoftwareOutputDevice>());
 
-  int root_render_pass_id = 1;
+  RenderPassId root_render_pass_id{1};
   std::unique_ptr<RenderPass> root_render_pass = RenderPass::Create();
   root_render_pass->SetNew(root_render_pass_id, outer_rect, outer_rect,
                            gfx::Transform());
@@ -210,7 +213,7 @@ TEST_F(SoftwareRendererTest, TileQuad) {
 
   gfx::Rect root_rect = outer_rect;
 
-  int root_render_pass_id = 1;
+  RenderPassId root_render_pass_id{1};
   std::unique_ptr<RenderPass> root_render_pass = RenderPass::Create();
   root_render_pass->SetNew(root_render_pass_id, root_rect, root_rect,
                            gfx::Transform());
@@ -271,7 +274,7 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
   ResourceId mapped_resource_cyan = resource_map[resource_cyan];
 
   gfx::Rect root_rect(tile_size);
-  int root_render_pass_id = 1;
+  RenderPassId root_render_pass_id{1};
   std::unique_ptr<RenderPass> root_render_pass = RenderPass::Create();
   root_render_pass->SetNew(root_render_pass_id, root_rect, root_rect,
                            gfx::Transform());
@@ -323,7 +326,7 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
   RenderPassList list;
 
   // Draw a fullscreen green quad in a first frame.
-  int root_clear_pass_id = 1;
+  RenderPassId root_clear_pass_id{1};
   RenderPass* root_clear_pass =
       cc::AddRenderPass(&list, root_clear_pass_id, gfx::Rect(viewport_size),
                         gfx::Transform(), cc::FilterOperations());
@@ -346,7 +349,7 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
   // frame.
   gfx::Rect smaller_rect(20, 20, 60, 60);
 
-  int root_smaller_pass_id = 2;
+  RenderPassId root_smaller_pass_id{2};
   RenderPass* root_smaller_pass =
       cc::AddRenderPass(&list, root_smaller_pass_id, gfx::Rect(viewport_size),
                         gfx::Transform(), cc::FilterOperations());
@@ -378,14 +381,14 @@ TEST_F(SoftwareRendererTest, RenderPassVisibleRect) {
 
   // Pass drawn as inner quad is magenta.
   gfx::Rect smaller_rect(20, 20, 60, 60);
-  int smaller_pass_id = 2;
+  RenderPassId smaller_pass_id{2};
   RenderPass* smaller_pass =
       cc::AddRenderPass(&list, smaller_pass_id, smaller_rect, gfx::Transform(),
                         cc::FilterOperations());
   cc::AddQuad(smaller_pass, smaller_rect, SK_ColorMAGENTA);
 
   // Root pass is green.
-  int root_clear_pass_id = 1;
+  RenderPassId root_clear_pass_id{1};
   RenderPass* root_clear_pass =
       AddRenderPass(&list, root_clear_pass_id, gfx::Rect(viewport_size),
                     gfx::Transform(), cc::FilterOperations());
@@ -475,7 +478,7 @@ TEST_F(SoftwareRendererTest, PartialSwap) {
     // Draw one black frame to make sure output surface is reshaped before
     // tests.
     RenderPassList list;
-    int root_pass_id = 1;
+    RenderPassId root_pass_id{1};
     RenderPass* root_pass =
         AddRenderPass(&list, root_pass_id, gfx::Rect(viewport_size),
                       gfx::Transform(), cc::FilterOperations());
@@ -491,7 +494,7 @@ TEST_F(SoftwareRendererTest, PartialSwap) {
   }
   {
     RenderPassList list;
-    int root_pass_id = 1;
+    RenderPassId root_pass_id{1};
     RenderPass* root_pass =
         AddRenderPass(&list, root_pass_id, gfx::Rect(viewport_size),
                       gfx::Transform(), cc::FilterOperations());

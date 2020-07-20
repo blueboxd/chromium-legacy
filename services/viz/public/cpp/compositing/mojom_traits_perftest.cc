@@ -199,7 +199,7 @@ class VizSerializationPerfTest : public testing::Test {
     SkScalar arbitrary_sigma = SkFloatToScalar(2.0f);
     gfx::ContentColorUsage arbitrary_content_color_usage =
         gfx::ContentColorUsage::kSRGB;
-    int root_id = 14;
+    RenderPassId root_id{14};
 
     cc::FilterOperations arbitrary_filters1;
     arbitrary_filters1.Append(
@@ -308,7 +308,8 @@ class VizSerializationPerfTest : public testing::Test {
 
     for (uint32_t i = 0; i < num_passes; ++i) {
       std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
-      render_pass->SetNew(1, gfx::Rect(20, 20), gfx::Rect(), gfx::Transform());
+      render_pass->SetNew(RenderPassId{1}, gfx::Rect(20, 20), gfx::Rect(),
+                          gfx::Transform());
       for (uint32_t j = 0; j < num_quads; ++j) {
         if (j == 0 || single_sqs == UseSingleSharedQuadState::NO)
           render_pass->CreateAndAppendSharedQuadState();

@@ -8,6 +8,7 @@
 #include "base/component_export.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/input/touch_action.h"
+#include "cc/trees/browser_controls_params.h"
 #include "ipc/ipc_message_macros.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -23,5 +24,14 @@ IPC_STRUCT_TRAITS_BEGIN(cc::OverscrollBehavior)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(cc::TouchAction, cc::TouchAction::kMax)
+
+IPC_STRUCT_TRAITS_BEGIN(cc::BrowserControlsParams)
+  IPC_STRUCT_TRAITS_MEMBER(top_controls_height)
+  IPC_STRUCT_TRAITS_MEMBER(top_controls_min_height)
+  IPC_STRUCT_TRAITS_MEMBER(bottom_controls_height)
+  IPC_STRUCT_TRAITS_MEMBER(bottom_controls_min_height)
+  IPC_STRUCT_TRAITS_MEMBER(animate_browser_controls_height_changes)
+  IPC_STRUCT_TRAITS_MEMBER(browser_controls_shrink_blink_size)
+IPC_STRUCT_TRAITS_END()
 
 #endif  // CC_IPC_CC_PARAM_TRAITS_MACROS_H_

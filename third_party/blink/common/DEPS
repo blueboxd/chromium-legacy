@@ -8,6 +8,7 @@ include_rules = [
     # It is allowed to depend on common chromium stuff (and itself).
     "+base",
     "+build",
+    "+cc/mojom/browser_controls_params.mojom.h",
     "+net",
     "+media",
     "+mojo",
@@ -19,6 +20,7 @@ include_rules = [
     "+services/network/public/mojom/url_loader_factory.mojom.h",
     "+services/network/public/mojom/url_response_head.mojom.h",
     "+services/network/public/mojom/url_response_head.mojom-forward.h",
+    "+services/viz/public/mojom/compositing/local_surface_id_allocation.mojom.h",
     "+skia/public/mojom/bitmap_skbitmap_mojom_traits.h",
     "+testing/gmock/include/gmock",
     "+testing/gtest/include/gtest",
@@ -29,6 +31,7 @@ include_rules = [
     "+ui/events/base_event_utils.h",
     "+ui/gfx/transform.h",
     "+ui/gfx/geometry",
+    "+ui/gfx/mojom/color_space.mojom.h",
     "+ui/gfx/win/direct_write.h",
     "+ui/latency/mojom/latency_info_mojom_traits.h",
     "+url",

@@ -7073,11 +7073,9 @@
       'id': 97,
       'caption': '''Import bookmarks from default browser on first run''',
       'tags': ['local-data-access'],
-      'desc': '''This policy forces bookmarks to be imported from the current default browser if enabled. If enabled, this policy also affects the import dialog.
+      'desc': '''Setting the policy to Enabled imports bookmarks from the previous default browser on first run. Setting the policy to Disabled or leaving it unset means no bookmarks are imported on first run.
 
-      If disabled, no bookmarks are imported.
-
-      If it is not set, the user may be asked whether to import, or importing may happen automatically.''',
+      Users can trigger an import dialog and the bookmarks checkbox will be checked or unchecked to match this policy's value.''',
       'label': '''Import bookmarks from default browser on first run''',
     },
     {
@@ -7095,11 +7093,9 @@
       'id': 98,
       'caption': '''Import browsing history from default browser on first run''',
       'tags': ['local-data-access'],
-      'desc': '''This policy forces the browsing history to be imported from the current default browser if enabled. If enabled, this policy also affects the import dialog.
+      'desc': '''Setting the policy to Enabled imports browsing history from the previous default browser on first run. Setting the policy to Disabled or leaving it unset means no browsing history is imported on first run.
 
-      If disabled, no browsing history is imported.
-
-      If it is not set, the user may be asked whether to import, or importing may happen automatically.''',
+      Users can trigger an import dialog and the browsing history checkbox will be checked or unchecked to match this policy's value.''',
       'label': '''Import browsing history from default browser on first run''',
     },
     {
@@ -7116,11 +7112,9 @@
       'id': 99,
       'caption': '''Import of homepage from default browser on first run''',
       'tags': ['local-data-access'],
-      'desc': '''This policy forces the home page to be imported from the current default browser if enabled.
+      'desc': '''Setting the policy to Enabled imports the homepage from the previous default browser on first run. Setting the policy to Disabled or leaving it unset means the homepage isn't imported on first run.
 
-      If disabled, the home page is not imported.
-
-      If it is not set, the user may be asked whether to import, or importing may happen automatically.''',
+      Users can trigger an import dialog and the the homepage checkbox will be checked or unchecked to match this policy's value.''',
       'label': '''Import of homepage from default browser on first run''',
     },
     {
@@ -7138,11 +7132,9 @@
       'id': 100,
       'caption': '''Import search engines from default browser on first run''',
       'tags': ['local-data-access'],
-      'desc': '''This policy forces search engines to be imported from the current default browser if enabled. If enabled, this policy also affects the import dialog.
+      'desc': '''Setting the policy to Enabled imports the default search engine from the previous default browser on first run. Setting the policy to Disabled or leaving it unset means the default search engine isn't imported on first run.
 
-      If disabled, the default search engine is not imported.
-
-      If it is not set, the user may be asked whether to import, or importing may happen automatically.''',
+      Users can trigger an import dialog and the default search engine checkbox will be checked or unchecked to match this policy's value.''',
       'label': '''Import search engines from default browser on first run''',
     },
     {
@@ -7160,11 +7152,9 @@
       'id': 101,
       'caption': '''Import saved passwords from default browser on first run''',
       'tags': ['local-data-access'],
-      'desc': '''This policy forces the saved passwords to be imported from the previous default browser if enabled. If enabled, this policy also affects the import dialog.
+      'desc': '''Setting the policy to Enabled imports saved passwords from the previous default browser on first run. Setting the policy to Disabled or leaving it unset means no saved passwords are imported on first run.
 
-      If disabled, the saved passwords are not imported.
-
-      If it is not set, the user may be asked whether to import, or importing may happen automatically.''',
+      Users can trigger an import dialog and the saved passwords checkbox will be checked or unchecked to match this policy's value.''',
       'label': '''Import saved passwords from default browser on first run''',
     },
     {
@@ -7182,11 +7172,9 @@
       'id': 277,
       'caption': '''Import autofill form data from default browser on first run''',
       'tags': ['local-data-access'],
-      'desc': '''This policy forces the autofill form data to be imported from the previous default browser if enabled. If enabled, this policy also affects the import dialog.
+      'desc': '''Setting the policy to Enabled imports autofill form data from the previous default browser on first run. Setting the policy to Disabled or leaving it unset means no autofill form data is imported on first run.
 
-      If disabled, the autofill form data is not imported.
-
-      If it is not set, the user may be asked whether to import, or importing may happen automatically.''',
+      Users can trigger an import dialog and the autofill form data checkbox will be checked or unchecked to match this policy's value.''',
       'label': '''Import autofill form data from default browser on first run''',
     },
     {
@@ -22001,7 +21989,9 @@ If you disable this policy, web page scrolling to specific text fragments via UR
 
       This is an additive feature, but the new headers may break some websites that restrict the characters that requests may contain.
 
-      If this policy is enabled or not set the <ph name="PRODUCT_NAME">User-Agent Client Hints</ph> feature is enabled. If the policy is disabled the feature is unavailable.''',
+      If this policy is enabled or not set the <ph name="PRODUCT_NAME">User-Agent Client Hints</ph> feature is enabled. If the policy is disabled the feature is unavailable.
+
+      This enterprise policy is for short-term adaptation and will be removed in Chrome 88.''',
     },
     {
       'name': 'SuggestedContentEnabled',

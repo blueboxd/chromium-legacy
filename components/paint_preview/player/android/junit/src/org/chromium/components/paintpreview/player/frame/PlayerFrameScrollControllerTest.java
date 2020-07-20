@@ -56,9 +56,11 @@ public class PlayerFrameScrollControllerTest {
         Runnable mOnScrollListener = () -> mDidScroll = true;
         Runnable mOnFlingListener = () -> mDidFling = true;
         mViewport = new PlayerFrameViewport();
-        mScrollController = new PlayerFrameScrollController(mScroller, mViewport,
-                new Size(CONTENT_WIDTH, CONTENT_HEIGHT), mMediatorDelegateMock, mOnScrollListener,
-                mOnFlingListener);
+        when(mMediatorDelegateMock.getViewport()).thenReturn(mViewport);
+        when(mMediatorDelegateMock.getContentSize())
+                .thenReturn(new Size(CONTENT_WIDTH, CONTENT_HEIGHT));
+        mScrollController = new PlayerFrameScrollController(
+                mScroller, mMediatorDelegateMock, mOnScrollListener, mOnFlingListener);
     }
 
     /**

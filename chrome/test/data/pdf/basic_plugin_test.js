@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {PDFScriptingAPI} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_scripting_api.js';
+import {PDFViewerElement} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer.js';
 
 /**
  * These tests require that the PDF plugin be available to run correctly.
@@ -12,25 +13,25 @@ const tests = [
    * Test that the page is sized to the size of the document.
    */
   function testPageSize() {
+    const viewer = /** @type {!PDFViewerElement} */ (
+        document.body.querySelector('#viewer'));
     // Verify that the initial zoom is less than or equal to 100%.
     chrome.test.assertTrue(viewer.viewport.getZoom() <= 1);
 
     viewer.viewport.setZoom(1);
     const sizer = viewer.shadowRoot.querySelector('#sizer');
     chrome.test.assertEq(826, sizer.offsetWidth);
-    chrome.test.assertEq(
-        1066 + viewer.viewport.topToolbarHeight_, sizer.offsetHeight);
+    chrome.test.assertEq(1066 + viewer.getToolbarHeight(), sizer.offsetHeight);
     chrome.test.succeed();
-    console.log('done page size');
   },
 
   function testGetSelectedText() {
     const client = new PDFScriptingAPI(window, window);
     client.selectAll();
-    client.getSelectedText(chrome.test.callbackPass(function(selectedText) {
+    client.getSelectedText(function(selectedText) {
       chrome.test.assertEq('this is some text\nsome more text', selectedText);
-    }));
-    console.log('done select');
+      chrome.test.succeed();
+    });
   },
 
   /**
@@ -38,8 +39,6 @@ const tests = [
    */
   function testHasCorrectTitle() {
     chrome.test.assertEq('test.pdf', document.title);
-
-    console.log('done title');
     chrome.test.succeed();
   },
 ];

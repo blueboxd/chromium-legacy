@@ -49,8 +49,8 @@ class NavigationManager {
    */
   static enterKeyboard() {
     const navigator = NavigationManager.instance;
-    const keyboard = KeyboardRootNode.buildTree();
     navigator.node_.automationNode.focus();
+    const keyboard = KeyboardRootNode.buildTree();
     navigator.jumpTo_(keyboard);
   }
 

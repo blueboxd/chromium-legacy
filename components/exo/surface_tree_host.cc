@@ -324,7 +324,7 @@ viz::CompositorFrame SurfaceTreeHost::PrepareToSubmitCompositorFrame() {
   const std::unique_ptr<viz::RenderPass>& render_pass =
       frame.render_pass_list.back();
 
-  const int kRenderPassId = 1;
+  const viz::RenderPassId kRenderPassId{1};
   // Compute a temporally stable (across frames) size for the render pass output
   // rectangle that is consistent with the window size. It is used to set the
   // size of the output surface. Note that computing the actual coverage while

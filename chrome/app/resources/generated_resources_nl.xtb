@@ -105,7 +105,7 @@
 <translation id="1124772482545689468">Gebruiker</translation>
 <translation id="1125550662859510761">Ziet eruit als <ph name="WIDTH" /> x <ph name="HEIGHT" /> (systeemeigen resolutie)</translation>
 <translation id="1126809382673880764">Beschermt je niet tegen gevaarlijke websites, downloads en extensies. Je wordt voor andere services, zoals Gmail en Zoeken, nog steeds beschermd door Safe Browsing als dat beschikbaar is.</translation>
-<translation id="112752777279960360">Als je een Android-telefoon voor het eerst wilt instellen als beveiligingssleutel voor deze computer, open je Chrome op je telefoon en ga je naar Instellingen &gt; Wachtwoorden &gt; Telefoon gebruiken als beveiligingssleutel. Tik vervolgens op 'Nieuw apparaat verbinden' en scan deze QR-code.</translation>
+<translation id="112752777279960360">Als je een Android-telefoon voor het eerst wilt instellen als beveiligingssleutel voor deze computer, open je Chrome op je telefoon en ga je naar 'Instellingen' &gt; 'Wachtwoorden' &gt; 'Telefoon gebruiken als beveiligingssleutel'. Tik vervolgens op 'Nieuw apparaat verbinden' en scan deze QR-code.</translation>
 <translation id="1128109161498068552">Sites niet toestaan berichten exclusief voor het systeem te gebruiken om toegang te krijgen tot MIDI-apparaten</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Zoekmachine bewerken</translation>
@@ -1382,7 +1382,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2682498795777673382">Update van je ouder</translation>
 <translation id="2683638487103917598">Map gesorteerd</translation>
 <translation id="2684004000387153598">Als je verder wilt gaan, klik je op 'OK' en vervolgens op 'Persoon toevoegen' om een nieuw profiel te maken voor je e-mailadres.</translation>
-<translation id="2686222346846590368">Dit is de laatste automatische software- en beveiligingsupdate voor dit apparaat: <ph name="DEVICE_TYPE" />. Upgrade naar een nieuwer model om nieuwe updates te ontvangen. &lt;a target="_blank" href="<ph name="URL" />"&gt;Meer informatie<ph name="LINK_END" /></translation>
+<translation id="2686222346846590368">Dit is de laatste automatische software- en beveiligingsupdate voor deze <ph name="DEVICE_TYPE" />. Upgrade naar een nieuwer model om nieuwe updates te ontvangen. &lt;a target="_blank" href="<ph name="URL" />"&gt;Meer informatie<ph name="LINK_END" /></translation>
 <translation id="2687403674020088961">Alle cookies blokkeren (niet aanbevolen)</translation>
 <translation id="2687407218262674387">Servicevoorwaarden van Google</translation>
 <translation id="2688196195245426394">Fout bij het registreren van het apparaat bij de server: <ph name="CLIENT_ERROR" />.</translation>
@@ -1823,7 +1823,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3253225298092156258">Niet beschikbaar</translation>
 <translation id="3253448572569133955">Onbekend account</translation>
 <translation id="3254516606912442756">Automatische tijdzonedetectie is uitgeschakeld</translation>
-<translation id="3254715652085014625">Open Chrome op je Android-telefoon, ga naar Instellingen &gt; Wachtwoorden &gt; Telefoon gebruiken als beveiligingssleutel en volg de instructies.</translation>
+<translation id="3254715652085014625">Open Chrome op je Android-telefoon, ga naar 'Instellingen' &gt; 'Wachtwoorden' &gt; 'Telefoon gebruiken als beveiligingssleutel' en volg de instructies.</translation>
 <translation id="3255355328033513170">Alle gegevens die door <ph name="SITE_GROUP_NAME" /> en onderliggende sites zijn opgeslagen, worden verwijderd. Dit geldt ook voor cookies. Je wordt uitgelogd bij deze sites, inclusief geopende tabbladen.</translation>
 <translation id="3259723213051400722">Probeer het opnieuw.</translation>
 <translation id="3264544094376351444">Sans-Serif-lettertype</translation>
@@ -1986,7 +1986,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3450157232394774192">Bezettingspercentage van inactieve status</translation>
 <translation id="3453612417627951340">Autorisatie vereist</translation>
 <translation id="3454157711543303649">Activering voltooid</translation>
-<translation id="3454213325559396544">Dit is de laatste automatische software- en beveiligingsupdate voor dit <ph name="DEVICE_TYPE" />. Upgrade naar een nieuwer model om nieuwe updates te ontvangen.</translation>
+<translation id="3454213325559396544">Dit is de laatste automatische software- en beveiligingsupdate voor deze <ph name="DEVICE_TYPE" />. Upgrade naar een nieuwer model om nieuwe updates te ontvangen.</translation>
 <translation id="3455436146814891176">Wachtwoord voor versleuteling synchroniseren</translation>
 <translation id="345693547134384690">&amp;Afbeelding openen in nieuw tabblad</translation>
 <translation id="3458451003193188688">Kan de virtuele machine niet installeren door een netwerkfout. Probeer het opnieuw of neem contact op met je beheerder. Foutcode: <ph name="ERROR_CODE" />.</translation>

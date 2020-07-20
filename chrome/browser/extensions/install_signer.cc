@@ -327,9 +327,9 @@ void InstallSigner::GetSignature(SignatureCallback callback) {
             "This feature cannot be disabled, but it is only activated if "
             "extensions are installed."
           chrome_policy {
-            ExtensionInstallBlacklist {
+            ExtensionInstallBlocklist {
               policy_options {mode: MANDATORY}
-              ExtensionInstallBlacklist: {
+              ExtensionInstallBlocklist: {
                 entries: '*'
               }
             }

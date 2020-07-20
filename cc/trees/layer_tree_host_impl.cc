@@ -1318,7 +1318,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
 
   for (EffectTreeLayerListIterator it(active_tree());
        it.state() != EffectTreeLayerListIterator::State::END; ++it) {
-    auto target_render_pass_id = it.target_render_surface()->id();
+    auto target_render_pass_id = it.target_render_surface()->render_pass_id();
     viz::RenderPass* target_render_pass =
         FindRenderPassById(frame->render_passes, target_render_pass_id);
 

@@ -96,10 +96,6 @@ const char kSessionExitedCleanly[] = "profile.exited_cleanly";
 // shutdown. Used to determine the exit type the last time the profile was open.
 const char kSessionExitType[] = "profile.exit_type";
 
-// Stores the total amount of observed active session time for the user while
-// in-product help is active. Observed time is active session time in seconds.
-const char kObservedSessionTime[] = "profile.observed_session_time";
-
 // The last time that the site engagement service recorded an engagement event
 // for this profile for any URL. Recorded only during shutdown. Used to prevent
 // the service from decaying engagement when a user does not use Chrome at all

@@ -36,8 +36,11 @@ void NGFragmentPainter::PaintOutline(const PaintInfo& paint_info,
           paint_info.context, display_item_client, paint_info.phase))
     return;
 
+  IntRect visual_rect =
+      PixelSnappedIntRect(UnionRectEvenIfEmpty(outline_rects));
+  visual_rect.Inflate(fragment.Style().OutlineOutsetExtent());
   DrawingRecorder recorder(paint_info.context, display_item_client,
-                           paint_info.phase);
+                           paint_info.phase, visual_rect);
   PaintOutlineRects(paint_info, outline_rects, fragment.Style());
 }
 
@@ -59,11 +62,13 @@ void NGFragmentPainter::AddURLRectIfNeeded(const PaintInfo& paint_info,
   if (!url.IsValid())
     return;
 
-  const DisplayItemClient& display_item_client = GetDisplayItemClient();
-  IntRect rect = display_item_client.VisualRect();
+  auto outline_rects = fragment.GetLayoutObject()->OutlineRects(
+      paint_offset, NGOutlineType::kIncludeBlockVisualOverflow);
+  IntRect rect = PixelSnappedIntRect(UnionRect(outline_rects));
   if (rect.IsEmpty())
     return;
 
+  const DisplayItemClient& display_item_client = GetDisplayItemClient();
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, display_item_client,
           DisplayItem::kPrintedContentPDFURLRect))

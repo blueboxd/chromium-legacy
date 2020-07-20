@@ -193,6 +193,7 @@ class TabImpl : public Tab,
       const base::android::JavaParamRef<jstring>& js_object_name);
   jboolean CanTranslate(JNIEnv* env);
   void ShowTranslateUi(JNIEnv* env);
+  void SetTopControlsMinHeight(JNIEnv* env, int min_height);
 #endif
 
   ErrorPageDelegate* error_page_delegate() { return error_page_delegate_; }
@@ -257,6 +258,7 @@ class TabImpl : public Tab,
                       scoped_refptr<content::FileSelectListener> listener,
                       const blink::mojom::FileChooserParams& params) override;
   int GetTopControlsHeight() override;
+  int GetTopControlsMinHeight() override;
   int GetBottomControlsHeight() override;
   bool DoBrowserControlsShrinkRendererSize(
       const content::WebContents* web_contents) override;
@@ -365,6 +367,7 @@ class TabImpl : public Tab,
   base::android::ScopedJavaGlobalRef<jobject> java_impl_;
   std::unique_ptr<BrowserControlsNavigationStateHandler>
       browser_controls_navigation_state_handler_;
+  int top_controls_min_height_ = 0;
 
   // Last value supplied to UpdateBrowserControlsState().
   content::BrowserControlsState current_browser_controls_state_ =

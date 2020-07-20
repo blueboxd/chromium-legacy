@@ -203,8 +203,8 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
     // Non-Polymer properties
 
-    /** @private {number} */
-    this.beepCount_ = 0;
+    /** @type {number} */
+    this.beepCount = 0;
 
     /** @private {boolean} */
     this.hadPassword_ = false;
@@ -732,7 +732,7 @@ export class PDFViewerElement extends PDFViewerBaseElement {
    */
   handleBeep_() {
     // Beeps are annoying, so just track count for now.
-    this.beepCount_ += 1;
+    this.beepCount += 1;
   }
 
   /**

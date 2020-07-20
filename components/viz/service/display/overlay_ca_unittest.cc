@@ -105,7 +105,7 @@ class CATestOverlayProcessor : public OverlayProcessorMac {
 };
 
 std::unique_ptr<RenderPass> CreateRenderPass() {
-  int render_pass_id = 1;
+  RenderPassId render_pass_id{1};
 
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetNew(render_pass_id, kRenderPassOutputRect, kRenderPassOutputRect,
@@ -412,7 +412,7 @@ class CALayerOverlayRPDQTest : public CALayerOverlayTest {
     pass_list_.push_back(CreateRenderPass());
     pass_ = pass_list_.back().get();
     quad_ = pass_->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-    render_pass_id_ = 3;
+    render_pass_id_ = RenderPassId{3};
   }
 
   void ProcessForOverlays() {
@@ -424,7 +424,7 @@ class CALayerOverlayRPDQTest : public CALayerOverlayTest {
   RenderPassList pass_list_;
   RenderPass* pass_;
   RenderPassDrawQuad* quad_;
-  int render_pass_id_;
+  RenderPassId render_pass_id_;
   cc::FilterOperations filters_;
   cc::FilterOperations backdrop_filters_;
   OverlayProcessorInterface::FilterOperationsMap render_pass_filters_;

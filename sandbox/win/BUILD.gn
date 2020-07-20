@@ -217,7 +217,6 @@ test("sbox_integration_tests") {
     "tests/common/controller.h",
     "tests/common/test_utils.cc",
     "tests/common/test_utils.h",
-    "tests/integration_tests/cfi_unittest.cc",
     "tests/integration_tests/integration_tests.cc",
     "tests/integration_tests/integration_tests_common.h",
     "tests/integration_tests/integration_tests_test.cc",
@@ -231,7 +230,6 @@ test("sbox_integration_tests") {
   ]
 
   data_deps = [
-    ":cfi_unittest_exe",
     ":sbox_integration_test_hijack_dll",
     ":sbox_integration_test_hijack_shim_dll",
     ":sbox_integration_test_hooking_dll",
@@ -239,14 +237,6 @@ test("sbox_integration_tests") {
   ]
 
   libs = [ "dxva2.lib" ]
-}
-
-executable("cfi_unittest_exe") {
-  sources = [ "tests/integration_tests/cfi_unittest_exe.cc" ]
-  deps = [
-    "//base",
-    "//build/win:default_exe_manifest",
-  ]
 }
 
 shared_library("sbox_integration_test_hijack_dll") {

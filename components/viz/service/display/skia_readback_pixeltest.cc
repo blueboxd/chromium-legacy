@@ -139,8 +139,7 @@ class SkiaReadbackPixelTest : public cc::PixelTest,
 
     const gfx::Rect output_rect(kSourceSize);
     std::unique_ptr<RenderPass> pass = RenderPass::Create();
-    pass->SetNew(/*render_pass_id=*/1, output_rect, output_rect,
-                 gfx::Transform());
+    pass->SetNew(RenderPassId{1}, output_rect, output_rect, gfx::Transform());
 
     SharedQuadState* sqs = CreateSharedQuadState(pass.get(), output_rect);
 

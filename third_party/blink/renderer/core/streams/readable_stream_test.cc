@@ -336,7 +336,6 @@ TEST_F(ReadableStreamTest, Error) {
 TEST_F(ReadableStreamTest, LockAndDisturb) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
-  ExceptionState& exception_state = scope.GetExceptionState();
 
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(script_state);
@@ -348,8 +347,7 @@ TEST_F(ReadableStreamTest, LockAndDisturb) {
   EXPECT_FALSE(stream->IsLocked());
   EXPECT_FALSE(stream->IsDisturbed());
 
-  stream->LockAndDisturb(script_state, exception_state);
-  ASSERT_FALSE(exception_state.HadException());
+  stream->LockAndDisturb(script_state);
 
   EXPECT_TRUE(stream->IsLocked());
   EXPECT_TRUE(stream->IsDisturbed());

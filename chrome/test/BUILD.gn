@@ -20,7 +20,6 @@ import("//chrome/test/base/js2gtest.gni")
 import("//chrome/test/include_js_tests.gni")
 import("//chromeos/assistant/assistant.gni")
 import("//components/captive_portal/core/features.gni")
-import("//components/feature_engagement/features.gni")
 import("//components/feed/features.gni")
 import("//components/gwp_asan/buildflags/buildflags.gni")
 import("//components/nacl/features.gni")
@@ -2595,12 +2594,6 @@ if (!is_android) {
     if (enable_kaleidoscope) {
       deps += [ "../browser/media/kaleidoscope/internal:browser_tests" ]
     }
-    if (enable_legacy_desktop_in_product_help) {
-      sources += [
-        "../browser/feature_engagement/incognito_window/incognito_window_tracker_browsertest.cc",
-        "../browser/feature_engagement/new_tab/new_tab_tracker_browsertest.cc",
-      ]
-    }
     if (safe_browsing_mode == 1) {
       sources += [
         "../browser/safe_browsing/ad_redirect_trigger_browsertest.cc",
@@ -3635,6 +3628,8 @@ test("unit_tests") {
       "../browser/nearby_sharing/nearby_process_manager_unittest.cc",
       "../browser/nearby_sharing/nearby_sharing_service_impl_unittest.cc",
       "../browser/nearby_sharing/webrtc_signaling_messenger_unittest.cc",
+      "../browser/performance_manager/test_support/page_discarding_utils.cc",
+      "../browser/performance_manager/test_support/page_discarding_utils.h",
       "../browser/profiles/profile_avatar_icon_util_unittest.cc",
       "../browser/profiles/profile_destroyer_unittest.cc",
       "../browser/safe_browsing/generated_safe_browsing_pref_unittest.cc",
@@ -4116,6 +4111,7 @@ test("unit_tests") {
       "../browser/performance_manager/persistence/site_data/unittest_utils.h",
 
       # Urgent discarding from performance_manager isn't supported on Android.
+      "../browser/performance_manager/policies/page_discarding_helper_unittest.cc",
       "../browser/performance_manager/policies/urgent_page_discarding_policy_unittest.cc",
 
       # Background tab loading from performance_manager isn't supported on Android.
@@ -4477,16 +4473,6 @@ test("unit_tests") {
 
       data_deps += [ "//chrome/notification_helper" ]
     }
-  }
-
-  if (enable_legacy_desktop_in_product_help) {
-    sources += [
-      "../browser/feature_engagement/bookmark/bookmark_tracker_unittest.cc",
-      "../browser/feature_engagement/feature_tracker_unittest.cc",
-      "../browser/feature_engagement/incognito_window/incognito_window_tracker_unittest.cc",
-      "../browser/feature_engagement/new_tab/new_tab_tracker_unittest.cc",
-      "../browser/feature_engagement/session_duration_updater_unittest.cc",
-    ]
   }
 
   if (is_chromeos) {

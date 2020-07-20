@@ -199,6 +199,18 @@ public class DisplayCutoutControllerTest {
 
     @Test
     @SmallTest
+    public void testLayout_NoWindow() {
+        // Verify there's no crash when the tab's interactability changes after activity detachment.
+        verify(mTab).addObserver(mTabObserverCaptor.capture());
+        reset(mTab);
+
+        mTabObserverCaptor.getValue().onActivityAttachmentChanged(mTab, null);
+        mTabObserverCaptor.getValue().onInteractabilityChanged(mTab, false);
+        verify(mWindow, never()).getAttributes();
+    }
+
+    @Test
+    @SmallTest
     public void testLayoutOnShown() {
         // In this test we are checking for a side effect of maybeUpdateLayout.
         // This is because the tab observer holds a reference to the original

@@ -299,10 +299,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return FirstFragment().PartialInvalidationVisualRect();
   }
 
-  IntRect VisualRectForInlineBox() const {
-    return AdjustVisualRectForInlineBox(VisualRect());
-  }
-
   IntRect PartialInvalidationVisualRectForInlineBox() const {
     return AdjustVisualRectForInlineBox(PartialInvalidationVisualRect());
   }

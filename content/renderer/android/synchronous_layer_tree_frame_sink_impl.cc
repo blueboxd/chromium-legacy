@@ -358,7 +358,7 @@ void SynchronousLayerTreeFrameSinkImpl::SubmitCompositorFrame(
 
     // The embedding RenderPass covers the entire Display's area.
     const auto& embed_render_pass = embed_frame.render_pass_list.back();
-    embed_render_pass->SetNew(1, gfx::Rect(display_size),
+    embed_render_pass->SetNew(viz::RenderPassId{1}, gfx::Rect(display_size),
                               gfx::Rect(display_size), gfx::Transform());
     embed_render_pass->has_transparent_background = false;
 

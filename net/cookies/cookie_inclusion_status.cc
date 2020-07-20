@@ -51,6 +51,11 @@ bool CookieInclusionStatus::HasExclusionReason(ExclusionReason reason) const {
   return exclusion_reasons_ & GetExclusionBitmask(reason);
 }
 
+bool CookieInclusionStatus::HasOnlyExclusionReason(
+    ExclusionReason reason) const {
+  return exclusion_reasons_ == GetExclusionBitmask(reason);
+}
+
 void CookieInclusionStatus::AddExclusionReason(ExclusionReason reason) {
   exclusion_reasons_ |= GetExclusionBitmask(reason);
   // If the cookie would be excluded for reasons other than the new SameSite

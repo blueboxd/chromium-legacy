@@ -866,6 +866,10 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
         WebLayerAccessibilityUtil.get().removeObserver(mAccessibilityObserver);
     }
 
+    /* package */ void setTopControlsMinHeight(int minHeight) {
+        TabImplJni.get().setTopControlsMinHeight(mNativeTab, minHeight);
+    }
+
     @CalledByNative
     private boolean doBrowserControlsShrinkRendererSize() {
         BrowserViewController viewController = getViewController();
@@ -986,5 +990,6 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
         void unregisterWebMessageCallback(long nativeTabImpl, String jsObjectName);
         boolean canTranslate(long nativeTabImpl);
         void showTranslateUi(long nativeTabImpl);
+        void setTopControlsMinHeight(long nativeTabImpl, int minHeight);
     }
 }

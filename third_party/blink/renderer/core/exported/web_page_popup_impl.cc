@@ -745,6 +745,11 @@ void WebPagePopupImpl::ScheduleAnimation() {
   WidgetClient()->ScheduleAnimation();
 }
 
+void WebPagePopupImpl::UpdateVisualProperties(
+    const VisualProperties& visual_properties) {
+  WidgetClient()->UpdateVisualProperties(visual_properties);
+}
+
 WebURL WebPagePopupImpl::GetURLForDebugTrace() {
   if (!page_)
     return {};

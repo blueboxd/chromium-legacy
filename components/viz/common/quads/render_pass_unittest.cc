@@ -74,7 +74,7 @@ static void CompareRenderPassLists(const RenderPassList& expected_list,
 }
 
 TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
-  RenderPassId render_pass_id = 3u;
+  RenderPassId render_pass_id{3u};
   gfx::Rect output_rect(45, 22, 120, 13);
   gfx::Transform transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
@@ -109,7 +109,7 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
   color_quad->SetNew(pass->shared_quad_state_list.back(), gfx::Rect(),
                      gfx::Rect(), SkColor(), false);
 
-  RenderPassId new_render_pass_id = 63u;
+  RenderPassId new_render_pass_id{63u};
 
   std::unique_ptr<RenderPass> copy = pass->Copy(new_render_pass_id);
   EXPECT_EQ(new_render_pass_id, copy->id);
@@ -138,7 +138,7 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
 TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   RenderPassList pass_list;
 
-  int id = 3;
+  RenderPassId id{3};
   gfx::Rect output_rect(45, 22, 120, 13);
   gfx::Transform transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
@@ -194,7 +194,7 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
                       false);
 
   // A second render pass with a quad.
-  int contrib_id = 4;
+  RenderPassId contrib_id{4};
   gfx::Rect contrib_output_rect(10, 15, 12, 17);
   gfx::Transform contrib_transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
@@ -251,7 +251,7 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
 TEST(RenderPassTest, CopyAllWithCulledQuads) {
   RenderPassList pass_list;
 
-  int id = 3;
+  RenderPassId id{3};
   gfx::Rect output_rect(45, 22, 120, 13);
   gfx::Transform transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);

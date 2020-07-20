@@ -1028,8 +1028,10 @@ void PeopleSection::AddKerberosAccountsPageStrings(
 
   // Toggles the Chrome OS Kerberos Accounts submenu in the People section.
   // Note that the handler is also dependent on this pref.
-  html_source->AddBoolean("isKerberosEnabled",
-                          kerberos_credentials_manager_->IsKerberosEnabled());
+  html_source->AddBoolean(
+      "isKerberosEnabled",
+      kerberos_credentials_manager_ != nullptr &&
+          kerberos_credentials_manager_->IsKerberosEnabled());
 
   PrefService* local_state = g_browser_process->local_state();
 

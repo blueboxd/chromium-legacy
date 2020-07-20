@@ -456,18 +456,28 @@ void ResourceBundle::LoadTestResources(const base::FilePath& path,
                                        const base::FilePath& locale_path) {
   is_test_resources_ = true;
   DCHECK(!ui::GetSupportedScaleFactors().empty());
-  const ScaleFactor scale_factor(ui::GetSupportedScaleFactors()[0]);
   // Use the given resource pak for both common and localized resources.
-  std::unique_ptr<DataPack> data_pack(new DataPack(scale_factor));
-  if (!path.empty() && data_pack->LoadFromPath(path))
-    AddDataPack(std::move(data_pack));
 
-  data_pack = std::make_unique<DataPack>(ui::SCALE_FACTOR_NONE);
+  if (!path.empty()) {
+    const ScaleFactor scale_factor(ui::GetSupportedScaleFactors()[0]);
+    auto data_pack = std::make_unique<DataPack>(scale_factor);
+#if defined(OS_ANDROID)
+    // TODO(https://crbug.com/1078365): Fix Android and remove this conditional.
+    if (data_pack->LoadFromPath(path))
+      AddDataPack(std::move(data_pack));
+#else   // !defined(OS_ANDROID)
+    CHECK(data_pack->LoadFromPath(path));
+    AddDataPack(std::move(data_pack));
+#endif  // !define(OS_ANDROID)
+  }
+
+  auto data_pack = std::make_unique<DataPack>(ui::SCALE_FACTOR_NONE);
   if (!locale_path.empty() && data_pack->LoadFromPath(locale_path)) {
     locale_resources_data_ = std::move(data_pack);
   } else {
     locale_resources_data_ = std::make_unique<DataPack>(ui::SCALE_FACTOR_NONE);
   }
+
   // This is necessary to initialize ICU since we won't be calling
   // LoadLocaleResources in this case.
   l10n_util::GetApplicationLocale(std::string());

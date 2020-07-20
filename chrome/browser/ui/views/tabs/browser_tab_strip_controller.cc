@@ -43,7 +43,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/feature_engagement/buildflags.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/prefs/pref_service.h"
@@ -65,11 +64,6 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
 #include "url/origin.h"
-
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
-#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
-#endif
 
 using base::UserMetricsAction;
 using content::WebContents;
@@ -446,14 +440,6 @@ void BrowserTabStripController::CreateNewTab() {
   reopen_tab_iph->NewTabOpened();
 
   model_->delegate()->AddTabAt(GURL(), -1, true);
-
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-  auto* new_tab_tracker =
-      feature_engagement::NewTabTrackerFactory::GetInstance()->GetForProfile(
-          browser_view_->browser()->profile());
-  new_tab_tracker->OnNewTabOpened();
-  new_tab_tracker->CloseBubble();
-#endif
 }
 
 void BrowserTabStripController::CreateNewTabWithLocation(

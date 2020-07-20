@@ -33,9 +33,7 @@ class RenderWidgetTest : public RenderViewTest {
 
   void OnSynchronizeVisualProperties(
       const blink::VisualProperties& visual_properties) {
-    WidgetMsg_UpdateVisualProperties msg(widget()->routing_id(),
-                                         visual_properties);
-    widget()->OnMessageReceived(msg);
+    widget()->UpdateVisualProperties(visual_properties);
   }
 
   gfx::Range LastCompositionRange() {
@@ -380,11 +378,7 @@ TEST_F(RenderWidgetTest, ActivePinchGestureUpdatesLayerTreeHost) {
 
   // Sync visual properties on a mainframe RenderWidget.
   visual_properties.is_pinch_gesture_active = true;
-  {
-    WidgetMsg_UpdateVisualProperties msg(widget()->routing_id(),
-                                         visual_properties);
-    widget()->OnMessageReceived(msg);
-  }
+  widget()->UpdateVisualProperties(visual_properties);
   // We do not expect the |is_pinch_gesture_active| value to propagate to the
   // LayerTreeHost for the main-frame. Since GesturePinch events are handled
   // directly by the layer tree for the main frame, it already knows whether or

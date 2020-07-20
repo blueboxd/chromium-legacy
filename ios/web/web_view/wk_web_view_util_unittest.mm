@@ -4,6 +4,7 @@
 
 #import "ios/web/web_view/wk_web_view_util.h"
 
+#include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -30,6 +31,8 @@
 
 class WKWebViewUtilTest : public PlatformTest {};
 
+namespace web {
+
 // Tests that IsSafeBrowsingWarningDisplayedInWebView returns true when safe
 // browsing warning is displayed in WKWebView.
 TEST_F(WKWebViewUtilTest, TestIsSafeBrowsingWarningDisplayedInWebView) {
@@ -54,4 +57,38 @@ TEST_F(WKWebViewUtilTest, TestIsSafeBrowsingWarningDisplayedInWebView) {
 
     EXPECT_TRUE(web::IsSafeBrowsingWarningDisplayedInWebView(web_view));
   }
+}
+
+// Tests that CreateFullPagePDF invokes the callback with NSData.
+TEST_F(WKWebViewUtilTest, EnsureCallbackIsCalled) {
+  WKWebViewConfiguration* config = [[WKWebViewConfiguration alloc] init];
+  WKWebView* web_view = [[WKWebView alloc] initWithFrame:CGRectZero
+                                           configuration:config];
+
+  __block bool callback_called = false;
+  __block NSData* callback_data = nil;
+
+  CreateFullPagePdf(web_view, base::Bind(^(NSData* data) {
+                      callback_called = true;
+                      callback_data = [data copy];
+                    }));
+
+  ASSERT_TRUE(callback_called);
+  EXPECT_TRUE(callback_data);
+}
+
+// Tests that CreateFullPagePDF invokes the callback with NULL if
+// its given a NULL WKWebView.
+TEST_F(WKWebViewUtilTest, NULLWebView) {
+  __block bool callback_called = false;
+  __block NSData* callback_data = nil;
+
+  CreateFullPagePdf(nil, base::Bind(^(NSData* data) {
+                      callback_called = true;
+                      callback_data = [data copy];
+                    }));
+
+  ASSERT_TRUE(callback_called);
+  EXPECT_FALSE(callback_data);
+}
 }

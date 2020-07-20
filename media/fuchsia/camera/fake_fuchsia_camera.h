@@ -147,7 +147,7 @@ class FakeCameraDevice : public fuchsia::camera3::testing::Device_TestBase {
   // fuchsia::camera3::testing::Device_TestBase override.
   void NotImplemented_(const std::string& name) override;
 
-  fidl::Binding<fuchsia::camera3::Device> binding_;
+  fidl::BindingSet<fuchsia::camera3::Device> bindings_;
   FakeCameraStream* const stream_;
 };
 
@@ -158,6 +158,10 @@ class FakeCameraDeviceWatcher {
 
   FakeCameraDeviceWatcher(const FakeCameraDeviceWatcher&) = delete;
   FakeCameraDeviceWatcher& operator=(const FakeCameraDeviceWatcher&) = delete;
+
+  void DisconnectClients();
+
+  FakeCameraStream* stream() { return &stream_; }
 
  private:
   class Client : public fuchsia::camera3::testing::DeviceWatcher_TestBase {

@@ -39343,6 +39343,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="Blocklisted due to reloads/back-forwards"/>
 </enum>
 
+<enum name="LiteVideoDecision">
+  <int value="0" label="None"/>
+  <int value="1" label="Allowed"/>
+  <int value="2" label="Not Allowed"/>
+  <int value="3" label="Holdback"/>
+</enum>
+
 <enum name="LiveCaptionsSessionEvent">
   <int value="0" label="Stream started"/>
   <int value="1" label="Stream finished"/>
@@ -41710,6 +41717,7 @@ from previous Chrome versions.
   <int value="44240181" label="SharingQRCodeGenerator:disabled"/>
   <int value="48159177" label="reduced-referrer-granularity"/>
   <int value="51793504" label="protect-sync-credential-on-reauth:disabled"/>
+  <int value="52150780" label="OsSettingsPolymer3:disabled"/>
   <int value="52368742" label="enable-pixel-canvas-recording:disabled"/>
   <int value="54258707" label="NewTabstripAnimation:enabled"/>
   <int value="54571864" label="EnableDisplayZoomSetting:enabled"/>
@@ -42118,6 +42126,7 @@ from previous Chrome versions.
   <int value="513258875" label="WinrtSensorsImplementation:disabled"/>
   <int value="513356954" label="InstantTethering:disabled"/>
   <int value="513372959" label="ViewsProfileChooser:enabled"/>
+  <int value="513728926" label="OsSettingsPolymer3:enabled"/>
   <int value="514569020" label="RemoteCopyImageNotification:enabled"/>
   <int value="516603570" label="QuickAnswersRichUi:disabled"/>
   <int value="517429103" label="AutofillImportDynamicForms:enabled"/>

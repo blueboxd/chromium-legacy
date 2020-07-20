@@ -69,11 +69,6 @@ class FCMSyncNetworkChannel {
           callback) = 0;
 
  protected:
-  // Subclass should call NotifyNetworkStatusChange to notify about network
-  // changes. This triggers cacheinvalidation to try resending failed message
-  // ahead of schedule when client comes online or IP address changes.
-  void NotifyNetworkStatusChange(bool online);
-
   // Subclass should notify about connection state through
   // NotifyChannelStateChange. If communication doesn't work and it is possible
   // that invalidations from server will not reach this client then channel

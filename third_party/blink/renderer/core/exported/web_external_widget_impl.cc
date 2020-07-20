@@ -224,4 +224,9 @@ void WebExternalWidgetImpl::FocusChanged(bool enabled) {
   client_->FocusChanged(enabled);
 }
 
+void WebExternalWidgetImpl::UpdateVisualProperties(
+    const VisualProperties& visual_properties) {
+  client_->UpdateVisualProperties(visual_properties);
+}
+
 }  // namespace blink

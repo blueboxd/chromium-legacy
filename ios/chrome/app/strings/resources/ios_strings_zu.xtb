@@ -72,6 +72,7 @@
 <translation id="1674504678466460478">Isi-<ph name="SOURCE_LANGUAGE" /> ukuya kusi-<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Ukuze uthole amabhukhimakhi akho kuwo onke amadivayisi akho, vula ukuvumelanisa.</translation>
 <translation id="1687475363370981210">Maka konke njengokufundiwe</translation>
+<translation id="1689333818294560261">Isiteketiso</translation>
 <translation id="1690731385917361335">Azikho izinto</translation>
 <translation id="1692118695553449118">Ukuvumelanisa kuvuliwe</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> kukhethiwe</translation>
@@ -206,6 +207,7 @@ Lapho uku-incognito, amasayithi awakwazi ukusebenzisa amakhukhi akho ukubona ums
 <translation id="3335947283844343239">Phinda uvule ithebhu evaliwe</translation>
 <translation id="3371831930909698441">Ukuhumusha kuyatholakala. Izinketho ziyatholakala eduze kwangaphansi kwesikrini.</translation>
 <translation id="3393920035788932672">Izigelekeqe zivunyelwe</translation>
+<translation id="3425644765244388016">Isiteketiso segama</translation>
 <translation id="3443810440409579745">Ithebhu itholiwe.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> amaminithi</translation>
 <translation id="3448016392200048164">Ukubuka okuhlukanisiwe</translation>
@@ -240,6 +242,7 @@ Lapho uku-incognito, amasayithi awakwazi ukusebenzisa amakhukhi akho ukubona ums
 <translation id="3783017676699494206">Londoloza isithombe</translation>
 <translation id="3789841737615482174">Faka</translation>
 <translation id="3803696231112616155">Nikeza ukuhumusha leli sayithi</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Awekho amaphasiwedi onakalisiwe}=1{Amaphasiwedi onakalisiwe angu-{COUNT}}one{Amaphasiwedi onakalisiwe angu-{COUNT}}other{Amaphasiwedi onakalisiwe angu-{COUNT}}}</translation>
 <translation id="385051799172605136">Emuva</translation>
 <translation id="3892144330757387737">Uzothola umlando wakho lapha</translation>
 <translation id="3897092660631435901">Imenyu</translation>
@@ -529,6 +532,7 @@ Amasayithi awakwazi ukusebenzisa amakhukhi ukubona umsebenzi wakho wokuphequlula
 <translation id="7189598951263744875">Yabelana...</translation>
 <translation id="7192050974311852563">Qala ukuloga</translation>
 <translation id="7203585745079012652">Khulumela emuva izimpendulo</translation>
+<translation id="721597782417389033">Isiteketiso Sekhadi Esingavumelekile</translation>
 <translation id="7265758999917665941">Ungalokothi kuleli sayithi</translation>
 <translation id="7272437679830969316">Ayikwazi ukuqinisekisa ubunikazi bakho. Iphasiwedi ayikopishiwe.</translation>
 <translation id="7291368939935408496">Ilungiselela amaphasiwedi...</translation>

@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">For å få bokmerkene dine på alle enhetene dine, slå på synkronisering.</translation>
 <translation id="1687475363370981210">Merk alle som lest</translation>
+<translation id="1689333818294560261">Kallenavn</translation>
 <translation id="1690731385917361335">Ingen elementer</translation>
 <translation id="1692118695553449118">Synkronisering er slått på.</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> er valgt</translation>
@@ -206,6 +207,7 @@ Når du er i inkognitomodus, kan ikke nettsteder bruke informasjonskapsler til �
 <translation id="3335947283844343239">Åpne lukkede faner igjen</translation>
 <translation id="3371831930909698441">Oversetter er tilgjengelig. Du finner alternativer på nedre del av skjermen.</translation>
 <translation id="3393920035788932672">Tillat forgrunnsvinduer</translation>
+<translation id="3425644765244388016">Kallenavn på kortet</translation>
 <translation id="3443810440409579745">Fane er mottatt.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Delt visning</translation>
@@ -240,6 +242,7 @@ Når du er i inkognitomodus, kan ikke nettsteder bruke informasjonskapsler til �
 <translation id="3783017676699494206">Lagre bildet</translation>
 <translation id="3789841737615482174">Installer</translation>
 <translation id="3803696231112616155">Tilby å oversette dette nettstedet</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Ingen passord er utsatt for sikkerhetsbrudd}=1{{COUNT} passord er utsatt for sikkerhetsbrudd}other{{COUNT} passord er utsatt for sikkerhetsbrudd}}</translation>
 <translation id="385051799172605136">Tilbake</translation>
 <translation id="3892144330757387737">Her finner du loggen din</translation>
 <translation id="3897092660631435901">Meny</translation>
@@ -529,6 +532,7 @@ Nettsteder kan ikke bruke informasjonskapsler til å se nettleseraktiviteten din
 <translation id="7189598951263744875">Del</translation>
 <translation id="7192050974311852563">Start loggføring</translation>
 <translation id="7203585745079012652">Svar med tale</translation>
+<translation id="721597782417389033">Ugyldig kallenavn på kortet</translation>
 <translation id="7265758999917665941">Aldri for dette nettstedet</translation>
 <translation id="7272437679830969316">Kan ikke bekrefte identiteten din. Passordet er ikke kopiert.</translation>
 <translation id="7291368939935408496">Klargjør passordene …</translation>

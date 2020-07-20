@@ -12,5 +12,6 @@ os_test_namespace_rewrites =
       "settings.MultiDeviceSettingsMode|MultiDeviceSettingsMode",
       "test_util.flushTasks|flushTasks",
       "test_util.eventToPromise|eventToPromise",
+      "test_util.waitAfterNextRender|waitAfterNextRender",
       "settings.TestWallpaperBrowserProxy|TestWallpaperBrowserProxy",
     ]

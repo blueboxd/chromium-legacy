@@ -321,6 +321,10 @@ const base::Feature kNewOsSettingsSearch{"NewOsSettingsSearch",
 const base::Feature kOsSettingsDeepLinking{"OsSettingsDeepLinking",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Flips chrome://os-settings to show Polymer 3 version
+const base::Feature kOsSettingsPolymer3{"OsSettingsPolymer3",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to enable the Parental Controls section of settings.
 const base::Feature kParentalControlsSettings{
     "ChromeOSParentalControlsSettings", base::FEATURE_ENABLED_BY_DEFAULT};

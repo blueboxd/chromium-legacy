@@ -125,8 +125,10 @@ CSSValue* ConsumeBaselineKeyword(CSSParserTokenRange& range) {
   if (!baseline)
     return nullptr;
   if (preference && preference->GetValueID() == CSSValueID::kLast) {
-    return MakeGarbageCollected<CSSValuePair>(
-        preference, baseline, CSSValuePair::kDropIdenticalValues);
+    // We still don't have support for 'last baseline' in layout
+    // https://crbug.com/885175
+    // https://crbug.com/886585
+    return nullptr;
   }
   return baseline;
 }

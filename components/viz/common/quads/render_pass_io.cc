@@ -1043,8 +1043,9 @@ void RenderPassDrawQuadToDict(const RenderPassDrawQuad* draw_quad,
                               base::Value* dict) {
   DCHECK(draw_quad);
   DCHECK(dict);
-  dict->SetStringKey("render_pass_id",
-                     base::NumberToString(draw_quad->render_pass_id));
+  dict->SetStringKey(
+      "render_pass_id",
+      base::NumberToString(static_cast<uint64_t>(draw_quad->render_pass_id)));
   dict->SetKey("mask_uv_rect", RectFToDict(draw_quad->mask_uv_rect));
   dict->SetKey("mask_texture_size", SizeToDict(draw_quad->mask_texture_size));
   dict->SetKey("filters_scale", Vector2dFToDict(draw_quad->filters_scale));
@@ -1233,12 +1234,12 @@ bool RenderPassDrawQuadFromDict(const base::Value& dict,
       !backdrop_filter_quality || !force_anti_aliasing_off) {
     return false;
   }
-  RenderPassId t_render_pass_id;
+  uint64_t render_pass_id_as_int;
   gfx::RectF t_mask_uv_rect, t_tex_coord_rect;
   gfx::Size t_mask_texture_size;
   gfx::Vector2dF t_filters_scale;
   gfx::PointF t_filters_origin;
-  if (!base::StringToUint64(*render_pass_id, &t_render_pass_id) ||
+  if (!base::StringToUint64(*render_pass_id, &render_pass_id_as_int) ||
       !RectFFromDict(*mask_uv_rect, &t_mask_uv_rect) ||
       !SizeFromDict(*mask_texture_size, &t_mask_texture_size) ||
       !Vector2dFFromDict(*filters_scale, &t_filters_scale) ||
@@ -1246,6 +1247,7 @@ bool RenderPassDrawQuadFromDict(const base::Value& dict,
       !RectFFromDict(*tex_coord_rect, &t_tex_coord_rect)) {
     return false;
   }
+  RenderPassId t_render_pass_id{render_pass_id_as_int};
 
   ResourceId mask_resource_id = 0u;
   if (common.resources.count == 1u) {
@@ -1740,7 +1742,9 @@ bool SharedQuadStateListFromList(const base::Value& list,
 
 base::Value GetRenderPassMetadata(const RenderPass& render_pass) {
   base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetStringKey("render_pass_id", base::NumberToString(render_pass.id));
+  dict.SetStringKey(
+      "render_pass_id",
+      base::NumberToString(static_cast<uint64_t>(render_pass.id)));
   dict.SetIntKey("quad_count", static_cast<int>(render_pass.quad_list.size()));
   dict.SetIntKey("shared_quad_state_count",
                  static_cast<int>(render_pass.shared_quad_state_list.size()));
@@ -1759,7 +1763,8 @@ base::Value GetRenderPassListMetadata(const RenderPassList& render_pass_list) {
 base::Value RenderPassToDict(const RenderPass& render_pass) {
   base::Value dict(base::Value::Type::DICTIONARY);
   if (ProcessRenderPassField(kRenderPassID))
-    dict.SetStringKey("id", base::NumberToString(render_pass.id));
+    dict.SetStringKey(
+        "id", base::NumberToString(static_cast<uint64_t>(render_pass.id)));
   if (ProcessRenderPassField(kRenderPassOutputRect))
     dict.SetKey("output_rect", RectToDict(render_pass.output_rect));
   if (ProcessRenderPassField(kRenderPassDamageRect))
@@ -1822,8 +1827,10 @@ std::unique_ptr<RenderPass> RenderPassFromDict(const base::Value& dict) {
     const std::string* id = dict.FindStringKey("id");
     if (!id)
       return nullptr;
-    if (!base::StringToUint64(*id, &(pass->id)))
+    uint64_t pass_id_as_int = 0;
+    if (!base::StringToUint64(*id, &pass_id_as_int))
       return nullptr;
+    pass->id = RenderPassId{pass_id_as_int};
   }
 
   if (ProcessRenderPassField(kRenderPassOutputRect)) {

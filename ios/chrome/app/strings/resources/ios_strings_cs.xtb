@@ -72,6 +72,7 @@
 <translation id="1674504678466460478">Z: <ph name="SOURCE_LANGUAGE" /> do: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Chcete-li mít záložky ve všech zařízeních, zapněte synchronizaci.</translation>
 <translation id="1687475363370981210">Označit vše jako přečtené</translation>
+<translation id="1689333818294560261">Přezdívka</translation>
 <translation id="1690731385917361335">Žádné položky</translation>
 <translation id="1692118695553449118">Synchronizace je zapnuta</translation>
 <translation id="1700629756560807968">Počet vybraných položek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -206,6 +207,7 @@ V anonymním režimu weby nemohou používat soubory cookie ke sledování vaš
 <translation id="3335947283844343239">Znovu otevřít zavřenou kartu</translation>
 <translation id="3371831930909698441">Je k dispozici Překladač. Možnosti jsou k dispozici ve spodní části obrazovky.</translation>
 <translation id="3393920035788932672">Vyskakovací okna povolena</translation>
+<translation id="3425644765244388016">Přezdívka karty</translation>
 <translation id="3443810440409579745">Byla přijata karta.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Režim Split View</translation>
@@ -240,6 +242,7 @@ V anonymním režimu weby nemohou používat soubory cookie ke sledování vaš
 <translation id="3783017676699494206">Uložit obrázek</translation>
 <translation id="3789841737615482174">Instalovat</translation>
 <translation id="3803696231112616155">Nabízet překlad tohoto webu</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Žádná hesla nebyla prolomena}=1{Bylo prolomeno {COUNT} heslo}few{Byla prolomena {COUNT} hesla}many{Bylo prolomeno {COUNT} hesla}other{Bylo prolomeno {COUNT} hesel}}</translation>
 <translation id="385051799172605136">Zpět</translation>
 <translation id="3892144330757387737">Zde najdete svou historii</translation>
 <translation id="3897092660631435901">Nabídka</translation>
@@ -529,6 +532,7 @@ Weby pomocí souborů cookie nemohou sledovat vaši aktivitu prohlížení mezi 
 <translation id="7189598951263744875">Sdílet...</translation>
 <translation id="7192050974311852563">Začít protokolovat</translation>
 <translation id="7203585745079012652">Vyslovovat odpovědi</translation>
+<translation id="721597782417389033">Neplatná přezdívka karty</translation>
 <translation id="7265758999917665941">Pro tento web nikdy</translation>
 <translation id="7272437679830969316">Vaši totožnost nelze ověřit. Heslo nebylo zkopírováno.</translation>
 <translation id="7291368939935408496">Příprava hesel…</translation>

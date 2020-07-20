@@ -12,6 +12,7 @@ import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.url.Origin;
 
 import java.util.Map;
@@ -92,8 +93,10 @@ public interface PaymentAppFactoryParams {
         return null;
     }
 
-    /** @return The currency of the total amount. Should not be null. */
-    default String getTotalAmountCurrency() {
+    /**
+     * @return The PaymentOptions of the payment request.
+     */
+    default PaymentOptions getPaymentOptions() {
         return null;
     }
 

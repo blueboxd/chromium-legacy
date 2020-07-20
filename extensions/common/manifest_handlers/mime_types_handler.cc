@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/metrics/histogram_functions.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,7 +26,7 @@ namespace {
 // This has to by in sync with MimeHandlerType enum.
 // Note that if multiple versions of quickoffice are installed, the
 // higher-indexed entry will clobber earlier entries.
-const char* const kMIMETypeHandlersAllowlist[] = {
+constexpr const char* const kMIMETypeHandlersAllowlist[] = {
     extension_misc::kPdfExtensionId,
     extension_misc::kQuickOfficeComponentExtensionId,
     extension_misc::kQuickOfficeInternalExtensionId,
@@ -68,9 +69,11 @@ MimeTypesHandlerInfo::~MimeTypesHandlerInfo() = default;
 }  // namespace
 
 // static
-std::vector<std::string> MimeTypesHandler::GetMIMETypeAllowlist() {
-  return {std::begin(kMIMETypeHandlersAllowlist),
-          std::end(kMIMETypeHandlersAllowlist)};
+const std::vector<std::string>& MimeTypesHandler::GetMIMETypeAllowlist() {
+  static base::NoDestructor<std::vector<std::string>> allowlist_vector{
+      std::begin(kMIMETypeHandlersAllowlist),
+      std::end(kMIMETypeHandlersAllowlist)};
+  return *allowlist_vector;
 }
 
 // static

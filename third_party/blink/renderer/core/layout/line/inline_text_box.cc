@@ -95,6 +95,14 @@ void InlineTextBox::SetLogicalOverflowRect(const LayoutRect& rect) {
   g_text_boxes_with_overflow->Set(this, rect);
 }
 
+PhysicalRect InlineTextBox::PhysicalOverflowRect() const {
+  LayoutRect overflow_rect = LogicalOverflowRect();
+  if (!IsHorizontal())
+    overflow_rect = overflow_rect.TransposedRect();
+  FlipForWritingMode(overflow_rect);
+  return PhysicalRectToBeNoop(overflow_rect);
+}
+
 void InlineTextBox::Move(const LayoutSize& delta) {
   InlineBox::Move(delta);
 

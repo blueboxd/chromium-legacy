@@ -153,10 +153,12 @@ void SaveUpdateWithAccountStoreBubbleController::OnSaveClicked() {
   dismissal_reason_ = metrics_util::CLICKED_ACCEPT;
   if (delegate_) {
     CleanStatisticsForSite(GetProfile(), origin_);
-    if (!IsUsingAccountStore() ||
+    if (IsCurrentStateUpdate() || !IsUsingAccountStore() ||
         delegate_->GetPasswordFeatureManager()->IsOptedInForAccountStorage()) {
-      // User is saving locally or already has opted in to the account store.
-      // Save directly without the need for reauth.
+      // The following cases don't require gaia reauth:
+      // 1. Password Update.
+      // 2. User is saving locally .
+      // 3. User has already opted in to the account store.
       delegate_->SavePassword(pending_password_.username_value,
                               pending_password_.password_value);
     } else {

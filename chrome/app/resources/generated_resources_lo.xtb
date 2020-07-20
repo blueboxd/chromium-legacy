@@ -538,7 +538,7 @@
 <translation id="164936512206786300">ຍົກເລີກການຈັບຄູ່ອຸປະກອນ Bluetooth</translation>
 <translation id="1650371550981945235">ສະແດງຕົວເລືອກການປ້ອນຂໍ້ມູນ</translation>
 <translation id="1651008383952180276">ທ່ານຕ້ອງປ້ອນວະລີຜ່ານອັນດຽວກັນສອງເທື່ອ</translation>
-<translation id="1652326691684645429">ເປີດການນຳໃຊ້ Nearby Share</translation>
+<translation id="1652326691684645429">ເປີດການນຳໃຊ້ການແບ່ງປັນໃກ້ຄຽງ</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{ເພີ່ມເຄື່ອງພິມໃສ່ Google Cloud Print ເພື່ອໃຫ້ທ່ານສາມາດພິມໄດ້ຢູ່ທຸກບ່ອນ.}other{ເພີ່ມ # ເຄື່ອງພິມໃສ່ Google Cloud Print ເພື່ອໃຫ້ທ່ານສາມາດພິມໄດ້ຢູ່ທຸກບ່ອນ.}}</translation>
 <translation id="1656528038316521561">ຄວາມທຶບແສງຂອງພື້ນຫຼັງ</translation>
 <translation id="1657406563541664238">ຊ່ວຍ​ເຮັດ​ໃຫ້ <ph name="PRODUCT_NAME" /> ດີຂຶ້ນ​ໂດຍ​​ການ​ສົ່ງ​ສະ​ຖິ​ຕິ​ການ​ນໍາ​ໃຊ້​ ແລະ​ລາຍ​ງານການ​ຂັດຂ້ອງຫາ Google ໂດຍອັດຕະໂນມັດ</translation>
@@ -1667,7 +1667,7 @@
 <translation id="3022978424994383087">ບໍ່ເຂົ້າໃຈສິ່ງນັ້ນ.</translation>
 <translation id="3023464535986383522">ເລືອກເພື່ອເວົ້າ</translation>
 <translation id="3024374909719388945">ໃຊ້​ໂມງ​ແບບ 24 ຊົ່ວ​ໂມງ</translation>
-<translation id="3027296729579831126">ເປີດໃຊ້ Nearby Share</translation>
+<translation id="3027296729579831126">ເປີດໃຊ້ການແບ່ງປັນໃກ້ຄຽງ</translation>
 <translation id="3029466929721441205">ສະແດງເຄື່ອງມືປາຍປາກກາໃນຖ້ານ</translation>
 <translation id="3031417829280473749">ຕົວ​ແທນ X</translation>
 <translation id="3031557471081358569">ເລືອກ​ລາຍ​ການ​ທີ່​ຈະ​ນໍາ​ເຂົ້າ​:</translation>
@@ -2963,7 +2963,7 @@
 <translation id="4673442866648850031">ເປີດເຄື່ອງມືປາຍປາກກາ ເມື່ອປາຍປາກກາຖືກລຶບອອກ</translation>
 <translation id="4677772697204437347">ຄວາມ​ຈໍາ GPU</translation>
 <translation id="4680105648806843642">ປິດສຽງໄວ້ແລ້ວໃນໜ້ານີ້</translation>
-<translation id="4681453295291708042">ປິດການນຳໃຊ້ Nearby Share</translation>
+<translation id="4681453295291708042">ປິດການນຳໃຊ້ການແບ່ງປັນໃກ້ຄຽງ</translation>
 <translation id="4681930562518940301">ເປີດຮູບ&amp;ເດີມຢູ່ໃນແຖບໃໝ່</translation>
 <translation id="4682551433947286597">ວອລເປເປີປະກົດຢູ່ໃນໜ້າຈໍລົງຊື່ເຂົ້າ​ໃຊ້.</translation>
 <translation id="4683947955326903992"><ph name="PERCENTAGE" />% (ຄ່າເລີ່ມຕົ້ນ)</translation>
@@ -3780,7 +3780,7 @@
 <translation id="5739017626473506901">ເຂົ້າສູ່ລະບົບເພື່ອຊ່ວຍ <ph name="USER_NAME" /> ເພີ່ມບັນຊີໂຮງຮຽນ</translation>
 <translation id="5739235828260127894">ກຳລັງລໍຖ້າການຢັ້ງຢືນ. <ph name="LINK_BEGIN" />ສຶກສາເພີ່ມເຕີມ<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">​ໃຫຍ່​ຫຼາຍ</translation>
-<translation id="5740328398383587084">Nearby Share</translation>
+<translation id="5740328398383587084">ການແບ່ງປັນໃກ້ຄຽງ</translation>
 <translation id="574104302965107104">ການສາຍພາບຈໍສະແດງຜົນ</translation>
 <translation id="574209121243317957">ລະດັບສຽງ</translation>
 <translation id="5746169159649715125">ບັນທຶກເປັນ PDF</translation>
@@ -4735,7 +4735,7 @@
 <translation id="6965978654500191972">ອຸ​ປະ​ກອນ</translation>
 <translation id="696780070563539690">ເວັບໄຊບໍ່ສາມາດໃຊ້ຄຸກກີ້ຂອງທ່ານເພື່ອເບິ່ງການເຄື່ອນໄຫວທ່ອງເວັບຂອງທ່ານໃນທົ່ວເວັບໄຊຕ່າງໆ, ຕົວຢ່າງ: ເພື່ອປັບແຕ່ງໂຄສະນາໃຫ້ເປັນແບບສ່ວນຕົວໄດ້</translation>
 <translation id="6968288415730398122">ປ້ອນລະຫັດຜ່ານຂອງທ່ານເພື່ອກຳນົດຄ່າການລັອກໜ້າຈໍ</translation>
-<translation id="6969047215179982698">ປິດ Nearby Share</translation>
+<translation id="6969047215179982698">ປິດການແບ່ງປັນໃກ້ຄຽງ</translation>
 <translation id="6970480684834282392">ປະ​ເພດເລີ່ມຕົ້ນ</translation>
 <translation id="6970856801391541997">ພິມ​ໜ້າສະ​ເພາະ</translation>
 <translation id="6972180789171089114">ສຽງ/ວິດີໂອ</translation>

@@ -12,7 +12,6 @@ boringssl_crypto_tests
 boringssl_ssl_tests
 breakpad_unittests
 browser_tests
-cacheinvalidation_unittests
 capture_unittests
 cast_unittests
 cc_unittests

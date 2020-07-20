@@ -348,6 +348,30 @@ TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest,
   DestroyModelExpectReason(password_manager::metrics_util::CLICKED_ACCEPT);
 }
 
+TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest,
+       ClickUpdateWhileNotOptedIn) {
+  // This is testing that updating a password should not trigger an account
+  // store opt in flow even if the user isn't opted in.
+  ON_CALL(*password_feature_manager(), GetDefaultPasswordStore)
+      .WillByDefault(Return(autofill::PasswordForm::Store::kAccountStore));
+  ON_CALL(*password_feature_manager(), IsOptedInForAccountStorage)
+      .WillByDefault(Return(false));
+  PretendUpdatePasswordWaiting();
+
+  EXPECT_TRUE(controller()->enable_editing());
+  EXPECT_TRUE(controller()->IsCurrentStateUpdate());
+
+  EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
+  EXPECT_CALL(*delegate(), SavePassword(pending_password().username_value,
+                                        pending_password().password_value));
+  EXPECT_CALL(*delegate(), NeverSavePassword()).Times(0);
+  EXPECT_CALL(*delegate(), OnNopeUpdateClicked()).Times(0);
+  EXPECT_CALL(*delegate(), AuthenticateUserForAccountStoreOptInAndSavePassword)
+      .Times(0);
+  controller()->OnSaveClicked();
+  DestroyModelExpectReason(password_manager::metrics_util::CLICKED_ACCEPT);
+}
+
 TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest, ClickSaveInUpdateState) {
   PretendUpdatePasswordWaiting();
 

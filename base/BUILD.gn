@@ -3786,6 +3786,7 @@ if (is_android) {
     deps = [
       ":base_java",
       "//testing/android/junit:junit_test_support",
+      "//third_party/android_deps:androidx_test_core_java",
       "//third_party/android_deps:androidx_test_monitor_java",
       "//third_party/android_deps:androidx_test_uiautomator_uiautomator_java",
       "//third_party/android_deps:robolectric_all_java",

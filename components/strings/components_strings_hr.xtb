@@ -450,6 +450,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="2824775600643448204">Adresna traka i traka za pretraživanje</translation>
 <translation id="2826760142808435982">Veza je kriptirana i autentificirana šifrom <ph name="CIPHER" />, a <ph name="KX" /> služi za mehanizam razmjene ključeva.</translation>
 <translation id="2835170189407361413">Obriši obrazac</translation>
+<translation id="2839501879576190149">Pokušavate pristupiti lažnoj web-lokaciji</translation>
 <translation id="2847118875340931228">Otvori anonimni prozor</translation>
 <translation id="2850739647070081192">Invite (omotnica)</translation>
 <translation id="2856444702002559011">Napadači možda pokušavaju ukrasti vaše podatke s web-lokacije <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (na primjer zaporke, poruke ili brojeve kreditnih kartica). <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -810,6 +811,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="42981349822642051">Proširi</translation>
 <translation id="4300675098767811073">Višestruko bušenje s desne strane</translation>
 <translation id="4302965934281694568">Chou3 (omotnica)</translation>
+<translation id="4305666528087210886">Pristup datoteci nije uspio</translation>
 <translation id="4305817255990598646">Prebaci</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Blokiraj (zadano)</translation>
@@ -828,6 +830,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="4358461427845829800">Upravljajte načinima plaćanja...</translation>
 <translation id="4359160567981085931">Upravo ste unijeli zaporku na obmanjujućoj web-lokaciji. Chrome može pomoći. Da biste promijenili zaporku i obavijestili Google da je vaš račun možda ugrožen, kliknite Zaštitite račun.</translation>
 <translation id="4367563149485757821">Number-12 (omotnica)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Spremljena zaporka za <ph name="ORIGIN" /> ugrožena je zbog povrede podataka na web-lokaciji ili u aplikaciji. Chrome preporučuje da odmah promijenite zaporku za <ph name="ORIGIN" />.}=1{Spremljena zaporka za <ph name="ORIGIN" /> i još jednu web-lokaciju ugrožena je zbog povrede podataka na web-lokaciji ili u aplikaciji. Chrome preporučuje da odmah provjerite spremljene zaporke.}one{Spremljena zaporka za <ph name="ORIGIN" /> i još <ph name="SITES_COUNT" /> web-lokaciju ugrožena je zbog povrede podataka na web-lokaciji ili u aplikaciji. Chrome preporučuje da odmah provjerite spremljene zaporke.}few{Spremljena zaporka za <ph name="ORIGIN" /> i još <ph name="SITES_COUNT" /> web-lokacije ugrožena je zbog povrede podataka na web-lokaciji ili u aplikaciji. Chrome preporučuje da odmah provjerite spremljene zaporke.}other{Spremljena zaporka za <ph name="ORIGIN" /> i još <ph name="SITES_COUNT" /> web-lokacija ugrožena je zbog povrede podataka na web-lokaciji ili u aplikaciji. Chrome preporučuje da odmah provjerite spremljene zaporke.}}</translation>
 <translation id="437058704415269440">Stanje računa</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Očekivana vrijednost vrste <ph name="VALUE_TYPE" />.</translation>
@@ -1298,6 +1301,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Ako nastavite, moguća je naplata.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 drugi prijedlog}one{# drugi prijedlog}few{# druga prijedloga}other{# drugih prijedloga}}</translation>
+<translation id="6387645831795005740">Napadači ponekad oponašaju web-lokacije unošenjem malih, teško uočljivih promjena u URL.</translation>
 <translation id="6389470377220713856">Ime na kartici</translation>
 <translation id="6390200185239044127">Cik-cak presavijanje napola</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1511,6 +1515,7 @@ Dodatne pojedinosti:
 <translation id="7372973238305370288">rezultat pretraživanja</translation>
 <translation id="7374733840632556089">Do ovog problema dolazi zbog certifikata koji ste vi ili neka druga osoba instalirali na ovaj uređaj. Certifikat se upotrebljava za nadzor i presretanje mreža i Chrome ga ne smatra pouzdanim. Iako postoje opravdani razlozi za nadziranje, kao na primjer na školskoj mreži ili mreži tvrtke, Chrome želi da budete svjesni da se to događa, čak i ako to ne možete spriječiti. Nadziranje je moguće u bilo kojem pregledniku ili aplikaciji koja pristupa webu.</translation>
 <translation id="7375818412732305729">Datoteka je priložena</translation>
+<translation id="7376551888419889433">Kad poveznici za Chrome za poduzeća označe sigurnosne događaje, vašem administratoru šalju se relevantni podaci o tim događajima. To može uključivati URL-ove stranica koje posjetite u Chromeu, nazive datoteka ili metapodatke, kao i korisničko ime koje upotrebljavate za prijavu na svoj uređaj i Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Medijske kontrole</translation>
 <translation id="7378627244592794276">Ne</translation>
@@ -1908,6 +1913,7 @@ Dodatne pojedinosti:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Pokušali ste pristupiti domeni <ph name="DOMAIN" />, ali poslužitelj je prikazao nevažeći certifikat.</translation>
 <translation id="9050666287014529139">Zaporka</translation>
+<translation id="9062620674789239642">Možda je premještena, uređena ili izbrisana.</translation>
 <translation id="9065203028668620118">Uredi</translation>
 <translation id="9065745800631924235">Pretraživanje <ph name="TEXT" /> iz povijesti</translation>
 <translation id="9069693763241529744">Blokiralo proširenje</translation>

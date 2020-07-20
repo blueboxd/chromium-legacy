@@ -608,14 +608,6 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
     diff.SetNeedsPaintInvalidation();
   }
 
-  if ((!diff.NeedsCollectInlines() || !diff.NeedsFullLayout() ||
-       !diff.NeedsPaintInvalidation()) &&
-      DiffNeedsCollectInlinesAndFullLayoutAndPaintInvalidation(*this, other)) {
-    diff.SetNeedsCollectInlines();
-    diff.SetNeedsFullLayout();
-    diff.SetNeedsPaintInvalidation();
-  }
-
   if ((!diff.NeedsFullLayout() || !diff.NeedsPaintInvalidation()) &&
       DiffNeedsFullLayoutAndPaintInvalidation(other)) {
     diff.SetNeedsFullLayout();

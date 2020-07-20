@@ -639,7 +639,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="3676592649209844519">ID Perangkat:</translation>
 <translation id="3677008721441257057">Maksud Anda &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Permintaan tidak dapat ditandatangani</translation>
-<translation id="3678529606614285348">Buka halaman dalam Jendela samaran baru (Ctrl-Shift-N)</translation>
+<translation id="3678529606614285348">Buka halaman dalam jendela Samaran baru (Ctrl-Shift-N)</translation>
 <translation id="3681007416295224113">Informasi sertifikat</translation>
 <translation id="3701427423622901115">Setel ulang dikonfirmasi.</translation>
 <translation id="3704162925118123524">Jaringan yang digunakan mungkin mewajibkan Anda mengunjungi halaman masuk jaringan.</translation>
@@ -771,8 +771,8 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
     &lt;li&gt;Buka situs yang diawali dengan &lt;code&gt;http://&lt;/code&gt;, seperti &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;.&lt;/li&gt;
     &lt;li&gt;Di halaman login yang terbuka, silakan login untuk menggunakan internet.&lt;/li&gt;
     &lt;/ol&gt;
-    &lt;h4&gt;Langkah 2: Buka halaman dalam Mode samaran (khusus komputer)&lt;/h4&gt;
-    &lt;p&gt;Buka halaman yang Anda akses sebelumnya dalam Jendela samaran.&lt;/p&gt;
+    &lt;h4&gt;Langkah 2: Buka halaman dalam mode Samaran (khusus komputer)&lt;/h4&gt;
+    &lt;p&gt;Buka halaman yang Anda akses sebelumnya dalam jendela Samaran.&lt;/p&gt;
     &lt;p&gt;Jika halaman tersebut terbuka, ekstensi Chrome tidak berfungsi dengan baik. Untuk memperbaiki error, nonaktifkan ekstensi.&lt;/p&gt;
     &lt;h4&gt;Langkah 3: Update sistem operasi&lt;/h4&gt;
     &lt;p&gt;Pastikan perangkat sudah diupdate.&lt;/p&gt;
@@ -992,7 +992,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="5148809049217731050">Menghadap ke atas</translation>
 <translation id="515292512908731282">C4 (Envelope)</translation>
 <translation id="5158275234811857234">Sampul</translation>
-<translation id="5159010409087891077">Buka halaman dalam Jendela samaran baru (⇧⌘N)</translation>
+<translation id="5159010409087891077">Buka halaman dalam jendela Samaran baru (⇧⌘N)</translation>
 <translation id="5161506081086828129">Tempat kertas 9</translation>
 <translation id="5164798890604758545">Teks dimasukkan</translation>
 <translation id="516920405563544094">Masukkan CVC untuk <ph name="CREDIT_CARD" />. Setelah mengonfirmasi, detail kartu dari Akun Google Anda akan dibagikan dengan situs ini.</translation>

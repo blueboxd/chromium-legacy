@@ -4,6 +4,7 @@
 
 #include "services/viz/public/cpp/compositing/quads_mojom_traits.h"
 
+#include "services/viz/public/cpp/compositing/render_pass_id_mojom_traits.h"
 #include "services/viz/public/cpp/crash_keys.h"
 #include "ui/gfx/mojom/color_space_mojom_traits.h"
 #include "ui/gfx/mojom/transform_mojom_traits.h"
@@ -73,17 +74,17 @@ bool StructTraits<viz::mojom::RenderPassQuadStateDataView, viz::DrawQuad>::Read(
   quad->resources.ids[viz::RenderPassDrawQuad::kMaskResourceIdIndex] =
       data.mask_resource_id();
   quad->resources.count = data.mask_resource_id() ? 1 : 0;
-  quad->render_pass_id = data.render_pass_id();
-  // RenderPass ids are never zero.
-  if (!quad->render_pass_id) {
-    viz::SetDeserializationCrashKeyString("Draw quad invalid render pass ID");
-    return false;
-  }
   if (!data.ReadMaskUvRect(&quad->mask_uv_rect) ||
       !data.ReadMaskTextureSize(&quad->mask_texture_size) ||
       !data.ReadFiltersScale(&quad->filters_scale) ||
       !data.ReadFiltersOrigin(&quad->filters_origin) ||
-      !data.ReadTexCoordRect(&quad->tex_coord_rect)) {
+      !data.ReadTexCoordRect(&quad->tex_coord_rect) ||
+      !data.ReadRenderPassId(&quad->render_pass_id)) {
+    return false;
+  }
+  // RenderPass ids are never zero.
+  if (!quad->render_pass_id) {
+    viz::SetDeserializationCrashKeyString("Draw quad invalid render pass ID");
     return false;
   }
   quad->force_anti_aliasing_off = data.force_anti_aliasing_off();

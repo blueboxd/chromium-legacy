@@ -135,7 +135,8 @@ void FastInitiationManager::OnSetAdvertisingInterval(
 void FastInitiationManager::OnSetAdvertisingIntervalError(
     FastInitiationManager::FastInitType type,
     device::BluetoothAdvertisement::ErrorCode code) {
-  LOG(WARNING) << "SetAdvertisingInterval() failed with error code = " << code;
+  NS_LOG(WARNING) << "SetAdvertisingInterval() failed with error code = "
+                  << code;
   RegisterAdvertisement(type);
 }
 
@@ -190,7 +191,8 @@ void FastInitiationManager::OnRestoreAdvertisingInterval() {
 
 void FastInitiationManager::OnRestoreAdvertisingIntervalError(
     device::BluetoothAdvertisement::ErrorCode code) {
-  LOG(WARNING) << "SetAdvertisingInterval() failed with error code = " << code;
+  NS_LOG(WARNING) << "SetAdvertisingInterval() failed with error code = "
+                  << code;
   UnregisterAdvertisement();
 }
 

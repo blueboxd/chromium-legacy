@@ -128,6 +128,11 @@ VideoCaptureDeviceFactoryFuchsia::CreateDevice(
   if (!converted)
     return nullptr;
 
+  // CreateDevice() may be called before GetDeviceDescriptors(). Make sure
+  // |device_watcher_| is initialized.
+  if (!device_watcher_)
+    Initialize();
+
   fidl::InterfaceHandle<fuchsia::camera3::Device> device;
   device_watcher_->ConnectToDevice(device_id, device.NewRequest());
   return std::make_unique<VideoCaptureDeviceFuchsia>(std::move(device));
@@ -139,11 +144,13 @@ void VideoCaptureDeviceFactoryFuchsia::GetDeviceDescriptors(
 
   device_descriptors->clear();
 
-  if (!device_watcher_) {
-    DCHECK(!first_update_run_loop_);
-    DCHECK(devices_.empty());
-
+  if (!device_watcher_)
     Initialize();
+
+  // Even if |device_watcher_| was already connected, we may need need to wait
+  // for the first WatchDevices() response.
+  if (!received_first_update_) {
+    DCHECK(!first_update_run_loop_);
 
     // The RunLoop will quit when either we've received the first WatchDevices()
     // response or DeviceWatcher fails. |devices_| will be empty in case of a
@@ -185,6 +192,7 @@ void VideoCaptureDeviceFactoryFuchsia::Initialize() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!device_watcher_);
   DCHECK(devices_.empty());
+  DCHECK(!received_first_update_);
 
   base::ComponentContextForProcess()->svc()->Connect(
       device_watcher_.NewRequest());
@@ -199,8 +207,19 @@ void VideoCaptureDeviceFactoryFuchsia::OnDeviceWatcherDisconnected(
     zx_status_t status) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  ZX_LOG(ERROR, status) << "fuchsia.camera3.DeviceWatcher disconnected.";
+  // CastRunner may close the channel with ZX_ERR_UNAVAILABLE error code when
+  // none of the running applications have access to camera. No need to log the
+  // error in that case.
+  if (status != ZX_ERR_UNAVAILABLE)
+    ZX_LOG(ERROR, status) << "fuchsia.camera3.DeviceWatcher disconnected.";
+
+  // Clear the list of devices and reset |received_first_update_| so we
+  // don't report any camera devices while DeviceWatcher is disconnected. We
+  // will try connecting DeviceWatcher again when GetDeviceDescriptors() is
+  // called.
   devices_.clear();
+
+  received_first_update_ = false;
 
   if (first_update_run_loop_)
     first_update_run_loop_->Quit();
@@ -249,6 +268,8 @@ void VideoCaptureDeviceFactoryFuchsia::OnWatchDevicesResult(
     devices_.emplace(
         id, std::make_unique<DeviceInfoFetcher>(id, std::move(device)));
   }
+
+  received_first_update_ = true;
 
   if (first_update_run_loop_)
     first_update_run_loop_->Quit();

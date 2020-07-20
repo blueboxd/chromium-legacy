@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Включете синхронизирането, за да получите отметките си на всичките си устройства.</translation>
 <translation id="1687475363370981210">Означаване на всичко като прочетено</translation>
+<translation id="1689333818294560261">Псевдоним</translation>
 <translation id="1690731385917361335">Няма елементи</translation>
 <translation id="1692118695553449118">Синхронизирането е включено</translation>
 <translation id="1700629756560807968">Избрахте <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -206,6 +207,7 @@
 <translation id="3335947283844343239">Повторно отваряне на затворения раздел</translation>
 <translation id="3371831930909698441">Налице е превод. Опциите са достъпни в долната част на екрана.</translation>
 <translation id="3393920035788932672">Изск. прозорци са разр.</translation>
+<translation id="3425644765244388016">Псевдоним на картата</translation>
 <translation id="3443810440409579745">Получен раздел.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин</translation>
 <translation id="3448016392200048164">Разделен изглед</translation>
@@ -240,6 +242,7 @@
 <translation id="3783017676699494206">Запазване на изобрaжението</translation>
 <translation id="3789841737615482174">Инсталиране</translation>
 <translation id="3803696231112616155">Предлагане да се преведе този сайт</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Няма компрометирани пароли}=1{{COUNT} компрометирана парола}other{{COUNT} компрометирани пароли}}</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3892144330757387737">Тук ще се показва историята ви</translation>
 <translation id="3897092660631435901">Меню</translation>
@@ -529,6 +532,7 @@
 <translation id="7189598951263744875">Споделяне...</translation>
 <translation id="7192050974311852563">Стартиране на регистрирането</translation>
 <translation id="7203585745079012652">Изговаряне на отговорите</translation>
+<translation id="721597782417389033">Псевдонимът на картата е невалиден</translation>
 <translation id="7265758999917665941">Никога за този сайт</translation>
 <translation id="7272437679830969316">Паролата не бе копирана поради неуспешно удостоверяване.</translation>
 <translation id="7291368939935408496">Паролите се подготвят...</translation>

@@ -297,7 +297,7 @@ class DragSession {
   /** @param {!DragEvent} event */
   start(event) {
     event.dataTransfer.effectAllowed = 'move';
-    const draggedItemRect = this.element_.getBoundingClientRect();
+    const draggedItemRect = event.composedPath()[0].getBoundingClientRect();
     this.element_.setDragging(true);
 
     const dragImage = this.element_.getDragImage();
@@ -313,14 +313,26 @@ class DragSession {
     verticalOffset = 25;
     // </if>
 
-    const xDiffFromCenter =
-        event.clientX - draggedItemRect.left - (draggedItemRect.width / 2);
-    const yDiffFromCenter = event.clientY - draggedItemRect.top -
-        verticalOffset - (draggedItemRect.height / 2);
+    const eventXPercentage =
+        (event.clientX - draggedItemRect.left) / draggedItemRect.width;
+    const eventYPercentage =
+        (event.clientY - draggedItemRect.top) / draggedItemRect.height;
 
-    event.dataTransfer.setDragImage(
-        dragImage, (dragImageRect.width / 2 + xDiffFromCenter / scaleFactor),
-        (dragImageRect.height / 2 + yDiffFromCenter / scaleFactor));
+    // First, align the top-left corner of the drag image's center element
+    // to the event's coordinates.
+    const dragImageCenterRect =
+        this.element_.getDragImageCenter().getBoundingClientRect();
+    let xOffset = (dragImageCenterRect.left - dragImageRect.left) * scaleFactor;
+    let yOffset = (dragImageCenterRect.top - dragImageRect.top) * scaleFactor;
+
+    // Then, offset the drag image again by using the event's coordinates
+    // within the dragged item itself so that the drag image appears positioned
+    // as closely as its state before dragging.
+    xOffset += dragImageCenterRect.width * eventXPercentage;
+    yOffset += dragImageCenterRect.height * eventYPercentage;
+    yOffset -= verticalOffset;
+
+    event.dataTransfer.setDragImage(dragImage, xOffset, yOffset);
 
     if (isTabElement(this.element_)) {
       event.dataTransfer.setData(

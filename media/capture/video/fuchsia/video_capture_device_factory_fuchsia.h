@@ -51,6 +51,10 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryFuchsia
   base::small_map<std::map<uint64_t, std::unique_ptr<DeviceInfoFetcher>>>
       devices_;
 
+  // Indicates whether the first update has been received from
+  // |device_watcher_|.
+  bool received_first_update_ = false;
+
   // RunLoop used to wait for the first WatchDevices() response. Currently
   // required because GetDeviceDescriptors() is synchronous.
   // TODO(crbug.com/1072932) Refactor interface to allow asynchronous

@@ -357,6 +357,7 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="3892148308691398805">Sao chép văn bản</translation>
 <translation id="3894427358181296146">Thêm thư mục</translation>
 <translation id="3895926599014793903">Buộc bật thu phóng</translation>
+<translation id="3909763690984331376">Kiểm tra an toàn <ph name="BEGIN_NEW" />Mới<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Đang tìm dữ liệu thích hợp nhất từ web…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Kết hợp dữ liệu của tôi</translation>
@@ -579,6 +580,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5686790454216892815">Tên tệp quá dài</translation>
 <translation id="5694049548840660018">Dễ dàng quay lại trang chủ</translation>
 <translation id="569536719314091526">Dịch trang này sang ngôn ngữ bất kỳ từ nút Tùy chọn khác</translation>
+<translation id="5696597120588531049">Chrome có thể bảo vệ bạn trước các sự cố rò rỉ dữ liệu, trang web không an toàn và những vấn đề khác</translation>
 <translation id="5697688514913266141">Tệp của bạn sẽ được lưu vào <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Chỉnh sửa<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Chuyển sang thẻ</translation>
 <translation id="572328651809341494">Các tab gần đây</translation>
@@ -712,6 +714,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6656545060687952787">Chrome cần có quyền truy cập vị trí để quét tìm thiết bị. <ph name="BEGIN_LINK" />Cập nhật quyền<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Mật khẩu</translation>
 <translation id="6659594942844771486">Thẻ</translation>
+<translation id="6663079968236414793">Đường liên kết tới văn bản</translation>
 <translation id="666573598175432848">Đã có phiên bản Chrome mới. Hãy nhấn vào thành phần này để chuyển đến Cửa hàng Play.</translation>
 <translation id="666731172850799929">Mở trong <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Thông báo quyền riêng tư của Chrome</translation>

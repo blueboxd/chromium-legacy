@@ -1525,6 +1525,11 @@
     "expiry_milestone": 86
   },
   {
+    "name": "enable-fullpage-screenshot",
+    "owners": [ "jmentasti", "seblalancette" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-future-v8-vm-features",
     "owners": [ "hablich" ],
     // This flag enables the rolling set of upcoming V8 features, for early
@@ -3347,6 +3352,10 @@
     "owners": [ "cros-customization@google.com", "hsuregan", "khorimoto" ],
     "expiry_milestone": 90
   },
+  { "name": "os-settings-polymer3",
+    "owners": [ "cros-customization@google.com", "tjohnsonkanu", "khorimoto" ],
+    "expiry_milestone": 90
+  },
   {
     "name": "overlay-new-layout",
     "owners": [ "donnd", "jinsukkim", "contextual-search-eng" ],
@@ -3617,7 +3626,7 @@
   {
     "name": "recover-from-never-save-android",
     "owners": [ "ioanap" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 88
   },
   {
     "name": "reduce-display-notifications",

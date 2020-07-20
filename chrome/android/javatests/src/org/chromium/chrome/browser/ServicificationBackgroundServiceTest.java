@@ -21,6 +21,7 @@ import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.init.ServiceManagerStartupUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
@@ -115,6 +116,10 @@ public final class ServicificationBackgroundServiceTest {
     @LargeTest
     @Feature({"ServicificationStartup"})
     @CommandLineFlags.Add({"force-fieldtrials=*Foo/Bar", "enable-features=UMABackgroundSessions"})
+    @Restriction({Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE}) // crbug.com/1096833
+    // Verifies that the memory-mapped file for persistent histogram data exists and contains a
+    // valid SystemProfile. This test isn't run on low end devices which use local memory for
+    // storing histogram data.
     public void testHistogramsPersistedWithServiceManagerOnlyStart() {
         createBrowserMetricsSpareFile();
         Assert.assertTrue(mSpareFile.exists());

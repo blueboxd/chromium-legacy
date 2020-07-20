@@ -357,6 +357,7 @@
 <translation id="3892148308691398805">ટેક્સ્ટ કૉપિ કરો</translation>
 <translation id="3894427358181296146">ફોલ્ડર ઉમેરો</translation>
 <translation id="3895926599014793903">ફરજિયાતપૂર્વક ઝૂમ ચાલુ કરો</translation>
+<translation id="3909763690984331376">સલામતી માટે તપાસ <ph name="BEGIN_NEW" />નવું<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">વેબમાંથી શ્રેષ્ઠ શોધવું…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">મારા ડેટાને સંયોજિત કરો</translation>
@@ -579,6 +580,7 @@
 <translation id="5686790454216892815">ફાઇલનું નામ ખૂબ લાંબું છે</translation>
 <translation id="5694049548840660018">પાછા સરળતાથી હોમ પર જાઓ</translation>
 <translation id="569536719314091526">વધુ વિકલ્પો બટનમાંથી આ પેજનો અનુવાદ કોઈપણ ભાષામાં કરો</translation>
+<translation id="5696597120588531049">ડેટા ઉલ્લંઘનો, અસુરક્ષિત વેબસાઇટ જેવી બીજી ઘણી બાબતોથી તમને સુરક્ષિત રાખવામાં Chrome તમારી સહાય કરી શકે છે</translation>
 <translation id="5697688514913266141">તમારી ફાઇલ <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />માં સચવાશે. <ph name="BEGIN_LINK2" />ફેરફાર કરો<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">ટૅબ પર સ્વિચ કરો</translation>
 <translation id="572328651809341494">તાજેતરના ટેબ્સ</translation>
@@ -712,6 +714,7 @@
 <translation id="6656545060687952787">ઉપકરણો માટે સ્કેન કરવા માટે Chrome ને સ્થાન ઍક્સેસની જરૂર છે. <ph name="BEGIN_LINK" />પરવાનગીઓ અપડેટ કરો<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">પાસવર્ડ</translation>
 <translation id="6659594942844771486">ટૅબ</translation>
+<translation id="6663079968236414793">ટેક્સ્ટને લિંક કરો</translation>
 <translation id="666573598175432848">Chromeનું એકદમ નવું વર્ઝન ઉપલબ્ધ છે. Play સ્ટોર પર જવા માટે, અહીં ટૅપ કરો.</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> માં ખોલો</translation>
 <translation id="666981079809192359">Chrome ગોપનીયતા સૂચના</translation>

@@ -5,6 +5,8 @@
 #ifndef MEDIA_CAPTURE_CONTENT_VIDEO_CAPTURE_ORACLE_H_
 #define MEDIA_CAPTURE_CONTENT_VIDEO_CAPTURE_ORACLE_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "media/base/feedback_signal_accumulator.h"
@@ -30,10 +32,9 @@ class CAPTURE_EXPORT VideoCaptureOracle {
 
   // Constructs a VideoCaptureOracle with a default min capture period and
   // capture size constraints. Clients should call SetMinCapturePeriod() and
-  // SetCaptureSizeConstraints() to provide more-accurate hard limits. If
-  // |enable_auto_throttling| is true, enable realtime analysis of system
-  // performance and auto-adjust the capture resolution and sampling decisions
-  // to provide the best user experience.
+  // SetCaptureSizeConstraints() to provide more-accurate hard limits.
+  //
+  // See SetAutoThrottlingEnabled() for |enable_auto_throttling| semantics.
   explicit VideoCaptureOracle(bool enable_auto_throttling);
 
   virtual ~VideoCaptureOracle();
@@ -51,8 +52,11 @@ class CAPTURE_EXPORT VideoCaptureOracle {
                                  const gfx::Size& max_size,
                                  bool use_fixed_aspect_ratio);
 
-  // Specifies whether the oracle should automatically adjust the capture size
-  // in response to end-to-end utilization.
+  // Specifies whether the oracle should propose varying capture sizes, in
+  // response to consumer feedback. If not |enabled|, capture_size() will always
+  // return the source_size().
+  //
+  // See: SetMinSizeChangePeriod().
   void SetAutoThrottlingEnabled(bool enabled);
 
   // Get/Update the source content size.  Changes may not have an immediate
@@ -161,7 +165,7 @@ class CAPTURE_EXPORT VideoCaptureOracle {
   void CommitCaptureSizeAndReset(base::TimeTicks last_frame_time);
 
   // Called after a capture or no-capture decision was recorded.  This analyzes
-  // current state and may result in a future change to the capture frame size.
+  // current state and may result in a future change to the capture size.
   void AnalyzeAndAdjust(base::TimeTicks analyze_time);
 
   // Analyzes current feedback signal accumulators for an indication that the
@@ -188,9 +192,15 @@ class CAPTURE_EXPORT VideoCaptureOracle {
       const FeedbackSignalAccumulator<base::TimeTicks>& accumulator,
       base::TimeTicks now);
 
-  // Set to false to prevent the oracle from automatically adjusting the capture
-  // size in response to end-to-end utilization.
-  bool auto_throttling_enabled_;
+  // Set to disabled/enabled via SetAutoThrottlingEnabled(). Data collection and
+  // analysis for capture size changes only occurs while in "active" mode, which
+  // is only engaged when in "enabled" mode and consumer feedback is received
+  // for the first time.
+  enum {
+    kThrottlingDisabled,
+    kThrottlingEnabled,
+    kThrottlingActive
+  } capture_size_throttling_mode_;
 
   // The minimum amount of time that must pass between changes to the capture
   // size.

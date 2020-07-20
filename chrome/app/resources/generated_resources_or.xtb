@@ -535,7 +535,7 @@
 <translation id="164936512206786300">ବ୍ଲୁଟୁଥ୍ ଡିଭାଇସ୍ ଅନପେୟାର୍ କରନ୍ତୁ</translation>
 <translation id="1650371550981945235">ଇନ୍‌ପୁଟ୍‌ ବିକଳ୍ପଗୁଡ଼ିକ ଦେଖାନ୍ତୁ</translation>
 <translation id="1651008383952180276">ଆପଣ ସେହି ଏକା ପାସ୍‌ଫ୍ରେଜ୍ ଦୁଇଥର ଲେଖିବା ଆବଶ୍ୟକ</translation>
-<translation id="1652326691684645429">Nearby Share ଚାଲୁ କରନ୍ତୁ</translation>
+<translation id="1652326691684645429">Nearby Share ସକ୍ଷମ କରନ୍ତୁ</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{'Google କ୍ଲାଉଡ୍ ପ୍ରିଣ୍ଟ'ରେ ପ୍ରିଣ୍ଟର୍‌ଟିକୁ ଯୋଗ କରନ୍ତୁ ଯାହାଫଳରେ ଆପଣ ଯେକୌଣସି ସ୍ଥାନରୁ ପ୍ରିଣ୍ଟ କରିପାରିବେ।}other{'Google କ୍ଲାଉଡ୍ ପ୍ରିଣ୍ଟ'ରେ #ଟି ପ୍ରିଣ୍ଟର୍‌କୁ ଯୋଗ କରନ୍ତୁ ଯାହାଫଳରେ ଆପଣ ଯେକୌଣସି ସ୍ଥାନରୁ ପ୍ରିଣ୍ଟ କରିପାରିବେ।}}</translation>
 <translation id="1656528038316521561">ପୃଷ୍ଠପଟ ଅସ୍ପଷ୍ଟତା</translation>
 <translation id="1657406563541664238">Googleକୁ ବ୍ୟବହାରର ସାଂଖ୍ୟିକ ତଥ୍ୟ ଓ କ୍ରାସ୍ ରିପୋର୍ଟ ସ୍ୱଚାଳିତ ଭାବେ ପଠାଇ <ph name="PRODUCT_NAME" />କୁ ଉନ୍ନତ କରିବାରେ ସାହାଯ୍ୟ କରନ୍ତୁ</translation>
@@ -1814,7 +1814,7 @@
 <translation id="3253225298092156258">ଉପଲବ୍ଧ ନାହିଁ</translation>
 <translation id="3253448572569133955">ଅଜଣା ଆକାଉଣ୍ଟ</translation>
 <translation id="3254516606912442756">ସ୍ୱଚାଳିତ ସମୟ କ୍ଷେତ୍ର ସନ୍ଧାନ ସୁବିଧା ଅକ୍ଷମ ଅଛି</translation>
-<translation id="3254715652085014625">ଆପଣଙ୍କ Android ଫୋନରେ Chrome ଖୋଲନ୍ତୁ ଏବଂ "ସେଟିଂସ୍ &gt; ପାସୱାର୍ଡ &gt; ସୁରକ୍ଷା କୀ ଭାବେ ଫୋନ୍ ବ୍ୟବହାର କରନ୍ତୁ"କୁ ଯାଆନ୍ତୁ ଏବଂ ସେଠାରେ ଥିବା ନିର୍ଦ୍ଦେଶାବଳୀର ଅନୁସରଣ କରନ୍ତୁ।</translation>
+<translation id="3254715652085014625">ଆପଣଙ୍କ Android ଫୋନରେ Chrome ଖୋଲନ୍ତୁ ଏବଂ "ସେଟିଂସ୍ &gt; ପାସୱାର୍ଡ &gt; ସୁରକ୍ଷା କୀ ଭାବେ ଫୋନ୍ ବ୍ୟବହାର କରନ୍ତୁ"କୁ ଯାଆନ୍ତୁ ଏବଂ ସେଠାରେ ଥିବା ନିର୍ଦ୍ଦେଶାବଳୀ ଅନୁସରଣ କରନ୍ତୁ।</translation>
 <translation id="3255355328033513170"><ph name="SITE_GROUP_NAME" /> ଦ୍ୱାରା ଷ୍ଟୋର୍ କରାଯାଇଥିବା ସମସ୍ତ ଡାଟା ଏବଂ ଏହା ଅଧୀନରେ ଥିବା ଯେକୌଣସି ସାଇଟ୍ ଡିଲିଟ୍ ହୋଇଯିବ ଏଥିରେ କୁକୀଗୁଡ଼ିକ ମଧ୍ୟ ଅନ୍ତର୍ଭୁକ୍ତ ଅଛି। ଖୋଲାଥିବା ଟାବ୍‌ଗୁଡ଼ିକ ସମେତ ଆପଣ ଏହି ସାଇଟ୍‌ଗୁଡ଼ିକରୁ ସାଇନ୍ ଆଉଟ୍ ହୋଇଯିବେ।</translation>
 <translation id="3259723213051400722">ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="3264544094376351444">Sans-Serif ଫଣ୍ଟ</translation>
@@ -4272,7 +4272,7 @@
 <translation id="6362853299801475928">ଏକ ସମସ୍ୟା ରିପୋର୍ଟ କରନ୍ତୁ...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">ଫ୍ୟାମିଲି ଏବଂ ବନ୍ଧୁମାନଙ୍କୁ ଯୋଗ କରନ୍ତୁ</translation>
-<translation id="6367985768157257101">Nearby Share ମାଧ୍ୟମରେ ପ୍ରାପ୍ତ କରନ୍ତୁ?</translation>
+<translation id="6367985768157257101">Nearby Share ମାଧ୍ୟମରେ ପ୍ରାପ୍ତ କରିବେ?</translation>
 <translation id="636850387210749493">ଏଣ୍ଟର୍‌ପ୍ରାଇଜ୍ ନାମାଙ୍କନ</translation>
 <translation id="6370021412472292592">ମାନିଫେଷ୍ଟକୁ ଲୋଡ୍ କରାଯାଇପାରିଲା ନାହିଁ।</translation>
 <translation id="6374077068638737855">Iceweasel</translation>

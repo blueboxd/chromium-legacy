@@ -448,7 +448,8 @@ TEST_F(StructTraitsTest, SharedQuadState) {
 // RenderPass, and QuadListBasic unit tests.
 TEST_F(StructTraitsTest, CompositorFrame) {
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
-  render_pass->SetNew(1, gfx::Rect(5, 6), gfx::Rect(2, 3), gfx::Transform());
+  render_pass->SetNew(RenderPassId{1}, gfx::Rect(5, 6), gfx::Rect(2, 3),
+                      gfx::Transform());
 
   // SharedQuadState.
   const gfx::Transform sqs_quad_to_target_transform(
@@ -589,7 +590,7 @@ TEST_F(StructTraitsTest, SurfaceInfo) {
 }
 
 TEST_F(StructTraitsTest, ReturnedResource) {
-  const RenderPassId id = 1337u;
+  const unsigned id = 1337u;
   const gpu::CommandBufferNamespace command_buffer_namespace = gpu::IN_PROCESS;
   const gpu::CommandBufferId command_buffer_id(
       gpu::CommandBufferId::FromUnsafeValue(0xdeadbeef));
@@ -698,7 +699,7 @@ TEST_F(StructTraitsTest, RenderPass) {
   // The CopyOutputRequest struct traits require a TaskRunner.
   base::test::TaskEnvironment task_environment;
 
-  const RenderPassId render_pass_id = 3u;
+  const RenderPassId render_pass_id{3u};
   const gfx::Rect output_rect(45, 22, 120, 13);
   const gfx::Transform transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
@@ -855,7 +856,7 @@ TEST_F(StructTraitsTest, RenderPass) {
 }
 
 TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
-  const RenderPassId render_pass_id = 3u;
+  const RenderPassId render_pass_id{3u};
   const gfx::Rect output_rect(45, 22, 120, 13);
   const gfx::Rect damage_rect(56, 123, 19, 43);
   const gfx::Transform transform_to_root =
@@ -892,7 +893,8 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
 
 TEST_F(StructTraitsTest, QuadListBasic) {
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
-  render_pass->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
+  render_pass->SetNew(RenderPassId{1}, gfx::Rect(), gfx::Rect(),
+                      gfx::Transform());
 
   SharedQuadState* sqs = render_pass->CreateAndAppendSharedQuadState();
 
@@ -926,7 +928,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   const gfx::Rect rect4(1234, 5678, 91012, 13141);
   const bool needs_blending = true;
   const ResourceId resource_id4(1337);
-  const RenderPassId render_pass_id = 1234u;
+  const RenderPassId render_pass_id{1234u};
   const gfx::RectF mask_uv_rect(0, 0, 1337.1f, 1234.2f);
   const gfx::Size mask_texture_size(1234, 5678);
   gfx::Vector2dF filters_scale(1234.1f, 4321.2f);
@@ -1120,7 +1122,8 @@ TEST_F(StructTraitsTest, TransferableResource) {
 
 TEST_F(StructTraitsTest, YUVDrawQuad) {
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
-  render_pass->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
+  render_pass->SetNew(RenderPassId{1}, gfx::Rect(), gfx::Rect(),
+                      gfx::Transform());
 
   const DrawQuad::Material material = DrawQuad::Material::kYuvVideoContent;
   const gfx::Rect rect(1234, 4321, 1357, 7531);

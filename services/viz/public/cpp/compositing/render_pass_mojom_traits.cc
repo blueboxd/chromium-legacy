@@ -5,6 +5,8 @@
 #include "services/viz/public/cpp/compositing/render_pass_mojom_traits.h"
 
 #include "base/numerics/safe_conversions.h"
+#include "components/viz/common/quads/render_pass.h"
+#include "services/viz/public/cpp/compositing/render_pass_id_mojom_traits.h"
 #include "services/viz/public/cpp/crash_keys.h"
 #include "ui/gfx/mojom/display_color_spaces_mojom_traits.h"
 
@@ -23,10 +25,10 @@ bool StructTraits<viz::mojom::RenderPassDataView,
       !data.ReadBackdropFilters(&(*out)->backdrop_filters) ||
       !data.ReadBackdropFilterBounds(&(*out)->backdrop_filter_bounds) ||
       !data.ReadContentColorUsage(&(*out)->content_color_usage) ||
-      !data.ReadCopyRequests(&(*out)->copy_requests)) {
+      !data.ReadCopyRequests(&(*out)->copy_requests) ||
+      !data.ReadId(&(*out)->id)) {
     return false;
   }
-  (*out)->id = data.id();
   // RenderPass ids are never zero.
   if (!(*out)->id) {
     viz::SetDeserializationCrashKeyString("Invalid render pass ID");

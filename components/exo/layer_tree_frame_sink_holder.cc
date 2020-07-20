@@ -58,7 +58,8 @@ void LayerTreeFrameSinkHolder::DeleteWhenLastResourceHasBeenReclaimed(
   frame.metadata.local_surface_id_allocation_time =
       holder->last_local_surface_id_allocation_time_;
   std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
-  pass->SetNew(1, gfx::Rect(holder->last_frame_size_in_pixels_),
+  pass->SetNew(viz::RenderPassId{1},
+               gfx::Rect(holder->last_frame_size_in_pixels_),
                gfx::Rect(holder->last_frame_size_in_pixels_), gfx::Transform());
   frame.render_pass_list.push_back(std::move(pass));
   holder->last_frame_resources_.clear();

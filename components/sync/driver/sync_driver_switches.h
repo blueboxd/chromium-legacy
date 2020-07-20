@@ -31,7 +31,6 @@ extern const base::Feature
     kSyncAllowWalletDataInTransportModeWithCustomPassphrase;
 extern const base::Feature kSyncWifiConfigurations;
 extern const base::Feature kSyncDeviceInfoInTransportMode;
-extern const base::Feature kProfileSyncServiceUsesThreadPool;
 extern const base::Feature kDecoupleSyncFromAndroidMasterSync;
 
 }  // namespace switches

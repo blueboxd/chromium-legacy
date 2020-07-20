@@ -212,7 +212,7 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureFragment) {
   // match what is specified.
   LoadHTML(
       "<body style='min-height:1000px;'>"
-      "  <a style='position: absolute; left: -15px; top: 0px; width: 20px; "
+      "  <a style='position: absolute; left: -15px; top: 0px; width: 40px; "
       "   height: 30px;' href='#fragment'>Foo</a>"
       "  <h1 id='fragment'>I'm a fragment</h1>"
       "</body>");
@@ -246,7 +246,7 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureFragment) {
   EXPECT_EQ(out_response->links[0]->url, GURL("fragment"));
   EXPECT_EQ(out_response->links[0]->rect.x(), -15);
   EXPECT_EQ(out_response->links[0]->rect.y(), 0);
-  EXPECT_EQ(out_response->links[0]->rect.width(), 20);
+  EXPECT_EQ(out_response->links[0]->rect.width(), 40);
   EXPECT_EQ(out_response->links[0]->rect.height(), 30);
 }
 

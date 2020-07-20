@@ -113,7 +113,7 @@ class FetchManager::Loader final
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 
-  void Start(ExceptionState&);
+  void Start();
   void Dispose();
   void Abort();
 
@@ -226,9 +226,9 @@ class FetchManager::Loader final
   };
 
  private:
-  void PerformSchemeFetch(ExceptionState&);
+  void PerformSchemeFetch();
   void PerformNetworkError(const String& message);
-  void PerformHTTPFetch(ExceptionState&);
+  void PerformHTTPFetch();
   void PerformDataFetch();
   // If |dom_exception| is provided, throws the specified DOMException instead
   // of the usual "Failed to fetch" TypeError.
@@ -527,7 +527,7 @@ void FetchManager::Loader::DidFailRedirectCheck() {
   Failed(String(), nullptr);
 }
 
-void FetchManager::Loader::Start(ExceptionState& exception_state) {
+void FetchManager::Loader::Start() {
   // "1. If |request|'s url contains a Known HSTS Host, modify it per the
   // requirements of the 'URI [sic] Loading and Port Mapping' chapter of HTTP
   // Strict Transport Security."
@@ -573,7 +573,7 @@ void FetchManager::Loader::Start(ExceptionState& exception_state) {
        fetch_request_data_->IsolatedWorldOrigin()->CanReadContent(url)) ||
       fetch_request_data_->Mode() == network::mojom::RequestMode::kNavigate) {
     // "The result of performing a scheme fetch using request."
-    PerformSchemeFetch(exception_state);
+    PerformSchemeFetch();
     return;
   }
 
@@ -603,7 +603,7 @@ void FetchManager::Loader::Start(ExceptionState& exception_state) {
     // "Set |request|'s response tainting to |opaque|."
     fetch_request_data_->SetResponseTainting(FetchRequestData::kOpaqueTainting);
     // "The result of performing a scheme fetch using |request|."
-    PerformSchemeFetch(exception_state);
+    PerformSchemeFetch();
     return;
   }
 
@@ -624,7 +624,7 @@ void FetchManager::Loader::Start(ExceptionState& exception_state) {
 
   // "The result of performing an HTTP fetch using |request| with the
   // |CORS flag| set."
-  PerformHTTPFetch(exception_state);
+  PerformHTTPFetch();
 }
 
 void FetchManager::Loader::Dispose() {
@@ -660,16 +660,14 @@ void FetchManager::Loader::Abort() {
   NotifyFinished();
 }
 
-void FetchManager::Loader::PerformSchemeFetch(ExceptionState& exception_state) {
+void FetchManager::Loader::PerformSchemeFetch() {
   // "To perform a scheme fetch using |request|, switch on |request|'s url's
   // scheme, and run the associated steps:"
   if (SchemeRegistry::ShouldTreatURLSchemeAsSupportingFetchAPI(
           fetch_request_data_->Url().Protocol()) ||
       fetch_request_data_->Url().ProtocolIs("blob")) {
     // "Return the result of performing an HTTP fetch using |request|."
-    PerformHTTPFetch(exception_state);
-    if (exception_state.HadException())
-      return;
+    PerformHTTPFetch();
   } else if (fetch_request_data_->Url().ProtocolIsData()) {
     PerformDataFetch();
   } else {
@@ -685,7 +683,7 @@ void FetchManager::Loader::PerformNetworkError(const String& message) {
   Failed(message, nullptr);
 }
 
-void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
+void FetchManager::Loader::PerformHTTPFetch() {
   // CORS preflight fetch procedure is implemented inside ThreadableLoader.
 
   // "1. Let |HTTPRequest| be a copy of |request|, except that |HTTPRequest|'s
@@ -732,10 +730,7 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
       fetch_request_data_->Method() != http_names::kHEAD) {
     if (fetch_request_data_->Buffer()) {
       scoped_refptr<EncodedFormData> form_data =
-          fetch_request_data_->Buffer()->DrainAsFormData(exception_state);
-
-      if (exception_state.HadException())
-        return;
+          fetch_request_data_->Buffer()->DrainAsFormData();
       if (form_data) {
         request.SetHttpBody(form_data);
       } else if (RuntimeEnabledFeatures::OutOfBlinkCorsEnabled() &&
@@ -743,13 +738,12 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
                      execution_context_)) {
         UseCounter::Count(execution_context_,
                           WebFeature::kFetchUploadStreaming);
+        DCHECK(!fetch_request_data_->Buffer()->IsStreamLocked());
         mojo::PendingRemote<network::mojom::blink::ChunkedDataPipeGetter>
             pending_remote;
         fetch_request_data_->Buffer()->DrainAsChunkedDataPipeGetter(
             resolver_->GetScriptState(),
-            pending_remote.InitWithNewPipeAndPassReceiver(), exception_state);
-        if (exception_state.HadException())
-          return;
+            pending_remote.InitWithNewPipeAndPassReceiver());
         request.MutableBody().SetStreamBody(std::move(pending_remote));
         request.SetAllowHTTP1ForStreamingUpload(
             fetch_request_data_->AllowHTTP1ForStreamingUpload());
@@ -881,18 +875,18 @@ ScriptPromise FetchManager::Fetch(ScriptState* script_state,
                                   FetchRequestData* request,
                                   AbortSignal* signal,
                                   ExceptionState& exception_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
   DCHECK(signal);
   if (signal->aborted()) {
-    resolver->Reject(
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
-    return promise;
+    exception_state.ThrowDOMException(DOMExceptionCode::kAbortError,
+                                      "The user aborted a request.");
+    return ScriptPromise();
   }
 
   request->SetContext(mojom::RequestContextType::FETCH);
   request->SetDestination(network::mojom::RequestDestination::kEmpty);
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
 
   auto* loader =
       MakeGarbageCollected<Loader>(GetExecutionContext(), this, resolver,
@@ -900,9 +894,7 @@ ScriptPromise FetchManager::Fetch(ScriptState* script_state,
   loaders_.insert(loader);
   signal->AddAlgorithm(WTF::Bind(&Loader::Abort, WrapWeakPersistent(loader)));
   // TODO(ricea): Reject the Response body with AbortError, not TypeError.
-  loader->Start(exception_state);
-  if (exception_state.HadException())
-    return ScriptPromise();
+  loader->Start();
   return promise;
 }
 

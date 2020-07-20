@@ -577,6 +577,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5659593005791499971">E-pošta</translation>
 <translation id="5665379678064389456">Stvorite događaj u aplikaciji <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Nadjača zahtjev web-lokacije za sprječavanje povećavanja</translation>
+<translation id="5683547024293500885">Chrome ne može provjeriti ima li ažuriranja</translation>
 <translation id="5686790454216892815">Datoteka ima predugačak naziv</translation>
 <translation id="5694049548840660018">Vratite se kući jednostavno</translation>
 <translation id="569536719314091526">Prevedite ovu stranicu na bilo koji jezik pomoću gumba Više opcija</translation>
@@ -589,6 +590,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5732819098735351888">Preuzimanje će se pokrenuti na Wi-Fiju.</translation>
 <translation id="5748802427693696783">Prešli ste na standardne kartice</translation>
 <translation id="5749068826913805084">Chrome treba pristup pohrani radi preuzimanja datoteka.</translation>
+<translation id="5749237766298580851">Isključeno <ph name="SEPARATOR" /> ne preporučuje se</translation>
 <translation id="5754350196967618083">Nije moguće osvježiti Discover</translation>
 <translation id="5763382633136178763">Anonimne kartice</translation>
 <translation id="5763514718066511291">Dodirnite da biste kopirali URL za tu aplikaciju</translation>
@@ -641,7 +643,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="6140912465461743537">Država/regija</translation>
 <translation id="614940544461990577">Pokušajte sljedeće:</translation>
 <translation id="6154478581116148741">Uključite zaključavanje zaslona u postavkama da biste izvezli svoje zaporke s ovog uređaja</translation>
-<translation id="6157392216611456285">Odaberite <ph name="APP_NAME" />.</translation>
+<translation id="6157392216611456285">Odaberite <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> manji podatkovni promet</translation>
 <translation id="6201345951596836663">Veza je kopirana</translation>
 <translation id="6206830853671714236">Odaberite vrijeme preuzimanja</translation>
@@ -721,7 +723,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6671495933530132209">Kopiraj sliku</translation>
 <translation id="6676840375528380067">Želite li izbrisati svoje podatke iz Chromea s ovog uređaja?</translation>
 <translation id="6689172468748959065">Fotografije profila</translation>
-<translation id="6691888250440401212">1. Odaberite <ph name="APP_NAME" />.\n2. Dodirnite "Postavi kao zadano".</translation>
+<translation id="6691888250440401212">1. Odaberite <ph name="APP_NAME" />\n2. Dodirnite "Postavi kao zadano"</translation>
 <translation id="6697492270171225480">Prikaži prijedloge za slične stranice kada se stranica ne može pronaći</translation>
 <translation id="6698801883190606802">Upravljanje sinkroniziranim podacima</translation>
 <translation id="6699370405921460408">Googleovi poslužitelji optimizirat će stranice koje posjećujete.</translation>
@@ -953,7 +955,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="8555836665334561807">Putem Wi-Fija</translation>
 <translation id="8558485628462305855">Za prikaz sadržaja proširene stvarnosti ažurirajte ARCore</translation>
 <translation id="8559990750235505898">Ponudi prevođenje stranica na druge jezike</translation>
-<translation id="8561196567344536112">1. Otvorite Postavke.\n2. Dodirnite opciju "Aplikacija preglednika".\n3. Odaberite <ph name="APP_NAME" />.</translation>
+<translation id="8561196567344536112">1. Otvorite Postavke\n2. Dodirnite opciju "Aplikacija preglednika"\n3. Odaberite <ph name="APP_NAME" /></translation>
 <translation id="8562452229998620586">Ovdje će se pojaviti spremljene zaporke.</translation>
 <translation id="8569404424186215731">od <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Protekla 4 tjedna</translation>

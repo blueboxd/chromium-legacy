@@ -134,18 +134,18 @@ class KeyboardRootNode extends RootNodeWrapper {
     KeyboardRootNode.loadKeyboard_();
     AutoScanManager.setInKeyboard(true);
 
-    if (!KeyboardRootNode.keyboardObject_) {
+    const keyboardObject = KeyboardRootNode.getKeyboardObject();
+    if (!keyboardObject) {
       throw SwitchAccess.error(
           SAConstants.ErrorType.MISSING_KEYBOARD,
           'Could not find keyboard in the automation tree',
           true /* shouldRecover */);
     }
     const keyboard =
-        new AutomationTreeWalker(
-            KeyboardRootNode.keyboardObject_, constants.Dir.FORWARD, {
-              visit: (node) => SwitchAccessPredicate.isGroup(node, null),
-              root: (node) => node === KeyboardRootNode.keyboardObject_
-            })
+        new AutomationTreeWalker(keyboardObject, constants.Dir.FORWARD, {
+          visit: (node) => SwitchAccessPredicate.isGroup(node, null),
+          root: (node) => node === keyboardObject
+        })
             .next()
             .node;
 
@@ -158,10 +158,18 @@ class KeyboardRootNode extends RootNodeWrapper {
    * Start listening for keyboard open/closed.
    */
   static startWatchingVisibility() {
-    KeyboardRootNode.isVisible_ =
-        SwitchAccessPredicate.isVisible(KeyboardRootNode.keyboardObject_);
+    const keyboardObject = KeyboardRootNode.getKeyboardObject();
+    if (!keyboardObject) {
+      const isKeyboard = (n) => n.role === chrome.automation.RoleType.KEYBOARD;
+      SwitchAccess.findNodeMatchingPredicate(
+          isKeyboard, KeyboardRootNode.startWatchingVisibility);
+      return;
+    }
 
-    KeyboardRootNode.keyboardObject_.addEventListener(
+    KeyboardRootNode.isVisible_ =
+        SwitchAccessPredicate.isVisible(keyboardObject);
+
+    keyboardObject.addEventListener(
         chrome.automation.EventType.ARIA_ATTRIBUTE_CHANGED,
         KeyboardRootNode.checkVisibilityChanged_, false /* capture */);
   }
@@ -174,7 +182,7 @@ class KeyboardRootNode extends RootNodeWrapper {
    */
   static checkVisibilityChanged_(event) {
     const currentlyVisible =
-        SwitchAccessPredicate.isVisible(KeyboardRootNode.keyboardObject_);
+        SwitchAccessPredicate.isVisible(KeyboardRootNode.getKeyboardObject());
     if (currentlyVisible === KeyboardRootNode.isVisible_) {
       return;
     }
@@ -199,7 +207,7 @@ class KeyboardRootNode extends RootNodeWrapper {
    * @return {AutomationNode}
    * @private
    */
-  static get keyboardObject_() {
+  static getKeyboardObject() {
     if (!this.object_ || !this.object_.role) {
       this.object_ = NavigationManager.desktopNode.find(
           {role: chrome.automation.RoleType.KEYBOARD});

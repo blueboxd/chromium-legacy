@@ -164,6 +164,9 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   // the execution of SwapBuffers, and such textures are more expensive to make
   // so we want to reuse them.
   struct OverlayTexture {
+    OverlayTexture();
+    ~OverlayTexture();
+
     RenderPassId render_pass_id;
     ScopedGpuMemoryBufferTexture texture;
     int frames_waiting_for_reuse = 0;

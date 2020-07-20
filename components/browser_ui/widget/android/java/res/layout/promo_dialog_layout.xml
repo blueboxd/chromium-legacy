@@ -63,6 +63,7 @@
                         android:id="@+id/header"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textDirection="locale"
                         android:layout_marginTop="@dimen/dialog_header_margin"
                         android:layout_marginBottom="@dimen/dialog_header_margin"
                         android:textAppearance="@style/TextAppearance.Headline.Primary" />
@@ -71,6 +72,7 @@
                         android:id="@+id/subheader"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:textDirection="locale"
                         app:leading="@dimen/text_size_medium_leading"
                         style="@style/TextAppearance.TextMedium.Secondary" />
                 </org.chromium.components.browser_ui.widget.BoundedLinearLayout>

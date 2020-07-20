@@ -119,6 +119,8 @@ class PaymentRequestSpec : public PaymentOptionsProvider,
   bool request_payer_email() const override;
   PaymentShippingType shipping_type() const override;
 
+  const mojom::PaymentOptionsPtr& payment_options() const { return options_; }
+
   // Returns the query to be used for the quota on hasEnrolledInstrument()
   // calls. Generally this returns the payment method identifiers and their
   // corresponding data. However, in the case of basic-card with

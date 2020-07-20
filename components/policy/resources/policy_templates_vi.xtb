@@ -205,6 +205,11 @@
 <translation id="1376119291123231789">Bật chế độ sạc pin nâng cao</translation>
 <translation id="1384459581748403878">Tham khảo: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Báo cáo trạng thái cập nhật hệ điều hành</translation>
+<translation id="1390901586107713894">Cho phép bạn chỉ định những tiện ích mà người dùng KHÔNG THỂ cài đặt. Những tiện ích đã cài đặt sẽ tắt nếu bị chặn. Người dùng không có cách nào để bật những tiện ích đó. Sau khi bạn xóa một tiện ích (bị tắt do thuộc danh sách chặn) khỏi danh sách chặn, thì tiện ích này sẽ tự động được bật lại.
+
+          Giá trị danh sách chặn là "*" có nghĩa là tất cả tiện ích đều bị chặn trừ khi những tiện ích đó được liệt kê rõ ràng trong danh sách cho phép.
+
+          Nếu bạn không đặt chính sách này, thì người dùng có thể cài đặt bất kỳ tiện ích nào trong <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1393485621820363363">Đã bật máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
 <translation id="1397855852561539316">URL đề xuất của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="1404043648050567997">Dịch vụ Duyệt web an toàn hiển thị một trang cảnh báo khi người dùng truy cập các trang web bị gắn cờ là có thể độc hại. Khi bạn bật mục cài đặt này, người dùng sẽ không thể tiếp tục truy cập vào trang web độc hại từ trang cảnh báo đó.
@@ -1040,6 +1045,13 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
 <translation id="253135976343875019">Thời gian chờ cảnh báo trạng thái không sử dụng khi chạy trên nguồn AC</translation>
 <translation id="2536525645274582300">Người dùng quyết định có bật dịch vụ vị trí của Google hay không</translation>
 <translation id="254653220329944566">Bật tính năng báo cáo đám mây của <ph name="PRODUCT_NAME" /></translation>
+<translation id="2547854230073316008">Việc đặt chính sách này sẽ đặt độ phân giải và hệ số tỷ lệ cho mỗi màn hình. Tùy chọn cài đặt màn hình bên ngoài áp dụng cho các màn hình đã kết nối. (Chính sách này không áp dụng nếu màn hình không hỗ trợ tỷ lệ hoặc độ phân giải đã chỉ định.)
+
+      Khi đặt <ph name="EXTERNAL_USE_NATIVE" /> thành True, chính sách này sẽ bỏ qua <ph name="EXTERNAL_WIDTH" /> và <ph name="EXTERNAL_HEIGHT" /> rồi đặt các màn hình bên ngoài về độ phân giải gốc. Khi đặt <ph name="EXTERNAL_USE_NATIVE" /> thành False hoặc không đặt chính sách này và <ph name="EXTERNAL_WIDTH" /> hay <ph name="EXTERNAL_HEIGHT" />, chính sách này sẽ không ảnh hưởng đến các màn hình bên ngoài.
+
+      Khi đặt cờ đề xuất thành True, người dùng có thể thay đổi độ phân giải và hệ số tỷ lệ của màn hình bất kỳ trên trang cài đặt. Tuy nhiên, tùy chọn cài đặt sẽ chuyển về như cũ vào lần khởi động lại tiếp theo. Khi bạn đặt cờ đề xuất thành False hoặc không đặt cờ này, người dùng không thể thay đổi các tùy chọn cài đặt màn hình.
+
+      Lưu ý: Đặt <ph name="EXTERNAL_WIDTH" /> và <ph name="EXTERNAL_HEIGHT" /> bằng pixel và <ph name="EXTERNAL_SCALE_PERCENTAGE" /> và <ph name="INTERNAL_SCALE_PERCENTAGE" /> ở dạng tỷ lệ phần trăm.</translation>
 <translation id="2548397295248733155">Lưu ý rằng chúng tôi không dùng chính sách này nữa và sẽ xóa khỏi <ph name="PRODUCT_OS_NAME" /> phiên bản 85. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Chỉ định khoảng thời gian kể từ lần cuối cùng người dùng nhập cho đến thời điểm màn hình bị tắt khi chạy bằng pin.
@@ -1520,6 +1532,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3251500716404598358">Định cấu hình chính sách để chuyển đổi giữa các trình duyệt.
 
       Các trang web được định cấu hình sẽ tự động mở trong trình duyệt khác không phải là <ph name="PRODUCT_NAME" />.</translation>
+<translation id="3255762580838224124">Nếu đặt chính sách này, thì mỗi màn hình sẽ xoay theo một hướng chỉ định mỗi khi khởi động lại và vào lần đầu tiên màn hình được kết nối sau khi giá trị chính sách thay đổi. Người dùng có thể thay đổi chế độ xoay màn hình thông qua trang cài đặt sau khi đăng nhập. Tuy nhiên, chế độ này sẽ chuyển về như cũ vào lần khởi động lại tiếp theo. Chính sách này áp dụng cho màn hình chính và phụ.
+
+      Nếu bạn chưa đặt chính sách này, thì giá trị mặc định là 0 độ và người dùng có thể thay đổi giá trị này. Trong trường hợp này, giá trị mặc định không được áp dụng thêm lần nữa khi khởi động lại.</translation>
 <translation id="3264793472749429012">Mã hóa của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="3273221114520206906">Cài đặt JavaScript  mặc định</translation>
 <translation id="3284094172359247914">Kiểm soát việc sử dụng API WebUSB</translation>
@@ -1873,6 +1888,17 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="382476126209906314">Định cấu hình tiền tố TalkGadget cho máy chủ truy cập từ xa</translation>
 <translation id="3824972131618513497">Kiểm soát các tùy chọn cài đặt liên quan đến quản lý nguồn và khởi động lại.</translation>
 <translation id="3826475866868158882">Đã bật Dịch vụ vị trí của Google</translation>
+<translation id="383002993919016993">Chính sách này ngăn người dùng tải trang web từ các URL bị chặn. Danh sách chặn cung cấp danh sách các mẫu URL chỉ định những URL sẽ bị chặn.
+
+      Bạn phải định dạng mẫu URL theo định dạng trên trang web https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Bạn có thể xác định các trường hợp ngoại lệ trong chính sách về danh sách URL được cho phép. Những chính sách này chỉ giới hạn trong 1000 mục; các mục sau đó sẽ bị bỏ qua.
+
+      Lưu ý rằng bạn không nên chặn các URL "chrome://*" nội bộ vì điều này có thể dẫn đến lỗi không mong muốn.
+
+      Bạn có thể chặn các URL "javascript://*". Tuy nhiên, chính sách này chỉ ảnh hưởng đến JavaScript đã nhập trong thanh địa chỉ (hoặc các bookmarklet). Lưu ý rằng nếu dữ liệu được tải động thì các URL JavaScript trong trang không phải tuân theo chính sách này. Ví dụ: nếu bạn chặn "example.com/abc", thì trang "example.com" sẽ vẫn có thể tải "example.com/abc" qua XMLHTTPRequest.
+
+      Nếu bạn không đặt chính sách này, thì không có URL nào sẽ bị chặn trên trình duyệt.</translation>
 <translation id="3831376478177535007">Khi bạn bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ cho phép tin cậy các chứng chỉ do hoạt động của Cơ sở hạ tầng khóa công khai (PKI) cũ của Symantec Corporation phát hành nếu các chứng chỉ xác thực thành công và liên kết với một chứng chỉ CA được công nhận.
 
       Lưu ý rằng chính sách này phụ thuộc vào việc hệ điều hành vẫn công nhận các chứng chỉ từ hạ tầng cũ của Symantec. Nếu bản cập nhật hệ điều hành thay đổi cách xử lý các chứng chỉ đó của hệ điều hành, thì chính sách này sẽ không còn hiệu lực nữa.  Ngoài ra, chính sách này có vai trò là giải pháp tạm thời để cho các doanh nghiệp có thêm thời gian di chuyển đổi chứng chỉ Symantec cũ. Chính sách này sẽ bị loại bỏ vào đúng hoặc khoảng ngày 01 tháng 01 năm 2019.
@@ -2544,6 +2570,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi được. Nếu bạn không đặt chính sách này, thì người dùng sẽ quyết định xem kệ có tự động ẩn hay không.</translation>
 <translation id="4816674326202173458">Cho phép người dùng doanh nghiệp trở thành người dùng vừa chính vừa phụ  (Hành vi mặc định cho người dùng không được quản lý)</translation>
 <translation id="4826326557828204741">Tác vụ sẽ thực hiện khi đạt độ trễ không hoạt động trong khi chạy bằng nguồn pin</translation>
+<translation id="482803100714220060">Hiển thị URL đầy đủ</translation>
 <translation id="4830531683854509779">Báo cáo thống kê phần cứng cho các thành phần SoC.
 
       Nếu bạn không đặt chính sách này hoặc đặt thành false, thì số liệu thống kê sẽ không được báo cáo.
@@ -2574,6 +2601,11 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       </translation>
 <translation id="489803897780524242">Tham số kiểm soát vị trí cụm từ tìm kiếm cho nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="4899708173828500852">Bật Duyệt web an toàn</translation>
+<translation id="4902163780937592202">Bật các chính sách hợp nhất danh sách cài đặt tiện ích <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_ALLOWLIST_POLICY_NAME" /> và <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
+
+      Nếu bạn bật tùy chọn cài đặt này, thì các giá trị trong chính sách nền tảng của máy, chính sách đám mây của máy và chính sách nền tảng của người dùng sẽ được hợp nhất thành một danh sách và được sử dụng toàn bộ thay vì chỉ sử dụng các giá trị từ một nguồn có mức ưu tiên cao nhất.
+
+      Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này, thì chỉ các mục danh sách từ nguồn có mức ưu tiên cao nhất mới được sử dụng, còn tất cả các nguồn khác sẽ hiển thị dưới dạng nguồn xung đột nhưng bị bỏ qua.</translation>
 <translation id="4906194810004762807">Chính sách tốc độ làm mới cho thiết bị</translation>
 <translation id="4917385247580444890">Mạnh</translation>
 <translation id="4919122295221518724">Cho phép thắt chặt việc xử lý nội dung hỗn hợp</translation>
@@ -2683,6 +2715,19 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
           Nếu bạn không đặt chính sách này, độ dài tối thiểu của mã PIN là 6 chữ số sẽ được
           thực thi. Đây là giá trị tối thiểu được đề xuất.</translation>
+<translation id="5077993112092904096">Chính sách này không còn dùng nữa, vui lòng sử dụng chính sách "<ph name="URL_BLOCKLIST_POLICY_NAME" />".
+
+      Chính sách này ngăn người dùng tải trang web từ các URL bị chặn. Danh sách chặn cung cấp danh sách các mẫu URL chỉ định những URL sẽ bị chặn.
+
+      Bạn phải định dạng mẫu URL theo định dạng trên trang web https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Bạn có thể xác định các trường hợp ngoại lệ trong chính sách về danh sách URL được cho phép. Những chính sách này chỉ giới hạn trong 1000 mục; các mục sau đó sẽ bị bỏ qua.
+
+      Lưu ý rằng bạn không nên chặn các URL "chrome://*" nội bộ vì điều này có thể dẫn đến lỗi không mong muốn.
+
+      Từ Chrome 73, bạn có thể chặn các URL "javascript://*". Tuy nhiên, chính sách này chỉ ảnh hưởng đến JavaScript đã nhập trong thanh địa chỉ (hoặc các bookmarklet). Lưu ý rằng nếu dữ liệu được tải động thì các URL JavaScript trong trang không phải tuân theo chính sách này. Ví dụ: nếu bạn chặn "example.com/abc", thì trang "example.com" sẽ vẫn có thể tải "example.com/abc" qua XMLHTTPRequest.
+
+      Nếu bạn không đặt chính sách này, thì không có URL nào sẽ bị chặn trên trình duyệt.</translation>
 <translation id="5085647276663819155">Vô hiệu hóa xem trước bản in</translation>
 <translation id="5090209345759901501">Mở rộng cài đặt nội dung Flash cho tất cả nội dung</translation>
 <translation id="5090791951240382356">Cho phép hợp nhất các chính sách từ điển thuộc các nguồn khác nhau</translation>
@@ -3620,6 +3665,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="6394350458541421998">Chính sách này đã chấm dứt kể từ phiên bản <ph name="PRODUCT_OS_NAME" /> 29. Vui lòng sử dụng chính sách PresentationScreenDimDelayScale thay vào đó.</translation>
 <translation id="6401669939808766804">Đăng xuất người dùng</translation>
 <translation id="640244877779556713">Bật tùy chọn đề xuất biểu tượng cảm xúc</translation>
+<translation id="6407093060083181305">Định cấu hình danh sách chặn cài đặt tiện ích</translation>
 <translation id="6417265370957905582">Trợ lý Google</translation>
 <translation id="6422575351619065453">Trong chế độ kiosk, hãy kiểm soát xem trình đơn hỗ trợ tiếp cận nổi có đang hiển thị hay không.
 
@@ -3798,6 +3844,11 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="6658245400435704251">Chỉ định số giây tối đa mà thiết bị có thể ngẫu nhiên trì hoãn việc tải xuống bản cập nhật từ thời điểm bản cập nhật được đưa lên máy chủ lần đầu tiên. Thiết bị có thể đợi một phần số thời gian này là thời gian thực và phần thời gian còn lại là thời gian kiểm tra bản cập nhật. Trong bất kỳ trường hợp nào, việc phân tán bị chặn trên ở lượng thời gian cố định để thiết bị không bao giờ phải chờ mãi để tải xuống bản cập nhật.</translation>
 <translation id="6665670272107384733">Đặt tần suất người dùng phải nhập mật khẩu để sử dụng tính năng mở khóa nhanh</translation>
 <translation id="6667586534922258705">Hiện nút hiển thị mật khẩu trên màn hình đăng nhập và màn hình khóa</translation>
+<translation id="6669700740683748046">Tính năng này cho phép hiển thị URL đầy đủ trên thanh địa chỉ.
+      Nếu bạn đặt chính sách này thành True, thì URL đầy đủ sẽ hiển thị trên thanh địa chỉ, bao gồm cả giao thức và miền con.
+      Nếu bạn đặt chính sách này thành False, thì thanh địa chỉ sẽ hiển thị URL mặc định.
+      Bạn bạn không đặt chính sách này, thì thanh địa chỉ sẽ hiển thị URL mặc định. Đồng thời, người dùng sẽ có thể chuyển đổi giữa chế độ hiển thị URL mặc định và đầy đủ bằng tùy chọn trình đơn ngữ cảnh.
+      </translation>
 <translation id="6672070613706645316">Cho phép người dùng tùy chỉnh nền trên trang Tab mới</translation>
 <translation id="6672630473862787247">Bật quy trình xác thực môi trường xung quanh trong các phiên khách, phiên thông thường và phiên ẩn danh.</translation>
 <translation id="6685903773201985073">Bật quy trình xác thực môi trường xung quanh trong các phiên khách và phiên thông thường.</translation>

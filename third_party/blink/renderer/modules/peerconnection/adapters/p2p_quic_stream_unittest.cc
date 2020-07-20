@@ -102,7 +102,7 @@ TEST_F(P2PQuicStreamTest, StreamSendsFinAndCanNoLongerWrite) {
 
 TEST_F(P2PQuicStreamTest, StreamResetSendsRst) {
   InitializeStream();
-  EXPECT_CALL(*session_, SendRstStream(kStreamId, _, _));
+  EXPECT_CALL(*session_, SendRstStream(kStreamId, _, _, _));
   stream_->Reset();
   EXPECT_TRUE(stream_->rst_sent());
 }
@@ -216,7 +216,7 @@ TEST_F(P2PQuicStreamTest, StreamClosedAfterReceivingReset) {
     // Google RST_STREAM closes the stream in both directions. A RST_STREAM
     // is then sent to the peer to communicate the final byte offset.
     EXPECT_CALL(*session_,
-                SendRstStream(kStreamId, quic::QUIC_RST_ACKNOWLEDGEMENT, 0));
+                SendRstStream(kStreamId, quic::QUIC_RST_ACKNOWLEDGEMENT, 0, _));
   }
   stream_->OnStreamReset(rst_frame);
   if (VersionHasIetfQuicFrames(connection_->version().transport_version)) {

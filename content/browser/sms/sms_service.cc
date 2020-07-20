@@ -5,6 +5,7 @@
 #include "content/browser/sms/sms_service.h"
 
 #include <iterator>
+#include <memory>
 #include <queue>
 #include <string>
 #include <utility>
@@ -16,6 +17,7 @@
 #include "base/optional.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/sms/sms_metrics.h"
+#include "content/browser/sms/user_consent_handler.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/sms_fetcher.h"
@@ -23,6 +25,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "third_party/blink/public/mojom/sms/sms_receiver.mojom-shared.h"
 
 using blink::SmsReceiverDestroyedReason;
 using blink::mojom::SmsStatus;
@@ -31,11 +34,13 @@ namespace content {
 
 SmsService::SmsService(
     SmsFetcher* fetcher,
+    std::unique_ptr<UserConsentHandler> consent_handler,
     const url::Origin& origin,
     RenderFrameHost* host,
     mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver)
     : FrameServiceBase(host, std::move(receiver)),
       fetcher_(fetcher),
+      consent_handler_(std::move(consent_handler)),
       origin_(origin) {
   DCHECK(fetcher_);
 }
@@ -45,13 +50,24 @@ SmsService::SmsService(
     RenderFrameHost* host,
     mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver)
     : SmsService(fetcher,
+                 nullptr,
                  host->GetLastCommittedOrigin(),
                  host,
-                 std::move(receiver)) {}
+                 std::move(receiver)) {
+  bool needs_user_prompt =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kWebOtpBackend) == switches::kWebOtpBackendSmsVerification;
+
+  if (needs_user_prompt) {
+    consent_handler_ = std::make_unique<PromptBasedUserConsentHandler>();
+  } else {
+    consent_handler_ = std::make_unique<NoopUserConsentHandler>();
+  }
+}
 
 SmsService::~SmsService() {
   if (callback_)
-    Process(SmsStatus::kTimeout, base::nullopt);
+    CompleteRequest(SmsStatus::kTimeout);
   DCHECK(!callback_);
 }
 
@@ -72,6 +88,13 @@ void SmsService::Create(
 
 void SmsService::Receive(ReceiveCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // TODO(majidvp): The comment below seems incorrect. This flow is used for
+  // both prompted and unprompted backends so it is not clear if we should
+  // always cancel early. Also I don't believe that we are actually silently
+  // dropping the sms but in fact the logic cancels the request once
+  // an sms comes in and there is no delegate.
+
   // This flow relies on the delegate to display an infobar for user
   // confirmation. Cancelling the call early if no delegate is available is
   // easier to debug then silently dropping SMSes later on.
@@ -82,6 +105,7 @@ void SmsService::Receive(ReceiveCallback callback) {
     return;
   }
 
+  // Abort the last request if there is we have not yet handled it.
   if (callback_) {
     std::move(callback_).Run(SmsStatus::kCancelled, base::nullopt);
     fetcher_->Unsubscribe(origin_, this);
@@ -90,9 +114,11 @@ void SmsService::Receive(ReceiveCallback callback) {
   start_time_ = base::TimeTicks::Now();
   callback_ = std::move(callback);
 
-  // |one_time_code_| and prompt are still present from the previous
-  // request so a new subscription is unnecessary.
-  if (prompt_open_) {
+  // |one_time_code_| and prompt are still present from the previous request so
+  // a new subscription is unnecessary. Note that it is only safe for us to use
+  // the in flight otp with the new request since both requests belong to the
+  // same origin.
+  if (consent_handler_->is_active()) {
     // TODO(crbug.com/1024598): Add UMA histogram.
     return;
   }
@@ -102,29 +128,23 @@ void SmsService::Receive(ReceiveCallback callback) {
 
 void SmsService::OnReceive(const std::string& one_time_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   DCHECK(!one_time_code_);
   DCHECK(!start_time_.is_null());
 
-  auto now = base::TimeTicks::Now();
-  RecordSmsReceiveTime(now - start_time_);
+  receive_time_ = base::TimeTicks::Now();
+  RecordSmsReceiveTime(receive_time_ - start_time_);
 
   one_time_code_ = one_time_code;
 
-  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kWebOtpBackend) !=
-      switches::kWebOtpBackendSmsVerification) {
-    Process(SmsStatus::kSuccess, one_time_code_);
-    return;
-  }
-
-  receive_time_ = now;
-  OpenInfoBar(one_time_code);
+  consent_handler_->RequestUserConsent(
+      render_frame_host(), origin_, one_time_code,
+      base::BindOnce(&SmsService::CompleteRequest,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SmsService::Abort() {
   DCHECK(callback_);
-  Process(SmsStatus::kAborted, base::nullopt);
+  CompleteRequest(SmsStatus::kAborted);
 }
 
 void SmsService::NavigationEntryCommitted(
@@ -145,68 +165,39 @@ void SmsService::NavigationEntryCommitted(
   }
 }
 
-void SmsService::OpenInfoBar(const std::string& one_time_code) {
-  WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host());
-  if (!web_contents->GetDelegate()) {
-    Process(SmsStatus::kCancelled, base::nullopt);
-    return;
+void SmsService::CompleteRequest(blink::mojom::SmsStatus status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  base::Optional<std::string> code = base::nullopt;
+  if (status == SmsStatus::kSuccess) {
+    DCHECK(one_time_code_);
+    code = one_time_code_;
   }
 
-  prompt_open_ = true;
-  web_contents->GetDelegate()->CreateSmsPrompt(
-      render_frame_host(), origin_, one_time_code,
-      base::BindOnce(&SmsService::OnConfirm, weak_ptr_factory_.GetWeakPtr()),
-      base::BindOnce(&SmsService::OnCancel, weak_ptr_factory_.GetWeakPtr()));
-}
+  // Record ContinueOn timing values only if we are using an asynchronous
+  // consent handler (i.e. showing user prompts).
+  if (consent_handler_->is_async()) {
+    if (status == SmsStatus::kSuccess) {
+      DCHECK(!receive_time_.is_null());
+      RecordContinueOnSuccessTime(base::TimeTicks::Now() - receive_time_);
+    } else if (status == SmsStatus::kCancelled) {
+      DCHECK(!receive_time_.is_null());
+      RecordCancelOnSuccessTime(base::TimeTicks::Now() - receive_time_);
+    }
+  }
 
-void SmsService::Process(blink::mojom::SmsStatus status,
-                         base::Optional<std::string> one_time_code) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(callback_);
-  std::move(callback_).Run(status, one_time_code);
+  if (callback_) {
+    std::move(callback_).Run(status, code);
+  }
+
   CleanUp();
-}
-
-void SmsService::OnConfirm() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  DCHECK(one_time_code_);
-  DCHECK(!receive_time_.is_null());
-  RecordContinueOnSuccessTime(base::TimeTicks::Now() - receive_time_);
-
-  prompt_open_ = false;
-
-  if (!callback_) {
-    // Cleanup since request has been aborted while prompt is up.
-    CleanUp();
-    return;
-  }
-  Process(SmsStatus::kSuccess, one_time_code_);
-}
-
-void SmsService::OnCancel() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // Record only when SMS has already been received.
-  DCHECK(!receive_time_.is_null());
-  RecordCancelOnSuccessTime(base::TimeTicks::Now() - receive_time_);
-
-  prompt_open_ = false;
-
-  if (!callback_) {
-    // Cleanup since request has been aborted while prompt is up.
-    CleanUp();
-    return;
-  }
-  Process(SmsStatus::kCancelled, base::nullopt);
 }
 
 void SmsService::CleanUp() {
   // Skip resetting |one_time_code_|, |sms| and |receive_time_| while prompt is
   // still open in case it needs to be returned to the next incoming request
   // upon prompt confirmation.
-  if (!prompt_open_) {
+  if (!consent_handler_->is_active()) {
     one_time_code_.reset();
     receive_time_ = base::TimeTicks();
   }

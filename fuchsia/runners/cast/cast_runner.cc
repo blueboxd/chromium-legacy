@@ -343,9 +343,11 @@ void CastRunner::OnCameraServiceRequest(
     return;
   }
 
-  LOG(WARNING) << "fuchsia.camera3.DeviceWatcher request was received while no "
-                  "apps with the CAMERA permission are running.";
-  // Drop the request.
+  // fuchsia.camera3.DeviceWatcher may be requested while none of the running
+  // apps have the CAMERA permission. Return ZX_ERR_UNAVAILABLE, which implies
+  // that the client should try connecting again later, since the service may
+  // become available after a web.Frame with camera access is created.
+  request.Close(ZX_ERR_UNAVAILABLE);
 }
 
 void CastRunner::OnMetricsRecorderServiceRequest(

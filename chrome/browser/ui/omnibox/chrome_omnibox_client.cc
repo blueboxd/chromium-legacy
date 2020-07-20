@@ -53,7 +53,6 @@
 #include "chrome/common/url_constants.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/favicon/core/favicon_service.h"
-#include "components/feature_engagement/buildflags.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/location_bar_model.h"
@@ -78,11 +77,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
-#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
-#endif
 
 using predictors::AutocompleteActionPredictor;
 
@@ -383,20 +377,6 @@ void ChromeOmniboxClient::OnRevert() {
 }
 
 void ChromeOmniboxClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
-// The new tab tracker tracks when a user starts a session in the same
-// tab as a previous one. If ShouldDisplayURL() is true, that's a good
-// signal that the previous page was part of some other session.
-// We could go further to try to analyze the difference between the previous
-// and current URLs, but users edit URLs rarely enough that this is a
-// reasonable approximation.
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-  if (controller_->GetLocationBarModel()->ShouldDisplayURL()) {
-    feature_engagement::NewTabTrackerFactory::GetInstance()
-        ->GetForProfile(profile_)
-        ->OnOmniboxNavigation();
-  }
-#endif
-
   predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_)
       ->OnOmniboxOpenedUrl(*log);
 }

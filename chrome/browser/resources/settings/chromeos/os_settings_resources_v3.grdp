@@ -117,6 +117,11 @@
            use_base_dir="false"
            compress="false"
            type="BINDATA" />
+  <include name="IDR_OS_SETTINGS_DEEP_LINKING_BEHAVIOR_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/chromeos/deep_linking_behavior.m.js"
+           use_base_dir="false"
+           compress="false"
+           type="BINDATA" />
   <include name="IDR_OS_SETTINGS_LOCALIZED_LINK_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/chromeos/localized_link/localized_link.m.js"
            use_base_dir="false"
@@ -282,11 +287,11 @@
            file="i18n_setup.js"
            compress="false"
            type="BINDATA" />
-  <include name="IDR_OS_SETTINGS_SETTINGS_V3_HTML"
+  <include name="IDR_OS_SETTINGS_OS_SETTINGS_V3_HTML"
            file="chromeos/os_settings_v3.html"
            compress="false"
            type="BINDATA" />
-  <include name="IDR_OS_SETTINGS_SETTINGS_V3_JS"
+  <include name="IDR_OS_SETTINGS_OS_SETTINGS_V3_JS"
            file="chromeos/os_settings.js"
            compress="false"
            type="BINDATA" />

@@ -55,10 +55,11 @@ PermissionRequestManagerTestApi::PermissionRequestManagerTestApi(
               browser->tab_strip_model()->GetActiveWebContents())) {}
 
 void PermissionRequestManagerTestApi::AddSimpleRequest(
+    content::RenderFrameHost* source_frame,
     ContentSettingsType type) {
   TestPermissionRequestOwner* request_owner =
       new TestPermissionRequestOwner(type);
-  manager_->AddRequest(request_owner->request());
+  manager_->AddRequest(source_frame, request_owner->request());
 }
 
 views::Widget* PermissionRequestManagerTestApi::GetPromptWindow() {

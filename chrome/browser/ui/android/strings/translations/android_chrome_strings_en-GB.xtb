@@ -577,6 +577,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5659593005791499971">Email</translation>
 <translation id="5665379678064389456">Create event in <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Override a website’s request to prevent zooming in</translation>
+<translation id="5683547024293500885">Chrome can’t check for updates</translation>
 <translation id="5686790454216892815">File name too long</translation>
 <translation id="5694049548840660018">Get back home easily</translation>
 <translation id="569536719314091526">Translate this page to any language from the More options button</translation>
@@ -589,6 +590,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5732819098735351888">Download will start on Wi-Fi.</translation>
 <translation id="5748802427693696783">Switched to standard tabs</translation>
 <translation id="5749068826913805084">Chrome needs storage access to download files.</translation>
+<translation id="5749237766298580851">Off <ph name="SEPARATOR" /> Not recommended</translation>
 <translation id="5754350196967618083">Can't refresh Discover</translation>
 <translation id="5763382633136178763">Incognito tabs</translation>
 <translation id="5763514718066511291">Tap to copy the URL for this app</translation>

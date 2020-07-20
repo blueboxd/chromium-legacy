@@ -1211,6 +1211,9 @@ if (enable_java_templates) {
         rebase_path(_desugared_library_keep_rule_output_path, root_build_dir),
       ]
     }
+    if (!enable_bazel_desugar) {
+      _args += [ "--show-desugar-default-interface-warnings" ]
+    }
 
     _enable_assert = is_java_debug || dcheck_always_on
     if (_enable_assert) {
@@ -1655,6 +1658,9 @@ if (enable_java_templates) {
               "--desugar-jdk-libs-json",
               rebase_path(_desugar_jdk_libs_json, root_build_dir),
             ]
+          }
+          if (!enable_bazel_desugar) {
+            _args += [ "--show-desugar-default-interface-warnings" ]
           }
         }
         if (_desugar_needs_classpath) {
@@ -3061,8 +3067,6 @@ if (enable_java_templates) {
           filter_exclude(
               [ get_label_info(":$target_name", "label_no_toolchain") ],
               [
-                "//chrome/browser*",
-                "//clank*",
                 "//components*",
 
                 # This is due to the "special group" bypass.

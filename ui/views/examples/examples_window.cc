@@ -207,6 +207,12 @@ class ExamplesWindowContents : public WidgetDelegateView,
 // static
 ExamplesWindowContents* ExamplesWindowContents::instance_ = nullptr;
 
+Widget* GetExamplesWidget() {
+  return ExamplesWindowContents::instance()
+             ? ExamplesWindowContents::instance()->GetWidget()
+             : nullptr;
+}
+
 void ShowExamplesWindow(base::OnceClosure on_close,
                         ExampleVector examples,
                         gfx::NativeWindow window_context) {

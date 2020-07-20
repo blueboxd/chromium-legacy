@@ -45,8 +45,7 @@ _GSUTIL = os.path.join(_DIR_SOURCE_ROOT, 'third_party', 'depot_tools',
 _PUSH_URL = 'gs://chrome-supersize/milestones/'
 
 _DESIRED_CPUS = ['arm', 'arm_64']
-# Measure Chrome.apk since it's not a bundle.
-_DESIRED_APKS = ['Monochrome.apk', 'Chrome.apk', 'AndroidWebview.apk']
+_DESIRED_APKS = ['Monochrome.apk', 'AndroidWebview.apk']
 # Versions are manually gathered from
 # https://omahaproxy.appspot.com/history?os=android&channel=stable
 _DESIRED_VERSIONS = [
@@ -73,7 +72,8 @@ _DESIRED_VERSIONS = [
     '80.0.3987.99',
     '81.0.4044.138',
     '83.0.4103.60',
-    '84.0.4147.20',  # Canary
+    '84.0.4147.89',
+    '85.0.4183.25',  # Canary
 ]
 
 

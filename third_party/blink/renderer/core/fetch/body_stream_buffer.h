@@ -61,13 +61,11 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
 
   // Callable only when neither locked nor disturbed.
   scoped_refptr<BlobDataHandle> DrainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy,
-      ExceptionState&);
-  scoped_refptr<EncodedFormData> DrainAsFormData(ExceptionState&);
+      BytesConsumer::BlobSizePolicy);
+  scoped_refptr<EncodedFormData> DrainAsFormData();
   void DrainAsChunkedDataPipeGetter(
       ScriptState*,
-      mojo::PendingReceiver<network::mojom::blink::ChunkedDataPipeGetter>,
-      ExceptionState&);
+      mojo::PendingReceiver<network::mojom::blink::ChunkedDataPipeGetter>);
   void StartLoading(FetchDataLoader*,
                     FetchDataLoader::Client* /* client */,
                     ExceptionState&);
@@ -88,7 +86,11 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   bool IsStreamErrored() const;
   bool IsStreamLocked() const;
   bool IsStreamDisturbed() const;
-  void CloseAndLockAndDisturb(ExceptionState&);
+
+  // Closes the stream if necessary, and then locks and disturbs it. Should not
+  // be called if |stream_broken_| is true.
+  void CloseAndLockAndDisturb();
+
   ScriptState* GetScriptState() { return script_state_; }
 
   bool IsAborted();

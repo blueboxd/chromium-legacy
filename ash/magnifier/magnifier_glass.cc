@@ -64,55 +64,6 @@ gfx::Rect GetBounds(const MagnifierGlass::Params& params,
 
 }  // namespace
 
-// The border mask provides a clipping layer for the magnification window
-// border so that there is no shadow in the center.
-class MagnifierGlass::BorderMask : public ui::LayerDelegate {
- public:
-  BorderMask(const gfx::Size& mask_bounds, int radius)
-      : radius_(radius), layer_(ui::LAYER_TEXTURED) {
-    layer_.set_delegate(this);
-    layer_.SetFillsBoundsOpaquely(false);
-    layer_.SetBounds(gfx::Rect(mask_bounds));
-  }
-
-  ~BorderMask() override { layer_.set_delegate(nullptr); }
-
-  BorderMask(const BorderMask& other) = delete;
-  BorderMask& operator=(const BorderMask& rhs) = delete;
-
-  ui::Layer* layer() { return &layer_; }
-
- private:
-  // ui::LayerDelegate:
-  void OnPaintLayer(const ui::PaintContext& context) override {
-    ui::PaintRecorder recorder(context, layer()->size());
-
-    cc::PaintFlags flags;
-    flags.setAlpha(255);
-    flags.setAntiAlias(true);
-    // Stroke is used for clipping the border which consists of the rendered
-    // border |kBorderSize| and the magnifier shadow |kShadowThickness| and
-    // |kShadowOffset|.
-    constexpr int kStrokeWidth = kBorderSize + kShadowThickness + kShadowOffset;
-    flags.setStrokeWidth(kStrokeWidth);
-    flags.setStyle(cc::PaintFlags::kStroke_Style);
-
-    // We want to clip everything but the border, shadow and shadow offset, so
-    // set the clipping radius at the halfway point of the stroke width.
-    const int kClippingRadius = radius_ + (kStrokeWidth) / 2;
-    const gfx::Rect rect(layer()->bounds().size());
-    recorder.canvas()->DrawCircle(rect.CenterPoint(), kClippingRadius, flags);
-  }
-
-  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
-                                  float new_device_scale_factor) override {
-    // Redrawing will take care of scale factor change.
-  }
-
-  const int radius_;
-  ui::Layer layer_;
-};
-
 // The border renderer draws the border as well as outline on both the outer and
 // inner radius to increase visibility. The border renderer also handles drawing
 // the shadow.
@@ -144,12 +95,21 @@ class MagnifierGlass::BorderRenderer : public ui::LayerDelegate {
         shadow_bounds.width() / 2 - kShadowThickness - kShadowOffset,
         shadow_flags);
 
+    // The radius of the magnifier and its border.
+    const int magnifier_radius = radius_ + kBorderSize;
+
+    // Clear the shadow for the magnified area.
+    cc::PaintFlags mask_flags;
+    mask_flags.setAntiAlias(true);
+    mask_flags.setBlendMode(SkBlendMode::kClear);
+    mask_flags.setStyle(cc::PaintFlags::kFill_Style);
+    recorder.canvas()->DrawCircle(
+        magnifier_window_bounds_.CenterPoint(),
+        magnifier_radius - kBorderOutlineThickness / 2, mask_flags);
+
     cc::PaintFlags border_flags;
     border_flags.setAntiAlias(true);
     border_flags.setStyle(cc::PaintFlags::kStroke_Style);
-
-    // The radius of the magnifier and its border.
-    const int magnifier_radius = radius_ + kBorderSize;
 
     // Draw the inner border.
     border_flags.setStrokeWidth(kBorderSize);
@@ -264,9 +224,6 @@ void MagnifierGlass::CreateMagnifierWindow(aura::Window* root_window,
   border_layer_->set_delegate(border_renderer_.get());
   border_layer_->SetFillsBoundsOpaquely(false);
   root_layer->Add(border_layer_.get());
-
-  border_mask_ = std::make_unique<BorderMask>(window_size, params_.radius);
-  border_layer_->SetMaskLayer(border_mask_->layer());
 
   host_widget_->AddObserver(this);
 }

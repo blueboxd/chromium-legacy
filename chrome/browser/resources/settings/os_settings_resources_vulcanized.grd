@@ -82,7 +82,7 @@
                type="BINDATA" />
 
       <!-- Polymer3 related files-->
-      <include name="IDR_OS_SETTINGS_SETTINGS_ROLLUP_JS"
+      <include name="IDR_OS_SETTINGS_OS_SETTINGS_ROLLUP_JS"
                file="${root_gen_dir}\chrome\browser\resources\settings\chromeos\os_settings.rollup.js"
                use_base_dir="false"
                preprocess="true"

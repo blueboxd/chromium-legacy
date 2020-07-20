@@ -96,7 +96,7 @@ SharedQuadState* CreateAndAppendTestSharedQuadState(
 // Draws a very simple frame with no surface references.
 TYPED_TEST(SurfaceAggregatorPixelTest, DrawSimpleFrame) {
   gfx::Rect rect(this->device_viewport_size_);
-  int id = 1;
+  RenderPassId id{1};
   auto pass = RenderPass::Create();
   pass->SetNew(id, rect, rect, gfx::Transform());
 
@@ -155,7 +155,7 @@ TYPED_TEST(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
 
   {
     gfx::Rect rect(this->device_viewport_size_);
-    int id = 1;
+    RenderPassId id{1};
     auto pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
@@ -182,7 +182,7 @@ TYPED_TEST(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
 
   {
     gfx::Rect rect(child_size);
-    int id = 1;
+    RenderPassId id{1};
     auto pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
@@ -252,7 +252,7 @@ TYPED_TEST(SurfaceAggregatorPixelTest,
 
   {
     gfx::Rect rect(this->device_viewport_size_);
-    int id = 1;
+    RenderPassId id{1};
     auto pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
@@ -285,7 +285,7 @@ TYPED_TEST(SurfaceAggregatorPixelTest,
 
   {
     gfx::Rect rect(child_size);
-    int id = 1;
+    RenderPassId id{1};
     auto pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 
@@ -313,7 +313,7 @@ TYPED_TEST(SurfaceAggregatorPixelTest,
 
   {
     gfx::Rect rect(child_size);
-    int id = 1;
+    RenderPassId id{1};
     auto pass = RenderPass::Create();
     pass->SetNew(id, rect, rect, gfx::Transform());
 

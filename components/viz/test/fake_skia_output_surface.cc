@@ -71,7 +71,7 @@ void FakeSkiaOutputSurface::Reshape(const gfx::Size& size,
                                     const gfx::ColorSpace& color_space,
                                     gfx::BufferFormat format,
                                     bool use_stencil) {
-  auto& sk_surface = sk_surfaces_[0];
+  auto& sk_surface = sk_surfaces_[RenderPassId{0}];
   SkColorType color_type = kRGBA_8888_SkColorType;
   SkImageInfo image_info =
       SkImageInfo::Make(size.width(), size.height(), color_type,
@@ -139,9 +139,9 @@ gfx::OverlayTransform FakeSkiaOutputSurface::GetDisplayTransform() {
 
 SkCanvas* FakeSkiaOutputSurface::BeginPaintCurrentFrame() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  auto& sk_surface = sk_surfaces_[0];
+  auto& sk_surface = sk_surfaces_[RenderPassId{0}];
   DCHECK(sk_surface);
-  DCHECK_EQ(current_render_pass_id_, 0u);
+  DCHECK_EQ(current_render_pass_id_, RenderPassId{0u});
   return sk_surface->getCanvas();
 }
 
@@ -197,7 +197,7 @@ SkCanvas* FakeSkiaOutputSurface::BeginPaintRenderPass(
     sk_sp<SkColorSpace> color_space) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Make sure there is no unsubmitted PaintFrame or PaintRenderPass.
-  DCHECK_EQ(current_render_pass_id_, 0u);
+  DCHECK_EQ(current_render_pass_id_, RenderPassId{0u});
   auto& sk_surface = sk_surfaces_[id];
 
   if (!sk_surface) {
@@ -216,7 +216,7 @@ gpu::SyncToken FakeSkiaOutputSurface::SubmitPaint(
     base::OnceClosure on_finished) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   sk_surfaces_[current_render_pass_id_]->flushAndSubmit();
-  current_render_pass_id_ = 0;
+  current_render_pass_id_ = RenderPassId{0};
 
   if (on_finished)
     std::move(on_finished).Run();

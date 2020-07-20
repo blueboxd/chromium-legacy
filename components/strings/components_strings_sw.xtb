@@ -449,6 +449,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="2824775600643448204">Upau wa anwani na utafutaji</translation>
 <translation id="2826760142808435982">Muunganisho umesimbwa kwa njia fiche na kuthibitishwa kupitia <ph name="CIPHER" /> na unatumia <ph name="KX" /> kama utaratibu msingi wa ubadilishaji.</translation>
 <translation id="2835170189407361413">Futa fomu</translation>
+<translation id="2839501879576190149">Huenda ni tovuti bandia</translation>
 <translation id="2847118875340931228">Fungua Dirisha Fiche</translation>
 <translation id="2850739647070081192">Invite (Bahasha)</translation>
 <translation id="2856444702002559011">Huenda wavamizi wanajaribu kuiba maelezo yako kutoka <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (kwa mfano, manenosiri, ujumbe au kadi za mikopo).<ph name="BEGIN_LEARN_MORE_LINK" />Pata maelezo zaidi<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -809,6 +810,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="42981349822642051">Panua</translation>
 <translation id="4300675098767811073">Toboa mara kadhaa kulia</translation>
 <translation id="4302965934281694568">Chou3 (Bahasha)</translation>
+<translation id="4305666528087210886">Imeshindwa kufikia faili yako</translation>
 <translation id="4305817255990598646">Badilisha</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Zuia (chaguomsingi)</translation>
@@ -827,6 +829,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="4358461427845829800">Dhibiti njia za kulipa...</translation>
 <translation id="4359160567981085931">Umeweka nenosiri lako kwenye tovuti inayotiliwa shaka. Chrome inaweza kukusaidia. Ili ubadilishe nenosiri lako na uarifu Google kwamba huenda akaunti yako imo hatarini, bofya Linda Akaunti.</translation>
 <translation id="4367563149485757821">Number-12 (Bahasha)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Tukio la ufichuzi haramu wa data kwenye programu au tovuti limefichua nenosiri ulilohifadhi la <ph name="ORIGIN" />. Chrome inapendekeza ubadilishe nenosiri lako kwenye <ph name="ORIGIN" /> sasa.}=1{Tukio la ufichuzi haramu wa data kwenye programu au tovuti limefichua nenosiri ulilohifadhi la <ph name="ORIGIN" /> na tovuti nyingine moja. Chrome inapendekeza ukague manenosiri uliyohifadhi sasa.}other{Tukio la ufichuzi haramu wa data kwenye programu au tovuti limefichua nenosiri ulilohifadhi la <ph name="ORIGIN" /> na tovuti zingine <ph name="SITES_COUNT" />. Chrome inapendekeza ukague manenosiri uliyohifadhi sasa.}}</translation>
 <translation id="437058704415269440">Salio la Akaunti</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Thamani <ph name="VALUE_TYPE" /> inayotarajiwa.</translation>
@@ -1297,6 +1300,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Huenda ukatozwa gharama.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{Pendekezo jingine 1}other{Mapendekezo mengine #}}</translation>
+<translation id="6387645831795005740">Wakati mwingine wadukuzi huiga tovuti kwa kufanya mabadiliko madogo ambayo hayaonekani kwa urahisi kwenye URL.</translation>
 <translation id="6389470377220713856">Jina lilio kwenye Kadi</translation>
 <translation id="6390200185239044127">Mkunjo wa Z nusu</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1508,6 +1512,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="7372973238305370288">matokeo ya utafutaji</translation>
 <translation id="7374733840632556089">Tatizo hili hutokea kwa sababu ya cheti ambacho wewe au mtu mwingine amesakinisha kwenye kifaa chako. Cheti kinajulikana kuwa huwa kinatumika kufuatilia na kuvamia mitandao na hakiaminiki na Chrome. Ingawa baadhi ya hali halali za ufuatiliaji zipo, kama vile kwenye mtandao wa shule au kampuni, Chrome ingependa kuhakikisha kuwa unafahamu kwamba jambo hili linafanyika, hata ikiwa huwezi kulisimamisha. Ufuatiliaji unaweza kutokea katika kivinjari chochote au programu inayoweza kufikia wavuti.</translation>
 <translation id="7375818412732305729">Faili inapoambatishwa</translation>
+<translation id="7376551888419889433">Matukio ya usalama yanaporipotiwa na Viunganishi vya Chrome Enterprise, data inayohusiana na tukio hilo hutumwa kwa msimamizi wako. Data hii inaweza kujumuisha URL za kurasa ambazo umetembelea kwenye Chrome, metadata au majina ya faili na jina la mtumiaji unalotumia kuingia katika kifaa chako na Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Vidhibiti vya Maudhui</translation>
 <translation id="7378627244592794276">La</translation>
@@ -1903,6 +1908,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Ulijaribu kufikia <ph name="DOMAIN" />, lakini seva iliwasilisha cheti batili.</translation>
 <translation id="9050666287014529139">Kaulisiri</translation>
+<translation id="9062620674789239642">Huenda imehamishwa, imebadilishwa au imefutwa.</translation>
 <translation id="9065203028668620118">Badilisha</translation>
 <translation id="9065745800631924235"><ph name="TEXT" /> tafuta kwenye historia</translation>
 <translation id="9069693763241529744">Imezuiwa na kiendelezi</translation>

@@ -371,6 +371,7 @@ ContentBrowserClientImpl::CreateURLLoaderThrottles(
     BrowserContextImpl* browser_context_impl =
         static_cast<BrowserContextImpl*>(browser_context);
     bool is_real_time_lookup_enabled =
+        !GetSafeBrowsingService()->GetSafeBrowsingDisabled() &&
         safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(
             browser_context_impl->pref_service(),
             browser_context_impl->IsOffTheRecord(),

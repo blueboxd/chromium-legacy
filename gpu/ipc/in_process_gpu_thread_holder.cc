@@ -99,6 +99,11 @@ void InProcessGpuThreadHolder::InitializeOnGpuThread(
 #endif
   use_virtualized_gl_context |=
       gpu_driver_bug_workarounds.use_virtualized_gl_contexts;
+  if (use_passthrough_cmd_decoder) {
+    // Virtualized contexts don't work with passthrough command decoder.
+    // See https://crbug.com/914976
+    use_virtualized_gl_context = false;
+  }
   if (use_virtualized_gl_context)
     share_group_->SetSharedContext(context_.get());
 

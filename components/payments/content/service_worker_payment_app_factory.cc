@@ -13,6 +13,10 @@
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/service_worker_payment_app.h"
 #include "components/payments/content/service_worker_payment_app_finder.h"
+#include "components/payments/core/features.h"
+#include "components/payments/core/method_strings.h"
+#include "content/public/browser/stored_payment_app.h"
+#include "content/public/browser/supported_delegations.h"
 #include "content/public/browser/web_contents.h"
 
 namespace payments {
@@ -50,15 +54,22 @@ class ServiceWorkerPaymentAppCreator {
     if (!error_message.empty())
       delegate_->OnPaymentAppCreationError(error_message);
 
-    number_of_pending_sw_payment_apps_ = apps.size() + installable_apps.size();
-    if (number_of_pending_sw_payment_apps_ == 0U) {
-      FinishAndCleanup();
-      return;
-    }
     base::RepeatingClosure show_processing_spinner = base::BindRepeating(
         &PaymentAppFactory::Delegate::ShowProcessingSpinner, delegate_);
 
     for (auto& installed_app : apps) {
+      std::vector<std::string> enabled_methods =
+          installed_app.second->enabled_methods;
+      bool has_app_store_billing_method =
+          enabled_methods.end() != std::find(enabled_methods.begin(),
+                                             enabled_methods.end(),
+                                             methods::kGooglePlayBilling);
+      if (ShouldSkipAppForPartialDelegation(
+              installed_app.second->supported_delegations, delegate_,
+              has_app_store_billing_method)) {
+        // TODO(crbug.com/1100656): give the developer an error message.
+        continue;
+      }
       auto app = std::make_unique<ServiceWorkerPaymentApp>(
           delegate_->GetWebContents(), delegate_->GetTopOrigin(),
           delegate_->GetFrameOrigin(), delegate_->GetSpec(),
@@ -69,9 +80,18 @@ class ServiceWorkerPaymentAppCreator {
           weak_ptr_factory_.GetWeakPtr()));
       PaymentApp* raw_payment_app_pointer = app.get();
       available_apps_[raw_payment_app_pointer] = std::move(app);
+      number_of_pending_sw_payment_apps_++;
     }
 
     for (auto& installable_app : installable_apps) {
+      bool is_app_store_billing_method =
+          installable_app.first.spec() == methods::kGooglePlayBilling;
+      if (ShouldSkipAppForPartialDelegation(
+              installable_app.second->supported_delegations, delegate_,
+              is_app_store_billing_method)) {
+        // TODO(crbug.com/1100656): give the developer an error message.
+        continue;
+      }
       auto app = std::make_unique<ServiceWorkerPaymentApp>(
           delegate_->GetWebContents(), delegate_->GetTopOrigin(),
           delegate_->GetFrameOrigin(), delegate_->GetSpec(),
@@ -82,7 +102,21 @@ class ServiceWorkerPaymentAppCreator {
           weak_ptr_factory_.GetWeakPtr()));
       PaymentApp* raw_payment_app_pointer = app.get();
       available_apps_[raw_payment_app_pointer] = std::move(app);
+      number_of_pending_sw_payment_apps_++;
     }
+
+    if (number_of_pending_sw_payment_apps_ == 0U)
+      FinishAndCleanup();
+  }
+
+  bool ShouldSkipAppForPartialDelegation(
+      const content::SupportedDelegations& supported_delegations,
+      const base::WeakPtr<PaymentAppFactory::Delegate>& delegate,
+      bool has_app_store_billing_method) const {
+    return (base::FeatureList::IsEnabled(features::kEnforceFullDelegation) ||
+            has_app_store_billing_method) &&
+           !supported_delegations.ProvidesAll(
+               delegate->GetSpec()->payment_options());
   }
 
   base::WeakPtr<ServiceWorkerPaymentAppCreator> GetWeakPtr() {

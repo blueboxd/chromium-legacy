@@ -749,7 +749,7 @@
 <translation id="1887850431809612466">Version du matériel</translation>
 <translation id="1888523338879380247">{0,plural, =1{Dernier jour pour mettre à jour l'appareil}one{Mettre à jour l'appareil sous # jour}other{Mettre à jour l'appareil sous # jours}}</translation>
 <translation id="1890674179660343635">&lt;span&gt;Identifiant&lt;/span&gt; : <ph name="EXTENSION_ID" /></translation>
-<translation id="1891760696839073783">Réception de <ph name="ATTACHMENTS" /> depuis le <ph name="DEVICE_NAME" /></translation>
+<translation id="1891760696839073783">Réception de <ph name="ATTACHMENTS" /> depuis l'appareil <ph name="DEVICE_NAME" /></translation>
 <translation id="189210018541388520">Ouvrir en mode plein écran</translation>
 <translation id="1892341345406963517">Bonjour <ph name="PARENT_NAME" /></translation>
 <translation id="189358972401248634">Autres langues</translation>
@@ -1670,7 +1670,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3022978424994383087">Je n'ai pas compris.</translation>
 <translation id="3023464535986383522">Sélectionner pour prononcer</translation>
 <translation id="3024374909719388945">Utiliser l'horloge au format 24 heures</translation>
-<translation id="3027296729579831126">Activer le partage à proximité</translation>
+<translation id="3027296729579831126">Activer le Partage à proximité</translation>
 <translation id="3029466929721441205">Afficher les outils de stylet sur l'étagère</translation>
 <translation id="3031417829280473749">Agent X</translation>
 <translation id="3031557471081358569">Sélectionnez les éléments à importer :</translation>
@@ -2966,7 +2966,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4673442866648850031">Ouvrir les outils de stylet lors du retrait du stylet</translation>
 <translation id="4677772697204437347">Mémoire du processeur graphique</translation>
 <translation id="4680105648806843642">Le son a été désactivé sur cette page</translation>
-<translation id="4681453295291708042">Désactiver le partage à proximité</translation>
+<translation id="4681453295291708042">Désactiver le Partage à proximité</translation>
 <translation id="4681930562518940301">Ouvrir l'image originale dans un nouvel onglet</translation>
 <translation id="4682551433947286597">Les fonds d'écran s'affichent sur l'écran de connexion.</translation>
 <translation id="4683947955326903992"><ph name="PERCENTAGE" /> % (par défaut)</translation>
@@ -4740,7 +4740,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6965978654500191972">Périphérique</translation>
 <translation id="696780070563539690">Les sites ne peuvent pas utiliser vos cookies pour voir votre activité de navigation sur l'ensemble des différents sites (par exemple, pour personnaliser les annonces)</translation>
 <translation id="6968288415730398122">Saisissez votre mot de passe pour configurer le verrouillage de l'écran</translation>
-<translation id="6969047215179982698">Désactiver le partage à proximité</translation>
+<translation id="6969047215179982698">Désactiver le Partage à proximité</translation>
 <translation id="6970480684834282392">Type de démarrage</translation>
 <translation id="6970856801391541997">Imprimer des pages spécifiques</translation>
 <translation id="6972180789171089114">Audio/Vidéo</translation>

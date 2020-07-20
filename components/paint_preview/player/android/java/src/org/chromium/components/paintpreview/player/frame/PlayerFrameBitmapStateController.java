@@ -101,6 +101,11 @@ public class PlayerFrameBitmapStateController {
         return state == mVisibleBitmapState;
     }
 
+    void onStartScaling() {
+        invalidateLoadingBitmaps();
+        mVisibleBitmapState.lock();
+    }
+
     /**
      * Invalidates loading bitmaps.
      */

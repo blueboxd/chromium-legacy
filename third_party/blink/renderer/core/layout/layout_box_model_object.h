@@ -123,7 +123,8 @@ enum LineDirectionMode { kHorizontalLine, kVerticalLine };
 //   block coordinates", without considering text direction. Examples are
 //   "LogicalLeft" and "LogicalRight".
 //
-// For more, see Source/core/layout/README.md ### Coordinate Spaces.
+// For more information, see the following doc about coordinate spaces:
+// https://chromium.googlesource.com/chromium/src.git/+/master/third_party/blink/renderer/core/layout/README.md#coordinate-spaces
 class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
  public:
   LayoutBoxModelObject(ContainerNode*);

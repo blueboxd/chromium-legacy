@@ -38,6 +38,22 @@ const size_t kDefaultNumQuadsToReserve = 128;
 
 namespace viz {
 
+RenderPassInternal::RenderPassInternal()
+    : RenderPassInternal(kDefaultNumSharedQuadStatesToReserve,
+                         kDefaultNumQuadsToReserve) {}
+// Each layer usually produces one shared quad state, so the number of layers
+// is a good hint for what to reserve here.
+RenderPassInternal::RenderPassInternal(size_t num_layers)
+    : RenderPassInternal(num_layers, kDefaultNumQuadsToReserve) {}
+RenderPassInternal::RenderPassInternal(size_t shared_quad_state_list_size,
+                                       size_t quad_list_size)
+    : quad_list(quad_list_size),
+      shared_quad_state_list(alignof(SharedQuadState),
+                             sizeof(SharedQuadState),
+                             shared_quad_state_list_size) {}
+
+RenderPassInternal::~RenderPassInternal() = default;
+
 std::unique_ptr<RenderPass> RenderPass::Create() {
   return base::WrapUnique(new RenderPass());
 }
@@ -53,39 +69,19 @@ std::unique_ptr<RenderPass> RenderPass::Create(
       new RenderPass(shared_quad_state_list_size, quad_list_size));
 }
 
-RenderPass::RenderPass()
-    : quad_list(kDefaultNumQuadsToReserve),
-      shared_quad_state_list(alignof(SharedQuadState),
-                             sizeof(SharedQuadState),
-                             kDefaultNumSharedQuadStatesToReserve) {}
-
-// Each layer usually produces one shared quad state, so the number of layers
-// is a good hint for what to reserve here.
-RenderPass::RenderPass(size_t num_layers)
-    : has_transparent_background(true),
-      cache_render_pass(false),
-      has_damage_from_contributing_content(false),
-      quad_list(kDefaultNumQuadsToReserve),
-      shared_quad_state_list(alignof(SharedQuadState),
-                             sizeof(SharedQuadState),
-                             num_layers) {}
-
+RenderPass::RenderPass() = default;
+RenderPass::RenderPass(size_t num_layers) : RenderPassInternal(num_layers) {}
 RenderPass::RenderPass(size_t shared_quad_state_list_size,
                        size_t quad_list_size)
-    : has_transparent_background(true),
-      cache_render_pass(false),
-      has_damage_from_contributing_content(false),
-      quad_list(quad_list_size),
-      shared_quad_state_list(alignof(SharedQuadState),
-                             sizeof(SharedQuadState),
-                             shared_quad_state_list_size) {}
+    : RenderPassInternal(shared_quad_state_list_size, quad_list_size) {}
 
 RenderPass::~RenderPass() {
-  TRACE_EVENT_OBJECT_DELETED_WITH_ID(TRACE_DISABLED_BY_DEFAULT("viz.quads"),
-                                     "RenderPass", reinterpret_cast<void*>(id));
+  TRACE_EVENT_OBJECT_DELETED_WITH_ID(
+      TRACE_DISABLED_BY_DEFAULT("viz.quads"), "RenderPass",
+      reinterpret_cast<void*>(static_cast<uint64_t>(id)));
 }
 
-std::unique_ptr<RenderPass> RenderPass::Copy(int new_id) const {
+std::unique_ptr<RenderPass> RenderPass::Copy(RenderPassId new_id) const {
   std::unique_ptr<RenderPass> copy_pass(
       Create(shared_quad_state_list.size(), quad_list.size()));
   copy_pass->SetAll(new_id, output_rect, damage_rect, transform_to_root_target,
@@ -146,7 +142,7 @@ void RenderPass::CopyAll(const std::vector<std::unique_ptr<RenderPass>>& in,
     out->push_back(source->DeepCopy());
 }
 
-void RenderPass::SetNew(uint64_t id,
+void RenderPass::SetNew(RenderPassId id,
                         const gfx::Rect& output_rect,
                         const gfx::Rect& damage_rect,
                         const gfx::Transform& transform_to_root_target) {
@@ -165,7 +161,7 @@ void RenderPass::SetNew(uint64_t id,
 }
 
 void RenderPass::SetAll(
-    uint64_t id,
+    RenderPassId id,
     const gfx::Rect& output_rect,
     const gfx::Rect& damage_rect,
     const gfx::Transform& transform_to_root_target,
@@ -240,7 +236,7 @@ void RenderPass::AsValueInto(base::trace_event::TracedValue* value) const {
 
   TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
       TRACE_DISABLED_BY_DEFAULT("viz.quads"), value, "RenderPass",
-      reinterpret_cast<void*>(id));
+      reinterpret_cast<void*>(static_cast<uint64_t>(id)));
 }
 
 SharedQuadState* RenderPass::CreateAndAppendSharedQuadState() {

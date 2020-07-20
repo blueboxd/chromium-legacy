@@ -7,40 +7,46 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojom") {
   generate_java = true
   sources = [
+    "browser_controls_params.mojom",
     "overscroll_behavior.mojom",
     "touch_action.mojom",
   ]
 
   public_deps = [ "//mojo/public/mojom/base" ]
 
-  touch_action_typemap = {
-    types = [
-      {
-        mojom = "cc.mojom.TouchAction"
-        cpp = "::cc::TouchAction"
-      },
-    ]
-    traits_headers = [ "//cc/ipc/cc_param_traits_macros.h" ]
-    traits_public_deps = [ "//cc/ipc" ]
-  }
-
-  overscroll_behavior_typemap = {
-    types = [
-      {
-        mojom = "cc.mojom.OverscrollBehavior"
-        cpp = "::cc::OverscrollBehavior"
-      },
-    ]
-    traits_headers = [ "//cc/ipc/cc_param_traits_macros.h" ]
-    traits_public_deps = [ "//cc/ipc" ]
-  }
-
-  cpp_typemaps = [
-    overscroll_behavior_typemap,
-    touch_action_typemap,
+  shared_typemap = [
+    {
+      types = [
+        {
+          mojom = "cc.mojom.TouchAction"
+          cpp = "::cc::TouchAction"
+        },
+      ]
+      traits_headers = [ "//cc/ipc/cc_param_traits_macros.h" ]
+      traits_public_deps = [ "//cc/ipc" ]
+    },
+    {
+      types = [
+        {
+          mojom = "cc.mojom.OverscrollBehavior"
+          cpp = "::cc::OverscrollBehavior"
+        },
+      ]
+      traits_headers = [ "//cc/ipc/cc_param_traits_macros.h" ]
+      traits_public_deps = [ "//cc/ipc" ]
+    },
+    {
+      types = [
+        {
+          mojom = "cc.mojom.BrowserControlsParams"
+          cpp = "::cc::BrowserControlsParams"
+        },
+      ]
+      traits_headers = [ "//cc/ipc/cc_param_traits_macros.h" ]
+      traits_public_deps = [ "//cc/ipc" ]
+    },
   ]
-  blink_cpp_typemaps = [
-    overscroll_behavior_typemap,
-    touch_action_typemap,
-  ]
+
+  cpp_typemaps = shared_typemap
+  blink_cpp_typemaps = shared_typemap
 }

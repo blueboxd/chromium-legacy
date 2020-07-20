@@ -646,8 +646,8 @@ IntRect NGPaintFragment::VisualRect() const {
   // pre-paint. Use the stored value in the LayoutObject.
   bool this_as_inline_box;
   const auto& layout_object = VisualRectLayoutObject(this_as_inline_box);
-  return this_as_inline_box ? layout_object.VisualRectForInlineBox()
-                            : layout_object.FragmentsVisualRectBoundingBox();
+  DCHECK(!this_as_inline_box);
+  return layout_object.FragmentsVisualRectBoundingBox();
 }
 
 IntRect NGPaintFragment::PartialInvalidationVisualRect() const {

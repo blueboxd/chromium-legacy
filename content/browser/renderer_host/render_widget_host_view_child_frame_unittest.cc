@@ -33,6 +33,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/mock_render_widget_host_delegate.h"
+#include "content/test/mock_widget.h"
 #include "content/test/test_render_view_host.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -125,12 +126,9 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
         /*hidden=*/false, std::make_unique<FrameTokenMessageQueue>());
 
     mojo::AssociatedRemote<blink::mojom::WidgetHost> blink_widget_host;
-    mojo::AssociatedRemote<blink::mojom::Widget> blink_widget;
-    auto blink_widget_receiver =
-        blink_widget.BindNewEndpointAndPassDedicatedReceiverForTesting();
     widget_host_->BindWidgetInterfaces(
         blink_widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting(),
-        blink_widget.Unbind());
+        widget_.GetNewRemote());
 
     mojo::AssociatedRemote<blink::mojom::FrameWidgetHost> frame_widget_host;
     mojo::AssociatedRemote<blink::mojom::FrameWidget> frame_widget;
@@ -185,6 +183,7 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
   std::unique_ptr<BrowserContext> browser_context_;
   IPC::TestSink* sink_ = nullptr;
   MockRenderWidgetHostDelegate delegate_;
+  MockWidget widget_;
 
   // Tests should set these to NULL if they've already triggered their
   // destruction.
@@ -300,18 +299,17 @@ TEST_F(RenderWidgetHostViewChildFrameTest,
   visual_properties.local_surface_id_allocation = local_surface_id_allocation;
   visual_properties.root_widget_window_segments.emplace_back(1, 2, 3, 4);
 
-  sink_->ClearMessages();
+  base::RunLoop().RunUntilIdle();
+  widget_.ClearVisualProperties();
   test_frame_connector_->SynchronizeVisualProperties(frame_sink_id,
                                                      visual_properties);
 
   // Update to the renderer.
-  ASSERT_EQ(1u, sink_->message_count());
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(1u, widget_.ReceivedVisualProperties().size());
   {
-    const IPC::Message* msg = sink_->GetMessageAt(0);
-    ASSERT_EQ(WidgetMsg_UpdateVisualProperties::ID, msg->type());
-    WidgetMsg_UpdateVisualProperties::Param params;
-    WidgetMsg_UpdateVisualProperties::Read(msg, &params);
-    blink::VisualProperties sent_visual_properties = std::get<0>(params);
+    blink::VisualProperties sent_visual_properties =
+        widget_.ReceivedVisualProperties().at(0);
 
     EXPECT_EQ(compositor_viewport_pixel_rect,
               sent_visual_properties.compositor_viewport_pixel_rect);

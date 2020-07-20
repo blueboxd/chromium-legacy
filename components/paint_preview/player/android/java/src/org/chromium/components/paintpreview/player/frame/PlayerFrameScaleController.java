@@ -18,7 +18,6 @@ import org.chromium.base.Callback;
 public class PlayerFrameScaleController {
     private static final float MAX_SCALE_FACTOR = 5f;
 
-    private float mInitialScaleFactor;
     private float mUncommittedScaleFactor;
 
     /** References to shared state. */
@@ -29,29 +28,15 @@ public class PlayerFrameScaleController {
     private final PlayerFrameMediatorDelegate mMediatorDelegate;
     private final Callback<Boolean> mOnScaleListener;
 
-    PlayerFrameScaleController(PlayerFrameViewport viewport, Size contentSize,
-            Matrix bitmapScaleMatrix, PlayerFrameMediatorDelegate mediatorDelegate,
+    PlayerFrameScaleController(Matrix bitmapScaleMatrix,
+            PlayerFrameMediatorDelegate mediatorDelegate,
             @Nullable Callback<Boolean> onScaleListener) {
-        mViewport = viewport;
-        mContentSize = contentSize;
+        mUncommittedScaleFactor = 0f;
+        mViewport = mediatorDelegate.getViewport();
+        mContentSize = mediatorDelegate.getContentSize();
         mBitmapScaleMatrix = bitmapScaleMatrix;
         mMediatorDelegate = mediatorDelegate;
         mOnScaleListener = onScaleListener;
-    }
-
-    /**
-     * Calculates the initial scale factor for a given viewport width.
-     * @param width The viewport width.
-     */
-    void calculateInitialScaleFactor(float width) {
-        mInitialScaleFactor = width / ((float) mContentSize.getWidth());
-    }
-
-    /**
-     * Gets the initial scale factor at the last computed viewport width.
-     */
-    float getInitialScaleFactor() {
-        return mInitialScaleFactor;
     }
 
     /**
@@ -92,22 +77,23 @@ public class PlayerFrameScaleController {
         }
         // Don't scale outside of the acceptable range. The value is still accumulated such that the
         // continuous gesture feels smooth.
+        final float initialScaleFactor = mMediatorDelegate.getInitialScaleFactor();
         final float lastUncommittedScaleFactor = mUncommittedScaleFactor;
         mUncommittedScaleFactor *= scaleFactor;
         // Compute a corrected and bounded scale factor when close to the max/min scale.
-        if (mUncommittedScaleFactor < mInitialScaleFactor
-                && lastUncommittedScaleFactor > mInitialScaleFactor) {
-            scaleFactor = mInitialScaleFactor / lastUncommittedScaleFactor;
+        if (mUncommittedScaleFactor < initialScaleFactor
+                && lastUncommittedScaleFactor > initialScaleFactor) {
+            scaleFactor = initialScaleFactor / lastUncommittedScaleFactor;
         } else if (mUncommittedScaleFactor > MAX_SCALE_FACTOR
                 && lastUncommittedScaleFactor < MAX_SCALE_FACTOR) {
             scaleFactor = MAX_SCALE_FACTOR / lastUncommittedScaleFactor;
-        } else if (mUncommittedScaleFactor > mInitialScaleFactor
-                && lastUncommittedScaleFactor < mInitialScaleFactor) {
-            scaleFactor = mUncommittedScaleFactor / mInitialScaleFactor;
+        } else if (mUncommittedScaleFactor > initialScaleFactor
+                && lastUncommittedScaleFactor < initialScaleFactor) {
+            scaleFactor = mUncommittedScaleFactor / initialScaleFactor;
         } else if (mUncommittedScaleFactor < MAX_SCALE_FACTOR
                 && lastUncommittedScaleFactor > MAX_SCALE_FACTOR) {
             scaleFactor = mUncommittedScaleFactor / MAX_SCALE_FACTOR;
-        } else if (mUncommittedScaleFactor < mInitialScaleFactor
+        } else if (mUncommittedScaleFactor < initialScaleFactor
                 || lastUncommittedScaleFactor > MAX_SCALE_FACTOR) {
             return true;
         }

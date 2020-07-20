@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Brought from: //depot/google3/location/nearby/sharing/proto/wire_format.proto
-// At CL 311037085
+// At CL 317565061
 
 syntax = "proto2";
 
@@ -40,6 +40,9 @@ message FileMetadata {
   // The mimeType of file (eg. 'image/jpeg' from 'dog.jpg'). Specifying a
   // mimeType helps provide a richer experience on receiving side.
   optional string mime_type = 5 [default = "application/octet-stream"];
+
+  // A uuid for the attachment. Should be unique across all attachments.
+  optional int64 id = 6;
 }
 
 // NEXT_ID=5
@@ -67,6 +70,9 @@ message TextMetadata {
 
   // The size of the text content.
   optional int64 size = 5;
+
+  // A uuid for the attachment. Should be unique across all attachments.
+  optional int64 id = 6;
 }
 
 // NEXT_ID=5
@@ -87,6 +93,9 @@ message WifiCredentialsMetadata {
   // The BYTE payload id that will be sent as a follow up containing the
   // password.
   optional int64 payload_id = 4;
+
+  // A uuid for the attachment. Should be unique across all attachments.
+  optional int64 id = 5;
 }
 
 // A frame used when sending messages over the wire.
@@ -112,6 +121,7 @@ message V1Frame {
     PAIRED_KEY_ENCRYPTION = 3;
     PAIRED_KEY_RESULT = 4;
     CERTIFICATE_INFO = 5;
+    CANCEL = 6;
   }
 
   optional FrameType type = 1;

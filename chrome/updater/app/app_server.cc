@@ -25,25 +25,23 @@ void AppServer::Initialize() {
 }
 
 base::OnceClosure AppServer::ModeCheck() {
-  std::unique_ptr<UpdaterPrefs> local_prefs = CreateLocalPrefs();
-  if (!local_prefs->GetPrefService()->GetBoolean(kPrefQualified))
+  std::unique_ptr<LocalPrefs> local_prefs = CreateLocalPrefs();
+  if (!local_prefs->GetQualified())
     return base::BindOnce(&AppServer::Qualify, this, std::move(local_prefs));
 
-  std::unique_ptr<UpdaterPrefs> global_prefs = CreateGlobalPrefs();
+  std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
   if (!global_prefs) {
     return base::BindOnce(&AppServer::Shutdown, this,
                           kErrorFailedToLockPrefsMutex);
   }
 
   base::Version this_version(UPDATER_VERSION_STRING);
-  base::Version active_version(
-      global_prefs->GetPrefService()->GetString(kPrefActiveVersion));
+  base::Version active_version(global_prefs->GetActiveVersion());
   if (this_version < active_version)
     return base::BindOnce(&AppServer::UninstallSelf, this);
 
-  if (this_version > active_version ||
-      global_prefs->GetPrefService()->GetBoolean(kPrefSwapping)) {
-    if (!SwapVersions(global_prefs->GetPrefService()))
+  if (this_version > active_version || global_prefs->GetSwapping()) {
+    if (!SwapVersions(global_prefs.get()))
       return base::BindOnce(&AppServer::Shutdown, this, kErrorFailedToSwap);
   }
 
@@ -60,22 +58,22 @@ void AppServer::FirstTaskRun() {
   std::move(first_task_).Run();
 }
 
-void AppServer::Qualify(std::unique_ptr<UpdaterPrefs> local_prefs) {
+void AppServer::Qualify(std::unique_ptr<LocalPrefs> local_prefs) {
   // For now, assume qualification succeeds.
-  local_prefs->GetPrefService()->SetBoolean(kPrefQualified, true);
+  local_prefs->SetQualified(true);
   PrefsCommitPendingWrites(local_prefs->GetPrefService());
   Shutdown(kErrorOk);
 }
 
-bool AppServer::SwapVersions(PrefService* global_prefs) {
-  global_prefs->SetBoolean(kPrefSwapping, true);
-  PrefsCommitPendingWrites(global_prefs);
+bool AppServer::SwapVersions(GlobalPrefs* global_prefs) {
+  global_prefs->SetSwapping(true);
+  PrefsCommitPendingWrites(global_prefs->GetPrefService());
   bool result = SwapRPCInterfaces();
   if (!result)
     return false;
-  global_prefs->SetString(kPrefActiveVersion, UPDATER_VERSION_STRING);
-  global_prefs->SetBoolean(kPrefSwapping, false);
-  PrefsCommitPendingWrites(global_prefs);
+  global_prefs->SetActiveVersion(UPDATER_VERSION_STRING);
+  global_prefs->SetSwapping(false);
+  PrefsCommitPendingWrites(global_prefs->GetPrefService());
   return true;
 }
 

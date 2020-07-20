@@ -320,10 +320,6 @@ class ProfileSyncService : public SyncService,
 
   void ClearUnrecoverableError();
 
-  // Initializes |backend_task_runner_| which is backed by |sync_thread_| or the
-  // ThreadPool depending on the ProfileSyncServiceUsesThreadPool experiment.
-  void InitializeBackendTaskRunnerIfNeeded();
-
   // Kicks off asynchronous initialization of the SyncEngine.
   void StartUpSlowEngineComponents();
 
@@ -385,11 +381,6 @@ class ProfileSyncService : public SyncService,
 
   // A utility object containing logic and state relating to encryption.
   SyncServiceCrypto crypto_;
-
-  // Owns the sync thread and takes care of its destruction.
-  // TODO(https://crbug.com/1014464): Remove once we have switched to
-  // Threadpool.
-  base::OnceClosure sync_thread_stopper_;
 
   // TODO(crbug.com/923287): Move out of this class. Possibly to SyncEngineImpl.
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;

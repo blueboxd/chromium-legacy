@@ -12,6 +12,7 @@ import sys
 import tempfile
 import zipfile
 
+import dex
 import dex_jdk_libs
 from util import build_utils
 from util import diff_utils
@@ -29,48 +30,6 @@ _API_LEVEL_VERSION_CODE = [
 ]
 _CHECKDISCARD_RE = re.compile(r'^\s*-checkdiscard[\s\S]*?}', re.MULTILINE)
 _DIRECTIVE_RE = re.compile(r'^\s*-', re.MULTILINE)
-
-
-class _ProguardOutputFilter(object):
-  """ProGuard outputs boring stuff to stdout (ProGuard version, jar path, etc)
-  as well as interesting stuff (notes, warnings, etc). If stdout is entirely
-  boring, this class suppresses the output.
-  """
-
-  IGNORE_RE = re.compile(
-      r'Pro.*version|Note:|Reading|Preparing|Printing|ProgramClass:|Searching|'
-      r'jar \[|\d+ class path entries checked')
-
-  def __init__(self):
-    self._last_line_ignored = False
-    self._ignore_next_line = False
-
-  def __call__(self, output):
-    ret = []
-    for line in output.splitlines(True):
-      if self._ignore_next_line:
-        self._ignore_next_line = False
-        continue
-
-      if '***BINARY RUN STATS***' in line:
-        self._last_line_ignored = True
-        self._ignore_next_line = True
-      elif not line.startswith(' '):
-        self._last_line_ignored = bool(self.IGNORE_RE.match(line))
-      elif 'You should check if you need to specify' in line:
-        self._last_line_ignored = True
-
-      if not self._last_line_ignored:
-        ret.append(line)
-    return ''.join(ret)
-
-
-class ProguardProcessError(build_utils.CalledProcessError):
-  """Wraps CalledProcessError and enables adding extra output to failures."""
-
-  def __init__(self, cpe, output):
-    super(ProguardProcessError, self).__init__(cpe.cwd, cpe.args,
-                                               cpe.output + output)
 
 
 def _ValidateAndFilterCheckDiscards(configs):
@@ -196,6 +155,9 @@ def _ParseOptions():
       action='append',
       dest='feature_names',
       help='The name of the feature module.')
+  parser.add_argument('--show-desugar-default-interface-warnings',
+                      action='store_true',
+                      help='Enable desugaring warnings.')
   parser.add_argument(
       '--stamp',
       help='File to touch upon success. Mutually exclusive with --output-path')
@@ -295,6 +257,16 @@ class _DexPathContext(object):
     shutil.move(tmp_jar_output, self._final_output_path)
 
 
+def _CreateStderrFilter(show_desugar_default_interface_warnings):
+  d8_filter = dex.CreateStderrFilter(show_desugar_default_interface_warnings)
+
+  def filter_stderr(output):
+    output = re.sub(r'.*_JAVA_OPTIONS.*\n?', '', output)
+    return d8_filter(output)
+
+  return filter_stderr
+
+
 def _OptimizeWithR8(options,
                     config_paths,
                     libraries,
@@ -380,19 +352,23 @@ def _OptimizeWithR8(options,
     cmd += sorted(extra_jars)
 
     env = os.environ.copy()
-    stderr_filter = lambda l: re.sub(r'.*_JAVA_OPTIONS.*\n?', '', l)
     env['_JAVA_OPTIONS'] = '-Dcom.android.tools.r8.allowTestProguardOptions=1'
     if options.disable_outlining:
       env['_JAVA_OPTIONS'] += ' -Dcom.android.tools.r8.disableOutlining=1'
 
     try:
-      build_utils.CheckOutput(
-          cmd, env=env, print_stdout=print_stdout, stderr_filter=stderr_filter)
+      stderr_filter = _CreateStderrFilter(
+          options.show_desugar_default_interface_warnings)
+      build_utils.CheckOutput(cmd,
+                              env=env,
+                              print_stdout=print_stdout,
+                              stderr_filter=stderr_filter)
     except build_utils.CalledProcessError as err:
-      debugging_link = ('R8 failed. Please see {}.'.format(
+      debugging_link = ('\n\nR8 failed. Please see {}.'.format(
           'https://chromium.googlesource.com/chromium/src/+/HEAD/build/'
           'android/docs/java_optimization.md#Debugging-common-failures\n'))
-      raise ProguardProcessError(err, debugging_link)
+      raise build_utils.CalledProcessError(err.cwd, err.args,
+                                           err.output + debugging_link)
 
     base_has_imported_lib = False
     if options.desugar_jdk_libs_json:

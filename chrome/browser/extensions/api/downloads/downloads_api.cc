@@ -1045,8 +1045,8 @@ ExtensionFunction::ResponseAction DownloadsDownloadFunction::Run() {
             "This feature cannot be disabled in settings, but disabling all "
             "extensions will prevent it."
           chrome_policy {
-            ExtensionInstallBlacklist {
-              ExtensionInstallBlacklist: {
+            ExtensionInstallBlocklist {
+              ExtensionInstallBlocklist: {
                 entries: '*'
               }
             }

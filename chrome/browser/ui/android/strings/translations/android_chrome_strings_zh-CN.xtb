@@ -357,6 +357,7 @@
 <translation id="3892148308691398805">复制文字</translation>
 <translation id="3894427358181296146">添加文件夹</translation>
 <translation id="3895926599014793903">强制启用缩放功能</translation>
+<translation id="3909763690984331376">安全检查<ph name="BEGIN_NEW" />新<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">正在从网络中查找最具价值的数据…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">合并我的数据</translation>
@@ -579,6 +580,7 @@
 <translation id="5686790454216892815">文件名过长</translation>
 <translation id="5694049548840660018">轻松访问主页</translation>
 <translation id="569536719314091526">通过“更多选项”按钮将此页面翻译成任何语言</translation>
+<translation id="5696597120588531049">Chrome 有助于保护您免受数据泄露、不安全网站等问题的影响</translation>
 <translation id="5697688514913266141">您的文件将会保存到<ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />。<ph name="BEGIN_LINK2" />修改<ph name="END_LINK2" />。</translation>
 <translation id="570347048394355941">切换至标签页</translation>
 <translation id="572328651809341494">最近打开的标签页</translation>
@@ -712,6 +714,7 @@
 <translation id="6656545060687952787">Chrome 需要拥有位置信息权限才能扫描设备。<ph name="BEGIN_LINK" />更新权限<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">密码</translation>
 <translation id="6659594942844771486">标签页</translation>
+<translation id="6663079968236414793">关联到所选文字</translation>
 <translation id="666573598175432848">已推出新版 Chrome。点按此元素即可转到 Play 商店。</translation>
 <translation id="666731172850799929">在 <ph name="APP_NAME" />中打开</translation>
 <translation id="666981079809192359">Chrome 隐私权声明</translation>

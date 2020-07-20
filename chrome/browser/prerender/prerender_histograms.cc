@@ -14,8 +14,8 @@
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/common/prerender_util.h"
 #include "components/google/core/common/google_util.h"
+#include "components/prerender/common/prerender_util.h"
 #include "net/http/http_cache.h"
 
 namespace prerender {

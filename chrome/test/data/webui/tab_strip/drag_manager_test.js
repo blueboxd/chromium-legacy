@@ -150,12 +150,15 @@ suite('DragManager', () => {
   test('DragStartSetsDragImage', () => {
     const draggedElement = delegate.children[0];
     const dragImage = draggedElement.getDragImage();
+    const dragImageCenter = draggedElement.getDragImageCenter();
 
     // Mock the dimensions and position of the element and the drag image.
     const draggedElementRect = {top: 20, left: 30, width: 200, height: 150};
     draggedElement.getBoundingClientRect = () => draggedElementRect;
     const dragImageRect = {top: 20, left: 30, width: 200, height: 150};
     dragImage.getBoundingClientRect = () => dragImageRect;
+    const dragImageCenterRect = {top: 25, left: 25, width: 100, height: 120};
+    dragImageCenter.getBoundingClientRect = () => dragImageCenterRect;
 
     const eventClientX = 100;
     const eventClientY = 50;
@@ -172,26 +175,40 @@ suite('DragManager', () => {
     assertEquals(
         mockDataTransfer.dragImageData.image, draggedElement.getDragImage());
 
-    const xDiffFromCenter =
-        eventClientX - draggedElementRect.left - draggedElementRect.width / 2;
-    const yDiffFromCenter =
-        eventClientY - draggedElementRect.top - draggedElementRect.height / 2;
+    const eventXPercentage =
+        (eventClientX - draggedElementRect.left) / draggedElementRect.width;
+    const eventYPercentage =
+        (eventClientY - draggedElementRect.top) / draggedElementRect.height;
 
+    // Offset should account for any margins or padding between the
+    // dragImageCenter and the dragImage.
+    let dragImageCenterLeftMargin =
+        dragImageCenterRect.left - dragImageRect.left;
+    let dragImageCenterTopMargin = dragImageCenterRect.top - dragImageRect.top;
     if (isChromeOS) {
-      assertEquals(
-          dragImageRect.width / 2 + xDiffFromCenter / 1.2,
-          mockDataTransfer.dragImageData.offsetX);
-      assertEquals(
-          dragImageRect.height / 2 + (yDiffFromCenter - 25) / 1.2,
-          mockDataTransfer.dragImageData.offsetY);
-    } else {
-      assertEquals(
-          dragImageRect.width / 2 + xDiffFromCenter,
-          mockDataTransfer.dragImageData.offsetX);
-      assertEquals(
-          dragImageRect.height / 2 + yDiffFromCenter,
-          mockDataTransfer.dragImageData.offsetY);
+      // Dimensions are scaled on ChromeOS so the margins and paddings are also
+      // scaled.
+      dragImageCenterLeftMargin *= 1.2;
+      dragImageCenterTopMargin *= 1.2;
     }
+
+    // Offset should map event's coordinates to within the dimensions of the
+    // dragImageCenter.
+    const eventXWithinDragImageCenter =
+        eventXPercentage * dragImageCenterRect.width;
+    const eventYWithinDragImageCenter =
+        eventYPercentage * dragImageCenterRect.height;
+
+    let expectedOffsetX =
+        dragImageCenterLeftMargin + eventXWithinDragImageCenter;
+    let expectedOffsetY =
+        dragImageCenterTopMargin + eventYWithinDragImageCenter;
+    if (isChromeOS) {
+      expectedOffsetY -= 25;
+    }
+
+    assertEquals(expectedOffsetX, mockDataTransfer.dragImageData.offsetX);
+    assertEquals(expectedOffsetY, mockDataTransfer.dragImageData.offsetY);
   });
 
   test('DragOverMovesTabs', async () => {

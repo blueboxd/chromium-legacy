@@ -510,9 +510,8 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
 
   void SetDeviceScaleFactor(float dsf) {
     RenderWidget* widget = main_widget();
-    WidgetMsg_UpdateVisualProperties msg(
-        widget->routing_id(), MakeVisualPropertiesWithDeviceScaleFactor(dsf));
-    widget->OnMessageReceived(msg);
+    widget->UpdateVisualProperties(
+        MakeVisualPropertiesWithDeviceScaleFactor(dsf));
 
     ASSERT_EQ(dsf, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
     ASSERT_EQ(dsf, widget->GetOriginalScreenInfo().device_scale_factor);

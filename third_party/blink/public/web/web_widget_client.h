@@ -72,6 +72,7 @@ struct ImeTextSpan;
 }
 
 namespace blink {
+struct VisualProperties;
 class WebDragData;
 class WebMouseEvent;
 class WebGestureEvent;
@@ -300,6 +301,10 @@ class WebWidgetClient {
 
   // Called to indicate a syntehtic event was queued.
   virtual void WillQueueSyntheticEvent(const WebCoalescedInputEvent& event) {}
+
+  // Apply the visual properties to the widget.
+  virtual void UpdateVisualProperties(
+      const VisualProperties& visual_properties) {}
 };
 
 }  // namespace blink

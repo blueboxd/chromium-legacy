@@ -23,13 +23,13 @@ export const TutorialLesson = Polymer({
 
     curriculums: {type: Array},
 
-    testAreaTitle: {type: String},
+    practiceTitle: {type: String},
 
-    testAreaInstructions: {type: String},
+    practiceInstructions: {type: String},
 
-    testAreaFile: {type: String},
+    practiceFile: {type: String},
 
-    testAreaState: {type: Object},
+    practiceState: {type: Object},
 
     events: {type: Array},
 
@@ -43,16 +43,16 @@ export const TutorialLesson = Polymer({
 
     // Observed properties.
 
-    activeLessonNum: {type: Number, observer: '_setVisibility'},
+    activeLessonNum: {type: Number, observer: 'setVisibility'},
   },
 
   /** @override */
   ready() {
-    if (this.testAreaFile) {
-      this.populateTestArea_();
+    if (this.practiceFile) {
+      this.populatePracticeContent();
       for (const evt of this.events) {
-        this.$.testArea.addEventListener(
-            evt, this.onTestAreaEvent.bind(this), true);
+        this.$.practiceContent.addEventListener(
+            evt, this.onPracticeEvent.bind(this), true);
       }
     }
   },
@@ -60,8 +60,9 @@ export const TutorialLesson = Polymer({
   /**
    * Updates this lessons visibility whenever the active lesson of the tutorial
    * changes.
+   * @private
    */
-  _setVisibility() {
+  setVisibility() {
     if (this.lessonNum === this.activeLessonNum) {
       this.show();
     } else {
@@ -69,63 +70,70 @@ export const TutorialLesson = Polymer({
     }
   },
 
+  /** @private */
   show() {
-    this.$.lessonContainer.hidden = false;
-    this.$.lessonTitle.focus();
+    this.$.container.hidden = false;
+    this.$.title.focus();
   },
 
+  /** @private */
   hide() {
-    this.$.lessonContainer.hidden = true;
+    this.$.container.hidden = true;
   },
 
 
-  // Methods for managing the test area.
+  // Methods for managing the practice area.
 
 
   /**
-   * Asynchronously populates test area.
+   * Asynchronously populates practice area.
    * @private
    */
-  populateTestArea_() {
-    const path = '../i_tutorial/lessons/' + this.testAreaFile + '.html';
+  populatePracticeContent() {
+    const path = '../i_tutorial/lessons/' + this.practiceFile + '.html';
     const xhr = new XMLHttpRequest();
     xhr.open('GET', path, true);
     xhr.onload = (evt) => {
       if (xhr.readyState === 4 && xhr.status === 200) {
-        this.$.testArea.innerHTML = xhr.responseText;
+        this.$.practiceContent.innerHTML = xhr.responseText;
       } else {
         console.error(xhr.statusText);
       }
     };
     xhr.onerror = function(evt) {
-      console.error('Failed to open test area file: ' + path);
+      console.error('Failed to open practice file: ' + path);
       console.error(xhr.statusText);
     };
     xhr.send(null);
   },
 
-  showTestArea() {
-    this.$.testAreaContainer.showModal();
+  /** @private */
+  startPractice() {
+    this.$.practice.showModal();
     this.startHints();
   },
 
-  closeTestArea() {
+  /** @private */
+  endPractice() {
     this.stopHints();
-    this.$.showTestArea.focus();
+    this.$.startPractice.focus();
   },
 
 
-  // Methods for tracking the state of the test area.
+  // Methods for tracking the state of the practice area.
 
 
-  /** @param {Event} event */
-  onTestAreaEvent(event) {
+  /**
+   * @param {Event} event
+   * @private
+   */
+  onPracticeEvent(event) {
     const elt = event.target.id;
     const type = event.type;
     // Maybe update goal state.
-    if (elt in this.testAreaState) {
-      if (type in this.testAreaState[elt]) {
-        this.testAreaState[elt][type] = true;
+    if (elt in this.practiceState) {
+      if (type in this.practiceState[elt]) {
+        this.practiceState[elt][type] = true;
       }
     }
 
@@ -134,13 +142,16 @@ export const TutorialLesson = Polymer({
     }
   },
 
-  /** @return {boolean} */
+  /**
+   * @return {boolean}
+   * @private
+   */
   isGoalStateReached() {
     if (this.goalStateReached === true) {
       return true;
     }
 
-    for (const [elt, state] of Object.entries(this.testAreaState)) {
+    for (const [elt, state] of Object.entries(this.practiceState)) {
       for (const [evt, performed] of Object.entries(state)) {
         if (performed == false) {
           return false;
@@ -150,6 +161,7 @@ export const TutorialLesson = Polymer({
     return true;
   },
 
+  /** @private */
   onGoalStateReached() {
     const previousState = this.goalStateReached;
     this.goalStateReached = true;
@@ -157,15 +169,15 @@ export const TutorialLesson = Polymer({
       // Only perform when crossing the threshold from not reached to reached.
       this.stopHints();
       this.requestSpeech(
-          'You have passed this tutorial lesson. Find and press the close ' +
-          'test area button to continue');
+          'You have passed this tutorial lesson. Find and press the exit ' +
+          'practice area button to continue');
     }
   },
 
 
   // Methods for managing hints.
 
-
+  /** @private */
   startHints() {
     this.hintCounter = 0;
     this.hintIntervalId = setInterval(() => {
@@ -175,9 +187,10 @@ export const TutorialLesson = Polymer({
       }
       this.requestSpeech(this.hints[this.hintCounter]);
       this.hintCounter += 1;
-    }, 20000);
+    }, 20 * 1000);
   },
 
+  /** @private */
   stopHints() {
     if (this.hintIntervalId) {
       clearInterval(this.hintIntervalId);
@@ -203,15 +216,19 @@ export const TutorialLesson = Polymer({
   /**
    * Requests speech from the Panel.
    * @param {string} text
+   * @private
    */
   requestSpeech(text) {
     this.dispatchEvent(
         new CustomEvent('request-speech', {composed: true, detail: {text}}));
   },
 
-  /** @return {boolean} */
-  shouldHideTestAreaButton_() {
-    if (!this.testAreaFile) {
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldHidePracticeButton() {
+    if (!this.practiceFile) {
       return true;
     }
 

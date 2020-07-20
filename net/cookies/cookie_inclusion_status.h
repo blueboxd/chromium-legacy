@@ -184,6 +184,10 @@ class NET_EXPORT CookieInclusionStatus {
   // Whether the given reason for exclusion is present.
   bool HasExclusionReason(ExclusionReason status_type) const;
 
+  // Whether the given reason for exclusion is present, and is the ONLY reason
+  // for exclusion.
+  bool HasOnlyExclusionReason(ExclusionReason status_type) const;
+
   // Add an exclusion reason.
   void AddExclusionReason(ExclusionReason status_type);
 

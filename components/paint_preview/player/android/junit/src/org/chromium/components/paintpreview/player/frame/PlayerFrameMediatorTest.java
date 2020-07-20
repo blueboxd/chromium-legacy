@@ -15,6 +15,7 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.os.Parcel;
 import android.util.Pair;
+import android.util.Size;
 import android.view.View;
 import android.widget.OverScroller;
 
@@ -62,9 +63,10 @@ public class PlayerFrameMediatorTest {
     private OverScroller mScroller;
     private boolean mHasUserInteraction;
     private PlayerGestureListener mGestureListener;
-    private PlayerFrameViewport mViewport;
     private PlayerFrameMediator mMediator;
     private PlayerFrameBitmapStateController mBitmapStateController;
+    private PlayerFrameScrollController mScrollController;
+    private PlayerFrameScaleController mScaleController;
 
     /**
      * Generate an UnguessableToken with a static value.
@@ -207,9 +209,14 @@ public class PlayerFrameMediatorTest {
         mCompositorDelegate = new TestPlayerCompositorDelegate();
         mScroller = new OverScroller(ContextUtils.getApplicationContext());
         mGestureListener = new PlayerGestureListener(null, () -> mHasUserInteraction = true);
-        mViewport = new PlayerFrameViewport();
-        mMediator = new PlayerFrameMediator(mModel, mCompositorDelegate, mViewport, mScroller,
-                mGestureListener, mFrameGuid, CONTENT_WIDTH, CONTENT_HEIGHT, 0, 0);
+        Size contentSize = new Size(CONTENT_WIDTH, CONTENT_HEIGHT);
+        mMediator = new PlayerFrameMediator(
+                mModel, mCompositorDelegate, mGestureListener, mFrameGuid, contentSize, 0, 0);
+        mScaleController =
+                new PlayerFrameScaleController(mModel.get(PlayerFrameProperties.SCALE_MATRIX),
+                        mMediator, mGestureListener::onScale);
+        mScrollController = new PlayerFrameScrollController(
+                mScroller, mMediator, mGestureListener::onScroll, mGestureListener::onFling);
         mBitmapStateController = mMediator.getBitmapStateControllerForTest();
     }
 
@@ -305,7 +312,7 @@ public class PlayerFrameMediatorTest {
                 new RequestedBitmap(mFrameGuid, getRectForTile(100, 200, 0, 1), 1f));
         Assert.assertEquals(expectedRequestedBitmaps, mCompositorDelegate.mRequestedBitmap);
 
-        mMediator.scrollBy(10, 20);
+        mScrollController.scrollBy(10, 20);
         // The view port was moved with the #updateViewport call. It should've been updated in the
         // model.
         Rect expectedViewPort = new Rect(10, 20, 110, 220);
@@ -343,7 +350,7 @@ public class PlayerFrameMediatorTest {
         // Move the view port slightly. It is still covered by the same 4 tiles. Since there were
         // already bitmap requests out for those tiles and their adjacent tiles, we shouldn't have
         // made new requests.
-        mMediator.scrollBy(10, 20);
+        mScrollController.scrollBy(10, 20);
         Assert.assertEquals(expectedRequestedBitmaps, mCompositorDelegate.mRequestedBitmap);
 
         // Move the view port to the bottom right so it covers portions of the 4 bottom right bitmap
@@ -362,7 +369,7 @@ public class PlayerFrameMediatorTest {
         // |   |   |   | 6 | 1 | 3 |
         // -------------------------
         // |   |   |   | 7 | 2 | 4 |
-        mMediator.scrollBy(430, 900);
+        mScrollController.scrollBy(430, 900);
         expectedViewPort.set(450, 940, 550, 1140);
         Assert.assertEquals(expectedViewPort, mModel.get(PlayerFrameProperties.VIEWPORT));
 
@@ -418,7 +425,7 @@ public class PlayerFrameMediatorTest {
         Assert.assertTrue(Arrays.deepEquals(
                 expectedRequiredBitmaps, getVisibleBitmapState().getRequiredBitmapsForTest()));
 
-        mMediator.scrollBy(10, 15);
+        mScrollController.scrollBy(10, 15);
         // The current viewport covers portions of the 4 top left bitmap tiles.
         // -------------------------
         // | x | x | x |   |   |   |
@@ -440,7 +447,7 @@ public class PlayerFrameMediatorTest {
         Assert.assertTrue(Arrays.deepEquals(
                 expectedRequiredBitmaps, getVisibleBitmapState().getRequiredBitmapsForTest()));
 
-        mMediator.scrollBy(200, 400);
+        mScrollController.scrollBy(200, 400);
         // The current view port contains portions of the middle 4 tiles.
         // Tiles marked with x are required for the current view port.
         // -------------------------
@@ -474,7 +481,7 @@ public class PlayerFrameMediatorTest {
         Assert.assertTrue(Arrays.deepEquals(
                 expectedRequiredBitmaps, getVisibleBitmapState().getRequiredBitmapsForTest()));
 
-        mMediator.scrollBy(200, 400);
+        mScrollController.scrollBy(200, 400);
         // The current view port contains portions of the 4 bottom right tiles.
         // Tiles marked with x are required for the current view port.
         // -------------------------
@@ -543,7 +550,7 @@ public class PlayerFrameMediatorTest {
                 expectedBitmapMatrix, mModel.get(PlayerFrameProperties.BITMAP_MATRIX)));
 
         // Move the viewport to an area that is covered by 4 top left tiles.
-        mMediator.scrollBy(10, 10);
+        mScrollController.scrollBy(10, 10);
 
         // Scroll should've triggered bitmap requests for an the 4th new tile as well as adjacent
         // tiles. See comments on {@link #testBitmapRequest} for details on which tiles will be
@@ -568,7 +575,7 @@ public class PlayerFrameMediatorTest {
         // Move the view port while staying within the 4 bitmap tiles in order to trigger the
         // request logic again. Make sure only one new request is added, for the tile with a
         // compositing failure.
-        mMediator.scrollBy(10, 10);
+        mScrollController.scrollBy(10, 10);
         Assert.assertEquals(9, mCompositorDelegate.mRequestedBitmap.size());
         Assert.assertEquals(new RequestedBitmap(mFrameGuid, getRectForTile(150, 200, 2, 0), 1f),
                 mCompositorDelegate.mRequestedBitmap.get(
@@ -587,7 +594,7 @@ public class PlayerFrameMediatorTest {
 
         // Scroll right and down by a within bounds amount. Both scroll directions should be
         // effective.
-        Assert.assertTrue(mMediator.scrollBy(250f, 80f));
+        Assert.assertTrue(mScrollController.scrollBy(250f, 80f));
         expectedViewPort.offset(250, 80);
         Assert.assertEquals(expectedViewPort, mModel.get(PlayerFrameProperties.VIEWPORT));
     }
@@ -633,7 +640,7 @@ public class PlayerFrameMediatorTest {
         Assert.assertEquals(expectedVisibility,
                 getVisibilities(mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS)));
 
-        mMediator.scrollBy(100, 0);
+        mScrollController.scrollBy(100, 0);
         expectedRects.set(0, new Rect(0, 0, 0, 0));
         expectedRects.set(1, new Rect(0, 0, 0, 0));
         expectedRects.set(2, new Rect(20, 35, 50, 65));
@@ -646,7 +653,7 @@ public class PlayerFrameMediatorTest {
         Assert.assertEquals(expectedVisibility,
                 getVisibilities(mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS)));
 
-        mMediator.scrollBy(-50, 0);
+        mScrollController.scrollBy(-50, 0);
         expectedRects.clear();
         expectedRects.add(new Rect(-40, 20, 10, 120));
         expectedRects.add(new Rect(-20, 130, 20, 160));
@@ -660,7 +667,7 @@ public class PlayerFrameMediatorTest {
         Assert.assertEquals(expectedVisibility,
                 getVisibilities(mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS)));
 
-        mMediator.scrollBy(0, 200);
+        mScrollController.scrollBy(0, 200);
         expectedRects.clear();
         expectedRects.add(new Rect(0, 0, 0, 0));
         expectedRects.add(new Rect(0, 0, 0, 0));
@@ -685,7 +692,7 @@ public class PlayerFrameMediatorTest {
         mMediator.updateViewportSize(100, 200, 1f);
         Rect expectedViewPort = new Rect(0, 0, 100, 200);
 
-        mMediator.onFling(100, 0);
+        mScrollController.onFling(100, 0);
         expectedViewPort.offsetTo(mScroller.getFinalX(), mScroller.getFinalY());
         ShadowLooper.runUiThreadTasks();
         Assert.assertTrue(mScroller.isFinished());
@@ -709,12 +716,12 @@ public class PlayerFrameMediatorTest {
 
         // Scroll, and then click. The call to {@link PlayerFrameMediator} must account for the
         // scroll offset.
-        mMediator.scrollBy(90, 100);
+        mScrollController.scrollBy(90, 100);
         mMediator.onTap(70, 50);
         expectedClickedPoints.add(new ClickedPoint(mFrameGuid, 160, 150));
         Assert.assertEquals(expectedClickedPoints, mCompositorDelegate.mClickedPoints);
 
-        mMediator.scrollBy(-40, -60);
+        mScrollController.scrollBy(-40, -60);
         mMediator.onTap(30, 80);
         expectedClickedPoints.add(new ClickedPoint(mFrameGuid, 80, 120));
         Assert.assertEquals(expectedClickedPoints, mCompositorDelegate.mClickedPoints);
@@ -756,8 +763,8 @@ public class PlayerFrameMediatorTest {
 
         // Now a scale factor of 2 will be applied. This will happen at a focal point of 0, 0.
         // The same bitmaps will be required but the grid will be double the size.
-        Assert.assertTrue(mMediator.scaleBy(2f, 0, 0));
-        Assert.assertTrue(mMediator.scaleFinished(1f, 0, 0));
+        Assert.assertTrue(mScaleController.scaleBy(2f, 0, 0));
+        Assert.assertTrue(mScaleController.scaleFinished(1f, 0, 0));
         mBitmapStateController.swapForTest();
 
         expectedRequiredBitmaps = new boolean[12][12];
@@ -768,8 +775,8 @@ public class PlayerFrameMediatorTest {
                 expectedRequiredBitmaps, getVisibleBitmapState().getRequiredBitmapsForTest()));
 
         // Reduce the scale factor by 0.5 returning to a scale of 1.
-        Assert.assertTrue(mMediator.scaleBy(0.5f, 0, 0));
-        Assert.assertTrue(mMediator.scaleFinished(1f, 0, 0));
+        Assert.assertTrue(mScaleController.scaleBy(0.5f, 0, 0));
+        Assert.assertTrue(mScaleController.scaleFinished(1f, 0, 0));
         mBitmapStateController.swapForTest();
 
         expectedRequiredBitmaps = new boolean[6][6];
@@ -818,7 +825,7 @@ public class PlayerFrameMediatorTest {
                 new RequestedBitmap(mFrameGuid, getRectForTile(100, 200, 0, 1), 1f));
 
         // Both matricies should be identity to start.
-        assertViewportStateIs(1f, 0f, 0f, mViewport);
+        assertViewportStateIs(1f, 0f, 0f, mMediator.getViewport());
         Assert.assertTrue(mModel.get(PlayerFrameProperties.SCALE_MATRIX).isIdentity());
         // Ensure the correct bitmaps are required and requested.
         Assert.assertTrue(Arrays.deepEquals(
@@ -826,7 +833,7 @@ public class PlayerFrameMediatorTest {
         Assert.assertEquals(expectedRequestedBitmaps, mCompositorDelegate.mRequestedBitmap);
 
         // STEP 2: Scroll slightly.
-        mMediator.scrollBy(10, 15);
+        mScrollController.scrollBy(10, 15);
         // The current viewport covers portions of the 4 top left bitmap tiles.
         // -------------------------
         // | x | x | x |   |   |   |
@@ -868,18 +875,18 @@ public class PlayerFrameMediatorTest {
         expectedViewportMatrixValues[Matrix.MTRANS_Y] = 15;
         expectedViewportMatrix.setValues(expectedViewportMatrixValues);
 
-        assertViewportStateIs(expectedViewportMatrix, mViewport);
+        assertViewportStateIs(expectedViewportMatrix, mMediator.getViewport());
         Assert.assertTrue(mModel.get(PlayerFrameProperties.SCALE_MATRIX).isIdentity());
 
         // STEP 3: Now a scale factor of 2 will be applied. This will happen at a focal point of 50,
         // 100.
-        Assert.assertTrue(mMediator.scaleBy(2f, 50f, 100f));
+        Assert.assertTrue(mScaleController.scaleBy(2f, 50f, 100f));
 
         // Before the scaling commits both matricies should update.
         expectedViewportMatrix.postScale(2f, 2f, -50f, -100f);
         Matrix expectedBitmapMatrix = new Matrix();
         expectedBitmapMatrix.postScale(2f, 2f, 50f, 100f);
-        assertViewportStateIs(expectedViewportMatrix, mViewport);
+        assertViewportStateIs(expectedViewportMatrix, mMediator.getViewport());
         Assert.assertEquals(expectedBitmapMatrix, mModel.get(PlayerFrameProperties.SCALE_MATRIX));
 
         // Bitmaps should be the same as before scaling until scaling is finished.
@@ -887,7 +894,7 @@ public class PlayerFrameMediatorTest {
         mCompositorDelegate.mRequestedBitmap.clear();
         expectedRequestedBitmaps.clear();
 
-        Assert.assertTrue(mMediator.scaleFinished(1f, 0, 0));
+        Assert.assertTrue(mScaleController.scaleFinished(1f, 0, 0));
         mBitmapStateController.swapForTest();
 
         expectedRequiredBitmaps = new boolean[12][12];
@@ -926,12 +933,12 @@ public class PlayerFrameMediatorTest {
 
         // STEP4: Now a scale factor of 0.5 will be applied. This will happen at a focal point of
         // 50, 100.
-        Assert.assertTrue(mMediator.scaleBy(0.5f, 50f, 100f));
+        Assert.assertTrue(mScaleController.scaleBy(0.5f, 50f, 100f));
 
         // Ensure the matricies are correct mid-scale.
         expectedViewportMatrix.postScale(0.5f, 0.5f, -50f, -100f);
         expectedBitmapMatrix.postScale(0.5f, 0.5f, 50f, 100f);
-        assertViewportStateIs(expectedViewportMatrix, mViewport);
+        assertViewportStateIs(expectedViewportMatrix, mMediator.getViewport());
         Assert.assertEquals(expectedBitmapMatrix, mModel.get(PlayerFrameProperties.SCALE_MATRIX));
 
         // Bitmaps should be the same as before scaling until scaling is finished.
@@ -939,7 +946,7 @@ public class PlayerFrameMediatorTest {
         mCompositorDelegate.mRequestedBitmap.clear();
         expectedRequestedBitmaps.clear();
 
-        Assert.assertTrue(mMediator.scaleFinished(1f, 0, 0));
+        Assert.assertTrue(mScaleController.scaleFinished(1f, 0, 0));
         mBitmapStateController.swapForTest();
 
         expectedRequiredBitmaps = new boolean[6][6];
@@ -989,18 +996,18 @@ public class PlayerFrameMediatorTest {
         // |   |   |   |   |   |   |
         // -------------------------
         // |   |   |   |   |   |   |
-        Assert.assertTrue(mMediator.scaleBy(2f, 100f, 200f));
+        Assert.assertTrue(mScaleController.scaleBy(2f, 100f, 200f));
 
         expectedViewportMatrix.postScale(2f, 2f, -100f, -200f);
         expectedBitmapMatrix.postScale(2f, 2f, 100f, 200f);
-        assertViewportStateIs(expectedViewportMatrix, mViewport);
+        assertViewportStateIs(expectedViewportMatrix, mMediator.getViewport());
         Assert.assertEquals(expectedBitmapMatrix, mModel.get(PlayerFrameProperties.SCALE_MATRIX));
 
         Assert.assertEquals(expectedRequestedBitmaps, mCompositorDelegate.mRequestedBitmap);
         mCompositorDelegate.mRequestedBitmap.clear();
         expectedRequestedBitmaps.clear();
 
-        Assert.assertTrue(mMediator.scaleFinished(1f, 0, 0));
+        Assert.assertTrue(mScaleController.scaleFinished(1f, 0, 0));
         mBitmapStateController.swapForTest();
 
         expectedRequiredBitmaps = new boolean[12][12];
@@ -1090,7 +1097,7 @@ public class PlayerFrameMediatorTest {
         expectedVisibility.set(1, false);
 
         // During scaling the second subframe should disappear from the viewport.
-        Assert.assertTrue(mMediator.scaleBy(2f, 0f, 0f));
+        Assert.assertTrue(mScaleController.scaleBy(2f, 0f, 0f));
         Assert.assertEquals(expectedViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
         Assert.assertEquals(expectedRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
         Assert.assertEquals(expectedVisibility,
@@ -1100,7 +1107,7 @@ public class PlayerFrameMediatorTest {
         inOrderMediator1.verify(subFrame1Mediator)
                 .setBitmapScaleMatrixOfSubframe(argThat(new MatrixMatcher(expectedMatrix)), eq(2f));
 
-        Assert.assertTrue(mMediator.scaleFinished(1f, 0f, 0f));
+        Assert.assertTrue(mScaleController.scaleFinished(1f, 0f, 0f));
         mBitmapStateController.swapForTest();
         inOrderMediator1.verify(subFrame1Mediator).resetScaleFactor();
         inOrderMediator1.verify(subFrame1Mediator).forceRedraw();
@@ -1113,7 +1120,7 @@ public class PlayerFrameMediatorTest {
                 .setBitmapScaleMatrixOfSubframe(argThat(new MatrixMatcher(expectedMatrix)), eq(1f));
 
         // Scroll so the second subframe is back in the viewport..
-        mMediator.scrollBy(20, 40);
+        mScrollController.scrollBy(20, 40);
         expectedRects.clear();
         expectedRects.add(new Rect(0, 0, 100, 40));
         expectedRects.add(new Rect(40, 60, 120, 280));
@@ -1126,7 +1133,7 @@ public class PlayerFrameMediatorTest {
                 getVisibilities(mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS)));
 
         // Scale out keeping the subframes in the viewport..
-        Assert.assertTrue(mMediator.scaleBy(0.75f, 25f, 50f));
+        Assert.assertTrue(mScaleController.scaleBy(0.75f, 25f, 50f));
         expectedRects.clear();
         expectedRects.add(new Rect(6, 12, 81, 42));
         expectedRects.add(new Rect(36, 57, 96, 222));
@@ -1210,15 +1217,32 @@ public class PlayerFrameMediatorTest {
 
         Assert.assertFalse(
                 "User interaction callback shouldn't have been called", mHasUserInteraction);
-        mMediator.scrollBy(0, 10);
+        mScrollController.scrollBy(0, 10);
         Assert.assertTrue("User interaction callback should have been called", mHasUserInteraction);
 
         mHasUserInteraction = false;
-        mMediator.onFling(0, 10);
+        mScrollController.onFling(0, 10);
         Assert.assertTrue("User interaction callback should have been called", mHasUserInteraction);
 
         mHasUserInteraction = false;
-        mMediator.scaleBy(1.5f, 20, 30);
+        mScaleController.scaleBy(1.5f, 20, 30);
         Assert.assertTrue("User interaction callback should have been called", mHasUserInteraction);
+    }
+
+    /**
+     * Tests that bitmap matrix is offset correctly.
+     */
+    @Test
+    public void testOffsetBitmapScaleMatrix() {
+        Matrix bitmapScaleMatrix = mModel.get(PlayerFrameProperties.SCALE_MATRIX);
+        Matrix expectedBitmapScaleMatrix = new Matrix();
+        mMediator.offsetBitmapScaleMatrix(5f, 10f); // Should no-op.
+        Assert.assertEquals(expectedBitmapScaleMatrix, bitmapScaleMatrix);
+
+        bitmapScaleMatrix.postScale(2f, 2f);
+        mMediator.offsetBitmapScaleMatrix(5f, 10f);
+        expectedBitmapScaleMatrix.postScale(2f, 2f);
+        expectedBitmapScaleMatrix.postTranslate(-5f, -10f);
+        Assert.assertEquals(expectedBitmapScaleMatrix, bitmapScaleMatrix);
     }
 }

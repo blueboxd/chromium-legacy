@@ -105,6 +105,9 @@ class ServiceConnectionImpl : public ServiceConnection {
       const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
       mojom::CrosHealthdProbeService::ProbeTelemetryInfoCallback callback)
       override;
+  void ProbeProcessInfo(pid_t process_id,
+                        mojom::CrosHealthdProbeService::ProbeProcessInfoCallback
+                            callback) override;
   void GetDiagnosticsService(
       mojom::CrosHealthdDiagnosticsServiceRequest service) override;
   void GetProbeService(mojom::CrosHealthdProbeServiceRequest service) override;
@@ -328,6 +331,16 @@ void ServiceConnectionImpl::ProbeTelemetryInfo(
   BindCrosHealthdProbeServiceIfNeeded();
   cros_healthd_probe_service_->ProbeTelemetryInfo(categories_to_test,
                                                   std::move(callback));
+}
+
+void ServiceConnectionImpl::ProbeProcessInfo(
+    pid_t process_id,
+    mojom::CrosHealthdProbeService::ProbeProcessInfoCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(process_id > 0);
+  BindCrosHealthdProbeServiceIfNeeded();
+  cros_healthd_probe_service_->ProbeProcessInfo(
+      static_cast<uint32_t>(process_id), std::move(callback));
 }
 
 void ServiceConnectionImpl::GetDiagnosticsService(

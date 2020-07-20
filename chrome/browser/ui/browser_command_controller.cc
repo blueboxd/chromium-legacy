@@ -50,7 +50,6 @@
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
-#include "components/feature_engagement/buildflags.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -85,13 +84,6 @@
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"  // nogncheck
-#endif
-
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-#include "chrome/browser/feature_engagement/bookmark/bookmark_tracker.h"
-#include "chrome/browser/feature_engagement/bookmark/bookmark_tracker_factory.h"
-#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
-#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
 #endif
 
 #if defined(USE_OZONE)
@@ -401,16 +393,6 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       break;
     case IDC_NEW_TAB: {
       NewTab(browser_);
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-      // This is not in NewTab() to avoid tracking programmatic creation of new
-      // tabs by extensions.
-      auto* new_tab_tracker =
-          feature_engagement::NewTabTrackerFactory::GetInstance()
-              ->GetForProfile(profile());
-
-      new_tab_tracker->OnNewTabOpened();
-      new_tab_tracker->CloseBubble();
-#endif
       break;
     }
     case IDC_CLOSE_TAB:
@@ -516,19 +498,9 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       SavePage(browser_);
       break;
     case IDC_BOOKMARK_THIS_TAB:
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-      feature_engagement::BookmarkTrackerFactory::GetInstance()
-          ->GetForProfile(profile())
-          ->OnBookmarkAdded();
-#endif
       BookmarkCurrentTab(browser_);
       break;
     case IDC_BOOKMARK_ALL_TABS:
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-      feature_engagement::BookmarkTrackerFactory::GetInstance()
-          ->GetForProfile(profile())
-          ->OnBookmarkAdded();
-#endif
       BookmarkAllTabs(browser_);
       break;
     case IDC_VIEW_SOURCE:

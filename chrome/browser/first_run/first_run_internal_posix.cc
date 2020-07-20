@@ -113,7 +113,7 @@ bool IsFirstRunSentinelPresent() {
   return !GetFirstRunSentinelFilePath(&sentinel) || base::PathExists(sentinel);
 }
 
-bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
+bool ShowPostInstallEULAIfNeeded(installer::InitialPreferences* install_prefs) {
   // The EULA is only handled on Windows.
   return true;
 }

@@ -450,6 +450,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="2824775600643448204">Adreso ir paieškos juosta</translation>
 <translation id="2826760142808435982">Ryšys užšifruotas ir tapatybė nustatyta naudojant <ph name="CIPHER" />. <ph name="KX" /> naudojamas kaip pagrindinis mainų mechanizmas.</translation>
 <translation id="2835170189407361413">Valyti formą</translation>
+<translation id="2839501879576190149">Ketinate apsilankyti netikroje svetainėje</translation>
 <translation id="2847118875340931228">Atidaryti inkognito langą</translation>
 <translation id="2850739647070081192">„Invite“ (vokas)</translation>
 <translation id="2856444702002559011">Užpuolikai gali bandyti pavogti jūsų informaciją iš <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (pvz., slaptažodžius, pranešimus ar kredito kortelių duomenis). <ph name="BEGIN_LEARN_MORE_LINK" />Sužinokite daugiau<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -811,6 +812,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="42981349822642051">Išskleisti</translation>
 <translation id="4300675098767811073">Kelios skylės dešinėje</translation>
 <translation id="4302965934281694568">„Chou3“ (vokas)</translation>
+<translation id="4305666528087210886">Nepavyko pasiekti failo</translation>
 <translation id="4305817255990598646">Perjungti</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Užblokuoti (numatytoji parinktis)</translation>
@@ -829,6 +831,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="4358461427845829800">Tvarkyti mokėjimo metodus...</translation>
 <translation id="4359160567981085931">Ką tik savo slaptažodį įvedėte apgaulingoje svetainėje. „Chrome“ gali padėti. Norėdami pakeisti slaptažodį ir pranešti „Google“, kad jūsų paskyrai gali grėsti pavojus, spustelėkite „Apsaugoti paskyrą“.</translation>
 <translation id="4367563149485757821">„Number-12“ (vokas)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Dėl duomenų saugos pažeidimo svetainėje ar programoje buvo atskleistas jūsų <ph name="ORIGIN" /> slaptažodis. „Chrome“ rekomenduoja dabar pakeisti <ph name="ORIGIN" /> slaptažodį.}=1{Dėl duomenų saugos pažeidimo svetainėje ar programoje buvo atskleisti jūsų <ph name="ORIGIN" /> ir dar vienos svetainės slaptažodžiai. „Chrome“ rekomenduoja dabar patikrinti išsaugotus slaptažodžius.}one{Dėl duomenų saugos pažeidimo svetainėje ar programoje buvo atskleisti jūsų <ph name="ORIGIN" /> ir dar <ph name="SITES_COUNT" /> svetainės slaptažodžiai. „Chrome“ rekomenduoja dabar patikrinti išsaugotus slaptažodžius.}few{Dėl duomenų saugos pažeidimo svetainėje ar programoje buvo atskleisti jūsų <ph name="ORIGIN" /> ir dar <ph name="SITES_COUNT" /> svetainių slaptažodžiai. „Chrome“ rekomenduoja dabar patikrinti išsaugotus slaptažodžius.}many{Dėl duomenų saugos pažeidimo svetainėje ar programoje buvo atskleisti jūsų <ph name="ORIGIN" /> ir dar <ph name="SITES_COUNT" /> svetainės slaptažodžiai. „Chrome“ rekomenduoja dabar patikrinti išsaugotus slaptažodžius.}other{Dėl duomenų saugos pažeidimo svetainėje ar programoje buvo atskleisti jūsų <ph name="ORIGIN" /> ir dar <ph name="SITES_COUNT" /> svetainių slaptažodžiai. „Chrome“ rekomenduoja dabar patikrinti išsaugotus slaptažodžius.}}</translation>
 <translation id="437058704415269440">Sąskaitos balansas</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Numatyta „<ph name="VALUE_TYPE" />“ vertė.</translation>
@@ -1299,6 +1302,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Galimi apmokestinimai.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{Dar 1 pasiūlymas}one{Dar # pasiūlymas}few{Dar # pasiūlymai}many{Dar # pasiūlymo}other{Dar # pasiūlymų}}</translation>
+<translation id="6387645831795005740">Atakos vykdytojai kartais sukuria svetainių kopijas ir atlieka nedidelių, sunkiai pastebimų URL pakeitimų.</translation>
 <translation id="6389470377220713856">Vardas kortel.</translation>
 <translation id="6390200185239044127">Z formos perlenkimas pusiau</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1512,6 +1516,7 @@ Papildoma išsami informacija:
 <translation id="7372973238305370288">paieškos rezultatas</translation>
 <translation id="7374733840632556089">Ši problema kyla dėl sertifikato, kurį jūs ar kitas asmuo įdiegėte įrenginyje. Žinoma, kad sertifikatas naudojamas tinklams stebėti ir nuskaityti ir nėra patikimas sistemoje „Chrome“. Kai kurie stebėjimo atvejai yra teisėti, pvz., mokyklos ar įmonės tinkle, bet „Chrome“ nori būti tikra, kad apie stebėjimą būsite informuoti, net jei jo nutraukti negalite. Stebėjimas galimas bet kurioje naršyklėje ar programoje, iš kurių pasiekiamas žiniatinklis.</translation>
 <translation id="7375818412732305729">Pridėtas failas</translation>
+<translation id="7376551888419889433">Kai saugos įvykius pažymi „Chrome Enterprise Connectors“, atitinkami įvykių duomenys išsiunčiami administratoriui. Tai gali būti naršyklėje „Chrome“ lankomų puslapių URL, failų pavadinimai ar metaduomenys ir naudotojo vardas, kurį naudodami prisijungiate prie įrenginio ir „Chrome“.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Medijos valdikliai</translation>
 <translation id="7378627244592794276">Ne</translation>
@@ -1909,6 +1914,7 @@ Papildoma išsami informacija:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Bandėte pasiekti <ph name="DOMAIN" />, bet serveris pateikė neteisingą sertifikatą.</translation>
 <translation id="9050666287014529139">Slaptafrazė</translation>
+<translation id="9062620674789239642">Galbūt jis buvo perkeltas, redaguotas ar ištrintas.</translation>
 <translation id="9065203028668620118">Redaguoti</translation>
 <translation id="9065745800631924235">„<ph name="TEXT" />“ paieška istorijoje</translation>
 <translation id="9069693763241529744">Užblokuota pagal plėtinį</translation>

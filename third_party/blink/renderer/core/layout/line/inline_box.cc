@@ -93,10 +93,6 @@ String InlineBox::DebugName() const {
   return BoxName();
 }
 
-IntRect InlineBox::VisualRect() const {
-  return GetLineLayoutItem().VisualRectForInlineBox();
-}
-
 IntRect InlineBox::PartialInvalidationVisualRect() const {
   return GetLineLayoutItem().PartialInvalidationVisualRectForInlineBox();
 }

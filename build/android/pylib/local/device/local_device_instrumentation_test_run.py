@@ -994,8 +994,8 @@ class LocalDeviceInstrumentationTestRun(
       # Pull everything at once instead of pulling individually, as it's
       # slightly faster since each command over adb has some overhead compared
       # to doing the same thing locally.
-      device.PullFile(gold_dir, host_dir)
       host_dir = os.path.join(host_dir, _DEVICE_GOLD_DIR)
+      device.PullFile(gold_dir, host_dir)
       for image_name in os.listdir(host_dir):
         if not image_name.endswith('.png'):
           continue

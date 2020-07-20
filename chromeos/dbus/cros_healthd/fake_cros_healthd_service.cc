@@ -148,6 +148,12 @@ void FakeCrosHealthdService::ProbeTelemetryInfo(
   std::move(callback).Run(telemetry_response_info_.Clone());
 }
 
+void FakeCrosHealthdService::ProbeProcessInfo(
+    const uint32_t process_id,
+    ProbeProcessInfoCallback callback) {
+  std::move(callback).Run(process_response_.Clone());
+}
+
 void FakeCrosHealthdService::SetAvailableRoutinesForTesting(
     const std::vector<mojom::DiagnosticRoutineEnum>& available_routines) {
   available_routines_ = available_routines;
@@ -166,6 +172,11 @@ void FakeCrosHealthdService::SetGetRoutineUpdateResponseForTesting(
 void FakeCrosHealthdService::SetProbeTelemetryInfoResponseForTesting(
     mojom::TelemetryInfoPtr& response_info) {
   telemetry_response_info_.Swap(&response_info);
+}
+
+void FakeCrosHealthdService::SetProbeProcessInfoResponseForTesting(
+    mojom::ProcessResultPtr& result) {
+  process_response_.Swap(&result);
 }
 
 void FakeCrosHealthdService::EmitAcInsertedEventForTesting() {

@@ -450,6 +450,7 @@
 <translation id="2824775600643448204">Трака за адресу и претрагу</translation>
 <translation id="2826760142808435982">Веза је шифрована и њена аутентичност је потврђена помоћу <ph name="CIPHER" /> и користи <ph name="KX" /> као механизам за размену шифара.</translation>
 <translation id="2835170189407361413">Обриши образац</translation>
+<translation id="2839501879576190149">Сајт на који желите да одете је лажан</translation>
 <translation id="2847118875340931228">Отвори прозор без архивирања</translation>
 <translation id="2850739647070081192">Invite (коверат)</translation>
 <translation id="2856444702002559011">Нападачи можда покушавају да украду информације са <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (на пример, лозинке, поруке или кредитне картице). <ph name="BEGIN_LEARN_MORE_LINK" />Сазнајте више<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -810,6 +811,7 @@
 <translation id="42981349822642051">Проширите</translation>
 <translation id="4300675098767811073">Вишеструко бушење на десној страни</translation>
 <translation id="4302965934281694568">Chou3 (коверат)</translation>
+<translation id="4305666528087210886">Приступ датотеци није успео</translation>
 <translation id="4305817255990598646">Пређи</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Блокирај (подразумевано)</translation>
@@ -828,6 +830,7 @@
 <translation id="4358461427845829800">Управљајте начинима плаћања...</translation>
 <translation id="4359160567981085931">Управо сте унели лозинку на обмањујућем сајту. Chrome може да вам помогне. Да бисте променили лозинку и обавестили Google да је налог можда угрожен, кликните на Заштити налог.</translation>
 <translation id="4367563149485757821">Број-12 (коверат)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Сачувана лозинка за <ph name="ORIGIN" /> откривена је при упаду у податке на сајту или у апликацији. Chrome препоручује да одмах промените лозинку на <ph name="ORIGIN" />.}=1{Сачуване лозинке за <ph name="ORIGIN" /> и још један сајт откривене су при упаду у податке на сајту или у апликацији. Chrome препоручује да одмах проверите сачуване лозинке.}one{Сачуване лозинке за <ph name="ORIGIN" /> и још <ph name="SITES_COUNT" /> сајт откривене су при упаду у податке на сајту или у апликацији. Chrome препоручује да одмах проверите сачуване лозинке.}few{Сачуване лозинке за <ph name="ORIGIN" /> и још <ph name="SITES_COUNT" /> сајта откривене су при упаду у податке на сајту или у апликацији. Chrome препоручује да одмах проверите сачуване лозинке.}other{Сачуване лозинке за <ph name="ORIGIN" /> и још <ph name="SITES_COUNT" /> сајтова откривене су при упаду у податке на сајту или у апликацији. Chrome препоручује да одмах проверите сачуване лозинке.}}</translation>
 <translation id="437058704415269440">Стање на рачуну</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Очекивана вредност je <ph name="VALUE_TYPE" />.</translation>
@@ -1179,7 +1182,7 @@
 <translation id="5869405914158311789">Овај сајт није доступан</translation>
 <translation id="5869522115854928033">Сачуване лозинке</translation>
 <translation id="5887400589839399685">Картица је сачувана</translation>
-<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> захтева да направите резервну копију података и да вратите уређај.</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> захтева да направите резервну копију података и да вратите овај уређај.</translation>
 <translation id="5895138241574237353">Покрени поново</translation>
 <translation id="5895187275912066135">Издато</translation>
 <translation id="5901630391730855834">Жута</translation>
@@ -1297,6 +1300,7 @@
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Очекују вас потенцијални трошкови.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{још 1 предлог}one{још # предлог}few{још # предлога}other{још # предлога}}</translation>
+<translation id="6387645831795005740">Нападачи понекад имитирају сајтове тако што незнатно и скоро неприметно измене URL.</translation>
 <translation id="6389470377220713856">Име и презиме на картици</translation>
 <translation id="6390200185239044127">Пресавијање половине у облику слова Z</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1510,6 +1514,7 @@
 <translation id="7372973238305370288">резултат претраге</translation>
 <translation id="7374733840632556089">Овај проблем се јавља због сертификата који сте ви или неко други инсталирали на уређају. Сертификат се користи за надгледање и пресретање мрежа и Chrome га не сматра поузданим. Иако постоје поједини оправдани разлози за надгледање, на пример на школској или пословној мрежи, Chrome жели да будете свесни да се то догађа, чак и ако то не можете да спречите. Надгледање је могуће у било ком прегледачу или апликацији која приступа вебу.</translation>
 <translation id="7375818412732305729">Датотека је приложена</translation>
+<translation id="7376551888419889433">Кад Chrome Enterprise Connectors обележи безбедносне догађаје, релевантни подаци о догађајима се шаљу администратору. То може да обухвата URL-ове страница које посећујете у Chrome-у, називе датотека или метаподатке и корисничко име помоћу ког се пријављујете на уређај и у Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Контроле за медије</translation>
 <translation id="7378627244592794276">Не</translation>
@@ -1907,6 +1912,7 @@
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Покушали сте да дођете до домена <ph name="DOMAIN" />, али сервер је послао неважећи сертификат.</translation>
 <translation id="9050666287014529139">Приступна фраза</translation>
+<translation id="9062620674789239642">Можда је премештен, измењен или избрисан.</translation>
 <translation id="9065203028668620118">Измени</translation>
 <translation id="9065745800631924235">Претрага <ph name="TEXT" /> из историје</translation>
 <translation id="9069693763241529744">Блокира додатак</translation>

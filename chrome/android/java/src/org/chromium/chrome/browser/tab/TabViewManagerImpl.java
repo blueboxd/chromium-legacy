@@ -122,6 +122,8 @@ class TabViewManagerImpl implements TabViewManager, Comparator<TabViewProvider> 
             if (currentTabViewProvider != null) {
                 view = currentTabViewProvider.getView();
                 assert view != null;
+                view.setFocusable(true);
+                view.setFocusableInTouchMode(true);
             }
             mCurrentView = view;
             initMarginSupplier();

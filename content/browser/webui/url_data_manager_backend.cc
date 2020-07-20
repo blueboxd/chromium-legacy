@@ -163,6 +163,7 @@ scoped_refptr<net::HttpResponseHeaders> URLDataManagerBackend::GetHeaders(
 
     const network::mojom::CSPDirectiveName kAllDirectives[] = {
         network::mojom::CSPDirectiveName::ChildSrc,
+        network::mojom::CSPDirectiveName::ConnectSrc,
         network::mojom::CSPDirectiveName::DefaultSrc,
         network::mojom::CSPDirectiveName::FrameSrc,
         network::mojom::CSPDirectiveName::ImgSrc,
@@ -170,8 +171,7 @@ scoped_refptr<net::HttpResponseHeaders> URLDataManagerBackend::GetHeaders(
         network::mojom::CSPDirectiveName::ObjectSrc,
         network::mojom::CSPDirectiveName::ScriptSrc,
         network::mojom::CSPDirectiveName::StyleSrc,
-        network::mojom::CSPDirectiveName::WorkerSrc,
-        network::mojom::CSPDirectiveName::ConnectSrc};
+        network::mojom::CSPDirectiveName::WorkerSrc};
 
     for (auto& directive : kAllDirectives) {
       csp_header.append(source->GetContentSecurityPolicy(directive));

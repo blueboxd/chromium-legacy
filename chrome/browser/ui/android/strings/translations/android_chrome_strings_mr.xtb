@@ -357,6 +357,7 @@
 <translation id="3892148308691398805">मजकूर कॉपी करा</translation>
 <translation id="3894427358181296146">फोल्डर जोडा</translation>
 <translation id="3895926599014793903">झूम सुरू करण्याची सक्ती</translation>
+<translation id="3909763690984331376">सुरक्षा तपासण्या <ph name="BEGIN_NEW" />नवीन<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">वेबवरून सर्वोत्तम शोधत आहे…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">माझा डेटा एकत्र करा</translation>
@@ -579,6 +580,7 @@
 <translation id="5686790454216892815">फाइलचे नाव खूप लांब आहे</translation>
 <translation id="5694049548840660018">होमवर सहजपणे परत जा</translation>
 <translation id="569536719314091526">अधिक पर्याय बटणावरून या पेजचे कोणत्याही भाषेत भाषांतर करा</translation>
+<translation id="5696597120588531049">Chrome तुम्हाला डेटा भंग, असुरक्षित वेबसाइट आणि आणखी बर्‍याच गोष्टींपासून सुरक्षित ठेवण्यात मदत करू शकते</translation>
 <translation id="5697688514913266141">तुमची फाइल <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" /> मध्ये सेव्ह केली जाईल. <ph name="BEGIN_LINK2" />संपादित करा<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">टॅब वर स्विच करा</translation>
 <translation id="572328651809341494">अलीकडील टॅब</translation>
@@ -712,6 +714,7 @@
 <translation id="6656545060687952787">डिव्हाइस स्कॅन करण्‍यासाठी Chrome ला स्थान ॲक्सेसची आवश्‍यकता असते. <ph name="BEGIN_LINK" />परवानग्या अपडेट करा<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="6659594942844771486">टॅब</translation>
+<translation id="6663079968236414793">मजकुराशी लिंक करा</translation>
 <translation id="666573598175432848">Chrome ची नवीन आवृत्ती उपलब्ध आहे. Play Store वर जाण्यासाठी या घटकावर टॅप करा.</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> मध्ये उघडा</translation>
 <translation id="666981079809192359">Chrome गोपनीयता सूचना</translation>

@@ -608,8 +608,8 @@ viz::CompositorFrame VideoFrameSubmitter::CreateCompositorFrame(
   // allocate using the defaults of 32 and 128 since we only append one quad.
   auto render_pass = viz::RenderPass::Create(/*shared_quad_state_list_size=*/1u,
                                              /*quad_list_size*/ 1u);
-  render_pass->SetNew(1, gfx::Rect(frame_size_), gfx::Rect(frame_size_),
-                      gfx::Transform());
+  render_pass->SetNew(viz::RenderPassId{1}, gfx::Rect(frame_size_),
+                      gfx::Rect(frame_size_), gfx::Transform());
 
   if (video_frame) {
     compositor_frame.metadata.content_color_usage =

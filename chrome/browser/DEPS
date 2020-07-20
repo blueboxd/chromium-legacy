@@ -318,7 +318,6 @@ include_rules = [
   "+extensions/buildflags",
   "+extensions/grit",
   "+extensions/test",
-  "+google/cacheinvalidation",  # Sync invalidation API protobuf files.
   "+google_apis",
   "+google_update",
   "+installer_util_strings",  # For generated headers

@@ -67,7 +67,7 @@ public class AndroidPaymentAppFinderTest
         private GURL mTestServerUrl;
 
         /**
-         * @param uri The URL of the test server.
+         * @param url The URL of the test server.
          */
         /* package */ void setTestServerUrl(GURL url) {
             assert mTestServerUrl == null : "Test server URL should be set only once";

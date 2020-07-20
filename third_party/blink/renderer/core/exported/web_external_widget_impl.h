@@ -101,6 +101,8 @@ class WebExternalWidgetImpl : public WebExternalWidget,
   void FocusChanged(bool enabled) override;
   void FlushInputProcessedCallback() override;
   void CancelCompositionForPepper() override;
+  void UpdateVisualProperties(
+      const VisualProperties& visual_properties) override;
 
  private:
   WebExternalWidgetClient* const client_;

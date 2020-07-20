@@ -158,6 +158,81 @@ NSString* const kPasteboardChangeDateKey = @"PasteboardChangeDate";
   return self.cachedImage;
 }
 
+- (void)hasRecentURLFromClipboard:(void (^)(BOOL))callback {
+  DCHECK(callback);
+  if (@available(iOS 14, *)) {
+    [self updateIfNeeded];
+    if (![self shouldReturnValueOfClipboard]) {
+      callback(NO);
+      return;
+    }
+
+    // Use cached value if it exists
+    if (self.cachedURL) {
+      callback(YES);
+      return;
+    }
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+    NSSet<UIPasteboardDetectionPattern>* urlPattern =
+        [NSSet setWithObject:UIPasteboardDetectionPatternProbableWebURL];
+    [UIPasteboard.generalPasteboard
+        detectPatternsForPatterns:urlPattern
+                completionHandler:^(
+                    NSSet<UIPasteboardDetectionPattern>* patterns,
+                    NSError* error) {
+                  callback([patterns
+                      containsObject:
+                          UIPasteboardDetectionPatternProbableWebURL]);
+                }];
+#else
+    // To prevent clipboard notification from appearing on iOS 14 with iOS 13
+    // SDK, use the -hasURLs property to check for URL existence. This will
+    // cause crbug.com/1033935 to reappear in code using this method (also see
+    // the comments in -URLFromPasteboard in this file), but that is preferable
+    // to the notificatio appearing when it shouldn't.
+    callback(UIPasteboard.generalPasteboard.hasURLs);
+#endif
+  } else {
+    callback([self recentURLFromClipboard] != nil);
+  }
+}
+
+- (void)recentURLFromClipboardAsync:(void (^)(NSURL*))callback {
+  DCHECK(callback);
+  if (@available(iOS 14, *)) {
+    [self updateIfNeeded];
+    if (![self shouldReturnValueOfClipboard]) {
+      callback(nil);
+      return;
+    }
+
+    // Use cached value if it exists.
+    if (self.cachedURL) {
+      callback(self.cachedURL);
+      return;
+    }
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+    NSSet<UIPasteboardDetectionPattern>* urlPattern =
+        [NSSet setWithObject:UIPasteboardDetectionPatternProbableWebURL];
+    [UIPasteboard.generalPasteboard
+        detectValuesForPatterns:urlPattern
+              completionHandler:^(
+                  NSDictionary<UIPasteboardDetectionPattern, id>* values,
+                  NSError* error) {
+                self.cachedURL =
+                    values[UIPasteboardDetectionPatternProbableWebURL];
+                callback(self.cachedURL);
+              }];
+#else
+    callback([self recentURLFromClipboard]);
+#endif
+  } else {
+    callback([self recentURLFromClipboard]);
+  }
+}
+
 - (NSTimeInterval)clipboardContentAge {
   return -[self.lastPasteboardChangeDate timeIntervalSinceNow];
 }

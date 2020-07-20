@@ -77,7 +77,7 @@
             android:layout_height="wrap_content"
             android:text="@string/download_location_dialog_checkbox"
             android:layout_marginTop="16dp"
-            android:layout_marginStart="-5dp"/>
+            android:layout_marginStart="@dimen/download_dialog_checkbox_margin_start"/>
 
     </LinearLayout>
 

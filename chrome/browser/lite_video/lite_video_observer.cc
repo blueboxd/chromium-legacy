@@ -6,15 +6,21 @@
 
 #include "base/metrics/histogram_macros_local.h"
 #include "base/optional.h"
+#include "base/rand_util.h"
 #include "chrome/browser/lite_video/lite_video_decider.h"
 #include "chrome/browser/lite_video/lite_video_features.h"
 #include "chrome/browser/lite_video/lite_video_hint.h"
 #include "chrome/browser/lite_video/lite_video_keyed_service.h"
 #include "chrome/browser/lite_video/lite_video_keyed_service_factory.h"
+#include "chrome/browser/lite_video/lite_video_switches.h"
 #include "chrome/browser/lite_video/lite_video_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
@@ -37,6 +43,15 @@ lite_video::LiteVideoDecider* GetLiteVideoDeciderFromWebContents(
   return nullptr;
 }
 
+// Returns the result of a coinflip.
+bool GetCoinflipExperimentState() {
+  if (!lite_video::features::IsCoinflipExperimentEnabled())
+    return false;
+  if (lite_video::switches::ShouldForceCoinflipHoldback())
+    return true;
+  return base::RandInt(0, 1);
+}
+
 }  // namespace
 
 // static
@@ -55,6 +70,12 @@ LiteVideoObserver::LiteVideoObserver(content::WebContents* web_contents)
 
 LiteVideoObserver::~LiteVideoObserver() = default;
 
+void LiteVideoObserver::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsInMainFrame())
+    current_mainframe_navigation_id_.reset();
+}
+
 void LiteVideoObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK(navigation_handle);
@@ -66,14 +87,53 @@ void LiteVideoObserver::DidFinishNavigation(
   if (!lite_video_decider_)
     return;
 
+  lite_video::LiteVideoBlocklistReason blocklist_reason =
+      lite_video::LiteVideoBlocklistReason::kUnknown;
   base::Optional<lite_video::LiteVideoHint> hint =
-      lite_video_decider_->CanApplyLiteVideo(navigation_handle);
+      lite_video_decider_->CanApplyLiteVideo(navigation_handle,
+                                             &blocklist_reason);
+
+  if (navigation_handle->IsInMainFrame()) {
+    DCHECK(!current_mainframe_navigation_id_);
+    current_mainframe_navigation_id_ = navigation_handle->GetNavigationId();
+    // The coinflip state should only be updated on a mainframe navigation.
+    is_coinflip_holdback_ = GetCoinflipExperimentState();
+  }
+
+  // TODO(crbug/1097792): Record these metrics when the renderer associated with
+  // this navigation ends and the result from the renderer is available.
+  lite_video::LiteVideoDecision decision =
+      MakeLiteVideoDecision(navigation_handle, hint);
+
+  RecordUKMMetrics(decision, blocklist_reason);
 
   LOCAL_HISTOGRAM_BOOLEAN("LiteVideo.Navigation.HasHint", hint ? true : false);
 
   // TODO(crbug/1082553): Add logic to pass the hint via the
   // ResourceLoadingAgent to the LiteVideoAgent for use when throttling media
-  // requests.
+  // requests. Only pass a hint if the decision is kAllowed.
+}
+
+lite_video::LiteVideoDecision LiteVideoObserver::MakeLiteVideoDecision(
+    content::NavigationHandle* navigation_handle,
+    base::Optional<lite_video::LiteVideoHint> hint) const {
+  if (hint) {
+    return is_coinflip_holdback_ ? lite_video::LiteVideoDecision::kHoldback
+                                 : lite_video::LiteVideoDecision::kAllowed;
+  }
+  return lite_video::LiteVideoDecision::kNotAllowed;
+}
+
+void LiteVideoObserver::RecordUKMMetrics(
+    lite_video::LiteVideoDecision decision,
+    lite_video::LiteVideoBlocklistReason blocklist_reason) {
+  DCHECK(current_mainframe_navigation_id_);
+  ukm::SourceId ukm_source_id = ukm::ConvertToSourceId(
+      *current_mainframe_navigation_id_, ukm::SourceIdType::NAVIGATION_ID);
+  ukm::builders::LiteVideo builder(ukm_source_id);
+  builder.SetThrottlingStartDecision(static_cast<int>(decision))
+      .SetBlocklistReason(static_cast<int>(blocklist_reason))
+      .Record(ukm::UkmRecorder::Get());
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(LiteVideoObserver)

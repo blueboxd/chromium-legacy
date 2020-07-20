@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">To get your bookmarks on all your devices, turn on sync.</translation>
 <translation id="1687475363370981210">Mark All Read</translation>
+<translation id="1689333818294560261">Nickname</translation>
 <translation id="1690731385917361335">No items</translation>
 <translation id="1692118695553449118">Sync is on</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selected</translation>
@@ -206,6 +207,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="3335947283844343239">Re-open Closed Tab</translation>
 <translation id="3371831930909698441">Translate is available. Options available near bottom of the screen.</translation>
 <translation id="3393920035788932672">Pop-ups Allowed</translation>
+<translation id="3425644765244388016">Card nickname</translation>
 <translation id="3443810440409579745">Tab received.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Split View</translation>
@@ -240,6 +242,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="3783017676699494206">Save Image</translation>
 <translation id="3789841737615482174">Install</translation>
 <translation id="3803696231112616155">Offer to translate this site</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{No passwords compromised}=1{{COUNT} password compromised}other{{COUNT} passwords compromised}}</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3892144330757387737">You'll find your history here</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -529,6 +532,7 @@ Sites can't use cookies to see your browsing activity across different sites, fo
 <translation id="7189598951263744875">Share...</translation>
 <translation id="7192050974311852563">Start logging</translation>
 <translation id="7203585745079012652">Speak Answers Back</translation>
+<translation id="721597782417389033">Invalid card nickname</translation>
 <translation id="7265758999917665941">Never for this site</translation>
 <translation id="7272437679830969316">Can't verify your identity. Password not copied.</translation>
 <translation id="7291368939935408496">Preparing Passwords…</translation>

@@ -14,9 +14,6 @@ struct FrameOwnerProperties;
 [Native]
 struct FrameReplicationState;
 
-[Native]
-struct VisualProperties;
-
 // NOTE: This type is only mapped and usable on Mac.
 [Native]
 enum ScrollbarButtonsPlacement;

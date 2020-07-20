@@ -161,6 +161,7 @@ class CC_EXPORT RenderSurfaceImpl {
   }
 
   uint64_t id() const { return stable_id_; }
+  viz::RenderPassId render_pass_id() const { return viz::RenderPassId{id()}; }
 
   bool HasMaskingContributingSurface() const;
 

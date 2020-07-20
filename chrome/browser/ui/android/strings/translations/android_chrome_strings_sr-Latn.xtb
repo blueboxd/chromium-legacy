@@ -458,7 +458,7 @@ Google nalog možda ima druge oblike istorije pregledanja, poput pretraga i akti
 <translation id="4749960740855309258">Otvorite novu karticu</translation>
 <translation id="4759238208242260848">Preuzimanja</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 preuzimanje je dovršeno.}one{# preuzimanje je dovršeno.}few{# preuzimanja su dovršena.}other{# preuzimanja je dovršeno.}}</translation>
-<translation id="4766678251456904326">Dodajte nalog na uređaj</translation>
+<translation id="4766678251456904326">Dodaj nalog na uređaj</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{Zakazano je 1 preuzimanje.}one{Zakazano je # preuzimanje.}few{Zakazana su # preuzimanja.}other{Zakazano je # preuzimanja.}}</translation>
 <translation id="478981486571169252">Videćete status prijave na <ph name="SITE_NAME" />, podatke pregledanja i podatke o sajtu u Chrome-u.</translation>
 <translation id="4802417911091824046">Šifrovanje pomoću pristupne fraze ne obuhvata načine plaćanja i adrese iz Google Pay-a.
@@ -577,10 +577,11 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="5659593005791499971">Imejl</translation>
 <translation id="5665379678064389456">Napravite događaj u aplikaciji <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Odbijanje zahteva veb-sajta da se spreči uvećavanje</translation>
+<translation id="5683547024293500885">Chrome ne može da traži ažuriranja</translation>
 <translation id="5686790454216892815">Ime datoteke je predugačko</translation>
 <translation id="5694049548840660018">Jednostavno se vratite na početnu stranicu</translation>
 <translation id="569536719314091526">Prevedite ovu stranicu na bilo koji jezik pomoću dugmeta Još opcija</translation>
-<translation id="5696597120588531049">Chrome može da vas štiti od upada u podatke, nebezbednih veb-lokacija i drugo</translation>
+<translation id="5696597120588531049">Chrome može da vas štiti od upada u podatke, nebezbednih veb-sajtova i drugo</translation>
 <translation id="5697688514913266141">Datoteka će se sačuvati u direktorijumu <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Izmeni<ph name="END_LINK2" />.</translation>
 <translation id="570347048394355941">Pređi na karticu</translation>
 <translation id="572328651809341494">Nedavno korišćene kartice</translation>
@@ -589,6 +590,7 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="5732819098735351888">Preuzimanje će početi preko Wi-Fi mreže.</translation>
 <translation id="5748802427693696783">Prebacili ste na standardne kartice</translation>
 <translation id="5749068826913805084">Chrome-u je potreban pristup memorijskom prostoru da bi preuzimao datoteke.</translation>
+<translation id="5749237766298580851">Isključeno <ph name="SEPARATOR" /> Ne preporučuje se</translation>
 <translation id="5754350196967618083">Osvežavanje Discover-a nije uspelo</translation>
 <translation id="5763382633136178763">Kartice bez arhiviranja</translation>
 <translation id="5763514718066511291">Dodirnite da biste kopirali URL za ovu aplikaciju</translation>

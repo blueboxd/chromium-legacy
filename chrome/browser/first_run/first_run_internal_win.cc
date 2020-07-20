@@ -69,7 +69,7 @@ bool LaunchSetupForEula(const base::FilePath::StringType& value,
 // Returns true if the EULA is required but has not been accepted by this user.
 // The EULA is considered having been accepted if the user has gotten past
 // first run in the "other" environment (desktop or metro).
-bool IsEULANotAccepted(installer::MasterPreferences* install_prefs) {
+bool IsEULANotAccepted(installer::InitialPreferences* install_prefs) {
   bool value = false;
   if (install_prefs->GetBool(installer::master_preferences::kRequireEula,
           &value) && value) {
@@ -125,7 +125,7 @@ bool IsFirstRunSentinelPresent() {
   return !GetFirstRunSentinelFilePath(&sentinel) || base::PathExists(sentinel);
 }
 
-bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
+bool ShowPostInstallEULAIfNeeded(installer::InitialPreferences* install_prefs) {
   if (IsEULANotAccepted(install_prefs)) {
     // Show the post-installation EULA. This is done by setup.exe and the
     // result determines if we continue or not. We wait here until the user

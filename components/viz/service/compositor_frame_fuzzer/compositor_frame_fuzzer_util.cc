@@ -143,7 +143,7 @@ class FuzzedCompositorFrameBuilder {
   // specific bitmaps/textures.
   uint64_t reserved_bytes_ = 0;
 
-  RenderPassId next_pass_id_ = 1;
+  RenderPassId::Generator pass_id_generator_;
 
   // Frame and data being built.
   FuzzedData data_;
@@ -188,8 +188,8 @@ RenderPassId FuzzedCompositorFrameBuilder::AddRenderPass(
           ? GetTransformFromProtobuf(
                 render_pass_spec.transform_to_root_target())
           : gfx::Transform();
-  pass->SetNew(next_pass_id_++, rp_output_rect, rp_damage_rect,
-               transform_to_root_target);
+  pass->SetNew(pass_id_generator_.GenerateNextId(), rp_output_rect,
+               rp_damage_rect, transform_to_root_target);
 
   for (const proto::DrawQuad& quad_spec : render_pass_spec.quad_list()) {
     if (quad_spec.quad_case() == proto::DrawQuad::QUAD_NOT_SET) {

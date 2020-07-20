@@ -370,7 +370,7 @@ std::unique_ptr<viz::RenderPass> RenderSurfaceImpl::CreateRenderPass() {
       viz::RenderPass::Create(num_contributors_);
   gfx::Rect damage_rect = GetDamageRect();
   damage_rect.Intersect(content_rect());
-  pass->SetNew(id(), content_rect(), damage_rect,
+  pass->SetNew(render_pass_id(), content_rect(), damage_rect,
                draw_properties_.screen_space_transform);
   pass->filters = Filters();
   pass->backdrop_filters = BackdropFilters();
@@ -451,9 +451,9 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
   gfx::RectF tex_coord_rect(gfx::Rect(content_rect().size()));
   auto* quad = render_pass->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
   quad->SetAll(shared_quad_state, content_rect(), unoccluded_content_rect,
-               /*needs_blending=*/true, id(), mask_resource_id, mask_uv_rect,
-               mask_texture_size, surface_contents_scale, gfx::PointF(),
-               tex_coord_rect,
+               /*needs_blending=*/true, render_pass_id(), mask_resource_id,
+               mask_uv_rect, mask_texture_size, surface_contents_scale,
+               gfx::PointF(), tex_coord_rect,
                !layer_tree_impl_->settings().enable_edge_anti_aliasing,
                OwningEffectNode()->backdrop_filter_quality,
                can_use_cached_backdrop_filtered_result_);

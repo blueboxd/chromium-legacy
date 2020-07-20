@@ -44,7 +44,8 @@ std::vector<mojom::FileMetadataPtr> GetFileMetadata(
        proto_frame.file_metadata()) {
     mojo_file_metadatas.push_back(mojom::FileMetadata::New(
         metadata.name(), ConvertFileMetadataType(metadata.type()),
-        metadata.payload_id(), metadata.size(), metadata.mime_type()));
+        metadata.payload_id(), metadata.size(), metadata.mime_type(),
+        metadata.id()));
   }
 
   return mojo_file_metadatas;
@@ -75,7 +76,7 @@ std::vector<mojom::TextMetadataPtr> GetTextMetadata(
        proto_frame.text_metadata()) {
     mojo_text_metadatas.push_back(mojom::TextMetadata::New(
         metadata.text_title(), ConvertTextMetadataType(metadata.type()),
-        metadata.payload_id(), metadata.size()));
+        metadata.payload_id(), metadata.size(), metadata.id()));
   }
 
   return mojo_text_metadatas;
@@ -104,7 +105,7 @@ std::vector<mojom::WifiCredentialsMetadataPtr> GetWifiMetadata(
        proto_frame.wifi_credentials_metadata()) {
     mojo_wifi_metadatas.push_back(mojom::WifiCredentialsMetadata::New(
         metadata.ssid(), ConvertSecurityType(metadata.security_type()),
-        metadata.payload_id()));
+        metadata.payload_id(), metadata.id()));
   }
 
   return mojo_wifi_metadatas;
@@ -303,6 +304,9 @@ void NearbySharingDecoder::DecodeFrame(const std::vector<uint8_t>& data,
 
       mojo_v1frame->set_certificate_info(
           GetCertificateInfoFrame(proto_frame.v1().certificate_info()));
+      break;
+    case sharing::nearby::V1Frame_FrameType_CANCEL:
+      mojo_v1frame->set_cancel_frame(mojom::CancelFrame::New());
       break;
     default:
       LOG(ERROR) << "Unknown type of v1frame, unable to process.";

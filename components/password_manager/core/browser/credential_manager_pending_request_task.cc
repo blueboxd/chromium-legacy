@@ -114,8 +114,21 @@ CredentialManagerPendingRequestTask::~CredentialManagerPendingRequestTask() =
 
 void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
+  // This class overrides OnGetPasswordStoreResultsFrom() (the version of this
+  // method that also receives the originating store), so the store-less version
+  // never gets called.
+  NOTREACHED();
+}
+
+void CredentialManagerPendingRequestTask::OnGetPasswordStoreResultsFrom(
+    scoped_refptr<PasswordStore> store,
+    std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   // localhost is a secure origin but not https.
-  if (results.empty() && origin_.scheme() == url::kHttpsScheme) {
+  if (store.get() == delegate_->client()->GetProfilePasswordStore() &&
+      results.empty() && origin_.scheme() == url::kHttpsScheme) {
+    // TODO(crbug.com/1093286): Consider also supporting HTTP->HTTPS migration
+    // for the account store.
+
     // Try to migrate the HTTP passwords and process them later.
     http_migrator_ = std::make_unique<HttpPasswordStoreMigrator>(
         origin_, delegate_->client(), this);

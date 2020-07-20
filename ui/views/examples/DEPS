@@ -11,3 +11,12 @@ include_rules = [
   "+ui/snapshot", # Enable Skia Gold testing
   "+ui/views_content_client",
 ]
+
+specific_include_rules = {
+  "examples_main_proc.cc": [
+    "+ui/wm/core/wm_state.h",
+  ],
+  "examples_views_delegate_chromeos.cc": [
+    "+ui/wm/test/wm_test_helper.h",
+  ],
+}

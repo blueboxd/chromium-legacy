@@ -11,6 +11,7 @@
 #include "components/permissions/permission_request_manager.h"
 #include "components/permissions/test/mock_permission_request.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/web_contents.h"
 
 class PermissionPromptAndroidTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -45,7 +46,8 @@ TEST_F(PermissionPromptAndroidTest, TabCloseMiniInfoBarClosesCleanly) {
   // Create a notification request. This causes an infobar to appear.
   permissions::MockPermissionRequest request(
       "test", ContentSettingsType::NOTIFICATIONS);
-  permission_request_manager()->AddRequest(&request);
+  permission_request_manager()->AddRequest(web_contents()->GetMainFrame(),
+                                           &request);
 
   base::RunLoop().RunUntilIdle();
 
@@ -66,7 +68,8 @@ TEST_F(PermissionPromptAndroidTest, RemoveAllInfoBarsWithOtherObservers) {
   // Create a notification request. This causes an infobar to appear.
   permissions::MockPermissionRequest request(
       "test", ContentSettingsType::NOTIFICATIONS);
-  permission_request_manager()->AddRequest(&request);
+  permission_request_manager()->AddRequest(web_contents()->GetMainFrame(),
+                                           &request);
 
   base::RunLoop().RunUntilIdle();
 

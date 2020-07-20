@@ -5041,7 +5041,6 @@ void WebContentsImpl::RegisterProtocolHandler(RenderFrameHostImpl* source,
                                               const GURL& url,
                                               const base::string16& title,
                                               bool user_gesture) {
-  // TODO(nick): Should we consider |source| here or pass it to the delegate?
   // TODO(nick): Do we need to apply FilterURL to |url|?
   if (!delegate_)
     return;
@@ -5053,14 +5052,13 @@ void WebContentsImpl::RegisterProtocolHandler(RenderFrameHostImpl* source,
     return;
   }
 
-  delegate_->RegisterProtocolHandler(this, protocol, url, user_gesture);
+  delegate_->RegisterProtocolHandler(source, protocol, url, user_gesture);
 }
 
 void WebContentsImpl::UnregisterProtocolHandler(RenderFrameHostImpl* source,
                                                 const std::string& protocol,
                                                 const GURL& url,
                                                 bool user_gesture) {
-  // TODO(nick): Should we consider |source| here or pass it to the delegate?
   // TODO(nick): Do we need to apply FilterURL to |url|?
   if (!delegate_)
     return;
@@ -5072,7 +5070,7 @@ void WebContentsImpl::UnregisterProtocolHandler(RenderFrameHostImpl* source,
     return;
   }
 
-  delegate_->UnregisterProtocolHandler(this, protocol, url, user_gesture);
+  delegate_->UnregisterProtocolHandler(source, protocol, url, user_gesture);
 }
 
 void WebContentsImpl::OnAppCacheAccessed(const GURL& manifest_url,

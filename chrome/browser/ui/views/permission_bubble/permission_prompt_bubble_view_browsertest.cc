@@ -5,8 +5,10 @@
 #include "base/run_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/test/permissions/permission_request_manager_test_api.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 
 class PermissionPromptBubbleViewBrowserTest : public DialogBrowserTest {
@@ -23,7 +25,9 @@ class PermissionPromptBubbleViewBrowserTest : public DialogBrowserTest {
     std::unique_ptr<test::PermissionRequestManagerTestApi> test_api_ =
         std::make_unique<test::PermissionRequestManagerTestApi>(browser());
     EXPECT_TRUE(test_api_->manager());
-    test_api_->AddSimpleRequest(ContentSettingsType::GEOLOCATION);
+    test_api_->AddSimpleRequest(
+        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+        ContentSettingsType::GEOLOCATION);
 
     base::RunLoop().RunUntilIdle();
   }

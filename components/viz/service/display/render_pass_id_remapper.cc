@@ -32,7 +32,7 @@ RenderPassId RenderPassIdRemapper::Remap(RenderPassId surface_local_pass_id,
 }
 
 RenderPassId RenderPassIdRemapper::NextAvailableId() {
-  return next_render_pass_id_++;
+  return render_pass_id_generator_.GenerateNextId();
 }
 
 void RenderPassIdRemapper::ClearUnusedMappings() {
@@ -47,5 +47,14 @@ void RenderPassIdRemapper::ClearUnusedMappings() {
     }
   }
 }
+
+RenderPassIdRemapper::RenderPassInfo::RenderPassInfo() = default;
+RenderPassIdRemapper::RenderPassInfo::RenderPassInfo(
+    const RenderPassInfo& other) = default;
+RenderPassIdRemapper::RenderPassInfo::~RenderPassInfo() = default;
+
+RenderPassIdRemapper::RenderPassInfo&
+RenderPassIdRemapper::RenderPassInfo::operator=(const RenderPassInfo& other) =
+    default;
 
 }  // namespace viz

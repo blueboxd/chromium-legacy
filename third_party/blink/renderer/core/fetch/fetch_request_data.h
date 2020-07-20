@@ -43,7 +43,7 @@ class CORE_EXPORT FetchRequestData final
                                   mojom::blink::FetchAPIRequestPtr,
                                   ForServiceWorkerFetchEvent);
   FetchRequestData* Clone(ScriptState*, ExceptionState&);
-  FetchRequestData* Pass(ScriptState*, ExceptionState&);
+  FetchRequestData* Pass(ScriptState*);
 
   explicit FetchRequestData(ExecutionContext* execution_context);
   ~FetchRequestData();

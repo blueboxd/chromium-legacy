@@ -7,6 +7,7 @@ package org.chromium.components.paintpreview.player.frame;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.when;
 
 import android.graphics.Matrix;
 import android.util.Size;
@@ -59,27 +60,14 @@ public class PlayerFrameScaleControllerTest {
         Callback<Boolean> mScaleListener = (Boolean didFinish) -> mDidScale = true;
         mViewport = new PlayerFrameViewport();
         mBitmapScaleMatrix = new Matrix();
-        mScaleController =
-                new PlayerFrameScaleController(mViewport, new Size(CONTENT_WIDTH, CONTENT_HEIGHT),
-                        mBitmapScaleMatrix, mMediatorDelegateMock, mScaleListener);
-        mScaleController.calculateInitialScaleFactor(CONTENT_WIDTH);
-        mViewport.setScale(mScaleController.getInitialScaleFactor());
+        Size contentSize = new Size(CONTENT_WIDTH, CONTENT_HEIGHT);
+        when(mMediatorDelegateMock.getViewport()).thenReturn(mViewport);
+        when(mMediatorDelegateMock.getContentSize()).thenReturn(contentSize);
+        when(mMediatorDelegateMock.getInitialScaleFactor()).thenReturn(1f);
+        mScaleController = new PlayerFrameScaleController(
+                mBitmapScaleMatrix, mMediatorDelegateMock, mScaleListener);
+        mViewport.setScale(1f);
         mViewport.setSize(100, 100);
-    }
-
-    /**
-     * Tests calculating and getting the initial scale factor.
-     */
-    @Test
-    public void testInitialScaleFactor() {
-        mScaleController.calculateInitialScaleFactor(CONTENT_WIDTH);
-        Assert.assertEquals(1f, mScaleController.getInitialScaleFactor(), TOLERANCE);
-
-        mScaleController.calculateInitialScaleFactor(250);
-        Assert.assertEquals(0.5f, mScaleController.getInitialScaleFactor(), TOLERANCE);
-
-        mScaleController.calculateInitialScaleFactor(1000);
-        Assert.assertEquals(2f, mScaleController.getInitialScaleFactor(), TOLERANCE);
     }
 
     /**

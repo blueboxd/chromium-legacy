@@ -80,6 +80,9 @@ extern const base::Feature kAllowJITInstallationWhenAppIconIsMissing;
 // allowed inside the payment handler.
 extern const base::Feature kPaymentHandlerLockIcon;
 
+// Used to reject the apps with partial delegation.
+extern const base::Feature kEnforceFullDelegation;
+
 }  // namespace features
 }  // namespace payments
 

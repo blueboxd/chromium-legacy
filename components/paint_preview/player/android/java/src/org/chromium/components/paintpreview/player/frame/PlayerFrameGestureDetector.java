@@ -11,14 +11,14 @@ import android.view.ScaleGestureDetector;
 
 /**
  * Detects scroll, fling, and scale gestures on calls to {@link #onTouchEvent} and reports back to
- * the provided {@link PlayerFrameViewDelegate}.
+ * the provided {@link PlayerFrameGestureDetectorDelegate}.
  */
 class PlayerFrameGestureDetector
         implements GestureDetector.OnGestureListener, ScaleGestureDetector.OnScaleGestureListener {
     private GestureDetector mGestureDetector;
     private ScaleGestureDetector mScaleGestureDetector;
     private boolean mCanDetectZoom;
-    private PlayerFrameViewDelegate mPlayerFrameViewDelegate;
+    private PlayerFrameGestureDetectorDelegate mDelegate;
     private PlayerFrameGestureDetector mParentGestureDetector;
     /**
      * Last horizontal scroll distance that was detected by this {@link PlayerFrameGestureDetector}
@@ -36,14 +36,14 @@ class PlayerFrameGestureDetector
      * {@link ScaleGestureDetector}.
      * @param canDetectZoom Whether this {@link PlayerFrameGestureDetector} should detect scale
      * gestures.
-     * @param playerFrameViewDelegate The delegate used when desired gestured are detected.
+     * @param delegate The delegate used when desired gestured are detected.
      */
-    PlayerFrameGestureDetector(Context context, boolean canDetectZoom,
-            PlayerFrameViewDelegate playerFrameViewDelegate) {
+    PlayerFrameGestureDetector(
+            Context context, boolean canDetectZoom, PlayerFrameGestureDetectorDelegate delegate) {
         mGestureDetector = new GestureDetector(context, this);
         mScaleGestureDetector = new ScaleGestureDetector(context, this);
         mCanDetectZoom = canDetectZoom;
-        mPlayerFrameViewDelegate = playerFrameViewDelegate;
+        mDelegate = delegate;
     }
 
     /**
@@ -65,7 +65,7 @@ class PlayerFrameGestureDetector
         }
 
         if (event.getAction() == MotionEvent.ACTION_UP) {
-            mPlayerFrameViewDelegate.onRelease();
+            mDelegate.onRelease();
             // Propagate the release to the parent, this won't trigger any unexpected behavior as
             // this is only an UP event.
             if (mParentGestureDetector != null) {
@@ -85,13 +85,13 @@ class PlayerFrameGestureDetector
 
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
-        mPlayerFrameViewDelegate.onTap((int) e.getX(), (int) e.getY());
+        mDelegate.onTap((int) e.getX(), (int) e.getY());
         return true;
     }
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        if (mPlayerFrameViewDelegate.scrollBy(distanceX, distanceY)) {
+        if (mDelegate.scrollBy(distanceX, distanceY)) {
             mLastParentScrollX = 0f;
             mLastParentScrollY = 0f;
             return true;
@@ -116,12 +116,12 @@ class PlayerFrameGestureDetector
 
     @Override
     public void onLongPress(MotionEvent e) {
-        mPlayerFrameViewDelegate.onLongPress((int) e.getX(), (int) e.getY());
+        mDelegate.onLongPress((int) e.getX(), (int) e.getY());
     }
 
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-        if (mPlayerFrameViewDelegate.onFling(velocityX, velocityY)) return true;
+        if (mDelegate.onFling(velocityX, velocityY)) return true;
 
         if (mParentGestureDetector != null) {
             return mParentGestureDetector.onFling(e1, e2, velocityX, velocityY);
@@ -132,7 +132,7 @@ class PlayerFrameGestureDetector
     @Override
     public boolean onScale(ScaleGestureDetector detector) {
         assert mCanDetectZoom;
-        return mPlayerFrameViewDelegate.scaleBy(
+        return mDelegate.scaleBy(
                 detector.getScaleFactor(), detector.getFocusX(), detector.getFocusY());
     }
 
@@ -145,7 +145,7 @@ class PlayerFrameGestureDetector
     @Override
     public void onScaleEnd(ScaleGestureDetector detector) {
         assert mCanDetectZoom;
-        mPlayerFrameViewDelegate.scaleFinished(
+        mDelegate.scaleFinished(
                 detector.getScaleFactor(), detector.getFocusX(), detector.getFocusY());
     }
 }

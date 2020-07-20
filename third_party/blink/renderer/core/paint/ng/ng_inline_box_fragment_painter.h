@@ -121,6 +121,8 @@ class NGInlineBoxFragmentPainterBase : public InlineBoxPainterBase {
   void PaintBackgroundBorderShadow(const PaintInfo&,
                                    const PhysicalOffset& paint_offset);
 
+  IntRect VisualRect(const PhysicalOffset& paint_offset);
+
   const NGPhysicalFragment& inline_box_fragment_;
   const NGPaintFragment* inline_box_paint_fragment_ = nullptr;
   const NGFragmentItem* inline_box_item_ = nullptr;

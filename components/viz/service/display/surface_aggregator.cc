@@ -1403,7 +1403,7 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
 
 gfx::Rect SurfaceAggregator::PrewalkSurface(Surface* surface,
                                             bool in_moved_pixel_surface,
-                                            int parent_pass_id,
+                                            RenderPassId parent_pass_id,
                                             bool will_draw,
                                             const gfx::Rect& damage_from_parent,
                                             PrewalkResult* result) {
@@ -1528,8 +1528,8 @@ gfx::Rect SurfaceAggregator::PrewalkSurface(Surface* surface,
       result->undrawn_surfaces.insert(surface_id);
       Surface* undrawn_surface = manager_->GetSurfaceForId(surface_id);
       if (undrawn_surface)
-        PrewalkSurface(undrawn_surface, false, 0, /*will_draw=*/false,
-                       gfx::Rect(), result);
+        PrewalkSurface(undrawn_surface, false, RenderPassId(),
+                       /*will_draw=*/false, gfx::Rect(), result);
     }
   }
 
@@ -1682,7 +1682,7 @@ AggregatedFrame SurfaceAggregator::Aggregate(
   DCHECK(referenced_surfaces_.empty());
   PrewalkResult prewalk_result;
   gfx::Rect surfaces_damage_rect = PrewalkSurface(
-      surface, /*in_moved_pixel_surface=*/false, /*parent_pass=*/0,
+      surface, /*in_moved_pixel_surface=*/false, /*parent_pass=*/RenderPassId(),
       /*will_draw=*/true, /*damage_from_parent=*/gfx::Rect(), &prewalk_result);
   root_damage_rect_ = surfaces_damage_rect;
   // |root_damage_rect_| is used to restrict aggregating quads only if they

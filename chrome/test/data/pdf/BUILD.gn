@@ -13,10 +13,10 @@ js_type_check("closure_compile") {
                   ]
   deps = [
     #":annotations_feature_enabled_test",
-    #":basic_plugin_test",
+    ":basic_plugin_test",
     ":basic_test",
+    ":beep_test",
 
-    #":beep_test",
     #":bookmarks_test",
     ":download_controls_test",
     ":gesture_detector_test",
@@ -25,20 +25,30 @@ js_type_check("closure_compile") {
     #":material_elements_test",
     #":metrics_test",
     #":navigator_test",
-    #":nobeep_test",
+    ":nobeep_test",
+
     #":page_change_test",
     #":params_parser_test",
     #":printing_icon_test",
     #":redirects_fail_test",
     ":test_util",
+    ":title_test",
 
-    #":title_test",
     #":toolbar_manager_test",
     #":touch_handling_test",
     #":viewport_test",
-    #":whitespace_title_test",
+    ":whitespace_title_test",
+
     #":zoom_manager_test",
   ]
+}
+
+js_library("basic_plugin_test") {
+  deps = [
+    "//chrome/browser/resources/pdf:pdf_scripting_api",
+    "//chrome/browser/resources/pdf:pdf_viewer",
+  ]
+  externs_list = [ "$externs_path/test.js" ]
 }
 
 js_library("basic_test") {
@@ -46,6 +56,14 @@ js_library("basic_test") {
     "//chrome/browser/resources/pdf:pdf_viewer",
     "//chrome/browser/resources/pdf/elements:viewer-pdf-toolbar",
     "//chrome/browser/resources/pdf/elements:viewer-toolbar-dropdown",
+  ]
+  externs_list = [ "$externs_path/test.js" ]
+}
+
+js_library("beep_test") {
+  deps = [
+    "//chrome/browser/resources/pdf:pdf_scripting_api",
+    "//chrome/browser/resources/pdf:pdf_viewer",
   ]
   externs_list = [ "$externs_path/test.js" ]
 }
@@ -71,9 +89,25 @@ js_library("download_controls_test") {
   externs_list = [ "$externs_path/test.js" ]
 }
 
+js_library("nobeep_test") {
+  deps = [
+    "//chrome/browser/resources/pdf:pdf_scripting_api",
+    "//chrome/browser/resources/pdf:pdf_viewer",
+  ]
+  externs_list = [ "$externs_path/test.js" ]
+}
+
 js_library("test_util") {
   deps = [
     "//chrome/browser/resources/pdf:viewport",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
+}
+
+js_library("title_test") {
+  externs_list = [ "$externs_path/test.js" ]
+}
+
+js_library("whitespace_title_test") {
+  externs_list = [ "$externs_path/test.js" ]
 }

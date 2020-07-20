@@ -77,9 +77,9 @@ void ValidateHeartbeat(const apis::v1::HeartbeatRequest& request,
   is_linux = true;
 #endif
   if (is_googler && is_linux) {
-    ASSERT_TRUE(request.has_hostname());
+    ASSERT_TRUE(request.has_hostname_hash());
   } else {
-    ASSERT_FALSE(request.has_hostname());
+    ASSERT_FALSE(request.has_hostname_hash());
   }
 }
 

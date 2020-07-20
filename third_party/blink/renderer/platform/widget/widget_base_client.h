@@ -160,6 +160,10 @@ class WidgetBaseClient {
   // VR. https://crbug.com/940063
   virtual bool ShouldAckSyntheticInputImmediately() { return false; }
 
+  // Apply the visual properties.
+  virtual void UpdateVisualProperties(
+      const VisualProperties& visual_properties) = 0;
+
   // Test-specific methods below this point.
   virtual void ScheduleAnimationForWebTests() {}
 };

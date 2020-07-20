@@ -174,8 +174,8 @@ NearbySharingServiceImpl::RegisterReceiveSurface(
   DCHECK_NE(state, ReceiveSurfaceState::kUnknown);
   if (foreground_receive_callbacks_.HasObserver(transfer_callback) ||
       background_receive_callbacks_.HasObserver(transfer_callback)) {
-    VLOG(1) << __func__
-            << ": registerReceiveSurface failed. Already registered.";
+    NS_LOG(VERBOSE) << __func__
+                    << ": registerReceiveSurface failed. Already registered.";
     return StatusCodes::kError;
   }
 
@@ -192,8 +192,9 @@ NearbySharingServiceImpl::RegisterReceiveSurface(
     background_receive_callbacks_.AddObserver(transfer_callback);
   }
 
-  VLOG(1) << __func__ << ": A ReceiveSurface("
-          << ReceiveSurfaceStateToString(state) << ") has been registered";
+  NS_LOG(VERBOSE) << __func__ << ": A ReceiveSurface("
+                  << ReceiveSurfaceStateToString(state)
+                  << ") has been registered";
   InvalidateReceiveSurfaceState();
   return StatusCodes::kOk;
 }
@@ -207,7 +208,7 @@ NearbySharingServiceImpl::UnregisterReceiveSurface(
   bool is_background =
       background_receive_callbacks_.HasObserver(transfer_callback);
   if (!is_foreground && !is_background) {
-    VLOG(1)
+    NS_LOG(VERBOSE)
         << __func__
         << ": unregisterReceiveSurface failed. Unknown TransferUpdateCallback.";
     return StatusCodes::kError;
@@ -239,9 +240,9 @@ NearbySharingServiceImpl::UnregisterReceiveSurface(
     }
   }
 
-  VLOG(1) << __func__ << ": A ReceiveSurface("
-          << (is_foreground ? "foreground" : "background")
-          << ") has been unregistered";
+  NS_LOG(VERBOSE) << __func__ << ": A ReceiveSurface("
+                  << (is_foreground ? "foreground" : "background")
+                  << ") has been unregistered";
 
   InvalidateReceiveSurfaceState();
   return StatusCodes::kOk;
@@ -341,13 +342,14 @@ Visibility NearbySharingServiceImpl::GetVisibilityPref() {
 void NearbySharingServiceImpl::OnVisibilityPrefChanged() {
   Visibility new_visibility = GetVisibilityPref();
   if (advertising_visibilty_preference_ == new_visibility) {
-    VLOG(1) << __func__ << ": Nearby sharing visibility pref is unchanged";
+    NS_LOG(VERBOSE) << __func__
+                    << ": Nearby sharing visibility pref is unchanged";
     return;
   }
 
   advertising_visibilty_preference_ = new_visibility;
-  VLOG(1) << __func__ << ": Nearby sharing visibility changed to "
-          << VisibilityToString(advertising_visibilty_preference_);
+  NS_LOG(VERBOSE) << __func__ << ": Nearby sharing visibility changed to "
+                  << VisibilityToString(advertising_visibilty_preference_);
 
   if (advertising_power_level_ != PowerLevel::kUnknown) {
     StopAdvertising();
@@ -367,11 +369,12 @@ DataUsage NearbySharingServiceImpl::GetDataUsagePref() {
 void NearbySharingServiceImpl::OnDataUsagePrefChanged() {
   DataUsage new_data_usage = GetDataUsagePref();
   if (advertising_data_usage_preference_ == new_data_usage) {
-    VLOG(1) << __func__ << ": Nearby sharing data usage pref is unchanged";
+    NS_LOG(VERBOSE) << __func__
+                    << ": Nearby sharing data usage pref is unchanged";
     return;
   }
 
-  VLOG(1) << __func__ << ": Nearby sharing data usage changed.";
+  NS_LOG(VERBOSE) << __func__ << ": Nearby sharing data usage changed.";
   if (advertising_power_level_ != PowerLevel::kUnknown) {
     StopAdvertising();
   }
@@ -496,8 +499,8 @@ void NearbySharingServiceImpl::InvalidateAdvertisingState() {
   // Screen is off. Do no work.
   if (ui::CheckIdleStateIsLocked()) {
     StopAdvertising();
-    VLOG(1) << __func__
-            << ": Stopping advertising because the screen is locked.";
+    NS_LOG(VERBOSE) << __func__
+                    << ": Stopping advertising because the screen is locked.";
     return;
   }
 
@@ -512,24 +515,26 @@ void NearbySharingServiceImpl::InvalidateAdvertisingState() {
         connection_type ==
             net::NetworkChangeNotifier::ConnectionType::CONNECTION_ETHERNET)) {
     StopAdvertising();
-    VLOG(1) << __func__
-            << ": Stopping advertising because both bluetooth and wifi LAN are "
-               "disabled.";
+    NS_LOG(VERBOSE)
+        << __func__
+        << ": Stopping advertising because both bluetooth and wifi LAN are "
+           "disabled.";
     return;
   }
 
   // Nearby Sharing is disabled. Don't advertise.
   if (!IsEnabled()) {
     StopAdvertising();
-    VLOG(1) << __func__
-            << ": Stopping advertising because Nearby Sharing is disabled.";
+    NS_LOG(VERBOSE)
+        << __func__
+        << ": Stopping advertising because Nearby Sharing is disabled.";
     return;
   }
 
   // We're scanning for other nearby devices. Don't advertise.
   if (is_scanning_) {
     StopAdvertising();
-    VLOG(1)
+    NS_LOG(VERBOSE)
         << __func__
         << ": Stopping advertising because we're scanning for other devices.";
     return;
@@ -537,16 +542,17 @@ void NearbySharingServiceImpl::InvalidateAdvertisingState() {
 
   if (is_transferring_files_) {
     StopAdvertising();
-    VLOG(1) << __func__
-            << ": Stopping advertising because we're currently in the midst of "
-               "a transfer.";
+    NS_LOG(VERBOSE)
+        << __func__
+        << ": Stopping advertising because we're currently in the midst of "
+           "a transfer.";
     return;
   }
 
   if (!foreground_receive_callbacks_.might_have_observers() &&
       !background_receive_callbacks_.might_have_observers()) {
     StopAdvertising();
-    VLOG(1)
+    NS_LOG(VERBOSE)
         << __func__
         << ": Stopping advertising because no receive surface is registered.";
     return;
@@ -555,9 +561,10 @@ void NearbySharingServiceImpl::InvalidateAdvertisingState() {
   if (!IsVisibleInBackground(advertising_visibilty_preference_) &&
       !foreground_receive_callbacks_.might_have_observers()) {
     StopAdvertising();
-    VLOG(1) << __func__
-            << ": Stopping advertising because no high power receive surface "
-               "is registered and device is visible to NO_ONE.";
+    NS_LOG(VERBOSE)
+        << __func__
+        << ": Stopping advertising because no high power receive surface "
+           "is registered and device is visible to NO_ONE.";
     return;
   }
 
@@ -575,19 +582,21 @@ void NearbySharingServiceImpl::InvalidateAdvertisingState() {
   if (advertising_power_level_ != PowerLevel::kUnknown) {
     if (power_level == advertising_power_level_ &&
         data_usage == advertising_data_usage_preference_) {
-      VLOG(1) << __func__
-              << "Failed to advertise because we're already advertising with "
-                 "power level "
-              << PowerLevelToString(advertising_power_level_)
-              << " and data usage preference "
-              << DataUsageToString(advertising_data_usage_preference_);
+      NS_LOG(VERBOSE)
+          << __func__
+          << "Failed to advertise because we're already advertising with "
+             "power level "
+          << PowerLevelToString(advertising_power_level_)
+          << " and data usage preference "
+          << DataUsageToString(advertising_data_usage_preference_);
       return;
     }
 
     StopAdvertising();
-    VLOG(1) << __func__ << ": Restart advertising with power level "
-            << PowerLevelToString(power_level) << " and data usage preference "
-            << DataUsageToString(data_usage);
+    NS_LOG(VERBOSE) << __func__ << ": Restart advertising with power level "
+                    << PowerLevelToString(power_level)
+                    << " and data usage preference "
+                    << DataUsageToString(data_usage);
   }
 
   // Starts advertising through Nearby Connections. Caller is expected to ensure
@@ -609,7 +618,7 @@ void NearbySharingServiceImpl::InvalidateAdvertisingState() {
       std::move(endpoint_info),
       /* listener= */ this, power_level, data_usage,
       base::BindOnce([](NearbyConnectionsManager::ConnectionsStatus status) {
-        VLOG(1)
+        NS_LOG(VERBOSE)
             << __func__
             << ": Advertising attempted over Nearby Connections with result "
             << ConnectionsStatusToString(status);
@@ -617,18 +626,20 @@ void NearbySharingServiceImpl::InvalidateAdvertisingState() {
 
   advertising_power_level_ = power_level;
   advertising_data_usage_preference_ = data_usage;
-  VLOG(1) << __func__ << ": Advertising has started over Nearby Connections: "
-          << " power level " << PowerLevelToString(power_level)
-          << " visibility "
-          << VisibilityToString(advertising_visibilty_preference_)
-          << " data usage " << DataUsageToString(data_usage);
+  NS_LOG(VERBOSE) << __func__
+                  << ": Advertising has started over Nearby Connections: "
+                  << " power level " << PowerLevelToString(power_level)
+                  << " visibility "
+                  << VisibilityToString(advertising_visibilty_preference_)
+                  << " data usage " << DataUsageToString(data_usage);
   return;
 }
 
 void NearbySharingServiceImpl::StopAdvertising() {
   if (advertising_power_level_ == PowerLevel::kUnknown) {
-    VLOG(1) << __func__
-            << ": Failed to stop advertising because we weren't advertising";
+    NS_LOG(VERBOSE)
+        << __func__
+        << ": Failed to stop advertising because we weren't advertising";
     return;
   }
 
@@ -636,5 +647,5 @@ void NearbySharingServiceImpl::StopAdvertising() {
 
   advertising_data_usage_preference_ = DataUsage::kUnknown;
   advertising_power_level_ = PowerLevel::kUnknown;
-  VLOG(1) << __func__ << ": Advertising has stopped";
+  NS_LOG(VERBOSE) << __func__ << ": Advertising has stopped";
 }

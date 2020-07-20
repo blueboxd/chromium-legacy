@@ -115,7 +115,7 @@ class DCTestOverlayProcessor : public OverlayProcessorWin {
 };
 
 std::unique_ptr<RenderPass> CreateRenderPass() {
-  int render_pass_id = 1;
+  RenderPassId render_pass_id{1};
   gfx::Rect output_rect(0, 0, 256, 256);
 
   std::unique_ptr<RenderPass> pass = RenderPass::Create();

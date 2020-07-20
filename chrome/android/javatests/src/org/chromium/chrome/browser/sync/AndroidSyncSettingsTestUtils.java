@@ -28,6 +28,8 @@ public class AndroidSyncSettingsTestUtils {
     @VisibleForTesting
     public static void setUpAndroidSyncSettingsForTesting(SyncContentResolverDelegate delegate) {
         delegate.setMasterSyncAutomatically(true);
-        AndroidSyncSettings.overrideForTests(new AndroidSyncSettings(delegate));
+        // AndroidSyncSettings ctor usually gets sync account from IdentityManager, which may have
+        // state left by previous tests. To avoid this, pass null account explicitly.
+        AndroidSyncSettings.overrideForTests(new AndroidSyncSettings(delegate, null, null));
     }
 }

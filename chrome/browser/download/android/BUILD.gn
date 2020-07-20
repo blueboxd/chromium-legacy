@@ -69,6 +69,7 @@ android_library("java") {
     "//components/prefs/android:java",
     "//components/user_prefs/android:java",
     "//content/public/android:content_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_core_core_java",
     "//third_party/android_deps:androidx_fragment_fragment_java",
     "//third_party/android_deps:androidx_preference_preference_java",
@@ -83,7 +84,14 @@ android_library("java") {
 
 android_library_factory("factory_java") {
   # These deps will be inherited by the resulting android_library target.
-  deps = [ ":java" ]
+  deps = [
+    ":java",
+    "//base:base_java",
+    "//chrome/browser/ui/messages/android:java",
+    "//components/feature_engagement:feature_engagement_java",
+    "//components/offline_items_collection/core:core_java",
+    "//ui/android:ui_java",
+  ]
 
   # This internal file will be replaced by a generated file so the resulting
   # android_library target does not actually depend on this internal file.
@@ -114,9 +122,11 @@ android_library("download_java_tests") {
     ":java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//chrome/browser/flags:java",
     "//chrome/test/android:chrome_java_test_support",
     "//components/browser_ui/util/android:java",
     "//components/offline_items_collection/core:core_java",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",

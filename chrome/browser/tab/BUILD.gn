@@ -54,9 +54,13 @@ android_library("java") {
     "//components/find_in_page/android:java",
     "//components/navigation_interception/android:navigation_interception_java",
     "//content/public/android:content_java",
+    "//net/android:net_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_core_core_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
     "//ui/android:ui_full_java",
+    "//url:gurl_java",
+    "//url:origin_java",
   ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]

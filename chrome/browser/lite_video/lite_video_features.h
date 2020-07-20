@@ -20,6 +20,11 @@ namespace features {
 // adaptive bitrates of media streams is enabled. Currently disabled by default.
 bool IsLiteVideoEnabled();
 
+// Whether the LiteVideo coinflip experiment is enabled. The coinflip
+// experiment is a counterfactual experiment that decides whether LiteVideos
+// should be heldback on a per navigation basis.
+bool IsCoinflipExperimentEnabled();
+
 // Return the origins that are whitelisted for using the LiteVideo optimization
 // and the parameters needed to throttle media requests for that origin.
 base::Optional<base::Value> GetLiteVideoOriginHintsFromFieldTrial();

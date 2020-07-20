@@ -5239,6 +5239,28 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="LiteVideo">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    Metrics that capture the state and result of the LiteVideo optimization.
+    This will be recorded once per frame when the associated render process
+    ends. Only for Lite mode users on Android.
+  </summary>
+  <metric name="BlocklistReason" enum="LiteVideoBlocklistReason">
+    <summary>
+      The reason that a navigation was blocklisted and will not have media
+      requests throttled.
+    </summary>
+  </metric>
+  <metric name="ThrottlingStartDecision" enum="LiteVideoDecision">
+    <summary>
+      The decision for whether media requests associated with this frame will be
+      potentially throttled.
+    </summary>
+  </metric>
+</event>
+
 <event name="LoadingPredictor" singular="true">
   <owner>sophiechang@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>

@@ -69,5 +69,7 @@ const base::Feature kAllowJITInstallationWhenAppIconIsMissing{
 const base::Feature kPaymentHandlerLockIcon{"PaymentHandlerLockIcon",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEnforceFullDelegation{"EnforceFullDelegation",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace features
 }  // namespace payments

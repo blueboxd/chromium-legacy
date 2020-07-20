@@ -92,7 +92,6 @@
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "components/captive_portal/core/buildflags.h"
-#include "components/feature_engagement/buildflags.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
@@ -134,12 +133,6 @@
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/signin/signin_manager_factory.h"
-#endif
-
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-#include "chrome/browser/feature_engagement/bookmark/bookmark_tracker_factory.h"
-#include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker_factory.h"
-#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -265,11 +258,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   explore_sites::ExploreSitesServiceFactory::GetInstance();
 #endif
   FaviconServiceFactory::GetInstance();
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-  feature_engagement::BookmarkTrackerFactory::GetInstance();
-  feature_engagement::IncognitoWindowTrackerFactory::GetInstance();
-  feature_engagement::NewTabTrackerFactory::GetInstance();
-#endif
   feature_engagement::TrackerFactory::GetInstance();
 #if !defined(OS_ANDROID)
   feedback::FeedbackUploaderFactoryChrome::GetInstance();

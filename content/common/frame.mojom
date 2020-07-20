@@ -43,6 +43,7 @@ import "third_party/blink/public/mojom/portal/portal.mojom";
 import "third_party/blink/public/mojom/loader/referrer.mojom";
 import "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_container.mojom";
+import "third_party/blink/public/mojom/widget/visual_properties.mojom";
 import "third_party/blink/public/mojom/window_features/window_features.mojom";
 import "ui/accessibility/mojom/ax_tree_update.mojom";
 import "ui/base/mojom/window_open_disposition.mojom";
@@ -310,7 +311,7 @@ struct CreateNewWindowReply {
   int32 main_frame_widget_route_id;
 
   // Initial properties for the main frame RenderWidget.
-  VisualProperties visual_properties;
+  blink.mojom.VisualProperties visual_properties;
 
   // The communication interfaces for the WebFrameWidget in blink.
   pending_associated_remote<blink.mojom.FrameWidgetHost> frame_widget_host;

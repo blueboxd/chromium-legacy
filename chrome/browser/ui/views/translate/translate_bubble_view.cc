@@ -379,7 +379,6 @@ bool TranslateBubbleView::AcceleratorPressed(
       break;
     }
     case TranslateBubbleModel::VIEW_STATE_TRANSLATING:
-      break;
     case TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE: {
       if (accelerator.key_code() == ui::VKEY_RETURN) {
         ShowOriginal();
@@ -591,12 +590,14 @@ views::View* TranslateBubbleView::GetCurrentView() const {
 void TranslateBubbleView::Translate() {
   model_->Translate();
   model_->SetViewState(TranslateBubbleModel::VIEW_STATE_TRANSLATING);
+  SwitchView(TranslateBubbleModel::VIEW_STATE_TRANSLATING);
   translate::ReportUiAction(translate::TRANSLATE_BUTTON_CLICKED);
 }
 
 void TranslateBubbleView::ShowOriginal() {
   model_->RevertTranslation();
   model_->SetViewState(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE);
+  SwitchView(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE);
   translate::ReportUiAction(translate::SHOW_ORIGINAL_BUTTON_CLICKED);
 }
 

@@ -289,7 +289,7 @@ void PeopleHandler::RegisterMessages() {
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "SyncSetupShowSetupUI",
-      base::BindRepeating(&PeopleHandler::HandleShowSetupUI,
+      base::BindRepeating(&PeopleHandler::HandleShowSyncSetupUI,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "SyncSetupGetSyncStatus",
@@ -618,7 +618,7 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
     ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_PASSPHRASE);
 }
 
-void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
+void PeopleHandler::HandleShowSyncSetupUI(const base::ListValue* args) {
   AllowJavascript();
 
   syncer::SyncService* service = GetSyncService();
@@ -637,6 +637,8 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
 
   // Observe the web contents for a before unload event.
   Observe(web_ui()->GetWebContents());
+
+  MaybeMarkSyncConfiguring();
 
   PushSyncPrefs();
 
@@ -865,9 +867,10 @@ void PeopleHandler::OnPrimaryAccountCleared(
 
 void PeopleHandler::OnStateChanged(syncer::SyncService* sync) {
   UpdateSyncStatus();
-
-  // When the SyncService changes its state, we should also push the updated
-  // sync preferences.
+  // TODO(crbug.com/1106764): Re-evaluate marking sync as configuring here,
+  // since this gets called whenever ProfileSyncService changes state. Inline
+  // MaybeMarkSyncConfiguring() then.
+  MaybeMarkSyncConfiguring();
   PushSyncPrefs();
 }
 
@@ -955,21 +958,13 @@ std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStatusDictionary()
 }
 
 void PeopleHandler::PushSyncPrefs() {
-#if !defined(OS_CHROMEOS)
-  // Early exit if the user has not signed in yet.
-  if (IsProfileAuthNeededOrHasErrors())
-    return;
-#endif
-
   syncer::SyncService* service = GetSyncService();
   // The sync service may be nullptr if it has been just disabled by policy.
   if (!service || !service->IsEngineInitialized()) {
     return;
   }
 
-  configuring_sync_ = true;
-
-  // Setup args for the sync configure screen:
+  // Setup values for the JSON response:
   //   syncAllDataTypes: true if the user wants to sync everything
   //   <data_type>Registered: true if the associated data type is supported
   //   <data_type>Synced: true if the user wants to sync that specific data type
@@ -1065,6 +1060,17 @@ void PeopleHandler::MarkFirstSetupComplete() {
   service->GetUserSettings()->SetFirstSetupComplete(
       syncer::SyncFirstSetupCompleteSource::ADVANCED_FLOW_CONFIRM);
   FireWebUIListener("sync-settings-saved");
+}
+
+void PeopleHandler::MaybeMarkSyncConfiguring() {
+#if !defined(OS_CHROMEOS)
+  if (IsProfileAuthNeededOrHasErrors())
+    return;
+#endif
+  syncer::SyncService* service = GetSyncService();
+  // The sync service may be nullptr if it has been just disabled by policy.
+  if (service && service->IsEngineInitialized())
+    configuring_sync_ = true;
 }
 
 bool PeopleHandler::IsProfileAuthNeededOrHasErrors() {

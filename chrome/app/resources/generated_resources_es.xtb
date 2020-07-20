@@ -233,6 +233,7 @@
 <translation id="1274997165432133392">Cookies y otros datos de sitios</translation>
 <translation id="1275718070701477396">Seleccionado</translation>
 <translation id="1276994519141842946">No se ha podido desinstalar <ph name="APP_NAME" /></translation>
+<translation id="127946606521051357">Un dispositivo cercano está compartiendo datos</translation>
 <translation id="1280820357415527819">Buscando redes móviles</translation>
 <translation id="1280965841156951489">Editar archivos</translation>
 <translation id="1285320974508926690">No traducir nunca este sitio</translation>
@@ -1221,6 +1222,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2489918096470125693">Añadir &amp;carpeta...</translation>
 <translation id="2490481887078769936">Se ha quitado "<ph name="FILE_NAME" />" de la lista</translation>
 <translation id="249113932447298600">Lo sentimos, pero el dispositivo <ph name="DEVICE_LABEL" /> no se admite en este momento.</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> está compartiendo <ph name="ATTACHMENTS" /> contigo.</translation>
 <translation id="2492461744635776704">Preparando solicitud de firma de certificado</translation>
 <translation id="249303669840926644">No se ha podido completar el registro</translation>
 <translation id="2495777824269688114">Descubre más funciones o consigue respuestas. Selecciona ? para obtener ayuda.</translation>
@@ -4151,6 +4153,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6212039847102026977">Mostrar propiedades de red avanzadas</translation>
 <translation id="6212168817037875041">Apagar la pantalla</translation>
 <translation id="6212752530110374741">Enviar enlace por correo electrónico</translation>
+<translation id="6213230117190778270">Recibir</translation>
 <translation id="6216696360484424239">Iniciar sesión automáticamente</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> no tiene conexión. Conéctate a Internet e inténtalo de nuevo.</translation>
 <translation id="6220413761270491930">Error al cargar extensión</translation>
@@ -4278,6 +4281,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6362853299801475928">&amp;Notificar un error...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Añadir familiares y amigos</translation>
+<translation id="6367985768157257101">¿Recibir a través de Compartir con Nearby?</translation>
 <translation id="636850387210749493">Registro de empresa</translation>
 <translation id="6370021412472292592">No se ha podido cargar el archivo de manifiesto.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -6580,6 +6584,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Introducir frase de contraseña</translation>
 <translation id="939736085109172342">Nueva carpeta</translation>
+<translation id="941070664607309480">Haz clic para hacer que tu dispositivo sea visible y permitir que el dispositivo cercano pueda compartir datos contigo.</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> está compartiendo audio y una pestaña de Chrome.</translation>
 <translation id="945522503751344254">Enviar comentarios</translation>
 <translation id="947329552760389097">&amp;Inspeccionar elementos</translation>

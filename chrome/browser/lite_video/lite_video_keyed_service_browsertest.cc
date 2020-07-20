@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/lite_video/lite_video_keyed_service.h"
 
+#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/lite_video/lite_video_features.h"
 #include "chrome/browser/lite_video/lite_video_hint.h"
 #include "chrome/browser/lite_video/lite_video_keyed_service_factory.h"
+#include "chrome/browser/lite_video/lite_video_observer.h"
 #include "chrome/browser/lite_video/lite_video_switches.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -20,11 +22,14 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/network_connection_change_simulator.h"
 #include "net/nqe/effective_connection_type.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 #include "services/network/public/mojom/network_change_manager.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
@@ -111,6 +116,8 @@ class LiteVideoKeyedServiceBrowserTest
         {::features::kLiteVideo},
         {{"lite_video_origin_hints", "{\"litevideo.com\": 123}"},
          {"user_blocklist_opt_out_history_threshold", "1"}});
+
+    SetUpHTTPSServer();
     InProcessBrowserTest::SetUp();
   }
 
@@ -125,6 +132,16 @@ class LiteVideoKeyedServiceBrowserTest
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitch("enable-spdy-proxy-auth");
     cmd->AppendSwitch(lite_video::switches::kLiteVideoIgnoreNetworkConditions);
+  }
+
+  void SetUpHTTPSServer() {
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+    https_server_->ServeFilesFromSourceDirectory("chrome/test/data/previews");
+    ASSERT_TRUE(https_server_->Start());
+
+    https_url_ = https_server_->GetURL("/iframe_blank.html");
+    ASSERT_TRUE(https_url().SchemeIs(url::kHttpsScheme));
   }
 
   // Sets the effective connection type that the Network Quality Tracker will
@@ -149,8 +166,12 @@ class LiteVideoKeyedServiceBrowserTest
 
   const base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
+  GURL https_url() { return https_url_; }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
+  GURL https_url_;
   base::HistogramTester histogram_tester_;
 };
 
@@ -163,6 +184,7 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
 IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
                        LiteVideoCanApplyLiteVideo_UnsupportedScheme) {
   WaitForBlocklistToBeLoaded();
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
 
   EXPECT_TRUE(
       LiteVideoKeyedServiceFactory::GetForProfile(browser()->profile()));
@@ -171,6 +193,9 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://testserver.com"));
 
   histogram_tester()->ExpectTotalCount("LiteVideo.Navigation.HasHint", 0);
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::LiteVideo::kEntryName);
+  EXPECT_EQ(0u, entries.size());
 }
 
 // Fails occasionally on ChromeOS. http://crbug.com/1102563
@@ -183,14 +208,15 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
                        MAYBE_LiteVideoCanApplyLiteVideo_NoHintForHost) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   SetEffectiveConnectionType(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
   WaitForBlocklistToBeLoaded();
   EXPECT_TRUE(
       LiteVideoKeyedServiceFactory::GetForProfile(browser()->profile()));
-
+  GURL navigation_url("https://testserver.com");
   // Navigate metrics get recorded.
-  ui_test_utils::NavigateToURL(browser(), GURL("https://testserver.com"));
+  ui_test_utils::NavigateToURL(browser(), navigation_url);
 
   EXPECT_GT(RetryForHistogramUntilCountReached(
                 *histogram_tester(), "LiteVideo.Navigation.HasHint", 1),
@@ -202,10 +228,22 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
       lite_video::LiteVideoBlocklistReason::kAllowed, 1);
   histogram_tester()->ExpectTotalCount(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::LiteVideo::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  auto* entry = entries[0];
+  ukm_recorder.ExpectEntrySourceHasUrl(entry, navigation_url);
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::LiteVideo::kThrottlingStartDecisionName,
+      static_cast<int>(lite_video::LiteVideoDecision::kNotAllowed));
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::LiteVideo::kBlocklistReasonName,
+      static_cast<int>(lite_video::LiteVideoBlocklistReason::kAllowed));
 }
 
 IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
                        LiteVideoCanApplyLiteVideo_HasHint) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   SetEffectiveConnectionType(
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
   WaitForBlocklistToBeLoaded();
@@ -227,10 +265,22 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
       lite_video::LiteVideoBlocklistReason::kAllowed, 1);
   histogram_tester()->ExpectTotalCount(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::LiteVideo::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  auto* entry = entries[0];
+  ukm_recorder.ExpectEntrySourceHasUrl(entry, navigation_url);
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::LiteVideo::kThrottlingStartDecisionName,
+      static_cast<int>(lite_video::LiteVideoDecision::kAllowed));
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::LiteVideo::kBlocklistReasonName,
+      static_cast<int>(lite_video::LiteVideoBlocklistReason::kAllowed));
 }
 
 IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
                        LiteVideoCanApplyLiteVideo_Reload) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   WaitForBlocklistToBeLoaded();
   EXPECT_TRUE(
       LiteVideoKeyedServiceFactory::GetForProfile(browser()->profile()));
@@ -267,10 +317,34 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
       lite_video::LiteVideoBlocklistReason::kNavigationBlocklisted, 1);
   histogram_tester()->ExpectTotalCount(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
+
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::LiteVideo::kEntryName);
+  ASSERT_EQ(2u, entries.size());
+  auto* entry = entries[0];
+  ukm_recorder.ExpectEntrySourceHasUrl(entry, url);
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::LiteVideo::kThrottlingStartDecisionName,
+      static_cast<int>(lite_video::LiteVideoDecision::kNotAllowed));
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::LiteVideo::kBlocklistReasonName,
+      static_cast<int>(
+          lite_video::LiteVideoBlocklistReason::kNavigationReload));
+
+  entry = entries[1];
+  ukm_recorder.ExpectEntrySourceHasUrl(entry, url);
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::LiteVideo::kThrottlingStartDecisionName,
+      static_cast<int>(lite_video::LiteVideoDecision::kNotAllowed));
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::LiteVideo::kBlocklistReasonName,
+      static_cast<int>(
+          lite_video::LiteVideoBlocklistReason::kNavigationBlocklisted));
 }
 
 IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
                        LiteVideoCanApplyLiteVideo_ForwardBack) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   WaitForBlocklistToBeLoaded();
   EXPECT_TRUE(
       LiteVideoKeyedServiceFactory::GetForProfile(browser()->profile()));
@@ -307,10 +381,34 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
       lite_video::LiteVideoBlocklistReason::kNavigationBlocklisted, 1);
   histogram_tester()->ExpectTotalCount(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
+
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::LiteVideo::kEntryName);
+  ASSERT_EQ(2u, entries.size());
+  auto* entry = entries[0];
+  ukm_recorder.ExpectEntrySourceHasUrl(entry, url);
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::LiteVideo::kThrottlingStartDecisionName,
+      static_cast<int>(lite_video::LiteVideoDecision::kNotAllowed));
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::LiteVideo::kBlocklistReasonName,
+      static_cast<int>(
+          lite_video::LiteVideoBlocklistReason::kNavigationForwardBack));
+
+  entry = entries[1];
+  ukm_recorder.ExpectEntrySourceHasUrl(entry, url);
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::LiteVideo::kThrottlingStartDecisionName,
+      static_cast<int>(lite_video::LiteVideoDecision::kNotAllowed));
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::LiteVideo::kBlocklistReasonName,
+      static_cast<int>(
+          lite_video::LiteVideoBlocklistReason::kNavigationBlocklisted));
 }
 
 IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
                        MultipleNavigationsNotBlocklisted) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
   WaitForBlocklistToBeLoaded();
   EXPECT_TRUE(
       LiteVideoKeyedServiceFactory::GetForProfile(browser()->profile()));
@@ -345,6 +443,19 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
       lite_video::LiteVideoBlocklistReason::kAllowed, 2);
   histogram_tester()->ExpectTotalCount(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
+
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::LiteVideo::kEntryName);
+  ASSERT_EQ(2u, entries.size());
+  for (auto* entry : entries) {
+    ukm_recorder.ExpectEntrySourceHasUrl(entry, url);
+    ukm_recorder.ExpectEntryMetric(
+        entry, ukm::builders::LiteVideo::kThrottlingStartDecisionName,
+        static_cast<int>(lite_video::LiteVideoDecision::kAllowed));
+    ukm_recorder.ExpectEntryMetric(
+        entry, ukm::builders::LiteVideo::kBlocklistReasonName,
+        static_cast<int>(lite_video::LiteVideoBlocklistReason::kAllowed));
+  }
 }
 
 // This test fails on Windows because of the backing store for the blocklist.
@@ -488,4 +599,94 @@ IN_PROC_BROWSER_TEST_F(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame", 0);
   histogram_tester()->ExpectTotalCount(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame", 0);
+}
+
+IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
+                       LiteVideoCanApplyLiteVideo_NavigationWithSubframe) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  SetEffectiveConnectionType(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
+  WaitForBlocklistToBeLoaded();
+  EXPECT_TRUE(
+      LiteVideoKeyedServiceFactory::GetForProfile(browser()->profile()));
+
+  // Navigate metrics get recorded.
+  ui_test_utils::NavigateToURL(browser(), https_url());
+
+  EXPECT_EQ(RetryForHistogramUntilCountReached(
+                *histogram_tester(), "LiteVideo.Navigation.HasHint", 2),
+            2);
+  histogram_tester()->ExpectBucketCount("LiteVideo.Navigation.HasHint", false,
+                                        2);
+  histogram_tester()->ExpectBucketCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
+      lite_video::LiteVideoBlocklistReason::kAllowed, 1);
+  histogram_tester()->ExpectBucketCount(
+      "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame",
+      lite_video::LiteVideoBlocklistReason::kAllowed, 1);
+
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::LiteVideo::kEntryName);
+  ASSERT_EQ(2u, entries.size());
+  for (auto* entry : entries) {
+    // Both entries should be tied to the mainframe url.
+    ukm_recorder.ExpectEntrySourceHasUrl(entry, https_url());
+    ukm_recorder.ExpectEntryMetric(
+        entry, ukm::builders::LiteVideo::kThrottlingStartDecisionName,
+        static_cast<int>(lite_video::LiteVideoDecision::kNotAllowed));
+    ukm_recorder.ExpectEntryMetric(
+        entry, ukm::builders::LiteVideo::kBlocklistReasonName,
+        static_cast<int>(lite_video::LiteVideoBlocklistReason::kAllowed));
+  }
+}
+
+class LiteVideoKeyedServiceCoinflipBrowserTest
+    : public LiteVideoKeyedServiceBrowserTest {
+ public:
+  LiteVideoKeyedServiceCoinflipBrowserTest() = default;
+  ~LiteVideoKeyedServiceCoinflipBrowserTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        {::features::kLiteVideo}, {{"is_coinflip_exp", "true"}});
+    SetUpHTTPSServer();
+    InProcessBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceCoinflipBrowserTest,
+                       LiteVideoCanApplyLiteVideo_CoinflipHoldback) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      lite_video::switches::kLiteVideoForceOverrideDecision);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      lite_video::switches::kLiteVideoForceCoinflipHoldback);
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  SetEffectiveConnectionType(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
+  WaitForBlocklistToBeLoaded();
+  EXPECT_TRUE(
+      LiteVideoKeyedServiceFactory::GetForProfile(browser()->profile()));
+
+  // Navigate metrics get recorded.
+  ui_test_utils::NavigateToURL(browser(), https_url());
+
+  EXPECT_EQ(RetryForHistogramUntilCountReached(
+                *histogram_tester(), "LiteVideo.Navigation.HasHint", 2),
+            2);
+  histogram_tester()->ExpectBucketCount("LiteVideo.Navigation.HasHint", true,
+                                        2);
+
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::LiteVideo::kEntryName);
+  ASSERT_EQ(2u, entries.size());
+  for (auto* entry : entries) {
+    // Both entries should be tied to the mainframe url.
+    ukm_recorder.ExpectEntrySourceHasUrl(entry, https_url());
+    ukm_recorder.ExpectEntryMetric(
+        entry, ukm::builders::LiteVideo::kThrottlingStartDecisionName,
+        static_cast<int>(lite_video::LiteVideoDecision::kHoldback));
+  }
 }

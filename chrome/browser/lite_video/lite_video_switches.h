@@ -12,6 +12,7 @@ namespace switches {
 
 extern const char kLiteVideoIgnoreNetworkConditions[];
 extern const char kLiteVideoForceOverrideDecision[];
+extern const char kLiteVideoForceCoinflipHoldback[];
 
 // Returns true if checking the network condition should be ignored.
 bool ShouldIgnoreLiteVideoNetworkConditions();
@@ -19,6 +20,10 @@ bool ShouldIgnoreLiteVideoNetworkConditions();
 // Returns true if the decision logic for whether to allow LiteVideos should be
 // overridden and allow LiteVideos to be enabled for every navigation.
 bool ShouldOverrideLiteVideoDecision();
+
+// Returns true if the coinflip experiment should be set to true, resulting
+// in LiteVideos being heldback.
+bool ShouldForceCoinflipHoldback();
 
 }  // namespace switches
 }  // namespace lite_video

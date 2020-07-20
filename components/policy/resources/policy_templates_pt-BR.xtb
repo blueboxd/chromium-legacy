@@ -4313,7 +4313,7 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
       Se o dispositivo do usuário não for gerenciado, a disponibilidade da funcionalidade será dependente também da possibilidade de o usuário não ser proprietário do dispositivo.</translation>
 <translation id="7567748950909116096">Especifica as impressoras que um usuário pode usar.
 
-      Esta política só será usada se <ph name="PRINTERS_ALLOWLIST" /> for escolhida para <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
+      Esta política só será usada se <ph name="PRINTERS_ALLOWLIST" /> for escolhida para <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
 
       Se esta política for usada, somente as impressoras com IDs que correspondem aos valores da política estarão disponíveis para o usuário. Os IDs precisam corresponder aos campos "id" ou "guid" no arquivo especificado na <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>

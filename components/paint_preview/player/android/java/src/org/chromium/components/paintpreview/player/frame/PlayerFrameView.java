@@ -38,13 +38,14 @@ class PlayerFrameView extends FrameLayout {
      * @param playerFrameViewDelegate The interface used for forwarding events.
      */
     PlayerFrameView(@NonNull Context context, boolean canDetectZoom,
-            PlayerFrameViewDelegate playerFrameViewDelegate) {
+            PlayerFrameViewDelegate playerFrameViewDelegate,
+            PlayerFrameGestureDetectorDelegate gestureDetectorDelegate) {
         super(context);
         setWillNotDraw(false);
         mDelegate = playerFrameViewDelegate;
         mBitmapPainter = new PlayerFrameBitmapPainter(this::invalidate);
         mGestureDetector =
-                new PlayerFrameGestureDetector(context, canDetectZoom, playerFrameViewDelegate);
+                new PlayerFrameGestureDetector(context, canDetectZoom, gestureDetectorDelegate);
     }
 
     PlayerFrameGestureDetector getGestureDetector() {

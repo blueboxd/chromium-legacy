@@ -1418,6 +1418,14 @@ util.isZipNoNacl = () => {
 };
 
 /**
+ * Returns true if transfer details flag is enabled.
+ * @return {boolean}
+ */
+util.isTransferDetailsEnabled = () => {
+  return loadTimeData.getBoolean('FILES_TRANSFER_DETAILS_ENABLED');
+};
+
+/**
  * Retrieves all entries inside the given |rootEntry|.
  * @param {!DirectoryEntry} rootEntry
  * @param {function(!Array<!Entry>)} entriesCallback Called when some chunk of

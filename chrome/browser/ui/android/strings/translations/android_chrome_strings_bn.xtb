@@ -357,6 +357,7 @@
 <translation id="3892148308691398805">টেক্সট কপি করুন</translation>
 <translation id="3894427358181296146">ফোল্ডার যোগ করুন</translation>
 <translation id="3895926599014793903">ফোর্স জুম চালু করুন</translation>
+<translation id="3909763690984331376">নিরাপত্তা পরীক্ষা <ph name="BEGIN_NEW" />নতুন<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">ওয়েব থেকে সেরা ফলাফল লোড করা হচ্ছে…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">আমার ডেটা একত্রিত করুন</translation>
@@ -581,6 +582,7 @@
 <translation id="5686790454216892815">ফাইলের নামটি খুব বড়</translation>
 <translation id="5694049548840660018">হোমে সহজেই ফিরে যান</translation>
 <translation id="569536719314091526">আরও বিকল্প বোতাম থেকে এই পৃষ্ঠাটিকে যেকোনও ভাষায় অনুবাদ করুন</translation>
+<translation id="5696597120588531049">Chrome আপনাকে ডেটার নিরাপত্তা লঙ্ঘন, ক্ষতিকর ওয়েবসাইট ও আরও অন্যান্য কিছু থেকে সুরক্ষিত থাকতে সাহায্য করে</translation>
 <translation id="5697688514913266141">আপনার ফাইল <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" /> ডিরেক্টরিতে সেভ করা হবে। <ph name="BEGIN_LINK2" />এডিট করুন<ph name="END_LINK2" />।</translation>
 <translation id="570347048394355941">বদল করে ট্যাবে যান</translation>
 <translation id="572328651809341494">সাম্প্রতিক ট্যাবগুলি</translation>
@@ -714,6 +716,7 @@
 <translation id="6656545060687952787">ডিভাইস স্ক্যান করার জন্য Chrome এর স্থান এক্সেস প্রয়োজন। <ph name="BEGIN_LINK" />অনুমতি আপডেট করুন<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">পাসওয়ার্ড</translation>
 <translation id="6659594942844771486">ট্যাব</translation>
+<translation id="6663079968236414793">টেক্সটের সাথে লিঙ্ক করুন</translation>
 <translation id="666573598175432848">Chrome-এর একটি নতুন ভার্সন উপলভ্য রয়েছে। Play Store-এ যেতে এই এলিমেন্টে ট্যাপ করুন।</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> এ খুলুন</translation>
 <translation id="666981079809192359">Chrome এর গোপনীয়তা বিজ্ঞপ্তি</translation>

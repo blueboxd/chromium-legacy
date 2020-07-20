@@ -30,7 +30,6 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.Features.JUnitProcessor;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -124,14 +123,11 @@ public class AndroidSyncSettingsTest {
         mNumberOfCallsToWait = 0;
         mCallbackHelper = new CallbackHelper();
         setupTestAccounts();
-        // Set signed in account to mAccount before initializing AndroidSyncSettings to let
-        // AndroidSyncSettings establish correct assumptions.
-        ChromeSigninController.get().setSignedInAccountName(mAccount.name);
 
         mSyncContentResolverDelegate = new CountingMockSyncContentResolverDelegate();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mAndroidSyncSettings = new AndroidSyncSettings(mSyncContentResolverDelegate,
-                    (Boolean result) -> mCallbackHelper.notifyCalled());
+                    (Boolean result) -> mCallbackHelper.notifyCalled(), mAccount);
         });
         mNumberOfCallsToWait++;
         mCallbackHelper.waitForCallback(0, mNumberOfCallsToWait);

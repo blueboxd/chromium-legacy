@@ -716,6 +716,7 @@ class ExtensionService : public ExtensionServiceInterface,
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            DestroyingProfileClearsExtensions);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, SetUnsetBlocklistInPrefs);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, NoUnsetBlocklistInPrefs);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            BlocklistedExtensionWillNotInstall);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,

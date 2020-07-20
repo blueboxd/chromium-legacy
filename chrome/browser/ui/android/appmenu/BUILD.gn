@@ -17,12 +17,18 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/ui/appmenu/CustomViewBinder.java",
     "java/src/org/chromium/chrome/browser/ui/appmenu/MenuButtonDelegate.java",
   ]
-  deps = [ "//chrome/browser/android/lifecycle:java" ]
+  deps = [
+    "//chrome/browser/android/lifecycle:java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
+  ]
 }
 
 android_library_factory("factory_java") {
   # These deps will be inherited by the resulting android_library target.
-  deps = [ ":java" ]
+  deps = [
+    ":java",
+    "//chrome/browser/android/lifecycle:java",
+  ]
 
   # This internal file will be replaced by a generated file so the resulting
   # android_library target does not actually depend on this internal file.

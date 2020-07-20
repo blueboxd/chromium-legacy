@@ -37,27 +37,26 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <!-- TODO(xingliu): Use 0 paddingStart for RadioButtonWithDescription. See crbug.com/1090062 -->
             <!-- TODO(xingliu): Adjust margin between RadioButtonWithDescription. See crbug.com/1090155 -->
             <org.chromium.components.browser_ui.widget.RadioButtonWithDescription
                 android:id="@+id/download_now"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="1dp"
+                android:paddingStart="@dimen/download_dialog_radio_button_margin_start"
                 app:primaryText="@string/download_later_download_now_text" />
 
             <org.chromium.components.browser_ui.widget.RadioButtonWithDescription
                 android:id="@+id/on_wifi"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="1dp"
+                android:paddingStart="@dimen/download_dialog_radio_button_margin_start"
                 app:primaryText="@string/download_later_on_wifi_text" />
 
             <org.chromium.components.browser_ui.widget.RadioButtonWithDescription
                 android:id="@+id/choose_date_time"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="1dp"
+                android:paddingStart="@dimen/download_dialog_radio_button_margin_start"
                 app:primaryText="@string/download_later_pick_time_text" />
 
         </org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionLayout>
@@ -68,7 +67,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="11dp"
             android:layout_marginBottom="11dp"
-            android:layout_marginStart="-5dp"
+            android:layout_marginStart="@dimen/download_dialog_checkbox_margin_start"
             android:text="@string/download_location_dialog_checkbox"
             style="@style/TextAppearance.TextMedium.Tertiary"
             android:visibility="gone" />

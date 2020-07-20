@@ -233,7 +233,7 @@ namespace first_run {
 namespace internal {
 
 void SetupInitialPrefsFromInstallPrefs(
-    const installer::MasterPreferences& install_prefs,
+    const installer::InitialPreferences& install_prefs,
     MasterPrefs* out_prefs) {
   ConvertStringVectorToGURLVector(
       install_prefs.GetFirstRunTabs(), &out_prefs->new_tabs);
@@ -376,7 +376,7 @@ void SetInitialPrefsPathForTesting(const base::FilePath& initial_prefs) {
   GetInitialPrefsPathForTesting() = initial_prefs;
 }
 
-std::unique_ptr<installer::MasterPreferences> LoadInitialPrefs() {
+std::unique_ptr<installer::InitialPreferences> LoadInitialPrefs() {
   base::FilePath initial_prefs_path;
   if (!GetInitialPrefsPathForTesting().empty())
     initial_prefs_path = GetInitialPrefsPathForTesting();
@@ -387,15 +387,15 @@ std::unique_ptr<installer::MasterPreferences> LoadInitialPrefs() {
   if (initial_prefs_path.empty())
     return nullptr;
   auto initial_prefs =
-      std::make_unique<installer::MasterPreferences>(initial_prefs_path);
+      std::make_unique<installer::InitialPreferences>(initial_prefs_path);
   if (!initial_prefs->read_from_file())
     return nullptr;
   return initial_prefs;
 }
 
-ProcessMasterPreferencesResult ProcessMasterPreferences(
+ProcessInitialPreferencesResult ProcessInitialPreferences(
     const base::FilePath& user_data_dir,
-    std::unique_ptr<installer::MasterPreferences> initial_prefs,
+    std::unique_ptr<installer::InitialPreferences> initial_prefs,
     MasterPrefs* out_prefs) {
   DCHECK(!user_data_dir.empty());
 
@@ -437,8 +437,8 @@ void AutoImport(
   // Use |profile|'s PrefService to determine what to import. It will reflect in
   // order:
   //  1) Policies.
-  //  2) Master preferences (used to initialize user prefs in
-  //     ProcessMasterPreferences()).
+  //  2) Initial preferences (used to initialize user prefs in
+  //     ProcessInitialPreferences()).
   //  3) Recommended policies.
   //  4) Registered default.
   PrefService* prefs = profile->GetPrefs();

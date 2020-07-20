@@ -3,13 +3,16 @@
 // found in the LICENSE file.
 
 import {PDFScriptingAPI} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_scripting_api.js';
+import {PDFViewerElement} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer.js';
 
 const tests = [
   /**
    * Test that the JS was able to call back via "app.beep()"
    */
   function testHasCorrectBeepCount() {
-    chrome.test.assertEq(1, viewer.beepCount_);
+    const viewer = /** @type {!PDFViewerElement} */ (
+        document.body.querySelector('#viewer'));
+    chrome.test.assertEq(1, viewer.beepCount);
     chrome.test.succeed();
   }
 ];

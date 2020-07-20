@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "components/viz/service/surfaces/surface.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -115,17 +117,17 @@ TEST(SurfaceTest, CopyRequestLifetime) {
   for (int i = 0; i < max_frame; ++i) {
     CompositorFrame frame = CompositorFrameBuilder().Build();
     frame.render_pass_list.push_back(RenderPass::Create());
-    frame.render_pass_list.back()->id = i * 3 + start_id;
+    frame.render_pass_list.back()->id = RenderPassId{i * 3 + start_id};
     frame.render_pass_list.push_back(RenderPass::Create());
-    frame.render_pass_list.back()->id = i * 3 + start_id + 1;
+    frame.render_pass_list.back()->id = RenderPassId{i * 3 + start_id + 1};
     frame.render_pass_list.push_back(RenderPass::Create());
-    frame.render_pass_list.back()->SetNew(i * 3 + start_id + 2,
+    frame.render_pass_list.back()->SetNew(RenderPassId{i * 3 + start_id + 2},
                                           gfx::Rect(0, 0, 20, 20), gfx::Rect(),
                                           gfx::Transform());
     support->SubmitCompositorFrame(local_surface_id, std::move(frame));
   }
 
-  int last_pass_id = (max_frame - 1) * 3 + start_id + 2;
+  RenderPassId last_pass_id{(max_frame - 1) * 3 + start_id + 2};
   // The copy request should stay on the Surface until TakeCopyOutputRequests
   // is called.
   EXPECT_FALSE(copy_called);

@@ -77,7 +77,7 @@ viz::CompositorFrame DemoClient::CreateFrame(const viz::BeginFrameArgs& args) {
       local_surface_id_.allocation_time();
   frame.metadata.frame_token = ++next_frame_token_;
 
-  const int kRenderPassId = 1;
+  const viz::RenderPassId kRenderPassId{1};
   const gfx::Rect& output_rect = bounds_;
   const gfx::Rect& damage_rect = output_rect;
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();

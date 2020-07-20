@@ -83,6 +83,10 @@ extern const char kShippingOptionEmpty[];
 // Used when non-empty "shippingOptionId": "" is required, but not provided.
 extern const char kShippingOptionIdRequired[];
 
+// Used when an app is skipped for supporting only part of the requested payment
+// options.
+extern const char kSkipAppForPartialDelegation[];
+
 // Used when rejecting show() with NotSupportedError, because the user did not
 // have all valid autofill data.
 extern const char kStrictBasicCardShowReject[];

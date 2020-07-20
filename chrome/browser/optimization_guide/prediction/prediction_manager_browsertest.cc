@@ -196,9 +196,6 @@ class OptimizationGuideConsumerWebContentsObserver
     OptimizationGuideKeyedService* service =
         OptimizationGuideKeyedServiceFactory::GetForProfile(
             Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-    last_should_target_decision_ = service->ShouldTargetNavigation(
-        navigation_handle,
-        optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
     if (callback_) {
       // Intentionally do not set client model feature values to override to
       // make sure decisions are the same in both sync and async variants.
@@ -214,15 +211,8 @@ class OptimizationGuideConsumerWebContentsObserver
     callback_ = std::move(callback);
   }
 
-  optimization_guide::OptimizationGuideDecision last_should_target_decision()
-      const {
-    return last_should_target_decision_;
-  }
-
  private:
   optimization_guide::OptimizationGuideTargetDecisionCallback callback_;
-  optimization_guide::OptimizationGuideDecision last_should_target_decision_ =
-      optimization_guide::OptimizationGuideDecision::kUnknown;
 };
 
 }  // namespace
@@ -537,6 +527,8 @@ IN_PROC_BROWSER_TEST_F(
       &histogram_tester,
       "OptimizationGuide.PredictionManager.PredictionModelsStored", 1);
 
+  SetCallbackOnConsumer(base::BindOnce(
+      [](optimization_guide::OptimizationGuideDecision decision) {}));
   ui_test_utils::NavigateToURL(browser(), https_url_with_content());
 
   histogram_tester.ExpectUniqueSample(
@@ -548,6 +540,8 @@ IN_PROC_BROWSER_TEST_F(
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ClearHostModelFeatures.StoreAvailable", true, 1);
 
+  SetCallbackOnConsumer(base::BindOnce(
+      [](optimization_guide::OptimizationGuideDecision decision) {}));
   ui_test_utils::NavigateToURL(browser(), https_url_with_content());
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.PredictionManager.HasHostModelFeaturesForHost", false,
@@ -589,6 +583,8 @@ IN_PROC_BROWSER_TEST_F(PredictionManagerBrowserSameOriginTest,
       &histogram_tester,
       "OptimizationGuide.PredictionManager.PredictionModelsStored", 1);
 
+  SetCallbackOnConsumer(base::BindOnce(
+      [](optimization_guide::OptimizationGuideDecision decision) {}));
   ui_test_utils::NavigateToURL(browser(), https_url_with_content());
   RetryForHistogramUntilCountReached(
       &histogram_tester, "OptimizationGuide.PredictionManager.IsSameOrigin", 1);
@@ -597,6 +593,8 @@ IN_PROC_BROWSER_TEST_F(PredictionManagerBrowserSameOriginTest,
 
   // Navigate to the same URL in the same tab. This should count as a
   // same-origin navigation.
+  SetCallbackOnConsumer(base::BindOnce(
+      [](optimization_guide::OptimizationGuideDecision decision) {}));
   ui_test_utils::NavigateToURL(browser(), https_url_with_content());
   RetryForHistogramUntilCountReached(
       &histogram_tester, "OptimizationGuide.PredictionManager.IsSameOrigin", 2);
@@ -607,6 +605,8 @@ IN_PROC_BROWSER_TEST_F(PredictionManagerBrowserSameOriginTest,
 
   // Navigate to a cross-origin URL. This should count as a cross-origin
   // navigation.
+  SetCallbackOnConsumer(base::BindOnce(
+      [](optimization_guide::OptimizationGuideDecision decision) {}));
   ui_test_utils::NavigateToURL(browser(), GURL("https://www.google.com/"));
   RetryForHistogramUntilCountReached(
       &histogram_tester, "OptimizationGuide.PredictionManager.IsSameOrigin", 3);
@@ -618,8 +618,7 @@ IN_PROC_BROWSER_TEST_F(PredictionManagerBrowserSameOriginTest,
 
 IN_PROC_BROWSER_TEST_F(
     PredictionManagerBrowserSameOriginTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(
-        ShouldTargetNavigationAsyncAndSyncDecisionAreTheSameWithoutOverrides)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(ShouldTargetNavigationAsync)) {
   base::HistogramTester histogram_tester;
 
   RegisterWithKeyedService();
@@ -643,7 +642,10 @@ IN_PROC_BROWSER_TEST_F(
       [](base::RunLoop* run_loop,
          OptimizationGuideConsumerWebContentsObserver* consumer,
          optimization_guide::OptimizationGuideDecision decision) {
-        EXPECT_EQ(consumer->last_should_target_decision(), decision);
+        // The model should be evaluated with an actual decision since the model
+        // and all features provided are valid.
+        EXPECT_NE(decision,
+                  optimization_guide::OptimizationGuideDecision::kUnknown);
         run_loop->Quit();
       },
       run_loop.get(), consumer()));

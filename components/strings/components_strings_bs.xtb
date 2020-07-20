@@ -450,6 +450,7 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="2824775600643448204">Traka za adresu i pretraživanje</translation>
 <translation id="2826760142808435982">Veza je šifrirana i autentificirana koristeći <ph name="CIPHER" /> i koristi <ph name="KX" /> kao glavni mehanizam za razmjenu.</translation>
 <translation id="2835170189407361413">Obriši polja obrasca</translation>
+<translation id="2839501879576190149">Web lokacija koja slijedi je lažna</translation>
 <translation id="2847118875340931228">Otvori anonimni prozor</translation>
 <translation id="2850739647070081192">Invite (koverta)</translation>
 <translation id="2856444702002559011">Moguće je da napadači pokušavaju ukrasti vaše podatke s web lokacije <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (naprimjer, lozinke, poruke ili kreditne kartice). <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -810,6 +811,7 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="42981349822642051">Proširi</translation>
 <translation id="4300675098767811073">Višestruko bušenje na desnoj strani</translation>
 <translation id="4302965934281694568">Chou3 (koverta)</translation>
+<translation id="4305666528087210886">Pristupanje vašem fajlu nije uspjelo</translation>
 <translation id="4305817255990598646">Prebaci</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Blokiraj (zadano)</translation>
@@ -828,6 +830,7 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="4358461427845829800">Upravljajte načinima plaćanja…</translation>
 <translation id="4359160567981085931">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chrome vam može pomoći. Da promijenite lozinku i obavijestite Google da vam je račun možda ugrožen, kliknite Zaštiti račun.</translation>
 <translation id="4367563149485757821">Broj 12 (koverta)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Došlo je do narušavanja podataka na web lokaciji ili u aplikaciji čime je izložena vaša sačuvana lozinka za <ph name="ORIGIN" />. Chrome preporučuje da odmah promijenite lozinku na web lokaciji <ph name="ORIGIN" />.}=1{Došlo je do narušavanja podataka na web lokaciji ili u aplikaciji čime je izložena vaša sačuvana lozinka za <ph name="ORIGIN" /> i za još jednu web lokaciju. Chrome vam preporučuje da odmah provjerite sačuvane lozinke.}one{Došlo je do narušavanja podataka na web lokaciji ili u aplikaciji čime je izložena vaša sačuvana lozinka za <ph name="ORIGIN" /> i za još <ph name="SITES_COUNT" /> web lokaciju. Chrome vam preporučuje da odmah provjerite sačuvane lozinke.}few{Došlo je do narušavanja podataka na web lokaciji ili u aplikaciji čime je izložena vaša sačuvana lozinka za <ph name="ORIGIN" /> i za još <ph name="SITES_COUNT" /> web lokacije. Chrome vam preporučuje da odmah provjerite sačuvane lozinke.}other{Došlo je do narušavanja podataka na web lokaciji ili u aplikaciji čime je izložena vaša sačuvana lozinka za <ph name="ORIGIN" /> i za još <ph name="SITES_COUNT" /> web lokacija. Chrome vam preporučuje da odmah provjerite sačuvane lozinke.}}</translation>
 <translation id="437058704415269440">Sredstva na računu</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Očekivana vrijednost vrste <ph name="VALUE_TYPE" />.</translation>
@@ -1298,6 +1301,7 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Postoje mogući troškovi.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{Još jedan prijedlog}one{Još # prijedlog}few{Još # prijedloga}other{Još # prijedloga}}</translation>
+<translation id="6387645831795005740">Napadači ponekad oponašaju web lokacije tako što naprave male, teško primjetne izmjene URL-a.</translation>
 <translation id="6389470377220713856">Ime i prezime na kartici</translation>
 <translation id="6390200185239044127">Z-presavijanje napola</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1511,6 +1515,7 @@ Dodatni detalji:
 <translation id="7372973238305370288">rezultat pretraživanja</translation>
 <translation id="7374733840632556089">Ovaj problem nastaje zbog potvrde koju ste vi ili neko drugi instalirali na uređaj. Poznato je da se ta potvrda koristi za nadzor i presretanje mreža te je Chrome ne smatra pouzdanom. Iako postoje opravdani slučajevi za nadzor, naprimjer na mrežama u školama ili preduzećima, Chrome želi potvrditi da ste toga svjesni čak i ako taj proces ne možete zaustaviti. Nadzor se može vršiti u bilo kojem pregledniku ili bilo kojoj aplikaciji koja pristupa webu.</translation>
 <translation id="7375818412732305729">Fajl je priložen</translation>
+<translation id="7376551888419889433">Kada Konektori Chromea za preduzeća označe sigurnosne događaje, relevantni podaci o događajima se šalju vašem administratoru. To može obuhvatati URL-ove stranica koje posjetite na Chromeu, nazive fajlova ili metapodatke te korisničko ime koje koristite za prijavu na uređaj i Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" />, <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Upravljanje medijima</translation>
 <translation id="7378627244592794276">Ne</translation>
@@ -1907,6 +1912,7 @@ Dodatni detalji:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Pokušali ste pristupiti domeni <ph name="DOMAIN" />, ali je server prikazao nevažeću potvrdu.</translation>
 <translation id="9050666287014529139">Zaporka</translation>
+<translation id="9062620674789239642">Moguće je da je premješten, uređen ili izbrisan.</translation>
 <translation id="9065203028668620118">Uredi</translation>
 <translation id="9065745800631924235">Pretraživanje <ph name="TEXT" /> iz historije</translation>
 <translation id="9069693763241529744">Blokirala ekstenzija</translation>

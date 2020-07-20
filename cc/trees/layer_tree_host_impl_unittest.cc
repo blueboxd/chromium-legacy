@@ -14945,9 +14945,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RemoveUnreferencedRenderPass) {
   frame.render_passes.push_back(viz::RenderPass::Create());
   viz::RenderPass* pass1 = frame.render_passes.back().get();
 
-  pass1->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
-  pass2->SetNew(2, gfx::Rect(), gfx::Rect(), gfx::Transform());
-  pass3->SetNew(3, gfx::Rect(), gfx::Rect(), gfx::Transform());
+  pass1->SetNew(viz::RenderPassId{1}, gfx::Rect(), gfx::Rect(),
+                gfx::Transform());
+  pass2->SetNew(viz::RenderPassId{2}, gfx::Rect(), gfx::Rect(),
+                gfx::Transform());
+  pass3->SetNew(viz::RenderPassId{3}, gfx::Rect(), gfx::Rect(),
+                gfx::Transform());
 
   // Add a quad to each pass so they aren't empty.
   auto* color_quad = pass1->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
@@ -14965,10 +14968,13 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RemoveUnreferencedRenderPass) {
   // But pass2 is not referenced by pass1. So pass2 and pass3 should be culled.
   FakeLayerTreeHostImpl::RemoveRenderPasses(&frame);
   EXPECT_EQ(1u, frame.render_passes.size());
-  EXPECT_EQ(1u, CountRenderPassesWithId(frame.render_passes, 1u));
-  EXPECT_EQ(0u, CountRenderPassesWithId(frame.render_passes, 2u));
-  EXPECT_EQ(0u, CountRenderPassesWithId(frame.render_passes, 3u));
-  EXPECT_EQ(1u, frame.render_passes[0]->id);
+  EXPECT_EQ(
+      1u, CountRenderPassesWithId(frame.render_passes, viz::RenderPassId{1u}));
+  EXPECT_EQ(
+      0u, CountRenderPassesWithId(frame.render_passes, viz::RenderPassId{2u}));
+  EXPECT_EQ(
+      0u, CountRenderPassesWithId(frame.render_passes, viz::RenderPassId{3u}));
+  EXPECT_EQ(viz::RenderPassId{1u}, frame.render_passes[0]->id);
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, RemoveEmptyRenderPass) {
@@ -14980,9 +14986,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RemoveEmptyRenderPass) {
   frame.render_passes.push_back(viz::RenderPass::Create());
   viz::RenderPass* pass1 = frame.render_passes.back().get();
 
-  pass1->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
-  pass2->SetNew(2, gfx::Rect(), gfx::Rect(), gfx::Transform());
-  pass3->SetNew(3, gfx::Rect(), gfx::Rect(), gfx::Transform());
+  pass1->SetNew(viz::RenderPassId{1}, gfx::Rect(), gfx::Rect(),
+                gfx::Transform());
+  pass2->SetNew(viz::RenderPassId{2}, gfx::Rect(), gfx::Rect(),
+                gfx::Transform());
+  pass3->SetNew(viz::RenderPassId{3}, gfx::Rect(), gfx::Rect(),
+                gfx::Transform());
 
   // pass1 is not empty, but pass2 and pass3 are.
   auto* color_quad = pass1->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
@@ -15002,10 +15011,13 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RemoveEmptyRenderPass) {
   // should be removed.
   FakeLayerTreeHostImpl::RemoveRenderPasses(&frame);
   EXPECT_EQ(1u, frame.render_passes.size());
-  EXPECT_EQ(1u, CountRenderPassesWithId(frame.render_passes, 1u));
-  EXPECT_EQ(0u, CountRenderPassesWithId(frame.render_passes, 2u));
-  EXPECT_EQ(0u, CountRenderPassesWithId(frame.render_passes, 3u));
-  EXPECT_EQ(1u, frame.render_passes[0]->id);
+  EXPECT_EQ(
+      1u, CountRenderPassesWithId(frame.render_passes, viz::RenderPassId{1u}));
+  EXPECT_EQ(
+      0u, CountRenderPassesWithId(frame.render_passes, viz::RenderPassId{2u}));
+  EXPECT_EQ(
+      0u, CountRenderPassesWithId(frame.render_passes, viz::RenderPassId{3u}));
+  EXPECT_EQ(viz::RenderPassId{1u}, frame.render_passes[0]->id);
   // The viz::RenderPassDrawQuad should be removed from pass1.
   EXPECT_EQ(1u, pass1->quad_list.size());
   EXPECT_EQ(viz::DrawQuad::Material::kSolidColor,
@@ -15021,9 +15033,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, DoNotRemoveEmptyRootRenderPass) {
   frame.render_passes.push_back(viz::RenderPass::Create());
   viz::RenderPass* pass1 = frame.render_passes.back().get();
 
-  pass1->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
-  pass2->SetNew(2, gfx::Rect(), gfx::Rect(), gfx::Transform());
-  pass3->SetNew(3, gfx::Rect(), gfx::Rect(), gfx::Transform());
+  pass1->SetNew(viz::RenderPassId{1}, gfx::Rect(), gfx::Rect(),
+                gfx::Transform());
+  pass2->SetNew(viz::RenderPassId{2}, gfx::Rect(), gfx::Rect(),
+                gfx::Transform());
+  pass3->SetNew(viz::RenderPassId{3}, gfx::Rect(), gfx::Rect(),
+                gfx::Transform());
 
   // pass3 is referenced by pass2.
   auto* rpdq = pass2->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
@@ -15040,10 +15055,13 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, DoNotRemoveEmptyRootRenderPass) {
   // not be removed.
   FakeLayerTreeHostImpl::RemoveRenderPasses(&frame);
   EXPECT_EQ(1u, frame.render_passes.size());
-  EXPECT_EQ(1u, CountRenderPassesWithId(frame.render_passes, 1u));
-  EXPECT_EQ(0u, CountRenderPassesWithId(frame.render_passes, 2u));
-  EXPECT_EQ(0u, CountRenderPassesWithId(frame.render_passes, 3u));
-  EXPECT_EQ(1u, frame.render_passes[0]->id);
+  EXPECT_EQ(
+      1u, CountRenderPassesWithId(frame.render_passes, viz::RenderPassId{1u}));
+  EXPECT_EQ(
+      0u, CountRenderPassesWithId(frame.render_passes, viz::RenderPassId{2u}));
+  EXPECT_EQ(
+      0u, CountRenderPassesWithId(frame.render_passes, viz::RenderPassId{3u}));
+  EXPECT_EQ(viz::RenderPassId{1u}, frame.render_passes[0]->id);
   // The viz::RenderPassDrawQuad should be removed from pass1.
   EXPECT_EQ(0u, pass1->quad_list.size());
 }

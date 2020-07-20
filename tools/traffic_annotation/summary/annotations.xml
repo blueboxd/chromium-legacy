@@ -23,7 +23,7 @@ Refer to README.md for content description and update process.
  <item id="background_fetch_context" hash_code="16469669" type="0" content_hash_code="52235434" os_list="linux,windows" file_path="content/browser/background_fetch/background_fetch_delegate_proxy.cc"/>
  <item id="background_performance_tracer" hash_code="84575287" type="0" content_hash_code="120154250" os_list="linux,windows" file_path="chrome/browser/tracing/crash_service_uploader.cc"/>
  <item id="bidirectional_stream" hash_code="108665132" type="0" content_hash_code="130038340" os_list="linux,windows" file_path="net/http/bidirectional_stream.cc"/>
- <item id="blink_extension_resource_loader" hash_code="84165821" type="0" content_hash_code="3695143" os_list="linux,windows" file_path="content/renderer/loader/web_url_loader_impl.cc"/>
+ <item id="blink_extension_resource_loader" hash_code="84165821" type="0" content_hash_code="63536185" os_list="linux,windows" file_path="content/renderer/loader/web_url_loader_impl.cc"/>
  <item id="blink_resource_loader" hash_code="101845102" type="0" content_hash_code="75331172" os_list="linux,windows" file_path="content/renderer/loader/web_url_loader_impl.cc"/>
  <item id="blob_read" hash_code="112303907" type="0" deprecated="2019-08-09" content_hash_code="135449692" file_path=""/>
  <item id="blob_reader" hash_code="5154306" type="0" deprecated="2018-06-14" content_hash_code="39702178" file_path=""/>
@@ -40,7 +40,7 @@ Refer to README.md for content description and update process.
  <item id="certificate_verifier_url_loader" hash_code="80134684" type="0" content_hash_code="92630208" os_list="linux,windows" file_path="services/cert_verifier/cert_net_url_loader/cert_net_fetcher_url_loader.cc"/>
  <item id="certificate_verifier_url_request" hash_code="85988208" type="0" content_hash_code="59262468" os_list="linux,windows" file_path="net/cert_net/cert_net_fetcher_url_request.cc"/>
  <item id="chrome_HaTS_service" hash_code="136028241" type="0" content_hash_code="68990360" os_list="linux,windows" file_path="chrome/browser/ui/hats/hats_survey_status_checker.cc"/>
- <item id="chrome_apps_socket_api" hash_code="8591273" type="0" content_hash_code="70868355" os_list="linux,windows" file_path="extensions/browser/api/socket/socket.cc"/>
+ <item id="chrome_apps_socket_api" hash_code="8591273" type="0" content_hash_code="130709397" os_list="linux,windows" file_path="extensions/browser/api/socket/socket.cc"/>
  <item id="chrome_cleaner" hash_code="27071967" type="0" content_hash_code="111240292" os_list="windows" file_path="chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_fetcher_win.cc"/>
  <item id="chrome_cleanup_report" hash_code="71102679" type="0" content_hash_code="130565656" os_list="windows" file_path="chrome/chrome_cleaner/logging/cleaner_logging_service.cc"/>
  <item id="chrome_feedback_report_app" hash_code="134729048" type="0" content_hash_code="73916972" os_list="linux,windows" file_path="components/feedback/feedback_uploader.cc"/>
@@ -94,15 +94,15 @@ Refer to README.md for content description and update process.
  <item id="download_manager_resume" hash_code="35380758" type="0" content_hash_code="41227674" os_list="linux,windows" file_path="components/download/internal/common/download_item_impl.cc"/>
  <item id="download_recovery_component" hash_code="131711536" type="0" content_hash_code="3243311" os_list="windows" file_path="chrome/chrome_cleaner/components/recovery_component.cc"/>
  <item id="download_web_contents_frame" hash_code="56351037" type="0" content_hash_code="3657889" os_list="linux,windows" file_path="content/browser/web_contents/web_contents_impl.cc"/>
- <item id="downloads_api_run_async" hash_code="121068967" type="0" content_hash_code="87443585" os_list="linux,windows" file_path="chrome/browser/extensions/api/downloads/downloads_api.cc"/>
+ <item id="downloads_api_run_async" hash_code="121068967" type="0" content_hash_code="9280914" os_list="linux,windows" file_path="chrome/browser/extensions/api/downloads/downloads_api.cc"/>
  <item id="downloads_dom_handler" hash_code="95951029" type="0" content_hash_code="137150731" os_list="linux,windows" file_path="chrome/browser/ui/webui/downloads/downloads_dom_handler.cc"/>
  <item id="drag_download_file" hash_code="95910019" type="0" content_hash_code="126492858" os_list="linux,windows" file_path="content/browser/download/drag_download_file.cc"/>
  <item id="enterprise_safe_browsing_realtime_url_lookup" hash_code="22262963" type="0" content_hash_code="14052810" os_list="linux,windows" file_path="chrome/browser/safe_browsing/chrome_enterprise_url_lookup_service.cc"/>
  <item id="expect_ct_reporter" hash_code="57276415" type="0" deprecated="2018-06-20" content_hash_code="130492494" file_path="services/network/expect_ct_reporter.cc"/>
  <item id="extension_blacklist" hash_code="59592717" type="0" content_hash_code="116742516" os_list="linux,windows" file_path="chrome/browser/extensions/blocklist_state_fetcher.cc"/>
  <item id="extension_crx_fetcher" hash_code="21145003" type="0" content_hash_code="79150319" os_list="linux,windows" file_path="extensions/browser/updater/extension_downloader.cc"/>
- <item id="extension_install_signer" hash_code="50464499" type="0" content_hash_code="88088656" os_list="linux,windows" file_path="chrome/browser/extensions/install_signer.cc"/>
- <item id="extension_manifest_fetcher" hash_code="5151071" type="0" content_hash_code="75239211" os_list="linux,windows" file_path="extensions/browser/updater/extension_downloader.cc"/>
+ <item id="extension_install_signer" hash_code="50464499" type="0" content_hash_code="106712014" os_list="linux,windows" file_path="chrome/browser/extensions/install_signer.cc"/>
+ <item id="extension_manifest_fetcher" hash_code="5151071" type="0" content_hash_code="93862569" os_list="linux,windows" file_path="extensions/browser/updater/extension_downloader.cc"/>
  <item id="external_policy_fetcher" hash_code="9459438" type="0" content_hash_code="64260484" os_list="linux,windows" file_path="components/policy/core/common/cloud/external_policy_data_fetcher.cc"/>
  <item id="family_info" hash_code="30913825" type="0" deprecated="2019-07-30" content_hash_code="25369370" file_path=""/>
  <item id="favicon_loader" hash_code="112189210" type="0" content_hash_code="70773116" os_list="linux,windows" file_path="content/renderer/loader/web_url_loader_impl.cc"/>
@@ -212,8 +212,8 @@ Refer to README.md for content description and update process.
  <item id="payment_manifest_downloader" hash_code="84045030" type="0" content_hash_code="19293316" os_list="linux,windows" file_path="components/payments/core/payment_manifest_downloader.cc"/>
  <item id="payments_sync_cards" hash_code="95588446" type="0" content_hash_code="56526513" os_list="linux,windows" file_path="components/autofill/core/browser/payments/payments_client.cc"/>
  <item id="pdf_plugin_placeholder" hash_code="56866367" type="0" content_hash_code="16907221" os_list="linux,windows" file_path="chrome/browser/plugins/pdf_plugin_placeholder_observer.cc"/>
- <item id="pepper_tcp_socket" hash_code="120623198" type="0" content_hash_code="105652563" os_list="linux,windows" file_path="content/browser/renderer_host/pepper/pepper_socket_utils.cc"/>
- <item id="pepper_udp_socket" hash_code="53512439" type="0" content_hash_code="85431089" os_list="linux,windows" file_path="content/browser/renderer_host/pepper/pepper_socket_utils.cc"/>
+ <item id="pepper_tcp_socket" hash_code="120623198" type="0" content_hash_code="27489892" os_list="linux,windows" file_path="content/browser/renderer_host/pepper/pepper_socket_utils.cc"/>
+ <item id="pepper_udp_socket" hash_code="53512439" type="0" content_hash_code="7268418" os_list="linux,windows" file_path="content/browser/renderer_host/pepper/pepper_socket_utils.cc"/>
  <item id="per_user_topic_registration_request" hash_code="10498172" type="0" content_hash_code="57098847" os_list="linux,windows" file_path="components/invalidation/impl/per_user_topic_subscription_request.cc"/>
  <item id="permission_reporting" hash_code="131741641" type="0" deprecated="2018-03-06" content_hash_code="7213535" file_path=""/>
  <item id="permission_request_creator" hash_code="43206794" type="0" deprecated="2019-07-30" content_hash_code="73571699" file_path=""/>
@@ -335,7 +335,7 @@ Refer to README.md for content description and update process.
  <item id="websocket_stream" hash_code="17188928" type="0" content_hash_code="7250776" os_list="linux,windows" file_path="net/websockets/websocket_stream.cc"/>
  <item id="webstore_data_fetcher" hash_code="26302604" type="0" content_hash_code="24000746" os_list="linux,windows" file_path="chrome/browser/extensions/webstore_data_fetcher.cc"/>
  <item id="webstore_install_helper" hash_code="25921771" type="0" content_hash_code="10206361" os_list="linux,windows" file_path="chrome/browser/extensions/webstore_install_helper.cc"/>
- <item id="webstore_installer" hash_code="18764319" type="0" content_hash_code="11030110" os_list="linux,windows" file_path="chrome/browser/extensions/webstore_installer.cc"/>
+ <item id="webstore_installer" hash_code="18764319" type="0" content_hash_code="70871152" os_list="linux,windows" file_path="chrome/browser/extensions/webstore_installer.cc"/>
  <item id="webui_content_scripts_download" hash_code="100545943" type="0" content_hash_code="119898059" os_list="linux,windows" file_path="extensions/browser/guest_view/web_view/web_ui/web_ui_url_fetcher.cc"/>
  <item id="well_known_path_that_should_not_exist" hash_code="134618785" type="0" content_hash_code="55913167" os_list="linux,windows" file_path="chrome/browser/ui/passwords/well_known_change_password_navigation_throttle.cc"/>
  <item id="worker_script_load" hash_code="72087791" type="0" content_hash_code="24889169" os_list="linux,windows" file_path="content/browser/worker_host/worker_script_fetcher.cc"/>

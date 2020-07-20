@@ -21,24 +21,49 @@
 syntax = "proto2";
 
 import "cast_channel.proto";
+import "revocation.proto";
 
 option optimize_for = LITE_RUNTIME;
 
 package cast_channel.fuzz;
 
+enum TimeBoundCase {
+  VALID = 0;
+  INVALID = 1;
+  OOB = 2;
+  MISSING = 3;
+}
+
 // Inputs for functions in cast_auth_utils.cc
 message CastAuthUtilInputs {
   message AuthenticateChallengeReplyInput {
-    required cast.channel.DeviceAuthMessage auth_message = 1;
-    required cast.channel.CastMessage cast_message = 2;
-    required string nonce = 3;
+    // The actual input to the function, parts of which may be
+    // overridden based on the additional fields below.
+    required cast.channel.CastMessage cast_message = 1;
+    required string nonce = 2;
+
+    // Values used to set the start and end times.
+    required TimeBoundCase start_case = 3;
+    required TimeBoundCase expiry_case = 4;
+
+    // Value used to replace the payload of |cast_message| with data
+    // that is more likely to be valid (and thus exercise more code
+    // paths).
+    optional cast.channel.DeviceAuthMessage auth_message = 5;
+
+    // Values used to replace the |crl| field of
+    // |auth_message.response|.
+    repeated cast.certificate.TbsCrl tbs_crls = 7;
+
+    // Flags that force certain fields to have correct values.
+    required bool nonce_ok = 8;
+    required bool response_certs_ok = 9;
+    required bool crl_certs_ok = 10;
+    required bool crl_signatures_ok = 11;
   }
 
   oneof input {
     AuthenticateChallengeReplyInput authenticate_challenge_reply_input = 1;
-    // TODO(crbug.com/796717): Add inputs for other functions to test:
-    // - VerifyTLSCertificate
-    // - VerifyCredentials
   }
 }
 

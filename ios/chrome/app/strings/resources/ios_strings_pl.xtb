@@ -72,6 +72,7 @@
 <translation id="1674504678466460478">Z: <ph name="SOURCE_LANGUAGE" /> na: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Aby korzystać ze swoich zakładek na wszystkich urządzeniach, włącz synchronizację.</translation>
 <translation id="1687475363370981210">Oznacz wszystkie jako przeczytane</translation>
+<translation id="1689333818294560261">Pseudonim</translation>
 <translation id="1690731385917361335">Brak elementów</translation>
 <translation id="1692118695553449118">Synchronizacja jest włączona</translation>
 <translation id="1700629756560807968">Wybrane: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -206,6 +207,7 @@ W trybie incognito witryny nie mogą używać plików cookie do śledzenia Twoj
 <translation id="3335947283844343239">Otwórz ponownie zamkniętą kartę</translation>
 <translation id="3371831930909698441">Dostępne jest tłumaczenie. Opcje znajdują się u dołu ekranu.</translation>
 <translation id="3393920035788932672">Pop-upy akceptowane</translation>
+<translation id="3425644765244388016">Nazwa karty</translation>
 <translation id="3443810440409579745">Odebrano kartę.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Widok dzielony</translation>
@@ -240,6 +242,7 @@ W trybie incognito witryny nie mogą używać plików cookie do śledzenia Twoj
 <translation id="3783017676699494206">Zapisz obraz</translation>
 <translation id="3789841737615482174">Zainstaluj</translation>
 <translation id="3803696231112616155">Proponuj tłumaczenie tej strony</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Brak przejętych haseł}=1{Zostało przejęte {COUNT} hasło}few{Zostały przejęte {COUNT} hasła}many{Zostało przejętych {COUNT} haseł}other{Zostało przejęte {COUNT} hasła}}</translation>
 <translation id="385051799172605136">Wstecz</translation>
 <translation id="3892144330757387737">Tu znajdziesz swoją historię</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -529,6 +532,7 @@ Witryny nie mogą używać plików cookie do śledzenia Twojej aktywności zwią
 <translation id="7189598951263744875">Udostępnij...</translation>
 <translation id="7192050974311852563">Uruchom rejestrowanie</translation>
 <translation id="7203585745079012652">Odczytuj odpowiedzi</translation>
+<translation id="721597782417389033">Nieprawidłowa nazwa karty</translation>
 <translation id="7265758999917665941">Nigdy dla tej witryny</translation>
 <translation id="7272437679830969316">Nie można zweryfikować Twojej tożsamości. Hasło nie zostało skopiowane.</translation>
 <translation id="7291368939935408496">Przygotowuję hasła…</translation>

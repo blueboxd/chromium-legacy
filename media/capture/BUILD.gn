@@ -403,7 +403,10 @@ test("capture_unittests") {
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sysmem",
       "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     ]
-    sources += [ "video/fuchsia/video_capture_device_fuchsia_test.cc" ]
+    sources += [
+      "video/fuchsia/video_capture_device_factory_fuchsia_test.cc",
+      "video/fuchsia/video_capture_device_fuchsia_test.cc",
+    ]
   }
 
   if (is_win) {

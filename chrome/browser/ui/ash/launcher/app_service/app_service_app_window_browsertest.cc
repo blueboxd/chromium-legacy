@@ -640,7 +640,7 @@ IN_PROC_BROWSER_TEST_F(AppServiceAppWindowArcAppBrowserTest, LogicalWindowId) {
   auto is_hidden = [](aura::Window* w) {
     return w->GetProperty(ash::kHideInShelfKey);
   };
-  EXPECT_EQ(1u, std::count_if(windows.begin(), windows.end(), is_hidden));
+  EXPECT_EQ(1, std::count_if(windows.begin(), windows.end(), is_hidden));
 
   // The hidden window should be task_id 2.
   aura::Window* window1 =
@@ -670,7 +670,7 @@ IN_PROC_BROWSER_TEST_F(AppServiceAppWindowArcAppBrowserTest, LogicalWindowId) {
   app_host()->OnTaskDestroyed(1);
   windows = app_service_proxy_->InstanceRegistry().GetWindows(app_id);
   EXPECT_EQ(1u, windows.size());
-  EXPECT_EQ(0u, std::count_if(windows.begin(), windows.end(), is_hidden));
+  EXPECT_EQ(0, std::count_if(windows.begin(), windows.end(), is_hidden));
 
   // Close second window.
   app_host()->OnTaskDestroyed(2);

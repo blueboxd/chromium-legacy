@@ -190,9 +190,9 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 <translation id="1376119291123231789">Attiva modalità di ricarica avanzata della batteria</translation>
 <translation id="1384459581748403878">Riferimento: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Indica lo stato di aggiornamento del sistema operativo</translation>
-<translation id="1390901586107713894">Consente di specificare le estensioni che gli utenti NON possono installare. Le estensioni già installate vengono disattivate, se bloccate, e l'utente non può attivarle. Se un'estensione è disattivata a causa della lista bloccata da cui viene rimossa, viene automaticamente riattivata.
+<translation id="1390901586107713894">Consente di specificare le estensioni che gli utenti NON possono installare. Le estensioni già installate vengono disattivate, se bloccate, e l'utente non può attivarle. Un'estensione disattivata da una lista bloccata viene automaticamente riattivata nel caso venga rimossa dalla lista.
 
-          Il valore di una lista bloccata "*" significa che tutte le estensioni sono bloccate, a meno che vengano elencate esplicitamente nella lista consentita.
+          Il valore "*" di una lista bloccata significa che tutte le estensioni sono bloccate, a meno che vengano elencate esplicitamente nella lista consentita.
 
           Se questo criterio non viene configurato, l'utente può installare qualsiasi estensione in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1393485621820363363">Stampanti aziendali associate ai dispositivi attive</translation>
@@ -1010,9 +1010,9 @@ Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizia
 <translation id="254653220329944566">Consente di attivare il reporting su cloud di <ph name="PRODUCT_NAME" /></translation>
 <translation id="2547854230073316008">La configurazione del criterio consente di impostare la risoluzione e il fattore di scalabilità per ogni display. Le impostazioni del display esterno si applicano ai display collegati. Il criterio non viene applicato se un display non supporta la risoluzione o la scalabilità specificate.
 
-      Se <ph name="EXTERNAL_USE_NATIVE" /> viene impostato su True, il criterio ignora <ph name="EXTERNAL_WIDTH" /> e <ph name="EXTERNAL_HEIGHT" /> e imposta i display esterni sulla propria risoluzione nativa. Se <ph name="EXTERNAL_USE_NATIVE" /> viene impostato su False o se non viene configurato insieme a <ph name="EXTERNAL_WIDTH" /> o <ph name="EXTERNAL_HEIGHT" />, il criterio non interessa i display esterni.
+      Se <ph name="EXTERNAL_USE_NATIVE" /> viene impostato su True, il criterio ignora <ph name="EXTERNAL_WIDTH" /> e <ph name="EXTERNAL_HEIGHT" /> e imposta i display esterni sulla loro risoluzione nativa. Se <ph name="EXTERNAL_USE_NATIVE" /> viene impostato su False o se non viene configurato insieme a <ph name="EXTERNAL_WIDTH" /> o <ph name="EXTERNAL_HEIGHT" />, il criterio non viene applicato ai display esterni.
 
-      Se il flag consigliato viene impostato su True consente agli utenti di modificare la risoluzione e il fattore di scalabilità per qualsiasi display tramite la pagina delle impostazioni, ma le impostazioni torneranno allo stato precedente al riavvio successivo. Se il flag consigliato viene impostato su False o se non viene configurato, gli utenti non possono modificare la impostazioni del display.
+      L'impostazione del flag consigliato su True consente agli utenti di modificare la risoluzione e il fattore di scalabilità per qualsiasi display tramite la pagina delle impostazioni, ma le impostazioni del display torneranno allo stato precedente al riavvio successivo. Se il flag consigliato viene impostato su False o se non viene configurato, gli utenti non possono modificare la impostazioni del display.
 
       Nota: imposta <ph name="EXTERNAL_WIDTH" /> e <ph name="EXTERNAL_HEIGHT" /> in pixel e <ph name="EXTERNAL_SCALE_PERCENTAGE" /> e <ph name="INTERNAL_SCALE_PERCENTAGE" /> in percentuali.</translation>
 <translation id="2548397295248733155">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 85 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
@@ -1492,7 +1492,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3251500716404598358">Configura le norme per passare da un browser all'altro.
 
       I siti web configurati verranno aperti automaticamente in un browser diverso da <ph name="PRODUCT_NAME" />.</translation>
-<translation id="3255762580838224124">La configurazione del criterio comporta la rotazione di ogni display nell'orientamento specificato a ogni riavvio e la prima volta che viene eseguita la connessione dopo la modifica del valore del criterio. Gli utenti possono modificare la rotazione del display tramite la pagina delle impostazioni dopo aver effettuato l'accesso, ma tornerà allo stato precedente al riavvio successivo. Questo criterio si applica ai display primari e secondari.
+<translation id="3255762580838224124">La configurazione del criterio comporta la rotazione di ogni display nell'orientamento specificato a ogni riavvio e la prima volta che viene eseguita la connessione del display dopo la modifica del valore del criterio. Gli utenti possono modificare la rotazione del display tramite la pagina delle impostazioni dopo aver effettuato l'accesso, ma la rotazione tornerà allo stato precedente al riavvio successivo. Questo criterio si applica ai display primari e secondari.
 
       Se non viene configurato, il valore predefinito è 0 e gli utenti sono liberi di modificarlo. In questo caso, il valore predefinito non viene applicato nuovamente al riavvio.</translation>
 <translation id="3264793472749429012">Codifiche del provider di ricerca predefinito</translation>
@@ -1850,7 +1850,7 @@ Se questa norma viene impostata su False o non viene impostata, i ritardi di ges
 
       Un pattern URL deve essere nel formato indicato all'indirizzo https://www.chromium.org/administrators/url-blacklist-filter-format.
 
-      È possibile definire eccezioni nel criterio relativo alla lista consentita di URL. Per questi criteri è possibile definire massimo 1000 voci; le voci in più vengono ignorate.
+      È possibile definire eccezioni nel criterio relativo alla lista consentita di URL. Per questi criteri è possibile definire massimo 1000 voci; le voci successive verranno ignorate.
 
       È sconsigliato bloccare gli URL "chrome://*" interni perché ciò potrebbe generare errori imprevisti.
 
@@ -2548,9 +2548,9 @@ Se il criterio viene disattivato, <ph name="PRODUCT_OS_NAME" /> disattiva il Blu
 <translation id="4899708173828500852">Consenti Navigazione sicura</translation>
 <translation id="4902163780937592202">Consente di unire i criteri relativi all'elenco di installazione delle estensioni <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_ALLOWLIST_POLICY_NAME" /> e <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
-      Se questa impostazione viene attivata, i valori dei criteri relativi alla piattaforma della macchina, al cloud della macchina e alla piattaforma dell'utente vengono uniti in un unico elenco e usati in toto invece di usare soltanto i valori di una singola origine con la massima priorità.
+      Se questa impostazione viene attivata, i valori dei criteri relativi alla piattaforma della macchina, al cloud della macchina e alla piattaforma dell'utente vengono uniti in un unico elenco e usati in toto invece di usare soltanto i valori della singola origine con la massima priorità.
 
-      Se questa impostazione viene disattivata o se non viene configurata, vengono recuperate soltanto le voci dell'elenco dell'origine con la massima priorità e tutte le altre origini risultano in conflitto, ma vengono ignorate.</translation>
+      Se questa impostazione viene disattivata o se non viene configurata, vengono recuperate soltanto le voci dell'elenco dell'origine con la massima priorità e tutte le altre origini vengono mostrate come in conflitto, ma ignorate.</translation>
 <translation id="4906194810004762807">Frequenza di aggiornamento per norma dispositivo</translation>
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4919122295221518724">Attiva trattamento più restrittivo per i contenuti misti</translation>
@@ -2659,11 +2659,11 @@ Se il criterio viene disattivato, <ph name="PRODUCT_OS_NAME" /> disattiva il Blu
 
       Un pattern URL deve essere nel formato indicato all'indirizzo https://www.chromium.org/administrators/url-blacklist-filter-format.
 
-      È possibile definire eccezioni nel criterio relativo alla lista consentita di URL. Per questi criteri è possibile definire massimo 1000 voci; le voci in più vengono ignorate.
+      È possibile definire eccezioni nel criterio relativo alla lista consentita di URL. Per questi criteri è possibile definire massimo 1000 voci; le voci successive verranno ignorate.
 
       È sconsigliato bloccare gli URL "chrome://*" interni perché ciò potrebbe generare errori imprevisti.
 
-      Da Chrome 73, puoi bloccare URL "javascript://*". Tuttavia, questa operazione interessa solo il codice JavaScript digitato nella barra degli indirizzi o, ad esempio, nei bookmarklet. Tieni presente che gli URL JavaScript in-page, in presenza di un caricamento dinamico dei dati, non sono soggetti a questo criterio. Ad esempio, se blocchi "example.com/abc", la pagina "example.com" continua a caricare "example.com/abc" tramite XMLHTTPRequest.
+      A partire da Chrome 73 puoi bloccare gli URL "javascript://*". Tuttavia, questa operazione interessa solo il codice JavaScript digitato nella barra degli indirizzi o, ad esempio, nei bookmarklet. Tieni presente che gli URL JavaScript in-page, in presenza di un caricamento dinamico dei dati, non sono soggetti a questo criterio. Ad esempio, se blocchi "example.com/abc", la pagina "example.com" continua a caricare "example.com/abc" tramite XMLHTTPRequest.
 
       Se questo criterio non viene configurato, non viene bloccato alcun URL nel browser.</translation>
 <translation id="5085647276663819155">Disattiva anteprima di stampa</translation>
@@ -2898,11 +2898,11 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 
       Se il criterio viene impostato su False, il port forwarding nei container Crostini viene disattivato.</translation>
 <translation id="538108065117008131">Consenti a <ph name="PRODUCT_FRAME_NAME" /> di gestire i seguenti tipi di contenuto.</translation>
-<translation id="538768040137709073">Consente di attivare la funzione Appunti condivisi che permette agli utenti di inviare messaggi tra computer desktop Chrome e un dispositivo Android quando la sincronizzazione è attivata e l'utente ha effettuato l'accesso.
+<translation id="538768040137709073">Consente di attivare la funzione Appunti condivisi che permette agli utenti di inviare testi tra computer desktop Chrome e un dispositivo Android quando la sincronizzazione è attivata e l'utente ha effettuato l'accesso.
 
-          Se il criterio è impostato su true, la funzionalità di invio messaggi, cross-device, è attivata per gli utenti Chrome.
+          Se il criterio è impostato su true, la funzionalità di invio testi tra dispositivi è attivata per gli utenti Chrome.
 
-          Se il criterio è impostato su false, la funzionalità di invio messaggi, cross-device, è disattivata per gli utenti Chrome.
+          Se il criterio è impostato su false, la funzionalità di invio testi tra dispositivi è disattivata per gli utenti Chrome.
 
           Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
 
@@ -3764,7 +3764,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6669700740683748046">Questa funzionalità consente la visualizzazione dell'URL completo nella barra degli indirizzi.
       Se questo criterio viene impostato su True, l'URL completo viene visualizzato nella barra degli indirizzi, inclusi gli schemi e i sottodomini.
       Se questo criterio viene impostato su False, viene applicata la visualizzazione dell'URL predefinita.
-      Se questo criterio non viene configurato, viene applicata la visualizzazione dell'URL predefinita e l'utente può passare dalla visualizzazione predefinita all'URL completo e viceversa tramite l'opzione di un menu contestuale.
+      Se questo criterio non viene configurato, viene applicata la visualizzazione dell'URL predefinita e l'utente può passare dalla visualizzazione predefinita all'URL completo e viceversa tramite un menu contestuale.
       </translation>
 <translation id="6672070613706645316">Consenti agli utenti di personalizzare lo sfondo della pagina Nuova scheda</translation>
 <translation id="6672630473862787247">Attiva l'autenticazione ambientale nelle sessioni standard, Ospite e in modalità in incognito.</translation>

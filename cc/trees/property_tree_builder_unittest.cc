@@ -4,6 +4,9 @@
 
 #include "cc/trees/property_tree_builder.h"
 
+#include <memory>
+#include <utility>
+
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
@@ -200,7 +203,7 @@ TEST_F(PropertyTreeBuilderTest, RenderSurfaceListForTransparentChild) {
   EXPECT_EQ(0, GetRenderSurfaceImpl(root)->num_contributors());
   EXPECT_EQ(1U, GetRenderSurfaceList().size());
   EXPECT_EQ(static_cast<viz::RenderPassId>(root->id()),
-            GetRenderSurfaceList().at(0)->id());
+            GetRenderSurfaceList().at(0)->render_pass_id());
   EXPECT_EQ(gfx::Rect(), ImplOf(root)->visible_drawable_content_rect());
 }
 

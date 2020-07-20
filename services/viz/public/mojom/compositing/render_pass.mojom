@@ -7,6 +7,7 @@ module viz.mojom;
 import "services/viz/public/mojom/compositing/copy_output_request.mojom";
 import "services/viz/public/mojom/compositing/filter_operations.mojom";
 import "services/viz/public/mojom/compositing/quads.mojom";
+import "services/viz/public/mojom/compositing/render_pass_id.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojom/display_color_spaces.mojom";
 import "ui/gfx/mojom/rrect_f.mojom";
@@ -14,7 +15,7 @@ import "ui/gfx/mojom/transform.mojom";
 
 // See components/viz/common/quads/render_pass.h.
 struct RenderPass {
-  uint64 id;
+  RenderPassId id;
   gfx.mojom.Rect output_rect;
   gfx.mojom.Rect damage_rect;
   gfx.mojom.Transform transform_to_root_target;

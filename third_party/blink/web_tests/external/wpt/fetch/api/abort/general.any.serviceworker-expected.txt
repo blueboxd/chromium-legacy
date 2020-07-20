@@ -34,15 +34,15 @@ PASS response.text() rejects if already aborted
 PASS Already aborted signal does not make request
 PASS Already aborted signal can be used for many fetches
 PASS Signal can be used to abort other fetches, even if another fetch succeeded before aborting
-FAIL Underlying connection is closed when aborting after receiving response assert_equals: Connection is open expected "open" but got "closed"
-FAIL Underlying connection is closed when aborting after receiving response - no-cors assert_equals: Connection is open expected "open" but got "closed"
-FAIL Fetch aborted & connection closed when aborted after calling response.arrayBuffer() assert_equals: Connection is open expected "open" but got "closed"
-FAIL Fetch aborted & connection closed when aborted after calling response.blob() assert_equals: Connection is open expected "open" but got "closed"
-FAIL Fetch aborted & connection closed when aborted after calling response.formData() assert_equals: Connection is open expected "open" but got "closed"
-FAIL Fetch aborted & connection closed when aborted after calling response.json() assert_equals: Connection is open expected "open" but got "closed"
-FAIL Fetch aborted & connection closed when aborted after calling response.text() assert_equals: Connection is open expected "open" but got "closed"
+PASS Underlying connection is closed when aborting after receiving response
+PASS Underlying connection is closed when aborting after receiving response - no-cors
+PASS Fetch aborted & connection closed when aborted after calling response.arrayBuffer()
+PASS Fetch aborted & connection closed when aborted after calling response.blob()
+PASS Fetch aborted & connection closed when aborted after calling response.formData()
+PASS Fetch aborted & connection closed when aborted after calling response.json()
+PASS Fetch aborted & connection closed when aborted after calling response.text()
 PASS Stream errors once aborted. Underlying connection closed.
-FAIL Stream errors once aborted, after reading. Underlying connection closed. assert_unreached: Should have rejected: undefined Reached unreachable code
+PASS Stream errors once aborted, after reading. Underlying connection closed.
 PASS Stream will not error if body is empty. It's closed with an empty queue before it errors.
 FAIL Readable stream synchronously cancels with AbortError if aborted before reading assert_true: Cancel called sync expected true got false
 PASS Signal state is cloned

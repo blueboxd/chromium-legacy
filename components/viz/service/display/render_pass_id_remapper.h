@@ -31,15 +31,21 @@ class RenderPassIdRemapper {
 
  private:
   struct RenderPassInfo {
+    RenderPassInfo();
+    RenderPassInfo(const RenderPassInfo& other);
+    ~RenderPassInfo();
+
+    RenderPassInfo& operator=(const RenderPassInfo& other);
+
     // This is the id the pass is mapped to.
-    int id;
+    RenderPassId id;
     // This is true if the pass was used in the last aggregated frame.
     bool in_use = true;
   };
 
   base::flat_map<std::pair<SurfaceId, RenderPassId>, RenderPassInfo>
       render_pass_allocator_map_;
-  RenderPassId next_render_pass_id_ = 1;
+  RenderPassId::Generator render_pass_id_generator_;
 };
 
 }  // namespace viz

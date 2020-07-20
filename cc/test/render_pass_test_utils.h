@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "cc/paint/filter_operations.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -33,7 +35,7 @@ namespace cc {
 // Adds a new render pass with the provided properties to the given
 // render pass list.
 viz::RenderPass* AddRenderPass(viz::RenderPassList* pass_list,
-                               int render_pass_id,
+                               viz::RenderPassId render_pass_id,
                                const gfx::Rect& output_rect,
                                const gfx::Transform& root_transform,
                                const FilterOperations& filters);
@@ -41,7 +43,7 @@ viz::RenderPass* AddRenderPass(viz::RenderPassList* pass_list,
 // Adds a new render pass with the provided properties to the given
 // render pass list.
 viz::RenderPass* AddRenderPassWithDamage(viz::RenderPassList* pass_list,
-                                         int render_pass_id,
+                                         viz::RenderPassId render_pass_id,
                                          const gfx::Rect& output_rect,
                                          const gfx::Rect& damage_rect,
                                          const gfx::Transform& root_transform,

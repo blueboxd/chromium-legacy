@@ -446,6 +446,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="2824775600643448204">Pasek adresu i wyszukiwania</translation>
 <translation id="2826760142808435982">Połączenie jest szyfrowane i uwierzytelniane algorytmem <ph name="CIPHER" />, a mechanizm wymiany kluczy to <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Wyczyść formularz</translation>
+<translation id="2839501879576190149">Wchodzisz na fałszywą stronę</translation>
 <translation id="2847118875340931228">Otwórz okno incognito</translation>
 <translation id="2850739647070081192">Invite (koperta)</translation>
 <translation id="2856444702002559011">Osoby atakujące mogą próbować wykraść Twoje informacje ze strony <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (na przykład hasła, wiadomości lub dane kart kredytowych). <ph name="BEGIN_LEARN_MORE_LINK" />Więcej informacji<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -801,6 +802,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="42981349822642051">Rozwiń</translation>
 <translation id="4300675098767811073">Wiele otworów z prawej strony</translation>
 <translation id="4302965934281694568">Chou3 (koperta)</translation>
+<translation id="4305666528087210886">Nie udało się uzyskać dostępu do pliku</translation>
 <translation id="4305817255990598646">Przełącz</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Blokuj (domyślnie)</translation>
@@ -819,6 +821,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="4358461427845829800">Zarządzaj formami płatności…</translation>
 <translation id="4359160567981085931">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chrome może pomóc. Aby zmienić hasło i powiadomić Google, że Twoje konto może być zagrożone, kliknij Chroń konto.</translation>
 <translation id="4367563149485757821">Number-12 (koperta)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Naruszenie bezpieczeństwa danych w jednej z witryn lub aplikacji spowodowało ujawnienie hasła, którego używasz na stronie <ph name="ORIGIN" />. Chrome zaleca, by natychmiast je zmienić.<ph name="ORIGIN" />}=1{Naruszenie bezpieczeństwa danych w jednej z witryn lub aplikacji spowodowało ujawnienie hasła, którego używasz na <ph name="ORIGIN" /> i 1 innej stronie. Chrome zaleca niezwłoczne sprawdzenie zapisanych haseł.}few{Naruszenie bezpieczeństwa danych w jednej z witryn lub aplikacji spowodowało ujawnienie hasła, którego używasz na <ph name="ORIGIN" /> i <ph name="SITES_COUNT" /> innych stronach. Chrome zaleca niezwłoczne sprawdzenie zapisanych haseł.}many{Naruszenie bezpieczeństwa danych w jednej z witryn lub aplikacji spowodowało ujawnienie hasła, którego używasz na <ph name="ORIGIN" /> i <ph name="SITES_COUNT" /> innych stronach. Chrome zaleca niezwłoczne sprawdzenie zapisanych haseł.}other{Naruszenie bezpieczeństwa danych w jednej z witryn lub aplikacji spowodowało ujawnienie hasła, którego używasz na <ph name="ORIGIN" /> i <ph name="SITES_COUNT" /> innej strony. Chrome zaleca niezwłoczne sprawdzenie zapisanych haseł.}}</translation>
 <translation id="437058704415269440">Saldo konta</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Oczekiwano wartości typu <ph name="VALUE_TYPE" />.</translation>
@@ -1289,6 +1292,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Uważaj na możliwe opłaty.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 inna podpowiedź}few{# inne podpowiedzi}many{# innych podpowiedzi}other{# innej podpowiedzi}}</translation>
+<translation id="6387645831795005740">Złośliwe strony czasami podszywają się pod inne, wprowadzając małe i trudne do zauważenia zmiany w adresie URL.</translation>
 <translation id="6389470377220713856">Imię i nazwisko na karcie</translation>
 <translation id="6390200185239044127">Składanie w połowie, a następnie składanie typu Z</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1502,6 +1506,7 @@ Dodatkowe informacje:
 <translation id="7372973238305370288">wynik wyszukiwania</translation>
 <translation id="7374733840632556089">Ten problem pojawia się z powodu certyfikatu zainstalowanego na tym urządzeniu przez Ciebie lub inną osobę. Ten certyfikat jest używany do monitorowania i przechwytywania ruchu sieciowego. Chrome mu nie ufa. Choć w pewnych przypadkach (np. w sieci szkolnej lub firmowej) monitorowanie jest uzasadnione i legalne, Chrome będzie Cię o tym powiadamiać, nawet jeśli nie możesz nic na to poradzić. Monitorowanie może odbywać się w każdej przeglądarce lub aplikacji, która ma dostęp do sieci.</translation>
 <translation id="7375818412732305729">Dołączono plik</translation>
+<translation id="7376551888419889433">Gdy oprogramowanie sprzęgające Chrome Enterprise oznacza zdarzenia związane z bezpieczeństwem, odpowiednie dane o zdarzeniach są wysyłane do administratora. Mogą one obejmować adresy URL stron odwiedzanych w Chrome, nazwy plików lub metadane oraz nazwę użytkownika, pod którą logujesz się na swoim urządzeniu i w Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Sterowanie multimediami</translation>
 <translation id="7378627244592794276">Nie</translation>
@@ -1898,6 +1903,7 @@ Dodatkowe informacje:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Podjęto próbę nawiązania połączenia z witryną <ph name="DOMAIN" />, jednak serwer przedstawił nieprawidłowy certyfikat.</translation>
 <translation id="9050666287014529139">Hasło</translation>
+<translation id="9062620674789239642">Mógł zostać przeniesiony, edytowany lub usunięty.</translation>
 <translation id="9065203028668620118">Edytuj</translation>
 <translation id="9065745800631924235">Wyszukiwanie ciągu <ph name="TEXT" /> w historii</translation>
 <translation id="9069693763241529744">Zablokowane przez rozszerzenie</translation>

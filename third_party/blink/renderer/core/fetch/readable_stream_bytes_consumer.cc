@@ -95,9 +95,8 @@ class ReadableStreamBytesConsumer::OnRejected final : public ScriptFunction {
 
 ReadableStreamBytesConsumer::ReadableStreamBytesConsumer(
     ScriptState* script_state,
-    ReadableStream* stream,
-    ExceptionState& exception_state)
-    : reader_(stream->GetReaderNotForAuthorCode(script_state, exception_state)),
+    ReadableStream* stream)
+    : reader_(stream->GetReaderNotForAuthorCode(script_state)),
       script_state_(script_state) {}
 
 ReadableStreamBytesConsumer::~ReadableStreamBytesConsumer() {}

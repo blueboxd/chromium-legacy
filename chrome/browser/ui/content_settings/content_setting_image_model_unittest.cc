@@ -468,7 +468,7 @@ TEST_F(ContentSettingImageModelTest, NotificationsPrompt) {
       ContentSettingImageModel::CreateForContentType(
           ContentSettingImageModel::ImageType::NOTIFICATIONS_QUIET_PROMPT);
   EXPECT_FALSE(content_setting_image_model->is_visible());
-  manager_->AddRequest(&request_);
+  manager_->AddRequest(web_contents()->GetMainFrame(), &request_);
   WaitForBubbleToBeShown();
   EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
   content_setting_image_model->Update(web_contents());
@@ -492,7 +492,7 @@ TEST_F(ContentSettingImageModelTest, NotificationsPromptCrowdDeny) {
       std::make_unique<TestQuietNotificationPermissionUiSelector>(
           permissions::NotificationPermissionUiSelector::QuietUiReason::
               kTriggeredByCrowdDeny));
-  manager_->AddRequest(&request_);
+  manager_->AddRequest(web_contents()->GetMainFrame(), &request_);
   WaitForBubbleToBeShown();
   EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
   content_setting_image_model->Update(web_contents());
@@ -513,7 +513,7 @@ TEST_F(ContentSettingImageModelTest, NotificationsPromptAbusive) {
       std::make_unique<TestQuietNotificationPermissionUiSelector>(
           permissions::NotificationPermissionUiSelector::QuietUiReason::
               kTriggeredDueToAbusiveRequests));
-  manager_->AddRequest(&request_);
+  manager_->AddRequest(web_contents()->GetMainFrame(), &request_);
   WaitForBubbleToBeShown();
   EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
   content_setting_image_model->Update(web_contents());
@@ -534,7 +534,7 @@ TEST_F(ContentSettingImageModelTest, NotificationsContentAbusive) {
       std::make_unique<TestQuietNotificationPermissionUiSelector>(
           permissions::NotificationPermissionUiSelector::QuietUiReason::
               kTriggeredDueToAbusiveContent));
-  manager_->AddRequest(&request_);
+  manager_->AddRequest(web_contents()->GetMainFrame(), &request_);
   WaitForBubbleToBeShown();
   EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
   content_setting_image_model->Update(web_contents());

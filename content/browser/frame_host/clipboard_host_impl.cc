@@ -30,10 +30,15 @@
 
 namespace content {
 
-// TODO(rogerta): how old is too old will need to be determined, maybe via
-// experimentation.  For now using 1 minute.
+// 5 mins is based on the timeout in BinaryUploadService. This scanning timeout
+// of 5 mins means no paste will be held back longer before being allowed or
+// blocked, so matching this timeout with the threshold for a paste being too
+// old ensures scans that:
+//  - Scans that timeout can be retried without waiting
+//  - Scans that succeed will apply their verdicts without the risk that their
+//    associated IsPasteAllowedRequest is already too old.
 const base::TimeDelta ClipboardHostImpl::kIsPasteAllowedRequestTooOld =
-    base::TimeDelta::FromMinutes(1);
+    base::TimeDelta::FromMinutes(5);
 
 ClipboardHostImpl::IsPasteAllowedRequest::IsPasteAllowedRequest() = default;
 ClipboardHostImpl::IsPasteAllowedRequest::~IsPasteAllowedRequest() = default;

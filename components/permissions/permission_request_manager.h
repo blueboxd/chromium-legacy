@@ -18,6 +18,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+namespace content {
+class RenderFrameHost;
+}
+
 namespace test {
 class PermissionRequestManagerTestApi;
 }
@@ -84,7 +88,8 @@ class PermissionRequestManager
   // bubble closes. A request with message text identical to an outstanding
   // request will be merged with the outstanding request, and will have the same
   // callbacks called as the outstanding request.
-  void AddRequest(PermissionRequest* request);
+  void AddRequest(content::RenderFrameHost* source_frame,
+                  PermissionRequest* request);
 
   // Will reposition the bubble (may change parent if necessary).
   void UpdateAnchorPosition();

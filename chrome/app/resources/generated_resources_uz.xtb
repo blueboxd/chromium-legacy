@@ -104,7 +104,7 @@
 <translation id="1124772482545689468">Foydalanuvchi</translation>
 <translation id="1125550662859510761"><ph name="WIDTH" /> x <ph name="HEIGHT" /> kabi (asli)</translation>
 <translation id="1126809382673880764">Zararli sayt, yuklanma va kengaytmalardan himoya qila olmaydi. Gmail va Qidiruv kabi Google xizmatlarida Saytlarni xavfsiz kezish himoyasi ostida boʻlasiz.</translation>
-<translation id="112752777279960360">Bu kompyuterda Android telefonini birinchi marta elektron kalit sifatida ishlatishni sozlash uchun telefonda Chromeni oching va “Sozlamalar &gt; Parollar &gt; Telefonni elektron kalit sifatida ishlatish" sahifasini oching. Keyin “Yanqi qurilmani ulash” ustiga bosib, mana bu QR kodni skanerlang.</translation>
+<translation id="112752777279960360">Bu kompyuterda Android telefonini birinchi marta elektron kalit sifatida ishlatishni sozlash uchun telefonda Chromeni oching va “Sozlamalar &gt; Parollar &gt; Telefonni elektron kalit sifatida ishlatish” sahifasini oching. Keyin “Yangi qurilmani ulash” ustiga bosib, mana bu QR kodni skanerlang.</translation>
 <translation id="1128109161498068552">Hech qanday saytga MIDI qurilmalarga kirish uchun tizim xabarlaridan foydalanishiga ruxsat berilmasin</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Qidiruv tizimini o‘zgartirish</translation>
@@ -1219,7 +1219,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2489918096470125693">&amp;Jild qo‘shish</translation>
 <translation id="2490481887078769936"><ph name="FILE_NAME" /> fayli roʻyxatdan olib tashlandi</translation>
 <translation id="249113932447298600">Kechirasiz, <ph name="DEVICE_LABEL" /> qurilmasi ayni vaqtda qo‘llab-quvvatlanmaydi.</translation>
-<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> sizga <ph name="ATTACHMENTS" /> ulashmoqda</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> sizga <ph name="ATTACHMENTS" /> ulashmoqda.</translation>
 <translation id="2492461744635776704">Sertifikatni imzolash talabi tayyorlanmoqda</translation>
 <translation id="249303669840926644">Ro‘yxatdan o‘tish amalini yakunlab bo‘lmadi</translation>
 <translation id="2495777824269688114">Boshqa funksiyalar yoki javoblar uchun “?” ustiga bosing.</translation>
@@ -1820,7 +1820,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3253225298092156258">Mavjud emas</translation>
 <translation id="3253448572569133955">Notanish hisob</translation>
 <translation id="3254516606912442756">Avtomatik vaqt mintaqasi funksiyasi o‘chiq</translation>
-<translation id="3254715652085014625">Telefonda Chromeni oching va “Sozlamalar &gt; Parollar &gt; Telefonni elektron kalit sifatida ishlatish" sahifasidagi koʻrsatmalarni bajaring.</translation>
+<translation id="3254715652085014625">Telefonda Chromeni oching va “Sozlamalar &gt; Parollar &gt; Telefonni elektron kalit sifatida ishlatish” sahifasidagi koʻrsatmalarni bajaring.</translation>
 <translation id="3255355328033513170"><ph name="SITE_GROUP_NAME" /> va ichidagi saytlar tomonidan saqlangan barcha maʼlumotlar tozalanadi. Cookie fayllari ham. Bu saytlardagi seanslaringiz yakunlanadi, hatto ochiq varaqlarda ham.</translation>
 <translation id="3259723213051400722">Qaytadan urining.</translation>
 <translation id="3264544094376351444">Sans-serif shrift</translation>

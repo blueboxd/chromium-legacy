@@ -45,6 +45,7 @@
 <translation id="115926840831309955">请检查您的银行卡验证码 (CVC) 并重试，或者更新失效日期</translation>
 <translation id="1161325031994447685">重新连接到 Wi-Fi 网络</translation>
 <translation id="1165039591588034296">错误</translation>
+<translation id="1165174597379888365">访问网页</translation>
 <translation id="1175364870820465910">打印(&amp;P)...</translation>
 <translation id="1175875016430184367">三钉（右侧）</translation>
 <translation id="1178581264944972037">暂停</translation>
@@ -261,6 +262,7 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{以及另外 1 个应用}other{以及另外 # 个应用}}</translation>
 <translation id="2003709556000175978">立即重置您的密码</translation>
 <translation id="2003775180883135320">四孔（顶部）</translation>
+<translation id="202072848677994234">此表单将通过不安全的连接提交。因此，系统已停用自动填充功能。</translation>
 <translation id="2025115093177348061">增强现实</translation>
 <translation id="2025186561304664664">代理已设为自动配置。</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />检查代理服务器和防火墙<ph name="END_LINK" /></translation>
@@ -328,6 +330,7 @@
 <translation id="2289385804009217824">裁切</translation>
 <translation id="2292556288342944218">您被禁止访问互联网</translation>
 <translation id="2293443924986248631">开启此设置后，网站无法使用 Cookie 来跟踪您在网上的活动。某些网站上的功能可能会无法正常运作。</translation>
+<translation id="2295290966866883927">系统会将您所访问网页的网址发送给 Google Cloud 或第三方以供分析。例如，这些网址可能会被扫描，以检测出不安全的网站。</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2300306941146563769">未上传</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>

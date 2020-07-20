@@ -35,6 +35,8 @@ union V1Frame {
   PairedKeyResultFrame paired_key_result;
 
   CertificateInfoFrame certificate_info;
+
+  CancelFrame cancel_frame;
 };
 
 // An introduction packet sent by the sending side. Contains a list of files
@@ -81,6 +83,9 @@ struct FileMetadata {
   // The mimeType of file (eg. 'image/jpeg' from 'dog.jpg'). Specifying a
   // mimeType helps provide a richer experience on receiving side.
   string mime_type = "application/octet-stream";
+
+  // A uuid for the attachment. Should be unique across all attachments.
+  int64 id;
 };
 
 // Text metadata. Does not include the actual bytes of the text in transit.
@@ -108,6 +113,9 @@ struct TextMetadata {
 
   // The size of the text content.
   uint64 size;
+
+  // A uuid for the attachment. Should be unique across all attachments.
+  int64 id;
 };
 
 // Wifi credentails metadata. Describes the wifi network to be used by the
@@ -129,6 +137,9 @@ struct WifiCredentialsMetadata {
   // The BYTE payload id that will be sent as a follow up containing the
   // password.
   int64 payload_id;
+
+  // A uuid for the attachment. Should be unique across all attachments.
+  int64 id;
 };
 
 // A response packet sent by the receiving side. Accepts or rejects the list of
@@ -207,4 +218,8 @@ struct PublicCertificate {
   // The tag for verifying metadata_encryption_key.
   // The size should be 32.
   array<uint8> metadata_encryption_key_tag;
+};
+
+// Frame sent by remote device to cancel the share action.
+struct CancelFrame {
 };

@@ -7,7 +7,7 @@
 <translation id="1657719826150349398">Sposta scheda in basso</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> scheda}other{<ph name="TABS_COUNT_MANY" /> schede}}</translation>
 <translation id="2569352796411618312">Suggerimento: <ph name="NUMBER_OF_TABS" /> delle tue schede non sono state usate ultimamente. Vuoi chiuderle?</translation>
-<translation id="257674075312929031">Gruppo</translation>
+<translation id="257674075312929031">Raggruppa</translation>
 <translation id="2613747923081026172">Crea gruppo</translation>
 <translation id="2671423594960767771">Condividi gruppo</translation>
 <translation id="2977480621796371840">Rimuovi dal gruppo</translation>

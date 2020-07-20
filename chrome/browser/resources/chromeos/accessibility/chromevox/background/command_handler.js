@@ -437,11 +437,13 @@ CommandHandler.onCommand = function(command) {
     case 'nextFormField':
       pred = AutomationPredicate.formField;
       predErrorMsg = 'no_next_form_field';
+      CommandHandler.smartStickyMode_.startIgnoringRangeChanges();
       break;
     case 'previousFormField':
       dir = Dir.BACKWARD;
       pred = AutomationPredicate.formField;
       predErrorMsg = 'no_previous_form_field';
+      CommandHandler.smartStickyMode_.startIgnoringRangeChanges();
       break;
     case 'previousGraphic':
       dir = Dir.BACKWARD;

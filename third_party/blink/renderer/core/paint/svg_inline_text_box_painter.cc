@@ -100,8 +100,10 @@ void SVGInlineTextBoxPainter::Paint(const PaintInfo& paint_info,
     LayoutObject& parent_layout_object = ParentInlineLayoutObject();
     const ComputedStyle& style = parent_layout_object.StyleRef();
 
-    DrawingRecorder recorder(paint_info.context, svg_inline_text_box_,
-                             paint_info.phase);
+    DrawingRecorder recorder(
+        paint_info.context, svg_inline_text_box_, paint_info.phase,
+        EnclosingIntRect(
+            parent_layout_object.VisualRectInLocalSVGCoordinates()));
     InlineTextBoxPainter text_painter(svg_inline_text_box_);
     const DocumentMarkerVector& markers_to_paint =
         text_painter.ComputeMarkersToPaint();

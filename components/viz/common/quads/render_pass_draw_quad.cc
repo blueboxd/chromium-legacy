@@ -80,8 +80,9 @@ const RenderPassDrawQuad* RenderPassDrawQuad::MaterialCast(
 
 void RenderPassDrawQuad::ExtendValue(
     base::trace_event::TracedValue* value) const {
-  TracedValue::SetIDRef(reinterpret_cast<void*>(render_pass_id), value,
-                        "render_pass_id");
+  TracedValue::SetIDRef(
+      reinterpret_cast<void*>(static_cast<uint64_t>(render_pass_id)), value,
+      "render_pass_id");
   value->SetInteger("mask_resource_id", resources.ids[kMaskResourceIdIndex]);
   cc::MathUtil::AddToTracedValue("mask_texture_size", mask_texture_size, value);
   cc::MathUtil::AddToTracedValue("mask_uv_rect", mask_uv_rect, value);

@@ -18,8 +18,11 @@
     [VisibilityStateEntry](https://docs.google.com/document/d/1l5kHiJRkdQwEN-CYI5_mUNODhQVB5rCyjN4jHDdXDHA/edit).
   * {#frame-timing-20203}Work on the
     **[Frame Timing](https://docs.google.com/document/d/1t3A56iTN01ReEELJ18_jLYrvc13L3hDTXWK46AafKwE/edit)** proposal.
-      * Draft a spec.
-      * _(Stretch)_ Land a prototype of the API.
+    * Draft a spec.
+    * _(Stretch)_ Land a prototype of the API.
+  * {#fb-driven-20203}Continue [previous work](#fb-driven-20202) on Facebook-driven APIs.
+    * Based on the iframe layerization experiment results, send Intent to Ship for **isInputPending**.
+    * _(Stretch)_ Implement warm initialization logic for the **JS Self-Profiling** API.
 
 ### Existing web performance API improvements
 
@@ -68,6 +71,7 @@
   all of them.
 * [Documentation](#documentation-20202): Submitted feedback on some of the metrics content on web.dev, most of which was actioned
   upon. Updated MDN entries for core web vitals metrics.
+* [Facebook-driven APIs](#fb-driven-20202): Landed support for predicting touch and gesture events for isInputPending.
 
 ## 2020 Q2 Objectives
 
@@ -123,7 +127,7 @@
     [support](https://lists.w3.org/Archives/Public/public-web-perf/2020Apr/0005.html)
     for the observer instead.
 
-  * Provide support for two Facebook-driven APIs:
+  * {#fb-driven-20202}Provide support for two Facebook-driven APIs:
     [isInputPending](https://github.com/WICG/is-input-pending) and [JavaScript
     Self-Profiling](https://github.com/WICG/js-self-profiling). The
     **isInputPending** API enables developers to query whether the browser has

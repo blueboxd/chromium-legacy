@@ -173,7 +173,7 @@ Vyhľadávanie spustíte klepnutím na ľubovoľné slovo. Spresníte ho pridrž
 <translation id="2387895666653383613">Mierka textu</translation>
 <translation id="2394602618534698961">Tu sa zobrazia stiahnuté súbory</translation>
 <translation id="2407481962792080328">Keď sa prihlásite do svojho účtu Google, táto funkcia je zapnutá</translation>
-<translation id="2407674018644220013">Chcete aplikáciu <ph name="APP_NAME" /> nastaviť ako predvolenú?</translation>
+<translation id="2407674018644220013">Chcete nastaviť aplikáciu <ph name="APP_NAME" /> ako predvolenú?</translation>
 <translation id="2410754283952462441">Výber účtu</translation>
 <translation id="2414886740292270097">Tmavý režim</translation>
 <translation id="2426805022920575512">Vybrať iný účet</translation>
@@ -667,7 +667,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6342069812937806050">Práve teraz</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ďalšia}few{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ďalšie}many{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ďalšej}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 a <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ďalších}}</translation>
 <translation id="6364438453358674297">Odstrániť návrh z histórie?</translation>
-<translation id="6366047038980456022"><ph name="APP_NAME" /> má inteligenciu a rýchlosť na všetko, čo potrebujete na internete robiť, tvoriť alebo skúmať</translation>
+<translation id="6366047038980456022"><ph name="APP_NAME" /> vám poskytuje inteligentné funkcie a rýchlosť, aby ste mohli bezpečne konať, vytvárať a skúmať obsah na internete</translation>
 <translation id="6369229450655021117">Môžete v ňom vyhľadávať na internete, zdieľať obsah s priateľmi a prezerať otvorené stránky</translation>
 <translation id="6378173571450987352">Podrobnosti: zoradené podľa množstva využitých dát</translation>
 <translation id="6379829913050047669"><ph name="APP_NAME" /> sa otvorí v Chrome. Pokračovaním vyjadrujete súhlas so <ph name="BEGIN_LINK1" />zmluvnými podmienkami spoločnosti Google<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />dodatočnými zmluvnými podmienkami prehliadača Google Chrome a systému Chrome OS<ph name="END_LINK2" />.</translation>

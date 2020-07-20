@@ -1009,6 +1009,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnMoveCaret(const gfx::Point& point);
   void OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
   void OnSelectRange(const gfx::Point& base, const gfx::Point& extent);
+  void OnVisualStateRequest(uint64_t key);
   void OnSuppressFurtherDialogs();
   void OnMixedContentFound(const FrameMsg_MixedContentFound_Params& params);
 

@@ -103,15 +103,7 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 
 // Tests that find in page allows iteration between search results and displays
 // correct number of results.
-// TODO(crbug.com/1030701): Test fails on iOS 13 when rolling EG2 version.
-- (void)DISABLED_testFindInPage {
-// TODO(crbug.com/1030701): Test fails on iOS 12 when run as EG2 test.
-#if defined(CHROME_EARL_GREY_2)
-  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
-    EARL_GREY_TEST_DISABLED(@"Fails on iOS 12.0.");
-  }
-#endif
-
+- (void)testFindInPage {
   // Type "find".
   [self typeFindInPageText:@"find"];
   // Should be highlighting result 1 of 2.
@@ -128,8 +120,7 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 // Tests that Find In Page search term retention is working as expected, e.g.
 // the search term is persisted between FIP runs, but in incognito search term
 // is not retained and not autofilled.
-// TODO(crbug.com/1029709): Test failed.
-- (void)DISABLED_testFindInPageRetainsSearchTerm {
+- (void)testFindInPageRetainsSearchTerm {
   // Type "find".
   [self typeFindInPageText:@"find"];
   [self assertResultStringIsResult:1 outOfTotal:2];
@@ -169,20 +160,10 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 }
 
 // Tests accessibility of the Find in Page screen.
-// TODO(crbug.com/1030701): Test fails on iOS 13 when rolling EG2 version.
-- (void)DISABLED_testAccessibilityOnFindInPage {
-// TODO(crbug.com/1030701): Test fails on iOS 12 when run as EG2 test.
-#if defined(CHROME_EARL_GREY_2)
-  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
-    EARL_GREY_TEST_DISABLED(@"Fails on iOS 12.0.");
-  }
-#endif
-
+- (void)testAccessibilityOnFindInPage {
   [self typeFindInPageText:@"find"];
+  [self assertResultStringIsResult:1 outOfTotal:2];
 
-  // Wait for UI to finish loading screen, before programatically verifying
-  // accessibility.
-  [ChromeEarlGreyUI waitForAppToIdle];
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
 
@@ -194,7 +175,7 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
       selectElementWithMatcher:grey_allOf(
                                    grey_accessibilityID(kToolsMenuFindInPageId),
                                    grey_sufficientlyVisible(), nil)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 250)
       onElementWithMatcher:grey_accessibilityID(kPopupMenuToolsMenuTableViewId)]
       performAction:grey_tap()];
 }
@@ -206,21 +187,8 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 }
 
 - (void)typeFindInPageText:(NSString*)text {
-#if defined(CHROME_EARL_GREY_1)
   [[EarlGrey selectElementWithMatcher:[self findInPageInputField]]
-      performAction:grey_replaceText(text)];
-#elif defined(CHROME_EARL_GREY_2)
-  // There are two elements in the DOM (UITextField and
-  // UIAccessibilityTextFieldElement) that match the acessibilityID of
-  // kFindInPageInputFieldId. Choose the accessibility element.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
-                                              kFindInPageInputFieldId),
-                                          grey_accessibilityElement(), nil)]
-      performAction:grey_replaceText(text)];
-#else
-#error Must define either CHROME_EARL_GREY_1 or CHROME_EARL_GREY_2.
-#endif
+      performAction:grey_typeText(text)];
 }
 
 - (id<GREYMatcher>)findInPageInputField {

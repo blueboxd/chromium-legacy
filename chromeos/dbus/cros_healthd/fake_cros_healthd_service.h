@@ -93,6 +93,9 @@ class FakeCrosHealthdService final
       const std::vector<mojom::ProbeCategoryEnum>& categories,
       ProbeTelemetryInfoCallback callback) override;
 
+  void ProbeProcessInfo(const uint32_t process_id,
+                        ProbeProcessInfoCallback callback) override;
+
   // Set the list of routines that will be used in the response to any
   // GetAvailableRoutines IPCs received.
   void SetAvailableRoutinesForTesting(
@@ -110,6 +113,10 @@ class FakeCrosHealthdService final
   // ProbeTelemetryInfo IPCs received.
   void SetProbeTelemetryInfoResponseForTesting(
       mojom::TelemetryInfoPtr& response_info);
+
+  // Set the ProcessResultPtr that will be used in the response to any
+  // ProbeProcessInfo IPCs received.
+  void SetProbeProcessInfoResponseForTesting(mojom::ProcessResultPtr& result);
 
   // Calls the power event OnAcInserted for all registered power observers.
   void EmitAcInsertedEventForTesting();
@@ -131,6 +138,9 @@ class FakeCrosHealthdService final
   mojom::RoutineUpdatePtr routine_update_response_{mojom::RoutineUpdate::New()};
   // Used as the response to any ProbeTelemetryInfo IPCs received.
   mojom::TelemetryInfoPtr telemetry_response_info_{mojom::TelemetryInfo::New()};
+  // Used as the response to any ProbeProcessInfo IPCs received.
+  mojom::ProcessResultPtr process_response_{
+      mojom::ProcessResult::NewProcessInfo(mojom::ProcessInfo::New())};
 
   // Allows the remote end to call the probe, diagnostics and event service
   // methods.

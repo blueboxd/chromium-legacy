@@ -3398,6 +3398,46 @@ TEST_F(ExtensionServiceTest, SetUnsetBlocklistInPrefs) {
   EXPECT_TRUE(ValidateBooleanPref(good2, kPrefBlocklist, true));
   EXPECT_FALSE(IsPrefExist("invalid_id", kPrefBlocklist));
 }
+
+// Tests that an extension that was disabled through Omaha won't be
+// re-enabled if it's not present in the Safe Browsing blocklist.
+// Regression test for https://crbug.com/1107040.
+TEST_F(ExtensionServiceTest, NoUnsetBlocklistInPrefs) {
+  TestBlocklist test_blocklist;
+  // A profile with 3 extensions installed: good0, good1, and good2.
+  // We really only care about good0 for this test since the other
+  // functionality is already tested in the above test.
+  InitializeGoodInstalledExtensionService();
+  test_blocklist.Attach(service()->blocklist_);
+  service()->Init();
+
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(good0));
+  EXPECT_FALSE(registry()->blocklisted_extensions().Contains(good0));
+
+  base::Value attributes(base::Value::Type::DICTIONARY);
+  attributes.SetKey("_malware", base::Value(true));
+
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  service()->PerformActionBasedOnOmahaAttributes(good0, attributes);
+  EXPECT_EQ(disable_reason::DISABLE_REMOTELY_FOR_MALWARE,
+            prefs->GetDisableReasons(good0));
+  EXPECT_TRUE(IsPrefExist(good0, kPrefBlocklist));
+  EXPECT_FALSE(registry()->enabled_extensions().Contains(good0));
+  EXPECT_TRUE(registry()->blocklisted_extensions().Contains(good0));
+
+  // Un-blocklist all extensions.
+  test_blocklist.Clear(false);
+  content::RunAllTasksUntilIdle();
+
+  // If the extension has a DISABLE_REMOTELY_FOR_MALWARE disable reason,
+  // the extension should still not be enabled even if it's no on the
+  // SB blocklist. This disable reason needs to be removed prior to
+  // unblocklisting/re-enabling.
+  EXPECT_FALSE(registry()->enabled_extensions().Contains(good0));
+  EXPECT_TRUE(registry()->blocklisted_extensions().Contains(good0));
+  EXPECT_TRUE(ValidateBooleanPref(good0, kPrefBlocklist, true));
+  EXPECT_FALSE(IsPrefExist(good1, kPrefBlocklist));
+}
 #endif  // defined(ENABLE_BLOCKLIST_TESTS)
 
 #if defined(ENABLE_BLOCKLIST_TESTS)

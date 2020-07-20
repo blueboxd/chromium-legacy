@@ -16,7 +16,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
@@ -786,14 +785,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Add/ClearPendingUserActivation() for details.
   bool RemovePendingUserActivationIfAvailable();
 
-  // Roundtrips through the renderer and compositor pipeline to ensure that any
-  // changes to the contents resulting from operations executed prior to this
-  // call are visible on screen. The call completes asynchronously by running
-  // the supplied |callback| with a value of true upon successful completion and
-  // false otherwise when the widget is destroyed.
-  using VisualStateCallback = base::OnceCallback<void(bool)>;
-  void InsertVisualStateCallback(VisualStateCallback callback);
-
   const mojo::AssociatedRemote<blink::mojom::FrameWidget>&
   GetAssociatedFrameWidget();
 
@@ -1133,9 +1124,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // frame to a child frame RenderWidgetHost. They are not used on a top-level
   // RenderWidgetHost. The child frame RenderWidgetHost stores these values to
   // pass them to the renderer, instead of computing them for itself. It
-  // collects them and passes them though WidgetMsg_UpdateVisualProperties so
-  // that the renderer receives updates in an atomic fashion along with a
-  // synchronization token for the compositor in a LocalSurfaceIdAllocation.
+  // collects them and passes them though
+  // blink::mojom::Widget::UpdateVisualProperties so that the renderer receives
+  // updates in an atomic fashion along with a synchronization token for the
+  // compositor in a LocalSurfaceIdAllocation.
   struct MainFramePropagationProperties {
     MainFramePropagationProperties();
     ~MainFramePropagationProperties();
@@ -1333,8 +1325,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   mojo::AssociatedReceiver<blink::mojom::WidgetHost>
       blink_widget_host_receiver_{this};
   mojo::AssociatedRemote<blink::mojom::Widget> blink_widget_;
-
-  mojo::Remote<blink::mojom::WidgetCompositor> widget_compositor_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_{this};
 

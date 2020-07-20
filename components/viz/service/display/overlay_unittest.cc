@@ -230,7 +230,7 @@ class OverlayOutputSurface : public OutputSurface {
 };
 
 std::unique_ptr<RenderPass> CreateRenderPass() {
-  int render_pass_id = 1;
+  RenderPassId render_pass_id{1};
   gfx::Rect output_rect(0, 0, 256, 256);
 
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
@@ -243,7 +243,7 @@ std::unique_ptr<RenderPass> CreateRenderPass() {
 
 std::unique_ptr<RenderPass> CreateRenderPassWithTransform(
     const gfx::Transform& transform) {
-  int render_pass_id = 1;
+  RenderPassId render_pass_id{1};
   gfx::Rect output_rect(0, 0, 256, 256);
 
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
@@ -1305,7 +1305,7 @@ TEST_F(UnderlayTest, DisallowsTransparentCandidates) {
 TEST_F(UnderlayTest, DisallowFilteredQuadOnTop) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
 
-  int render_pass_id = 3;
+  RenderPassId render_pass_id{3};
   RenderPassDrawQuad* quad =
       pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(pass->shared_quad_state_list.back(), kOverlayRect, kOverlayRect,

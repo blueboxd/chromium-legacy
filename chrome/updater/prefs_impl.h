@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "prefs.h"
+
 namespace base {
 class TimeDelta;
 }  // namespace base
@@ -27,6 +29,30 @@ class ScopedPrefsLock {
 
  private:
   std::unique_ptr<ScopedPrefsLockImpl> impl_;
+};
+
+class UpdaterPrefsImpl : public LocalPrefs, public GlobalPrefs {
+ public:
+  UpdaterPrefsImpl(std::unique_ptr<ScopedPrefsLock> lock,
+                   std::unique_ptr<PrefService> prefs);
+  ~UpdaterPrefsImpl() override;
+
+  // Overrides for UpdaterPrefs.
+  PrefService* GetPrefService() const override;
+
+  // Overrides for LocalPrefs
+  bool GetQualified() const override;
+  void SetQualified(bool value) override;
+
+  // Overrides for GlobalPrfs
+  std::string GetActiveVersion() const override;
+  void SetActiveVersion(std::string value) override;
+  bool GetSwapping() const override;
+  void SetSwapping(bool value) override;
+
+ private:
+  std::unique_ptr<ScopedPrefsLock> lock_;
+  std::unique_ptr<PrefService> prefs_;
 };
 
 // Returns a ScopedPrefsLock, or nullptr if the lock could not be acquired

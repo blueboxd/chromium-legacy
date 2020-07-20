@@ -76,7 +76,7 @@ message HeartbeatRequest {
   optional bool is_initial_heartbeat = 11;
 
   // A hash of the local hostname of the machine.
-  optional string hostname = 12;
+  optional string hostname_hash = 12;
 }
 
 // Sent in response to a HeartbeatRequest.

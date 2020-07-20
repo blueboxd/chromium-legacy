@@ -6,14 +6,16 @@
 
 #include "third_party/blink/renderer/modules/webaudio/periodic_wave.h"
 
+#if defined(CPU_ARM_NEON)
 #include <arm_neon.h>
+#endif
 
 namespace blink {
 
 #if defined(CPU_ARM_NEON)
-static float32x4_t v_wrap_virtual_index(float32x4_t x,
-                                        float32x4_t wave_size,
-                                        float32x4_t inv_wave_size) {
+static float32x4_t WrapVirtualIndexVector(float32x4_t x,
+                                          float32x4_t wave_size,
+                                          float32x4_t inv_wave_size) {
   // r = x/wave_size, f = truncate(r), truncating towards 0
   const float32x4_t r = vmulq_f32(x, inv_wave_size);
   int32x4_t f = vcvtq_s32_f32(r);
@@ -74,7 +76,7 @@ std::tuple<int, double> OscillatorHandler::ProcessKRateVector(
   // It's possible that adding the incr above exceeded the bounds, so wrap them
   // if needed.
   v_virt_index =
-      v_wrap_virtual_index(v_virt_index, v_wave_size, v_inv_wave_size);
+      WrapVirtualIndexVector(v_virt_index, v_wave_size, v_inv_wave_size);
 
   int k = 0;
   int n_loops = n / 4;
@@ -119,16 +121,124 @@ std::tuple<int, double> OscillatorHandler::ProcessKRateVector(
     // 0 -> periodicWaveSize.
     v_virt_index = vaddq_f32(v_virt_index, v_incr);
     v_virt_index =
-        v_wrap_virtual_index(v_virt_index, v_wave_size, v_inv_wave_size);
+        WrapVirtualIndexVector(v_virt_index, v_wave_size, v_inv_wave_size);
   }
 
   // There's a bit of round-off above, so update the index more accurately so at
   // least the next render starts over with a more accurate value.
   virtual_read_index += k * incr;
   virtual_read_index -=
-      floor(virtual_read_index * inv_periodic_wave_size) * periodic_wave_size;
+      std::floor(virtual_read_index * inv_periodic_wave_size) *
+      periodic_wave_size;
 
   return std::make_tuple(k, virtual_read_index);
+}
+
+static ALWAYS_INLINE double WrapVirtualIndex(double virtual_index,
+                                             unsigned periodic_wave_size,
+                                             double inv_periodic_wave_size) {
+  return virtual_index -
+         floor(virtual_index * inv_periodic_wave_size) * periodic_wave_size;
+}
+
+double OscillatorHandler::ProcessARateVectorKernel(
+    float* destination,
+    double virtual_read_index,
+    const float* phase_increments,
+    unsigned periodic_wave_size,
+    const float* const lower_wave_data[4],
+    const float* const higher_wave_data[4],
+    const float table_interpolation_factor[4]) const {
+  // See the scalar version in oscillator_node.cc for the basic algorithm.
+  double inv_periodic_wave_size = 1.0 / periodic_wave_size;
+  unsigned read_index_mask = periodic_wave_size - 1;
+
+  // Accumulate the phase increments so we can set up the virtual read index
+  // vector appropriately.  This must be a double to preserve accuracy and
+  // to match the scalar version.
+  double incr_sum[4];
+  incr_sum[0] = phase_increments[0];
+  for (int m = 1; m < 4; ++m) {
+    incr_sum[m] = incr_sum[m - 1] + phase_increments[m];
+  }
+
+  // It's really important for accuracy that we use doubles instead of
+  // floats for the virtual_read_index.  Without this, we can only get some
+  // 30-50 dB in the sweep tests instead of 100+ dB.
+  //
+  // Arm NEON doesn't have float64x2_t so we have to do this.  (Aarch64 has
+  // float64x2_t.)
+  double virt_index[4];
+  virt_index[0] = virtual_read_index;
+  virt_index[1] = WrapVirtualIndex(virtual_read_index + incr_sum[0],
+                                   periodic_wave_size, inv_periodic_wave_size);
+  virt_index[2] = WrapVirtualIndex(virtual_read_index + incr_sum[1],
+                                   periodic_wave_size, inv_periodic_wave_size);
+  virt_index[3] = WrapVirtualIndex(virtual_read_index + incr_sum[2],
+                                   periodic_wave_size, inv_periodic_wave_size);
+
+  // The virtual indices we're working with now.
+  const float32x4_t v_virt_index = {
+      static_cast<float>(virt_index[0]), static_cast<float>(virt_index[1]),
+      static_cast<float>(virt_index[2]), static_cast<float>(virt_index[3])};
+
+  // Convert virtual index to actual index into wave data.
+  const uint32x4_t v_read0 = vcvtq_u32_f32(v_virt_index);
+
+  // v_read1 = v_read0 + 1, but wrap the index around, if needed.
+  const uint32x4_t v_read1 = vandq_s32(vaddq_s32(v_read0, vdupq_n_u32(1)),
+                                       vdupq_n_u32(read_index_mask));
+
+  float sample1_lower[4] __attribute__((aligned(16)));
+  float sample2_lower[4] __attribute__((aligned(16)));
+  float sample1_higher[4] __attribute__((aligned(16)));
+  float sample2_higher[4] __attribute__((aligned(16)));
+
+  uint32_t read0[4] __attribute__((aligned(16)));
+  uint32_t read1[4] __attribute__((aligned(16)));
+
+  vst1q_u32(read0, v_read0);
+  vst1q_u32(read1, v_read1);
+
+  // Read the samples from the wave tables
+  for (int m = 0; m < 4; ++m) {
+    DCHECK_LT(read0[m], periodic_wave_size);
+    DCHECK_LT(read1[m], periodic_wave_size);
+
+    sample1_lower[m] = lower_wave_data[m][read0[m]];
+    sample2_lower[m] = lower_wave_data[m][read1[m]];
+    sample1_higher[m] = higher_wave_data[m][read0[m]];
+    sample2_higher[m] = higher_wave_data[m][read1[m]];
+  }
+
+  // Compute factor for linear interpolation within a wave table.
+  const float32x4_t v_factor = vsubq_f32(v_virt_index, vcvtq_f32_u32(v_read0));
+
+  // Linearly interpolate between samples from the higher wave table.
+  const float32x4_t sample_higher = vmlaq_f32(
+      vld1q_f32(sample1_higher), v_factor,
+      vsubq_f32(vld1q_f32(sample2_higher), vld1q_f32(sample1_higher)));
+
+  // Linearly interpolate between samples from the lower wave table.
+  const float32x4_t sample_lower =
+      vmlaq_f32(vld1q_f32(sample1_lower), v_factor,
+                vsubq_f32(vld1q_f32(sample2_lower), vld1q_f32(sample1_lower)));
+
+  // Linearly interpolate between wave tables to get the desired
+  // output samples.
+  const float32x4_t sample =
+      vmlaq_f32(sample_higher, vld1q_f32(table_interpolation_factor),
+                vsubq_f32(sample_lower, sample_higher));
+
+  vst1q_f32(destination, sample);
+
+  // Update the virtual_read_index appropriately and return it for the
+  // next call.
+  virtual_read_index =
+      WrapVirtualIndex(virtual_read_index + incr_sum[3], periodic_wave_size,
+                       inv_periodic_wave_size);
+
+  return virtual_read_index;
 }
 #endif
 

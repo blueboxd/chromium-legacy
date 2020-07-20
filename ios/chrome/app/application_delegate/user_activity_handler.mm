@@ -20,6 +20,7 @@
 #import "ios/chrome/app/application_delegate/tab_opening.h"
 #include "ios/chrome/app/application_mode.h"
 #import "ios/chrome/app/intents/OpenInChromeIntent.h"
+#import "ios/chrome/app/intents/SearchInChromeIntent.h"
 #import "ios/chrome/app/spotlight/actions_spotlight_manager.h"
 #import "ios/chrome/app/spotlight/spotlight_util.h"
 #include "ios/chrome/app/startup/chrome_app_startup_parameters.h"
@@ -144,10 +145,23 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
   } else if ([userActivity.activityType
                  isEqualToString:@"SearchInChromeIntent"]) {
     base::RecordAction(UserMetricsAction("IOSLaunchedBySearchInChromeIntent"));
+
     AppStartupParameters* startupParams = [[AppStartupParameters alloc]
         initWithExternalURL:GURL(kChromeUINewTabURL)
                 completeURL:GURL(kChromeUINewTabURL)];
-    [startupParams setPostOpeningAction:FOCUS_OMNIBOX];
+
+    SearchInChromeIntent* intent =
+        base::mac::ObjCCastStrict<SearchInChromeIntent>(
+            userActivity.interaction.intent);
+
+    NSString* searchPhrase = intent.searchPhrase;
+
+    if ([searchPhrase length]) {
+      startupParams.textQuery = searchPhrase;
+    } else {
+      startupParams.postOpeningAction = FOCUS_OMNIBOX;
+    }
+
     [connectionInformation setStartupParameters:startupParams];
     webpageURL =
         [NSURL URLWithString:base::SysUTF8ToNSString(kChromeUINewTabURL)];

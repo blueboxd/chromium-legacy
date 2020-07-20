@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/feature_engagement/buildflags.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/location_bar_model.h"
@@ -95,11 +94,6 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/browser_process.h"
-#endif
-
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
-#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
 #endif
 
 using metrics::OmniboxEventProto;
@@ -1608,21 +1602,6 @@ void OmniboxViewViews::OnFocus() {
   // Focus changes can affect the visibility of any keyword hint.
   if (location_bar_view_ && model()->is_keyword_hint())
     location_bar_view_->Layout();
-
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-  // The user must be starting a session in the same tab as a previous one in
-  // order to display the new tab in-product help promo.  While focusing the
-  // omnibox is not always a precursor to starting a new session, we don't
-  // want to wait until the user is in the middle of editing or navigating,
-  // because we'd like to show them the promo at the time when it would be
-  // immediately useful.
-  if (location_bar_view_ &&
-      controller()->GetLocationBarModel()->ShouldDisplayURL()) {
-    feature_engagement::NewTabTrackerFactory::GetInstance()
-        ->GetForProfile(location_bar_view_->profile())
-        ->OnOmniboxFocused();
-  }
-#endif
 
   if (location_bar_view_)
     location_bar_view_->OnOmniboxFocused();

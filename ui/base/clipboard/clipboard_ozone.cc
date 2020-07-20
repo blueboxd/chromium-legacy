@@ -556,7 +556,7 @@ void ClipboardOzone::WriteText(const char* text_data, size_t text_len) {
   std::vector<uint8_t> data(text_data, text_data + text_len);
   async_clipboard_ozone_->InsertData(
       std::move(data), {kMimeTypeText, kMimeTypeX11Text, kMimeTypeX11String,
-                        kMimeTypeX11Utf8String});
+                        kMimeTypeTextUtf8, kMimeTypeX11Utf8String});
 }
 
 void ClipboardOzone::WriteHTML(const char* markup_data,

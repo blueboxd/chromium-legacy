@@ -78,12 +78,8 @@ void AssertURLIs(const GURL& expectedURL) {
 // Verifies that the content offset of the web view is set up at the correct
 // initial value when initially displaying a PDF.
 // TODO(crbug.com/947536): Fails on iOS 12 devices.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testLongPDFInitialState DISABLED_testLongPDFInitialState
-#else
-#define MAYBE_testLongPDFInitialState testLongPDFInitialState
-#endif
-- (void)MAYBE_testLongPDFInitialState {
+// TODO(crbug.com/1106997): Test fails in simulator builders.
+- (void)DISABLED_testLongPDFInitialState {
   web::test::SetUpFileBasedHttpServer();
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/two_pages.pdf");

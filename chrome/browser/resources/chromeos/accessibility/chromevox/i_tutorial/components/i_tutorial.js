@@ -26,14 +26,13 @@ const InteractionMedium = {
 };
 
 /**
- * The various containers within the tutorial.
+ * The various screens within the tutorial.
  * @enum {string}
  */
-const Container = {
-  ROUTING: 'routing',
+const Screen = {
   MAIN_MENU: 'main_menu',
+  LESSON_MENU: 'lesson_menu',
   LESSON: 'lesson',
-  NAVIGATION: 'navigation',
 };
 
 Polymer({
@@ -42,12 +41,12 @@ Polymer({
   _template: html`{__html_template__}`,
 
   properties: {
-    curriculum: {type: String, observer: '_updateIncludedLessons'},
+    curriculum: {type: String, observer: 'updateIncludedLessons'},
 
     medium: {
       type: String,
       value: InteractionMedium.KEYBOARD,
-      observer: '_updateIncludedLessons'
+      observer: 'updateIncludedLessons'
     },
 
     // Bookkeeping variables.
@@ -63,12 +62,9 @@ Polymer({
 
     numLessons: {type: Number, value: 0},
 
-    activeContainer: {type: String},
+    activeScreen: {type: String},
 
     // Labels and text content.
-
-    routingPageWelcome:
-        {type: String, value: 'Welcome to the ChromeVox Tutorial'},
 
     chooseYourExperience: {
       type: String,
@@ -87,61 +83,61 @@ Polymer({
 
     nextLesson: {type: String, value: 'Next lesson'},
 
-    showRoutingPage: {type: String, value: 'Show routing page'},
+    mainMenu: {type: String, value: 'Main menu'},
 
-    showMainMenu: {type: String, value: 'Show main menu'},
+    lessonMenu: {type: String, value: 'All lessons'},
 
-    quitTutorial: {type: String, value: 'Quit tutorial'},
+    exitTutorial: {type: String, value: 'Exit tutorial'},
 
     lessonData: {
       type: Array,
       value: [
         {
-          'title': 'On, Off, and Stop',
-          'content': [
+          title: 'On, Off, and Stop',
+          content: [
             'To temporarily stop ChromeVox from speaking, press the Control ' +
                 'key.',
             'To turn ChromeVox on or off, use Control+Alt+Z.',
           ],
-          'medium': InteractionMedium.KEYBOARD,
-          'curriculums': [Curriculum.OOBE, Curriculum.NEW_USER],
+          medium: InteractionMedium.KEYBOARD,
+          curriculums: [Curriculum.OOBE, Curriculum.NEW_USER],
         },
 
         {
-          'title': 'The ChromeVox Modifier Key',
-          'content': [
+          title: 'The ChromeVox Modifier Key',
+          content: [
             'In ChromeVox, the Search key is the modifier key. ' +
                 'Most ChromeVox shortcuts start with the Search key. ' +
                 'You’ll also use the arrow keys for navigation.',
             'On the Chromebook, the Search key is immediately above the ' +
                 'left Shift key.',
           ],
-          'medium': InteractionMedium.KEYBOARD,
-          'curriculums': [Curriculum.OOBE, Curriculum.NEW_USER],
+          medium: InteractionMedium.KEYBOARD,
+          curriculums: [Curriculum.OOBE, Curriculum.NEW_USER],
         },
 
         {
-          'title': 'Basic Navigation',
-          'content': [
+          title: 'Basic Navigation',
+          content: [
             'To move forward between items on a page, press Search + Right ' +
                 'Arrow, or Search + Left Arrow to jump back.',
             'To go to the next line, press Search + Down Arrow. ' +
                 'To get to the previous line, use Search + Up Arrow.',
             'If you reach an item you want to click, press Search + Space.',
           ],
-          'medium': InteractionMedium.KEYBOARD,
-          'curriculums': [Curriculum.OOBE, Curriculum.NEW_USER],
-          'testAreaTitle': 'Basic Navigation Test Area',
-          'testAreaInstructions':
+          medium: InteractionMedium.KEYBOARD,
+          curriculums: [Curriculum.OOBE, Curriculum.NEW_USER],
+          practiceTitle: 'Basic Navigation Practice',
+          practiceInstructions:
               'Try using basic navigation to navigate through the items ' +
               'below. Find the button titled "Click me" and use Search ' +
               '+ Space to click it. Then move to the next lesson.',
-          'testAreaFile': 'basic_navigation',
-          'testAreaState': {
-            'goal': {'click': false},
+          practiceFile: 'basic_navigation',
+          practiceState: {
+            goal: {click: false},
           },
-          'events': ['click'],
-          'hints': [
+          events: ['click'],
+          hints: [
             'Try pressing Search + left/right arrow. The search key directly ' +
                 ' above the shift key',
             'Use search + space to click an item'
@@ -149,8 +145,8 @@ Polymer({
         },
 
         {
-          'title': 'Jump Commands',
-          'content': [
+          title: 'Jump Commands',
+          content: [
             'Use jump commands to skip to specific types of elements.',
             'To jump forward between headings, press Search + H, or to ' +
                 'jump backward, press Search + Shift + H.',
@@ -159,28 +155,28 @@ Polymer({
             'To jump foorward beetween links, press Search + L, or to ' +
                 'jump backward, press Search + Shift + L'
           ],
-          'medium': InteractionMedium.KEYBOARD,
-          'curriculums': [Curriculum.NEW_USER],
-          'testAreaTitle': 'Jump Commands Test Area',
-          'testAreaInstructions':
+          medium: InteractionMedium.KEYBOARD,
+          curriculums: [Curriculum.NEW_USER],
+          practiceTitle: 'Jump Commands Practice',
+          practiceInstructions:
               'Try using what you have learned to navigate by element type. ' +
               'Notice that navigation wraps if you are on the first or ' +
               'last element and press previous element or next element, ' +
               'respectively.',
-          'testAreaFile': 'jump_commands',
-          'testAreaState': {
-            'first-heading': {'focus': false},
-            'first-link': {'focus': false},
-            'first-button': {'focus': false},
-            'second-heading': {'focus': false},
-            'second-link': {'focus': false},
-            'second-button': {'focus': false},
-            'last-heading': {'focus': false},
-            'last-link': {'focus': false},
-            'last-button': {'focus': false},
+          practiceFile: 'jump_commands',
+          practiceState: {
+            'first-heading': {focus: false},
+            'first-link': {focus: false},
+            'first-button': {focus: false},
+            'second-heading': {focus: false},
+            'second-link': {focus: false},
+            'second-button': {focus: false},
+            'last-heading': {focus: false},
+            'last-link': {focus: false},
+            'last-button': {focus: false},
           },
-          'events': ['focus'],
-          'hints': [
+          events: ['focus'],
+          hints: [
             'Try using search + h to move by header',
             'Try using search + b to move by button',
             'Try using search + l to move by link'
@@ -188,20 +184,20 @@ Polymer({
         },
 
         {
-          'title': 'The ChromeVox Menu',
-          'content': [
+          title: 'The ChromeVox Menu',
+          content: [
             'To explore all ChromeVox commands and shortcuts, press ' +
                 'Search + Period, then use the Arrow keys to navigate the ' +
                 'menus, and Enter to activate a command. Return here by ' +
                 'pressing Search+o then t.',
           ],
-          'medium': InteractionMedium.KEYBOARD,
-          'curriculums': [Curriculum.NEW_USER]
+          medium: InteractionMedium.KEYBOARD,
+          curriculums: [Curriculum.NEW_USER]
         },
 
         {
-          'title': 'Helpful Chrome Shortcuts',
-          'content': [
+          title: 'Helpful Chrome Shortcuts',
+          content: [
             'The next few shortcuts aren’t ChromeVox commands, but they are ' +
                 'still very useful for getting the most out of Chrome.',
             'To navigate forward through actionable items like buttons and ' +
@@ -217,13 +213,13 @@ Polymer({
             'To open the full list of keyboard shortcuts, press ' +
                 'Control + Alt + /'
           ],
-          'medium': InteractionMedium.KEYBOARD,
-          'curriculums': [Curriculum.NEW_USER]
+          medium: InteractionMedium.KEYBOARD,
+          curriculums: [Curriculum.NEW_USER]
         },
 
         {
-          'title': 'Sounds',
-          'content': [
+          title: 'Sounds',
+          content: [
             'ChromeVox uses sounds to give you essential and additional ' +
                 'information. You can use these sounds to navigate more ' +
                 'quickly by learning what each sound means. Once you get ' +
@@ -231,34 +227,34 @@ Polymer({
                 'speech and rely on them for essential information about the ' +
                 'page. Here is a complete list of sounds and what they mean',
           ],
-          'medium': InteractionMedium.KEYBOARD,
-          'curriculums': [Curriculum.NEW_USER]
+          medium: InteractionMedium.KEYBOARD,
+          curriculums: [Curriculum.NEW_USER]
         },
 
         {
-          'title': 'Text fields',
-          'content': ['Text content for text fields lesson'],
-          'medium': InteractionMedium.KEYBOARD,
-          'curriculums': [Curriculum.EXPERIENCED_USER],
-          'testAreaTitle': 'Edit fields Test Area',
-          'testAreaInstructions':
+          title: 'Text fields',
+          content: ['Text content for text fields lesson'],
+          medium: InteractionMedium.KEYBOARD,
+          curriculums: [Curriculum.EXPERIENCED_USER],
+          practiceTitle: 'Edit fields practice',
+          practiceInstructions:
               'Try using what you have learned about text fields and edit ' +
               'the text fields below.',
-          'testAreaFile': 'text_fields',
-          'testAreaState': {
-            'input': {'focus': false, 'input': false},
-            'editable': {'focus': false, 'input': false}
+          practiceFile: 'text_fields',
+          practiceState: {
+            input: {focus: false, input: false},
+            editable: {focus: false, input: false}
           },
-          'events': ['focus', 'input'],
-          'hints': [
+          events: ['focus', 'input'],
+          hints: [
             'Once you find an editable element, you can type normally.',
             'Try editing the content you entered'
           ]
         },
 
         {
-          'title': 'Congratulations',
-          'content': [
+          title: 'Congratulations',
+          content: [
             'You’ve learned the essentials to use ChromeVox successfully.  ' +
                 'Remember that you can open the ChromeVox command menu at ' +
                 'any time by pressing Search+Period. To learn even more ' +
@@ -266,8 +262,8 @@ Polymer({
             'If you are done with the tutorial, use ChromeVox to navigate ' +
                 'to the Quit button and click it.'
           ],
-          'medium': InteractionMedium.KEYBOARD,
-          'curriculums': [
+          medium: InteractionMedium.KEYBOARD,
+          curriculums: [
             Curriculum.OOBE, Curriculum.NEW_USER, Curriculum.DEVELOPER,
             Curriculum.EXPERIENCED_USER
           ],
@@ -278,10 +274,14 @@ Polymer({
 
   /** @override */
   ready() {
-    this.showRoutingContainer_();
+    this.showMainMenu();
   },
 
-  chooseCurriculum_(evt) {
+  /**
+   * @param {!MouseEvent} evt
+   * @private
+   */
+  chooseCurriculum(evt) {
     const id = evt.target.id;
     if (id === 'newUserButton') {
       this.curriculum = Curriculum.NEW_USER;
@@ -290,23 +290,26 @@ Polymer({
     } else if (id === 'developerButton') {
       this.curriculum = Curriculum.DEVELOPER;
     } else {
-      throw new Error('Invalid target for chooseCurriculum_: ' + evt.target.id);
+      throw new Error('Invalid target for chooseCurriculum: ' + evt.target.id);
     }
-    this.showMainMenuContainer_();
+    this.showLessonMenu();
   },
 
-  nextLesson_() {
-    this.showLesson_(this.activeLessonIndex + 1);
+  /** @private */
+  showNextLesson() {
+    this.showLesson(this.activeLessonIndex + 1);
   },
 
-  previousLesson_() {
-    this.showLesson_(this.activeLessonIndex - 1);
+  /** @private */
+  showPreviousLesson() {
+    this.showLesson(this.activeLessonIndex - 1);
   },
 
   /**
    * @param {number} index
+   * @private
    */
-  showLesson_(index) {
+  showLesson(index) {
     this.showLessonContainer();
     if (index < 0 || index >= this.numLessons) {
       return;
@@ -320,25 +323,28 @@ Polymer({
   },
 
 
-  // Methods for hiding and showing containers.
+  // Methods for hiding and showing screens.
 
-
-  showRoutingContainer_() {
-    this.activeContainer = Container.ROUTING;
-    this.$.welcomeRoutingPage.focus();
+  /** @private */
+  showMainMenu() {
+    this.activeScreen = Screen.MAIN_MENU;
+    this.$.mainMenuHeader.focus();
   },
 
-  showMainMenuContainer_() {
-    this.activeContainer = Container.MAIN_MENU;
+  /** @private */
+  showLessonMenu() {
+    this.activeScreen = Screen.LESSON_MENU;
     this.createLessonShortcuts();
-    this.$.welcomeMainMenu.focus();
+    this.$.lessonMenuHeader.focus();
   },
 
+  /** @private */
   showLessonContainer() {
-    this.activeContainer = Container.LESSON;
+    this.activeScreen = Screen.LESSON;
   },
 
-  _updateIncludedLessons() {
+  /** @private */
+  updateIncludedLessons() {
     this.includedLessons = [];
     this.activeLessonNum = -1;
     this.activeLessonIndex = -1;
@@ -359,6 +365,7 @@ Polymer({
     this.createLessonShortcuts();
   },
 
+  /** @private */
   createLessonShortcuts() {
     // Clear previous lesson shortcuts, as the user may have chosen a new
     // curriculum or medium for the tutorial.
@@ -368,8 +375,8 @@ Polymer({
     let count = 1;
     for (const lesson of this.includedLessons) {
       const button = document.createElement('cr-button');
-      button.addEventListener('click', this.showLesson_.bind(this, count - 1));
-      button.textContent = count + ': ' + lesson.title;
+      button.addEventListener('click', this.showLesson.bind(this, count - 1));
+      button.textContent = lesson.title;
       this.$.lessonShortcuts.appendChild(button);
       count += 1;
     }
@@ -378,53 +385,86 @@ Polymer({
 
   // Methods for computing attributes and properties.
 
-
-  shouldHideNextLessonButton_(activeLessonIndex, activeContainer) {
+  /**
+   * @param {number} activeLessonIndex
+   * @param {Screen} activeScreen
+   * @return {boolean}
+   * @private
+   */
+  shouldHideNextLessonButton(activeLessonIndex, activeScreen) {
     if (activeLessonIndex === this.numLessons - 1 ||
-        activeContainer !== Container.LESSON) {
+        activeScreen !== Screen.LESSON) {
       return true;
     }
 
     return false;
   },
 
-  shouldHidePreviousLessonButton_(activeLessonIndex, activeContainer) {
-    if (activeLessonIndex === 0 || activeContainer !== Container.LESSON) {
+  /**
+   * @param {number} activeLessonIndex
+   * @param {Screen} activeScreen
+   * @return {boolean}
+   * @private
+   */
+  shouldHidePreviousLessonButton(activeLessonIndex, activeScreen) {
+    if (activeLessonIndex === 0 || activeScreen !== Screen.LESSON) {
       return true;
     }
 
     return false;
   },
 
-  shouldHideRoutingContainer_(activeContainer) {
-    if (activeContainer === Container.ROUTING) {
+  /**
+   * @param {Screen} activeScreen
+   * @return {boolean}
+   * @private
+   */
+  shouldHideMainMenu(activeScreen) {
+    if (activeScreen === Screen.MAIN_MENU) {
       return false;
     }
 
     return true;
   },
 
-  shouldHideLessonContainer_(activeContainer) {
-    if (activeContainer === Container.LESSON) {
+  /**
+   * @param {Screen} activeScreen
+   * @return {boolean}
+   * @private
+   */
+  shouldHideLessonContainer(activeScreen) {
+    if (activeScreen === Screen.LESSON) {
       return false;
     }
 
     return true;
   },
 
-  shouldHideMainMenuContainer_(activeContainer) {
-    if (activeContainer === Container.MAIN_MENU) {
+  /**
+   * @param {Screen} activeScreen
+   * @return {boolean}
+   * @private
+   */
+  shouldHideLessonMenu(activeScreen) {
+    if (activeScreen === Screen.LESSON_MENU) {
       return false;
     }
 
     return true;
   },
 
-  computeMainMenuHeader_(curriculum, medium) {
+  /**
+   * @param {Curriculum} curriculum
+   * @param {InteractionMedium} medium
+   * @return {string}
+   * @private
+   */
+  computeLessonMenuHeader(curriculum, medium) {
     return 'Lessons for the ' + curriculum + ' ' + medium + ' experience';
   },
 
-  quit_() {
+  /** @private */
+  exit() {
     this.dispatchEvent(new CustomEvent('tutorial-close', {}));
   },
 });

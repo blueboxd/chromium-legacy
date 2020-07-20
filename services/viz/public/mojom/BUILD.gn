@@ -26,6 +26,7 @@ mojom("mojom") {
     "compositing/paint_filter.mojom",
     "compositing/quads.mojom",
     "compositing/render_pass.mojom",
+    "compositing/render_pass_id.mojom",
     "compositing/resource_settings.mojom",
     "compositing/returned_resource.mojom",
     "compositing/selection.mojom",
@@ -128,6 +129,16 @@ mojom("mojom") {
         "//components/viz/common",
         "//ui/gfx/geometry/mojom",
       ]
+    },
+    {
+      types = [
+        {
+          mojom = "viz.mojom.LocalSurfaceIdAllocation"
+          cpp = "::viz::LocalSurfaceIdAllocation"
+        },
+      ]
+      traits_headers = [ "//services/viz/public/cpp/compositing/local_surface_id_allocation_mojom_traits.h" ]
+      traits_public_deps = [ "//components/viz/common" ]
     },
   ]
 
@@ -309,16 +320,6 @@ mojom("mojom") {
     {
       types = [
         {
-          mojom = "viz.mojom.LocalSurfaceIdAllocation"
-          cpp = "::viz::LocalSurfaceIdAllocation"
-        },
-      ]
-      traits_headers = [ "//services/viz/public/cpp/compositing/local_surface_id_allocation_mojom_traits.h" ]
-      traits_public_deps = [ "//components/viz/common" ]
-    },
-    {
-      types = [
-        {
           mojom = "viz.mojom.PaintFilter"
           cpp = "::sk_sp<::cc::PaintFilter>"
         },
@@ -330,6 +331,21 @@ mojom("mojom") {
         "//services/viz/public/cpp/compositing/paint_filter_mojom_traits.h",
       ]
       traits_public_deps = [ "//cc/paint" ]
+    },
+    {
+      types = [
+        {
+          mojom = "viz.mojom.RenderPassId"
+          cpp = "::viz::RenderPassId"
+        },
+      ]
+      traits_sources = [
+        "//services/viz/public/cpp/compositing/render_pass_id_mojom_traits.cc",
+      ]
+      traits_headers = [
+        "//services/viz/public/cpp/compositing/render_pass_id_mojom_traits.h",
+      ]
+      traits_public_deps = [ "//components/viz/common" ]
     },
     {
       types = [
@@ -509,6 +525,7 @@ mojom("mojom") {
         "//services/viz/public/cpp/compositing/filter_operation_mojom_traits.h",
         "//services/viz/public/cpp/compositing/filter_operations_mojom_traits.h",
         "//services/viz/public/cpp/compositing/quads_mojom_traits.h",
+        "//services/viz/public/cpp/compositing/render_pass_id_mojom_traits.h",
         "//services/viz/public/cpp/compositing/render_pass_mojom_traits.h",
         "//services/viz/public/cpp/compositing/selection_mojom_traits.h",
         "//services/viz/public/cpp/compositing/shared_quad_state_mojom_traits.h",

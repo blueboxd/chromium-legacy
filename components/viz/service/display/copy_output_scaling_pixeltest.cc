@@ -96,8 +96,8 @@ class CopyOutputScalingPixelTest
     // Create the render passes drawn on top of the root render pass.
     RenderPass* smaller_passes[4];
     gfx::Rect smaller_pass_rects[4];
-    int pass_id = 5;
-    for (int i = 0; i < 4; ++i, --pass_id) {
+    RenderPassId pass_id{5};
+    for (int i = 0; i < 4; ++i, pass_id = RenderPassId{pass_id.value() - 1}) {
       smaller_pass_rects[i] = gfx::Rect(
           i % 2 == 0 ? x_block : (viewport_size.width() - 2 * x_block),
           i / 2 == 0 ? y_block : (viewport_size.height() - 2 * y_block),

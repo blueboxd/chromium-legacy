@@ -11,12 +11,11 @@
 #include "base/memory/scoped_refptr.h"
 #include "chrome/updater/app/app.h"
 
-class PrefService;
-
 namespace updater {
 
 class Configurator;
-class UpdaterPrefs;
+class GlobalPrefs;
+class LocalPrefs;
 
 // AppServer runs as the updater server process. Multiple servers of different
 // application versions can be run side-by-side. Each such server is called a
@@ -60,8 +59,8 @@ class AppServer : public App {
   // the system is consistent with an incomplete swap, ModeCheck may have the
   // side effect of promoting this candidate to the active candidate.
   base::OnceClosure ModeCheck();
-  void Qualify(std::unique_ptr<UpdaterPrefs> local_prefs);
-  bool SwapVersions(PrefService* global_prefs);
+  void Qualify(std::unique_ptr<LocalPrefs> local_prefs);
+  bool SwapVersions(GlobalPrefs* global_prefs);
 
   base::OnceClosure first_task_;
 };

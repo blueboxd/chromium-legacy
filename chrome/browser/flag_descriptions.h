@@ -2310,6 +2310,9 @@ extern const char kMediaSessionNotificationsDescription[];
 extern const char kMeteredShowToggleName[];
 extern const char kMeteredShowToggleDescription[];
 
+extern const char kOsSettingsPolymer3Name[];
+extern const char kOsSettingsPolymer3Description[];
+
 extern const char kPrintServerUiName[];
 extern const char kPrintServerUiDescription[];
 

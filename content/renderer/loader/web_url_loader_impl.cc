@@ -1235,8 +1235,8 @@ WebURLLoaderImpl::Context::GetTrafficAnnotationTag(
             "These requests cannot be disabled in settings, but they are "
             "sent only if user installs extensions."
           chrome_policy {
-            ExtensionInstallBlacklist {
-              ExtensionInstallBlacklist: {
+            ExtensionInstallBlocklist {
+              ExtensionInstallBlocklist: {
                 entries: '*'
               }
             }

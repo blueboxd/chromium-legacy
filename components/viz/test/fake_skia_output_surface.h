@@ -138,7 +138,7 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   std::unique_ptr<TextureDeleter> texture_deleter_;
 
   // The current render pass id set by BeginPaintRenderPass.
-  RenderPassId current_render_pass_id_ = 0;
+  RenderPassId current_render_pass_id_;
 
   // SkSurfaces for render passes, sk_surfaces_[0] is the root surface.
   base::flat_map<RenderPassId, sk_sp<SkSurface>> sk_surfaces_;

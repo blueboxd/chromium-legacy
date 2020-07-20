@@ -58,7 +58,7 @@ class ChromeFeatureListCreator {
   TakeChromeBrowserPolicyConnector();
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  std::unique_ptr<installer::MasterPreferences> TakeMasterPrefs();
+  std::unique_ptr<installer::InitialPreferences> TakeInitialPrefs();
 #endif
 
   PrefService* local_state() { return local_state_.get(); }
@@ -77,10 +77,10 @@ class ChromeFeatureListCreator {
   void SetupFieldTrials();
   void CreateMetricsServices();
 
-  // Imports variations master preference any preferences (to local state)
+  // Imports variations initial preference any preferences (to local state)
   // needed for first run. This is always called and early outs if not
   // first-run.
-  void SetupMasterPrefs();
+  void SetupInitialPrefs();
 
   // Must be destroyed after |local_state_|.
   std::unique_ptr<policy::ChromeBrowserPolicyConnector>
@@ -103,7 +103,7 @@ class ChromeFeatureListCreator {
   std::unique_ptr<ChromeBrowserFieldTrials> browser_field_trials_;
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  std::unique_ptr<installer::MasterPreferences> installer_master_prefs_;
+  std::unique_ptr<installer::InitialPreferences> installer_initial_prefs_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeFeatureListCreator);

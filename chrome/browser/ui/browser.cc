@@ -1960,13 +1960,17 @@ blink::mojom::DisplayMode Browser::GetDisplayMode(
   return blink::mojom::DisplayMode::kBrowser;
 }
 
-void Browser::RegisterProtocolHandler(WebContents* web_contents,
-                                      const std::string& protocol,
-                                      const GURL& url,
-                                      bool user_gesture) {
-  content::BrowserContext* context = web_contents->GetBrowserContext();
+void Browser::RegisterProtocolHandler(
+    content::RenderFrameHost* requesting_frame,
+    const std::string& protocol,
+    const GURL& url,
+    bool user_gesture) {
+  content::BrowserContext* context = requesting_frame->GetBrowserContext();
   if (context->IsOffTheRecord())
     return;
+
+  auto* web_contents =
+      content::WebContents::FromRenderFrameHost(requesting_frame);
 
   // Permission request UI cannot currently be rendered binocularly in VR mode,
   // so we suppress the UI. crbug.com/736568
@@ -1984,6 +1988,8 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
   if (registry->SilentlyHandleRegisterHandlerRequest(handler))
     return;
 
+  // TODO(carlscab): This should probably be FromFrame() once it becomes
+  // PageSpecificContentSettingsDelegate
   auto* tab_content_settings_delegate =
       chrome::TabSpecificContentSettingsDelegate::FromWebContents(web_contents);
   if (!user_gesture && window_) {
@@ -2010,18 +2016,20 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
         web_contents->ForSecurityDropFullscreen();
 
     permission_request_manager->AddRequest(
+        requesting_frame,
         new RegisterProtocolHandlerPermissionRequest(
             registry, handler, url, user_gesture, std::move(fullscreen_block)));
   }
 }
 
-void Browser::UnregisterProtocolHandler(WebContents* web_contents,
-                                        const std::string& protocol,
-                                        const GURL& url,
-                                        bool user_gesture) {
+void Browser::UnregisterProtocolHandler(
+    content::RenderFrameHost* requesting_frame,
+    const std::string& protocol,
+    const GURL& url,
+    bool user_gesture) {
   // user_gesture will be used in case we decide to have confirmation bubble
   // for user while un-registering the handler.
-  content::BrowserContext* context = web_contents->GetBrowserContext();
+  content::BrowserContext* context = requesting_frame->GetBrowserContext();
   if (context->IsOffTheRecord())
     return;
 

@@ -4,7 +4,9 @@
 
 #include "media/capture/video/fuchsia/video_capture_device_fuchsia.h"
 
+#include "base/fuchsia/test_component_context_for_process.h"
 #include "base/test/task_environment.h"
+#include "media/capture/video/fuchsia/video_capture_device_factory_fuchsia.h"
 #include "media/fuchsia/camera/fake_fuchsia_camera.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
@@ -188,15 +190,25 @@ class TestVideoCaptureClient : public VideoCaptureDevice::Client {
 class VideoCaptureDeviceFuchsiaTest : public testing::Test {
  public:
   VideoCaptureDeviceFuchsiaTest() {
-    fidl::InterfaceHandle<fuchsia::camera3::Device> device_handle;
-    fake_device_.Bind(device_handle.NewRequest());
-    device_ =
-        std::make_unique<VideoCaptureDeviceFuchsia>(std::move(device_handle));
+    test_context_.AddService("fuchsia.sysmem.Allocator");
   }
 
-  ~VideoCaptureDeviceFuchsiaTest() override { device_->StopAndDeAllocate(); }
+  ~VideoCaptureDeviceFuchsiaTest() override {
+    if (device_)
+      device_->StopAndDeAllocate();
+  }
+
+  void CreateDevice() {
+    VideoCaptureDeviceDescriptors device_descriptors;
+    device_factory_.GetDeviceDescriptors(&device_descriptors);
+    ASSERT_EQ(device_descriptors.size(), 1U);
+    device_ = device_factory_.CreateDevice(device_descriptors[0]);
+  }
 
   void StartCapturer() {
+    if (!device_)
+      CreateDevice();
+
     VideoCaptureParams params;
     params.requested_format.frame_size = FakeCameraStream::kDefaultFrameSize;
     params.requested_format.frame_rate = 30.0;
@@ -206,16 +218,19 @@ class VideoCaptureDeviceFuchsiaTest : public testing::Test {
     client_ = client.get();
     device_->AllocateAndStart(params, std::move(client));
 
-    EXPECT_TRUE(fake_stream_.WaitBuffersAllocated());
+    EXPECT_TRUE(fake_device_watcher_.stream()->WaitBuffersAllocated());
   }
 
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
+  base::TestComponentContextForProcess test_context_;
 
-  FakeCameraStream fake_stream_;
-  FakeCameraDevice fake_device_{&fake_stream_};
-  std::unique_ptr<VideoCaptureDeviceFuchsia> device_;
+  FakeCameraDeviceWatcher fake_device_watcher_{
+      test_context_.additional_services()};
+
+  VideoCaptureDeviceFactoryFuchsia device_factory_;
+  std::unique_ptr<VideoCaptureDevice> device_;
   TestVideoCaptureClient* client_ = nullptr;
 };
 
@@ -227,7 +242,7 @@ TEST_F(VideoCaptureDeviceFuchsiaTest, SendFrame) {
   StartCapturer();
 
   auto frame_timestamp = base::TimeTicks::Now();
-  fake_stream_.ProduceFrame(frame_timestamp, 1);
+  fake_device_watcher_.stream()->ProduceFrame(frame_timestamp, 1);
   client_->WaitFrame();
 
   ASSERT_EQ(client_->received_frames().size(), 1U);
@@ -239,14 +254,14 @@ TEST_F(VideoCaptureDeviceFuchsiaTest, SendFrame) {
 TEST_F(VideoCaptureDeviceFuchsiaTest, MultipleFrames) {
   StartCapturer();
 
-  EXPECT_TRUE(fake_stream_.WaitBuffersAllocated());
+  EXPECT_TRUE(fake_device_watcher_.stream()->WaitBuffersAllocated());
 
   for (size_t i = 0; i < 10; ++i) {
-    ASSERT_TRUE(fake_stream_.WaitFreeBuffer());
+    ASSERT_TRUE(fake_device_watcher_.stream()->WaitFreeBuffer());
 
     auto frame_timestamp =
         base::TimeTicks() + base::TimeDelta::FromMilliseconds(i * 16);
-    fake_stream_.ProduceFrame(frame_timestamp, i);
+    fake_device_watcher_.stream()->ProduceFrame(frame_timestamp, i);
     client_->WaitFrame();
 
     ASSERT_EQ(client_->received_frames().size(), i + 1);
@@ -258,11 +273,11 @@ TEST_F(VideoCaptureDeviceFuchsiaTest, MultipleFrames) {
 
 TEST_F(VideoCaptureDeviceFuchsiaTest, FrameRotation) {
   const gfx::Size kResolution(4, 2);
-  fake_stream_.SetFakeResolution(kResolution);
+  fake_device_watcher_.stream()->SetFakeResolution(kResolution);
 
   StartCapturer();
 
-  EXPECT_TRUE(fake_stream_.WaitBuffersAllocated());
+  EXPECT_TRUE(fake_device_watcher_.stream()->WaitBuffersAllocated());
 
   for (int i = static_cast<int>(fuchsia::camera3::Orientation::UP);
        i <= static_cast<int>(fuchsia::camera3::Orientation::RIGHT_FLIPPED);
@@ -271,9 +286,9 @@ TEST_F(VideoCaptureDeviceFuchsiaTest, FrameRotation) {
 
     auto orientation = static_cast<fuchsia::camera3::Orientation>(i);
 
-    ASSERT_TRUE(fake_stream_.WaitFreeBuffer());
-    fake_stream_.SetFakeOrientation(orientation);
-    fake_stream_.ProduceFrame(base::TimeTicks::Now(), i);
+    ASSERT_TRUE(fake_device_watcher_.stream()->WaitFreeBuffer());
+    fake_device_watcher_.stream()->SetFakeOrientation(orientation);
+    fake_device_watcher_.stream()->ProduceFrame(base::TimeTicks::Now(), i);
     client_->WaitFrame();
 
     gfx::Size expected_size = kResolution;
@@ -289,11 +304,11 @@ TEST_F(VideoCaptureDeviceFuchsiaTest, FrameRotation) {
 
 TEST_F(VideoCaptureDeviceFuchsiaTest, FrameDimensionsNotDivisibleBy2) {
   const gfx::Size kOddResolution(21, 7);
-  fake_stream_.SetFakeResolution(kOddResolution);
+  fake_device_watcher_.stream()->SetFakeResolution(kOddResolution);
 
   StartCapturer();
 
-  fake_stream_.ProduceFrame(base::TimeTicks::Now(), 1);
+  fake_device_watcher_.stream()->ProduceFrame(base::TimeTicks::Now(), 1);
   client_->WaitFrame();
 
   ASSERT_EQ(client_->received_frames().size(), 1U);
@@ -304,14 +319,14 @@ TEST_F(VideoCaptureDeviceFuchsiaTest, MidStreamResolutionChange) {
   StartCapturer();
 
   // Capture the first frame at the default resolution.
-  fake_stream_.ProduceFrame(base::TimeTicks::Now(), 1);
+  fake_device_watcher_.stream()->ProduceFrame(base::TimeTicks::Now(), 1);
   client_->WaitFrame();
-  ASSERT_TRUE(fake_stream_.WaitFreeBuffer());
+  ASSERT_TRUE(fake_device_watcher_.stream()->WaitFreeBuffer());
 
   // Update resolution and produce another frames.
   const gfx::Size kUpdatedResolution(3, 14);
-  fake_stream_.SetFakeResolution(kUpdatedResolution);
-  fake_stream_.ProduceFrame(base::TimeTicks::Now(), 1);
+  fake_device_watcher_.stream()->SetFakeResolution(kUpdatedResolution);
+  fake_device_watcher_.stream()->ProduceFrame(base::TimeTicks::Now(), 1);
   client_->WaitFrame();
 
   // Verify that we get captured frames with correct resolution.
@@ -319,6 +334,28 @@ TEST_F(VideoCaptureDeviceFuchsiaTest, MidStreamResolutionChange) {
   ValidateReceivedFrame(client_->received_frames()[0],
                         FakeCameraStream::kDefaultFrameSize, 1);
   ValidateReceivedFrame(client_->received_frames()[1], kUpdatedResolution, 1);
+}
+
+TEST_F(VideoCaptureDeviceFuchsiaTest,
+       CreateDeviceAfterDeviceWatcherDisconnect) {
+  VideoCaptureDeviceDescriptors device_descriptors;
+  device_factory_.GetDeviceDescriptors(&device_descriptors);
+  ASSERT_EQ(device_descriptors.size(), 1U);
+
+  // Disconnect DeviceWatcher and run the run loop so |device_factory_| can
+  // handle the disconnect.
+  fake_device_watcher_.DisconnectClients();
+  base::RunLoop().RunUntilIdle();
+
+  // The factory is expected to reconnect DeviceWatcher.
+  device_ = device_factory_.CreateDevice(device_descriptors[0]);
+
+  StartCapturer();
+
+  fake_device_watcher_.stream()->ProduceFrame(base::TimeTicks::Now(), 1);
+  client_->WaitFrame();
+
+  ASSERT_EQ(client_->received_frames().size(), 1U);
 }
 
 }  // namespace media

@@ -59,11 +59,6 @@
             method: "WhiteSpace()",
             field_dependencies: ["white-space"]
           },
-        ]
-    },
-    {
-        name: "DiffNeedsCollectInlinesAndFullLayoutAndPaintInvalidation",
-        methods_to_diff: [
           {
             method: "Direction()",
             field_dependencies: ["direction"]

@@ -44,6 +44,8 @@ class ClipboardRecentContentIOS : public ClipboardRecentContent {
   base::Optional<base::string16> GetRecentTextFromClipboard() override;
   void GetRecentImageFromClipboard(GetRecentImageCallback callback) override;
   bool HasRecentImageFromClipboard() override;
+  void HasRecentURLFromClipboard(HasDataCallback callback) override;
+  void GetRecentURLFromClipboard(GetRecentURLCallback callback) override;
   base::TimeDelta GetClipboardContentAge() const override;
   void SuppressClipboardContent() override;
   void ClearClipboardContent() override;

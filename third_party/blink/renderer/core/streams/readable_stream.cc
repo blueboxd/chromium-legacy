@@ -1581,19 +1581,13 @@ void ReadableStream::Tee(ScriptState* script_state,
   *branch2 = engine->Branch2();
 }
 
-void ReadableStream::LockAndDisturb(ScriptState* script_state,
-                                    ExceptionState& exception_state) {
-  ScriptState::Scope scope(script_state);
-
+void ReadableStream::LockAndDisturb(ScriptState* script_state) {
   if (reader_) {
     return;
   }
 
-  ReadableStreamReader* reader =
-      AcquireDefaultReader(script_state, this, false, exception_state);
-  if (!reader) {
-    return;
-  }
+  ReadableStreamReader* reader = GetReaderNotForAuthorCode(script_state);
+  DCHECK(reader);
 
   is_disturbed_ = true;
 }
@@ -1633,8 +1627,11 @@ ReadableStream* ReadableStream::Deserialize(ScriptState* script_state,
 }
 
 ReadableStreamDefaultReader* ReadableStream::GetReaderNotForAuthorCode(
-    ScriptState* script_state,
-    ExceptionState& exception_state) {
+    ScriptState* script_state) {
+  DCHECK(!IsLocked(this));
+
+  // Since the stream is not locked, AcquireDefaultReader cannot fail.
+  NonThrowableExceptionState exception_state(__FILE__, __LINE__);
   return AcquireDefaultReader(script_state, this, false, exception_state);
 }
 

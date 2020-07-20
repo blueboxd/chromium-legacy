@@ -33,6 +33,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_request_impl.h"
 #include "components/permissions/permission_request_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -1358,7 +1359,8 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
   auto* permission_manager =
       permissions::PermissionRequestManager::FromWebContents(active_contents);
   TopControlsShownRatioWaiter waiter(top_controls_slide_controller());
-  permission_manager->AddRequest(&permission_request);
+  permission_manager->AddRequest(active_contents->GetMainFrame(),
+                                 &permission_request);
   waiter.WaitForRatio(1.f);
   EXPECT_FLOAT_EQ(top_controls_slide_controller()->GetShownRatio(), 1.f);
   CheckBrowserLayout(browser_view(), TopChromeShownState::kFullyShown);

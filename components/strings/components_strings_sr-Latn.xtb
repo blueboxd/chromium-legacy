@@ -450,6 +450,7 @@ To inače blokiraju podešavanja privatnosti. To omogućava da sadržaj sa koji
 <translation id="2824775600643448204">Traka za adresu i pretragu</translation>
 <translation id="2826760142808435982">Veza je šifrovana i njena autentičnost je potvrđena pomoću <ph name="CIPHER" /> i koristi <ph name="KX" /> kao mehanizam za razmenu šifara.</translation>
 <translation id="2835170189407361413">Obriši obrazac</translation>
+<translation id="2839501879576190149">Sajt na koji želite da odete je lažan</translation>
 <translation id="2847118875340931228">Otvori prozor bez arhiviranja</translation>
 <translation id="2850739647070081192">Invite (koverat)</translation>
 <translation id="2856444702002559011">Napadači možda pokušavaju da ukradu informacije sa <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (na primer, lozinke, poruke ili kreditne kartice). <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -810,6 +811,7 @@ To inače blokiraju podešavanja privatnosti. To omogućava da sadržaj sa koji
 <translation id="42981349822642051">Proširite</translation>
 <translation id="4300675098767811073">Višestruko bušenje na desnoj strani</translation>
 <translation id="4302965934281694568">Chou3 (koverat)</translation>
+<translation id="4305666528087210886">Pristup datoteci nije uspeo</translation>
 <translation id="4305817255990598646">Pređi</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Blokiraj (podrazumevano)</translation>
@@ -828,6 +830,7 @@ To inače blokiraju podešavanja privatnosti. To omogućava da sadržaj sa koji
 <translation id="4358461427845829800">Upravljajte načinima plaćanja...</translation>
 <translation id="4359160567981085931">Upravo ste uneli lozinku na obmanjujućem sajtu. Chrome može da vam pomogne. Da biste promenili lozinku i obavestili Google da je nalog možda ugrožen, kliknite na Zaštiti nalog.</translation>
 <translation id="4367563149485757821">Broj-12 (koverat)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Sačuvana lozinka za <ph name="ORIGIN" /> otkrivena je pri upadu u podatke na sajtu ili u aplikaciji. Chrome preporučuje da odmah promenite lozinku na <ph name="ORIGIN" />.}=1{Sačuvane lozinke za <ph name="ORIGIN" /> i još jedan sajt otkrivene su pri upadu u podatke na sajtu ili u aplikaciji. Chrome preporučuje da odmah proverite sačuvane lozinke.}one{Sačuvane lozinke za <ph name="ORIGIN" /> i još <ph name="SITES_COUNT" /> sajt otkrivene su pri upadu u podatke na sajtu ili u aplikaciji. Chrome preporučuje da odmah proverite sačuvane lozinke.}few{Sačuvane lozinke za <ph name="ORIGIN" /> i još <ph name="SITES_COUNT" /> sajta otkrivene su pri upadu u podatke na sajtu ili u aplikaciji. Chrome preporučuje da odmah proverite sačuvane lozinke.}other{Sačuvane lozinke za <ph name="ORIGIN" /> i još <ph name="SITES_COUNT" /> sajtova otkrivene su pri upadu u podatke na sajtu ili u aplikaciji. Chrome preporučuje da odmah proverite sačuvane lozinke.}}</translation>
 <translation id="437058704415269440">Stanje na računu</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Očekivana vrednost je <ph name="VALUE_TYPE" />.</translation>
@@ -1179,7 +1182,7 @@ To inače blokiraju podešavanja privatnosti. To omogućava da sadržaj sa koji
 <translation id="5869405914158311789">Ovaj sajt nije dostupan</translation>
 <translation id="5869522115854928033">Sačuvane lozinke</translation>
 <translation id="5887400589839399685">Kartica je sačuvana</translation>
-<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> zahteva da napravite rezervnu kopiju podataka i da vratite uređaj.</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> zahteva da napravite rezervnu kopiju podataka i da vratite ovaj uređaj.</translation>
 <translation id="5895138241574237353">Pokreni ponovo</translation>
 <translation id="5895187275912066135">Izdato</translation>
 <translation id="5901630391730855834">Žuta</translation>
@@ -1297,6 +1300,7 @@ To inače blokiraju podešavanja privatnosti. To omogućava da sadržaj sa koji
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Očekuju vas potencijalni troškovi.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{još 1 predlog}one{još # predlog}few{još # predloga}other{još # predloga}}</translation>
+<translation id="6387645831795005740">Napadači ponekad imitiraju sajtove tako što neznatno i skoro neprimetno izmene URL.</translation>
 <translation id="6389470377220713856">Ime i prezime na kartici</translation>
 <translation id="6390200185239044127">Presavijanje polovine u obliku slova Z</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1510,6 +1514,7 @@ Dodatni detalji:
 <translation id="7372973238305370288">rezultat pretrage</translation>
 <translation id="7374733840632556089">Ovaj problem se javlja zbog sertifikata koji ste vi ili neko drugi instalirali na uređaju. Sertifikat se koristi za nadgledanje i presretanje mreža i Chrome ga ne smatra pouzdanim. Iako postoje pojedini opravdani razlozi za nadgledanje, na primer na školskoj ili poslovnoj mreži, Chrome želi da budete svesni da se to događa, čak i ako to ne možete da sprečite. Nadgledanje je moguće u bilo kom pregledaču ili aplikaciji koja pristupa vebu.</translation>
 <translation id="7375818412732305729">Datoteka je priložena</translation>
+<translation id="7376551888419889433">Kad Chrome Enterprise Connectors obeleži bezbednosne događaje, relevantni podaci o događajima se šalju administratoru. To može da obuhvata URL-ove stranica koje posećujete u Chrome-u, nazive datoteka ili metapodatke i korisničko ime pomoću kog se prijavljujete na uređaj i u Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Kontrole za medije</translation>
 <translation id="7378627244592794276">Ne</translation>
@@ -1907,6 +1912,7 @@ Dodatni detalji:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Pokušali ste da dođete do domena <ph name="DOMAIN" />, ali server je poslao nevažeći sertifikat.</translation>
 <translation id="9050666287014529139">Pristupna fraza</translation>
+<translation id="9062620674789239642">Možda je premešten, izmenjen ili izbrisan.</translation>
 <translation id="9065203028668620118">Izmeni</translation>
 <translation id="9065745800631924235">Pretraga <ph name="TEXT" /> iz istorije</translation>
 <translation id="9069693763241529744">Blokira dodatak</translation>

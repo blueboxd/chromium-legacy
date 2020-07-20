@@ -32,6 +32,15 @@ public class SupportedDelegations {
         mPayerEmail = false;
     }
 
+    public boolean providesAll(org.chromium.payments.mojom.PaymentOptions options) {
+        if (options == null) return true;
+        if (options.requestShipping && !mShippingAddress) return false;
+        if (options.requestPayerName && !mPayerName) return false;
+        if (options.requestPayerPhone && !mPayerPhone) return false;
+        if (options.requestPayerEmail && !mPayerEmail) return false;
+        return true;
+    }
+
     public boolean getShippingAddress() {
         return mShippingAddress;
     }

@@ -15,8 +15,10 @@
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer_animation_element.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/layout_manager.h"
@@ -32,6 +34,9 @@
 
 #if defined(OS_MACOSX)
 #include "ui/views/widget/widget_utils_mac.h"
+#else
+#include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 #endif
 
 namespace views {
@@ -174,16 +179,29 @@ class BubbleDialogDelegate::AnchorViewObserver : public ViewObserver {
 
 // This class is responsible for observing events on a BubbleDialogDelegate's
 // anchor widget and notifying the BubbleDialogDelegate of them.
+#if defined(OS_MACOSX)
 class BubbleDialogDelegate::AnchorWidgetObserver : public WidgetObserver {
+#else
+class BubbleDialogDelegate::AnchorWidgetObserver : public WidgetObserver,
+                                                   public aura::WindowObserver {
+#endif
+
  public:
   AnchorWidgetObserver(BubbleDialogDelegate* owner, Widget* widget)
       : owner_(owner) {
-    observer_.Add(widget);
+    widget_observer_.Add(widget);
+#if !defined(OS_MACOSX)
+    window_observer_.Add(widget->GetNativeWindow());
+#endif
   }
   ~AnchorWidgetObserver() override = default;
 
+  // WidgetObserver:
   void OnWidgetDestroying(Widget* widget) override {
-    observer_.Remove(widget);
+#if !defined(OS_MACOSX)
+    window_observer_.Remove(widget->GetNativeWindow());
+#endif
+    widget_observer_.Remove(widget);
     owner_->OnAnchorWidgetDestroying();
     // |this| may be destroyed here!
   }
@@ -196,9 +214,28 @@ class BubbleDialogDelegate::AnchorWidgetObserver : public WidgetObserver {
     owner_->OnAnchorBoundsChanged();
   }
 
+#if !defined(OS_MACOSX)
+  // aura::WindowObserver:
+  void OnWindowTransformed(aura::Window* window,
+                           ui::PropertyChangeReason reason) override {
+    if (window->is_destroying())
+      return;
+
+    // Update the anchor bounds when the transform animation is complete, or
+    // when the transform is set without animation.
+    if (!window->layer()->GetAnimator()->IsAnimatingOnePropertyOf(
+            ui::LayerAnimationElement::TRANSFORM)) {
+      owner_->OnAnchorBoundsChanged();
+    }
+  }
+#endif
+
  private:
   BubbleDialogDelegate* owner_;
-  ScopedObserver<views::Widget, views::WidgetObserver> observer_{this};
+  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
+#if !defined(OS_MACOSX)
+  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
+#endif
 };
 
 // This class is responsible for observing events on a BubbleDialogDelegate's
@@ -511,6 +548,21 @@ gfx::Rect BubbleDialogDelegate::GetAnchorRect() const {
 
   anchor_rect_ = GetAnchorView()->GetAnchorBoundsInScreen();
   anchor_rect_->Inset(anchor_view_insets_);
+
+#if !defined(OS_MACOSX)
+  // GetAnchorBoundsInScreen returns values that take anchor widget's
+  // translation into account, so undo that here. Without this, features which
+  // apply transforms on windows such as ChromeOS overview mode will see bubbles
+  // offset.
+  // TODO(sammiequon): Investigate if we can remove |anchor_widget_| and just
+  // replace its calls with GetAnchorView()->GetWidget().
+  DCHECK_EQ(anchor_widget_, GetAnchorView()->GetWidget());
+  gfx::Transform transform =
+      anchor_widget_->GetNativeWindow()->layer()->GetTargetTransform();
+  if (!transform.IsIdentity())
+    anchor_rect_->Offset(-gfx::ToRoundedVector2d(transform.To2dTranslation()));
+#endif
+
   return anchor_rect_.value();
 }
 

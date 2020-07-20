@@ -75,10 +75,14 @@ ImageDecoderExternal::ImageDecoderExternal(ScriptState* script_state,
     prefer_animation_ = init->preferAnimation();
 
   if (init->data().IsReadableStream()) {
-    consumer_ = MakeGarbageCollected<ReadableStreamBytesConsumer>(
-        script_state, init->data().GetAsReadableStream(), exception_state);
-    if (exception_state.HadException())
+    if (init->data().GetAsReadableStream()->IsLocked()) {
+      exception_state.ThrowTypeError(
+          "ImageDecoder can only accept readable streams that are not yet "
+          "locked to a reader");
       return;
+    }
+    consumer_ = MakeGarbageCollected<ReadableStreamBytesConsumer>(
+        script_state, init->data().GetAsReadableStream());
 
     stream_buffer_ = WTF::SharedBuffer::Create();
     CreateImageDecoder();

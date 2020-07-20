@@ -102,6 +102,7 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
   LayoutUnit LogicalBottomVisualOverflow() const {
     return LogicalOverflowRect().MaxY();
   }
+  PhysicalRect PhysicalOverflowRect() const;
 
   // charactersWithHyphen, if provided, must not be destroyed before the
   // TextRun.

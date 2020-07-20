@@ -19,5 +19,6 @@ android_library("java") {
     "//base:base_java",
     "//components/embedder_support/android:context_menu_java",
     "//content/public/android:content_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
 }

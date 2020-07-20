@@ -233,6 +233,7 @@
 <translation id="1274997165432133392">कुकीज आणि इतर साइट डेटा</translation>
 <translation id="1275718070701477396">निवडलेले</translation>
 <translation id="1276994519141842946"><ph name="APP_NAME" /> अनइंस्टॉल करता आले नाही</translation>
+<translation id="127946606521051357">जवळपासचे डिव्हाइस शेअर करत आहे</translation>
 <translation id="1280820357415527819">मोबाइल नेटवर्क शोधत आहे</translation>
 <translation id="1280965841156951489">फाइल संपादित करा</translation>
 <translation id="1285320974508926690">या साइटचा कधीही भाषांतर करु नका</translation>
@@ -539,7 +540,7 @@
 <translation id="164936512206786300">ब्लूटूथ डिव्हाइसचे पेअरिंग काढा</translation>
 <translation id="1650371550981945235">इनपुट पर्याय दर्शवा</translation>
 <translation id="1651008383952180276">समान सांकेतिक पासफ्रेझ दोनदा एंटर करणे आवश्यक आहे</translation>
-<translation id="1652326691684645429">जवळपासचे शेअरिंग सुरू करा</translation>
+<translation id="1652326691684645429">Nearby सह शेअरिंग सुरू करा</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Google क्लाउड प्रिंट वर प्रिंटर जोडा जेणेकरून तुम्ही कुठूनही प्रिंट करू शकता.}other{Google क्लाउड प्रिंट वर # प्रिंटर जोडा जेणेकरून तुम्ही कुठूनही प्रिंट करू शकता.}}</translation>
 <translation id="1656528038316521561">बॅकग्राउंडची अपारदर्शकता</translation>
 <translation id="1657406563541664238">वापर आकडेवारी आणि क्रॅश अहवाल आपोआप Google कडे पाठवून <ph name="PRODUCT_NAME" /> ला अधिक चांगले करण्यास मदत करा</translation>
@@ -1220,6 +1221,7 @@
 <translation id="2489918096470125693">&amp;फोल्डर जोडा...</translation>
 <translation id="2490481887078769936">सूचीमधून '<ph name="FILE_NAME" />' काढून टाकले</translation>
 <translation id="249113932447298600">क्षमस्व, <ph name="DEVICE_LABEL" /> डिव्हाइस आत्ता समर्थित नाही.</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> तुमच्यासोबत <ph name="ATTACHMENTS" /> शेअर करत आहे.</translation>
 <translation id="2492461744635776704">सर्टिफिकेटवर स्वाक्षरी करण्याची विनंती तयार करत आहे</translation>
 <translation id="249303669840926644">नोंदणी पूर्ण करू शकलो नाही</translation>
 <translation id="2495777824269688114">आणखी वैशिष्ट्ये शोधा किंवा उत्तरे मिळवा. मदतीसाठी “?” निवडा.</translation>
@@ -1667,7 +1669,7 @@
 <translation id="3022978424994383087">ते समजू शकले नाही.</translation>
 <translation id="3023464535986383522">बोलण्यासाठी निवडा</translation>
 <translation id="3024374909719388945">24-तासांचे घड्याळ वापरा</translation>
-<translation id="3027296729579831126">जवळपासचे शेअरिंग सुरू करा</translation>
+<translation id="3027296729579831126">Nearby सह शेअरिंग सुरू करा</translation>
 <translation id="3029466929721441205">शेल्फमध्ये स्टायलस टूल दाखवा</translation>
 <translation id="3031417829280473749">एजंट X</translation>
 <translation id="3031557471081358569">इंपोर्ट करण्यासाठी आयटम निवडा:</translation>
@@ -2961,7 +2963,7 @@
 <translation id="4673442866648850031">स्टायलस काढल्यानंतर स्टायलस टूल उघडा</translation>
 <translation id="4677772697204437347">GPU मेमरी</translation>
 <translation id="4680105648806843642">या पेजवर आवाज म्यूट केला होता</translation>
-<translation id="4681453295291708042">जवळपासचे शेअरिंग बंद करा</translation>
+<translation id="4681453295291708042">Nearby सह शेअरिंग बंद करा</translation>
 <translation id="4681930562518940301">नवीन टॅबमध्‍ये मूळ &amp;प्रतिमा उघडा</translation>
 <translation id="4682551433947286597">साइन-इन स्क्रीनवर दिसणारे वॉलपेपर.</translation>
 <translation id="4683947955326903992"><ph name="PERCENTAGE" />% (डीफॉल्ट)</translation>
@@ -3778,7 +3780,7 @@
 <translation id="5739017626473506901"><ph name="USER_NAME" /> यांना शाळेच्या खात्यामध्ये जोडण्यात मदत करण्यासाठी साइन इन करा</translation>
 <translation id="5739235828260127894">पडताळणीसाठी वाट पाहत आहे. <ph name="LINK_BEGIN" />अधिक जाणून घ्या.<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">खूप मोठा</translation>
-<translation id="5740328398383587084">जवळपासचे शेअरिंग</translation>
+<translation id="5740328398383587084">Nearby सह शेअरिंग</translation>
 <translation id="574104302965107104">डिस्प्ले मिररिंग</translation>
 <translation id="574209121243317957">पिच</translation>
 <translation id="5746169159649715125">पीडीएफ म्हणून सेव्ह करा</translation>
@@ -4150,6 +4152,7 @@
 <translation id="6212039847102026977">प्रगत नेटवर्क वैशिष्ट्ये दर्शवा</translation>
 <translation id="6212168817037875041">डिस्प्ले बंद करा</translation>
 <translation id="6212752530110374741">ईमेल लिंक</translation>
+<translation id="6213230117190778270">मिळवा</translation>
 <translation id="6216696360484424239">आपोआप साइन इन करा</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> ऑफलाइन आहे. इंटरनेटशी कनेक्ट करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="6220413761270491930">एक्स्टेंशन लोड करताना एरर</translation>
@@ -4277,6 +4280,7 @@
 <translation id="6362853299801475928">&amp;समस्या नोंदवणे...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">कुटुंब आणि मित्र जोडा</translation>
+<translation id="6367985768157257101">Nearby सह शेअरिंग वापरून मिळवायचे आहे का?</translation>
 <translation id="636850387210749493">Enterprise नावनोंदणी</translation>
 <translation id="6370021412472292592">मॅनिफेस्ट लोड करू शकलो नाही.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4733,7 +4737,7 @@
 <translation id="6965978654500191972">डिव्हाइस</translation>
 <translation id="696780070563539690">वेगवेगळ्या साइटवरील तुमची ब्राउझिंग ॲक्टिव्हिटी पाहण्यासाठी साइट कुकी वापरू शकत नाहीत, उदाहरणार्थ, जाहिराती पर्सनलाइझ करण्यासाठी</translation>
 <translation id="6968288415730398122">स्क्रीन लॉक कॉन्फिगर करण्यासाठी तुमचा पासवर्ड एंटर करा</translation>
-<translation id="6969047215179982698">जवळपासचे शेअरिंग बंद करा</translation>
+<translation id="6969047215179982698">Nearby सह शेअरिंग बंद करा</translation>
 <translation id="6970480684834282392">प्रारंभ वेळ</translation>
 <translation id="6970856801391541997">विशिष्ट पेज प्रिंट करा</translation>
 <translation id="6972180789171089114">ऑडिओ/व्हिडिओ</translation>
@@ -6578,6 +6582,7 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">सांकेतिक पासफ्रेझ एंटर करा</translation>
 <translation id="939736085109172342">नवीन फोल्‍डर</translation>
+<translation id="941070664607309480">दृश्यमान होण्यासाठी क्लिक करा जेणेकरून ते तुमच्यासोबत शेअर करू शकेल</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> Chrome टॅब आणि ऑडिओ शेअर करीत आहे.</translation>
 <translation id="945522503751344254">अभिप्राय पाठवा</translation>
 <translation id="947329552760389097">&amp;तपासणी घटक</translation>

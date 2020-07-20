@@ -1482,6 +1482,15 @@ bool RemoveShortcutFolderIfEmpty(ShellUtil::ShortcutLocation location,
   return true;
 }
 
+// Return a shortened version of |component|. Cut in the middle to try
+// to avoid losing the unique parts of |component| (which are usually
+// at the beginning or end for things like usernames and paths).
+base::string16 ShortenAppModelIdComponent(const base::string16& component,
+                                          int desired_length) {
+  return component.substr(0, desired_length / 2) +
+         component.substr(component.length() - ((desired_length + 1) / 2));
+}
+
 }  // namespace
 
 const wchar_t* ShellUtil::kRegDefaultIcon = L"\\DefaultIcon";
@@ -1856,11 +1865,10 @@ base::string16 ShellUtil::GetBrowserModelId(bool is_per_user_install) {
   } else if (is_per_user_install && !GetUserSpecificRegistrySuffix(&suffix)) {
     NOTREACHED();
   }
-  // There is only one component (i.e. the suffixed appid) in this case, but it
-  // is still necessary to go through the appid constructor to make sure the
-  // returned appid is truncated if necessary.
-  std::vector<base::string16> components(1, app_id.append(suffix));
-  return BuildAppModelId(components);
+  app_id.append(suffix);
+  if (app_id.length() <= installer::kMaxAppModelIdLength)
+    return app_id;
+  return ShortenAppModelIdComponent(app_id, installer::kMaxAppModelIdLength);
 }
 
 base::string16 ShellUtil::BuildAppModelId(
@@ -1890,13 +1898,8 @@ base::string16 ShellUtil::BuildAppModelId(
     const base::string16& component = *it;
     DCHECK(!component.empty());
     if (component.length() > max_component_length) {
-      // Append a shortened version of this component. Cut in the middle to try
-      // to avoid losing the unique parts of this component (which are usually
-      // at the beginning or end for things like usernames and paths).
-      app_id.append(component, 0, max_component_length / 2);
-      app_id.append(component,
-                    component.length() - ((max_component_length + 1) / 2),
-                    base::string16::npos);
+      app_id.append(
+          ShortenAppModelIdComponent(component, max_component_length));
     } else {
       app_id.append(component);
     }

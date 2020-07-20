@@ -16,7 +16,6 @@ import("//chrome/browser/buildflags.gni")
 import("//chrome/browser/downgrade/buildflags.gni")
 import("//chrome/common/features.gni")
 import("//components/captive_portal/core/features.gni")
-import("//components/feature_engagement/features.gni")
 import("//components/feed/features.gni")
 import("//components/nacl/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
@@ -3353,6 +3352,8 @@ static_library("browser") {
       "performance_manager/policies/background_tab_loading_policy.h",
       "performance_manager/policies/background_tab_loading_policy_helpers.cc",
       "performance_manager/policies/background_tab_loading_policy_helpers.h",
+      "performance_manager/policies/page_discarding_helper.cc",
+      "performance_manager/policies/page_discarding_helper.h",
       "performance_manager/policies/urgent_page_discarding_policy.cc",
       "performance_manager/policies/urgent_page_discarding_policy.h",
       "permissions/attestation_permission_request.cc",
@@ -4823,27 +4824,6 @@ static_library("browser") {
     sources += [
       "captive_portal/captive_portal_service_factory.cc",
       "captive_portal/captive_portal_service_factory.h",
-    ]
-  }
-
-  if (enable_legacy_desktop_in_product_help) {
-    sources += [
-      "feature_engagement/bookmark/bookmark_tracker.cc",
-      "feature_engagement/bookmark/bookmark_tracker.h",
-      "feature_engagement/bookmark/bookmark_tracker_factory.cc",
-      "feature_engagement/bookmark/bookmark_tracker_factory.h",
-      "feature_engagement/feature_tracker.cc",
-      "feature_engagement/feature_tracker.h",
-      "feature_engagement/incognito_window/incognito_window_tracker.cc",
-      "feature_engagement/incognito_window/incognito_window_tracker.h",
-      "feature_engagement/incognito_window/incognito_window_tracker_factory.cc",
-      "feature_engagement/incognito_window/incognito_window_tracker_factory.h",
-      "feature_engagement/new_tab/new_tab_tracker.cc",
-      "feature_engagement/new_tab/new_tab_tracker.h",
-      "feature_engagement/new_tab/new_tab_tracker_factory.cc",
-      "feature_engagement/new_tab/new_tab_tracker_factory.h",
-      "feature_engagement/session_duration_updater.cc",
-      "feature_engagement/session_duration_updater.h",
     ]
   }
 

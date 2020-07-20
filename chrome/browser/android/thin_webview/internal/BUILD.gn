@@ -42,6 +42,7 @@ android_library("internal_java") {
     "//chrome/browser/android/thin_webview:java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//content/public/android:content_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//ui/android:ui_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]

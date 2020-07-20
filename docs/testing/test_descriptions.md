@@ -14,7 +14,6 @@ See [Testing and infrastructure](https://sites.google.com/a/chromium.org/dev/dev
 |blink\_platform\_unittests| |
 |breakpad\_unittests     | |
 |[browser\_tests](https://sites.google.com/a/chromium.org/dev/developers/testing/browser-tests)|Tests the browser UI. Can not inject user input or depend on focus/activation behavior because it can be run in parallel processes and/or with a locked screen, headless etc. For tests sensitive to that, use interactive\_ui\_tests. For example, when tests need to navigate to chrome://hang (see chrome/browser/ui/webui/ntp/new\_tab\_ui\_uitest.cc)|
-|cacheinvalidation\_unittests| |
 |chromedriver\_unittests | |
 |content\_browsertests   |Similar to browser\_tests, but with a minimal shell contained entirely within content/. This test, as well as the entire content module, has no dependencies on chrome/.|
 |content\_gl\_tests      | |

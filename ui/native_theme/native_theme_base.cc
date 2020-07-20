@@ -1664,6 +1664,7 @@ SkColor NativeThemeBase::GetDarkModeControlColor(
     case kBackground:
       return SkColorSetRGB(0x3B, 0x3B, 0x3B);
     case kBorder:
+      return SkColorSetRGB(0x85, 0x85, 0x85);
     case kSlider:
       return SkColorSetRGB(0xC3, 0xC3, 0xC3);
     case kHoveredSlider:

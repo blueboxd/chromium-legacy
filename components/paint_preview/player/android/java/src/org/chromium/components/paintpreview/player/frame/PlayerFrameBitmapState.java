@@ -73,6 +73,20 @@ public class PlayerFrameBitmapState {
     }
 
     /**
+     * Locks the state out of further updates.
+     */
+    void lock() {
+        mRequiredBitmaps = null;
+    }
+
+    /**
+     * Returns whether this state can be updated.
+     */
+    boolean isLocked() {
+        return mRequiredBitmaps == null && mBitmapMatrix != null;
+    }
+
+    /**
      * Clears state so in-flight requests abort upon return.
      */
     void clear() {
@@ -128,8 +142,7 @@ public class PlayerFrameBitmapState {
 
         for (int col = colStart; col < colEnd; col++) {
             for (int row = rowStart; row < rowEnd; row++) {
-                requestBitmapForTile(row, col);
-                if (mInitialMissingVisibleBitmaps != null) {
+                if (requestBitmapForTile(row, col) && mInitialMissingVisibleBitmaps != null) {
                     mInitialMissingVisibleBitmaps.add(row * mBitmapMatrix.length + col);
                 }
             }
@@ -162,13 +175,13 @@ public class PlayerFrameBitmapState {
         }
     }
 
-    private void requestBitmapForTile(int row, int col) {
-        if (mRequiredBitmaps == null) return;
+    private boolean requestBitmapForTile(int row, int col) {
+        if (mRequiredBitmaps == null) return false;
 
         mRequiredBitmaps[row][col] = true;
         if (mBitmapMatrix == null || mPendingBitmapRequests == null
                 || mBitmapMatrix[row][col] != null || mPendingBitmapRequests[row][col]) {
-            return;
+            return false;
         }
 
         final int y = row * mTileSize.getHeight();
@@ -180,6 +193,7 @@ public class PlayerFrameBitmapState {
         mCompositorDelegate.requestBitmap(mGuid,
                 new Rect(x, y, x + mTileSize.getWidth(), y + mTileSize.getHeight()), mScaleFactor,
                 bitmapRequestHandler, bitmapRequestHandler::onError);
+        return true;
     }
 
     /**
@@ -187,7 +201,7 @@ public class PlayerFrameBitmapState {
      * {@link #mRequiredBitmaps}.
      */
     private void deleteUnrequiredBitmaps() {
-        if (mBitmapMatrix == null) return;
+        if (mBitmapMatrix == null || mRequiredBitmaps == null) return;
 
         for (int row = 0; row < mBitmapMatrix.length; row++) {
             for (int col = 0; col < mBitmapMatrix[row].length; col++) {
@@ -244,8 +258,10 @@ public class PlayerFrameBitmapState {
                 onError();
                 return;
             }
-            if (mBitmapMatrix == null || !mPendingBitmapRequests[mRequestRow][mRequestCol]
+            if (mBitmapMatrix == null || mPendingBitmapRequests == null || mRequiredBitmaps == null
+                    || !mPendingBitmapRequests[mRequestRow][mRequestCol]
                     || !mRequiredBitmaps[mRequestRow][mRequestCol]) {
+                markBitmapReceived(mRequestRow, mRequestCol);
                 result.recycle();
                 deleteUnrequiredBitmaps();
                 return;
@@ -261,6 +277,8 @@ public class PlayerFrameBitmapState {
          * Called when there was an error compositing the bitmap.
          */
         public void onError() {
+            markBitmapReceived(mRequestRow, mRequestCol);
+
             if (mPendingBitmapRequests == null) return;
 
             // TODO(crbug.com/1021590): Handle errors.
@@ -269,7 +287,6 @@ public class PlayerFrameBitmapState {
             assert mPendingBitmapRequests[mRequestRow][mRequestCol];
 
             mPendingBitmapRequests[mRequestRow][mRequestCol] = false;
-            markBitmapReceived(mRequestRow, mRequestCol);
         }
     }
 }

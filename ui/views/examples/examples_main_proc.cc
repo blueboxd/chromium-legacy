@@ -52,6 +52,10 @@
 #include "ui/wm/core/wm_state.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "ui/views/examples/examples_views_delegate_chromeos.h"
+#endif
+
 #if BUILDFLAG(ENABLE_DESKTOP_AURA)
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #endif
@@ -154,9 +158,13 @@ ExamplesExitCode ExamplesMainProc(bool under_test) {
   ExamplesExitCode compare_result = ExamplesExitCode::kSucceeded;
 
   {
+#if defined(OS_CHROMEOS)
+    ExamplesViewsDelegateChromeOS views_delegate;
+#else
     views::DesktopTestViewsDelegate views_delegate;
 #if defined(USE_AURA)
     wm::WMState wm_state;
+#endif
 #endif
 #if BUILDFLAG(ENABLE_DESKTOP_AURA)
     std::unique_ptr<display::Screen> desktop_screen =

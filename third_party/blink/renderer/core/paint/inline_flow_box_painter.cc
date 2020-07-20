@@ -210,10 +210,10 @@ void InlineFlowBoxPainter::PaintBackgroundBorderShadow(
           DisplayItem::kBoxDecorationBackground))
     return;
 
+  PhysicalRect paint_rect = AdjustedFrameRect(paint_offset);
   DrawingRecorder recorder(paint_info.context, inline_flow_box_,
-                           DisplayItem::kBoxDecorationBackground);
-
-  PhysicalRect paint_rect = AdjustedPaintRect(paint_offset);
+                           DisplayItem::kBoxDecorationBackground,
+                           VisualRect(paint_rect));
 
   bool object_has_multiple_boxes = inline_flow_box_.PrevForSameLayoutObject() ||
                                    inline_flow_box_.NextForSameLayoutObject();
@@ -239,10 +239,10 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, inline_flow_box_, paint_info.phase))
     return;
-  DrawingRecorder recorder(paint_info.context, inline_flow_box_,
-                           paint_info.phase);
 
-  PhysicalRect paint_rect = AdjustedPaintRect(paint_offset);
+  PhysicalRect paint_rect = AdjustedFrameRect(paint_offset);
+  DrawingRecorder recorder(paint_info.context, inline_flow_box_,
+                           paint_info.phase, VisualRect(paint_rect));
 
   const auto& mask_nine_piece_image = box_model.StyleRef().MaskBoxImage();
   const auto* mask_box_image = mask_nine_piece_image.GetImage();
@@ -321,7 +321,7 @@ LayoutRect InlineFlowBoxPainter::FrameRectClampedToLineTopAndBottomIfNeeded()
   return rect;
 }
 
-PhysicalRect InlineFlowBoxPainter::AdjustedPaintRect(
+PhysicalRect InlineFlowBoxPainter::AdjustedFrameRect(
     const PhysicalOffset& paint_offset) const {
   LayoutRect frame_rect = FrameRectClampedToLineTopAndBottomIfNeeded();
   LayoutRect local_rect = frame_rect;
@@ -329,6 +329,15 @@ PhysicalRect InlineFlowBoxPainter::AdjustedPaintRect(
   PhysicalOffset adjusted_paint_offset =
       paint_offset + PhysicalOffsetToBeNoop(local_rect.Location());
   return PhysicalRect(adjusted_paint_offset, frame_rect.Size());
+}
+
+IntRect InlineFlowBoxPainter::VisualRect(
+    const PhysicalRect& adjusted_frame_rect) const {
+  PhysicalRect visual_rect = adjusted_frame_rect;
+  const auto& style = inline_flow_box_.GetLineLayoutItem().StyleRef();
+  if (style.HasVisualOverflowingEffect())
+    visual_rect.Expand(style.BoxDecorationOutsets());
+  return EnclosingIntRect(visual_rect);
 }
 
 void InlineFlowBoxPainter::RecordHitTestData(
@@ -340,7 +349,7 @@ void InlineFlowBoxPainter::RecordHitTestData(
   DCHECK_EQ(layout_object->StyleRef().Visibility(), EVisibility::kVisible);
 
   paint_info.context.GetPaintController().RecordHitTestData(
-      inline_flow_box_, PixelSnappedIntRect(AdjustedPaintRect(paint_offset)),
+      inline_flow_box_, PixelSnappedIntRect(AdjustedFrameRect(paint_offset)),
       layout_object->EffectiveAllowedTouchAction());
 }
 

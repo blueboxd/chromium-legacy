@@ -75,11 +75,8 @@ class GlobalFetchImpl final : public GarbageCollected<GlobalFetchImpl<T>>,
       return ScriptPromise();
 
     probe::WillSendXMLHttpOrFetchNetworkRequest(execution_context, r->url());
-    FetchRequestData* request_data =
-        r->PassRequestData(script_state, exception_state);
+    FetchRequestData* request_data = r->PassRequestData(script_state);
     MeasureFetchProperties(execution_context, request_data);
-    if (exception_state.HadException())
-      return ScriptPromise();
     auto promise = fetch_manager_->Fetch(script_state, request_data,
                                          r->signal(), exception_state);
     if (exception_state.HadException())

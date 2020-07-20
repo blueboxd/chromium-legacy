@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 static_library("cast_channel") {
   sources = [
@@ -101,6 +103,55 @@ source_set("unit_tests") {
   ]
 }
 
+if (use_fuzzing_engine) {
+  fuzzable_proto_library("cast_channel_fuzzer_inputs") {
+    sources = [ "proto/fuzzer_inputs.proto" ]
+    import_dirs = [
+      "//third_party/openscreen/src/cast/common/certificate/proto",
+      "//third_party/openscreen/src/cast/common/channel/proto",
+    ]
+    proto_out_dir = "components/cast_channel/fuzz_proto"
+  }
+
+  protoc_convert("cast_auth_util_fuzzer_convert_corpus") {
+    sources = [
+      "test/data/error.textproto",
+      "test/data/good.textproto",
+    ]
+
+    inputs = [ "proto/fuzzer_inputs.proto" ]
+
+    output_pattern = "$target_gen_dir/cast_auth_util_fuzzer_corpus/{{source_name_part}}.binarypb"
+
+    args = [
+      "--encode=cast_channel.fuzz.CastAuthUtilInputs",
+      "-I",
+      rebase_path("//third_party/openscreen/src/cast/common/channel/proto"),
+      "-I",
+      rebase_path("//third_party/openscreen/src/cast/common/certificate/proto"),
+      "-I",
+      rebase_path("proto"),
+      "fuzzer_inputs.proto",
+    ]
+  }
+}
+
+fuzzer_test("cast_auth_util_fuzzer") {
+  sources = [ "cast_auth_util_fuzzer.cc" ]
+  deps = [
+    ":cast_channel",
+    ":cast_channel_fuzzer_inputs",
+    "//components/cast_certificate",
+    "//components/cast_certificate:test_support",
+    "//net:test_support",
+    "//net/data/ssl/certificates:generate_fuzzer_cert_includes",
+    "//third_party/libprotobuf-mutator",
+    "//third_party/openscreen/src/cast/common/certificate/proto:certificate_proto",
+  ]
+  seed_corpus = "$target_gen_dir/cast_auth_util_fuzzer_corpus"
+  seed_corpus_deps = [ ":cast_auth_util_fuzzer_convert_corpus" ]
+}
+
 # TODO(jrw): Rename target to cast_framer_ingest_fuzzer.  The name
 # is left unchanged for now to avoid the need to get reviews for
 # various files that include it.
@@ -119,23 +170,11 @@ fuzzer_test("cast_message_fuzzer") {
   libfuzzer_options = [ "max_len=65535" ]
 }
 
-fuzzer_test("cast_auth_util_fuzzer") {
-  sources = [ "cast_auth_util_fuzzer.cc" ]
-  dict = "fuzz.dict"
-  deps = [
-    ":cast_channel",
-    "//components/cast_channel/proto:cast_channel_fuzzer_inputs_proto",
-    "//net/data/ssl/certificates:generate_fuzzer_cert_includes",
-    "//third_party/libprotobuf-mutator",
-    "//third_party/openscreen/src/cast/common/channel/proto:channel_proto",
-  ]
-}
-
 fuzzer_test("cast_framer_serialize_fuzzer") {
   sources = [ "cast_framer_serialize_fuzzer.cc" ]
   deps = [
     ":cast_channel",
-    "//components/cast_channel/proto:cast_channel_fuzzer_inputs_proto",
+    ":cast_channel_fuzzer_inputs",
     "//third_party/libprotobuf-mutator",
     "//third_party/openscreen/src/cast/common/channel/proto:channel_proto",
   ]
@@ -146,7 +185,7 @@ fuzzer_test("cast_message_util_fuzzer") {
   dict = "fuzz.dict"
   deps = [
     ":cast_channel",
-    "//components/cast_channel/proto:cast_channel_fuzzer_inputs_proto",
+    ":cast_channel_fuzzer_inputs",
     "//third_party/libprotobuf-mutator",
     "//third_party/openscreen/src/cast/common/channel/proto:channel_proto",
   ]

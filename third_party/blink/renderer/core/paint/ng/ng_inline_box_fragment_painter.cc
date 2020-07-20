@@ -111,13 +111,12 @@ void NGInlineBoxFragmentPainterBase::PaintBackgroundBorderShadow(
           DisplayItem::kBoxDecorationBackground))
     return;
 
-  DrawingRecorder recorder(paint_info.context, display_item_client,
-                           DisplayItem::kBoxDecorationBackground);
-
   PhysicalRect frame_rect = inline_box_fragment_.LocalRect();
-  PhysicalOffset adjusted_paint_offset = paint_offset;
+  PhysicalRect adjusted_frame_rect(paint_offset, frame_rect.size);
 
-  PhysicalRect adjusted_frame_rect(adjusted_paint_offset, frame_rect.size);
+  DrawingRecorder recorder(paint_info.context, display_item_client,
+                           DisplayItem::kBoxDecorationBackground,
+                           VisualRect(paint_offset));
 
   DCHECK(inline_box_fragment_.GetLayoutObject());
   const LayoutObject& layout_object = *inline_box_fragment_.GetLayoutObject();
@@ -151,6 +150,19 @@ void NGInlineBoxFragmentPainterBase::PaintBackgroundBorderShadow(
                                border_edges.line_left, border_edges.line_right);
 }
 
+IntRect NGInlineBoxFragmentPainterBase::VisualRect(
+    const PhysicalOffset& paint_offset) {
+  PhysicalRect overflow_rect;
+  if (inline_box_paint_fragment_) {
+    overflow_rect = inline_box_paint_fragment_->SelfInkOverflow();
+  } else {
+    DCHECK(inline_box_item_);
+    overflow_rect = inline_box_item_->SelfInkOverflow();
+  }
+  overflow_rect.Move(paint_offset);
+  return EnclosingIntRect(overflow_rect);
+}
+
 void NGLineBoxFragmentPainter::PaintBackgroundBorderShadow(
     const PaintInfo& paint_info,
     const PhysicalOffset& paint_offset) {
@@ -176,9 +188,6 @@ void NGLineBoxFragmentPainter::PaintBackgroundBorderShadow(
           DisplayItem::kBoxDecorationBackground))
     return;
 
-  DrawingRecorder recorder(paint_info.context, display_item_client,
-                           DisplayItem::kBoxDecorationBackground);
-
   // Compute the content box for the `::first-line` box. It's different from
   // fragment size because the height of line box includes `line-height` while
   // the height of inline box does not. The box "behaves similar to that of an
@@ -198,6 +207,10 @@ void NGLineBoxFragmentPainter::PaintBackgroundBorderShadow(
     rect.size = {text_metrics.LineHeight(), line_box.Size().height};
   }
   rect.offset += paint_offset;
+
+  DrawingRecorder recorder(paint_info.context, display_item_client,
+                           DisplayItem::kBoxDecorationBackground,
+                           VisualRect(paint_offset));
 
   const LayoutBlockFlow& layout_block_flow =
       *To<LayoutBlockFlow>(block_fragment_.GetLayoutObject());

@@ -295,6 +295,15 @@ interface CrosHealthdEventService {
 
 // Probe interface exposed by the cros_healthd daemon.
 interface CrosHealthdProbeService {
+  // Returns information about a specific process running on the device.
+  //
+  // The request:
+  // * |process_id| - PID of the process whose information is requested.
+  //
+  // The response:
+  // * |process_info| - Information about the requested process.
+  ProbeProcessInfo(uint32 process_id) => (ProcessResult process_info);
+
   // Returns telemetry information for the desired categories.
   //
   // The request:

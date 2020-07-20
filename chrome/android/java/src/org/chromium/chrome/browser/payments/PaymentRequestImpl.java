@@ -2619,14 +2619,13 @@ public class PaymentRequestImpl
 
     // PaymentAppFactoryParams implementation.
     @Override
-    public String getTotalAmountCurrency() {
-        return mRawTotal.amount.currency;
-    }
-
-    // PaymentAppFactoryParams implementation.
-    @Override
     public boolean requestShippingOrPayerContact() {
         return mRequestShipping || mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail;
+    }
+
+    @Override
+    public PaymentOptions getPaymentOptions() {
+        return mPaymentOptions;
     }
 
     // PaymentAppFactoryParams implementation.

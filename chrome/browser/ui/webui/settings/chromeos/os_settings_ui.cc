@@ -62,21 +62,28 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
                                                            html_source));
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  html_source->AddResourcePath("crisper.js", IDR_OS_SETTINGS_CRISPER_JS);
-  html_source->AddResourcePath("lazy_load.crisper.js",
-                               IDR_OS_SETTINGS_LAZY_LOAD_CRISPER_JS);
-  html_source->AddResourcePath("chromeos/lazy_load.html",
-                               IDR_OS_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
-  html_source->SetDefaultResource(IDR_OS_SETTINGS_VULCANIZED_HTML);
-  html_source->AddResourcePath("chromeos/os_settings_v3.html",
-                               IDR_OS_SETTINGS_OS_SETTINGS_V3_HTML);
-  html_source->AddResourcePath("chromeos/os_settings.js",
-                               IDR_OS_SETTINGS_SETTINGS_ROLLUP_JS);
+  if (base::FeatureList::IsEnabled(::chromeos::features::kOsSettingsPolymer3)) {
+    // Polymer3 Source files
+    webui::SetupBundledWebUIDataSource(html_source, "chromeos/os_settings.js",
+                                       IDR_OS_SETTINGS_OS_SETTINGS_ROLLUP_JS,
+                                       IDR_OS_SETTINGS_OS_SETTINGS_V3_HTML);
+  } else {
+    // Polymer2 Source files
+    html_source->AddResourcePath("crisper.js", IDR_OS_SETTINGS_CRISPER_JS);
+    html_source->AddResourcePath("lazy_load.crisper.js",
+                                 IDR_OS_SETTINGS_LAZY_LOAD_CRISPER_JS);
+    html_source->AddResourcePath("chromeos/lazy_load.html",
+                                 IDR_OS_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
+    html_source->SetDefaultResource(IDR_OS_SETTINGS_VULCANIZED_HTML);
+  }
 #else
   webui::SetupWebUIDataSource(
       html_source,
       base::make_span(kOsSettingsResources, kOsSettingsResourcesSize),
-      kOsGeneratedPath, IDR_OS_SETTINGS_SETTINGS_HTML);
+      kOsGeneratedPath,
+      base::FeatureList::IsEnabled(chromeos::features::kOsSettingsPolymer3)
+          ? IDR_OS_SETTINGS_OS_SETTINGS_V3_HTML
+          : IDR_OS_SETTINGS_SETTINGS_HTML);
 #endif
 
   ManagedUIHandler::Initialize(web_ui, html_source);

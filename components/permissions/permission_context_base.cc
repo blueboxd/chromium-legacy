@@ -385,7 +385,17 @@ void PermissionContextBase::DecidePermission(
           .insert(std::make_pair(id.ToString(), std::move(request_ptr)))
           .second;
   DCHECK(inserted) << "Duplicate id " << id.ToString();
-  permission_request_manager->AddRequest(request);
+
+  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
+      id.render_process_id(), id.render_frame_id());
+
+  if (!rfh) {
+    request->Cancelled();
+    request->RequestFinished();
+    return;
+  }
+
+  permission_request_manager->AddRequest(rfh, request);
 }
 
 void PermissionContextBase::PermissionDecided(

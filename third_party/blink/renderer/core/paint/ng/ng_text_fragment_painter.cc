@@ -381,11 +381,12 @@ class SelectionPaintState {
         !paint_selected_text_only_ && text_style != selection_style_;
   }
 
-  void ComputeSelectionRect(const PhysicalOffset& box_offset) {
+  PhysicalRect ComputeSelectionRect(const PhysicalOffset& box_offset) {
     DCHECK(!selection_rect_);
     selection_rect_ =
         ComputeLocalSelectionRectForText(containing_block_, selection_status_);
     selection_rect_->offset += box_offset;
+    return *selection_rect_;
   }
 
   // Logic is copied from InlineTextBoxPainter::PaintSelection.
@@ -511,19 +512,19 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
   // We can skip painting if the fragment (including selection) is invisible.
   if (!text_item.TextLength())
     return;
-  const IntRect visual_rect = AsDisplayItemClient(cursor_).VisualRect();
-  if (visual_rect.IsEmpty())
-    return;
 
   if (!text_item.TextShapeResult() &&
       // A line break's selection tint is still visible.
       !text_item.IsLineBreak())
     return;
 
+  const ComputedStyle& style = text_item.Style();
+  if (style.Visibility() != EVisibility::kVisible)
+    return;
+
   const NGTextFragmentPaintInfo& fragment_paint_info =
       GetTextFragmentPaintInfo(cursor_);
   const LayoutObject* layout_object = text_item.GetLayoutObject();
-  const ComputedStyle& style = text_item.Style();
   const Document& document = layout_object->GetDocument();
   const bool is_printing = paint_info.IsPrinting();
 
@@ -548,6 +549,11 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
       return;
   }
 
+  PhysicalRect box_rect = ComputeBoxRect(cursor_, paint_offset, parent_offset_);
+  PhysicalRect ink_overflow = text_item.SelfInkOverflow();
+  ink_overflow.Move(box_rect.offset);
+  IntRect visual_rect = EnclosingIntRect(ink_overflow);
+
   // The text clip phase already has a DrawingRecorder. Text clips are initiated
   // only in BoxPainterBase::PaintFillLayer, which is already within a
   // DrawingRecorder.
@@ -557,10 +563,8 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
             paint_info.context, AsDisplayItemClient(cursor_), paint_info.phase))
       return;
     recorder.emplace(paint_info.context, AsDisplayItemClient(cursor_),
-                     paint_info.phase);
+                     paint_info.phase, visual_rect);
   }
-
-  PhysicalRect box_rect = ComputeBoxRect(cursor_, paint_offset, parent_offset_);
 
   if (UNLIKELY(text_item.IsSymbolMarker())) {
     // The NGInlineItem of marker might be Split(). To avoid calling PaintSymbol
@@ -608,8 +612,10 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
                          markers_to_paint, box_rect.offset, style,
                          DocumentMarkerPaintPhase::kBackground, nullptr);
     if (UNLIKELY(selection)) {
-      selection->ComputeSelectionRect(box_rect.offset);
+      auto selection_rect = selection->ComputeSelectionRect(box_rect.offset);
       selection->PaintSelectionBackground(context, node, document, style);
+      if (recorder)
+        recorder->UniteVisualRect(EnclosingIntRect(selection_rect));
     }
   }
 

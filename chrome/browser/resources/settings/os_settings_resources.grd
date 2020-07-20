@@ -510,6 +510,12 @@
       <structure name="IDR_OS_SETTINGS_CONTROLS_TOGGLE_BUTTON_JS"
                  file="controls/settings_toggle_button.js"
                  compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_DEEP_LINKING_BEHAVIOR_HTML"
+                 file="chromeos/deep_linking_behavior.html"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_DEEP_LINKING_BEHAVIOR_JS"
+                 file="chromeos/deep_linking_behavior.js"
+                 compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_DEVICE_BROWSER_PROXY_HTML"
                  file="chromeos/device_page/device_page_browser_proxy.html"
                  compress="false" type="chrome_html" />

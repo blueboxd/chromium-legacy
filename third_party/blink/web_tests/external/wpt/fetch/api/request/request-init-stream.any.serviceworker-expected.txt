@@ -1,8 +1,8 @@
 This is a testharness.js-based test.
 PASS Constructing a Request with a stream holds the original object.
-FAIL Constructing a Request with a stream on which getReader() is called assert_throws_js: new Request() function "() => new Request(input, init)" did not throw
-FAIL Constructing a Request with a stream on which read() is called assert_throws_js: new Request() function "() => new Request(input, init)" did not throw
-FAIL Constructing a Request with a stream on which read() and releaseLock() are called assert_throws_js: new Request() function "() => new Request(input, init)" did not throw
+PASS Constructing a Request with a stream on which getReader() is called
+PASS Constructing a Request with a stream on which read() is called
+PASS Constructing a Request with a stream on which read() and releaseLock() are called
 FAIL Constructing a Request with a Request on which body.getReader() is called assert_throws_js: new Request() function "() => new Request(input, init)" did not throw
 FAIL Constructing a Request with a Request on which body.getReader().read() is called promise_test: Unhandled rejection with value: object "TypeError: Failed to construct 'Request': Cannot construct a Request with a Request object that has already been used."
 FAIL Constructing a Request with a Request on which read() and releaseLock() are called promise_test: Unhandled rejection with value: object "TypeError: Failed to construct 'Request': Cannot construct a Request with a Request object that has already been used."

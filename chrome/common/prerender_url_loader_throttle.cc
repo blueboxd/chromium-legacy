@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "build/build_config.h"
-#include "chrome/common/prerender_util.h"
+#include "components/prerender/common/prerender_util.h"
 #include "content/public/common/content_constants.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"

@@ -168,7 +168,9 @@ mojom("mojom_platform") {
     "webdatabase/web_database.mojom",
     "websockets/websocket_connector.mojom",
     "webtransport/quic_transport_connector.mojom",
+    "widget/screen_info.mojom",
     "widget/screen_orientation.mojom",
+    "widget/visual_properties.mojom",
     "window_features/window_features.mojom",
     "worker/shared_worker_client.mojom",
     "worker/shared_worker_creation_context_type.mojom",
@@ -279,6 +281,26 @@ mojom("mojom_platform") {
         },
       ]
       traits_headers = [ "//third_party/blink/public/common/input/web_coalesced_input_event_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.ScreenInfo"
+          cpp = "::blink::ScreenInfo"
+        },
+      ]
+      traits_headers = [
+        "//third_party/blink/public/common/widget/screen_info_mojom_traits.h",
+      ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.VisualProperties"
+          cpp = "::blink::VisualProperties"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/widget/visual_properties_mojom_traits.h" ]
     },
   ]
   cpp_typemaps = [

@@ -656,8 +656,8 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
             "This feature cannot be disabled. It is only activated if the user "
             "triggers an extension installation."
           chrome_policy {
-            ExtensionInstallBlacklist {
-              ExtensionInstallBlacklist: {
+            ExtensionInstallBlocklist {
+              ExtensionInstallBlocklist: {
                 entries: '*'
               }
             }

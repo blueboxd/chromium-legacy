@@ -244,8 +244,7 @@ TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandle) {
   EXPECT_EQ(side_data_blob, buffer->GetSideDataBlobForTest());
   scoped_refptr<BlobDataHandle> output_blob_data_handle =
       buffer->DrainAsBlobDataHandle(
-          BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize,
-          ASSERT_NO_EXCEPTION);
+          BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize);
 
   EXPECT_TRUE(buffer->IsStreamLocked());
   EXPECT_TRUE(buffer->IsStreamDisturbed());
@@ -270,8 +269,7 @@ TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandleReturnsNull) {
   EXPECT_EQ(side_data_blob, buffer->GetSideDataBlobForTest());
 
   EXPECT_FALSE(buffer->DrainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize,
-      ASSERT_NO_EXCEPTION));
+      BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize));
 
   EXPECT_FALSE(buffer->IsStreamLocked());
   EXPECT_FALSE(buffer->IsStreamDisturbed());
@@ -295,8 +293,7 @@ TEST_F(BodyStreamBufferTest,
   EXPECT_TRUE(buffer->IsStreamReadable());
 
   EXPECT_FALSE(buffer->DrainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize,
-      exception_state));
+      BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize));
 
   EXPECT_FALSE(buffer->HasPendingActivity());
   EXPECT_FALSE(buffer->IsStreamLocked());
@@ -323,8 +320,7 @@ TEST_F(BodyStreamBufferTest, DrainAsFormData) {
   EXPECT_FALSE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
   EXPECT_EQ(side_data_blob, buffer->GetSideDataBlobForTest());
-  scoped_refptr<EncodedFormData> output_form_data =
-      buffer->DrainAsFormData(ASSERT_NO_EXCEPTION);
+  scoped_refptr<EncodedFormData> output_form_data = buffer->DrainAsFormData();
 
   EXPECT_TRUE(buffer->IsStreamLocked());
   EXPECT_TRUE(buffer->IsStreamDisturbed());
@@ -349,7 +345,7 @@ TEST_F(BodyStreamBufferTest, DrainAsFormDataReturnsNull) {
   EXPECT_FALSE(buffer->HasPendingActivity());
   EXPECT_EQ(side_data_blob, buffer->GetSideDataBlobForTest());
 
-  EXPECT_FALSE(buffer->DrainAsFormData(ASSERT_NO_EXCEPTION));
+  EXPECT_FALSE(buffer->DrainAsFormData());
 
   EXPECT_FALSE(buffer->IsStreamLocked());
   EXPECT_FALSE(buffer->IsStreamDisturbed());
@@ -371,7 +367,7 @@ TEST_F(BodyStreamBufferTest,
   EXPECT_FALSE(buffer->IsStreamDisturbed());
   EXPECT_TRUE(buffer->IsStreamReadable());
 
-  EXPECT_FALSE(buffer->DrainAsFormData(exception_state));
+  EXPECT_FALSE(buffer->DrainAsFormData());
 
   EXPECT_FALSE(buffer->HasPendingActivity());
   EXPECT_FALSE(buffer->IsStreamLocked());

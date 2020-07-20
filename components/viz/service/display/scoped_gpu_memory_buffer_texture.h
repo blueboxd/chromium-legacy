@@ -37,9 +37,9 @@ class VIZ_SERVICE_EXPORT ScopedGpuMemoryBufferTexture {
 
   // The ContextProvider used to free the texture when this object is destroyed,
   // so it must outlive this object.
-  ContextProvider* context_provider_;
-  uint32_t gl_id_;
-  uint32_t target_;
+  ContextProvider* context_provider_ = nullptr;
+  uint32_t gl_id_ = 0;
+  uint32_t target_ = 0;
   gfx::Size size_;
   gfx::ColorSpace color_space_;
 };

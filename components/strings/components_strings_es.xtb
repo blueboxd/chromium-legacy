@@ -45,6 +45,7 @@
 <translation id="115926840831309955">Comprueba el código CVC y vuelve a intentarlo o actualiza la fecha de vencimiento</translation>
 <translation id="1161325031994447685">Volver a conectarte a una red Wi-Fi</translation>
 <translation id="1165039591588034296">Error</translation>
+<translation id="1165174597379888365">Se visita una página</translation>
 <translation id="1175364870820465910">Im&amp;primir...</translation>
 <translation id="1175875016430184367">Grapado triple en la parte derecha</translation>
 <translation id="1178581264944972037">Pausar</translation>
@@ -265,6 +266,7 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="2001146170449793414">{COUNT,plural, =1{y una más}other{y # más}}</translation>
 <translation id="2003709556000175978">Cambia tu contraseña ahora</translation>
 <translation id="2003775180883135320">Perforado cuádruple en la parte superior</translation>
+<translation id="202072848677994234">Este formulario se envía a través de una conexión no segura. Se ha inhabilitado la opción de autocompletar.</translation>
 <translation id="2025115093177348061">Realidad aumentada</translation>
 <translation id="2025186561304664664">Se ha establecido que el proxy se configure automáticamente.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Comprobar el proxy y el cortafuegos<ph name="END_LINK" /></translation>
@@ -332,6 +334,7 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="2289385804009217824">Recortar</translation>
 <translation id="2292556288342944218">Tu acceso a Internet está bloqueado</translation>
 <translation id="2293443924986248631">Si activas esta opción, los sitios web no podrán usar cookies para hacer un seguimiento de tu actividad en la Web. Es posible que las funciones de algunos sitios web no funcionen correctamente.</translation>
+<translation id="2295290966866883927">Las URL de las páginas que visites se enviarán a Google Cloud o a terceros para que se analicen. Por ejemplo, puede que se analicen para detectar sitios web no seguros.</translation>
 <translation id="2297722699537546652">B5 (sobre)</translation>
 <translation id="2300306941146563769">No subido</translation>
 <translation id="2310021320168182093">Chou2 (sobre)</translation>
@@ -679,7 +682,7 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="3799805948399000906">Fuente solicitada</translation>
 <translation id="3807366285948165054">Desplazamiento de la imagen en el eje X</translation>
 <translation id="3807873520724684969">Contenido dañino bloqueado.</translation>
-<translation id="3808375843007691220">Advertencia: Se han detectado funciones experimentales.</translation>
+<translation id="3808375843007691220">Advertencia: Estas funciones son experimentales</translation>
 <translation id="3810973564298564668">Gestionar</translation>
 <translation id="382518646247711829">Si utilizas un servidor proxy...</translation>
 <translation id="3827112369919217609">Absoluto</translation>

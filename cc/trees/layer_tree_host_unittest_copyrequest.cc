@@ -590,8 +590,8 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
 
   void AfterTest() override { EXPECT_TRUE(did_swap_); }
 
-  viz::RenderPassId parent_render_pass_id = 0;
-  viz::RenderPassId copy_layer_render_pass_id = 0;
+  viz::RenderPassId parent_render_pass_id;
+  viz::RenderPassId copy_layer_render_pass_id;
   TestLayerTreeFrameSink* frame_sink_ = nullptr;
   bool did_swap_ = false;
   FakeContentLayerClient client_;

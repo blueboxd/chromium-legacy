@@ -396,3 +396,12 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_record_received_min_ack_delay,
           false)
+
+// If true, QuicSession will no longer need streams_waiting_for_acks_.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_remove_streams_waiting_for_acks,
+          false)
+
+// When true, ParsedQuicVersionToString will print IETF drafts with format
+// draft29 instead of ff00001d.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_print_draft_version, false)

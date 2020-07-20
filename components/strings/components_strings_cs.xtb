@@ -444,6 +444,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="2824775600643448204">Adresní a vyhledávací řádek</translation>
 <translation id="2826760142808435982">Připojení je šifrováno a ověřeno pomocí šifry <ph name="CIPHER" /> a jako mechanismus výměny klíčů používá <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Vymazat formulář</translation>
+<translation id="2839501879576190149">Chystáte se navštívit falešný web</translation>
 <translation id="2847118875340931228">Otevřít anonymní okno</translation>
 <translation id="2850739647070081192">Invite (obálka)</translation>
 <translation id="2856444702002559011">Útočníci se mohou pokusit odcizit vaše údaje na webu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (například hesla, zprávy nebo informace o platebních kartách). <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -795,6 +796,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="42981349822642051">Rozbalit</translation>
 <translation id="4300675098767811073">Několik děr vpravo</translation>
 <translation id="4302965934281694568">Chou3 (obálka)</translation>
+<translation id="4305666528087210886">K souboru nelze získat přístup</translation>
 <translation id="4305817255990598646">Přepínač</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Blokovat (výchozí)</translation>
@@ -813,6 +815,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="4358461427845829800">Spravovat platební metody...</translation>
 <translation id="4359160567981085931">Právě jste své heslo zadali na klamavém webu. Chrome vám může pomoci. Chcete-li změnit heslo a oznámit Googlu, že váš účet může být ohrožen, klikněte na Ochránit účet.</translation>
 <translation id="4367563149485757821">Number-12 (obálka)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Při porušení zabezpečení webu nebo aplikace bylo vyzrazeno vaše uložené heslo pro web <ph name="ORIGIN" />. Chrome vám doporučuje okamžitě heslo na webu <ph name="ORIGIN" /> změnit.}=1{Při porušení zabezpečení webu nebo aplikace bylo vyzrazeno vaše uložené heslo pro web <ph name="ORIGIN" /> a jeden další web. Chrome vám doporučuje okamžitě zkontrolovat uložená hesla.}few{Při porušení zabezpečení webu nebo aplikace bylo vyzrazeno vaše uložené heslo pro web <ph name="ORIGIN" /> a <ph name="SITES_COUNT" /> dalších webů. Chrome vám doporučuje okamžitě zkontrolovat uložená hesla.}many{Při porušení zabezpečení webu nebo aplikace bylo vyzrazeno vaše uložené heslo pro web <ph name="ORIGIN" /> a <ph name="SITES_COUNT" /> dalšího webu. Chrome vám doporučuje okamžitě zkontrolovat uložená hesla.}other{Při porušení zabezpečení webu nebo aplikace bylo vyzrazeno vaše uložené heslo pro web <ph name="ORIGIN" /> a <ph name="SITES_COUNT" /> dalších webů. Chrome vám doporučuje okamžitě zkontrolovat uložená hesla.}}</translation>
 <translation id="437058704415269440">Zůstatek na účtu</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Očekávána hodnota <ph name="VALUE_TYPE" />.</translation>
@@ -1282,6 +1285,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Pozor na možné poplatky na webu, který se chystáte navštívit</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 další návrh}few{# další návrhy}many{# dalšího návrhu}other{# dalších návrhů}}</translation>
+<translation id="6387645831795005740">Útočníci někdy weby napodobují tak, že v adrese URL provádějí drobné, obtížně odhalitelné změny.</translation>
 <translation id="6389470377220713856">Jméno na kartě</translation>
 <translation id="6390200185239044127">Přeložení napůl do Z</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1494,6 +1498,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7372973238305370288">výsledek vyhledávání</translation>
 <translation id="7374733840632556089">K tomuto problému dochází kvůli certifikátu, který jste vy nebo někdo jiný nainstalovali do zařízení. O certifikátu je známo, že se používá ke sledování a zachytávání provozu v sítích, a Chrome mu nedůvěřuje. Ačkoliv sledování v některých případech (například ve školní nebo firemní síti) může být legitimní a nemůžete mu zabránit, Chrome se chce ujistit, že o něm víte. Ke sledování může docházet v kterémkoliv prohlížeči nebo aplikaci, které přistupují k webu.</translation>
 <translation id="7375818412732305729">Připojení souboru</translation>
+<translation id="7376551888419889433">Když konektory Chrome Enterprise Connectors nahlásí události týkající se zabezpečení, administrátorovi se odešlou relevantní data o událostech. Mohou být zahrnuty adresy URL stránek, které navštěvujete v Chromu, názvy souborů nebo metadata a uživatelské jméno, pomocí něhož se přihlašujete do svého zařízení a do Chromu.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Ovládání médií</translation>
 <translation id="7378627244592794276">Ne</translation>
@@ -1891,6 +1896,7 @@ Další podrobnosti:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Pokusili jste se přejít do domény <ph name="DOMAIN" />, ale server předložil certifikát, jehož platnost vypršela.</translation>
 <translation id="9050666287014529139">Heslová fráze</translation>
+<translation id="9062620674789239642">Soubor mohl být přesunut, upraven nebo smazán.</translation>
 <translation id="9065203028668620118">Upravit</translation>
 <translation id="9065745800631924235">vyhledávání <ph name="TEXT" /> z historie</translation>
 <translation id="9069693763241529744">Blokováno rozšířením</translation>

@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_SERVICES_CROS_HEALTHD_PUBLIC_CPP_SERVICE_CONNECTION_H_
 #define CHROMEOS_SERVICES_CROS_HEALTHD_PUBLIC_CPP_SERVICE_CONNECTION_H_
 
+#include <sys/types.h>
+
 #include <cstdint>
 #include <string>
 
@@ -171,12 +173,19 @@ class ServiceConnection {
       mojo::PendingRemote<mojom::CrosHealthdPowerObserver>
           pending_observer) = 0;
 
-  // Gather pieces of information about the platform. See
+  // Gathers pieces of information about the platform. See
   // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
   // details.
   virtual void ProbeTelemetryInfo(
       const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
       mojom::CrosHealthdProbeService::ProbeTelemetryInfoCallback callback) = 0;
+
+  // Gathers information about a particular process on the device. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void ProbeProcessInfo(
+      pid_t process_id,
+      mojom::CrosHealthdProbeService::ProbeProcessInfoCallback callback) = 0;
 
   // Binds |service| to an implementation of CrosHealthdDiagnosticsService. In
   // production, this implementation is provided by cros_healthd. See

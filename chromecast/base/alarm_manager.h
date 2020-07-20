@@ -41,7 +41,7 @@ class AlarmManager {
 
   // For testing only. Allows setting a fake clock and using a custom task
   // runner.
-  AlarmManager(std::unique_ptr<base::Clock> clock,
+  AlarmManager(const base::Clock* clock,
                scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Add an alarm.
@@ -105,7 +105,7 @@ class AlarmManager {
       next_alarm_;
 
   // Poller for wall clock time.
-  std::unique_ptr<base::Clock> clock_;
+  const base::Clock* const clock_;
   base::RepeatingTimer clock_tick_timer_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

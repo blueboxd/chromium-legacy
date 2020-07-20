@@ -60,10 +60,6 @@ const base::Feature kSyncWifiConfigurations{"SyncWifiConfigurations",
 const base::Feature kSyncDeviceInfoInTransportMode{
     "SyncDeviceInfoInTransportMode", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the running of backend ProfileSyncService tasks on the ThreadPool.
-const base::Feature kProfileSyncServiceUsesThreadPool{
-    "ProfileSyncServiceUsesThreadPool", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Stops honoring the Android master sync toggle.
 const base::Feature kDecoupleSyncFromAndroidMasterSync{
     "DecoupleSyncFromAndroidMasterSync", base::FEATURE_DISABLED_BY_DEFAULT};

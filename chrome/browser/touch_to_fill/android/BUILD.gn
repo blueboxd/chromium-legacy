@@ -27,7 +27,9 @@ generate_jni("jni_headers") {
 
 android_library("public_java") {
   deps = [
+    "//base:base_java",
     "//components/browser_ui/android/bottomsheet:java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//ui/android:ui_java",
   ]
 
@@ -48,6 +50,7 @@ junit_binary("touch_to_fill_junit_tests") {
     "//base:base_junit_test_support",
     "//chrome/android:chrome_java",
     "//chrome/android:chrome_test_util_java",
+    "//chrome/browser/flags:java",
     "//chrome/browser/touch_to_fill/android:public_java",
     "//chrome/browser/touch_to_fill/android/internal:java",
     "//chrome/browser/ui/android/favicon:java",
@@ -55,6 +58,7 @@ junit_binary("touch_to_fill_junit_tests") {
     "//components/browser_ui/android/bottomsheet:java",
     "//components/module_installer/android:module_installer_java",
     "//components/url_formatter/android:url_formatter_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
@@ -77,12 +81,14 @@ android_library("test_java") {
     "//chrome/android:chrome_java",
     "//chrome/android:chrome_test_java",
     "//chrome/android:chrome_test_util_java",
+    "//chrome/browser/flags:java",
     "//chrome/browser/touch_to_fill/android/internal:java",
     "//chrome/test/android:chrome_java_test_support",
     "//components/browser_ui/android/bottomsheet:java",
     "//components/browser_ui/android/bottomsheet/test:java",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_deps:espresso_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit",

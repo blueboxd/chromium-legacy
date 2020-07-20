@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/css/resolver/css_property_priority.h"
 #include "third_party/blink/renderer/core/css/resolver/matched_properties_cache.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder.h"
-#include "third_party/blink/renderer/core/css/resolver/style_cascade.h"
 #include "third_party/blink/renderer/core/css/selector_checker.h"
 #include "third_party/blink/renderer/core/css/selector_filter.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -43,16 +42,17 @@
 
 namespace blink {
 
-class CSSValue;
 class CompositorKeyframeValue;
+class CSSPropertyValueSet;
+class CSSValue;
 class Document;
 class Element;
 class Interpolation;
 class MatchResult;
-class RuleSet;
-class CSSPropertyValueSet;
-class StyleRuleUsageTracker;
 class PropertyHandle;
+class RuleSet;
+class StyleCascade;
+class StyleRuleUsageTracker;
 
 enum RuleMatchingBehavior { kMatchAllRules, kMatchAllRulesExcludingSMIL };
 enum ApplyMask { kApplyMaskRegular = 1 << 0, kApplyMaskVisited = 1 << 1 };
@@ -158,12 +158,12 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
  private:
   void InitStyleAndApplyInheritance(Element& element,
                                     StyleResolverState& state);
-  void ApplyBaseComputedStyle(Element* element,
-                              StyleResolverState& state,
-                              StyleCascade* cascade,
-                              MatchResult& match_result,
-                              RuleMatchingBehavior matching_behavior,
-                              bool can_cache_animation_base_computed_style);
+  void ApplyBaseStyle(Element* element,
+                      StyleResolverState& state,
+                      StyleCascade& cascade,
+                      MatchResult& match_result,
+                      RuleMatchingBehavior matching_behavior,
+                      bool can_cache_animation_base_computed_style);
   void ApplyInterpolations(StyleResolverState& state,
                            StyleCascade& cascade,
                            ActiveInterpolationsMap& interpolations);
@@ -239,8 +239,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
 
   void CalculateAnimationUpdate(StyleResolverState&);
 
-  bool ApplyAnimatedStandardProperties(StyleResolverState&,
-                                       StyleCascade* cascade = nullptr);
+  bool ApplyAnimatedStyle(StyleResolverState&, StyleCascade&);
 
   void ApplyCallbackSelectors(StyleResolverState&);
 

@@ -19,6 +19,10 @@ const char kLiteVideoIgnoreNetworkConditions[] =
 const char kLiteVideoForceOverrideDecision[] =
     "lite-video-force-override-decision";
 
+// Forces the coinflip used for a counterfactual experiment to be true.
+const char kLiteVideoForceCoinflipHoldback[] =
+    "lite-video-force-coinflip-holdback";
+
 bool ShouldIgnoreLiteVideoNetworkConditions() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kLiteVideoIgnoreNetworkConditions);
@@ -27,6 +31,11 @@ bool ShouldIgnoreLiteVideoNetworkConditions() {
 bool ShouldOverrideLiteVideoDecision() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kLiteVideoForceOverrideDecision);
+}
+
+bool ShouldForceCoinflipHoldback() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kLiteVideoForceCoinflipHoldback);
 }
 
 }  // namespace switches

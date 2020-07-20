@@ -331,6 +331,8 @@ class CORE_EXPORT WebFrameWidgetBase
   blink::FrameWidget* FrameWidget() override { return this; }
   void ScheduleAnimation() override;
   bool ShouldAckSyntheticInputImmediately() override;
+  void UpdateVisualProperties(
+      const VisualProperties& visual_properties) override;
   void ScheduleAnimationForWebTests() override;
 
   // mojom::blink::FrameWidget methods.
@@ -375,9 +377,6 @@ class CORE_EXPORT WebFrameWidgetBase
 #endif
 
   base::Optional<gfx::Point> GetAndResetContextMenuLocation();
-
-  void BindWidgetCompositor(
-      mojo::PendingReceiver<mojom::blink::WidgetCompositor> receiver) override;
 
   // Called when the FrameView for this Widget's local root is created.
   virtual void DidCreateLocalRootView() {}

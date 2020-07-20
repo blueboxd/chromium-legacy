@@ -68,10 +68,11 @@ class MockQuicClientSessionBase : public quic::QuicSpdyClientSessionBase {
                    quic::StreamSendingState state,
                    quic::TransmissionType type,
                    quiche::QuicheOptional<quic::EncryptionLevel> level));
-  MOCK_METHOD3(SendRstStream,
+  MOCK_METHOD4(SendRstStream,
                void(quic::QuicStreamId stream_id,
                     quic::QuicRstStreamErrorCode error,
-                    quic::QuicStreamOffset bytes_written));
+                    quic::QuicStreamOffset bytes_written,
+                    bool send_rst_only));
 
   MOCK_METHOD2(OnStreamHeaders,
                void(quic::QuicStreamId stream_id,
@@ -369,7 +370,7 @@ TEST_P(QuicChromiumClientStreamTest, HandleAfterConnectionClose) {
       session_,
       SendRstStream(quic::test::GetNthClientInitiatedBidirectionalStreamId(
                         version_.transport_version, 0),
-                    quic::QUIC_RST_ACKNOWLEDGEMENT, 0));
+                    quic::QUIC_RST_ACKNOWLEDGEMENT, 0, _));
   stream_->OnConnectionClosed(quic::QUIC_INVALID_FRAME_DATA,
                               quic::ConnectionCloseSource::FROM_PEER);
 
@@ -384,24 +385,16 @@ TEST_P(QuicChromiumClientStreamTest, HandleAfterStreamReset) {
       quic::test::GetNthClientInitiatedBidirectionalStreamId(
           version_.transport_version, 0),
       quic::QUIC_STREAM_CANCELLED, 0);
-  if (!version_.HasIetfQuicFrames()) {
-    EXPECT_CALL(
-        session_,
-        SendRstStream(quic::test::GetNthClientInitiatedBidirectionalStreamId(
-                          version_.transport_version, 0),
-                      quic::QUIC_RST_ACKNOWLEDGEMENT, 0));
-  } else {
-    // Intercept & check that the call to the QuicConnection's OnStreamReast
-    // has correct stream ID and error code -- for V99/IETF Quic, it should
-    // have the STREAM_CANCELLED error code, not RST_ACK... Capture
-    // OnStreamReset (rather than SendRstStream) because the V99 path bypasses
-    // SendRstStream, calling SendRstStreamInner directly. Mocking
-    // SendRstStreamInner is problematic since the test relies on it to perform
-    // the closing operations and getting the stream in the correct state.
-    EXPECT_CALL(
-        *(static_cast<quic::test::MockQuicConnection*>(session_.connection())),
-        OnStreamReset(stream_->id(), quic::QUIC_STREAM_CANCELLED));
+
+  quic::QuicRstStreamErrorCode error_code = quic::QUIC_RST_ACKNOWLEDGEMENT;
+  if (version_.HasIetfQuicFrames()) {
+    error_code = quic::QUIC_STREAM_CANCELLED;
   }
+  EXPECT_CALL(
+      session_,
+      SendRstStream(quic::test::GetNthClientInitiatedBidirectionalStreamId(
+                        version_.transport_version, 0),
+                    error_code, 0, _));
 
   stream_->OnStreamReset(rst);
   if (version_.HasIetfQuicFrames()) {
@@ -504,7 +497,7 @@ TEST_P(QuicChromiumClientStreamTest, ProcessHeadersWithError) {
       session_,
       SendRstStream(quic::test::GetNthClientInitiatedBidirectionalStreamId(
                         version_.transport_version, 0),
-                    quic::QUIC_BAD_APPLICATION_PAYLOAD, 0));
+                    quic::QUIC_BAD_APPLICATION_PAYLOAD, 0, _));
 
   auto headers = quic::test::AsHeaderList(bad_headers);
   stream_->OnStreamHeaderList(false, headers.uncompressed_header_bytes(),
@@ -521,7 +514,7 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailableWithError) {
       session_,
       SendRstStream(quic::test::GetNthClientInitiatedBidirectionalStreamId(
                         version_.transport_version, 0),
-                    quic::QUIC_STREAM_CANCELLED, 0));
+                    quic::QUIC_STREAM_CANCELLED, 0, _));
 
   const char data[] = "hello world!";
   int data_len = strlen(data);
@@ -958,8 +951,8 @@ TEST_P(QuicChromiumClientStreamTest, ResetOnEmptyResponseHeaders) {
   if (!VersionUsesHttp3(version_.transport_version)) {
     // QuicSpdyStream resets itself on empty headers,
     // because it is used to signal that headers were too large.
-    EXPECT_CALL(session_,
-                SendRstStream(stream_->id(), quic::QUIC_HEADERS_TOO_LARGE, 0));
+    EXPECT_CALL(session_, SendRstStream(stream_->id(),
+                                        quic::QUIC_HEADERS_TOO_LARGE, 0, _));
   }
 
   const spdy::SpdyHeaderBlock empty_response_headers;

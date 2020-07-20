@@ -457,20 +457,39 @@ void IsolatedPrerenderTabHelper::DidFinishNavigation(
 
     new_page->after_srp_metrics_->probe_latency_ = page_->probe_latency_;
 
-    auto status_iter = page_->prefetch_status_by_url_.find(url);
-    if (status_iter != page_->prefetch_status_by_url_.end()) {
-      new_page->after_srp_metrics_->prefetch_status_ =
-          MaybeUpdatePrefetchStatusWithNSPContext(url, status_iter->second);
+    // Check every url in the redirect chain for a status, starting at the end
+    // and working backwards. Note: When a redirect chain is eligible all the
+    // way to the end, the status is already propagated. But if a redirect was
+    // not eligible then this will find its last known status.
+    DCHECK(!navigation_handle->GetRedirectChain().empty());
+    base::Optional<PrefetchStatus> status;
+    base::Optional<size_t> prediction_position;
+    for (auto back_iter = navigation_handle->GetRedirectChain().rbegin();
+         back_iter != navigation_handle->GetRedirectChain().rend();
+         ++back_iter) {
+      GURL chain_url = *back_iter;
+      auto status_iter = page_->prefetch_status_by_url_.find(chain_url);
+      if (!status && status_iter != page_->prefetch_status_by_url_.end()) {
+        status = MaybeUpdatePrefetchStatusWithNSPContext(chain_url,
+                                                         status_iter->second);
+      }
+
+      // Same check for the original prediction ordering.
+      auto position_iter = page_->original_prediction_ordering_.find(chain_url);
+      if (!prediction_position &&
+          position_iter != page_->original_prediction_ordering_.end()) {
+        prediction_position = position_iter->second;
+      }
+    }
+
+    if (status) {
+      new_page->after_srp_metrics_->prefetch_status_ = *status;
     } else {
       new_page->after_srp_metrics_->prefetch_status_ =
           PrefetchStatus::kNavigatedToLinkNotOnSRP;
     }
-
-    auto position_iter = page_->original_prediction_ordering_.find(url);
-    if (position_iter != page_->original_prediction_ordering_.end()) {
-      new_page->after_srp_metrics_->clicked_link_srp_position_ =
-          position_iter->second;
-    }
+    new_page->after_srp_metrics_->clicked_link_srp_position_ =
+        prediction_position;
 
     // See if the page being navigated to was prerendered. If so, copy over its
     // subresource manager and networking pipes.

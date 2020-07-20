@@ -72,6 +72,7 @@
 <translation id="1674504678466460478">Din <ph name="SOURCE_LANGUAGE" /> în <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Pentru a accesa marcajele pe toate dispozitivele, activează sincronizarea.</translation>
 <translation id="1687475363370981210">Marchează-le pe toate ca citite</translation>
+<translation id="1689333818294560261">Pseudonim</translation>
 <translation id="1690731385917361335">Niciun element</translation>
 <translation id="1692118695553449118">Sincronizarea este activată</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selectate</translation>
@@ -206,6 +207,7 @@ Site-urile nu pot folosi cookie-uri pentru a-ți vedea activitatea de navigare d
 <translation id="3335947283844343239">Redeschide fila închisă</translation>
 <translation id="3371831930909698441">Traducerea este disponibilă. Sunt disponibile opțiuni în partea de jos a ecranului.</translation>
 <translation id="3393920035788932672">Pop-upuri permise</translation>
+<translation id="3425644765244388016">Pseudonimul cardului</translation>
 <translation id="3443810440409579745">Fila a fost primită.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Vizualizare împărțită</translation>
@@ -240,6 +242,7 @@ Site-urile nu pot folosi cookie-uri pentru a-ți vedea activitatea de navigare d
 <translation id="3783017676699494206">Salvează imaginea</translation>
 <translation id="3789841737615482174">Instalează</translation>
 <translation id="3803696231112616155">Oferă traducerea acestui site</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Nu există parole compromise}=1{{COUNT} parolă compromisă}few{{COUNT} parole compromise}other{{COUNT} de parole compromise}}</translation>
 <translation id="385051799172605136">Înapoi</translation>
 <translation id="3892144330757387737">Aici vei vedea istoricul</translation>
 <translation id="3897092660631435901">Meniu</translation>
@@ -529,6 +532,7 @@ Site-urile nu pot folosi cookie-uri pentru a-ți vedea activitatea de navigare d
 <translation id="7189598951263744875">Trimite...</translation>
 <translation id="7192050974311852563">Activează înregistrarea în jurnal</translation>
 <translation id="7203585745079012652">Primești răspunsuri vocale</translation>
+<translation id="721597782417389033">Pseudonimul cardului nu este valid</translation>
 <translation id="7265758999917665941">Niciodată pentru acest site</translation>
 <translation id="7272437679830969316">Nu ți se poate confirma identitatea. Parola nu a fost copiată.</translation>
 <translation id="7291368939935408496">Se pregătesc parolele...</translation>

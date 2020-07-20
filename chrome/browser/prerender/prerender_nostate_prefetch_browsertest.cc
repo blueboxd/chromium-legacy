@@ -1901,4 +1901,36 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, OpenTaskManager) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, prefetch_page));
 }
 
+// Renders a page that contains a prerender link to a page that contains an
+// img with a source that requires http authentication. This should not
+// prerender successfully.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
+                       PrerenderHttpAuthentication) {
+  GURL url =
+      src_server()->GetURL("/prerender/prerender_http_auth_container.html");
+  std::unique_ptr<TestPrerender> prerender =
+      PrefetchFromURL(url, FINAL_STATUS_AUTH_NEEDED);
+}
+
+// Checks that the referrer is not set when prerendering and the source page is
+// HTTPS.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrerenderNoSSLReferrer) {
+  // Use http:// url for the prerendered page main resource.
+  GURL url(
+      embedded_test_server()->GetURL("/prerender/prerender_no_referrer.html"));
+
+  // Use https:// for all resources.
+  UseHttpsSrcServer();
+
+  PrefetchFromURL(url, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  ui_test_utils::NavigateToURL(current_browser(), url);
+  EXPECT_TRUE(WaitForLoadStop(
+      current_browser()->tab_strip_model()->GetActiveWebContents()));
+  content::WebContents* web_contents =
+      current_browser()->tab_strip_model()->GetActiveWebContents();
+  const std::string referrer =
+      EvalJs(web_contents, "document.referrer").ExtractString();
+  EXPECT_TRUE(referrer.empty());
+}
+
 }  // namespace prerender

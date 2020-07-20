@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "chrome/browser/nearby_sharing/certificates/common.h"
 #include "chrome/browser/nearby_sharing/certificates/constants.h"
+#include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/nearby_sharing/proto/timestamp.pb.h"
 #include "crypto/aead.h"
 #include "crypto/encryptor.h"
@@ -41,7 +41,7 @@ base::Optional<std::vector<uint8_t>> DecryptMetadataKey(
   std::unique_ptr<crypto::Encryptor> encryptor =
       CreateNearbyShareCtrEncryptor(secret_key, encrypted_metadata_key.salt());
   if (!encryptor) {
-    LOG(ERROR)
+    NS_LOG(ERROR)
         << "Cannot decrypt metadata key: Could not create CTR encryptor.";
     return base::nullopt;
   }
@@ -139,8 +139,8 @@ NearbyShareDecryptedPublicCertificate::DecryptPublicCertificate(
   // Confirm that the decrypted metadata key agrees with key commitment tag.
   if (!VerifyMetadataEncryptionKeyTag(*decrypted_metadata_key,
                                       metadata_encryption_key_tag)) {
-    LOG(ERROR) << "Metadata decryption failed: Failed to verify metadata "
-               << "encryption key tag.";
+    NS_LOG(ERROR) << "Metadata decryption failed: Failed to verify metadata "
+                  << "encryption key tag.";
     return base::nullopt;
   }
 
@@ -150,16 +150,16 @@ NearbyShareDecryptedPublicCertificate::DecryptPublicCertificate(
       DecryptMetadataPayload(encrypted_metadata, *decrypted_metadata_key,
                              secret_key.get());
   if (!decrypted_metadata_bytes) {
-    LOG(ERROR) << "Metadata decryption failed: Failed to decrypt metadata "
-               << "payload.";
+    NS_LOG(ERROR) << "Metadata decryption failed: Failed to decrypt metadata "
+                  << "payload.";
     return base::nullopt;
   }
 
   nearbyshare::proto::EncryptedMetadata unencrypted_metadata;
   if (!unencrypted_metadata.ParseFromArray(decrypted_metadata_bytes->data(),
                                            decrypted_metadata_bytes->size())) {
-    LOG(ERROR) << "Metadata decryption failed: Failed to parse decrypted "
-               << "metadata payload.";
+    NS_LOG(ERROR) << "Metadata decryption failed: Failed to parse decrypted "
+                  << "metadata payload.";
     return base::nullopt;
   }
 
@@ -192,7 +192,7 @@ bool NearbyShareDecryptedPublicCertificate::VerifySignature(
   crypto::SignatureVerifier verifier;
   if (!verifier.VerifyInit(crypto::SignatureVerifier::ECDSA_SHA256, signature,
                            public_key_)) {
-    LOG(ERROR) << "Verification failed: Initialization unsuccessful.";
+    NS_LOG(ERROR) << "Verification failed: Initialization unsuccessful.";
     return false;
   }
 

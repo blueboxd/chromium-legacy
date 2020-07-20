@@ -2388,7 +2388,7 @@ class MockWebContentsDelegate : public WebContentsDelegate {
   MOCK_METHOD2(HandleContextMenu,
                bool(RenderFrameHost*, const ContextMenuParams&));
   MOCK_METHOD4(RegisterProtocolHandler,
-               void(WebContents*, const std::string&, const GURL&, bool));
+               void(RenderFrameHost*, const std::string&, const GURL&, bool));
 };
 
 }  // namespace
@@ -2419,11 +2419,11 @@ TEST_F(WebContentsImplTest, RegisterProtocolHandlerDifferentOrigin) {
 
   // Only the first call to RegisterProtocolHandler should register because the
   // other call has a handler from a different origin.
-  EXPECT_CALL(delegate,
-              RegisterProtocolHandler(contents(), "mailto", handler_url1, true))
+  EXPECT_CALL(delegate, RegisterProtocolHandler(main_test_rfh(), "mailto",
+                                                handler_url1, true))
       .Times(1);
-  EXPECT_CALL(delegate,
-              RegisterProtocolHandler(contents(), "mailto", handler_url2, true))
+  EXPECT_CALL(delegate, RegisterProtocolHandler(main_test_rfh(), "mailto",
+                                                handler_url2, true))
       .Times(0);
 
   {
@@ -2451,8 +2451,8 @@ TEST_F(WebContentsImplTest, RegisterProtocolHandlerDataURL) {
   contents()->NavigateAndCommit(data);
 
   // Data URLs should fail.
-  EXPECT_CALL(delegate,
-              RegisterProtocolHandler(contents(), "mailto", data_handler, true))
+  EXPECT_CALL(delegate, RegisterProtocolHandler(contents()->GetMainFrame(),
+                                                "mailto", data_handler, true))
       .Times(0);
 
   {

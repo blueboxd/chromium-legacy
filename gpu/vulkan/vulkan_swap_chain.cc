@@ -353,7 +353,7 @@ bool VulkanSwapChain::PresentBuffer(const gfx::Rect& rect) {
 
   VkPresentInfoKHR present_info = {
       .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-      .pNext = &present_regions,
+      .pNext = is_incremental_present_supported_ ? &present_regions : nullptr,
       .waitSemaphoreCount = 1,
       .pWaitSemaphores = &end_write_semaphore_,
       .swapchainCount = 1,

@@ -54,12 +54,6 @@ class OptimizationGuideDecider {
   virtual void RegisterOptimizationTargets(
       const std::vector<proto::OptimizationTarget>& optimization_targets) = 0;
 
-  // Returns whether the current conditions match |optimization_target|. This
-  // should only be called for main frame navigations.
-  virtual OptimizationGuideDecision ShouldTargetNavigation(
-      content::NavigationHandle* navigation_handle,
-      proto::OptimizationTarget optimization_target) = 0;
-
   // Invokes |callback| with the decision for whether the current browser
   // conditions, as expressed by |client_model_feature_values| and the
   // |navigation_handle|, match |optimization_target|.

@@ -6,6 +6,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "components/viz/client/client_resource_provider.h"
@@ -45,7 +50,7 @@ viz::ResourceId CreateAndImportResource(
 }  // anonymous namespace
 
 viz::RenderPass* AddRenderPass(viz::RenderPassList* pass_list,
-                               int render_pass_id,
+                               viz::RenderPassId render_pass_id,
                                const gfx::Rect& output_rect,
                                const gfx::Transform& root_transform,
                                const FilterOperations& filters) {
@@ -58,7 +63,7 @@ viz::RenderPass* AddRenderPass(viz::RenderPassList* pass_list,
 }
 
 viz::RenderPass* AddRenderPassWithDamage(viz::RenderPassList* pass_list,
-                                         int render_pass_id,
+                                         viz::RenderPassId render_pass_id,
                                          const gfx::Rect& output_rect,
                                          const gfx::Rect& damage_rect,
                                          const gfx::Transform& root_transform,

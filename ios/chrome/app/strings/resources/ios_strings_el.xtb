@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> προς <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Για να εμφανίζονται οι σελιδοδείκτες σας σε όλες τις συσκευές σας, ενεργοποιήστε τον συγχρονισμό.</translation>
 <translation id="1687475363370981210">Επισήμανση όλων ως αναγνωσμένων</translation>
+<translation id="1689333818294560261">Ψευδώνυμο</translation>
 <translation id="1690731385917361335">Κανένα στοιχείο</translation>
 <translation id="1692118695553449118">Ο συγχρονισμός είναι ενεργοποιημένος</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> στοιχεία επιλεγμένα</translation>
@@ -206,6 +207,7 @@
 <translation id="3335947283844343239">Εκ Νέου Άνοιγμα Κλεισμένης Καρτέλας</translation>
 <translation id="3371831930909698441">Διατίθεται μετάφραση. Διαθέσιμες επιλογές κοντά στο κάτω μέρος της οθόνης.</translation>
 <translation id="3393920035788932672">Επιτρέπ. τα αναδυόμ.</translation>
+<translation id="3425644765244388016">Ψευδώνυμο κάρτας</translation>
 <translation id="3443810440409579745">Η καρτέλα λήφθηκε.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> λεπτά</translation>
 <translation id="3448016392200048164">Προβολή διαχωρισμού οθόνης</translation>
@@ -240,6 +242,7 @@
 <translation id="3783017676699494206">Αποθήκευση εικόνας</translation>
 <translation id="3789841737615482174">Εγκατάσταση</translation>
 <translation id="3803696231112616155">Πρόταση για μετάφραση αυτού του ιστοτόπου</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Δεν παραβιάστηκαν κωδικοί πρόσβασης.}=1{Παραβιάστηκε {COUNT} κωδικός πρόσβασης.}other{Παραβιάστηκαν {COUNT} κωδικοί πρόσβασης.}}</translation>
 <translation id="385051799172605136">Πίσω</translation>
 <translation id="3892144330757387737">Εδώ θα βρείτε το ιστορικό σας</translation>
 <translation id="3897092660631435901">Μενού</translation>
@@ -530,6 +533,7 @@
 <translation id="7189598951263744875">Κοινοποίηση…</translation>
 <translation id="7192050974311852563">Έναρξη καταγραφής</translation>
 <translation id="7203585745079012652">Εκφώνηση απαντήσεων</translation>
+<translation id="721597782417389033">Μη έγκυρο ψευδώνυμο κάρτας</translation>
 <translation id="7265758999917665941">Ποτέ για αυτόν τον ιστότοπο</translation>
 <translation id="7272437679830969316">Δεν είναι δυνατή η επαλήθευση της ταυτότητας σας. Ο κωδικός πρόσβασης δεν αντιγράφηκε.</translation>
 <translation id="7291368939935408496">Προετοιμασία κωδικών πρόσβασης…</translation>

@@ -158,23 +158,40 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
 
 class SyncTokenClientImpl : public VideoFrame::SyncTokenClient {
  public:
-  SyncTokenClientImpl(gpu::gles2::GLES2Interface* gl, gpu::SyncToken sync_token)
-      : gl_(gl), sync_token_(sync_token) {}
+  SyncTokenClientImpl(gpu::gles2::GLES2Interface* gl,
+                      gpu::SharedImageInterface* sii,
+                      gpu::SyncToken sync_token)
+      : gl_(gl), sii_(sii), sync_token_(sync_token) {
+    // Only one interface should be used.
+    DCHECK((gl_ && !sii_) || (!gl_ && sii_));
+  }
   ~SyncTokenClientImpl() override = default;
 
   void GenerateSyncToken(gpu::SyncToken* sync_token) override {
     if (sync_token_.HasData()) {
       *sync_token = sync_token_;
     } else {
-      gl_->GenSyncTokenCHROMIUM(sync_token->GetData());
+      if (gl_) {
+        gl_->GenSyncTokenCHROMIUM(sync_token->GetData());
+      } else {
+        *sync_token = sii_->GenVerifiedSyncToken();
+      }
     }
   }
 
   void WaitSyncToken(const gpu::SyncToken& sync_token) override {
     if (sync_token.HasData()) {
-      gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+      if (gl_) {
+        gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+      } else {
+        sii_->WaitSyncToken(sync_token);
+      }
       if (sync_token_.HasData() && sync_token_ != sync_token) {
-        gl_->WaitSyncTokenCHROMIUM(sync_token_.GetConstData());
+        if (gl_) {
+          gl_->WaitSyncTokenCHROMIUM(sync_token_.GetConstData());
+        } else {
+          sii_->WaitSyncToken(sync_token);
+        }
         sync_token_.Clear();
       }
     }
@@ -182,6 +199,7 @@ class SyncTokenClientImpl : public VideoFrame::SyncTokenClient {
 
  private:
   gpu::gles2::GLES2Interface* gl_;
+  gpu::SharedImageInterface* sii_;
   gpu::SyncToken sync_token_;
   DISALLOW_COPY_AND_ASSIGN(SyncTokenClientImpl);
 };
@@ -796,7 +814,8 @@ void VideoResourceUpdater::CopyHardwarePlane(
   gl->DeleteTextures(1, &src_texture_id);
 
   // Pass an empty sync token to force generation of a new sync token.
-  SyncTokenClientImpl client(gl, gpu::SyncToken());
+  SyncTokenClientImpl client(gl, nullptr /* gpu::SharedImageInterface* */,
+                             gpu::SyncToken());
   gpu::SyncToken sync_token = video_frame->UpdateReleaseSyncToken(&client);
 
   auto transferable_resource = viz::TransferableResource::MakeGL(
@@ -1231,7 +1250,8 @@ void VideoResourceUpdater::ReturnTexture(scoped_refptr<VideoFrame> video_frame,
   // The video frame will insert a wait on the previous release sync token.
   auto* gl = raster_context_provider_ ? raster_context_provider_->ContextGL()
                                       : context_provider_->ContextGL();
-  SyncTokenClientImpl client(gl, sync_token);
+  SyncTokenClientImpl client(gl, nullptr /* gpu::SharedImageInterface* */,
+                             sync_token);
   video_frame->UpdateReleaseSyncToken(&client);
 }
 

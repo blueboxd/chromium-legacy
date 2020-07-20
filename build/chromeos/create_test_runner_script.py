@@ -53,7 +53,7 @@ def main(args):
   parser.add_argument('--suite-name')
   parser.add_argument('--tast-attr-expr')
   parser.add_argument('--tast-tests', action='append')
-  args = parser.parse_args(args)
+  args, extra_args = parser.parse_known_args(args)
 
   def RelativizePathToScript(path):
     return os.path.relpath(path, os.path.dirname(args.script_output_path))
@@ -94,6 +94,8 @@ def main(args):
   ]
   if args.use_vm:
     vm_test_args += ['--use-vm']
+
+  vm_test_args += extra_args
 
   vm_test_path_args = [
       ('--cros-cache', RelativizePathToScript(args.cros_cache)),

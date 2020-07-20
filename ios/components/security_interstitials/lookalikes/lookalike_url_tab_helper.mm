@@ -19,15 +19,6 @@
 #endif
 
 namespace {
-// Creates a PolicyDecision that cancels a navigation to show a lookalike
-// error.
-web::WebStatePolicyDecider::PolicyDecision CreateLookalikeErrorDecision() {
-  return web::WebStatePolicyDecider::PolicyDecision::CancelAndDisplayError(
-      [NSError errorWithDomain:kLookalikeUrlErrorDomain
-                          code:kLookalikeUrlErrorCode
-                      userInfo:nil]);
-}
-
 // Creates a PolicyDecision that allows the navigation.
 web::WebStatePolicyDecider::PolicyDecision CreateAllowDecision() {
   return web::WebStatePolicyDecider::PolicyDecision::Allow();
@@ -50,7 +41,7 @@ void LookalikeUrlTabHelper::ShouldAllowResponse(
     return;
   }
 
-  // TODO(crbug.com/1058898): Create container and ReleaseInterstitialParams.
+  // TODO(crbug.com/1104386): Create container and ReleaseInterstitialParams.
   // Get stored interstitial parameters early. Doing so ensures that a
   // navigation to an irrelevant (for this interstitial's purposes) URL such as
   // chrome://settings while the lookalike interstitial is being shown clears
@@ -78,7 +69,7 @@ void LookalikeUrlTabHelper::ShouldAllowResponse(
     return;
   }
 
-  // TODO(crbug.com/1058898): If this is a reload and if the current
+  // TODO(crbug.com/1104386): If this is a reload and if the current
   // URL is the last URL of the stored redirect chain, the interstitial
   // was probably reloaded. Stop the reload and navigate back to the
   // original lookalike URL so that the full checks are exercised again.
@@ -91,7 +82,7 @@ void LookalikeUrlTabHelper::ShouldAllowResponse(
     return;
   }
 
-  // TODO(crbug.com/1058898): After site engagement has been componentized,
+  // TODO(crbug.com/1104384): After site engagement has been componentized,
   // fetch and set |engaged_sites| here so that an interstitial won't be
   // shown on engaged sites, and so that the interstitial will be shown on
   // lookalikes of engaged sites.

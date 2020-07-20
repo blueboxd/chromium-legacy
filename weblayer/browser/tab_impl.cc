@@ -772,6 +772,10 @@ void TabImpl::ShowTranslateUi(JNIEnv* env) {
   TranslateClientImpl::FromWebContents(web_contents())
       ->ManualTranslateWhenReady();
 }
+
+void TabImpl::SetTopControlsMinHeight(JNIEnv* env, int min_height) {
+  top_controls_min_height_ = min_height;
+}
 #endif  // OS_ANDROID
 
 content::WebContents* TabImpl::OpenURLFromTab(
@@ -878,6 +882,14 @@ int TabImpl::GetTopControlsHeight() {
   return top_controls_container_view_
              ? top_controls_container_view_->GetControlsHeight()
              : 0;
+#else
+  return 0;
+#endif
+}
+
+int TabImpl::GetTopControlsMinHeight() {
+#if defined(OS_ANDROID)
+  return top_controls_min_height_;
 #else
   return 0;
 #endif

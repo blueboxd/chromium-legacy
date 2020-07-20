@@ -167,8 +167,8 @@ net::NetworkTrafficAnnotationTag Socket::GetNetworkTrafficAnnotationTag() {
             "uses this API. Other than that, this request will not be sent if "
             "the user does not install a Chrome App that uses the Socket API."
           chrome_policy {
-            ExtensionInstallBlacklist {
-              ExtensionInstallBlacklist: {
+            ExtensionInstallBlocklist {
+              ExtensionInstallBlocklist: {
                 entries: '*'
               }
             }

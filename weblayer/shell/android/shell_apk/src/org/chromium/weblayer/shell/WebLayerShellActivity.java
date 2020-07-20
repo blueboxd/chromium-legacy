@@ -139,6 +139,7 @@ public class WebLayerShellActivity extends FragmentActivity {
     private List<Tab> mPreviousTabList = new ArrayList<>();
     private Runnable mExitFullscreenRunnable;
     private View mBottomView;
+    private int mTopViewMinHeight;
     private boolean mInIncognitoMode;
 
     @Override
@@ -180,6 +181,8 @@ public class WebLayerShellActivity extends FragmentActivity {
             popup.getMenuInflater().inflate(R.menu.app_menu, popup.getMenu());
             MenuItem bottomMenuItem = popup.getMenu().findItem(R.id.toggle_bottom_view_id);
             bottomMenuItem.setChecked(mBottomView != null);
+            MenuItem topMenuItem = popup.getMenu().findItem(R.id.toggle_top_view_min_height_id);
+            topMenuItem.setChecked(mTopViewMinHeight > 0);
             popup.getMenu()
                     .findItem(R.id.translate_menu_id)
                     .setVisible(mBrowser.getActiveTab().canTranslate());
@@ -211,6 +214,12 @@ public class WebLayerShellActivity extends FragmentActivity {
                         mBottomView = null;
                     }
                     mBrowser.setBottomView(mBottomView);
+                    return true;
+                }
+
+                if (item.getItemId() == R.id.toggle_top_view_min_height_id) {
+                    mTopViewMinHeight = (mTopViewMinHeight == 0) ? 50 : 0;
+                    mBrowser.setTopView(mTopContentsContainer, mTopViewMinHeight, false);
                     return true;
                 }
 

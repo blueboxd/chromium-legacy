@@ -223,6 +223,9 @@ SK_API void SkDebugf_FileLine(const char* file,
 // Staging for https://review.skia.org/302643
 #define SK_IMAGE_MAKE_TEXTURE_IMAGE_ALLOW_GR_CONTEXT
 
+// Staging for https://review.skia.org/304003
+#define SK_IMAGE_MAKE_WITH_FILTER_LEGACY_API
+
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,

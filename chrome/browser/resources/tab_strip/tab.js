@@ -200,6 +200,13 @@ export class TabElement extends CustomElement {
     return this.dragImageEl_;
   }
 
+  /** @return {!HTMLElement} */
+  getDragImageCenter() {
+    // dragImageEl_ has padding, so the drag image should be centered relative
+    // to tabEl_, the element within the padding.
+    return this.tabEl_;
+  }
+
   /**
    * @param {string} imgData
    */

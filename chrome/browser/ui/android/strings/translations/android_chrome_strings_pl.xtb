@@ -577,6 +577,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5665379678064389456">Utwórz wydarzenie w aplikacji <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Zignoruj żądanie strony, gdy chce zapobiec powiększeniu widoku</translation>
+<translation id="5683547024293500885">Chrome nie może sprawdzić dostępności aktualizacji</translation>
 <translation id="5686790454216892815">Nazwa pliku jest za długa</translation>
 <translation id="5694049548840660018">Łatwy powrót na stronę główną</translation>
 <translation id="569536719314091526">Możesz przetłumaczyć tę stronę na dowolny język, używając przycisku Więcej opcji</translation>
@@ -589,6 +590,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5732819098735351888">Pobieranie rozpocznie się po połączeniu z siecią Wi-Fi.</translation>
 <translation id="5748802427693696783">Przełączono na karty standardowe</translation>
 <translation id="5749068826913805084">Chrome musi mieć dostęp do pamięci, by pobierać pliki.</translation>
+<translation id="5749237766298580851">Wyłączono <ph name="SEPARATOR" /> Niezalecane</translation>
 <translation id="5754350196967618083">Nie można odświeżyć karty Discover</translation>
 <translation id="5763382633136178763">Karty incognito</translation>
 <translation id="5763514718066511291">Kliknij, by skopiować URL tej aplikacji</translation>

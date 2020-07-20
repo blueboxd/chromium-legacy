@@ -17,9 +17,14 @@
 #include "ui/views/examples/views_examples_export.h"
 
 namespace views {
+class Widget;
+
 namespace examples {
 
 VIEWS_EXAMPLES_EXPORT extern const char kExamplesWidgetName[];
+
+// Returns the current widget.
+VIEWS_EXAMPLES_EXPORT Widget* GetExamplesWidget();
 
 // Shows a window with the views examples in it. |extra_examples| contains any
 // additional examples to add. |window_context| is used to determine where the

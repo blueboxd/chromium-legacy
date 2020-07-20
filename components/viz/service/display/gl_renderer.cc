@@ -4085,4 +4085,7 @@ gfx::Size GLRenderer::GetRenderPassBackingPixelSize(
   return texture_it->second.size();
 }
 
+GLRenderer::OverlayTexture::OverlayTexture() = default;
+GLRenderer::OverlayTexture::~OverlayTexture() = default;
+
 }  // namespace viz

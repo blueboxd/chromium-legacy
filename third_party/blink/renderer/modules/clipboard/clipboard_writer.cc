@@ -157,7 +157,6 @@ class ClipboardHtmlWriter final : public ClipboardWriter {
 
   void Write(const String& sanitized_html, KURL url) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    String plain_text = "";
     system_clipboard()->WriteHTML(sanitized_html, url);
     promise_->CompleteWriteRepresentation();
   }

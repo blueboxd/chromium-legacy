@@ -109,6 +109,7 @@ void ExpectFrameContainsIntroduction(
     EXPECT_EQ(base::checked_cast<uint64_t>(file_metadata[i].size()),
               file->size);
     EXPECT_EQ(file_metadata[i].mime_type(), file->mime_type);
+    EXPECT_EQ(file_metadata[i].id(), file->id);
   }
 
   // Verify contents of TextMetadata vector.
@@ -121,6 +122,7 @@ void ExpectFrameContainsIntroduction(
     EXPECT_EQ(text_metadata[i].payload_id(), text->payload_id);
     EXPECT_EQ(base::checked_cast<uint64_t>(text_metadata[i].size()),
               text->size);
+    EXPECT_EQ(text_metadata[i].id(), text->id);
   }
 
   EXPECT_EQ(required_package, intro->required_package);
@@ -135,6 +137,7 @@ void ExpectFrameContainsIntroduction(
     EXPECT_EQ(wifi_credentials_metadata[i].security_type(),
               ConvertWifiCredentialsMetadataType(wifi->security_type));
     EXPECT_EQ(wifi_credentials_metadata[i].payload_id(), wifi->payload_id);
+    EXPECT_EQ(wifi_credentials_metadata[i].id(), wifi->id);
   }
 }
 
@@ -169,6 +172,12 @@ void ExpectFrameContainsPairedKeyEncryption(const mojom::FramePtr& frame,
             frame->get_v1()->get_paired_key_encryption()->signed_data);
   EXPECT_EQ(std::vector<uint8_t>(secret_id_hash.begin(), secret_id_hash.end()),
             frame->get_v1()->get_paired_key_encryption()->secret_id_hash);
+}
+
+void ExpectFrameContainsCancelFrame(const mojom::FramePtr& frame) {
+  ASSERT_TRUE(frame);
+  ASSERT_TRUE(frame->is_v1());
+  EXPECT_TRUE(frame->get_v1()->is_cancel_frame());
 }
 
 std::unique_ptr<sharing::nearby::Frame> BuildPairedKeyResultFrame(
@@ -328,6 +337,7 @@ TEST_F(NearbySharingDecoderTest, IntroductionFrameDecoding) {
     file->set_payload_id(i);
     file->set_size(i);
     file->set_mime_type("mime " + base::NumberToString(i));
+    file->set_id(i);
     files.push_back(*file);
   }
 
@@ -342,6 +352,7 @@ TEST_F(NearbySharingDecoderTest, IntroductionFrameDecoding) {
     text->set_type(static_cast<sharing::nearby::TextMetadata_Type>(i));
     text->set_payload_id(i);
     text->set_size(i);
+    text->set_id(i);
     texts.push_back(*text);
   }
 
@@ -362,6 +373,7 @@ TEST_F(NearbySharingDecoderTest, IntroductionFrameDecoding) {
     wifi->set_security_type(
         static_cast<sharing::nearby::WifiCredentialsMetadata_SecurityType>(i));
     wifi->set_payload_id(i);
+    wifi->set_id(i);
     wifis.push_back(*wifi);
   }
 
@@ -522,6 +534,24 @@ TEST_F(NearbySharingDecoderTest, V1FrameMissingPairedKeyResultFrameDecoding) {
   v1frame->set_type(sharing::nearby::V1Frame_FrameType_PAIRED_KEY_RESULT);
 
   ExpectNullFrame(frame);
+}
+
+TEST_F(NearbySharingDecoderTest, CancelFrameSuccessDecoding) {
+  sharing::nearby::Frame frame = sharing::nearby::Frame();
+  sharing::nearby::V1Frame* v1frame = frame.mutable_v1();
+  v1frame->set_type(sharing::nearby::V1Frame_FrameType_CANCEL);
+
+  std::vector<uint8_t> data;
+  data.resize(frame.ByteSize());
+  ASSERT_TRUE(frame.SerializeToArray(&data[0], frame.ByteSize()));
+
+  base::RunLoop run_loop;
+  auto callback = base::BindLambdaForTesting([&](const mojom::FramePtr answer) {
+    ExpectFrameContainsCancelFrame(answer);
+    run_loop.Quit();
+  });
+  decoder()->DecodeFrame(std::move(data), std::move(callback));
+  run_loop.Run();
 }
 
 TEST_F(NearbySharingDecoderTest, PairedKeyResultFrameSuccessDecoding) {

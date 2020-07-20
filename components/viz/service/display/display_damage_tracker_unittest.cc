@@ -4,6 +4,8 @@
 
 #include "components/viz/service/display/display_damage_tracker.h"
 
+#include <utility>
+
 #include "base/test/null_task_runner.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/render_pass.h"
@@ -83,7 +85,7 @@ class DisplayDamageTrackerTest : public testing::Test {
       auto pass = RenderPass::Create();
       pass->output_rect = gfx::Rect(0, 0, 100, 100);
       pass->damage_rect = gfx::Rect(10, 10, 1, 1);
-      pass->id = 1u;
+      pass->id = RenderPassId{1u};
       pass_list.push_back(std::move(pass));
 
       BeginFrameAck ack;

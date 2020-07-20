@@ -45,6 +45,7 @@
 <translation id="115926840831309955">Hãy kiểm tra CVC của bạn rồi thử lại hoặc cập nhật ngày hết hạn</translation>
 <translation id="1161325031994447685">Kết nối lại với Wi-Fi</translation>
 <translation id="1165039591588034296">Lỗi</translation>
+<translation id="1165174597379888365">Trang đã truy cập</translation>
 <translation id="1175364870820465910">&amp;In...</translation>
 <translation id="1175875016430184367">Dập 3 ghim bên phải</translation>
 <translation id="1178581264944972037">Tạm dừng</translation>
@@ -265,6 +266,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="2001146170449793414">{COUNT,plural, =1{và 1 ứng dụng khác}other{và # ứng dụng khác}}</translation>
 <translation id="2003709556000175978">Đặt lại mật khẩu của bạn ngay bây giờ</translation>
 <translation id="2003775180883135320">Đục 4 lỗ trên cùng</translation>
+<translation id="202072848677994234">Biểu mẫu này được gửi qua một đường kết nối không an toàn. Tính năng tự động điền đang tắt.</translation>
 <translation id="2025115093177348061">Thực tế tăng cường</translation>
 <translation id="2025186561304664664">Proxy được đặt thành định cấu hình tự động.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Kiểm tra proxy và tường lửa<ph name="END_LINK" /></translation>
@@ -332,6 +334,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="2289385804009217824">Cắt bỏ</translation>
 <translation id="2292556288342944218">Quyền truy cập Internet của bạn bị chặn</translation>
 <translation id="2293443924986248631">Khi tùy chọn này bật, các trang web không thể dùng cookie theo dõi bạn trên web. Do đó, các tính năng trên một số trang web có thể hoạt động không đúng cách.</translation>
+<translation id="2295290966866883927">Hệ thống sẽ gửi URL của những trang mà bạn truy cập cho Google Cloud hoặc bên thứ ba để phân tích. Ví dụ: họ có thể quét những trang này để phát hiện trang web không an toàn.</translation>
 <translation id="2297722699537546652">B5 (Phong bì)</translation>
 <translation id="2300306941146563769">Chưa tải lên</translation>
 <translation id="2310021320168182093">Chou2 (Phong bì)</translation>

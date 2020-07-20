@@ -81,7 +81,6 @@
 #include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "components/favicon/content/content_favicon_driver.h"
-#include "components/feature_engagement/buildflags.h"
 #include "components/find_in_page/find_tab_helper.h"
 #include "components/find_in_page/find_types.h"
 #include "components/google/core/common/google_util.h"
@@ -143,11 +142,6 @@
 
 #if BUILDFLAG(ENABLE_RLZ)
 #include "components/rlz/rlz_tracker.h"  // nogncheck
-#endif
-
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-#include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker.h"
-#include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker_factory.h"
 #endif
 
 namespace {
@@ -630,11 +624,6 @@ void NewWindow(Browser* browser) {
 }
 
 void NewIncognitoWindow(Profile* profile) {
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-  feature_engagement::IncognitoWindowTrackerFactory::GetInstance()
-      ->GetForProfile(profile)
-      ->OnIncognitoWindowOpened();
-#endif
   NewEmptyWindow(profile->GetPrimaryOTRProfile());
 }
 

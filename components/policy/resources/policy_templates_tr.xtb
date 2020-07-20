@@ -3482,7 +3482,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 
       Bu listedeki girişlerin biçimi için '<ph name="URL_BLOCKLIST_POLICY_NAME" />' politikasının açıklamasına bakın.
 
-      Bu politika, kısıtlayıcı engellenenler listeleri için tanımlanan istisnaları açmak için kullanılabilir. Örneğin '*' kullanılarak tüm talepler engellenebilir ve bu politika, sınırlı bir URL listesine erişim izni vermek için kullanılabilir. Aynı zamanda bazı belirli başka alan adlarının alt alan adları, bağlantı noktaları ve belirli yolları için tanımlanan istisnaları açmak için kullanılabilir.
+      Bu politika, kısıtlayıcı engellenenler listeleri için tanımlanan istisnaları açmak için kullanılabilir. Örneğin '*' kullanılarak tüm istekler engellenebilir ve bu politika, sınırlı bir URL listesine erişim izni vermek için kullanılabilir. Aynı zamanda bazı belirli başka alan adlarının alt alan adları, bağlantı noktaları ve belirli yolları için tanımlanan istisnaları açmak için kullanılabilir.
 
       En belirgin filtre, bir URL'nin engellenip engellenmediğini belirler. İzin verilenler listesi, engellenenler listesine göre önceliklidir.
 
@@ -5258,7 +5258,7 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 
       Bu listedeki girişlerin biçimi için '<ph name="URL_BLOCKLIST_POLICY_NAME" />' politikasının açıklamasına bakın.
 
-      Bu politika, kısıtlayıcı engellenenler listeleri için tanımlanan istisnaları açmak için kullanılabilir. Örneğin '*' kullanılarak tüm talepler engellenebilir ve bu politika, sınırlı bir URL listesine erişim izni vermek için kullanılabilir. Aynı zamanda bazı belirli başka alan adlarının alt alan adları, bağlantı noktaları ve belirli yolları için tanımlanan istisnaları açmak için kullanılabilir.
+      Bu politika, kısıtlayıcı engellenenler listeleri için tanımlanan istisnaları açmak için kullanılabilir. Örneğin '*' kullanılarak tüm istekler engellenebilir ve bu politika, sınırlı bir URL listesine erişim izni vermek için kullanılabilir. Aynı zamanda bazı belirli başka alan adlarının alt alan adları, bağlantı noktaları ve belirli yolları için tanımlanan istisnaları açmak için kullanılabilir.
 
       En belirgin filtre, bir URL'nin engellenip engellenmediğini belirler. İzin verilenler listesi, engellenenler listesine göre önceliklidir.
 

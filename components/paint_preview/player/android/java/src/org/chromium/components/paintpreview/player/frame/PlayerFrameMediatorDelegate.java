@@ -7,11 +7,27 @@ package org.chromium.components.paintpreview.player.frame;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.util.Size;
 
 /**
  * API of the PlayerFrameMediator to helper classes.
  */
 public interface PlayerFrameMediatorDelegate {
+    /**
+     * Gets the visual viewport of the player.
+     */
+    public PlayerFrameViewport getViewport();
+
+    /**
+     * Gets the size of the content shown in the mediator.
+     */
+    public Size getContentSize();
+
+    /**
+     * Gets the initial scale factor at the last computed viewport width.
+     */
+    public float getInitialScaleFactor();
+
     /**
      * Triggers an update of the visual contents of the PlayerFrameView. This fetches updates the
      * model and fetches any new bitmaps asynchronously.

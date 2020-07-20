@@ -173,7 +173,7 @@ Tocca una parola per eseguire una ricerca. Per perfezionare la ricerca, tocca e 
 <translation id="2387895666653383613">Ridimensionamento testo</translation>
 <translation id="2394602618534698961">I file scaricati vengono visualizzati qui</translation>
 <translation id="2407481962792080328">Questa funzionalità viene attivata quando accedi al tuo Account Google</translation>
-<translation id="2407674018644220013">Impostare <ph name="APP_NAME" /> come browser predefinito?</translation>
+<translation id="2407674018644220013">Impostare <ph name="APP_NAME" /> come app browser predefinita?</translation>
 <translation id="2410754283952462441">Scegli un account</translation>
 <translation id="2414886740292270097">Scuro</translation>
 <translation id="2426805022920575512">Scegli un altro account</translation>
@@ -445,7 +445,7 @@ Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4665282149850138822">Il sito <ph name="NAME" /> è stato aggiunto alla schermata Home</translation>
 <translation id="4684427112815847243">Sincronizza tutto</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e altre <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e altre <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
-<translation id="4696983787092045100">Invia un messaggio ai tuoi dispositivi</translation>
+<translation id="4696983787092045100">Invia testo ai tuoi dispositivi</translation>
 <translation id="4698034686595694889">Visualizza offline in <ph name="APP_NAME" /></translation>
 <translation id="4699172675775169585">Immagini e file memorizzati nella cache</translation>
 <translation id="4714588616299687897">Riduci l'utilizzo di dati fino al 60%</translation>
@@ -667,7 +667,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6342069812937806050">In questo momento</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 e altri <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 e altri <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="6364438453358674297">Rimuovere il suggerimento dalla cronologia?</translation>
-<translation id="6366047038980456022"><ph name="APP_NAME" /> ha l'esperienza e la velocità che ti servono per eseguire operazioni, creare e navigare online in sicurezza.</translation>
+<translation id="6366047038980456022"><ph name="APP_NAME" /> ha le funzionalità e la velocità che ti servono per eseguire attività, creare e navigare online in sicurezza.</translation>
 <translation id="6369229450655021117">Da qui puoi eseguire ricerche sul Web, condividere contenuti con amici e vedere le pagine aperte.</translation>
 <translation id="6378173571450987352">Dettagli: ordinati per quantità di dati utilizzati</translation>
 <translation id="6379829913050047669"><ph name="APP_NAME" /> si aprirà in Chrome. Se continui, accetti i <ph name="BEGIN_LINK1" />Termini di servizio di Google<ph name="END_LINK1" /> e i <ph name="BEGIN_LINK2" />Termini di servizio aggiuntivi di Google Chrome e Chrome OS<ph name="END_LINK2" />.</translation>
@@ -714,14 +714,14 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6656545060687952787">Chrome ha bisogno dell'accesso alla posizione per cercare dispositivi. <ph name="BEGIN_LINK" />Aggiorna le autorizzazioni<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">Password</translation>
 <translation id="6659594942844771486">Scheda</translation>
-<translation id="6663079968236414793">Link al testo</translation>
+<translation id="6663079968236414793">Crea link al testo</translation>
 <translation id="666573598175432848">È disponibile una versione più recente di Chrome. Tocca questo elemento per andare al Play Store.</translation>
 <translation id="666731172850799929">Apri in <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Informativa sulla privacy di Chrome</translation>
 <translation id="6671495933530132209">Copia immagine</translation>
 <translation id="6676840375528380067">Eliminare i dati di Chrome dal dispositivo?</translation>
 <translation id="6689172468748959065">Foto del profilo</translation>
-<translation id="6691888250440401212">1. Scegli <ph name="APP_NAME" />\n2. Tocca "Imposta predefinito"</translation>
+<translation id="6691888250440401212">1. Scegli <ph name="APP_NAME" />\n2. Tocca "Imposta predefinita"</translation>
 <translation id="6697492270171225480">Mostra suggerimenti per pagine simili quando una pagina non viene trovata</translation>
 <translation id="6698801883190606802">Gestisci dati sincronizzati</translation>
 <translation id="6699370405921460408">I server di Google ottimizzeranno le pagine che visiti.</translation>
@@ -953,7 +953,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8555836665334561807">Con Wi-Fi</translation>
 <translation id="8558485628462305855">Per visualizzare i contenuti di realtà aumentata, aggiorna ARCore</translation>
 <translation id="8559990750235505898">Proponi di tradurre le pagine in altre lingue</translation>
-<translation id="8561196567344536112">1. Vai a Impostazioni\n2. Tocca "App browser"\n3. Scegli <ph name="APP_NAME" /></translation>
+<translation id="8561196567344536112">1. Vai a Impostazioni\n2. Tocca "App Browser"\n3. Scegli <ph name="APP_NAME" /></translation>
 <translation id="8562452229998620586">Le password salvate verranno visualizzate qui.</translation>
 <translation id="8569404424186215731">dal giorno <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Ultime 4 settimane</translation>

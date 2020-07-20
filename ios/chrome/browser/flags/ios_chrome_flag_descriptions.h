@@ -192,6 +192,10 @@ extern const char kEnableAutofillCacheServerCardInfoDescription[];
 extern const char kEnableClipboardProviderImageSuggestionsName[];
 extern const char kEnableClipboardProviderImageSuggestionsDescription[];
 
+// Title and description for the flag to enable fullpage screenshots.
+extern const char kEnableFullPageScreenshotName[];
+extern const char kEnableFullPageScreenshotDescription[];
+
 // Title and description for the flag to enable to show a different UI when the
 // setting is managed by an enterprise policy.
 extern const char kEnableIOSManagedSettingsUIName[];

@@ -60,9 +60,6 @@ class FakeFrameWidget : public blink::mojom::FrameWidget {
 #endif
   void ShowContextMenu(ui::MenuSourceType source_type,
                        const gfx::Point& location) override {}
-  void BindWidgetCompositor(
-      mojo::PendingReceiver<blink::mojom::WidgetCompositor> receiver) override {
-  }
 
   mojo::AssociatedReceiver<blink::mojom::FrameWidget> receiver_;
   base::i18n::TextDirection text_direction_ =

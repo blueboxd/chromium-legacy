@@ -18,10 +18,8 @@ class SwitchAccess {
       NavigationManager.initialize(desktop);
 
       Commands.initialize();
-      SwitchAccessPreferences.initialize();
-
-      // This can throw an error, so it is done last.
       KeyboardRootNode.startWatchingVisibility();
+      SwitchAccessPreferences.initialize();
     });
   }
 

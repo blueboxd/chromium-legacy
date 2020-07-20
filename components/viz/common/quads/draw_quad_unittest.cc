@@ -191,7 +191,7 @@ TEST(DrawQuadTest, CopyDebugBorderDrawQuad) {
 
 TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
-  RenderPassId render_pass_id = 61;
+  RenderPassId render_pass_id{61};
   ResourceId mask_resource_id = 78;
   gfx::RectF mask_uv_rect(0, 0, 33.f, 19.f);
   gfx::Size mask_texture_size(128, 134);
@@ -202,7 +202,7 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   float backdrop_filter_quality = 1.0f;
   bool can_use_backdrop_filter_cache = true;
 
-  RenderPassId copied_render_pass_id = 235;
+  RenderPassId copied_render_pass_id{235};
   CREATE_SHARED_STATE();
 
   CREATE_QUAD_ALL_RP(RenderPassDrawQuad, visible_rect, render_pass_id,
@@ -529,7 +529,7 @@ TEST_F(DrawQuadIteratorTest, DebugBorderDrawQuad) {
 
 TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
-  int render_pass_id = 61;
+  RenderPassId render_pass_id{61};
   ResourceId mask_resource_id = 78;
   gfx::RectF mask_uv_rect(0.f, 0.f, 33.f, 19.f);
   gfx::Size mask_texture_size(128, 134);
@@ -538,7 +538,7 @@ TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   gfx::RectF tex_coord_rect(1.f, 1.f, 33.f, 19.f);
   bool force_anti_aliasing_off = false;
   float backdrop_filter_quality = 1.0f;
-  int copied_render_pass_id = 235;
+  RenderPassId copied_render_pass_id{235};
 
   CREATE_SHARED_STATE();
   CREATE_QUAD_NEW_RP(RenderPassDrawQuad, visible_rect, render_pass_id,

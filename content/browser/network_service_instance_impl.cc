@@ -233,12 +233,13 @@ net::NetLogCaptureMode GetNetCaptureModeFromCommandLine(
   return net::NetLogCaptureMode::kDefault;
 }
 
+static NetworkServiceClient* g_client = nullptr;
+
 }  // namespace
 
 network::mojom::NetworkService* GetNetworkService() {
   if (!g_network_service_remote)
     g_network_service_remote = new mojo::Remote<network::mojom::NetworkService>;
-  static NetworkServiceClient* g_client;
   if (!g_network_service_remote->is_bound() ||
       !g_network_service_remote->is_connected()) {
     bool service_was_bound = g_network_service_remote->is_bound();
@@ -445,6 +446,8 @@ void ResetNetworkServiceForTesting() {
 void ShutDownNetworkService() {
   delete g_network_service_remote;
   g_network_service_remote = nullptr;
+  delete g_client;
+  g_client = nullptr;
   if (g_in_process_instance) {
     GetNetworkTaskRunner()->DeleteSoon(FROM_HERE, g_in_process_instance);
     g_in_process_instance = nullptr;

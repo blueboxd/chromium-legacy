@@ -449,6 +449,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="2824775600643448204">Address and search bar</translation>
 <translation id="2826760142808435982">The connection is encrypted and authenticated using <ph name="CIPHER" /> and uses <ph name="KX" /> as the key exchange mechanism.</translation>
 <translation id="2835170189407361413">Clear form</translation>
+<translation id="2839501879576190149">Fake site ahead</translation>
 <translation id="2847118875340931228">Open incognito window</translation>
 <translation id="2850739647070081192">Invite (Envelope)</translation>
 <translation id="2856444702002559011">Attackers might be trying to steal your information from <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (for example, passwords, messages or credit cards). <ph name="BEGIN_LEARN_MORE_LINK" />Learn more<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -809,6 +810,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="42981349822642051">Expand</translation>
 <translation id="4300675098767811073">Multiple punch right</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
+<translation id="4305666528087210886">Your file couldn’t be accessed</translation>
 <translation id="4305817255990598646">Switch</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Block (default)</translation>
@@ -827,6 +829,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="4358461427845829800">Manage payment methods...</translation>
 <translation id="4359160567981085931">You just entered your password on a deceptive site. Chrome can help. To change your password and notify Google that your account may be at risk, click 'Protect account'.</translation>
 <translation id="4367563149485757821">Number-12 (Envelope)</translation>
+<translation id="4367839622597707614">{1,plural, =0{A data breach on a site or app exposed your saved password for <ph name="ORIGIN" />. Chrome recommends changing your password on <ph name="ORIGIN" /> now.}=1{A data breach on a site or app exposed your saved password for <ph name="ORIGIN" /> and one other site. Chrome recommends checking your saved passwords now.}other{A data breach on a site or app exposed your saved password for <ph name="ORIGIN" /> and <ph name="SITES_COUNT" /> other sites. Chrome recommends checking your saved passwords now.}}</translation>
 <translation id="437058704415269440">Account balance</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Expected <ph name="VALUE_TYPE" /> value.</translation>
@@ -1297,6 +1300,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Potential charges ahead.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 other suggestion}other{# other suggestions}}</translation>
+<translation id="6387645831795005740">Attackers sometimes mimic sites by making small, hard-to-see changes to the URL.</translation>
 <translation id="6389470377220713856">Name on Card</translation>
 <translation id="6390200185239044127">Z-fold half</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1510,6 +1514,7 @@ Additional details:
 <translation id="7372973238305370288">search result</translation>
 <translation id="7374733840632556089">This problem happens because of a certificate that you or someone else installed on your device. The certificate is known to be used to monitor and intercept networks, and is not trusted by Chrome. While some legitimate cases for monitoring do exist, like on a school or company network, Chrome wants to make sure that you're aware it's happening, even if you can't stop it. Monitoring may happen in any browser or application that accesses the web.</translation>
 <translation id="7375818412732305729">File is attached</translation>
+<translation id="7376551888419889433">When security events are flagged by Chrome Enterprise Connectors, relevant data about the events is sent to your administrator. This can include the URLs of pages that you visit in Chrome, file names or metadata, and the username that you use to sign in to your device and Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Media controls</translation>
 <translation id="7378627244592794276">Nope</translation>
@@ -1906,6 +1911,7 @@ Additional details:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">You attempted to reach <ph name="DOMAIN" />, but the server presented an invalid certificate.</translation>
 <translation id="9050666287014529139">Passphrase</translation>
+<translation id="9062620674789239642">It may have been moved, edited or deleted.</translation>
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9065745800631924235"><ph name="TEXT" /> search from history</translation>
 <translation id="9069693763241529744">Blocked by an extension</translation>

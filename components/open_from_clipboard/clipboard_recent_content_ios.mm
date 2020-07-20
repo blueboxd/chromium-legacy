@@ -102,6 +102,27 @@ bool ClipboardRecentContentIOS::HasRecentImageFromClipboard() {
   return GetRecentImageFromClipboardInternal().has_value();
 }
 
+void ClipboardRecentContentIOS::HasRecentURLFromClipboard(
+    HasDataCallback callback) {
+  __block HasDataCallback callback_for_block = std::move(callback);
+  [implementation_ hasRecentURLFromClipboard:^(BOOL exists) {
+    std::move(callback_for_block).Run(exists);
+  }];
+}
+
+void ClipboardRecentContentIOS::GetRecentURLFromClipboard(
+    GetRecentURLCallback callback) {
+  __block GetRecentURLCallback callback_for_block = std::move(callback);
+  [implementation_ recentURLFromClipboardAsync:^(NSURL* url) {
+    GURL converted_url = net::GURLWithNSURL(url);
+    if (!converted_url.is_valid()) {
+      std::move(callback_for_block).Run(base::nullopt);
+      return;
+    }
+    std::move(callback_for_block).Run(converted_url);
+  }];
+}
+
 ClipboardRecentContentIOS::~ClipboardRecentContentIOS() {}
 
 base::TimeDelta ClipboardRecentContentIOS::GetClipboardContentAge() const {

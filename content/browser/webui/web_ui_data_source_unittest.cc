@@ -278,6 +278,8 @@ TEST_F(WebUIDataSourceTest, SetCspValues) {
             url_data_source->GetContentSecurityPolicy(
                 network::mojom::CSPDirectiveName::ChildSrc));
   EXPECT_EQ("", url_data_source->GetContentSecurityPolicy(
+                    network::mojom::CSPDirectiveName::ConnectSrc));
+  EXPECT_EQ("", url_data_source->GetContentSecurityPolicy(
                     network::mojom::CSPDirectiveName::DefaultSrc));
   EXPECT_EQ("", url_data_source->GetContentSecurityPolicy(
                     network::mojom::CSPDirectiveName::FrameSrc));
@@ -293,8 +295,6 @@ TEST_F(WebUIDataSourceTest, SetCspValues) {
                 network::mojom::CSPDirectiveName::ScriptSrc));
   EXPECT_EQ("", url_data_source->GetContentSecurityPolicy(
                     network::mojom::CSPDirectiveName::StyleSrc));
-  EXPECT_EQ("", url_data_source->GetContentSecurityPolicy(
-                    network::mojom::CSPDirectiveName::ConnectSrc));
 
   // Override each directive and test it updates the underlying URLDataSource.
   source()->OverrideContentSecurityPolicy(
@@ -302,6 +302,13 @@ TEST_F(WebUIDataSourceTest, SetCspValues) {
   EXPECT_EQ("child-src 'self';",
             url_data_source->GetContentSecurityPolicy(
                 network::mojom::CSPDirectiveName::ChildSrc));
+
+  source()->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ConnectSrc,
+      "connect-src 'self' 'unsafe-inline';");
+  EXPECT_EQ("connect-src 'self' 'unsafe-inline';",
+            url_data_source->GetContentSecurityPolicy(
+                network::mojom::CSPDirectiveName::ConnectSrc));
 
   source()->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::DefaultSrc, "default-src 'self';");
@@ -346,13 +353,6 @@ TEST_F(WebUIDataSourceTest, SetCspValues) {
   EXPECT_EQ("style-src 'self' 'unsafe-inline';",
             url_data_source->GetContentSecurityPolicy(
                 network::mojom::CSPDirectiveName::StyleSrc));
-
-  source()->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::ConnectSrc,
-      "connect-src 'self' 'unsafe-inline';");
-  EXPECT_EQ("connect-src 'self' 'unsafe-inline';",
-            url_data_source->GetContentSecurityPolicy(
-                network::mojom::CSPDirectiveName::ConnectSrc));
 }
 
 }  // namespace content

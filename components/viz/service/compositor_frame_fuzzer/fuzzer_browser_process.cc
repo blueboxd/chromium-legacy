@@ -125,8 +125,8 @@ CompositorFrame FuzzerBrowserProcess::BuildBrowserUICompositorFrame(
       SurfaceRange(base::nullopt, renderer_surface_id));
 
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
-  pass->SetNew(/*id=*/1, gfx::Rect(kBrowserSize), gfx::Rect(kBrowserSize),
-               gfx::Transform());
+  pass->SetNew(RenderPassId{1}, gfx::Rect(kBrowserSize),
+               gfx::Rect(kBrowserSize), gfx::Transform());
 
   auto* renderer_sqs = pass->CreateAndAppendSharedQuadState();
   renderer_sqs->SetAll(gfx::Transform(1.0, 0.0, 0.0, 1.0, 0, 80),

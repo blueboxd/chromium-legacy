@@ -32,12 +32,11 @@
 #include "ui/aura/scoped_window_event_targeting_blocker.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_observer.h"
-#include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_observer.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/layout/layout_provider.h"
@@ -439,7 +438,11 @@ gfx::RectF ScopedOverviewTransformWindow::ShrinkRectToFitPreservingAspectRatio(
       break;
   }
 
-  return new_bounds;
+  // If we do not use whole numbers, there may be some artifacts drawn (i.e.
+  // shadows, notches). This may be an effect of subpixel rendering. It's ok to
+  // round it here since this is the last calculation (we don't have to worry
+  // about roundoff error).
+  return gfx::RectF(gfx::ToRoundedRect(new_bounds));
 }
 
 aura::Window* ScopedOverviewTransformWindow::GetOverviewWindow() const {

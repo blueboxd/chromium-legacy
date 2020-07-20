@@ -371,7 +371,7 @@ std::tuple<int, double> OscillatorHandler::ProcessKRateVector(
 }
 #endif
 
-#if !defined(ARCH_CPU_X86_FAMILY)
+#if !(defined(ARCH_CPU_X86_FAMILY) || defined(CPU_ARM_NEON))
 double OscillatorHandler::ProcessARateVectorKernel(
     float* dest_p,
     double virtual_read_index,

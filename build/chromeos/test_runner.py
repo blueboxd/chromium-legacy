@@ -122,6 +122,8 @@ class RemoteTest(object):
       ]
     if args.flash:
       self._test_cmd += ['--flash']
+      if args.public_image:
+        self._test_cmd += ['--public-image']
 
     # This environment variable is set for tests that have been instrumented
     # for code coverage. Its incoming value is expected to be a location
@@ -268,17 +270,12 @@ class TastTest(RemoteTest):
           if not arg.startswith('--gtest_repeat')
       ]
 
-    if self._additional_args:
-      logging.error(
-          'Tast tests should not have additional args. These will be '
-          'ignored: %s', self._additional_args)
-
     self._test_cmd += [
         '--deploy',
         '--mount',
         '--build-dir',
         os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH),
-    ]
+    ] + self._additional_args
 
     # Coverage tests require some special pre-test setup, so use an
     # on_device_script in that case. For all other tests, use cros_run_test's
@@ -720,6 +717,8 @@ def host_cmd(args, cmd_args):
     cros_run_test_cmd.append('--debug')
   if args.flash:
     cros_run_test_cmd.append('--flash')
+    if args.public_image:
+      cros_run_test_cmd += ['--public-image']
 
   if args.logs_dir:
     for log in SYSTEM_LOG_LOCATIONS:
@@ -811,6 +810,10 @@ def add_common_args(*parsers):
         action='store_true',
         help='Will flash the device to the current SDK version before running '
         'the test.')
+    parser.add_argument(
+        '--public-image',
+        action='store_true',
+        help='Will flash a public "full" image to the device.')
 
     vm_or_device_group = parser.add_mutually_exclusive_group()
     vm_or_device_group.add_argument(

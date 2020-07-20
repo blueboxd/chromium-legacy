@@ -27,7 +27,6 @@ jumbo_source_set("public") {
 
   deps = [
     "//base",
-    "//components/feature_engagement:buildflags",
     "//components/flags_ui",
     "//components/keyed_service/core",
   ]

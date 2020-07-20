@@ -100,7 +100,6 @@
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/pref_names.h"
-#include "components/feature_engagement/buildflags.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/image_fetcher/core/cache/image_cache.h"
 #include "components/invalidation/impl/fcm_invalidation_service.h"
@@ -187,10 +186,6 @@
 #include "chrome/browser/extensions/api/enterprise_reporting_private/prefs.h"
 #endif  // defined(OS_CHROMEOS)
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-#include "chrome/browser/feature_engagement/session_duration_updater.h"
-#endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/prefetch/offline_metrics_collector_impl.h"
@@ -562,6 +557,9 @@ const char kStricterMixedContentTreatmentEnabled[] =
 // Deprecated 7/2020
 const char kHashedAvailablePages[] = "previews.offline_helper.available_pages";
 
+// Deprecated 7/2020
+const char kObservedSessionTime[] = "profile.observed_session_time";
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -668,6 +666,8 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterBooleanPref(kStricterMixedContentTreatmentEnabled, true);
 
   registry->RegisterDictionaryPref(kHashedAvailablePages);
+
+  registry->RegisterDictionaryPref(kObservedSessionTime);
 }
 
 }  // namespace
@@ -949,10 +949,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   update_client::RegisterProfilePrefs(registry);
   web_app::WebAppProvider::RegisterProfilePrefs(registry);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-  feature_engagement::SessionDurationUpdater::RegisterProfilePrefs(registry);
-#endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::OfflineMetricsCollectorImpl::RegisterPrefs(registry);
@@ -1321,4 +1317,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 7/2020.
   profile_prefs->ClearPref(kHashedAvailablePages);
+
+  // Added 7/2020
+  profile_prefs->ClearPref(kObservedSessionTime);
 }

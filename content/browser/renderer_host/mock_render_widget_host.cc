@@ -71,7 +71,21 @@ MockRenderWidgetHost* MockRenderWidgetHost::Create(
     RenderWidgetHostDelegate* delegate,
     RenderProcessHost* process,
     int32_t routing_id) {
-  return new MockRenderWidgetHost(delegate, process, routing_id);
+  mojo::AssociatedRemote<blink::mojom::Widget> blink_widget;
+  auto blink_widget_receiver =
+      blink_widget.BindNewEndpointAndPassDedicatedReceiverForTesting();
+  return new MockRenderWidgetHost(delegate, process, routing_id,
+                                  blink_widget.Unbind());
+}
+
+MockRenderWidgetHost* MockRenderWidgetHost::Create(
+    RenderWidgetHostDelegate* delegate,
+    RenderProcessHost* process,
+    int32_t routing_id,
+    mojo::PendingAssociatedRemote<blink::mojom::Widget> pending_blink_widget) {
+  DCHECK(pending_blink_widget);
+  return new MockRenderWidgetHost(delegate, process, routing_id,
+                                  std::move(pending_blink_widget));
 }
 
 blink::mojom::WidgetInputHandler*
@@ -83,9 +97,11 @@ void MockRenderWidgetHost::NotifyNewContentRenderingTimeoutForTesting() {
   new_content_rendering_timeout_fired_ = true;
 }
 
-MockRenderWidgetHost::MockRenderWidgetHost(RenderWidgetHostDelegate* delegate,
-                                           RenderProcessHost* process,
-                                           int routing_id)
+MockRenderWidgetHost::MockRenderWidgetHost(
+    RenderWidgetHostDelegate* delegate,
+    RenderProcessHost* process,
+    int routing_id,
+    mojo::PendingAssociatedRemote<blink::mojom::Widget> pending_blink_widget)
     : RenderWidgetHostImpl(delegate,
                            process,
                            routing_id,
@@ -95,12 +111,9 @@ MockRenderWidgetHost::MockRenderWidgetHost(RenderWidgetHostDelegate* delegate,
       fling_scheduler_(std::make_unique<FlingScheduler>(this)) {
   acked_touch_event_type_ = blink::WebInputEvent::Type::kUndefined;
   mojo::AssociatedRemote<blink::mojom::WidgetHost> blink_widget_host;
-  mojo::AssociatedRemote<blink::mojom::Widget> blink_widget;
-  auto blink_widget_receiver =
-      blink_widget.BindNewEndpointAndPassDedicatedReceiverForTesting();
   BindWidgetInterfaces(
       blink_widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting(),
-      blink_widget.Unbind());
+      std::move(pending_blink_widget));
 }
 
 }  // namespace content

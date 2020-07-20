@@ -813,24 +813,24 @@ int ChromeBrowserMainParts::ApplyFirstRunPrefs() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   master_prefs_ = std::make_unique<first_run::MasterPrefs>();
 
-  std::unique_ptr<installer::MasterPreferences> installer_master_prefs =
-      startup_data_->chrome_feature_list_creator()->TakeMasterPrefs();
-  if (!installer_master_prefs)
+  std::unique_ptr<installer::InitialPreferences> installer_initial_prefs =
+      startup_data_->chrome_feature_list_creator()->TakeInitialPrefs();
+  if (!installer_initial_prefs)
     return service_manager::RESULT_CODE_NORMAL_EXIT;
 
   // On first run, we need to process the predictor preferences before the
   // browser's profile_manager object is created, but after ResourceBundle
   // is initialized.
-  first_run::ProcessMasterPreferencesResult pmp_result =
-      first_run::ProcessMasterPreferences(user_data_dir_,
-                                          std::move(installer_master_prefs),
-                                          master_prefs_.get());
-  if (pmp_result == first_run::EULA_EXIT_NOW)
+  first_run::ProcessInitialPreferencesResult pip_result =
+      first_run::ProcessInitialPreferences(user_data_dir_,
+                                           std::move(installer_initial_prefs),
+                                           master_prefs_.get());
+  if (pip_result == first_run::EULA_EXIT_NOW)
     return chrome::RESULT_CODE_EULA_REFUSED;
 
   // TODO(macourteau): refactor preferences that are copied from
   // master_preferences into local_state, as a "local_state" section in
-  // master preferences. If possible, a generic solution would be preferred
+  // initial preferences. If possible, a generic solution would be preferred
   // over a copy one-by-one of specific preferences. Also see related TODO
   // in first_run.h.
 

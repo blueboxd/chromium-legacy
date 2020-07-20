@@ -217,6 +217,33 @@ public class Browser {
     }
 
     /**
+     * Sets the View shown at the top of the browser. The top-view is typically used to show the
+     * uri. This method also allows you to control the scrolling behavior of the top-view by setting
+     * a minimum height it will scroll to, and pinning the top-view to the top of the web contents.
+     *
+     * @param view The new top-view, or null to remove the view.
+     * @param minHeight The minimum height in pixels that the top controls can scoll up to. A value
+     *        of 0 means the top-view should scroll entirely off screen.
+     * @param pinToContentTop Whether the top-view should only be expanded when the web
+     *        content is scrolled to the top. A true value makes the top-view behave as though it
+     *        were inserted into the top of the page content.
+     *
+     * @since 86
+     */
+    public void setTopView(@Nullable View view, int minHeight, boolean pinToContentTop) {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 86) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            mImpl.setTopViewAndScrollingBehavior(
+                    ObjectWrapper.wrap(view), minHeight, pinToContentTop);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
      * Sets the View shown at the bottom of the browser. A value of null removes the view.
      *
      * @param view The new bottom-view.

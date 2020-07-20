@@ -51,6 +51,7 @@
 #include "content/public/test/test_utils.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -162,12 +163,16 @@ class CookieSettingsTest
   CookieMode WriteMode() const { return GetParam().second; }
 
   void SetUpOnMainThread() override {
+    RegisterDefaultHandlers(embedded_test_server());
     embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
         &CookieSettingsTest::MonitorRequest, base::Unretained(this)));
+    RegisterDefaultHandlers(&https_server_);
     https_server_.RegisterRequestMonitor(base::BindRepeating(
         &CookieSettingsTest::MonitorRequest, base::Unretained(this)));
     ASSERT_TRUE(embedded_test_server()->Start());
     ASSERT_TRUE(https_server_.Start());
+
+    host_resolver()->AddRule("*", "127.0.0.1");
 
     // CookieStore API is for https only.
     if (ReadMode() == CookieMode::kCookieStoreJS ||
@@ -252,11 +257,44 @@ class CookieSettingsTest
     return secure_scheme_ ? embedded_test_server() : &https_server_;
   }
 
- private:
   net::EmbeddedTestServer* GetServer() {
     return secure_scheme_ ? &https_server_ : embedded_test_server();
   }
 
+  // Read a cookie by fetching a url and checking what Cookie header (if any) it
+  // saw.
+  std::string HttpReadCookieWithURL(Browser* browser, const GURL& url) {
+    {
+      base::AutoLock auto_lock(cookies_seen_lock_);
+      cookies_seen_.clear();
+    }
+
+    auto* network_context =
+        content::BrowserContext::GetDefaultStoragePartition(browser->profile())
+            ->GetNetworkContext();
+    content::LoadBasicRequest(network_context, url);
+
+    {
+      base::AutoLock auto_lock(cookies_seen_lock_);
+      return cookies_seen_[url];
+    }
+  }
+
+  // Set a cookie by visiting a page that has a Set-Cookie header.
+  void HttpWriteCookieWithURL(Browser* browser, const GURL& url) {
+    auto* frame =
+        browser->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+    auto* network_context =
+        content::BrowserContext::GetDefaultStoragePartition(browser->profile())
+            ->GetNetworkContext();
+    // Need process & frame ID here for the accessed/blocked cookies lists to be
+    // updated properly.
+    content::LoadBasicRequest(network_context, url,
+                              frame->GetProcess()->GetID(),
+                              frame->GetRoutingID());
+  }
+
+ private:
   // Read a cookie via JavaScript.
   std::string JSReadCookie(Browser* browser) {
     std::string cookies;
@@ -282,25 +320,14 @@ class CookieSettingsTest
         .ExtractString();
   }
 
-  // Read a cookie by fetching a url on the appropriate test server and checking
-  // what Cookie header (if any) it saw.
+  // Read a cookie by fetching the page url (which we should have just navigated
+  // to) and checking what Cookie header (if any) it saw.
   std::string HttpReadCookie(Browser* browser) {
-    {
-      base::AutoLock auto_lock(cookies_seen_lock_);
-      cookies_seen_.clear();
-    }
-
-    auto* network_context =
-        content::BrowserContext::GetDefaultStoragePartition(browser->profile())
-            ->GetNetworkContext();
-    content::LoadBasicRequest(network_context, browser->tab_strip_model()
-                                                   ->GetActiveWebContents()
-                                                   ->GetLastCommittedURL());
-
-    {
-      base::AutoLock auto_lock(cookies_seen_lock_);
-      return cookies_seen_[GetPageURL()];
-    }
+    GURL url = browser->tab_strip_model()
+                   ->GetActiveWebContents()
+                   ->GetLastCommittedURL();
+    EXPECT_EQ(GetPageURL(), url);
+    return HttpReadCookieWithURL(browser, url);
   }
 
   // Set a cookie with JavaScript.
@@ -330,16 +357,7 @@ class CookieSettingsTest
 
   // Set a cookie by visiting a page that has a Set-Cookie header.
   void HttpWriteCookie(Browser* browser) {
-    auto* frame =
-        browser->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
-    auto* network_context =
-        content::BrowserContext::GetDefaultStoragePartition(browser->profile())
-            ->GetNetworkContext();
-    // Need process & frame ID here for the accessed/blocked cookies lists to be
-    // updated properly.
-    content::LoadBasicRequest(network_context, GetSetCookieURL(),
-                              frame->GetProcess()->GetID(),
-                              frame->GetRoutingID());
+    HttpWriteCookieWithURL(browser, GetSetCookieURL());
   }
 
   void MonitorRequest(const net::test_server::HttpRequest& request) {
@@ -456,6 +474,94 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesUsingExceptions) {
   net::CookieList accepted_cookies = ExtractCookies(accepted);
   EXPECT_THAT(accepted_cookies, net::MatchesCookieLine("foo=baz"));
   EXPECT_TRUE(blocked->empty());
+}
+
+// Test that cookies that are considered "blocked" are excluded only due to the
+// content settings blocking (i.e. not for other reasons like domain or path not
+// matching). See https://crbug.com/1104451.
+IN_PROC_BROWSER_TEST_P(CookieSettingsTest,
+                       BlockedCookiesOnlyExcludedDueToBlocking) {
+  // This test only runs in HTTP mode, not with the full parameterized test
+  // suite.
+  if (ReadMode() != CookieMode::kHttp || WriteMode() != CookieMode::kHttp)
+    return;
+
+  // URLs to get cookies from:
+  GURL cookies_present_url(GetServer()->GetURL("a.test", "/simple.html"));
+  GURL cookies_blocked_url(
+      GetServer()->GetURL("sub.a.test", "/echoheader?Cookie"));
+
+  // URLs to set cookies on:
+  GURL set_host_cookie_url(
+      GetServer()->GetURL("a.test", "/set-cookie?host_cookie=1"));
+  GURL set_path_cookie_url(GetServer()->GetURL(
+      "sub.a.test",
+      "/set-cookie?path_cookie=1;domain=a.test;path=/simple.html"));
+  GURL set_included_cookie_url(GetServer()->GetURL(
+      "sub.a.test", "/set-cookie?included_cookie=1;domain=a.test"));
+
+  // No cookies are present prior to setting them.
+  ui_test_utils::NavigateToURL(browser(), cookies_present_url);
+  ASSERT_TRUE(HttpReadCookieWithURL(browser(), cookies_present_url).empty());
+  ui_test_utils::NavigateToURL(browser(), cookies_blocked_url);
+  ASSERT_TRUE(HttpReadCookieWithURL(browser(), cookies_blocked_url).empty());
+
+  // Set the cookies.
+  HttpWriteCookieWithURL(browser(), set_host_cookie_url);
+  HttpWriteCookieWithURL(browser(), set_path_cookie_url);
+  HttpWriteCookieWithURL(browser(), set_included_cookie_url);
+
+  // Verify all cookies are present on |cookies_present_url|.
+  ui_test_utils::NavigateToURL(browser(), cookies_present_url);
+  HttpReadCookieWithURL(browser(), cookies_present_url);
+  browsing_data::CannedCookieHelper* accepted =
+      GetSiteSettingsCookieContainer(browser());
+  browsing_data::CannedCookieHelper* blocked =
+      GetSiteSettingsBlockedCookieContainer(browser());
+  EXPECT_EQ(3u, accepted->GetCookieCount());
+  EXPECT_TRUE(blocked->empty());
+  net::CookieList accepted_cookies = ExtractCookies(accepted);
+  EXPECT_THAT(accepted_cookies,
+              net::MatchesCookieLine(
+                  "included_cookie=1; host_cookie=1; path_cookie=1"));
+
+  // Verify there is only one included cookie for |cookies_blocked_url|.
+  ui_test_utils::NavigateToURL(browser(), cookies_blocked_url);
+  HttpReadCookieWithURL(browser(), cookies_blocked_url);
+  accepted = GetSiteSettingsCookieContainer(browser());
+  blocked = GetSiteSettingsBlockedCookieContainer(browser());
+  EXPECT_EQ(1u, accepted->GetCookieCount());
+  EXPECT_TRUE(blocked->empty());
+  accepted_cookies = ExtractCookies(accepted);
+  EXPECT_THAT(accepted_cookies, net::MatchesCookieLine("included_cookie=1"));
+
+  // Set content settings to block cookies for |cookies_blocked_url|.
+  ui_test_utils::NavigateToURL(browser(), cookies_blocked_url);
+  content_settings::CookieSettings* settings =
+      CookieSettingsFactory::GetForProfile(browser()->profile()).get();
+  settings->SetCookieSetting(cookies_blocked_url, CONTENT_SETTING_BLOCK);
+
+  // Verify all cookies are still present on |cookies_present_url|.
+  ui_test_utils::NavigateToURL(browser(), cookies_present_url);
+  HttpReadCookieWithURL(browser(), cookies_present_url);
+  accepted = GetSiteSettingsCookieContainer(browser());
+  blocked = GetSiteSettingsBlockedCookieContainer(browser());
+  EXPECT_EQ(3u, accepted->GetCookieCount());
+  EXPECT_TRUE(blocked->empty());
+  accepted_cookies = ExtractCookies(accepted);
+  EXPECT_THAT(accepted_cookies,
+              net::MatchesCookieLine(
+                  "included_cookie=1; host_cookie=1; path_cookie=1"));
+
+  // Verify there is only one blocked cookie on |cookies_blocked_url|.
+  ui_test_utils::NavigateToURL(browser(), cookies_blocked_url);
+  HttpReadCookieWithURL(browser(), cookies_blocked_url);
+  accepted = GetSiteSettingsCookieContainer(browser());
+  blocked = GetSiteSettingsBlockedCookieContainer(browser());
+  EXPECT_TRUE(accepted->empty());
+  EXPECT_EQ(1u, blocked->GetCookieCount());
+  net::CookieList blocked_cookies = ExtractCookies(blocked);
+  EXPECT_THAT(blocked_cookies, net::MatchesCookieLine("included_cookie=1"));
 }
 
 IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesAlsoBlocksCacheStorage) {

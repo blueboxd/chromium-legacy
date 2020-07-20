@@ -267,7 +267,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
   auto pass = RenderPass::Create();
   pass->output_rect = gfx::Rect(0, 0, 100, 100);
   pass->damage_rect = gfx::Rect(10, 10, 1, 1);
-  pass->id = 1u;
+  pass->id = RenderPassId{1u};
   pass_list.push_back(std::move(pass));
 
   ResetDamageForTest();
@@ -293,7 +293,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 1, 1);
-    pass->id = 1u;
+    pass->id = RenderPassId{1u};
 
     pass_list.push_back(std::move(pass));
     ResetDamageForTest();
@@ -323,7 +323,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 1, 1);
-    pass->id = 1u;
+    pass->id = RenderPassId{1u};
 
     pass_list.push_back(std::move(pass));
     ResetDamageForTest();
@@ -351,7 +351,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
-    pass->id = 1u;
+    pass->id = RenderPassId{1u};
 
     pass_list.push_back(std::move(pass));
     ResetDamageForTest();
@@ -399,7 +399,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
-    pass->id = 1u;
+    pass->id = RenderPassId{1u};
 
     id_allocator_.GenerateId();
     display_->SetLocalSurfaceId(
@@ -434,7 +434,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
         CopyOutputRequest::ResultFormat::RGBA_BITMAP,
         base::BindOnce(&CopyCallback, &copy_called,
                        copy_run_loop.QuitClosure())));
-    pass->id = 1u;
+    pass->id = RenderPassId{1u};
 
     pass_list.push_back(std::move(pass));
     ResetDamageForTest();
@@ -516,7 +516,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 99, 99);
     pass->damage_rect = gfx::Rect(0, 0, 99, 99);
-    pass->id = 1u;
+    pass->id = RenderPassId{1u};
 
     pass_list.push_back(std::move(pass));
     ResetDamageForTest();
@@ -633,7 +633,7 @@ TEST_F(DisplayTest, DisableSwapUntilResize) {
     auto pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 1, 1);
-    pass->id = 1u;
+    pass->id = RenderPassId{1u};
     pass_list.push_back(std::move(pass));
 
     SubmitCompositorFrame(&pass_list, local_surface_id1);
@@ -666,7 +666,7 @@ TEST_F(DisplayTest, DisableSwapUntilResize) {
     auto pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 200, 200);
     pass->damage_rect = gfx::Rect(10, 10, 1, 1);
-    pass->id = 1u;
+    pass->id = RenderPassId{1u};
     pass_list.push_back(std::move(pass));
 
     SubmitCompositorFrame(&pass_list, local_surface_id2);
@@ -724,7 +724,7 @@ TEST_F(DisplayTest, BackdropFilterTest) {
   const gfx::Rect sub_surface_rect(5, 5, 25, 25);
   const gfx::Rect no_damage;
 
-  uint64_t next_render_pass_id = 1;
+  RenderPassId::Generator render_pass_id_generator;
   for (size_t frame_num = 1; frame_num <= 2; ++frame_num) {
     bool first_frame = frame_num == 1;
     ResetDamageForTest();
@@ -735,8 +735,8 @@ TEST_F(DisplayTest, BackdropFilterTest) {
       cc::FilterOperations backdrop_filters;
       backdrop_filters.Append(cc::FilterOperation::CreateBlurFilter(5.0));
       bd_pass->SetAll(
-          next_render_pass_id++, sub_surface_rect, no_damage, gfx::Transform(),
-          cc::FilterOperations(), backdrop_filters,
+          render_pass_id_generator.GenerateNextId(), sub_surface_rect,
+          no_damage, gfx::Transform(), cc::FilterOperations(), backdrop_filters,
           gfx::RRectF(gfx::RectF(sub_surface_rect), 0),
           gfx::ContentColorUsage::kSRGB, false, false, false, false);
       pass_list.push_back(std::move(bd_pass));
@@ -754,7 +754,7 @@ TEST_F(DisplayTest, BackdropFilterTest) {
       auto other_pass = RenderPass::Create();
       other_pass->output_rect = gfx::Rect(display_size);
       other_pass->damage_rect = damage_rect;
-      other_pass->id = next_render_pass_id++;
+      other_pass->id = render_pass_id_generator.GenerateNextId();
       pass_list.push_back(std::move(other_pass));
 
       CompositorFrame frame = CompositorFrameBuilder()
@@ -769,7 +769,7 @@ TEST_F(DisplayTest, BackdropFilterTest) {
       auto pass = RenderPass::Create();
       pass->output_rect = gfx::Rect(display_size);
       pass->damage_rect = damage_rect;
-      pass->id = next_render_pass_id++;
+      pass->id = render_pass_id_generator.GenerateNextId();
 
       // Embed sub surface 1, with backdrop filter.
       auto* shared_quad_state1 = pass->CreateAndAppendSharedQuadState();
@@ -900,7 +900,7 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
   auto pass = RenderPass::Create();
   pass->output_rect = gfx::Rect(0, 0, 100, 100);
   pass->damage_rect = gfx::Rect(10, 10, 1, 1);
-  pass->id = 1;
+  pass->id = RenderPassId{1};
   pass_list.push_back(std::move(pass));
 
   SubmitCompositorFrame(&pass_list, local_surface_id);
@@ -1000,9 +1000,10 @@ TEST_F(DisplayTest, DrawOcclusionWithIntersectingBackdropFilter) {
   cc::FilterOperations backdrop_filters;
   backdrop_filters.Append(cc::FilterOperation::CreateBlurFilter(5.0));
   bd_render_pass->SetAll(
-      2, bd_filter_rect, gfx::Rect(), gfx::Transform(), cc::FilterOperations(),
-      backdrop_filters, gfx::RRectF(gfx::RectF(bd_filter_rect), 0),
-      gfx::ContentColorUsage::kSRGB, false, false, false, false);
+      RenderPassId{2}, bd_filter_rect, gfx::Rect(), gfx::Transform(),
+      cc::FilterOperations(), backdrop_filters,
+      gfx::RRectF(gfx::RectF(bd_filter_rect), 0), gfx::ContentColorUsage::kSRGB,
+      false, false, false, false);
 
   // Add quads to root render pass
   for (int i = 0; i < 3; i++) {
@@ -2698,7 +2699,8 @@ TEST_F(DisplayTest, CompositorFrameWithMultipleRenderPass) {
   gfx::Rect rect2(100, 0, 60, 60);
 
   std::unique_ptr<RenderPass> render_pass2 = RenderPass::Create();
-  render_pass2->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
+  render_pass2->SetNew(RenderPassId{1}, gfx::Rect(), gfx::Rect(),
+                       gfx::Transform());
   frame.render_pass_list.push_back(std::move(render_pass2));
   gfx::Rect rect3(10, 10, 120, 30);
 
@@ -2770,13 +2772,14 @@ TEST_F(DisplayTest, CompositorFrameWithCoveredRenderPass) {
   gfx::Rect rect1(0, 0, 100, 100);
 
   std::unique_ptr<RenderPass> render_pass2 = RenderPass::Create();
-  render_pass2->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
+  render_pass2->SetNew(RenderPassId{1}, gfx::Rect(), gfx::Rect(),
+                       gfx::Transform());
   frame.render_pass_list.push_back(std::move(render_pass2));
 
   bool is_clipped = false;
   bool opaque_content = true;
   float opacity = 1.f;
-  RenderPassId render_pass_id = 1;
+  RenderPassId render_pass_id{1};
   ResourceId mask_resource_id = 2;
 
   SharedQuadState* shared_quad_state =
@@ -3005,7 +3008,7 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
 
   bool is_clipped = false;
   bool opaque_content = true;
-  RenderPassId render_pass_id = 1;
+  RenderPassId render_pass_id{1};
   ResourceId mask_resource_id = 2;
   float opacity = 1.f;
   SharedQuadState* shared_quad_state =
@@ -3527,7 +3530,7 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     auto pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(display_size);
     pass->damage_rect = gfx::Rect(display_size);
-    pass->id = 1;
+    pass->id = RenderPassId{1};
 
     auto* shared_quad_state1 = pass->CreateAndAppendSharedQuadState();
     gfx::Rect rect1(display_size);
@@ -3612,7 +3615,7 @@ TEST_F(DisplayTest, BeginFrameThrottling) {
     auto pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 1, 1);
-    pass->id = 1u;
+    pass->id = RenderPassId{1u};
     pass_list.push_back(std::move(pass));
 
     SubmitCompositorFrame(
@@ -3687,7 +3690,7 @@ TEST_F(DisplayTest, BeginFrameThrottlingMultipleSurfaces) {
     auto pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 1, 1);
-    pass->id = 1u;
+    pass->id = RenderPassId{1u};
     pass_list.push_back(std::move(pass));
 
     SubmitCompositorFrame(
@@ -4522,7 +4525,7 @@ TEST_F(DisplayTest, DisplaySizeMismatch) {
         CopyOutputRequest::ResultFormat::RGBA_BITMAP,
         base::BindOnce(&CopyCallback, &copy_called,
                        copy_run_loop.QuitClosure())));
-    pass->id = 1u;
+    pass->id = RenderPassId{1u};
 
     RenderPassList pass_list;
     pass_list.push_back(std::move(pass));

@@ -5,6 +5,7 @@
 module viz.mojom;
 
 import "mojo/public/mojom/base/unguessable_token.mojom";
+import "services/viz/public/mojom/compositing/render_pass_id.mojom";
 import "services/viz/public/mojom/compositing/shared_quad_state.mojom";
 import "services/viz/public/mojom/compositing/surface_range.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
@@ -26,7 +27,7 @@ struct DebugBorderQuadState {
 };
 
 struct RenderPassQuadState {
-  uint64 render_pass_id;
+  RenderPassId render_pass_id;
 
   // If nonzero, resource id of mask to use when drawing this pass.
   uint32 mask_resource_id;

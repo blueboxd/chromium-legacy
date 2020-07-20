@@ -168,11 +168,10 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
 }
 
 scoped_refptr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
-    BytesConsumer::BlobSizePolicy policy,
-    ExceptionState& exception_state) {
+    BytesConsumer::BlobSizePolicy policy) {
   DCHECK(!IsStreamLocked());
   DCHECK(!IsStreamDisturbed());
-  if (IsStreamClosed() || IsStreamErrored())
+  if (IsStreamClosed() || IsStreamErrored() || stream_broken_)
     return nullptr;
 
   if (made_from_readable_stream_)
@@ -181,19 +180,16 @@ scoped_refptr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
   scoped_refptr<BlobDataHandle> blob_data_handle =
       consumer_->DrainAsBlobDataHandle(policy);
   if (blob_data_handle) {
-    CloseAndLockAndDisturb(exception_state);
-    if (exception_state.HadException())
-      return nullptr;
+    CloseAndLockAndDisturb();
     return blob_data_handle;
   }
   return nullptr;
 }
 
-scoped_refptr<EncodedFormData> BodyStreamBuffer::DrainAsFormData(
-    ExceptionState& exception_state) {
+scoped_refptr<EncodedFormData> BodyStreamBuffer::DrainAsFormData() {
   DCHECK(!IsStreamLocked());
   DCHECK(!IsStreamDisturbed());
-  if (IsStreamClosed() || IsStreamErrored())
+  if (IsStreamClosed() || IsStreamErrored() || stream_broken_)
     return nullptr;
 
   if (made_from_readable_stream_)
@@ -201,9 +197,7 @@ scoped_refptr<EncodedFormData> BodyStreamBuffer::DrainAsFormData(
 
   scoped_refptr<EncodedFormData> form_data = consumer_->DrainAsFormData();
   if (form_data) {
-    CloseAndLockAndDisturb(exception_state);
-    if (exception_state.HadException())
-      return nullptr;
+    CloseAndLockAndDisturb();
     return form_data;
   }
   return nullptr;
@@ -212,13 +206,10 @@ scoped_refptr<EncodedFormData> BodyStreamBuffer::DrainAsFormData(
 void BodyStreamBuffer::DrainAsChunkedDataPipeGetter(
     ScriptState* script_state,
     mojo::PendingReceiver<network::mojom::blink::ChunkedDataPipeGetter>
-        pending_receiver,
-    ExceptionState& exception_state) {
+        pending_receiver) {
   DCHECK(!IsStreamLocked());
-  auto* consumer = MakeGarbageCollected<ReadableStreamBytesConsumer>(
-      script_state, stream_, exception_state);
-  if (exception_state.HadException())
-    return;
+  auto* consumer =
+      MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state, stream_);
   stream_uploader_ = MakeGarbageCollected<BytesUploader>(
       consumer, std::move(pending_receiver),
       ExecutionContext::From(script_state)
@@ -368,13 +359,8 @@ bool BodyStreamBuffer::IsStreamDisturbed() const {
   return stream_->IsDisturbed();
 }
 
-void BodyStreamBuffer::CloseAndLockAndDisturb(ExceptionState& exception_state) {
-  if (stream_broken_) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Body stream has suffered a fatal error and cannot be disturbed");
-    return;
-  }
+void BodyStreamBuffer::CloseAndLockAndDisturb() {
+  DCHECK(!stream_broken_);
 
   if (IsStreamReadable()) {
     // Note that the stream cannot be "draining", because it doesn't have
@@ -382,7 +368,7 @@ void BodyStreamBuffer::CloseAndLockAndDisturb(ExceptionState& exception_state) {
     Close();
   }
 
-  stream_->LockAndDisturb(script_state_, exception_state);
+  stream_->LockAndDisturb(script_state_);
 }
 
 bool BodyStreamBuffer::IsAborted() {
@@ -524,14 +510,10 @@ BytesConsumer* BodyStreamBuffer::ReleaseHandle(
   side_data_blob_.reset();
 
   if (made_from_readable_stream_) {
+    DCHECK(script_state_->ContextIsValid());
     ScriptState::Scope scope(script_state_);
-    auto* consumer = MakeGarbageCollected<ReadableStreamBytesConsumer>(
-        script_state_, stream_, exception_state);
-    if (exception_state.HadException()) {
-      stream_broken_ = true;
-      return nullptr;
-    }
-    return consumer;
+    return MakeGarbageCollected<ReadableStreamBytesConsumer>(script_state_,
+                                                             stream_);
   }
   // We need to call these before calling CloseAndLockAndDisturb.
   const bool is_closed = IsStreamClosed();
@@ -539,9 +521,7 @@ BytesConsumer* BodyStreamBuffer::ReleaseHandle(
 
   BytesConsumer* consumer = consumer_.Release();
 
-  CloseAndLockAndDisturb(exception_state);
-  if (exception_state.HadException())
-    return nullptr;
+  CloseAndLockAndDisturb();
 
   if (is_closed) {
     // Note that the stream cannot be "draining", because it doesn't have

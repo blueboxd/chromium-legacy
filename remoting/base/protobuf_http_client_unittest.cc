@@ -44,12 +44,8 @@ constexpr char kAuthorizationHeaderKey[] = "Authorization";
 constexpr char kFakeAccessToken[] = "fake_access_token";
 constexpr char kFakeAccessTokenHeaderValue[] = "Bearer fake_access_token";
 
-MATCHER_P(HasStatusCode, status_code, "") {
-  return arg.http_status_code() == status_code;
-}
-
-MATCHER_P(HasNetError, net_error, "") {
-  return arg.net_error() == net_error;
+MATCHER_P(HasErrorCode, error_code, "") {
+  return arg.error_code() == error_code;
 }
 
 MATCHER(IsResponseText, "") {
@@ -108,7 +104,7 @@ TEST_F(ProtobufHttpClientTest, SendRequestAndDecodeResponse) {
 
   MockEchoResponseCallback response_callback;
   EXPECT_CALL(response_callback,
-              Run(HasStatusCode(net::HTTP_OK), IsResponseText()))
+              Run(HasErrorCode(ProtobufHttpStatus::Code::OK), IsResponseText()))
       .WillOnce([&]() { run_loop.Quit(); });
 
   auto request = CreateDefaultTestRequest();
@@ -163,7 +159,8 @@ TEST_F(ProtobufHttpClientTest,
 
   MockEchoResponseCallback response_callback;
   EXPECT_CALL(response_callback,
-              Run(HasStatusCode(net::HTTP_UNAUTHORIZED), IsNullResponse()))
+              Run(HasErrorCode(ProtobufHttpStatus::Code::UNAUTHENTICATED),
+                  IsNullResponse()))
       .WillOnce([&]() { run_loop.Quit(); });
 
   auto request = CreateDefaultTestRequest();
@@ -183,7 +180,7 @@ TEST_F(ProtobufHttpClientTest, FailedToParseResponse_GetsInvalidResponseError) {
   MockEchoResponseCallback response_callback;
   EXPECT_CALL(
       response_callback,
-      Run(HasNetError(net::Error::ERR_INVALID_RESPONSE), IsNullResponse()))
+      Run(HasErrorCode(ProtobufHttpStatus::Code::INTERNAL), IsNullResponse()))
       .WillOnce([&]() { run_loop.Quit(); });
 
   auto request = CreateDefaultTestRequest();
@@ -203,7 +200,8 @@ TEST_F(ProtobufHttpClientTest, ServerRespondsWithError) {
 
   MockEchoResponseCallback response_callback;
   EXPECT_CALL(response_callback,
-              Run(HasStatusCode(net::HTTP_UNAUTHORIZED), IsNullResponse()))
+              Run(HasErrorCode(ProtobufHttpStatus::Code::UNAUTHENTICATED),
+                  IsNullResponse()))
       .WillOnce([&]() { run_loop.Quit(); });
 
   auto request = CreateDefaultTestRequest();

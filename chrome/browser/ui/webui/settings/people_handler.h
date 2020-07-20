@@ -152,7 +152,7 @@ class PeopleHandler : public SettingsPageUIHandler,
   void OnDidClosePage(const base::ListValue* args);
   void HandleSetDatatypes(const base::ListValue* args);
   void HandleSetEncryption(const base::ListValue* args);
-  void HandleShowSetupUI(const base::ListValue* args);
+  void HandleShowSyncSetupUI(const base::ListValue* args);
   void HandleSyncPrefsDispatch(const base::ListValue* args);
 #if defined(OS_CHROMEOS)
   void HandleAttemptUserExit(const base::ListValue* args);
@@ -189,6 +189,9 @@ class PeopleHandler : public SettingsPageUIHandler,
 
   // Suppresses any further signin promos, since the user has signed in once.
   void MarkFirstSetupComplete();
+
+  // If sync is indeed being configured, sets |configuring_sync_| to true.
+  void MaybeMarkSyncConfiguring();
 
   // True if profile needs authentication before sync can run.
   bool IsProfileAuthNeededOrHasErrors();

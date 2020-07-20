@@ -56,7 +56,7 @@ void SplitCookiesIntoAllowedAndBlocked(
                            /* blocked_by_policy=*/true});
 
   for (auto& cookie_and_access_result : cookie_details->cookie_list) {
-    if (cookie_and_access_result.access_result.status.HasExclusionReason(
+    if (cookie_and_access_result.access_result.status.HasOnlyExclusionReason(
             net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES)) {
       blocked->cookie_list.push_back(
           std::move(cookie_and_access_result.cookie));

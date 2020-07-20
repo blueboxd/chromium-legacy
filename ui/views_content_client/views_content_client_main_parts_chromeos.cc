@@ -43,7 +43,7 @@ void ViewsContentClientMainPartsChromeOS::PreMainMessageLoopRun() {
   ViewsContentClientMainPartsAura::PreMainMessageLoopRun();
 
   // Set up basic pieces of views::corewm.
-  wm_test_helper_ = std::make_unique<wm::WMTestHelper>(gfx::Size(800, 600));
+  wm_test_helper_ = std::make_unique<wm::WMTestHelper>(gfx::Size(1024, 768));
   // Ensure the X window gets mapped.
   wm_test_helper_->host()->Show();
 

@@ -4,6 +4,8 @@
 
 #include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
 
+#include <sys/types.h>
+
 #include <utility>
 #include <vector>
 
@@ -457,6 +459,21 @@ TEST_F(CrosHealthdServiceConnectionTest, ProbeTelemetryInfo) {
   ServiceConnection::GetInstance()->ProbeTelemetryInfo(
       {}, base::BindLambdaForTesting([&](mojom::TelemetryInfoPtr info) {
         EXPECT_EQ(info, response);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+// Test that we can request process info.
+TEST_F(CrosHealthdServiceConnectionTest, ProbeProcessInfo) {
+  auto response =
+      mojom::ProcessResult::NewProcessInfo(mojom::ProcessInfo::New());
+  FakeCrosHealthdClient::Get()->SetProbeProcessInfoResponseForTesting(response);
+  base::RunLoop run_loop;
+  ServiceConnection::GetInstance()->ProbeProcessInfo(
+      /*process_id=*/13,
+      base::BindLambdaForTesting([&](mojom::ProcessResultPtr result) {
+        EXPECT_EQ(result, response);
         run_loop.Quit();
       }));
   run_loop.Run();

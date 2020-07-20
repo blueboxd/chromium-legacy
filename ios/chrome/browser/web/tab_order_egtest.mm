@@ -47,8 +47,7 @@ const char kLinksTestURL2Text[] = "arrived";
 @implementation TabOrderTestCase
 
 // Tests that new tabs are always inserted after their parent tab.
-// TODO(crbug.com/1106739): reenable this test.
-- (void)DISABLED_testChildTabOrdering {
+- (void)testChildTabOrdering {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL URL1 = self.testServer->GetURL(kLinksTestURL1);
 
@@ -61,6 +60,8 @@ const char kLinksTestURL2Text[] = "arrived";
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         [ElementSelector selectorWithElementID:kLinkSelectorID],
                         true /* menu should appear */)];
+  [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
+      assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
   [ChromeEarlGrey waitForMainTabCount:2U];

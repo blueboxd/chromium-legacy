@@ -165,6 +165,11 @@ $ android_webview/tools/run_cts.py \
 $ adb logcat
 ```
 
+*** promo
+**Tip:** make sure your device locale is **English (United States)** per
+[CTS setup requirements](https://source.android.com/compatibility/cts/setup).
+***
+
 To disable failing CTS tests, please see the cts_config
 [README](../tools/cts_config/README.md) file.
 

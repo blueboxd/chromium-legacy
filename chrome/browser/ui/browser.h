@@ -807,11 +807,11 @@ class Browser : public TabStripModelObserver,
       const content::WebContents* web_contents) override;
   blink::mojom::DisplayMode GetDisplayMode(
       const content::WebContents* web_contents) override;
-  void RegisterProtocolHandler(content::WebContents* web_contents,
+  void RegisterProtocolHandler(content::RenderFrameHost* requesting_frame,
                                const std::string& protocol,
                                const GURL& url,
                                bool user_gesture) override;
-  void UnregisterProtocolHandler(content::WebContents* web_contents,
+  void UnregisterProtocolHandler(content::RenderFrameHost* requesting_frame,
                                  const std::string& protocol,
                                  const GURL& url,
                                  bool user_gesture) override;

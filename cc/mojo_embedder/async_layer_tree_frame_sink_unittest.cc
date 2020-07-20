@@ -5,6 +5,7 @@
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
@@ -176,7 +177,7 @@ class AsyncLayerTreeFrameSinkSimpleTest : public testing::Test {
 TEST_F(AsyncLayerTreeFrameSinkSimpleTest, HitTestRegionListEmpty) {
   viz::RenderPassList pass_list;
   auto pass = viz::RenderPass::Create();
-  pass->id = 1;
+  pass->id = viz::RenderPassId{1};
   pass->output_rect = display_rect_;
   pass_list.push_back(move(pass));
 
@@ -191,7 +192,7 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest, HitTestRegionListDuplicate) {
   viz::RenderPassList pass_list;
   // Initial submission.
   auto pass1 = viz::RenderPass::Create();
-  pass1->id = 1;
+  pass1->id = viz::RenderPassId{1};
   pass1->output_rect = display_rect_;
   pass_list.push_back(move(pass1));
 
@@ -206,7 +207,7 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest, HitTestRegionListDuplicate) {
 
   // Identical submission.
   auto pass2 = viz::RenderPass::Create();
-  pass2->id = 2;
+  pass2->id = viz::RenderPassId{2};
   pass2->output_rect = display_rect_;
   pass_list.push_back(move(pass2));
 
@@ -218,7 +219,7 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest, HitTestRegionListDuplicate) {
 
   // Different submission.
   auto pass3 = viz::RenderPass::Create();
-  pass3->id = 3;
+  pass3->id = viz::RenderPassId{3};
   pass3->output_rect = display_rect_;
   pass_list.push_back(move(pass3));
 
@@ -239,7 +240,7 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest,
 
   // Initial submission.
   auto pass1 = viz::RenderPass::Create();
-  pass1->id = 1;
+  pass1->id = viz::RenderPassId{1};
   pass1->output_rect = display_rect_;
   pass_list.push_back(move(pass1));
 
@@ -254,7 +255,7 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest,
 
   // Different submission with |hit_test_data_changed| set to true.
   auto pass2 = viz::RenderPass::Create();
-  pass2->id = 2;
+  pass2->id = viz::RenderPassId{2};
   pass2->output_rect = display_rect_;
   pass_list.push_back(std::move(pass2));
 
@@ -273,7 +274,7 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest,
   // Different submission with |hit_test_data_changed| set back to false. We
   // expect the hit-data to still have been sent.
   auto pass3 = viz::RenderPass::Create();
-  pass3->id = 3;
+  pass3->id = viz::RenderPassId{3};
   pass3->output_rect = display_rect_;
   pass_list.push_back(move(pass3));
 

@@ -28,25 +28,6 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 
-namespace {
-
-// For bookmark in-product help.
-int GetBookmarkPromoStringSpecifier() {
-  static constexpr int kTextIds[] = {IDS_BOOKMARK_PROMO_0, IDS_BOOKMARK_PROMO_1,
-                                     IDS_BOOKMARK_PROMO_2};
-  const std::string& str = variations::GetVariationParamValue(
-      "BookmarkInProductHelp", "x_promo_string");
-  size_t text_specifier;
-  if (!base::StringToSizeT(str, &text_specifier) ||
-      text_specifier >= base::size(kTextIds)) {
-    text_specifier = 0;
-  }
-
-  return kTextIds[text_specifier];
-}
-
-}  // namespace
-
 StarView::StarView(CommandUpdater* command_updater,
                    Browser* browser,
                    IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
@@ -66,21 +47,6 @@ StarView::StarView(CommandUpdater* command_updater,
 }
 
 StarView::~StarView() {}
-
-void StarView::ShowPromo() {
-  FeaturePromoBubbleView* bookmark_promo_bubble =
-      FeaturePromoBubbleView::CreateOwned(
-          this, views::BubbleBorder::TOP_RIGHT,
-          FeaturePromoBubbleView::ActivationAction::ACTIVATE,
-          /*title_string_specifier=*/base::nullopt,
-          GetBookmarkPromoStringSpecifier());
-  if (!bookmark_promo_observer_.IsObserving(
-          bookmark_promo_bubble->GetWidget())) {
-    bookmark_promo_observer_.Add(bookmark_promo_bubble->GetWidget());
-    SetActive(false);
-    UpdateIconImage();
-  }
-}
 
 void StarView::UpdateImpl() {
   SetVisible(browser_defaults::bookmarks_enabled &&
@@ -124,21 +90,6 @@ base::string16 StarView::GetTextForTooltipAndAccessibleName() const {
 
 const char* StarView::GetClassName() const {
   return "StarView";
-}
-
-SkColor StarView::GetInkDropBaseColor() const {
-  return bookmark_promo_observer_.IsObservingSources()
-             ? GetNativeTheme()->GetSystemColor(
-                   ui::NativeTheme::kColorId_ProminentButtonColor)
-             : PageActionIconView::GetInkDropBaseColor();
-}
-
-void StarView::OnWidgetDestroying(views::Widget* widget) {
-  if (bookmark_promo_observer_.IsObserving(widget)) {
-    bookmark_promo_observer_.Remove(widget);
-    SetActive(false);
-    UpdateIconImage();
-  }
 }
 
 void StarView::EditBookmarksPrefUpdated() {

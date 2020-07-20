@@ -76,13 +76,15 @@ class InlineTextBoxPainter {
                                       Color background_color,
                                       int start_pos,
                                       int end_pos);
+
+  // Returns the selection rect.
   template <PaintOptions>
-  void PaintSelection(GraphicsContext&,
-                      const PhysicalRect& box_rect,
-                      const ComputedStyle&,
-                      const Font&,
-                      Color text_color,
-                      LayoutTextCombine* = nullptr);
+  PhysicalRect PaintSelection(GraphicsContext&,
+                              const PhysicalRect& box_rect,
+                              const ComputedStyle&,
+                              const Font&,
+                              Color text_color,
+                              LayoutTextCombine* = nullptr);
 
   template <PaintOptions>
   PhysicalRect GetSelectionRect(GraphicsContext&,
@@ -105,7 +107,6 @@ class InlineTextBoxPainter {
   // text match markers, which do draw over said ellipsis)
   PaintOffsets MarkerPaintStartAndEnd(const DocumentMarker&);
 
-  bool ShouldPaintTextBox(const PaintInfo&);
   void ExpandToIncludeNewlineForSelection(PhysicalRect&);
   LayoutObject& InlineLayoutObject() const;
 

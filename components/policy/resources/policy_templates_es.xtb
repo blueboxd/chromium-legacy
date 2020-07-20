@@ -204,6 +204,11 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 <translation id="1376119291123231789">Habilita el modo avanzado de carga de la batería</translation>
 <translation id="1384459581748403878">Referencia: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Envía el estado de las actualizaciones del sistema operativo</translation>
+<translation id="1390901586107713894">Permite especificar las extensiones que los usuarios no pueden instalar. Si se bloquea una extensión ya instalada, se inhabilitará y el usuario no podrá habilitarla. Si una extensión que se había inhabilitado porque estaba en la lista de bloqueados se quita de esa lista, volverá a habilitarse automáticamente.
+
+          Si el valor de una lista de bloqueados es un asterisco (*), se bloquearán todas las extensiones excepto las que estén incluidas explícitamente en la lista de permitidos.
+
+          Si no se asigna ningún valor a esta política, el usuario podrá instalar cualquier extensión en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1393485621820363363">Impresoras de dispositivos de empresa habilitadas</translation>
 <translation id="1397855852561539316">URL de sugerencia del proveedor de búsquedas predeterminadas</translation>
 <translation id="1404043648050567997">El servicio Navegación Segura muestra una página de advertencia cuando los usuarios acceden a sitios web marcados como potencialmente maliciosos. Habilitar esta opción evita que los usuarios sigan navegando de todos modos desde la página de advertencia hasta el sitio web malicioso.
@@ -1045,6 +1050,13 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 <translation id="253135976343875019">Tiempo de espera de inactividad cuando el dispositivo está conectado a la red</translation>
 <translation id="2536525645274582300">El usuario decide si quiere habilitar los servicios de ubicación de Google</translation>
 <translation id="254653220329944566">Activa los informes en la nube de <ph name="PRODUCT_NAME" /></translation>
+<translation id="2547854230073316008">Si se asigna un valor a esta política, se establecerá la resolución y el factor de escala de cada pantalla. La configuración de las pantallas externas se aplicará a las pantallas conectadas. Si una pantalla no es compatible con la resolución o la escala especificadas, la política no tendrá efecto.
+
+      Si se asigna el valor "True" a <ph name="EXTERNAL_USE_NATIVE" />, la política establecerá que las pantallas externas utilicen su resolución nativa e ignorará los valores de <ph name="EXTERNAL_WIDTH" /> y <ph name="EXTERNAL_HEIGHT" />. Si se asigna el valor "False" a <ph name="EXTERNAL_USE_NATIVE" /> o no se asigna ningún valor a esta opción ni a <ph name="EXTERNAL_WIDTH" /> o a <ph name="EXTERNAL_HEIGHT" />, esta política no afectará a las pantallas externas.
+
+      Si se asigna el valor "True" al indicador recomendado, los usuarios podrán cambiar la resolución y el factor de escala de cualquier pantalla desde la página de configuración, pero, en el siguiente reinicio, se volverán a establecer los valores definidos en la política. Si se asigna el valor "False" al indicador recomendado o no se le asigna ningún valor, los usuarios no podrán cambiar la configuración de las pantallas.
+
+      Nota: Los valores de <ph name="EXTERNAL_WIDTH" /> y de <ph name="EXTERNAL_HEIGHT" /> deben indicarse en píxeles y los de <ph name="EXTERNAL_SCALE_PERCENTAGE" /> y <ph name="INTERNAL_SCALE_PERCENTAGE" />, en porcentajes.</translation>
 <translation id="2548397295248733155">Ten en cuenta que esta política está obsoleta y se eliminará de la versión 85 de <ph name="PRODUCT_OS_NAME" />. Utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> en su lugar.
 
           Permite especificar el tiempo que debe transcurrir sin que el usuario realice ninguna acción antes de que la pantalla se apague (con batería).
@@ -1529,6 +1541,9 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 <translation id="3251500716404598358">Configura las políticas para cambiar de navegador.
 
       Los sitios web configurados se abrirán automáticamente en un navegador diferente a <ph name="PRODUCT_NAME" />.</translation>
+<translation id="3255762580838224124">Si se asigna un valor a esta política, cada pantalla rotará después de cada reinicio según la orientación especificada y también rotará la primera vez que se conecte después de que cambies el valor de la política. Los usuarios podrán cambiar la rotación de la pantalla a través de la página de configuración después de iniciar sesión, pero, en el siguiente reinicio, se volverá a establecer el valor definido en la política. Esta política se aplica a las pantallas principales y secundarias.
+
+      Si no se le asigna ningún valor, el valor predeterminado será 0 grados y los usuarios podrán cambiarlo. En este caso, no se volverá a aplicar el valor predeterminado tras reiniciar.</translation>
 <translation id="3264793472749429012">Codificaciones del proveedor de búsquedas predeterminadas</translation>
 <translation id="3273221114520206906">Configuración de JavaScript predeterminada</translation>
 <translation id="3284094172359247914">Controlar el uso de la API WebUSB</translation>
@@ -1881,6 +1896,17 @@ Si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> no usará notificac
 <translation id="382476126209906314">Configurar el prefijo TalkGadget para hosts de acceso remoto</translation>
 <translation id="3824972131618513497">Controla los ajustes relacionados con el reinicio y la gestión de la batería.</translation>
 <translation id="3826475866868158882">Se han habilitado los servicios de ubicación de Google</translation>
+<translation id="383002993919016993">Esta política evita que el usuario cargue las páginas web de las URL bloqueadas. La lista de bloqueados incluye patrones de URL que especifican qué URLs se bloquearán.
+
+      Los patrones de URL deben tener el formato que se indica en la página https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Las excepciones se pueden definir en la política de lista de URL permitidas. Estas políticas están limitadas a 1000 entradas. A partir de ese número, se ignorarán las siguientes entradas.
+
+      Recomendamos no bloquear las URL internas chrome://* porque podrían producirse errores inesperados.
+
+      Puedes bloquear las URL javascript://*, pero esto solo afectará al código JavaScript que se introduzca en la barra de direcciones o, por ejemplo, en los bookmarklets. Ten en cuenta que las URL JavaScript in-page, si cargan datos dinámicamente, no están sujetas a esta política. Por ejemplo, si bloqueas example.com/abc, la página example.com podrá cargar example.com/abc a través de XMLHTTPRequest.
+
+      Si no se establece esta política, no se bloqueará ninguna URL en el navegador.</translation>
 <translation id="3831376478177535007">Si se habilita esta opción, <ph name="PRODUCT_NAME" /> permitirá que se confíe en los certificados emitidos por operaciones de la infraestructura de clave pública antigua de Symantec Corporation si se validan correctamente y se vinculan con un certificado de CA reconocido.
 
       Ten en cuenta que esta política depende de que el sistema operativo siga reconociendo los certificados de la infraestructura antigua de Symantec. Si una actualización del sistema operativo cambia la forma en que este gestiona los certificados, esta política dejará de aplicarse. Además, el objetivo de esta política es ofrecer a las empresas una solución temporal que les proporcione más tiempo para dejar de usar los certificados antiguos de Symantec. Esta política se retirará sobre el 1 de enero del 2019.
@@ -1895,7 +1921,7 @@ Si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> no usará notificac
           De forma predeterminada, todos los hosts de mensajes nativos se incluyen en la lista blanca, pero si todos los hosts de mensajes nativos se incluyen en la lista negra por una política, se puede utilizar la lista blanca para anular esa política.</translation>
 <translation id="3835692988507803626">Forzar la inhabilitación del corrector ortográfico de idiomas</translation>
 <translation id="3837424079837455272">Esta política controla si se pueden añadir nuevos usuarios a <ph name="PRODUCT_OS_NAME" />. No impide que los usuarios inicien sesión en cuentas de Google adicionales en Android. Si quieres impedir que esto ocurra, configura la política <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> específica de Android como parte de <ph name="ARC_POLICY_POLICY_NAME" />.</translation>
-<translation id="3838094946886335701">Si se establece esta política (solo según lo recomendado), podrás registrar una lista de controladores de protocolo, la cual se combinará con las listas que registre el usuario (se unirán ambos conjuntos). Establece la propiedad protocol según el esquema (por ejemplo, mailto) y la propiedad URL según el patrón de URL de la aplicación que controla el esquema especificado en el campo protocol. El patrón puede incluir un marcador de posición %s, que se sustituye por la URL controlada.
+<translation id="3838094946886335701">Si se establece esta política (solo según lo recomendado), podrás registrar una lista de controladores de protocolo, la cual se combinará con las listas que registre el usuario (se usarán ambos conjuntos). Establece la propiedad protocol según el esquema (por ejemplo, mailto) y la propiedad URL según el patrón de URL de la aplicación que controla el esquema especificado en el campo protocol. El patrón puede incluir un marcador de posición %s, que se sustituye por la URL controlada.
 
       Los usuarios no pueden quitar un controlador de protocolo registrado por la política. Sin embargo, si instalan un controlador predeterminado nuevo, podrán cambiar los controladores de protocolo instalados por la política.</translation>
 <translation id="3851039766298741586">Proporciona información sobre la sesión del kiosco activa, como el
@@ -2554,6 +2580,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
       Si le asignas un valor a esta política, los usuarios no podrán cambiarlo. Si no se le asigna ninguno, los usuarios decidirán si la estantería se oculta automáticamente.</translation>
 <translation id="4816674326202173458">Permitir que el usuario de empresa sea principal y secundario (comportamiento predeterminado para usuarios no administrados)</translation>
 <translation id="4826326557828204741">Acción a emprender si se alcanza el retraso de inactividad mientras el dispositivo está usando la batería</translation>
+<translation id="482803100714220060">Mostrar URL completas</translation>
 <translation id="4830531683854509779">Envía estadísticas de hardware sobre componentes SoC.
 
       Si se asigna el valor "false" a esta política o no se le asigna ninguno, no se enviará ninguna estadística.
@@ -2582,6 +2609,11 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
       </translation>
 <translation id="489803897780524242">Parámetro que controla el emplazamiento de los términos de búsqueda para el proveedor de búsquedas predeterminado</translation>
 <translation id="4899708173828500852">Habilitar Navegación Segura</translation>
+<translation id="4902163780937592202">Habilita la combinación de las siguientes políticas de lista de instalación de extensiones: <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_ALLOWLIST_POLICY_NAME" /> y <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
+
+      Si habilitas esta opción, los valores de la política de plataforma del equipo, de la política de nube del equipo y de la política de plataforma del usuario se combinarán en una única lista que se usará en conjunto, en lugar de utilizar únicamente los valores de la fuente que tenga mayor prioridad.
+
+      Si inhabilitas esta opción o no le asignas ningún valor, solo se usarán las entradas de lista de la fuente que tenga mayor prioridad. Las demás fuentes se mostrarán como conflictos, pero se ignorarán.</translation>
 <translation id="4906194810004762807">Frecuencia de actualización de Device Policy</translation>
 <translation id="4917385247580444890">Buena</translation>
 <translation id="4919122295221518724">Permite un tratamiento más estricto para el contenido mixto</translation>
@@ -2691,6 +2723,19 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 
           Si no se asigna ningún valor a esta política, se aplica una longitud mínima del PIN
           de 6 dígitos. Esta es la longitud mínima recomendada.</translation>
+<translation id="5077993112092904096">Esta política está obsoleta. Usa la política <ph name="URL_BLOCKLIST_POLICY_NAME" /> en su lugar.
+
+      Esta política evita que el usuario cargue las páginas web de las URL bloqueadas. La lista de bloqueados incluye patrones de URL que especifican qué URLs se bloquearán.
+
+      Los patrones de URL deben tener el formato que se indica en la página https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Las excepciones se pueden definir en la política de lista de URL permitidas. Estas políticas están limitadas a 1000 entradas. A partir de ese número, se ignorarán las siguientes entradas.
+
+      Recomendamos no bloquear las URL internas chrome://* porque podrían producirse errores inesperados.
+
+      Puedes bloquear las URL javascript://* en Chrome 73. Sin embargo, esto solo afecta al código JavaScript que se introduce en la barra de direcciones o, por ejemplo, en los bookmarklets. Ten en cuenta que las URL JavaScript in-page, si cargan datos dinámicamente, no están sujetas a esta política. Por ejemplo, si bloqueas example.com/abc, la página example.com podrá cargar example.com/abc a través de XMLHTTPRequest.
+
+      Si no se establece esta política, no se bloqueará ninguna URL en el navegador.</translation>
 <translation id="5085647276663819155">Inhabilitar vista previa de impresión</translation>
 <translation id="5090209345759901501">Extiende la configuración del contenido Flash a todo el contenido</translation>
 <translation id="5090791951240382356">Permite combinar políticas de diccionario de fuentes distintas</translation>
@@ -3480,7 +3525,7 @@ Ten en cuenta que se anunció que esta política se eliminaría en la versión 8
 
       Esta política se puede usar para crear excepciones de las listas de bloqueados restrictivas. Por ejemplo, el asterisco se puede usar para bloquear todas las solicitudes, y esta política se puede usar para permitir el acceso a una lista limitada de URLs. También se puede utilizar para crear excepciones de determinados esquemas, subdominios de otros dominios, puertos o rutas específicas.
 
-      El filtro más específico determinará si una URL está bloqueada o autorizada. La lista de permitidos tiene prioridad con respecto a la lista de bloqueados.
+      El filtro más específico determinará si una URL está bloqueada o permitida. La lista de permitidos tiene prioridad con respecto a la lista de bloqueados.
 
       Esta política está limitada a 1000 entradas. A partir de ese número, se ignorarán las siguientes entradas.
 
@@ -3624,6 +3669,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 <translation id="6394350458541421998">Esta política no está disponible desde la versión 29 de <ph name="PRODUCT_OS_NAME" />. Utiliza la política PresentationScreenDimDelayScale en su lugar.</translation>
 <translation id="6401669939808766804">Cerrar la sesión del usuario</translation>
 <translation id="640244877779556713">Habilitar sugerencias de emojis</translation>
+<translation id="6407093060083181305">Configurar lista de bloqueados de instalación de extensiones</translation>
 <translation id="6417265370957905582">Asistente de Google</translation>
 <translation id="6422575351619065453">En modo kiosco, permite controlar si se muestra el menú de accesibilidad flotante.
 
@@ -3802,6 +3848,11 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 <translation id="6658245400435704251">Especifica el número de segundos hasta los que un dispositivo puede retrasar aleatoriamente la descarga de una actualización desde el momento en el que esta se envío al servidor por primera vez. El dispositivo puede dedicar una parte de este tiempo al propio proceso de actualización y el resto a realizar las comprobaciones necesarias. En cualquier caso, el límite superior de la dispersión es un periodo de tiempo constante, para que el dispositivo no se quede bloqueado mientras descarga una actualización.</translation>
 <translation id="6665670272107384733">Definir la frecuencia con la que el usuario debe introducir la contraseña para utilizar el desbloqueo rápido</translation>
 <translation id="6667586534922258705">Muestra el botón para mostrar la contraseña en las pantallas de inicio de sesión y bloqueo</translation>
+<translation id="6669700740683748046">Esta función permite mostrar la URL completa en la barra de direcciones.
+      Si se asigna el valor "True" a esta política, se mostrará la URL completa en la barra de direcciones, incluidos los esquemas y subdominios.
+      Si se le asigna el valor "False", se mostrará la URL predeterminada.
+      Si no se le asigna ningún valor, se mostrará la URL de forma predeterminada y el usuario podrá alternar entre esta opción y la de mostrar la URL completa usando un menú contextual.
+      </translation>
 <translation id="6672070613706645316">Permite a los usuarios personalizar la imagen de fondo de la página Nueva pestaña</translation>
 <translation id="6672630473862787247">Habilita la autenticación pasiva en sesiones normales, de incógnito y de invitado.</translation>
 <translation id="6685903773201985073">Habilita la autenticación pasiva en sesiones normales y de invitado.</translation>
@@ -5254,7 +5305,7 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
 
       Esta política se puede usar para crear excepciones de las listas de bloqueados restrictivas. Por ejemplo, el asterisco se puede usar para bloquear todas las solicitudes, y esta política se puede usar para permitir el acceso a una lista limitada de URLs. También se puede utilizar para crear excepciones de determinados esquemas, subdominios de otros dominios, puertos o rutas específicas.
 
-      El filtro más específico determinará si una URL está bloqueada o autorizada. La lista de permitidos tiene prioridad con respecto a la lista de bloqueados.
+      El filtro más específico determinará si una URL está bloqueada o permitida. La lista de permitidos tiene prioridad con respecto a la lista de bloqueados.
 
       Esta política está limitada a 1000 entradas. A partir de ese número, se ignorarán las siguientes entradas.
 

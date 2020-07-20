@@ -151,6 +151,8 @@ jumbo_source_set("common") {
     "user_agent/user_agent_metadata.cc",
     "web_package/signed_exchange_consts.cc",
     "web_package/web_package_request_matcher.cc",
+    "widget/screen_info_mojom_traits.cc",
+    "widget/visual_properties_mojom_traits.cc",
   ]
 
   sources += get_target_outputs(":make_generated_document_policy_features")

@@ -265,7 +265,7 @@ TEST(RenderPassIOTest, QuadList) {
           render_pass0->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
       quad->SetAll(render_pass0->shared_quad_state_list.ElementAt(sqs_index),
                    gfx::Rect(2, 3, 100, 50), gfx::Rect(2, 3, 100, 50), true,
-                   198u, 81u, gfx::RectF(0.1f, 0.2f, 0.5f, 0.6f),
+                   RenderPassId{198u}, 81u, gfx::RectF(0.1f, 0.2f, 0.5f, 0.6f),
                    gfx::Size(800, 600), gfx::Vector2dF(1.1f, 0.9f),
                    gfx::PointF(0.01f, 0.02f),
                    gfx::RectF(0.2f, 0.3f, 0.3f, 0.4f), true, 0.88f, true);

@@ -14,12 +14,6 @@ TestOptimizationGuideDecider::~TestOptimizationGuideDecider() = default;
 void TestOptimizationGuideDecider::RegisterOptimizationTargets(
     const std::vector<proto::OptimizationTarget>& optimization_targets) {}
 
-OptimizationGuideDecision TestOptimizationGuideDecider::ShouldTargetNavigation(
-    content::NavigationHandle* navigation_handle,
-    proto::OptimizationTarget optimization_target) {
-  return OptimizationGuideDecision::kFalse;
-}
-
 void TestOptimizationGuideDecider::ShouldTargetNavigationAsync(
     content::NavigationHandle* navigation_handle,
     proto::OptimizationTarget optimization_target,

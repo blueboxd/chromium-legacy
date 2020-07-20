@@ -20,7 +20,9 @@ ViewsContentClientMainPartsAura::~ViewsContentClientMainPartsAura() {
 void ViewsContentClientMainPartsAura::ToolkitInitialized() {
   ViewsContentClientMainParts::ToolkitInitialized();
 
+#if !defined(OS_CHROMEOS)
   wm_state_ = std::make_unique<::wm::WMState>();
+#endif
 }
 
 void ViewsContentClientMainPartsAura::PostMainMessageLoopRun() {

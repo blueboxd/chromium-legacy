@@ -11,7 +11,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
-#include "chrome/browser/sync/test/integration/feature_toggler.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
@@ -19,7 +18,6 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/profile_sync_service.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_user_settings_impl.h"
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
@@ -66,12 +64,10 @@ ModelTypeSet MultiGroupTypes(const ModelTypeSet& registered_types) {
 
 // This test enables and disables types and verifies the type is sufficiently
 // affected by checking for existence of a root node.
-class EnableDisableSingleClientTest : public FeatureToggler, public SyncTest {
+class EnableDisableSingleClientTest : public SyncTest {
  public:
-  EnableDisableSingleClientTest()
-      : FeatureToggler(switches::kProfileSyncServiceUsesThreadPool),
-        SyncTest(SINGLE_CLIENT) {}
-  ~EnableDisableSingleClientTest() override {}
+  EnableDisableSingleClientTest() : SyncTest(SINGLE_CLIENT) {}
+  ~EnableDisableSingleClientTest() override = default;
 
   // Don't use self-notifications as they can trigger additional sync cycles.
   bool TestUsesSelfNotifications() override { return false; }
@@ -157,7 +153,7 @@ class EnableDisableSingleClientTest : public FeatureToggler, public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(EnableDisableSingleClientTest);
 };
 
-IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest, EnableOneAtATime) {
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
   // Setup sync with no enabled types.
   SetupTest(/*all_types_enabled=*/false);
 
@@ -192,7 +188,7 @@ IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest, EnableOneAtATime) {
   }
 }
 
-IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest, DisableOneAtATime) {
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
   // Setup sync with no disabled types.
   SetupTest(/*all_types_enabled=*/true);
 
@@ -219,7 +215,7 @@ IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest, DisableOneAtATime) {
   }
 }
 
-IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest,
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
                        FastEnableDisableOneAtATime) {
   // Setup sync with no enabled types.
   SetupTest(/*all_types_enabled=*/false);
@@ -251,7 +247,7 @@ IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest,
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
                        FastDisableEnableOneAtATime) {
   // Setup sync with no disabled types.
   SetupTest(/*all_types_enabled=*/true);
@@ -275,7 +271,7 @@ IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest,
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
                        FastEnableDisableEnableOneAtATime) {
   // Setup sync with no enabled types.
   SetupTest(/*all_types_enabled=*/false);
@@ -301,7 +297,7 @@ IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest, EnableDisable) {
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableDisable) {
   SetupTest(/*all_types_enabled=*/false);
 
   // Enable all, and then disable immediately afterwards, before datatypes
@@ -318,11 +314,11 @@ IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest, EnableDisable) {
   }
 }
 
-IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest, PRE_EnableAndRestart) {
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, PRE_EnableAndRestart) {
   SetupTest(/*all_types_enabled=*/true);
 }
 
-IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest, EnableAndRestart) {
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableAndRestart) {
   ASSERT_TRUE(SetupClients());
 
   EXPECT_TRUE(GetClient(0)->AwaitEngineInitialization());
@@ -335,7 +331,7 @@ IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest, EnableAndRestart) {
   }
 }
 
-IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest, FastEnableDisableEnable) {
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, FastEnableDisableEnable) {
   SetupTest(/*all_types_enabled=*/false);
 
   // Enable all, and then disable+reenable immediately afterwards, before
@@ -357,7 +353,7 @@ IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest, FastEnableDisableEnable) {
 // redownloaded when Sync is started again. This does not actually verify that
 // the data is gone from disk (which seems infeasible); it's mostly here as a
 // baseline for the following tests.
-IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest,
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
                        RedownloadsAfterClearData) {
   ASSERT_TRUE(SetupClients());
   ASSERT_FALSE(bookmarks_helper::GetBookmarkModel(0)->IsBookmarked(
@@ -387,7 +383,7 @@ IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest,
   EXPECT_EQ(GetNumUpdatesDownloadedInLastCycle(), initial_updates_downloaded);
 }
 
-IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest,
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
                        DoesNotRedownloadAfterKeepData) {
   ASSERT_TRUE(SetupClients());
   ASSERT_FALSE(bookmarks_helper::GetBookmarkModel(0)->IsBookmarked(
@@ -429,7 +425,7 @@ IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest,
                                          /*REMOTE_INITIAL_UPDATE=*/5));
 }
 
-IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest, ClearsPrefsIfClearData) {
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, ClearsPrefsIfClearData) {
   SetupTest(/*all_types_enabled=*/true);
 
   SyncPrefs prefs(GetProfile(0)->GetPrefs());
@@ -439,7 +435,7 @@ IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest, ClearsPrefsIfClearData) {
   EXPECT_EQ("", prefs.GetCacheGuid());
 }
 
-IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest,
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
                        DoesNotClearPrefsWithKeepData) {
   SetupTest(/*all_types_enabled=*/true);
 
@@ -467,7 +463,7 @@ class EnableDisableSingleClientSelfNotifyTest
   }
 };
 
-IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientSelfNotifyTest,
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientSelfNotifyTest,
                        PRE_ResendsBagOfChips) {
   sync_pb::ChipBag bag_of_chips;
   bag_of_chips.set_server_chips(kTestServerChips);
@@ -484,7 +480,7 @@ IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientSelfNotifyTest,
   EXPECT_EQ(kTestServerChips, message.bag_of_chips().server_chips());
 }
 
-IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientSelfNotifyTest,
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientSelfNotifyTest,
                        ResendsBagOfChips) {
   ASSERT_TRUE(SetupClients());
   SyncPrefs prefs(GetProfile(0)->GetPrefs());
@@ -495,13 +491,5 @@ IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientSelfNotifyTest,
   EXPECT_TRUE(message.has_bag_of_chips());
   EXPECT_EQ(kTestServerChips, message.bag_of_chips().server_chips());
 }
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         EnableDisableSingleClientTest,
-                         ::testing::Values(false, true));
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         EnableDisableSingleClientSelfNotifyTest,
-                         ::testing::Values(false, true));
 
 }  // namespace

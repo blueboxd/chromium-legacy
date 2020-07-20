@@ -46,7 +46,6 @@ class ASH_EXPORT MagnifierGlass : public aura::WindowObserver,
 
  private:
   friend class PartialMagnificationControllerTestApi;
-  class BorderMask;
   class BorderRenderer;
 
   // aura::WindowObserver:
@@ -78,9 +77,6 @@ class ASH_EXPORT MagnifierGlass : public aura::WindowObserver,
   // |border_layer_| so that it gets destroyed after |border_layer_|, otherwise
   // |border_layer_| will have a pointer to a deleted delegate.
   std::unique_ptr<BorderRenderer> border_renderer_;
-  // Masks the content of |border_layer_| so that only a circle outline is
-  // drawn.
-  std::unique_ptr<BorderMask> border_mask_;
 };
 
 }  // namespace ash

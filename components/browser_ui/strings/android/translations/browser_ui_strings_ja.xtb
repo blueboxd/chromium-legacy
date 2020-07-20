@@ -21,6 +21,7 @@
 <translation id="1620510694547887537">カメラ</translation>
 <translation id="1647391597548383849">カメラへのアクセス</translation>
 <translation id="1660204651932907780">音声の再生をサイトに許可する（推奨）</translation>
+<translation id="1677097821151855053">Cookie と他のサイトデータは、ログインや広告のカスタマイズなどでユーザーを特定するために使用されます。すべてのサイトの Cookie を管理するには、<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="1688867105868176567">サイトデータを削除しますか？</translation>
 <translation id="169515064810179024">サイトによるモーション センサーへのアクセスをブロックする</translation>
 <translation id="1717218214683051432">モーション センサー</translation>
@@ -94,6 +95,7 @@
 <translation id="4008040567710660924">特定のサイトの Cookie を許可します。</translation>
 <translation id="4046123991198612571">次のトラック</translation>
 <translation id="4165986682804962316">サイトの設定</translation>
+<translation id="4200726100658658164">位置情報の設定を開く</translation>
 <translation id="4226663524361240545">通知を受け取るとデバイスが振動します</translation>
 <translation id="4242533952199664413">設定を開く</translation>
 <translation id="4259722352634471385"><ph name="URL" /> へのアクセスがブロックされました</translation>
@@ -160,6 +162,7 @@
 <translation id="6295158916970320988">すべてのサイト</translation>
 <translation id="6320088164292336938">バイブレーション</translation>
 <translation id="6388207532828177975">データを削除してリセット</translation>
+<translation id="6423924377271166037">Cookie を消去</translation>
 <translation id="6439114592976064011">サイトによるバーチャル リアリティ デバイスとデータの使用をブロックする</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6527303717912515753">共有</translation>
@@ -233,6 +236,7 @@
 <translation id="8441146129660941386">後方にシーク再生</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> に現在地へのアクセスを許可するには、<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でも位置情報をオンにしてください。</translation>
 <translation id="8447861592752582886">デバイスの許可を取り消します</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 個の Cookie が使用中です}other{# 個の Cookie が使用中です}}</translation>
 <translation id="8463851957836045671">サイトは高速です</translation>
 <translation id="851751545965956758">サイトからデバイスへの接続をブロックする</translation>
 <translation id="857943718398505171">許可（推奨）</translation>

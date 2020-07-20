@@ -360,7 +360,7 @@ apis::v1::HeartbeatRequest HeartbeatSender::CreateHeartbeatRequest() {
   // a Linux OS.
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (is_googler_) {
-    heartbeat.set_hostname(base::MD5String(net::GetHostName()));
+    heartbeat.set_hostname_hash(base::MD5String(net::GetHostName()));
   }
 #endif
   return heartbeat;

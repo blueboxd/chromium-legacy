@@ -38,6 +38,10 @@
 #include "third_party/blink/renderer/platform/audio/vector_math.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
+#if defined(CPU_ARM_NEON)
+#include <arm_neon.h>
+#endif
+
 namespace blink {
 
 // The number of bands per octave.  Each octave will have this many entries in
@@ -264,6 +268,64 @@ void PeriodicWave::WaveDataForFundamentalFrequency(
 
   const unsigned* range_index1 = reinterpret_cast<const unsigned*>(&v_index1);
   const unsigned* range_index2 = reinterpret_cast<const unsigned*>(&v_index2);
+
+  for (int k = 0; k < 4; ++k) {
+    lower_wave_data[k] = band_limited_tables_[range_index2[k]]->Data();
+    higher_wave_data[k] = band_limited_tables_[range_index1[k]]->Data();
+  }
+}
+#elif defined(CPU_ARM_NEON)
+void PeriodicWave::WaveDataForFundamentalFrequency(
+    const float fundamental_frequency[4],
+    float* lower_wave_data[4],
+    float* higher_wave_data[4],
+    float table_interpolation_factor[4]) {
+  // Negative frequencies are allowed, in which case we alias to the positive
+  // frequency.
+  float32x4_t frequency = vabsq_f32(vld1q_f32(fundamental_frequency));
+
+  // pos = 0xffffffff if frequency > 0; otherwise 0.
+  uint32x4_t pos = vcgtq_f32(frequency, vdupq_n_f32(0));
+
+  // v_ratio = frequency / lowest_fundamental_frequency_.  But NEON
+  // doesn't have a division instruction, so multiply by reciprocal.
+  // (Aarch64 does, though).
+  float32x4_t v_ratio =
+      vmulq_f32(frequency, vdupq_n_f32(1 / lowest_fundamental_frequency_));
+
+  // Select v_ratio or 0.5 depending on whether pos is all ones or all
+  // zeroes.
+  v_ratio = vbslq_f32(pos, v_ratio, vdupq_n_f32(0.5));
+
+  float ratio[4] __attribute__((aligned(16)));
+  vst1q_f32(ratio, v_ratio);
+
+  float cents_above_lowest_frequency[4] __attribute__((aligned(16)));
+
+  for (int k = 0; k < 4; ++k) {
+    cents_above_lowest_frequency[k] = log2f(ratio[k]) * 1200;
+  }
+
+  float32x4_t v_pitch_range = vaddq_f32(
+      vdupq_n_f32(1.0), vmulq_f32(vld1q_f32(cents_above_lowest_frequency),
+                                  vdupq_n_f32(1 / cents_per_range_)));
+
+  v_pitch_range = vmaxq_f32(v_pitch_range, vdupq_n_f32(0));
+  v_pitch_range = vminq_f32(v_pitch_range, vdupq_n_f32(NumberOfRanges() - 1));
+
+  const uint32x4_t v_index1 = vcvtq_u32_f32(v_pitch_range);
+  uint32x4_t v_index2 = vaddq_u32(v_index1, vdupq_n_u32(1));
+  v_index2 = vminq_u32(v_index2, vdupq_n_f32(NumberOfRanges() - 1));
+
+  uint32_t range_index1[4] __attribute__((aligned(16)));
+  uint32_t range_index2[4] __attribute__((aligned(16)));
+
+  vst1q_u32(range_index1, v_index1);
+  vst1q_u32(range_index2, v_index2);
+
+  const float32x4_t table_factor =
+      vsubq_f32(v_pitch_range, vcvtq_f32_u32(v_index1));
+  vst1q_f32(table_interpolation_factor, table_factor);
 
   for (int k = 0; k < 4; ++k) {
     lower_wave_data[k] = band_limited_tables_[range_index2[k]]->Data();

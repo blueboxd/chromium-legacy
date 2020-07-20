@@ -56,6 +56,8 @@ public final class BrowserViewController
     private final View.OnAttachStateChangeListener mOnAttachedStateChangeListener;
     private final ModalDialogManager mModalDialogManager;
 
+    private int mTopControlsMinHeight;
+
     private TabImpl mTab;
 
     private WebContentsGestureStateTracker mGestureStateTracker;
@@ -161,6 +163,8 @@ public final class BrowserViewController
 
         if (mTab != null) {
             mTab.onDidLoseActive();
+            // Clean up UI related state now that the old Tab is inactive.
+            mTab.setTopControlsMinHeight(0);
             // WebContentsGestureStateTracker is relatively cheap, easier to destroy rather than
             // update WebContents.
             mGestureStateTracker.destroy();
@@ -184,6 +188,7 @@ public final class BrowserViewController
         mContentViewRenderView.setWebContents(webContents);
         mTopControlsContainerView.setWebContents(webContents);
         mBottomControlsContainerView.setWebContents(webContents);
+        updateActiveTabScrollBehavior();
         if (mTab != null) {
             mTab.onDidGainActive(mTopControlsContainerView.getNativeHandle(),
                     mBottomControlsContainerView.getNativeHandle());
@@ -197,6 +202,12 @@ public final class BrowserViewController
 
     public void setTopView(View view) {
         mTopControlsContainerView.setView(view);
+    }
+
+    public void setTopControlsMinHeight(int minHeight) {
+        mTopControlsMinHeight = minHeight;
+        mTopControlsContainerView.setMinHeight(minHeight);
+        updateActiveTabScrollBehavior();
     }
 
     public void setBottomView(View view) {
@@ -216,7 +227,7 @@ public final class BrowserViewController
     }
 
     @Override
-    public void onBrowserControlsCompletelyShownOrHidden() {
+    public void onBrowserControlsCompletelyExpandedOrCollapsed() {
         adjustWebContentsHeightIfNecessary();
     }
 
@@ -256,8 +267,8 @@ public final class BrowserViewController
 
     private void adjustWebContentsHeightIfNecessary() {
         if (mGestureStateTracker == null || mGestureStateTracker.isInGestureOrScroll()
-                || !mTopControlsContainerView.isCompletelyShownOrHidden()
-                || !mBottomControlsContainerView.isCompletelyShownOrHidden()) {
+                || !mTopControlsContainerView.isCompletelyExpandedOrCollapsed()
+                || !mBottomControlsContainerView.isCompletelyExpandedOrCollapsed()) {
             return;
         }
         mContentViewRenderView.setWebContentsHeightDelta(
@@ -287,6 +298,12 @@ public final class BrowserViewController
                 ? mCachedDoBrowserControlsShrinkRendererSize
                 : (mTopControlsContainerView.isControlVisible()
                         || mBottomControlsContainerView.isControlVisible());
+    }
+
+    private void updateActiveTabScrollBehavior() {
+        if (mTab != null) {
+            mTab.setTopControlsMinHeight(mTopControlsMinHeight);
+        }
     }
 
     /**

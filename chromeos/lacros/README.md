@@ -1,6 +1,10 @@
-This directory contains the low-level system interfaces that lacros-chrome needs
-to function properly. This includes both device interaction (e.g. querying
-displays) and system-provided UI components (e.g. file picker).
+This directory contains the lacros-chrome client implementation of the ChromeOS
+API (//chromeos/crosapi). This is primarily glue code that allows lacros-chrome
+to access interfaces exposed by ash-chrome.
+
+Examples of contained functionality include:
+* Device interaction (e.g. querying displays)
+* System provided UI components (e.g. file picker)
 
 The closest equivalent on other operating systems would be a client-side library
 that provides OS-specific functionality, such as Win32 or Cocoa.

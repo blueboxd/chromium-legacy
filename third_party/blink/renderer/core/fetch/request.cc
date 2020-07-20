@@ -183,6 +183,20 @@ static BodyStreamBuffer* ExtractBody(ScriptState* script_state,
              V8ReadableStream::HasInstance(body, isolate)) {
     ReadableStream* readable_stream =
         V8ReadableStream::ToImpl(body.As<v8::Object>());
+    // This is implemented in Request::CreateRequestWithRequestOrString():
+    //   "If the |keepalive| flag is set, then throw a TypeError."
+
+    //   "If |object| is disturbed or locked, then throw a TypeError."
+    if (readable_stream->IsDisturbed()) {
+      exception_state.ThrowTypeError(
+          "The provided ReadableStream is disturbed");
+      return nullptr;
+    }
+    if (readable_stream->IsLocked()) {
+      exception_state.ThrowTypeError("The provided ReadableStream is locked");
+      return nullptr;
+    }
+    //   "Set |stream| to |object|."
     return_buffer =
         MakeGarbageCollected<BodyStreamBuffer>(script_state, readable_stream);
   } else {
@@ -688,9 +702,7 @@ Request* Request::CreateRequestWithRequestOrString(
     input_request->request_->SetBuffer(dummy_stream);
     // "Let |reader| be the result of getting reader from |dummyStream|."
     // "Read all bytes from |dummyStream| with |reader|."
-    input_request->BodyBuffer()->CloseAndLockAndDisturb(exception_state);
-    if (exception_state.HadException())
-      return nullptr;
+    input_request->BodyBuffer()->CloseAndLockAndDisturb();
   }
 
   // "Return |r|."
@@ -931,12 +943,9 @@ Request* Request::clone(ScriptState* script_state,
   return MakeGarbageCollected<Request>(script_state, request, headers, signal);
 }
 
-FetchRequestData* Request::PassRequestData(ScriptState* script_state,
-                                           ExceptionState& exception_state) {
+FetchRequestData* Request::PassRequestData(ScriptState* script_state) {
   DCHECK(!IsBodyUsed());
-  FetchRequestData* data = request_->Pass(script_state, exception_state);
-  if (exception_state.HadException())
-    return nullptr;
+  FetchRequestData* data = request_->Pass(script_state);
   // |data|'s buffer('s js wrapper) has no retainer, but it's OK because
   // the only caller is the fetch function and it uses the body buffer
   // immediately.

@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> na <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Da biste imali svoje oznake na svim svojim uređajima, uključite sinhronizaciju.</translation>
 <translation id="1687475363370981210">Označi sve pročitano</translation>
+<translation id="1689333818294560261">Nadimak</translation>
 <translation id="1690731385917361335">Nema stavki</translation>
 <translation id="1692118695553449118">Sinhronizacija je uključena</translation>
 <translation id="1700629756560807968">Odabrano je <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -206,6 +207,7 @@ U anonimnom načinu rada web lokacije ne mogu koristiti kolačiće da vide vašu
 <translation id="3335947283844343239">Ponovo otvori zatvorenu karticu</translation>
 <translation id="3371831930909698441">Dostupan je Prevodilac. Opcije su dostupne pri dnu ekrana.</translation>
 <translation id="3393920035788932672">Skočni prozori su dozvoljeni</translation>
+<translation id="3425644765244388016">Nadimak kartice</translation>
 <translation id="3443810440409579745">Kartica je primljena.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Podijeljeni prikaz</translation>
@@ -240,6 +242,7 @@ U anonimnom načinu rada web lokacije ne mogu koristiti kolačiće da vide vašu
 <translation id="3783017676699494206">Sačuvaj sliku</translation>
 <translation id="3789841737615482174">Instaliraj</translation>
 <translation id="3803696231112616155">Ponudi prijevod ove web lokacije</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Nijedna lozinka nije ugrožena}=1{{COUNT} lozinka je ugrožena}one{{COUNT} lozinka je ugrožena}few{{COUNT} lozinke su ugrožene}other{{COUNT} lozinki je ugroženo}}</translation>
 <translation id="385051799172605136">Nazad</translation>
 <translation id="3892144330757387737">Svoju historiju ćete pronaći ovdje</translation>
 <translation id="3897092660631435901">Meni</translation>
@@ -529,6 +532,7 @@ Web lokacije ne mogu koristiti kolačiće da vide vašu aktivnost pregledanja na
 <translation id="7189598951263744875">Dijeli...</translation>
 <translation id="7192050974311852563">Pokreni zapisivanje</translation>
 <translation id="7203585745079012652">Izgovori odgovore</translation>
+<translation id="721597782417389033">Nevažeći nadimak kartice</translation>
 <translation id="7265758999917665941">Nikada za ovu web lokaciju</translation>
 <translation id="7272437679830969316">Nije moguće potvrditi vaš identitet. Lozinka nije kopirana.</translation>
 <translation id="7291368939935408496">Pripremanje lozinki...</translation>

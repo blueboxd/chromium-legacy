@@ -69,4 +69,7 @@ extern const base::Feature kIllustratedEmptyStates;
 // and Link to Text features).
 extern const base::Feature kSharedHighlightingIOS;
 
+// Feature flag that enables taking fullpage screenshots of a webpage.
+extern const base::Feature kEnableFullPageScreenshot;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

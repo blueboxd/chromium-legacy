@@ -738,11 +738,13 @@
   <message name="IDS_FILE_BROWSER_COPY_ITEMS_REMAINING_LONG" desc="File Manager status message including destination folder when copying multiple files or folders. 'Item' is used here as a generic term for file or directory.">
     Copying <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items to <ph name="FOLDER_NAME">$2<ex>images</ex></ph>
   </message>
-  <message name="IDS_FILE_BROWSER_COPY_TIME_REMAINING_ESTIMATE" desc="File Manager remaining time message when copying or moving files.">
-   About <ph name="REMAINING_TIME">$1<ex>2 min</ex></ph>
+  <message name="IDS_FILE_BROWSER_TIME_REMAINING_ESTIMATE"
+           desc="The progress panel message indicating estimate of remaining time of a file operation. The time will be in 1 part (hour or minute) like '2 hours' or '3 min'.">
+    About <ph name="REMAINING_TIME">$1<ex>1 min</ex></ph> remaining
   </message>
-  <message name="IDS_FILE_BROWSER_COPY_TIME_REMAINING_CLOSE" desc="File Manager close to finish remaining time message when copying or moving files.">
-   Less than <ph name="REMAINING_TIME">$1<ex>1 min</ex></ph>
+  <message name="IDS_FILE_BROWSER_TIME_REMAINING_ESTIMATE_2"
+           desc="The progress panel message indicating estimate of remaining time of a file operation. The time will be in 2 parts and has both hour and minute like '2 hours 1 min'.">
+    About <ph name="REMAINING_TIME_HOUR">$1<ex>2 hours</ex></ph> <ph name="REMAINING_TIME_MINUTE">$2<ex>3 min</ex></ph> remaining
   </message>
   <message name="IDS_FILE_BROWSER_COPY_TARGET_EXISTS_ERROR" desc="File Manager error message. 'Item' is used here as a generic term for file or directory.">
     Whoops, <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph> already exists. Rename it and try again.
@@ -888,6 +890,15 @@
   </message>
   <message name="IDS_FILE_BROWSER_UPLOAD_LABEL" desc="Upload label.">
     Upload
+  </message>
+  <message name="IDS_FILE_BROWSER_COMPLETE_LABEL" desc="Complete label.">
+    Complete
+  </message>
+  <message name="IDS_FILE_BROWSER_DISMISS_LABEL" desc="Dismiss label.">
+    Dismiss
+  </message>
+  <message name="IDS_FILE_BROWSER_PENDING_LABEL" desc="Pending label.">
+    Pending
   </message>
   <message name="IDS_FILE_BROWSER_SEARCH_TEXT_LABEL" desc="Search text field label.">
     Search

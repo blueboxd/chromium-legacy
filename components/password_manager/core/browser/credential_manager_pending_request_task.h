@@ -75,6 +75,9 @@ class CredentialManagerPendingRequestTask
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
+  void OnGetPasswordStoreResultsFrom(
+      scoped_refptr<PasswordStore> store,
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
  private:
   // HttpPasswordStoreMigrator::Consumer:

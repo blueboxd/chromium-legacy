@@ -23,7 +23,7 @@ import convert_dex_profile
 
 
 _IGNORE_WARNINGS = (
-    # A play services library triggers this.
+    # Caused by Play Services:
     r'Type `libcore.io.Memory` was not found',
     # Filter out warnings caused by our fake main dex list used to enable
     # multidex on library targets.
@@ -73,6 +73,9 @@ def _ParseArgs(args):
       help='GN-list of bootclasspath. Needed for --desugar')
   parser.add_argument(
       '--desugar-jdk-libs-json', help='Path to desugar_jdk_libs.json.')
+  parser.add_argument('--show-desugar-default-interface-warnings',
+                      action='store_true',
+                      help='Enable desugaring warnings.')
   parser.add_argument(
       '--classpath',
       action='append',
@@ -136,24 +139,21 @@ def _ParseArgs(args):
   return options
 
 
-def _RunD8(dex_cmd, input_paths, output_path):
-  dex_cmd = dex_cmd + ['--output', output_path] + input_paths
-
-  def stderr_filter(output):
+def CreateStderrFilter(show_desugar_default_interface_warnings):
+  def filter_stderr(output):
     patterns = _IGNORE_WARNINGS
-    # No classpath means we are using Bazel's Desugar tool to desugar lambdas
-    # and interface methods, in which case we intentionally do not pass a
-    # classpath to D8.
+    # When using Bazel's Desugar tool to desugar lambdas and interface methods,
+    # we do not provide D8 with a classpath, which causes a lot of warnings
+    # from D8's default interface desugaring pass.
     # Not having a classpath makes incremental dexing much more effective.
-    # D8 will still be used for backported method desugaring.
-    # We still use D8 for backported method desugaring.
-    if '--classpath' not in dex_cmd:
+    # D8 still does backported method desugaring.
+    if not show_desugar_default_interface_warnings:
       patterns = list(patterns) + ['default or static interface methods']
 
     combined_pattern = '|'.join(re.escape(p) for p in patterns)
     output = build_utils.FilterLines(output, combined_pattern)
 
-    # Each warning has a prefix line of tthe file it's from. If we've filtered
+    # Each warning has a prefix line of the file it's from. If we've filtered
     # out the warning, then also filter out the file header.
     # E.g.:
     # Warning in path/to/Foo.class:
@@ -161,6 +161,15 @@ def _RunD8(dex_cmd, input_paths, output_path):
     #   Error message #2 indented here.
     output = re.sub(r'^Warning in .*?:\n(?!  )', '', output, flags=re.MULTILINE)
     return output
+
+  return filter_stderr
+
+
+def _RunD8(dex_cmd, input_paths, output_path,
+           show_desugar_default_interface_warnings):
+  dex_cmd = dex_cmd + ['--output', output_path] + input_paths
+
+  stderr_filter = CreateStderrFilter(show_desugar_default_interface_warnings)
 
   with tempfile.NamedTemporaryFile() as flag_file:
     # Chosen arbitrarily. Needed to avoid command-line length limits.
@@ -353,7 +362,8 @@ def _CreateFinalDex(d8_inputs, output, tmp_dir, dex_cmd, options=None):
 
     tmp_dex_dir = os.path.join(tmp_dir, 'tmp_dex_dir')
     os.mkdir(tmp_dex_dir)
-    _RunD8(dex_cmd, d8_inputs, tmp_dex_dir)
+    _RunD8(dex_cmd, d8_inputs, tmp_dex_dir,
+           (options and options.show_desugar_default_interface_warnings))
     logging.debug('Performed dex merging')
 
     dex_files = [os.path.join(tmp_dex_dir, f) for f in os.listdir(tmp_dex_dir)]
@@ -435,7 +445,8 @@ def _CreateIntermediateDexFiles(changes, options, tmp_dir, dex_cmd):
   if class_files:
     # Dex necessary classes into intermediate dex files.
     dex_cmd = dex_cmd + ['--intermediate', '--file-per-class-file']
-    _RunD8(dex_cmd, class_files, options.incremental_dir)
+    _RunD8(dex_cmd, class_files, options.incremental_dir,
+           options.show_desugar_default_interface_warnings)
     logging.debug('Dexed class files.')
 
 

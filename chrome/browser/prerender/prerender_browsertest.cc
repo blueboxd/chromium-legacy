@@ -761,51 +761,6 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
   std::unique_ptr<content::URLLoaderInterceptor> interceptor_;
 };
 
-// Renders a page that contains a prerender link to a page that contains an
-// iframe with a source that requires http authentication. This should not
-// prerender successfully.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttpAuthentication) {
-  PrerenderTestURL("/prerender/prerender_http_auth_container.html",
-                   FINAL_STATUS_AUTH_NEEDED, 0);
-}
-
-// Checks that the referrer is set when prerendering.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReferrer) {
-  PrerenderTestURL("/prerender/prerender_referrer.html", FINAL_STATUS_USED, 1);
-  NavigateToDestURL();
-}
-
-// Checks that the referrer is not set when prerendering and the source page is
-// HTTPS.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoSSLReferrer) {
-  // Use http:// url for the prerendered page main resource.
-  GURL url(
-      embedded_test_server()->GetURL("/prerender/prerender_no_referrer.html"));
-
-  // Use https:// for all other resources.
-  UseHttpsSrcServer();
-
-  PrerenderTestURL(url, FINAL_STATUS_USED, 1);
-  NavigateToDestURL();
-}
-
-// Checks that the referrer policy is used when prerendering.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReferrerPolicy) {
-  set_loader_path("/prerender/prerender_loader_with_referrer_policy.html");
-  PrerenderTestURL("/prerender/prerender_referrer_policy.html",
-                   FINAL_STATUS_USED, 1);
-  NavigateToDestURL();
-}
-
-// Checks that the referrer policy is used when prerendering on HTTPS.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLReferrerPolicy) {
-  UseHttpsSrcServer();
-  set_loader_path("/prerender/prerender_loader_with_referrer_policy.html");
-  PrerenderTestURL("/prerender/prerender_referrer_policy.html",
-                   FINAL_STATUS_USED, 1);
-  NavigateToDestURL();
-}
-
 }  // namespace prerender
 
 #endif  // !defined(OS_MACOSX) || !defined(ADDRESS_SANITIZER)

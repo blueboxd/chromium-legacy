@@ -128,7 +128,7 @@ class WaitForSwapDisplayClient : public DisplayClient {
 };
 
 std::unique_ptr<RenderPass> CreateTestRootRenderPass() {
-  const RenderPassId id = 1;
+  const RenderPassId id{1};
   const gfx::Rect output_rect = kSurfaceRect;
   const gfx::Rect damage_rect = kSurfaceRect;
   const gfx::Transform transform_to_root_target;

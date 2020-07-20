@@ -2135,22 +2135,27 @@ void ExtensionService::ManageBlocklist(
   std::set<std::string> blocklisted;
   ExtensionIdSet greylist;
   ExtensionIdSet unchanged;
-  for (const auto& it : state_map) {
-    // If it was previously disabled remotely for malware, do not remove from
-    // the blocklisted_extensions set. The disable reason should be removed
-    // first before updating its blocklist state.
-    if (extension_prefs_->HasDisableReason(
-            it.first, disable_reason::DISABLE_REMOTELY_FOR_MALWARE)) {
-      unchanged.insert(it.first);
-      continue;
-    }
 
+  // If it was previously disabled remotely for malware, do not remove from
+  // the blocklisted_extensions set. The disable reason should be removed
+  // first before updating its blocklist state. Thus, we add these extensions
+  // to |unchanged| set.
+  for (const auto& extension_id :
+       registry_->blocklisted_extensions().GetIDs()) {
+    if (extension_prefs_->HasDisableReason(
+            extension_id, disable_reason::DISABLE_REMOTELY_FOR_MALWARE)) {
+      unchanged.insert(extension_id);
+    }
+  }
+
+  for (const auto& it : state_map) {
     switch (it.second) {
       case NOT_BLOCKLISTED:
         break;
 
       case BLOCKLISTED_MALWARE:
-        blocklisted.insert(it.first);
+        if (!base::Contains(unchanged, it.first))
+          blocklisted.insert(it.first);
         break;
 
       case BLOCKLISTED_SECURITY_VULNERABILITY:

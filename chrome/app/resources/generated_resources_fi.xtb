@@ -541,7 +541,7 @@
 <translation id="164936512206786300">Poista Bluetooth-laitteen pari</translation>
 <translation id="1650371550981945235">Näytä syöttöasetukset</translation>
 <translation id="1651008383952180276">Kirjoita sama tunnuslause kahdesti.</translation>
-<translation id="1652326691684645429">Ota Lähijakaminen käyttöön</translation>
+<translation id="1652326691684645429">Ota lähijakaminen käyttöön</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Lisää tulostin Google Cloud Printiin, jotta voit tulostaa mistä tahansa.}other{Lisää # tulostinta Google Cloud Printiin, jotta voit tulostaa mistä tahansa.}}</translation>
 <translation id="1656528038316521561">Taustan läpinäkyvyys</translation>
 <translation id="1657406563541664238">Auta parantamaan tuotetta <ph name="PRODUCT_NAME" /> lähettämällä automaattisesti käyttötilastoja ja virheraportteja Googlelle.</translation>
@@ -1670,7 +1670,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="3022978424994383087">En ymmärtänyt.</translation>
 <translation id="3023464535986383522">Teksti puhuttuna</translation>
 <translation id="3024374909719388945">Käytä 24 tunnin kelloa</translation>
-<translation id="3027296729579831126">Laita Lähijakaminen päälle</translation>
+<translation id="3027296729579831126">Laita lähijakaminen päälle</translation>
 <translation id="3029466929721441205">Näytä näyttökynätyökalut hyllyssä</translation>
 <translation id="3031417829280473749">Agentti X</translation>
 <translation id="3031557471081358569">Valitse tuotavat kohteet:</translation>
@@ -2963,7 +2963,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4673442866648850031">Avaa näyttökynätyökalut, kun näyttökynä otetaan esille</translation>
 <translation id="4677772697204437347">GPU-muisti</translation>
 <translation id="4680105648806843642">Ääni mykistettiin tällä sivulla</translation>
-<translation id="4681453295291708042">Poista Lähijakaminen käytöstä</translation>
+<translation id="4681453295291708042">Poista lähijakaminen käytöstä</translation>
 <translation id="4681930562518940301">Avaa alkuperäinen &amp;kuva uudessa välilehdessä</translation>
 <translation id="4682551433947286597">Taustakuva näytetään kirjautumisruudulla.</translation>
 <translation id="4683947955326903992"><ph name="PERCENTAGE" /> % (oletus)</translation>
@@ -4738,7 +4738,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6965978654500191972">Laite</translation>
 <translation id="696780070563539690">Sivustot eivät voi nähdä evästeiden kautta selaustoimintaasi eri sivustoilla esim. personoidakseen mainoksia</translation>
 <translation id="6968288415730398122">Määritä näytön lukitus antamalla salasanasi.</translation>
-<translation id="6969047215179982698">Laita Lähijakaminen pois päältä</translation>
+<translation id="6969047215179982698">Laita lähijakaminen pois päältä</translation>
 <translation id="6970480684834282392">Käynnistystyyppi</translation>
 <translation id="6970856801391541997">Tulosta tietyt sivut</translation>
 <translation id="6972180789171089114">Ääni- ja videotiedostot</translation>

@@ -25,6 +25,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &::features::kWebPaymentsMinimalUI,
     &features::kAlwaysAllowJustInTimePaymentApp,
     &features::kAppStoreBillingDebug,
+    &features::kEnforceFullDelegation,
     &features::kPaymentRequestSkipToGPay,
     &features::kPaymentRequestSkipToGPayIfNoCard,
     &features::kReturnGooglePayInBasicCard,

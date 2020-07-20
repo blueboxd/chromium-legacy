@@ -40,6 +40,16 @@ bool FakeClipboardRecentContent::HasRecentImageFromClipboard() {
   return clipboard_image_content_.has_value();
 }
 
+void FakeClipboardRecentContent::HasRecentURLFromClipboard(
+    HasDataCallback callback) {
+  std::move(callback).Run(GetRecentURLFromClipboard().has_value());
+}
+
+void FakeClipboardRecentContent::GetRecentURLFromClipboard(
+    GetRecentURLCallback callback) {
+  std::move(callback).Run(GetRecentURLFromClipboard());
+}
+
 base::TimeDelta FakeClipboardRecentContent::GetClipboardContentAge() const {
   return content_age_;
 }

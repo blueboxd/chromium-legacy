@@ -42,7 +42,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/feature_engagement/buildflags.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -54,11 +53,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
-
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
-#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
-#endif
 
 using base::UserMetricsAction;
 using content::WebContents;
@@ -1247,13 +1241,6 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
                                 TabStripModel::NEW_TAB_ENUM_COUNT);
       delegate()->AddTabAt(GURL(), context_index + 1, true,
                            GetTabGroupForTab(context_index));
-#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
-      auto* new_tab_tracker =
-          feature_engagement::NewTabTrackerFactory::GetInstance()
-              ->GetForProfile(profile_);
-      new_tab_tracker->OnNewTabOpened();
-      new_tab_tracker->CloseBubble();
-#endif
       break;
     }
 

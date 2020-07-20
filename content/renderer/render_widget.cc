@@ -439,8 +439,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WidgetMsg_DisableDeviceEmulation,
                         OnDisableDeviceEmulation)
     IPC_MESSAGE_HANDLER(WidgetMsg_Close, OnClose)
-    IPC_MESSAGE_HANDLER(WidgetMsg_UpdateVisualProperties,
-                        OnUpdateVisualProperties)
     IPC_MESSAGE_HANDLER(WidgetMsg_WasHidden, OnWasHidden)
     IPC_MESSAGE_HANDLER(WidgetMsg_WasShown, OnWasShown)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetActive, OnSetActive)
@@ -448,6 +446,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WidgetMsg_UpdateScreenRects, OnUpdateScreenRects)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetViewportIntersection,
                         OnSetViewportIntersection)
+    IPC_MESSAGE_HANDLER(WidgetMsg_WaitForNextFrameForTests,
+                        OnWaitNextFrameForTests)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragEnter, OnDragTargetDragEnter)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -473,9 +473,9 @@ void RenderWidget::OnClose() {
   Close(base::WrapUnique(this));
 }
 
-void RenderWidget::OnUpdateVisualProperties(
+void RenderWidget::UpdateVisualProperties(
     const blink::VisualProperties& visual_properties_from_browser) {
-  TRACE_EVENT0("renderer", "RenderWidget::OnUpdateVisualProperties");
+  TRACE_EVENT0("renderer", "RenderWidget::UpdateVisualProperties");
 
   // UpdateVisualProperties is used to receive properties from the browser
   // process for this RenderWidget. There are roughly 4 types of
@@ -1784,6 +1784,13 @@ void RenderWidget::RegisterRenderFrame(RenderFrameImpl* frame) {
 
 void RenderWidget::UnregisterRenderFrame(RenderFrameImpl* frame) {
   render_frames_.RemoveObserver(frame);
+}
+
+void RenderWidget::OnWaitNextFrameForTests(
+    int main_frame_thread_observer_routing_id) {
+  // Sends an ACK to the browser process during the next compositor frame.
+  QueueMessage(std::make_unique<WidgetHostMsg_WaitForNextFrameForTests_ACK>(
+      main_frame_thread_observer_routing_id));
 }
 
 const blink::ScreenInfo& RenderWidget::GetOriginalScreenInfo() const {

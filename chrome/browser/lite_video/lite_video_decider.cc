@@ -114,8 +114,12 @@ LiteVideoDecider::~LiteVideoDecider() {
 }
 
 base::Optional<LiteVideoHint> LiteVideoDecider::CanApplyLiteVideo(
-    content::NavigationHandle* navigation_handle) {
+    content::NavigationHandle* navigation_handle,
+    LiteVideoBlocklistReason* blocklist_reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(blocklist_reason);
+  if (blocklist_reason)
+    *blocklist_reason = LiteVideoBlocklistReason::kUnknown;
 
   if (!IsLiteVideoAllowedForUser(Profile::FromBrowserContext(
           navigation_handle->GetWebContents()->GetBrowserContext()))) {
@@ -147,24 +151,25 @@ base::Optional<LiteVideoHint> LiteVideoDecider::CanApplyLiteVideo(
   if (is_reload || (navigation_handle->GetPageTransition() &
                     ui::PAGE_TRANSITION_FORWARD_BACK)) {
     user_blocklist_->AddNavigationToBlocklist(navigation_handle, true);
+    *blocklist_reason = is_reload
+                            ? LiteVideoBlocklistReason::kNavigationReload
+                            : LiteVideoBlocklistReason::kNavigationForwardBack;
     ScopedLiteVideoDecisionRecorder scoped_decision_recorder(
-        is_reload ? LiteVideoBlocklistReason::kNavigationReload
-                  : LiteVideoBlocklistReason::kNavigationForwardBack,
-        navigation_handle->IsInMainFrame());
+        *blocklist_reason, navigation_handle->IsInMainFrame());
     return base::nullopt;
   }
 
-  auto blocklist_reason =
+  *blocklist_reason =
       user_blocklist_->IsLiteVideoAllowedOnNavigation(navigation_handle);
   ScopedLiteVideoDecisionRecorder scoped_decision_recorder(
-      blocklist_reason, navigation_handle->IsInMainFrame());
+      *blocklist_reason, navigation_handle->IsInMainFrame());
 
   base::Optional<LiteVideoHint> hint =
       hint_cache_->GetHintForNavigationURL(url);
   if (hint)
     scoped_decision_recorder.set_has_hint_for_host(true);
 
-  if (blocklist_reason != LiteVideoBlocklistReason::kAllowed || !hint)
+  if (*blocklist_reason != LiteVideoBlocklistReason::kAllowed || !hint)
     return base::nullopt;
 
   // The navigation will have the LiteVideo optimization triggered so

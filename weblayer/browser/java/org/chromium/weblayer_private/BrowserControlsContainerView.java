@@ -87,6 +87,9 @@ class BrowserControlsContainerView extends FrameLayout {
     // bottom-controls, the value ranges from 0 (completely shown) to height (completely hidden).
     private int mControlsOffset;
 
+    // The minimum height that the controls should collapse to. Only used for top controls.
+    private int mMinHeight;
+
     // Set to true if |mView| is hidden because the user has scrolled or triggered some action such
     // that mView is not visible. While |mView| is not visible if this is true, the bitmap from
     // |mView| may be partially visible.
@@ -101,9 +104,9 @@ class BrowserControlsContainerView extends FrameLayout {
 
     public interface Listener {
         /**
-         * Called when the browser-controls are either completely showing, or completely hiding.
+         * Called when the browser-controls are either completely exapanded or completely collapsed.
          */
-        public void onBrowserControlsCompletelyShownOrHidden();
+        public void onBrowserControlsCompletelyExpandedOrCollapsed();
     }
 
     // Used to  delay updating the image for the layer.
@@ -184,11 +187,13 @@ class BrowserControlsContainerView extends FrameLayout {
     }
 
     /**
-     * Returns true if the controls are completely shown or completely hidden. A return value
-     * of false indicates the controls are being moved.
+     * Returns true if the controls are completely expanded or completely collapsed.
+     * "Completely collapsed" does not necessarily mean hidden; the controls could be at their min
+     * height, in which case this would return true. A return value of false indicates the controls
+     * are being moved.
      */
-    public boolean isCompletelyShownOrHidden() {
-        return mControlsOffset == 0 || Math.abs(mControlsOffset) == getHeight();
+    public boolean isCompletelyExpandedOrCollapsed() {
+        return mControlsOffset == 0 || Math.abs(mControlsOffset) == getHeight() - mMinHeight;
     }
 
     /**
@@ -235,17 +240,30 @@ class BrowserControlsContainerView extends FrameLayout {
     }
 
     /**
+     * Sets the minimum height the controls can collapse to.
+     * Only valid for top controls.
+     */
+    public void setMinHeight(int minHeight) {
+        assert mIsTop;
+        mMinHeight = minHeight;
+        // Refresh the offsets so they can get clamped to their possibly taller min height.
+        onOffsetsChanged(mControlsOffset, mContentOffset);
+        if (mWebContents != null) mWebContents.notifyBrowserControlsHeightChanged();
+    }
+
+    /**
      * Called from ViewAndroidDelegate, see it for details.
      */
     public void onOffsetsChanged(int controlsOffsetY, int contentOffsetY) {
         if (mView == null) return;
         if (mIsFullscreen) return;
-        if (controlsOffsetY == 0) {
-            finishScroll(contentOffsetY);
-            return;
-        }
-        if (!mInScroll) prepareForScroll();
         setControlsOffset(controlsOffsetY, contentOffsetY);
+        if (controlsOffsetY == 0
+                || (mIsTop && mMinHeight > 0 && controlsOffsetY <= -getHeight() + mMinHeight)) {
+            finishScroll();
+        } else if (!mInScroll) {
+            prepareForScroll();
+        }
     }
 
     @SuppressLint("NewApi") // Used on O+, invalidateChildInParent used for previous versions.
@@ -286,10 +304,10 @@ class BrowserControlsContainerView extends FrameLayout {
                     // The controls are completely visible.
                     onOffsetsChanged(0, height);
                 } else {
-                    // The controls are partially (and possibly completely) hidden. Snap to
-                    // completely hidden.
+                    // The controls are partially (and possibly completely) hidden. Snap to min
+                    // height (which may be 0).
                     if (mIsTop) {
-                        onOffsetsChanged(-height, height);
+                        onOffsetsChanged(-height + mMinHeight, mMinHeight);
                     } else {
                         onOffsetsChanged(height, 0);
                     }
@@ -347,9 +365,8 @@ class BrowserControlsContainerView extends FrameLayout {
         }
     }
 
-    private void finishScroll(int contentOffsetY) {
+    private void finishScroll() {
         mInScroll = false;
-        setControlsOffset(0, contentOffsetY);
         if (BrowserControlsContainerViewJni.get().shouldDelayVisibilityChange()) {
             mContentViewRenderView.postOnAnimation(() -> showControls());
         } else {
@@ -361,13 +378,14 @@ class BrowserControlsContainerView extends FrameLayout {
         // This function is called asynchronously from the gpu, and may be out of sync with the
         // current values.
         if (mIsTop) {
-            mControlsOffset = MathUtils.clamp(controlsOffsetY, -getHeight(), 0);
+            mControlsOffset = MathUtils.clamp(controlsOffsetY, -getHeight() + mMinHeight, 0);
         } else {
             mControlsOffset = MathUtils.clamp(controlsOffsetY, 0, getHeight());
         }
-        mContentOffset = MathUtils.clamp(contentOffsetY, 0, getHeight());
-        if (isCompletelyShownOrHidden()) {
-            mListener.onBrowserControlsCompletelyShownOrHidden();
+        mContentOffset = MathUtils.clamp(contentOffsetY, mMinHeight, getHeight());
+
+        if (isCompletelyExpandedOrCollapsed()) {
+            mListener.onBrowserControlsCompletelyExpandedOrCollapsed();
         }
         if (mIsTop) {
             BrowserControlsContainerViewJni.get().setTopControlsOffset(
@@ -392,7 +410,10 @@ class BrowserControlsContainerView extends FrameLayout {
     }
 
     private void showControls() {
-        if (mView != null) mView.setVisibility(View.VISIBLE);
+        if (mView != null) {
+            if (mIsTop) mView.setTranslationY(mControlsOffset);
+            mView.setVisibility(View.VISIBLE);
+        }
     }
 
     @CalledByNative

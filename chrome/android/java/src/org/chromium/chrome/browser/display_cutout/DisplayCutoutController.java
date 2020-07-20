@@ -204,7 +204,7 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
 
     @VisibleForTesting
     protected LayoutParams getWindowAttributes() {
-        return mWindow.getAttributes();
+        return mWindow == null ? null : mWindow.getAttributes();
     }
 
     @VisibleForTesting
@@ -218,6 +218,8 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return;
 
         LayoutParams attributes = getWindowAttributes();
+        if (attributes == null) return;
+
         attributes.layoutInDisplayCutoutMode = getDisplayCutoutMode();
         setWindowAttributes(attributes);
     }

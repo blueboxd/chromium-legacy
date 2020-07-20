@@ -232,6 +232,7 @@
 <translation id="1274997165432133392">কুকি আৰু অন্য ছাইট ডেটা</translation>
 <translation id="1275718070701477396">বাছনি কৰা আছে</translation>
 <translation id="1276994519141842946"><ph name="APP_NAME" /> ইনষ্টল কৰিব পৰা নগ’ল</translation>
+<translation id="127946606521051357">ওচৰৰ ডিভাইচে শ্বেয়াৰ কৰি আছে</translation>
 <translation id="1280820357415527819">ম’বাইল নেটৱৰ্ক বিচাৰি থকা হৈছে</translation>
 <translation id="1280965841156951489">ফাইলসমূহ সম্পাদনা কৰক</translation>
 <translation id="1285320974508926690">এই ছাইটটো কেতিয়াও অনুবাদ নকৰিব</translation>
@@ -535,7 +536,7 @@
 <translation id="164936512206786300">ব্লুটুথ ডিভাইচ আনপেয়াৰ কৰক</translation>
 <translation id="1650371550981945235">ইনপুটৰ বিকল্প দেখুৱাওক</translation>
 <translation id="1651008383952180276">আপুনি একেটা পাছফ্ৰেজ দুবাৰ দিবই লাগিব</translation>
-<translation id="1652326691684645429">নিকটৱৰ্তী ডিভাইচৰ সৈতে শ্বেয়াৰ কৰাৰ সুবিধাটো সক্ষম কৰক</translation>
+<translation id="1652326691684645429">নীয়েৰবাই শ্বেয়াৰ সুবিধাটো সক্ষম কৰক</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{আপুনি যিকোনো ঠাইৰে পৰা প্ৰিণ্ট কৰিবলৈ Google ক্লাউড প্ৰিণ্টত প্ৰিণ্টাৰটো যোগ কৰক।}one{আপুনি যিকোনো ঠাইৰে পৰা প্ৰিণ্ট কৰিবলৈ Google ক্লাউড প্ৰিণ্টত #টা প্ৰিণ্টাৰ যোগ কৰক।}other{আপুনি যিকোনো ঠাইৰে পৰা প্ৰিণ্ট কৰিবলৈ Google ক্লাউড প্ৰিণ্টত #টা প্ৰিণ্টাৰ যোগ কৰক।}}</translation>
 <translation id="1656528038316521561">নেপথ্যৰ অস্বচ্ছতা</translation>
 <translation id="1657406563541664238">Googleলৈ ব্যৱহাৰৰ পৰিসংখ্যা আৰু ক্ৰেশ্বৰ অভিযোগ স্বয়ংক্ৰিয়ভাৱে পঠিয়াই <ph name="PRODUCT_NAME" />ক অধিক উন্নত কৰাত সহায় কৰক</translation>
@@ -1216,6 +1217,7 @@
 <translation id="2489918096470125693">&amp;ফ’ল্ডাৰ যোগ দিয়ক...</translation>
 <translation id="2490481887078769936">সূচীৰ পৰা '<ph name="FILE_NAME" />' আঁতৰোৱা হ'ল</translation>
 <translation id="249113932447298600">দুঃখিত, এই সময়ত <ph name="DEVICE_LABEL" /> ডিভাইচটো সমৰ্থিত নহয়।</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" />এ আপোনৰ সৈতে <ph name="ATTACHMENTS" /> শ্বেয়াৰ কৰি আছে।</translation>
 <translation id="2492461744635776704">প্ৰমাণপত্ৰ স্বাক্ষৰ কৰাৰ অনুৰোধ প্ৰস্তুত কৰি থকা হৈছে</translation>
 <translation id="249303669840926644">পঞ্জীয়ন সম্পূৰ্ণ কৰিব পৰা নগ’ল</translation>
 <translation id="2495777824269688114">অধিক সুবিধা বিচাৰি পাওক বা উত্তৰ পাওক। সহায়ৰ বাবে “?” বাছনি কৰক।</translation>
@@ -1663,7 +1665,7 @@
 <translation id="3022978424994383087">কি ক'লে বুজি নাপালোঁ।</translation>
 <translation id="3023464535986383522">কথা ক'বলৈ বাছনি কৰক</translation>
 <translation id="3024374909719388945">২৪ ঘণ্টীয়া ঘড়ীৰ ফর্মেট ব্যৱহাৰ কৰক</translation>
-<translation id="3027296729579831126">নিকটৱৰ্তী ডিভাইচৰ সৈতে শ্বেয়াৰ কৰাৰ সুবিধাটো অন কৰক</translation>
+<translation id="3027296729579831126">নীয়েৰবাই শ্বেয়াৰ সুবিধাটো অন কৰক</translation>
 <translation id="3029466929721441205">শ্বেল্‌ফত ষ্টাইলাছ সঁজুলি দেখুৱাওক</translation>
 <translation id="3031417829280473749">এজেণ্ট X</translation>
 <translation id="3031557471081358569">আমদানি কৰিবলৈ বস্তু বাছনি কৰক:</translation>
@@ -2955,7 +2957,7 @@
 <translation id="4673442866648850031">ষ্টাইলাছ আঁতৰালে ষ্টাইলাছ সঁজুলিসমূহ খোলক</translation>
 <translation id="4677772697204437347">GPU মেম’ৰী</translation>
 <translation id="4680105648806843642">এই পৃষ্ঠাটোত শব্দ মিউট কৰা হৈছে</translation>
-<translation id="4681453295291708042">নিকটৱৰ্তী ডিভাইচৰ সৈতে শ্বেয়াৰ কৰাৰ সুবিধাটো অক্ষম কৰক</translation>
+<translation id="4681453295291708042">নীয়েৰবাই শ্বেয়াৰ সুবিধাটো অক্ষম কৰক</translation>
 <translation id="4681930562518940301">মূল &amp;প্ৰতিচ্ছবি নতুন টেবত খোলক</translation>
 <translation id="4682551433947286597">ছাইন ইন কৰা স্ক্ৰীণত প্ৰদর্শন হোৱা ৱালপেপাৰ।</translation>
 <translation id="4683947955326903992"><ph name="PERCENTAGE" />% (ডিফ’ল্ট)</translation>
@@ -3771,7 +3773,7 @@
 <translation id="5739017626473506901">বিদ্যালয়ৰ এটা একাউণ্ট যোগ দিয়াত <ph name="USER_NAME" />ক সহায় কৰিবলৈ ছাইন ইন কৰক</translation>
 <translation id="5739235828260127894">সত্যাপনৰ বাবে অপেক্ষা কৰি আছে। <ph name="LINK_BEGIN" />অধিক জানক<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">যথেষ্ট ডাঙৰ</translation>
-<translation id="5740328398383587084">নিকটৱৰ্তী ডিভাইচৰ সৈতে শ্বেয়াৰ কৰাৰ সুবিধা</translation>
+<translation id="5740328398383587084">নীয়েৰবাই শ্বেয়াৰ</translation>
 <translation id="574104302965107104">প্ৰতিবিম্বকৰণ দেখুৱাওক</translation>
 <translation id="574209121243317957">পিচ্চ</translation>
 <translation id="5746169159649715125">PDF হিচাপে ছেভ কৰক</translation>
@@ -4141,6 +4143,7 @@
 <translation id="6212039847102026977">নেটৱৰ্কৰ উচ্চখাপৰ বৈশিষ্ট্যসমূহ দেখুৱাওক</translation>
 <translation id="6212168817037875041">ডিছপ্লে’ অফ কৰক</translation>
 <translation id="6212752530110374741">লিংক ইমেইল কৰক</translation>
+<translation id="6213230117190778270">গ্ৰহণ কৰক</translation>
 <translation id="6216696360484424239">স্বয়ংক্ৰিয়ভাৱে ছাইন ইন কৰক</translation>
 <translation id="6218058416316985984">’<ph name="DEVICE_TYPE" />’ অফলাইন আছে। ইণ্টাৰনেটৰ লগত সংযোগ কৰি আকৌ চেষ্টা কৰক।</translation>
 <translation id="6220413761270491930">এক্সটেনশ্বন ল’ড কৰোতে আসোঁৱাহ হৈছে</translation>
@@ -4267,6 +4270,7 @@
 <translation id="6362853299801475928">&amp;কোনো সমস্যাৰ বিযয়ে অভিযোগ কৰক...</translation>
 <translation id="6365069501305898914">ফেচবুক</translation>
 <translation id="6365411474437319296">পৰিয়াল আৰু বন্ধুবর্গক যোগ কৰক</translation>
+<translation id="6367985768157257101">নিকটৱৰ্তী ডিভাইচৰ সৈতে শ্বেয়াৰ কৰাৰ সুবিধাটোৰ জৰিয়তে গ্ৰহণ কৰিবনে?</translation>
 <translation id="636850387210749493">এন্টাৰপ্ৰাইজৰ পঞ্জীয়ন</translation>
 <translation id="6370021412472292592">মেনিফেষ্ট ল’ড কৰিব পৰা নগ’ল।</translation>
 <translation id="6374077068638737855">আইচৱিজল</translation>
@@ -4720,7 +4724,7 @@
 <translation id="6965978654500191972">ডিভাইচ</translation>
 <translation id="696780070563539690">আপুনি বিভিন্ন ছাইটসমূহত কৰা ব্ৰাউজিঙৰ কার্যকলাপ চাবলৈ ছাইটসমূহে কুকিসমূহ ব্যৱহাৰ কৰিব নোৱাৰে, যেনে, বিজ্ঞাপন ব্যক্তিগতকৃত কৰিবলৈ</translation>
 <translation id="6968288415730398122">স্ক্ৰীণ লক কনফিগাৰ কৰিবলৈ নিজৰ পাছৱৰ্ড দিয়ক</translation>
-<translation id="6969047215179982698">নিকটৱৰ্তী ডিভাইচৰ সৈতে শ্বেয়াৰ কৰাৰ সুবিধাটো অফ কৰক</translation>
+<translation id="6969047215179982698">নীয়েৰবাই শ্বেয়াৰ সুবিধাটো অফ কৰক</translation>
 <translation id="6970480684834282392">ষ্টার্ট আপৰ প্ৰকাৰ</translation>
 <translation id="6970856801391541997">নির্দিষ্ট পৃষ্ঠা প্ৰিণ্ট কৰক</translation>
 <translation id="6972180789171089114">অডিঅ’/ভিডিঅ’</translation>
@@ -6561,6 +6565,7 @@
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">পাছফ্ৰেজ দিয়ক</translation>
 <translation id="939736085109172342">নতুন ফ'ল্ডাৰ</translation>
+<translation id="941070664607309480">দৃশ্যমান হ’বলৈ ক্লিক কৰক যাতে এইটোৱে আপোনাৰ সৈতে শ্বেয়াৰ কৰিব পাৰে</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" />এ এটা Chrome টেব আৰু অডিঅ' শ্বেয়াৰ কৰি আছে।</translation>
 <translation id="945522503751344254">মতামত পঠিয়াওক</translation>
 <translation id="947329552760389097">উপাদানসমূহ  &amp;পৰীক্ষা কৰক</translation>

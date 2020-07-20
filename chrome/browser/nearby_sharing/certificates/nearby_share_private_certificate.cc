@@ -7,13 +7,13 @@
 #include <utility>
 
 #include "base/base64url.h"
-#include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/util/values/values_util.h"
 #include "chrome/browser/nearby_sharing/certificates/common.h"
 #include "chrome/browser/nearby_sharing/certificates/constants.h"
+#include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/nearby_sharing/proto/timestamp.pb.h"
 #include "crypto/aead.h"
 #include "crypto/ec_private_key.h"
@@ -184,14 +184,14 @@ base::Optional<NearbyShareEncryptedMetadataKey>
 NearbySharePrivateCertificate::EncryptMetadataKey() {
   base::Optional<std::vector<uint8_t>> salt = GenerateUnusedSalt();
   if (!salt) {
-    LOG(ERROR) << "Encryption failed: Salt generation unsuccessful.";
+    NS_LOG(ERROR) << "Encryption failed: Salt generation unsuccessful.";
     return base::nullopt;
   }
 
   std::unique_ptr<crypto::Encryptor> encryptor =
       CreateNearbyShareCtrEncryptor(secret_key_.get(), *salt);
   if (!encryptor) {
-    LOG(ERROR) << "Encryption failed: Could not create CTR encryptor.";
+    NS_LOG(ERROR) << "Encryption failed: Could not create CTR encryptor.";
     return base::nullopt;
   }
 
@@ -199,7 +199,7 @@ NearbySharePrivateCertificate::EncryptMetadataKey() {
             metadata_encryption_key_.size());
   std::vector<uint8_t> encrypted_metadata_key;
   if (!encryptor->Encrypt(metadata_encryption_key_, &encrypted_metadata_key)) {
-    LOG(ERROR) << "Encryption failed: Could not encrypt metadata key.";
+    NS_LOG(ERROR) << "Encryption failed: Could not encrypt metadata key.";
     return base::nullopt;
   }
 
@@ -213,7 +213,7 @@ base::Optional<std::vector<uint8_t>> NearbySharePrivateCertificate::Sign(
 
   std::vector<uint8_t> signature;
   if (!signer->Sign(payload.data(), payload.size(), &signature)) {
-    LOG(ERROR) << "Signing failed.";
+    NS_LOG(ERROR) << "Signing failed.";
     return base::nullopt;
   }
 
@@ -224,21 +224,21 @@ base::Optional<nearbyshare::proto::PublicCertificate>
 NearbySharePrivateCertificate::ToPublicCertificate() {
   std::vector<uint8_t> public_key;
   if (!key_pair_->ExportPublicKey(&public_key)) {
-    LOG(ERROR) << "Failed to export public key.";
+    NS_LOG(ERROR) << "Failed to export public key.";
     return base::nullopt;
   }
 
   base::Optional<std::vector<uint8_t>> encrypted_metadata_bytes =
       EncryptMetadata();
   if (!encrypted_metadata_bytes) {
-    LOG(ERROR) << "Failed to encrypt metadata.";
+    NS_LOG(ERROR) << "Failed to encrypt metadata.";
     return base::nullopt;
   }
 
   base::Optional<std::vector<uint8_t>> metadata_encryption_key_tag =
       CreateMetadataEncryptionKeyTag(metadata_encryption_key_);
   if (!metadata_encryption_key_tag) {
-    LOG(ERROR) << "Failed to compute metadata encryption key tag.";
+    NS_LOG(ERROR) << "Failed to compute metadata encryption key tag.";
     return base::nullopt;
   }
 
@@ -368,7 +368,7 @@ NearbySharePrivateCertificate::FromDictionary(const base::Value& dict) {
 base::Optional<std::vector<uint8_t>>
 NearbySharePrivateCertificate::GenerateUnusedSalt() {
   if (consumed_salts_.size() >= kNearbyShareMaxNumMetadataEncryptionKeySalts) {
-    LOG(ERROR) << "All salts exhausted for certificate.";
+    NS_LOG(ERROR) << "All salts exhausted for certificate.";
     return base::nullopt;
   }
 
@@ -390,8 +390,8 @@ NearbySharePrivateCertificate::GenerateUnusedSalt() {
     }
   }
 
-  LOG(ERROR) << "Salt generation exceeded max number of retries. This is "
-                "highly improbable.";
+  NS_LOG(ERROR) << "Salt generation exceeded max number of retries. This is "
+                   "highly improbable.";
   return base::nullopt;
 }
 

@@ -439,13 +439,13 @@ void FakeCameraStream::OnZxHandleSignalled(zx_handle_t handle,
     wait_free_buffer_run_loop_->Quit();
 }
 FakeCameraDevice::FakeCameraDevice(FakeCameraStream* stream)
-    : binding_(this), stream_(stream) {}
+    : stream_(stream) {}
 
 FakeCameraDevice::~FakeCameraDevice() = default;
 
 void FakeCameraDevice::Bind(
     fidl::InterfaceRequest<fuchsia::camera3::Device> request) {
-  binding_.Bind(std::move(request));
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void FakeCameraDevice::GetIdentifier(GetIdentifierCallback callback) {
@@ -486,6 +486,10 @@ FakeCameraDeviceWatcher::FakeCameraDeviceWatcher(
 }
 
 FakeCameraDeviceWatcher::~FakeCameraDeviceWatcher() = default;
+
+void FakeCameraDeviceWatcher::DisconnectClients() {
+  bindings_.CloseAll();
+}
 
 FakeCameraDeviceWatcher::Client::Client(FakeCameraDevice* device)
     : device_(device) {}

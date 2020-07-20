@@ -58,6 +58,7 @@ class SafeBrowsingService {
                     content::RenderProcessHost* render_process_host);
   void StopDBManager();
   void SetSafeBrowsingDisabled(bool disabled);
+  bool GetSafeBrowsingDisabled();
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
 
  private:

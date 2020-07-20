@@ -201,6 +201,8 @@ class MasterPreferences {
   DISALLOW_COPY_AND_ASSIGN(MasterPreferences);
 };
 
+using InitialPreferences = MasterPreferences;
+
 }  // namespace installer
 
 #endif  // CHROME_INSTALLER_UTIL_MASTER_PREFERENCES_H_

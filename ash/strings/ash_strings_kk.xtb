@@ -144,7 +144,7 @@
 <translation id="256712445991462162">бекітілген ұлғайтқыш</translation>
 <translation id="2575685495496069081">Бірнеше есептік жазбаға кіру функциясы өшірілді</translation>
 <translation id="2582112259361606227">Жаңарту үшін қайта іске қосу</translation>
-<translation id="2595239820337756193">5 мың миля</translation>
+<translation id="2595239820337756193">5 км неше миляға тең</translation>
 <translation id="2617342710774726426">SIM картасы құлыпталған</translation>
 <translation id="2621713457727696555">Қорғалған</translation>
 <translation id="2653659639078652383">Жіберу</translation>
@@ -525,7 +525,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> уақыт ішінде ескі ажыратымдылыққа ауысады</translation>
 <translation id="7188494361780961876">Мәзір экранның жоғарғы сол жақ бұрышына жылжытылды.</translation>
-<translation id="7189412385142492784">Шолпан Жерден қаншалықты алыс орналасқан?</translation>
+<translation id="7189412385142492784">Шолпан қаншалықты алыс орналасқан?</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Жаңартылған нұсқаны қолдану үшін бұл Chromebook-ті қайта қосу қажет. Оған 1 минуттай кетуі мүмкін.</translation>
 <translation id="7256634071279256947">Артқы микрофон</translation>
 <translation id="726276584504105859">Бөлінген экранды пайдалану үшін осында сүйреңіз</translation>
@@ -652,7 +652,7 @@
 <translation id="8649101189709089199">Select-to-Speak</translation>
 <translation id="8652175077544655965">Параметрлерді жабу</translation>
 <translation id="8653151467777939995">Хабарландыру параметрлерін көрсету. Хабарландырулар қосулы</translation>
-<translation id="8660331759611631213">71 санының түбірі</translation>
+<translation id="8660331759611631213">71 санының шаршы түбірі</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, сигнал күші: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Желі тізімін көрсету. <ph name="STATE_TEXT" /></translation>
 <translation id="8673028979667498656">270°</translation>

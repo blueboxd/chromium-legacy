@@ -7,9 +7,11 @@ module blink.mojom;
 import "cc/mojom/touch_action.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/text_direction.mojom";
+import "services/viz/public/mojom/compositing/local_surface_id_allocation.mojom";
 import "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom";
 import "third_party/blink/public/mojom/input/input_handler.mojom";
 import "third_party/blink/public/mojom/page/drag.mojom";
+import "third_party/blink/public/mojom/widget/visual_properties.mojom";
 import "ui/base/mojom/ui_base_types.mojom";
 import "ui/base/ime/mojom/text_input_state.mojom";
 import "ui/base/cursor/mojom/cursor.mojom";
@@ -82,9 +84,6 @@ interface FrameWidget {
   // The parameter specifies the location in the render widget's coordinates.
   ShowContextMenu(
       ui.mojom.MenuSourceType source_type, gfx.mojom.Point location);
-
-  // Binds an WidgetCompositor interface.
-  BindWidgetCompositor(pending_receiver<WidgetCompositor> host);
 };
 
 // Implemented in Browser, this interface defines frame-widget-specific methods that
@@ -147,6 +146,8 @@ interface Widget {
     pending_receiver<blink.mojom.WidgetInputHandler> request,
     pending_remote<blink.mojom.WidgetInputHandlerHost> host);
 
+  // Update the visual properties of the widget.
+  UpdateVisualProperties(VisualProperties visual_properties);
 };
 
 // Implemented in Browser, this interface defines widget-specific methods that
@@ -171,11 +172,4 @@ interface WidgetHost {
              gfx.mojom.Rect focus_rect,
              mojo_base.mojom.TextDirection focus_dir,
              bool is_anchor_first);
-};
-
-// This interface is bound on the compositor thread.
-interface WidgetCompositor {
-  // Requests that the RenderWidget sends back a response after the next main
-  // frame is generated and presented in the display compositor.
-  VisualStateRequest() => ();
 };

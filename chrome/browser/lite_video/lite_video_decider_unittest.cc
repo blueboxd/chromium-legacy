@@ -100,14 +100,16 @@ class LiteVideoDeciderTest : public ChromeRenderViewHostTestHarness {
 
   base::Optional<lite_video::LiteVideoHint> CanApplyOnSubframeNavigation(
       const GURL& mainframe_url,
-      const GURL& subframe_url) {
+      const GURL& subframe_url,
+      lite_video::LiteVideoBlocklistReason* blocklist_reason) {
     // Needed so that a mainframe navigation exists.
     NavigateAndCommit(mainframe_url);
     content::RenderFrameHostTester* rfh_tester =
         content::RenderFrameHostTester::For(main_rfh());
     content::RenderFrameHost* subframe = rfh_tester->AppendChild("subframe");
     content::MockNavigationHandle navigation_handle(subframe_url, subframe);
-    return lite_video_decider_->CanApplyLiteVideo(&navigation_handle);
+    return lite_video_decider()->CanApplyLiteVideo(&navigation_handle,
+                                                   blocklist_reason);
   }
 
   void SeedLiteVideoHintCache(const GURL& gurl,
@@ -144,9 +146,13 @@ TEST_F(LiteVideoDeciderTest, CanApplyOnNonHTTPOrHTTPSURL) {
   content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(GURL("chrome:://about"));
   navigation_handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
+  lite_video::LiteVideoBlocklistReason blocklist_reason =
+      lite_video::LiteVideoBlocklistReason::kAllowed;
   base::Optional<lite_video::LiteVideoHint> hint =
-      lite_video_decider()->CanApplyLiteVideo(&navigation_handle);
+      lite_video_decider()->CanApplyLiteVideo(&navigation_handle,
+                                              &blocklist_reason);
   EXPECT_FALSE(hint);
+  EXPECT_EQ(blocklist_reason, lite_video::LiteVideoBlocklistReason::kUnknown);
   histogram_tester.ExpectTotalCount(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame", 0);
   histogram_tester.ExpectTotalCount(
@@ -162,9 +168,13 @@ TEST_F(LiteVideoDeciderTest, CanApplyNoHintAndHostBlocklisted) {
   content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(GURL("https://NoVideo.com"));
   navigation_handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
+  lite_video::LiteVideoBlocklistReason blocklist_reason;
   base::Optional<lite_video::LiteVideoHint> hint =
-      lite_video_decider()->CanApplyLiteVideo(&navigation_handle);
+      lite_video_decider()->CanApplyLiteVideo(&navigation_handle,
+                                              &blocklist_reason);
   EXPECT_FALSE(hint);
+  EXPECT_EQ(blocklist_reason,
+            lite_video::LiteVideoBlocklistReason::kNavigationBlocklisted);
   histogram_tester.ExpectUniqueSample(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
       lite_video::LiteVideoBlocklistReason::kNavigationBlocklisted, 1);
@@ -179,10 +189,13 @@ TEST_F(LiteVideoDeciderTest, CanApplyAllowedButNoHint) {
   content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(GURL("https://NoVideo.com"));
   navigation_handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
+  lite_video::LiteVideoBlocklistReason blocklist_reason;
   base::Optional<lite_video::LiteVideoHint> hint =
-      lite_video_decider()->CanApplyLiteVideo(&navigation_handle);
+      lite_video_decider()->CanApplyLiteVideo(&navigation_handle,
+                                              &blocklist_reason);
 
   EXPECT_FALSE(hint);
+  EXPECT_EQ(blocklist_reason, lite_video::LiteVideoBlocklistReason::kAllowed);
   histogram_tester.ExpectUniqueSample(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
       lite_video::LiteVideoBlocklistReason::kAllowed, 1);
@@ -204,10 +217,13 @@ TEST_F(LiteVideoDeciderTest, CanApplyLiteVideo) {
       /*kilobytes_to_buffer_before_throttle=*/500);
   SeedLiteVideoHintCache(url, seeded_hint);
 
+  lite_video::LiteVideoBlocklistReason blocklist_reason;
   base::Optional<lite_video::LiteVideoHint> hint =
-      lite_video_decider()->CanApplyLiteVideo(&navigation_handle);
+      lite_video_decider()->CanApplyLiteVideo(&navigation_handle,
+                                              &blocklist_reason);
 
   ASSERT_TRUE(hint);
+  EXPECT_EQ(blocklist_reason, lite_video::LiteVideoBlocklistReason::kAllowed);
   EXPECT_EQ(seeded_hint.target_downlink_bandwidth_kbps(),
             hint->target_downlink_bandwidth_kbps());
   EXPECT_EQ(seeded_hint.target_downlink_rtt_latency_ms(),
@@ -237,9 +253,12 @@ TEST_F(LiteVideoDeciderTest, LiteVideoDisabled) {
       /*kilobytes_to_buffer_before_throttle=*/500);
   SeedLiteVideoHintCache(url, seeded_hint);
 
+  lite_video::LiteVideoBlocklistReason blocklist_reason;
   base::Optional<lite_video::LiteVideoHint> hint =
-      lite_video_decider()->CanApplyLiteVideo(&navigation_handle);
+      lite_video_decider()->CanApplyLiteVideo(&navigation_handle,
+                                              &blocklist_reason);
   EXPECT_FALSE(hint);
+  EXPECT_EQ(blocklist_reason, lite_video::LiteVideoBlocklistReason::kUnknown);
   histogram_tester.ExpectTotalCount(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame", 0);
   histogram_tester.ExpectTotalCount(
@@ -262,10 +281,12 @@ TEST_F(LiteVideoDeciderTest, LiteVideoCanApplyOnSubframeNavigation) {
       /*kilobytes_to_buffer_before_throttle=*/500);
   SeedLiteVideoHintCache(url, seeded_hint);
 
-  base::Optional<lite_video::LiteVideoHint> hint =
-      CanApplyOnSubframeNavigation(GURL("https://mainframe.com"), url);
+  lite_video::LiteVideoBlocklistReason blocklist_reason;
+  base::Optional<lite_video::LiteVideoHint> hint = CanApplyOnSubframeNavigation(
+      GURL("https://mainframe.com"), url, &blocklist_reason);
 
   ASSERT_TRUE(hint);
+  EXPECT_EQ(blocklist_reason, lite_video::LiteVideoBlocklistReason::kAllowed);
   EXPECT_EQ(seeded_hint.target_downlink_bandwidth_kbps(),
             hint->target_downlink_bandwidth_kbps());
   EXPECT_EQ(seeded_hint.target_downlink_rtt_latency_ms(),
@@ -296,9 +317,13 @@ TEST_F(LiteVideoDeciderTest, CanApplyOnReload) {
       /*kilobytes_to_buffer_before_throttle=*/500);
   SeedLiteVideoHintCache(url, seeded_hint);
 
+  lite_video::LiteVideoBlocklistReason blocklist_reason;
   base::Optional<lite_video::LiteVideoHint> hint =
-      lite_video_decider()->CanApplyLiteVideo(&navigation_handle);
+      lite_video_decider()->CanApplyLiteVideo(&navigation_handle,
+                                              &blocklist_reason);
   EXPECT_FALSE(hint);
+  EXPECT_EQ(blocklist_reason,
+            lite_video::LiteVideoBlocklistReason::kNavigationReload);
   histogram_tester.ExpectUniqueSample(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
       lite_video::LiteVideoBlocklistReason::kNavigationReload, 1);
@@ -323,9 +348,13 @@ TEST_F(LiteVideoDeciderTest, CanApplyOnBackForwardNavigation) {
       /*kilobytes_to_buffer_before_throttle=*/500);
   SeedLiteVideoHintCache(url, seeded_hint);
 
+  lite_video::LiteVideoBlocklistReason blocklist_reason;
   base::Optional<lite_video::LiteVideoHint> hint =
-      lite_video_decider()->CanApplyLiteVideo(&navigation_handle);
+      lite_video_decider()->CanApplyLiteVideo(&navigation_handle,
+                                              &blocklist_reason);
   EXPECT_FALSE(hint);
+  EXPECT_EQ(blocklist_reason,
+            lite_video::LiteVideoBlocklistReason::kNavigationForwardBack);
   histogram_tester.ExpectUniqueSample(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
       lite_video::LiteVideoBlocklistReason::kNavigationForwardBack, 1);

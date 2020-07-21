@@ -521,10 +521,12 @@ void OmniboxResultView::UpdateHoverState() {
 
 void OmniboxResultView::UpdateRemoveSuggestionVisibility() {
   bool old_visibility = remove_suggestion_button_->GetVisible();
-  bool new_visibility = match_.SupportsDeletion() &&
-                        !match_.associated_keyword &&
-                        !match_.ShouldShowTabMatchButtonInlineInResultView() &&
-                        (IsMatchSelected() || IsMouseHovered());
+  bool new_visibility =
+      popup_contents_view_->model()->IsControlPresentOnMatch(
+          OmniboxPopupModel::Selection(
+              model_index_,
+              OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION)) &&
+      (IsMatchSelected() || IsMouseHovered());
 
   remove_suggestion_button_->SetVisible(new_visibility);
 

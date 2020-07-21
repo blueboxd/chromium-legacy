@@ -1163,7 +1163,7 @@ interface ServiceWorkerRegistration : EventTarget
     method unregister
     method update
     setter onupdatefound
-interface StorageManager
+interface StorageManager : EventTarget
     attribute @@toStringTag
     method constructor
     method estimate

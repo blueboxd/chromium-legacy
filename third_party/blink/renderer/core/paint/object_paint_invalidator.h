@@ -56,7 +56,6 @@ class CORE_EXPORT ObjectPaintInvalidator {
   }
 
   void InvalidatePaintIncludingNonCompositingDescendants();
-  void InvalidatePaintIncludingNonSelfPaintingLayerDescendants();
 
  protected:
 #if DCHECK_IS_ON()

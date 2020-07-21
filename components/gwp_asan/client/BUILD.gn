@@ -14,8 +14,6 @@ component("client") {
     "guarded_page_allocator_win.cc",
     "gwp_asan.cc",
     "gwp_asan.h",
-    "sampling_helpers.cc",
-    "sampling_helpers.h",
     "sampling_state.h",
   ]
 
@@ -56,7 +54,6 @@ source_set("unit_tests") {
   sources = [
     "guarded_page_allocator_unittest.cc",
     "gwp_asan_unittest.cc",
-    "sampling_helpers_unittest.cc",
   ]
 
   if (use_allocator_shim) {

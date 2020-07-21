@@ -1787,12 +1787,18 @@ def main(argv):
     deps_info['jetified_full_jar_classpath'] = sorted(
         jetified_full_jar_classpath)
   elif options.type == 'android_app_bundle':
-    # bundles require javac_full_classpath to create .aab.jar.info.
+    # bundles require javac_full_classpath to create .aab.jar.info and require
+    # javac_full_interface_classpath for lint.
     javac_full_classpath = set()
+    javac_full_interface_classpath = set()
     for d in deps.Direct('android_app_bundle_module'):
-      javac_full_classpath.update(p for p in d['javac_full_classpath'])
+      javac_full_classpath.update(d['javac_full_classpath'])
+      javac_full_interface_classpath.update(d['javac_full_interface_classpath'])
       javac_full_classpath.add(d['unprocessed_jar_path'])
+      javac_full_interface_classpath.add(d['interface_jar_path'])
     deps_info['javac_full_classpath'] = sorted(javac_full_classpath)
+    deps_info['javac_full_interface_classpath'] = sorted(
+        javac_full_interface_classpath)
 
   if options.type in ('android_apk', 'dist_jar', 'android_app_bundle_module',
                       'android_app_bundle'):

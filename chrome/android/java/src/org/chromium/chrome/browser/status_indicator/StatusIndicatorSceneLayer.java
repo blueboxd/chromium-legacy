@@ -133,12 +133,6 @@ class StatusIndicatorSceneLayer extends SceneOverlayLayer implements SceneOverla
     @Override
     public void tabStateInitialized() {}
 
-    @Override
-    public void tabModelSwitched(boolean incognito) {}
-
-    @Override
-    public void tabCreated(long time, boolean incognito, int id, int prevId, boolean selected) {}
-
     @NativeMethods
     interface Natives {
         long init(StatusIndicatorSceneLayer caller);

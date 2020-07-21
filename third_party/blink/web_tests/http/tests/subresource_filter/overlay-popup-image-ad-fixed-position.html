@@ -44,32 +44,46 @@ div.bottom {
 if (window.testRunner) {
   // Inject a subresource filter to mark 'alpha.png' as a would be disallowed resource.
   testRunner.setDisallowedSubresourcePathSuffixes(["alpha.png"], false /* block_subresources */);
+  internals.DisableFrequencyCappingForOverlayPopupDetection();
 }
 
-async_test(t => {
-  // After 1500ms, force a layout update so that the interstitial detector is
-  // aware of the first meaningful paint, and future overlay candidates will
-  // be considered for pop-ups rather than for prestitials.
-  verifyOverlayPopupUseCounterAfter1500ms(t, false,
-    () => {
-      // Create the overlay pop-up ad.
+promise_test(() => {
+  return new Promise(async (resolve, reject) => {
+      // After 1500ms, force a layout update so that the interstitial detector
+      // is aware of the first meaningful paint, and future overlay candidates
+      // will be considered for pop-ups rather than for prestitials.
+    await timeout(1500);
+    await forceLayoutUpdate();
+
+    // Create the overlay pop-up ad, and wait for image load so that the ad
+    // status are propagated.
+    await new Promise(resolve => {
       let ad_img = document.createElement('img');
+      ad_img.addEventListener('load', () => {
+        resolve();
+      });
       ad_img.src = "resources/alpha.png";
       document.getElementsByTagName('div')[0].appendChild(ad_img);
-
-      // After 1500ms, force a layout update so that the interstitial detector
-      // is aware of the overlay candidate.
-      verifyOverlayPopupUseCounterAfter1500ms(t, false,
-        () => {
-          // Hide the pop-up.
-          document.getElementsByTagName('img')[0].style.display = 'none';
-
-          // After 1500ms, force a layout update so that the interstitial
-          // detector is aware of the overlay candidate's dismissal. Expect
-          // that the use counter kOverlayPopupAd is recorded.
-          verifyOverlayPopupUseCounterAfter1500ms(t, true);
-        });
     });
+
+    // Force a layout update, so that the interstitial detector is aware of the
+    // overlay candidate.
+    await forceLayoutUpdate();
+
+    // Hide the pop-up.
+    document.getElementsByTagName('img')[0].style.display = 'none';
+
+    // Force a layout update, so that the interstitial detector is aware of the
+    // overlay candidate's dismissal.
+    await forceLayoutUpdate();
+
+    // Expect the OverlayPopupAd UseCounter.
+    if (!internals.isUseCounted(document, kOverlayPopupAd)) {
+      reject();
+    }
+
+    resolve();
+  });
 }, "Test UseCounter for overlay-popup-ad when the image itself has a fixed position.");
 
 </script>

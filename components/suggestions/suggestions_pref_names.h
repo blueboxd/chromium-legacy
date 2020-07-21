@@ -10,7 +10,7 @@ namespace prefs {
 
 // Alphabetical list of preference names specific to the Suggestions
 // component. Keep alphabetized, and document each in the .cc file.
-extern const char kSuggestionsBlacklist[];
+extern const char kSuggestionsBlocklist[];
 extern const char kSuggestionsData[];
 
 }  // namespace prefs

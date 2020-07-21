@@ -155,10 +155,6 @@ class SafeBrowsingNavigationObserver : public base::SupportsUserData::Data,
 
   scoped_refptr<SafeBrowsingNavigationObserverManager> manager_;
 
-  // If the observed WebContents just got an user gesture.
-  bool has_user_gesture_;
-
-  base::Time last_user_gesture_timestamp_;
   ScopedObserver<HostContentSettingsMap, content_settings::Observer>
       content_settings_observer_{this};
 

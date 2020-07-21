@@ -73,6 +73,11 @@ content::WebUIDataSource* CreateUntrustedWebUIDataSource() {
       network::mojom::CSPDirectiveName::StyleSrc,
       "style-src chrome-untrusted://resources 'unsafe-inline' 'self';");
 
+  // Allow workers from chrome-untrusted://kaleidoscope.
+  untrusted_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::WorkerSrc,
+      "worker-src chrome-untrusted://kaleidoscope;");
+
   // Allow images and videos from anywhere.
   untrusted_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ImgSrc, "img-src * data:;");
@@ -91,6 +96,8 @@ content::WebUIDataSource* CreateUntrustedWebUIDataSource() {
   untrusted_source->AddResourcePath("content.css",
                                     IDR_KALEIDOSCOPE_CONTENT_CSS);
   untrusted_source->AddResourcePath("content.js", IDR_KALEIDOSCOPE_CONTENT_JS);
+  untrusted_source->AddResourcePath("content-worker.js",
+                                    IDR_KALEIDOSCOPE_CONTENT_WORKER_JS);
   untrusted_source->AddResourcePath("messages.js",
                                     IDR_KALEIDOSCOPE_MESSAGES_JS);
   untrusted_source->AddResourcePath("toolbar.js", IDR_KALEIDOSCOPE_TOOLBAR_JS);
@@ -135,10 +142,19 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   html_source->SetRequestFilter(base::BindRepeating(OnShouldHandleRequest),
                                 base::BindRepeating(OnStringsRequest));
 
+  // Allow workers from chrome://kaleidoscope (for testing).
+  html_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::WorkerSrc,
+      "worker-src chrome://kaleidoscope;");
+
 #if BUILDFLAG(ENABLE_KALEIDOSCOPE)
   html_source->AddResourcePath("kaleidoscope.js", IDR_KALEIDOSCOPE_JS);
   html_source->AddResourcePath("messages.js", IDR_KALEIDOSCOPE_MESSAGES_JS);
+
+  // TODO(beccahughes): Remove
   html_source->AddResourcePath("utils.js", IDR_KALEIDOSCOPE_UTILS_JS);
+  html_source->AddResourcePath("content-worker.js",
+                               IDR_KALEIDOSCOPE_CONTENT_WORKER_JS);
 
   html_source->AddResourcePath("geometry.mojom-lite.js",
                                IDR_GEOMETRY_MOJOM_LITE_JS);

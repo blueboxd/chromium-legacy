@@ -43,6 +43,7 @@
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom-blink.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_host.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom-blink.h"
 #include "third_party/blink/public/platform/web_fetch_client_settings_object.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
@@ -72,7 +73,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
   ~WebSharedWorkerImpl() override;
 
   // WebSharedWorker methods:
-  void Connect(MessagePortChannel) override;
+  void Connect(int connection_request_id, MessagePortDescriptor port) override;
   void TerminateWorkerContext() override;
 
   // Callback methods for SharedWorkerReportingProxy.
@@ -88,8 +89,10 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
  private:
   friend class WebSharedWorker;
 
-  WebSharedWorkerImpl(const base::UnguessableToken& appcache_host_id,
-                      WebSharedWorkerClient*);
+  WebSharedWorkerImpl(
+      const base::UnguessableToken& appcache_host_id,
+      CrossVariantMojoRemote<mojom::SharedWorkerHostInterfaceBase> host,
+      WebSharedWorkerClient*);
 
   void StartWorkerContext(
       const WebURL&,
@@ -113,19 +116,29 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
       std::unique_ptr<WorkerMainScriptLoadParameters>
           worker_main_script_load_params);
 
+  void DispatchPendingConnections();
+  void ConnectToChannel(int connection_request_id,
+                        blink::MessagePortChannel channel);
+  void ConnectTaskOnWorkerThread(MessagePortChannel);
+
   SharedWorkerThread* GetWorkerThread() { return worker_thread_.get(); }
 
   // Shuts down the worker thread. This may synchronously destroy |this|.
   void TerminateWorkerThread();
 
-  void ConnectTaskOnWorkerThread(MessagePortChannel);
-
   const Persistent<SharedWorkerReportingProxy> reporting_proxy_;
   const std::unique_ptr<SharedWorkerThread> worker_thread_;
+
+  mojo::Remote<mojom::blink::SharedWorkerHost> host_;
 
   // |client_| owns |this|.
   WebSharedWorkerClient* client_;
 
+  using PendingChannel =
+      std::pair<int /* connection_request_id */, blink::MessagePortChannel>;
+  Vector<PendingChannel> pending_channels_;
+
+  bool running_ = false;
   bool asked_to_terminate_ = false;
 
   base::WeakPtrFactory<WebSharedWorkerImpl> weak_ptr_factory_{this};

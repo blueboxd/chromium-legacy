@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CapabilitiesResponse, DEFAULT_MAX_COPIES, Destination, DestinationCertificateStatus, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationType, LocalDestinationInfo, MeasurementSystemUnitType, NativeInitialSettings, SelectOption} from 'chrome://print/print_preview.js';
+import {CapabilitiesResponse, Cdd, DEFAULT_MAX_COPIES, Destination, DestinationCertificateStatus, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationType, LocalDestinationInfo, MeasurementSystemUnitType, NativeInitialSettings, SelectOption} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -37,7 +37,7 @@ export function getDefaultInitialSettings() {
 /**
  * @param {string} printerId
  * @param {string=} opt_printerName Defaults to an empty string.
- * @return {!CapabilitiesResponse}
+ * @return {!{printer: !LocalDestinationInfo, capabilities: !Cdd}}
  */
 export function getCddTemplate(printerId, opt_printerName) {
   const template = {

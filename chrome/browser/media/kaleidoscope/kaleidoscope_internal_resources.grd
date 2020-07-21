@@ -18,6 +18,7 @@
       <include name="IDR_KALEIDOSCOPE_CONTENT_CSS" file="internal/resources/content.css" type="chrome_html" flattenhtml="true" />
       <include name="IDR_KALEIDOSCOPE_CONTENT_HTML" file="internal/resources/content.html" type="BINDATA" />
       <include name="IDR_KALEIDOSCOPE_CONTENT_JS" file="${root_gen_dir}/chrome/browser/media/kaleidoscope/internal/resources/ks-content.js" use_base_dir="false" type="BINDATA" />
+      <include name="IDR_KALEIDOSCOPE_CONTENT_WORKER_JS" file="${root_gen_dir}/chrome/browser/media/kaleidoscope/internal/resources/ks-content-worker.js" use_base_dir="false" type="BINDATA" />
       <include name="IDR_KALEIDOSCOPE_HTML" file="internal/resources/kaleidoscope.html" type="BINDATA" />
       <include name="IDR_KALEIDOSCOPE_JS" file="internal/resources/kaleidoscope.js" type="BINDATA" />
       <include name="IDR_KALEIDOSCOPE_MESSAGES_JS" file="internal/resources/messages.js" type="BINDATA" />

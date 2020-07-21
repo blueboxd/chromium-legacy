@@ -20,6 +20,7 @@ import android.view.View;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadController;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.share.BitmapDownloadRequest;
 import org.chromium.chrome.browser.share.qrcode.QRCodeGenerationRequest;
@@ -40,7 +41,6 @@ class QrCodeShareMediator {
     // The number of times the user has attempted to download the QR code in this dialog.
     private int mNumDownloads;
 
-    private long mDownloadStartTime;
     private boolean mIsDownloadInProgress;
     private String mUrl;
     private Runnable mCloseDialog;
@@ -48,7 +48,7 @@ class QrCodeShareMediator {
     /**
      * The QrCodeScanMediator constructor.
      * @param context The context to use.
-     * @param propertyModel The property modelto use to communicate with views.
+     * @param propertyModel The property model to use to communicate with views.
      * @param closeDialog The {@link Runnable} to close the dialog.
      * @param url The url to create the QRCode.
      */
@@ -74,10 +74,22 @@ class QrCodeShareMediator {
                 new QRCodeGenerationRequest.QRCodeServiceCallback() {
                     @Override
                     public void onQRCodeAvailable(Bitmap bitmap) {
-                        // TODO(skare): If bitmap is null, surface an error.
                         if (bitmap != null) {
                             mPropertyModel.set(QrCodeShareViewProperties.QRCODE_BITMAP, bitmap);
+                            return;
                         }
+                        int maxUrlLength = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                                ChromeFeatureList.CHROME_SHARE_QRCODE, "max_url_length",
+                                /*defaultValue=*/122);
+                        String errorMessage;
+                        if (mUrl.length() > maxUrlLength) {
+                            errorMessage = mContext.getResources().getString(
+                                    R.string.qr_code_error_too_long, maxUrlLength);
+                        } else {
+                            errorMessage = mContext.getResources().getString(
+                                    R.string.qr_code_error_unknown);
+                        }
+                        mPropertyModel.set(QrCodeShareViewProperties.ERROR_STRING, errorMessage);
                     }
                 };
         new QRCodeGenerationRequest(data, callback);

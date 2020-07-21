@@ -22,8 +22,8 @@
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/test/test_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
-#include "chrome/browser/web_applications/test/test_file_handler_manager.h"
 #include "chrome/browser/web_applications/test/test_file_utils.h"
+#include "chrome/browser/web_applications/test/test_os_integration_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
 #include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
@@ -130,9 +130,8 @@ std::unique_ptr<WebAppDataRetriever> CreateEmptyDataRetriever() {
 std::unique_ptr<WebAppInstallTask> CreateDummyTask() {
   return std::make_unique<WebAppInstallTask>(
       /*profile=*/nullptr,
-      /*registrar=*/nullptr,
       /*shortcut_manager=*/nullptr,
-      /*file_handler_manager=*/nullptr,
+      /*os_integration_manager=*/nullptr,
       /*install_finalizer=*/nullptr,
       /*data_retriever=*/nullptr);
 }
@@ -161,11 +160,11 @@ class WebAppInstallManagerTest : public WebAppTest {
         profile(), icon_manager_.get(), /*legacy_finalizer=*/nullptr);
 
     shortcut_manager_ = std::make_unique<TestAppShortcutManager>(profile());
-    file_handler_manager_ = std::make_unique<TestFileHandlerManager>(profile());
+    os_integration_manager_ = std::make_unique<TestOsIntegrationManager>();
 
     install_manager_ = std::make_unique<WebAppInstallManager>(profile());
     install_manager_->SetSubsystems(&registrar(), shortcut_manager_.get(),
-                                    file_handler_manager_.get(),
+                                    os_integration_manager_.get(),
                                     install_finalizer_.get());
 
     auto test_url_loader = std::make_unique<TestWebAppUrlLoader>();
@@ -188,8 +187,8 @@ class WebAppInstallManagerTest : public WebAppTest {
   WebAppRegistrar& registrar() { return controller().registrar(); }
   WebAppInstallManager& install_manager() { return *install_manager_; }
   TestAppShortcutManager& shortcut_manager() { return *shortcut_manager_; }
-  TestFileHandlerManager& file_handler_manager() {
-    return *file_handler_manager_;
+  TestOsIntegrationManager& os_integration_manager() {
+    return *os_integration_manager_;
   }
   WebAppInstallFinalizer& finalizer() { return *install_finalizer_; }
   WebAppIconManager& icon_manager() { return *icon_manager_; }
@@ -444,7 +443,7 @@ class WebAppInstallManagerTest : public WebAppTest {
   std::unique_ptr<WebAppIconManager> icon_manager_;
 
   std::unique_ptr<TestAppShortcutManager> shortcut_manager_;
-  std::unique_ptr<TestFileHandlerManager> file_handler_manager_;
+  std::unique_ptr<TestOsIntegrationManager> os_integration_manager_;
   std::unique_ptr<WebAppInstallManager> install_manager_;
   std::unique_ptr<WebAppInstallFinalizer> install_finalizer_;
   std::unique_ptr<TestWebAppUiManager> ui_manager_;

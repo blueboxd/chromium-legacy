@@ -1412,11 +1412,13 @@ interface ServiceWorkerRegistration : EventTarget
     method unregister
     method update
     setter onupdatefound
-interface StorageManager
+interface StorageManager : EventTarget
     attribute @@toStringTag
+    getter onquotachange
     method constructor
     method estimate
     method persisted
+    setter onquotachange
 interface SubtleCrypto
     attribute @@toStringTag
     method constructor

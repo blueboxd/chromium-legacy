@@ -77,6 +77,10 @@ class WebExternalWidgetClient {
   // Apply the visual properties to the widget.
   virtual void UpdateVisualProperties(
       const VisualProperties& visual_properties) {}
+
+  // Apply the updated screen rects.
+  virtual void UpdateScreenRects(const gfx::Rect& widget_screen_rect,
+                                 const gfx::Rect& window_screen_rect) {}
 };
 
 }  // namespace blink

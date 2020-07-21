@@ -71,7 +71,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyntheticSmoothScrollGestureParams)
   IPC_STRUCT_TRAITS_MEMBER(fling_velocity_x)
   IPC_STRUCT_TRAITS_MEMBER(fling_velocity_y)
   IPC_STRUCT_TRAITS_MEMBER(granularity)
-  IPC_STRUCT_TRAITS_MEMBER(key_modifiers)
+  IPC_STRUCT_TRAITS_MEMBER(modifiers)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::SyntheticPinchGestureParams)

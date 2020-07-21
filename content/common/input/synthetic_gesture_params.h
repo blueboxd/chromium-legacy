@@ -48,6 +48,8 @@ struct CONTENT_EXPORT SyntheticGestureParams {
     SYNTHETIC_GESTURE_TYPE_MAX = POINTER_ACTION_LIST
   };
 
+  static constexpr int kDefaultSpeedInPixelsPerSec = 800;
+
   virtual GestureType GetGestureType() const = 0;
 
   // Returns true if the specific gesture source type is supported on this

@@ -33,50 +33,62 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
     ACTIVATE,
   };
 
+  // Parameters to determine the promo's contents and appearance. Only
+  // |body_string_specifier|, |anchor_view|, and |arrow| are required.
+  struct CreateParams {
+    CreateParams();
+    ~CreateParams();
+
+    CreateParams(CreateParams&&);
+
+    // Promo contents:
+
+    // The main promo text. Must be set to a valid string specifier.
+    int body_string_specifier = -1;
+
+    // Title shown larger at top of bubble. Optional.
+    base::Optional<int> title_string_specifier;
+
+    // String to be announced when bubble is shown. Optional.
+    base::Optional<int> screenreader_string_specifier;
+
+    // A keyboard accelerator to access the feature. If
+    // |screenreader_string_specifier| is set and contains a
+    // placeholder, this is filled in.
+    base::Optional<ui::Accelerator> feature_accelerator;
+
+    // Positioning and sizing:
+
+    // View bubble is positioned relative to. Required.
+    views::View* anchor_view = nullptr;
+
+    // Determines position relative to |anchor_view|. Required. Note
+    // that contrary to the name, no visible arrow is shown.
+    views::BubbleBorder::Arrow arrow;
+
+    // If set, determines the width of the bubble. Prefer the default if
+    // possible.
+    base::Optional<int> preferred_width;
+
+    // Determines whether the bubble's widget can be activated, and
+    // activates it on creation if so.
+    ActivationAction activation_action = ActivationAction::DO_NOT_ACTIVATE;
+
+    // Changes the bubble timeout. Intended for tests, avoid use.
+    std::unique_ptr<FeaturePromoBubbleTimeout> timeout;
+  };
+
   ~FeaturePromoBubbleView() override;
 
-  // Creates a promo bubble. The returned pointer is only valid until the widget
-  // is closed. It must not be manually deleted by the caller.
-  // * |anchor_view| is the View this bubble is anchored to.
-  // * |arrow| specifies where on the border the bubble's arrow is located.
-  // * |title_string_specifier| is a string ID that can be passed to
-  // |l10n_util::GetStringUTF16()|.
-  // * |body_string_specifier| is a string ID that can be passed to
-  // |l10n_util::GetStringUTF16()|.
-  // * |preferred_width| is an optional width for the promo bubble.
-  // * |screenreader_string_specifier| is an optional alternate string to be
-  // exposed to screen readers.
-  // * |feature_accelerator| is an optional keyboard accelerator to be announced
-  // by screen readers. If |screenreader_string_specifier| is used and has a
-  // placeholder, |feature_accelerator|'s shortcut text will be filled in.
-  // * |activation_action| specifies whether the bubble's widget will be
-  // activated.
-  static FeaturePromoBubbleView* CreateOwned(
-      views::View* anchor_view,
-      views::BubbleBorder::Arrow arrow,
-      ActivationAction activation_action,
-      base::Optional<int> title_string_specifier,
-      int body_string_specifier,
-      base::Optional<int> preferred_width = base::nullopt,
-      base::Optional<int> screenreader_string_specifier = base::nullopt,
-      base::Optional<ui::Accelerator> feature_accelerator = base::nullopt,
-      std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout =
-          nullptr);
+  // Creates the promo. The returned pointer is only valid until the
+  // widget is destroyed. It must not be manually deleted by the caller.
+  static FeaturePromoBubbleView* Create(CreateParams params);
 
   // Closes the promo bubble.
   void CloseBubble();
 
  private:
-  FeaturePromoBubbleView(
-      views::View* anchor_view,
-      views::BubbleBorder::Arrow arrow,
-      ActivationAction activation_action,
-      base::Optional<int> title_string_specifier,
-      int body_string_specifier,
-      base::Optional<int> preferred_width,
-      base::Optional<int> screenreader_string_specifier,
-      base::Optional<ui::Accelerator> feature_accelerator,
-      std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout);
+  explicit FeaturePromoBubbleView(CreateParams params);
 
   // BubbleDialogDelegateView:
   bool OnMousePressed(const ui::MouseEvent& event) override;

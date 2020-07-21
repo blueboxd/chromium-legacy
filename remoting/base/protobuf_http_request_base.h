@@ -1,0 +1,80 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef REMOTING_BASE_PROTOBUF_HTTP_REQUEST_BASE_H_
+#define REMOTING_BASE_PROTOBUF_HTTP_REQUEST_BASE_H_
+
+#include <memory>
+#include <string>
+
+#include "base/callback.h"
+#include "base/dcheck_is_on.h"
+#include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
+#include "remoting/base/protobuf_http_status.h"
+
+namespace network {
+
+namespace mojom {
+class URLLoaderFactory;
+}  // namespace mojom
+
+class SimpleURLLoader;
+
+}  // namespace network
+
+namespace remoting {
+
+class ProtobufHttpClient;
+
+struct ProtobufHttpRequestConfig;
+
+// Base request class for unary and server streaming requests.
+class ProtobufHttpRequestBase {
+ public:
+  explicit ProtobufHttpRequestBase(
+      std::unique_ptr<ProtobufHttpRequestConfig> config);
+  virtual ~ProtobufHttpRequestBase();
+
+  const ProtobufHttpRequestConfig& config() const { return *config_; }
+
+ protected:
+  virtual void OnAuthFailed(const ProtobufHttpStatus& status) = 0;
+  virtual void StartRequestInternal(
+      network::mojom::URLLoaderFactory* loader_factory) = 0;
+
+  // Returns a deadline for when the request has to be finished. Returns zero
+  // if the request doesn't timeout. This is generally only useful for unary
+  // requests.
+  virtual base::TimeDelta GetRequestTimeoutDuration() const = 0;
+
+  // Returns the http status from |url_loader_|. Only useful when |url_loader_|
+  // informs that the request has been completed.
+  ProtobufHttpStatus GetUrlLoaderStatus() const;
+
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
+
+  // Subclass should run this closure whenever its lifetime ends, e.g. response
+  // is received or stream is closed. This will delete |this| from the parent
+  // ProtobufHttpClient.
+  base::OnceClosure invalidator_;
+
+ private:
+  friend class ProtobufHttpClient;
+
+  // Called by ProtobufHttpClient.
+  void StartRequest(network::mojom::URLLoaderFactory* loader_factory,
+                    std::unique_ptr<network::SimpleURLLoader> url_loader,
+                    base::OnceClosure invalidator);
+
+  std::unique_ptr<ProtobufHttpRequestConfig> config_;
+
+#if DCHECK_IS_ON()
+  base::TimeTicks request_deadline_;
+#endif  // DCHECK_IS_ON()
+};
+
+}  // namespace remoting
+
+#endif  // REMOTING_BASE_PROTOBUF_HTTP_REQUEST_BASE_H_

@@ -693,11 +693,7 @@ TEST_F(RenderViewImplEmulatingPopupTest, EmulatingPopupRect) {
     ASSERT_TRUE(popup_widget);
 
     // Set its size.
-    {
-      WidgetMsg_UpdateScreenRects msg(popup_widget->routing_id(),
-                                      widget_screen_rect, window_screen_rect);
-      popup_widget->OnMessageReceived(msg);
-    }
+    popup_widget->UpdateScreenRects(widget_screen_rect, window_screen_rect);
 
     // The WindowScreenRect, WidgetScreenRect, and ScreenRect are all available
     // to the popup.
@@ -734,11 +730,7 @@ TEST_F(RenderViewImplEmulatingPopupTest, EmulatingPopupRect) {
     ASSERT_TRUE(popup_widget);
 
     // Set its size again.
-    {
-      WidgetMsg_UpdateScreenRects msg(popup_widget->routing_id(),
-                                      widget_screen_rect, window_screen_rect);
-      popup_widget->OnMessageReceived(msg);
-    }
+    popup_widget->UpdateScreenRects(widget_screen_rect, window_screen_rect);
 
     // This time, the position of the WidgetScreenRect and WindowScreenRect
     // should be affected by emulation params.

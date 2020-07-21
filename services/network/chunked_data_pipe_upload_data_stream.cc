@@ -53,7 +53,8 @@ int ChunkedDataPipeUploadDataStream::InitInternal(
   mojo::ScopedDataPipeConsumerHandle data_pipe_consumer;
   MojoResult result =
       mojo::CreateDataPipe(nullptr, &data_pipe_producer, &data_pipe_consumer);
-  DCHECK_EQ(MOJO_RESULT_OK, result);
+  if (result != MOJO_RESULT_OK)
+    return net::ERR_INSUFFICIENT_RESOURCES;
   chunked_data_pipe_getter_->StartReading(std::move(data_pipe_producer));
   data_pipe_ = std::move(data_pipe_consumer);
 

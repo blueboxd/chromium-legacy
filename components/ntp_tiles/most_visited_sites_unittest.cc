@@ -216,9 +216,9 @@ class MockSuggestionsService : public SuggestionsService {
   MOCK_METHOD1(AddCallback,
                std::unique_ptr<ResponseCallbackList::Subscription>(
                    const ResponseCallback& callback));
-  MOCK_METHOD1(BlacklistURL, bool(const GURL& candidate_url));
-  MOCK_METHOD1(UndoBlacklistURL, bool(const GURL& url));
-  MOCK_METHOD0(ClearBlacklist, void());
+  MOCK_METHOD1(BlocklistURL, bool(const GURL& candidate_url));
+  MOCK_METHOD1(UndoBlocklistURL, bool(const GURL& url));
+  MOCK_METHOD0(ClearBlocklist, void());
 };
 
 class MockMostVisitedSitesObserver : public MostVisitedSites::Observer {
@@ -977,14 +977,14 @@ TEST_P(MostVisitedSitesTest, RemovesPersonalSiteIfExploreSitesTilePresent) {
 
 TEST_P(MostVisitedSitesTest, ShouldInformSuggestionSourcesWhenBlacklisting) {
   EXPECT_CALL(*mock_top_sites_, AddBlockedUrl(Eq(GURL(kHomepageUrl)))).Times(1);
-  EXPECT_CALL(mock_suggestions_service_, BlacklistURL(Eq(GURL(kHomepageUrl))))
+  EXPECT_CALL(mock_suggestions_service_, BlocklistURL(Eq(GURL(kHomepageUrl))))
       .Times(AnyNumber());
   most_visited_sites_->AddOrRemoveBlacklistedUrl(GURL(kHomepageUrl),
                                                  /*add_url=*/true);
   EXPECT_CALL(*mock_top_sites_, RemoveBlockedUrl(Eq(GURL(kHomepageUrl))))
       .Times(1);
   EXPECT_CALL(mock_suggestions_service_,
-              UndoBlacklistURL(Eq(GURL(kHomepageUrl))))
+              UndoBlocklistURL(Eq(GURL(kHomepageUrl))))
       .Times(AnyNumber());
   most_visited_sites_->AddOrRemoveBlacklistedUrl(GURL(kHomepageUrl),
                                                  /*add_url=*/false);

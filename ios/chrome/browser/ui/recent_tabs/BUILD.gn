@@ -65,6 +65,7 @@ source_set("recent_tabs_ui") {
   ]
   deps = [
     ":recent_tabs_ui_constants",
+    "resources:recent_tabs_other_devices_empty",
     "//base",
     "//components/sessions",
     "//components/strings",
@@ -142,6 +143,7 @@ source_set("eg2_tests") {
     "//base/test:test_support",
     "//components/strings",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
     "//ios/chrome/browser/ui/authentication/cells:constants",
     "//ios/chrome/browser/ui/history:constants",

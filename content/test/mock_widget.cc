@@ -11,6 +11,7 @@ MockWidget::MockWidget() = default;
 MockWidget::~MockWidget() = default;
 
 mojo::PendingAssociatedRemote<blink::mojom::Widget> MockWidget::GetNewRemote() {
+  blink_widget_.reset();
   return blink_widget_.BindNewEndpointAndPassDedicatedRemoteForTesting();
 }
 
@@ -23,6 +24,19 @@ void MockWidget::ClearVisualProperties() {
   visual_properties_.clear();
 }
 
+const std::vector<std::pair<gfx::Rect, gfx::Rect>>&
+MockWidget::ReceivedScreenRects() {
+  return screen_rects_;
+}
+
+void MockWidget::ClearScreenRects() {
+  for (auto& callback : screen_rects_callbacks_) {
+    std::move(callback).Run();
+  }
+  screen_rects_callbacks_.clear();
+  screen_rects_.clear();
+}
+
 void MockWidget::ForceRedraw(ForceRedrawCallback callback) {}
 
 void MockWidget::GetWidgetInputHandler(
@@ -32,6 +46,14 @@ void MockWidget::GetWidgetInputHandler(
 void MockWidget::UpdateVisualProperties(
     const blink::VisualProperties& visual_properties) {
   visual_properties_.push_back(visual_properties);
+}
+
+void MockWidget::UpdateScreenRects(const gfx::Rect& widget_screen_rect,
+                                   const gfx::Rect& window_screen_rect,
+                                   UpdateScreenRectsCallback callback) {
+  screen_rects_.push_back(
+      std::make_pair(widget_screen_rect, window_screen_rect));
+  screen_rects_callbacks_.push_back(std::move(callback));
 }
 
 }  // namespace content

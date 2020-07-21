@@ -32,7 +32,7 @@ enum class InstallResultCode;
 class InstallFinalizer;
 class AppRegistrar;
 class AppShortcutManager;
-class FileHandlerManager;
+class OsIntegrationManager;
 
 // TODO(loyso): Rework this interface. Unify the API and merge similar
 // InstallWebAppZZZZ functions.
@@ -162,7 +162,7 @@ class InstallManager {
 
   void SetSubsystems(AppRegistrar* registrar,
                      AppShortcutManager* shortcut_manager,
-                     FileHandlerManager* file_handler_manager,
+                     OsIntegrationManager* os_integration_manager,
                      InstallFinalizer* finalizer);
 
   // Loads |web_app_url| in a new WebContents and determines whether it has a
@@ -183,7 +183,9 @@ class InstallManager {
   Profile* profile() { return profile_; }
   AppRegistrar* registrar() { return registrar_; }
   AppShortcutManager* shortcut_manager() { return shortcut_manager_; }
-  FileHandlerManager* file_handler_manager() { return file_handler_manager_; }
+  OsIntegrationManager* os_integration_manager() {
+    return os_integration_manager_;
+  }
   InstallFinalizer* finalizer() { return finalizer_; }
 
   bool disable_bookmark_app_sync_install_for_testing() const {
@@ -199,7 +201,7 @@ class InstallManager {
 
   AppRegistrar* registrar_ = nullptr;
   AppShortcutManager* shortcut_manager_ = nullptr;
-  FileHandlerManager* file_handler_manager_ = nullptr;
+  OsIntegrationManager* os_integration_manager_ = nullptr;
   InstallFinalizer* finalizer_ = nullptr;
 
   bool disable_bookmark_app_sync_install_for_testing_ = false;

@@ -26,10 +26,13 @@ import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabStripSceneLayer;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.ui.base.LocalizationUtils;
@@ -73,6 +76,16 @@ public class StripLayoutHelperManager implements SceneOverlay {
     private TabStripSceneLayer mTabStripTreeProvider;
 
     private TabStripEventHandler mTabStripEventHandler;
+
+    private TabModelSelectorTabModelObserver mTabModelSelectorTabModelObserver;
+    private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
+    private final TabModelSelectorObserver mTabModelSelectorObserver =
+            new EmptyTabModelSelectorObserver() {
+                @Override
+                public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
+                    tabModelSwitched(newModel.isIncognito());
+                }
+            };
 
     private class TabStripEventHandler implements GestureHandler {
         @Override
@@ -178,6 +191,11 @@ public class StripLayoutHelperManager implements SceneOverlay {
         mTabStripTreeProvider = null;
         mIncognitoHelper.destroy();
         mNormalHelper.destroy();
+        if (mTabModelSelector != null) {
+            mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+            mTabModelSelectorTabModelObserver.destroy();
+            mTabModelSelectorTabObserver.destroy();
+        }
     }
 
     private void handleModelSelectorButtonClick() {
@@ -306,7 +324,7 @@ public class StripLayoutHelperManager implements SceneOverlay {
                 tabCreatorManager.getTabCreator(true));
         tabModelSwitched(mTabModelSelector.isIncognitoSelected());
 
-        new TabModelSelectorTabModelObserver(modelSelector) {
+        mTabModelSelectorTabModelObserver = new TabModelSelectorTabModelObserver(modelSelector) {
             /**
              * @return The actual current time of the app in ms.
              */
@@ -349,9 +367,18 @@ public class StripLayoutHelperManager implements SceneOverlay {
                 if (tab.getId() == lastId) return;
                 getStripLayoutHelper(tab.isIncognito()).tabSelected(time(), tab.getId(), lastId);
             }
+
+            @Override
+            public void didAddTab(Tab tab, int type, int creationState) {
+                boolean selected = type != TabLaunchType.FROM_LONGPRESS_BACKGROUND
+                        || (mTabModelSelector.isIncognitoSelected() && tab.isIncognito());
+                getStripLayoutHelper(tab.isIncognito())
+                        .tabCreated(
+                                time(), tab.getId(), mTabModelSelector.getCurrentTabId(), selected);
+            }
         };
 
-        new TabModelSelectorTabObserver(modelSelector) {
+        mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(modelSelector) {
             @Override
             public void onLoadStarted(Tab tab, boolean toDifferentDocument) {
                 getStripLayoutHelper(tab.isIncognito()).tabLoadStarted(tab.getId());
@@ -382,6 +409,8 @@ public class StripLayoutHelperManager implements SceneOverlay {
                 getStripLayoutHelper(tab.isIncognito()).tabPageLoadFinished(tab.getId());
             }
         };
+
+        mTabModelSelector.addObserver(mTabModelSelectorObserver);
     }
 
     @Override
@@ -434,8 +463,7 @@ public class StripLayoutHelperManager implements SceneOverlay {
         updateModelSwitcherButton();
     }
 
-    @Override
-    public void tabModelSwitched(boolean incognito) {
+    private void tabModelSwitched(boolean incognito) {
         if (incognito == mIsIncognito) return;
         mIsIncognito = incognito;
 
@@ -461,11 +489,6 @@ public class StripLayoutHelperManager implements SceneOverlay {
             mNormalHelper.setEndMargin(endMargin);
             mIncognitoHelper.setEndMargin(endMargin);
         }
-    }
-
-    @Override
-    public void tabCreated(long time, boolean incognito, int id, int prevId, boolean selected) {
-        getStripLayoutHelper(incognito).tabCreated(time, id, prevId, selected);
     }
 
     /**

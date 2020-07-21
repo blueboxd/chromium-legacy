@@ -7066,7 +7066,7 @@ interface StorageEvent : Event
     getter url
     method constructor
     method initStorageEvent
-interface StorageManager
+interface StorageManager : EventTarget
     attribute @@toStringTag
     method constructor
     method estimate

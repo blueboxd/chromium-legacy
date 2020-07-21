@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -237,6 +238,23 @@ id<GREYMatcher> TitleOfTestPage() {
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
 
   OpenRecentTabsPanel();
+}
+
+// Tests that there is a text cell in the Recently Closed section when it's
+// empty (Only with illustrated-empty-states flag enabled).
+- (void)testEmptyState {
+  OpenRecentTabsPanel();
+
+  id<GREYInteraction> detailTextCell = [EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabelId(
+                         IDS_IOS_RECENT_TABS_RECENTLY_CLOSED_EMPTY),
+                     grey_sufficientlyVisible(), nil)];
+  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
+    [detailTextCell assertWithMatcher:grey_notNil()];
+  } else {
+    [detailTextCell assertWithMatcher:grey_nil()];
+  }
 }
 
 @end

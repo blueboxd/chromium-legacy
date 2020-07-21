@@ -389,10 +389,13 @@ class WebUITabStripContainerView::IPHController : public TabStripModelObserver,
       return;
 
     anchor_view->SetProperty(kHasInProductHelpPromoKey, true);
-    promo_ = FeaturePromoBubbleView::CreateOwned(
-        anchor_view, views::BubbleBorder::TOP_RIGHT,
-        FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE,
-        /*title_string_specifier=*/base::nullopt, IDS_WEBUI_TAB_STRIP_PROMO);
+
+    FeaturePromoBubbleView::CreateParams bubble_params;
+    bubble_params.body_string_specifier = IDS_WEBUI_TAB_STRIP_PROMO;
+    bubble_params.anchor_view = anchor_view;
+    bubble_params.arrow = views::BubbleBorder::TOP_RIGHT;
+
+    promo_ = FeaturePromoBubbleView::Create(std::move(bubble_params));
     promo_->set_close_on_deactivate(false);
     widget_observer_.Add(promo_->GetWidget());
   }

@@ -13,12 +13,13 @@ from skia_gold_common import skia_gold_session
 
 
 class GpuSkiaGoldSession(skia_gold_session.SkiaGoldSession):
-  def RunComparison(self,
-                    name,
-                    png_file,
-                    output_manager=True,
-                    inexact_matching_args=None,
-                    use_luci=True):
+  def RunComparison(  # pylint: disable=too-many-arguments
+      self,
+      name,
+      png_file,
+      output_manager=True,
+      inexact_matching_args=None,
+      use_luci=True):
     # Passing True for the output manager is a bit of a hack, as we don't
     # actually need an output manager and just need to get past the truthy
     # check.

@@ -2888,7 +2888,7 @@ void LocalFrame::PostMessageEvent(
   message_event->initMessageEvent(
       "message", false, false, std::move(message.message), source_origin,
       "" /*lastEventId*/, window, ports, user_activation,
-      message.transfer_user_activation, message.allow_autoplay);
+      message.transfer_user_activation);
 
   // If the agent cluster id had a value it means this was locked when it
   // was serialized.
@@ -2905,12 +2905,9 @@ void LocalFrame::PostMessageEvent(
   //
   // TODO(mustaq): Remove the ad-hoc solution when the API shape is
   // ready. https://crbug.com/985914
-  if ((RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
-       message.transfer_user_activation) ||
-      message.allow_autoplay) {
+  if (RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
+      message.transfer_user_activation) {
     TransferUserActivationFrom(source_frame);
-    if (message.allow_autoplay)
-      UseCounter::Count(GetDocument(), WebFeature::kAutoplayDynamicDelegation);
   }
 
   // Finally dispatch the message to the DOM Window.

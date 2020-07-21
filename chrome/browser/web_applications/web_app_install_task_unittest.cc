@@ -31,6 +31,7 @@
 #include "chrome/browser/web_applications/test/test_file_handler_manager.h"
 #include "chrome/browser/web_applications/test/test_file_utils.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
+#include "chrome/browser/web_applications/test/test_os_integration_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
 #include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
@@ -99,21 +100,19 @@ class WebAppInstallTaskTest : public WebAppTest {
         std::make_unique<WebAppInstallFinalizer>(profile(), icon_manager_.get(),
                                                  /*legacy_finalizer=*/nullptr);
     shortcut_manager_ = std::make_unique<TestAppShortcutManager>(profile());
-    file_handler_manager_ = std::make_unique<TestFileHandlerManager>(profile());
+    os_integration_manager_ = std::make_unique<TestOsIntegrationManager>();
 
     install_finalizer_->SetSubsystems(
         &registrar(), ui_manager_.get(),
         &test_registry_controller_->sync_bridge());
     shortcut_manager_->SetSubsystems(icon_manager_.get(), &registrar());
-    file_handler_manager_->SetSubsystems(&registrar());
 
     auto data_retriever = std::make_unique<TestDataRetriever>();
     data_retriever_ = data_retriever.get();
 
     install_task_ = std::make_unique<WebAppInstallTask>(
-        profile(), &registrar(), shortcut_manager_.get(),
-        file_handler_manager_.get(), install_finalizer_.get(),
-        std::move(data_retriever));
+        profile(), shortcut_manager_.get(), os_integration_manager_.get(),
+        install_finalizer_.get(), std::move(data_retriever));
 
     url_loader_ = std::make_unique<TestWebAppUrlLoader>();
     controller().Init();
@@ -322,6 +321,9 @@ class WebAppInstallTaskTest : public WebAppTest {
 
   WebAppRegistrar& registrar() { return controller().registrar(); }
   TestAppShortcutManager& test_shortcut_manager() { return *shortcut_manager_; }
+  TestOsIntegrationManager& test_os_integration_manager() {
+    return *os_integration_manager_;
+  }
   TestWebAppUrlLoader& url_loader() { return *url_loader_; }
   TestDataRetriever& data_retriever() {
     DCHECK(data_retriever_);
@@ -333,7 +335,7 @@ class WebAppInstallTaskTest : public WebAppTest {
   std::unique_ptr<TestWebAppUiManager> ui_manager_;
   std::unique_ptr<InstallFinalizer> install_finalizer_;
   std::unique_ptr<TestAppShortcutManager> shortcut_manager_;
-  std::unique_ptr<TestFileHandlerManager> file_handler_manager_;
+  std::unique_ptr<TestOsIntegrationManager> os_integration_manager_;
 
   // Owned by install_task_:
   TestFileUtils* file_utils_ = nullptr;
@@ -794,17 +796,18 @@ TEST_F(WebAppInstallTaskTest, FinalizerMethodsCalled) {
 
   InstallWebAppFromManifestWithFallback();
 
-  EXPECT_EQ(1u, test_shortcut_manager().num_create_shortcuts_calls());
+  EXPECT_EQ(1u, test_os_integration_manager().num_create_shortcuts_calls());
   EXPECT_EQ(1, test_install_finalizer().num_reparent_tab_calls());
 
 #if defined(OS_CHROMEOS)
-  const int expected_num_add_app_to_quick_launch_bar_calls = 0;
+  const size_t expected_num_add_app_to_quick_launch_bar_calls = 0;
 #else
-  const int expected_num_add_app_to_quick_launch_bar_calls = 1;
+  const size_t expected_num_add_app_to_quick_launch_bar_calls = 1;
 #endif
 
-  EXPECT_EQ(expected_num_add_app_to_quick_launch_bar_calls,
-            test_install_finalizer().num_add_app_to_quick_launch_bar_calls());
+  EXPECT_EQ(
+      expected_num_add_app_to_quick_launch_bar_calls,
+      test_os_integration_manager().num_add_app_to_quick_launch_bar_calls());
 }
 
 TEST_F(WebAppInstallTaskTest, FinalizerMethodsNotCalled) {
@@ -817,10 +820,11 @@ TEST_F(WebAppInstallTaskTest, FinalizerMethodsNotCalled) {
   EXPECT_TRUE(result.app_id.empty());
   EXPECT_EQ(InstallResultCode::kBookmarkExtensionInstallError, result.code);
 
-  EXPECT_EQ(0u, test_shortcut_manager().num_create_shortcuts_calls());
+  EXPECT_EQ(0u, test_os_integration_manager().num_create_shortcuts_calls());
   EXPECT_EQ(0, test_install_finalizer().num_reparent_tab_calls());
-  EXPECT_EQ(0,
-            test_install_finalizer().num_add_app_to_quick_launch_bar_calls());
+  EXPECT_EQ(
+      0u,
+      test_os_integration_manager().num_add_app_to_quick_launch_bar_calls());
 }
 
 TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifest_Success) {
@@ -1010,9 +1014,8 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_GuestProfile) {
                                              /*scope=*/GURL{});
 
   auto install_task = std::make_unique<WebAppInstallTask>(
-      guest_profile, &registrar(), shortcut_manager_.get(),
-      file_handler_manager_.get(), install_finalizer_.get(),
-      std::move(data_retriever));
+      guest_profile, shortcut_manager_.get(), os_integration_manager_.get(),
+      install_finalizer_.get(), std::move(data_retriever));
 
   base::RunLoop run_loop;
   install_task->InstallWebAppWithParams(
@@ -1173,9 +1176,8 @@ TEST_F(WebAppInstallTaskTest, LoadAndRetrieveWebApplicationInfoWithIcons) {
     url_loader().SetNextLoadUrlResult(url, WebAppUrlLoader::Result::kUrlLoaded);
 
     auto task = std::make_unique<WebAppInstallTask>(
-        profile(), &registrar(), shortcut_manager_.get(),
-        file_handler_manager_.get(), install_finalizer_.get(),
-        std::move(data_retriever));
+        profile(), shortcut_manager_.get(), os_integration_manager_.get(),
+        install_finalizer_.get(), std::move(data_retriever));
 
     std::unique_ptr<WebApplicationInfo> info;
     task->LoadAndRetrieveWebApplicationInfoWithIcons(
@@ -1232,7 +1234,8 @@ TEST_F(WebAppInstallTaskWithRunOnOsLoginTest,
   EXPECT_EQ(url, web_app->launch_url());
   EXPECT_EQ(scope, web_app->scope());
   EXPECT_EQ(theme_color, web_app->theme_color());
-  EXPECT_EQ(1u, test_shortcut_manager().num_register_run_on_os_login_calls());
+  EXPECT_EQ(1u,
+            test_os_integration_manager().num_register_run_on_os_login_calls());
 }
 
 TEST_F(WebAppInstallTaskWithRunOnOsLoginTest,
@@ -1277,7 +1280,8 @@ TEST_F(WebAppInstallTaskWithRunOnOsLoginTest,
   EXPECT_EQ(url, web_app->launch_url());
   EXPECT_EQ(scope, web_app->scope());
   EXPECT_EQ(theme_color, web_app->theme_color());
-  EXPECT_EQ(0u, test_shortcut_manager().num_register_run_on_os_login_calls());
+  EXPECT_EQ(0u,
+            test_os_integration_manager().num_register_run_on_os_login_calls());
 }
 
 // TODO(https://crbug.com/1096953): Move these tests out into a dedicated

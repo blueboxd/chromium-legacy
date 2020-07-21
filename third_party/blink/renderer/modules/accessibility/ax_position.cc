@@ -842,6 +842,11 @@ const PositionWithAffinity AXPosition::ToPositionWithAffinity(
   return PositionWithAffinity(range.EndPosition(), affinity_);
 }
 
+const Position AXPosition::ToPosition(
+    const AXPositionAdjustmentBehavior adjustment_behavior) const {
+  return ToPositionWithAffinity(adjustment_behavior).GetPosition();
+}
+
 String AXPosition::ToString() const {
   if (!IsValid())
     return "Invalid AXPosition";

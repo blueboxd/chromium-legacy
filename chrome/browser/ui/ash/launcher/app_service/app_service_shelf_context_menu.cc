@@ -529,9 +529,16 @@ bool AppServiceShelfContextMenu::ShouldAddPinMenu() {
       FALLTHROUGH;
     case apps::mojom::AppType::kExtension:
       FALLTHROUGH;
+    case apps::mojom::AppType::kLacros:
+      FALLTHROUGH;
     case apps::mojom::AppType::kWeb:
       return true;
+    case apps::mojom::AppType::kUnknown:
+      FALLTHROUGH;
+    case apps::mojom::AppType::kMacNative:
+      return false;
     default:
+      NOTREACHED() << "All AppType must decide if pin menu should be added.";
       return false;
   }
 }

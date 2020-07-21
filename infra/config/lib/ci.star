@@ -15,6 +15,7 @@ to set the default value. Can also be accessed through `ci.defaults`.
 load('@stdlib//internal/graph.star', 'graph')
 load('@stdlib//internal/luci/common.star', 'keys')
 
+load('//project.star', 'settings')
 load('./builders.star', 'builders')
 load('./args.star', 'args')
 
@@ -101,6 +102,7 @@ def set_defaults(milestone_vars, **kwargs):
       header = '//chromium-header.textpb',
       os = builders.os.LINUX_DEFAULT,
       pool = 'luci.chromium.ci',
+      project_trigger_overrides = {'chromium': settings.project} if not settings.is_master else None,
       repo = 'https://chromium.googlesource.com/chromium/src',
       service_account = 'chromium-ci-builder@chops-service-accounts.iam.gserviceaccount.com',
       swarming_tags = ['vpython:native-python-wrapper'],

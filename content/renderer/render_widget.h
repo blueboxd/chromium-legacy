@@ -328,6 +328,8 @@ class CONTENT_EXPORT RenderWidget
   void ImeFinishComposingTextForPepper(bool keep_selection) override;
   void UpdateVisualProperties(
       const blink::VisualProperties& properties) override;
+  void UpdateScreenRects(const gfx::Rect& widget_screen_rect,
+                         const gfx::Rect& window_screen_rect) override;
 
   // Returns the scale being applied to the document in blink by the device
   // emulator. Returns 1 if there is no emulation active. Use this to position
@@ -477,8 +479,6 @@ class CONTENT_EXPORT RenderWidget
   void OnRequestSetBoundsAck();
 
   void OnGetFPS();
-  void OnUpdateScreenRects(const gfx::Rect& widget_screen_rect,
-                           const gfx::Rect& window_screen_rect);
   void OnSetViewportIntersection(
       const blink::ViewportIntersectionState& intersection_state);
   void OnDragTargetDragEnter(

@@ -498,6 +498,26 @@ if (is_android) {
       "base/android/android_browser_test_browsertest_android.cc",
     ]
 
+    # Add unwind tables in android_browsertests apk to support enabling
+    # sampling profiler. The unwind tables are generated from debug info in the
+    # binary. Removing "default_symbols" and adding symbols config removes the
+    # "strip_debug" config that strips the debug info, on android_browsertests
+    # apk.
+    if (enable_arm_cfi_table) {
+      sources += [ "../common/profiler/stack_sampling_browsertest.cc" ]
+      deps += [
+        "//chrome/android/modules/stack_unwinder/internal:java",
+        "//chrome/android/modules/stack_unwinder/internal:stack_unwinder_for_testing",
+      ]
+      configs -= [ "//build/config/compiler:default_symbols" ]
+      if (symbol_level == 2) {
+        configs += [ "//build/config/compiler:symbols" ]
+      } else {
+        configs += [ "//build/config/compiler:minimal_symbols" ]
+      }
+      add_unwind_tables_in_apk = true
+    }
+
     data = [
       "$root_gen_dir/chrome/android/chrome_apk_paks/chrome_100_percent.pak",
       "$root_gen_dir/chrome/android/chrome_apk_paks/locales/en-US.pak",
@@ -3928,19 +3948,6 @@ test("unit_tests") {
       "../browser/metrics/chrome_android_metrics_provider_unittest.cc",
       "../browser/notifications/notification_platform_bridge_android_unittest.cc",
       "../browser/offline_pages/prefetch/notifications/prefetch_notification_service_impl_unittest.cc",
-      "../browser/omnibox/status/status_mediator_unittest.cc",
-      "../browser/omnibox/suggestions/answer/answer_suggestion_processor_unittest.cc",
-      "../browser/omnibox/suggestions/autocomplete_mediator_unittest.cc",
-      "../browser/omnibox/suggestions/autocomplete_result_unittest.cc",
-      "../browser/omnibox/suggestions/base/base_suggestion_processor_unittest.cc",
-      "../browser/omnibox/suggestions/basic/basic_suggestion_processor_unittest.cc",
-      "../browser/omnibox/suggestions/cached_zero_suggestions_manager_unittest.cc",
-      "../browser/omnibox/suggestions/clipboard/clipboard_suggestion_processor_unittest.cc",
-      "../browser/omnibox/suggestions/dropdown_item_view_info_list_builder_unittest.cc",
-      "../browser/omnibox/suggestions/dropdown_item_view_info_list_manager_unittest.cc",
-      "../browser/omnibox/suggestions/editurl/edit_url_suggestions_unittest.cc",
-      "../browser/omnibox/suggestions/entity/entity_suggestions_processor_unittest.cc",
-      "../browser/omnibox/suggestions/tiles/tile_suggestion_processor_unittest.cc",
       "../browser/optimization_guide/android/optimization_guide_bridge_unittest.cc",
       "../browser/page_load_metrics/observers/android_page_load_metrics_observer_unittest.cc",
       "../browser/partnercustomizations/partner_browser_customizations_unittest.cc",

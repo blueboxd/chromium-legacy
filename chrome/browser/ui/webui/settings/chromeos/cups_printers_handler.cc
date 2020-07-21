@@ -168,6 +168,9 @@ std::unique_ptr<chromeos::Printer> DictToPrinter(
 
   std::string printer_queue;
   printer_dict.GetString("printerQueue", &printer_queue);
+  // Path must start from '/' character.
+  if (!printer_queue.empty() && printer_queue.front() != '/')
+    printer_queue = "/" + printer_queue;
 
   auto printer = std::make_unique<chromeos::Printer>(printer_id);
   printer->set_display_name(printer_name);
@@ -182,9 +185,25 @@ std::unique_ptr<chromeos::Printer> DictToPrinter(
   SplitAddress(printer_address, &printer_host, &printer_port);
 
   Uri uri;
-  if (!uri.SetScheme(printer_protocol) || !uri.SetHostEncoded(printer_host) ||
-      !uri.SetPort(printer_port) || !uri.SetPathEncoded(printer_queue) ||
-      !printer->SetUri(uri)) {
+  if (!uri.SetScheme(printer_protocol)) {
+    PRINTER_LOG(ERROR) << "Incorrect protocol: " << printer_protocol;
+    return nullptr;
+  }
+  if (!uri.SetHostEncoded(printer_host)) {
+    PRINTER_LOG(ERROR) << "Incorrect host: " << printer_host;
+    return nullptr;
+  }
+  if (!uri.SetPort(printer_port)) {
+    PRINTER_LOG(ERROR) << "Incorrect port: " << printer_port;
+    return nullptr;
+  }
+  if (!uri.SetPathEncoded(printer_queue)) {
+    PRINTER_LOG(ERROR) << "Incorrect path: " << printer_queue;
+    return nullptr;
+  }
+  std::string message;
+  if (!printer->SetUri(uri, &message)) {
+    PRINTER_LOG(ERROR) << "Incorrect uri: " << message;
     return nullptr;
   }
 
@@ -476,6 +495,9 @@ void CupsPrintersHandler::HandleGetPrinterInfo(const base::ListValue* args) {
 
   std::string printer_queue;
   printer_dict->GetString("printerQueue", &printer_queue);
+  // Path must start from '/' character.
+  if (!printer_queue.empty() && printer_queue.front() != '/')
+    printer_queue = "/" + printer_queue;
 
   std::string printer_protocol;
   if (!printer_dict->GetString("printerProtocol", &printer_protocol)) {

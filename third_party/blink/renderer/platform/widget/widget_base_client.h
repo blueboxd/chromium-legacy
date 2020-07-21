@@ -164,6 +164,10 @@ class WidgetBaseClient {
   virtual void UpdateVisualProperties(
       const VisualProperties& visual_properties) = 0;
 
+  // Apply the updated screen rects.
+  virtual void UpdateScreenRects(const gfx::Rect& widget_screen_rect,
+                                 const gfx::Rect& window_screen_rect) = 0;
+
   // Test-specific methods below this point.
   virtual void ScheduleAnimationForWebTests() {}
 };

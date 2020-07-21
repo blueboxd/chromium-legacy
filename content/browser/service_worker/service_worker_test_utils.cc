@@ -518,15 +518,8 @@ void WriteToDiskCacheAsync(
                                    std::move(writer), std::move(callback)));
 }
 
-std::unique_ptr<ServiceWorkerResponseWriter> CreateNewResponseWriterSync(
-    ServiceWorkerStorage* storage) {
-  base::RunLoop run_loop;
-  std::unique_ptr<ServiceWorkerResponseWriter> writer;
-  int64_t resource_id = GetNewResourceIdSync(storage);
-  return storage->CreateResponseWriter(resource_id);
-}
-
-int64_t GetNewResourceIdSync(ServiceWorkerStorage* storage) {
+int64_t GetNewResourceIdSync(
+    mojo::Remote<storage::mojom::ServiceWorkerStorageControl>& storage) {
   base::RunLoop run_loop;
   int64_t resource_id;
   storage->GetNewResourceId(

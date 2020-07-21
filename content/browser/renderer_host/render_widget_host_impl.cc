@@ -532,7 +532,7 @@ const viz::FrameSinkId& RenderWidgetHostImpl::GetFrameSinkId() {
 }
 
 void RenderWidgetHostImpl::SendScreenRects() {
-  if (!renderer_initialized_ || waiting_for_screen_rects_ack_)
+  if (!renderer_initialized_ || !blink_widget_ || waiting_for_screen_rects_ack_)
     return;
 
   if (is_hidden_) {
@@ -547,8 +547,10 @@ void RenderWidgetHostImpl::SendScreenRects() {
   last_view_screen_rect_ = view_->GetViewBounds();
   last_window_screen_rect_ = view_->GetBoundsInRootWindow();
   view_->WillSendScreenRects();
-  Send(new WidgetMsg_UpdateScreenRects(GetRoutingID(), last_view_screen_rect_,
-                                       last_window_screen_rect_));
+  blink_widget_->UpdateScreenRects(
+      last_view_screen_rect_, last_window_screen_rect_,
+      base::BindOnce(&RenderWidgetHostImpl::OnUpdateScreenRectsAck,
+                     weak_factory_.GetWeakPtr()));
   waiting_for_screen_rects_ack_ = true;
 }
 
@@ -696,8 +698,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostImpl, msg)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_Close, OnClose)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_UpdateScreenRects_ACK,
-                        OnUpdateScreenRectsAck)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_RequestSetBounds, OnRequestSetBounds)
     IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnStartDragging)
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)

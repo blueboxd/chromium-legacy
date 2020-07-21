@@ -230,6 +230,7 @@
     "push",
     "pushsubscriptionchange",
     "quicstream",
+    "quotachange",
     "ratechange",
     "reading",
     "readystatechange",

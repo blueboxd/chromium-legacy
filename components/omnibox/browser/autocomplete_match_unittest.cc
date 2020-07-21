@@ -546,28 +546,32 @@ TEST(AutocompleteMatchTest, TryRichAutocompletion) {
         });
 
     // Prefer autocompleting primary text prefix.
-    test(0, "x", false, "x_mid_x_primary", "x_mid_x_secondary", true,
-         "_mid_x_primary", "", "x_mid_x_secondary", true);
+    test(0, "x", false, "x_mixd_x_primary", "x_mixd_x_secondary", true,
+         "_mixd_x_primary", "", "x_mixd_x_secondary", true);
 
     // Otherwise, prefer secondary text prefix.
-    test(1, "x", false, "y_mid_x_primary", "x_mid_x_secondary", true,
-         "_mid_x_secondary", "", "y_mid_x_primary", true);
+    test(1, "x", false, "y_mixd_x_primary", "x_mixd_x_secondary", true,
+         "_mixd_x_secondary", "", "y_mixd_x_primary", true);
 
-    // Otherwise, prefer primary text non-prefix
-    test(2, "x", false, "y_mid_x_primary", "y_mid_x_secondary", true,
-         "_primary", "y_mid_", "y_mid_x_secondary", true);
+    // Otherwise, prefer primary text non-prefix (wordbreak)
+    test(2, "x", false, "y_mixd_x_primary", "y_mixd_x_secondary", true,
+         "_primary", "y_mixd_", "y_mixd_x_secondary", true);
 
-    // Otherwise, prefer secondary text non-prefix
-    test(3, "x", false, "y_mid_y_primary", "y_mid_x_secondary", true,
-         "_secondary", "y_mid_", "y_mid_y_primary", true);
+    // Otherwise, prefer secondary text non-prefix (wordbreak)
+    test(3, "x", false, "y_mid_y_primary", "y_mixd_x_secondary", true,
+         "_secondary", "y_mixd_", "y_mid_y_primary", true);
+
+    // We don't explicitly test that non-wordbreak matches aren't autocompleted,
+    // because we rely on providers to not provide suggestions that only match
+    // the input at non-wordbreaks.
 
     // Otherwise, don't autocomplete but still set |fill_into_edit_second_line|
     test(4, "x", false, "y_mid_y_primary", "y_mid_y_secondary", false, "", "",
          "y_mid_y_secondary", false);
 
     // Don't autocomplete if |prevent_inline_autocomplete| is true.
-    test(5, "x", true, "x_mid_x_primary", "x_mid_x_secondary", false, "", "",
-         "x_mid_x_secondary", false);
+    test(5, "x", true, "x_mixd_x_primary", "x_mixd_x_secondary", false, "", "",
+         "x_mixd_x_secondary", false);
   }
 
   {
@@ -584,11 +588,11 @@ TEST(AutocompleteMatchTest, TryRichAutocompletion) {
         });
 
     // Don't autocomplete title and non-prefix if input is less than limits.
-    test(6, "x", false, "y_mid_x_primary", "x_mid_x_secondary", false, "", "",
-         "x_mid_x_secondary", false);
+    test(6, "x", false, "y_mixd_x_primary", "x_mixd_x_secondary", false, "", "",
+         "x_mixd_x_secondary", false);
   }
 
   // Don't autocomplete if IsRichAutocompletionEnabled is disabled
-  test(7, "x", false, "x_mid_x_primary", "x_mid_x_secondary", false, "", "", "",
-       false);
+  test(7, "x", false, "x_mixd_x_primary", "x_mixd_x_secondary", false, "", "",
+       "", false);
 }

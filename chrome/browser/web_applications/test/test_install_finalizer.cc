@@ -102,14 +102,6 @@ bool TestInstallFinalizer::WasExternalAppUninstalledByUser(
   return base::Contains(user_uninstalled_external_apps_, app_id);
 }
 
-bool TestInstallFinalizer::CanAddAppToQuickLaunchBar() const {
-  return true;
-}
-
-void TestInstallFinalizer::AddAppToQuickLaunchBar(const AppId& app_id) {
-  ++num_add_app_to_quick_launch_bar_calls_;
-}
-
 bool TestInstallFinalizer::CanReparentTab(const AppId& app_id,
                                           bool shortcut_created) const {
   return true;

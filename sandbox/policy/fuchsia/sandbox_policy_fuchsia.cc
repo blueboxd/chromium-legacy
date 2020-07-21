@@ -75,7 +75,7 @@ constexpr SandboxConfig kWebContextConfig = {
     // and kCloneJob |features| themselves. However, they must be granted
     // all of the other features to delegate to child processes.
     kCloneJob | kProvideVulkanResources | kProvideSslConfig |
-        kAmbientMarkVmoAsExecutable | kUseServiceDirectoryOverride,
+        kUseServiceDirectoryOverride,
 };
 
 constexpr SandboxConfig kGpuConfig = {
@@ -269,15 +269,24 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
   ZX_CHECK(status == ZX_OK, status) << "zx_job_create";
   options->job_handle = job_.get();
 
-  // Do not allow ambient VMO mark-as-executable capability to be inherited
-  // by processes that do not need to JIT (i.e. do not run V8/WASM).
-  if (!(config->features & kAmbientMarkVmoAsExecutable)) {
-    zx_policy_basic_v2_t deny_ambient_mark_vmo_exec{
-        ZX_POL_AMBIENT_MARK_VMO_EXEC, ZX_POL_ACTION_KILL, ZX_POL_OVERRIDE_DENY};
-    status = job_.set_policy(ZX_JOB_POL_RELATIVE, ZX_JOB_POL_BASIC_V2,
-                             &deny_ambient_mark_vmo_exec, 1);
-    ZX_CHECK(status == ZX_OK, status) << "zx_job_set_policy";
-  }
+  // Only allow ambient VMO mark-as-executable capability to be granted
+  // to processes that which need to JIT (i.e. do not run V8/WASM).
+  zx_policy_basic_v2_t ambient_mark_vmo_exec{
+      ZX_POL_AMBIENT_MARK_VMO_EXEC,
+
+      // Kill processes which attempt to execute writable VMOs but lack the
+      // right to do so.
+      (config->features & kAmbientMarkVmoAsExecutable) ? ZX_POL_ACTION_ALLOW
+                                                       : ZX_POL_ACTION_KILL,
+
+      // Only grant spawn-capable processes, such as the browser process, the
+      // ability to override the execution policy.
+      (config->features & kCloneJob) ? ZX_POL_OVERRIDE_ALLOW
+                                     : ZX_POL_OVERRIDE_DENY};
+
+  status = job_.set_policy(ZX_JOB_POL_ABSOLUTE, ZX_JOB_POL_BASIC_V2,
+                           &ambient_mark_vmo_exec, 1);
+  ZX_CHECK(status == ZX_OK, status) << "zx_job_set_policy";
 }
 
 }  // namespace policy

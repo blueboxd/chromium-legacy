@@ -1734,6 +1734,9 @@ CHROMEOS_TRIGGER_SCRIPT_OUTPUT = """\
   "Fake Tester": {
     "gtest_tests": [
       {
+        "args": [
+          "--flash"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"

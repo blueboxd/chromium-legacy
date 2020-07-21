@@ -15,9 +15,7 @@
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
-#include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/install_bounce_metric.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
@@ -70,15 +68,13 @@ constexpr bool kAddAppsToQuickLaunchBarByDefault = true;
 
 WebAppInstallTask::WebAppInstallTask(
     Profile* profile,
-    AppRegistrar* registrar,
     AppShortcutManager* shortcut_manager,
-    FileHandlerManager* file_handler_manager,
+    OsIntegrationManager* os_integration_manager,
     InstallFinalizer* install_finalizer,
     std::unique_ptr<WebAppDataRetriever> data_retriever)
     : data_retriever_(std::move(data_retriever)),
-      registrar_(registrar),
       shortcut_manager_(shortcut_manager),
-      file_handler_manager_(file_handler_manager),
+      os_integration_manager_(os_integration_manager),
       install_finalizer_(install_finalizer),
       profile_(profile) {}
 
@@ -769,85 +765,50 @@ void WebAppInstallTask::OnInstallFinalizedCreateShortcuts(
   RecordWebAppInstallationTimestamp(profile_->GetPrefs(), app_id,
                                     install_source_);
 
-  bool add_to_applications_menu = true;
-  bool add_to_desktop = true;
+  InstallOsHooksOptions options;
+
+  options.add_to_applications_menu = true;
+  options.add_to_desktop = true;
+  options.add_to_quick_launch_bar = kAddAppsToQuickLaunchBarByDefault;
+  options.run_on_os_login = web_app_info->run_on_os_login;
+
+  if (install_source_ == WebappInstallSource::SYNC)
+    options.add_to_quick_launch_bar = false;
 
   if (install_params_) {
-    add_to_applications_menu = install_params_->add_to_applications_menu;
-    add_to_desktop = install_params_->add_to_desktop;
+    options.add_to_applications_menu =
+        install_params_->add_to_applications_menu;
+    options.add_to_desktop = install_params_->add_to_desktop;
+    options.add_to_quick_launch_bar = install_params_->add_to_quick_launch_bar;
+    options.run_on_os_login = install_params_->run_on_os_login;
   }
 
-  auto create_shortcuts_callback = base::BindOnce(
-      &WebAppInstallTask::OnShortcutsCreated, weak_ptr_factory_.GetWeakPtr(),
-      std::move(web_app_info), app_id);
+  auto hooks_created_callback = base::BindOnce(
+      &WebAppInstallTask::OnOsHooksCreated, weak_ptr_factory_.GetWeakPtr(),
+      web_app_info->open_as_window, app_id);
 
-  if (add_to_applications_menu && shortcut_manager_->CanCreateShortcuts()) {
-    // TODO(ortuno): Make adding a shortcut to the applications menu independent
-    // from adding a shortcut to desktop.
-    shortcut_manager_->CreateShortcuts(app_id, add_to_desktop,
-                                       std::move(create_shortcuts_callback));
-  } else {
-    std::move(create_shortcuts_callback).Run(false /* created_shortcuts */);
-  }
+  os_integration_manager_->InstallOsHooks(app_id,
+                                          std::move(hooks_created_callback),
+                                          std::move(web_app_info), options);
 }
 
-void WebAppInstallTask::OnShortcutsCreated(
-    std::unique_ptr<WebApplicationInfo> web_app_info,
+void WebAppInstallTask::OnOsHooksCreated(
+    bool open_as_window,
     const AppId& app_id,
-    bool shortcut_created) {
+    const OsHooksResults os_hooks_results) {
   if (ShouldStopInstall())
     return;
 
-  bool add_to_quick_launch_bar = kAddAppsToQuickLaunchBarByDefault;
-  if (install_source_ == WebappInstallSource::SYNC)
-    add_to_quick_launch_bar = false;
-
-  if (install_params_)
-    add_to_quick_launch_bar = install_params_->add_to_quick_launch_bar;
-
-  if (add_to_quick_launch_bar &&
-      install_finalizer_->CanAddAppToQuickLaunchBar()) {
-    install_finalizer_->AddAppToQuickLaunchBar(app_id);
-  }
-
   if (!background_installation_) {
-    const bool can_reparent_tab =
-        install_finalizer_->CanReparentTab(app_id, shortcut_created);
+    const bool can_reparent_tab = install_finalizer_->CanReparentTab(
+        app_id, os_hooks_results[OsHookType::kShortcuts]);
 
-    if (can_reparent_tab && web_app_info->open_as_window)
-      install_finalizer_->ReparentTab(app_id, shortcut_created, web_contents());
-  }
-
-  // Enable file handlers, if the app is locally installed.
-  if (registrar_->IsLocallyInstalled(app_id))
-    file_handler_manager_->EnableAndRegisterOsFileHandlers(app_id);
-
-  if (base::FeatureList::IsEnabled(
-          features::kDesktopPWAsAppIconShortcutsMenu) &&
-      !web_app_info->shortcut_infos.empty() && add_to_quick_launch_bar) {
-    shortcut_manager_->RegisterShortcutsMenuWithOs(
-        app_id, web_app_info->shortcut_infos,
-        web_app_info->shortcuts_menu_icons_bitmaps);
-  }
-
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin)) {
-    // TODO(crbug.com/897302): Add run on OS login dev activation from
-    // manifest, for now it is on by default if feature flag is enabled
-    bool run_on_os_login = web_app_info->run_on_os_login;
-
-    if (install_params_)
-      run_on_os_login = install_params_->run_on_os_login;
-
-    if (run_on_os_login) {
-      shortcut_manager_->RegisterRunOnOsLogin(
-          app_id, base::BindOnce(&WebAppInstallTask::OnRegisteredRunOnOsLogin,
-                                 weak_ptr_factory_.GetWeakPtr(), app_id));
-    } else {
-      CallInstallCallback(app_id, InstallResultCode::kSuccessNewInstall);
+    if (can_reparent_tab && open_as_window) {
+      install_finalizer_->ReparentTab(
+          app_id, os_hooks_results[OsHookType::kShortcuts], web_contents());
     }
-  } else {
-    CallInstallCallback(app_id, InstallResultCode::kSuccessNewInstall);
   }
+  CallInstallCallback(app_id, InstallResultCode::kSuccessNewInstall);
 }
 
 void WebAppInstallTask::OnRegisteredRunOnOsLogin(

@@ -763,8 +763,10 @@ void CrashTab(WebContents* web_contents) {
   RenderProcessHost* rph = web_contents->GetMainFrame()->GetProcess();
   RenderProcessHostWatcher watcher(
       rph, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  rph->Shutdown(0);
+  EXPECT_TRUE(rph->Shutdown(RESULT_CODE_KILLED));
   watcher.Wait();
+  EXPECT_FALSE(watcher.did_exit_normally());
+  EXPECT_TRUE(web_contents->IsCrashed());
 }
 
 void PwnCommitIPC(WebContents* web_contents,

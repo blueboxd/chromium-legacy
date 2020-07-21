@@ -39,21 +39,16 @@ constexpr gfx::Insets kBubbleContentsInsets(12, 16);
 
 }  // namespace
 
-FeaturePromoBubbleView::FeaturePromoBubbleView(
-    views::View* anchor_view,
-    views::BubbleBorder::Arrow arrow,
-    ActivationAction activation_action,
-    base::Optional<int> title_string_specifier,
-    int body_string_specifier,
-    base::Optional<int> preferred_width,
-    base::Optional<int> screenreader_string_specifier,
-    base::Optional<ui::Accelerator> feature_accelerator,
-    std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout)
-    : BubbleDialogDelegateView(anchor_view, arrow),
-      activation_action_(activation_action),
-      feature_promo_bubble_timeout_(std::move(feature_promo_bubble_timeout)),
-      preferred_width_(preferred_width) {
-  DCHECK(anchor_view);
+FeaturePromoBubbleView::CreateParams::CreateParams() = default;
+FeaturePromoBubbleView::CreateParams::~CreateParams() = default;
+FeaturePromoBubbleView::CreateParams::CreateParams(CreateParams&&) = default;
+
+FeaturePromoBubbleView::FeaturePromoBubbleView(CreateParams params)
+    : BubbleDialogDelegateView(params.anchor_view, params.arrow),
+      activation_action_(params.activation_action),
+      feature_promo_bubble_timeout_(std::move(params.timeout)),
+      preferred_width_(params.preferred_width) {
+  DCHECK(params.anchor_view);
   UseCompactMargins();
 
   // If the timeout was not explicitly specified, use the default values.
@@ -63,26 +58,28 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
   }
 
   const base::string16 body_text =
-      l10n_util::GetStringUTF16(body_string_specifier);
+      l10n_util::GetStringUTF16(params.body_string_specifier);
 
   // Feature promos are purely informational. We can skip reading the UI
   // elements inside the bubble and just have the information announced when the
   // bubble shows. To do so, we change the a11y tree to make this a leaf node
   // and set the name to the message we want to announce.
   GetViewAccessibility().OverrideIsLeaf(true);
-  if (!screenreader_string_specifier) {
+  if (!params.screenreader_string_specifier) {
     accessible_name_ = body_text;
-  } else if (feature_accelerator) {
+  } else if (params.feature_accelerator) {
     accessible_name_ = l10n_util::GetStringFUTF16(
-        *screenreader_string_specifier, feature_accelerator->GetShortcutText());
+        *params.screenreader_string_specifier,
+        params.feature_accelerator->GetShortcutText());
   } else {
     accessible_name_ =
-        l10n_util::GetStringUTF16(*screenreader_string_specifier);
+        l10n_util::GetStringUTF16(*params.screenreader_string_specifier);
   }
 
   // We get the theme provider from the anchor view since our widget hasn't been
   // created yet.
-  const ui::ThemeProvider* theme_provider = anchor_view->GetThemeProvider();
+  const ui::ThemeProvider* theme_provider =
+      params.anchor_view->GetThemeProvider();
   DCHECK(theme_provider);
 
   const SkColor background_color = theme_provider->GetColor(
@@ -98,15 +95,15 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
       views::BoxLayout::CrossAxisAlignment::kStretch);
   SetLayoutManager(std::move(box_layout));
 
-  if (title_string_specifier.has_value()) {
+  if (params.title_string_specifier.has_value()) {
     auto* title_label = AddChildView(std::make_unique<views::Label>(
-        l10n_util::GetStringUTF16(title_string_specifier.value())));
+        l10n_util::GetStringUTF16(params.title_string_specifier.value())));
     title_label->SetBackgroundColor(background_color);
     title_label->SetEnabledColor(text_color);
     title_label->SetFontList(views::style::GetFont(
         views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY));
 
-    if (preferred_width.has_value()) {
+    if (params.preferred_width.has_value()) {
       title_label->SetMultiLine(true);
       title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     }
@@ -116,13 +113,13 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
   body_label->SetBackgroundColor(background_color);
   body_label->SetEnabledColor(text_color);
 
-  if (preferred_width.has_value()) {
+  if (params.preferred_width.has_value()) {
     body_label->SetMultiLine(true);
     body_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   }
 
-  if (activation_action == ActivationAction::DO_NOT_ACTIVATE) {
-    SetCanActivate(activation_action == ActivationAction::ACTIVATE);
+  if (params.activation_action == ActivationAction::DO_NOT_ACTIVATE) {
+    SetCanActivate(false);
     set_shadow(views::BubbleBorder::BIG_SHADOW);
   }
 
@@ -144,20 +141,8 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
 FeaturePromoBubbleView::~FeaturePromoBubbleView() = default;
 
 // static
-FeaturePromoBubbleView* FeaturePromoBubbleView::CreateOwned(
-    views::View* anchor_view,
-    views::BubbleBorder::Arrow arrow,
-    ActivationAction activation_action,
-    base::Optional<int> title_string_specifier,
-    int body_string_specifier,
-    base::Optional<int> preferred_width,
-    base::Optional<int> screenreader_string_specifier,
-    base::Optional<ui::Accelerator> feature_accelerator,
-    std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout) {
-  return new FeaturePromoBubbleView(
-      anchor_view, arrow, activation_action, title_string_specifier,
-      body_string_specifier, preferred_width, screenreader_string_specifier,
-      feature_accelerator, std::move(feature_promo_bubble_timeout));
+FeaturePromoBubbleView* FeaturePromoBubbleView::Create(CreateParams params) {
+  return new FeaturePromoBubbleView(std::move(params));
 }
 
 void FeaturePromoBubbleView::CloseBubble() {

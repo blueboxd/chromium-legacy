@@ -1395,11 +1395,13 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker]     setter onaddsourcebuffer
 [Worker]     setter onremovesourcebuffer
-[Worker] interface StorageManager
+[Worker] interface StorageManager : EventTarget
 [Worker]     attribute @@toStringTag
+[Worker]     getter onquotachange
 [Worker]     method constructor
 [Worker]     method estimate
 [Worker]     method persisted
+[Worker]     setter onquotachange
 [Worker] interface SubtleCrypto
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor

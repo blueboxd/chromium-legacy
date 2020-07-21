@@ -11,8 +11,7 @@ SyntheticSmoothScrollGesture::SyntheticSmoothScrollGesture(
     : params_(params) {
 }
 
-SyntheticSmoothScrollGesture::~SyntheticSmoothScrollGesture() {
-}
+SyntheticSmoothScrollGesture::~SyntheticSmoothScrollGesture() = default;
 
 SyntheticGesture::Result SyntheticSmoothScrollGesture::ForwardInputEvents(
     const base::TimeTicks& timestamp,
@@ -58,8 +57,8 @@ bool SyntheticSmoothScrollGesture::InitializeMoveGesture(
     move_params.input_type = GetInputSourceType(gesture_type);
     move_params.add_slop = true;
     move_params.granularity = params_.granularity;
-    move_params.key_modifiers = params_.key_modifiers;
-    move_gesture_.reset(new SyntheticSmoothMoveGesture(move_params));
+    move_params.modifiers = params_.modifiers;
+    move_gesture_ = std::make_unique<SyntheticSmoothMoveGesture>(move_params);
     return true;
   }
   return false;

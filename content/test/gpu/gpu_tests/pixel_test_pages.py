@@ -25,20 +25,21 @@ class PixelTestPage(object):
   from the old-style GPU tests.
   """
 
-  def __init__(self,
-               url,
-               name,
-               test_rect,
-               tolerance=2,
-               browser_args=None,
-               expected_colors=None,
-               gpu_process_disabled=False,
-               optional_action=None,
-               restart_browser_after_test=False,
-               other_args=None,
-               grace_period_end=None,
-               expected_per_process_crashes=None,
-               matching_algorithm=None):
+  def __init__(  # pylint: disable=too-many-arguments
+      self,
+      url,
+      name,
+      test_rect,
+      tolerance=2,
+      browser_args=None,
+      expected_colors=None,
+      gpu_process_disabled=False,
+      optional_action=None,
+      restart_browser_after_test=False,
+      other_args=None,
+      grace_period_end=None,
+      expected_per_process_crashes=None,
+      matching_algorithm=None):
     super(PixelTestPage, self).__init__()
     self.url = url
     self.name = name

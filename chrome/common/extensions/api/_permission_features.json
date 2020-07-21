@@ -327,8 +327,7 @@
       "031E5E4A54C39E4F46E11CE643584E9187915908",  // https://crbug.com/882461 SecureConnect
       "349E89FE0296161007623C0B4096B617D7CECD54",  // https://crbug.com/882461 SecureConnect
       "18B761AA5B58FA89E596EB7996B4C92C86775C7F",  // https://crbug.com/882461 SecureConnect
-      "2012C0122892D332325339998251D1CC3CAE396A",  // https://crbug.com/882461 SecureConnect
-      "86C81CACF5E2273044C491F1949E928E25F28E0A"   // https://crbug.com/922140 Cloud Reporting
+      "2012C0122892D332325339998251D1CC3CAE396A"   // https://crbug.com/882461 SecureConnect
     ]
   },
   "experimental": {
@@ -734,8 +733,7 @@
     "whitelist": [
       "B281B98DDD6A379EF50D59BB1135419536C1C353",  // Report site to Safe Browsing Extension, crbug.com/932161
       "FD15C63ABA854733FDCBC1D4D34A71E963A12ABD",  // Chrome Reporting Extension
-      "08455FA7CB8734168378F731B00B354CEEE0088F",  // Chrome Reporting Ext. Beta
-      "86C81CACF5E2273044C491F1949E928E25F28E0A"   // https://crbug.com/922140 Cloud Reporting
+      "08455FA7CB8734168378F731B00B354CEEE0088F"   // Chrome Reporting Ext. Beta
     ]
   },
   "sessions": {

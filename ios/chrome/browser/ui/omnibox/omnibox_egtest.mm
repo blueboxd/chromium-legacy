@@ -468,17 +468,6 @@ id<GREYMatcher> SearchCopiedTextButton() {
 // it should be displayed. Select & SelectAll buttons should be hidden when the
 // omnibox is empty.
 - (void)testEmptyOmnibox {
-  // TODO(crbug.com/1078784): This is flaky on iOS 13 iPad, probably linked to
-  // Apple help on the keyboard.
-  if ([ChromeEarlGrey isIPadIdiom] && base::ios::IsRunningOnOrLater(13, 0, 0)) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad, iOS 13 and later.");
-  }
-
-  // TODO(crbug.com/1099361): Test fails on iOS 12 when run as EG2 test.
-  if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
-    EARL_GREY_TEST_DISABLED(@"Fails on iOS 12.");
-  }
-
   // Focus omnibox.
   [self focusFakebox];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -545,10 +534,9 @@ id<GREYMatcher> SearchCopiedTextButton() {
   // Cut the text.
   [[EarlGrey selectElementWithMatcher:CutButton()] performAction:grey_tap()];
 
-  // Pressing should allow pasting.
-  // Click on the omnibox.
+  // Long pressing should allow pasting.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      performAction:grey_tap()];
+      performAction:grey_longPress()];
   // Verify that system text selection callout is displayed (Search Copied
   // Text).
   GREYCondition* searchCopiedTextButtonIsDisplayed = [GREYCondition

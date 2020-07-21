@@ -7,6 +7,8 @@
 
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/quota/quota_manager_host.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
@@ -19,11 +21,12 @@ class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
 
-class StorageManager final : public ScriptWrappable {
+class StorageManager final : public EventTargetWithInlineData,
+                             public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit StorageManager(ContextLifecycleNotifier* notifier);
+  explicit StorageManager(ExecutionContext*);
 
   ScriptPromise persisted(ScriptState*);
   ScriptPromise persist(ScriptState*);
@@ -32,8 +35,14 @@ class StorageManager final : public ScriptWrappable {
 
   void Trace(Visitor* visitor) const override;
 
+  // EventTargetWithInlineData
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(quotachange, kQuotachange)
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
+
  private:
   mojom::blink::PermissionService* GetPermissionService(ExecutionContext*);
+
   void PermissionServiceConnectionError();
   void PermissionRequestComplete(ScriptPromiseResolver*,
                                  mojom::blink::PermissionStatus);

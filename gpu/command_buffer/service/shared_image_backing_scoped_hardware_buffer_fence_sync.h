@@ -39,7 +39,6 @@ class GPU_GLES2_EXPORT SharedImageBackingScopedHardwareBufferFenceSync
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
       uint32_t usage,
-      size_t estimated_size,
       bool is_thread_safe);
   ~SharedImageBackingScopedHardwareBufferFenceSync() override;
 

@@ -498,12 +498,6 @@ bool OmniboxPopupModel::IsControlPresentOnMatch(Selection selection) const {
       return true;
     case KEYWORD:
       return match.associated_keyword != nullptr;
-
-    // TODO(orinj): Here is an opportunity to clean up the presentational
-    //  logic that pkasting wanted to take out of AutocompleteMatch. The view
-    //  should be driven by the model, so this is really the place to decide.
-    //  In other words, this duplicates logic within OmniboxResultView.
-    //  This is the proper place. OmniboxResultView should refer to here.
     case FOCUSED_BUTTON_REMOVE_SUGGESTION:
       // Remove suggestion buttons are suppressed for matches with an associated
       // keyword or tab match, unless dedicated button row is enabled.

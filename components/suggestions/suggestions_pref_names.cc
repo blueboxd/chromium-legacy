@@ -7,9 +7,9 @@
 namespace suggestions {
 namespace prefs {
 
-// A cache of a suggestions blacklist, represented as a serialized
-// SuggestionsBlacklist protobuf.
-const char kSuggestionsBlacklist[] = "suggestions.blacklist";
+// A cache of a suggestions blocklist, represented as a serialized
+// SuggestionsBlocklist protobuf.
+const char kSuggestionsBlocklist[] = "suggestions.blacklist";
 
 // A cache of suggestions represented as a serialized SuggestionsProfile
 // protobuf.

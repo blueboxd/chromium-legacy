@@ -51,6 +51,7 @@ def _GenerateProjectFile(android_manifest,
                          android_sdk_root,
                          cache_dir,
                          sources=None,
+                         classpath=None,
                          srcjar_sources=None,
                          resource_sources=None,
                          android_sdk_version=None):
@@ -79,6 +80,10 @@ def _GenerateProjectFile(android_manifest,
     for source in sources:
       src = ElementTree.SubElement(main_module, 'src')
       src.set('file', _SrcRelative(source))
+  if classpath:
+    for file_path in classpath:
+      classpath_element = ElementTree.SubElement(main_module, 'classpath')
+      classpath_element.set('file', _SrcRelative(file_path))
   if resource_sources:
     for resource_file in resource_sources:
       resource = ElementTree.SubElement(main_module, 'resource')
@@ -116,6 +121,7 @@ def _RunLint(lint_binary_path,
              config_path,
              manifest_path,
              sources,
+             classpath,
              cache_dir,
              android_sdk_version,
              srcjars,
@@ -125,6 +131,7 @@ def _RunLint(lint_binary_path,
              resource_zips,
              android_sdk_root,
              lint_gen_dir,
+             baseline,
              testonly_target=False,
              can_fail_build=False,
              silent=False):
@@ -139,6 +146,8 @@ def _RunLint(lint_binary_path,
       '--exitcode',  # Sets error code if there are errors.
       '--quiet',  # Silences lint's "." progress updates.
   ]
+  if baseline:
+    cmd.extend(['--baseline', _SrcRelative(baseline)])
   if config_path:
     cmd.extend(['--config', _SrcRelative(config_path)])
   if testonly_target:
@@ -189,7 +198,8 @@ def _RunLint(lint_binary_path,
   logging.info('Generating project file')
   project_file_root = _GenerateProjectFile(lint_android_manifest_path,
                                            android_sdk_root, cache_dir, sources,
-                                           srcjar_sources, resource_sources,
+                                           classpath, srcjar_sources,
+                                           resource_sources,
                                            android_sdk_version)
 
   project_xml_path = os.path.join(lint_gen_dir, 'project.xml')
@@ -289,12 +299,18 @@ def _ParseArgs(argv):
                       action='append',
                       help='GYP-list of resource zips, zip files of generated '
                       'resource files.')
+  parser.add_argument('--classpath',
+                      help='List of jars to add to the classpath.')
+  parser.add_argument('--baseline',
+                      help='Baseline file to ignore existing errors and fail '
+                      'on new errors.')
 
   args = parser.parse_args(build_utils.ExpandFileArgs(argv))
   args.java_sources = build_utils.ParseGnList(args.java_sources)
   args.srcjars = build_utils.ParseGnList(args.srcjars)
   args.resource_sources = build_utils.ParseGnList(args.resource_sources)
   args.resource_zips = build_utils.ParseGnList(args.resource_zips)
+  args.classpath = build_utils.ParseGnList(args.classpath)
   return args
 
 
@@ -319,6 +335,7 @@ def main():
            args.config_path,
            args.manifest_path,
            sources,
+           args.classpath,
            args.cache_dir,
            args.android_sdk_version,
            args.srcjars,
@@ -328,6 +345,7 @@ def main():
            args.resource_zips,
            args.android_sdk_root,
            args.lint_gen_dir,
+           args.baseline,
            testonly_target=args.testonly,
            can_fail_build=args.can_fail_build,
            silent=args.silent)

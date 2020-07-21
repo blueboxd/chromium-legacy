@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.tab;
 
+import org.chromium.base.annotations.MockedInTests;
+
 /**
  */
+@MockedInTests
 public interface TabLifecycle {
     /**
      * @return Whether or not this Tab has a live native component.  This will be true prior to

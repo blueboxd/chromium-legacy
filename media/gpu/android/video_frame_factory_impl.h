@@ -10,7 +10,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/sequence_bound.h"
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/android/codec_buffer_wait_coordinator.h"
@@ -52,7 +51,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
       const gpu::GpuPreferences& gpu_preferences,
       std::unique_ptr<SharedImageVideoProvider> image_provider,
       std::unique_ptr<MaybeRenderEarlyManager> mre_manager,
-      base::SequenceBound<FrameInfoHelper> frame_info_helper);
+      std::unique_ptr<FrameInfoHelper> frame_info_helper);
   ~VideoFrameFactoryImpl() override;
 
   void Initialize(OverlayMode overlay_mode, InitCB init_cb) override;
@@ -105,8 +104,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
       ImageWithInfoReadyCB image_ready_cb,
       scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
       std::unique_ptr<CodecOutputBufferRenderer> output_buffer_renderer,
-      FrameInfoHelper::FrameInfo frame_info,
-      bool success);
+      FrameInfoHelper::FrameInfo frame_info);
 
   MaybeRenderEarlyManager* mre_manager() const { return mre_manager_.get(); }
 
@@ -128,12 +126,8 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
 
   std::unique_ptr<MaybeRenderEarlyManager> mre_manager_;
 
-  // Caches FrameInfo and visible size it was cached for.
-  gfx::Size visible_size_;
-  FrameInfoHelper::FrameInfo frame_info_;
-
-  // Optional helper to get the Vulkan YCbCrInfo.
-  base::SequenceBound<FrameInfoHelper> frame_info_helper_;
+  // Helper to get coded_size and optional Vulkan YCbCrInfo.
+  std::unique_ptr<FrameInfoHelper> frame_info_helper_;
 
   // The current image spec that we'll use to request images.
   SharedImageVideoProvider::ImageSpec image_spec_;

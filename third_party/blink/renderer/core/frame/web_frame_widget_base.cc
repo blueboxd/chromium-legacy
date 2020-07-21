@@ -555,6 +555,12 @@ void WebFrameWidgetBase::UpdateVisualProperties(
   Client()->UpdateVisualProperties(visual_properties);
 }
 
+void WebFrameWidgetBase::UpdateScreenRects(
+    const gfx::Rect& widget_screen_rect,
+    const gfx::Rect& window_screen_rect) {
+  Client()->UpdateScreenRects(widget_screen_rect, window_screen_rect);
+}
+
 void WebFrameWidgetBase::ScheduleAnimationForWebTests() {
   Client()->ScheduleAnimationForWebTests();
 }

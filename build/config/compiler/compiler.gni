@@ -172,6 +172,11 @@ assert(!can_unwind_with_frame_pointers || enable_frame_pointers)
 can_unwind_with_cfi_table = is_android && !is_component_build &&
                             !enable_frame_pointers && current_cpu == "arm"
 
+# Whether or not cfi table should be enabled on arm.
+# TODO(crbug.com/1090409): Replace can_unwind_with_cfi_table with this once
+# sampling profiler is enabled on android.
+enable_arm_cfi_table = is_android && !is_component_build && current_cpu == "arm"
+
 declare_args() {
   # Set to true to use lld, the LLVM linker.
   use_lld = is_clang && (!is_ios && !is_mac)

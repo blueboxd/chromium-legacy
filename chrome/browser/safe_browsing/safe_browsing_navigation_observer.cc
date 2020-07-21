@@ -102,10 +102,7 @@ SafeBrowsingNavigationObserver* SafeBrowsingNavigationObserver::FromWebContents(
 SafeBrowsingNavigationObserver::SafeBrowsingNavigationObserver(
     content::WebContents* contents,
     const scoped_refptr<SafeBrowsingNavigationObserverManager>& manager)
-    : content::WebContentsObserver(contents),
-      manager_(manager),
-      has_user_gesture_(false),
-      last_user_gesture_timestamp_(base::Time()) {
+    : content::WebContentsObserver(contents), manager_(manager) {
   content_settings_observer_.Add(HostContentSettingsMapFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext())));
 }
@@ -113,10 +110,7 @@ SafeBrowsingNavigationObserver::SafeBrowsingNavigationObserver(
 SafeBrowsingNavigationObserver::~SafeBrowsingNavigationObserver() {}
 
 void SafeBrowsingNavigationObserver::OnUserInteraction() {
-  last_user_gesture_timestamp_ = base::Time::Now();
-  has_user_gesture_ = true;
-  manager_->RecordUserGestureForWebContents(web_contents(),
-                                            last_user_gesture_timestamp_);
+  manager_->RecordUserGestureForWebContents(web_contents());
 }
 
 // Called when a navigation starts in the WebContents. |navigation_handle|
@@ -154,20 +148,14 @@ void SafeBrowsingNavigationObserver::DidStartNavigation(
     // NavigationEvent, and decide if it is triggered by user.
     if (!navigation_handle->IsRendererInitiated()) {
       nav_event->navigation_initiation = ReferrerChainEntry::BROWSER_INITIATED;
-    } else if (has_user_gesture_ &&
-               !SafeBrowsingNavigationObserverManager::IsUserGestureExpired(
-                   last_user_gesture_timestamp_)) {
+    } else if (manager_->HasUnexpiredUserGesture(web_contents())) {
       nav_event->navigation_initiation =
           ReferrerChainEntry::RENDERER_INITIATED_WITH_USER_GESTURE;
     } else {
       nav_event->navigation_initiation =
           ReferrerChainEntry::RENDERER_INITIATED_WITHOUT_USER_GESTURE;
     }
-    if (has_user_gesture_) {
-      manager_->OnUserGestureConsumed(web_contents(),
-                                      last_user_gesture_timestamp_);
-      has_user_gesture_ = false;
-    }
+    manager_->OnUserGestureConsumed(web_contents());
   }
 
   // All the other fields are reconstructed based on current content of

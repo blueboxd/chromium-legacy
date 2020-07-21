@@ -113,7 +113,8 @@ class ASH_EXPORT ShelfNavigationWidget : public ShelfComponent,
   Shelf* shelf_ = nullptr;
   Delegate* delegate_ = nullptr;
 
-  // In tablet mode, |clip_rect_| is used to hide the invisible widget part.
+  // In tablet mode with hotseat enabled, |clip_rect_| is used to hide the
+  // invisible widget part.
   gfx::Rect clip_rect_;
 
   // The target widget bounds in screen coordinates.

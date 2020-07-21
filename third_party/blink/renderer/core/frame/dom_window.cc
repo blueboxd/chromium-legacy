@@ -531,20 +531,10 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
 
   LocalFrame* source_frame = source->GetFrame();
 
-  bool allow_autoplay = false;
-  if (RuntimeEnabledFeatures::ExperimentalAutoplayDynamicDelegationEnabled(
-          GetExecutionContext()) &&
-      LocalFrame::HasTransientUserActivation(source_frame) &&
-      options->hasAllow()) {
-    Vector<String> policy_entry_list;
-    options->allow().Split(' ', policy_entry_list);
-    allow_autoplay = policy_entry_list.Contains("autoplay");
-  }
-
   MessageEvent* event = MessageEvent::Create(
       std::move(channels), std::move(message),
       source->GetSecurityOrigin()->ToString(), String(), source,
-      user_activation, options->transferUserActivation(), allow_autoplay);
+      user_activation, options->transferUserActivation());
 
   // Transfer user activation state in the source's renderer when
   // |transferUserActivation| is true. We are making an expriment with
@@ -555,8 +545,6 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
   bool should_transfer_user_activation =
       RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
       options->transferUserActivation();
-  should_transfer_user_activation =
-      should_transfer_user_activation || allow_autoplay;
   if (should_transfer_user_activation &&
       LocalFrame::HasTransientUserActivation(source_frame)) {
     GetFrame()->TransferUserActivationFrom(source_frame);

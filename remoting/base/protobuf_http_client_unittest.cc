@@ -11,10 +11,14 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "remoting/base/protobuf_http_client_messages.pb.h"
 #include "remoting/base/protobuf_http_client_test_messages.pb.h"
 #include "remoting/base/protobuf_http_request.h"
+#include "remoting/base/protobuf_http_request_config.h"
 #include "remoting/base/protobuf_http_status.h"
+#include "remoting/base/protobuf_http_stream_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -25,15 +29,22 @@ namespace remoting {
 
 namespace {
 
+using protobufhttpclient::Status;
+using protobufhttpclient::StreamBody;
 using protobufhttpclienttest::EchoRequest;
 using protobufhttpclienttest::EchoResponse;
 
 using ::base::test::RunOnceCallback;
 using ::testing::_;
+using ::testing::InSequence;
 
-using MockEchoResponseCallback =
-    base::MockCallback<base::OnceCallback<void(const ProtobufHttpStatus&,
-                                               std::unique_ptr<EchoResponse>)>>;
+using EchoResponseCallback =
+    ProtobufHttpRequest::ResponseCallback<EchoResponse>;
+using MockEchoResponseCallback = base::MockCallback<EchoResponseCallback>;
+using MockEchoMessageCallback = base::MockCallback<
+    ProtobufHttpStreamRequest::MessageCallback<EchoResponse>>;
+using MockStreamClosedCallback =
+    base::MockCallback<ProtobufHttpStreamRequest::StreamClosedCallback>;
 
 constexpr char kTestServerEndpoint[] = "test.com";
 constexpr char kTestRpcPath[] = "/v1/echo:echo";
@@ -48,8 +59,17 @@ MATCHER_P(HasErrorCode, error_code, "") {
   return arg.error_code() == error_code;
 }
 
-MATCHER(IsResponseText, "") {
+MATCHER_P(EqualsToStatus, expected_status, "") {
+  return arg.error_code() == expected_status.error_code() &&
+         arg.error_message() == expected_status.error_message();
+}
+
+MATCHER(IsDefaultResponseText, "") {
   return arg->text() == kResponseText;
+}
+
+MATCHER_P(IsResponseText, response_text, "") {
+  return arg->text() == response_text;
 }
 
 MATCHER(IsNullResponse, "") {
@@ -62,30 +82,68 @@ class MockOAuthTokenGetter : public OAuthTokenGetter {
   MOCK_METHOD0(InvalidateCache, void());
 };
 
-std::unique_ptr<ProtobufHttpRequest> CreateDefaultTestRequest() {
-  auto request =
-      std::make_unique<ProtobufHttpRequest>(TRAFFIC_ANNOTATION_FOR_TESTS);
+EchoResponseCallback DoNothingResponse() {
+  return base::DoNothing::Once<const ProtobufHttpStatus&,
+                               std::unique_ptr<EchoResponse>>();
+}
+
+std::unique_ptr<ProtobufHttpRequestConfig> CreateDefaultRequestConfig() {
   auto request_message = std::make_unique<EchoRequest>();
   request_message->set_text(kRequestText);
-  request->request_message = std::move(request_message);
-  request->SetResponseCallback(
-      base::DoNothing::Once<const ProtobufHttpStatus&,
-                            std::unique_ptr<EchoResponse>>());
-  request->path = kTestRpcPath;
+  auto request_config =
+      std::make_unique<ProtobufHttpRequestConfig>(TRAFFIC_ANNOTATION_FOR_TESTS);
+  request_config->request_message = std::move(request_message);
+  request_config->path = kTestRpcPath;
+  return request_config;
+}
+
+std::unique_ptr<ProtobufHttpRequest> CreateDefaultTestRequest() {
+  auto request =
+      std::make_unique<ProtobufHttpRequest>(CreateDefaultRequestConfig());
+  request->SetResponseCallback(DoNothingResponse());
   return request;
 }
 
-std::string CreateDefaultResponseContent() {
+std::unique_ptr<ProtobufHttpStreamRequest> CreateDefaultTestStreamRequest() {
+  auto request =
+      std::make_unique<ProtobufHttpStreamRequest>(CreateDefaultRequestConfig());
+  request->SetStreamReadyCallback(base::DoNothing::Once());
+  request->SetStreamClosedCallback(
+      base::DoNothing::Once<const ProtobufHttpStatus&>());
+  request->SetMessageCallback(
+      base::DoNothing::Repeatedly<std::unique_ptr<EchoResponse>>());
+  return request;
+}
+
+std::string CreateSerializedEchoResponse(
+    const std::string& text = kResponseText) {
   EchoResponse response;
-  response.set_text(kResponseText);
+  response.set_text(text);
   return response.SerializeAsString();
+}
+
+std::string CreateSerializedStreamBodyWithText(
+    const std::string& text = kResponseText) {
+  StreamBody stream_body;
+  stream_body.add_messages(CreateSerializedEchoResponse(text));
+  return stream_body.SerializeAsString();
+}
+
+std::string CreateSerializedStreamBodyWithStatusCode(
+    ProtobufHttpStatus::Code status_code) {
+  StreamBody stream_body;
+  stream_body.mutable_status()->set_code(static_cast<int32_t>(status_code));
+  return stream_body.SerializeAsString();
 }
 
 }  // namespace
 
 class ProtobufHttpClientTest : public testing::Test {
  protected:
-  base::test::SingleThreadTaskEnvironment task_environment_;
+  void ExpectCallWithToken(bool success);
+
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   MockOAuthTokenGetter mock_token_getter_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_ =
@@ -95,16 +153,24 @@ class ProtobufHttpClientTest : public testing::Test {
                              test_shared_loader_factory_};
 };
 
+void ProtobufHttpClientTest::ExpectCallWithToken(bool success) {
+  EXPECT_CALL(mock_token_getter_, CallWithToken(_))
+      .WillOnce(RunOnceCallback<0>(success
+                                       ? OAuthTokenGetter::Status::SUCCESS
+                                       : OAuthTokenGetter::Status::AUTH_ERROR,
+                                   "", success ? kFakeAccessToken : ""));
+}
+
+// Unary request tests.
+
 TEST_F(ProtobufHttpClientTest, SendRequestAndDecodeResponse) {
   base::RunLoop run_loop;
 
-  EXPECT_CALL(mock_token_getter_, CallWithToken(_))
-      .WillOnce(RunOnceCallback<0>(OAuthTokenGetter::Status::SUCCESS, "",
-                                   kFakeAccessToken));
+  ExpectCallWithToken(/* success= */ true);
 
   MockEchoResponseCallback response_callback;
-  EXPECT_CALL(response_callback,
-              Run(HasErrorCode(ProtobufHttpStatus::Code::OK), IsResponseText()))
+  EXPECT_CALL(response_callback, Run(HasErrorCode(ProtobufHttpStatus::Code::OK),
+                                     IsDefaultResponseText()))
       .WillOnce([&]() { run_loop.Quit(); });
 
   auto request = CreateDefaultTestRequest();
@@ -129,16 +195,20 @@ TEST_F(ProtobufHttpClientTest, SendRequestAndDecodeResponse) {
 
   // Respond.
   test_url_loader_factory_.AddResponse(kTestFullUrl,
-                                       CreateDefaultResponseContent());
+                                       CreateSerializedEchoResponse());
   run_loop.Run();
+  ASSERT_FALSE(client_.HasPendingRequests());
 }
 
 TEST_F(ProtobufHttpClientTest,
        SendUnauthenticatedRequest_TokenGetterNotCalled) {
   EXPECT_CALL(mock_token_getter_, CallWithToken(_)).Times(0);
 
-  auto request = CreateDefaultTestRequest();
-  request->authenticated = false;
+  auto request_config = CreateDefaultRequestConfig();
+  request_config->authenticated = false;
+  auto request =
+      std::make_unique<ProtobufHttpRequest>(std::move(request_config));
+  request->SetResponseCallback(DoNothingResponse());
   client_.ExecuteRequest(std::move(request));
 
   // Verify that the request is sent with no auth header.
@@ -153,9 +223,7 @@ TEST_F(ProtobufHttpClientTest,
        FailedToFetchAuthToken_RejectsWithUnauthorizedError) {
   base::RunLoop run_loop;
 
-  EXPECT_CALL(mock_token_getter_, CallWithToken(_))
-      .WillOnce(
-          RunOnceCallback<0>(OAuthTokenGetter::Status::AUTH_ERROR, "", ""));
+  ExpectCallWithToken(/* success= */ false);
 
   MockEchoResponseCallback response_callback;
   EXPECT_CALL(response_callback,
@@ -168,14 +236,13 @@ TEST_F(ProtobufHttpClientTest,
   client_.ExecuteRequest(std::move(request));
 
   run_loop.Run();
+  ASSERT_FALSE(client_.HasPendingRequests());
 }
 
 TEST_F(ProtobufHttpClientTest, FailedToParseResponse_GetsInvalidResponseError) {
   base::RunLoop run_loop;
 
-  EXPECT_CALL(mock_token_getter_, CallWithToken(_))
-      .WillOnce(RunOnceCallback<0>(OAuthTokenGetter::Status::SUCCESS, "",
-                                   kFakeAccessToken));
+  ExpectCallWithToken(/* success= */ true);
 
   MockEchoResponseCallback response_callback;
   EXPECT_CALL(
@@ -190,13 +257,42 @@ TEST_F(ProtobufHttpClientTest, FailedToParseResponse_GetsInvalidResponseError) {
   // Respond.
   test_url_loader_factory_.AddResponse(kTestFullUrl, "Invalid content");
   run_loop.Run();
+  ASSERT_FALSE(client_.HasPendingRequests());
 }
 
-TEST_F(ProtobufHttpClientTest, ServerRespondsWithError) {
+TEST_F(ProtobufHttpClientTest, ServerRespondsWithErrorStatusMessage) {
   base::RunLoop run_loop;
 
-  EXPECT_CALL(mock_token_getter_, CallWithToken(_))
-      .WillOnce(RunOnceCallback<0>(OAuthTokenGetter::Status::SUCCESS, "", ""));
+  ExpectCallWithToken(/* success= */ true);
+
+  MockEchoResponseCallback response_callback;
+  EXPECT_CALL(response_callback,
+              Run(EqualsToStatus(ProtobufHttpStatus(
+                      ProtobufHttpStatus::Code::FAILED_PRECONDITION,
+                      "Unauthenticated error message")),
+                  IsNullResponse()))
+      .WillOnce([&]() { run_loop.Quit(); });
+
+  auto request = CreateDefaultTestRequest();
+  request->SetResponseCallback(response_callback.Get());
+  client_.ExecuteRequest(std::move(request));
+
+  Status status_message;
+  status_message.set_code(
+      static_cast<int>(ProtobufHttpStatus::Code::FAILED_PRECONDITION));
+  status_message.set_message("Unauthenticated error message");
+
+  test_url_loader_factory_.AddResponse(
+      kTestFullUrl, status_message.SerializeAsString(),
+      net::HttpStatusCode::HTTP_INTERNAL_SERVER_ERROR);
+  run_loop.Run();
+  ASSERT_FALSE(client_.HasPendingRequests());
+}
+
+TEST_F(ProtobufHttpClientTest, ServerRespondsWithHttpErrorCode) {
+  base::RunLoop run_loop;
+
+  ExpectCallWithToken(/* success= */ true);
 
   MockEchoResponseCallback response_callback;
   EXPECT_CALL(response_callback,
@@ -211,9 +307,11 @@ TEST_F(ProtobufHttpClientTest, ServerRespondsWithError) {
   test_url_loader_factory_.AddResponse(kTestFullUrl, "",
                                        net::HttpStatusCode::HTTP_UNAUTHORIZED);
   run_loop.Run();
+  ASSERT_FALSE(client_.HasPendingRequests());
 }
 
-TEST_F(ProtobufHttpClientTest, CancelPendingRequests_CallbackNotCalled) {
+TEST_F(ProtobufHttpClientTest,
+       CancelPendingRequestsBeforeTokenCallback_CallbackNotCalled) {
   base::RunLoop run_loop;
 
   OAuthTokenGetter::TokenCallback token_callback;
@@ -222,7 +320,10 @@ TEST_F(ProtobufHttpClientTest, CancelPendingRequests_CallbackNotCalled) {
         token_callback = std::move(callback);
       });
 
+  MockEchoResponseCallback not_called_response_callback;
+
   auto request = CreateDefaultTestRequest();
+  request->SetResponseCallback(not_called_response_callback.Get());
   client_.ExecuteRequest(std::move(request));
   client_.CancelPendingRequests();
   ASSERT_TRUE(token_callback);
@@ -231,6 +332,179 @@ TEST_F(ProtobufHttpClientTest, CancelPendingRequests_CallbackNotCalled) {
 
   // Verify no request.
   ASSERT_FALSE(test_url_loader_factory_.IsPending(kTestFullUrl));
+  ASSERT_FALSE(client_.HasPendingRequests());
+}
+
+TEST_F(ProtobufHttpClientTest,
+       CancelPendingRequestsAfterTokenCallback_CallbackNotCalled) {
+  base::RunLoop run_loop;
+
+  ExpectCallWithToken(/* success= */ true);
+
+  client_.ExecuteRequest(CreateDefaultTestRequest());
+
+  // Respond.
+  ASSERT_TRUE(test_url_loader_factory_.IsPending(kTestFullUrl));
+  ASSERT_EQ(1, test_url_loader_factory_.NumPending());
+  client_.CancelPendingRequests();
+  test_url_loader_factory_.AddResponse(kTestFullUrl,
+                                       CreateSerializedEchoResponse());
+  run_loop.RunUntilIdle();
+  ASSERT_FALSE(client_.HasPendingRequests());
+}
+
+TEST_F(ProtobufHttpClientTest, RequestTimeout_ReturnsDeadlineExceeded) {
+  base::RunLoop run_loop;
+
+  ExpectCallWithToken(/* success= */ true);
+
+  MockEchoResponseCallback response_callback;
+  EXPECT_CALL(response_callback,
+              Run(HasErrorCode(ProtobufHttpStatus::Code::DEADLINE_EXCEEDED),
+                  IsNullResponse()))
+      .WillOnce([&]() { run_loop.Quit(); });
+
+  auto request = CreateDefaultTestRequest();
+  request->SetTimeoutDuration(base::TimeDelta::FromSeconds(15));
+  request->SetResponseCallback(response_callback.Get());
+  client_.ExecuteRequest(std::move(request));
+
+  ASSERT_TRUE(test_url_loader_factory_.IsPending(kTestFullUrl));
+  ASSERT_EQ(1, test_url_loader_factory_.NumPending());
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(16));
+
+  run_loop.Run();
+  ASSERT_FALSE(client_.HasPendingRequests());
+}
+
+// Stream request tests.
+
+TEST_F(ProtobufHttpClientTest, StartStreamRequestAndDecodeMessages) {
+  base::MockOnceClosure stream_ready_callback;
+  MockEchoMessageCallback message_callback;
+  MockStreamClosedCallback stream_closed_callback;
+
+  {
+    InSequence s;
+
+    ExpectCallWithToken(/* success= */ true);
+    EXPECT_CALL(stream_ready_callback, Run());
+    EXPECT_CALL(message_callback, Run(IsResponseText("response text 1")));
+    EXPECT_CALL(message_callback, Run(IsResponseText("response text 2")));
+    EXPECT_CALL(stream_closed_callback,
+                Run(HasErrorCode(ProtobufHttpStatus::Code::CANCELLED)));
+  }
+
+  auto request = CreateDefaultTestStreamRequest();
+  request->SetStreamReadyCallback(stream_ready_callback.Get());
+  request->SetMessageCallback(message_callback.Get());
+  request->SetStreamClosedCallback(stream_closed_callback.Get());
+  network::SimpleURLLoaderStreamConsumer* stream_consumer = request.get();
+  client_.ExecuteRequest(std::move(request));
+
+  ASSERT_TRUE(test_url_loader_factory_.IsPending(kTestFullUrl));
+  ASSERT_EQ(1, test_url_loader_factory_.NumPending());
+
+  // TestURLLoaderFactory can't simulate streaming, so we invoke the request
+  // directly.
+  stream_consumer->OnDataReceived(
+      CreateSerializedStreamBodyWithText("response text 1"),
+      base::DoNothing::Once());
+  stream_consumer->OnDataReceived(
+      CreateSerializedStreamBodyWithText("response text 2"),
+      base::DoNothing::Once());
+  stream_consumer->OnDataReceived(CreateSerializedStreamBodyWithStatusCode(
+                                      ProtobufHttpStatus::Code::CANCELLED),
+                                  base::DoNothing::Once());
+  ASSERT_FALSE(client_.HasPendingRequests());
+}
+
+TEST_F(ProtobufHttpClientTest, InvalidStreamData_Ignored) {
+  base::RunLoop run_loop;
+  base::MockOnceClosure stream_ready_callback;
+  MockEchoMessageCallback not_called_message_callback;
+  MockStreamClosedCallback stream_closed_callback;
+
+  {
+    InSequence s;
+
+    ExpectCallWithToken(/* success= */ true);
+    EXPECT_CALL(stream_ready_callback, Run());
+    EXPECT_CALL(stream_closed_callback,
+                Run(HasErrorCode(ProtobufHttpStatus::Code::OK)))
+        .WillOnce([&]() { run_loop.Quit(); });
+  }
+
+  auto request = CreateDefaultTestStreamRequest();
+  request->SetStreamReadyCallback(stream_ready_callback.Get());
+  request->SetMessageCallback(not_called_message_callback.Get());
+  request->SetStreamClosedCallback(stream_closed_callback.Get());
+  client_.ExecuteRequest(std::move(request));
+
+  ASSERT_TRUE(test_url_loader_factory_.IsPending(kTestFullUrl));
+  ASSERT_EQ(1, test_url_loader_factory_.NumPending());
+  test_url_loader_factory_.AddResponse(kTestFullUrl, "Invalid stream data",
+                                       net::HttpStatusCode::HTTP_OK);
+  run_loop.Run();
+  ASSERT_FALSE(client_.HasPendingRequests());
+}
+
+TEST_F(ProtobufHttpClientTest, SendHttpStatusOnly_StreamClosesWithHttpStatus) {
+  base::RunLoop run_loop;
+  base::MockOnceClosure stream_ready_callback;
+  MockStreamClosedCallback stream_closed_callback;
+
+  {
+    InSequence s;
+
+    ExpectCallWithToken(/* success= */ true);
+    EXPECT_CALL(stream_closed_callback,
+                Run(HasErrorCode(ProtobufHttpStatus::Code::UNAUTHENTICATED)))
+        .WillOnce([&]() { run_loop.Quit(); });
+  }
+
+  auto request = CreateDefaultTestStreamRequest();
+  request->SetStreamReadyCallback(stream_ready_callback.Get());
+  request->SetStreamClosedCallback(stream_closed_callback.Get());
+  client_.ExecuteRequest(std::move(request));
+
+  ASSERT_TRUE(test_url_loader_factory_.IsPending(kTestFullUrl));
+  ASSERT_EQ(1, test_url_loader_factory_.NumPending());
+  test_url_loader_factory_.AddResponse(kTestFullUrl, /* response_body= */ "",
+                                       net::HttpStatusCode::HTTP_UNAUTHORIZED);
+  run_loop.Run();
+  ASSERT_FALSE(client_.HasPendingRequests());
+}
+
+TEST_F(ProtobufHttpClientTest, SendStreamStatusAndHttpStatus_StreamStatusWins) {
+  base::RunLoop run_loop;
+  base::MockOnceClosure stream_ready_callback;
+  MockStreamClosedCallback stream_closed_callback;
+
+  {
+    InSequence s;
+
+    ExpectCallWithToken(/* success= */ true);
+    EXPECT_CALL(stream_ready_callback, Run());
+    EXPECT_CALL(stream_closed_callback,
+                Run(HasErrorCode(ProtobufHttpStatus::Code::CANCELLED)))
+        .WillOnce([&]() { run_loop.Quit(); });
+  }
+
+  auto request = CreateDefaultTestStreamRequest();
+  request->SetStreamReadyCallback(stream_ready_callback.Get());
+  request->SetStreamClosedCallback(stream_closed_callback.Get());
+  client_.ExecuteRequest(std::move(request));
+
+  ASSERT_TRUE(test_url_loader_factory_.IsPending(kTestFullUrl));
+  ASSERT_EQ(1, test_url_loader_factory_.NumPending());
+  test_url_loader_factory_.AddResponse(kTestFullUrl,
+                                       CreateSerializedStreamBodyWithStatusCode(
+                                           ProtobufHttpStatus::Code::CANCELLED),
+                                       net::HttpStatusCode::HTTP_OK);
+  run_loop.Run();
+  ASSERT_FALSE(client_.HasPendingRequests());
 }
 
 }  // namespace remoting

@@ -229,4 +229,10 @@ void WebExternalWidgetImpl::UpdateVisualProperties(
   client_->UpdateVisualProperties(visual_properties);
 }
 
+void WebExternalWidgetImpl::UpdateScreenRects(
+    const gfx::Rect& widget_screen_rect,
+    const gfx::Rect& window_screen_rect) {
+  client_->UpdateScreenRects(widget_screen_rect, window_screen_rect);
+}
+
 }  // namespace blink

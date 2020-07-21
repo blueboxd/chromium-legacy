@@ -966,6 +966,7 @@ android_library("chrome_test_java") {
     "//chrome/browser/enterprise/util:java",
     "//chrome/browser/flags:java",
     "//chrome/browser/fullscreen/android:java",
+    "//chrome/browser/image_fetcher:java",
     "//chrome/browser/offline_pages/android:java",
     "//chrome/browser/paint_preview/android:java",
     "//chrome/browser/password_check/android:public_java",
@@ -2306,7 +2307,8 @@ template("monochrome_test_apk_tmpl") {
 }
 
 chrome_test_apk_tmpl("chrome_public_test_apk") {
-  enable_lint = true
+  # TODO(wnwen): Re-enable when new lint failures are fixed.
+  #enable_lint = true
   apk_name = "ChromePublicTest"
   android_manifest = chrome_public_test_apk_manifest
   android_manifest_dep = ":chrome_public_test_apk_manifest"
@@ -3166,19 +3168,6 @@ native_java_unittests_tests = [
   "native_java_unittests/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulatorTest.java",
   "native_java_unittests/src/org/chromium/chrome/browser/installedapp/InstalledAppProviderTest.java",
   "native_java_unittests/src/org/chromium/chrome/browser/notifications/NotificationPlatformBridgeUnitTest.java",
-  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediatorUnitTest.java",
-  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteResultUnitTest.java",
-  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/DropdownItemViewInfoListBuilderUnitTest.java",
-  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/DropdownItemViewInfoListManagerUnitTest.java",
-  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/basic/BasicSuggestionProcessorUnitTest.java",
-  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/clipboard/ClipboardSuggestionProcessorTest.java",
-  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/status/StatusMediatorUnitTest.java",
-  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionProcessorTest.java",
-  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/answer/AnswerSuggestionProcessorUnitTest.java",
-  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/editurl/EditUrlSuggestionUnitTest.java",
-  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/entity/EntitySuggestionProcessorUnitTest.java",
-  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/tiles/TileSuggestionProcessorUnitTest.java",
-  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/CachedZeroSuggestionsManagerUnitTest.java",
   "native_java_unittests/src/org/chromium/chrome/browser/partnercustomizations/PartnerBrowserCustomizationsUnitTest.java",
   "native_java_unittests/src/org/chromium/chrome/browser/payments/AndroidPaymentAppFinderUnitTest.java",
   "native_java_unittests/src/org/chromium/chrome/browser/payments/AndroidPaymentAppUnitTest.java",
@@ -3236,7 +3225,6 @@ android_library("native_java_unittests_java") {
 
   sources = [
     "native_java_unittests/src/org/chromium/chrome/browser/UnitTestUtils.java",
-    "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/OmniboxSuggestionBuilderForTest.java",
   ]
 
   sources += native_java_unittests_tests

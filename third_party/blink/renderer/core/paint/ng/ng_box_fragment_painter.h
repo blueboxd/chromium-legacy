@@ -75,6 +75,8 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                                                 const PhysicalRect&,
                                                 const BoxDecorationData&);
 
+  IntRect VisualRect(const PhysicalOffset& paint_offset);
+
  protected:
   LayoutRectOutsets ComputeBorders() const override;
   LayoutRectOutsets ComputePadding() const override;
@@ -110,8 +112,13 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintBoxDecorationBackground(const PaintInfo&,
                                     const PhysicalOffset& paint_offset,
                                     bool suppress_box_decoration_background);
+
+  // |visual_rect| is for the drawing display item, covering overflowing box
+  // shadows and border image outsets. |paint_rect| is the border box rect in
+  // paint coordinates.
   void PaintBoxDecorationBackgroundWithRect(const PaintInfo&,
-                                            const PhysicalRect&,
+                                            const IntRect& visual_rect,
+                                            const PhysicalRect& paint_rect,
                                             const DisplayItemClient&);
 
   void PaintColumnRules(const PaintInfo&, const PhysicalOffset& paint_offset);

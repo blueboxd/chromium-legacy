@@ -304,12 +304,10 @@ public class StaticLayout extends Layout {
     @Override
     public void onTabCreated(long time, int tabId, int tabIndex, int sourceTabId,
             boolean newIsIncognito, boolean background, float originX, float originY) {
-
     }
 
     @Override
     public void onTabModelSwitched(boolean incognito) {
-
     }
 
     @Override

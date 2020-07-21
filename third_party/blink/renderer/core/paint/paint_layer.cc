@@ -1392,25 +1392,7 @@ void PaintLayer::InsertOnlyThisLayerAfterStyleChange() {
        curr = curr->NextSibling())
     curr->MoveLayers(parent_, this);
 
-  // If the previous directly composited container is not a stacking context and
-  // this object is stacked content, creating this layer may cause this object
-  // and its descendants to change paint invalidation container.
-  bool did_set_paint_invalidation = false;
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      !IsA<LayoutView>(GetLayoutObject()) && GetLayoutObject().IsRooted() &&
-      GetLayoutObject().IsStacked()) {
-    const LayoutBoxModelObject& previous_directly_compositable_container =
-        GetLayoutObject().Parent()->DirectlyCompositableContainer();
-    if (!previous_directly_compositable_container.IsStackingContext()) {
-      ObjectPaintInvalidator(GetLayoutObject())
-          .InvalidatePaintIncludingNonSelfPaintingLayerDescendants();
-      // Set needsRepaint along the original compositingContainer chain.
-      GetLayoutObject().Parent()->EnclosingLayer()->SetNeedsRepaint();
-      did_set_paint_invalidation = true;
-    }
-  }
-
-  if (!did_set_paint_invalidation && IsSelfPaintingLayer() && parent_) {
+  if (IsSelfPaintingLayer() && parent_) {
     if (PaintLayer* enclosing_self_painting_layer =
             parent_->EnclosingSelfPaintingLayer())
       MergeNeedsPaintPhaseFlagsFrom(*enclosing_self_painting_layer);

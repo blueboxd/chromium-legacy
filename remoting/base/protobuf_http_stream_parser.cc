@@ -136,10 +136,7 @@ bool ProtobufHttpStreamParser::ParseOneField(
         return false;
       }
       VLOG(1) << "Client status decoded.";
-      ProtobufHttpStatus client_status(
-          static_cast<ProtobufHttpStatus::Code>(status.code()),
-          status.message());
-      std::move(stream_closed_callback_).Run(client_status);
+      std::move(stream_closed_callback_).Run(ProtobufHttpStatus(status));
       break;
     }
 

@@ -333,6 +333,8 @@ class CORE_EXPORT WebFrameWidgetBase
   bool ShouldAckSyntheticInputImmediately() override;
   void UpdateVisualProperties(
       const VisualProperties& visual_properties) override;
+  void UpdateScreenRects(const gfx::Rect& widget_screen_rect,
+                         const gfx::Rect& window_screen_rect) override;
   void ScheduleAnimationForWebTests() override;
 
   // mojom::blink::FrameWidget methods.

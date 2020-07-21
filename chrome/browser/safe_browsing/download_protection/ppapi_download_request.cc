@@ -69,7 +69,7 @@ PPAPIDownloadRequest::PPAPIDownloadRequest(
         service->navigation_observer_manager()->HasUserGesture(web_contents);
     if (has_user_gesture_) {
       service->navigation_observer_manager()->OnUserGestureConsumed(
-          web_contents, base::Time::Now());
+          web_contents);
     }
   }
 }

@@ -31,6 +31,21 @@ enum Type {
 };
 }  // namespace Source
 
+// Type of OS hook.
+//
+// This enum should be zero based. It is not strongly typed enum class to
+// support implicit conversion to int. Values are also used as index in
+// OsHooksResults.
+namespace OsHookType {
+enum Type {
+  kShortcuts = 0,
+  kRunOnOsLogin,
+  kShortcutsMenu,
+  kFileHandlers,
+  kMaxValue = kFileHandlers,
+};
+}
+
 // The result of an attempted web app installation, uninstallation or update.
 //
 // This is an enum, instead of a struct with multiple fields (e.g. one field for

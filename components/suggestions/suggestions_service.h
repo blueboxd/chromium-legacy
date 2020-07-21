@@ -39,16 +39,16 @@ class SuggestionsService : public KeyedService {
   virtual std::unique_ptr<ResponseCallbackList::Subscription> AddCallback(
       const ResponseCallback& callback) WARN_UNUSED_RESULT = 0;
 
-  // Adds a URL to the blacklist cache, returning true on success or false on
+  // Adds a URL to the blocklist cache, returning true on success or false on
   // failure. The URL will eventually be uploaded to the server.
-  virtual bool BlacklistURL(const GURL& candidate_url) = 0;
+  virtual bool BlocklistURL(const GURL& candidate_url) = 0;
 
-  // Removes a URL from the local blacklist, returning true on success or false
+  // Removes a URL from the local blocklist, returning true on success or false
   // on failure.
-  virtual bool UndoBlacklistURL(const GURL& url) = 0;
+  virtual bool UndoBlocklistURL(const GURL& url) = 0;
 
-  // Removes all URLs from the blacklist.
-  virtual void ClearBlacklist() = 0;
+  // Removes all URLs from the blocklist.
+  virtual void ClearBlocklist() = 0;
 };
 
 }  // namespace suggestions

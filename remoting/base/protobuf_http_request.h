@@ -5,35 +5,34 @@
 #ifndef REMOTING_BASE_PROTOBUF_HTTP_REQUEST_H_
 #define REMOTING_BASE_PROTOBUF_HTTP_REQUEST_H_
 
-#include <memory>
-#include <string>
-
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/time/time.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
-#include "remoting/base/protobuf_http_status.h"
-#include "third_party/protobuf/src/google/protobuf/message_lite.h"
+#include "remoting/base/protobuf_http_request_base.h"
+
+namespace google {
+namespace protobuf {
+class MessageLite;
+}  // namespace protobuf
+}  // namespace google
 
 namespace remoting {
 
-// A simple unary request. Caller needs to set all public members and call
-// SetResponseCallback() before passing it to ProtobufHttpClient.
-struct ProtobufHttpRequest final {
+// A simple unary request.
+class ProtobufHttpRequest final : public ProtobufHttpRequestBase {
+ public:
   template <typename ResponseType>
   using ResponseCallback =
       base::OnceCallback<void(const ProtobufHttpStatus& status,
                               std::unique_ptr<ResponseType> response)>;
 
   explicit ProtobufHttpRequest(
-      const net::NetworkTrafficAnnotationTag& traffic_annotation);
-  ~ProtobufHttpRequest();
+      std::unique_ptr<ProtobufHttpRequestConfig> config);
+  ~ProtobufHttpRequest() override;
 
-  const net::NetworkTrafficAnnotationTag traffic_annotation;
-  std::unique_ptr<google::protobuf::MessageLite> request_message;
-  std::string path;
-  bool authenticated = true;
-  base::TimeDelta timeout_duration = base::TimeDelta::FromSeconds(30);
+  // Sets the amount of time to wait before giving up on a given network request
+  // and considering it an error. The default value is 30s. Set it to zero to
+  // disable timeout.
+  void SetTimeoutDuration(base::TimeDelta timeout_duration);
 
   // Sets the response callback. |ResponseType| needs to be a protobuf message
   // type.
@@ -54,14 +53,18 @@ struct ProtobufHttpRequest final {
   }
 
  private:
-  friend class ProtobufHttpClient;
+  // ProtobufHttpRequestBase implementations.
+  void OnAuthFailed(const ProtobufHttpStatus& status) override;
+  void StartRequestInternal(
+      network::mojom::URLLoaderFactory* loader_factory) override;
+  base::TimeDelta GetRequestTimeoutDuration() const override;
 
-  // To be called by ProtobufHttpClient.
-  void OnResponse(const ProtobufHttpStatus& status,
-                  std::unique_ptr<std::string> response_body);
+  void OnResponse(std::unique_ptr<std::string> response_body);
 
   // Parses |response_body| and writes it to |response_message_|.
   ProtobufHttpStatus ParseResponse(std::unique_ptr<std::string> response_body);
+
+  base::TimeDelta timeout_duration_ = base::TimeDelta::FromSeconds(30);
 
   // This is owned by |response_callback_|.
   google::protobuf::MessageLite* response_message_;

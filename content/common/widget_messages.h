@@ -94,13 +94,6 @@ IPC_MESSAGE_ROUTED1(WidgetMsg_SetActive, bool /* active */)
 // are in progress.
 IPC_MESSAGE_ROUTED0(WidgetMsg_SetBounds_ACK)
 
-// Informs the RenderWidget of its position on the user's screen, as well as
-// the position of the native window holding the RenderWidget.
-// TODO(danakj): These should be part of UpdateVisualProperties.
-IPC_MESSAGE_ROUTED2(WidgetMsg_UpdateScreenRects,
-                    gfx::Rect /* widget_screen_rect */,
-                    gfx::Rect /* window_screen_rect */)
-
 // Sent by a parent frame to notify its child about the state of the child's
 // intersection with the parent's viewport, primarily for use by the
 // IntersectionObserver API. Also see FrameHostMsg_UpdateViewportIntersection.
@@ -122,10 +115,6 @@ IPC_MESSAGE_ROUTED1(WidgetMsg_WaitForNextFrameForTests,
 // this message.  Otherwise, the browser will generate a WidgetMsg_Close
 // message to close the widget.
 IPC_MESSAGE_ROUTED0(WidgetHostMsg_Close)
-
-// Sent in response to a WidgetMsg_UpdateScreenRects so that the renderer can
-// throttle these messages.
-IPC_MESSAGE_ROUTED0(WidgetHostMsg_UpdateScreenRects_ACK)
 
 // Sent by the renderer process to request that the browser change the bounds of
 // the widget. This corresponds to the window.resizeTo() and window.moveTo()

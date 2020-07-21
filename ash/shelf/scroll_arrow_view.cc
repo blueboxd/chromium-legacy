@@ -11,8 +11,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
-#include "ui/views/animation/ink_drop_mask.h"
 
 namespace ash {
 
@@ -54,22 +52,6 @@ void ScrollArrowView::PaintButtonContents(gfx::Canvas* canvas) {
 
 const char* ScrollArrowView::GetClassName() const {
   return "ScrollArrowView";
-}
-
-std::unique_ptr<views::InkDropMask> ScrollArrowView::CreateInkDropMask() const {
-  gfx::Point center_point = gfx::Rect(size()).CenterPoint();
-  return std::make_unique<views::CircleInkDropMask>(size(), center_point,
-                                                    width() / 2);
-}
-
-std::unique_ptr<views::InkDropRipple> ScrollArrowView::CreateInkDropRipple()
-    const {
-  gfx::Rect bounds = gfx::Rect(size());
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      size(), GetLocalBounds().InsetsFrom(bounds),
-      GetInkDropCenterBasedOnLastEvent(),
-      ShelfConfig::Get()->shelf_ink_drop_base_color(),
-      ShelfConfig::Get()->shelf_ink_drop_visible_opacity());
 }
 
 }  // namespace ash

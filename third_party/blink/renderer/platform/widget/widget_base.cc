@@ -228,6 +228,13 @@ void WidgetBase::UpdateVisualProperties(
   client_->UpdateVisualProperties(visual_properties);
 }
 
+void WidgetBase::UpdateScreenRects(const gfx::Rect& widget_screen_rect,
+                                   const gfx::Rect& window_screen_rect,
+                                   UpdateScreenRectsCallback callback) {
+  client_->UpdateScreenRects(widget_screen_rect, window_screen_rect);
+  std::move(callback).Run();
+}
+
 void WidgetBase::ApplyViewportChanges(
     const cc::ApplyViewportChangesArgs& args) {
   client_->ApplyViewportChanges(args);

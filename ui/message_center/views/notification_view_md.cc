@@ -41,7 +41,6 @@
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -1461,11 +1460,6 @@ std::vector<views::View*> NotificationViewMD::GetChildrenForLayerAdjustment()
     const {
   return {header_row_, block_all_button_, dont_block_button_,
           settings_done_button_};
-}
-
-std::unique_ptr<views::InkDropMask> NotificationViewMD::CreateInkDropMask()
-    const {
-  return nullptr;
 }
 
 SkColor NotificationViewMD::GetInkDropBaseColor() const {

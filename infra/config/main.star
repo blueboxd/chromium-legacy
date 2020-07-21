@@ -6,7 +6,7 @@
 # See https://chromium.googlesource.com/infra/luci/luci-go/+/HEAD/lucicfg/doc/README.md
 # for information on starlark/lucicfg
 
-load('//project.star', 'master_only_exec')
+load('//project.star', 'master_only_exec', 'settings')
 
 lucicfg.check_version(
     min = '1.15.1',
@@ -45,7 +45,7 @@ lucicfg.emit(
 )
 
 luci.project(
-    name = 'chromium',
+    name = settings.project,
     buildbucket = 'cr-buildbucket.appspot.com',
     logdog = 'luci-logdog.appspot.com',
     milo = 'luci-milo.appspot.com',

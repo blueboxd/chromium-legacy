@@ -39,30 +39,19 @@ float GetCurvedRatio(const base::TimeTicks& current,
          (kMaxArctan - kMinArctan);
 }
 
-const int kDefaultSpeedInPixelsPerSec = 800;
-
 }  // namespace
 
-SyntheticSmoothMoveGestureParams::SyntheticSmoothMoveGestureParams()
-    : speed_in_pixels_s(kDefaultSpeedInPixelsPerSec),
-      fling_velocity_x(0),
-      fling_velocity_y(0),
-      prevent_fling(true),
-      add_slop(true),
-      granularity(ui::ScrollGranularity::kScrollByPixel),
-      key_modifiers(0) {}
+SyntheticSmoothMoveGestureParams::SyntheticSmoothMoveGestureParams() = default;
 
 SyntheticSmoothMoveGestureParams::SyntheticSmoothMoveGestureParams(
     const SyntheticSmoothMoveGestureParams& other) = default;
 
-SyntheticSmoothMoveGestureParams::~SyntheticSmoothMoveGestureParams() {}
+SyntheticSmoothMoveGestureParams::~SyntheticSmoothMoveGestureParams() = default;
 
 SyntheticSmoothMoveGesture::SyntheticSmoothMoveGesture(
     SyntheticSmoothMoveGestureParams params)
     : params_(params),
-      current_move_segment_start_position_(params.start_point),
-      state_(SETUP),
-      needs_scroll_begin_(true) {}
+      current_move_segment_start_position_(params.start_point) {}
 
 SyntheticSmoothMoveGesture::~SyntheticSmoothMoveGesture() {}
 
@@ -178,7 +167,7 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelInputEvents(
             needs_scroll_begin_ ? blink::WebMouseWheelEvent::kPhaseBegan
                                 : blink::WebMouseWheelEvent::kPhaseChanged;
         ForwardMouseWheelEvent(target, delta, phase, event_timestamp,
-                               params_.key_modifiers);
+                               params_.modifiers);
         current_move_segment_total_delta_ += delta;
         needs_scroll_begin_ = false;
       }
@@ -199,7 +188,7 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelInputEvents(
             // Forward a wheel event with phase ended and zero deltas.
             ForwardMouseWheelEvent(target, gfx::Vector2d(),
                                    blink::WebMouseWheelEvent::kPhaseEnded,
-                                   event_timestamp, params_.key_modifiers);
+                                   event_timestamp, params_.modifiers);
           }
           needs_scroll_begin_ = true;
         }
@@ -269,10 +258,10 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelEvent(
     const gfx::Vector2dF& delta,
     const blink::WebMouseWheelEvent::Phase phase,
     const base::TimeTicks& timestamp,
-    int key_modifiers) const {
+    int modifiers) const {
   blink::WebMouseWheelEvent mouse_wheel_event =
       blink::SyntheticWebMouseWheelEventBuilder::Build(
-          0, 0, delta.x(), delta.y(), key_modifiers, params_.granularity);
+          0, 0, delta.x(), delta.y(), modifiers, params_.granularity);
 
   mouse_wheel_event.SetPositionInWidget(
       current_move_segment_start_position_.x(),

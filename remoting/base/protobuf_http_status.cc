@@ -5,6 +5,7 @@
 #include "remoting/base/protobuf_http_status.h"
 
 #include "net/http/http_status_code.h"
+#include "remoting/base/protobuf_http_client_messages.pb.h"
 
 namespace remoting {
 
@@ -81,6 +82,10 @@ ProtobufHttpStatus::ProtobufHttpStatus(net::HttpStatusCode http_status_code)
 ProtobufHttpStatus::ProtobufHttpStatus(net::Error net_error)
     : error_code_(NetErrorToClientCode(net_error)),
       error_message_(net::ErrorToString(net_error)) {}
+
+ProtobufHttpStatus::ProtobufHttpStatus(const protobufhttpclient::Status& status)
+    : error_code_(static_cast<ProtobufHttpStatus::Code>(status.code())),
+      error_message_(status.message()) {}
 
 ProtobufHttpStatus::ProtobufHttpStatus(Code code,
                                        const std::string& error_message)

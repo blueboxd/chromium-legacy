@@ -95,7 +95,10 @@ RemoteFrame::RemoteFrame(
             owner,
             frame_token,
             MakeGarbageCollected<RemoteWindowProxyManager>(*this),
-            inheriting_agent_factory) {
+            inheriting_agent_factory),
+      interface_registry_(
+          interface_registry ? interface_registry
+                             : InterfaceRegistry::GetEmptyInterfaceRegistry()) {
   // TODO(crbug.com/1094850): Remove this check once the renderer is correctly
   // handling errors during the creation of HTML portal elements, which would
   // otherwise cause RemoteFrame() being created with empty frame tokens.
@@ -225,6 +228,7 @@ void RemoteFrame::DetachImpl(FrameDetachType type) {
   if (cc_layer_)
     SetCcLayer(nullptr, false, false);
   receiver_.reset();
+  main_frame_receiver_.reset();
 }
 
 bool RemoteFrame::DetachDocument() {
@@ -723,6 +727,11 @@ void RemoteFrame::SetOpener(Frame* opener_frame) {
   }
 }
 
+void RemoteFrame::WasAttachedAsRemoteMainFrame() {
+  interface_registry_->AddAssociatedInterface(WTF::BindRepeating(
+      &RemoteFrame::BindToMainFrameReceiver, WrapWeakPersistent(this)));
+}
+
 bool RemoteFrame::IsIgnoredForHitTest() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   if (!owner || !owner->GetLayoutObject())
@@ -791,10 +800,17 @@ void RemoteFrame::ApplyReplicatedFeaturePolicyHeader() {
 }
 
 void RemoteFrame::BindToReceiver(
-    blink::RemoteFrame* frame,
+    RemoteFrame* frame,
     mojo::PendingAssociatedReceiver<mojom::blink::RemoteFrame> receiver) {
   DCHECK(frame);
   frame->receiver_.Bind(std::move(receiver));
+}
+
+void RemoteFrame::BindToMainFrameReceiver(
+    RemoteFrame* frame,
+    mojo::PendingAssociatedReceiver<mojom::blink::RemoteMainFrame> receiver) {
+  DCHECK(frame);
+  frame->main_frame_receiver_.Bind(std::move(receiver));
 }
 
 }  // namespace blink

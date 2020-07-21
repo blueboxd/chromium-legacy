@@ -842,7 +842,11 @@ void HandleToggleAppList(const ui::Accelerator& accelerator,
 void HandleToggleFullscreen(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_MEDIA_LAUNCH_APP2)
     base::RecordAction(UserMetricsAction("Accel_Fullscreen_F4"));
-  accelerators::ToggleFullscreen();
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  // Disable fullscreen while overview animation is running due to
+  // http://crbug.com/1094739
+  if (!overview_controller->IsInStartAnimation())
+    accelerators::ToggleFullscreen();
 }
 
 void HandleToggleOverview() {

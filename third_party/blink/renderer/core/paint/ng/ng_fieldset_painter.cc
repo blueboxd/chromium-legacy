@@ -83,8 +83,9 @@ void NGFieldsetPainter::PaintFieldsetDecorationBackground(
   PhysicalRect contracted_rect(paint_rect);
   contracted_rect.Contract(fieldset_paint_info.border_outsets);
 
-  DrawingRecorder recorder(paint_info.context, *fieldset_.GetLayoutObject(),
-                           paint_info.phase);
+  DrawingRecorder recorder(
+      paint_info.context, *fieldset_.GetLayoutObject(), paint_info.phase,
+      NGBoxFragmentPainter(fieldset_).VisualRect(paint_offset));
 
   NGBoxFragmentPainter fragment_painter(fieldset_);
   if (box_decoration_data.ShouldPaintShadow()) {

@@ -144,11 +144,10 @@ class SafeBrowsingNavigationObserverManager
   // Adds |nav_event| to |navigation_event_list_|. Object pointed to by
   // |nav_event| will be no longer accessible after this function.
   void RecordNavigationEvent(std::unique_ptr<NavigationEvent> nav_event);
-  void RecordUserGestureForWebContents(content::WebContents* web_contents,
-                                       const base::Time& timestamp);
-  void OnUserGestureConsumed(content::WebContents* web_contents,
-                             const base::Time& timestamp);
+  void RecordUserGestureForWebContents(content::WebContents* web_contents);
+  void OnUserGestureConsumed(content::WebContents* web_contents);
   bool HasUserGesture(content::WebContents* web_contents);
+  bool HasUnexpiredUserGesture(content::WebContents* web_contents);
   void RecordHostToIpMapping(const std::string& host, const std::string& ip);
 
   // Clean-ups need to be done when a WebContents gets destroyed.

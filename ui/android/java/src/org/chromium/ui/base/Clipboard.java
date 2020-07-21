@@ -54,7 +54,7 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     // access to network resources, etceteras (e.g., URI in clipboard)
     private final Context mContext;
 
-    private final ClipboardManager mClipboardManager;
+    private ClipboardManager mClipboardManager;
 
     private long mNativeClipboard;
 
@@ -474,6 +474,17 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
         return bitmap != null
                 && (bitmap.getConfig() == Bitmap.Config.ARGB_8888
                         || bitmap.getConfig() == Bitmap.Config.ALPHA_8);
+    }
+
+    /**
+     * Allows the ClipboardManager Android Service to be replaced with a mock for tests, returning
+     * the original so that it can be restored.
+     */
+    @VisibleForTesting
+    public ClipboardManager overrideClipboardManagerForTesting(ClipboardManager manager) {
+        ClipboardManager oldManager = mClipboardManager;
+        mClipboardManager = manager;
+        return oldManager;
     }
 
     @NativeMethods

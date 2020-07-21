@@ -55,8 +55,8 @@ void WebKioskAppLauncher::ContinueWithNetworkReady() {
   delegate_->OnAppInstalling();
   DCHECK(!is_installed_);
   install_task_.reset(new web_app::WebAppInstallTask(
-      profile_, /*registrar=*/nullptr, /*shortcut_manager=*/nullptr,
-      /*file_handler_manager=*/nullptr, /*install_finalizer=*/nullptr,
+      profile_, /*shortcut_manager=*/nullptr,
+      /*os_integration_manager=*/nullptr, /*install_finalizer=*/nullptr,
       data_retriever_factory_.Run()));
   install_task_->LoadAndRetrieveWebApplicationInfoWithIcons(
       WebKioskAppManager::Get()->GetAppByAccountId(account_id_)->install_url(),

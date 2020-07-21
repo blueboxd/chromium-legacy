@@ -641,15 +641,6 @@ const LayoutObject& NGPaintFragment::VisualRectLayoutObject(
   return *containing_block_fragment->GetLayoutObject();
 }
 
-IntRect NGPaintFragment::VisualRect() const {
-  // VisualRect is computed from fragment tree and set to LayoutObject in
-  // pre-paint. Use the stored value in the LayoutObject.
-  bool this_as_inline_box;
-  const auto& layout_object = VisualRectLayoutObject(this_as_inline_box);
-  DCHECK(!this_as_inline_box);
-  return layout_object.FragmentsVisualRectBoundingBox();
-}
-
 IntRect NGPaintFragment::PartialInvalidationVisualRect() const {
   bool this_as_inline_box;
   const auto& layout_object = VisualRectLayoutObject(this_as_inline_box);

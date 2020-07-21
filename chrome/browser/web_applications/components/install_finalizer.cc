@@ -50,14 +50,6 @@ void InstallFinalizer::SetSubsystems(
   registry_controller_ = registry_controller;
 }
 
-bool InstallFinalizer::CanAddAppToQuickLaunchBar() const {
-  return ui_manager().CanAddAppToQuickLaunchBar();
-}
-
-void InstallFinalizer::AddAppToQuickLaunchBar(const AppId& app_id) {
-  ui_manager().AddAppToQuickLaunchBar(app_id);
-}
-
 bool InstallFinalizer::CanReparentTab(const AppId& app_id,
                                       bool shortcut_created) const {
   // Reparent the web contents into its own window only if that is the

@@ -29,14 +29,28 @@
         android:text="@string/qr_code_share_description"
         android:textAppearance="@style/TextAppearance.TextLarge.Primary"/>
 
-    <org.chromium.ui.widget.ChromeImageView
-        android:id="@+id/qrcode"
-        android:layout_width="228dp"
-        android:layout_height="228dp"
-        android:gravity="center_horizontal"
-        android:layout_gravity="center_horizontal"
-        android:background="@drawable/qrcode_background"
-        android:padding="16dp" />
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <org.chromium.ui.widget.ChromeImageView
+            android:id="@+id/qrcode"
+            android:layout_width="228dp"
+            android:layout_height="228dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/qrcode_background"
+            android:gravity="center_horizontal"
+            android:padding="16dp" />
+
+        <TextView
+            android:id="@+id/error_message"
+            android:layout_width="228dp"
+            android:layout_height="fill_parent"
+            android:padding="16dp"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:textAppearance="@style/TextAppearance.TextMedium.Secondary.Dark"
+            android:visibility="visible"/>
+    </FrameLayout>
 
     <org.chromium.ui.widget.ButtonCompat
         android:id="@+id/download"
@@ -45,6 +59,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="30dp"
         android:text="@string/qr_code_download"
+        android:enabled="false"
         style="@style/TextButton"/>
 
     <org.chromium.ui.widget.ButtonCompat
@@ -54,6 +69,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="30dp"
         android:text="@string/open_settings_button"
+        android:enabled="false"
         style="@style/TextButton"/>
   </LinearLayout>
 </ScrollView>

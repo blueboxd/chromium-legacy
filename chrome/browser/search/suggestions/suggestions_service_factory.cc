@@ -17,7 +17,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "components/suggestions/blacklist_store.h"
+#include "components/suggestions/blocklist_store.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_service_impl.h"
 #include "components/suggestions/suggestions_store.h"
@@ -61,14 +61,14 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
 
   std::unique_ptr<SuggestionsStore> suggestions_store(
       new SuggestionsStore(profile->GetPrefs()));
-  std::unique_ptr<BlacklistStore> blacklist_store(
-      new BlacklistStore(profile->GetPrefs()));
+  std::unique_ptr<BlocklistStore> blocklist_store(
+      new BlocklistStore(profile->GetPrefs()));
 
   return new SuggestionsServiceImpl(
       identity_manager, sync_service,
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess(),
-      std::move(suggestions_store), std::move(blacklist_store),
+      std::move(suggestions_store), std::move(blocklist_store),
       base::DefaultTickClock::GetInstance());
 }
 

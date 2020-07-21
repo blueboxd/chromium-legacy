@@ -76,12 +76,14 @@ namespace blink {
 
 WebSharedWorkerImpl::WebSharedWorkerImpl(
     const base::UnguessableToken& appcache_host_id,
+    CrossVariantMojoRemote<mojom::SharedWorkerHostInterfaceBase> host,
     WebSharedWorkerClient* client)
     : reporting_proxy_(MakeGarbageCollected<SharedWorkerReportingProxy>(
           this,
           ParentExecutionContextTaskRunners::Create())),
       worker_thread_(std::make_unique<SharedWorkerThread>(*reporting_proxy_,
                                                           appcache_host_id)),
+      host_(std::move(host)),
       client_(client) {
   DCHECK(IsMainThread());
 }
@@ -95,42 +97,47 @@ void WebSharedWorkerImpl::TerminateWorkerThread() {
   if (asked_to_terminate_)
     return;
   asked_to_terminate_ = true;
+  pending_channels_.clear();
   worker_thread_->Terminate();
   // DidTerminateWorkerThread() will be called asynchronously.
 }
 
 void WebSharedWorkerImpl::CountFeature(WebFeature feature) {
   DCHECK(IsMainThread());
-  client_->CountFeature(feature);
+  host_->OnFeatureUsed(feature);
 }
 
 void WebSharedWorkerImpl::DidFailToFetchClassicScript() {
   DCHECK(IsMainThread());
-  client_->WorkerScriptLoadFailed("Failed to fetch a worker script.");
+  host_->OnScriptLoadFailed("Failed to fetch a worker script.");
   TerminateWorkerThread();
   // DidTerminateWorkerThread() will be called asynchronously.
 }
 
 void WebSharedWorkerImpl::DidFailToFetchModuleScript() {
   DCHECK(IsMainThread());
-  client_->WorkerScriptLoadFailed("Failed to fetch a worker script.");
+  host_->OnScriptLoadFailed("Failed to fetch a worker script.");
   TerminateWorkerThread();
   // DidTerminateWorkerThread() will be called asynchronously.
 }
 
 void WebSharedWorkerImpl::DidEvaluateClassicScript(bool success) {
   DCHECK(IsMainThread());
-  client_->WorkerScriptEvaluated(success);
+  DCHECK(!running_);
+  running_ = true;
+  DispatchPendingConnections();
 }
 
 void WebSharedWorkerImpl::DidEvaluateModuleScript(bool success) {
   DCHECK(IsMainThread());
-  client_->WorkerScriptEvaluated(success);
+  DCHECK(!running_);
+  running_ = true;
+  DispatchPendingConnections();
 }
 
 void WebSharedWorkerImpl::DidCloseWorkerGlobalScope() {
   DCHECK(IsMainThread());
-  client_->WorkerContextClosed();
+  host_->OnContextClosed();
   TerminateWorkerThread();
   // DidTerminateWorkerThread() will be called asynchronously.
 }
@@ -141,10 +148,26 @@ void WebSharedWorkerImpl::DidTerminateWorkerThread() {
   // |this| is deleted at this point.
 }
 
-void WebSharedWorkerImpl::Connect(MessagePortChannel web_channel) {
+void WebSharedWorkerImpl::Connect(int connection_request_id,
+                                  MessagePortDescriptor port) {
   DCHECK(IsMainThread());
   if (asked_to_terminate_)
     return;
+
+  blink::MessagePortChannel channel(std::move(port));
+  if (running_) {
+    ConnectToChannel(connection_request_id, std::move(channel));
+  } else {
+    // If two documents try to load a SharedWorker at the same time, the
+    // mojom::SharedWorker::Connect() for one of the documents can come in
+    // before the worker is started. Just queue up the connect and deliver it
+    // once the worker starts.
+    pending_channels_.emplace_back(connection_request_id, std::move(channel));
+  }
+}
+
+void WebSharedWorkerImpl::ConnectToChannel(int connection_request_id,
+                                           MessagePortChannel channel) {
   // The HTML spec requires to queue a connect event using the DOM manipulation
   // task source.
   // https://html.spec.whatwg.org/C/#shared-workers-and-the-sharedworker-interface
@@ -152,7 +175,14 @@ void WebSharedWorkerImpl::Connect(MessagePortChannel web_channel) {
       *GetWorkerThread()->GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
       CrossThreadBindOnce(&WebSharedWorkerImpl::ConnectTaskOnWorkerThread,
                           WTF::CrossThreadUnretained(this),
-                          WTF::Passed(std::move(web_channel))));
+                          WTF::Passed(std::move(channel))));
+  host_->OnConnected(connection_request_id);
+}
+
+void WebSharedWorkerImpl::DispatchPendingConnections() {
+  for (auto& item : pending_channels_)
+    ConnectToChannel(item.first, std::move(item.second));
+  pending_channels_.clear();
 }
 
 void WebSharedWorkerImpl::ConnectTaskOnWorkerThread(
@@ -280,8 +310,8 @@ void WebSharedWorkerImpl::StartWorkerContext(
   }
 
   // We are now ready to inspect worker thread.
-  client_->WorkerReadyForInspection(std::move(devtools_agent_remote),
-                                    std::move(devtools_agent_host_receiver));
+  host_->OnReadyForInspection(std::move(devtools_agent_remote),
+                              std::move(devtools_agent_host_receiver));
 }
 
 void WebSharedWorkerImpl::TerminateWorkerContext() {
@@ -310,9 +340,10 @@ std::unique_ptr<WebSharedWorker> WebSharedWorker::CreateAndStart(
     bool pause_worker_context_on_start,
     std::unique_ptr<WorkerMainScriptLoadParameters>
         worker_main_script_load_params,
+    CrossVariantMojoRemote<mojom::SharedWorkerHostInterfaceBase> host,
     WebSharedWorkerClient* client) {
-  auto worker =
-      base::WrapUnique(new WebSharedWorkerImpl(appcache_host_id, client));
+  auto worker = base::WrapUnique(
+      new WebSharedWorkerImpl(appcache_host_id, std::move(host), client));
   worker->StartWorkerContext(
       script_request_url, script_type, credentials_mode, name,
       constructor_origin, user_agent, ua_metadata, content_security_policy,

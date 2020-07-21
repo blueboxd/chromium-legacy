@@ -320,7 +320,7 @@ export class NativeLayerStub extends TestBrowserProxy {
   /**
    * @param {!PrinterSetupResponse} response The response to send when
    *     |setupPrinter| is called.
-   * @param {?boolean} opt_reject Whether printSetup requests should be
+   * @param {boolean=} opt_reject Whether printSetup requests should be
    *     rejected. Defaults to false (will resolve callback) if not provided.
    */
   setSetupPrinterResponse(response, opt_reject) {

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_storage_estimate.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_storage_usage_details.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -84,8 +85,10 @@ void QueryStorageUsageAndQuotaCallback(
 
 }  // namespace
 
-StorageManager::StorageManager(ContextLifecycleNotifier* notifier)
-    : permission_service_(notifier), quota_host_(notifier) {}
+StorageManager::StorageManager(ExecutionContext* execution_context)
+    : ExecutionContextClient(execution_context),
+      permission_service_(execution_context),
+      quota_host_(execution_context) {}
 
 ScriptPromise StorageManager::persist(ScriptState* script_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -160,7 +163,17 @@ ScriptPromise StorageManager::estimate(ScriptState* script_state) {
 void StorageManager::Trace(Visitor* visitor) const {
   visitor->Trace(permission_service_);
   visitor->Trace(quota_host_);
+  EventTargetWithInlineData::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
   ScriptWrappable::Trace(visitor);
+}
+
+const AtomicString& StorageManager::InterfaceName() const {
+  return event_type_names::kQuotachange;
+}
+
+ExecutionContext* StorageManager::GetExecutionContext() const {
+  return ExecutionContextClient::GetExecutionContext();
 }
 
 PermissionService* StorageManager::GetPermissionService(

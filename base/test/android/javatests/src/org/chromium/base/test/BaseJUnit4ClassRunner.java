@@ -235,7 +235,7 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
      */
     @CallSuper
     protected List<TestRule> getDefaultTestRules() {
-        return Collections.singletonList(new BaseJUnit4TestRule());
+        return Arrays.asList(new BaseJUnit4TestRule(), new MockitoErrorHandler());
     }
 
     /**

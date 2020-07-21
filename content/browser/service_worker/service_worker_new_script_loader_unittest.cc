@@ -218,7 +218,7 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
     int routing_id = 0;
     int request_id = 10;
     uint32_t options = 0;
-    int64_t resource_id = GetNewResourceIdSync(context()->storage());
+    int64_t resource_id = GetNewResourceIdSync(context()->GetStorageControl());
 
     network::ResourceRequest request;
     request.url = url;

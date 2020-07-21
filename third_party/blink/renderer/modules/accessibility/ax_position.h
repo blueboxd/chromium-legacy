@@ -147,6 +147,8 @@ class MODULES_EXPORT AXPosition final {
   const PositionWithAffinity ToPositionWithAffinity(
       const AXPositionAdjustmentBehavior =
           AXPositionAdjustmentBehavior::kMoveLeft) const;
+  const Position ToPosition(const AXPositionAdjustmentBehavior =
+                                AXPositionAdjustmentBehavior::kMoveLeft) const;
 
   // Returns a string representation of this object.
   String ToString() const;

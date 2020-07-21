@@ -249,15 +249,22 @@ void USB::OnDeviceRemoved(UsbDeviceInfoPtr device_info) {
 void USB::OnServiceConnectionError() {
   service_.reset();
   client_receiver_.reset();
-  for (ScriptPromiseResolver* resolver : get_devices_requests_)
-    resolver->Resolve(HeapVector<Member<USBDevice>>(0));
-  get_devices_requests_.clear();
 
-  for (ScriptPromiseResolver* resolver : get_permission_requests_) {
+  // Move the set to a local variable to prevent script execution in Resolve()
+  // from invalidating the iterator used by the loop.
+  HeapHashSet<Member<ScriptPromiseResolver>> get_devices_requests;
+  get_devices_requests.swap(get_devices_requests_);
+  for (auto& resolver : get_devices_requests)
+    resolver->Resolve(HeapVector<Member<USBDevice>>(0));
+
+  // Move the set to a local variable to prevent script execution in Reject()
+  // from invalidating the iterator used by the loop.
+  HeapHashSet<Member<ScriptPromiseResolver>> get_permission_requests;
+  get_permission_requests.swap(get_permission_requests_);
+  for (auto& resolver : get_permission_requests) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotFoundError, kNoDeviceSelected));
   }
-  get_permission_requests_.clear();
 }
 
 void USB::AddedEventListener(const AtomicString& event_type,

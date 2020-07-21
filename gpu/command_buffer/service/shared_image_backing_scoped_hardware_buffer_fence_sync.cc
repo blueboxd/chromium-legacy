@@ -47,18 +47,18 @@ SharedImageBackingScopedHardwareBufferFenceSync::
         GrSurfaceOrigin surface_origin,
         SkAlphaType alpha_type,
         uint32_t usage,
-        size_t estimated_size,
         bool is_thread_safe)
-    : SharedImageBackingAndroid(mailbox,
-                                format,
-                                size,
-                                color_space,
-                                surface_origin,
-                                alpha_type,
-                                usage,
-                                estimated_size,
-                                is_thread_safe,
-                                base::ScopedFD()),
+    : SharedImageBackingAndroid(
+          mailbox,
+          format,
+          size,
+          color_space,
+          surface_origin,
+          alpha_type,
+          usage,
+          viz::ResourceSizes::UncheckedSizeInBytes<size_t>(size, format),
+          is_thread_safe,
+          base::ScopedFD()),
       scoped_hardware_buffer_(std::move(scoped_hardware_buffer)) {
   // This backing is not thread safe and should not be accessed by multiple
   // thread at once.

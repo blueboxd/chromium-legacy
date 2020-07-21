@@ -47,16 +47,7 @@ namespace blink {
 // alive until WorkerScriptLoadFailed() or WorkerContextDestroyed() is called).
 class WebSharedWorkerClient {
  public:
-  virtual void CountFeature(mojom::WebFeature) = 0;
-  virtual void WorkerContextClosed() = 0;
   virtual void WorkerContextDestroyed() = 0;
-  virtual void WorkerReadyForInspection(
-      CrossVariantMojoRemote<mojom::DevToolsAgentInterfaceBase>
-          devtools_agent_remote,
-      CrossVariantMojoReceiver<mojom::DevToolsAgentHostInterfaceBase>
-          devtools_agent_host_receiver) {}
-  virtual void WorkerScriptLoadFailed(const std::string& error_message) = 0;
-  virtual void WorkerScriptEvaluated(bool success) = 0;
 
   // Called on the main thread during initialization. Creates a new
   // WebWorkerFetchContext for the shared worker. This is passed to the worker

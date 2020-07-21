@@ -12,23 +12,33 @@
 
 namespace updater {
 
-base::ScopedCFTypeRef<CFStringRef> CopyServiceLaunchDName() {
+base::ScopedCFTypeRef<CFStringRef> CopyServiceLaunchdName() {
   return base::SysUTF8ToCFStringRef(MAC_BUNDLE_IDENTIFIER_STRING ".service");
 }
 
-base::ScopedCFTypeRef<CFStringRef> CopyAdministrationLaunchDName() {
+base::ScopedCFTypeRef<CFStringRef> CopyWakeLaunchdName() {
   return base::SysUTF8ToCFStringRef(MAC_BUNDLE_IDENTIFIER_STRING
-                                    ".admin." UPDATER_VERSION_STRING);
+                                    ".wake." UPDATER_VERSION_STRING);
 }
 
-base::scoped_nsobject<NSString> GetServiceLaunchDLabel() {
-  return base::scoped_nsobject<NSString>(
-      base::mac::CFToNSCast(CopyServiceLaunchDName().release()));
+base::ScopedCFTypeRef<CFStringRef> CopyControlLaunchdName() {
+  return base::SysUTF8ToCFStringRef(MAC_BUNDLE_IDENTIFIER_STRING
+                                    ".control." UPDATER_VERSION_STRING);
 }
 
-base::scoped_nsobject<NSString> GetAdministrationLaunchDLabel() {
+base::scoped_nsobject<NSString> GetServiceLaunchdLabel() {
   return base::scoped_nsobject<NSString>(
-      base::mac::CFToNSCast(CopyAdministrationLaunchDName().release()));
+      base::mac::CFToNSCast(CopyServiceLaunchdName().release()));
+}
+
+base::scoped_nsobject<NSString> GetWakeLaunchdLabel() {
+  return base::scoped_nsobject<NSString>(
+      base::mac::CFToNSCast(CopyWakeLaunchdName().release()));
+}
+
+base::scoped_nsobject<NSString> GetControlLaunchdLabel() {
+  return base::scoped_nsobject<NSString>(
+      base::mac::CFToNSCast(CopyControlLaunchdName().release()));
 }
 
 base::scoped_nsobject<NSString> GetServiceMachName(NSString* name) {
@@ -39,10 +49,17 @@ base::scoped_nsobject<NSString> GetServiceMachName(NSString* name) {
 
 base::scoped_nsobject<NSString> GetServiceMachName() {
   base::scoped_nsobject<NSString> name(
-      base::mac::CFToNSCast(CopyServiceLaunchDName().release()));
-  return base::scoped_nsobject<NSString>(
-      [name stringByAppendingFormat:@".%lu", [GetServiceLaunchDLabel() hash]],
-      base::scoped_policy::RETAIN);
+      base::mac::CFToNSCast(CopyServiceLaunchdName().release()));
+  return GetServiceMachName(name);
+}
+
+base::scoped_nsobject<NSString> GetVersionedServiceMachName() {
+  base::scoped_nsobject<NSString> name([NSString
+      stringWithFormat:@"%@.%@",
+                       base::mac::CFToNSCast(
+                           CopyServiceLaunchdName().release()),
+                       base::SysUTF8ToNSString(UPDATER_VERSION_STRING)]);
+  return GetServiceMachName(name);
 }
 
 }  // namespace updater

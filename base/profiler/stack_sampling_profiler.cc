@@ -742,8 +742,9 @@ TimeTicks StackSamplingProfiler::TestPeer::GetNextSampleTime(
 // The profiler is currently only implemented for Windows x64 and MacOSX.
 // TODO(https://crbug.com/1004855): enable for Android arm.
 bool StackSamplingProfiler::IsSupported() {
-#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || \
-    (defined(OS_MACOSX) && defined(ARCH_CPU_X86_64) && !defined(OS_IOS))
+#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) ||                        \
+    (defined(OS_MACOSX) && defined(ARCH_CPU_X86_64) && !defined(OS_IOS)) || \
+    (defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE))
 #if defined(OS_MACOSX)
   // TODO(https://crbug.com/1098119): Fix unwinding on OS X 10.16. The OS
   // has moved all system libraries into the dyld shared cache and this

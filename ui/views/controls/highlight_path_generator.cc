@@ -51,7 +51,8 @@ base::Optional<gfx::RRectF> HighlightPathGenerator::GetRoundRect(
 
 base::Optional<gfx::RRectF> HighlightPathGenerator::GetRoundRect(
     const View* view) {
-  gfx::Rect bounds(view->GetLocalBounds());
+  gfx::Rect bounds =
+      use_contents_bounds_ ? view->GetContentsBounds() : view->GetLocalBounds();
   bounds.Inset(insets_);
   return GetRoundRect(gfx::RectF(bounds));
 }

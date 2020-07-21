@@ -91,6 +91,11 @@ bool IsHomeButtonShown() {
   return ShelfConfig::Get()->shelf_controls_shown();
 }
 
+bool IsHotseatEnabled() {
+  return Shell::Get()->IsInTabletMode() &&
+         chromeos::switches::ShouldShowShelfHotseat();
+}
+
 // An implicit animation observer that hides a view once the view's opacity
 // animation finishes.
 // It deletes itself when the animation is done.
@@ -552,6 +557,7 @@ void ShelfNavigationWidget::CalculateTargetBounds() {
                      nav_size.width());
   }
   target_bounds_ = gfx::Rect(nav_origin, nav_size);
+  clip_rect_ = CalculateClipRect();
 }
 
 gfx::Rect ShelfNavigationWidget::GetTargetBounds() const {
@@ -609,13 +615,11 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
     }
     if (update_opacity)
       GetLayer()->SetOpacity(layout_manager->GetOpacity());
-    if (update_bounds) {
+    if (update_bounds)
       SetBounds(target_bounds_);
-      clip_rect_ = CalculateClipRect();
-    }
   }
 
-  if (update_bounds && Shell::Get()->IsInTabletMode())
+  if (update_bounds && IsHotseatEnabled())
     GetLayer()->SetClipRect(clip_rect_);
 
   views::View* const back_button = delegate_->back_button();
@@ -711,10 +715,10 @@ void ShelfNavigationWidget::UpdateButtonVisibility(
 }
 
 gfx::Rect ShelfNavigationWidget::CalculateClipRect() const {
-  if (!Shell::Get()->IsInTabletMode())
-    return gfx::Rect(target_bounds_.size());
+  if (IsHotseatEnabled())
+    return gfx::Rect(CalculateIdealSize(/*only_visible_area=*/true));
 
-  return gfx::Rect(CalculateIdealSize(/*only_visible_area=*/true));
+  return gfx::Rect(target_bounds_.size());
 }
 
 gfx::Size ShelfNavigationWidget::CalculateIdealSize(
@@ -723,7 +727,7 @@ gfx::Size ShelfNavigationWidget::CalculateIdealSize(
     return gfx::Size();
 
   int control_button_number;
-  if (Shell::Get()->IsInTabletMode() && !only_visible_area) {
+  if (IsHotseatEnabled() && !only_visible_area) {
     // There are home button and back button. So the maximum is 2.
     control_button_number = 2;
   } else {

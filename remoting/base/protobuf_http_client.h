@@ -5,22 +5,23 @@
 #ifndef REMOTING_BASE_PROTOBUF_HTTP_CLIENT_H_
 #define REMOTING_BASE_PROTOBUF_HTTP_CLIENT_H_
 
+#include <list>
 #include <memory>
 #include <string>
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "remoting/base/oauth_token_getter.h"
 
 namespace network {
 class SharedURLLoaderFactory;
-class SimpleURLLoader;
 }  // namespace network
 
 namespace remoting {
 
-struct ProtobufHttpRequest;
+class ProtobufHttpRequestBase;
 
 // Helper class for executing REST/Protobuf requests over HTTP.
 class ProtobufHttpClient final {
@@ -38,26 +39,36 @@ class ProtobufHttpClient final {
 
   // Executes a unary request. Caller will not be notified of the result if
   // CancelPendingRequests() is called or |this| is destroyed.
-  void ExecuteRequest(std::unique_ptr<ProtobufHttpRequest> request);
+  void ExecuteRequest(std::unique_ptr<ProtobufHttpRequestBase> request);
 
-  // Tries to cancel all pending requests. Note that this prevents request
-  // callbacks from being called but does not necessarily stop pending requests
-  // from being sent.
+  // Cancel all pending requests.
   void CancelPendingRequests();
 
+  // Indicates whether the client has any pending requests.
+  bool HasPendingRequests() const;
+
  private:
-  void DoExecuteRequest(std::unique_ptr<ProtobufHttpRequest> request,
+  using PendingRequestList =
+      std::list<std::unique_ptr<ProtobufHttpRequestBase>>;
+
+  // std::list iterators are stable, so they survive list editing and only
+  // become invalidated when underlying element is deleted.
+  using PendingRequestListIterator = PendingRequestList::iterator;
+
+  void DoExecuteRequest(std::unique_ptr<ProtobufHttpRequestBase> request,
                         OAuthTokenGetter::Status status,
                         const std::string& user_email,
                         const std::string& access_token);
 
-  void OnResponse(std::unique_ptr<ProtobufHttpRequest> request,
-                  std::unique_ptr<network::SimpleURLLoader> url_loader,
-                  std::unique_ptr<std::string> response_body);
+  void CancelRequest(const PendingRequestListIterator& request_iterator);
 
   std::string server_endpoint_;
   OAuthTokenGetter* token_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  PendingRequestList pending_requests_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
   base::WeakPtrFactory<ProtobufHttpClient> weak_factory_{this};
 };
 

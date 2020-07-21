@@ -142,6 +142,8 @@ source_set("web_applications_test_support") {
     "test/test_file_utils.h",
     "test/test_install_finalizer.cc",
     "test/test_install_finalizer.h",
+    "test/test_os_integration_manager.cc",
+    "test/test_os_integration_manager.h",
     "test/test_pending_app_manager.cc",
     "test/test_pending_app_manager.h",
     "test/test_pending_app_manager_impl.cc",

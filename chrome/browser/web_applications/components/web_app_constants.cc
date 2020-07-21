@@ -11,6 +11,9 @@ namespace web_app {
 
 static_assert(Source::kMinValue == 0, "Source enum should be zero based");
 
+static_assert(OsHookType::kShortcuts == 0,
+              "OsHookType enum should be zero based");
+
 bool IsSuccess(InstallResultCode code) {
   return code == InstallResultCode::kSuccessNewInstall ||
          code == InstallResultCode::kSuccessAlreadyInstalled;

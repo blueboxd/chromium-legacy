@@ -1894,24 +1894,6 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
             activated_observer.result());
 }
 
-namespace {
-void CrashContents(WebContentsImpl* contents) {
-#if defined(OS_WIN)
-  // TODO(mcnee): |CrashTab| on windows makes it look like the process
-  // terminated normally. For now we crash it properly here.
-  RenderProcessHost* rph = contents->GetMainFrame()->GetProcess();
-  RenderProcessHostWatcher watcher(
-      rph, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  EXPECT_TRUE(rph->Shutdown(RESULT_CODE_KILLED));
-  watcher.Wait();
-  EXPECT_FALSE(watcher.did_exit_normally());
-#else
-  CrashTab(contents);
-#endif
-  EXPECT_TRUE(contents->IsCrashed());
-}
-}  // namespace
-
 IN_PROC_BROWSER_TEST_F(PortalBrowserTest, RejectActivationOfCrashedPages) {
   GURL main_url(embedded_test_server()->GetURL("portal.test", "/title1.html"));
   ASSERT_TRUE(NavigateToURL(shell(), main_url));
@@ -1922,7 +1904,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, RejectActivationOfCrashedPages) {
   GURL portal_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   Portal* portal = CreatePortalToUrl(web_contents_impl, portal_url);
   WebContentsImpl* portal_contents = portal->GetPortalContents();
-  CrashContents(portal_contents);
+  CrashTab(portal_contents);
 
   PortalActivatedObserver activated_observer(portal);
   EXPECT_TRUE(
@@ -1941,7 +1923,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivatePreviouslyCrashedPortal) {
   GURL portal_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   Portal* portal = CreatePortalToUrl(web_contents_impl, portal_url);
   WebContentsImpl* portal_contents = portal->GetPortalContents();
-  CrashContents(portal_contents);
+  CrashTab(portal_contents);
 
   TestNavigationObserver navigation_observer(portal_contents);
   EXPECT_TRUE(ExecJs(

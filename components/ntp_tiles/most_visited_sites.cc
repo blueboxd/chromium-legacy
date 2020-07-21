@@ -395,12 +395,12 @@ void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,
       top_sites_->RemoveBlockedUrl(url);
   }
 
-  // Only blacklist in the server-side suggestions service if it's active.
+  // Only blocklist in the server-side suggestions service if it's active.
   if (mv_source_ == TileSource::SUGGESTIONS_SERVICE) {
     if (add_url)
-      suggestions_service_->BlacklistURL(url);
+      suggestions_service_->BlocklistURL(url);
     else
-      suggestions_service_->UndoBlacklistURL(url);
+      suggestions_service_->UndoBlocklistURL(url);
   }
 }
 
@@ -408,9 +408,9 @@ void MostVisitedSites::ClearBlacklistedUrls() {
   if (top_sites_)
     top_sites_->ClearBlockedUrls();
 
-  // Only update the server-side blacklist if it's active.
+  // Only update the server-side blocklist if it's active.
   if (mv_source_ == TileSource::SUGGESTIONS_SERVICE) {
-    suggestions_service_->ClearBlacklist();
+    suggestions_service_->ClearBlocklist();
   }
 }
 

@@ -58,22 +58,18 @@ void ReopenTabPromoController::ShowPromo() {
       browser_view_->GetAccelerator(IDC_RESTORE_TAB, &accelerator);
   DCHECK(has_accelerator);
 
-  auto feature_promo_bubble_timeout =
-      std::make_unique<FeaturePromoBubbleTimeout>(base::TimeDelta(),
-                                                  base::TimeDelta());
-  promo_bubble_ =
-      disable_bubble_timeout_for_test_
-          ? FeaturePromoBubbleView::CreateOwned(
-                app_menu_button, views::BubbleBorder::Arrow::TOP_RIGHT,
-                FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE,
-                base::nullopt, IDS_REOPEN_TAB_PROMO, base::nullopt,
-                IDS_REOPEN_TAB_PROMO_SCREENREADER, accelerator,
-                std::move(feature_promo_bubble_timeout))
-          : FeaturePromoBubbleView::CreateOwned(
-                app_menu_button, views::BubbleBorder::Arrow::TOP_RIGHT,
-                FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE,
-                base::nullopt, IDS_REOPEN_TAB_PROMO, base::nullopt,
-                IDS_REOPEN_TAB_PROMO_SCREENREADER, accelerator);
+  FeaturePromoBubbleView::CreateParams bubble_params;
+  bubble_params.body_string_specifier = IDS_REOPEN_TAB_PROMO;
+  bubble_params.screenreader_string_specifier =
+      IDS_REOPEN_TAB_PROMO_SCREENREADER;
+  bubble_params.feature_accelerator = accelerator;
+  bubble_params.anchor_view = app_menu_button;
+  bubble_params.arrow = views::BubbleBorder::Arrow::TOP_RIGHT;
+  if (disable_bubble_timeout_for_test_)
+    bubble_params.timeout = std::make_unique<FeaturePromoBubbleTimeout>(
+        base::TimeDelta(), base::TimeDelta());
+
+  promo_bubble_ = FeaturePromoBubbleView::Create(std::move(bubble_params));
   promo_bubble_->set_close_on_deactivate(false);
   observer_.Add(promo_bubble_->GetWidget());
 }

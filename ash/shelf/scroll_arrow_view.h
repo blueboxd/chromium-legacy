@@ -32,10 +32,6 @@ class ASH_EXPORT ScrollArrowView : public ShelfButton {
   void PaintButtonContents(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
 
-  // views::InkDropHost:
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-
  private:
   ArrowType arrow_type_ = kLeft;
   bool is_horizontal_alignment_ = true;

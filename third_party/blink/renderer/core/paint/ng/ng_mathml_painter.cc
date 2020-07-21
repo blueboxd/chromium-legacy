@@ -44,10 +44,7 @@ void NGMathMLPainter::PaintStretchyOrLargeOperator(
 
 void NGMathMLPainter::PaintFractionBar(
     const PaintInfo& info,
-    const DisplayItemClient& display_item_client,
     PhysicalOffset paint_offset) {
-  DrawingRecorder recorder(info.context, display_item_client, info.phase);
-
   DCHECK(box_fragment_.Style().IsHorizontalWritingMode());
   const ComputedStyle& style = box_fragment_.Style();
   LayoutUnit line_thickness = FractionLineThickness(style);
@@ -69,7 +66,6 @@ void NGMathMLPainter::PaintFractionBar(
 
 void NGMathMLPainter::PaintRadicalSymbol(
     const PaintInfo& info,
-    const DisplayItemClient& display_item_client,
     PhysicalOffset paint_offset) {
   auto children = box_fragment_.Children();
   if (children.size() == 0)
@@ -78,8 +74,6 @@ void NGMathMLPainter::PaintRadicalSymbol(
   const auto& base_child = To<NGPhysicalBoxFragment>(*children[0]);
 
   const NGMathMLPaintInfo& parameters = box_fragment_.GetMathMLPaintInfo();
-
-  DrawingRecorder recorder(info.context, display_item_client, info.phase);
   DCHECK(box_fragment_.Style().IsHorizontalWritingMode());
 
   // Paint the vertical symbol.
@@ -137,15 +131,18 @@ void NGMathMLPainter::Paint(const PaintInfo& info,
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           info.context, display_item_client, info.phase))
     return;
+  DrawingRecorder recorder(
+      info.context, display_item_client, info.phase,
+      NGBoxFragmentPainter(box_fragment_).VisualRect(paint_offset));
 
   // Fraction
   if (box_fragment_.IsMathMLFraction()) {
-    PaintFractionBar(info, display_item_client, paint_offset);
+    PaintFractionBar(info, paint_offset);
     return;
   }
 
   // TODO(rbuis): paint operator
-  PaintRadicalSymbol(info, display_item_client, paint_offset);
+  PaintRadicalSymbol(info, paint_offset);
 }
 
 }  // namespace blink

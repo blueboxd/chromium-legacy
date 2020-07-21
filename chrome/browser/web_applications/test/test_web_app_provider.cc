@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
@@ -120,6 +121,12 @@ void TestWebAppProvider::SetShortcutManager(
     std::unique_ptr<AppShortcutManager> shortcut_manager) {
   CheckNotStarted();
   shortcut_manager_ = std::move(shortcut_manager);
+}
+
+void TestWebAppProvider::SetOsIntegrationManager(
+    std::unique_ptr<OsIntegrationManager> os_integration_manager) {
+  CheckNotStarted();
+  os_integration_manager_ = std::move(os_integration_manager);
 }
 
 void TestWebAppProvider::CheckNotStarted() const {

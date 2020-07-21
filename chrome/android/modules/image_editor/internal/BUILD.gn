@@ -10,6 +10,7 @@ android_library("java") {
   sources = [ "java/src/org/chromium/chrome/modules/image_editor/ImageEditorProviderImpl.java" ]
 
   deps = [
+    "//base:base_java",
     "//chrome/android/modules/image_editor/public:java",
     "//chrome/browser/image_editor/public:java",
   ]

@@ -11,13 +11,19 @@
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/thread_annotations.h"
 #include "base/threading/platform_thread.h"
+#include "build/build_config.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/version_info/channel.h"
 #include "content/public/test/browser_test.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/test/base/android/android_browser_test.h"
+#else
+#include "chrome/test/base/in_process_browser_test.h"
+#endif
 
 namespace {
 
@@ -95,7 +101,7 @@ bool MatchesProfile(metrics::SampledProfile::TriggerEvent trigger_event,
          profile.process() == process && profile.thread() == thread;
 }
 
-class StackSamplingBrowserTest : public InProcessBrowserTest {
+class StackSamplingBrowserTest : public PlatformBrowserTest {
  public:
   void SetUp() override {
     // Arrange to intercept the CPU profiles at the time they're provided to the
@@ -104,7 +110,7 @@ class StackSamplingBrowserTest : public InProcessBrowserTest {
         SetCpuInterceptorCallbackForTesting(base::BindRepeating(
             &ProfileInterceptor::Intercept,
             base::Unretained(&ProfileInterceptor::GetInstance())));
-    InProcessBrowserTest::SetUp();
+    PlatformBrowserTest::SetUp();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -190,8 +196,15 @@ IN_PROC_BROWSER_TEST_F(StackSamplingBrowserTest,
                              metrics::COMPOSITOR_THREAD));
 }
 
+// Android doesn't have a network service process.
+#if defined(OS_ANDROID)
+#define MAYBE_NetworkServiceProcessIOThread \
+  DISABLED_NetworkServiceProcessIOThread
+#else
+#define MAYBE_NetworkServiceProcessIOThread NetworkServiceProcessIOThread
+#endif
 IN_PROC_BROWSER_TEST_F(StackSamplingBrowserTest,
-                       NetworkServiceProcessIOThread) {
+                       MAYBE_NetworkServiceProcessIOThread) {
   EXPECT_TRUE(WaitForProfile(metrics::SampledProfile::PROCESS_STARTUP,
                              metrics::NETWORK_SERVICE_PROCESS,
                              metrics::IO_THREAD));

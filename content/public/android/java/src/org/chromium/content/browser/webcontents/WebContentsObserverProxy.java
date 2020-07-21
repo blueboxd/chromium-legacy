@@ -11,7 +11,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.NavigationHandle;
-import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -66,9 +65,9 @@ class WebContentsObserverProxy extends WebContentsObserver {
 
     @Override
     @CalledByNative
-    public void renderFrameCreated(RenderFrameHost renderFrameHost) {
+    public void renderFrameCreated(int renderProcessId, int renderFrameId) {
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
-            mObserversIterator.next().renderFrameCreated(renderFrameHost);
+            mObserversIterator.next().renderFrameCreated(renderProcessId, renderFrameId);
         }
     }
 

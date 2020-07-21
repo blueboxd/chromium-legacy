@@ -23,6 +23,7 @@ namespace web_app {
 class AppRegistrar;
 class AppShortcutManager;
 class FileHandlerManager;
+class OsIntegrationManager;
 class InstallFinalizer;
 class PendingAppManager;
 class SystemWebAppManager;
@@ -57,6 +58,8 @@ class TestWebAppProvider : public WebAppProvider {
   void SetRegistryController(std::unique_ptr<AppRegistryController> controller);
   void SetFileHandlerManager(
       std::unique_ptr<FileHandlerManager> file_handler_manager);
+  void SetOsIntegrationManager(
+      std::unique_ptr<OsIntegrationManager> os_integration_manager);
   void SetInstallManager(std::unique_ptr<WebAppInstallManager> install_manager);
   void SetInstallFinalizer(std::unique_ptr<InstallFinalizer> install_finalizer);
   void SetPendingAppManager(

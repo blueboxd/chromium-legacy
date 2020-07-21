@@ -11,7 +11,6 @@ namespace blink {
 
 struct PaintInfo;
 struct PhysicalOffset;
-class DisplayItemClient;
 class IntRect;
 class NGPhysicalBoxFragment;
 
@@ -26,10 +25,8 @@ class NGMathMLPainter {
  private:
   void PaintBar(const PaintInfo&, const IntRect&);
   void PaintFractionBar(const PaintInfo&,
-                        const DisplayItemClient&,
                         PhysicalOffset);
   void PaintRadicalSymbol(const PaintInfo&,
-                          const DisplayItemClient&,
                           PhysicalOffset);
   void PaintStretchyOrLargeOperator(const PaintInfo&, PhysicalOffset);
 

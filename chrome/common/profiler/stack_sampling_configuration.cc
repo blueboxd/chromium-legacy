@@ -37,17 +37,6 @@ namespace {
 base::LazyInstance<StackSamplingConfiguration>::Leaky g_configuration =
     LAZY_INSTANCE_INITIALIZER;
 
-bool IsProfilerEnabledForChannel() {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  // Only run on canary and dev.
-  const version_info::Channel channel = chrome::GetChannel();
-  return channel == version_info::Channel::CANARY ||
-         channel == version_info::Channel::DEV;
-#else
-  return true;
-#endif
-}
-
 // Returns true if the current execution is taking place in the browser process.
 bool IsBrowserProcess() {
   const base::CommandLine* command_line =
@@ -75,6 +64,21 @@ bool IsBrowserTestModeEnabled() {
       base::CommandLine::ForCurrentProcess();
   return command_line->GetSwitchValueASCII(switches::kStartStackProfiler) ==
          switches::kStartStackProfilerBrowserTest;
+}
+
+bool IsProfilerEnabledForChannel() {
+#if defined(OS_ANDROID)
+  // Profiling is only enable in it's own dedicated browser tests on Android.
+  // TODO(crbug.com/1004855): Remove this logic to launch profiler.
+  return IsBrowserTestModeEnabled();
+#elif BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Only run on canary and dev.
+  const version_info::Channel channel = chrome::GetChannel();
+  return channel == version_info::Channel::CANARY ||
+         channel == version_info::Channel::DEV;
+#else
+  return true;
+#endif
 }
 
 bool ShouldEnableProfilerForNextRendererProcess() {

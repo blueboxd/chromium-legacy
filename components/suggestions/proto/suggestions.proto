@@ -64,8 +64,8 @@ message ChromeSuggestion {
 // A list of URLs that should be filtered from the SuggestionsProfile.
 //
 // Next tag: 2
-message SuggestionsBlacklist {
-  // URLs that make up the blacklist.
+message SuggestionsBlocklist {
+  // URLs that make up the blocklist.
   repeated string urls = 1;
 }
 

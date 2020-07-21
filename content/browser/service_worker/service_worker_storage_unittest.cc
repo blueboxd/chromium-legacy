@@ -1304,8 +1304,8 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
     script_ = GURL("http://www.test.not/script.js");
     import_ = GURL("http://www.test.not/import.js");
     document_url_ = GURL("http://www.test.not/scope/document.html");
-    resource_id1_ = GetNewResourceIdSync(storage());
-    resource_id2_ = GetNewResourceIdSync(storage());
+    resource_id1_ = GetNewResourceIdSync(storage_control());
+    resource_id2_ = GetNewResourceIdSync(storage_control());
     resource_id1_size_ = 239193;
     resource_id2_size_ = 59923;
 
@@ -1380,7 +1380,7 @@ TEST_F(ServiceWorkerResourceStorageTest,
        WriteMetadataWithServiceWorkerResponseMetadataWriter) {
   const char kMetadata1[] = "Test metadata";
   const char kMetadata2[] = "small";
-  int64_t new_resource_id_ = GetNewResourceIdSync(storage());
+  int64_t new_resource_id_ = GetNewResourceIdSync(storage_control());
   // Writing metadata to nonexistent resoirce ID must fail.
   EXPECT_GE(0, WriteResponseMetadata(storage_control(), new_resource_id_,
                                      kMetadata1));
@@ -1544,7 +1544,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   EXPECT_TRUE(VerifyBasicResponse(storage_control(), resource_id2_, true));
 
   // Also add an uncommitted resource.
-  int64_t kStaleUncommittedResourceId = GetNewResourceIdSync(storage());
+  int64_t kStaleUncommittedResourceId = GetNewResourceIdSync(storage_control());
   registry()->StoreUncommittedResourceId(kStaleUncommittedResourceId,
                                          registration_->scope());
   verify_ids = GetUncommittedResourceIdsFromDB();
@@ -1561,7 +1561,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   // Store a new uncommitted resource. This triggers stale resource cleanup.
   base::RunLoop loop;
   storage()->SetPurgingCompleteCallbackForTest(loop.QuitClosure());
-  int64_t kNewResourceId = GetNewResourceIdSync(storage());
+  int64_t kNewResourceId = GetNewResourceIdSync(storage_control());
   WriteBasicResponse(storage_control(), kNewResourceId);
   registry()->StoreUncommittedResourceId(kNewResourceId,
                                          registration_->scope());

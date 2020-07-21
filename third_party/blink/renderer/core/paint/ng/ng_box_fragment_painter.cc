@@ -513,12 +513,12 @@ void NGBoxFragmentPainter::PaintObject(
   const NGPhysicalBoxFragment& physical_box_fragment = PhysicalFragment();
   const ComputedStyle& style = box_fragment_.Style();
   bool is_visible = IsVisibleToPaint(physical_box_fragment, style);
-  if (!is_visible)
-    suppress_box_decoration_background = true;
 
   if (ShouldPaintSelfBlockBackground(paint_phase)) {
-    PaintBoxDecorationBackground(paint_info, paint_offset,
-                                 suppress_box_decoration_background);
+    if (is_visible) {
+      PaintBoxDecorationBackground(paint_info, paint_offset,
+                                   suppress_box_decoration_background);
+    }
     // We're done. We don't bother painting any children.
     if (paint_phase == PaintPhase::kSelfBlockBackgroundOnly)
       return;
@@ -542,9 +542,9 @@ void NGBoxFragmentPainter::PaintObject(
       (!physical_box_fragment.Children().empty() ||
        physical_box_fragment.HasItems() || inline_box_cursor_) &&
       !paint_info.DescendantPaintingBlocked()) {
-    if (UNLIKELY(paint_phase == PaintPhase::kForeground &&
-                 box_fragment_.IsCSSBox() &&
-                 box_fragment_.Style().HasColumnRule()))
+    if (is_visible && UNLIKELY(paint_phase == PaintPhase::kForeground &&
+                               box_fragment_.IsCSSBox() &&
+                               box_fragment_.Style().HasColumnRule()))
       PaintColumnRules(paint_info, paint_offset);
 
     if (paint_phase != PaintPhase::kFloat) {
@@ -619,7 +619,7 @@ void NGBoxFragmentPainter::PaintObject(
     }
   }
 
-  if (ShouldPaintSelfOutline(paint_phase)) {
+  if (is_visible && ShouldPaintSelfOutline(paint_phase)) {
     NGFragmentPainter(box_fragment_, GetDisplayItemClient())
         .PaintOutline(paint_info, paint_offset);
   }
@@ -893,7 +893,7 @@ void NGBoxFragmentPainter::PaintMask(const PaintInfo& paint_info,
       box_fragment_.GetLayoutObject()));
 
   DrawingRecorder recorder(paint_info.context, GetDisplayItemClient(),
-                           paint_info.phase);
+                           paint_info.phase, VisualRect(paint_offset));
   PhysicalRect paint_rect(paint_offset, box_fragment_.Size());
   const NGBorderEdges& border_edges = BorderEdges();
   PaintMaskImages(paint_info, paint_rect, *box_fragment_.GetLayoutObject(),
@@ -914,6 +914,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
   base::Optional<ScopedBoxContentsPaintState> contents_paint_state;
   bool painting_scrolling_background =
       IsPaintingScrollingBackground(paint_info);
+  IntRect visual_rect;
   if (painting_scrolling_background) {
     // For the case where we are painting the background into the scrolling
     // contents layer of a composited scroller we need to include the entire
@@ -931,6 +932,8 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
 
     background_client = &layout_box.GetScrollableArea()
                              ->GetScrollingBackgroundDisplayItemClient();
+    visual_rect = layout_box.GetScrollableArea()->ScrollingBackgroundVisualRect(
+        paint_offset);
   } else {
     paint_rect.offset = paint_offset;
     paint_rect.size = box_fragment_.Size();
@@ -939,6 +942,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
           PhysicalSize(ToLayoutBox(layout_object).PixelSnappedSize());
     }
     background_client = &GetDisplayItemClient();
+    visual_rect = VisualRect(paint_offset);
   }
 
   if (!suppress_box_decoration_background) {
@@ -951,7 +955,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
       PaintBoxDecorationBackgroundWithRect(
           contents_paint_state ? contents_paint_state->GetPaintInfo()
                                : paint_info,
-          paint_rect, *background_client);
+          visual_rect, paint_rect, *background_client);
     }
   }
 
@@ -985,6 +989,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
 
 void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
     const PaintInfo& paint_info,
+    const IntRect& visual_rect,
     const PhysicalRect& paint_rect,
     const DisplayItemClient& background_client) {
   const LayoutBox& layout_box = ToLayoutBox(*box_fragment_.GetLayoutObject());
@@ -1004,7 +1009,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
     return;
 
   DrawingRecorder recorder(paint_info.context, background_client,
-                           DisplayItem::kBoxDecorationBackground);
+                           DisplayItem::kBoxDecorationBackground, visual_rect);
 
   PaintBoxDecorationBackgroundWithRectImpl(paint_info, paint_rect,
                                            box_decoration_data);
@@ -1133,7 +1138,7 @@ void NGBoxFragmentPainter::PaintColumnRules(
     return;
 
   DrawingRecorder recorder(paint_info.context, GetDisplayItemClient(),
-                           DisplayItem::kColumnRules);
+                           DisplayItem::kColumnRules, IntRect());
 
   const Color& rule_color =
       LayoutObject::ResolveColor(style, GetCSSPropertyColumnRuleColor());
@@ -1211,6 +1216,7 @@ void NGBoxFragmentPainter::PaintColumnRules(
                                       snapped_rule.Y(), snapped_rule.MaxX(),
                                       snapped_rule.MaxY(), box_side, rule_color,
                                       rule_style, 0, 0, true);
+    recorder.UniteVisualRect(snapped_rule);
 
     previous_column = current_column;
   }
@@ -1509,14 +1515,15 @@ void NGBoxFragmentPainter::PaintBackplate(NGInlineCursor* line_boxes,
           DisplayItem::kForcedColorsModeBackplate))
     return;
 
-  DrawingRecorder recorder(paint_info.context, GetDisplayItemClient(),
-                           DisplayItem::kForcedColorsModeBackplate);
   Color backplate_color = PhysicalFragment()
                               .GetLayoutObject()
                               ->GetDocument()
                               .GetStyleEngine()
                               .ForcedBackgroundColor();
   const auto& backplates = BuildBackplate(line_boxes, paint_offset);
+  DrawingRecorder recorder(paint_info.context, GetDisplayItemClient(),
+                           DisplayItem::kForcedColorsModeBackplate,
+                           EnclosingIntRect(UnionRect(backplates)));
   for (const auto backplate : backplates)
     paint_info.context.FillRect(FloatRect(backplate), backplate_color);
 }
@@ -2520,6 +2527,22 @@ bool NGBoxFragmentPainter::HitTestOverflowControl(
   return layout_box &&
          layout_box->HitTestOverflowControl(*hit_test.result, hit_test.location,
                                             accumulated_offset);
+}
+
+IntRect NGBoxFragmentPainter::VisualRect(const PhysicalOffset& paint_offset) {
+  if (const auto* layout_box =
+          ToLayoutBoxOrNull(box_fragment_.GetLayoutObject()))
+    return BoxPainter(*layout_box).VisualRect(paint_offset);
+
+  PhysicalRect ink_overflow;
+  if (paint_fragment_)
+    ink_overflow = paint_fragment_->InkOverflow();
+  else if (box_item_)
+    ink_overflow = box_item_->InkOverflow();
+  else
+    NOTREACHED();
+  ink_overflow.Move(paint_offset);
+  return EnclosingIntRect(ink_overflow);
 }
 
 }  // namespace blink

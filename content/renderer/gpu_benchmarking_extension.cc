@@ -319,6 +319,21 @@ int ToKeyModifiers(const base::StringPiece& key) {
   return 0;
 }
 
+int ToButtonModifiers(const base::StringPiece& button) {
+  if (button == "Left")
+    return blink::WebMouseEvent::kLeftButtonDown;
+  if (button == "Middle")
+    return blink::WebMouseEvent::kMiddleButtonDown;
+  if (button == "Right")
+    return blink::WebMouseEvent::kRightButtonDown;
+  if (button == "Back")
+    return blink::WebMouseEvent::kBackButtonDown;
+  if (button == "Forward")
+    return blink::WebMouseEvent::kForwardButtonDown;
+  NOTREACHED() << "invalid button modifier";
+  return 0;
+}
+
 // BeginSmoothScroll takes pixels_to_scroll_x and pixels_to_scroll_y, positive
 // pixels_to_scroll_y means scroll down, positive pixels_to_scroll_x means
 // scroll right.
@@ -337,7 +352,7 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
                        bool scroll_by_page,
                        bool cursor_visible,
                        bool scroll_by_percentage,
-                       int key_modifiers) {
+                       int modifiers) {
   DCHECK(!(precise_scrolling_deltas && scroll_by_page));
   DCHECK(!(precise_scrolling_deltas && scroll_by_percentage));
   DCHECK(!(scroll_by_page && scroll_by_percentage));
@@ -351,8 +366,7 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
     // trigger any hover or mousemove effects.
     context->web_view()->SetIsActive(true);
     blink::WebMouseEvent mouseMove(blink::WebInputEvent::Type::kMouseMove,
-                                   blink::WebInputEvent::kNoModifiers,
-                                   ui::EventTimeForNow());
+                                   modifiers, ui::EventTimeForNow());
     mouseMove.SetPositionInWidget(start_x, start_y);
     CHECK(context->web_view()->MainFrameWidget());
     context->web_view()->MainFrameWidget()->HandleInputEvent(
@@ -400,7 +414,7 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
   gesture_params.fling_velocity_y = fling_velocity.y();
   gesture_params.distances.push_back(-pixels_to_scroll);
 
-  gesture_params.key_modifiers = key_modifiers;
+  gesture_params.modifiers = modifiers;
 
   injector->QueueSyntheticSmoothScroll(
       gesture_params, base::BindOnce(&OnSyntheticGestureCompleted,
@@ -743,7 +757,7 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
   if (!pixels_to_scrol_vector.has_value())
     return false;
   gfx::Vector2dF fling_velocity(0, 0);
-  int key_modifiers = 0;
+  int modifiers = 0;
   std::vector<base::StringPiece> key_list = base::SplitStringPiece(
       keys_value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   for (const base::StringPiece& key : key_list) {
@@ -751,7 +765,7 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
     if (key_modifier == 0) {
       return false;
     }
-    key_modifiers |= key_modifier;
+    modifiers |= key_modifier;
   }
 
   EnsureRemoteInterface();
@@ -759,7 +773,7 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
       &context, args, input_injector_, pixels_to_scrol_vector.value(), callback,
       gesture_source_type, speed_in_pixels_s, true /* prevent_fling */, start_x,
       start_y, fling_velocity, precise_scrolling_deltas, scroll_by_page,
-      cursor_visible, scroll_by_percentage, key_modifiers);
+      cursor_visible, scroll_by_percentage, modifiers);
 }
 
 // SmoothScrollByXY does not take direction as one of the arguments, and
@@ -782,7 +796,14 @@ bool GpuBenchmarking::SmoothScrollByXY(gin::Arguments* args) {
   bool scroll_by_page = false;
   bool cursor_visible = true;
   bool scroll_by_percentage = false;
+  // It should be one or multiple values in the |Modifiers| in the function
+  // ToKeyModifiers, multiple values are expressed as a string
+  // separated by comma.
   std::string keys_value;
+  // It should be one or multiple values in the |Buttons| in the function
+  // ToButtonModifiers, multiple values are expressed as a string separated by
+  // comma.
+  std::string buttons_value;
 
   if (!GetOptionalArg(args, &pixels_to_scroll_x) ||
       !GetOptionalArg(args, &pixels_to_scroll_y) ||
@@ -794,7 +815,8 @@ bool GpuBenchmarking::SmoothScrollByXY(gin::Arguments* args) {
       !GetOptionalArg(args, &scroll_by_page) ||
       !GetOptionalArg(args, &cursor_visible) ||
       !GetOptionalArg(args, &scroll_by_percentage) ||
-      !GetOptionalArg(args, &keys_value)) {
+      !GetOptionalArg(args, &keys_value) ||
+      !GetOptionalArg(args, &buttons_value)) {
     return false;
   }
 
@@ -810,7 +832,7 @@ bool GpuBenchmarking::SmoothScrollByXY(gin::Arguments* args) {
 
   gfx::Vector2dF distances(pixels_to_scroll_x, pixels_to_scroll_y);
   gfx::Vector2dF fling_velocity(0, 0);
-  int key_modifiers = 0;
+  int modifiers = 0;
   std::vector<base::StringPiece> key_list = base::SplitStringPiece(
       keys_value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   for (const base::StringPiece& key : key_list) {
@@ -818,7 +840,17 @@ bool GpuBenchmarking::SmoothScrollByXY(gin::Arguments* args) {
     if (key_modifier == 0) {
       return false;
     }
-    key_modifiers |= key_modifier;
+    modifiers |= key_modifier;
+  }
+
+  std::vector<base::StringPiece> button_list = base::SplitStringPiece(
+      buttons_value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  for (const base::StringPiece& button : button_list) {
+    int button_modifier = ToButtonModifiers(button);
+    if (button_modifier == 0) {
+      return false;
+    }
+    modifiers |= button_modifier;
   }
 
   EnsureRemoteInterface();
@@ -826,7 +858,7 @@ bool GpuBenchmarking::SmoothScrollByXY(gin::Arguments* args) {
       &context, args, input_injector_, distances, callback, gesture_source_type,
       speed_in_pixels_s, true /* prevent_fling */, start_x, start_y,
       fling_velocity, precise_scrolling_deltas, scroll_by_page, cursor_visible,
-      scroll_by_percentage, key_modifiers);
+      scroll_by_percentage, modifiers);
 }
 
 bool GpuBenchmarking::SmoothDrag(gin::Arguments* args) {
@@ -904,7 +936,7 @@ bool GpuBenchmarking::Swipe(gin::Arguments* args) {
       false /* prevent_fling */, start_x, start_y,
       fling_velocity_vector.value(), true /* precise_scrolling_deltas */,
       false /* scroll_by_page */, true /* cursor_visible */,
-      false /* scroll_by_percentage */, 0 /* key_modifiers */);
+      false /* scroll_by_percentage */, 0 /* modifiers */);
 }
 
 bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {

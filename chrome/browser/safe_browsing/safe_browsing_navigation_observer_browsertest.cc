@@ -415,7 +415,7 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
       ReferrerChain* referrer_chain) {
     SessionID tab_id = sessions::SessionTabHelper::IdForTab(web_contents);
     bool has_user_gesture = observer_manager_->HasUserGesture(web_contents);
-    observer_manager_->OnUserGestureConsumed(web_contents, base::Time::Now());
+    observer_manager_->OnUserGestureConsumed(web_contents);
     EXPECT_LE(observer_manager_->IdentifyReferrerChainByHostingPage(
                   initiating_frame_url, web_contents->GetLastCommittedURL(),
                   tab_id, has_user_gesture,
@@ -437,10 +437,9 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
               ip_list.back().ip);
   }
 
-  void SimulateUserGesture(){
+  void SimulateUserGesture() {
     observer_manager_->RecordUserGestureForWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      base::Time::Now());
+        browser()->tab_strip_model()->GetActiveWebContents());
   }
 
   NavigationEventList* navigation_event_list() {

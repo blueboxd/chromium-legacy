@@ -40,6 +40,7 @@
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-shared.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_host.mojom-shared.h"
 #include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom-shared.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -48,7 +49,6 @@
 
 namespace blink {
 
-class MessagePortChannel;
 class WebString;
 class WebSharedWorkerClient;
 class WebURL;
@@ -84,10 +84,12 @@ class BLINK_EXPORT WebSharedWorker {
       bool pause_worker_context_on_start,
       std::unique_ptr<blink::WorkerMainScriptLoadParameters>
           worker_main_script_load_params,
+      CrossVariantMojoRemote<mojom::SharedWorkerHostInterfaceBase>,
       WebSharedWorkerClient*);
 
   // Sends a connect event to the SharedWorker context.
-  virtual void Connect(MessagePortChannel) = 0;
+  virtual void Connect(int connection_request_id,
+                       MessagePortDescriptor port) = 0;
 
   // Invoked to shutdown the worker when there are no more associated documents.
   // This eventually deletes this instance.

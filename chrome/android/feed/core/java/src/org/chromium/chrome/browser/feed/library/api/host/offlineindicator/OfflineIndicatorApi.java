@@ -5,10 +5,12 @@
 package org.chromium.chrome.browser.feed.library.api.host.offlineindicator;
 
 import org.chromium.base.Consumer;
+import org.chromium.base.annotations.MockedInTests;
 
 import java.util.List;
 
 /** Api to allow the Feed to get information about offline availability status of content. */
+@MockedInTests
 public interface OfflineIndicatorApi {
     /**
      * Requests information on the offline status of content shown in the Feed.

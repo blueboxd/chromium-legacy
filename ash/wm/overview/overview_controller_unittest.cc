@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/frame_throttler/mock_frame_throttling_observer.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
@@ -703,6 +704,30 @@ TEST_F(OverviewVirtualKeyboardTest,
 
   Shell::Get()->overview_controller()->StartOverview();
   EXPECT_FALSE(keyboard::IsKeyboardHiding());
+}
+
+// Tests that frame throttling starts and ends accordingly when overview starts
+// and ends.
+TEST_F(OverviewControllerTest, FrameThrottling) {
+  MockFrameThrottlingObserver observer;
+  FrameThrottlingController* frame_throttling_controller =
+      Shell::Get()->frame_throttling_controller();
+  frame_throttling_controller->AddObserver(&observer);
+  const int window_count = 5;
+  std::unique_ptr<aura::Window> created_windows[window_count];
+  std::vector<aura::Window*> windows(window_count, nullptr);
+  for (int i = 0; i < window_count; ++i) {
+    created_windows[i] = CreateTestWindow();
+    windows[i] = created_windows[i].get();
+  }
+
+  auto* controller = Shell::Get()->overview_controller();
+  EXPECT_CALL(observer,
+              OnThrottlingStarted(testing::UnorderedElementsAreArray(windows)));
+  controller->StartOverview();
+  EXPECT_CALL(observer, OnThrottlingEnded());
+  controller->EndOverview();
+  frame_throttling_controller->RemoveObserver(&observer);
 }
 
 }  // namespace ash

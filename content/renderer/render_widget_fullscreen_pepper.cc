@@ -168,6 +168,11 @@ class PepperExternalWidgetClient : public blink::WebExternalWidgetClient {
     widget_->UpdateVisualProperties(visual_properties);
   }
 
+  void UpdateScreenRects(const gfx::Rect& widget_screen_rect,
+                         const gfx::Rect& window_screen_rect) override {
+    widget_->UpdateScreenRects(widget_screen_rect, window_screen_rect);
+  }
+
  private:
   RenderWidgetFullscreenPepper* widget_;
 };

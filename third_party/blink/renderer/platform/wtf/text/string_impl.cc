@@ -55,7 +55,7 @@ struct SameSizeAsStringImpl {
 
 ASSERT_SIZE(StringImpl, SameSizeAsStringImpl);
 
-}  // anonymous namespace
+}  // namespace
 
 void* StringImpl::operator new(size_t size) {
   DCHECK_EQ(size, sizeof(StringImpl));
@@ -78,11 +78,18 @@ void StringImpl::DestroyIfNotStatic() const {
     delete this;
 }
 
-void StringImpl::UpdateContainsOnlyASCIIOrEmpty() const {
-  contains_only_ascii_ = Is8Bit()
-                             ? CharactersAreAllASCII(Characters8(), length())
-                             : CharactersAreAllASCII(Characters16(), length());
-  needs_ascii_check_ = false;
+bool StringImpl::ContainsOnlyASCIIOrEmptySlowCase() const {
+  bool contains_only_ascii =
+      Is8Bit() ? CharactersAreAllASCII(Characters8(), length())
+               : CharactersAreAllASCII(Characters16(), length());
+  uint32_t new_flags = kAsciiCheckDone;
+  if (contains_only_ascii)
+    new_flags |= kContainsOnlyAscii;
+  const uint32_t previous_flags =
+      hash_and_flags_.fetch_or(new_flags, std::memory_order_relaxed);
+  static constexpr uint32_t mask = kAsciiCheckDone | kContainsOnlyAscii;
+  DCHECK((previous_flags & mask) == 0 || (previous_flags & mask) == new_flags);
+  return contains_only_ascii;
 }
 
 bool StringImpl::IsSafeToSendToAnotherThread() const {

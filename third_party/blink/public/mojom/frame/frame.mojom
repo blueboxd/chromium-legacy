@@ -885,6 +885,17 @@ interface LocalMainFrame {
       pending_remote<network.mojom.CrossOriginOpenerPolicyReporter> reporter);
 };
 
+// Implemented in Blink, this interface defines remote main-frame-specific
+// methods that will be invoked from the browser process (e.g.
+// content::RenderFrameProxyHost).
+//
+// There is only ever one remote main frame for a given tab in all renderer
+// processes.
+//
+// This interface will only be provided when the RemoteFrame is a main frame.
+interface RemoteMainFrame {
+};
+
 // Implemented in Browser, this interface defines local-main-frame-specific
 // methods that will be invoked from the renderer process (e.g. WebViewImpl).
 interface LocalMainFrameHost {

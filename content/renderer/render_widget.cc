@@ -443,7 +443,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WidgetMsg_WasShown, OnWasShown)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetActive, OnSetActive)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetBounds_ACK, OnRequestSetBoundsAck)
-    IPC_MESSAGE_HANDLER(WidgetMsg_UpdateScreenRects, OnUpdateScreenRects)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetViewportIntersection,
                         OnSetViewportIntersection)
     IPC_MESSAGE_HANDLER(WidgetMsg_WaitForNextFrameForTests,
@@ -1583,15 +1582,14 @@ void RenderWidget::SetWindowRectSynchronously(
   }
 }
 
-void RenderWidget::OnUpdateScreenRects(const gfx::Rect& widget_screen_rect,
-                                       const gfx::Rect& window_screen_rect) {
+void RenderWidget::UpdateScreenRects(const gfx::Rect& widget_screen_rect,
+                                     const gfx::Rect& window_screen_rect) {
   if (device_emulator_) {
     device_emulator_->OnUpdateScreenRects(widget_screen_rect,
                                           window_screen_rect);
   } else {
     SetScreenRects(widget_screen_rect, window_screen_rect);
   }
-  Send(new WidgetHostMsg_UpdateScreenRects_ACK(routing_id()));
 }
 
 void RenderWidget::OnSetViewportIntersection(

@@ -1686,125 +1686,6 @@ component("ash") {
   }
 }
 
-static_library("ash_shell_lib") {
-  testonly = true
-  sources = [
-    "../ui/views/test/test_views_delegate_aura.cc",
-    "shell/bubble.cc",
-    "shell/example_app_list_client.cc",
-    "shell/example_app_list_client.h",
-    "shell/example_factory.h",
-    "shell/example_session_controller_client.cc",
-    "shell/example_session_controller_client.h",
-    "shell/lock_view.cc",
-    "shell/shell_delegate_impl.cc",
-    "shell/shell_delegate_impl.h",
-    "shell/shell_views_delegate.cc",
-    "shell/shell_views_delegate.h",
-    "shell/toplevel_window.cc",
-    "shell/toplevel_window.h",
-    "shell/widgets.cc",
-    "shell/window_type_launcher.cc",
-    "shell/window_type_launcher.h",
-    "shell/window_watcher.cc",
-    "shell/window_watcher.h",
-    "shell/window_watcher_shelf_item_delegate.cc",
-    "shell/window_watcher_shelf_item_delegate.h",
-  ]
-
-  # Usage of content should be in ash_shell_lib_with_content.
-  assert_no_deps = [
-    "//ash/public/cpp/external_arc",
-    "//components/arc",
-    "//components/exo",
-    "//content/public/browser",
-    "//content/public/common",
-  ]
-
-  deps = [
-    ":ash",
-    ":test_support",
-    "//ash/app_list",
-    "//ash/public/cpp",
-    "//base",
-    "//base:i18n",
-    "//components/user_manager",
-    "//skia",
-    "//ui/aura",
-    "//ui/base",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-    "//ui/message_center",
-    "//ui/views",
-    "//ui/views:test_support",
-    "//ui/views/examples:views_examples_lib",
-    "//ui/wm",
-  ]
-}
-
-static_library("ash_shell_lib_with_content") {
-  testonly = true
-  sources = [
-    "shell/content/client/shell_browser_main_parts.cc",
-    "shell/content/client/shell_browser_main_parts.h",
-    "shell/content/client/shell_content_browser_client.cc",
-    "shell/content/client/shell_content_browser_client.h",
-    "shell/content/client/shell_main_delegate.cc",
-    "shell/content/client/shell_main_delegate.h",
-    "shell/content/client/shell_new_window_delegate.cc",
-    "shell/content/client/shell_new_window_delegate.h",
-    "shell/content/embedded_browser.cc",
-    "shell/content/embedded_browser.h",
-  ]
-
-  deps = [
-    ":test_support",
-    "//ash/public/cpp",
-    "//ash/shortcut_viewer",
-    "//base:i18n",
-    "//chrome:packed_resources",
-
-    # TODO(https://crbug.com/644336): Make CrasAudioHandler Chrome or Ash only.
-    "//chromeos/audio",
-    "//chromeos/constants",
-    "//chromeos/dbus/biod",
-    "//chromeos/dbus/power",
-    "//chromeos/dbus/shill",
-    "//chromeos/network",
-    "//chromeos/services/network_config",
-    "//chromeos/services/network_config/public/mojom",
-    "//chromeos/system",
-    "//components/discardable_memory/public/mojom",
-    "//components/services/font:lib",
-    "//components/services/font/public/mojom",
-    "//content",
-    "//content/shell:content_shell_lib",
-    "//device/bluetooth",
-    "//net",
-    "//services/device/public/mojom",
-    "//skia",
-    "//ui/aura",
-    "//ui/base",
-    "//ui/base/ime/chromeos",
-    "//ui/base/ime/init",
-    "//ui/chromeos/events",
-    "//ui/compositor",
-    "//ui/display",
-    "//ui/events/devices",
-    "//ui/message_center",
-    "//ui/views:test_support",
-    "//ui/views/controls/webview",
-    "//ui/views/examples:views_examples_with_content_lib",
-    "//ui/wm",
-  ]
-  public_deps = [ ":ash_shell_lib" ]
-  data_deps = [
-    "//ash/resources:ash_test_resources_200_percent",
-    "//ash/resources:ash_test_resources_with_content_100_percent",
-    "//ash/strings:ash_test_strings",
-  ]
-}
-
 action("dbus_service_files") {
   sources = [
     "dbus/org.chromium.DisplayService.conf",
@@ -2369,53 +2250,6 @@ test("ash_perftests") {
   ]
 }
 
-test("ash_ui_perftests") {
-  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
-
-  sources = [
-    "perftests/overview_animations_preftest.cc",
-    "shell/content/test/ash_content_perf_test_launcher.cc",
-    "shell/content/test/ash_content_test.cc",
-    "shell/content/test/ash_content_test.h",
-  ]
-
-  deps = [
-    ":ash_shell_lib_with_content",
-    ":test_support",
-    "//ash/public/cpp",
-    "//base/test:test_support",
-    "//cc/base",
-    "//chromeos/constants:constants",
-    "//content/shell:content_shell_app",
-    "//content/shell:content_shell_lib",
-    "//content/test:browsertest_support",
-    "//content/test:test_support",
-    "//mojo/core/embedder",
-    "//testing/gtest",
-    "//testing/perf",
-    "//ui/aura",
-    "//ui/base",
-    "//ui/base:test_support",
-    "//ui/compositor:test_support",
-    "//ui/events:test_support",
-    "//ui/gl:test_support",
-  ]
-}
-
-executable("ash_shell_with_content") {
-  testonly = true
-  sources = [ "shell/content/shell_with_content_main.cc" ]
-
-  deps = [
-    ":ash_shell_lib_with_content",
-    "//base",
-    "//components/user_manager",
-    "//content",
-    "//content/public/app",
-    "//device/bluetooth",
-  ]
-}
-
 static_library("test_support") {
   testonly = true
   friend = [
@@ -2468,6 +2302,8 @@ static_library("test_support") {
     "drag_drop/drag_drop_controller_test_api.h",
     "fast_ink/laser/laser_pointer_controller_test_api.cc",
     "fast_ink/laser/laser_pointer_controller_test_api.h",
+    "frame_throttler/mock_frame_throttling_observer.cc",
+    "frame_throttler/mock_frame_throttling_observer.h",
     "highlighter/highlighter_controller_test_api.cc",
     "highlighter/highlighter_controller_test_api.h",
     "ime/test_ime_controller_client.cc",
@@ -2499,8 +2335,6 @@ static_library("test_support") {
     "shelf/shelf_view_test_api.h",
     "shelf/test/widget_animation_waiter.cc",
     "shelf/test/widget_animation_waiter.h",
-    "shell/toplevel_window.cc",
-    "shell/toplevel_window.h",
     "shell_test_api.cc",
     "system/message_center/test_notifier_settings_controller.cc",
     "system/message_center/test_notifier_settings_controller.h",
@@ -2527,6 +2361,8 @@ static_library("test_support") {
     "test/ash_test_views_delegate.h",
     "test/fake_android_intent_helper.cc",
     "test/fake_android_intent_helper.h",
+    "test/toplevel_window.cc",
+    "test/toplevel_window.h",
     "test/ui_controls_factory_ash.cc",
     "test/ui_controls_factory_ash.h",
     "test_media_client.cc",

@@ -215,8 +215,7 @@ class TestPendingAppManagerImpl : public PendingAppManagerImpl {
         : PendingAppInstallTask(
               profile,
               pending_app_manager_impl->registrar(),
-              pending_app_manager_impl->shortcut_manager(),
-              pending_app_manager_impl->file_handler_manager(),
+              pending_app_manager_impl->os_integration_manager(),
               pending_app_manager_impl->ui_manager(),
               pending_app_manager_impl->finalizer(),
               pending_app_manager_impl->install_manager(),

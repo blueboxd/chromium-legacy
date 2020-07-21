@@ -37,7 +37,7 @@ struct UCharBufferTranslator {
       string->AddRef();
     location = string.get();
     location->SetHash(hash);
-    location->SetIsAtomic(true);
+    location->SetIsAtomic();
   }
 };
 
@@ -118,7 +118,7 @@ struct HashAndUTF8CharactersTranslator {
     new_string->AddRef();
     location = new_string.get();
     location->SetHash(hash);
-    location->SetIsAtomic(true);
+    location->SetIsAtomic();
   }
 };
 
@@ -181,7 +181,7 @@ AtomicStringTable::~AtomicStringTable() {
   for (StringImpl* string : table_) {
     if (!string->IsStatic()) {
       DCHECK(string->IsAtomic());
-      string->SetIsAtomic(false);
+      string->UnsetIsAtomic();
     }
   }
 }
@@ -230,7 +230,7 @@ struct LCharBufferTranslator {
     string->AddRef();
     location = string.get();
     location->SetHash(hash);
-    location->SetIsAtomic(true);
+    location->SetIsAtomic();
   }
 };
 
@@ -253,7 +253,7 @@ StringImpl* AtomicStringTable::Add(StringImpl* string) {
   StringImpl* result = *table_.insert(string).stored_value;
 
   if (!result->IsAtomic())
-    result->SetIsAtomic(true);
+    result->SetIsAtomic();
 
   DCHECK(!string->IsStatic() || result->IsStatic());
   return result;

@@ -1,6 +1,7 @@
 include_rules = [
   "+chrome/app",
   "+chrome/browser/android/lifecycle",
+  "+chrome/browser/image_fetcher",
   "+chrome/browser/password_check/android",
   "+chrome/browser/profiles/android/java",
   "+chrome/browser/share/android/java",

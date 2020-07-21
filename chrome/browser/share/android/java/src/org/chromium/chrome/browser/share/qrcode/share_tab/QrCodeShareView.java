@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.TextView;
 
 import org.chromium.chrome.browser.share.R;
 import org.chromium.ui.widget.ChromeImageView;
@@ -61,8 +62,25 @@ class QrCodeShareView {
      */
     public void updateQrCodeBitmap(Bitmap bitmap) {
         ChromeImageView qrcodeImageView = mView.findViewById(R.id.qrcode);
-        Drawable drawable = new BitmapDrawable(bitmap);
+        Drawable drawable = new BitmapDrawable(mContext.getResources(), bitmap);
         qrcodeImageView.setImageDrawable(drawable);
+
+        mView.findViewById(R.id.download).setEnabled(true);
+        mView.findViewById(R.id.settings).setEnabled(true);
+    }
+
+    /**
+     * Displays an error message on the share panel.
+     *
+     * @param errorMessage The error message to display.
+     */
+    public void displayErrorMessage(String errorMessage) {
+        TextView errorView = mView.findViewById(R.id.error_message);
+        errorView.setText(errorMessage);
+        errorView.setVisibility(View.VISIBLE);
+
+        mView.findViewById(R.id.download).setEnabled(false);
+        mView.findViewById(R.id.settings).setEnabled(false);
     }
 
     public void storagePermissionsChanged(Boolean hasStoragePermission) {

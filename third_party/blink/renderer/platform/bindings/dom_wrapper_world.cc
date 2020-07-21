@@ -156,15 +156,28 @@ static IsolatedWorldSecurityOriginMap& IsolatedWorldSecurityOrigins() {
   return map;
 }
 
-scoped_refptr<SecurityOrigin> DOMWrapperWorld::IsolatedWorldSecurityOrigin(
+static scoped_refptr<SecurityOrigin> GetIsolatedWorldSecurityOrigin(
+    int32_t world_id,
     const base::UnguessableToken& cluster_id) {
-  DCHECK(this->IsIsolatedWorld());
   IsolatedWorldSecurityOriginMap& origins = IsolatedWorldSecurityOrigins();
-  IsolatedWorldSecurityOriginMap::iterator it = origins.find(GetWorldId());
+  auto it = origins.find(world_id);
   if (it == origins.end())
     return nullptr;
 
   return it->value->GetOriginForAgentCluster(cluster_id);
+}
+
+scoped_refptr<SecurityOrigin> DOMWrapperWorld::IsolatedWorldSecurityOrigin(
+    const base::UnguessableToken& cluster_id) {
+  DCHECK(this->IsIsolatedWorld());
+  return GetIsolatedWorldSecurityOrigin(GetWorldId(), cluster_id);
+}
+
+scoped_refptr<const SecurityOrigin>
+DOMWrapperWorld::IsolatedWorldSecurityOrigin(
+    const base::UnguessableToken& cluster_id) const {
+  DCHECK(this->IsIsolatedWorld());
+  return GetIsolatedWorldSecurityOrigin(GetWorldId(), cluster_id);
 }
 
 void DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(

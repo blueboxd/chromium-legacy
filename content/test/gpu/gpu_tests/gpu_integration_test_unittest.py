@@ -38,12 +38,13 @@ VENDOR_STRING_IMAGINATION = 'Imagination Technologies'
 DEVICE_STRING_SGX = 'PowerVR SGX 554'
 
 
-def _GetSystemInfo(gpu='',
-                   device='',
-                   vendor_string='',
-                   device_string='',
-                   passthrough=False,
-                   gl_renderer=''):
+def _GetSystemInfo(  # pylint: disable=too-many-arguments
+    gpu='',
+    device='',
+    vendor_string='',
+    device_string='',
+    passthrough=False,
+    gl_renderer=''):
   sys_info = {
       'model_name': '',
       'gpu': {
@@ -85,6 +86,17 @@ def _GenerateNvidiaExampleTagsForTestClassAndArgs(test_class, args):
         gpu=VENDOR_NVIDIA, device=0x1cb3, gl_renderer='ANGLE Direct3D9')
     tags = _GetTagsToTest(browser, test_class)
   return tags
+
+
+class _IntegrationTestArgs(object):
+  """Struct-like object for defining an integration test."""
+
+  def __init__(self, test_name):
+    self.test_name = test_name
+    self.failures = []
+    self.successes = []
+    self.skips = []
+    self.additional_args = []
 
 
 class GpuIntegrationTestUnittest(unittest.TestCase):
@@ -221,74 +233,93 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
         ]))
 
   def testSimpleIntegrationTest(self):
-    self._RunIntegrationTest(
-        test_name='simple_integration_unittest',
-        failures=['unexpected_error', 'unexpected_failure'],
-        successes=['expected_flaky', 'expected_failure'],
-        skips=['expected_skip'],
-        additional_args=[
-            '--retry-only-retry-on-failure', '--retry-limit=3',
-            '--test-name-prefix=unittest_data.integration_tests.SimpleTest.'
-        ])
+    test_args = _IntegrationTestArgs('simple_integration_unittest')
+    test_args.failures = [
+        'unexpected_error',
+        'unexpected_failure',
+    ]
+    test_args.successes = [
+        'expected_flaky',
+        'expected_failure',
+    ]
+    test_args.skips = ['expected_skip']
+    test_args.additional_args = [
+        '--retry-only-retry-on-failure',
+        '--retry-limit=3',
+        '--test-name-prefix=unittest_data.integration_tests.SimpleTest.',
+    ]
+
+    self._RunIntegrationTest(test_args)
     # The number of browser starts include the one call to StartBrowser at the
     # beginning of the run of the test suite and for each RestartBrowser call
     # which happens after every failure
     self.assertEquals(self._test_state['num_browser_starts'], 6)
 
   def testIntegrationTesttWithBrowserFailure(self):
-    self._RunIntegrationTest(
-        test_name='browser_start_failure_integration_unittest',
-        failures=[],
-        successes=[('unittest_data.integration_tests.'
-                    'BrowserStartFailureTest.restart')],
-        skips=[], additional_args=[])
+    test_args = _IntegrationTestArgs(
+        'browser_start_failure_integration_unittest')
+    test_args.successes = [
+        'unittest_data.integration_tests.BrowserStartFailureTest.restart'
+    ]
+
+    self._RunIntegrationTest(test_args)
     self.assertEquals(self._test_state['num_browser_crashes'], 2)
     self.assertEquals(self._test_state['num_browser_starts'], 3)
 
   def testIntegrationTestWithBrowserCrashUponStart(self):
-    self._RunIntegrationTest(
-        test_name='browser_crash_after_start_integration_unittest',
-        failures=[],
-        successes=[('unittest_data.integration_tests.'
-                    'BrowserCrashAfterStartTest.restart')],
-        skips=[], additional_args=[])
+    test_args = _IntegrationTestArgs(
+        'browser_crash_after_start_integration_unittest')
+    test_args.successes = [
+        'unittest_data.integration_tests.BrowserCrashAfterStartTest.restart'
+    ]
+
+    self._RunIntegrationTest(test_args)
     self.assertEquals(self._test_state['num_browser_crashes'], 2)
     self.assertEquals(self._test_state['num_browser_starts'], 3)
 
   def testRetryLimit(self):
-    self._RunIntegrationTest(
-        test_name='test_retry_limit',
-        failures=[('unittest_data.integration_tests'
-                   '.TestRetryLimit.unexpected_failure')],
-        successes=[], skips=[], additional_args=['--retry-limit=2'])
+    test_args = _IntegrationTestArgs('test_retry_limit')
+    test_args.failures = [
+        'unittest_data.integration_tests.TestRetryLimit.unexpected_failure'
+    ]
+    test_args.additional_args = ['--retry-limit=2']
+
+    self._RunIntegrationTest(test_args)
     # The number of attempted runs is 1 + the retry limit.
     self.assertEquals(self._test_state['num_test_runs'], 3)
 
   def _RunTestsWithExpectationsFiles(self):
-    self._RunIntegrationTest(
-        test_name='run_tests_with_expectations_files',
-        failures=['a/b/unexpected-fail.html'],
-        successes=['a/b/expected-fail.html', 'a/b/expected-flaky.html'],
-        skips=['should_skip'],
-        additional_args=[
-            '--retry-limit=3', '--retry-only-retry-on-failure-tests',
-            ('--test-name-prefix=unittest_data.integration_tests.'
-             'RunTestsWithExpectationsFiles.')
-        ])
+    test_args = _IntegrationTestArgs('run_tests_with_expectations_files')
+    test_args.failures = ['a/b/unexpected-fail.html']
+    test_args.successes = [
+        'a/b/expected-fail.html',
+        'a/b/expected-flaky.html',
+    ]
+    test_args.skips = ['should_skip']
+    test_args.additional_args = [
+        '--retry-limit=3',
+        '--retry-only-retry-on-failure-tests',
+        ('--test-name-prefix=unittest_data.integration_tests.'
+         'RunTestsWithExpectationsFiles.'),
+    ]
+
+    self._RunIntegrationTest(test_args)
 
   def testTestFilterCommandLineArg(self):
-    self._RunIntegrationTest(
-        test_name='run_tests_with_expectations_files',
-        failures=['a/b/unexpected-fail.html'],
-        successes=['a/b/expected-fail.html'],
-        skips=['should_skip'],
-        additional_args=[
-            '--retry-limit=3', '--retry-only-retry-on-failure-tests',
-            ('--test-filter=a/b/unexpected-fail.html::a/b/expected-fail.html::'
-             'should_skip'),
-            ('--test-name-prefix=unittest_data.integration_tests.'
-             'RunTestsWithExpectationsFiles.')
-        ])
+    test_args = _IntegrationTestArgs('run_tests_with_expectations_files')
+    test_args.failures = ['a/b/unexpected-fail.html']
+    test_args.successes = ['a/b/expected-fail.html']
+    test_args.skips = ['should_skip']
+    test_args.additional_args = [
+        '--retry-limit=3',
+        '--retry-only-retry-on-failure-tests',
+        ('--test-filter=a/b/unexpected-fail.html::a/b/expected-fail.html::'
+         'should_skip'),
+        ('--test-name-prefix=unittest_data.integration_tests.'
+         'RunTestsWithExpectationsFiles.'),
+    ]
+
+    self._RunIntegrationTest(test_args)
 
   def testUseTestExpectationsFileToHandleExpectedSkip(self):
     self._RunTestsWithExpectationsFiles()
@@ -319,26 +350,30 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self.assertNotIn('is_regression', results)
 
   def testRepeat(self):
-    self._RunIntegrationTest(
-        test_name='test_repeat',
-        failures=[],
-        successes=['unittest_data.integration_tests.TestRepeat.success'],
-        skips=[],
-        additional_args=['--repeat=3'])
+    test_args = _IntegrationTestArgs('test_repeat')
+    test_args.successes = ['unittest_data.integration_tests.TestRepeat.success']
+    test_args.additional_args = ['--repeat=3']
+
+    self._RunIntegrationTest(test_args)
     self.assertEquals(self._test_state['num_test_runs'], 3)
 
   def testAlsoRunDisabledTests(self):
-    self._RunIntegrationTest(
-        test_name='test_also_run_disabled_tests',
-        failures=['skip', 'flaky'],
-        # Tests that are expected to fail and do fail are treated as test passes
-        successes=['expected_failure'],
-        skips=[],
-        additional_args=[
-            '--all', '--test-name-prefix',
-            'unittest_data.integration_tests.TestAlsoRunDisabledTests.',
-            '--retry-limit=3', '--retry-only-retry-on-failure'
-        ])
+    test_args = _IntegrationTestArgs('test_also_run_disabled_tests')
+    test_args.failures = [
+        'skip',
+        'flaky',
+    ]
+    # Tests that are expected to fail and do fail are treated as test passes
+    test_args.successes = ['expected_failure']
+    test_args.additional_args = [
+        '--all',
+        '--test-name-prefix',
+        'unittest_data.integration_tests.TestAlsoRunDisabledTests.',
+        '--retry-limit=3',
+        '--retry-only-retry-on-failure',
+    ]
+
+    self._RunIntegrationTest(test_args)
     self.assertEquals(self._test_state['num_flaky_test_runs'], 4)
     self.assertEquals(self._test_state['num_test_runs'], 6)
 
@@ -366,9 +401,12 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
         self.assertEqual(mock_stop_browser.call_count,
                          gpu_integration_test._START_BROWSER_RETRIES)
 
-  def _RunIntegrationTest(self, test_name, failures, successes, skips,
-                          additional_args):
-    # pylint: disable=too-many-locals
+  def _RunIntegrationTest(self, test_args):
+    """Runs an integration and asserts fail/success/skip expectations.
+
+    Args:
+      test_args: A _IntegrationTestArgs instance to use.
+    """
     config = chromium_config.ChromiumConfig(
         top_level_dir=path_util.GetGpuTestDir(),
         benchmark_dirs=[
@@ -383,13 +421,11 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
       # list. Then we pass it directly to run_browser_tests.RunTests. If
       # we called browser_test_runner.Run, then it would spawn another
       # subprocess which is less efficient.
-      args = browser_test_runner.ProcessConfig(
-          config,
-          [
-              test_name,
-              '--write-full-results-to=%s' % test_results_path,
-              '--test-state-json-path=%s' % test_state_path
-          ] + additional_args)
+      args = browser_test_runner.ProcessConfig(config, [
+          test_args.test_name,
+          '--write-full-results-to=%s' % test_results_path,
+          '--test-state-json-path=%s' % test_state_path
+      ] + test_args.additional_args)
       run_browser_tests.RunTests(args)
       with open(test_results_path) as f:
         self._test_result = json.load(f)
@@ -397,9 +433,9 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
         self._test_state = json.load(f)
       actual_successes, actual_failures, actual_skips = (_ExtractTestResults(
           self._test_result))
-      self.assertEquals(set(actual_failures), set(failures))
-      self.assertEquals(set(actual_successes), set(successes))
-      self.assertEquals(set(actual_skips), set(skips))
+      self.assertEquals(set(actual_failures), set(test_args.failures))
+      self.assertEquals(set(actual_successes), set(test_args.successes))
+      self.assertEquals(set(actual_skips), set(test_args.skips))
 
 
 def _ExtractTestResults(test_result):

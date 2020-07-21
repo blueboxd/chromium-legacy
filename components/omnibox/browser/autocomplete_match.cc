@@ -75,6 +75,24 @@ bool WordMatchesURLContent(
   return false;
 }
 
+// Finds the first occurrence of |search| at a wordbreak within |text|.
+size_t FindAtWordbreak(const base::string16& text,
+                       const base::string16& search) {
+  WordStarts word_starts;
+  String16VectorFromString16(text, false, &word_starts);
+  size_t next_occurrence = std::string::npos;
+  for (auto word_start : word_starts) {
+    if (next_occurrence != std::string::npos && word_start < next_occurrence)
+      continue;
+    next_occurrence = text.find(search, word_start);
+    if (next_occurrence == std::string::npos)
+      break;
+    if (word_start == next_occurrence)
+      return next_occurrence;
+  }
+  return std::string::npos;
+}
+
 }  // namespace
 
 // static
@@ -1210,7 +1228,8 @@ bool AutocompleteMatch::TryRichAutocompletion(
     return false;
 
   // Try matching a non-prefix the |primary_text|.
-  size_t primary_find_index = primary_text_lower.find(input_text_lower);
+  size_t primary_find_index =
+      FindAtWordbreak(primary_text_lower, input_text_lower);
   if (primary_find_index != base::string16::npos) {
     // |fill_into_edit| should already be set to |primary_text|.
     inline_autocompletion =
@@ -1222,7 +1241,8 @@ bool AutocompleteMatch::TryRichAutocompletion(
   }
 
   // Try matching a non-prefix the |secondary_text|.
-  size_t secondary_find_index = secondary_text_lower.find(input_text_lower);
+  size_t secondary_find_index =
+      FindAtWordbreak(secondary_text_lower, input_text_lower);
   if (can_autocomplete_titles && secondary_find_index != base::string16::npos) {
     fill_into_edit = secondary_text;
     fill_into_edit_additional_text = primary_text;

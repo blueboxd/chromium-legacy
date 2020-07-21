@@ -588,14 +588,27 @@ base::Optional<ui::Cursor> EventHandler::SelectCursor(
         continue;
 
       // For large cursors below the max size, limit their ability to cover UI
-      // elements by removing them when they intersect with the visual viewport.
+      // elements by removing them when they are not fully contained by the
+      // visual viewport. Careful, we need to make sure to translate coordinate
+      // spaces if we are in an OOPIF.
+      //
       // TODO(csharrison): Consider sending a fallback cursor in the IPC to the
-      // browser process so we can do that calculation there instead.
+      // browser process so we can do that calculation there instead, this would
+      // ensure even a compromised renderer could not obscure browser UI with a
+      // large cursor. Also, consider augmenting the intervention to drop the
+      // cursor for iframes if the cursor image obscures content in the parent
+      // frame.
       if (size.Width() > kMaximumCursorSizeWithoutFallback ||
           size.Height() > kMaximumCursorSizeWithoutFallback) {
-        IntRect cursor_rect(IntPoint(location.RoundedPoint() - hot_spot), size);
-        IntRect visible_rect = page->GetVisualViewport().VisibleContentRect();
-        if (!visible_rect.Contains(cursor_rect)) {
+        PhysicalOffset cursor_offset =
+            frame_->ContentLayoutObject()->LocalToAncestorPoint(
+                location.Point(),
+                nullptr,  // no ancestor maps all the way up the hierarchy
+                kTraverseDocumentBoundaries | kApplyMainFrameTransform) -
+            PhysicalOffset(hot_spot);
+        PhysicalRect cursor_rect(cursor_offset, LayoutSize(size));
+        if (!PhysicalRect(page->GetVisualViewport().VisibleContentRect())
+                 .Contains(cursor_rect)) {
           Deprecation::CountDeprecation(
               node->GetExecutionContext(),
               WebFeature::kCustomCursorIntersectsViewport);

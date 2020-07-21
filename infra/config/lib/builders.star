@@ -152,12 +152,16 @@ xcode_cache = struct(
 _DEFAULT_BUILDERLESS_OS_CATEGORIES = [os_category.LINUX]
 
 
-def _chromium_tests_property(*, bucketed_triggers):
+def _chromium_tests_property(*, bucketed_triggers, project_trigger_overrides):
   chromium_tests = {}
 
   bucketed_triggers = defaults.get_value('bucketed_triggers', bucketed_triggers)
   if bucketed_triggers:
     chromium_tests['bucketed_triggers'] = True
+
+  project_trigger_overrides = defaults.get_value('project_trigger_overrides', project_trigger_overrides)
+  if project_trigger_overrides:
+    chromium_tests['project_trigger_overrides'] = project_trigger_overrides
 
   return chromium_tests or None
 
@@ -246,6 +250,7 @@ defaults = args.defaults(
     goma_use_luci_auth = None,
     mastername = None,
     os = None,
+    project_trigger_overrides = None,
     pool = None,
     ssd = args.COMPUTE,
     use_clang_coverage = False,
@@ -279,6 +284,7 @@ def builder(
     pool=args.DEFAULT,
     ssd=args.DEFAULT,
     bucketed_triggers=args.DEFAULT,
+    project_trigger_overrides=args.DEFAULT,
     configure_kitchen=args.DEFAULT,
     goma_backend=args.DEFAULT,
     goma_debug=args.DEFAULT,
@@ -341,6 +347,11 @@ def builder(
       builder being defined should have the bucket prepended to the builder name
       to trigger. If True, the 'bucketed_triggers' field will be set in the
       '$build/chromium_tests' property. By default, considered False.
+    * project_trigger_overrides - a dict mapping the LUCI projects declared in
+      recipe BotSpecs to the LUCI project to use when triggering builders. When
+      this builder triggers another builder, if the BotSpec for that builder has
+      a LUCI project that is a key in this mapping, the corresponding value will
+      be used instead.
     * configure_kitchen - a boolean indicating whether to configure kitchen. If
       True, emits a property to set the 'git_auth' and 'devshell' fields of the
       '$kitchen' property. By default, considered False.
@@ -446,6 +457,7 @@ def builder(
 
   chromium_tests = _chromium_tests_property(
       bucketed_triggers = bucketed_triggers,
+      project_trigger_overrides = project_trigger_overrides,
   )
   if chromium_tests != None:
     properties['$build/chromium_tests'] = chromium_tests

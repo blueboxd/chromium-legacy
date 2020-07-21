@@ -47,6 +47,7 @@ div.bottom {
 if (window.testRunner) {
   // Inject a subresource filter to mark 'overlay-interstitial-ad-testharness.js' as a would be disallowed resource.
   testRunner.setDisallowedSubresourcePathSuffixes(["overlay-interstitial-ad-testharness.js"], false /* block_subresources */);
+  internals.DisableFrequencyCappingForOverlayPopupDetection();
 }
 
 promise_test(() => {
@@ -65,17 +66,15 @@ promise_test(() => {
       let form = document.createElement('form');
       document.getElementsByTagName('div')[0].appendChild(form);
 
-      // After 1500ms, force a layout update so that the interstitial detector
-      // is aware of the overlay candidate.
-      await timeout(1500);
+      // Force a layout update, so that the interstitial detector is aware of
+      // the overlay candidate.
       await forceLayoutUpdate();
 
       // Hide the pop-up.
       document.getElementsByTagName('form')[0].style.display = 'none';
 
-      // After 1500ms, force a layout update so that the interstitial detector
-      // is aware of the overlay candidate's dismissal.
-      await timeout(1500);
+      // Force a layout update, so that the interstitial detector is aware of
+      // the overlay candidate's dismissal.
       await forceLayoutUpdate();
 
       // Expect use counter kOverlayPopup.
@@ -91,17 +90,15 @@ promise_test(() => {
       // Create the overlay pop-up ad.
       appendAdFrameTo(document.getElementsByTagName('div')[0]);
 
-      // After 1500ms, force a layout update so that the interstitial detector
-      // is aware of the overlay ad candidate.
-      await timeout(1500);
+      // Force a layout update, so that the interstitial detector is aware of
+      // the overlay ad candidate.
       await forceLayoutUpdate();
 
       // Hide the pop-up ad.
       document.getElementsByTagName('iframe')[0].style.display = 'none';
 
-      // After 1500ms, force a layout update so that the interstitial detector
-      // is aware of the overlay ad candidate's dismissal.
-      await timeout(1500);
+      // Force a layout update, so that the interstitial detector is aware of
+      // the overlay ad candidate's dismissal.
       await forceLayoutUpdate();
 
       // Expect use counter kOverlayPopupAd.

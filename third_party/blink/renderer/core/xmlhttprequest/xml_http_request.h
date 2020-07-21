@@ -60,6 +60,7 @@ class Blob;
 class BlobDataHandle;
 class DOMArrayBuffer;
 class DOMArrayBufferView;
+class DOMWrapperWorld;
 class Document;
 class DocumentParser;
 class ExceptionState;
@@ -85,8 +86,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
 
   XMLHttpRequest(ExecutionContext*,
                  v8::Isolate*,
-                 bool is_isolated_world,
-                 scoped_refptr<SecurityOrigin>);
+                 scoped_refptr<const DOMWrapperWorld> world);
   ~XMLHttpRequest() override;
 
   // These exact numeric values are important because JS expects them.
@@ -349,10 +349,11 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   ResponseTypeCode response_type_code_ = kResponseTypeDefault;
 
   v8::Isolate* const isolate_;
-  // Set to true if the XMLHttpRequest was created in an isolated world.
-  bool is_isolated_world_;
-  // Stores the SecurityOrigin associated with the isolated world if any.
-  scoped_refptr<SecurityOrigin> isolated_world_security_origin_;
+  // The DOMWrapperWorld in which the request initiated. Can be null.
+  scoped_refptr<const DOMWrapperWorld> world_;
+  // Stores the SecurityOrigin associated with the |world_| if it's an isolated
+  // world.
+  scoped_refptr<const SecurityOrigin> isolated_world_security_origin_;
 
   // This blob loader will be used if |m_downloadingToFile| is true and
   // |m_responseTypeCode| is NOT ResponseTypeBlob.

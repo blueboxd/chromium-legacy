@@ -143,7 +143,7 @@ class ArcAppIcon {
       ArcAppIcon::IconType icon_type,
       ui::ScaleFactor scale_factor,
       const std::vector<base::FilePath>& paths,
-      const base::FilePath& default_app_path);
+      const std::vector<base::FilePath>& default_app_paths);
   static std::unique_ptr<ArcAppIcon::ReadResult> ReadSingleIconFile(
       ui::ScaleFactor scale_factor,
       const base::FilePath& path,
@@ -151,12 +151,18 @@ class ArcAppIcon {
   static std::unique_ptr<ArcAppIcon::ReadResult> ReadAdaptiveIconFiles(
       ui::ScaleFactor scale_factor,
       const std::vector<base::FilePath>& paths,
-      const base::FilePath& default_app_path);
+      const std::vector<base::FilePath>& default_app_paths);
   static std::unique_ptr<ArcAppIcon::ReadResult> ReadFile(
       bool request_to_install,
       ui::ScaleFactor scale_factor,
       bool resize_allowed,
       const base::FilePath& path);
+  static std::unique_ptr<ArcAppIcon::ReadResult> ReadFiles(
+      bool request_to_install,
+      ui::ScaleFactor scale_factor,
+      bool resize_allowed,
+      const base::FilePath& foreground_path,
+      const base::FilePath& background_path);
   void OnIconRead(std::unique_ptr<ArcAppIcon::ReadResult> read_result);
   void DecodeImage(
       const std::string& unsafe_icon_data,

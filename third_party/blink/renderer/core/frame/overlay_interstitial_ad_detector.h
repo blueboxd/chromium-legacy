@@ -53,11 +53,13 @@ class CORE_EXPORT OverlayInterstitialAdDetector {
 
   void MaybeFireDetection(LocalFrame* main_frame);
 
+  static void DisableFrequencyCappingForTesting();
+
  private:
   void OnPopupDetected(LocalFrame* main_frame, bool is_ad);
 
   bool started_detection_ = false;
-  bool main_content_has_loaded_ = false;
+  bool content_has_been_stable_ = false;
 
   // The following members are valid only when |started_detection_| is true.
   base::Time last_detection_time_;

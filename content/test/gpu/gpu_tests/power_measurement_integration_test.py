@@ -207,17 +207,18 @@ _VIDEO_TEST_SCRIPT = r"""
 class _PowerMeasurementTestArguments(object):
   """Struct-like object for passing power measurement args instead of a dict."""
 
-  def __init__(self,
-               test_func,
-               repeat,
-               bypass_ipg,
-               underlay=None,
-               fullscreen=None,
-               outliers=None,
-               ipg_logdir=None,
-               ipg_duration=None,
-               ipg_delay=None,
-               ipg_resolution=None):
+  def __init__(  # pylint: disable=too-many-arguments
+      self,
+      test_func,
+      repeat,
+      bypass_ipg,
+      underlay=None,
+      fullscreen=None,
+      outliers=None,
+      ipg_logdir=None,
+      ipg_duration=None,
+      ipg_delay=None,
+      ipg_resolution=None):
     self.test_func = test_func
     self.repeat = repeat
     self.bypass_ipg = bypass_ipg

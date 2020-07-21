@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/synchronization/condition_variable.h"
-#include "base/task/common/checked_lock.h"
+#include "base/synchronization/lock.h"
 #include "base/task/post_job.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/sequence_sort_key.h"
@@ -91,9 +91,7 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
 
  private:
   // Atomic internal state to track the number of workers running a task from
-  // this JobTaskSource and whether this JobTaskSource is canceled. All
-  // operations are performed with std::memory_order_relaxed as State is only
-  // ever modified under a lock or read atomically (optimistic read).
+  // this JobTaskSource and whether this JobTaskSource is canceled.
   class State {
    public:
     static constexpr size_t kCanceledMask = 1;
@@ -111,17 +109,28 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
     State();
     ~State();
 
-    // Sets as canceled. Returns the state
+    // Sets as canceled using std::memory_order_relaxed. Returns the state
     // before the operation.
     Value Cancel();
 
-    // Increments the worker count by 1. Returns the state before the operation.
-    Value IncrementWorkerCount();
+    // Increments the worker count by 1 if smaller than |max_concurrency| and if
+    // |!is_canceled()|, using std::memory_order_release, and returns the state
+    // before the operation. Equivalent to Load() otherwise.
+    Value TryIncrementWorkerCountFromWorkerRelease(size_t max_concurrency);
 
-    // Decrements the worker count by 1. Returns the state before the operation.
-    Value DecrementWorkerCount();
+    // Decrements the worker count by 1 using std::memory_order_acquire. Returns
+    // the state before the operation.
+    Value DecrementWorkerCountFromWorkerAcquire();
 
-    // Loads and returns the state.
+    // Increments the worker count by 1 using std::memory_order_relaxed. Returns
+    // the state before the operation.
+    Value IncrementWorkerCountFromJoiningThread();
+
+    // Decrements the worker count by 1 using std::memory_order_relaxed. Returns
+    // the state before the operation.
+    Value DecrementWorkerCountFromJoiningThread();
+
+    // Loads and returns the state, using std::memory_order_relaxed.
     Value Load() const;
 
    private:
@@ -177,7 +186,7 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
   // DidProcessTask()). Returns true if the joining thread should run a task, or
   // false if joining was completed and all other workers returned because
   // either there's no work remaining or Job was cancelled.
-  bool WaitForParticipationOpportunity() EXCLUSIVE_LOCKS_REQUIRED(worker_lock_);
+  bool WaitForParticipationOpportunity();
 
   // TaskSource:
   RunStatus WillRunTask() override;
@@ -186,20 +195,15 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
   bool DidProcessTask(TaskSource::Transaction* transaction) override;
   SequenceSortKey GetSortKey() const override;
 
-  // Synchronizes access to workers state.
-  mutable CheckedLock worker_lock_{UniversalSuccessor()};
-
-  // Current atomic state (atomic despite the lock to allow optimistic reads
-  // without the lock).
-  State state_ GUARDED_BY(worker_lock_);
+  // Current atomic state.
+  State state_;
+  std::atomic<uint32_t> assigned_task_ids_{0};
   // Normally, |join_flag_| is protected by |lock_|, except in ShouldYield()
   // hence the use of atomics.
-  JoinFlag join_flag_ GUARDED_BY(worker_lock_);
+  JoinFlag join_flag_ GUARDED_BY(lock_);
   // Signaled when |join_flag_| is kWaiting* and a worker returns.
   std::unique_ptr<ConditionVariable> worker_released_condition_
-      GUARDED_BY(worker_lock_);
-
-  std::atomic<uint32_t> assigned_task_ids_{0};
+      GUARDED_BY(lock_);
 
   const Location from_here_;
   RepeatingCallback<size_t()> max_concurrency_callback_;
@@ -213,10 +217,12 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
   PooledTaskRunnerDelegate* delegate_;
 
 #if DCHECK_IS_ON()
-  // Signaled whenever |increase_version_| is updated.
-  std::unique_ptr<ConditionVariable> version_condition_for_dcheck_;
+  // Synchronizes accesses to |increase_version_|.
+  mutable Lock version_lock_;
+  // Signaled whenever increase_version_ is updated.
+  ConditionVariable version_condition_{&version_lock_};
   // Incremented every time max concurrency is increased.
-  size_t increase_version_ GUARDED_BY(worker_lock_) = 0;
+  size_t increase_version_ GUARDED_BY(version_lock_) = 0;
 #endif  // DCHECK_IS_ON()
 
   DISALLOW_COPY_AND_ASSIGN(JobTaskSource);

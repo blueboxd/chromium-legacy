@@ -80,11 +80,12 @@ void TabGroupsIPHController::OnTabStripModelChanged(
     return;
   }
 
-  promo_widget_ = FeaturePromoBubbleView::CreateOwned(
-                      get_tab_view_.Run(2), views::BubbleBorder::TOP_LEFT,
-                      FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE,
-                      base::nullopt, IDS_TAB_GROUPS_NEW_GROUP_PROMO)
-                      ->GetWidget();
+  FeaturePromoBubbleView::CreateParams bubble_params;
+  bubble_params.body_string_specifier = IDS_TAB_GROUPS_NEW_GROUP_PROMO;
+  bubble_params.anchor_view = get_tab_view_.Run(2);
+  bubble_params.arrow = views::BubbleBorder::TOP_LEFT;
+  promo_widget_ =
+      FeaturePromoBubbleView::Create(std::move(bubble_params))->GetWidget();
 
   // We must notify the backend when the promo is dismissed. Observing
   // the promo's widget and notifying on close is the most

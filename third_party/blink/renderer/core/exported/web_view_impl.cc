@@ -2010,7 +2010,7 @@ void WebViewImpl::DidAttachRemoteMainFrame() {
   DCHECK(!MainFrameImpl());
 
   RemoteFrame* remote_frame = DynamicTo<RemoteFrame>(GetPage()->MainFrame());
-  DCHECK(remote_frame);
+  remote_frame->WasAttachedAsRemoteMainFrame();
 
   remote_frame->GetRemoteAssociatedInterfaces()->GetInterface(
       remote_main_frame_host_remote_.BindNewEndpointAndPassReceiver());

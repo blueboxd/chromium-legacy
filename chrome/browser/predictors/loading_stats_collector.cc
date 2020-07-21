@@ -201,14 +201,9 @@ void LoadingStatsCollector::RecordPageRequestSummary(
     }
     if (!optimization_guide_prediction->preconnect_prediction.requests
              .empty()) {
-      size_t correctly_predicted_origins = ReportPreconnectPredictionAccuracy(
+      ReportPreconnectPredictionAccuracy(
           optimization_guide_prediction->preconnect_prediction, summary,
           HintOrigin::OPTIMIZATION_GUIDE);
-      builder.SetOptimizationGuidePredictionOrigins(
-          std::min(ukm_cap, optimization_guide_prediction->preconnect_prediction
-                                .requests.size()));
-      builder.SetOptimizationGuidePredictionCorrectlyPredictedOrigins(
-          std::min(ukm_cap, correctly_predicted_origins));
     }
     if (!optimization_guide_prediction->predicted_subresources.empty()) {
       builder.SetOptimizationGuidePredictionSubresources(std::min(
@@ -224,6 +219,29 @@ void LoadingStatsCollector::RecordPageRequestSummary(
           });
       builder.SetOptimizationGuidePredictionCorrectlyPredictedSubresources(
           std::min(ukm_cap, correctly_predicted_subresources));
+
+      url::Origin main_frame_origin = url::Origin::Create(summary.initial_url);
+      std::set<url::Origin> predicted_origins;
+      for (const auto& subresource :
+           optimization_guide_prediction->predicted_subresources) {
+        url::Origin subresource_origin = url::Origin::Create(subresource);
+        if (subresource_origin == main_frame_origin) {
+          // Do not count the main frame origin as a predicted origin.
+          continue;
+        }
+        predicted_origins.insert(subresource_origin);
+      }
+      builder.SetOptimizationGuidePredictionOrigins(
+          std::min(ukm_cap, predicted_origins.size()));
+      const auto& actual_subresource_origins = summary.origins;
+      size_t correctly_predicted_origins = std::count_if(
+          predicted_origins.begin(), predicted_origins.end(),
+          [&actual_subresource_origins](const url::Origin& subresource_origin) {
+            return actual_subresource_origins.find(subresource_origin) !=
+                   actual_subresource_origins.end();
+          });
+      builder.SetOptimizationGuidePredictionCorrectlyPredictedOrigins(
+          std::min(ukm_cap, correctly_predicted_origins));
     }
     recorded_ukm = true;
   }

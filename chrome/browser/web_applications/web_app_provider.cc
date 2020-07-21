@@ -258,13 +258,13 @@ void WebAppProvider::ConnectSubsystems() {
   install_finalizer_->SetSubsystems(registrar_.get(), ui_manager_.get(),
                                     registry_controller_.get());
   install_manager_->SetSubsystems(registrar_.get(), shortcut_manager_.get(),
-                                  file_handler_manager_.get(),
+                                  os_integration_manager_.get(),
                                   install_finalizer_.get());
   manifest_update_manager_->SetSubsystems(
       registrar_.get(), icon_manager_.get(), ui_manager_.get(),
       install_manager_.get(), system_web_app_manager_.get());
   pending_app_manager_->SetSubsystems(
-      registrar_.get(), shortcut_manager_.get(), file_handler_manager_.get(),
+      registrar_.get(), shortcut_manager_.get(), os_integration_manager_.get(),
       ui_manager_.get(), install_finalizer_.get(), install_manager_.get());
   external_web_app_manager_->SetSubsystems(pending_app_manager_.get());
   system_web_app_manager_->SetSubsystems(
@@ -273,8 +273,8 @@ void WebAppProvider::ConnectSubsystems() {
   web_app_policy_manager_->SetSubsystems(pending_app_manager_.get());
   file_handler_manager_->SetSubsystems(registrar_.get());
   shortcut_manager_->SetSubsystems(icon_manager_.get(), registrar_.get());
-  os_integration_manager_->SetSubsystems(shortcut_manager_.get(),
-                                         file_handler_manager_.get());
+  os_integration_manager_->SetSubsystems(
+      shortcut_manager_.get(), file_handler_manager_.get(), ui_manager_.get());
 
   connected_ = true;
 }

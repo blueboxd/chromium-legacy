@@ -20,6 +20,7 @@
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
 #include "chrome/browser/web_applications/test/test_file_handler_manager.h"
 #include "chrome/browser/web_applications/test/test_file_utils.h"
+#include "chrome/browser/web_applications/test/test_os_integration_manager.h"
 #include "chrome/browser/web_applications/test/test_pending_app_manager_impl.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
@@ -186,6 +187,7 @@ class SystemWebAppManagerTest : public WebAppTest {
     test_system_web_app_manager_ =
         std::make_unique<TestSystemWebAppManager>(profile());
     test_ui_manager_ = std::make_unique<TestWebAppUiManager>();
+    test_os_integration_manager_ = std::make_unique<TestOsIntegrationManager>();
 
     install_finalizer().SetSubsystems(&controller().registrar(), &ui_manager(),
                                       &controller().sync_bridge());
@@ -193,15 +195,16 @@ class SystemWebAppManagerTest : public WebAppTest {
     install_manager().SetUrlLoaderForTesting(
         std::make_unique<TestWebAppUrlLoader>());
     install_manager().SetSubsystems(
-        &controller().registrar(), &shortcut_manager(), &file_handler_manager(),
-        &install_finalizer());
+        &controller().registrar(), &shortcut_manager(),
+        &os_integration_manager(), &install_finalizer());
 
     auto url_loader = std::make_unique<TestWebAppUrlLoader>();
     url_loader_ = url_loader.get();
     pending_app_manager().SetUrlLoaderForTesting(std::move(url_loader));
     pending_app_manager().SetSubsystems(
-        &controller().registrar(), &shortcut_manager(), &file_handler_manager(),
-        &ui_manager(), &install_finalizer(), &install_manager());
+        &controller().registrar(), &shortcut_manager(),
+        &os_integration_manager(), &ui_manager(), &install_finalizer(),
+        &install_manager());
 
     system_web_app_manager().SetSubsystems(
         &pending_app_manager(), &controller().registrar(),
@@ -260,6 +263,10 @@ class SystemWebAppManagerTest : public WebAppTest {
   }
 
   TestWebAppUiManager& ui_manager() { return *test_ui_manager_; }
+
+  TestOsIntegrationManager& os_integration_manager() {
+    return *test_os_integration_manager_;
+  }
 
   TestWebAppUrlLoader& url_loader() { return *url_loader_; }
 
@@ -353,6 +360,7 @@ class SystemWebAppManagerTest : public WebAppTest {
   std::unique_ptr<TestAppShortcutManager> test_shortcut_manager_;
   std::unique_ptr<TestSystemWebAppManager> test_system_web_app_manager_;
   std::unique_ptr<TestWebAppUiManager> test_ui_manager_;
+  std::unique_ptr<TestOsIntegrationManager> test_os_integration_manager_;
   TestWebAppUrlLoader* url_loader_ = nullptr;
   std::unique_ptr<TestDataRetrieverFactory> test_data_retriever_factory_;
 

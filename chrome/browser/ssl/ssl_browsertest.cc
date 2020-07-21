@@ -3607,8 +3607,9 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
 // This test, and the related test TestUnsafeContentsWithUserException, verify
 // that if unsafe content is loaded but the host of that unsafe content has a
 // user exception, the content runs and the security style is downgraded.
+// TODO(crbug.com/1107659): Disabled due to flakiness.
 IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
-                       TestUnsafeContentsInWorkerWithUserException) {
+                       DISABLED_TestUnsafeContentsInWorkerWithUserException) {
   https_server_.ServeFilesFromDirectory(tmp_dir_.GetPath());
   https_server_mismatched_.ServeFilesFromDirectory(tmp_dir_.GetPath());
   ASSERT_TRUE(https_server_.Start());

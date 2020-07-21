@@ -25,7 +25,7 @@ enum class InstallResultCode;
 
 class AppRegistrar;
 class AppShortcutManager;
-class FileHandlerManager;
+class OsIntegrationManager;
 class InstallFinalizer;
 class InstallManager;
 class WebAppUiManager;
@@ -59,7 +59,7 @@ class PendingAppManager {
 
   void SetSubsystems(AppRegistrar* registrar,
                      AppShortcutManager* shortcut_manager,
-                     FileHandlerManager* file_handler_manager,
+                     OsIntegrationManager* os_integration_manager,
                      WebAppUiManager* ui_manager,
                      InstallFinalizer* finalizer,
                      InstallManager* install_manager);
@@ -120,7 +120,9 @@ class PendingAppManager {
  protected:
   AppRegistrar* registrar() { return registrar_; }
   AppShortcutManager* shortcut_manager() { return shortcut_manager_; }
-  FileHandlerManager* file_handler_manager() { return file_handler_manager_; }
+  OsIntegrationManager* os_integration_manager() {
+    return os_integration_manager_;
+  }
   WebAppUiManager* ui_manager() { return ui_manager_; }
   InstallFinalizer* finalizer() { return finalizer_; }
   InstallManager* install_manager() { return install_manager_; }
@@ -155,7 +157,7 @@ class PendingAppManager {
 
   AppRegistrar* registrar_ = nullptr;
   AppShortcutManager* shortcut_manager_ = nullptr;
-  FileHandlerManager* file_handler_manager_ = nullptr;
+  OsIntegrationManager* os_integration_manager_ = nullptr;
   WebAppUiManager* ui_manager_ = nullptr;
   InstallFinalizer* finalizer_ = nullptr;
   InstallManager* install_manager_ = nullptr;

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 settings = struct(
+    project = 'chromium',
     # Switch this to False for branches
     is_master = True,
     ref = 'refs/heads/master',

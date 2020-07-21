@@ -668,9 +668,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      */
     public void onTabCreated(long time, int tabId, int tabIndex, int sourceTabId,
             boolean newIsIncognito, boolean background, float originX, float originY) {
-        for (int i = 0; i < mSceneOverlays.size(); i++) {
-            mSceneOverlays.get(i).tabCreated(time, newIsIncognito, tabId, sourceTabId, !background);
-        }
     }
 
     /**
@@ -695,9 +692,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * @param incognito True if the new model is incognito.
      */
     public void onTabModelSwitched(boolean incognito) {
-        for (int i = 0; i < mSceneOverlays.size(); i++) {
-            mSceneOverlays.get(i).tabModelSwitched(incognito);
-        }
     }
 
     /**

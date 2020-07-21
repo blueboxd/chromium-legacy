@@ -434,6 +434,28 @@ base::FilePath ArcAppListPrefs::MaybeGetIconPathForDefaultApp(
       MapDefaultAppIconDescriptor(descriptor).GetName());
 }
 
+base::FilePath ArcAppListPrefs::MaybeGetForegroundIconPathForDefaultApp(
+    const std::string& app_id,
+    const ArcAppIconDescriptor& descriptor) const {
+  const ArcDefaultAppList::AppInfo* default_app = default_apps_->GetApp(app_id);
+  if (!default_app || default_app->app_path.empty())
+    return base::FilePath();
+
+  return default_app->app_path.AppendASCII(
+      MapDefaultAppIconDescriptor(descriptor).GetForegroundIconName());
+}
+
+base::FilePath ArcAppListPrefs::MaybeGetBackgroundIconPathForDefaultApp(
+    const std::string& app_id,
+    const ArcAppIconDescriptor& descriptor) const {
+  const ArcDefaultAppList::AppInfo* default_app = default_apps_->GetApp(app_id);
+  if (!default_app || default_app->app_path.empty())
+    return base::FilePath();
+
+  return default_app->app_path.AppendASCII(
+      MapDefaultAppIconDescriptor(descriptor).GetBackgroundIconName());
+}
+
 base::FilePath ArcAppListPrefs::GetIconPath(
     const std::string& app_id,
     const ArcAppIconDescriptor& descriptor) {
@@ -448,7 +470,7 @@ base::FilePath ArcAppListPrefs::GetForegroundIconPath(
   active_icons_[app_id].insert(descriptor);
   return GetAppPath(app_id).AppendASCII(descriptor.GetForegroundIconName());
 }
-// Constructs path to the app background icon for specific scale factor.
+
 base::FilePath ArcAppListPrefs::GetBackgroundIconPath(
     const std::string& app_id,
     const ArcAppIconDescriptor& descriptor) {

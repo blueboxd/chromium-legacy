@@ -201,13 +201,9 @@ void WriteToDiskCacheAsync(
     const std::string& meta_data,
     WriteToDiskCacheCallback callback);
 
-// Calls ServiceWorkerStorage::CreateNewResponseWriter() and returns the
-// created writer synchronously.
-std::unique_ptr<ServiceWorkerResponseWriter> CreateNewResponseWriterSync(
-    ServiceWorkerStorage* storage);
-
-// Calls ServiceWorkerStorage::GetNewResourceId() synchronously.
-int64_t GetNewResourceIdSync(ServiceWorkerStorage* storage);
+// Calls ServiceWorkerStorageControl::GetNewResourceId() synchronously.
+int64_t GetNewResourceIdSync(
+    mojo::Remote<storage::mojom::ServiceWorkerStorageControl>& storage);
 
 // A test implementation of ServiceWorkerResourceReader.
 //

@@ -89,8 +89,8 @@ void WebAppInstallManager::LoadWebAppAndCheckManifest(
   DCHECK(started_);
 
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), registrar(), shortcut_manager(), file_handler_manager(),
-      finalizer(), data_retriever_factory_.Run());
+      profile(), shortcut_manager(), os_integration_manager(), finalizer(),
+      data_retriever_factory_.Run());
 
   task->LoadWebAppAndCheckManifest(
       web_app_url, install_source, url_loader_.get(),
@@ -110,8 +110,8 @@ void WebAppInstallManager::InstallWebAppFromManifest(
   DCHECK(started_);
 
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), registrar(), shortcut_manager(), file_handler_manager(),
-      finalizer(), data_retriever_factory_.Run());
+      profile(), shortcut_manager(), os_integration_manager(), finalizer(),
+      data_retriever_factory_.Run());
   task->InstallWebAppFromManifest(
       contents, bypass_service_worker_check, install_source,
       std::move(dialog_callback),
@@ -130,8 +130,8 @@ void WebAppInstallManager::InstallWebAppFromManifestWithFallback(
   DCHECK(started_);
 
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), registrar(), shortcut_manager(), file_handler_manager(),
-      finalizer(), data_retriever_factory_.Run());
+      profile(), shortcut_manager(), os_integration_manager(), finalizer(),
+      data_retriever_factory_.Run());
   task->InstallWebAppFromManifestWithFallback(
       contents, force_shortcut_app, install_source, std::move(dialog_callback),
       base::BindOnce(&WebAppInstallManager::OnInstallTaskCompleted,
@@ -148,8 +148,8 @@ void WebAppInstallManager::InstallWebAppFromInfo(
   DCHECK(started_);
 
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), registrar(), shortcut_manager(), file_handler_manager(),
-      finalizer(), data_retriever_factory_.Run());
+      profile(), shortcut_manager(), os_integration_manager(), finalizer(),
+      data_retriever_factory_.Run());
   task->InstallWebAppFromInfo(
       std::move(web_application_info), for_installable_site, install_source,
       base::BindOnce(&WebAppInstallManager::OnInstallTaskCompleted,
@@ -166,8 +166,8 @@ void WebAppInstallManager::InstallWebAppWithParams(
   DCHECK(started_);
 
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), registrar(), shortcut_manager(), file_handler_manager(),
-      finalizer(), data_retriever_factory_.Run());
+      profile(), shortcut_manager(), os_integration_manager(), finalizer(),
+      data_retriever_factory_.Run());
   task->InstallWebAppWithParams(
       web_contents, install_params, install_source,
       base::BindOnce(&WebAppInstallManager::OnInstallTaskCompleted,
@@ -221,8 +221,8 @@ void WebAppInstallManager::EnqueueInstallAppFromSync(
   GURL launch_url = web_application_info->app_url;
 
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), registrar(), shortcut_manager(), file_handler_manager(),
-      finalizer(), data_retriever_factory_.Run());
+      profile(), shortcut_manager(), os_integration_manager(), finalizer(),
+      data_retriever_factory_.Run());
 
   task->ExpectAppId(sync_app_id);
   task->SetInstallParams(CreateSyncInstallParams(
@@ -266,8 +266,8 @@ void WebAppInstallManager::UpdateWebAppFromInfo(
   DCHECK(started_);
 
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), registrar(), shortcut_manager(), file_handler_manager(),
-      finalizer(), data_retriever_factory_.Run());
+      profile(), shortcut_manager(), os_integration_manager(), finalizer(),
+      data_retriever_factory_.Run());
 
   base::OnceClosure start_task = base::BindOnce(
       &WebAppInstallTask::UpdateWebAppFromInfo, base::Unretained(task.get()),
@@ -358,8 +358,8 @@ void WebAppInstallManager::
 
   // Install failed. Do the fallback install from info fetching just icon URLs.
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), registrar(), shortcut_manager(), file_handler_manager(),
-      finalizer(), data_retriever_factory_.Run());
+      profile(), shortcut_manager(), os_integration_manager(), finalizer(),
+      data_retriever_factory_.Run());
 
   InstallFinalizer::FinalizeOptions finalize_options;
   finalize_options.install_source = WebappInstallSource::SYNC;

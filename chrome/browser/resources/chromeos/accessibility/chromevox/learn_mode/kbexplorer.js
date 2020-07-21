@@ -72,6 +72,9 @@ KbExplorer = class {
       ChromeVox.tts.stop();
     }
     KbExplorer.keydownWithoutKeyupEvents_.add(evt.keyCode);
+    if (evt.repeat) {
+      return false;
+    }
     ChromeVox.tts.speak(
         KeyUtil.getReadableNameForKeyCode(evt.keyCode),
         window.backgroundWindow.QueueMode.QUEUE,

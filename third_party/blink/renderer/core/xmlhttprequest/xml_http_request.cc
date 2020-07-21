@@ -272,37 +272,30 @@ class XMLHttpRequest::BlobLoader final
 };
 
 XMLHttpRequest* XMLHttpRequest::Create(ScriptState* script_state) {
-  ExecutionContext* context = ExecutionContext::From(script_state);
-  DOMWrapperWorld& world = script_state->World();
-  v8::Isolate* isolate = script_state->GetIsolate();
-
-  return world.IsIsolatedWorld() ? MakeGarbageCollected<XMLHttpRequest>(
-                                       context, isolate, true,
-                                       world.IsolatedWorldSecurityOrigin(
-                                           context->GetAgentClusterID()))
-                                 : MakeGarbageCollected<XMLHttpRequest>(
-                                       context, isolate, false, nullptr);
+  return MakeGarbageCollected<XMLHttpRequest>(
+      ExecutionContext::From(script_state), script_state->GetIsolate(),
+      &script_state->World());
 }
 
 XMLHttpRequest* XMLHttpRequest::Create(ExecutionContext* context) {
   v8::Isolate* isolate = context->GetIsolate();
   CHECK(isolate);
 
-  return MakeGarbageCollected<XMLHttpRequest>(context, isolate, false, nullptr);
+  return MakeGarbageCollected<XMLHttpRequest>(context, isolate, nullptr);
 }
 
-XMLHttpRequest::XMLHttpRequest(
-    ExecutionContext* context,
-    v8::Isolate* isolate,
-    bool is_isolated_world,
-    scoped_refptr<SecurityOrigin> isolated_world_security_origin)
+XMLHttpRequest::XMLHttpRequest(ExecutionContext* context,
+                               v8::Isolate* isolate,
+                               scoped_refptr<const DOMWrapperWorld> world)
     : ExecutionContextLifecycleObserver(context),
       progress_event_throttle_(
           MakeGarbageCollected<XMLHttpRequestProgressEventThrottle>(this)),
       isolate_(isolate),
-      is_isolated_world_(is_isolated_world),
-      isolated_world_security_origin_(
-          std::move(isolated_world_security_origin)) {}
+      world_(std::move(world)),
+      isolated_world_security_origin_(world_ && world_->IsIsolatedWorld()
+                                          ? world_->IsolatedWorldSecurityOrigin(
+                                                context->GetAgentClusterID())
+                                          : nullptr) {}
 
 XMLHttpRequest::~XMLHttpRequest() {
   binary_response_builder_ = nullptr;
@@ -1060,7 +1053,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   request.SetCredentialsMode(
       with_credentials_ ? network::mojom::CredentialsMode::kInclude
                         : network::mojom::CredentialsMode::kSameOrigin);
-  request.SetSkipServiceWorker(is_isolated_world_);
+  request.SetSkipServiceWorker(world_ && world_->IsIsolatedWorld());
   request.SetExternalRequestStateFromRequestorAddressSpace(
       execution_context.AddressSpace());
   if (trust_token_params_)
@@ -1079,6 +1072,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
     request.AddHTTPHeaderFields(request_headers_);
 
   ResourceLoaderOptions resource_loader_options;
+  resource_loader_options.world = world_;
   resource_loader_options.initiator_info.name =
       fetch_initiator_type_names::kXmlhttprequest;
   if (blob_url_loader_factory_) {

@@ -18,6 +18,7 @@
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -175,7 +176,8 @@ class AppLauncherHandler
   void PromptToEnableApp(const std::string& extension_id);
 
   // Records result to UMA after OS Hooks are installed.
-  void OnOsHooksInstalled(const web_app::AppId& app_id, bool shortcuts_created);
+  void OnOsHooksInstalled(const web_app::AppId& app_id,
+                          const web_app::OsHooksResults os_hooks_results);
 
   // ExtensionUninstallDialog::Delegate:
   void OnExtensionUninstallDialogClosed(bool did_start_uninstall,

@@ -372,8 +372,17 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
     widget_.ClearVisualProperties();
   }
 
+  void ClearScreenRects() {
+    base::RunLoop().RunUntilIdle();
+    widget_.ClearScreenRects();
+  }
+
   const std::vector<blink::VisualProperties>& visual_properties() {
     return widget_.ReceivedVisualProperties();
+  }
+
+  const std::vector<std::pair<gfx::Rect, gfx::Rect>>& screen_rects() {
+    return widget_.ReceivedScreenRects();
   }
 
   static MockRenderWidgetHostImpl* Create(RenderWidgetHostDelegate* delegate,
@@ -1089,41 +1098,25 @@ TEST_F(RenderWidgetHostViewAuraTest, ParentMovementUpdatesScreenRect) {
   view_ = nullptr;
 
   // Flush the state after initial setup is done.
-  widget_host_->OnMessageReceived(
-      WidgetHostMsg_UpdateScreenRects_ACK(widget_host_->GetRoutingID()));
-  widget_host_->OnMessageReceived(
-      WidgetHostMsg_UpdateScreenRects_ACK(widget_host_->GetRoutingID()));
-  sink_->ClearMessages();
+  widget_host_->ClearScreenRects();
 
   // Move parents.
   parent2->SetBounds(gfx::Rect(20, 20, 200, 200));
-  ASSERT_EQ(1U, sink_->message_count());
-  const IPC::Message* msg = sink_->GetMessageAt(0);
-  ASSERT_EQ(static_cast<uint32_t>(WidgetMsg_UpdateScreenRects::ID),
-            msg->type());
-  WidgetMsg_UpdateScreenRects::Param params;
-  WidgetMsg_UpdateScreenRects::Read(msg, &params);
-  EXPECT_EQ(gfx::Rect(21, 21, 100, 100), std::get<0>(params));
-  EXPECT_EQ(gfx::Rect(1, 1, 300, 300), std::get<1>(params));
-  sink_->ClearMessages();
-  widget_host_->OnMessageReceived(
-      WidgetHostMsg_UpdateScreenRects_ACK(widget_host_->GetRoutingID()));
-  // There should not be any pending update.
-  EXPECT_EQ(0U, sink_->message_count());
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(1U, widget_host_->screen_rects().size());
+  EXPECT_EQ(gfx::Rect(21, 21, 100, 100),
+            widget_host_->screen_rects().at(0).first);
+  EXPECT_EQ(gfx::Rect(1, 1, 300, 300),
+            widget_host_->screen_rects().at(0).second);
+  widget_host_->ClearScreenRects();
 
   parent1->SetBounds(gfx::Rect(10, 10, 300, 300));
-  ASSERT_EQ(1U, sink_->message_count());
-  msg = sink_->GetMessageAt(0);
-  ASSERT_EQ(static_cast<uint32_t>(WidgetMsg_UpdateScreenRects::ID),
-            msg->type());
-  WidgetMsg_UpdateScreenRects::Read(msg, &params);
-  EXPECT_EQ(gfx::Rect(30, 30, 100, 100), std::get<0>(params));
-  EXPECT_EQ(gfx::Rect(10, 10, 300, 300), std::get<1>(params));
-  sink_->ClearMessages();
-  widget_host_->OnMessageReceived(
-      WidgetHostMsg_UpdateScreenRects_ACK(widget_host_->GetRoutingID()));
-  // There should not be any pending update.
-  EXPECT_EQ(0U, sink_->message_count());
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(1U, widget_host_->screen_rects().size());
+  EXPECT_EQ(gfx::Rect(30, 30, 100, 100),
+            widget_host_->screen_rects().at(0).first);
+  EXPECT_EQ(gfx::Rect(10, 10, 300, 300),
+            widget_host_->screen_rects().at(0).second);
 }
 
 // Checks that a fullscreen view is destroyed when it loses the focus.

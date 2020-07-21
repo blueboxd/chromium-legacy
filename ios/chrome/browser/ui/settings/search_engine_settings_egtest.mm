@@ -108,6 +108,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 - (void)tearDown {
   [SettingsAppInterface resetSearchEngine];
+  [super tearDown];
 }
 
 // Tests that when changing the default search engine, the URL used for the

@@ -33,6 +33,7 @@ class RemoteFrameClient;
 struct FrameLoadRequest;
 
 class CORE_EXPORT RemoteFrame final : public Frame,
+                                      public mojom::blink::RemoteMainFrame,
                                       public mojom::blink::RemoteFrame {
  public:
   // Returns the RemoteFrame for the given |frame_token|.
@@ -169,6 +170,9 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
   void SetOpener(Frame* opener) override;
 
+  // Indicate that this frame was attached as a MainFrame.
+  void WasAttachedAsRemoteMainFrame();
+
  private:
   // Frame protected overrides:
   void DetachImpl(FrameDetachType) override;
@@ -182,8 +186,11 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void ApplyReplicatedFeaturePolicyHeader();
 
   static void BindToReceiver(
-      blink::RemoteFrame* frame,
+      RemoteFrame* frame,
       mojo::PendingAssociatedReceiver<mojom::blink::RemoteFrame> receiver);
+  static void BindToMainFrameReceiver(
+      RemoteFrame* frame,
+      mojo::PendingAssociatedReceiver<mojom::blink::RemoteMainFrame> receiver);
 
   Member<RemoteFrameView> view_;
   RemoteSecurityContext security_context_;
@@ -193,9 +200,13 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   ParsedFeaturePolicy feature_policy_header_;
   String unique_name_;
 
+  InterfaceRegistry* const interface_registry_;
+
   mojo::AssociatedRemote<mojom::blink::RemoteFrameHost>
       remote_frame_host_remote_;
   mojo::AssociatedReceiver<mojom::blink::RemoteFrame> receiver_{this};
+  mojo::AssociatedReceiver<mojom::blink::RemoteMainFrame> main_frame_receiver_{
+      this};
 };
 
 inline RemoteFrameView* RemoteFrame::View() const {

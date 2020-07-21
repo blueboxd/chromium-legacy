@@ -83,6 +83,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
@@ -461,7 +462,7 @@ class ShelfWebAppBrowserTest
     WebAppProviderBase* provider =
         WebAppProviderBase::GetProviderBase(browser()->profile());
     DCHECK(provider);
-    provider->shortcut_manager().SuppressShortcutsForTesting();
+    provider->os_integration_manager().SuppressOsHooksForTesting();
   }
 
  private:

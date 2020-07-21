@@ -4,11 +4,13 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions;
 
+import org.chromium.base.annotations.MockedInTests;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * A processor of omnibox dropdown items.
  */
+@MockedInTests
 public interface DropdownItemProcessor {
     /**
      * @return The type of view the models created by this processor represent.

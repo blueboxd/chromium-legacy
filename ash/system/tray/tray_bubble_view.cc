@@ -175,7 +175,12 @@ void TrayBubbleView::RerouteEventHandler::OnKeyEvent(ui::KeyEvent* event) {
                ui::EF_COMMAND_DOWN | ui::EF_ALTGR_DOWN | ui::EF_MOD3_DOWN);
   if ((key_code == ui::VKEY_TAB && flags == ui::EF_NONE) ||
       (key_code == ui::VKEY_TAB && flags == ui::EF_SHIFT_DOWN) ||
-      (key_code == ui::VKEY_ESCAPE && flags == ui::EF_NONE)) {
+      (key_code == ui::VKEY_ESCAPE && flags == ui::EF_NONE) ||
+      // Do not dismiss the bubble immediately when a user triggers a feedback
+      // report; if they're reporting an issue with the bubble we want the
+      // screenshot to contain it.
+      (key_code == ui::VKEY_I &&
+       flags == (ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN))) {
     // Make TrayBubbleView activatable as the following Widget::OnKeyEvent might
     // try to activate it.
     tray_bubble_view_->SetCanActivate(true);

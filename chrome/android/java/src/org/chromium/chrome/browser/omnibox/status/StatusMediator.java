@@ -17,6 +17,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.MathUtils;
+import org.chromium.base.annotations.MockedInTests;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
@@ -36,6 +37,7 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 class StatusMediator implements IncognitoStateProvider.IncognitoStateObserver {
     @VisibleForTesting
+    @MockedInTests
     class StatusMediatorDelegate {
         /** @see {@link AutocompleteCoordinatorFactory#qualifyPartialURLQuery} */
         boolean isUrlValid(String partialUrl) {

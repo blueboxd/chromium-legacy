@@ -10,7 +10,6 @@ import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.ui.resources.ResourceManager;
 
 import java.util.List;
@@ -100,20 +99,4 @@ public interface SceneOverlay {
      * Called when the TabModelSelector has been initialized with an accurate tab count.
      */
     void tabStateInitialized();
-
-    /**
-     * Called when the active {@link TabModel} switched (e.g. standard -> incognito).
-     * @param incognito Whether or not the new active model is incognito.
-     */
-    void tabModelSwitched(boolean incognito);
-
-    /**
-     * Called when a tab is created from the top left button.
-     * @param time      The current time of the app in ms.
-     * @param incognito Whether or not the affected model was incognito.
-     * @param id        The id of the newly created tab.
-     * @param prevId    The id of the source tab.
-     * @param selected  Whether the tab will be selected.
-     */
-    void tabCreated(long time, boolean incognito, int id, int prevId, boolean selected);
 }

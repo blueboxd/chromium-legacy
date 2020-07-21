@@ -80,11 +80,10 @@ class CORE_EXPORT MessageEvent final : public Event {
                               const String& last_event_id = String(),
                               EventTarget* source = nullptr,
                               UserActivation* user_activation = nullptr,
-                              bool transfer_user_activation = false,
-                              bool allow_autoplay = false) {
+                              bool transfer_user_activation = false) {
     return MakeGarbageCollected<MessageEvent>(
         std::move(data), origin, last_event_id, source, std::move(channels),
-        user_activation, transfer_user_activation, allow_autoplay);
+        user_activation, transfer_user_activation);
   }
   static MessageEvent* CreateError(const String& origin = String(),
                                    EventTarget* source = nullptr) {
@@ -123,8 +122,7 @@ class CORE_EXPORT MessageEvent final : public Event {
                EventTarget* source,
                Vector<MessagePortChannel>,
                UserActivation* user_activation,
-               bool transfer_user_activation,
-               bool allow_autoplay);
+               bool transfer_user_activation);
   // Creates a "messageerror" event.
   MessageEvent(const String& origin, EventTarget* source);
   MessageEvent(const String& data, const String& origin);
@@ -149,8 +147,7 @@ class CORE_EXPORT MessageEvent final : public Event {
                         EventTarget* source,
                         MessagePortArray*,
                         UserActivation* user_activation,
-                        bool transfer_user_activation = false,
-                        bool allow_autoplay = false);
+                        bool transfer_user_activation = false);
   void initMessageEvent(const AtomicString& type,
                         bool bubbles,
                         bool cancelable,
@@ -169,7 +166,6 @@ class CORE_EXPORT MessageEvent final : public Event {
   bool isPortsDirty() const { return is_ports_dirty_; }
   UserActivation* userActivation() const { return user_activation_; }
   bool transferUserActivation() const { return transfer_user_activation_; }
-  bool allowAutoplay() const { return allow_autoplay_; }
 
   Vector<MessagePortChannel> ReleaseChannels() { return std::move(channels_); }
 
@@ -236,7 +232,6 @@ class CORE_EXPORT MessageEvent final : public Event {
   Vector<MessagePortChannel> channels_;
   Member<UserActivation> user_activation_;
   bool transfer_user_activation_ = false;
-  bool allow_autoplay_ = false;
   size_t amount_of_external_memory_ = 0;
   // For serialized messages across process this attribute contains the
   // information of whether the actual original SerializedScriptValue was locked

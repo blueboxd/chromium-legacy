@@ -59,7 +59,6 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_finalizer_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
-#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/buildflags.h"
@@ -971,9 +970,16 @@ void AppLauncherHandler::HandleInstallAppLocally(const base::ListValue* args) {
                                                                     true);
   web_app_provider_->registry_controller().SetAppInstallTime(app_id,
                                                              base::Time::Now());
+  web_app::InstallOsHooksOptions options;
+  options.add_to_applications_menu = true;
+  options.add_to_desktop = true;
+  options.add_to_quick_launch_bar = false;
+  options.run_on_os_login = false;
   web_app_provider_->os_integration_manager().InstallOsHooks(
-      app_id, base::BindOnce(&AppLauncherHandler::OnOsHooksInstalled,
-                             weak_ptr_factory_.GetWeakPtr(), app_id));
+      app_id,
+      base::BindOnce(&AppLauncherHandler::OnOsHooksInstalled,
+                     weak_ptr_factory_.GetWeakPtr(), app_id),
+      nullptr, std::move(options));
 
   // Use the appAdded to update the app icon's color to no longer be
   // greyscale.
@@ -1195,10 +1201,11 @@ void AppLauncherHandler::PromptToEnableApp(const std::string& extension_id) {
   extension_enable_flow_->StartForWebContents(web_ui()->GetWebContents());
 }
 
-void AppLauncherHandler::OnOsHooksInstalled(const web_app::AppId& app_id,
-                                            bool shortcuts_created) {
+void AppLauncherHandler::OnOsHooksInstalled(
+    const web_app::AppId& app_id,
+    const web_app::OsHooksResults os_hooks_results) {
   LOCAL_HISTOGRAM_BOOLEAN("Apps.Launcher.InstallLocallyShortcutsCreated",
-                          shortcuts_created);
+                          os_hooks_results[web_app::OsHookType::kShortcuts]);
 }
 
 void AppLauncherHandler::OnExtensionUninstallDialogClosed(

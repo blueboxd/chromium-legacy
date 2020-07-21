@@ -13,6 +13,8 @@ class QrCodeShareViewBinder implements ViewBinder<PropertyModel, QrCodeShareView
     public void bind(PropertyModel model, QrCodeShareView view, PropertyKey propertyKey) {
         if (QrCodeShareViewProperties.QRCODE_BITMAP == propertyKey) {
             view.updateQrCodeBitmap(model.get(QrCodeShareViewProperties.QRCODE_BITMAP));
+        } else if (QrCodeShareViewProperties.ERROR_STRING == propertyKey) {
+            view.displayErrorMessage(model.get(QrCodeShareViewProperties.ERROR_STRING));
         } else if (QrCodeShareViewProperties.HAS_STORAGE_PERMISSION == propertyKey) {
             view.storagePermissionsChanged(
                     model.get(QrCodeShareViewProperties.HAS_STORAGE_PERMISSION));

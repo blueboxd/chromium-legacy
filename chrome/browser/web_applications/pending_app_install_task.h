@@ -25,8 +25,7 @@ class WebContents;
 
 namespace web_app {
 
-class AppShortcutManager;
-class FileHandlerManager;
+class OsIntegrationManager;
 class InstallFinalizer;
 class InstallManager;
 class WebAppUiManager;
@@ -59,8 +58,7 @@ class PendingAppInstallTask {
   // policy, etc.
   explicit PendingAppInstallTask(Profile* profile,
                                  AppRegistrar* registrar,
-                                 AppShortcutManager* shortcut_manager,
-                                 FileHandlerManager* file_handler_manager,
+                                 OsIntegrationManager* os_integration_manager,
                                  WebAppUiManager* ui_manager,
                                  InstallFinalizer* install_finalizer,
                                  InstallManager* install_manager,
@@ -94,8 +92,7 @@ class PendingAppInstallTask {
 
   Profile* const profile_;
   AppRegistrar* const registrar_;
-  AppShortcutManager* const shortcut_manager_;
-  FileHandlerManager* const file_handler_manager_;
+  OsIntegrationManager* const os_integration_manager_;
   InstallFinalizer* const install_finalizer_;
   InstallManager* const install_manager_;
   WebAppUiManager* const ui_manager_;

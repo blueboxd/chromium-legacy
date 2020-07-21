@@ -81,7 +81,7 @@ VideoFrameFactoryImpl::VideoFrameFactoryImpl(
     const gpu::GpuPreferences& gpu_preferences,
     std::unique_ptr<SharedImageVideoProvider> image_provider,
     std::unique_ptr<MaybeRenderEarlyManager> mre_manager,
-    base::SequenceBound<FrameInfoHelper> frame_info_helper)
+    std::unique_ptr<FrameInfoHelper> frame_info_helper)
     : image_provider_(std::move(image_provider)),
       gpu_task_runner_(std::move(gpu_task_runner)),
       enable_threaded_texture_mailboxes_(
@@ -112,10 +112,6 @@ void VideoFrameFactoryImpl::SetSurfaceBundle(
   // Increase the generation ID used by the shared image provider, since we're
   // changing the TextureOwner.  This is temporary.  See ImageSpec.
   image_spec_.generation_id++;
-
-  // Reset cached visible size as we might switched between overlay and texture
-  // owner mode.
-  visible_size_ = gfx::Size();
 
   if (!surface_bundle) {
     // Clear everything, just so we're not holding a reference.
@@ -185,48 +181,20 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
 void VideoFrameFactoryImpl::RequestImage(
     std::unique_ptr<CodecOutputBufferRenderer> buffer_renderer,
     ImageWithInfoReadyCB image_ready_cb) {
-  if (buffer_renderer && visible_size_ == buffer_renderer->size()) {
-    auto cb = base::BindOnce(std::move(image_ready_cb),
-                             std::move(buffer_renderer), frame_info_);
-
-    image_provider_->RequestImage(
-        std::move(cb), image_spec_,
-        codec_buffer_wait_coordinator_
-            ? codec_buffer_wait_coordinator_->texture_owner()
-            : nullptr);
-    return;
-  }
-
-  // We need to reset size to make sure VFFI pipeline is still ordered.
-  // e.g: CreateVideoFrame is called with new size. We post task to GPU thread
-  // to get new frame info. While we wait CreateVideoFrame might be called with
-  // old size again and if we don't reset size here we will skip GPU hop and new
-  // frame will be created earlier than first one.
-  visible_size_ = gfx::Size();
-
-  auto info_cb = BindToCurrentLoop(
+  auto info_cb =
       base::BindOnce(&VideoFrameFactoryImpl::CreateVideoFrame_OnFrameInfoReady,
                      weak_factory_.GetWeakPtr(), std::move(image_ready_cb),
-                     codec_buffer_wait_coordinator_));
+                     codec_buffer_wait_coordinator_);
 
-  frame_info_helper_.Post(FROM_HERE, &FrameInfoHelper::GetFrameInfo,
-                          std::move(buffer_renderer), std::move(info_cb));
+  frame_info_helper_->GetFrameInfo(std::move(buffer_renderer),
+                                   std::move(info_cb));
 }
 
 void VideoFrameFactoryImpl::CreateVideoFrame_OnFrameInfoReady(
     ImageWithInfoReadyCB image_ready_cb,
     scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
     std::unique_ptr<CodecOutputBufferRenderer> output_buffer_renderer,
-    FrameInfoHelper::FrameInfo frame_info,
-    bool success) {
-  // To get frame info we need to render frame which might fail for variety of
-  // reason. FrameInfoHelper will provide best values we can proceed with, but
-  // we should not cache it and attempt to get info for next frame.
-  if (success) {
-    frame_info_ = frame_info;
-    visible_size_ = output_buffer_renderer->size();
-  }
-
+    FrameInfoHelper::FrameInfo frame_info) {
   // If we don't have output buffer here we can't rely on reply from
   // FrameInfoHelper as there might be not cached value and we can't render
   // nothing. But in this case call comes from RunAfterPendingVideoFrames and we

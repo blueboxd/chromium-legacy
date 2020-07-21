@@ -148,6 +148,12 @@ interface Widget {
 
   // Update the visual properties of the widget.
   UpdateVisualProperties(VisualProperties visual_properties);
+
+  // Informs the widget of its position on the user's screen, as well as
+  // the position of the native window holding the widget.
+  // TODO(danakj): These should be part of UpdateVisualProperties.
+  UpdateScreenRects(gfx.mojom.Rect widget_screen_rect,
+                    gfx.mojom.Rect window_screen_rect) => ();
 };
 
 // Implemented in Browser, this interface defines widget-specific methods that

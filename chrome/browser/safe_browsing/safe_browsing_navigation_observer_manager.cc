@@ -308,8 +308,8 @@ void SafeBrowsingNavigationObserverManager::RecordNavigationEvent(
 }
 
 void SafeBrowsingNavigationObserverManager::RecordUserGestureForWebContents(
-    content::WebContents* web_contents,
-    const base::Time& timestamp) {
+    content::WebContents* web_contents) {
+  const base::Time timestamp = base::Time::Now();
   auto insertion_result =
       user_gesture_map_.insert(std::make_pair(web_contents, timestamp));
   // Update the timestamp if entry already exists.
@@ -318,13 +318,8 @@ void SafeBrowsingNavigationObserverManager::RecordUserGestureForWebContents(
 }
 
 void SafeBrowsingNavigationObserverManager::OnUserGestureConsumed(
-    content::WebContents* web_contents,
-    const base::Time& timestamp) {
-  auto it = user_gesture_map_.find(web_contents);
-  // Remove entry from |user_gesture_map_| as a user_gesture is consumed by
-  // a navigation event.
-  if (it != user_gesture_map_.end() && timestamp >= it->second)
-    user_gesture_map_.erase(it);
+    content::WebContents* web_contents) {
+  user_gesture_map_.erase(web_contents);
 }
 
 bool SafeBrowsingNavigationObserverManager::HasUserGesture(
@@ -334,6 +329,16 @@ bool SafeBrowsingNavigationObserverManager::HasUserGesture(
   if (user_gesture_map_.find(web_contents) != user_gesture_map_.end())
     return true;
   return false;
+}
+
+bool SafeBrowsingNavigationObserverManager::HasUnexpiredUserGesture(
+    content::WebContents* web_contents) {
+  if (!web_contents)
+    return false;
+  auto it = user_gesture_map_.find(web_contents);
+  if (it == user_gesture_map_.end())
+    return false;
+  return !IsUserGestureExpired(it->second);
 }
 
 void SafeBrowsingNavigationObserverManager::RecordHostToIpMapping(
@@ -493,18 +498,13 @@ void SafeBrowsingNavigationObserverManager::RecordNewWebContents(
 
   if (!renderer_initiated) {
     nav_event->navigation_initiation = ReferrerChainEntry::BROWSER_INITIATED;
+  } else if (HasUnexpiredUserGesture(source_web_contents)) {
+    OnUserGestureConsumed(source_web_contents);
+    nav_event->navigation_initiation =
+        ReferrerChainEntry::RENDERER_INITIATED_WITH_USER_GESTURE;
   } else {
-    auto it = user_gesture_map_.find(source_web_contents);
-    if (it == user_gesture_map_.end() ||
-        SafeBrowsingNavigationObserverManager::IsUserGestureExpired(
-            it->second)) {
-      nav_event->navigation_initiation =
-          ReferrerChainEntry::RENDERER_INITIATED_WITHOUT_USER_GESTURE;
-    } else {
-      OnUserGestureConsumed(it->first, it->second);
-      nav_event->navigation_initiation =
-          ReferrerChainEntry::RENDERER_INITIATED_WITH_USER_GESTURE;
-    }
+    nav_event->navigation_initiation =
+        ReferrerChainEntry::RENDERER_INITIATED_WITHOUT_USER_GESTURE;
   }
 
   navigation_event_list_.RecordNavigationEvent(std::move(nav_event));

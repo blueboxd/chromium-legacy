@@ -209,11 +209,6 @@ class CORE_EXPORT MatchResult {
   void Reset();
 
  private:
-  friend class ImportantUserRanges;
-  friend class ImportantUserRangeIterator;
-  friend class ImportantAuthorRanges;
-  friend class ImportantAuthorRangeIterator;
-
   MatchedPropertiesVector matched_properties_;
   Vector<unsigned, 16> user_range_ends_;
   Vector<unsigned, 16> author_range_ends_;
@@ -222,112 +217,6 @@ class CORE_EXPORT MatchResult {
   CascadeOrigin current_origin_ = CascadeOrigin::kUserAgent;
   uint16_t current_tree_order_ = 0;
   DISALLOW_COPY_AND_ASSIGN(MatchResult);
-};
-
-class ImportantUserRangeIterator {
-  STACK_ALLOCATED();
-
- public:
-  ImportantUserRangeIterator(const MatchResult& result, int end_index)
-      : result_(result), end_index_(end_index) {}
-
-  MatchedPropertiesRange operator*() const {
-    unsigned range_end = result_.user_range_ends_[end_index_];
-    unsigned range_begin = end_index_
-                               ? result_.user_range_ends_[end_index_ - 1]
-                               : result_.ua_range_end_;
-    return MatchedPropertiesRange(
-        result_.GetMatchedProperties().begin() + range_begin,
-        result_.GetMatchedProperties().begin() + range_end);
-  }
-
-  ImportantUserRangeIterator& operator++() {
-    --end_index_;
-    return *this;
-  }
-
-  bool operator==(const ImportantUserRangeIterator& other) const {
-    return end_index_ == other.end_index_ && &result_ == &other.result_;
-  }
-  bool operator!=(const ImportantUserRangeIterator& other) const {
-    return !(*this == other);
-  }
-
- private:
-  const MatchResult& result_;
-  unsigned end_index_;
-};
-
-class ImportantUserRanges {
-  STACK_ALLOCATED();
-
- public:
-  explicit ImportantUserRanges(const MatchResult& result) : result_(result) {}
-
-  ImportantUserRangeIterator begin() const {
-    return ImportantUserRangeIterator(result_,
-                                        result_.user_range_ends_.size() - 1);
-  }
-  ImportantUserRangeIterator end() const {
-    return ImportantUserRangeIterator(result_, -1);
-  }
-
- private:
-  const MatchResult& result_;
-};
-
-class ImportantAuthorRangeIterator {
-  STACK_ALLOCATED();
-
- public:
-  ImportantAuthorRangeIterator(const MatchResult& result, int end_index)
-      : result_(result), end_index_(end_index) {}
-
-  MatchedPropertiesRange operator*() const {
-    unsigned range_end = result_.author_range_ends_[end_index_];
-    unsigned range_begin = end_index_
-                               ? result_.author_range_ends_[end_index_ - 1]
-                               : (result_.user_range_ends_.IsEmpty()
-                                      ? result_.ua_range_end_
-                                      : result_.user_range_ends_.back());
-    return MatchedPropertiesRange(
-        result_.GetMatchedProperties().begin() + range_begin,
-        result_.GetMatchedProperties().begin() + range_end);
-  }
-
-  ImportantAuthorRangeIterator& operator++() {
-    --end_index_;
-    return *this;
-  }
-
-  bool operator==(const ImportantAuthorRangeIterator& other) const {
-    return end_index_ == other.end_index_ && &result_ == &other.result_;
-  }
-  bool operator!=(const ImportantAuthorRangeIterator& other) const {
-    return !(*this == other);
-  }
-
- private:
-  const MatchResult& result_;
-  unsigned end_index_;
-};
-
-class ImportantAuthorRanges {
-  STACK_ALLOCATED();
-
- public:
-  explicit ImportantAuthorRanges(const MatchResult& result) : result_(result) {}
-
-  ImportantAuthorRangeIterator begin() const {
-    return ImportantAuthorRangeIterator(result_,
-                                        result_.author_range_ends_.size() - 1);
-  }
-  ImportantAuthorRangeIterator end() const {
-    return ImportantAuthorRangeIterator(result_, -1);
-  }
-
- private:
-  const MatchResult& result_;
 };
 
 inline bool operator==(const MatchedProperties& a, const MatchedProperties& b) {

@@ -4,12 +4,18 @@
 
 import {ColorModeRestriction, Destination, DestinationConnectionStatus, DestinationOrigin, DestinationStore, DestinationType, DuplexModeRestriction, InvitationStore, NativeLayer, NativeLayerImpl} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
-import {createDestinationStore, getCddTemplate, setupTestListenerElement} from 'chrome://test/print_preview/print_preview_test_utils.js';
-import {eventToPromise} from 'chrome://test/test_util.m.js';
+
+import {assertEquals, assertNotEquals} from '../chai_assert.js';
+import {eventToPromise} from '../test_util.m.js';
+
+import {NativeLayerStub} from './native_layer_stub.js';
+import {createDestinationStore, getCddTemplate, setupTestListenerElement} from './print_preview_test_utils.js';
 
 window.destination_search_test_chromeos = {};
+const destination_search_test_chromeos =
+    window.destination_search_test_chromeos;
 destination_search_test_chromeos.suiteName = 'DestinationSearchTest';
 /** @enum {string} */
 destination_search_test_chromeos.TestNames = {
@@ -21,14 +27,14 @@ destination_search_test_chromeos.TestNames = {
 };
 
 suite(destination_search_test_chromeos.suiteName, function() {
-  /** @type {?PrintPreviewDestinationDialogElement} */
-  let dialog = null;
+  /** @type {PrintPreviewDestinationDialogElement} */
+  let dialog;
 
-  /** @type {?DestinationStore} */
-  let destinationStore = null;
+  /** @type {DestinationStore} */
+  let destinationStore;
 
-  /** @type {?NativeLayer} */
-  let nativeLayer = null;
+  /** @type {NativeLayerStub} */
+  let nativeLayer;
 
   /** @override */
   suiteSetup(function() {
@@ -49,7 +55,8 @@ suite(destination_search_test_chromeos.suiteName, function() {
         [] /* recentDestinations */);
 
     // Set up dialog
-    dialog = document.createElement('print-preview-destination-dialog');
+    dialog = /** @type {!PrintPreviewDestinationDialogElement} */ (
+        document.createElement('print-preview-destination-dialog'));
     dialog.users = [];
     dialog.activeUser = '';
     dialog.destinationStore = destinationStore;
@@ -88,7 +95,6 @@ suite(destination_search_test_chromeos.suiteName, function() {
         DestinationConnectionStatus.ONLINE);
 
     // Add the destination to the list.
-    dialog.updateDestinations_([dest]);
     simulateDestinationSelect(dest);
   }
 
@@ -106,7 +112,8 @@ suite(destination_search_test_chromeos.suiteName, function() {
         nativeLayer.setSetupPrinterResponse(response);
 
         const waiter = eventToPromise(
-            DestinationStore.EventType.DESTINATION_SELECT, destinationStore);
+            DestinationStore.EventType.DESTINATION_SELECT,
+            /** @type {!EventTarget} */ (destinationStore));
         requestSetup(destId);
         return Promise.all([nativeLayer.whenCalled('setupPrinter'), waiter])
             .then(function(results) {
@@ -126,7 +133,12 @@ suite(destination_search_test_chromeos.suiteName, function() {
         const destId = '001122DEADBEEF';
         const originalDestination = destinationStore.selectedDestination;
         nativeLayer.setSetupPrinterResponse(
-            {printerId: destId, success: false}, true);
+            {
+              printerId: destId,
+              success: false,
+              capabilities: {printer: {}, version: '1'}
+            },
+            true);
         requestSetup(destId);
         return nativeLayer.whenCalled('setupPrinter').then(function(actualId) {
           assertEquals(destId, actualId);
@@ -175,7 +187,6 @@ suite(destination_search_test_chromeos.suiteName, function() {
             getCddTemplate(printerId, 'displayName').capabilities;
 
         // Place destination in the local list as happens for Kiosk printers.
-        dialog.updateDestinations_([cloudDest]);
         simulateDestinationSelect(cloudDest);
 
         // Verify that the destination has been selected.
@@ -195,6 +206,10 @@ suite(destination_search_test_chromeos.suiteName, function() {
           policies: {
             allowedColorModes: ColorModeRestriction.MONOCHROME,
             allowedDuplexModes: DuplexModeRestriction.DUPLEX,
+            allowedPinMode: null,
+            defaultColorMode: null,
+            defaultDuplexMode: null,
+            defaultPinMode: null,
           },
           success: true,
         };

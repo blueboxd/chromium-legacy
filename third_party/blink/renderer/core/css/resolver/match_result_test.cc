@@ -66,11 +66,6 @@ TEST_F(MatchResultTest, UARules) {
   TestMatchedPropertiesRange(result.UaRules(), 2, ua_sets);
   TestMatchedPropertiesRange(result.UserRules(), 0, nullptr);
   TestMatchedPropertiesRange(result.AuthorRules(), 0, nullptr);
-
-  ImportantAuthorRanges importantAuthor(result);
-  EXPECT_EQ(importantAuthor.end(), importantAuthor.begin());
-  ImportantUserRanges importantUser(result);
-  EXPECT_EQ(importantUser.end(), importantUser.begin());
 }
 
 TEST_F(MatchResultTest, UserRules) {
@@ -88,11 +83,6 @@ TEST_F(MatchResultTest, UserRules) {
   TestMatchedPropertiesRange(result.UaRules(), 0, nullptr);
   TestMatchedPropertiesRange(result.UserRules(), 2, user_sets);
   TestMatchedPropertiesRange(result.AuthorRules(), 0, nullptr);
-
-  ImportantAuthorRanges importantAuthor(result);
-  EXPECT_EQ(importantAuthor.end(), importantAuthor.begin());
-  ImportantUserRanges importantUser(result);
-  EXPECT_EQ(importantUser.end(), ++importantUser.begin());
 }
 
 TEST_F(MatchResultTest, AuthorRules) {
@@ -110,11 +100,6 @@ TEST_F(MatchResultTest, AuthorRules) {
   TestMatchedPropertiesRange(result.UaRules(), 0, nullptr);
   TestMatchedPropertiesRange(result.UserRules(), 0, nullptr);
   TestMatchedPropertiesRange(result.AuthorRules(), 2, author_sets);
-
-  ImportantAuthorRanges importantAuthor(result);
-  EXPECT_EQ(importantAuthor.end(), ++importantAuthor.begin());
-  ImportantUserRanges importantUser(result);
-  EXPECT_EQ(importantUser.end(), importantUser.begin());
 }
 
 TEST_F(MatchResultTest, AllRules) {
@@ -143,11 +128,6 @@ TEST_F(MatchResultTest, AllRules) {
   TestMatchedPropertiesRange(result.UaRules(), 2, ua_sets);
   TestMatchedPropertiesRange(result.UserRules(), 2, user_sets);
   TestMatchedPropertiesRange(result.AuthorRules(), 2, author_sets);
-
-  ImportantAuthorRanges importantAuthor(result);
-  EXPECT_EQ(importantAuthor.end(), ++importantAuthor.begin());
-  ImportantUserRanges importantUser(result);
-  EXPECT_EQ(importantUser.end(), ++importantUser.begin());
 }
 
 TEST_F(MatchResultTest, AuthorRulesMultipleScopes) {
@@ -171,22 +151,6 @@ TEST_F(MatchResultTest, AuthorRulesMultipleScopes) {
   TestMatchedPropertiesRange(result.UaRules(), 0, nullptr);
   TestMatchedPropertiesRange(result.UserRules(), 0, nullptr);
   TestMatchedPropertiesRange(result.AuthorRules(), 4, author_sets);
-
-  ImportantAuthorRanges importantAuthor(result);
-
-  auto iter = importantAuthor.begin();
-  EXPECT_NE(importantAuthor.end(), iter);
-  TestMatchedPropertiesRange(*iter, 2, &author_sets[2]);
-
-  ++iter;
-  EXPECT_NE(importantAuthor.end(), iter);
-  TestMatchedPropertiesRange(*iter, 2, author_sets);
-
-  ++iter;
-  EXPECT_EQ(importantAuthor.end(), iter);
-
-  ImportantUserRanges importantUser(result);
-  EXPECT_EQ(importantUser.end(), importantUser.begin());
 }
 
 TEST_F(MatchResultTest, AllRulesMultipleScopes) {
@@ -219,22 +183,6 @@ TEST_F(MatchResultTest, AllRulesMultipleScopes) {
   TestMatchedPropertiesRange(result.UaRules(), 2, ua_sets);
   TestMatchedPropertiesRange(result.UserRules(), 2, user_sets);
   TestMatchedPropertiesRange(result.AuthorRules(), 4, author_sets);
-
-  ImportantAuthorRanges importantAuthor(result);
-
-  ImportantAuthorRangeIterator iter = importantAuthor.begin();
-  EXPECT_NE(importantAuthor.end(), iter);
-  TestMatchedPropertiesRange(*iter, 2, &author_sets[2]);
-
-  ++iter;
-  EXPECT_NE(importantAuthor.end(), iter);
-  TestMatchedPropertiesRange(*iter, 2, author_sets);
-
-  ++iter;
-  EXPECT_EQ(importantAuthor.end(), iter);
-
-  ImportantUserRanges importantUser(result);
-  EXPECT_EQ(importantUser.end(), ++importantUser.begin());
 }
 
 TEST_F(MatchResultTest, CascadeOriginUserAgent) {

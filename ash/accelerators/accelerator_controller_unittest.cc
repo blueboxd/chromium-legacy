@@ -1015,6 +1015,23 @@ TEST_F(AcceleratorControllerTest, DontRepeatToggleFullscreen) {
   EXPECT_FALSE(window_state->IsFullscreen());
 }
 
+TEST_F(AcceleratorControllerTest, DontToggleFullscreenWhenOverviewStarts) {
+  std::unique_ptr<views::Widget> widget(CreateTestWidget(
+      nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(400, 400)));
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  // Toggle overview and fullscreen immediately after.
+  generator->PressKey(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE);
+  generator->PressKey(ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_NONE);
+  EXPECT_FALSE(WindowState::Get(widget->GetNativeWindow())->IsFullscreen());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(Shell::Get()
+                  ->overview_controller()
+                  ->overview_session()
+                  ->IsWindowInOverview(widget->GetNativeWindow()));
+}
+
 // TODO(oshima): Fix this test to use EventGenerator.
 TEST_F(AcceleratorControllerTest, ProcessOnce) {
   // The IME event filter interferes with the basic key event propagation we

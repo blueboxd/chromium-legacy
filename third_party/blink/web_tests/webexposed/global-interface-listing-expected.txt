@@ -8216,12 +8216,14 @@ interface StorageEvent : Event
     getter url
     method constructor
     method initStorageEvent
-interface StorageManager
+interface StorageManager : EventTarget
     attribute @@toStringTag
+    getter onquotachange
     method constructor
     method estimate
     method persist
     method persisted
+    setter onquotachange
 interface StylePropertyMap : StylePropertyMapReadOnly
     attribute @@toStringTag
     method append

@@ -509,6 +509,11 @@ class RenderWidgetHostTest : public testing::Test {
     widget_.ClearVisualProperties();
   }
 
+  void ClearScreenRects() {
+    base::RunLoop().RunUntilIdle();
+    widget_.ClearScreenRects();
+  }
+
  protected:
   // testing::Test
   void SetUp() override {
@@ -596,12 +601,9 @@ class RenderWidgetHostTest : public testing::Test {
 
   void ReinitalizeHost() {
     mojo::AssociatedRemote<blink::mojom::WidgetHost> widget_host;
-    mojo::AssociatedRemote<blink::mojom::Widget> widget;
-    auto widget_receiver =
-        widget.BindNewEndpointAndPassDedicatedReceiverForTesting();
     host_->BindWidgetInterfaces(
         widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting(),
-        widget.Unbind());
+        widget_.GetNewRemote());
 
     mojo::AssociatedRemote<blink::mojom::FrameWidgetHost> frame_widget_host;
     mojo::AssociatedRemote<blink::mojom::FrameWidget> frame_widget;
@@ -1093,11 +1095,7 @@ TEST_F(RenderWidgetHostTest, RootWindowSegments) {
       /* mask_length */ kDisplayFeatureLength};
   view_->SetDisplayFeatureForTesting(emulated_display_feature);
 
-  // Flush initial state (Init ends up leaving a pending UpdateScreenRects ACK -
-  // we need this cleared so that the below call to SendScreenRects updates
-  // RenderWidgetHostImpl members).
-  host_->OnMessageReceived(
-      WidgetHostMsg_UpdateScreenRects_ACK(host_->GetRoutingID()));
+  ClearScreenRects();
 
   view_->SetBounds(screen_rect);
   host_->SendScreenRects();
@@ -1883,21 +1881,14 @@ TEST_F(RenderWidgetHostTest, DestroyingRenderWidgetResetsInputRouter) {
 }
 
 TEST_F(RenderWidgetHostTest, RendererExitedResetsScreenRectsAck) {
-  auto count_screen_rect_messages = [&]() {
-    int count = 0;
-    for (uint32_t i = 0; i < sink_->message_count(); ++i) {
-      if (sink_->GetMessageAt(i)->type() == WidgetMsg_UpdateScreenRects::ID)
-        ++count;
-    }
-    return count;
-  };
-
   // Screen rects are sent during initialization, but we are waiting for an ack.
-  EXPECT_EQ(1, count_screen_rect_messages());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, widget_.ReceivedScreenRects().size());
   // Waiting for the ack prevents further sending.
   host_->SendScreenRects();
   host_->SendScreenRects();
-  EXPECT_EQ(1, count_screen_rect_messages());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, widget_.ReceivedScreenRects().size());
 
   // RendererExited will delete the view.
   host_->SetView(new TestView(host_.get()));
@@ -1905,7 +1896,8 @@ TEST_F(RenderWidgetHostTest, RendererExitedResetsScreenRectsAck) {
 
   // Still can't send until the RenderWidget is replaced.
   host_->SendScreenRects();
-  EXPECT_EQ(1, count_screen_rect_messages());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, widget_.ReceivedScreenRects().size());
 
   // The renderer is recreated.
   host_->SetView(view_.get());
@@ -1918,25 +1910,19 @@ TEST_F(RenderWidgetHostTest, RendererExitedResetsScreenRectsAck) {
   // The RenderWidget is shown when navigation completes. This sends screen
   // rects again. The IPC is sent as it's not waiting for an ack.
   host_->WasShown(base::nullopt);
-  EXPECT_EQ(2, count_screen_rect_messages());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2u, widget_.ReceivedScreenRects().size());
 }
 
 TEST_F(RenderWidgetHostTest, DestroyingRenderWidgetResetsScreenRectsAck) {
-  auto count_screen_rect_messages = [&]() {
-    int count = 0;
-    for (uint32_t i = 0; i < sink_->message_count(); ++i) {
-      if (sink_->GetMessageAt(i)->type() == WidgetMsg_UpdateScreenRects::ID)
-        ++count;
-    }
-    return count;
-  };
-
   // Screen rects are sent during initialization, but we are waiting for an ack.
-  EXPECT_EQ(1, count_screen_rect_messages());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, widget_.ReceivedScreenRects().size());
   // Waiting for the ack prevents further sending.
   host_->SendScreenRects();
   host_->SendScreenRects();
-  EXPECT_EQ(1, count_screen_rect_messages());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, widget_.ReceivedScreenRects().size());
 
   // The RenderWidget has been destroyed in the renderer.
   EXPECT_CALL(mock_owner_delegate_, IsMainFrameActive())
@@ -1944,7 +1930,8 @@ TEST_F(RenderWidgetHostTest, DestroyingRenderWidgetResetsScreenRectsAck) {
 
   // Still can't send until the RenderWidget is replaced.
   host_->SendScreenRects();
-  EXPECT_EQ(1, count_screen_rect_messages());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, widget_.ReceivedScreenRects().size());
 
   // Make a new RenderWidget when the renderer is recreated and inform that a
   // RenderWidget is being created.
@@ -1956,7 +1943,8 @@ TEST_F(RenderWidgetHostTest, DestroyingRenderWidgetResetsScreenRectsAck) {
   // We are able to send screen rects again. The IPC is sent as it's not waiting
   // for an ack.
   host_->SendScreenRects();
-  EXPECT_EQ(2, count_screen_rect_messages());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2u, widget_.ReceivedScreenRects().size());
 }
 
 // Regression test for http://crbug.com/401859 and http://crbug.com/522795.

@@ -48,19 +48,17 @@ void GlobalMediaControlsPromoController::ShowPromo() {
   DCHECK(owner_->GetEnabled());
 
   // Here, we open the promo bubble.
-  std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout;
+  // TODO(https://crbug.com/991585): Supply a screenreader string too.
+  FeaturePromoBubbleView::CreateParams bubble_params;
+  bubble_params.body_string_specifier = IDS_GLOBAL_MEDIA_CONTROLS_PROMO;
+  bubble_params.anchor_view = owner_;
+  bubble_params.arrow = views::BubbleBorder::Arrow::TOP_RIGHT;
   if (!disable_bubble_timeout_for_test_) {
-    feature_promo_bubble_timeout = std::make_unique<FeaturePromoBubbleTimeout>(
+    bubble_params.timeout = std::make_unique<FeaturePromoBubbleTimeout>(
         kPromoHideDelay, base::TimeDelta());
   }
 
-  // TODO(https://crbug.com/991585): Supply a screenreader string too.
-  int string_specifier = IDS_GLOBAL_MEDIA_CONTROLS_PROMO;
-  promo_bubble_ = FeaturePromoBubbleView::CreateOwned(
-      owner_, views::BubbleBorder::Arrow::TOP_RIGHT,
-      FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE, base::nullopt,
-      string_specifier, base::nullopt, base::nullopt, base::nullopt,
-      std::move(feature_promo_bubble_timeout));
+  promo_bubble_ = FeaturePromoBubbleView::Create(std::move(bubble_params));
   promo_bubble_->set_close_on_deactivate(false);
   observer_.Add(promo_bubble_->GetWidget());
 }

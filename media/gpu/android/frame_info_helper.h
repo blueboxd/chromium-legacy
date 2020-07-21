@@ -6,12 +6,11 @@
 #define MEDIA_GPU_ANDROID_FRAME_INFO_HELPER_H_
 
 #include "base/optional.h"
-#include "base/threading/sequence_bound.h"
-#include "media/gpu/android/codec_image.h"
 #include "media/gpu/android/shared_image_video_provider.h"
 #include "media/gpu/media_gpu_export.h"
 
 namespace media {
+class CodecOutputBufferRenderer;
 
 // Helper class to fetch YCbCrInfo for Vulkan from a CodecImage.
 class MEDIA_GPU_EXPORT FrameInfoHelper {
@@ -29,11 +28,13 @@ class MEDIA_GPU_EXPORT FrameInfoHelper {
     base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info;
   };
 
-  static base::SequenceBound<FrameInfoHelper> Create(
+  using FrameInfoReadyCB =
+      base::OnceCallback<void(std::unique_ptr<CodecOutputBufferRenderer>,
+                              FrameInfo)>;
+
+  static std::unique_ptr<FrameInfoHelper> Create(
       scoped_refptr<base::SequencedTaskRunner> gpu_task_runner,
       SharedImageVideoProvider::GetStubCB get_stub_cb);
-
-  static std::unique_ptr<FrameInfoHelper> CreateForTesting();
 
   virtual ~FrameInfoHelper() = default;
 
@@ -42,9 +43,11 @@ class MEDIA_GPU_EXPORT FrameInfoHelper {
   // attempt to get YCbCrInfo and cache it.  If all necessary info is cached the
   // call will leave buffer_renderer intact and it can be rendered later.
   // Rendering can fail for reasons. This function will make best efforts to
-  // fill FrameInfo which can be used to create VideoFrame, but shouldn't be
-  // cached by caller. Last parameter in |cb| is bool that indicates that info
-  // is reliable.
+  // fill FrameInfo which can be used to create VideoFrame.
+  //
+  // Callbacks will be executed and on callers sequence and guaranteed to be
+  // called in order of GetFrameInfo calls. Callback can be called before this
+  // function returns if all necessary info is available right away.
   //
   // While this API might seem to be out of its Vulkan mind, it's this
   // complicated to (a) prevent rendering frames out of order to the front
@@ -52,9 +55,7 @@ class MEDIA_GPU_EXPORT FrameInfoHelper {
   // can't get a YCbCrInfo from a CodecImage due to timeouts.
   virtual void GetFrameInfo(
       std::unique_ptr<CodecOutputBufferRenderer> buffer_renderer,
-      base::OnceCallback<void(std::unique_ptr<CodecOutputBufferRenderer>,
-                              FrameInfo,
-                              bool)> cb) = 0;
+      FrameInfoReadyCB callback) = 0;
 
  protected:
   FrameInfoHelper() = default;

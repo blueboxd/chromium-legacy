@@ -328,6 +328,7 @@ void ArcAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
 
   const ArcAppIconDescriptor descriptor(resource_size_in_dip_, scale_factor);
   std::vector<base::FilePath> paths;
+  std::vector<base::FilePath> default_app_paths;
   switch (icon_type_) {
     case IconType::kUncompressed: {
       // Deliberately fall through to IconType::kCompressed to add |path| to
@@ -339,6 +340,8 @@ void ArcAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
       if (path.empty())
         return;
       paths.emplace_back(path);
+      default_app_paths.emplace_back(
+          prefs->MaybeGetIconPathForDefaultApp(mapped_app_id_, descriptor));
       break;
     }
     case IconType::kAdaptive: {
@@ -350,15 +353,21 @@ void ArcAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
         return;
       paths.emplace_back(foreground_path);
       paths.emplace_back(background_path);
+
+      default_app_paths.emplace_back(
+          prefs->MaybeGetForegroundIconPathForDefaultApp(mapped_app_id_,
+                                                         descriptor));
+      default_app_paths.emplace_back(
+          prefs->MaybeGetBackgroundIconPathForDefaultApp(mapped_app_id_,
+                                                         descriptor));
       break;
     }
   }
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(
-          &ArcAppIcon::ReadOnBackgroundThread, icon_type_, scale_factor, paths,
-          prefs->MaybeGetIconPathForDefaultApp(mapped_app_id_, descriptor)),
+      base::BindOnce(&ArcAppIcon::ReadOnBackgroundThread, icon_type_,
+                     scale_factor, paths, default_app_paths),
       base::BindOnce(&ArcAppIcon::OnIconRead, weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -381,7 +390,7 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadOnBackgroundThread(
     ArcAppIcon::IconType icon_type,
     ui::ScaleFactor scale_factor,
     const std::vector<base::FilePath>& paths,
-    const base::FilePath& default_app_path) {
+    const std::vector<base::FilePath>& default_app_paths) {
   DCHECK(!paths.empty());
 
   switch (icon_type) {
@@ -391,10 +400,10 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadOnBackgroundThread(
     case IconType::kCompressed:
       DCHECK_EQ(1u, paths.size());
       return ArcAppIcon::ReadSingleIconFile(scale_factor, paths[0],
-                                            default_app_path);
+                                            default_app_paths[0]);
     case IconType::kAdaptive:
       return ArcAppIcon::ReadAdaptiveIconFiles(scale_factor, paths,
-                                               default_app_path);
+                                               default_app_paths);
   }
 }
 
@@ -431,53 +440,34 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadSingleIconFile(
 std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadAdaptiveIconFiles(
     ui::ScaleFactor scale_factor,
     const std::vector<base::FilePath>& paths,
-    const base::FilePath& default_app_path) {
+    const std::vector<base::FilePath>& default_app_paths) {
   DCHECK_EQ(2u, paths.size());
 
   const base::FilePath& foreground_path = paths[0];
   const base::FilePath& background_path = paths[1];
   if (!base::PathExists(foreground_path) ||
       !base::PathExists(background_path)) {
-    if (default_app_path.empty() || !base::PathExists(default_app_path)) {
+    DCHECK_EQ(2u, default_app_paths.size());
+    const base::FilePath& default_app_foreground_path = default_app_paths[0];
+    const base::FilePath& default_app_background_path = default_app_paths[1];
+    if (default_app_foreground_path.empty() ||
+        !base::PathExists(default_app_foreground_path) ||
+        default_app_background_path.empty() ||
+        !base::PathExists(default_app_background_path)) {
       return std::make_unique<ArcAppIcon::ReadResult>(
           false /* error */, true /* request_to_install */, scale_factor,
           false /* resize_allowed */,
           std::vector<std::string>() /* unsafe_icon_data */);
     }
-    return ArcAppIcon::ReadFile(true /* request_to_install */, scale_factor,
-                                true /* resize_allowed */, default_app_path);
+
+    return ArcAppIcon::ReadFiles(
+        true /* request_to_install */, scale_factor, true /* resize_allowed */,
+        default_app_foreground_path, default_app_background_path);
   }
 
-  // Read the file from disk.
-  std::string unsafe_foreground_icon_data;
-  std::string unsafe_background_icon_data;
-  if (!base::ReadFileToString(foreground_path, &unsafe_foreground_icon_data) ||
-      unsafe_foreground_icon_data.empty()) {
-    VLOG(2) << "Failed to read an ARC icon from file "
-            << foreground_path.MaybeAsASCII();
-
-    return std::make_unique<ArcAppIcon::ReadResult>(
-        true /* error */, true /* request_to_install */, scale_factor,
-        false /* resize_allowed */,
-        std::vector<std::string>() /* unsafe_icon_data */);
-  }
-
-  if (!base::ReadFileToString(background_path, &unsafe_background_icon_data) ||
-      unsafe_background_icon_data.empty()) {
-    VLOG(2) << "Failed to read an ARC icon from file "
-            << background_path.MaybeAsASCII();
-
-    return std::make_unique<ArcAppIcon::ReadResult>(
-        true /* error */, true /* request_to_install */, scale_factor,
-        false /* resize_allowed */,
-        std::vector<std::string>() /* unsafe_icon_data */);
-  }
-
-  return std::make_unique<ArcAppIcon::ReadResult>(
-      false /* error */, false /* request_to_install */, scale_factor,
-      false /* resize_allowed */,
-      std::vector<std::string>{std::move(unsafe_foreground_icon_data),
-                               std::move(unsafe_background_icon_data)});
+  return ArcAppIcon::ReadFiles(false /* request_to_install */, scale_factor,
+                               false /* resize_allowed */, foreground_path,
+                               background_path);
 }
 
 // static
@@ -507,6 +497,50 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadFile(
   return std::make_unique<ArcAppIcon::ReadResult>(
       false /* error */, request_to_install, scale_factor, resize_allowed,
       std::vector<std::string>{std::move(unsafe_icon_data)});
+}
+
+// static
+std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadFiles(
+    bool request_to_install,
+    ui::ScaleFactor scale_factor,
+    bool resize_allowed,
+    const base::FilePath& foreground_path,
+    const base::FilePath& background_path) {
+  // Read the file from disk.
+  std::string unsafe_foreground_icon_data;
+  std::string unsafe_background_icon_data;
+  if (!base::ReadFileToString(foreground_path, &unsafe_foreground_icon_data) ||
+      unsafe_foreground_icon_data.empty()) {
+    VLOG(2) << "Failed to read an ARC icon from file "
+            << foreground_path.MaybeAsASCII();
+
+    // If |unsafe_icon_data| is empty typically means we have a file corruption
+    // on cached icon file. Send request to re install the icon.
+    request_to_install |= unsafe_foreground_icon_data.empty();
+    return std::make_unique<ArcAppIcon::ReadResult>(
+        true /* error */, true /* request_to_install */, scale_factor,
+        false /* resize_allowed */,
+        std::vector<std::string>() /* unsafe_icon_data */);
+  }
+
+  if (!base::ReadFileToString(background_path, &unsafe_background_icon_data) ||
+      unsafe_background_icon_data.empty()) {
+    VLOG(2) << "Failed to read an ARC icon from file "
+            << background_path.MaybeAsASCII();
+
+    // If |unsafe_icon_data| is empty typically means we have a file corruption
+    // on cached icon file. Send request to re install the icon.
+    request_to_install |= unsafe_background_icon_data.empty();
+    return std::make_unique<ArcAppIcon::ReadResult>(
+        true /* error */, true /* request_to_install */, scale_factor,
+        false /* resize_allowed */,
+        std::vector<std::string>() /* unsafe_icon_data */);
+  }
+
+  return std::make_unique<ArcAppIcon::ReadResult>(
+      false /* error */, request_to_install, scale_factor, resize_allowed,
+      std::vector<std::string>{std::move(unsafe_foreground_icon_data),
+                               std::move(unsafe_background_icon_data)});
 }
 
 void ArcAppIcon::OnIconRead(

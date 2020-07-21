@@ -20,16 +20,17 @@ class FeaturePromoDialogTest : public DialogBrowserTest {
     auto* app_menu_button = BrowserView::GetBrowserViewForBrowser(browser())
                                 ->toolbar_button_provider()
                                 ->GetAppMenuButton();
-    // We use one of the strings for the new tab feature promo since there is
-    // currently no infrastructure for test-only string resources.
+    // We use an arbitrary string because there are no test-only
+    // strings.
     int placeholder_string = IDS_REOPEN_TAB_PROMO;
-    FeaturePromoBubbleView::CreateOwned(
-        app_menu_button, views::BubbleBorder::TOP_RIGHT,
-        FeaturePromoBubbleView::ActivationAction::ACTIVATE,
-        /*title_string_specifier=*/base::nullopt, placeholder_string);
+    FeaturePromoBubbleView::CreateParams bubble_params;
+    bubble_params.body_string_specifier = placeholder_string;
+    bubble_params.anchor_view = app_menu_button;
+    bubble_params.arrow = views::BubbleBorder::TOP_RIGHT;
+    FeaturePromoBubbleView::Create(std::move(bubble_params));
   }
 };
 
-IN_PROC_BROWSER_TEST_F(FeaturePromoDialogTest, InvokeUi_FeaturePromo) {
+IN_PROC_BROWSER_TEST_F(FeaturePromoDialogTest, InvokeUi_default) {
   ShowAndVerifyUi();
 }

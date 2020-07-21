@@ -37,7 +37,6 @@ class WebSharedWorker;
 }  // namespace blink
 
 namespace blink {
-class MessagePortChannel;
 class MessagePortDescriptor;
 class PendingURLLoaderFactoryBundle;
 }  // namespace blink
@@ -83,33 +82,18 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   ~EmbeddedSharedWorkerStub() override;
 
   // blink::WebSharedWorkerClient implementation.
-  void CountFeature(blink::mojom::WebFeature feature) override;
-  void WorkerContextClosed() override;
   void WorkerContextDestroyed() override;
-  void WorkerReadyForInspection(
-      blink::CrossVariantMojoRemote<blink::mojom::DevToolsAgentInterfaceBase>
-          devtools_agent_remote,
-      blink::CrossVariantMojoReceiver<
-          blink::mojom::DevToolsAgentHostInterfaceBase>
-          devtools_agent_host_receiver) override;
-  void WorkerScriptLoadFailed(const std::string& error_message) override;
-  void WorkerScriptEvaluated(bool success) override;
   scoped_refptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext()
       override;
 
  private:
-  // WebSharedWorker will own |channel|.
-  void ConnectToChannel(int connection_request_id,
-                        blink::MessagePortChannel channel);
-
   // mojom::SharedWorker methods:
+  // TODO(nhiroki): Move these implementation into blink::WebSharedWorkerImpl.
   void Connect(int connection_request_id,
                blink::MessagePortDescriptor port) override;
   void Terminate() override;
 
   mojo::Receiver<blink::mojom::SharedWorker> receiver_;
-  mojo::Remote<blink::mojom::SharedWorkerHost> host_;
-  bool running_ = false;
   GURL url_;
   blink::mojom::RendererPreferences renderer_preferences_;
   // Set on ctor and passed to the fetch context created when
@@ -119,10 +103,6 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   std::unique_ptr<blink::WebSharedWorker> impl_;
 
   std::vector<std::string> cors_exempt_header_list_;
-
-  using PendingChannel =
-      std::pair<int /* connection_request_id */, blink::MessagePortChannel>;
-  std::vector<PendingChannel> pending_channels_;
 
   scoped_refptr<ServiceWorkerProviderContext> service_worker_provider_context_;
 

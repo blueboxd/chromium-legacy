@@ -41,6 +41,7 @@
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_activity_indicator_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_disclosure_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
@@ -82,6 +83,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeRecentlyClosedHeader = kItemTypeEnumZero,
   ItemTypeRecentlyClosed,
+  ItemTypeRecentlyClosedEmpty,
   ItemTypeOtherDevicesHeader,
   ItemTypeOtherDevicesSyncOff,
   ItemTypeOtherDevicesNoSessions,
@@ -295,6 +297,18 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     recentlyClosedTab.title = base::SysUTF16ToNSString(navigationEntry.title());
     recentlyClosedTab.URL = navigationEntry.virtual_url();
     [self.tableViewModel addItem:recentlyClosedTab
+         toSectionWithIdentifier:SectionIdentifierRecentlyClosedTabs];
+  }
+  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates) &&
+      self.tabRestoreService->entries().empty()) {
+    TableViewDetailTextItem* textItem = [[TableViewDetailTextItem alloc]
+        initWithType:ItemTypeRecentlyClosedEmpty];
+    textItem.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_RECENT_TABS_RECENTLY_CLOSED_EMPTY);
+    textItem.detailText =
+        l10n_util::GetNSString(IDS_IOS_RECENT_TABS_RECENTLY_CLOSED_EMPTY);
+    textItem.detailTextColor = [UIColor colorNamed:kTextSecondaryColor];
+    [self.tableViewModel addItem:textItem
          toSectionWithIdentifier:SectionIdentifierRecentlyClosedTabs];
   }
 }
@@ -674,6 +688,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
         [self.presentationDelegate showHistoryFromRecentTabs];
       }
       break;
+    case ItemTypeRecentlyClosedEmpty:
     case ItemTypeOtherDevicesSyncOff:
     case ItemTypeOtherDevicesNoSessions:
     case ItemTypeOtherDevicesSigninPromo:
@@ -727,6 +742,17 @@ const int kRecentlyClosedTabsSectionIndex = 0;
                                        action:@selector(updateSyncState)
                              forControlEvents:UIControlEventTouchUpInside];
   }
+  // Setup the cell for multiline and hide the separator.
+  if (itemTypeSelected == ItemTypeRecentlyClosedEmpty) {
+    // This cell should only exist when illustrated-empty-states is enabled.
+    DCHECK(base::FeatureList::IsEnabled(kIllustratedEmptyStates));
+    TableViewDetailTextCell* textCell =
+        base::mac::ObjCCastStrict<TableViewDetailTextCell>(cell);
+    textCell.detailTextLabel.numberOfLines = 0;
+    textCell.selectionStyle = UITableViewCellSelectionStyleNone;
+    textCell.separatorInset =
+        UIEdgeInsetsMake(0, tableView.bounds.size.width, 0, 0);
+  }
 
   return cell;
 }
@@ -770,6 +796,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     }
 
     case ItemTypeRecentlyClosedHeader:
+    case ItemTypeRecentlyClosedEmpty:
     case ItemTypeOtherDevicesHeader:
     case ItemTypeOtherDevicesSyncOff:
     case ItemTypeOtherDevicesNoSessions:

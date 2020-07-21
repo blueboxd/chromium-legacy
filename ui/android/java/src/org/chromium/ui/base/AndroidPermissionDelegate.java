@@ -10,6 +10,7 @@ package org.chromium.ui.base;
 public interface AndroidPermissionDelegate {
     /**
      * Determine whether access to a particular permission is granted.
+     *
      * @param permission The permission whose access is to be checked.
      * @return Whether access to the permission is granted.
      */
@@ -18,13 +19,14 @@ public interface AndroidPermissionDelegate {
     /**
      * Determine whether the specified permission can be requested.
      * <p>
-     * A permission can be requested in the following states:
-     * 1.) Default un-granted state, permission can be requested
-     * 2.) Permission previously requested but denied by the user, but the user did not select
-     *     "Never ask again".
+     * A permission can not be requested in the following states:
+     * <ul>
+     *   <li>Permission is denied by policy.
+     *   <li>Permission previously denied and the user selected "Never ask again".
+     * </ul>
      *
      * @param permission The permission name.
-     * @return Whether the requesting the permission is allowed.
+     * @return Whether the permission can be requested.
      */
     boolean canRequestPermission(String permission);
 

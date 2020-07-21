@@ -89,10 +89,6 @@ class InstallFinalizer {
   virtual bool WasExternalAppUninstalledByUser(const AppId& app_id) const = 0;
 
   // |virtual| for testing.
-  virtual bool CanAddAppToQuickLaunchBar() const;
-  virtual void AddAppToQuickLaunchBar(const AppId& app_id);
-
-  // |virtual| for testing.
   virtual bool CanReparentTab(const AppId& app_id, bool shortcut_created) const;
   virtual void ReparentTab(const AppId& app_id,
                            bool shortcut_created,

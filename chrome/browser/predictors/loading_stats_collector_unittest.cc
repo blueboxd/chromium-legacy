@@ -308,7 +308,7 @@ TEST_F(LoadingStatsCollectorTest,
       entry,
       ukm::builders::LoadingPredictor::
           kOptimizationGuidePredictionCorrectlyPredictedOriginsName,
-      2);
+      1);
   ukm_recorder_->ExpectEntryMetric(
       entry,
       ukm::builders::LoadingPredictor::

@@ -8,8 +8,8 @@
 
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/shell.h"
-#include "ash/shell/toplevel_window.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/toplevel_window.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_state.h"

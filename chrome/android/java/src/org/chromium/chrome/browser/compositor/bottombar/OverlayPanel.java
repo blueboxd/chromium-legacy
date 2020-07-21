@@ -951,10 +951,4 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
 
     @Override
     public void tabStateInitialized() {}
-
-    @Override
-    public void tabModelSwitched(boolean incognito) {}
-
-    @Override
-    public void tabCreated(long time, boolean incognito, int id, int prevId, boolean selected) {}
 }

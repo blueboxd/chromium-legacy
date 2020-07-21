@@ -91,11 +91,6 @@ dep_libevent =
 # Determines whether message_pump_libevent should be used.
 use_libevent = dep_libevent && !is_ios
 
-# Whether or not cfi table should be enabled on arm.
-# TODO(crbug.com/1090409): Replace can_unwind_with_cfi_table once sampling
-# profiler is enabled on android.
-enable_arm_cfi_table = is_android && !is_component_build && current_cpu == "arm"
-
 if (is_android) {
   import("//build/config/android/rules.gni")
 }
@@ -3520,6 +3515,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/annotations/JNINamespace.java",
       "android/java/src/org/chromium/base/annotations/JniIgnoreNatives.java",
       "android/java/src/org/chromium/base/annotations/MainDex.java",
+      "android/java/src/org/chromium/base/annotations/MockedInTests.java",
       "android/java/src/org/chromium/base/annotations/NativeClassQualifiedName.java",
       "android/java/src/org/chromium/base/annotations/NativeJavaTestFeatures.java",
       "android/java/src/org/chromium/base/annotations/RemovableInRelease.java",
@@ -3702,6 +3698,7 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/BaseJUnit4TestRule.java",
       "test/android/javatests/src/org/chromium/base/test/BundleTestRule.java",
       "test/android/javatests/src/org/chromium/base/test/LoadNative.java",
+      "test/android/javatests/src/org/chromium/base/test/MockitoErrorHandler.java",
       "test/android/javatests/src/org/chromium/base/test/ReachedCodeProfiler.java",
       "test/android/javatests/src/org/chromium/base/test/ScreenshotOnFailureStatement.java",
       "test/android/javatests/src/org/chromium/base/test/SetUpStatement.java",

@@ -43,13 +43,6 @@ struct BLINK_COMMON_EXPORT TransferableMessage : public CloneableMessage {
   // destination frame.
   bool transfer_user_activation = false;
 
-  // Whether the destination frame is allowed to autoplay.
-  //
-  // TODO(mustaq): Ideally the |transfer_user_activation| field above should be
-  // replaced by bits specific to "safe-to-delegate" capabilities, like the
-  // autoplay bit below.  See crbug.com/985914.
-  bool allow_autoplay = false;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TransferableMessage);
 };

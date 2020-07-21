@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "ash/frame_throttler/frame_throttling_controller.h"
+
+#include <utility>
+
 #include "ash/public/cpp/app_types.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -45,13 +48,16 @@ FrameThrottlingController::~FrameThrottlingController() {
 }
 
 void FrameThrottlingController::StartThrottling(
-    const std::vector<aura::Window*>& windows,
-    uint8_t fps) {
+    const std::vector<aura::Window*>& windows) {
   std::vector<viz::FrameSinkId> frame_sink_ids;
   frame_sink_ids.reserve(windows.size());
 
   CollectBrowserFrameSinkIds(windows, &frame_sink_ids);
-  StartThrottling(frame_sink_ids, fps);
+  StartThrottling(frame_sink_ids, fps_);
+
+  for (auto& observer : observers_) {
+    observer.OnThrottlingStarted(windows);
+  }
 }
 
 void FrameThrottlingController::StartThrottling(
@@ -67,6 +73,18 @@ void FrameThrottlingController::StartThrottling(
 void FrameThrottlingController::EndThrottling() {
   if (context_factory_)
     context_factory_->GetHostFrameSinkManager()->EndThrottling();
+
+  for (auto& observer : observers_) {
+    observer.OnThrottlingEnded();
+  }
+}
+
+void FrameThrottlingController::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void FrameThrottlingController::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace ash

@@ -49,12 +49,11 @@ class AppServerMac : public AppServer {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::scoped_nsobject<CRUUpdateCheckXPCServiceDelegate>
+  base::scoped_nsobject<CRUUpdateCheckServiceXPCDelegate>
       update_check_delegate_;
   base::scoped_nsobject<NSXPCListener> update_check_listener_;
-  base::scoped_nsobject<CRUAdministrationXPCServiceDelegate>
-      administration_delegate_;
-  base::scoped_nsobject<NSXPCListener> administration_listener_;
+  base::scoped_nsobject<CRUControlServiceXPCDelegate> control_service_delegate_;
+  base::scoped_nsobject<NSXPCListener> control_service_listener_;
 
   // Task runner bound to the main sequence and the update service instance.
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;

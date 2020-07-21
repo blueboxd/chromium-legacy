@@ -148,26 +148,6 @@ void ObjectPaintInvalidator::
       });
 }
 
-void ObjectPaintInvalidator::
-    InvalidatePaintIncludingNonSelfPaintingLayerDescendants() {
-  SlowSetPaintingLayerNeedsRepaint();
-  // This method may be used to invalidate paint of objects changing paint
-  // invalidation container.
-  struct Helper {
-    static void Traverse(const LayoutObject& object) {
-      object.GetMutableForPainting().SetShouldDoFullPaintInvalidation(
-          PaintInvalidationReason::kCompositing);
-      for (LayoutObject* child = object.SlowFirstChild(); child;
-           child = child->NextSibling()) {
-        if (!child->HasLayer() ||
-            !ToLayoutBoxModelObject(child)->Layer()->IsSelfPaintingLayer())
-          Traverse(*child);
-      }
-    }
-  };
-  Helper::Traverse(object_);
-}
-
 #if DCHECK_IS_ON()
 void ObjectPaintInvalidator::CheckPaintLayerNeedsRepaint() {
   DCHECK(!object_.PaintingLayer() ||

@@ -138,6 +138,8 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   // |cluster_id|.
   scoped_refptr<SecurityOrigin> IsolatedWorldSecurityOrigin(
       const base::UnguessableToken& cluster_id);
+  scoped_refptr<const SecurityOrigin> IsolatedWorldSecurityOrigin(
+      const base::UnguessableToken& cluster_id) const;
 
   static bool HasWrapperInAnyWorldInMainThread(ScriptWrappable*);
 

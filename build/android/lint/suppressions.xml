@@ -201,6 +201,9 @@ Still reading?
     <!-- We no longer supply class files to lint. -->
     <ignore regexp="No `.class` files were found in project"/>
   </issue>
+  <!-- We use the same baseline for all our targets. Since some targets run less
+       code than other targets, there will always be unused suppressions. -->
+  <issue id="LintBaseline" severity="ignore"/>
   <issue id="LogConditional" severity="ignore"/>
   <issue id="LongLogTag" severity="ignore"/>
   <issue id="MergeRootFrame" severity="Error">
@@ -223,6 +226,8 @@ Still reading?
   <issue id="MissingQuantity" severity="ignore"/>
   <issue id="MissingRegistered" severity="ignore"/>
   <issue id="MissingSuperCall" severity="Error">
+    <!-- TODO(wnwen): File bug to fix -->
+    <ignore regexp="remoting/android/java/src/org/chromium/chromoting/Chromoting.java"/>
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/widget/selection/SelectionToolbar.java"/>
   </issue>
   <issue id="MissingTranslation">
@@ -247,6 +252,9 @@ Still reading?
     <ignore regexp="components/content_capture/android/java/src/org/chromium/components/content_capture"/>
     <!-- 1: TODO(crbug.com/1085487): Fix -->
     <ignore regexp="chrome/android/javatests/src/org/chromium/chrome/browser/directactions/DirectActionTestRule.java"/>
+    <!-- 2: TODO(wnwen): File bugs to fix -->
+    <ignore regexp="android_webview/support_library/boundary_interfaces/src/org/chromium/support_lib_boundary/util/BoundaryInterfaceReflectionUtil.java"/>
+    <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/media/PictureInPictureActivity.java"/>
     <!-- Endnote: Please specify number of suppressions when adding more -->
   </issue>
   <!-- This warning just adds a lot of false positives. -->
@@ -454,6 +462,8 @@ Still reading?
   <issue id="VisibleForTests" severity="Error">
     <ignore regexp="/javatests/"/>
     <ignore regexp="/test/"/>
+    <!-- TODO(wnwen): File bug to fix -->
+    <ignore regexp="remoting/android/internal/apk/src/org/chromium/chromoting/RemotingApplication.java"/>
     <!-- TODO(crbug.com/757124): Remove all these specific Feedback files after underlying issue is resolved -->
     <!-- Underlying issue is that Android FeedbackOptions.Builder using @VisibleForTesting without 'otherwise='. -->
     <ignore regexp="clank/java/src/com/google/android/apps/chrome/feedback/FeedbackUtil.java"/>
@@ -473,5 +483,9 @@ Still reading?
     <ignore regexp="media/base/android/java/src/org/chromium/media/MediaCodecEncoder.java"/>
     <!-- Discussed in crbug.com/1069204, ignoring this class of errors since these are Q+ constants. -->
     <ignore regexp="Must be one of: LineBreaker.BREAK_STRATEGY_SIMPLE, LineBreaker.BREAK_STRATEGY_HIGH_QUALITY, LineBreaker.BREAK_STRATEGY_BALANCED"/>
+  </issue>
+  <issue id="WrongThread">
+    <!-- TODO(wnwen): File bug to fix -->
+    <ignore regexp="chrome/test/android/test_trusted_web_activity/src/org/chromium/chrome/browser/browserservices/TestTrustedWebActivityService.java"/>
   </issue>
 </lint>

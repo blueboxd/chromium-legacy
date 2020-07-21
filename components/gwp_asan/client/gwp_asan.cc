@@ -9,6 +9,7 @@
 #include <limits>
 
 #include "base/allocator/buildflags.h"
+#include "base/bind_helpers.h"
 #include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -21,7 +22,6 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/gwp_asan/client/guarded_page_allocator.h"
-#include "components/gwp_asan/client/sampling_helpers.h"
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
 #include "components/gwp_asan/client/sampling_malloc_shims.h"
@@ -195,9 +195,7 @@ void EnableForMalloc(bool boost_sampling, const char* process_type) {
 
     internal::InstallMallocHooks(
         settings->max_allocated_pages, settings->num_metadata,
-        settings->total_pages, settings->sampling_frequency,
-        internal::CreateOomCallback("Malloc", process_type,
-                                    settings->sampling_frequency));
+        settings->total_pages, settings->sampling_frequency, base::DoNothing());
     return true;
   }();
   ignore_result(init_once);
@@ -217,9 +215,7 @@ void EnableForPartitionAlloc(bool boost_sampling, const char* process_type) {
 
     internal::InstallPartitionAllocHooks(
         settings->max_allocated_pages, settings->num_metadata,
-        settings->total_pages, settings->sampling_frequency,
-        internal::CreateOomCallback("PartitionAlloc", process_type,
-                                    settings->sampling_frequency));
+        settings->total_pages, settings->sampling_frequency, base::DoNothing());
     return true;
   }();
   ignore_result(init_once);

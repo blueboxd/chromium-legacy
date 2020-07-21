@@ -521,6 +521,14 @@ void NetworkService::ConfigureStubHostResolver(
   overrides.disabled_upgrade_providers =
       SplitString(features::kDnsOverHttpsUpgradeDisabledProvidersParam.Get(),
                   ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  // Because SECURE mode does not allow any fallback, allow multiple retries as
+  // a quick hack to increase the timeout for these requests.
+  // TODO(crbug.com/1105138): Rethink the timeout logic to be less aggressive in
+  // cases where there is no fallback, without needing to make so many retries.
+  if (secure_dns_mode == net::DnsConfig::SecureDnsMode::SECURE)
+    overrides.doh_attempts = 3;
+
   host_resolver_manager_->SetDnsConfigOverrides(overrides);
 }
 

@@ -4,9 +4,14 @@
 
 import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, getSelectDropdownBackground} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {getGoogleDriveDestination, selectOption} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {Base} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+
+import {getGoogleDriveDestination, selectOption} from './print_preview_test_utils.js';
 
 window.destination_select_test = {};
+const destination_select_test = window.destination_select_test;
 destination_select_test.suiteName = 'DestinationSelectTest';
 /** @enum {string} */
 destination_select_test.TestNames = {
@@ -15,19 +20,24 @@ destination_select_test.TestNames = {
 };
 
 suite(destination_select_test.suiteName, function() {
-  /** @type {?PrintPreviewDestinationSelectElement} */
-  let destinationSelect = null;
+  /** @type {!PrintPreviewDestinationSelectElement} */
+  let destinationSelect;
 
+  /** @type {string} */
   const account = 'foo@chromium.org';
 
+  /** @type {!Array<!Destination>} */
   let recentDestinationList = [];
+
+  const meta = /** @type {!IronMetaElement} */ (
+      Base.create('iron-meta', {type: 'iconset'}));
 
   /** @override */
   setup(function() {
-    PolymerTest.clearBody();
-
+    document.body.innerHTML = '';
     destinationSelect =
-        document.createElement('print-preview-destination-select');
+        /** @type {!PrintPreviewDestinationSelectElement} */ (
+            document.createElement('print-preview-destination-select'));
     destinationSelect.activeUser = account;
     destinationSelect.appKioskMode = false;
     destinationSelect.disabled = false;
@@ -38,10 +48,10 @@ suite(destination_select_test.suiteName, function() {
           'ID1', DestinationType.LOCAL, DestinationOrigin.LOCAL, 'One',
           DestinationConnectionStatus.ONLINE),
       new Destination(
-          'ID2', DestinationType.CLOUD, DestinationOrigin.COOKIES, 'Two',
+          'ID2', DestinationType.GOOGLE, DestinationOrigin.COOKIES, 'Two',
           DestinationConnectionStatus.OFFLINE, {account: account}),
       new Destination(
-          'ID3', DestinationType.CLOUD, DestinationOrigin.COOKIES, 'Three',
+          'ID3', DestinationType.GOOGLE, DestinationOrigin.COOKIES, 'Three',
           DestinationConnectionStatus.ONLINE,
           {account: account, isOwned: true}),
     ];
@@ -53,8 +63,8 @@ suite(destination_select_test.suiteName, function() {
   function compareIcon(selectEl, expectedIcon) {
     const icon = selectEl.style['background-image'].replace(/ /gi, '');
     const expected = getSelectDropdownBackground(
-        destinationSelect.meta_.byKey('print-preview'), expectedIcon,
-        destinationSelect);
+        /** @type {!IronIconsetSvgElement} */ (meta.byKey('print-preview')),
+        expectedIcon, destinationSelect);
     assertEquals(expected, icon);
   }
 

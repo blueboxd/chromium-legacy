@@ -7,8 +7,11 @@
 
 #include <stdint.h>
 #include <vector>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 
 namespace aura {
@@ -25,23 +28,35 @@ constexpr uint8_t kDefaultThrottleFps = 20;
 
 class ASH_EXPORT FrameThrottlingController {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    virtual void OnThrottlingStarted(
+        const std::vector<aura::Window*>& windows) {}
+    virtual void OnThrottlingEnded() {}
+  };
+
   explicit FrameThrottlingController(ui::ContextFactory* context_factory);
+  FrameThrottlingController(const FrameThrottlingController&) = delete;
+  FrameThrottlingController& operator=(const FrameThrottlingController&) =
+      delete;
   ~FrameThrottlingController();
 
   // Starts to throttle the framerate of |windows|.
-  void StartThrottling(const std::vector<aura::Window*>& windows,
-                       uint8_t fps = kDefaultThrottleFps);
+  void StartThrottling(const std::vector<aura::Window*>& windows);
   // Ends throttling of all throttled windows.
   void EndThrottling();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
  private:
   void StartThrottling(const std::vector<viz::FrameSinkId>& frame_sink_ids,
                        uint8_t fps);
 
-  ui::ContextFactory* context_factory_;
-
-  friend class FrameThrottlingControllerTest;
-  DISALLOW_COPY_AND_ASSIGN(FrameThrottlingController);
+  ui::ContextFactory* context_factory_ = nullptr;
+  base::ObserverList<Observer> observers_;
+  // The fps used for throttling.
+  uint8_t fps_ = kDefaultThrottleFps;
 };
 
 }  // namespace ash

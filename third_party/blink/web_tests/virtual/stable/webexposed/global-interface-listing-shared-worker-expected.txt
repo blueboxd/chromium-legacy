@@ -1076,7 +1076,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute PERSISTENT
 [Worker]     attribute TEMPORARY
 [Worker]     method constructor
-[Worker] interface StorageManager
+[Worker] interface StorageManager : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker]     method estimate

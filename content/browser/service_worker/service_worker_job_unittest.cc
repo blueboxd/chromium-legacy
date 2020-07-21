@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
@@ -1171,18 +1172,11 @@ const char kHeaders[] =
 const char kBody[] = "/* old body */";
 const char kNewBody[] = "/* new body */";
 
-void RunNestedUntilIdle() {
-  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
-}
-
-void OnIOComplete(int* rv_out, int rv) {
-  *rv_out = rv;
-}
-
-void WriteResponse(ServiceWorkerResponseWriter* writer,
-                   const std::string& headers,
-                   IOBuffer* body,
-                   int length) {
+void WriteResponse(
+    mojo::Remote<storage::mojom::ServiceWorkerResourceWriter>& writer,
+    const std::string& headers,
+    mojo_base::BigBuffer body) {
+  int length = body.size();
   auto response_head = network::mojom::URLResponseHead::New();
   response_head->request_time = base::Time::Now();
   response_head->response_time = base::Time::Now();
@@ -1190,24 +1184,37 @@ void WriteResponse(ServiceWorkerResponseWriter* writer,
   response_head->content_length = length;
 
   int rv = -1234;
-  writer->WriteResponseHead(*response_head, length,
-                            base::BindOnce(&OnIOComplete, &rv));
-  RunNestedUntilIdle();
-  EXPECT_LT(0, rv);
+  {
+    base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
+    writer->WriteResponseHead(std::move(response_head),
+                              base::BindLambdaForTesting([&](int result) {
+                                rv = result;
+                                loop.Quit();
+                              }));
+    loop.Run();
+    EXPECT_LT(0, rv);
+  }
 
   rv = -1234;
-  writer->WriteData(body, length, base::BindOnce(&OnIOComplete, &rv));
-  RunNestedUntilIdle();
-  EXPECT_EQ(length, rv);
+  {
+    base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
+    writer->WriteData(std::move(body),
+                      base::BindLambdaForTesting([&](int result) {
+                        rv = result;
+                        loop.Quit();
+                      }));
+    loop.Run();
+    EXPECT_EQ(length, rv);
+  }
 }
 
-void WriteStringResponse(ServiceWorkerResponseWriter* writer,
-                         const std::string& body) {
-  scoped_refptr<IOBuffer> body_buffer =
-      base::MakeRefCounted<WrappedIOBuffer>(body.data());
+void WriteStringResponse(
+    mojo::Remote<storage::mojom::ServiceWorkerResourceWriter>& writer,
+    const std::string& body) {
+  mojo_base::BigBuffer body_buffer(base::as_bytes(base::make_span(body)));
   const char kHttpHeaders[] = "HTTP/1.0 200 HONKYDORY\0\0";
   std::string headers(kHttpHeaders, base::size(kHttpHeaders));
-  WriteResponse(writer, headers, body_buffer.get(), body.length());
+  WriteResponse(writer, headers, std::move(body_buffer));
 }
 
 class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
@@ -1322,6 +1329,14 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
   // EmbeddedWorkerTestHelper overrides:
   void PopulateScriptCacheMap(int64_t version_id,
                               base::OnceClosure callback) override {
+    context()->GetStorageControl()->GetNewResourceId(base::BindOnce(
+        &UpdateJobTestHelper::DidGetNewResourceIdForScriptCache,
+        weak_factory_.GetWeakPtr(), version_id, std::move(callback)));
+  }
+
+  void DidGetNewResourceIdForScriptCache(int64_t version_id,
+                                         base::OnceClosure callback,
+                                         int64_t resource_id) {
     ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
     ASSERT_TRUE(version);
     ServiceWorkerRegistration* registration =
@@ -1331,19 +1346,19 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
     bool is_update = registration->active_version() &&
                      version != registration->active_version();
 
-    std::unique_ptr<ServiceWorkerResponseWriter> writer =
-        CreateNewResponseWriterSync(storage());
-    int64_t resource_id = writer->response_id();
+    mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> writer;
+    context()->GetStorageControl()->CreateResourceWriter(
+        resource_id, writer.BindNewPipeAndPassReceiver());
     version->script_cache_map()->NotifyStartedCaching(script, resource_id);
     if (!is_update) {
       // Spoof caching the script for the initial version.
-      WriteStringResponse(writer.get(), kBody);
+      WriteStringResponse(writer, kBody);
       version->script_cache_map()->NotifyFinishedCaching(
           script, base::size(kBody), net::OK, std::string());
     } else {
       EXPECT_NE(GURL(kNoChangeOrigin), script.GetOrigin());
       // The script must be changed.
-      WriteStringResponse(writer.get(), kNewBody);
+      WriteStringResponse(writer, kNewBody);
       version->script_cache_map()->NotifyFinishedCaching(
           script, base::size(kNewBody), net::OK, std::string());
     }
@@ -1750,10 +1765,11 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_ScriptUrlChanged) {
 
   // Make sure the storage has the data of the current waiting version.
   const int64_t resource_id = 2;
-  std::unique_ptr<ServiceWorkerResponseWriter> writer =
-      storage()->CreateResponseWriter(resource_id);
+  mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> writer;
+  context()->GetStorageControl()->CreateResourceWriter(
+      resource_id, writer.BindNewPipeAndPassReceiver());
   version->script_cache_map()->NotifyStartedCaching(new_script, resource_id);
-  WriteStringResponse(writer.get(), kBody);
+  WriteStringResponse(writer, kBody);
   version->script_cache_map()->NotifyFinishedCaching(
       new_script, base::size(kBody), net::OK, std::string());
 

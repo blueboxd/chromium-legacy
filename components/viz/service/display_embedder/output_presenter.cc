@@ -117,8 +117,18 @@ OutputPresenter::OverlayData::OverlayData(
       scoped_read_access_(std::move(scoped_read_access)) {}
 OutputPresenter::OverlayData::OverlayData(OverlayData&&) = default;
 OutputPresenter::OverlayData::~OverlayData() = default;
+
 OutputPresenter::OverlayData& OutputPresenter::OverlayData::operator=(
-    OverlayData&&) = default;
+    OverlayData&& other) {
+  // If the default assignment operator is called when |this| is populated, then
+  // the members will be moved in declared order. As a consequence,
+  // |this->representation_| will be overwritten and therefore deleted before
+  // |this_->scoped_read_access_|, which will cause a DCHECK (because scoped
+  // accesses may not outlive their representation).
+  scoped_read_access_ = std::move(other.scoped_read_access_);
+  representation_ = std::move(other.representation_);
+  return *this;
+}
 
 const gpu::Mailbox& OutputPresenter::OverlayData::mailbox() const {
   return representation_->mailbox();

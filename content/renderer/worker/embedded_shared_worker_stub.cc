@@ -56,7 +56,6 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
         browser_interface_broker,
     const std::vector<std::string>& cors_exempt_header_list)
     : receiver_(this, std::move(receiver)),
-      host_(std::move(host)),
       url_(info->url),
       renderer_preferences_(renderer_preferences),
       preference_watcher_receiver_(std::move(preference_watcher_receiver)),
@@ -138,7 +137,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
           info->outside_fetch_client_settings_object),
       appcache_host_id, devtools_worker_token, std::move(content_settings),
       std::move(browser_interface_broker), pause_on_start,
-      std::move(worker_main_script_load_params), this);
+      std::move(worker_main_script_load_params), std::move(host), this);
 
   // If the host drops its connection, then self-destruct.
   receiver_.set_disconnect_handler(base::BindOnce(
@@ -148,39 +147,6 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
 EmbeddedSharedWorkerStub::~EmbeddedSharedWorkerStub() {
   // Destruction closes our connection to the host, triggering the host to
   // cleanup and notify clients of this worker going away.
-}
-
-void EmbeddedSharedWorkerStub::WorkerReadyForInspection(
-    blink::CrossVariantMojoRemote<blink::mojom::DevToolsAgentInterfaceBase>
-        devtools_agent_remote,
-    blink::CrossVariantMojoReceiver<
-        blink::mojom::DevToolsAgentHostInterfaceBase>
-        devtools_agent_host_receiver) {
-  host_->OnReadyForInspection(std::move(devtools_agent_remote),
-                              std::move(devtools_agent_host_receiver));
-}
-
-void EmbeddedSharedWorkerStub::WorkerScriptLoadFailed(
-    const std::string& error_message) {
-  host_->OnScriptLoadFailed(error_message);
-  pending_channels_.clear();
-}
-
-void EmbeddedSharedWorkerStub::WorkerScriptEvaluated(bool success) {
-  DCHECK(!running_);
-  running_ = true;
-  // Process any pending connections.
-  for (auto& item : pending_channels_)
-    ConnectToChannel(item.first, std::move(item.second));
-  pending_channels_.clear();
-}
-
-void EmbeddedSharedWorkerStub::CountFeature(blink::mojom::WebFeature feature) {
-  host_->OnFeatureUsed(feature);
-}
-
-void EmbeddedSharedWorkerStub::WorkerContextClosed() {
-  host_->OnContextClosed();
 }
 
 void EmbeddedSharedWorkerStub::WorkerContextDestroyed() {
@@ -224,30 +190,12 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext() {
   return worker_fetch_context;
 }
 
-void EmbeddedSharedWorkerStub::ConnectToChannel(
-    int connection_request_id,
-    blink::MessagePortChannel channel) {
-  impl_->Connect(std::move(channel));
-  host_->OnConnected(connection_request_id);
-}
-
 void EmbeddedSharedWorkerStub::Connect(int connection_request_id,
                                        blink::MessagePortDescriptor port) {
-  blink::MessagePortChannel channel(std::move(port));
-  if (running_) {
-    ConnectToChannel(connection_request_id, std::move(channel));
-  } else {
-    // If two documents try to load a SharedWorker at the same time, the
-    // mojom::SharedWorker::Connect() for one of the documents can come in
-    // before the worker is started. Just queue up the connect and deliver it
-    // once the worker starts.
-    pending_channels_.emplace_back(connection_request_id, std::move(channel));
-  }
+  impl_->Connect(connection_request_id, std::move(port));
 }
 
 void EmbeddedSharedWorkerStub::Terminate() {
-  // After this we should ignore any IPC for this stub.
-  running_ = false;
   impl_->TerminateWorkerContext();
 }
 

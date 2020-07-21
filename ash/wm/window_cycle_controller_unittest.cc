@@ -9,6 +9,7 @@
 
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/focus_cycler.h"
+#include "ash/frame_throttler/mock_frame_throttling_observer.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -825,6 +826,40 @@ TEST_F(LimitedWindowCycleControllerTest, CycleShowsActiveDeskWindows) {
   EXPECT_TRUE(base::Contains(cycle_windows, win1.get()));
   cycle_controller->CompleteCycling();
   EXPECT_EQ(win0.get(), window_util::GetActiveWindow());
+}
+
+// Tests that frame throttling starts and ends accordingly when window cycling
+// starts and ends.
+TEST_F(WindowCycleControllerTest, FrameThrottling) {
+  MockFrameThrottlingObserver observer;
+  FrameThrottlingController* frame_throttling_controller =
+      Shell::Get()->frame_throttling_controller();
+  frame_throttling_controller->AddObserver(&observer);
+  const int window_count = 5;
+  std::unique_ptr<aura::Window> created_windows[window_count];
+  std::vector<aura::Window*> windows(window_count, nullptr);
+  for (int i = 0; i < window_count; ++i) {
+    created_windows[i] = CreateTestWindow();
+    windows[i] = created_windows[i].get();
+  }
+
+  WindowCycleController* controller = Shell::Get()->window_cycle_controller();
+  EXPECT_CALL(observer,
+              OnThrottlingStarted(testing::UnorderedElementsAreArray(windows)));
+  controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  EXPECT_CALL(observer,
+              OnThrottlingStarted(testing::UnorderedElementsAreArray(windows)))
+      .Times(0);
+  controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  EXPECT_CALL(observer, OnThrottlingEnded());
+  controller->CompleteCycling();
+
+  EXPECT_CALL(observer,
+              OnThrottlingStarted(testing::UnorderedElementsAreArray(windows)));
+  controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  EXPECT_CALL(observer, OnThrottlingEnded());
+  controller->CancelCycling();
+  frame_throttling_controller->RemoveObserver(&observer);
 }
 
 }  // namespace ash

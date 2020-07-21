@@ -2397,6 +2397,63 @@ TEST_F(DnsTransactionTest, HttpsPostLookupWithLog) {
   EXPECT_EQ(observer.dict_count(), 3);
 }
 
+// Test for when a slow DoH response is delayed until after the initial timeout
+// and no more attempts are configured.
+TEST_F(DnsTransactionTestWithMockTime, SlowHttpsResponse_SingleAttempt) {
+  config_.doh_attempts = 1;
+  ConfigureDohServers(false /* use_post */);
+
+  AddQueryAndTimeout(kT0HostName, kT0Qtype,
+                     DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+
+  TransactionHelper helper(kT0HostName, kT0Qtype, true /* secure */,
+                           ERR_DNS_TIMED_OUT, resolve_context_.get());
+  ASSERT_FALSE(helper.Run(transaction_factory_.get()));
+
+  // Only one attempt configured, so expect immediate failure after timeout
+  // period.
+  FastForwardBy(resolve_context_->NextDohTimeout(0 /* doh_server_index */,
+                                                 session_.get()));
+  EXPECT_TRUE(helper.has_completed());
+}
+
+// Test for when a slow DoH response is delayed until after the initial timeout
+// but a retry is configured.
+TEST_F(DnsTransactionTestWithMockTime, SlowHttpsResponse_TwoAttempts) {
+  config_.doh_attempts = 2;
+  ConfigureDohServers(false /* use_post */);
+
+  // Simulate a slow response by using an ERR_IO_PENDING read error to delay
+  // until SequencedSocketData::Resume() is called.
+  auto data = std::make_unique<DnsSocketData>(
+      1 /* id */, kT1HostName, kT1Qtype, ASYNC, Transport::HTTPS,
+      nullptr /* opt_rdata */, DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+  data->AddReadError(ERR_IO_PENDING, ASYNC);
+  data->AddResponseData(kT1ResponseDatagram, base::size(kT1ResponseDatagram),
+                        ASYNC);
+  SequencedSocketData* sequenced_socket_data = data->GetProvider();
+  AddSocketData(std::move(data));
+
+  TransactionHelper helper(kT1HostName, kT1Qtype, true /* secure */,
+                           kT1RecordCount, resolve_context_.get());
+  ASSERT_FALSE(helper.Run(transaction_factory_.get()));
+  ASSERT_TRUE(sequenced_socket_data->IsPaused());
+
+  // Another attempt configured, so transaction should not fail after initial
+  // timeout. Setup the second attempt to never receive a response.
+  AddQueryAndTimeout(kT1HostName, kT1Qtype,
+                     DnsQuery::PaddingStrategy::BLOCK_LENGTH_128);
+  FastForwardBy(resolve_context_->NextDohTimeout(0 /* doh_server_index */,
+                                                 session_.get()));
+  EXPECT_FALSE(helper.has_completed());
+
+  // Expect first attempt to continue in parallel with retry, so expect the
+  // transaction to complete when the first query is allowed to resume.
+  sequenced_socket_data->Resume();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(helper.has_completed());
+}
+
 TEST_F(DnsTransactionTest, TCPLookup) {
   AddAsyncQueryAndRcode(kT0HostName, kT0Qtype,
                         dns_protocol::kRcodeNOERROR | dns_protocol::kFlagTC);

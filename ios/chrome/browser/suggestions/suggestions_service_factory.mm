@@ -13,7 +13,7 @@
 #include "base/time/default_tick_clock.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "components/suggestions/blacklist_store.h"
+#include "components/suggestions/blocklist_store.h"
 #include "components/suggestions/suggestions_service_impl.h"
 #include "components/suggestions/suggestions_store.h"
 #include "components/sync/driver/sync_service.h"
@@ -66,8 +66,8 @@ SuggestionsServiceFactory::BuildServiceInstanceFor(
 
   std::unique_ptr<SuggestionsStore> suggestions_store(
       new SuggestionsStore(browser_state->GetPrefs()));
-  std::unique_ptr<BlacklistStore> blocked_suggestions(
-      new BlacklistStore(browser_state->GetPrefs()));
+  std::unique_ptr<BlocklistStore> blocked_suggestions(
+      new BlocklistStore(browser_state->GetPrefs()));
 
   return std::make_unique<SuggestionsServiceImpl>(
       identity_manager, sync_service,

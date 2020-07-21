@@ -12,6 +12,10 @@
 
 namespace remoting {
 
+namespace protobufhttpclient {
+class Status;
+}  // namespace protobufhttpclient
+
 class ProtobufHttpStatus {
  public:
   // This is the same as the gRPC status code.
@@ -40,7 +44,8 @@ class ProtobufHttpStatus {
 
   explicit ProtobufHttpStatus(net::HttpStatusCode http_status_code);
   explicit ProtobufHttpStatus(net::Error net_error);
-  explicit ProtobufHttpStatus(Code code, const std::string& error_message);
+  explicit ProtobufHttpStatus(const protobufhttpclient::Status& status);
+  ProtobufHttpStatus(Code code, const std::string& error_message);
   ~ProtobufHttpStatus();
 
   // Indicates whether the http request was successful based on the status code.

@@ -1056,9 +1056,17 @@ if (enable_java_templates) {
         inputs += [ invoker.build_config ]
         _rebased_build_config =
             rebase_path(invoker.build_config, root_build_dir)
+
+        # TODO(wnwen): Remove this baseline once it is empty.
+        baseline = "//build/android/lint/baseline.xml"
+        _rebased_baseline = rebase_path(baseline, root_build_dir)
+
         args += [
+          "--baseline=$_rebased_baseline",
           "--java-sources=@FileArg($_rebased_build_config:deps_info:lint_java_sources)",
           "--srcjars=@FileArg($_rebased_build_config:deps_info:lint_srcjars)",
+          "--srcjars=@FileArg($_rebased_build_config:deps_info:lint_srcjars)",
+          "--classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)",
           "--manifest-path=@FileArg($_rebased_build_config:deps_info:lint_android_manifest)",
           "--resource-sources=@FileArg($_rebased_build_config:deps_info:lint_resource_sources)",
           "--resource-zips=@FileArg($_rebased_build_config:deps_info:lint_resource_zips)",

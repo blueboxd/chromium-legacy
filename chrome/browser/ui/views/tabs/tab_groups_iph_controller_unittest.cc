@@ -35,7 +35,8 @@ class TabGroupsIPHControllerTest : public BrowserWithTestWindowTest {
     views::Widget::InitParams widget_params;
     widget_params.context = GetContext();
 
-    anchor_widget_ = std::unique_ptr<views::Widget>(new ChromeTestWidget);
+    anchor_widget_ =
+        views::UniqueWidgetPtr(std::make_unique<ChromeTestWidget>());
     anchor_widget_->Init(std::move(widget_params));
 
     mock_tracker_ =

@@ -30,7 +30,7 @@ namespace {
 #define DOM_CODE(usb, evdev, xkb, win, mac, code, id) \
   { usb, evdev, code }
 #elif defined(OS_FUCHSIA)
-// TODO(https://bugs.fuchsia.com/23982): Fuchsia currently delivers events
+// TODO(https://crbug.com/1107418): Fuchsia currently delivers events
 // with a USB Code but no Page specified, so only map |native_keycode| for
 // Keyboard Usage Page codes, for now.
 inline constexpr uint32_t CodeIfOnKeyboardPage(uint32_t usage) {

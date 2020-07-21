@@ -726,13 +726,17 @@ void PasswordSaveUpdateWithAccountStoreView::ShowIPH(IPHType type) {
   bool close_save_bubble_on_deactivate_original_value = close_on_deactivate();
   set_close_on_deactivate(false);
 
-  account_storage_promo_ = FeaturePromoBubbleView::CreateOwned(
-      /*anchor_view=*/destination_dropdown_,
-      /*arrow=*/views::BubbleBorder::RIGHT_CENTER,
-      /*activation_action=*/
-      FeaturePromoBubbleView::ActivationAction::ACTIVATE,
-      title_string_specificer, body_string_specificer,
-      kAccountStoragePromoWidth);
+  FeaturePromoBubbleView::CreateParams bubble_params;
+  bubble_params.body_string_specifier = body_string_specificer;
+  bubble_params.title_string_specifier = title_string_specificer;
+  bubble_params.anchor_view = destination_dropdown_;
+  bubble_params.arrow = views::BubbleBorder::RIGHT_CENTER;
+  bubble_params.preferred_width = kAccountStoragePromoWidth;
+  bubble_params.activation_action =
+      FeaturePromoBubbleView::ActivationAction::ACTIVATE;
+
+  account_storage_promo_ =
+      FeaturePromoBubbleView::Create(std::move(bubble_params));
   set_close_on_deactivate(close_save_bubble_on_deactivate_original_value);
   observed_account_storage_promo_.Add(account_storage_promo_->GetWidget());
 

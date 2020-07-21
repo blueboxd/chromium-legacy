@@ -439,7 +439,6 @@ group("gn_all") {
 
   if (is_chromeos) {
     deps += [
-      "//ash:ash_shell_with_content",
       "//ash:ash_unittests",
       "//ash/app_list:app_list_demo",
       "//ash/app_list:app_list_unittests",

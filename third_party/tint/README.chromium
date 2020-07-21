@@ -2,7 +2,7 @@ Name: Tint
 Short Name: tint
 URL: https://dawn.googlesource.com/tint
 Version: 0
-Revision: 5f43fedcddba8fd4cc3d9ff21b2ae8c5f8f4f4bc
+Revision: 747e80a9b3695f6f694536a2bfde146f474873c3
 License: Apache 2.0
 License File: LICENSE
 Security Critical: yes

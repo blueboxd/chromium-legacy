@@ -36,15 +36,16 @@ PendingAppManager::~PendingAppManager() {
   DCHECK(!registration_callback_);
 }
 
-void PendingAppManager::SetSubsystems(AppRegistrar* registrar,
-                                      AppShortcutManager* shortcut_manager,
-                                      FileHandlerManager* file_handler_manager,
-                                      WebAppUiManager* ui_manager,
-                                      InstallFinalizer* finalizer,
-                                      InstallManager* install_manager) {
+void PendingAppManager::SetSubsystems(
+    AppRegistrar* registrar,
+    AppShortcutManager* shortcut_manager,
+    OsIntegrationManager* os_integration_manager,
+    WebAppUiManager* ui_manager,
+    InstallFinalizer* finalizer,
+    InstallManager* install_manager) {
   registrar_ = registrar;
   shortcut_manager_ = shortcut_manager;
-  file_handler_manager_ = file_handler_manager;
+  os_integration_manager_ = os_integration_manager;
   ui_manager_ = ui_manager;
   finalizer_ = finalizer;
   install_manager_ = install_manager;

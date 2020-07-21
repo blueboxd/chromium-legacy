@@ -284,6 +284,16 @@ class ArcAppListPrefs : public KeyedService,
   base::FilePath MaybeGetIconPathForDefaultApp(
       const std::string& app_id,
       const ArcAppIconDescriptor& descriptor) const;
+  // Constructs path to default app foreground icon for specific scale factor.
+  // This path is used to resolve icon if no icon is available.
+  base::FilePath MaybeGetForegroundIconPathForDefaultApp(
+      const std::string& app_id,
+      const ArcAppIconDescriptor& descriptor) const;
+  // Constructs path to default app background icon for specific scale factor.
+  // This path is used to resolve icon if no icon is available.
+  base::FilePath MaybeGetBackgroundIconPathForDefaultApp(
+      const std::string& app_id,
+      const ArcAppIconDescriptor& descriptor) const;
 
   // Sets last launched time for the requested app.
   void SetLastLaunchTime(const std::string& app_id);

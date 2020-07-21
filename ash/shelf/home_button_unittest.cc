@@ -559,8 +559,7 @@ TEST_P(HomeButtonTest, LongPressGesture) {
             AssistantUiController::Get()->GetModel()->visibility());
 }
 
-// Started failing consistently https://crbug.com/1106253
-TEST_P(HomeButtonTest, DISABLED_LongPressGestureInTabletMode) {
+TEST_P(HomeButtonTest, LongPressGestureInTabletMode) {
   // Simulate two users with primary user as active.
   CreateUserSessions(2);
 

@@ -10,6 +10,7 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/frame_throttler/frame_throttling_controller.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -477,6 +478,7 @@ WindowCycleList::~WindowCycleList() {
     auto* target_window = windows_[current_index_];
     SelectWindow(target_window);
   }
+  Shell::Get()->frame_throttling_controller()->EndThrottling();
 }
 
 void WindowCycleList::Step(WindowCycleController::Direction direction) {
@@ -621,6 +623,8 @@ void WindowCycleList::InitWindowCycleView() {
   // Close the app list, if it's open in clamshell mode.
   if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
     Shell::Get()->app_list_controller()->DismissAppList();
+
+  Shell::Get()->frame_throttling_controller()->StartThrottling(windows_);
 }
 
 void WindowCycleList::SelectWindow(aura::Window* window) {

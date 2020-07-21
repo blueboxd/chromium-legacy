@@ -26,6 +26,9 @@ class MockWidget : public blink::mojom::Widget {
   const std::vector<blink::VisualProperties>& ReceivedVisualProperties();
   void ClearVisualProperties();
 
+  const std::vector<std::pair<gfx::Rect, gfx::Rect>>& ReceivedScreenRects();
+  void ClearScreenRects();
+
   // blink::mojom::Widget overrides.
   void ForceRedraw(ForceRedrawCallback callback) override;
 
@@ -36,8 +39,14 @@ class MockWidget : public blink::mojom::Widget {
   void UpdateVisualProperties(
       const blink::VisualProperties& visual_properties) override;
 
+  void UpdateScreenRects(const gfx::Rect& widget_screen_rect,
+                         const gfx::Rect& window_screen_rect,
+                         UpdateScreenRectsCallback callback) override;
+
  private:
   std::vector<blink::VisualProperties> visual_properties_;
+  std::vector<std::pair<gfx::Rect, gfx::Rect>> screen_rects_;
+  std::vector<UpdateScreenRectsCallback> screen_rects_callbacks_;
   mojo::AssociatedReceiver<blink::mojom::Widget> blink_widget_{this};
 };
 

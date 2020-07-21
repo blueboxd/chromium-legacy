@@ -1,61 +1,65 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// A view that implements one download on the Download shelf.
-// Each DownloadItemView contains an application icon, a text label
-// indicating the download's file name, a text label indicating the
-// download's status (such as the number of bytes downloaded so far)
-// and a button for canceling an in progress download, or opening
-// the completed download.
-//
-// The DownloadItemView lives in the Browser, and has a corresponding
-// DownloadController that receives / writes data which lives in the
-// Renderer.
 
 #ifndef CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_ITEM_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_ITEM_VIEW_H_
 
-#include <memory>
-#include <string>
+#include <stddef.h>
 
-#include "base/callback_forward.h"
-#include "base/macros.h"
+#include <utility>
+
+#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/strings/string_util.h"
+#include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/download_ui_model.h"
-#include "chrome/browser/icon_manager.h"
-#include "chrome/browser/ui/tab_modal_confirm_dialog.h"
-#include "components/download/public/common/download_item.h"
-#include "content/public/browser/download_manager.h"
+#include "chrome/browser/icon_loader.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/view.h"
 
-class DownloadShelfView;
 class DownloadShelfContextMenuView;
+class DownloadShelfView;
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 namespace gfx {
-class Image;
-class ImageSkia;
-}
+class Canvas;
+class Point;
+class Rect;
+}  // namespace gfx
 
 namespace views {
+class Button;
 class ImageButton;
 class Label;
 class MdTextButton;
 class StyledLabel;
-}
+}  // namespace views
 
-// Represents a single download item on the download shelf. Encompasses an icon,
-// text, malicious download warnings, etc.
+// A view that implements one download on the Download shelf. Each
+// DownloadItemView contains an application icon, a text label indicating the
+// download's file name, a text label indicating the download's status (such as
+// the number of bytes downloaded so far), and a button for canceling an
+// in-progress download, or opening the completed download.
+//
+// The DownloadItemView lives in the Browser, and has a corresponding
+// DownloadController that receives / writes data which lives in the Renderer.
 class DownloadItemView : public views::View,
                          public views::ButtonListener,
                          public views::ContextMenuController,
@@ -67,6 +71,8 @@ class DownloadItemView : public views::View,
   DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
                    DownloadShelfView* parent,
                    views::View* accessible_alert);
+  DownloadItemView(const DownloadItemView&) = delete;
+  DownloadItemView& operator=(const DownloadItemView&) = delete;
   ~DownloadItemView() override;
 
   // views::View:
@@ -97,7 +103,7 @@ class DownloadItemView : public views::View,
   const DownloadUIModel* model() const { return model_.get(); }
 
   // Submits download to download feedback service if the user has approved and
-  // the download is suitable for submission, then apply |download_command|.
+  // the download is suitable for submission, then applies |download_command|.
   // If user hasn't seen SBER opt-in text before, show SBER opt-in dialog first.
   void MaybeSubmitDownloadToFeedbackService(
       DownloadCommands::Command download_command);
@@ -110,24 +116,6 @@ class DownloadItemView : public views::View,
   void OnThemeChanged() override;
 
  private:
-  enum State { NORMAL = 0, HOT, PUSHED };
-
-  static constexpr int kTextWidth = 140;
-
-  // Padding before the icon and at end of the item.
-  static constexpr int kStartPadding = 12;
-  static constexpr int kEndPadding = 6;
-
-  // Horizontal padding between progress indicator and filename/status text.
-  static constexpr int kProgressTextPadding = 8;
-
-  // The space between the Save and Discard buttons when prompting for a
-  // dangerous download.
-  static constexpr int kSaveDiscardButtonPadding = 5;
-
-  // The space on the right side of the dangerous download label.
-  static constexpr int kLabelPadding = 8;
-
   // Returns the mode that best reflects the current model state.
   Mode GetDesiredMode() const;
 
@@ -148,15 +136,11 @@ class DownloadItemView : public views::View,
   // Updates the accessible alert and timers for normal mode.
   void UpdateAccessibleAlertAndTimersForNormalMode();
 
-  // Update accessible status text.
-  // If |is_last_update| is false, then a timer is used to notify screen readers
-  // to speak the alert text on a regular interval. If |is_last_update| is true,
-  // then the screen reader is notified of the request to speak the alert
-  // immediately, and any running timer is ended.
-  void UpdateAccessibleAlert(const base::string16& alert, bool is_last_update);
+  // Update accessible status text, and announce it if desired.
+  void UpdateAccessibleAlert(const base::string16& alert);
 
   // Get the accessible alert text for a download that is currently in progress.
-  base::string16 GetInProgressAccessibleAlertText();
+  base::string16 GetInProgressAccessibleAlertText() const;
 
   // Callback for |accessible_update_timer_|, or can be used to ask a screen
   // reader to speak the current alert immediately.
@@ -188,16 +172,24 @@ class DownloadItemView : public views::View,
   // the text width.
   base::string16 ElidedFilename();
 
+  // Returns the Y coordinate that centers |element_height| within the current
+  // height().
+  int CenterY(int element_height) const;
+
   // Returns either:
   //   * 200, if |label| can fit in one line given at most 200 DIP width.
   //   * The minimum width needed to display |label| on two lines.
   int GetLabelWidth(const views::StyledLabel& label) const;
 
   // Sets the state and triggers a repaint.
-  void SetDropdownState(State new_state);
+  void SetDropdownPressed(bool pressed);
 
   // Sets |dropdown_button_| to have the correct image for the current state.
-  void UpdateDropdownButton();
+  void UpdateDropdownButtonImage();
+
+  // Shows an appropriate prompt dialog when the user hits the "open" button
+  // when not in normal mode.
+  void ShowOpenDialog(content::WebContents* web_contents);
 
   // Shows the context menu at the specified location. |point| is in the view's
   // coordinate system.
@@ -216,17 +208,17 @@ class DownloadItemView : public views::View,
   // Returns the height/width of the warning icon, in dp.
   static int GetWarningIconSize();
 
-  // Starts deep scanning for this download item.
-  void ConfirmDeepScanning();
+  // Forwards |command| to |commands_|; useful for callbacks.
+  void ExecuteCommand(DownloadCommands::Command command);
 
-  // Bypasses the prompt for deep scanning for this download item.
-  void BypassDeepScanning();
+  // The model controlling this object's state.
+  DownloadUIModel::DownloadUIModelPtr model_;
+
+  // A utility object to help execute commands on the model.
+  DownloadCommands commands_{model()};
 
   // The download shelf that owns us.
   DownloadShelfView* shelf_;
-
-  // The focus ring for this Button.
-  std::unique_ptr<views::FocusRing> focus_ring_;
 
   // The font list used to print the file name and warning text.
   gfx::FontList font_list_;
@@ -234,26 +226,8 @@ class DownloadItemView : public views::View,
   // The font list used to print the status text below the file name.
   gfx::FontList status_font_list_;
 
-  // The tooltip.  Only displayed when not showing a warning dialog.
-  base::string16 tooltip_text_;
-
-  // The current state (normal, hot or pushed) of the body and drop-down.
-  State dropdown_state_;
-
   // Mode of the download item view.
   Mode mode_;
-
-  // Whether we are dragging the download button.
-  bool dragging_;
-
-  // Position that a possible drag started at.
-  base::Optional<gfx::Point> drag_start_point_;
-
-  // For canceling an in progress icon request.
-  base::CancelableTaskTracker cancelable_task_tracker_;
-
-  // A model class to control the status text we display.
-  DownloadUIModel::DownloadUIModelPtr model_;
 
   // The "open download" button. This button is visually transparent and fills
   // the entire bounds of the DownloadItemView, to make the DownloadItemView
@@ -263,7 +237,20 @@ class DownloadItemView : public views::View,
   // button logic in DownloadItemView.
   views::Button* open_button_;
 
+  // Whether we are dragging the download button.
+  bool dragging_ = false;
+
+  // Position that a possible drag started at.
+  base::Optional<gfx::Point> drag_start_point_;
+
   gfx::ImageSkia file_icon_;
+
+  // Tracks in-progress file icon loading tasks.
+  base::CancelableTaskTracker cancelable_task_tracker_;
+
+  // |file_icon_| is based on the path of the downloaded item.  Store the path
+  // used, so that we can detect a change in the path and reload the icon.
+  base::FilePath file_path_;
 
   views::Label* file_name_label_;
   views::Label* status_label_;
@@ -276,13 +263,9 @@ class DownloadItemView : public views::View,
   views::MdTextButton* scan_button_;
   views::ImageButton* dropdown_button_;
 
-  // The time at which this view was created.
-  base::Time creation_time_;
+  // Whether the dropdown is currently pressed.
+  bool dropdown_pressed_ = false;
 
-  // The time at which a dangerous download warning was displayed.
-  base::Time time_download_warning_shown_;
-
-  // The currently running download context menu.
   std::unique_ptr<DownloadShelfContextMenuView> context_menu_;
 
   base::RepeatingTimer indeterminate_progress_timer_;
@@ -296,32 +279,25 @@ class DownloadItemView : public views::View,
 
   gfx::SlideAnimation complete_animation_{this};
 
-  // The name of this view as reported to assistive technology.
+  // The tooltip.  Only displayed when not showing a warning dialog.
+  base::string16 tooltip_text_;
+
   base::string16 accessible_name_;
 
-  // A hidden view for accessible status alerts, that are spoken by screen
+  // A hidden view for accessible status alerts that are spoken by screen
   // readers when a download changes state.
-  views::View* accessible_alert_;
+  views::View* const accessible_alert_;
 
   // A timer for accessible alerts that helps reduce the number of similar
   // messages spoken in a short period of time.
   base::RepeatingTimer accessible_alert_timer_;
 
-  // Force the reading of the current alert text the next time it updates.
-  bool announce_accessible_alert_soon_;
-
-  // |file_icon_| is based on the path of the downloaded item.  Store the path
-  // used, so that we can detect a change in the path and reload the icon.
-  base::FilePath file_path_;
-
-  // Deep scanning modal dialog confirming choice to "open now".
-  TabModalConfirmDialog* open_now_modal_dialog_;
+  // Forces reading the current alert text the next time it updates.
+  bool announce_accessible_alert_soon_ = false;
 
   // Method factory used to delay reenabling of the item when opening the
   // downloaded file.
   base::WeakPtrFactory<DownloadItemView> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadItemView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_ITEM_VIEW_H_

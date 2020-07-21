@@ -750,6 +750,11 @@ void WebPagePopupImpl::UpdateVisualProperties(
   WidgetClient()->UpdateVisualProperties(visual_properties);
 }
 
+void WebPagePopupImpl::UpdateScreenRects(const gfx::Rect& widget_screen_rect,
+                                         const gfx::Rect& window_screen_rect) {
+  WidgetClient()->UpdateScreenRects(widget_screen_rect, window_screen_rect);
+}
+
 WebURL WebPagePopupImpl::GetURLForDebugTrace() {
   if (!page_)
     return {};

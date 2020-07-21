@@ -92,6 +92,9 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
       mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> host) override;
   void UpdateVisualProperties(
       const VisualProperties& visual_properties) override;
+  void UpdateScreenRects(const gfx::Rect& widget_screen_rect,
+                         const gfx::Rect& window_screen_rect,
+                         UpdateScreenRectsCallback callback) override;
 
   // LayerTreeDelegate overrides:
   // Applies viewport related properties during a commit from the compositor

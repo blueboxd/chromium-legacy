@@ -20,11 +20,11 @@ InstallManager::~InstallManager() = default;
 
 void InstallManager::SetSubsystems(AppRegistrar* registrar,
                                    AppShortcutManager* shortcut_manager,
-                                   FileHandlerManager* file_handler_manager,
+                                   OsIntegrationManager* os_integration_manager,
                                    InstallFinalizer* finalizer) {
   registrar_ = registrar;
   shortcut_manager_ = shortcut_manager;
-  file_handler_manager_ = file_handler_manager;
+  os_integration_manager_ = os_integration_manager;
   finalizer_ = finalizer;
 }
 

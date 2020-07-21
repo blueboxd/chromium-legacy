@@ -90,13 +90,14 @@ _PRESENT_TO_SWAP_CHAIN_EVENT_NAME = 'SwapChainPresenter::PresentToSwapChain'
 class _TraceTestArguments(object):
   """Struct-like object for passing trace test arguments instead of dicts."""
 
-  def __init__(self,
-               browser_args,
-               category,
-               test_harness_script,
-               finish_js_condition,
-               success_eval_func,
-               other_args=None):
+  def __init__(  # pylint: disable=too-many-arguments
+      self,
+      browser_args,
+      category,
+      test_harness_script,
+      finish_js_condition,
+      success_eval_func,
+      other_args=None):
     self.browser_args = browser_args
     self.category = category
     self.test_harness_script = test_harness_script

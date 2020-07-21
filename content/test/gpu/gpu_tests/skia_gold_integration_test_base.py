@@ -277,9 +277,20 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
         screenshot,
         public=True)
 
-  def _CompareScreenshotSamples(self, tab, screenshot, expected_colors,
-                                tolerance, device_pixel_ratio,
-                                test_machine_name):
+  def _CompareScreenshotSamples(self, tab, screenshot, page,
+                                device_pixel_ratio):
+    """Checks a screenshot for expected colors.
+
+    Args:
+      tab: the Telemetry Tab object that the test was run in.
+      screenshot: the screenshot of the test page as a Telemetry Bitmap.
+      page: the GPU PixelTestPage object for the test.
+      device_pixel_ratio: the device pixel ratio for the test device as a float.
+
+    Raises:
+      AssertionError if the check fails for some reason.
+    """
+
     def _CompareScreenshotWithExpectation(expectation):
       """Compares a portion of the screenshot to the given expectation.
 
@@ -315,6 +326,10 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
                       ' to be ' + str(expectation["color"]) + " but got [" +
                       str(actual_color.r) + ", " + str(actual_color.g) + ", " +
                       str(actual_color.b) + ", " + str(actual_color.a) + "]")
+
+    expected_colors = page.expected_colors
+    tolerance = page.tolerance
+    test_machine_name = self.GetParsedCommandLineOptions().test_machine_name
 
     # First scan through the expected_colors and see if there are any scale
     # factor overrides that would preempt the device pixel ratio. This
@@ -499,10 +514,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       device_pixel_ratio: the device pixel ratio for the test device as a float.
     """
     try:
-      self._CompareScreenshotSamples(
-          tab, screenshot, page.expected_colors, page.tolerance,
-          device_pixel_ratio,
-          self.GetParsedCommandLineOptions().test_machine_name)
+      self._CompareScreenshotSamples(tab, screenshot, page, device_pixel_ratio)
     except Exception as comparison_exception:
       # An exception raised from self.fail() indicates a failure.
       image_name = self._UrlToImageName(page.name)

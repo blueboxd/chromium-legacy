@@ -46,6 +46,7 @@ class ShowGenericUiAction : public Action,
   void EndAction(const ClientStatus& status);
 
   void OnViewInflationFinished(const ClientStatus& status);
+  void OnNavigationEnded();
 
   // From autofill::PersonalDataManagerObserver.
   void OnPersonalDataChanged() override;

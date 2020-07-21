@@ -1092,7 +1092,7 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   // First make an existing committed entry.
   const GURL kExistingURL("http://foo/eh");
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kExistingURL);
-  main_test_rfh()->OnMessageReceived(FrameHostMsg_DidStopLoading(0));
+  main_test_rfh()->DidStopLoading();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 

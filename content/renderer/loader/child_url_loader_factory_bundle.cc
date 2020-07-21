@@ -262,7 +262,7 @@ void ChildURLLoaderFactoryBundle::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   auto override_iter = subresource_overrides_.find(request.url);
   if (override_iter != subresource_overrides_.end()) {
-    mojom::TransferrableURLLoaderPtr transferrable_loader =
+    blink::mojom::TransferrableURLLoaderPtr transferrable_loader =
         std::move(override_iter->second);
     subresource_overrides_.erase(override_iter);
 
@@ -325,7 +325,8 @@ void ChildURLLoaderFactoryBundle::Update(
 }
 
 void ChildURLLoaderFactoryBundle::UpdateSubresourceOverrides(
-    std::vector<mojom::TransferrableURLLoaderPtr>* subresource_overrides) {
+    std::vector<blink::mojom::TransferrableURLLoaderPtr>*
+        subresource_overrides) {
   for (auto& element : *subresource_overrides)
     subresource_overrides_[element->url] = std::move(element);
 }

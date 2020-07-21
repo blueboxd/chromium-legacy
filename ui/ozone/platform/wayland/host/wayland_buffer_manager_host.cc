@@ -153,8 +153,8 @@ class WaylandBufferManagerHost::Surface {
     if (!wayland_surface_)
       return;
 
-    wl_surface_attach(wayland_surface_->surface(), nullptr, 0, 0);
-    wl_surface_commit(wayland_surface_->surface());
+    wayland_surface_->AttachBuffer(nullptr);
+    wayland_surface_->Commit();
 
     // ResetSurfaceContents happens upon WaylandWindow::Hide call, which
     // destroys xdg_surface, xdg_popup, etc. They are going to be reinitialized
@@ -251,48 +251,17 @@ class WaylandBufferManagerHost::Surface {
       pending_damage_region.set_size(buffer->size);
     DCHECK(!pending_damage_region.size().IsEmpty());
 
-    if (connection_->compositor_version() >=
-        WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION) {
-      // wl_surface_damage_buffer relies on compositor API version 4. See
-      // https://bit.ly/2u00lv6 for details.
-      // We don't need to apply any scaling because pending_damage_region is
-      // already in buffer coordinates.
-      wl_surface_damage_buffer(
-          wayland_surface_->surface(), pending_damage_region.x(),
-          pending_damage_region.y(), pending_damage_region.width(),
-          pending_damage_region.height());
-    } else {
-      // The calculation for damage region relies on two assumptions:
-      // 1) The buffer is always attached at surface location (0, 0)
-      // 2) The API wl_surface::set_buffer_transform is not used.
-      // It's possible to write logic that accounts for both cases above, but
-      // it's currently unnecessary.
-      //
-      // Note: The damage region may not be an integer multiple of scale. To
-      // keep the implementation simple, the x() and y() coordinates round down,
-      // and the width() and height() calculations always add an extra pixel.
-      int scale = wayland_surface_->buffer_scale();
-      wl_surface_damage(wayland_surface_->surface(),
-                        pending_damage_region.x() / scale,
-                        pending_damage_region.y() / scale,
-                        pending_damage_region.width() / scale + 1,
-                        pending_damage_region.height() / scale + 1);
-    }
+    wayland_surface_->Damage(pending_damage_region);
   }
 
   void AttachBuffer(WaylandBuffer* buffer) {
     DCHECK(wayland_surface_ && configured_);
-
-    // The logic in DamageBuffer currently relies on attachment coordinates of
-    // (0, 0). If this changes, then the calculation in DamageBuffer will also
-    // need to be updated.
-    wl_surface_attach(wayland_surface_->surface(), buffer->wl_buffer.get(), 0,
-                      0);
+    wayland_surface_->AttachBuffer(buffer->wl_buffer.get());
   }
 
   void CommitSurface() {
     DCHECK(wayland_surface_);
-    wl_surface_commit(wayland_surface_->surface());
+    wayland_surface_->Commit();
   }
 
   void SetupFrameCallback() {
@@ -569,8 +538,8 @@ class WaylandBufferManagerHost::Surface {
   // Widget this helper surface backs and has 1:1 relationship with the
   // WaylandWindow.
 
-  // Non-owned. The window this helper surface stores and submits buffers for.
-  const WaylandSurface* wayland_surface_;
+  // Non-owned. The surface this helper stores and submits buffers for.
+  WaylandSurface* wayland_surface_;
 
   // Non-owned pointer to the connection.
   WaylandConnection* const connection_;
@@ -624,7 +593,7 @@ WaylandBufferManagerHost::~WaylandBufferManagerHost() {
 void WaylandBufferManagerHost::OnWindowAdded(WaylandWindow* window) {
   DCHECK(window);
   surfaces_[window->GetWidget()] =
-      std::make_unique<Surface>(window->wayland_surface(), connection_, this);
+      std::make_unique<Surface>(window->root_surface(), connection_, this);
 }
 
 void WaylandBufferManagerHost::OnWindowRemoved(WaylandWindow* window) {

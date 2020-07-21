@@ -32,7 +32,7 @@ class PLATFORM_EXPORT MarkingSchedulingOracle {
 
   explicit MarkingSchedulingOracle();
 
-  void UpdateIncrementalMarkingStats(size_t, base::TimeDelta);
+  void UpdateIncrementalMarkingStats(size_t, base::TimeDelta, base::TimeDelta);
   void AddConcurrentlyMarkedBytes(size_t);
 
   size_t GetOverallMarkedBytes();

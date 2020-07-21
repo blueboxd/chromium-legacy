@@ -123,7 +123,6 @@ class PLATFORM_EXPORT FrameWidget
       Vector<gfx::Rect>* bounds) = 0;
 
   virtual gfx::Range CompositionRange() = 0;
-  virtual WebTextInputType TextInputType() = 0;
   virtual WebTextInputInfo TextInputInfo() = 0;
   virtual ui::mojom::blink::VirtualKeyboardVisibilityRequest
   GetLastVirtualKeyboardVisibilityRequest() = 0;

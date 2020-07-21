@@ -127,8 +127,7 @@ TEST_F(NavigatorTest, SimpleRendererInitiatedSameSiteNavigation) {
 
   contents()->NavigateAndCommit(kUrl1);
   EXPECT_TRUE(main_test_rfh()->IsRenderFrameLive());
-  main_test_rfh()->OnMessageReceived(
-      FrameHostMsg_DidStopLoading(main_test_rfh()->GetRoutingID()));
+  main_test_rfh()->DidStopLoading();
 
   // Start a renderer-initiated non-user-initiated navigation.
   EXPECT_FALSE(main_test_rfh()->navigation_request());

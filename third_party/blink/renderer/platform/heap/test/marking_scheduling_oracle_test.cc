@@ -31,7 +31,8 @@ TEST_F(MarkingSchedulingOracleTest, NoTimePassedReturnsMinimumDuration) {
   // Add incrementally marked bytes to tell oracle this is not the first step.
   oracle.UpdateIncrementalMarkingStats(
       MarkingSchedulingOracle::kMinimumMarkedBytesInStep,
-      base::TimeDelta::FromMilliseconds(1));
+      base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromMilliseconds(0));
   oracle.SetElapsedTimeForTesting(0);
   // Given marking speed set above, Minimum duration should be 1ms.
   EXPECT_EQ(1, oracle.GetNextIncrementalStepDurationForTask(kObjectSize)
@@ -42,8 +43,10 @@ TEST_F(MarkingSchedulingOracleTest, OracleDoesntExccedMaximumStepDuration) {
   MarkingSchedulingOracle oracle;
   // Add incrementally marked bytes to tell oracle this is not the first step.
   oracle.UpdateIncrementalMarkingStats(
-      1, base::TimeDelta::FromMilliseconds(
-             MarkingSchedulingOracle::kEstimatedMarkingTimeMs));
+      1,
+      base::TimeDelta::FromMilliseconds(
+          MarkingSchedulingOracle::kEstimatedMarkingTimeMs),
+      base::TimeDelta::FromMilliseconds(0));
   oracle.SetElapsedTimeForTesting(
       MarkingSchedulingOracle::kEstimatedMarkingTimeMs);
   EXPECT_EQ(MarkingSchedulingOracle::kMaximumIncrementalMarkingStepDuration,
@@ -55,7 +58,8 @@ TEST_F(MarkingSchedulingOracleTest, AheadOfScheduleReturnsMinimumDuration) {
   // Add incrementally marked bytes to tell oracle this is not the first step.
   oracle.UpdateIncrementalMarkingStats(
       MarkingSchedulingOracle::kMinimumMarkedBytesInStep,
-      base::TimeDelta::FromMilliseconds(1));
+      base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromMilliseconds(0));
   oracle.AddConcurrentlyMarkedBytes(0.6 * kObjectSize);
   oracle.SetElapsedTimeForTesting(
       0.5 * MarkingSchedulingOracle::kEstimatedMarkingTimeMs);
@@ -69,7 +73,8 @@ TEST_F(MarkingSchedulingOracleTest, BehindScheduleReturnsCorrectDuration) {
   MarkingSchedulingOracle oracle;
   oracle.UpdateIncrementalMarkingStats(
       0.1 * kObjectSize,
-      base::TimeDelta::FromMilliseconds(kForegoundMarkingTime));
+      base::TimeDelta::FromMilliseconds(kForegoundMarkingTime),
+      base::TimeDelta::FromMilliseconds(0));
   oracle.AddConcurrentlyMarkedBytes(0.25 * kObjectSize);
   oracle.SetElapsedTimeForTesting(
       0.5 * MarkingSchedulingOracle::kEstimatedMarkingTimeMs);

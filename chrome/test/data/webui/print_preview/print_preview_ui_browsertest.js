@@ -1142,14 +1142,6 @@ TEST_F(
           destination_dropdown_cros_test.TestNames.CorrectListItems);
     });
 
-TEST_F('PrintPreviewDestinationDropdownCrosTest', 'ClickCloses', function() {
-  this.runMochaTest(destination_dropdown_cros_test.TestNames.ClickCloses);
-});
-
-TEST_F('PrintPreviewDestinationDropdownCrosTest', 'TabCloses', function() {
-  this.runMochaTest(destination_dropdown_cros_test.TestNames.TabCloses);
-});
-
 TEST_F(
     'PrintPreviewDestinationDropdownCrosTest', 'HighlightedAfterUpDown',
     function() {

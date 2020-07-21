@@ -625,6 +625,10 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
 void ServiceWorkerFetchDispatcher::DidFailToDispatch(
     std::unique_ptr<ResponseCallback> response_callback,
     blink::ServiceWorkerStatusCode status) {
+  // Fetch dispatcher can be completed at this point due to a failure of
+  // starting up a worker. In that case, let's simply ignore it.
+  if (IsCompleted())
+    return;
   DidFail(status);
 }
 
@@ -770,6 +774,10 @@ ServiceWorkerMetrics::EventType ServiceWorkerFetchDispatcher::GetEventType()
 
 bool ServiceWorkerFetchDispatcher::IsEventDispatched() const {
   return request_.is_null();
+}
+
+bool ServiceWorkerFetchDispatcher::IsCompleted() const {
+  return fetch_callback_.is_null();
 }
 
 // static

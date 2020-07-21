@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/prerender_url_loader_throttle.h"
+#include "components/prerender/common/prerender_url_loader_throttle.h"
 
 #include "base/bind.h"
 #include "build/build_config.h"

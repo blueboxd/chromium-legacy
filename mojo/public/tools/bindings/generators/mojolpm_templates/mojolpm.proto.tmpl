@@ -229,23 +229,6 @@ message {{union_name}} {
 {%- for interface in interfaces %}
 
 message {{interface.name}} {
-  // TODO(markbrand): remove the old types once crbug/955171 is landed.
-  message Ptr {
-    required uint32 id = 1;
-  }
-
-  message AssociatedPtr {
-    required uint32 id = 1;
-  }
-
-  message Request {
-    required uint32 id = 1;
-  }
-
-  message AssociatedRequest {
-    required uint32 id = 1;
-  }
-
   message PendingRemote {
     required uint32 id = 1;
   }
@@ -349,28 +332,6 @@ message {{interface.name}} {
 {%-   endfor%}
 
 {%-   if interface.methods|length %}
-  message MethodCall {
-    required {{interface.name}}.Ptr ptr = 1;
-
-    oneof method {
-      Reset reset = 2;
-{%-     for method in interface.methods %}
-      {{interface.name}}_{{method.name}} m_{{method.name|camel_to_under}} = {{loop.index + 2}};
-{%-     endfor %}
-    }
-  }
-
-  message MethodCallA {
-    required {{interface.name}}.AssociatedPtr ptr = 1;
-
-    oneof method {
-      Reset reset = 2;
-{%-     for method in interface.methods %}
-      {{interface.name}}_{{method.name}} m_{{method.name|camel_to_under}} = {{loop.index + 2}};
-{%-     endfor %}
-    }
-  }
-
   message RemoteMethodCall {
     required {{interface.name}}.PendingRemote remote = 1;
 

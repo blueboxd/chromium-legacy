@@ -142,7 +142,6 @@ class CORE_EXPORT WebFrameWidgetBase
   void GetCompositionCharacterBoundsInWindow(
       Vector<gfx::Rect>* bounds) override;
   gfx::Range CompositionRange() override;
-  WebTextInputType TextInputType() override;
   WebTextInputInfo TextInputInfo() override;
   ui::mojom::VirtualKeyboardVisibilityRequest
   GetLastVirtualKeyboardVisibilityRequest() override;

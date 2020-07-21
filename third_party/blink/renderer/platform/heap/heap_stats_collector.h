@@ -242,6 +242,9 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     // Time spent processing worklist in the foreground thread.
     base::TimeDelta worklist_processing_time_foreground() const;
 
+    // Time spent flushing v8 references (this is done only in the foreground)
+    base::TimeDelta flushing_v8_references_time() const;
+
     // Time spent in foreground tasks marking the heap.
     base::TimeDelta foreground_marking_time() const;
 
@@ -329,6 +332,8 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   base::TimeDelta marking_time_so_far() const;
 
   base::TimeDelta worklist_processing_time_foreground() const;
+
+  base::TimeDelta flushing_v8_references_time() const;
 
   int64_t allocated_bytes_since_prev_gc() const;
 

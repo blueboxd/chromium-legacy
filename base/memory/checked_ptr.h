@@ -343,15 +343,6 @@ struct CheckedPtr2OrMTEImpl {
 
 #endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
-template <typename T>
-struct DereferencedPointerType {
-  using Type = decltype(*std::declval<T*>());
-};
-// This explicitly doesn't define any type aliases, since dereferencing void is
-// invalid.
-template <>
-struct DereferencedPointerType<void> {};
-
 }  // namespace internal
 
 // DO NOT USE! EXPERIMENTAL ONLY! This is helpful for local testing!
@@ -423,11 +414,10 @@ class CheckedPtr {
     return wrapped_ptr_ != Impl::GetWrappedNullPtr();
   }
 
-  // Use SFINAE to avoid defining |operator*| for T=void, which wouldn't compile
-  // due to |void&|.
   template <typename U = T,
-            typename V = typename internal::DereferencedPointerType<U>::Type>
-  ALWAYS_INLINE V& operator*() const {
+            typename Unused = std::enable_if_t<
+                !std::is_void<typename std::remove_cv<U>::type>::value>>
+  ALWAYS_INLINE U& operator*() const {
     return *GetForDereference();
   }
   ALWAYS_INLINE T* operator->() const { return GetForDereference(); }

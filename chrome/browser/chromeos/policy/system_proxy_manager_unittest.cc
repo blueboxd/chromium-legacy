@@ -17,7 +17,19 @@
 #include "chromeos/dbus/system_proxy/system_proxy_client.h"
 #include "chromeos/dbus/system_proxy/system_proxy_service.pb.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "net/http/http_auth.h"
+#include "net/http/http_auth_cache.h"
+#include "net/http/http_network_session.h"
+#include "net/http/http_transaction_factory.h"
+#include "net/url_request/url_request_context.h"
+#include "services/network/network_context.h"
+#include "services/network/network_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,13 +40,40 @@ using testing::WithArg;
 namespace {
 constexpr char kSystemServicesUsername[] = "test_username";
 constexpr char kSystemServicesPassword[] = "test_password";
+constexpr char kBrowserUsername[] = "browser_username";
+constexpr char kBrowserPassword[] = "browser_password";
 constexpr char kKerberosActivePrincipalName[] = "kerberos_princ_name";
 constexpr char kProxyAuthUrl[] = "http://example.com:3128";
+constexpr char kProxyAuthEmptyPath[] = "http://example.com:3128/";
 constexpr char kRealm[] = "My proxy";
-constexpr char kScheme[] = "BaSiC";
+constexpr char kScheme[] = "dIgEsT";
+constexpr char kProxyAuthChallenge[] = "challenge";
+
+std::unique_ptr<network::NetworkContext>
+CreateNetworkContextForDefaultStoragePartition(
+    network::NetworkService* network_service,
+    content::BrowserContext* browser_context) {
+  mojo::PendingRemote<network::mojom::NetworkContext> network_context_remote;
+  auto network_context = std::make_unique<network::NetworkContext>(
+      network_service, network_context_remote.InitWithNewPipeAndPassReceiver(),
+      network::mojom::NetworkContextParams::New());
+  content::BrowserContext::GetDefaultStoragePartition(browser_context)
+      ->SetNetworkContextForTesting(std::move(network_context_remote));
+  return network_context;
+}
+
+network::NetworkService* GetNetworkService() {
+  content::GetNetworkService();
+  // Wait for the Network Service to initialize on the IO thread.
+  content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+  return network::NetworkService::GetNetworkServiceForTesting();
+}
+
 }  // namespace
 
 namespace policy {
+// TODO(acostinas, https://crbug.com/1102351) Replace RunUntilIdle() in tests
+// with RunLoop::Run() with explicit RunLoop::QuitClosure().
 class SystemProxyManagerTest : public testing::Test {
  public:
   SystemProxyManagerTest() : local_state_(TestingBrowserProcess::GetGlobal()) {}
@@ -158,7 +197,7 @@ TEST_F(SystemProxyManagerTest, KerberosConfig) {
 }
 
 // Tests that when no user is signed in, credential requests are resolved to a
-// d-bus call which sends back to System-proxy empty credentials for the
+// D-Bus call which sends back to System-proxy empty credentials for the
 // specified protection space.
 TEST_F(SystemProxyManagerTest, UserCredentialsRequiredNoUser) {
   SystemProxyManager system_proxy_manager(chromeos::CrosSettings::Get(),
@@ -189,5 +228,57 @@ TEST_F(SystemProxyManagerTest, UserCredentialsRequiredNoUser) {
   ASSERT_TRUE(request.has_credentials());
   EXPECT_EQ("", request.credentials().username());
   EXPECT_EQ("", request.credentials().password());
+}
+
+// Tests that credential requests are resolved to a  D-Bus call which sends back
+// to System-proxy credentials acquired from the NetworkService.
+TEST_F(SystemProxyManagerTest, UserCredentialsRequestedFromNetworkService) {
+  SystemProxyManager system_proxy_manager(chromeos::CrosSettings::Get(),
+                                          local_state_.Get());
+  SetPolicy(true /* system_proxy_enabled */, "" /* system_services_username */,
+            "" /* system_services_password */);
+  system_proxy_manager.StartObservingPrimaryProfilePrefs(profile_.get());
+
+  // Setup the NetworkContext with credentials.
+  std::unique_ptr<network::NetworkContext> network_context =
+      CreateNetworkContextForDefaultStoragePartition(GetNetworkService(),
+                                                     profile_.get());
+  network_context->url_request_context()
+      ->http_transaction_factory()
+      ->GetSession()
+      ->http_auth_cache()
+      ->Add(GURL(kProxyAuthEmptyPath), net::HttpAuth::AUTH_PROXY, kRealm,
+            net::HttpAuth::AUTH_SCHEME_DIGEST, net::NetworkIsolationKey(),
+            kProxyAuthChallenge,
+            net::AuthCredentials(base::ASCIIToUTF16(kBrowserUsername),
+                                 base::ASCIIToUTF16(kBrowserPassword)),
+            std::string() /* path */);
+
+  system_proxy::ProtectionSpace protection_space;
+  protection_space.set_origin(kProxyAuthUrl);
+  protection_space.set_scheme(kScheme);
+  protection_space.set_realm(kRealm);
+
+  system_proxy::AuthenticationRequiredDetails details;
+  *details.mutable_proxy_protection_space() = protection_space;
+
+  EXPECT_EQ(1, client_test_interface()->GetSetAuthenticationDetailsCallCount());
+
+  client_test_interface()->SendAuthenticationRequiredSignal(details);
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(2, client_test_interface()->GetSetAuthenticationDetailsCallCount());
+
+  system_proxy::SetAuthenticationDetailsRequest request =
+      client_test_interface()->GetLastAuthenticationDetailsRequest();
+
+  ASSERT_TRUE(request.has_protection_space());
+  EXPECT_EQ(protection_space.SerializeAsString(),
+            request.protection_space().SerializeAsString());
+
+  ASSERT_TRUE(request.has_credentials());
+  EXPECT_EQ(kBrowserUsername, request.credentials().username());
+  EXPECT_EQ(kBrowserPassword, request.credentials().password());
+  system_proxy_manager.StopObservingPrimaryProfilePrefs();
 }
 }  // namespace policy

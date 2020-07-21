@@ -1617,7 +1617,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_Unload_ACK, OnUnloadACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ContextMenu, OnContextMenu)
     IPC_MESSAGE_HANDLER(FrameHostMsg_VisualStateResponse, OnVisualStateResponse)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SelectionChanged, OnSelectionChanged)
   IPC_END_MESSAGE_MAP()
 
@@ -2651,7 +2650,7 @@ void RenderFrameHostImpl::DidCommitBackForwardCacheNavigation(
 
   // The page is already loaded since it came from the cache, so fire the stop
   // loading event.
-  OnDidStopLoading();
+  DidStopLoading();
 }
 
 void RenderFrameHostImpl::DidCommitPerNavigationMojoInterfaceNavigation(
@@ -4264,33 +4263,6 @@ void RenderFrameHostImpl::DidFinishDocumentLoad() {
   delegate_->DOMContentLoaded(this);
 }
 
-void RenderFrameHostImpl::OnDidStopLoading() {
-  TRACE_EVENT1("navigation", "RenderFrameHostImpl::OnDidStopLoading",
-               "frame_tree_node", frame_tree_node_->frame_tree_node_id());
-
-  // This method should never be called when the frame is not loading.
-  // Unfortunately, it can happen if a history navigation happens during a
-  // BeforeUnload or Unload event.
-  // TODO(fdegans): Change this to a DCHECK after LoadEventProgress has been
-  // refactored in Blink. See crbug.com/466089
-  if (!is_loading_)
-    return;
-
-  was_discarded_ = false;
-  is_loading_ = false;
-
-  // If we have a PeakGpuMemoryTrack, close it as loading as stopped. It will
-  // asynchronously receive the statistics from the GPU process, and update
-  // UMA stats.
-  if (loading_mem_tracker_)
-    loading_mem_tracker_.reset();
-
-  // Only inform the FrameTreeNode of a change in load state if the load state
-  // of this RenderFrameHost is being tracked.
-  if (!IsPendingDeletion())
-    frame_tree_node_->DidStopLoading();
-}
-
 void RenderFrameHostImpl::OnSelectionChanged(const base::string16& text,
                                              uint32_t offset,
                                              const gfx::Range& range) {
@@ -4573,6 +4545,33 @@ void RenderFrameHostImpl::OpenURL(mojom::OpenURLParamsPtr params) {
       params->should_replace_current_entry, params->user_gesture,
       params->triggering_event_info, params->href_translate,
       std::move(blob_url_loader_factory), params->impression);
+}
+
+void RenderFrameHostImpl::DidStopLoading() {
+  TRACE_EVENT1("navigation", "RenderFrameHostImpl::DidStopLoading",
+               "frame_tree_node", frame_tree_node_->frame_tree_node_id());
+
+  // This method should never be called when the frame is not loading.
+  // Unfortunately, it can happen if a history navigation happens during a
+  // BeforeUnload or Unload event.
+  // TODO(fdegans): Change this to a DCHECK after LoadEventProgress has been
+  // refactored in Blink. See crbug.com/466089
+  if (!is_loading_)
+    return;
+
+  was_discarded_ = false;
+  is_loading_ = false;
+
+  // If we have a PeakGpuMemoryTrack, close it as loading as stopped. It will
+  // asynchronously receive the statistics from the GPU process, and update
+  // UMA stats.
+  if (loading_mem_tracker_)
+    loading_mem_tracker_.reset();
+
+  // Only inform the FrameTreeNode of a change in load state if the load state
+  // of this RenderFrameHost is being tracked.
+  if (!IsPendingDeletion())
+    frame_tree_node_->DidStopLoading();
 }
 
 void RenderFrameHostImpl::GetSavableResourceLinksCallback(
@@ -5640,7 +5639,7 @@ void RenderFrameHostImpl::CommitNavigation(
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     bool is_view_source,
     base::Optional<SubresourceLoaderParams> subresource_loader_params,
-    base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
+    base::Optional<std::vector<blink::mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
     const base::UnguessableToken& devtools_navigation_token,
@@ -6474,12 +6473,12 @@ RenderFrameHostImpl::GetFrameBindingsControl() {
 void RenderFrameHostImpl::ResetLoadingState() {
   if (is_loading()) {
     // When pending deletion, just set the loading state to not loading.
-    // Otherwise, OnDidStopLoading will take care of that, as well as sending
+    // Otherwise, DidStopLoading will take care of that, as well as sending
     // notification to the FrameTreeNode about the change in loading state.
     if (IsPendingDeletion() || IsInBackForwardCache())
       is_loading_ = false;
     else
-      OnDidStopLoading();
+      DidStopLoading();
   }
 }
 
@@ -7925,8 +7924,8 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
 
   // Set is loading to true now if it has not been set yet. This happens for
   // renderer-initiated same-document navigations. It can also happen when a
-  // racy DidStopLoading IPC resets the loading state that was set to true in
-  // CommitNavigation.
+  // racy DidStopLoading Mojo method resets the loading state that was set to
+  // true in CommitNavigation.
   if (!is_loading()) {
     bool was_loading = frame_tree()->IsLoading();
     is_loading_ = true;
@@ -8027,7 +8026,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   if (loading_mem_tracker_)
     loading_mem_tracker_->Cancel();
   // Main Frames will create the tracker, which will be triggered after we
-  // receive OnDidStopLoading.
+  // receive DidStopLoading.
   loading_mem_tracker_ = navigation_request->TakePeakGpuMemoryTracker();
 
   network::mojom::ClientSecurityStatePtr client_security_state =
@@ -8218,7 +8217,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories,
-    base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
+    base::Optional<std::vector<blink::mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller,
     blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,

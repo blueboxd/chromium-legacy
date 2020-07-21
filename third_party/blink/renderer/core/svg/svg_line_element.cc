@@ -20,6 +20,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_line_element.h"
 
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/svg/svg_length.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -66,6 +67,8 @@ Path SVGLineElement::AsPath() const {
   Path path;
 
   SVGLengthContext length_context(this);
+  DCHECK(GetComputedStyle());
+
   path.MoveTo(FloatPoint(x1()->CurrentValue()->Value(length_context),
                          y1()->CurrentValue()->Value(length_context)));
   path.AddLineTo(FloatPoint(x2()->CurrentValue()->Value(length_context),

@@ -231,7 +231,8 @@ void PreconnectManager::TryToLaunchPreresolveJobs() {
                          weak_factory_.GetWeakPtr(), job_id));
       if (info) {
         ++info->inflight_count;
-        delegate_->PreconnectInitiated(info->url, job->url);
+        if (delegate_)
+          delegate_->PreconnectInitiated(info->url, job->url);
       }
       ++inflight_preresolves_count_;
     } else {

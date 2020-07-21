@@ -51,6 +51,7 @@
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/browser/install_flag.h"
+#include "extensions/browser/install_stage.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/policy_check.h"
 #include "extensions/browser/preload_check_group.h"
@@ -523,6 +524,7 @@ void CrxInstaller::OnUnpackSuccess(
   extension_ = extension;
   temp_dir_ = temp_dir;
   ruleset_checksums_ = std::move(ruleset_checksums);
+  ReportInstallationStage(InstallationStage::kFinalizing);
 
   if (!install_icon.empty())
     install_icon_ = std::make_unique<SkBitmap>(install_icon);
@@ -572,6 +574,10 @@ void CrxInstaller::OnUnpackSuccess(
   if (!content::GetUIThreadTaskRunner({})->PostTask(
           FROM_HERE, base::BindOnce(&CrxInstaller::CheckInstall, this)))
     NOTREACHED();
+}
+
+void CrxInstaller::OnStageChanged(InstallationStage stage) {
+  ReportInstallationStage(stage);
 }
 
 void CrxInstaller::CheckInstall() {
@@ -716,6 +722,7 @@ void CrxInstaller::OnInstallChecksComplete(const PreloadCheck::Errors& errors) {
 
 void CrxInstaller::ConfirmInstall() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ReportInstallationStage(InstallationStage::kComplete);
   ExtensionService* service = service_weak_.get();
   if (!service || service->browser_terminating())
     return;
@@ -1009,6 +1016,28 @@ void CrxInstaller::ReportSuccessFromUIThread() {
   service_weak_->OnExtensionInstalled(extension(), page_ordinal_,
                                       install_flags_, ruleset_checksums_);
   NotifyCrxInstallComplete(base::nullopt);
+}
+
+void CrxInstaller::ReportInstallationStage(InstallationStage stage) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    DCHECK(installer_task_runner_->RunsTasksInCurrentSequence());
+    if (!content::GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE, base::BindOnce(&CrxInstaller::ReportInstallationStage,
+                                      this, stage))) {
+      NOTREACHED();
+    }
+    return;
+  }
+
+  if (!service_weak_.get() || service_weak_->browser_terminating())
+    return;
+  // In case of force installed extensions, expected_id_ should always be set.
+  // We do not want to report in case of other extensions.
+  if (expected_id_.empty())
+    return;
+  InstallStageTracker* install_stage_tracker =
+      InstallStageTracker::Get(profile_);
+  install_stage_tracker->ReportCRXInstallationStage(expected_id_, stage);
 }
 
 void CrxInstaller::NotifyCrxInstallBegin() {

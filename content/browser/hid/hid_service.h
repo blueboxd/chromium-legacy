@@ -39,7 +39,8 @@ class HidService : public content::FrameServiceBase<blink::mojom::HidService>,
 
   // blink::mojom::HidService:
   void RegisterClient(
-      device::mojom::HidManagerClientAssociatedPtrInfo client) override;
+      mojo::PendingAssociatedRemote<device::mojom::HidManagerClient> client)
+      override;
   void GetDevices(GetDevicesCallback callback) override;
   void RequestDevice(std::vector<blink::mojom::HidDeviceFilterPtr> filters,
                      RequestDeviceCallback callback) override;

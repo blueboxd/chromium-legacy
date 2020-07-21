@@ -20,6 +20,7 @@
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/types/event_type.h"
+#include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
@@ -101,7 +102,7 @@ void WaylandKeyboard::Enter(void* data,
                             wl_surface* surface,
                             wl_array* keys) {
   // wl_surface might have been destroyed by this time.
-  if (auto* window = WaylandWindow::FromSurface(surface)) {
+  if (auto* window = wl::RootWindowFromWlSurface(surface)) {
     auto* self = static_cast<WaylandKeyboard*>(data);
     self->delegate_->OnKeyboardFocusChanged(window, /*focused=*/true);
   }
@@ -113,7 +114,7 @@ void WaylandKeyboard::Leave(void* data,
                             wl_surface* surface) {
   // wl_surface might have been destroyed by this time.
   auto* self = static_cast<WaylandKeyboard*>(data);
-  if (auto* window = WaylandWindow::FromSurface(surface))
+  if (auto* window = wl::RootWindowFromWlSurface(surface))
     self->delegate_->OnKeyboardFocusChanged(window, /*focused=*/false);
 
   // Upon window focus lose, reset the key repeat timers.

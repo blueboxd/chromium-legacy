@@ -75,7 +75,7 @@ class ExtensionsGuestViewMessageFilter
       const GURL& original_url,
       int32_t element_instance_id,
       const gfx::Size& element_size,
-      content::mojom::TransferrableURLLoaderPtr transferrable_url_loader)
+      blink::mojom::TransferrableURLLoaderPtr transferrable_url_loader)
       override;
   void CreateMimeHandlerViewGuest(
       int32_t render_frame_id,

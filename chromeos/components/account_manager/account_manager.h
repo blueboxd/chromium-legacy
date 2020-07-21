@@ -151,6 +151,12 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
       DelayNetworkCallRunner delay_network_call_runner,
       base::OnceClosure initialization_callback);
 
+  // Initializes |AccountManager| for ephemeral / in-memory usage.
+  // Useful for tests that cannot afford to write to disk and clean up after
+  // themselves.
+  void InitializeInEphemeralMode(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+
   // Returns |true| if |AccountManager| has been fully initialized.
   bool IsInitialized() const;
 
@@ -356,6 +362,10 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
   // Deletes |request| from |pending_token_revocation_requests_|, if present.
   void DeletePendingTokenRevocationRequest(GaiaTokenRevocationRequest* request);
 
+  // Returns |true| if |AccountManager| is operating in ephemeral / in-memory
+  // mode, and not persisting anything to disk.
+  bool IsEphemeralMode() const;
+
   // Status of this object's initialization.
   InitializationState init_state_ = InitializationState::kNotStarted;
 
@@ -371,13 +381,16 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
   PrefService* pref_service_ = nullptr;
 
   // A task runner for disk I/O.
+  // Will be |nullptr| if |AccountManager| is operating in ephemeral mode.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  // Writes |AccountManager|'s state to disk. Will be |nullptr| if
-  // |AccountManager| is operating in-memory only.
+  // Writes |AccountManager|'s state to disk.
+  // Will be |nullptr| if |AccountManager| is operating in ephemeral mode.
   std::unique_ptr<base::ImportantFileWriter> writer_;
 
   // Cryptohome root.
+  // Will be |base::FilePath::empty()| if |AccountManager| is operating in
+  // ephemeral mode.
   base::FilePath home_dir_;
 
   // A map from |AccountKey|s to |AccountInfo|.

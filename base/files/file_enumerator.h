@@ -57,6 +57,8 @@ class BASE_EXPORT FileEnumerator {
     FilePath GetName() const;
 
     int64_t GetSize() const;
+
+    // On POSIX systems, this is rounded down to the second.
     Time GetLastModifiedTime() const;
 
 #if defined(OS_WIN)

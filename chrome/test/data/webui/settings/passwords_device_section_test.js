@@ -74,11 +74,7 @@ suite('PasswordsDeviceSection', function() {
 
     // The user only enters this page when they are eligible (signed-in but not
     // syncing) and opted-in to account storage.
-    syncBrowserProxy.storedAccounts = [{
-      fullName: 'john doe',
-      givenName: 'john',
-      email: 'john@gmail.com',
-    }];
+    syncBrowserProxy.storedAccounts = [{email: 'john@gmail.com'}];
     simulateStoredAccounts(syncBrowserProxy.storedAccounts);
     syncBrowserProxy.syncStatus = {signedIn: false};
     simulateSyncStatus(syncBrowserProxy.syncStatus);

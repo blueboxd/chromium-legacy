@@ -30,22 +30,13 @@ WaylandWindow::WaylandWindow(PlatformWindowDelegate* delegate,
 
 WaylandWindow::~WaylandWindow() {
   shutting_down_ = true;
-  RemoveSurfaceListener();
 
   PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
-  if (wayland_surface_)
+  if (root_surface_)
     connection_->wayland_window_manager()->RemoveWindow(GetWidget());
 
   if (parent_window_)
     parent_window_->set_child_window(nullptr);
-}
-
-// static
-WaylandWindow* WaylandWindow::FromSurface(wl_surface* surface) {
-  if (!surface)
-    return nullptr;
-  return static_cast<WaylandWindow*>(
-      wl_proxy_get_user_data(reinterpret_cast<wl_proxy*>(surface)));
 }
 
 void WaylandWindow::OnWindowLostCapture() {
@@ -79,12 +70,16 @@ void WaylandWindow::UpdateBufferScale(bool update_bounds) {
     else
       ui_scale_ = display.device_scale_factor();
   }
-  SetBufferScale(new_scale, update_bounds);
+  // At this point, buffer_scale() still returns the old scale.
+  if (update_bounds)
+    SetBoundsDip(gfx::ScaleToRoundedRect(bounds_px_, 1.0 / buffer_scale()));
+
+  root_surface_->SetBufferScale(new_scale, update_bounds);
 }
 
 gfx::AcceleratedWidget WaylandWindow::GetWidget() const {
-  DCHECK(wayland_surface_);
-  return wayland_surface_->GetWidget();
+  DCHECK(root_surface_);
+  return root_surface_->GetWidget();
 }
 
 void WaylandWindow::SetPointerFocus(bool focus) {
@@ -121,10 +116,7 @@ void WaylandWindow::SetBounds(const gfx::Rect& bounds_px) {
     return;
   bounds_px_ = bounds_px;
 
-  // Opaque region is based on the size of the window. Thus, update the region
-  // on each update.
-  MaybeUpdateOpaqueRegion();
-
+  root_surface_->SetBounds(bounds_px);
   delegate_->OnBoundsChanged(bounds_px_);
 }
 
@@ -321,8 +313,8 @@ void WaylandWindow::SetBoundsDip(const gfx::Rect& bounds_dip) {
 }
 
 bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
-  wayland_surface_ = std::make_unique<WaylandSurface>(connection_, this);
-  if (!surface()) {
+  root_surface_ = std::make_unique<WaylandSurface>(connection_, this);
+  if (!root_surface_->Initialize()) {
     LOG(ERROR) << "Failed to create wl_surface";
     return false;
   }
@@ -330,12 +322,9 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   // Properties contain DIP bounds but the buffer scale is initially 1 so it's
   // OK to assign.  The bounds will be recalculated when the buffer scale
   // changes.
-  DCHECK_EQ(buffer_scale(), 1);
   bounds_px_ = properties.bounds;
   opacity_ = properties.opacity;
   type_ = properties.type;
-
-  AddSurfaceListener();
 
   connection_->wayland_window_manager()->AddWindow(GetWidget(), this);
 
@@ -349,27 +338,9 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
 
   // Will do nothing for menus because they have got their scale above.
   UpdateBufferScale(false);
+  root_surface_->SetBounds(bounds_px_);
 
-  MaybeUpdateOpaqueRegion();
   return true;
-}
-
-// TODO(crbug.com/1099838): Move wl_surface calls to WaylandSurface
-void WaylandWindow::SetBufferScale(int32_t new_scale, bool update_bounds) {
-  DCHECK_GT(new_scale, 0);
-  DCHECK(wayland_surface_);
-
-  if (new_scale == buffer_scale())
-    return;
-
-  auto old_scale = buffer_scale();
-  wayland_surface_->set_buffer_scale(new_scale);
-  if (update_bounds)
-    SetBoundsDip(gfx::ScaleToRoundedRect(bounds_px_, 1.0 / old_scale));
-
-  DCHECK(surface());
-  wl_surface_set_buffer_scale(surface(), buffer_scale());
-  connection_->ScheduleFlush();
 }
 
 WaylandWindow* WaylandWindow::GetParentWindow(
@@ -396,23 +367,6 @@ WaylandWindow* WaylandWindow::GetParentWindow(
 
 WaylandWindow* WaylandWindow::GetRootParentWindow() {
   return parent_window_ ? parent_window_->GetRootParentWindow() : this;
-}
-
-// TODO(crbug.com/1099838): Move wl_surface calls to WaylandSurface
-void WaylandWindow::AddSurfaceListener() {
-  static struct wl_surface_listener surface_listener = {
-      &WaylandWindow::Enter,
-      &WaylandWindow::Leave,
-  };
-  wl_surface_add_listener(surface(), &surface_listener, nullptr);
-  wl_surface_set_user_data(surface(), this);
-}
-
-void WaylandWindow::RemoveSurfaceListener() {
-  if (surface()) {
-    wl_surface_add_listener(surface(), nullptr, nullptr);
-    wl_surface_set_user_data(surface(), nullptr);
-  }
 }
 
 void WaylandWindow::AddEnteredOutputId(struct wl_output* output) {
@@ -491,19 +445,6 @@ WaylandWindow* WaylandWindow::GetTopMostChildWindow() {
   return child_window_ ? child_window_->GetTopMostChildWindow() : this;
 }
 
-void WaylandWindow::MaybeUpdateOpaqueRegion() {
-  if (!IsOpaqueWindow())
-    return;
-
-  wl::Object<wl_region> region(
-      wl_compositor_create_region(connection_->compositor()));
-  wl_region_add(region.get(), 0, 0, bounds_px_.width(), bounds_px_.height());
-
-  wl_surface_set_opaque_region(surface(), region.get());
-
-  connection_->ScheduleFlush();
-}
-
 bool WaylandWindow::IsOpaqueWindow() const {
   return opacity_ == ui::PlatformWindowOpacity::kOpaqueWindow;
 }
@@ -520,26 +461,10 @@ uint32_t WaylandWindow::DispatchEventToDelegate(
   return handled ? POST_DISPATCH_STOP_PROPAGATION : POST_DISPATCH_NONE;
 }
 
-// static
-void WaylandWindow::Enter(void* data,
-                          struct wl_surface* wl_surface,
-                          struct wl_output* output) {
-  if (auto* window = FromSurface(wl_surface))
-    window->AddEnteredOutputId(output);
-}
-
-// static
-void WaylandWindow::Leave(void* data,
-                          struct wl_surface* wl_surface,
-                          struct wl_output* output) {
-  if (auto* window = FromSurface(wl_surface))
-    window->RemoveEnteredOutputId(output);
-}
-
 std::unique_ptr<WaylandSurface> WaylandWindow::TakeWaylandSurface() {
   DCHECK(shutting_down_);
-  DCHECK(wayland_surface_);
-  return std::move(wayland_surface_);
+  DCHECK(root_surface_);
+  return std::move(root_surface_);
 }
 
 }  // namespace ui

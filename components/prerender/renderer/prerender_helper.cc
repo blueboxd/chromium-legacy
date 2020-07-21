@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/prerender/prerender_helper.h"
+#include "components/prerender/renderer/prerender_helper.h"
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/common/prerender_url_loader_throttle.h"
+#include "components/prerender//common/prerender_url_loader_throttle.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"

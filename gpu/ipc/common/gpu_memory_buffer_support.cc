@@ -8,6 +8,7 @@
 #include "base/notreached.h"
 #include "build/build_config.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_shared_memory.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/buffer_usage_util.h"
 
@@ -46,8 +47,12 @@ namespace gpu {
 
 GpuMemoryBufferSupport::GpuMemoryBufferSupport() {
 #if defined(USE_OZONE)
-  client_native_pixmap_factory_ = ui::CreateClientNativePixmapFactoryOzone();
-#elif defined(OS_LINUX)
+  if (features::IsUsingOzonePlatform()) {
+    client_native_pixmap_factory_ = ui::CreateClientNativePixmapFactoryOzone();
+    return;
+  }
+#endif
+#if defined(OS_LINUX)
   client_native_pixmap_factory_.reset(
       gfx::CreateClientNativePixmapFactoryDmabuf());
 #endif
@@ -116,10 +121,13 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
   }
   NOTREACHED();
   return false;
-#elif defined(USE_OZONE)
-  return ui::OzonePlatform::GetInstance()->IsNativePixmapConfigSupported(format,
-                                                                         usage);
-#elif defined(USE_X11)
+#elif defined(USE_OZONE) || defined(USE_X11)
+#if defined(USE_OZONE)
+  if (features::IsUsingOzonePlatform()) {
+    return ui::OzonePlatform::GetInstance()->IsNativePixmapConfigSupported(
+        format, usage);
+  }
+#endif
   // On X11, GPU memory buffer support can only be determined after GPU
   // initialization.
   // viz::HostGpuMemoryBufferManager::IsNativeGpuMemoryBufferConfiguration()

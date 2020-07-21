@@ -5,7 +5,7 @@
 #include "chrome/renderer/prerender/prerenderer_client.h"
 
 #include "base/logging.h"
-#include "chrome/renderer/prerender/prerender_helper.h"
+#include "components/prerender/renderer/prerender_helper.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/blink/public/web/web_view.h"

@@ -26,7 +26,6 @@
 #import "ios/chrome/app/application_delegate/user_activity_handler.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #import "ios/chrome/app/main_application_delegate.h"
-#import "ios/chrome/app/scoped_ui_blocker.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_constants.h"
@@ -53,6 +52,7 @@
 #import "ios/chrome/browser/ui/main/scene_delegate.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_coordinator.h"
+#import "ios/chrome/browser/ui/scoped_ui_blocker/scoped_ui_blocker.h"
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_metrics_browser_agent.h"
@@ -143,8 +143,8 @@ NSString* const kStartupAttemptReset = @"StartupAttempReset";
 // never reset.
 @property(nonatomic, assign) BOOL firstSceneHasActivated;
 
-// Redefined as readwrite.
-@property(nonatomic, weak, readwrite) SceneState* sceneShowingBlockingUI;
+// The current blocker target if any.
+@property(nonatomic, weak, readwrite) id<UIBlockerTarget> uiBlockerTarget;
 
 // The counter of currently shown blocking UIs. Do not use this directly,
 // instead use incrementBlockingUICounterForScene: and
@@ -196,14 +196,15 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   _safeModeCoordinator = safeModeCoordinator;
 }
 
-- (void)setSceneShowingBlockingUI:(SceneState*)newScene {
-  _sceneShowingBlockingUI = newScene;
-    for (SceneState* scene in self.connectedScenes) {
-      // When there's a scene with blocking UI, all other scenes should show the
-      // overlay.
-      BOOL shouldPresentOverlay = (newScene != nil) && (scene != newScene);
-      scene.presentingModalOverlay = shouldPresentOverlay;
-    }
+- (void)setUiBlockerTarget:(id<UIBlockerTarget>)uiBlockerTarget {
+  _uiBlockerTarget = uiBlockerTarget;
+  for (SceneState* scene in self.connectedScenes) {
+    // When there's a scene with blocking UI, all other scenes should show the
+    // overlay.
+    BOOL shouldPresentOverlay =
+        (uiBlockerTarget != nil) && (scene != uiBlockerTarget);
+    scene.presentingModalOverlay = shouldPresentOverlay;
+  }
 }
 
 #pragma mark - Public methods.
@@ -531,24 +532,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
 #pragma mark - Multiwindow-related
 
-- (void)decrementBlockingUICounter {
-  DCHECK(self.blockingUICounter > 0 && self.sceneShowingBlockingUI != nil);
-  self.blockingUICounter--;
-  if (self.blockingUICounter == 0) {
-    self.sceneShowingBlockingUI = nil;
-  }
-}
-
-- (void)incrementBlockingUICounterForScene:(SceneState*)scene {
-  DCHECK(self.sceneShowingBlockingUI == nil ||
-         scene == self.sceneShowingBlockingUI)
-      << "Another scene is already showing a blocking UI!";
-  self.blockingUICounter++;
-  if (!self.sceneShowingBlockingUI) {
-    self.sceneShowingBlockingUI = scene;
-  }
-}
-
 - (SceneState*)foregroundActiveScene {
   for (SceneState* sceneState in self.connectedScenes) {
     if (sceneState.activationLevel == SceneActivationLevelForegroundActive) {
@@ -616,8 +599,10 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
   [self.safeModeCoordinator start];
 
-  _safeModeBlocker =
-      std::make_unique<ScopedUIBlocker>(self.foregroundActiveScene);
+  if (IsMultiwindowSupported()) {
+    _safeModeBlocker =
+        std::make_unique<ScopedUIBlocker>(self.foregroundActiveScene);
+  }
 }
 
 - (void)initializeUI {
@@ -656,6 +641,25 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   [[PreviousSessionInfo sharedInstance] beginRecordingCurrentSession];
 }
 
+#pragma mark - UIBlockerManager
+
+- (void)incrementBlockingUICounterForTarget:(id<UIBlockerTarget>)target {
+  DCHECK(self.uiBlockerTarget == nil || target == self.uiBlockerTarget)
+      << "Another scene is already showing a blocking UI!";
+  self.blockingUICounter++;
+  if (!self.uiBlockerTarget) {
+    self.uiBlockerTarget = target;
+  }
+}
+
+- (void)decrementBlockingUICounterForTarget:(id<UIBlockerTarget>)target {
+  DCHECK(self.blockingUICounter > 0 && self.uiBlockerTarget == target);
+  self.blockingUICounter--;
+  if (self.blockingUICounter == 0) {
+    self.uiBlockerTarget = nil;
+  }
+}
+
 #pragma mark - Scene notifications
 
 // Handler for UISceneDidActivateNotification.
@@ -680,8 +684,8 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
       }
     }
     sceneDelegate.sceneState.presentingModalOverlay =
-        self.sceneShowingBlockingUI &&
-        (self.sceneShowingBlockingUI != sceneDelegate.sceneState);
+        (self.uiBlockerTarget != nil) &&
+        (self.uiBlockerTarget != sceneDelegate.sceneState);
   }
 }
 

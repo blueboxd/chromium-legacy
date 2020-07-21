@@ -59,7 +59,6 @@ enum class InsertMode { kSimple, kSmart };
 enum class DragSourceType { kHTMLSource, kPlainTextSource };
 enum class EditorParagraphSeparator { kIsDiv, kIsP };
 enum class EditorCommandSource { kMenuOrKeyBinding, kDOM };
-enum class WritingDirection;
 
 class CORE_EXPORT Editor final : public GarbageCollected<Editor> {
  public:
@@ -133,7 +132,7 @@ class CORE_EXPORT Editor final : public GarbageCollected<Editor> {
   // Supposed to be used as |const UndoStack&|.
   UndoStack& GetUndoStack() const { return *undo_stack_; }
 
-  void SetBaseWritingDirection(WritingDirection);
+  void SetBaseWritingDirection(mojo_base::mojom::blink::TextDirection);
 
   // smartInsertDeleteEnabled and selectTrailingWhitespaceEnabled are
   // mutually exclusive, meaning that enabling one will disable the other.

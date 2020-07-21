@@ -14,6 +14,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/install/sandboxed_unpacker_failure_reason.h"
+#include "extensions/browser/install_stage.h"
 #include "extensions/browser/updater/extension_downloader_delegate.h"
 #include "extensions/browser/updater/safe_manifest_parser.h"
 #include "extensions/common/extension_id.h"
@@ -295,6 +296,8 @@ class InstallStageTracker : public KeyedService {
     // Time at which the update manifest is downloaded and successfully parsed
     // from the server.
     base::Optional<base::Time> download_manifest_finish_time;
+    // See InstallationStage enum.
+    base::Optional<InstallationStage> installation_stage;
   };
 
   class Observer : public base::CheckedObserver {
@@ -347,6 +350,8 @@ class InstallStageTracker : public KeyedService {
   void ReportFailure(const ExtensionId& id, FailureReason reason);
   void ReportDownloadingStage(const ExtensionId& id,
                               ExtensionDownloaderDelegate::Stage stage);
+  void ReportCRXInstallationStage(const ExtensionId& id,
+                                  InstallationStage stage);
   void ReportDownloadingCacheStatus(
       const ExtensionId& id,
       ExtensionDownloaderDelegate::CacheStatus cache_status);

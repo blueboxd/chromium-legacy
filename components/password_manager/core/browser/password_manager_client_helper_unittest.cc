@@ -121,14 +121,33 @@ TEST_F(PasswordManagerClientHelperTest,
       CreateFormManager(&form, /*is_movable=*/true));
 }
 
-TEST_F(PasswordManagerClientHelperTest, PromptMoveForMovableForm) {
+TEST_F(PasswordManagerClientHelperTest, PromptMoveForMovableFormInAccountMode) {
   EXPECT_CALL(*client()->GetPasswordFeatureManager(),
               ShouldShowAccountStorageBubbleUi)
       .WillOnce(Return(true));
+  EXPECT_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore)
+      .WillOnce(Return(autofill::PasswordForm::Store::kAccountStore));
   EXPECT_CALL(*client(), PromptUserToMovePasswordToAccount);
   EXPECT_CALL(*client(), PromptUserToEnableAutosignin).Times(0);
 
-  // Indicate successful login without matching form.
+  // Indicate successful login.
+  const PasswordForm form =
+      CreateForm(kTestUsername, kTestPassword, GURL(kTestOrigin));
+  helper()->NotifySuccessfulLoginWithExistingPassword(
+      CreateFormManager(&form, /*is_movable=*/true));
+}
+
+TEST_F(PasswordManagerClientHelperTest,
+       NoPromptToMoveForMovableFormInProfileMode) {
+  EXPECT_CALL(*client()->GetPasswordFeatureManager(),
+              ShouldShowAccountStorageBubbleUi)
+      .WillOnce(Return(true));
+  EXPECT_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore)
+      .WillOnce(Return(autofill::PasswordForm::Store::kProfileStore));
+  EXPECT_CALL(*client(), PromptUserToMovePasswordToAccount).Times(0);
+  EXPECT_CALL(*client(), PromptUserToEnableAutosignin).Times(0);
+
+  // Indicate successful login.
   const PasswordForm form =
       CreateForm(kTestUsername, kTestPassword, GURL(kTestOrigin));
   helper()->NotifySuccessfulLoginWithExistingPassword(

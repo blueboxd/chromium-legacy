@@ -227,8 +227,8 @@ var CrSettingsPasswordsSectionV3Test = class extends CrSettingsV3BrowserTest {
   }
 };
 
-// Flaky on Mac and Debug builds https://crbug.com/1090931
-GEN('#if defined(OS_MACOSX) || !defined(NDEBUG)');
+// Flaky on Debug builds https://crbug.com/1090931
+GEN('#if !defined(NDEBUG)');
 GEN('#define MAYBE_All DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_All All');

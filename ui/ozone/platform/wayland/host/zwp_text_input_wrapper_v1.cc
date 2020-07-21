@@ -57,7 +57,7 @@ void ZWPTextInputWrapperV1::Reset() {
 
 void ZWPTextInputWrapperV1::Activate(WaylandWindow* window) {
   zwp_text_input_v1_activate(obj_.get(), connection_->seat(),
-                             window->surface());
+                             window->root_surface()->surface());
 }
 
 void ZWPTextInputWrapperV1::Deactivate() {

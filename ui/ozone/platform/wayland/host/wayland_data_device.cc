@@ -43,8 +43,8 @@ void WaylandDataDevice::StartDrag(const WaylandDataSource& data_source,
   drag_delegate_ = delegate;
 
   wl_data_device_start_drag(data_device_.get(), data_source.data_source(),
-                            origin_window.surface(), icon_surface,
-                            connection()->serial());
+                            origin_window.root_surface()->surface(),
+                            icon_surface, connection()->serial());
   drag_delegate_->DrawIcon();
   connection()->ScheduleFlush();
 }
@@ -109,7 +109,7 @@ void WaylandDataDevice::OnEnter(void* data,
                                 wl_fixed_t x,
                                 wl_fixed_t y,
                                 wl_data_offer* offer) {
-  WaylandWindow* window = WaylandWindow::FromSurface(surface);
+  WaylandWindow* window = wl::RootWindowFromWlSurface(surface);
   if (!window) {
     LOG(ERROR) << "Failed to get window.";
     return;

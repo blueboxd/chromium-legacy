@@ -73,7 +73,7 @@ struct HidDeviceFilter {
 interface HidService {
   // Registers a HidManagerClient to be notified when HID devices are added or
   // removed.
-  RegisterClient(associated device.mojom.HidManagerClient client);
+  RegisterClient(pending_associated_remote<device.mojom.HidManagerClient> client);
 
   // Retrieves information about all devices that this client has permission to
   // access.

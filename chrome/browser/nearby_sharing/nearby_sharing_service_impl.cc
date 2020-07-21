@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/nearby_sharing/fast_initiation_manager.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
@@ -150,26 +151,28 @@ NearbySharingServiceImpl::~NearbySharingServiceImpl() {
     bluetooth_adapter_->RemoveObserver(this);
 }
 
-void NearbySharingServiceImpl::RegisterSendSurface(
+NearbySharingService::StatusCodes NearbySharingServiceImpl::RegisterSendSurface(
     TransferUpdateCallback* transfer_callback,
-    ShareTargetDiscoveredCallback* discovery_callback,
-    StatusCodesCallback status_codes_callback) {
-  register_send_surface_callback_ = std::move(status_codes_callback);
+    ShareTargetDiscoveredCallback* discovery_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   StartFastInitiationAdvertising();
+  return StatusCodes::kOk;
 }
 
-void NearbySharingServiceImpl::UnregisterSendSurface(
+NearbySharingService::StatusCodes
+NearbySharingServiceImpl::UnregisterSendSurface(
     TransferUpdateCallback* transfer_callback,
-    ShareTargetDiscoveredCallback* discovery_callback,
-    StatusCodesCallback status_codes_callback) {
-  unregister_send_surface_callback_ = std::move(status_codes_callback);
+    ShareTargetDiscoveredCallback* discovery_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   StopFastInitiationAdvertising();
+  return StatusCodes::kOk;
 }
 
 NearbySharingService::StatusCodes
 NearbySharingServiceImpl::RegisterReceiveSurface(
     TransferUpdateCallback* transfer_callback,
     ReceiveSurfaceState state) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(transfer_callback);
   DCHECK_NE(state, ReceiveSurfaceState::kUnknown);
   if (foreground_receive_callbacks_.HasObserver(transfer_callback) ||
@@ -202,6 +205,7 @@ NearbySharingServiceImpl::RegisterReceiveSurface(
 NearbySharingService::StatusCodes
 NearbySharingServiceImpl::UnregisterReceiveSurface(
     TransferUpdateCallback* transfer_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(transfer_callback);
   bool is_foreground =
       foreground_receive_callbacks_.HasObserver(transfer_callback);
@@ -307,6 +311,7 @@ void NearbySharingServiceImpl::OnIncomingConnection(
     const std::string& endpoint_id,
     const std::vector<uint8_t>& endpoint_info,
     std::unique_ptr<NearbyConnection> connection) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(crbug/1085068): Handle incoming connection; use CertificateManager
 }
 
@@ -384,15 +389,13 @@ void NearbySharingServiceImpl::OnDataUsagePrefChanged() {
 
 void NearbySharingServiceImpl::StartFastInitiationAdvertising() {
   if (!IsBluetoothPresent() || !IsBluetoothPowered()) {
-    std::move(register_send_surface_callback_).Run(StatusCodes::kError);
+    NS_LOG(INFO) << "Failed to advertise FastInitiation. Bluetooth is not "
+                    "present or powered.";
     return;
   }
 
   if (fast_initiation_manager_) {
-    // TODO(hansenmichael): Do not invoke
-    // |register_send_surface_callback_| until Nearby Connections
-    // scanning is kicked off.
-    std::move(register_send_surface_callback_).Run(StatusCodes::kOk);
+    NS_LOG(INFO) << "Failed to advertise FastInitiation. Already advertising.";
     return;
   }
 
@@ -413,8 +416,7 @@ void NearbySharingServiceImpl::StartFastInitiationAdvertising() {
 
 void NearbySharingServiceImpl::StopFastInitiationAdvertising() {
   if (!fast_initiation_manager_) {
-    if (unregister_send_surface_callback_)
-      std::move(unregister_send_surface_callback_).Run(StatusCodes::kOk);
+    NS_LOG(INFO) << "Can't stop advertising FastInitiation. Not advertising.";
     return;
   }
 
@@ -431,7 +433,7 @@ void NearbySharingServiceImpl::GetBluetoothAdapter() {
   // Because this will be called from the constructor, GetAdapter() may call
   // OnGetBluetoothAdapter() immediately which can cause problems during tests
   // since the class is not fully constructed yet.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &device::BluetoothAdapterFactory::GetAdapter,
@@ -450,22 +452,17 @@ void NearbySharingServiceImpl::OnStartFastInitiationAdvertising() {
   // TODO(hansenmichael): Do not invoke
   // |register_send_surface_callback_| until Nearby Connections
   // scanning is kicked off.
-  std::move(register_send_surface_callback_).Run(StatusCodes::kOk);
+  NS_LOG(VERBOSE) << "Started advertising FastInitiation.";
 }
 
 void NearbySharingServiceImpl::OnStartFastInitiationAdvertisingError() {
   fast_initiation_manager_.reset();
-  std::move(register_send_surface_callback_).Run(StatusCodes::kError);
+  NS_LOG(ERROR) << "Failed to start FastInitiation advertising.";
 }
 
 void NearbySharingServiceImpl::OnStopFastInitiationAdvertising() {
   fast_initiation_manager_.reset();
-
-  // TODO(hansenmichael): Do not invoke
-  // |unregister_send_surface_callback_| until Nearby Connections
-  // scanning is stopped.
-  if (unregister_send_surface_callback_)
-    std::move(unregister_send_surface_callback_).Run(StatusCodes::kOk);
+  NS_LOG(VERBOSE) << "Stopped advertising FastInitiation";
 }
 
 bool NearbySharingServiceImpl::IsBluetoothPresent() const {

@@ -95,6 +95,9 @@ class CORE_EXPORT FetchResponseData final
     status_message_ = status_message;
   }
   void SetMimeType(const String& type) { mime_type_ = type; }
+  void SetRequestMethod(const AtomicString& method) {
+    request_method_ = method;
+  }
   void SetResponseTime(base::Time response_time) {
     response_time_ = response_time;
   }
@@ -131,6 +134,7 @@ class CORE_EXPORT FetchResponseData final
   // Initialize non-body data from the given |response|.
   void InitFromResourceResponse(
       const Vector<KURL>& request_url_list,
+      const AtomicString& request_method,
       network::mojom::CredentialsMode request_credentials,
       FetchRequestData::Tainting tainting,
       const ResourceResponse& response);
@@ -148,6 +152,7 @@ class CORE_EXPORT FetchResponseData final
   Member<FetchResponseData> internal_response_;
   Member<BodyStreamBuffer> buffer_;
   String mime_type_;
+  AtomicString request_method_;
   base::Time response_time_;
   String cache_storage_cache_name_;
   HTTPHeaderSet cors_exposed_header_names_;

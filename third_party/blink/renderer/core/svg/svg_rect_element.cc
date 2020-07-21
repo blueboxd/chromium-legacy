@@ -20,6 +20,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_rect_element.h"
 
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_rect.h"
 #include "third_party/blink/renderer/core/svg/svg_length.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -86,8 +87,7 @@ Path SVGRectElement::AsPath() const {
   Path path;
 
   SVGLengthContext length_context(this);
-  DCHECK(GetLayoutObject());
-  const ComputedStyle& style = GetLayoutObject()->StyleRef();
+  const ComputedStyle& style = ComputedStyleRef();
 
   FloatSize size(ToFloatSize(
       length_context.ResolveLengthPair(style.Width(), style.Height(), style)));

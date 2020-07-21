@@ -122,7 +122,7 @@ class MockNavigationHandle : public NavigationHandle {
                void(std::unique_ptr<NavigationThrottle>));
   MOCK_METHOD0(IsDeferredForTesting, bool());
   MOCK_METHOD1(RegisterSubresourceOverride,
-               void(mojom::TransferrableURLLoaderPtr));
+               void(blink::mojom::TransferrableURLLoaderPtr));
   MOCK_METHOD0(FromDownloadCrossOriginRedirect, bool());
   MOCK_METHOD0(IsSameProcess, bool());
   MOCK_METHOD0(GetNavigationEntryOffset, int());

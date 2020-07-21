@@ -466,9 +466,6 @@ IPC_SYNC_MESSAGE_CONTROL1_1(FrameHostMsg_CreateChildFrame,
 // detached from the DOM.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_Detach)
 
-// Sent when the renderer is done loading a page.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_DidStopLoading)
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Notification sent from a renderer to the browser that a Pepper plugin
 // instance is created in the DOM.

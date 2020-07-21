@@ -30,18 +30,6 @@
 {{ add_instance(kind.key_kind, name ~ "_key", True)|indent(2, True) }}
 {{ add_instance(kind.value_kind, name ~ "_value", True)|indent(2, True) }}
   }
-{%-   elif kind|is_interface_kind %}
-{%-     set mojom_type = kind|get_qualified_name_for_kind(flatten_nested_kind=True) %}
-  if ({{name}}) {
-    {{mojom_type}}Ptr tmp_{{name}}(std::move({{name}}));
-    mojolpm::GetContext()->AddInstance(std::move(tmp_{{name}}));
-  }
-{%-   elif kind|is_associated_interface_kind %}
-{%-     set mojom_type = kind.kind|get_qualified_name_for_kind(flatten_nested_kind=True) %}
-  if ({{name}}) {
-    {{mojom_type}}AssociatedPtr tmp_{{name}}(std::move({{name}}));
-    mojolpm::GetContext()->AddInstance(std::move(tmp_{{name}}));
-  }
 {%-   elif kind|is_pending_remote_kind %}
 {%-     set mojom_type = kind.kind|get_qualified_name_for_kind(flatten_nested_kind=True) %}
   if ({{name}}) {

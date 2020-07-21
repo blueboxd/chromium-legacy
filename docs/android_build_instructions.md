@@ -355,6 +355,17 @@ Args that affect build speed:
    * What it does: Uses multiple `.so` files instead of just one (faster links)
  * `is_java_debug = true` *(default=`is_debug`)*
    * What it does: Disables ProGuard (slow build step)
+ * `treat_warnings_as_errors = false` *(default=`true`)*
+   * Causes any compiler warnings or lint checks to not fail the build.
+   * Allows you to iterate without needing to satisfy static analysis checks.
+ * `use_errorprone_java_compiler = false` *(default=`true`)
+   * Don't run Errorprone checks when compiling Java files.
+   * Speeds up Java compiles by ~30% at the cost of not seeing ErrorProne
+     warnings.
+ * `disable_android_lint = true` *(default=`false`)*
+   * Don't run Android Lint when building APK / App Bundle targets.
+   * Lint usually takes > 60 seconds to run, so disabling it dramatically
+     reduces incremental build times.
 
 #### Incremental Install
 [Incremental Install](/build/android/incremental_install/README.md) uses

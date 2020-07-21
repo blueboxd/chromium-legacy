@@ -5,6 +5,7 @@
 #include "content/browser/appcache/appcache_backfillers.h"
 
 #include "content/browser/appcache/appcache_update_job.h"
+#include "net/http/http_request_headers.h"
 #include "sql/statement.h"
 #include "storage/browser/quota/padding_key.h"
 #include "url/gurl.h"
@@ -19,7 +20,7 @@ int64_t ComputeEntryPaddingSize(std::string response_url,
     return 0;
   return storage::ComputeResponsePadding(
       response_url, storage::GetDefaultPaddingKey(), /*has_metadata=*/false,
-      /*loaded_with_credentials=*/false);
+      /*loaded_with_credentials=*/false, net::HttpRequestHeaders::kGetMethod);
 }
 
 // Iterates over each Cache record; execute |callable| on each iteration.

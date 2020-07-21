@@ -138,7 +138,8 @@ Polymer({
     eligibleForAccountStorage_: {
       type: Boolean,
       value: false,
-      computed: 'computeEligibleForAccountStorage_(syncStatus_, signedIn_)',
+      computed: 'computeEligibleForAccountStorage_(' +
+          'syncStatus_, signedIn_, syncPrefs_)',
     },
 
     /** @private */
@@ -375,8 +376,8 @@ Polymer({
     this.addWebUIListener('sync-status-changed', syncStatusChanged);
 
     const syncPrefsChanged = syncPrefs => this.syncPrefs_ = syncPrefs;
-    syncBrowserProxy.sendSyncPrefsChanged();
     this.addWebUIListener('sync-prefs-changed', syncPrefsChanged);
+    syncBrowserProxy.sendSyncPrefsChanged();
 
     // For non-ChromeOS, also check whether accounts are available.
     // <if expr="not chromeos">
@@ -461,10 +462,13 @@ Polymer({
    * @private
    */
   computeEligibleForAccountStorage_() {
-    // |this.syncStatus_.signedIn| means the user has sync enabled, while
-    // |this.signedIn_| means they have signed in, in the content area.
+    // The user must have signed in but should have sync disabled
+    // (|!this.syncStatus_.signedin|). They should not be using a custom
+    // passphrase to encrypt their sync data, since there's no way for account
+    // storage users to input their passphrase and decrypt the passwords.
     return this.accountStorageFeatureEnabled_ &&
-        (!!this.syncStatus_ && !this.syncStatus_.signedIn) && this.signedIn_;
+        (!!this.syncStatus_ && !this.syncStatus_.signedIn) && this.signedIn_ &&
+        (!this.syncPrefs_ || !this.syncPrefs_.encryptAllData);
   },
 
   /**

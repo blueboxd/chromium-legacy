@@ -152,6 +152,16 @@ void InstallStageTracker::ReportDownloadingStage(
   }
 }
 
+void InstallStageTracker::ReportCRXInstallationStage(const ExtensionId& id,
+                                                     InstallationStage stage) {
+  DCHECK(!id.empty());
+  InstallationData& data = installation_data_map_[id];
+  data.installation_stage = stage;
+  for (auto& observer : observers_) {
+    observer.OnExtensionDataChangedForTesting(id, browser_context_, data);
+  }
+}
+
 void InstallStageTracker::ReportDownloadingCacheStatus(
     const ExtensionId& id,
     ExtensionDownloaderDelegate::CacheStatus cache_status) {

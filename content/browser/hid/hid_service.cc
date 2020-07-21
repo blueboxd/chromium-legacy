@@ -66,7 +66,7 @@ void HidService::Create(
 }
 
 void HidService::RegisterClient(
-    device::mojom::HidManagerClientAssociatedPtrInfo client) {
+    mojo::PendingAssociatedRemote<device::mojom::HidManagerClient> client) {
   clients_.Add(std::move(client));
 }
 

@@ -41,6 +41,7 @@ enum class VerifierFormat;
 namespace extensions {
 class Extension;
 enum class SandboxedUnpackerFailureReason;
+enum class InstallationStage;
 
 namespace declarative_net_request {
 struct IndexAndPersistJSONRulesetResult;
@@ -87,6 +88,9 @@ class SandboxedUnpackerClient
       const SkBitmap& install_icon,
       declarative_net_request::RulesetChecksums ruleset_checksums) = 0;
   virtual void OnUnpackFailure(const CrxInstallError& error) = 0;
+
+  // Called after stage of installation is changed.
+  virtual void OnStageChanged(InstallationStage stage) {}
 
  protected:
   friend class base::RefCountedDeleteOnSequence<SandboxedUnpackerClient>;

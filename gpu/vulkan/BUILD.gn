@@ -165,6 +165,7 @@ if (enable_vulkan) {
     sources = [ "tests/native_window.h" ]
 
     deps = [
+      "//ui/base:features",
       "//ui/gfx",
       "//ui/gfx:native_widget_types",
     ]

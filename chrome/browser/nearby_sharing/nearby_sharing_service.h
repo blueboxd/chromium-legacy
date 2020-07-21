@@ -41,16 +41,14 @@ class NearbySharingService {
 
   // Registers a send surface for handling payload transfer status and device
   // discovery.
-  virtual void RegisterSendSurface(
+  virtual StatusCodes RegisterSendSurface(
       TransferUpdateCallback* transfer_callback,
-      ShareTargetDiscoveredCallback* discovery_callback,
-      StatusCodesCallback status_codes_callback) = 0;
+      ShareTargetDiscoveredCallback* discovery_callback) = 0;
 
   // Unregisters the current send surface.
-  virtual void UnregisterSendSurface(
+  virtual StatusCodes UnregisterSendSurface(
       TransferUpdateCallback* transfer_callback,
-      ShareTargetDiscoveredCallback* discovery_callback,
-      StatusCodesCallback status_codes_callback) = 0;
+      ShareTargetDiscoveredCallback* discovery_callback) = 0;
 
   // Registers a receiver surface for handling payload transfer status.
   virtual StatusCodes RegisterReceiveSurface(

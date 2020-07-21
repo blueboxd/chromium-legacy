@@ -151,6 +151,15 @@ class AccountManagerTest : public testing::Test {
                              std::move(initialization_callback));
   }
 
+  // |account_manager| is a non-owning pointer.
+  void InitializeEphemeralAccountManager(AccountManager* account_manager) {
+    account_manager->InitializeInEphemeralMode(
+        test_url_loader_factory_.GetSafeWeakWrapper());
+    account_manager->SetPrefService(&pref_service_);
+    RunAllPendingTasks();
+    EXPECT_TRUE(account_manager->IsInitialized());
+  }
+
   void RunAllPendingTasks() { task_environment_.RunUntilIdle(); }
 
   // Returns an unowned pointer to |AccountManager|.
@@ -352,6 +361,24 @@ TEST_F(AccountManagerTest, TestTokenTransience) {
   // Create another |AccountManager| at the same path.
   AccountManager account_manager;
   InitializeAccountManager(&account_manager, home_dir);
+
+  std::vector<AccountManager::Account> accounts =
+      GetAccountsBlocking(&account_manager);
+  EXPECT_EQ(0UL, accounts.size());
+}
+
+TEST_F(AccountManagerTest, TestEphemeralMode) {
+  {
+    // Create a scoped |AccountManager|.
+    AccountManager account_manager;
+    InitializeEphemeralAccountManager(&account_manager);
+    account_manager.UpsertAccount(kGaiaAccountKey, kRawUserEmail, kGaiaToken);
+    RunAllPendingTasks();
+  }
+
+  // Create another |AccountManager|.
+  AccountManager account_manager;
+  InitializeEphemeralAccountManager(&account_manager);
 
   std::vector<AccountManager::Account> accounts =
       GetAccountsBlocking(&account_manager);

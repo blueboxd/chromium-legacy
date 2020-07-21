@@ -31,6 +31,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.test.espresso.NoMatchingViewException;
+import androidx.test.espresso.Root;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.ViewAssertion;
@@ -395,6 +396,24 @@ class AutofillAssistantUiTestUtil {
     public static void waitUntilViewMatchesCondition(
             Matcher<View> matcher, Matcher<View> condition) {
         waitUntilViewMatchesCondition(matcher, condition, DEFAULT_MAX_TIME_TO_POLL);
+    }
+
+    /**
+     * Same as {@link #waitUntilViewMatchesCondition(Matcher, Matcher)} but also uses {@code
+     * rootMatcher} to select the correct window.
+     */
+    public static void waitUntilViewInRootMatchesCondition(
+            Matcher<View> matcher, Matcher<Root> rootMatcher, Matcher<View> condition) {
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                onView(matcher).inRoot(rootMatcher).check(matches(condition));
+            } catch (NoMatchingViewException | AssertionError e) {
+                // Note: all other exceptions are let through, in particular
+                // AmbiguousViewMatcherException.
+                throw new CriteriaNotSatisfiedException(
+                        "Timeout while waiting for " + matcher + " to satisfy " + condition);
+            }
+        }, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
     }
 
     /** @see {@link #waitUntilViewMatchesCondition(Matcher, Matcher)} */

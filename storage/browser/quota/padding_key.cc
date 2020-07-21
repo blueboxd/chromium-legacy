@@ -9,6 +9,7 @@
 
 #include "base/no_destructor.h"
 #include "crypto/hmac.h"
+#include "net/http/http_request_headers.h"
 
 using crypto::SymmetricKey;
 
@@ -57,7 +58,8 @@ void ResetPaddingKeyForTesting() {
 int64_t ComputeResponsePadding(const std::string& response_url,
                                const crypto::SymmetricKey* padding_key,
                                bool has_metadata,
-                               bool loaded_with_credentials) {
+                               bool loaded_with_credentials,
+                               const std::string& request_method) {
   DCHECK(!response_url.empty());
 
   crypto::HMAC hmac(crypto::HMAC::SHA256);
@@ -68,6 +70,14 @@ int64_t ComputeResponsePadding(const std::string& response_url,
     key += "METADATA";
   if (loaded_with_credentials)
     key += "CREDENTIALED";
+
+  // It should only be possible to have a CORS safelisted method here since
+  // the spec does not permit other methods for no-cors requests.
+  DCHECK(request_method == net::HttpRequestHeaders::kGetMethod ||
+         request_method == net::HttpRequestHeaders::kHeadMethod ||
+         request_method == net::HttpRequestHeaders::kPostMethod);
+  key += request_method;
+
   uint64_t digest_start;
   CHECK(hmac.Sign(key, reinterpret_cast<uint8_t*>(&digest_start),
                   sizeof(digest_start)));

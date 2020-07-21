@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/guest_view/renderer/guest_view_container.h"
-#include "content/public/common/transferrable_url_loader.mojom.h"
 #include "extensions/common/api/mime_handler.mojom.h"
 #include "extensions/common/guest_view/mime_handler_view_uma_types.h"
 #include "extensions/common/mojom/guest_view.mojom.h"
@@ -22,6 +21,7 @@
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
 #include "third_party/blink/public/web/web_associated_url_loader_client.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -123,7 +123,7 @@ class MimeHandlerViewContainer : public blink::WebAssociatedURLLoaderClient,
   // by the URLLoaderThrottle which intercepts the resource load, which is then
   // sent to the browser to be handed off to the plugin.
   void SetEmbeddedLoader(
-      content::mojom::TransferrableURLLoaderPtr transferrable_url_loader);
+      blink::mojom::TransferrableURLLoaderPtr transferrable_url_loader);
 
   void CreateMimeHandlerViewGuestIfNecessary();
   int32_t GetInstanceId() const;
@@ -157,7 +157,7 @@ class MimeHandlerViewContainer : public blink::WebAssociatedURLLoaderClient,
   const std::string mime_type_;
 
   // Used when network service is enabled:
-  content::mojom::TransferrableURLLoaderPtr transferrable_url_loader_;
+  blink::mojom::TransferrableURLLoaderPtr transferrable_url_loader_;
 
   // Used when network service is disabled:
   // A URL loader to load the |original_url_| when the plugin is embedded. In

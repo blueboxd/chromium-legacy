@@ -351,6 +351,27 @@ var availableTests = [
         });
   },
 
+  function changeCompromisedCredentialWithEmptyPasswordFails() {
+    chrome.passwordsPrivate.changeCompromisedCredential(
+        {
+          id: 0,
+          formattedOrigin: 'example.com',
+          detailedOrigin: 'https://example.com',
+          isAndroidCredential: false,
+          signonRealm: 'https://example.com',
+          username: 'alice',
+          compromiseTime: COMPROMISE_TIME,
+          elapsedTimeSinceCompromise: '3 days ago',
+          compromiseType: 'LEAKED',
+        },
+        '', () => {
+          chrome.test.assertLastError(
+              'Could not change the compromised credential. The new password ' +
+              'can\'t be empty.');
+          chrome.test.succeed();
+        });
+  },
+
   function changeCompromisedCredentialFails() {
     chrome.passwordsPrivate.changeCompromisedCredential(
         {

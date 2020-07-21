@@ -9,12 +9,14 @@
 
 #include "chrome/browser/sharesheet/sharesheet_types.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/controls/button/button.h"
 
 namespace sharesheet {
 class SharesheetServiceDelegate;
 }
 
-class SharesheetBubbleView : public views::BubbleDialogDelegateView {
+class SharesheetBubbleView : public views::BubbleDialogDelegateView,
+                             public views::ButtonListener {
  public:
   using TargetInfo = sharesheet::TargetInfo;
 
@@ -25,7 +27,11 @@ class SharesheetBubbleView : public views::BubbleDialogDelegateView {
   ~SharesheetBubbleView() override;
 
   void ShowBubble(std::vector<TargetInfo> targets);
+  void ShowActionView();
   void CloseBubble();
+
+  // views::ButtonListener overrides
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::BubbleDialogDelegateView overrides
   gfx::Size CalculatePreferredSize() const override;
@@ -35,6 +41,7 @@ class SharesheetBubbleView : public views::BubbleDialogDelegateView {
   // Owns this class.
   sharesheet::SharesheetServiceDelegate* delegate_;
   std::vector<TargetInfo> targets_;
+  base::string16 active_target_;
 
   views::View* root_view_ = nullptr;
   views::View* main_view_ = nullptr;

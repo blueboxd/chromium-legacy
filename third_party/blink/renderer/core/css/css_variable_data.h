@@ -38,17 +38,17 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
   }
 
   static scoped_refptr<CSSVariableData> CreateResolved(
-      const Vector<CSSParserToken>& resolved_tokens,
+      Vector<CSSParserToken> resolved_tokens,
       Vector<String> backing_strings,
       bool is_animation_tainted,
       bool has_font_units,
       bool has_root_font_units,
-      bool absolutized,
       const String& base_url,
       const WTF::TextEncoding& charset) {
     return base::AdoptRef(new CSSVariableData(
-        resolved_tokens, std::move(backing_strings), is_animation_tainted,
-        has_font_units, has_root_font_units, absolutized, base_url, charset));
+        std::move(resolved_tokens), std::move(backing_strings),
+        is_animation_tainted, has_font_units, has_root_font_units, base_url,
+        charset));
   }
 
   CSSParserTokenRange TokenRange() const { return tokens_; }
@@ -70,10 +70,6 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
   // font-size of the root element, e.g. 'rem'.
   bool HasRootFontUnits() const { return has_root_font_units_; }
 
-  // True if this CSSVariableData has undergone absolutization. Absolutization
-  // is required for e.g. registered properties with 'em' units.
-  bool IsAbsolutized() const { return absolutized_; }
-
   const String& BaseURL() const { return base_url_; }
 
   const WTF::TextEncoding& Charset() const { return charset_; }
@@ -86,8 +82,7 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
       : is_animation_tainted_(false),
         needs_variable_resolution_(false),
         has_font_units_(false),
-        has_root_font_units_(false),
-        absolutized_(false) {}
+        has_root_font_units_(false) {}
 
   CSSVariableData(const CSSParserTokenRange&,
                   bool is_animation_tainted,
@@ -95,21 +90,19 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
                   const KURL& base_url,
                   const WTF::TextEncoding& charset);
 
-  CSSVariableData(const Vector<CSSParserToken>& resolved_tokens,
+  CSSVariableData(Vector<CSSParserToken> resolved_tokens,
                   Vector<String> backing_strings,
                   bool is_animation_tainted,
                   bool has_font_units,
                   bool has_root_font_units,
-                  bool absolutized,
                   const String& base_url,
                   const WTF::TextEncoding& charset)
       : backing_strings_(std::move(backing_strings)),
-        tokens_(resolved_tokens),
+        tokens_(std::move(resolved_tokens)),
         is_animation_tainted_(is_animation_tainted),
         needs_variable_resolution_(false),
         has_font_units_(has_font_units),
         has_root_font_units_(has_root_font_units),
-        absolutized_(absolutized),
         base_url_(base_url),
         charset_(charset) {}
 
@@ -124,7 +117,6 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
   const bool needs_variable_resolution_;
   bool has_font_units_;
   bool has_root_font_units_;
-  bool absolutized_;
   String base_url_;
   WTF::TextEncoding charset_;
   DISALLOW_COPY_AND_ASSIGN(CSSVariableData);

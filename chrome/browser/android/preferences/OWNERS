@@ -1,4 +1,5 @@
-file://components/prefs/android/OWNERS
+twellington@chromium.org
+chouinard@chromium.org
 
 per-file cookie_controls*=dullweber@chromium.org
 

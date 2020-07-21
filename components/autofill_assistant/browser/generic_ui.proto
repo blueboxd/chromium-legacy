@@ -208,9 +208,9 @@ message AutofillFormatProto {
   optional string locale = 2;
 }
 
-// A comparison of two values in the form |value_a| <mode> |value_b|. EQUAL is
-// supported for all values. All other comparison modes are only supported for
-// single integers, strings, and dates.
+// A comparison of two values in the form |value_a| <mode> |value_b|. EQUAL and
+// NOT_EQUAL are supported for all values. All other comparison modes are only
+// supported for single integers, strings, and dates.
 message ValueComparisonProto {
   enum Mode {
     UNDEFINED = 0;
@@ -219,6 +219,7 @@ message ValueComparisonProto {
     EQUAL = 3;
     GREATER_OR_EQUAL = 4;
     GREATER = 5;
+    NOT_EQUAL = 6;
   }
 
   // The first value to compare.

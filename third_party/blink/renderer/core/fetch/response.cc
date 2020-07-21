@@ -378,6 +378,8 @@ FetchResponseData* Response::CreateUnfilteredFetchResponseDataWithoutBody(
   response->SetURLList(fetch_api_response.url_list);
   response->SetStatus(fetch_api_response.status_code);
   response->SetStatusMessage(WTF::AtomicString(fetch_api_response.status_text));
+  response->SetRequestMethod(
+      WTF::AtomicString(fetch_api_response.request_method));
   response->SetResponseTime(fetch_api_response.response_time);
   response->SetCacheStorageCacheName(
       fetch_api_response.cache_storage_cache_name);

@@ -428,7 +428,8 @@ void FetchManager::Loader::DidReceiveResponse(
       BodyStreamBuffer::Create(script_state, place_holder_body_, signal_));
 
   response_data->InitFromResourceResponse(
-      url_list_, fetch_request_data_->Credentials(), tainting, response);
+      url_list_, fetch_request_data_->Method(),
+      fetch_request_data_->Credentials(), tainting, response);
 
   FetchResponseData* tainted_response = nullptr;
 

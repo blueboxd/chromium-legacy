@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/strings/string16.h"
 #include "chrome/browser/sharesheet/sharesheet_controller.h"
 #include "chrome/browser/sharesheet/sharesheet_types.h"
 
@@ -33,7 +34,11 @@ class SharesheetServiceDelegate : public SharesheetController {
       delete;
 
   void ShowBubble(std::vector<TargetInfo> targets);
-  void OnBubbleClosed();
+  void OnBubbleClosed(const base::string16& active_action);
+  void OnTargetSelected(const base::string16& target_name,
+                        const TargetType type,
+                        views::View* share_action_view);
+  void OnActionLaunched();
 
   // SharesheetController overrides
   uint32_t GetId() override;
@@ -41,6 +46,7 @@ class SharesheetServiceDelegate : public SharesheetController {
 
  private:
   const uint32_t id_;
+  base::string16 active_action_;
   std::unique_ptr<SharesheetBubbleView> sharesheet_bubble_view_;
   SharesheetService* sharesheet_service_;
 };

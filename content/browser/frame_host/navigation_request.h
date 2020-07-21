@@ -326,7 +326,7 @@ class CONTENT_EXPORT NavigationRequest
   bool IsSameProcess() override;
   int GetNavigationEntryOffset() override;
   void RegisterSubresourceOverride(
-      mojom::TransferrableURLLoaderPtr transferrable_loader) override;
+      blink::mojom::TransferrableURLLoaderPtr transferrable_loader) override;
   GlobalFrameRoutingId GetPreviousRenderFrameHostId() override;
   bool IsServedFromBackForwardCache() override;
   void SetIsOverridingUserAgent(bool override_ua) override;
@@ -1177,7 +1177,7 @@ class CONTENT_EXPORT NavigationRequest
   // See comment on accessor.
   const base::UnguessableToken devtools_navigation_token_;
 
-  base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
+  base::Optional<std::vector<blink::mojom::TransferrableURLLoaderPtr>>
       subresource_overrides_;
 
   // The NavigationClient interface for that requested this navigation in the

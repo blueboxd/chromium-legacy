@@ -191,6 +191,7 @@ FetchResponseData* FetchResponseData::Clone(ScriptState* script_state,
   new_response->status_message_ = status_message_;
   new_response->header_list_ = header_list_->Clone();
   new_response->mime_type_ = mime_type_;
+  new_response->request_method_ = request_method_;
   new_response->response_time_ = response_time_;
   new_response->cache_storage_cache_name_ = cache_storage_cache_name_;
   new_response->cors_exposed_header_names_ = cors_exposed_header_names_;
@@ -262,6 +263,7 @@ mojom::blink::FetchAPIResponsePtr FetchResponseData::PopulateFetchAPIResponse(
   response->response_type = type_;
   response->response_source = response_source_;
   response->mime_type = mime_type_;
+  response->request_method = request_method_;
   response->response_time = response_time_;
   response->cache_storage_cache_name = cache_storage_cache_name_;
   response->cors_exposed_header_names =
@@ -279,6 +281,7 @@ mojom::blink::FetchAPIResponsePtr FetchResponseData::PopulateFetchAPIResponse(
 
 void FetchResponseData::InitFromResourceResponse(
     const Vector<KURL>& request_url_list,
+    const AtomicString& request_method,
     network::mojom::CredentialsMode request_credentials,
     FetchRequestData::Tainting tainting,
     const ResourceResponse& response) {
@@ -308,6 +311,7 @@ void FetchResponseData::InitFromResourceResponse(
   }
 
   SetMimeType(response.MimeType());
+  SetRequestMethod(request_method);
   SetResponseTime(response.ResponseTime());
 
   if (response.WasCached()) {

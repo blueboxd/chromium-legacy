@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PRERENDER_URL_LOADER_THROTTLE_H_
-#define CHROME_COMMON_PRERENDER_URL_LOADER_THROTTLE_H_
+#ifndef COMPONENTS_PRERENDER_COMMON_PRERENDER_URL_LOADER_THROTTLE_H_
+#define COMPONENTS_PRERENDER_COMMON_PRERENDER_URL_LOADER_THROTTLE_H_
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -75,4 +75,4 @@ class PrerenderURLLoaderThrottle
 
 }  // namespace prerender
 
-#endif  // CHROME_COMMON_PRERENDER_URL_LOADER_THROTTLE_H_
+#endif  // COMPONENTS_PRERENDER_COMMON_PRERENDER_URL_LOADER_THROTTLE_H_

@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "base/sequence_checker.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_constants.h"
 #include "chrome/browser/nearby_sharing/nearby_notification_manager.h"
@@ -26,6 +27,7 @@ class NearbyConnectionsManager;
 class PrefService;
 class Profile;
 
+// All methods should be called from the same sequence that created the service.
 class NearbySharingServiceImpl
     : public NearbySharingService,
       public KeyedService,
@@ -40,13 +42,12 @@ class NearbySharingServiceImpl
   ~NearbySharingServiceImpl() override;
 
   // NearbySharingService:
-  void RegisterSendSurface(TransferUpdateCallback* transfer_callback,
-                           ShareTargetDiscoveredCallback* discovery_callback,
-                           StatusCodesCallback status_codes_callback) override;
-  void UnregisterSendSurface(
+  StatusCodes RegisterSendSurface(
       TransferUpdateCallback* transfer_callback,
-      ShareTargetDiscoveredCallback* discovery_callback,
-      StatusCodesCallback status_codes_callback) override;
+      ShareTargetDiscoveredCallback* discovery_callback) override;
+  StatusCodes UnregisterSendSurface(
+      TransferUpdateCallback* transfer_callback,
+      ShareTargetDiscoveredCallback* discovery_callback) override;
   StatusCodes RegisterReceiveSurface(TransferUpdateCallback* transfer_callback,
                                      ReceiveSurfaceState state) override;
   StatusCodes UnregisterReceiveSurface(
@@ -110,8 +111,6 @@ class NearbySharingServiceImpl
       nearby_process_observer_{this};
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   std::unique_ptr<FastInitiationManager> fast_initiation_manager_;
-  StatusCodesCallback register_send_surface_callback_;
-  StatusCodesCallback unregister_send_surface_callback_;
   NearbyNotificationManager nearby_notification_manager_;
 
   // A list of foreground receivers.
@@ -143,6 +142,7 @@ class NearbySharingServiceImpl
   // True if we're currently sending or receiving a file.
   bool is_transferring_files_ = false;
 
+  SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<NearbySharingServiceImpl> weak_ptr_factory_{this};
 };
 

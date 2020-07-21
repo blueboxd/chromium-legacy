@@ -87,6 +87,8 @@ bool PasswordManagerClientHelper::ShouldPromptToMovePasswordToAccount(
     const PasswordFormManagerForUI& submitted_manager) const {
   return delegate_->GetPasswordFeatureManager()
              ->ShouldShowAccountStorageBubbleUi() &&
+         delegate_->GetPasswordFeatureManager()->GetDefaultPasswordStore() ==
+             autofill::PasswordForm::Store::kAccountStore &&
          submitted_manager.IsMovableToAccountStore() &&
          !delegate_->IsIncognito();
 }

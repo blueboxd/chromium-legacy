@@ -530,11 +530,9 @@ void StyleCascade::TokenSequence::Append(const CSSParserToken& token) {
 
 scoped_refptr<CSSVariableData>
 StyleCascade::TokenSequence::BuildVariableData() {
-  // TODO(andruud): Why not also std::move tokens?
-  const bool absolutized = true;
   return CSSVariableData::CreateResolved(
-      tokens_, std::move(backing_strings_), is_animation_tainted_,
-      has_font_units_, has_root_font_units_, absolutized, base_url_, charset_);
+      std::move(tokens_), std::move(backing_strings_), is_animation_tainted_,
+      has_font_units_, has_root_font_units_, base_url_, charset_);
 }
 
 bool StyleCascade::ShouldRevert(const CSSProperty& property,

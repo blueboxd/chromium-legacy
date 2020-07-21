@@ -5,6 +5,7 @@
 #include "services/network/network_context.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/barrier_closure.h"
@@ -1722,6 +1723,41 @@ void NetworkContext::LookupServerBasicAuthCredentials(
   else
     std::move(callback).Run(base::nullopt);
 }
+
+#if defined(OS_CHROMEOS)
+void NetworkContext::LookupProxyAuthCredentials(
+    const net::ProxyServer& proxy_server,
+    const std::string& auth_scheme,
+    const std::string& realm,
+    LookupProxyAuthCredentialsCallback callback) {
+  net::HttpAuth::Scheme net_scheme =
+      net::HttpAuth::StringToScheme(base::ToLowerASCII(auth_scheme));
+  if (net_scheme == net::HttpAuth::Scheme::AUTH_SCHEME_MAX) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+  net::HttpAuthCache* http_auth_cache =
+      url_request_context_->http_transaction_factory()
+          ->GetSession()
+          ->http_auth_cache();
+  const char* scheme = proxy_server.is_https() ? "https://" : "http://";
+  GURL proxy_url(scheme + proxy_server.host_port_pair().ToString());
+  if (!proxy_url.is_valid()) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  //  Unlike server credentials, proxy credentials are not keyed on
+  //  NetworkIsolationKey.
+  net::HttpAuthCache::Entry* entry =
+      http_auth_cache->Lookup(proxy_url, net::HttpAuth::AUTH_PROXY, realm,
+                              net_scheme, net::NetworkIsolationKey());
+  if (entry)
+    std::move(callback).Run(entry->credentials());
+  else
+    std::move(callback).Run(base::nullopt);
+}
+#endif
 
 const net::HttpAuthPreferences* NetworkContext::GetHttpAuthPreferences() const {
   return &http_auth_merged_preferences_;

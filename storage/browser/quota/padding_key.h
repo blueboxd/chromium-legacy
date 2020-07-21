@@ -62,7 +62,8 @@ COMPONENT_EXPORT(STORAGE_BROWSER)
 int64_t ComputeResponsePadding(const std::string& response_url,
                                const crypto::SymmetricKey* padding_key,
                                bool has_metadata,
-                               bool loaded_with_credentials);
+                               bool loaded_with_credentials,
+                               const std::string& request_method);
 
 }  // namespace storage
 

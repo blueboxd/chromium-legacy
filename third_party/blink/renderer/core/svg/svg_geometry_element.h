@@ -52,7 +52,7 @@ class SVGGeometryElement : public SVGGraphicsElement {
   SVGAnimatedNumber* pathLength() const { return path_length_.Get(); }
 
   virtual float getTotalLength(ExceptionState&);
-  virtual SVGPointTearOff* getPointAtLength(float distance);
+  virtual SVGPointTearOff* getPointAtLength(float distance, ExceptionState&);
 
   float AuthorPathLength() const;
   float PathLengthScaleFactor() const;

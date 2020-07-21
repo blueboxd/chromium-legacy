@@ -124,8 +124,6 @@ static_library("common") {
     "pdf_util.h",
     "pref_names_util.cc",
     "pref_names_util.h",
-    "prerender_url_loader_throttle.cc",
-    "prerender_url_loader_throttle.h",
     "ref_counted_util.h",
     "render_messages.h",
     "search/instant_mojom_traits.h",

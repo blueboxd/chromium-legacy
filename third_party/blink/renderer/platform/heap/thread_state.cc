@@ -1611,7 +1611,8 @@ bool ThreadState::MarkPhaseAdvanceMarking(
   // the object graph, this is fine.
   marking_scheduling_->UpdateIncrementalMarkingStats(
       visitor->marked_bytes(),
-      Heap().stats_collector()->worklist_processing_time_foreground());
+      Heap().stats_collector()->worklist_processing_time_foreground(),
+      Heap().stats_collector()->flushing_v8_references_time());
   return finished;
 }
 

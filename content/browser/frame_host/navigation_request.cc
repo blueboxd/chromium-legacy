@@ -1648,7 +1648,7 @@ void NavigationRequest::ResetStateForSiteInstanceChange() {
 }
 
 void NavigationRequest::RegisterSubresourceOverride(
-    mojom::TransferrableURLLoaderPtr transferrable_loader) {
+    blink::mojom::TransferrableURLLoaderPtr transferrable_loader) {
   if (!transferrable_loader)
     return;
   if (!subresource_overrides_)

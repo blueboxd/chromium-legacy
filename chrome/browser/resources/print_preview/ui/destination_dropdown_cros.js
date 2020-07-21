@@ -68,15 +68,8 @@ Polymer({
 
   /** @override */
   attached() {
-    this.pointerDownListener_ = event => this.onPointerDown_(event);
-    document.addEventListener('pointerdown', this.pointerDownListener_);
     this.updateTabIndex_();
     this.IconLocation = IconLocation;
-  },
-
-  /** @override */
-  detached() {
-    document.removeEventListener('pointerdown', this.pointerDownListener_);
   },
 
   /**
@@ -130,28 +123,20 @@ Polymer({
     this.highlightedIndex_ = this.getButtonListFromDropdown_().indexOf(item);
   },
 
-  /**
-   * @param {!Event} event
-   * @private
-   */
-  onPointerDown_(event) {
-    const paths = event.composedPath();
+  /** @private */
+  onClick_(event) {
     const dropdown =
         /** @type {!IronDropdownElement} */ (this.$$('iron-dropdown'));
-    const destinationDropdown =
-        /** @type {!Element} */ (this.$$('#destination-dropdown'));
-
     // Exit if path includes |dropdown| because event will be handled by
     // onSelect_.
-    if (paths.includes(dropdown)) {
+    if (event.composedPath().includes(dropdown)) {
       return;
     }
 
-    if (!paths.includes(destinationDropdown) || dropdown.opened) {
+    if (dropdown.opened) {
       this.closeDropdown_();
       return;
     }
-
     this.openDropdown_();
   },
 
@@ -171,9 +156,6 @@ Polymer({
     event.stopPropagation();
     const dropdown = this.$$('iron-dropdown');
     switch (event.code) {
-      case 'Tab':
-        this.closeDropdown_();
-        break;
       case 'ArrowUp':
       case 'ArrowDown':
         this.onArrowKeyPress_(event.code);
@@ -306,5 +288,18 @@ Polymer({
     return itemToHighlight && itemValue === itemToHighlight.value ?
         'highlighted' :
         '';
+  },
+
+  /**
+   * Close the dropdown when focus is lost except when an item in the dropdown
+   * is the element that received the focus.
+   * @param {!Event} event
+   * @private
+   */
+  onBlur_(event) {
+    if (!this.getButtonListFromDropdown_().includes(
+            /** @type {!Element} */ (event.relatedTarget))) {
+      this.closeDropdown_();
+    }
   },
 });

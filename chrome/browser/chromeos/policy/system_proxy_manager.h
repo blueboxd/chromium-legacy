@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/dbus/system_proxy/system_proxy_service.pb.h"
 #include "net/base/auth.h"
@@ -70,8 +71,9 @@ class SystemProxyManager {
   // This function is called when the |WorkerActive| dbus signal is received.
   void OnWorkerActive(const system_proxy::WorkerActiveSignalDetails& details);
 
-  // This function is called when the |AuthenticationRequired| dbus signal is
-  // received.
+  // Requests from the NetworkService the user credentials associated with the
+  // protection space specified in |details|. This function is called when the
+  // |AuthenticationRequired| dbus signal is received.
   void OnAuthenticationRequired(
       const system_proxy::AuthenticationRequiredDetails& details);
 

@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/main/scene_state.h"
 
 #import "base/ios/crb_protocol_observers.h"
+#import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/chrome_overlay_window.h"
 #import "ios/chrome/browser/ui/main/scene_controller.h"
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
@@ -115,6 +116,10 @@
 - (void)setPendingUserActivity:(NSUserActivity*)pendingUserActivity {
   _pendingUserActivity = pendingUserActivity;
   [self.observers sceneState:self receivedUserActivity:pendingUserActivity];
+}
+
+- (id<UIBlockerManager>)uiBlockerManager {
+  return _appState;
 }
 
 #pragma mark - debug

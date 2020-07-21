@@ -101,7 +101,7 @@ class MimeHandlerViewContainer::PluginResourceThrottle
                                  new_client.InitWithNewPipeAndPassReceiver(),
                                  &original_loader, &original_client);
 
-    auto transferrable_loader = content::mojom::TransferrableURLLoader::New();
+    auto transferrable_loader = blink::mojom::TransferrableURLLoader::New();
     transferrable_loader->url_loader = std::move(original_loader);
     transferrable_loader->url_loader_client = std::move(original_client);
 
@@ -379,7 +379,7 @@ void MimeHandlerViewContainer::EmbedderRenderFrameWillBeGone() {
 }
 
 void MimeHandlerViewContainer::SetEmbeddedLoader(
-    content::mojom::TransferrableURLLoaderPtr transferrable_url_loader) {
+    blink::mojom::TransferrableURLLoaderPtr transferrable_url_loader) {
   transferrable_url_loader_ = std::move(transferrable_url_loader);
   transferrable_url_loader_->url = GURL(plugin_path_ + base::GenerateGUID());
   // Warning: It is possible that |this| gets destroyed after this line (when

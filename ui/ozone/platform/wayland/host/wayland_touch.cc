@@ -8,6 +8,7 @@
 
 #include "base/time/time.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
@@ -47,7 +48,7 @@ void WaylandTouch::Down(void* data,
   DCHECK(touch);
   touch->connection_->set_serial(serial);
 
-  WaylandWindow* window = WaylandWindow::FromSurface(surface);
+  WaylandWindow* window = wl::RootWindowFromWlSurface(surface);
   gfx::PointF location(wl_fixed_to_double(x), wl_fixed_to_double(y));
   base::TimeTicks timestamp =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(time);

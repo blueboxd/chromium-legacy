@@ -56,10 +56,11 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 }  // namespace
 
-@interface ContentSuggestionsMediator ()<ContentSuggestionsItemDelegate,
-                                         ContentSuggestionsServiceObserver,
-                                         MostVisitedSitesObserving,
-                                         ReadingListModelBridgeObserver> {
+@interface ContentSuggestionsMediator () <BooleanObserver,
+                                          ContentSuggestionsItemDelegate,
+                                          ContentSuggestionsServiceObserver,
+                                          MostVisitedSitesObserving,
+                                          ReadingListModelBridgeObserver> {
   // Bridge for this class to become an observer of a ContentSuggestionsService.
   std::unique_ptr<ContentSuggestionsServiceBridge> _suggestionBridge;
   std::unique_ptr<ntp_tiles::MostVisitedSites> _mostVisitedSites;
@@ -369,22 +370,13 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 - (void)toggleArticlesVisibility {
   [self.contentArticlesExpanded setValue:![self.contentArticlesExpanded value]];
+  [self reloadArticleSection];
+}
 
-  // Update the section information for new collapsed state.
-  ntp_snippets::Category category = ntp_snippets::Category::FromKnownCategory(
-      ntp_snippets::KnownCategories::ARTICLES);
-  ContentSuggestionsCategoryWrapper* wrapper =
-      [ContentSuggestionsCategoryWrapper wrapperWithCategory:category];
-  ContentSuggestionsSectionInformation* sectionInfo =
-      self.sectionInformationByCategory[wrapper];
-  sectionInfo.expanded = [self.contentArticlesExpanded value];
+#pragma mark - BooleanObserver
 
-  // Reloading the section with animations looks bad because the section
-  // border with the new collapsed height draws before the elements collapse.
-  BOOL animationsWereEnabled = [UIView areAnimationsEnabled];
-  [UIView setAnimationsEnabled:NO];
-  [self.dataSink reloadSection:sectionInfo];
-  [UIView setAnimationsEnabled:animationsWereEnabled];
+- (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
+  [self reloadArticleSection];
 }
 
 #pragma mark - ContentSuggestionsServiceObserver
@@ -563,6 +555,24 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 #pragma mark - Private
 
+- (void)reloadArticleSection {
+  // Update the section information for new collapsed state.
+  ntp_snippets::Category category = ntp_snippets::Category::FromKnownCategory(
+      ntp_snippets::KnownCategories::ARTICLES);
+  ContentSuggestionsCategoryWrapper* wrapper =
+      [ContentSuggestionsCategoryWrapper wrapperWithCategory:category];
+  ContentSuggestionsSectionInformation* sectionInfo =
+      self.sectionInformationByCategory[wrapper];
+  sectionInfo.expanded = [self.contentArticlesExpanded value];
+
+  // Reloading the section with animations looks bad because the section
+  // border with the new collapsed height draws before the elements collapse.
+  BOOL animationsWereEnabled = [UIView areAnimationsEnabled];
+  [UIView setAnimationsEnabled:NO];
+  [self.dataSink reloadSection:sectionInfo];
+  [UIView setAnimationsEnabled:animationsWereEnabled];
+}
+
 // Converts the |suggestions| from |category| to CSCollectionViewItem and adds
 // them to the |contentArray| if the category is available.
 - (void)addSuggestions:
@@ -703,6 +713,13 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   for (ContentSuggestionsMostVisitedItem* item in self.freshMostVisitedItems) {
     item.commandHandler = commandHandler;
   }
+}
+
+- (void)setContentArticlesExpanded:(PrefBackedBoolean*)contentArticlesExpanded {
+  if (_contentArticlesExpanded == contentArticlesExpanded)
+    return;
+  _contentArticlesExpanded = contentArticlesExpanded;
+  [contentArticlesExpanded setObserver:self];
 }
 
 #pragma mark - ReadingListModelBridgeObserver

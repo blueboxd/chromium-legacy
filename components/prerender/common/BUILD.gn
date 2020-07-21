@@ -10,11 +10,14 @@ static_library("common") {
     "prerender_final_status.h",
     "prerender_origin.cc",
     "prerender_origin.h",
+    "prerender_url_loader_throttle.cc",
+    "prerender_url_loader_throttle.h",
     "prerender_util.cc",
     "prerender_util.h",
   ]
   deps = [
     ":mojo_bindings",
+    "//content/public/common:common",
     "//extensions/common:common_constants",
     "//ipc",
     "//ipc:message_support",

@@ -46,7 +46,7 @@ StreamContainer::StreamContainer(
     bool embedded,
     const GURL& handler_url,
     const std::string& extension_id,
-    content::mojom::TransferrableURLLoaderPtr transferrable_loader,
+    blink::mojom::TransferrableURLLoaderPtr transferrable_loader,
     const GURL& original_url)
     : embedded_(embedded),
       tab_id_(tab_id),
@@ -65,7 +65,7 @@ base::WeakPtr<StreamContainer> StreamContainer::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-content::mojom::TransferrableURLLoaderPtr
+blink::mojom::TransferrableURLLoaderPtr
 StreamContainer::TakeTransferrableURLLoader() {
   return std::move(transferrable_loader_);
 }

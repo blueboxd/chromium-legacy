@@ -1037,6 +1037,84 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
   EXPECT_EQ(301, fetch_response->status_code);
 }
 
+// Check if a fetch event can be failed without crashing if starting a service
+// worker fails. This is a regression test for https://crbug.com/1106977.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
+                       DispatchFetchEventToBrokenWorker) {
+  // Setup the server so that the test doesn't crash when tearing down.
+  StartServerAndNavigateToSetup();
+  // This test is meaningful only when ServiceWorkerOnUI is enabled.
+  if (!ServiceWorkerContext::IsServiceWorkerOnUIEnabled())
+    return;
+
+  WorkerRunningStatusObserver observer(public_context());
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                "/service_worker/create_service_worker.html")));
+  EXPECT_EQ("DONE", EvalJs(shell(), "register('fetch_event.js');"));
+  observer.WaitUntilRunning();
+
+  ASSERT_TRUE(
+      BrowserThread::CurrentlyOn(ServiceWorkerContext::GetCoreThreadId()));
+  scoped_refptr<ServiceWorkerVersion> version =
+      wrapper()->GetLiveVersion(observer.version_id());
+  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version->running_status());
+
+  {
+    base::RunLoop loop;
+    version->StopWorker(loop.QuitClosure());
+    loop.Run();
+    EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version->running_status());
+  }
+
+  // Set a non-existent resource to the version.
+  std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources;
+  resources.push_back(storage::mojom::ServiceWorkerResourceRecord::New(
+      123456789, version->script_url(), 100));
+  version->script_cache_map()->resource_map_.clear();
+  version->script_cache_map()->SetResources(resources);
+
+  bool is_prepare_callback_called = false;
+  base::RunLoop fetch_loop;
+  blink::ServiceWorkerStatusCode fetch_status;
+  ServiceWorkerFetchDispatcher::FetchEventResult fetch_result;
+
+  auto request = blink::mojom::FetchAPIRequest::New();
+  request->url = embedded_test_server()->GetURL("/service_worker/in-scope");
+  request->method = "GET";
+  request->is_main_resource_load = true;
+  auto dispatcher = std::make_unique<ServiceWorkerFetchDispatcher>(
+      std::move(request), blink::mojom::ResourceType::kMainFrame,
+      /*client_id=*/base::GenerateGUID(), version,
+      base::BindLambdaForTesting([&]() { is_prepare_callback_called = true; }),
+      base::BindLambdaForTesting(
+          [&](blink::ServiceWorkerStatusCode status,
+              ServiceWorkerFetchDispatcher::FetchEventResult result,
+              blink::mojom::FetchAPIResponsePtr response,
+              blink::mojom::ServiceWorkerStreamHandlePtr,
+              blink::mojom::ServiceWorkerFetchEventTimingPtr,
+              scoped_refptr<ServiceWorkerVersion>) {
+            fetch_status = status;
+            fetch_result = result;
+            fetch_loop.Quit();
+          }),
+      /*is_offline_capability_check=*/false);
+
+  // DispatchFetchEvent is called synchronously with dispatcher->Run() even if
+  // the worker is stopped.
+  dispatcher->Run();
+  EXPECT_TRUE(is_prepare_callback_called);
+
+  // Check if the fetch event fails due to error of reading the resource.
+  fetch_loop.Run();
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorDiskCache, fetch_status);
+  EXPECT_EQ(ServiceWorkerFetchDispatcher::FetchEventResult::kShouldFallback,
+            fetch_result);
+
+  // Make sure that no crash happens in the remaining tasks.
+  base::RunLoop().RunUntilIdle();
+}
+
 class ServiceWorkerEagerCacheStorageSetupTest
     : public ServiceWorkerBrowserTest {
  public:

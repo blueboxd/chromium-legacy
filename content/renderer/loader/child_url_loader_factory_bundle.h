@@ -12,12 +12,12 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
-#include "content/public/common/transferrable_url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
+#include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
 
 namespace content {
 
@@ -121,7 +121,8 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
   void Update(
       std::unique_ptr<ChildPendingURLLoaderFactoryBundle> pending_factories);
   void UpdateSubresourceOverrides(
-      std::vector<mojom::TransferrableURLLoaderPtr>* subresource_overrides);
+      std::vector<blink::mojom::TransferrableURLLoaderPtr>*
+          subresource_overrides);
   void SetPrefetchLoaderFactory(
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory);
@@ -150,7 +151,8 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
 
   bool is_deprecated_process_wide_factory_ = false;
 
-  std::map<GURL, mojom::TransferrableURLLoaderPtr> subresource_overrides_;
+  std::map<GURL, blink::mojom::TransferrableURLLoaderPtr>
+      subresource_overrides_;
 };
 
 }  // namespace content

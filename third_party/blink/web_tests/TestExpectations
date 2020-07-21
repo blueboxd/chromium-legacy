@@ -6919,7 +6919,7 @@ crbug.com/1105279 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-for-different-
 crbug.com/1104381 fast/hidpi/image-srcset-change-resource-dpr.html [ Pass Failure ]
 
 # Temporarily disable tests to allow fixing of devtools path escaping
-crbug.com/1094436 http/tests/devtools/overrides/project-added-with-existing-files-bind.js [ Pass Timeout ]
+crbug.com/1094436 http/tests/devtools/overrides/project-added-with-existing-files-bind.js [ Pass Timeout Failure ]
 crbug.com/1094436 http/tests/devtools/persistence/automapping-urlencoded-paths.js [ Pass Failure ]
 crbug.com/1094436 http/tests/devtools/sources/debugger-ui/snippet-edit-breakpoint.js [ Pass Timeout ]
 crbug.com/1094436 http/tests/devtools/sources/debugger/navigator-view.js [ Pass Failure Crash ]

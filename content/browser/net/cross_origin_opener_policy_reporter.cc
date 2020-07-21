@@ -19,20 +19,20 @@ namespace content {
 
 namespace {
 
-constexpr char kUnsafeNone[] = "unsafe-none";
-constexpr char kSameOrigin[] = "same-origin";
-constexpr char kSameOriginPlusCoep[] = "same-origin-plus-coep";
-constexpr char kSameOriginAllowPopups[] = "same-origin-allow-popups";
-
-constexpr char kDisposition[] = "disposition";
 constexpr char kDispositionEnforce[] = "enforce";
 constexpr char kDispositionReporting[] = "reporting";
+constexpr char kDisposition[] = "disposition";
 constexpr char kDocumentURI[] = "document-uri";
+constexpr char kEffectivePolicy[] = "effective-policy";
 constexpr char kNavigationURI[] = "navigation-uri";
-constexpr char kViolationType[] = "violation-type";
+constexpr char kProperty[] = "property";
+constexpr char kSameOriginAllowPopups[] = "same-origin-allow-popups";
+constexpr char kSameOriginPlusCoep[] = "same-origin-plus-coep";
+constexpr char kSameOrigin[] = "same-origin";
+constexpr char kUnsafeNone[] = "unsafe-none";
 constexpr char kViolationTypeFromDocument[] = "navigation-from-document";
 constexpr char kViolationTypeToDocument[] = "navigation-to-document";
-constexpr char kEffectivePolicy[] = "effective-policy";
+constexpr char kViolationType[] = "violation-type";
 
 std::string CoopValueToString(
     network::mojom::CrossOriginOpenerPolicyValue coop_value) {
@@ -169,7 +169,28 @@ void CrossOriginOpenerPolicyReporter::QueueOpenerBreakageReport(
 
 void CrossOriginOpenerPolicyReporter::QueueAccessReport(
     const std::string& property) {
-  // TODO(arthursonzogni) Implement this.
+  // Cross-Origin-Opener-Policy-Report-Only is not required to provide
+  // endpoints.
+  if (!coop_.report_only_reporting_endpoint)
+    return;
+
+  const std::string& endpoint = coop_.report_only_reporting_endpoint.value();
+
+  DCHECK(base::FeatureList::IsEnabled(
+      network::features::kCrossOriginOpenerPolicyAccessReporting));
+
+  base::DictionaryValue body;
+  body.SetStringPath(kDisposition, kDispositionReporting);
+  body.SetStringPath(kEffectivePolicy,
+                     CoopValueToString(coop_.report_only_value));
+  body.SetStringPath(kProperty, property);
+  // TODO(arthursonzogni): Fill "blocked-window-url".
+  // TODO(arthursonzogni): Fill "source-file".
+  // TODO(arthursonzogni): Fill "line-no".
+  // TODO(arthursonzogni): Fill "col-no".
+  // TODO(arthursonzogni): Fill "violation-type".
+  storage_partition_->GetNetworkContext()->QueueReport(
+      "coop", endpoint, context_url_, base::nullopt, std::move(body));
 }
 
 void CrossOriginOpenerPolicyReporter::Clone(

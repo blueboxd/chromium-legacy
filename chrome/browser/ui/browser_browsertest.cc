@@ -1152,24 +1152,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   }
 }
 
-// Test that get_process_idle_time() returns reasonable values when compared
-// with time deltas measured locally.
-IN_PROC_BROWSER_TEST_F(BrowserTest, RenderIdleTime) {
-  base::TimeTicks start = base::TimeTicks::Now();
-  ui_test_utils::NavigateToURL(
-      browser(), ui_test_utils::GetTestUrl(
-                     base::FilePath(base::FilePath::kCurrentDirectory),
-                     base::FilePath(kTitle1File)));
-  base::TimeDelta renderer_td = browser()
-                                    ->tab_strip_model()
-                                    ->GetActiveWebContents()
-                                    ->GetMainFrame()
-                                    ->GetProcess()
-                                    ->GetChildProcessIdleTime();
-  base::TimeDelta browser_td = base::TimeTicks::Now() - start;
-  EXPECT_TRUE(browser_td >= renderer_td);
-}
-
 // Test RenderView correctly send back favicon url for web page that redirects
 // to an anchor in javascript body.onload handler.
 IN_PROC_BROWSER_TEST_F(BrowserTest,

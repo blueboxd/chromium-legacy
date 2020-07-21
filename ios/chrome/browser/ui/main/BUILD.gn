@@ -85,6 +85,7 @@ source_set("scene") {
     "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/user_feedback",
   ]
+  public_deps = [ "//ios/chrome/browser/ui/scoped_ui_blocker" ]
 
   allow_circular_includes_from = [ ":main" ]
 

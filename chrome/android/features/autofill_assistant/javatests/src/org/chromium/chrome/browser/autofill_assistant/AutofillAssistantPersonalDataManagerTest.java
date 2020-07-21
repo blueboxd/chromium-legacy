@@ -33,10 +33,12 @@ import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.getElementValue;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.isNextAfterSibling;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewInRootMatchesCondition;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
 import android.support.test.InstrumentationRegistry;
@@ -857,6 +859,20 @@ public class AutofillAssistantPersonalDataManagerTest {
         onView(withContentDescription("ZIP code*")).perform(scrollTo(), typeText("1234"));
         onView(withContentDescription("Phone*")).perform(scrollTo(), typeText("8008080808"));
         onView(withText("Done")).perform(scrollTo(), click());
+
+        addCreditCardAndSelectAddress();
+        int tryNumber = 0;
+        int maxRetries = 3;
+        while (!hasAddress() && tryNumber++ < maxRetries) {
+            // If the new address is not yet present, we first need to close the popup dialog.
+            Espresso.pressBack();
+            onView(withText("Cancel")).perform(scrollTo(), click());
+            addCreditCardAndSelectAddress();
+        }
+        assertThat(tryNumber, lessThan(maxRetries));
+    }
+
+    private void addCreditCardAndSelectAddress() {
         waitUntilViewMatchesCondition(
                 allOf(withId(R.id.section_title_add_button_label), withText("Add card")),
                 isCompletelyDisplayed());
@@ -867,11 +883,16 @@ public class AutofillAssistantPersonalDataManagerTest {
         Espresso.closeSoftKeyboard();
         onView(allOf(withId(org.chromium.chrome.R.id.spinner), withChild(withText("Select"))))
                 .perform(scrollTo(), click());
-        onData(anything())
-                .atPosition(1 /* address of John, 0 is SELECT (empty) */)
-                .inRoot(withDecorView(withClassName(containsString("Popup"))))
-                .perform(click());
-        waitUntilViewMatchesCondition(withText(containsString("John Doe")), isDisplayed());
+    }
+
+    private boolean hasAddress() {
+        try {
+            waitUntilViewInRootMatchesCondition(withText(containsString("John Doe")),
+                    withDecorView(withClassName(containsString("Popup"))), isDisplayed());
+            return true;
+        } catch (AssertionError e) {
+            return false;
+        }
     }
 
     private void runScript(AutofillAssistantTestScript script) {

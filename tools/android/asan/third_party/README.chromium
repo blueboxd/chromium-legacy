@@ -5,3 +5,6 @@ URL: http://llvm.org/viewvc/llvm-project/compiler-rt/trunk/lib/asan/scripts/asan
 Security Critical: no
 
 asan_device_setup.sh is a verbatim copy of asan_device_setup in the LLVM trunk.
+
+Local Modifications:
+ * Patched in https://reviews.llvm.org/D84237

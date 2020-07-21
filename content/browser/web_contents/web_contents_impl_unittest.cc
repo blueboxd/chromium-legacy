@@ -2122,8 +2122,7 @@ TEST_F(WebContentsImplTestWithSiteIsolation, IsLoadingToDifferentDocument) {
                                        ui::PAGE_TRANSITION_AUTO_SUBFRAME);
   EXPECT_TRUE(contents()->IsLoading());
   EXPECT_FALSE(contents()->IsLoadingToDifferentDocument());
-  subframe->OnMessageReceived(
-      FrameHostMsg_DidStopLoading(subframe->GetRoutingID()));
+  subframe->DidStopLoading();
   EXPECT_FALSE(contents()->IsLoading());
 }
 
@@ -2162,8 +2161,7 @@ TEST_F(WebContentsImplTest, DISABLED_NoEarlyStop) {
   // navigation in the current RenderFrameHost. There should still be a pending
   // RenderFrameHost and the WebContents should still be loading.
   same_process_navigation->Commit();
-  current_rfh->OnMessageReceived(
-      FrameHostMsg_DidStopLoading(current_rfh->GetRoutingID()));
+  current_rfh->DidStopLoading();
   EXPECT_EQ(contents()->GetPendingMainFrame(), pending_rfh);
   EXPECT_TRUE(contents()->IsLoading());
 
@@ -2183,8 +2181,7 @@ TEST_F(WebContentsImplTest, DISABLED_NoEarlyStop) {
 
   // Simulate the new current RenderFrameHost DidStopLoading. The WebContents
   // should now have stopped loading.
-  new_current_rfh->OnMessageReceived(
-      FrameHostMsg_DidStopLoading(new_current_rfh->GetRoutingID()));
+  new_current_rfh->DidStopLoading();
   EXPECT_EQ(main_test_rfh(), new_current_rfh);
   EXPECT_FALSE(contents()->IsLoading());
 }

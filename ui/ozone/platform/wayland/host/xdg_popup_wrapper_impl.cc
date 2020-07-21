@@ -329,7 +329,7 @@ bool XDGPopupWrapperImpl::InitializeStable(
   }
   xdg_popup_add_listener(xdg_popup_.get(), &xdg_popup_listener, this);
 
-  wl_surface_commit(wayland_window_->surface());
+  wayland_window_->root_surface()->Commit();
   return true;
 }
 
@@ -393,7 +393,7 @@ bool XDGPopupWrapperImpl::InitializeV6(
   zxdg_popup_v6_add_listener(zxdg_popup_v6_.get(), &zxdg_popup_v6_listener,
                              this);
 
-  wl_surface_commit(wayland_window_->surface());
+  wayland_window_->root_surface()->Commit();
   return true;
 }
 

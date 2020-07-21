@@ -18,9 +18,15 @@ MarkingSchedulingOracle::MarkingSchedulingOracle()
 
 void MarkingSchedulingOracle::UpdateIncrementalMarkingStats(
     size_t overall_marked_bytes,
-    base::TimeDelta overall_marking_time) {
+    base::TimeDelta overall_marking_time,
+    base::TimeDelta non_contributing_time) {
   incrementally_marked_bytes_ = overall_marked_bytes;
-  incremental_marking_time_so_far_ = overall_marking_time;
+  // |non_contributing_time| is time spent during |overall_marking_time| which
+  // does not contribute to |overall_marked_bytes| and is thus ignored so that
+  // it doesn't affect the marking speed.
+  DCHECK_LE(non_contributing_time, overall_marking_time);
+  incremental_marking_time_so_far_ =
+      overall_marking_time - non_contributing_time;
 }
 
 void MarkingSchedulingOracle::AddConcurrentlyMarkedBytes(size_t marked_bytes) {

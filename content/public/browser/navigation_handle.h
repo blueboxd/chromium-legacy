@@ -15,7 +15,6 @@
 #include "content/public/browser/restore_type.h"
 #include "content/public/common/impression.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/transferrable_url_loader.mojom.h"
 #include "net/base/auth.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/isolation_info.h"
@@ -23,6 +22,7 @@
 #include "net/dns/public/resolve_error_info.h"
 #include "net/http/http_response_info.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -382,7 +382,7 @@ class CONTENT_EXPORT NavigationHandle {
   virtual int GetNavigationEntryOffset() = 0;
 
   virtual void RegisterSubresourceOverride(
-      mojom::TransferrableURLLoaderPtr transferrable_loader) = 0;
+      blink::mojom::TransferrableURLLoaderPtr transferrable_loader) = 0;
 
   // Force enables the given origin trials for this navigation. This needs to
   // be called from WebContents::ReadyToCommitNavigation or earlier to have an

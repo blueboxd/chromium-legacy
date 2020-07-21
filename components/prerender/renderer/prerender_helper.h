@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_PRERENDER_PRERENDER_HELPER_H_
-#define CHROME_RENDERER_PRERENDER_PRERENDER_HELPER_H_
+#ifndef COMPONENTS_PRERENDER_RENDERER_PRERENDER_HELPER_H_
+#define COMPONENTS_PRERENDER_RENDERER_PRERENDER_HELPER_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -78,4 +78,4 @@ class PrerenderHelper
 
 }  // namespace prerender
 
-#endif  // CHROME_RENDERER_PRERENDER_PRERENDER_HELPER_H_
+#endif  // COMPONENTS_PRERENDER_RENDERER_PRERENDER_HELPER_H_

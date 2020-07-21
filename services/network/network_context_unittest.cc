@@ -1905,6 +1905,116 @@ TEST_F(NetworkContextTest, LookupServerBasicAuthCredentials) {
   EXPECT_FALSE(result.has_value());
 }
 
+#if defined(OS_CHROMEOS)
+base::Optional<net::AuthCredentials> GetProxyAuthCredentials(
+    NetworkContext* network_context,
+    const net::ProxyServer& proxy_server,
+    const std::string& scheme,
+    const std::string& realm) {
+  base::RunLoop run_loop;
+  base::Optional<net::AuthCredentials> result;
+  network_context->LookupProxyAuthCredentials(
+      proxy_server, scheme, realm,
+      base::BindLambdaForTesting(
+          [&](const base::Optional<net::AuthCredentials>& credentials) {
+            result = credentials;
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+  return result;
+}
+
+TEST_F(NetworkContextTest, LookupProxyAuthCredentials) {
+  GURL http_proxy("http://bar.test:1080");
+  GURL https_proxy("https://bar.test:443");
+  GURL http_proxy2("http://bar.test:443");
+  GURL foo_proxy("foo://bar.test:1080");
+  GURL server_origin("http://foo.test:3128");
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+  network_context->SetSplitAuthCacheByNetworkIsolationKey(true);
+  net::HttpAuthCache* cache = network_context->url_request_context()
+                                  ->http_transaction_factory()
+                                  ->GetSession()
+                                  ->http_auth_cache();
+
+  base::string16 user = base::ASCIIToUTF16("user");
+  base::string16 password = base::ASCIIToUTF16("pass");
+  cache->Add(http_proxy, net::HttpAuth::AUTH_PROXY, "Realm",
+             net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
+             "basic realm=Realm", net::AuthCredentials(user, password),
+             /* path = */ "");
+  cache->Add(https_proxy, net::HttpAuth::AUTH_PROXY, "Realm",
+             net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
+             "basic realm=Realm", net::AuthCredentials(user, password),
+             /* path = */ "");
+  cache->Add(server_origin, net::HttpAuth::AUTH_SERVER, "Realm",
+             net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
+             "basic realm=Realm", net::AuthCredentials(user, password),
+             /* path = */ "/");
+  base::Optional<net::AuthCredentials> result = GetProxyAuthCredentials(
+      network_context.get(),
+      net::ProxyServer(net::ProxyServer::Scheme::SCHEME_HTTP,
+                       net::HostPortPair::FromURL(http_proxy)),
+      "bAsIc", "Realm");
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ(user, result->username());
+  EXPECT_EQ(password, result->password());
+
+  result = GetProxyAuthCredentials(
+      network_context.get(),
+      net::ProxyServer(net::ProxyServer::Scheme::SCHEME_HTTPS,
+                       net::HostPortPair::FromURL(https_proxy)),
+      "bAsIc", "Realm");
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ(user, result->username());
+  EXPECT_EQ(password, result->password());
+
+  // Check that the proxy scheme is taken into account when looking for
+  // credentials
+  result = GetProxyAuthCredentials(
+      network_context.get(),
+      net::ProxyServer(net::ProxyServer::Scheme::SCHEME_HTTP,
+                       net::HostPortPair::FromURL(http_proxy2)),
+      "basic", "Realm");
+  EXPECT_FALSE(result.has_value());
+
+  // Check that the proxy authentication method is taken into account when
+  // looking for credentials
+  result = GetProxyAuthCredentials(
+      network_context.get(),
+      net::ProxyServer(net::ProxyServer::Scheme::SCHEME_HTTP,
+                       net::HostPortPair::FromURL(http_proxy)),
+      "digest", "Realm");
+  EXPECT_FALSE(result.has_value());
+
+  // Check that the realm is taken into account when looking for credentials
+  result = GetProxyAuthCredentials(
+      network_context.get(),
+      net::ProxyServer(net::ProxyServer::Scheme::SCHEME_HTTP,
+                       net::HostPortPair::FromURL(http_proxy)),
+      "basic", "Realm 2");
+  EXPECT_FALSE(result.has_value());
+
+  // All non-https proxies are cached as "http://" proxies
+  result = GetProxyAuthCredentials(
+      network_context.get(),
+      net::ProxyServer(net::ProxyServer::Scheme::SCHEME_HTTP,
+                       net::HostPortPair::FromURL(foo_proxy)),
+      "basic", "Realm");
+  EXPECT_FALSE(result.has_value());
+
+  // Server credentials should not be returned
+  result = GetProxyAuthCredentials(
+      network_context.get(),
+      net::ProxyServer(net::ProxyServer::Scheme::SCHEME_HTTP,
+                       net::HostPortPair::FromURL(server_origin)),
+      "basic", "Realm");
+  EXPECT_FALSE(result.has_value());
+}
+#endif
+
 #if BUILDFLAG(ENABLE_REPORTING)
 TEST_F(NetworkContextTest, ClearReportingCacheReports) {
   auto reporting_context = std::make_unique<net::TestReportingContext>(

@@ -227,6 +227,9 @@ bool SearchingForNodeTool::HandleGestureTapEvent(const WebGestureEvent& event) {
 }
 
 bool SearchingForNodeTool::HandlePointerEvent(const WebPointerEvent& event) {
+  // Trigger Inspect only when a pointer device is pressed down.
+  if (event.GetType() != WebInputEvent::Type::kPointerDown)
+    return false;
   Node* node = HoveredNodeForEvent(overlay_->GetFrame(), event, false);
   if (node) {
     overlay_->Inspect(node);

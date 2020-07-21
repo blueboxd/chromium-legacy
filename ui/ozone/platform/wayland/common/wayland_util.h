@@ -22,6 +22,7 @@ class SkBitmap;
 namespace ui {
 class WaylandConnection;
 class WaylandShmBuffer;
+class WaylandWindow;
 }  // namespace ui
 
 namespace gfx {
@@ -61,6 +62,9 @@ gfx::Rect TranslateBoundsToTopLevelCoordinates(const gfx::Rect& child_bounds,
 
 // Says if the type is kPopup or kMenu.
 bool IsMenuType(ui::PlatformWindowType type);
+
+// Returns the root WaylandWindow for the given wl_surface.
+ui::WaylandWindow* RootWindowFromWlSurface(wl_surface* surface);
 
 }  // namespace wl
 

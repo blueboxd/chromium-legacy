@@ -214,6 +214,13 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
+                       ChangeCompromisedCredentialWithEmptyPasswordFails) {
+  EXPECT_TRUE(
+      RunPasswordsSubtest("changeCompromisedCredentialWithEmptyPasswordFails"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
                        ChangeCompromisedCredentialFails) {
   EXPECT_TRUE(RunPasswordsSubtest("changeCompromisedCredentialFails"))
       << message_;

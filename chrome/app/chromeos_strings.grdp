@@ -2824,7 +2824,7 @@
     Use metered connection
   </message>
   <message name="IDS_UPDATE_REQUIRED_SCREEN_NO_NETWORK_MESSAGE" desc="The message on the dialog shown to the user in Chrome OS before forced update is attempted if the Chrome OS device is not connected to a network.">
-    <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires you to connect to Wi-Fi now and download an update. The update will download automatically when you connect to the internet.
+    <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires you to connect to Wi-Fi now and download an update.
   </message>
   <message name="IDS_UPDATE_REQUIRED_SCREEN_OPEN_NETWORK_SETTINGS" desc="Label for network configuration button on the update required dialog on the login screen to open network settings so that the user can connect to a network.">
     Open network settings

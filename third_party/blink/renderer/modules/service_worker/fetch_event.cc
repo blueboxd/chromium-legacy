@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 
 namespace blink {
@@ -141,7 +142,7 @@ void FetchEvent::OnNavigationPreloadResponse(
   url_list[0] = preload_response_->CurrentRequestUrl();
 
   response_data->InitFromResourceResponse(
-      url_list, network::mojom::CredentialsMode::kInclude,
+      url_list, http_names::kGET, network::mojom::CredentialsMode::kInclude,
       FetchRequestData::kBasicTainting,
       preload_response_->ToResourceResponse());
 

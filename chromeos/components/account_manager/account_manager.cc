@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
@@ -168,6 +169,16 @@ void AccountManager::SetPrefService(PrefService* pref_service) {
   pref_service_ = pref_service;
 }
 
+void AccountManager::InitializeInEphemeralMode(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  Initialize(/* home_dir= */ base::FilePath(), url_loader_factory,
+             /* delay_network_call_runner= */
+             base::BindRepeating(
+                 [](base::OnceClosure closure) { std::move(closure).Run(); }),
+             /* task_runner= */ nullptr, /* initialization_callback= */
+             base::DoNothing());
+}
+
 void AccountManager::Initialize(
     const base::FilePath& home_dir,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -215,19 +226,28 @@ void AccountManager::Initialize(
   task_runner_ = task_runner;
 
   base::FilePath tokens_file_path;
-  if (!home_dir_.empty()) {
+  if (!IsEphemeralMode()) {
+    DCHECK(task_runner_);
     tokens_file_path = home_dir_.Append(kTokensFileName);
     writer_ = std::make_unique<base::ImportantFileWriter>(tokens_file_path,
                                                           task_runner_);
   }
   initialization_callbacks_.emplace_back(std::move(initialization_callback));
 
-  PostTaskAndReplyWithResult(
-      task_runner_.get(), FROM_HERE,
-      base::BindOnce(&AccountManager::LoadAccountsFromDisk, tokens_file_path),
-      base::BindOnce(
-          &AccountManager::InsertAccountsAndRunInitializationCallbacks,
-          weak_factory_.GetWeakPtr(), initialization_start_time));
+  if (!IsEphemeralMode()) {
+    DCHECK(task_runner_);
+    PostTaskAndReplyWithResult(
+        task_runner_.get(), FROM_HERE,
+        base::BindOnce(&AccountManager::LoadAccountsFromDisk, tokens_file_path),
+        base::BindOnce(
+            &AccountManager::InsertAccountsAndRunInitializationCallbacks,
+            weak_factory_.GetWeakPtr(), initialization_start_time));
+  } else {
+    // We are running in ephemeral mode. There is nothing to load from disk.
+    RecordTokenLoadStatus(TokenLoadStatus::kSuccess);
+    InsertAccountsAndRunInitializationCallbacks(initialization_start_time,
+                                                /* accounts= */ AccountMap{});
+  }
 }
 
 // static
@@ -520,11 +540,12 @@ void AccountManager::UpsertAccountInternal(const AccountKey& account_key,
 }
 
 void AccountManager::PersistAccountsAsync() {
-  if (!writer_) {
+  if (IsEphemeralMode()) {
     return;
   }
 
   // Schedule (immediately) a non-blocking write.
+  DCHECK(writer_);
   writer_->WriteNow(std::make_unique<std::string>(GetSerializedAccounts()));
 }
 
@@ -654,6 +675,10 @@ void AccountManager::DeletePendingTokenRevocationRequest(
   if (it != pending_token_revocation_requests_.end()) {
     pending_token_revocation_requests_.erase(it);
   }
+}
+
+bool AccountManager::IsEphemeralMode() const {
+  return home_dir_.empty();
 }
 
 COMPONENT_EXPORT(ACCOUNT_MANAGER)

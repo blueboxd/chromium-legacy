@@ -62,7 +62,6 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/previews_state.h"
-#include "content/public/common/transferrable_url_loader.mojom.h"
 #include "media/mojo/mojom/interface_factory.mojom-forward.h"
 #include "media/mojo/mojom/media_metrics_provider.mojom-forward.h"
 #include "media/mojo/services/media_metrics_provider.h"
@@ -114,6 +113,7 @@
 #include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-forward.h"
+#include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
@@ -892,7 +892,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       bool is_view_source,
       base::Optional<SubresourceLoaderParams> subresource_loader_params,
-      base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
+      base::Optional<std::vector<blink::mojom::TransferrableURLLoaderPtr>>
           subresource_overrides,
       blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
       const base::UnguessableToken& devtools_navigation_token,
@@ -1684,6 +1684,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // mojom::FrameHost:
   void OpenURL(mojom::OpenURLParamsPtr params) override;
+  void DidStopLoading() override;
 
   void GetSavableResourceLinksFromRenderer();
 
@@ -1733,7 +1734,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories,
-      base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
+      base::Optional<std::vector<blink::mojom::TransferrableURLLoaderPtr>>
           subresource_overrides,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
@@ -1869,7 +1870,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void OnForwardResourceTimingToParent(
       const ResourceTimingInfo& resource_timing);
-  void OnDidStopLoading();
   void OnSelectionChanged(const base::string16& text,
                           uint32_t offset,
                           const gfx::Range& range);

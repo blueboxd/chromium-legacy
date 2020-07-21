@@ -20,7 +20,12 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/storage_partition.h"
+#include "net/base/host_port_pair.h"
+#include "net/base/proxy_server.h"
 #include "net/http/http_auth_scheme.h"
+#include "net/http/http_util.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace {
 const char kSystemProxyService[] = "system-proxy-service";
@@ -205,11 +210,33 @@ void SystemProxyManager::OnAuthenticationRequired(
     const system_proxy::AuthenticationRequiredDetails& details) {
   system_proxy::ProtectionSpace protection_space =
       details.proxy_protection_space();
+  if (!primary_profile_) {
+    LookupProxyAuthCredentialsCallback(protection_space,
+                                       /* credentials = */ base::nullopt);
+    return;
+  }
 
-  // TODO(acostinas, crbug.com/1098216): Get credentials from the network
-  // service.
-  LookupProxyAuthCredentialsCallback(protection_space,
-                                     /* credentials = */ base::nullopt);
+  // TODO(acostinas,chromium:1104818) |protection_space.origin()| is in a
+  // URI-like format which may be incompatible between Chrome and libcurl, which
+  // is used on the Chrome OS side. We should change |origin()| to be a PAC
+  // string (a more "standard" way of representing proxies) and call
+  // |FromPacString()| to create |proxy_server|.
+  net::ProxyServer proxy_server = net::ProxyServer::FromURI(
+      protection_space.origin(), net::ProxyServer::Scheme::SCHEME_HTTP);
+
+  if (!proxy_server.is_valid()) {
+    LookupProxyAuthCredentialsCallback(protection_space,
+                                       /* credentials = */ base::nullopt);
+    return;
+  }
+  content::BrowserContext::GetDefaultStoragePartition(primary_profile_)
+      ->GetNetworkContext()
+      ->LookupProxyAuthCredentials(
+          proxy_server, protection_space.scheme(),
+          net::HttpUtil::Unquote(protection_space.realm()),
+          base::BindOnce(
+              &SystemProxyManager::LookupProxyAuthCredentialsCallback,
+              weak_factory_.GetWeakPtr(), protection_space));
 }
 
 void SystemProxyManager::LookupProxyAuthCredentialsCallback(

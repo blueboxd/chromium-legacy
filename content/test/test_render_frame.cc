@@ -217,6 +217,8 @@ class MockFrameHost : public mojom::FrameHost {
     is_url_opened_ = true;
   }
 
+  void DidStopLoading() override {}
+
   void DidAddMessageToConsole(blink::mojom::ConsoleMessageLevel log_level,
                               const base::string16& msg,
                               int32_t line_number,

@@ -2546,7 +2546,6 @@ enum WebFeature {
   kLegacyLayoutByFlexBox = 3210,
   kLegacyLayoutByFrameSet = 3211,
   kLegacyLayoutByGrid = 3212,
-  kLegacyLayoutByMenuList = 3213,
   kLegacyLayoutByMultiCol = 3214,
   kLegacyLayoutByPrinting = 3215,
   kLegacyLayoutByRuby = 3216,

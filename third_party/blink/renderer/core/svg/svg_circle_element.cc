@@ -20,6 +20,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_circle_element.h"
 
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_ellipse.h"
 #include "third_party/blink/renderer/core/svg/svg_length.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -62,8 +63,8 @@ Path SVGCircleElement::AsPath() const {
   Path path;
 
   SVGLengthContext length_context(this);
-  DCHECK(GetLayoutObject());
-  const ComputedStyle& style = GetLayoutObject()->StyleRef();
+  const ComputedStyle& style = ComputedStyleRef();
+
   const SVGComputedStyle& svg_style = style.SvgStyle();
 
   float r = length_context.ValueForLength(svg_style.R(), style,

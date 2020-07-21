@@ -48,6 +48,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/http/http_request_headers.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/padding_key.h"
@@ -420,12 +421,17 @@ blink::mojom::FetchAPIResponsePtr CreateResponse(
   if (metadata.response().has_mime_type())
     mime_type = metadata.response().mime_type();
 
+  base::Optional<std::string> request_method;
+  if (metadata.response().has_request_method())
+    request_method = metadata.response().request_method();
+
   return blink::mojom::FetchAPIResponse::New(
       url_list, metadata.response().status_code(),
       metadata.response().status_text(),
       ProtoResponseTypeToFetchResponseType(metadata.response().response_type()),
       network::mojom::FetchResponseSource::kCacheStorage, headers, mime_type,
-      nullptr /* blob */, blink::mojom::ServiceWorkerResponseError::kUnknown,
+      request_method, nullptr /* blob */,
+      blink::mojom::ServiceWorkerResponseError::kUnknown,
       base::Time::FromInternalValue(metadata.response().response_time()),
       cache_name,
       std::vector<std::string>(
@@ -478,8 +484,12 @@ int64_t CalculateResponsePaddingInternal(
   const std::string& url = response->url_list(response->url_list_size() - 1);
   bool loaded_with_credentials = response->has_loaded_with_credentials() &&
                                  response->loaded_with_credentials();
+  const std::string& request_method = response->has_request_method()
+                                          ? response->request_method()
+                                          : net::HttpRequestHeaders::kGetMethod;
   return storage::ComputeResponsePadding(url, padding_key, side_data_size > 0,
-                                         loaded_with_credentials);
+                                         loaded_with_credentials,
+                                         request_method);
 }
 
 net::RequestPriority GetDiskCachePriority(
@@ -1065,7 +1075,8 @@ void LegacyCacheStorageCache::QueryCache(
 
   if (owner_ != CacheStorageOwner::kBackgroundFetch &&
       (!options || !options->ignore_method) && request &&
-      !request->method.empty() && request->method != "GET") {
+      !request->method.empty() &&
+      request->method != net::HttpRequestHeaders::kGetMethod) {
     std::move(callback).Run(CacheStorageError::kSuccess,
                             std::make_unique<QueryCacheResults>());
     return;
@@ -1335,9 +1346,16 @@ int64_t LegacyCacheStorageCache::CalculateResponsePadding(
   DCHECK_GE(side_data_size, 0);
   if (!ShouldPadResourceSize(response))
     return 0;
-  return storage::ComputeResponsePadding(response.url_list.back().spec(),
-                                         padding_key, side_data_size > 0,
-                                         response.loaded_with_credentials);
+  // Going forward we should always have a request method here since its
+  // impossible to create a no-cors Response via the constructor.  We must
+  // handle a missing method, however, since we may get a Response loaded
+  // from an old cache_storage instance without the data.
+  std::string request_method = response.request_method.has_value()
+                                   ? response.request_method.value()
+                                   : net::HttpRequestHeaders::kGetMethod;
+  return storage::ComputeResponsePadding(
+      response.url_list.back().spec(), padding_key, side_data_size > 0,
+      response.loaded_with_credentials, request_method);
 }
 
 // static
@@ -1794,6 +1812,10 @@ void LegacyCacheStorageCache::PutDidCreateEntry(
       put_context->response->was_fetched_via_spdy);
   if (put_context->response->mime_type.has_value())
     response_metadata->set_mime_type(put_context->response->mime_type.value());
+  if (put_context->response->request_method.has_value()) {
+    response_metadata->set_request_method(
+        put_context->response->request_method.value());
+  }
   response_metadata->set_response_time(
       put_context->response->response_time.ToInternalValue());
   for (ResponseHeaderMap::const_iterator it =

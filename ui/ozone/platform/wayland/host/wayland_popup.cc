@@ -75,7 +75,7 @@ void WaylandPopup::HandlePopupConfigure(const gfx::Rect& bounds_dip) {
   DCHECK(shell_popup());
   DCHECK(parent_window());
 
-  SetBufferScale(parent_window()->buffer_scale(), true);
+  root_surface()->SetBufferScale(parent_window()->buffer_scale(), true);
 
   gfx::Rect new_bounds_dip = bounds_dip;
 
@@ -138,7 +138,7 @@ bool WaylandPopup::OnInitialize(PlatformWindowInitProperties properties) {
     return false;
   }
   // If parent window is known in advanced, we may set the scale early.
-  SetBufferScale(parent_window()->buffer_scale(), false);
+  root_surface()->SetBufferScale(parent_window()->buffer_scale(), false);
   set_ui_scale(parent_window()->ui_scale());
   return true;
 }

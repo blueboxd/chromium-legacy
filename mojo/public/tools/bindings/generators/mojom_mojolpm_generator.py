@@ -346,18 +346,6 @@ class Generator(CppGenerator):
         or mojom.IsUnionKind(kind)):
       return self._GetCppProtoNameForKind(
           kind, add_same_module_namespaces=add_same_module_namespaces)
-    elif mojom.IsInterfaceKind(kind):
-      return '%s::Ptr' % self._GetCppProtoNameForKind(
-          kind, add_same_module_namespaces=add_same_module_namespaces)
-    elif mojom.IsInterfaceRequestKind(kind):
-      return '%s::Request' % self._GetCppProtoNameForKind(
-          kind.kind, add_same_module_namespaces=add_same_module_namespaces)
-    elif mojom.IsAssociatedInterfaceKind(kind):
-      return '%s::AssociatedPtr' % self._GetCppProtoNameForKind(
-          kind.kind, add_same_module_namespaces=add_same_module_namespaces)
-    elif mojom.IsAssociatedInterfaceRequestKind(kind):
-      return '%s::AssociatedRequest' % self._GetCppProtoNameForKind(
-          kind.kind, add_same_module_namespaces=add_same_module_namespaces)
     elif mojom.IsPendingRemoteKind(kind):
       return "%s::PendingRemote" % self._GetCppProtoNameForKind(
           kind.kind, add_same_module_namespaces=add_same_module_namespaces)
@@ -403,15 +391,6 @@ class Generator(CppGenerator):
       return ("map<%sKey, %sValue>" %
               (self._GetProtoFieldType(kind.key_kind, quantified=False),
                self._GetProtoFieldType(kind.value_kind, quantified=False)))
-    elif mojom.IsInterfaceKind(kind):
-      unquantified = "%s.Ptr" % self._GetProtoNameForKind(kind)
-    elif mojom.IsInterfaceRequestKind(kind):
-      unquantified = "%s.Request" % self._GetProtoNameForKind(kind.kind)
-    elif mojom.IsAssociatedInterfaceKind(kind):
-      unquantified = "%s.AssociatedPtr" % self._GetProtoNameForKind(kind.kind)
-    elif mojom.IsAssociatedInterfaceRequestKind(kind):
-      unquantified = ("%s.AssociatedRequest" %
-                      self._GetProtoNameForKind(kind.kind))
     elif mojom.IsPendingRemoteKind(kind):
       unquantified = "%s.PendingRemote" % self._GetProtoNameForKind(kind.kind)
     elif mojom.IsPendingReceiverKind(kind):

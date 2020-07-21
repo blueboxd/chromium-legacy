@@ -1974,11 +1974,10 @@ StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
 
   const bool has_font_units = false;
   const bool has_root_font_units = false;
-  const bool absolutized = true;
 
   return CSSVariableData::CreateResolved(
-      tokens, std::move(backing_strings), is_animation_tainted, has_font_units,
-      has_root_font_units, absolutized, g_null_atom, WTF::TextEncoding());
+      std::move(tokens), std::move(backing_strings), is_animation_tainted,
+      has_font_units, has_root_font_units, g_null_atom, WTF::TextEncoding());
 }
 
 LengthSize StyleBuilderConverter::ConvertIntrinsicSize(

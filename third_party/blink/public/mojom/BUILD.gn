@@ -85,6 +85,7 @@ mojom("mojom_platform") {
     "loader/request_context_frame_type.mojom",
     "loader/resource_load_info.mojom",
     "loader/resource_load_info_notifier.mojom",
+    "loader/transferrable_url_loader.mojom",
     "loader/url_loader_factory_bundle.mojom",
     "locks/lock_manager.mojom",
     "manifest/display_mode.mojom",

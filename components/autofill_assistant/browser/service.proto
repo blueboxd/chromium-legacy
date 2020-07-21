@@ -1325,6 +1325,8 @@ message ShowGenericUiProto {
     // The model containing the values for all keys specified in
     // |output_model_identifiers|.
     optional ModelProto model = 1;
+    // Set to true if the action was interrupted by a navigation event.
+    optional bool navigation_ended = 2;
   }
 
   // The generic user interface to show.
@@ -1357,6 +1359,12 @@ message ShowGenericUiProto {
     repeated ElementCheck element_checks = 1;
   }
   optional PeriodicElementChecks periodic_element_checks = 6;
+  // When set to true, end this action on navigation events. The result will
+  // have |navigation_ended| set to true.
+  optional bool end_on_navigation = 7;
+  // If true, run scripts flagged with |interrupt=true| as soon as their
+  // preconditions match, then go back to the parent action.
+  optional bool allow_interrupt = 8;
 }
 
 // Allow choosing one or more possibility. If FocusElement was called just

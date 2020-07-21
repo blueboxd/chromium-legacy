@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "content/common/service_worker/service_worker_utils.h"
 #include "net/base/io_buffer.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -25,16 +24,29 @@ void DidReadInfo(base::WeakPtr<AppCacheResponseIO> reader,
     return;
   }
 
-  DCHECK(io_buffer->http_info);
-  auto response_and_metadata =
-      ServiceWorkerUtils::CreateResourceResponseHeadAndMetadata(
-          io_buffer->http_info.get(),
-          /*options=*/network::mojom::kURLLoadOptionSendSSLInfoWithResponse,
-          /*request_start_time=*/base::TimeTicks(),
-          /*response_start_time=*/base::TimeTicks::Now(),
-          io_buffer->response_data_size);
-  std::move(callback).Run(result, std::move(response_and_metadata.head),
-                          std::move(response_and_metadata.metadata));
+  const net::HttpResponseInfo* http_info = io_buffer->http_info.get();
+  DCHECK(http_info);
+  DCHECK(http_info->headers);
+
+  auto head = network::mojom::URLResponseHead::New();
+  head->request_start = base::TimeTicks();
+  head->response_start = base::TimeTicks::Now();
+  head->request_time = http_info->request_time;
+  head->response_time = http_info->response_time;
+  head->headers = http_info->headers;
+  head->headers->GetMimeType(&head->mime_type);
+  head->headers->GetCharset(&head->charset);
+  head->content_length = io_buffer->response_data_size;
+  head->was_fetched_via_spdy = http_info->was_fetched_via_spdy;
+  head->was_alpn_negotiated = http_info->was_alpn_negotiated;
+  head->connection_info = http_info->connection_info;
+  head->alpn_negotiated_protocol = http_info->alpn_negotiated_protocol;
+  head->remote_endpoint = http_info->remote_endpoint;
+  head->cert_status = http_info->ssl_info.cert_status;
+  head->ssl_info = http_info->ssl_info;
+
+  std::move(callback).Run(result, std::move(head),
+                          std::move(http_info->metadata));
 }
 
 }  // namespace
@@ -63,11 +75,6 @@ void ServiceWorkerResponseWriter::WriteResponseHead(
     const network::mojom::URLResponseHead& response_head,
     int response_data_size,
     net::CompletionOnceCallback callback) {
-  // This is copied from CreateHttpResponseInfoAndCheckHeaders().
-  // TODO(bashi): Use CreateHttpResponseInfoAndCheckHeaders()
-  // once we remove URLResponseHead -> HttpResponseInfo -> URLResponseHead
-  // conversion, which drops some information needed for validation
-  // (e.g. mime type).
   auto response_info = std::make_unique<net::HttpResponseInfo>();
   response_info->headers = response_head.headers;
   if (response_head.ssl_info.has_value())

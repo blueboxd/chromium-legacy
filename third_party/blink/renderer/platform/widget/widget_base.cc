@@ -669,10 +669,7 @@ bool WidgetBase::ShouldUpdateCompositionInfo(const gfx::Range& range,
 }
 
 ui::TextInputType WidgetBase::GetTextInputType() {
-  FrameWidget* frame_widget = client_->FrameWidget();
-  if (!frame_widget)
-    return ui::TextInputType::TEXT_INPUT_TYPE_NONE;
-  return ConvertWebTextInputType(frame_widget->TextInputType());
+  return ConvertWebTextInputType(client_->GetTextInputType());
 }
 
 void WidgetBase::UpdateSelectionBounds() {

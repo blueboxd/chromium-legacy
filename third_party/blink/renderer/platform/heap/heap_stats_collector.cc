@@ -161,6 +161,11 @@ ThreadHeapStatsCollector::Event::worklist_processing_time_foreground() const {
   return scope_data[kMarkProcessWorklists];
 }
 
+base::TimeDelta ThreadHeapStatsCollector::Event::flushing_v8_references_time()
+    const {
+  return scope_data[kMarkFlushV8References];
+}
+
 base::TimeDelta ThreadHeapStatsCollector::Event::atomic_marking_time() const {
   return scope_data[kAtomicPauseMarkPrologue] +
          scope_data[kAtomicPauseMarkRoots] +
@@ -236,6 +241,10 @@ base::TimeDelta ThreadHeapStatsCollector::marking_time_so_far() const {
 base::TimeDelta ThreadHeapStatsCollector::worklist_processing_time_foreground()
     const {
   return current_.worklist_processing_time_foreground();
+}
+
+base::TimeDelta ThreadHeapStatsCollector::flushing_v8_references_time() const {
+  return current_.flushing_v8_references_time();
 }
 
 size_t ThreadHeapStatsCollector::allocated_space_bytes() const {

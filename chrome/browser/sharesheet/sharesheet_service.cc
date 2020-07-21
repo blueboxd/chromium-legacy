@@ -39,15 +39,53 @@ void SharesheetService::ShowBubble(views::View* bubble_anchor_view) {
 }
 
 // Cleanup delegate when bubble closes.
-void SharesheetService::OnBubbleClosed(uint32_t id) {
+void SharesheetService::OnBubbleClosed(uint32_t id,
+                                       const base::string16& active_action) {
   auto iter = active_delegates_.begin();
   while (iter != active_delegates_.end()) {
     if ((*iter)->GetId() == id) {
+      if (!active_action.empty()) {
+        ShareAction* share_action =
+            sharesheet_action_cache_->GetActionFromName(active_action);
+        if (share_action != nullptr)
+          share_action->OnClosing(iter->get());
+      }
       active_delegates_.erase(iter);
       break;
     }
     ++iter;
   }
+}
+
+void SharesheetService::OnTargetSelected(uint32_t delegate_id,
+                                         const base::string16& target_name,
+                                         const TargetType type,
+                                         views::View* share_action_view) {
+  if (type == TargetType::kAction) {
+    ShareAction* share_action =
+        sharesheet_action_cache_->GetActionFromName(target_name);
+    if (share_action == nullptr)
+      return;
+
+    SharesheetServiceDelegate* delegate = GetDelegate(delegate_id);
+    if (delegate == nullptr)
+      return;
+
+    delegate->OnActionLaunched();
+    share_action->LaunchAction(delegate, share_action_view);
+  }
+}
+
+SharesheetServiceDelegate* SharesheetService::GetDelegate(
+    uint32_t delegate_id) {
+  auto iter = active_delegates_.begin();
+  while (iter != active_delegates_.end()) {
+    if ((*iter)->GetId() == delegate_id) {
+      return iter->get();
+    }
+    ++iter;
+  }
+  return nullptr;
 }
 
 }  // namespace sharesheet

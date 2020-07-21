@@ -74,6 +74,8 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
   friend class ServiceWorkerVersion;
   friend class ServiceWorkerVersionBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerReadFromCacheJobTest, ResourceNotFound);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerBrowserTest,
+                           DispatchFetchEventToBrokenWorker);
 
   ServiceWorkerScriptCacheMap(
       ServiceWorkerVersion* owner,

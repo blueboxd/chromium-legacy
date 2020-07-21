@@ -5,7 +5,6 @@
 package org.chromium.components.prefs;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
@@ -24,8 +23,7 @@ public class PrefService {
         mNativePrefServiceAndroid = 0;
     }
 
-    @VisibleForTesting
-    PrefService(long nativePrefServiceAndroid) {
+    private PrefService(long nativePrefServiceAndroid) {
         mNativePrefServiceAndroid = nativePrefServiceAndroid;
     }
 

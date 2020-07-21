@@ -1,0 +1,1109 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/autofill/core/browser/data_model/autofill_structured_address_component.h"
+
+#include <stddef.h>
+#include <map>
+#include <string>
+#include <vector>
+
+#include "base/strings/utf_string_conversions.h"
+#include "base/test/gtest_util.h"
+#include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/data_model/autofill_structured_address_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+using base::ASCIIToUTF16;
+
+namespace autofill {
+namespace structured_address {
+
+// Creates an atomic name component for testing purposes.
+class TestAtomicFirstNameAddressComponent : public AddressComponent {
+ public:
+  TestAtomicFirstNameAddressComponent()
+      : TestAtomicFirstNameAddressComponent(nullptr) {}
+  explicit TestAtomicFirstNameAddressComponent(AddressComponent* parent)
+      : AddressComponent(NAME_FIRST, parent) {}
+};
+
+class TestAtomicMiddleNameAddressComponent : public AddressComponent {
+ public:
+  TestAtomicMiddleNameAddressComponent()
+      : TestAtomicMiddleNameAddressComponent(nullptr) {}
+  explicit TestAtomicMiddleNameAddressComponent(AddressComponent* parent)
+      : AddressComponent(NAME_MIDDLE, parent) {}
+
+  void GetAdditionalSupportedFieldTypes(
+      ServerFieldTypeSet* supported_types) const override {
+    DCHECK(supported_types->find(NAME_MIDDLE_INITIAL) ==
+           supported_types->end());
+    supported_types->insert(NAME_MIDDLE_INITIAL);
+  }
+
+  bool ConvertAndSetValueForAdditionalFieldTypeName(
+      const std::string& field_type_name,
+      const base::string16& value,
+      const VerificationStatus& status) override {
+    if (field_type_name == AutofillType(NAME_MIDDLE_INITIAL).ToString()) {
+      SetValue(value, status);
+      return true;
+    }
+    return false;
+  }
+
+  bool ConvertAndGetTheValueForAdditionalFieldTypeName(
+      const std::string& field_type_name,
+      base::string16* value) const override {
+    if (field_type_name == AutofillType(NAME_MIDDLE_INITIAL).ToString()) {
+      if (value) {
+        *value = GetValue().substr(0, 1);
+      }
+      return true;
+    }
+    return false;
+  }
+};
+
+class TestAtomicLastNameAddressComponent : public AddressComponent {
+ public:
+  TestAtomicLastNameAddressComponent()
+      : TestAtomicLastNameAddressComponent(nullptr) {}
+  explicit TestAtomicLastNameAddressComponent(AddressComponent* parent)
+      : AddressComponent(NAME_LAST, parent) {}
+};
+
+// Creates a compound name for testing purposes.
+class TestCompoundNameAddressComponent : public AddressComponent {
+ public:
+  TestCompoundNameAddressComponent()
+      : TestCompoundNameAddressComponent(nullptr) {}
+  explicit TestCompoundNameAddressComponent(AddressComponent* parent)
+      : AddressComponent(NAME_FULL,
+                         parent,
+                         {&first_name_, &middle_name_, &last_name_}) {}
+
+  AddressComponent* GetFirstNameSubComponentForTesting() {
+    return &first_name_;
+  }
+
+ private:
+  TestAtomicFirstNameAddressComponent first_name_{this};
+  TestAtomicMiddleNameAddressComponent middle_name_{this};
+  TestAtomicLastNameAddressComponent last_name_{this};
+};
+
+// Creates a compound name for testing purposes that uses a method for parsing.
+class TestCompoundNameMethodParsedAddressComponent : public AddressComponent {
+ public:
+  TestCompoundNameMethodParsedAddressComponent()
+      : TestCompoundNameMethodParsedAddressComponent(nullptr) {}
+  explicit TestCompoundNameMethodParsedAddressComponent(
+      AddressComponent* parent)
+      : AddressComponent(NAME_FULL,
+                         parent,
+                         {&first_name_, &middle_name_, &last_name_}) {}
+
+  bool ParseValueAndAssignSubcomponentsByMethod() override {
+    // Assigns everything to the first name.
+    first_name_.SetValue(GetValue(), VerificationStatus::kParsed);
+    return true;
+  }
+
+ private:
+  TestAtomicFirstNameAddressComponent first_name_{this};
+  TestAtomicMiddleNameAddressComponent middle_name_{this};
+  TestAtomicLastNameAddressComponent last_name_{this};
+};
+
+// Creates a compound name for testing purposes that uses an expression to
+// parse.
+class TestCompoundNameExpressionParsedAddressComponent
+    : public AddressComponent {
+ public:
+  TestCompoundNameExpressionParsedAddressComponent()
+      : TestCompoundNameExpressionParsedAddressComponent(nullptr) {
+    expression1_ =
+        BuildExpressionFromPattern("(?P<NAME_FULL>(?P<NAME_MIDDLE>\\d*))");
+    expression2_ =
+        BuildExpressionFromPattern("(?P<NAME_FULL>(?P<NAME_LAST>.*))");
+  }
+  explicit TestCompoundNameExpressionParsedAddressComponent(
+      AddressComponent* parent)
+      : AddressComponent(NAME_FULL,
+                         parent,
+                         {&first_name_, &middle_name_, &last_name_}) {}
+
+  std::vector<const RE2*> GetParseExpressionsByRelevance() const override {
+    // The first two expressions will fail and the last one will be
+    // successful.
+    return {nullptr, expression1_.get(), expression2_.get()};
+  }
+
+ private:
+  std::unique_ptr<const RE2> expression1_;
+  std::unique_ptr<const RE2> expression2_;
+  TestAtomicFirstNameAddressComponent first_name_{this};
+  TestAtomicMiddleNameAddressComponent middle_name_{this};
+  TestAtomicLastNameAddressComponent last_name_{this};
+};
+
+// Creates a compound name with a custom format for testing purposes.
+class TestCompoundNameCustomFormatAddressComponent : public AddressComponent {
+ public:
+  TestCompoundNameCustomFormatAddressComponent()
+      : TestCompoundNameCustomFormatAddressComponent(nullptr) {}
+  explicit TestCompoundNameCustomFormatAddressComponent(
+      AddressComponent* parent)
+      : AddressComponent(NAME_FULL,
+                         parent,
+                         {&first_name, &middle_name, &last_name}) {}
+
+  // Introduces a custom format with a leading last name.
+  base::string16 GetBestFormatString() const override {
+    return base::ASCIIToUTF16("${NAME_LAST}, ${NAME_FIRST}");
+  }
+
+ private:
+  TestAtomicFirstNameAddressComponent first_name{this};
+  TestAtomicMiddleNameAddressComponent middle_name{this};
+  TestAtomicLastNameAddressComponent last_name{this};
+};
+
+// Creates a compound name with a custom format with unsupported token.
+class TestCompoundNameCustomFormatWithUnsupportedTokenAddressComponent
+    : public AddressComponent {
+ public:
+  TestCompoundNameCustomFormatWithUnsupportedTokenAddressComponent()
+      : TestCompoundNameCustomFormatWithUnsupportedTokenAddressComponent(
+            nullptr) {}
+  explicit TestCompoundNameCustomFormatWithUnsupportedTokenAddressComponent(
+      AddressComponent* parent)
+      : AddressComponent(NAME_FULL,
+                         parent,
+                         {&first_name, &middle_name, &last_name}) {}
+
+  // Introduce a custom format with a leading last name.
+  base::string16 GetBestFormatString() const override {
+    return base::ASCIIToUTF16("${NAME_LAST}, ${NAME_FIRST} ${NOT_SUPPORTED}");
+  }
+
+ private:
+  TestAtomicFirstNameAddressComponent first_name{this};
+  TestAtomicMiddleNameAddressComponent middle_name{this};
+  TestAtomicLastNameAddressComponent last_name{this};
+};
+
+class TestAtomicTitleAddressComponent : public AddressComponent {
+ public:
+  TestAtomicTitleAddressComponent()
+      : TestAtomicTitleAddressComponent(nullptr) {}
+  explicit TestAtomicTitleAddressComponent(AddressComponent* parent)
+      : AddressComponent(NAME_HONORIFIC_PREFIX, parent) {}
+};
+
+// Creates a fictional compound component with sub- and sub subcomponents.
+class TestCompoundNameWithTitleAddressComponent : public AddressComponent {
+ public:
+  TestCompoundNameWithTitleAddressComponent()
+      : TestCompoundNameWithTitleAddressComponent(nullptr) {}
+  explicit TestCompoundNameWithTitleAddressComponent(AddressComponent* parent)
+      : AddressComponent(CREDIT_CARD_NAME_FULL, parent, {&title, &full_name}) {}
+
+ private:
+  TestAtomicTitleAddressComponent title{this};
+  TestCompoundNameAddressComponent full_name{this};
+};
+
+// Creates a tree that is not proper in the sense that it contains the same type
+// multiple times.
+class TestNonProperFirstNameAddressComponent : public AddressComponent {
+ public:
+  TestNonProperFirstNameAddressComponent()
+      : TestNonProperFirstNameAddressComponent(nullptr) {}
+  explicit TestNonProperFirstNameAddressComponent(AddressComponent* parent)
+      : AddressComponent(NAME_FIRST, parent, {&second_name_first_node_}) {}
+
+ private:
+  TestAtomicFirstNameAddressComponent second_name_first_node_;
+};
+
+// Tests that the destructor does not crash
+TEST(AutofillStructuredAddressAddressComponent, ConstructAndDestruct) {
+  AddressComponent* component = new AddressComponent(NAME_FULL, nullptr);
+  delete component;
+  EXPECT_TRUE(true);
+}
+
+// Tests that a non-proper AddressComponent tree fails a DCHECK for
+// |GetSupportedTypes()|.
+TEST(AutofillStructuredAddressAddressComponent,
+     TestNonProperTreeDcheckFailure) {
+  TestNonProperFirstNameAddressComponent non_proper_compound;
+  ServerFieldTypeSet supported_tpyes;
+  EXPECT_DCHECK_DEATH(non_proper_compound.GetSupportedTypes(&supported_tpyes));
+}
+
+// Tests getting the root node.
+TEST(AutofillStructuredAddressAddressComponent, TestGetRootNode) {
+  TestCompoundNameAddressComponent compound_component;
+
+  // The root node should return the root node.
+  EXPECT_EQ(&compound_component, &(compound_component.GetRootNodeForTesting()));
+
+  // Get a pointer to a subcomponent, verify that it is not the root node and
+  // check that it successfully retrieves the root node.
+  AddressComponent* first_name_subcomponent_ptr =
+      compound_component.GetFirstNameSubComponentForTesting();
+  EXPECT_NE(&compound_component, first_name_subcomponent_ptr);
+  EXPECT_EQ(&compound_component,
+            &(first_name_subcomponent_ptr->GetRootNodeForTesting()));
+}
+
+// Tests that additional field types are correctly retrieved.
+TEST(AutofillStructuredAddressAddressComponent, TestGetSupportedFieldType) {
+  ServerFieldTypeSet field_type_set;
+
+  TestAtomicFirstNameAddressComponent first_name_component;
+  TestAtomicMiddleNameAddressComponent middle_name_component;
+
+  // The first name does not have an additional supported field type.
+  first_name_component.GetAdditionalSupportedFieldTypes(&field_type_set);
+  EXPECT_EQ(field_type_set, ServerFieldTypeSet({}));
+
+  // The middle name supports an iniital.
+  middle_name_component.GetAdditionalSupportedFieldTypes(&field_type_set);
+  EXPECT_EQ(field_type_set, ServerFieldTypeSet({NAME_MIDDLE_INITIAL}));
+}
+
+// Tests setting an additional field type.
+TEST(AutofillStructuredAddressAddressComponent, TestSetFieldTypeValue) {
+  TestCompoundNameAddressComponent compound_name;
+  EXPECT_TRUE(compound_name.SetValueForTypeIfPossible(
+      NAME_MIDDLE_INITIAL, base::UTF8ToUTF16("M"),
+      VerificationStatus::kObserved));
+
+  EXPECT_EQ(compound_name.GetValueForType(NAME_MIDDLE), base::UTF8ToUTF16("M"));
+}
+
+// Tests retrieving an additional field type.
+TEST(AutofillStructuredAddressAddressComponent, TestGetFieldTypeValue) {
+  TestCompoundNameAddressComponent compound_name;
+  EXPECT_TRUE(compound_name.SetValueForTypeIfPossible(
+      NAME_MIDDLE, base::UTF8ToUTF16("Middle"), VerificationStatus::kObserved));
+
+  EXPECT_EQ(compound_name.GetValueForType(NAME_MIDDLE_INITIAL),
+            base::UTF8ToUTF16("M"));
+  EXPECT_EQ(compound_name.GetVerificationStatusForType(NAME_MIDDLE_INITIAL),
+            VerificationStatus::kObserved);
+}
+
+// Tests adding all supported types to the set.
+TEST(AutofillStructuredAddressAddressComponent, TestGetSupportedTypes) {
+  ServerFieldTypeSet field_type_set;
+
+  TestAtomicFirstNameAddressComponent first_name_component;
+  TestAtomicMiddleNameAddressComponent middle_name_component;
+  TestCompoundNameAddressComponent compound_name;
+
+  // The first name only supports NAME_FIRST.
+  first_name_component.GetSupportedTypes(&field_type_set);
+  EXPECT_EQ(field_type_set, ServerFieldTypeSet({NAME_FIRST}));
+
+  // The middle name supports an initial.
+  field_type_set.clear();
+  middle_name_component.GetSupportedTypes(&field_type_set);
+  EXPECT_EQ(field_type_set,
+            ServerFieldTypeSet({NAME_MIDDLE, NAME_MIDDLE_INITIAL}));
+
+  // Verify that all types are added correctly in a compound structure.
+  field_type_set.clear();
+  compound_name.GetSupportedTypes(&field_type_set);
+  EXPECT_EQ(field_type_set,
+            ServerFieldTypeSet({NAME_MIDDLE, NAME_MIDDLE_INITIAL, NAME_FIRST,
+                                NAME_LAST, NAME_FULL}));
+}
+
+// Tests the comparison of thw atoms of the same type.
+TEST(AutofillStructuredAddressAddressComponent, TestComparisonOperator_Atom) {
+  AddressComponent left(NAME_FIRST);
+  AddressComponent right(NAME_FIRST);
+
+  left.SetValue(base::UTF8ToUTF16("some value"), VerificationStatus::kParsed);
+  right.SetValue(base::UTF8ToUTF16("some other value"),
+                 VerificationStatus::kFormatted);
+  EXPECT_NE(left.GetValue(), right.GetValue());
+  EXPECT_NE(left.GetVerificationStatus(), right.GetVerificationStatus());
+
+  EXPECT_FALSE(left == right);
+  EXPECT_TRUE(left != right);
+
+  right.SetValue(base::UTF8ToUTF16("some value"), VerificationStatus::kParsed);
+
+  EXPECT_TRUE(left == right);
+  EXPECT_FALSE(left != right);
+}
+
+// Tests comparison of two different types.
+TEST(AutofillStructuredAddressAddressComponent,
+     TestComparisonOperator_DifferentTypes) {
+  AddressComponent type_a1(NAME_FIRST);
+  AddressComponent type_a2(NAME_FIRST);
+  AddressComponent type_b(NAME_LAST);
+
+  EXPECT_TRUE(type_a1 == type_a2);
+  EXPECT_FALSE(type_a1 == type_b);
+}
+
+// Tests the comparison with itself.
+TEST(AutofillStructuredAddressAddressComponent,
+     TestComparisonOperator_SelfComparison) {
+  AddressComponent type_a(NAME_FIRST);
+
+  EXPECT_TRUE(type_a == type_a);
+}
+
+// Tests the comparison operator.
+TEST(AutofillStructuredAddressAddressComponent,
+     TestComparisonOperator_Compound) {
+  TestCompoundNameAddressComponent left;
+  TestCompoundNameAddressComponent right;
+
+  // Set left to a value and verify its state.
+  left.SetValueForTypeIfPossible(NAME_FULL,
+                                 base::UTF8ToUTF16("First Middle Last"),
+                                 VerificationStatus::kObserved);
+  EXPECT_TRUE(left.CompleteFullTree());
+  EXPECT_EQ(left.GetValueForType(NAME_FULL),
+            base::UTF8ToUTF16("First Middle Last"));
+  EXPECT_EQ(left.GetValueForType(NAME_FIRST), base::UTF8ToUTF16("First"));
+  EXPECT_EQ(left.GetValueForType(NAME_MIDDLE), base::UTF8ToUTF16("Middle"));
+  EXPECT_EQ(left.GetValueForType(NAME_LAST), base::UTF8ToUTF16("Last"));
+  EXPECT_EQ(left.GetVerificationStatusForType(NAME_FULL),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(left.GetVerificationStatusForType(NAME_FIRST),
+            VerificationStatus::kParsed);
+  EXPECT_EQ(left.GetVerificationStatusForType(NAME_LAST),
+            VerificationStatus::kParsed);
+  EXPECT_EQ(left.GetVerificationStatusForType(NAME_MIDDLE),
+            VerificationStatus::kParsed);
+
+  // Set right to another value and verify its state.
+  right.SetValueForTypeIfPossible(NAME_FULL,
+                                  base::UTF8ToUTF16("The Dark Knight"),
+                                  VerificationStatus::kUserVerified);
+  EXPECT_TRUE(right.CompleteFullTree());
+  EXPECT_EQ(right.GetValueForType(NAME_FULL),
+            base::UTF8ToUTF16("The Dark Knight"));
+  EXPECT_EQ(right.GetValueForType(NAME_FIRST), base::UTF8ToUTF16("The"));
+  EXPECT_EQ(right.GetValueForType(NAME_MIDDLE), base::UTF8ToUTF16("Dark"));
+  EXPECT_EQ(right.GetValueForType(NAME_LAST), base::UTF8ToUTF16("Knight"));
+  EXPECT_EQ(right.GetVerificationStatusForType(NAME_FULL),
+            VerificationStatus::kUserVerified);
+  EXPECT_EQ(right.GetVerificationStatusForType(NAME_FIRST),
+            VerificationStatus::kParsed);
+  EXPECT_EQ(right.GetVerificationStatusForType(NAME_LAST),
+            VerificationStatus::kParsed);
+  EXPECT_EQ(right.GetVerificationStatusForType(NAME_MIDDLE),
+            VerificationStatus::kParsed);
+
+  EXPECT_FALSE(left == right);
+  EXPECT_TRUE(left != right);
+
+  // Set left to the same values as right and verify that it is now equal.
+  TestCompoundNameAddressComponent same_right;
+  same_right.SetValueForTypeIfPossible(NAME_FULL,
+                                       base::UTF8ToUTF16("The Dark Knight"),
+                                       VerificationStatus::kUserVerified);
+  EXPECT_TRUE(same_right.CompleteFullTree());
+
+  EXPECT_TRUE(right == same_right);
+  EXPECT_FALSE(right != same_right);
+
+  // Change one subcomponent and verify that it is not equal anymore.
+  same_right.SetValueForTypeIfPossible(NAME_LAST, base::UTF8ToUTF16("Joker"),
+                                       VerificationStatus::kParsed);
+  EXPECT_TRUE(right != same_right);
+  EXPECT_FALSE(right == same_right);
+}
+
+// Tests the assignment operator.
+TEST(AutofillStructuredAddressAddressComponent, TestAssignmentOperator_Atom) {
+  AddressComponent left(NAME_FIRST);
+  AddressComponent right(NAME_FIRST);
+
+  left.SetValue(base::UTF8ToUTF16("some value"), VerificationStatus::kParsed);
+  right.SetValue(base::UTF8ToUTF16("some other value"),
+                 VerificationStatus::kFormatted);
+  EXPECT_FALSE(left == right);
+
+  left.SetValue(base::UTF8ToUTF16("some other value"),
+                VerificationStatus::kFormatted);
+  EXPECT_TRUE(left == right);
+}
+
+// Tests the assignment operator on a compound node.
+TEST(AutofillStructuredAddressAddressComponent,
+     TestAssignmentOperator_Compound) {
+  TestCompoundNameAddressComponent left;
+  TestCompoundNameAddressComponent right;
+
+  left.SetValueForTypeIfPossible(NAME_FULL,
+                                 base::UTF8ToUTF16("First Middle Last"),
+                                 VerificationStatus::kObserved);
+  left.RecursivelyCompleteTree();
+
+  right.SetValueForTypeIfPossible(NAME_FULL,
+                                  base::UTF8ToUTF16("The Dark Knight"),
+                                  VerificationStatus::kParsed);
+  right.RecursivelyCompleteTree();
+
+  EXPECT_FALSE(left == right);
+
+  left = right;
+  EXPECT_TRUE(left == right);
+}
+
+// Tests that self-assignment does not break things.
+TEST(AutofillStructuredAddressAddressComponent, SelfAssignment) {
+  TestCompoundNameAddressComponent left;
+
+  left.SetValueForTypeIfPossible(NAME_FULL,
+                                 base::UTF8ToUTF16("First Middle Last"),
+                                 VerificationStatus::kObserved);
+  left = *(&left);
+
+  EXPECT_EQ(left.GetValueForType(NAME_FULL),
+            base::UTF8ToUTF16("First Middle Last"));
+}
+
+// Tests that the correct storage types are returned.
+TEST(AutofillStructuredAddressAddressComponent, GetStorageType) {
+  EXPECT_EQ(TestAtomicFirstNameAddressComponent().GetStorageType(), NAME_FIRST);
+  EXPECT_EQ(TestAtomicMiddleNameAddressComponent().GetStorageType(),
+            NAME_MIDDLE);
+  EXPECT_EQ(TestAtomicLastNameAddressComponent().GetStorageType(), NAME_LAST);
+  EXPECT_EQ(TestCompoundNameAddressComponent().GetStorageType(), NAME_FULL);
+}
+
+// Tests that the correct storage type names are returned.
+TEST(AutofillStructuredAddressAddressComponent, GetStorageTypeName) {
+  EXPECT_EQ(TestAtomicFirstNameAddressComponent().GetStorageTypeName(),
+            "NAME_FIRST");
+  EXPECT_EQ(TestAtomicMiddleNameAddressComponent().GetStorageTypeName(),
+            "NAME_MIDDLE");
+  EXPECT_EQ(TestAtomicLastNameAddressComponent().GetStorageTypeName(),
+            "NAME_LAST");
+  EXPECT_EQ(TestCompoundNameAddressComponent().GetStorageTypeName(),
+            "NAME_FULL");
+}
+
+// Tests that the correct atomicity is returned.
+TEST(AutofillStructuredAddressAddressComponent, GetAtomicity) {
+  EXPECT_TRUE(TestAtomicFirstNameAddressComponent().IsAtomic());
+  EXPECT_TRUE(TestAtomicMiddleNameAddressComponent().IsAtomic());
+  EXPECT_TRUE(TestAtomicLastNameAddressComponent().IsAtomic());
+  EXPECT_FALSE(TestCompoundNameAddressComponent().IsAtomic());
+}
+
+// Tests directly setting and retrieving values.
+TEST(AutofillStructuredAddressAddressComponent, DirectlyGetSetAndUnsetValue) {
+  base::string16 test_value = base::ASCIIToUTF16("test_value");
+
+  // Create an atomic structured component and verify its initial unset state
+  TestAtomicFirstNameAddressComponent first_name_component;
+  EXPECT_EQ(first_name_component.GetValue(), base::string16());
+  EXPECT_FALSE(first_name_component.IsValueAssigned());
+  EXPECT_EQ(first_name_component.GetVerificationStatus(),
+            VerificationStatus::kNoStatus);
+
+  // Set the value and the verification status and verify the set state.
+  first_name_component.SetValue(test_value, VerificationStatus::kObserved);
+  EXPECT_EQ(first_name_component.GetValue(), test_value);
+  EXPECT_TRUE(first_name_component.IsValueAssigned());
+  EXPECT_EQ(first_name_component.GetVerificationStatus(),
+            VerificationStatus::kObserved);
+
+  // Unset the value and verify the unset state again.
+  first_name_component.UnsetValue();
+  EXPECT_EQ(first_name_component.GetValue(), base::string16());
+  EXPECT_FALSE(first_name_component.IsValueAssigned());
+  EXPECT_EQ(first_name_component.GetVerificationStatus(),
+            VerificationStatus::kNoStatus);
+}
+
+// Tests recursively setting and retrieving values.
+TEST(AutofillStructuredAddressAddressComponent,
+     RecursivelySettingAndGettingValues) {
+  base::string16 test_value = base::ASCIIToUTF16("test_value");
+
+  // Create a compound component that has a child of type NAME_FIRST.
+  TestCompoundNameAddressComponent compound_component;
+
+  // Set the value and verification status of a type not present in the tree and
+  // verify the failure.
+  bool success = compound_component.SetValueForTypeIfPossible(
+      ADDRESS_HOME_COUNTRY, test_value, VerificationStatus::kObserved);
+  EXPECT_FALSE(success);
+
+  // Set the value and verification status of a type that is a subcomponent of
+  // the compound and verify the success.
+  EXPECT_TRUE(compound_component.SetValueForTypeIfPossible(
+      NAME_FIRST, test_value, VerificationStatus::kObserved));
+
+  // Retrieve the value and verification status, verify the success and
+  // retrieved values.
+  base::string16 retrieved_value;
+  VerificationStatus retrieved_status;
+  EXPECT_TRUE(compound_component.GetValueAndStatusForTypeIfPossible(
+      NAME_FIRST, &retrieved_value, &retrieved_status));
+  EXPECT_EQ(retrieved_value, test_value);
+  EXPECT_EQ(retrieved_status, VerificationStatus::kObserved);
+
+  // Retrieve the value of a non-existing type and verify the failure.
+  EXPECT_FALSE(compound_component.GetValueAndStatusForTypeIfPossible(
+      ADDRESS_HOME_COUNTRY, &retrieved_value, &retrieved_status));
+}
+
+// Tests retrieving the subcomponents types.
+TEST(AutofillStructuredAddressAddressComponent, GetSubcomponentTypes) {
+  // Create a compound component that has the subcomponents
+  // NAME_FIRST, NAME_MIDDLE, NAME_LAST.
+  TestCompoundNameAddressComponent compound_component;
+
+  // Get the subcomponent types and verify the expectation.
+  auto sub_component_types =
+      compound_component.GetSubcomponentTypesForTesting();
+  std::vector<ServerFieldType> expected_types{NAME_FIRST, NAME_MIDDLE,
+                                              NAME_LAST};
+  EXPECT_EQ(sub_component_types, expected_types);
+}
+
+// Tests getting the best format string for an atom.
+TEST(AutofillStructuredAddressAddressComponent, GetBestFormatString_ForAtom) {
+  TestAtomicFirstNameAddressComponent first_name_component;
+  EXPECT_EQ(first_name_component.GetBestFormatStringForTesting(),
+            base::UTF8ToUTF16("${NAME_FIRST}"));
+}
+
+// Tests getting the best format string using the fallback mechanism.
+TEST(AutofillStructuredAddressAddressComponent,
+     GetBestFormatString_WithFallback) {
+  // Create a compound component.
+  TestCompoundNameAddressComponent compound_component;
+
+  // Verify the retrieved default format string against the expectation.
+  base::string16 expected_result =
+      ASCIIToUTF16("${NAME_FIRST} ${NAME_MIDDLE} ${NAME_LAST}");
+  base::string16 actual_result =
+      compound_component.GetBestFormatStringForTesting();
+  EXPECT_EQ(expected_result, actual_result);
+}
+
+// Tests getting the best format string using the fallback mechanism.
+TEST(AutofillStructuredAddressAddressComponent,
+     GetBestFormatString_WithCustomMethod) {
+  // Create a compound component.
+  TestCompoundNameCustomFormatAddressComponent compound_component;
+
+  // Verify the retrieved custom format string against the expectation.
+  base::string16 expected_result = ASCIIToUTF16("${NAME_LAST}, ${NAME_FIRST}");
+  base::string16 actual_result =
+      compound_component.GetBestFormatStringForTesting();
+  EXPECT_EQ(expected_result, actual_result);
+}
+
+// Tests formatting the unstructured value from the subcomponents with an
+// unsupported token.
+TEST(AutofillStructuredAddressAddressComponent,
+     FormatValueFromSubcomponents_UnsupportedToken) {
+  base::string16 first_name = ASCIIToUTF16("Winston");
+  base::string16 middle_name = ASCIIToUTF16("O'Brien");
+  base::string16 last_name = ASCIIToUTF16("Smith");
+
+  // Create a compound component and set the values.
+  TestCompoundNameCustomFormatWithUnsupportedTokenAddressComponent
+      compound_component;
+  compound_component.SetValueForTypeIfPossible(
+      NAME_FIRST, first_name, VerificationStatus::kUserVerified);
+  compound_component.SetValueForTypeIfPossible(
+      NAME_MIDDLE, middle_name, VerificationStatus::kUserVerified);
+  compound_component.SetValueForTypeIfPossible(
+      NAME_LAST, last_name, VerificationStatus::kUserVerified);
+
+  compound_component.FormatValueFromSubcomponentsForTesting();
+
+  base::string16 expected_value =
+      ASCIIToUTF16("Smith, Winston ${NOT_SUPPORTED}");
+  base::string16 actual_value = compound_component.GetValue();
+
+  EXPECT_EQ(expected_value, actual_value);
+}
+
+// Tests formatting the unstructured value from the subcomponents.
+TEST(AutofillStructuredAddressAddressComponent, FormatValueFromSubcomponents) {
+  base::string16 first_name = ASCIIToUTF16("Winston");
+  base::string16 middle_name = ASCIIToUTF16("O'Brien");
+  base::string16 last_name = ASCIIToUTF16("Smith");
+
+  // Create a compound component and set the values.
+  TestCompoundNameAddressComponent compound_component;
+  compound_component.SetValueForTypeIfPossible(
+      NAME_FIRST, first_name, VerificationStatus::kUserVerified);
+  compound_component.SetValueForTypeIfPossible(
+      NAME_MIDDLE, middle_name, VerificationStatus::kUserVerified);
+  compound_component.SetValueForTypeIfPossible(
+      NAME_LAST, last_name, VerificationStatus::kUserVerified);
+
+  compound_component.FormatValueFromSubcomponentsForTesting();
+
+  base::string16 expected_value = ASCIIToUTF16("Winston O'Brien Smith");
+  base::string16 actual_value = compound_component.GetValue();
+
+  EXPECT_EQ(expected_value, actual_value);
+}
+
+// Tests that formatted values are correctly trimmed.
+TEST(AutofillStructuredAddressAddressComponent,
+     FormatAndTrimmValueFromSubcomponents) {
+  base::string16 first_name = ASCIIToUTF16("");
+  base::string16 middle_name = ASCIIToUTF16("O'Brien   ");
+  base::string16 last_name = ASCIIToUTF16("Smith");
+  // Create a compound component.
+  TestCompoundNameAddressComponent compound_component;
+
+  // Set the values of the components.
+  compound_component.SetValueForTypeIfPossible(
+      NAME_FIRST, first_name, VerificationStatus::kUserVerified);
+  compound_component.SetValueForTypeIfPossible(
+      NAME_MIDDLE, middle_name, VerificationStatus::kUserVerified);
+  compound_component.SetValueForTypeIfPossible(
+      NAME_LAST, last_name, VerificationStatus::kUserVerified);
+
+  compound_component.FormatValueFromSubcomponentsForTesting();
+
+  // Expect that the leading whitespace due to the missing first name and the
+  // double white spaces after the middle name are correctly trimmed.
+  base::string16 expected_value = ASCIIToUTF16("O'Brien Smith");
+  base::string16 actual_value = compound_component.GetValue();
+
+  EXPECT_EQ(expected_value, actual_value);
+}
+
+TEST(AutofillStructuredAddressAddressComponent,
+     TestEquivalenceOfReplacePlaceholderImplementations) {
+  base::string16 first_name = ASCIIToUTF16("Winston");
+  base::string16 middle_name = ASCIIToUTF16("O'Brien");
+  base::string16 last_name = ASCIIToUTF16("Smith");
+  // Create a compound component.
+  TestCompoundNameCustomFormatAddressComponent compound_component;
+
+  // Set the values of the subcomponents.
+  compound_component.SetValueForTypeIfPossible(
+      NAME_FIRST, first_name, VerificationStatus::kUserVerified);
+  compound_component.SetValueForTypeIfPossible(
+      NAME_MIDDLE, middle_name, VerificationStatus::kUserVerified);
+  compound_component.SetValueForTypeIfPossible(
+      NAME_LAST, last_name, VerificationStatus::kUserVerified);
+}
+
+// Tests the formatting of the unstructured value from the components with a
+// type-specific format string.
+TEST(AutofillStructuredAddressAddressComponent,
+     FormatValueFromSubcomponentsWithTypeSpecificFormat) {
+  base::string16 first_name = ASCIIToUTF16("Winston");
+  base::string16 middle_name = ASCIIToUTF16("O'Brien");
+  base::string16 last_name = ASCIIToUTF16("Smith");
+  // Create a compound component.
+  TestCompoundNameCustomFormatAddressComponent compound_component;
+
+  // Set the values of the subcomponents.
+  compound_component.SetValueForTypeIfPossible(
+      NAME_FIRST, first_name, VerificationStatus::kUserVerified);
+  compound_component.SetValueForTypeIfPossible(
+      NAME_MIDDLE, middle_name, VerificationStatus::kUserVerified);
+  compound_component.SetValueForTypeIfPossible(
+      NAME_LAST, last_name, VerificationStatus::kUserVerified);
+
+  // Format the compound and verify the expectation.
+  compound_component.FormatValueFromSubcomponentsForTesting();
+  base::string16 expected_value = ASCIIToUTF16("Smith, Winston");
+  base::string16 actual_value = compound_component.GetValue();
+
+  EXPECT_EQ(expected_value, actual_value);
+}
+
+// Tests parsing of an empty value. Because, that's why.
+TEST(AutofillStructuredAddressAddressComponent,
+     TestParseValueAndAssignSubcomponentsByFallbackMethod_EmptyString) {
+  TestCompoundNameAddressComponent compound_component;
+  compound_component.SetValue(base::string16(), VerificationStatus::kObserved);
+  compound_component.ParseValueAndAssignSubcomponents();
+
+  EXPECT_EQ(compound_component.GetValue(), base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_FIRST), base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_MIDDLE), base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_LAST), base::string16());
+}
+
+// Tests parsing using a defined method.
+TEST(AutofillStructuredAddressAddressComponent,
+     TestParseValueAndAssignSubcomponentsByMethod) {
+  TestCompoundNameMethodParsedAddressComponent compound_component;
+  compound_component.SetValue(ASCIIToUTF16("Dr. Strangelove"),
+                              VerificationStatus::kObserved);
+  compound_component.ParseValueAndAssignSubcomponents();
+
+  EXPECT_EQ(compound_component.GetValue(), ASCIIToUTF16("Dr. Strangelove"));
+  EXPECT_EQ(compound_component.GetValueForType(NAME_FIRST),
+            ASCIIToUTF16("Dr. Strangelove"));
+  EXPECT_EQ(compound_component.GetValueForType(NAME_MIDDLE), base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_LAST), base::string16());
+}
+
+// Tests parsing using a defined method.
+TEST(AutofillStructuredAddressAddressComponent,
+     TestParseValueAndAssignSubcomponentsByExpression) {
+  TestCompoundNameExpressionParsedAddressComponent compound_component;
+  compound_component.SetValue(ASCIIToUTF16("Dr. Strangelove"),
+                              VerificationStatus::kObserved);
+  compound_component.ParseValueAndAssignSubcomponents();
+
+  EXPECT_EQ(compound_component.GetValue(), ASCIIToUTF16("Dr. Strangelove"));
+  EXPECT_EQ(compound_component.GetValueForType(NAME_FIRST), base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_MIDDLE), base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_LAST),
+            ASCIIToUTF16("Dr. Strangelove"));
+}
+
+// Go nuclear and parse the value of an atomic component.
+TEST(AutofillStructuredAddressAddressComponent,
+     TestParseValueAndAssignSubcomponentsByFallbackMethod_Atom) {
+  TestAtomicFirstNameAddressComponent atomic_component;
+  atomic_component.SetValue(base::UTF8ToUTF16("Dangerzone"),
+                            VerificationStatus::kObserved);
+  atomic_component.ParseValueAndAssignSubcomponents();
+
+  // The parsing should not crash the browser and keep the initial value intact.
+  EXPECT_EQ(base::UTF8ToUTF16("Dangerzone"), atomic_component.GetValue());
+}
+
+// Tests the fallback method to parse a value into its components if there are
+// more space-separated tokens than components.
+TEST(AutofillStructuredAddressAddressComponent,
+     TestParseValueAndAssignSubcomponentsByFallbackMethod) {
+  base::string16 full_name = ASCIIToUTF16("Winston O'Brien Hammer Smith");
+
+  // Create a compound component, set the value and parse the value of the
+  // subcomponents.
+  TestCompoundNameAddressComponent compound_component;
+  compound_component.SetValueForTypeIfPossible(
+      NAME_FULL, full_name, VerificationStatus::kUserVerified);
+  compound_component.ParseValueAndAssignSubcomponents();
+
+  // Define the expectations, and verify the expectation.
+  base::string16 first_name = ASCIIToUTF16("Winston");
+  base::string16 middle_name = ASCIIToUTF16("O'Brien");
+  base::string16 last_name = ASCIIToUTF16("Hammer Smith");
+  EXPECT_EQ(compound_component.GetValueForType(NAME_FIRST), first_name);
+  EXPECT_EQ(compound_component.GetValueForType(NAME_MIDDLE), middle_name);
+  EXPECT_EQ(compound_component.GetValueForType(NAME_LAST), last_name);
+}
+
+// Tests the fallback method to parse a value into its components if there are
+// less space-separated tokens than components.
+TEST(AutofillStructuredAddressAddressComponent,
+     ParseValueAndAssignSubcomponentsByFallbackMethod_WithFewTokens) {
+  base::string16 full_name = ASCIIToUTF16("Winston");
+
+  // Create a compound component and assign a value.
+  TestCompoundNameAddressComponent compound_component;
+  compound_component.SetValueForTypeIfPossible(
+      NAME_FULL, full_name, VerificationStatus::kUserVerified);
+
+  // Parse the full name into its components by using the fallback method
+  compound_component.ParseValueAndAssignSubcomponents();
+
+  // Verify the expectation.
+  base::string16 first_name = ASCIIToUTF16("Winston");
+  base::string16 middle_name = ASCIIToUTF16("");
+  base::string16 last_name = ASCIIToUTF16("");
+  EXPECT_EQ(compound_component.GetValueForType(NAME_FIRST), first_name);
+  EXPECT_EQ(compound_component.GetValueForType(NAME_MIDDLE), middle_name);
+  EXPECT_EQ(compound_component.GetValueForType(NAME_LAST), last_name);
+}
+
+// Tests that a tree is regarded completable if and only if there if the
+// maximum number of assigned nodes on a path from the root node to a leaf is
+// exactly one.
+TEST(AutofillStructuredAddressAddressComponent, IsTreeCompletable) {
+  // Some values.
+  base::string16 first_name = ASCIIToUTF16("Winston");
+  base::string16 middle_name = ASCIIToUTF16("O'Brien");
+  base::string16 full_name = ASCIIToUTF16("Winston O'Brien Smith");
+
+  // Create a compound component.
+  TestCompoundNameAddressComponent compound_component;
+
+  // This tree is not completable because it has not a single assigned node.
+  EXPECT_FALSE(compound_component.IsTreeCompletable());
+
+  // Set the first name node of the tree.
+  compound_component.SetValueForTypeIfPossible(
+      NAME_FIRST, first_name, VerificationStatus::kUserVerified);
+
+  // The tree should be completable because there is exactly one assigned node.
+  EXPECT_TRUE(compound_component.IsTreeCompletable());
+
+  // Set the middle-name node of the tree.
+  compound_component.SetValueForTypeIfPossible(
+      NAME_MIDDLE, middle_name, VerificationStatus::kUserVerified);
+
+  // The tree should still be completable because the first and middle name are
+  // siblings and not in a direct line.
+  EXPECT_TRUE(compound_component.IsTreeCompletable());
+
+  // Set the full name node of the tree.
+  compound_component.SetValueForTypeIfPossible(
+      NAME_FULL, full_name, VerificationStatus::kUserVerified);
+
+  // Now, the tree is not completable anymore because there are multiple
+  // assigned values on a path from the root to a leaf.
+  EXPECT_FALSE(compound_component.IsTreeCompletable());
+  EXPECT_FALSE(compound_component.CompleteFullTree());
+}
+
+// Tests that the tree is completed successfully from the root node down to the
+// leafs.
+TEST(AutofillStructuredAddressAddressComponent, TreeCompletion_TopToBottom) {
+  // Some values.
+  base::string16 first_name = ASCIIToUTF16("Winston");
+  base::string16 middle_name = ASCIIToUTF16("O'Brien");
+  base::string16 last_name = ASCIIToUTF16("Smith");
+  base::string16 full_name = ASCIIToUTF16("Winston O'Brien Smith");
+
+  // Create a compound component and set the value of the root node.
+  TestCompoundNameAddressComponent compound_component;
+  compound_component.SetValueForTypeIfPossible(
+      NAME_FULL, full_name, VerificationStatus::kUserVerified);
+
+  // Verify that the are subcomponents empty.
+  EXPECT_EQ(compound_component.GetValueForType(NAME_FIRST), base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_MIDDLE), base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_LAST), base::string16());
+
+  // Complete the tree.
+  EXPECT_TRUE(compound_component.CompleteFullTree());
+
+  // Verify that the values for the subcomponents have been successfully parsed.
+  EXPECT_EQ(compound_component.GetValueForType(NAME_FIRST), first_name);
+  EXPECT_EQ(compound_component.GetValueForType(NAME_MIDDLE), middle_name);
+  EXPECT_EQ(compound_component.GetValueForType(NAME_LAST), last_name);
+}
+
+// Tests that the tree is completed successfully from leaf nodes to the root.
+TEST(AutofillStructuredAddressAddressComponent, TreeCompletion_BottomToTop) {
+  // Some values.
+  base::string16 first_name = ASCIIToUTF16("Winston");
+  base::string16 middle_name = ASCIIToUTF16("O'Brien");
+  base::string16 last_name = ASCIIToUTF16("Smith");
+  base::string16 full_name = ASCIIToUTF16("Winston O'Brien Smith");
+
+  // Create a compound component and set the value of the first, middle and last
+  // name.
+  TestCompoundNameAddressComponent compound_component;
+  compound_component.SetValueForTypeIfPossible(
+      NAME_FIRST, first_name, VerificationStatus::kUserVerified);
+  compound_component.SetValueForTypeIfPossible(
+      NAME_MIDDLE, middle_name, VerificationStatus::kUserVerified);
+  compound_component.SetValueForTypeIfPossible(
+      NAME_LAST, last_name, VerificationStatus::kUserVerified);
+
+  // Verify that the root node is empty.
+  EXPECT_EQ(compound_component.GetValueForType(NAME_FULL), base::string16());
+
+  // Complete the tree.
+  compound_component.CompleteFullTree();
+
+  // Verify that the value for the root node was successfully formatted.
+  EXPECT_EQ(compound_component.GetValueForType(NAME_FULL), full_name);
+}
+
+// Tests that the tree is completed successfully both upwards and downwards when
+// a node with both subcomponents and a parent is set.
+TEST(AutofillStructuredAddressAddressComponent, TreeCompletion_ToTopAndBottom) {
+  // Define Some values.
+  base::string16 title = ASCIIToUTF16("Dr.");
+  base::string16 first_name = ASCIIToUTF16("Winston");
+  base::string16 middle_name = ASCIIToUTF16("O'Brien");
+  base::string16 last_name = ASCIIToUTF16("Smith");
+  base::string16 full_name = ASCIIToUTF16("Winston O'Brien Smith");
+  base::string16 full_name_with_title =
+      ASCIIToUTF16("Dr. Winston O'Brien Smith");
+
+  // Create a compound component.
+  TestCompoundNameWithTitleAddressComponent compound_component;
+
+  // Set the value of the root node.
+  compound_component.SetValueForTypeIfPossible(
+      NAME_FULL, full_name, VerificationStatus::kUserVerified);
+  compound_component.SetValueForTypeIfPossible(
+      NAME_HONORIFIC_PREFIX, title, VerificationStatus::kUserVerified);
+
+  // Verify that the are subcomponents empty.
+  // CREDIT_CARD_NAME_FULL is a fictive type containing a title and a full name.
+  EXPECT_EQ(compound_component.GetValueForType(CREDIT_CARD_NAME_FULL),
+            base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_FIRST), base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_MIDDLE), base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_LAST), base::string16());
+
+  // Complete the tree.
+  compound_component.CompleteFullTree();
+
+  // Verify that the values for the subcomponents have been successfully parsed
+  // and the parent node was probably formatted.
+  EXPECT_EQ(compound_component.GetValueForType(CREDIT_CARD_NAME_FULL),
+            full_name_with_title);
+  EXPECT_EQ(compound_component.GetValueForType(NAME_FIRST), first_name);
+  EXPECT_EQ(compound_component.GetValueForType(NAME_MIDDLE), middle_name);
+  EXPECT_EQ(compound_component.GetValueForType(NAME_LAST), last_name);
+}
+
+// Test that values are invalidated correctly.
+TEST(AutofillStructuredAddressAddressComponent,
+     TestSettingsValuesWithInvalidation) {
+  // Define Some values.
+  base::string16 title = ASCIIToUTF16("Dr.");
+  base::string16 first_name = ASCIIToUTF16("Winston");
+  base::string16 middle_name = ASCIIToUTF16("O'Brien");
+  base::string16 last_name = ASCIIToUTF16("Smith");
+  base::string16 full_name = ASCIIToUTF16("Winston O'Brien Smith");
+  base::string16 full_name_with_title =
+      ASCIIToUTF16("Dr. Winston O'Brien Smith");
+
+  // Create a compound component.
+  TestCompoundNameWithTitleAddressComponent compound_component;
+
+  // Set the value of the root node.
+  compound_component.SetValueForTypeIfPossible(
+      NAME_FULL, full_name, VerificationStatus::kUserVerified);
+  compound_component.SetValueForTypeIfPossible(
+      NAME_HONORIFIC_PREFIX, title, VerificationStatus::kUserVerified);
+
+  // Verify that the are subcomponents empty.
+  // CREDIT_CARD_NAME_FULL is a fictive type containing a title and a full name.
+  EXPECT_EQ(compound_component.GetValueForType(CREDIT_CARD_NAME_FULL),
+            base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_FIRST), base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_MIDDLE), base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_LAST), base::string16());
+
+  // Complete the tree.
+  compound_component.CompleteFullTree();
+
+  // Verify that the values for the subcomponents have been successfully parsed
+  // and the parent node was probably formatted.
+  EXPECT_EQ(compound_component.GetValueForType(CREDIT_CARD_NAME_FULL),
+            full_name_with_title);
+  EXPECT_EQ(compound_component.GetValueForType(NAME_FIRST), first_name);
+  EXPECT_EQ(compound_component.GetValueForType(NAME_MIDDLE), middle_name);
+  EXPECT_EQ(compound_component.GetValueForType(NAME_LAST), last_name);
+
+  // Change the value of FULL_NAME and invalidate all child and ancestor nodes.
+  compound_component.SetValueForTypeIfPossible(
+      NAME_FULL, base::UTF8ToUTF16("Oh' Brian"), VerificationStatus::kObserved,
+      true, true);
+  EXPECT_EQ(compound_component.GetValueForType(CREDIT_CARD_NAME_FULL),
+            base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_FIRST), base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_MIDDLE), base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_LAST), base::string16());
+}
+
+// Test unsetting a value and its subcomponents.
+TEST(AutofillStructuredAddressAddressComponent,
+     TestUnsettingAValueAndItsSubcomponents) {
+  // Define Some values.
+  base::string16 title = ASCIIToUTF16("Dr.");
+  base::string16 first_name = ASCIIToUTF16("Winston");
+  base::string16 middle_name = ASCIIToUTF16("O'Brien");
+  base::string16 last_name = ASCIIToUTF16("Smith");
+  base::string16 full_name = ASCIIToUTF16("Winston O'Brien Smith");
+  base::string16 full_name_with_title =
+      ASCIIToUTF16("Dr. Winston O'Brien Smith");
+
+  // Create a compound component.
+  TestCompoundNameWithTitleAddressComponent compound_component;
+
+  // Set the value of the root node.
+  compound_component.SetValueForTypeIfPossible(
+      NAME_FULL, full_name, VerificationStatus::kUserVerified);
+  compound_component.SetValueForTypeIfPossible(
+      NAME_HONORIFIC_PREFIX, title, VerificationStatus::kUserVerified);
+
+  // Verify that the are subcomponents empty.
+  // CREDIT_CARD_NAME_FULL is a fictive type containing a title and a full name.
+  EXPECT_EQ(compound_component.GetValueForType(CREDIT_CARD_NAME_FULL),
+            base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_FIRST), base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_MIDDLE), base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_LAST), base::string16());
+
+  // Complete the tree.
+  compound_component.CompleteFullTree();
+
+  // Verify that the values for the subcomponents have been successfully parsed
+  // and the parent node was probably formatted.
+  EXPECT_EQ(compound_component.GetValueForType(CREDIT_CARD_NAME_FULL),
+            full_name_with_title);
+  EXPECT_EQ(compound_component.GetValueForType(NAME_FIRST), first_name);
+  EXPECT_EQ(compound_component.GetValueForType(NAME_MIDDLE), middle_name);
+  EXPECT_EQ(compound_component.GetValueForType(NAME_LAST), last_name);
+
+  // Change the value of FULL_NAME and invalidate all child and ancestor nodes.
+  compound_component.UnsetValueForTypeIfSupported(NAME_FULL);
+  EXPECT_EQ(compound_component.GetValueForType(CREDIT_CARD_NAME_FULL),
+            full_name_with_title);
+  EXPECT_EQ(compound_component.GetValueForType(NAME_FIRST), base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_MIDDLE), base::string16());
+  EXPECT_EQ(compound_component.GetValueForType(NAME_LAST), base::string16());
+}
+
+// Tests that the tree is completed successfully both upwards and downwards when
+// a node with both subcomponents and a parent is set.
+TEST(AutofillStructuredAddressAddressComponent,
+     TestUnsettingParsedAndFormatedValues) {
+  // Define Some values.
+
+  TestCompoundNameWithTitleAddressComponent compound_component;
+
+  // Set a value somewhere in the tree, complete and verify that another node is
+  // assigned.
+  compound_component.SetValueForTypeIfPossible(
+      NAME_FULL, base::UTF8ToUTF16("Winston Brian Smith"),
+      VerificationStatus::kObserved);
+  EXPECT_EQ(VerificationStatus::kObserved,
+            compound_component.GetVerificationStatusForType(NAME_FULL));
+  compound_component.CompleteFullTree();
+  EXPECT_EQ(VerificationStatus::kParsed,
+            compound_component.GetVerificationStatusForType(NAME_MIDDLE));
+  EXPECT_EQ(
+      VerificationStatus::kFormatted,
+      compound_component.GetVerificationStatusForType(CREDIT_CARD_NAME_FULL));
+
+  // Clear parsed and formatted values and verify the expectation.
+  compound_component.UnsetParsedAndFormattedValuesInEntireTree();
+  EXPECT_EQ(VerificationStatus::kObserved,
+            compound_component.GetVerificationStatusForType(NAME_FULL));
+  EXPECT_EQ(VerificationStatus::kNoStatus,
+            compound_component.GetVerificationStatusForType(NAME_MIDDLE));
+  EXPECT_EQ(
+      VerificationStatus::kNoStatus,
+      compound_component.GetVerificationStatusForType(CREDIT_CARD_NAME_FULL));
+}
+
+}  // namespace structured_address
+}  // namespace autofill

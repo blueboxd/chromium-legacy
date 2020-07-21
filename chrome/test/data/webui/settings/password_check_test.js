@@ -1039,7 +1039,16 @@ suite('PasswordsCheckSection', function() {
     const editDialog = createEditDialog(leakedPassword);
 
     assertEquals(leakedPassword.password, editDialog.$.passwordInput.value);
+
+    // Test that an empty password is considered invalid and disables the change
+    // button.
+    editDialog.$.passwordInput.value = '';
+    assertTrue(editDialog.$.passwordInput.invalid);
+    assertTrue(editDialog.$.save.disabled);
+
     editDialog.$.passwordInput.value = 'yadhtribym';
+    assertFalse(editDialog.$.passwordInput.invalid);
+    assertFalse(editDialog.$.save.disabled);
     editDialog.$.save.click();
 
     const interaction =

@@ -20,6 +20,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_poly_element.h"
 
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/svg/svg_animated_point_list.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -43,6 +44,7 @@ void SVGPolyElement::Trace(Visitor* visitor) const {
 
 Path SVGPolyElement::AsPathFromPoints() const {
   Path path;
+  DCHECK(GetComputedStyle());
 
   const SVGPointList* points_value = Points()->CurrentValue();
   if (points_value->IsEmpty())

@@ -28367,7 +28367,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3210" label="LegacyLayoutByFlexBox"/>
   <int value="3211" label="LegacyLayoutByFrameSet"/>
   <int value="3212" label="LegacyLayoutByGrid"/>
-  <int value="3213" label="LegacyLayoutByMenuList"/>
+  <int value="3213" label="OBSOLETE_LegacyLayoutByMenuList"/>
   <int value="3214" label="LegacyLayoutByMultiCol"/>
   <int value="3215" label="LegacyLayoutByPrinting"/>
   <int value="3216" label="LegacyLayoutByRuby"/>

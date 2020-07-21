@@ -1376,6 +1376,16 @@ interface NetworkContext {
       NetworkIsolationKey network_isolation_key)
       => (AuthCredentials? credentials);
 
+  // Looks up the proxy authentication credentials associated with
+  // |proxy_server|, |auth_scheme| and |realm| in the HttpAuthCache.
+  // |auth_scheme| is the authentication scheme of the challenge and it's
+  // specified as a case-insensitive string. Unlike server credentials, proxy
+  // credentials are not keyed on NetworkIsolationKey.
+  [EnableIf=is_chromeos]
+  LookupProxyAuthCredentials(proxy_resolver.mojom.ProxyServer proxy_server,
+      string auth_scheme, string realm)
+      => (AuthCredentials? credentials);
+
   [Sync]
   // Enables the checking of static PKP records.
   EnableStaticKeyPinningForTesting() => ();

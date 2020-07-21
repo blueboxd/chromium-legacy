@@ -245,6 +245,13 @@ bool Compare(UserModel* user_model,
                     ContainsClientOnlyValue({*value_a, *value_b})));
     return true;
   }
+  if (proto.mode() == ValueComparisonProto::NOT_EQUAL) {
+    user_model->SetValue(
+        result_model_identifier,
+        SimpleValue(*value_a != *value_b,
+                    ContainsClientOnlyValue({*value_a, *value_b})));
+    return true;
+  }
 
   // All modes except EQUAL require a size of 1 and a common value type and
   // are only supported for a subset of value types.
@@ -286,6 +293,7 @@ bool Compare(UserModel* user_model,
       result = *value_a > *value_b;
       break;
     case ValueComparisonProto::EQUAL:
+    case ValueComparisonProto::NOT_EQUAL:
     case ValueComparisonProto::UNDEFINED:
       NOTREACHED();
       return false;

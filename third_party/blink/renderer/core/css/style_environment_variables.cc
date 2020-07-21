@@ -149,11 +149,12 @@ void StyleEnvironmentVariables::SetVariable(const AtomicString& name,
   Vector<String> backing_strings;
   backing_strings.push_back(value);
 
-  SetVariable(name,
-              CSSVariableData::CreateResolved(
-                  tokens, backing_strings, false /* is_animation_tainted */,
-                  false /* has_font_units */, false /* has_root_font_units*/,
-                  true /* absolutized */, g_null_atom, WTF::TextEncoding()));
+  SetVariable(
+      name,
+      CSSVariableData::CreateResolved(
+          std::move(tokens), std::move(backing_strings),
+          false /* is_animation_tainted */, false /* has_font_units */,
+          false /* has_root_font_units*/, g_null_atom, WTF::TextEncoding()));
 }
 
 void StyleEnvironmentVariables::SetVariable(const UADefinedVariable name,

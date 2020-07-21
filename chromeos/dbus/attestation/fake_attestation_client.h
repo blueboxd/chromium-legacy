@@ -101,7 +101,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS_ATTESTATION) FakeAttestationClient
   AttestationClient::TestInterface* GetTestInterface() override;
 
  private:
-  bool is_prepared_{false};
+  bool is_prepared_ = true;
   std::deque<bool> preparation_sequences_;
 
   bool is_enrolled_ = false;

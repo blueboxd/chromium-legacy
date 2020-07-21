@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/scoped_ui_blocker/ui_blocker_manager.h"
+
 @class AppState;
 @protocol BrowserLauncher;
 @class CommandDispatcher;
@@ -34,7 +36,7 @@
 
 // Represents the application state and responds to application state changes
 // and system events.
-@interface AppState : NSObject
+@interface AppState : NSObject <UIBlockerManager>
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -60,13 +62,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // interaction with the app is allowed) is shown, this tracks the scene where it
 // is shown. When there is no blocking UI shown in any scene, this is nil.
 @property(nonatomic, weak, readonly) SceneState* sceneShowingBlockingUI;
-
-// Call this when showing a new blocking UI in |scene|.
-// It is an error to call this for scene A when scene B is already showing one
-// or more blocking UI.
-- (void)incrementBlockingUICounterForScene:(SceneState*)scene;
-// Call this after dismissing a blocking UI.
-- (void)decrementBlockingUICounter;
 
 // Saves the launchOptions to be used from -newTabFromLaunchOptions. If the
 // application is in background, initialize the browser to basic. If not, launch

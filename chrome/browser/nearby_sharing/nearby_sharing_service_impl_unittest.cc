@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/nearby_sharing/fake_nearby_connections_manager.h"
 #include "chrome/browser/nearby_sharing/fast_initiation_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
@@ -181,40 +182,6 @@ class NearbySharingServiceImplTest : public testing::Test {
         fast_initiation_manager_factory_.get());
   }
 
-  NearbySharingService::StatusCodes RegisterSendSurfaceAndWait() {
-    base::RunLoop run_loop;
-    NearbySharingService::StatusCodes result;
-    service_->RegisterSendSurface(
-        /*transfer_callback=*/nullptr, /*discovery_callback=*/nullptr,
-        base::BindOnce(
-            [](base::OnceClosure quit_closure,
-               NearbySharingService::StatusCodes* result,
-               NearbySharingService::StatusCodes code) {
-              *result = code;
-              std::move(quit_closure).Run();
-            },
-            run_loop.QuitClosure(), &result));
-    run_loop.Run();
-    return result;
-  }
-
-  NearbySharingService::StatusCodes UnregisterSendSurfaceAndWait() {
-    base::RunLoop run_loop;
-    NearbySharingService::StatusCodes result;
-    service_->UnregisterSendSurface(
-        /*transfer_callback=*/nullptr, /*discovery_callback=*/nullptr,
-        base::BindOnce(
-            [](base::OnceClosure quit_closure,
-               NearbySharingService::StatusCodes* result,
-               NearbySharingService::StatusCodes code) {
-              *result = code;
-              std::move(quit_closure).Run();
-            },
-            run_loop.QuitClosure(), &result));
-    run_loop.Run();
-    return result;
-  }
-
   bool IsBluetoothPresent() { return is_bluetooth_present_; }
   bool IsBluetoothPowered() { return is_bluetooth_powered_; }
 
@@ -265,42 +232,49 @@ TEST_F(NearbySharingServiceImplTest, DisableNearbyShutdownConnections) {
 
 TEST_F(NearbySharingServiceImplTest, StartFastInitiationAdvertising) {
   EXPECT_EQ(NearbySharingService::StatusCodes::kOk,
-            RegisterSendSurfaceAndWait());
+            service_->RegisterSendSurface(/*transfer_callback=*/nullptr,
+                                          /*discovery_callback=*/nullptr));
   EXPECT_EQ(1u, fast_initiation_manager_factory_->StartAdvertisingCount());
 
   // Call RegisterSendSurface() a second time and make sure StartAdvertising is
   // not called again.
   EXPECT_EQ(NearbySharingService::StatusCodes::kOk,
-            RegisterSendSurfaceAndWait());
+            service_->RegisterSendSurface(/*transfer_callback=*/nullptr,
+                                          /*discovery_callback=*/nullptr));
   EXPECT_EQ(1u, fast_initiation_manager_factory_->StartAdvertisingCount());
 }
 
 TEST_F(NearbySharingServiceImplTest, StartFastInitiationAdvertisingError) {
   SetFakeFastInitiationManagerFactory(/*should_succeed_on_start=*/false);
-  EXPECT_EQ(NearbySharingService::StatusCodes::kError,
-            RegisterSendSurfaceAndWait());
+  EXPECT_EQ(NearbySharingService::StatusCodes::kOk,
+            service_->RegisterSendSurface(/*transfer_callback=*/nullptr,
+                                          /*discovery_callback=*/nullptr));
 }
 
 TEST_F(NearbySharingServiceImplTest,
        StartFastInitiationAdvertising_BluetoothNotPresent) {
   is_bluetooth_present_ = false;
-  EXPECT_EQ(NearbySharingService::StatusCodes::kError,
-            RegisterSendSurfaceAndWait());
+  EXPECT_EQ(NearbySharingService::StatusCodes::kOk,
+            service_->RegisterSendSurface(/*transfer_callback=*/nullptr,
+                                          /*discovery_callback=*/nullptr));
 }
 
 TEST_F(NearbySharingServiceImplTest,
        StartFastInitiationAdvertising_BluetoothNotPowered) {
   is_bluetooth_powered_ = false;
-  EXPECT_EQ(NearbySharingService::StatusCodes::kError,
-            RegisterSendSurfaceAndWait());
+  EXPECT_EQ(NearbySharingService::StatusCodes::kOk,
+            service_->RegisterSendSurface(/*transfer_callback=*/nullptr,
+                                          /*discovery_callback=*/nullptr));
 }
 
 TEST_F(NearbySharingServiceImplTest, StopFastInitiationAdvertising) {
   EXPECT_EQ(NearbySharingService::StatusCodes::kOk,
-            RegisterSendSurfaceAndWait());
+            service_->RegisterSendSurface(/*transfer_callback=*/nullptr,
+                                          /*discovery_callback=*/nullptr));
   EXPECT_EQ(1u, fast_initiation_manager_factory_->StartAdvertisingCount());
   EXPECT_EQ(NearbySharingService::StatusCodes::kOk,
-            UnregisterSendSurfaceAndWait());
+            service_->UnregisterSendSurface(/*transfer_callback=*/nullptr,
+                                            /*discovery_callback=*/nullptr));
   EXPECT_TRUE(fast_initiation_manager_factory_
                   ->StopAdvertisingCalledAndManagerDestroyed());
 }
@@ -308,7 +282,8 @@ TEST_F(NearbySharingServiceImplTest, StopFastInitiationAdvertising) {
 TEST_F(NearbySharingServiceImplTest,
        StopFastInitiationAdvertising_BluetoothBecomesNotPresent) {
   EXPECT_EQ(NearbySharingService::StatusCodes::kOk,
-            RegisterSendSurfaceAndWait());
+            service_->RegisterSendSurface(/*transfer_callback=*/nullptr,
+                                          /*discovery_callback=*/nullptr));
   adapter_observer_->AdapterPresentChanged(mock_bluetooth_adapter_.get(),
                                            false);
   EXPECT_TRUE(fast_initiation_manager_factory_
@@ -318,7 +293,8 @@ TEST_F(NearbySharingServiceImplTest,
 TEST_F(NearbySharingServiceImplTest,
        StopFastInitiationAdvertising_BluetoothBecomesNotPowered) {
   EXPECT_EQ(NearbySharingService::StatusCodes::kOk,
-            RegisterSendSurfaceAndWait());
+            service_->RegisterSendSurface(/*transfer_callback=*/nullptr,
+                                          /*discovery_callback=*/nullptr));
   adapter_observer_->AdapterPoweredChanged(mock_bluetooth_adapter_.get(),
                                            false);
   EXPECT_TRUE(fast_initiation_manager_factory_

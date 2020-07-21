@@ -118,6 +118,10 @@
 #include <OpenGL/CGLIOSurface.h>
 #endif  // OS_MACOSX
 
+#if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"  // nogncheck
+#endif
+
 // Note: this undefs far and near so include this after other Windows headers.
 #include "third_party/angle/src/image_util/loadimage.h"
 
@@ -3216,14 +3220,14 @@ bool BackTexture::AllocateNativeGpuMemoryBuffer(const gfx::Size& size,
   bool is_cleared = false;
   gfx::BufferFormat buffer_format = gfx::BufferFormat::RGBA_8888;
   if (format == GL_RGB) {
+    buffer_format = gfx::BufferFormat::RGBX_8888;
 #if defined(USE_OZONE)
     // BGRX format is preferred for Ozone as it matches the format used by the
     // buffer queue and is as a result guaranteed to work on all devices.
     // TODO(reveman): Define this format in one place instead of having to
     // duplicate BGRX_8888.
-    buffer_format = gfx::BufferFormat::BGRX_8888;
-#else
-    buffer_format = gfx::BufferFormat::RGBX_8888;
+    if (features::IsUsingOzonePlatform())
+      buffer_format = gfx::BufferFormat::BGRX_8888;
 #endif
   }
   scoped_refptr<gl::GLImage> image =

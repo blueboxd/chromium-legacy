@@ -42,6 +42,7 @@ namespace extensions {
 class CrxInstallError;
 class ExtensionService;
 class ExtensionUpdaterTest;
+enum class InstallationStage;
 class PreloadCheckGroup;
 
 // This class installs a crx file into a profile.
@@ -297,6 +298,7 @@ class CrxInstaller : public SandboxedUnpackerClient {
       const Extension* extension,
       const SkBitmap& install_icon,
       declarative_net_request::RulesetChecksums ruleset_checksums) override;
+  void OnStageChanged(InstallationStage stage) override;
 
   // Called on the UI thread to start the requirements, policy and blocklist
   // checks on the extension.
@@ -326,6 +328,8 @@ class CrxInstaller : public SandboxedUnpackerClient {
   void ReportFailureFromUIThread(const CrxInstallError& error);
   void ReportSuccessFromFileThread();
   void ReportSuccessFromUIThread();
+  // Always report from the UI thread.
+  void ReportInstallationStage(InstallationStage stage);
   void NotifyCrxInstallBegin();
   void NotifyCrxInstallComplete(const base::Optional<CrxInstallError>& error);
 

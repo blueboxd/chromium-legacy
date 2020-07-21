@@ -455,5 +455,72 @@ TEST_F(ShowGenericUiActionTest, ElementPreconditionMissesIdentifier) {
   Run();
 }
 
+TEST_F(ShowGenericUiActionTest, EndActionOnNavigation) {
+  ON_CALL(mock_action_delegate_, OnSetGenericUi(_, _, _))
+      .WillByDefault(
+          Invoke([&](std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+                     base::OnceCallback<void(const ClientStatus&)>&
+                         end_action_callback,
+                     base::OnceCallback<void(const ClientStatus&)>&
+                         view_inflation_finished_callback) {
+            std::move(view_inflation_finished_callback)
+                .Run(ClientStatus(ACTION_APPLIED));
+          }));
+  EXPECT_CALL(mock_action_delegate_, Prompt(_, _, _, _))
+      .WillOnce(Invoke(
+          [](std::unique_ptr<std::vector<UserAction>> user_actions,
+             bool disable_force_expand_sheet,
+             base::OnceCallback<void()> end_navigation_callback,
+             bool browse_mode) { std::move(end_navigation_callback).Run(); }));
+  EXPECT_CALL(mock_action_delegate_, CleanUpAfterPrompt()).Times(1);
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(
+          AllOf(Property(&ProcessedActionProto::status, ACTION_APPLIED),
+                Property(&ProcessedActionProto::show_generic_ui_result,
+                         Property(&ShowGenericUiProto::Result::navigation_ended,
+                                  true))))));
+
+  proto_.set_end_on_navigation(true);
+  Run();
+}
+
+TEST_F(ShowGenericUiActionTest, BreakingNavigationBeforeUiIsSet) {
+  // End action immediately with ACTION_APPLIED after it goes into prompt.
+  EXPECT_CALL(mock_action_delegate_, Prompt(_, _, _, _))
+      .WillOnce(Invoke(
+          [](std::unique_ptr<std::vector<UserAction>> user_actions,
+             bool disable_force_expand_sheet,
+             base::OnceCallback<void()> end_navigation_callback,
+             bool browse_mode) { std::move(end_navigation_callback).Run(); }));
+  ON_CALL(mock_action_delegate_, OnSetGenericUi(_, _, _))
+      .WillByDefault(
+          Invoke([&](std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+                     base::OnceCallback<void(const ClientStatus&)>&
+                         end_action_callback,
+                     base::OnceCallback<void(const ClientStatus&)>&
+                         view_inflation_finished_callback) {
+            std::move(view_inflation_finished_callback)
+                .Run(ClientStatus(ACTION_APPLIED));
+            // Also end action when UI is set. At this point, the action should
+            // have terminated already.
+            std::move(end_action_callback)
+                .Run(ClientStatus(OTHER_ACTION_STATUS));
+          }));
+  EXPECT_CALL(mock_action_delegate_, CleanUpAfterPrompt()).Times(1);
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(
+          AllOf(Property(&ProcessedActionProto::status, ACTION_APPLIED),
+                Property(&ProcessedActionProto::show_generic_ui_result,
+                         Property(&ShowGenericUiProto::Result::navigation_ended,
+                                  true))))));
+
+  proto_.set_end_on_navigation(true);
+  Run();
+}
+
+// TODO(b/161652848): Add test coverage for element checks and interrupts.
+
 }  // namespace
 }  // namespace autofill_assistant

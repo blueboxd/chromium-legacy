@@ -150,11 +150,7 @@ function exceptionsListContainsUrl(exceptionList, url) {
  */
 function simulateAccountStorageUser(passwordManager) {
   simulateSyncStatus({signedIn: false});
-  simulateStoredAccounts([{
-    fullName: 'john doe',
-    givenName: 'john',
-    email: 'john@gmail.com',
-  }]);
+  simulateStoredAccounts([{email: 'john@gmail.com'}]);
   passwordManager.setIsOptedInForAccountStorageAndNotify(true);
 
   flush();
@@ -1109,11 +1105,7 @@ suite('PasswordsSection', function() {
           isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
 
       // User signs in but is not opted in yet.
-      simulateStoredAccounts([{
-        fullName: 'john doe',
-        givenName: 'john',
-        email: 'john@gmail.com',
-      }]);
+      simulateStoredAccounts([{email: 'john@gmail.com'}]);
       passwordManager.setIsOptedInForAccountStorageAndNotify(false);
       flush();
       assertTrue(
@@ -1138,6 +1130,27 @@ suite('PasswordsSection', function() {
       simulateStoredAccounts([]);
       assertFalse(
           isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
+    });
+
+    // Test verifies the the account storage buttons are not shown for custom
+    // passphrase users.
+    test('accountStorageButonsNotShownForCustomPassphraseUser', function() {
+      loadTimeData.overrideValues({enableAccountStorage: true});
+
+      const passwordsSection =
+          elementFactory.createPasswordsSection(passwordManager, [], []);
+
+      simulateSyncStatus({signedIn: false});
+      simulateStoredAccounts([{email: 'john@gmail.com'}]);
+      // Simulate custom passphrase.
+      const syncPrefs = getSyncAllPrefs();
+      syncPrefs.encryptAllData = true;
+      webUIListenerCallback('sync-prefs-changed', syncPrefs);
+      flush();
+
+      assertTrue(
+          !passwordsSection.$.accountStorageButtonsContainer ||
+          passwordsSection.$.accountStorageButtonsContainer.hidden);
     });
 
     // Test verifies that enabling sync hides the buttons for account storage
@@ -1172,11 +1185,7 @@ suite('PasswordsSection', function() {
       const passwordsSection = elementFactory.createPasswordsSection(
           passwordManager, passwordList, []);
       simulateSyncStatus({signedIn: false});
-      simulateStoredAccounts([{
-        fullName: 'john doe',
-        givenName: 'john',
-        email: 'john@gmail.com',
-      }]);
+      simulateStoredAccounts([{email: 'john@gmail.com'}]);
       assertTrue(passwordsSection.$.devicePasswordsLink.hidden);
 
       // Opting in still doesn't display it because the user has no device

@@ -211,6 +211,8 @@ source_set("application_delegate_internal") {
     "//ui/base",
     "//url",
   ]
+  public_deps = [ "//ios/chrome/browser/ui/scoped_ui_blocker" ]
+
   if (ios_enable_metrickit) {
     deps += [ ":metric_kit_subscriber" ]
   }

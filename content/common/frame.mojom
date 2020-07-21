@@ -11,7 +11,6 @@ import "content/common/navigation_client.mojom";
 import "content/common/navigation_params.mojom";
 import "content/common/web_ui.mojom";
 import "content/public/common/browser_controls_state.mojom";
-import "content/public/common/transferrable_url_loader.mojom";
 import "content/public/common/window_container_type.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/string16.mojom";
@@ -546,4 +545,7 @@ interface FrameHost {
 
   // Requests that the given URL be opened in the specified manner.
   OpenURL(OpenURLParams params);
+
+  // Called when the renderer is done loading a frame.
+  DidStopLoading();
 };

@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/scoped_ui_blocker/ui_blocker_target.h"
 #import "ios/chrome/browser/window_activities/window_activity_helpers.h"
 
 @class AppState;
@@ -55,7 +56,7 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 
 // An object containing the state of a UIWindowScene. One state object
 // corresponds to one scene.
-@interface SceneState : NSObject
+@interface SceneState : NSObject <UIBlockerTarget>
 
 - (instancetype)initWithAppState:(AppState*)appState NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;

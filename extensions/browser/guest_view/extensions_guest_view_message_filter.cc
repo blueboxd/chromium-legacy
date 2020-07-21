@@ -202,7 +202,7 @@ void ExtensionsGuestViewMessageFilter::CreateEmbeddedMimeHandlerViewGuest(
     const GURL& original_url,
     int32_t element_instance_id,
     const gfx::Size& element_size,
-    content::mojom::TransferrableURLLoaderPtr transferrable_url_loader) {
+    blink::mojom::TransferrableURLLoaderPtr transferrable_url_loader) {
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(&ExtensionsGuestViewMessageFilter::

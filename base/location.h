@@ -18,7 +18,7 @@
 
 namespace base {
 
-#if defined(__has_builtin)
+#if defined(__clang__)
 // Clang allows detection of these builtins.
 #define SUPPORTS_LOCATION_BUILTINS                                       \
   (__has_builtin(__builtin_FUNCTION) && __has_builtin(__builtin_FILE) && \

@@ -264,6 +264,13 @@ class TestNetworkContext : public mojom::NetworkContext {
       const GURL& url,
       const net::NetworkIsolationKey& network_isolation_key,
       LookupServerBasicAuthCredentialsCallback callback) override {}
+#if defined(OS_CHROMEOS)
+  void LookupProxyAuthCredentials(
+      const net::ProxyServer& proxy_server,
+      const std::string& auth_scheme,
+      const std::string& realm,
+      LookupProxyAuthCredentialsCallback callback) override {}
+#endif
   void GetOriginPolicyManager(
       mojo::PendingReceiver<mojom::OriginPolicyManager> receiver) override {}
 };

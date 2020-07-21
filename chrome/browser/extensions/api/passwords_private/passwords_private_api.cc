@@ -316,6 +316,12 @@ ResponseAction PasswordsPrivateChangeCompromisedCredentialFunction::Run() {
           *args_);
   EXTENSION_FUNCTION_VALIDATE(parameters);
 
+  if (parameters->new_password.empty()) {
+    return RespondNow(
+        Error("Could not change the compromised credential. The new password "
+              "can't be empty."));
+  }
+
   if (!GetDelegate(browser_context())
            ->ChangeCompromisedCredential(parameters->credential,
                                          parameters->new_password)) {

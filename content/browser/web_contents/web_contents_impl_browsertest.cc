@@ -29,10 +29,12 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
+#include "content/common/frame.mojom-test-utils.h"
 #include "content/common/frame_messages.h"
 #include "content/common/page_messages.h"
 #include "content/common/unfreezable_frame_messages.h"
@@ -4245,6 +4247,55 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
             EXPECT_TRUE(web_contents->ShouldIgnoreUnresponsiveRenderer());
           }));
   EXPECT_FALSE(web_contents->ShouldIgnoreUnresponsiveRenderer());
+}
+
+// Intercept calls to RenderFramHostImpl's DidStopLoading mojo method.
+class DidStopLoadingInterceptor : public mojom::FrameHostInterceptorForTesting {
+ public:
+  explicit DidStopLoadingInterceptor(RenderFrameHostImpl* render_frame_host)
+      : render_frame_host_(render_frame_host) {
+    render_frame_host_->frame_host_receiver_for_testing().SwapImplForTesting(
+        this);
+  }
+
+  ~DidStopLoadingInterceptor() override = default;
+
+  mojom::FrameHost* GetForwardingInterface() override {
+    return render_frame_host_;
+  }
+
+  void DidStopLoading() override {
+    static_cast<RenderProcessHostImpl*>(render_frame_host_->GetProcess())
+        ->mark_child_process_activity_time();
+    render_frame_host_->DidStopLoading();
+  }
+
+ private:
+  RenderFrameHostImpl* render_frame_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(DidStopLoadingInterceptor);
+};
+
+// Test that get_process_idle_time() returns reasonable values when compared
+// with time deltas measured locally.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, RenderIdleTime) {
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  base::TimeTicks start = base::TimeTicks::Now();
+  DidStopLoadingInterceptor interceptor(
+      static_cast<content::RenderFrameHostImpl*>(
+          shell()->web_contents()->GetMainFrame()));
+
+  GURL test_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
+
+  base::TimeDelta renderer_td = shell()
+                                    ->web_contents()
+                                    ->GetMainFrame()
+                                    ->GetProcess()
+                                    ->GetChildProcessIdleTime();
+  base::TimeDelta browser_td = base::TimeTicks::Now() - start;
+  EXPECT_TRUE(browser_td >= renderer_td);
 }
 
 }  // namespace content

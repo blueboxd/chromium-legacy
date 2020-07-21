@@ -1,26 +1,16 @@
 <!DOCTYPE HTML>
 <html>
     <head>
-        <script src="../resources/run-after-layout-and-paint.js"></script>
+        <script src="media-file.js"></script>
+        <script src="video-paint-test.js"></script>
         <script src="media-controls.js"></script>
     </head>
-    <body>
+    <body onload="setSrcByTagName('video', 'content/test.ogv'); init()">
         <p>Drawing the controls in strict mode.</p>
-        <video controls src='content/test.ogv'></video>
+        <video controls></video>
     </body>
     <script>
       const video = document.querySelector('video');
       enableTestMode(video);
-
-      if (window.testRunner) {
-        testRunner.waitUntilDone();
-
-        video.addEventListener('loadedmetadata', () => {
-          runAfterLayoutAndPaint(() => {
-            if (window.testRunner)
-              testRunner.notifyDone();
-          });
-        }, { once: true });
-      }
     </script>
 </html>

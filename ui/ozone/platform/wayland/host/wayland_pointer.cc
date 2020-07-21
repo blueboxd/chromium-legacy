@@ -10,6 +10,7 @@
 
 #include "ui/events/event.h"
 #include "ui/events/types/event_type.h"
+#include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
@@ -45,7 +46,7 @@ void WaylandPointer::Enter(void* data,
                            wl_fixed_t surface_y) {
   DCHECK(data);
   WaylandPointer* pointer = static_cast<WaylandPointer*>(data);
-  WaylandWindow* window = WaylandWindow::FromSurface(surface);
+  WaylandWindow* window = wl::RootWindowFromWlSurface(surface);
   gfx::PointF location{wl_fixed_to_double(surface_x),
                        wl_fixed_to_double(surface_y)};
   pointer->delegate_->OnPointerFocusChanged(window, location);

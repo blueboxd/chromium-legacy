@@ -44,8 +44,6 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
       WaylandConnection* connection,
       PlatformWindowInitProperties properties);
 
-  static WaylandWindow* FromSurface(wl_surface* surface);
-
   void OnWindowLostCapture();
 
   // Updates the surface buffer scale of the window.  Top level windows take
@@ -55,8 +53,7 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   // to do so (this is not needed upon window initialization).
   void UpdateBufferScale(bool update_bounds);
 
-  WaylandSurface* wayland_surface() { return wayland_surface_.get(); }
-  wl_surface* surface() const { return wayland_surface_->surface(); }
+  WaylandSurface* root_surface() const { return root_surface_.get(); }
 
   void set_parent_window(WaylandWindow* parent_window) {
     parent_window_ = parent_window;
@@ -83,7 +80,7 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   void set_child_window(WaylandWindow* window) { child_window_ = window; }
   WaylandWindow* child_window() const { return child_window_; }
 
-  int32_t buffer_scale() const { return wayland_surface_->buffer_scale(); }
+  int32_t buffer_scale() const { return root_surface_->buffer_scale(); }
   int32_t ui_scale() const { return ui_scale_; }
 
   const base::flat_set<uint32_t>& entered_outputs_ids() const {
@@ -157,6 +154,17 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   // Returns a top most child window within the same hierarchy.
   WaylandWindow* GetTopMostChildWindow();
 
+  // This should be called when a WaylandSurface part of this window becomes
+  // partially or fully within the scanout region of |output|.
+  void AddEnteredOutputId(struct wl_output* output);
+
+  // This should be called when a WaylandSurface part of this window becomes
+  // fully outside of the scanout region of |output|.
+  void RemoveEnteredOutputId(struct wl_output* output);
+
+  // Returns true iff this window is opaque.
+  bool IsOpaqueWindow() const;
+
  protected:
   WaylandWindow(PlatformWindowDelegate* delegate,
                 WaylandConnection* connection);
@@ -170,10 +178,6 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   // Gets a parent window for this window.
   WaylandWindow* GetParentWindow(gfx::AcceleratedWidget parent_widget);
 
-  // Sets the buffer scale.
-  void SetBufferScale(int32_t scale, bool update_bounds);
-
-  // Sets the ui scale.
   void set_ui_scale(int32_t ui_scale) { ui_scale_ = ui_scale; }
 
  private:
@@ -182,36 +186,14 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   // Initializes the WaylandWindow with supplied properties.
   bool Initialize(PlatformWindowInitProperties properties);
 
-  // Registers/unregisters a surface listener, so wl_output enter/leave events
-  // can be received.
-  void AddSurfaceListener();
-  void RemoveSurfaceListener();
-
-  void AddEnteredOutputId(struct wl_output* output);
-  void RemoveEnteredOutputId(struct wl_output* output);
-
   void UpdateCursorPositionFromEvent(std::unique_ptr<Event> event);
 
   WaylandWindow* GetTopLevelWindow();
-
-  // It's important to set opaque region for opaque windows (provides
-  // optimization hint for the Wayland compositor).
-  void MaybeUpdateOpaqueRegion();
-
-  bool IsOpaqueWindow() const;
 
   uint32_t DispatchEventToDelegate(const PlatformEvent& native_event);
 
   // Additional initialization of derived classes.
   virtual bool OnInitialize(PlatformWindowInitProperties properties) = 0;
-
-  // wl_surface_listener
-  static void Enter(void* data,
-                    struct wl_surface* wl_surface,
-                    struct wl_output* output);
-  static void Leave(void* data,
-                    struct wl_surface* wl_surface,
-                    struct wl_output* output);
 
   // WaylandWindowDragController might need to take ownership of the wayland
   // surface whether the window that originated the DND session gets destroyed
@@ -227,7 +209,7 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
   WaylandWindow* parent_window_ = nullptr;
   WaylandWindow* child_window_ = nullptr;
 
-  std::unique_ptr<WaylandSurface> wayland_surface_;
+  std::unique_ptr<WaylandSurface> root_surface_;
 
   // The current cursor bitmap (immutable).
   scoped_refptr<BitmapCursorOzone> bitmap_;

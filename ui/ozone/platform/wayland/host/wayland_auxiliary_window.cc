@@ -68,7 +68,7 @@ void WaylandAuxiliaryWindow::SetBounds(const gfx::Rect& bounds) {
       GetBounds(), parent_window()->GetBounds(), ui_scale(), buffer_scale());
   wl_subsurface_set_position(subsurface_.get(), bounds_px.x() / buffer_scale(),
                              bounds_px.y() / buffer_scale());
-  wl_surface_commit(surface());
+  root_surface()->Commit();
   connection()->ScheduleFlush();
 }
 
@@ -97,10 +97,7 @@ void WaylandAuxiliaryWindow::CreateSubsurface() {
   if (!parent)
     return;
 
-  wl_subcompositor* subcompositor = connection()->subcompositor();
-  DCHECK(subcompositor);
-  subsurface_.reset(wl_subcompositor_get_subsurface(subcompositor, surface(),
-                                                    parent->surface()));
+  subsurface_ = root_surface()->CreateSubsurface(parent->root_surface());
 
   // Chromium positions tooltip windows in screen coordinates, but Wayland
   // requires them to be in local surface coordinates a.k.a relative to parent
@@ -113,7 +110,7 @@ void WaylandAuxiliaryWindow::CreateSubsurface() {
   wl_subsurface_set_position(subsurface_.get(), bounds_px.x() / buffer_scale(),
                              bounds_px.y() / buffer_scale());
   wl_subsurface_set_desync(subsurface_.get());
-  wl_surface_commit(parent->surface());
+  parent->root_surface()->Commit();
   connection()->ScheduleFlush();
 
   // Notify the observers the window has been configured. Please note that

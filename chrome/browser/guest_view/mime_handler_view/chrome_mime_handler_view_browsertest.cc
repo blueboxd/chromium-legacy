@@ -151,7 +151,7 @@ class ChromeMimeHandlerViewTest : public extensions::ExtensionApiTest {
       const GURL& url,
       std::string* view_id) {
     *view_id = base::GenerateGUID();
-    auto transferrable_loader = content::mojom::TransferrableURLLoader::New();
+    auto transferrable_loader = blink::mojom::TransferrableURLLoader::New();
     transferrable_loader->url = url;
     transferrable_loader->head = network::mojom::URLResponseHead::New();
     transferrable_loader->head->mime_type = "application/pdf";

@@ -20,7 +20,6 @@ destination_dropdown_cros_test.suiteName =
 destination_dropdown_cros_test.TestNames = {
   CorrectListItems: 'correct list items',
   ClickCloses: 'click closes dropdown',
-  TabCloses: 'tab closes dropdown',
   HighlightedAfterUpDown: 'highlighted after keyboard press up and down',
   DestinationChangeAfterUpDown:
       'destination changes after keyboard press up and down',
@@ -48,22 +47,17 @@ suite(destination_dropdown_cros_test.suiteName, function() {
   }
 
   function clickDropdown() {
-    dropdown.$$('#destination-dropdown')
-        .dispatchEvent(new PointerEvent('pointerdown', {
-          bubbles: true,
-          cancelable: true,
-          composed: true,
-          buttons: 1,
-        }));
+    dropdown.$$('#destination-dropdown').click();
+  }
+
+  function clickDropdownFocus() {
+    dropdown.$$('#destination-dropdown').click();
+    dropdown.$$('#destination-dropdown').focus();
   }
 
   function clickOutsideDropdown() {
-    document.body.dispatchEvent(new PointerEvent('pointerdown', {
-      bubbles: true,
-      cancelable: true,
-      composed: true,
-      buttons: 1,
-    }));
+    document.body.click();
+    dropdown.$$('#destination-dropdown').blur();
   }
 
   function down() {
@@ -77,10 +71,6 @@ suite(destination_dropdown_cros_test.suiteName, function() {
 
   function enter() {
     keyDownOn(dropdown.$$('#destination-dropdown'), 'Enter', [], 'Enter');
-  }
-
-  function tab() {
-    keyDownOn(dropdown.$$('#destination-dropdown'), 'Tab', [], 'Tab');
   }
 
   /** @return {?Element} */
@@ -140,32 +130,20 @@ suite(destination_dropdown_cros_test.suiteName, function() {
         dropdown.value = destinationOne;
         const ironDropdown = dropdown.$$('iron-dropdown');
 
-        clickDropdown();
+        clickDropdownFocus();
         assertTrue(ironDropdown.opened);
 
         getList()[0].click();
         assertFalse(ironDropdown.opened);
 
-        clickDropdown();
+        clickDropdownFocus();
         assertTrue(ironDropdown.opened);
 
-        // Click outside dropdown to close the dropdown.
+        // Clicking outside the dropdown will cause it to lose focus and close.
+        // This will verify on-blur closes the dropdown.
         clickOutsideDropdown();
         assertFalse(ironDropdown.opened);
       });
-
-  test(assert(destination_dropdown_cros_test.TestNames.TabCloses), function() {
-    const destinationOne = createDestination('One', DestinationOrigin.CROS);
-    setItemList([destinationOne]);
-    dropdown.value = destinationOne;
-    const ironDropdown = dropdown.$$('iron-dropdown');
-
-    clickDropdown();
-    assertTrue(ironDropdown.opened);
-
-    tab();
-    assertFalse(ironDropdown.opened);
-  });
 
   test(
       assert(destination_dropdown_cros_test.TestNames.HighlightedAfterUpDown),

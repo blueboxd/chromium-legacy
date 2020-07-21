@@ -73,7 +73,7 @@ void WontCompile() {
   std::ignore = static_cast<Unrelated*>(ptr);
 }
 
-#elif defined(NCTEST_VOID_DEREFERENCE) // [r"ISO C\+\+ does not allow indirection on operand of type 'const void \*' \[-Wvoid-ptr-dereference\]"]
+#elif defined(NCTEST_VOID_DEREFERENCE) // [r"indirection requires pointer operand \('CheckedPtr<const void>' invalid\)"]
 
 void WontCompile() {
   const char foo[] = "42";

@@ -100,7 +100,8 @@
     width: 100%;
   }
 </style>
-<div id="destination-dropdown" on-keydown="onKeyDown_" tabindex="0">
+<div id="destination-dropdown" on-keydown="onKeyDown_" tabindex="0"
+    on-blur="onBlur_" on-click="onClick_">
   <div id="destination-display-container">
     <div id="destination-icon-box">
       <iron-icon icon="[[destinationIcon]]"
@@ -122,7 +123,7 @@
       <div slot="dropdown-content">
         <template is="dom-repeat" items="[[itemList]]">
           <button id="[[item.key]]" tabindex="-1" value="[[item.key]]"
-              on-click="onSelect_"
+              on-click="onSelect_" on-blur="onBlur_"
               class$="list-item [[getHighlightedClass_(item.key,
                   highlightedIndex_)]]">
             <printer-status-icon-cros icon-location="[[IconLocation.DROPDOWN]]"
@@ -134,25 +135,25 @@
           </button>
         </template>
         <button on-click="onSelect_" tabindex="-1" value="[[pdfDestinationKey]]"
-          hidden$="[[pdfPrinterDisabled]]"
+          hidden$="[[pdfPrinterDisabled]]" on-blur="onBlur_"
           class$="list-item [[getHighlightedClass_(pdfDestinationKey,
               highlightedIndex_)]]">
           $i18n{printToPDF}
         </button>
-        <button on-click="onSelect_" tabindex="-1"
+        <button on-click="onSelect_" tabindex="-1" on-blur="onBlur_"
           value="[[driveDestinationKey]]" hidden$="[[!driveDestinationKey]]"
           class$="list-item [[getHighlightedClass_(driveDestinationKey,
               highlightedIndex_)]]">
           $i18n{printToGoogleDrive}
         </button>
         <button on-click="onSelect_" tabindex="-1" value="noDestinations"
-          hidden$="[[!noDestinations]]"
+          hidden$="[[!noDestinations]]" on-blur="onBlur_"
           class$="list-item [[getHighlightedClass_('noDestinations',
               highlightedIndex_)]]">
           $i18n{noDestinationsMessage}
         </button>
         <button on-click="onSelect_" tabindex="-1" value="seeMore"
-          aria-label$="[[i18n(seeMoreDestinationsLabel)]]"
+          aria-label$="[[i18n(seeMoreDestinationsLabel)]]" on-blur="onBlur_"
           class$="list-item [[getHighlightedClass_('seeMore',
               highlightedIndex_)]]">
           $i18n{seeMore}

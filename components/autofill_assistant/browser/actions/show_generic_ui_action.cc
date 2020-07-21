@@ -118,8 +118,15 @@ void ShowGenericUiAction::InternalProcessAction(
     }
   }
 
+  base::OnceCallback<void()> end_on_navigation_callback;
+  if (proto_.show_generic_ui().end_on_navigation()) {
+    end_on_navigation_callback =
+        base::BindOnce(&ShowGenericUiAction::OnNavigationEnded,
+                       weak_ptr_factory_.GetWeakPtr());
+  }
   delegate_->Prompt(/* user_actions = */ nullptr,
-                    /* disable_force_expand_sheet = */ false);
+                    /* disable_force_expand_sheet = */ false,
+                    std::move(end_on_navigation_callback));
   delegate_->SetGenericUi(
       std::make_unique<GenericUserInterfaceProto>(
           proto_.show_generic_ui().generic_user_interface()),
@@ -166,17 +173,24 @@ void ShowGenericUiAction::OnViewInflationFinished(const ClientStatus& status) {
     preconditions_.emplace_back(std::make_unique<ElementPrecondition>(
         element_check.element_condition()));
   }
-  if (std::any_of(
+  if (proto_.show_generic_ui().allow_interrupt() ||
+      std::any_of(
           preconditions_.begin(), preconditions_.end(),
           [&](const auto& precondition) { return !precondition->empty(); })) {
     has_pending_wait_for_dom_ = true;
     delegate_->WaitForDom(
-        base::TimeDelta::Max(), false,
+        base::TimeDelta::Max(), proto_.show_generic_ui().allow_interrupt(),
         base::BindRepeating(&ShowGenericUiAction::RegisterChecks,
                             weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&ShowGenericUiAction::OnDoneWaitForDom,
                        weak_ptr_factory_.GetWeakPtr()));
   }
+}
+
+void ShowGenericUiAction::OnNavigationEnded() {
+  processed_action_proto_->mutable_show_generic_ui_result()
+      ->set_navigation_ended(true);
+  OnEndActionInteraction(ClientStatus(ACTION_APPLIED));
 }
 
 void ShowGenericUiAction::RegisterChecks(
@@ -203,6 +217,9 @@ void ShowGenericUiAction::OnPreconditionResult(
     size_t precondition_index,
     const ClientStatus& status,
     const std::vector<std::string>& ignored_payloads) {
+  if (should_end_action_) {
+    return;
+  }
   delegate_->GetUserModel()->SetValue(proto_.show_generic_ui()
                                           .periodic_element_checks()
                                           .element_checks(precondition_index)
@@ -243,6 +260,12 @@ void ShowGenericUiAction::OnEndActionInteraction(const ClientStatus& status) {
 }
 
 void ShowGenericUiAction::EndAction(const ClientStatus& status) {
+  if (!callback_) {
+    // Avoid race condition: it is possible that a breaking navigation event
+    // occurs immediately before or after the action would end naturally.
+    return;
+  }
+
   delegate_->ClearGenericUi();
   delegate_->CleanUpAfterPrompt();
   UpdateProcessedAction(status);

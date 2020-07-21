@@ -284,7 +284,9 @@ class AutofillAssistantClient {
             return;
         }
 
-        IdentityServicesProvider.get().getIdentityManager().getAccessToken(
+        IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
+                AutofillAssistantUiController.getProfile());
+        identityManager.getAccessToken(
                 mAccount, AUTH_TOKEN_TYPE, new IdentityManager.GetAccessTokenCallback() {
                     @Override
                     public void onGetTokenSuccess(AccessTokenData token) {
@@ -310,7 +312,9 @@ class AutofillAssistantClient {
             return;
         }
 
-        IdentityServicesProvider.get().getIdentityManager().invalidateAccessToken(accessToken);
+        IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
+                AutofillAssistantUiController.getProfile());
+        identityManager.invalidateAccessToken(accessToken);
     }
 
     /** Returns the e-mail address that corresponds to the access token or an empty string. */

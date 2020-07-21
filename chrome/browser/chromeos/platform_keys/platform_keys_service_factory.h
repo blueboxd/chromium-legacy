@@ -25,6 +25,21 @@ class PlatformKeysServiceFactory : public BrowserContextKeyedServiceFactory {
 
   static PlatformKeysServiceFactory* GetInstance();
 
+  // Returns an instance of PlatformKeysService that allows operations on the
+  // device-wide key store and is not tied to a user.
+  // The lifetime of the returned service is tied to the
+  // PlatformKeysServiceFactory itself.
+  PlatformKeysService* GetDeviceWideService();
+
+  // When call with a nun-nullptr |device_wide_service_for_testing|, subsequent
+  // calls to GetDeviceWideService() will return the passed pointer.
+  // When called with nullptr, subsequent calls to GetDeviceWideService() will
+  // return the default device-wide PlatformKeysService again.
+  // The caller is responsible that this is called with nullptr before an object
+  // previously passed in is destroyed.
+  void SetDeviceWideServiceForTesting(
+      PlatformKeysService* device_wide_service_for_testing);
+
  private:
   friend struct base::DefaultSingletonTraits<PlatformKeysServiceFactory>;
 
@@ -39,6 +54,15 @@ class PlatformKeysServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context) const override;
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
+
+  PlatformKeysService* GetOrCreateDeviceWideService();
+
+  // A PlatformKeysService that is not tied to a Profile/User and only has
+  // access to the system token.
+  // Initialized lazily.
+  std::unique_ptr<PlatformKeysService> device_wide_service_;
+
+  PlatformKeysService* device_wide_service_for_testing_ = nullptr;
 };
 }  // namespace platform_keys
 }  // namespace chromeos

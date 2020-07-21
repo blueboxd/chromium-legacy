@@ -123,10 +123,10 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
     _webStateObserverBridge =
         std::make_unique<web::WebStateObserverBridge>(self);
     _webState->AddObserver(_webStateObserverBridge.get());
-    _formHelper =
-        [[PasswordFormHelper alloc] initWithWebState:webState delegate:self];
-    _suggestionHelper =
-        [[PasswordSuggestionHelper alloc] initWithDelegate:self];
+    _formHelper = [[PasswordFormHelper alloc] initWithWebState:webState];
+    _formHelper.delegate = self;
+    _suggestionHelper = [[PasswordSuggestionHelper alloc] init];
+    _suggestionHelper.delegate = self;
     _passwordManagerClient = std::move(passwordManagerClient);
     _passwordManagerClient->set_delegate(self);
     _passwordManager = std::move(passwordManager);

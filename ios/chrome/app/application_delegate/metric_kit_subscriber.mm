@@ -6,9 +6,14 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "base/version.h"
+#include "components/version_info/version_info.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -16,7 +21,62 @@
 
 NSString* const kChromeMetricKitPayloadsDirectory = @"ChromeMetricKitPayloads";
 
+// The different causes of app exit as reported by MetricKit.
+// This enum is used in UMA. Do not change the order.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum MetricKitExitReason {
+  kNormalAppExit = 0,
+  kAbnormalAppExit = 1,
+  kWatchdogExit = 2,
+  kCPUResourceLimitExit = 3,
+  kMemoryResourceLimitExit = 4,
+  kMemoryPressureExit = 5,
+  kSuspendedWithLockedFileExit = 6,
+  kBadAccessExit = 7,
+  kIllegalInstructionExit = 8,
+  kBackgroundTaskAssertionTimeoutExit = 9,
+
+  // Must be the last enum entries.
+  kMetricKitExitReasonMaxValue = kBackgroundTaskAssertionTimeoutExit,
+  kMetricKitExitReasonCount = kMetricKitExitReasonMaxValue + 1
+};
+
 namespace {
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+void ReportExitReason(base::HistogramBase* histogram,
+                      MetricKitExitReason bucket,
+                      NSUInteger count) {
+  if (!count) {
+    return;
+  }
+  histogram->AddCount(bucket, count);
+}
+#endif
+
+void ReportDuration(const char* histogram_name, NSMeasurement* measurement)
+    API_AVAILABLE(ios(13.0)) {
+  if (!measurement) {
+    return;
+  }
+  double value =
+      [measurement measurementByConvertingToUnit:NSUnitDuration.seconds]
+          .doubleValue;
+  base::UmaHistogramTimes(histogram_name, base::TimeDelta::FromSecondsD(value));
+}
+
+void ReportMemory(const char* histogram_name, NSMeasurement* measurement)
+    API_AVAILABLE(ios(13.0)) {
+  if (!measurement) {
+    return;
+  }
+  double value =
+      [measurement
+          measurementByConvertingToUnit:NSUnitInformationStorage.megabytes]
+          .doubleValue;
+  base::UmaHistogramMemoryLargeMB(histogram_name, value);
+}
 
 void WriteMetricPayloads(NSArray<MXMetricPayload*>* payloads)
     API_AVAILABLE(ios(13.0)) {
@@ -95,6 +155,141 @@ void WriteDiagnosticPayloads(NSArray<MXDiagnosticPayload*>* payloads)
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
        base::ThreadPolicy::PREFER_BACKGROUND, base::MayBlock()},
       base::BindOnce(WriteMetricPayloads, payloads));
+  for (MXMetricPayload* payload : payloads) {
+    [self processPayload:payload];
+  }
+}
+
+- (void)logStartupDurationMXHistogram:(MXHistogram*)histogram
+                       toUMAHistogram:(const char*)histogramUMAName
+    API_AVAILABLE(ios(13.0)) {
+  if (!histogram || !histogram.totalBucketCount) {
+    return;
+  }
+  // It should take less than 1 minute to startup.
+  // Histogram is defined in millisecond granularity.
+  base::HistogramBase* histogramUMA = base::Histogram::FactoryTimeGet(
+      histogramUMAName, base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromMinutes(1), 50,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  MXHistogramBucket* bucket;
+  NSEnumerator* enumerator = [histogram bucketEnumerator];
+  while (bucket = [enumerator nextObject]) {
+    // MXHistogram structure is linear and the bucket size is not guaranteed to
+    // never change. As the granularity is small in the current iOS version,
+    // (10ms) they are reported using a representative value of the bucket.
+    // DCHECK on the size of the bucket to detect if the resolution decrease.
+
+    // Time based MXHistogram report their values using |UnitDuration| which has
+    // seconds as base unit. Hence, start and end are given in seconds.
+    double start =
+        [bucket.bucketStart
+            measurementByConvertingToUnit:NSUnitDuration.milliseconds]
+            .doubleValue;
+    double end = [bucket.bucketEnd
+                     measurementByConvertingToUnit:NSUnitDuration.milliseconds]
+                     .doubleValue;
+    // DCHECKS that resolution is less than 10ms.
+    // Note: Real paylods use 10ms resolution but the simulated payload in XCode
+    // uses 100ms resolution so it will trigger this DCHECK.
+    DCHECK_LE(end - start, 10);
+    double sample = (end + start) / 2;
+    histogramUMA->AddCount(
+        base::saturated_cast<base::HistogramBase::Sample>(sample),
+        bucket.bucketCount);
+  }
+}
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+- (void)logForegroundExit:(MXForegroundExitData*)exitData
+    API_AVAILABLE(ios(14.0)) {
+  base::HistogramBase* histogramUMA = base::LinearHistogram::FactoryGet(
+      "IOS.MetricKit.ForegroundExitData", 1, kMetricKitExitReasonCount,
+      kMetricKitExitReasonCount + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  ReportExitReason(histogramUMA, kNormalAppExit,
+                   exitData.cumulativeNormalAppExitCount);
+  ReportExitReason(histogramUMA, kAbnormalAppExit,
+                   exitData.cumulativeAbnormalExitCount);
+  ReportExitReason(histogramUMA, kWatchdogExit,
+                   exitData.cumulativeAppWatchdogExitCount);
+  ReportExitReason(histogramUMA, kMemoryResourceLimitExit,
+                   exitData.cumulativeMemoryResourceLimitExitCount);
+  ReportExitReason(histogramUMA, kBadAccessExit,
+                   exitData.cumulativeBadAccessExitCount);
+  ReportExitReason(histogramUMA, kIllegalInstructionExit,
+                   exitData.cumulativeIllegalInstructionExitCount);
+}
+
+- (void)logBackgroundExit:(MXBackgroundExitData*)exitData
+    API_AVAILABLE(ios(14.0)) {
+  base::HistogramBase* histogramUMA = base::LinearHistogram::FactoryGet(
+      "IOS.MetricKit.BackgroundExitData", 1, kMetricKitExitReasonCount,
+      kMetricKitExitReasonCount + 1,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  ReportExitReason(histogramUMA, kNormalAppExit,
+                   exitData.cumulativeNormalAppExitCount);
+  ReportExitReason(histogramUMA, kAbnormalAppExit,
+                   exitData.cumulativeAbnormalExitCount);
+  ReportExitReason(histogramUMA, kWatchdogExit,
+                   exitData.cumulativeAppWatchdogExitCount);
+  ReportExitReason(histogramUMA, kCPUResourceLimitExit,
+                   exitData.cumulativeCPUResourceLimitExitCount);
+  ReportExitReason(histogramUMA, kMemoryResourceLimitExit,
+                   exitData.cumulativeMemoryResourceLimitExitCount);
+  ReportExitReason(histogramUMA, kMemoryPressureExit,
+                   exitData.cumulativeMemoryPressureExitCount);
+  ReportExitReason(histogramUMA, kSuspendedWithLockedFileExit,
+                   exitData.cumulativeSuspendedWithLockedFileExitCount);
+  ReportExitReason(histogramUMA, kBadAccessExit,
+                   exitData.cumulativeBadAccessExitCount);
+  ReportExitReason(histogramUMA, kIllegalInstructionExit,
+                   exitData.cumulativeIllegalInstructionExitCount);
+  ReportExitReason(histogramUMA, kBackgroundTaskAssertionTimeoutExit,
+                   exitData.cumulativeBackgroundTaskAssertionTimeoutExitCount);
+}
+#endif
+
+- (void)processPayload:(MXMetricPayload*)payload API_AVAILABLE(ios(13.0)) {
+  if (payload.includesMultipleApplicationVersions ||
+      base::SysNSStringToUTF8(payload.metaData.applicationBuildVersion) !=
+          version_info::GetVersionNumber()) {
+    // The metrics will be reported on the current version of Chrome.
+    // Ignore any report that contains data from another version to avoid
+    // confusion.
+    return;
+  }
+
+  ReportDuration("IOS.MetricKit.ForegroundTimePerDay",
+                 payload.applicationTimeMetrics.cumulativeForegroundTime);
+  ReportDuration("IOS.MetricKit.BackgroundTimePerDay",
+                 payload.applicationTimeMetrics.cumulativeBackgroundTime);
+  ReportMemory("IOS.MetricKit.AverageSuspendedMemory",
+               payload.memoryMetrics.averageSuspendedMemory.averageMeasurement);
+  ReportMemory("IOS.MetricKit.PeakMemoryUsage",
+               payload.memoryMetrics.peakMemoryUsage);
+
+  MXHistogram* histogrammedApplicationResumeTime =
+      payload.applicationLaunchMetrics.histogrammedApplicationResumeTime;
+  [self logStartupDurationMXHistogram:histogrammedApplicationResumeTime
+                       toUMAHistogram:"IOS.MetricKit.ApplicationResumeTime"];
+
+  MXHistogram* histogrammedTimeToFirstDraw =
+      payload.applicationLaunchMetrics.histogrammedTimeToFirstDraw;
+  [self logStartupDurationMXHistogram:histogrammedTimeToFirstDraw
+                       toUMAHistogram:"IOS.MetricKit.TimeToFirstDraw"];
+
+  MXHistogram* histogrammedApplicationHangTime =
+      payload.applicationResponsivenessMetrics.histogrammedApplicationHangTime;
+  [self logStartupDurationMXHistogram:histogrammedApplicationHangTime
+                       toUMAHistogram:"IOS.MetricKit.ApplicationHangTime"];
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+  if (@available(iOS 14, *)) {
+    [self logForegroundExit:payload.applicationExitMetrics.foregroundExitData];
+    [self logBackgroundExit:payload.applicationExitMetrics.backgroundExitData];
+  }
+#endif
 }
 
 #if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0

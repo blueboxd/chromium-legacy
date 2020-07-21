@@ -529,6 +529,26 @@ static void Install{{v8_class}}Template(
   {% endfilter %}
   {% endif %}
 
+  {% if interface_name == 'FileSystemDirectoryHandle' %}
+  // Temporary @@asyncIterator support for FileSystemDirectoryHandle
+  // TODO(https://crbug.com/1087157): Replace with proper bindings support.
+  static const V8DOMConfiguration::SymbolKeyedMethodConfiguration
+  kSymbolKeyedIteratorConfiguration = {
+      v8::Symbol::GetAsyncIterator,
+      "entries",
+      V8FileSystemDirectoryHandle::EntriesMethodCallback,
+      0,
+      v8::DontEnum,
+      V8DOMConfiguration::kOnPrototype,
+      V8DOMConfiguration::kCheckHolder,
+      V8DOMConfiguration::kDoNotCheckAccess,
+      V8DOMConfiguration::kHasSideEffect
+  };
+  V8DOMConfiguration::InstallMethod(
+      isolate, world, prototype_template, signature,
+      kSymbolKeyedIteratorConfiguration);
+  {% endif %}
+
   {% if interface_name == 'Iterator' %}
   // The WebIDL spec says when an interface has pair iterators the iterators it
   // returns must be instances of the "default iterator object" whose
@@ -563,6 +583,17 @@ static void Install{{v8_class}}Template(
   intrinsic_iterator_prototype_interface_template->RemovePrototype();
   intrinsic_iterator_prototype_interface_template->SetIntrinsicDataProperty(
       V8AtomicString(isolate, "prototype"), v8::kIteratorPrototype);
+  interface_template->Inherit(intrinsic_iterator_prototype_interface_template);
+  {% endif %}
+
+  {% if interface_name == 'NativeFileSystemDirectoryIterator' %}
+  // Temporary @@asyncIterator support for FileSystemDirectoryHandle
+  // TODO(https://crbug.com/1087157): Replace with proper bindings support.
+  v8::Local<v8::FunctionTemplate> intrinsic_iterator_prototype_interface_template =
+      v8::FunctionTemplate::New(isolate);
+  intrinsic_iterator_prototype_interface_template->RemovePrototype();
+  intrinsic_iterator_prototype_interface_template->SetIntrinsicDataProperty(
+      V8AtomicString(isolate, "prototype"), v8::kAsyncIteratorPrototype);
   interface_template->Inherit(intrinsic_iterator_prototype_interface_template);
   {% endif %}
 

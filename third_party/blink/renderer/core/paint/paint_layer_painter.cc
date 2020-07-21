@@ -296,6 +296,15 @@ void PaintLayerPainter::AdjustForPaintProperties(
   }
 }
 
+static IntRect FirstFragmentVisualRect(const LayoutBoxModelObject& object) {
+  // We don't want to include overflowing contents.
+  PhysicalRect overflow_rect =
+      object.IsBox() ? ToLayoutBox(object).PhysicalSelfVisualOverflowRect()
+                     : object.PhysicalVisualOverflowRect();
+  overflow_rect.Move(object.FirstFragment().PaintOffset());
+  return EnclosingIntRect(overflow_rect);
+}
+
 PaintResult PaintLayerPainter::PaintLayerContents(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& painting_info_arg,
@@ -454,12 +463,16 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   bool is_video = IsA<LayoutVideo>(paint_layer_.GetLayoutObject());
 
   base::Optional<ScopedPaintChunkHint> paint_chunk_hint;
+  base::Optional<IntRect> visual_rect;
   if (should_paint_content) {
+    visual_rect.emplace(
+        FirstFragmentVisualRect(paint_layer_.GetLayoutObject()));
     paint_chunk_hint.emplace(context.GetPaintController(),
                              paint_layer_.GetLayoutObject()
                                  .FirstFragment()
                                  .LocalBorderBoxProperties(),
-                             paint_layer_, DisplayItem::kLayerChunk);
+                             paint_layer_, DisplayItem::kLayerChunk,
+                             *visual_rect);
   }
 
   if (should_paint_background) {
@@ -478,9 +491,9 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     if (paint_chunk_hint && paint_chunk_hint->HasCreatedPaintChunk()) {
       // Hint a foreground chunk if we have created any chunks, to give the
       // paint chunk after the previous forced paint chunks a stable id.
-      paint_chunk_hint_foreground.emplace(context.GetPaintController(),
-                                          paint_layer_,
-                                          DisplayItem::kLayerChunkForeground);
+      paint_chunk_hint_foreground.emplace(
+          context.GetPaintController(), paint_layer_,
+          DisplayItem::kLayerChunkForeground, *visual_rect);
     }
     if (selection_drag_image_only) {
       PaintForegroundForFragmentsWithPhase(PaintPhase::kSelectionDragImage,

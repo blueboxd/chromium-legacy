@@ -28,7 +28,7 @@ class DownloadItem;
 }
 
 namespace policy {
-class URLBlacklist;
+class URLBlocklist;
 }
 
 namespace user_prefs {
@@ -170,7 +170,7 @@ class DownloadPrefs {
   AutoOpenSet auto_open_by_user_;
   AutoOpenSet auto_open_by_policy_;
 
-  std::unique_ptr<policy::URLBlacklist> auto_open_allowed_by_urls_;
+  std::unique_ptr<policy::URLBlocklist> auto_open_allowed_by_urls_;
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
   bool should_open_pdf_in_system_reader_;

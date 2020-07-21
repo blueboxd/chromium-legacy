@@ -19,6 +19,7 @@
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/shared_worker_service.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
@@ -66,7 +67,8 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
       blink::mojom::SharedWorkerCreationContextType creation_context_type,
       const blink::MessagePortChannel& port,
-      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      ukm::SourceId client_ukm_source_id);
 
   // Virtual for testing.
   virtual void DestroyHost(SharedWorkerHost* host);

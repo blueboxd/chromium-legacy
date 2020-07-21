@@ -128,6 +128,68 @@ using base::SysUTF8ToNSString;
 
 @end
 
+// Interface to communicate with the XPC Updater Service.
+@interface CRUAdministrationServiceOutOfProcessImpl
+    : NSObject <CRUAdministering>
+
+- (instancetype)initPrivileged;
+
+@end
+
+@implementation CRUAdministrationServiceOutOfProcessImpl {
+  base::scoped_nsobject<NSXPCConnection> _administrationXPCConnection;
+}
+
+- (instancetype)init {
+  return [self initWithConnectionOptions:0];
+}
+
+- (instancetype)initPrivileged {
+  return [self initWithConnectionOptions:NSXPCConnectionPrivileged];
+}
+
+- (instancetype)initWithConnectionOptions:(NSXPCConnectionOptions)options {
+  if ((self = [super init])) {
+    _administrationXPCConnection.reset([[NSXPCConnection alloc]
+        initWithMachServiceName:base::mac::CFToNSCast(
+                                    updater::CopyAdministrationLaunchDName()
+                                        .get())
+                        options:options]);
+
+    _administrationXPCConnection.get().remoteObjectInterface =
+        updater::GetXPCAdministeringInterface();
+
+    _administrationXPCConnection.get().interruptionHandler = ^{
+      LOG(WARNING) << "CRUAdministering: XPC connection interrupted.";
+    };
+
+    _administrationXPCConnection.get().invalidationHandler = ^{
+      LOG(WARNING) << "CRUAdministering: XPC connection invalidated.";
+    };
+
+    [_administrationXPCConnection resume];
+  }
+
+  return self;
+}
+
+- (void)dealloc {
+  [_administrationXPCConnection invalidate];
+  [super dealloc];
+}
+
+- (void)performAdminTasks {
+  auto errorHandler = ^(NSError* xpcError) {
+    LOG(ERROR) << "XPC connection failed: "
+               << base::SysNSStringToUTF8([xpcError description]);
+  };
+
+  [[_administrationXPCConnection remoteObjectProxyWithErrorHandler:errorHandler]
+      performAdminTasks];
+}
+
+@end
+
 namespace updater {
 
 UpdateServiceOutOfProcess::UpdateServiceOutOfProcess(
@@ -139,6 +201,8 @@ UpdateServiceOutOfProcess::UpdateServiceOutOfProcess(
     case UpdateService::Scope::kUser:
       client_.reset([[CRUUpdateServiceOutOfProcessImpl alloc] init]);
       break;
+    default:
+      CHECK(false) << "Unexpected value for UpdateService::Scope";
   }
   callback_runner_ = base::SequencedTaskRunnerHandle::Get();
 }

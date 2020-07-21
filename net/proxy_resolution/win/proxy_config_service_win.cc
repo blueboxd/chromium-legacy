@@ -95,21 +95,19 @@ void ProxyConfigServiceWin::StartWatchingRegistryForChanges() {
 
   AddKeyToWatchList(
       HKEY_CURRENT_USER,
-      STRING16_LITERAL("Software\\Microsoft\\Windows\\CurrentVersion\\")
-          STRING16_LITERAL("Internet Settings"));
+      L"Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings");
 
   AddKeyToWatchList(
       HKEY_LOCAL_MACHINE,
-      STRING16_LITERAL("Software\\Microsoft\\Windows\\CurrentVersion\\")
-          STRING16_LITERAL("Internet Settings"));
+      L"Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings");
 
   AddKeyToWatchList(HKEY_LOCAL_MACHINE,
-                    STRING16_LITERAL("SOFTWARE\\Policies\\Microsoft\\Windows\\")
-                        STRING16_LITERAL("CurrentVersion\\Internet Settings"));
+                    L"SOFTWARE\\Policies\\Microsoft\\Windows\\CurrentVersion\\"
+                    L"Internet Settings");
 }
 
 bool ProxyConfigServiceWin::AddKeyToWatchList(HKEY rootkey,
-                                              const base::char16* subkey) {
+                                              const wchar_t* subkey) {
   std::unique_ptr<base::win::RegKey> key =
       std::make_unique<base::win::RegKey>();
   if (key->Create(rootkey, subkey, KEY_NOTIFY) != ERROR_SUCCESS)

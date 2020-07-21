@@ -792,7 +792,7 @@ constexpr bool equal(Range1&& range1,
 // the first and second range, this is currently not supported due to
 // dispatching to std::is_permutation, which demands that `pred` is an
 // equivalence relation.
-// TODO(https://crbug.com/1071094): Consider supporing different projections in
+// TODO(https://crbug.com/1071094): Consider supporting different projections in
 // the future.
 //
 // Reference:
@@ -2453,27 +2453,335 @@ constexpr auto shuffle(Range&& range, UniformRandomBitGenerator&& g) {
 // [sort] sort
 // Reference: https://wg21.link/sort
 
-// TODO(crbug.com/1071094): Implement.
+// Effects: Sorts the elements in the range `[first, last)` with respect to
+// `comp` and `proj`.
+//
+// Returns: `last`.
+//
+// Complexity: Let `N` be `last - first`. `O(N log N)` comparisons and
+// projections.
+//
+// Reference: https://wg21.link/sort#:~:text=ranges::sort(I
+template <typename RandomAccessIterator,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<RandomAccessIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<RandomAccessIterator, Proj>,
+                                       projected<RandomAccessIterator, Proj>>>
+constexpr auto sort(RandomAccessIterator first,
+                    RandomAccessIterator last,
+                    Comp comp = {},
+                    Proj proj = {}) {
+  std::sort(first, last, internal::ProjectedBinaryPredicate(comp, proj, proj));
+  return last;
+}
+
+// Effects: Sorts the elements in `range` with respect to `comp` and `proj`.
+//
+// Returns: `end(range)`.
+//
+// Complexity: Let `N` be `size(range)`. `O(N log N)` comparisons and
+// projections.
+//
+// Reference: https://wg21.link/sort#:~:text=ranges::sort(R
+template <typename Range,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range>, Proj>,
+                                       projected<iterator_t<Range>, Proj>>>
+constexpr auto sort(Range&& range, Comp comp = {}, Proj proj = {}) {
+  return ranges::sort(ranges::begin(range), ranges::end(range), std::move(comp),
+                      std::move(proj));
+}
 
 // [stable.sort] stable_sort
 // Reference: https://wg21.link/stable.sort
 
-// TODO(crbug.com/1071094): Implement.
+// Effects: Sorts the elements in the range `[first, last)` with respect to
+// `comp` and `proj`.
+//
+// Returns: `last`.
+//
+// Complexity: Let `N` be `last - first`. If enough extra memory is available,
+// `N log (N)` comparisons. Otherwise, at most `N log^2 (N)` comparisons. In
+// either case, twice as many projections as the number of comparisons.
+//
+// Remarks: Stable.
+//
+// Reference: https://wg21.link/stable.sort#:~:text=ranges::stable_sort(I
+template <typename RandomAccessIterator,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<RandomAccessIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<RandomAccessIterator, Proj>,
+                                       projected<RandomAccessIterator, Proj>>>
+constexpr auto stable_sort(RandomAccessIterator first,
+                           RandomAccessIterator last,
+                           Comp comp = {},
+                           Proj proj = {}) {
+  std::stable_sort(first, last,
+                   internal::ProjectedBinaryPredicate(comp, proj, proj));
+  return last;
+}
+
+// Effects: Sorts the elements in `range` with respect to `comp` and `proj`.
+//
+// Returns: `end(rang)`.
+//
+// Complexity: Let `N` be `size(range)`. If enough extra memory is available,
+// `N log (N)` comparisons. Otherwise, at most `N log^2 (N)` comparisons. In
+// either case, twice as many projections as the number of comparisons.
+//
+// Remarks: Stable.
+//
+// Reference: https://wg21.link/stable.sort#:~:text=ranges::stable_sort(R
+template <typename Range,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range>, Proj>,
+                                       projected<iterator_t<Range>, Proj>>>
+constexpr auto stable_sort(Range&& range, Comp comp = {}, Proj proj = {}) {
+  return ranges::stable_sort(ranges::begin(range), ranges::end(range),
+                             std::move(comp), std::move(proj));
+}
 
 // [partial.sort] partial_sort
 // Reference: https://wg21.link/partial.sort
 
-// TODO(crbug.com/1071094): Implement.
+// Preconditions: `[first, middle)` and `[middle, last)` are valid ranges.
+//
+// Effects: Places the first `middle - first` elements from the range
+// `[first, last)` as sorted with respect to `comp` and `proj` into the range
+// `[first, middle)`. The rest of the elements in the range `[middle, last)` are
+// placed in an unspecified order.
+//
+// Returns: `last`.
+//
+// Complexity: Approximately `(last - first) * log(middle - first)` comparisons,
+// and twice as many projections.
+//
+// Reference: https://wg21.link/partial.sort#:~:text=ranges::partial_sort(I
+template <typename RandomAccessIterator,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<RandomAccessIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<RandomAccessIterator, Proj>,
+                                       projected<RandomAccessIterator, Proj>>>
+constexpr auto partial_sort(RandomAccessIterator first,
+                            RandomAccessIterator middle,
+                            RandomAccessIterator last,
+                            Comp comp = {},
+                            Proj proj = {}) {
+  std::partial_sort(first, middle, last,
+                    internal::ProjectedBinaryPredicate(comp, proj, proj));
+  return last;
+}
+
+// Preconditions: `[begin(range), middle)` and `[middle, end(range))` are valid
+// ranges.
+//
+// Effects: Places the first `middle - begin(range)` elements from `range` as
+// sorted with respect to `comp` and `proj` into the range
+// `[begin(range), middle)`. The rest of the elements in the range
+// `[middle, end(range))` are placed in an unspecified order.
+//
+// Returns: `end(range)`.
+//
+// Complexity: Approximately `size(range) * log(middle - begin(range))`
+// comparisons, and twice as many projections.
+//
+// Reference: https://wg21.link/partial.sort#:~:text=ranges::partial_sort(R
+template <typename Range,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range>, Proj>,
+                                       projected<iterator_t<Range>, Proj>>>
+constexpr auto partial_sort(Range&& range,
+                            iterator_t<Range> middle,
+                            Comp comp = {},
+                            Proj proj = {}) {
+  return ranges::partial_sort(ranges::begin(range), middle, ranges::end(range),
+                              std::move(comp), std::move(proj));
+}
 
 // [partial.sort.copy] partial_sort_copy
 // Reference: https://wg21.link/partial.sort.copy
 
-// TODO(crbug.com/1071094): Implement.
+// Let `N` be `min(last - first, result_last - result_first)`.
+//
+// Preconditions: For iterators `a1` and `b1` in `[first, last)`, and iterators
+// `x2` and `y2` in `[result_first, result_last)`, after evaluating the
+// assignment `*y2 = *b1`, let `E` be the value of `bool(invoke(comp,
+// invoke(proj1, *a1), invoke(proj2, *y2)))`. Then, after evaluating the
+// assignment `*x2 = *a1`, `E` is equal to `bool(invoke(comp, invoke(proj2,
+// *x2), invoke(proj2, *y2)))`.
+//
+// Effects: Places the first `N` elements as sorted with respect to `comp` and
+// `proj2` into the range `[result_first, result_first + N)`.
+//
+// Returns: `result_first + N`.
+//
+// Complexity: Approximately `(last - first) * log N` comparisons, and twice as
+// many projections.
+//
+// Reference:
+// https://wg21.link/partial.sort.copy#:~:text=ranges::partial_sort_copy(I1
+//
+// Note: Currently different projections are not supported due to some
+// incompatible validation logic within libc++.
+// TODO(https://crbug.com/1071094): Consider supporting different projections in
+// the future.
+template <typename InputIterator,
+          typename RandomAccessIterator,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<InputIterator>,
+          typename = internal::iterator_category_t<RandomAccessIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<InputIterator, Proj>,
+                                       projected<RandomAccessIterator, Proj>>>
+constexpr auto partial_sort_copy(InputIterator first,
+                                 InputIterator last,
+                                 RandomAccessIterator result_first,
+                                 RandomAccessIterator result_last,
+                                 Comp comp = {},
+                                 Proj proj = {}) {
+  return std::partial_sort_copy(
+      first, last, result_first, result_last,
+      internal::ProjectedBinaryPredicate(comp, proj, proj));
+}
+
+// Let `N` be `min(size(range), size(result_range))`.
+//
+// Preconditions: For iterators `a1` and `b1` in `range`, and iterators
+// `x2` and `y2` in `result_range`, after evaluating the assignment
+// `*y2 = *b1`, let `E` be the value of
+// `bool(invoke(comp, invoke(proj1, *a1), invoke(proj2, *y2)))`. Then, after
+// evaluating the assignment `*x2 = *a1`, `E` is equal to
+// `bool(invoke(comp, invoke(proj2, *x2), invoke(proj2, *y2)))`.
+//
+// Effects: Places the first `N` elements as sorted with respect to `comp` and
+// `proj2` into the range `[begin(result_range), begin(result_range) + N)`.
+//
+// Returns: `begin(result_range) + N`.
+//
+// Complexity: Approximately `size(range) * log N` comparisons, and twice as
+// many projections.
+//
+// Reference:
+// https://wg21.link/partial.sort.copy#:~:text=ranges::partial_sort_copy(R1
+//
+// Note: Currently different projections are not supported due to some
+// incompatible validation logic within libc++.
+// TODO(https://crbug.com/1071094): Consider supporting different projections in
+// the future.
+template <typename Range1,
+          typename Range2,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range1>,
+          typename = internal::range_category_t<Range2>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range1>, Proj>,
+                                       projected<iterator_t<Range2>, Proj>>>
+constexpr auto partial_sort_copy(Range1&& range,
+                                 Range2&& result_range,
+                                 Comp comp = {},
+                                 Proj proj = {}) {
+  return ranges::partial_sort_copy(
+      ranges::begin(range), ranges::end(range), ranges::begin(result_range),
+      ranges::end(result_range), std::move(comp), std::move(proj));
+}
 
 // [is.sorted] is_sorted
 // Reference: https://wg21.link/is.sorted
 
-// TODO(crbug.com/1071094): Implement.
+// Returns: Whether the range `[first, last)` is sorted with respect to `comp`
+// and `proj`.
+//
+// Complexity: Linear.
+
+// Reference: https://wg21.link/is.sorted#:~:text=ranges::is_sorted(I
+template <typename ForwardIterator,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<ForwardIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<ForwardIterator, Proj>,
+                                       projected<ForwardIterator, Proj>>>
+constexpr auto is_sorted(ForwardIterator first,
+                         ForwardIterator last,
+                         Comp comp = {},
+                         Proj proj = {}) {
+  return std::is_sorted(first, last,
+                        internal::ProjectedBinaryPredicate(comp, proj, proj));
+}
+
+// Returns: Whether the range `[first, last)` is sorted with respect to `comp`
+// and `proj`.
+//
+// Complexity: Linear.
+
+// Reference: https://wg21.link/is.sorted#:~:text=ranges::is_sorted(R
+template <typename Range,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range>, Proj>,
+                                       projected<iterator_t<Range>, Proj>>>
+constexpr auto is_sorted(Range&& range, Comp comp = {}, Proj proj = {}) {
+  return ranges::is_sorted(ranges::begin(range), ranges::end(range),
+                           std::move(comp), std::move(proj));
+}
+
+// Returns: The last iterator `i` in `[first, last]` for which the range
+// `[first, i)` is sorted with respect to `comp` and `proj`.
+//
+// Complexity: Linear.
+
+// Reference: https://wg21.link/is.sorted#:~:text=ranges::is_sorted_until(I
+template <typename ForwardIterator,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<ForwardIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<ForwardIterator, Proj>,
+                                       projected<ForwardIterator, Proj>>>
+constexpr auto is_sorted_until(ForwardIterator first,
+                               ForwardIterator last,
+                               Comp comp = {},
+                               Proj proj = {}) {
+  return std::is_sorted_until(
+      first, last, internal::ProjectedBinaryPredicate(comp, proj, proj));
+}
+
+// Returns: The last iterator `i` in `[begin(range), end(range)]` for which the
+// range `[begin(range), i)` is sorted with respect to `comp` and `proj`.
+//
+// Complexity: Linear.
+
+// Reference: https://wg21.link/is.sorted#:~:text=ranges::is_sorted_until(R
+template <typename Range,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range>, Proj>,
+                                       projected<iterator_t<Range>, Proj>>>
+constexpr auto is_sorted_until(Range&& range, Comp comp = {}, Proj proj = {}) {
+  return ranges::is_sorted_until(ranges::begin(range), ranges::end(range),
+                                 std::move(comp), std::move(proj));
+}
 
 // [alg.nth.element] Nth element
 // Reference: https://wg21.link/alg.nth.element

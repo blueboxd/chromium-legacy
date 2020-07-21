@@ -665,7 +665,7 @@ class DownloadProtectionServiceTestBase
   // browser/renderer navigations.
   void SimulateLinkClick(const GURL& url) {
     content::WebContentsTester::For(web_contents())
-        ->TestDidReceiveInputEvent(blink::WebInputEvent::Type::kMouseDown);
+        ->TestDidReceiveMouseDownEvent();
     std::unique_ptr<content::NavigationSimulator> navigation =
         content::NavigationSimulator::CreateRendererInitiated(
             url, web_contents()->GetMainFrame());

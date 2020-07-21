@@ -229,6 +229,7 @@ class WebStateImpl : public WebState,
   void SetHasOpener(bool has_opener) override;
   bool CanTakeSnapshot() const override;
   void TakeSnapshot(const gfx::RectF& rect, SnapshotCallback callback) override;
+  void CreateFullPagePdf(base::OnceCallback<void(NSData*)> callback) override;
   void AddObserver(WebStateObserver* observer) override;
   void RemoveObserver(WebStateObserver* observer) override;
   void CloseWebState() override;

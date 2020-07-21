@@ -104,7 +104,7 @@ SharedContextState::SharedContextState(
     scoped_refptr<gl::GLSurface> surface,
     scoped_refptr<gl::GLContext> context,
     bool use_virtualized_gl_contexts,
-    base::OnceClosure context_lost_callback,
+    ContextLostCallback context_lost_callback,
     GrContextType gr_context_type,
     viz::VulkanContextProvider* vulkan_context_provider,
     viz::MetalContextProvider* metal_context_provider,
@@ -490,7 +490,8 @@ void SharedContextState::MarkContextLost(error::ContextLostReason reason) {
       gr_context_ = nullptr;
     }
     UpdateSkiaOwnedMemorySize();
-    std::move(context_lost_callback_).Run();
+    std::move(context_lost_callback_)
+        .Run(!context_lost_by_robustness_extension);
     for (auto& observer : context_lost_observers_)
       observer.OnContextLost();
   }
@@ -738,6 +739,7 @@ bool SharedContextState::CheckResetStatus(bool needs_gl) {
   LOG(ERROR) << "SharedContextState context lost via ARB/EXT_robustness. Reset "
                 "status = "
              << gles2::GLES2Util::GetStringEnum(driver_status);
+  context_lost_by_robustness_extension = true;
 
   switch (driver_status) {
     case GL_GUILTY_CONTEXT_RESET_ARB:

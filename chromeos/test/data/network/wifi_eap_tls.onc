@@ -4,7 +4,6 @@
   "Name": "WifiEapTls",
   "WiFi": {
     "Security": "WPA-EAP",
-    "FTEnabled": true,
     "EAP": {
       "Outer": "EAP-TLS",
       "Identity": "my_identity",

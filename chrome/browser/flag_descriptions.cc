@@ -4206,6 +4206,12 @@ const char kEnableMediaFeedsDescription[] =
     "Enables the Media Feeds feature which allows us to fetch feeds of media "
     "items from websites that support the feature. ";
 
+const char kEnableMediaFeedsBackgroundFetchName[] =
+    "Enables Media Feeds Background Fetch";
+const char kEnableMediaFeedsBackgroundFetchDescription[] =
+    "Enables the Media Feeds background fetch feature which allows feeds to be "
+    "fetched in the background. Requires #enable-media-feeds to be enabled. ";
+
 const char kRemoteCopyReceiverName[] =
     "Enables the remote copy feature to receive messages";
 const char kRemoteCopyReceiverDescription[] =

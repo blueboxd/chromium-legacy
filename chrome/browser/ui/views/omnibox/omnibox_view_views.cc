@@ -1777,9 +1777,17 @@ void OmniboxViewViews::DidFinishNavigation(
 }
 
 void OmniboxViewViews::DidGetUserInteraction(
-    const blink::WebInputEvent::Type type) {
+    const blink::WebInputEvent& event) {
   if (!OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() ||
       model()->ShouldPreventElision()) {
+    return;
+  }
+
+  // Exclude modifier keys to prevent keyboard shortcuts (such as switching
+  // tabs) from eliding the URL. We don't want to count these shortcuts as
+  // interactions with the page content.
+  if (blink::WebInputEvent::IsKeyboardEventType(event.GetType()) &&
+      event.GetModifiers() & blink::WebInputEvent::kKeyModifiers) {
     return;
   }
 

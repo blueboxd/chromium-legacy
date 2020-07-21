@@ -34,7 +34,7 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/variations/net/variations_http_headers.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_test.h"
@@ -65,7 +65,7 @@ class VariationHeaderSetter : public ChromeBrowserMainExtraParts {
   void PostEarlyInitialization() override {
     // Set up some fake variations.
     auto* variations_provider =
-        variations::VariationsHttpHeaderProvider::GetInstance();
+        variations::VariationsIdsProvider::GetInstance();
     variations_provider->ForceVariationIds({"12", "456", "t789"}, "");
   }
 
@@ -380,10 +380,10 @@ void CreateGoogleSignedInFieldTrial() {
   scoped_refptr<base::FieldTrial> trial_1(CreateTrialAndAssociateId(
       "t1", default_name, variations::GOOGLE_WEB_PROPERTIES_SIGNED_IN, 123));
 
-  auto* variations_http_header_provider =
-      variations::VariationsHttpHeaderProvider::GetInstance();
-  EXPECT_NE(variations_http_header_provider->GetClientDataHeader(true),
-            variations_http_header_provider->GetClientDataHeader(false));
+  auto* variations_ids_provider =
+      variations::VariationsIdsProvider::GetInstance();
+  EXPECT_NE(variations_ids_provider->GetClientDataHeader(true),
+            variations_ids_provider->GetClientDataHeader(false));
 }
 
 }  // namespace
@@ -438,7 +438,7 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest, UserSignedIn) {
   base::Optional<std::string> header =
       GetReceivedHeader(GetGoogleUrl(), "X-Client-Data");
   ASSERT_TRUE(header);
-  EXPECT_EQ(*header, variations::VariationsHttpHeaderProvider::GetInstance()
+  EXPECT_EQ(*header, variations::VariationsIdsProvider::GetInstance()
                          ->GetClientDataHeader(true));
 }
 
@@ -453,7 +453,7 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest, UserNotSignedIn) {
   base::Optional<std::string> header =
       GetReceivedHeader(GetGoogleUrl(), "X-Client-Data");
   ASSERT_TRUE(header);
-  EXPECT_EQ(*header, variations::VariationsHttpHeaderProvider::GetInstance()
+  EXPECT_EQ(*header, variations::VariationsIdsProvider::GetInstance()
                          ->GetClientDataHeader(false));
 }
 

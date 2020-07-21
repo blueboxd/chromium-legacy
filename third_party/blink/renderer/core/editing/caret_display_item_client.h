@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 
@@ -91,16 +90,11 @@ class CORE_EXPORT CaretDisplayItemClient final : public DisplayItemClient {
   PhysicalRect local_rect_;
   LayoutBlock* layout_block_ = nullptr;
 
-  // Visual rect of the caret in layout_block_. This is updated by
-  // InvalidatePaintIfNeeded().
-  IntRect visual_rect_;
-
-  // These are set to the previous value of layout_bloc_k and visual_rect_
-  // during UpdateStyleAndLayoutIfNeeded() if they haven't been set since the
-  // last paint invalidation. They can only be used in InvalidatePaintIfNeeded()
-  // to invalidate the caret in the previous layout block.
+  // This is set to the previous value of layout_block_ during
+  // UpdateStyleAndLayoutIfNeeded() if it hasn't been set since the last paint
+  // invalidation. It is used during InvalidatePaint() to invalidate the caret
+  // in the previous layout block.
   const LayoutBlock* previous_layout_block_ = nullptr;
-  IntRect visual_rect_in_previous_layout_block_;
 
   bool needs_paint_invalidation_ = false;
 

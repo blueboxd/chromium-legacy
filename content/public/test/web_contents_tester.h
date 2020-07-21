@@ -158,7 +158,7 @@ class WebContentsTester {
   virtual void SetIsCurrentlyAudible(bool audible) = 0;
 
   // Simulates an input event from the user.
-  virtual void TestDidReceiveInputEvent(blink::WebInputEvent::Type type) = 0;
+  virtual void TestDidReceiveMouseDownEvent() = 0;
 
   // Simulates successfully finishing a load.
   virtual void TestDidFinishLoad(const GURL& url) = 0;

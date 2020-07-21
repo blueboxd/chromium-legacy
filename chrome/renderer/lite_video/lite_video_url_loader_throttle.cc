@@ -36,7 +36,7 @@ LiteVideoURLLoaderThrottle::MaybeCreateThrottle(
   // disabled or ECT worsens. This logic should probably be in the browser
   // process.
   if (IsLiteVideoEnabled() &&
-      GetLiteVideoHintAgent(render_frame_id)->have_lite_video_hint()) {
+      GetLiteVideoHintAgent(render_frame_id)->HasLiteVideoHint()) {
     return std::make_unique<LiteVideoURLLoaderThrottle>(render_frame_id);
   }
   return nullptr;

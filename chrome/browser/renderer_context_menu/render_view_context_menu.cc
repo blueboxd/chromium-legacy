@@ -2533,10 +2533,10 @@ bool RenderViewContextMenu::IsSaveLinkAsEnabled() const {
   if (!local_state->GetBoolean(prefs::kAllowFileSelectionDialogs))
     return false;
 
-  PolicyBlacklistService* service =
-      PolicyBlacklistFactory::GetForBrowserContext(browser_context_);
-  if (service->GetURLBlacklistState(params_.link_url) ==
-      policy::URLBlacklist::URLBlacklistState::URL_IN_BLACKLIST) {
+  PolicyBlocklistService* service =
+      PolicyBlocklistFactory::GetForBrowserContext(browser_context_);
+  if (service->GetURLBlocklistState(params_.link_url) ==
+      policy::URLBlocklist::URLBlocklistState::URL_IN_BLOCKLIST) {
     return false;
   }
 

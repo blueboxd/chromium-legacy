@@ -114,15 +114,17 @@ NSString* MakeProgramArgument(const char* argument) {
 }
 
 base::ScopedCFTypeRef<CFDictionaryRef> CreateServiceLaunchdPlist(
+    const base::ScopedCFTypeRef<CFStringRef> label,
     const base::FilePath& updater_path) {
   // See the man page for launchd.plist.
   NSDictionary<NSString*, id>* launchd_plist = @{
-    @LAUNCH_JOBKEY_LABEL : GetServiceLaunchdLabel(),
+    @LAUNCH_JOBKEY_LABEL : base::mac::CFToNSCast(label),
     @LAUNCH_JOBKEY_PROGRAMARGUMENTS : @[
       base::SysUTF8ToNSString(updater_path.value()),
       MakeProgramArgument(kServerSwitch)
     ],
-    @LAUNCH_JOBKEY_MACHSERVICES : @{GetServiceMachName() : @YES},
+    @LAUNCH_JOBKEY_MACHSERVICES :
+        @{GetServiceMachName(base::mac::CFToNSCast(label)) : @YES},
     @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @NO,
     @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : @"Aqua"
   };
@@ -132,7 +134,7 @@ base::ScopedCFTypeRef<CFDictionaryRef> CreateServiceLaunchdPlist(
       base::scoped_policy::RETAIN);
 }
 
-base::ScopedCFTypeRef<CFDictionaryRef> CreateWakeLaunchdPlist(
+base::ScopedCFTypeRef<CFDictionaryRef> CreateAdministrationLaunchdPlist(
     const base::FilePath& updater_path) {
   // See the man page for launchd.plist.
   NSMutableArray<NSString*>* program_arguments =
@@ -145,7 +147,8 @@ base::ScopedCFTypeRef<CFDictionaryRef> CreateWakeLaunchdPlist(
     [program_arguments addObject:MakeProgramArgument(kSystemSwitch)];
 
   NSDictionary<NSString*, id>* launchd_plist = @{
-    @LAUNCH_JOBKEY_LABEL : GetWakeLaunchdLabel(),
+    @LAUNCH_JOBKEY_LABEL :
+        base::mac::CFToNSCast(CopyAdministrationLaunchDName()),
     @LAUNCH_JOBKEY_PROGRAMARGUMENTS : program_arguments,
     @LAUNCH_JOBKEY_STARTINTERVAL : @3600,
     @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @NO,
@@ -157,56 +160,28 @@ base::ScopedCFTypeRef<CFDictionaryRef> CreateWakeLaunchdPlist(
       base::scoped_policy::RETAIN);
 }
 
-base::ScopedCFTypeRef<CFDictionaryRef> CreateControlLaunchdPlist(
+bool CreateUpdateServiceLaunchdJobPlist(
+    const base::ScopedCFTypeRef<CFStringRef> name,
     const base::FilePath& updater_path) {
-  // See the man page for launchd.plist.
-  NSDictionary<NSString*, id>* launchd_plist = @{
-    @LAUNCH_JOBKEY_LABEL : GetControlLaunchdLabel(),
-    @LAUNCH_JOBKEY_PROGRAMARGUMENTS : @[
-      base::SysUTF8ToNSString(updater_path.value()),
-      MakeProgramArgument(kServerSwitch)
-    ],
-    @LAUNCH_JOBKEY_MACHSERVICES : @{GetVersionedServiceMachName() : @YES},
-    @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @NO,
-    @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : @"Aqua"
-  };
-
-  return base::ScopedCFTypeRef<CFDictionaryRef>(
-      base::mac::CFCast<CFDictionaryRef>(launchd_plist),
-      base::scoped_policy::RETAIN);
-}
-
-bool CreateUpdateServiceLaunchdJobPlist(const base::FilePath& updater_path) {
   // We're creating directories and writing a file.
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
   base::ScopedCFTypeRef<CFDictionaryRef> plist(
-      CreateServiceLaunchdPlist(updater_path));
+      CreateServiceLaunchdPlist(name, updater_path));
   return Launchd::GetInstance()->WritePlistToFile(
-      LaunchdDomain(), ServiceLaunchdType(), CopyServiceLaunchdName().release(),
-      plist);
+      LaunchdDomain(), ServiceLaunchdType(), name, plist);
 }
 
-bool CreateWakeLaunchdJobPlist(const base::FilePath& updater_path) {
+bool CreateUpdateAdministrationLaunchdJobPlist(
+    const base::FilePath& updater_path) {
   // We're creating directories and writing a file.
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   base::ScopedCFTypeRef<CFDictionaryRef> plist(
-      CreateWakeLaunchdPlist(updater_path));
+      CreateAdministrationLaunchdPlist(updater_path));
   return Launchd::GetInstance()->WritePlistToFile(
-      LaunchdDomain(), ServiceLaunchdType(), CopyWakeLaunchdName().release(),
-      plist);
-}
-
-bool CreateControlLaunchdJobPlist(const base::FilePath& updater_path) {
-  // We're creating directories and writing a file.
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::MAY_BLOCK);
-  base::ScopedCFTypeRef<CFDictionaryRef> plist(
-      CreateControlLaunchdPlist(updater_path));
-  return Launchd::GetInstance()->WritePlistToFile(
-      LaunchdDomain(), ServiceLaunchdType(), CopyControlLaunchdName().release(),
+      LaunchdDomain(), ServiceLaunchdType(), CopyAdministrationLaunchDName(),
       plist);
 }
 
@@ -216,20 +191,14 @@ bool StartUpdateServiceVersionedLaunchdJob(
       LaunchdDomain(), ServiceLaunchdType(), name, CFSTR("Aqua"));
 }
 
-bool StartUpdateWakeVersionedLaunchdJob() {
+bool StartUpdateAdministrationVersionedLaunchdJob() {
   return Launchd::GetInstance()->RestartJob(
-      LaunchdDomain(), ServiceLaunchdType(), CopyWakeLaunchdName().release(),
-      CFSTR("Aqua"));
-}
-
-bool StartUpdateControlVersionedLaunchdJob() {
-  return Launchd::GetInstance()->RestartJob(
-      LaunchdDomain(), ServiceLaunchdType(), CopyControlLaunchdName().release(),
+      LaunchdDomain(), ServiceLaunchdType(), CopyAdministrationLaunchDName(),
       CFSTR("Aqua"));
 }
 
 bool StartLaunchdServiceJob() {
-  return StartUpdateServiceVersionedLaunchdJob(CopyServiceLaunchdName());
+  return StartUpdateServiceVersionedLaunchdJob(CopyServiceLaunchDName());
 }
 
 bool RemoveJobFromLaunchd(Launchd::Domain domain,
@@ -256,15 +225,11 @@ bool RemoveUpdateServiceJobFromLaunchd(
 }
 
 bool RemoveUpdateServiceJobFromLaunchd() {
-  return RemoveUpdateServiceJobFromLaunchd(CopyServiceLaunchdName());
+  return RemoveUpdateServiceJobFromLaunchd(CopyServiceLaunchDName());
 }
 
-bool RemoveUpdateWakeJobFromLaunchd() {
-  return RemoveClientJobFromLaunchd(CopyWakeLaunchdName());
-}
-
-bool RemoveUpdateControlJobFromLaunchd() {
-  return RemoveClientJobFromLaunchd(CopyControlLaunchdName());
+bool RemoveUpdateAdministrationJobFromLaunchd() {
+  return RemoveClientJobFromLaunchd(CopyAdministrationLaunchDName());
 }
 
 bool DeleteInstallFolder(const base::FilePath& installed_path) {
@@ -291,24 +256,20 @@ int InstallCandidate() {
       dest_path.Append(GetUpdaterAppName())
           .Append(GetUpdaterAppExecutablePath());
 
-  if (!CreateWakeLaunchdJobPlist(updater_executable_path))
-    return setup_exit_codes::kFailedToCreateWakeLaunchdJobPlist;
+  if (!CreateUpdateAdministrationLaunchdJobPlist(
+          updater_executable_path)) {
+    return setup_exit_codes::kFailedToCreateAdministrationLaunchdJobPlist;
+  }
 
-  if (!CreateControlLaunchdJobPlist(updater_executable_path))
-    return setup_exit_codes::kFailedToCreateControlLaunchdJobPlist;
-
-  if (!StartUpdateControlVersionedLaunchdJob())
-    return setup_exit_codes::kFailedToStartLaunchdControlJob;
-
-  if (!StartUpdateWakeVersionedLaunchdJob())
-    return setup_exit_codes::kFailedToStartLaunchdWakeJob;
+  if (!StartUpdateAdministrationVersionedLaunchdJob()) {
+    return setup_exit_codes::kFailedToStartLaunchdAdministrationJob;
+  }
 
   return setup_exit_codes::kSuccess;
 }
 
 int UninstallCandidate() {
-  RemoveUpdateControlJobFromLaunchd();
-  RemoveUpdateWakeJobFromLaunchd();
+  RemoveUpdateAdministrationJobFromLaunchd();
   DeleteInstallFolder(GetVersionedUpdaterFolderPath());
   return setup_exit_codes::kSuccess;
 }
@@ -319,11 +280,14 @@ int PromoteCandidate() {
       dest_path.Append(GetUpdaterAppName())
           .Append(GetUpdaterAppExecutablePath());
 
-  if (!CreateUpdateServiceLaunchdJobPlist(updater_executable_path))
+  if (!CreateUpdateServiceLaunchdJobPlist(CopyServiceLaunchDName(),
+                                          updater_executable_path)) {
     return setup_exit_codes::kFailedToCreateUpdateServiceLaunchdJobPlist;
+  }
 
-  if (!StartLaunchdServiceJob())
+  if (!StartLaunchdServiceJob()) {
     return setup_exit_codes::kFailedToStartLaunchdActiveServiceJob;
+  }
 
   return setup_exit_codes::kSuccess;
 }

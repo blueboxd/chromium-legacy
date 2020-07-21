@@ -9,6 +9,7 @@ component("ios") {
 
   deps = [
     "//base",
+    "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/autofill/ios/browser",
     "//components/autofill/ios/form_util",
@@ -16,10 +17,12 @@ component("ios") {
     "//components/password_manager/core/browser/form_parsing",
     "//components/password_manager/core/common",
     "//components/security_state/ios",
+    "//components/strings:components_strings_grit",
     "//ios/web/common",
     "//ios/web/public",
     "//ios/web/public/deprecated",
     "//ios/web/public/js_messaging",
+    "//ui/base",
     "//url",
   ]
 
@@ -36,6 +39,8 @@ component("ios") {
     "password_manager_driver_bridge.h",
     "password_suggestion_helper.h",
     "password_suggestion_helper.mm",
+    "shared_password_controller.h",
+    "shared_password_controller.mm",
     "unique_id_tab_helper.h",
     "unique_id_tab_helper.mm",
   ]
@@ -63,6 +68,7 @@ source_set("unit_tests") {
     "account_select_fill_data_unittest.cc",
     "credential_manager_util_unittest.cc",
     "password_form_helper_unittest.mm",
+    "shared_password_controller_unittest.mm",
     "unique_id_tab_helper_unittest.mm",
   ]
   deps = [
@@ -72,11 +78,14 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/common",
+    "//components/autofill/ios/browser",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/browser:test_support",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
+    "//testing/gmock",
     "//testing/gtest",
+    "//third_party/ocmock",
   ]
 }
 

@@ -15,6 +15,7 @@
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "components/captive_portal/core/captive_portal_detector.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
@@ -25,6 +26,8 @@
 #import "ios/chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_error.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
+#import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
+#import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper_delegate.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #include "ios/chrome/browser/web/features.h"
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
@@ -37,9 +40,11 @@
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/test/js_test_util.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
+#include "net/http/http_status_code.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -321,6 +326,19 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageWithSSLInfo) {
   web::TestWebState test_web_state;
   security_interstitials::IOSBlockingPageTabHelper::CreateForWebState(
       &test_web_state);
+
+  // Use a test URLLoaderFactory so that the captive portal detector doesn't
+  // make an actual network request.
+  network::TestURLLoaderFactory test_loader_factory;
+  test_loader_factory.AddResponse(
+      captive_portal::CaptivePortalDetector::kDefaultURL, "",
+      net::HTTP_NO_CONTENT);
+  id captive_portal_detector_tab_helper_delegate = [OCMockObject
+      mockForProtocol:@protocol(CaptivePortalDetectorTabHelperDelegate)];
+  CaptivePortalDetectorTabHelper::CreateForWebState(
+      &test_web_state, captive_portal_detector_tab_helper_delegate,
+      &test_loader_factory);
+
   test_web_state.SetBrowserState(browser_state());
   web_client.PrepareErrorPage(&test_web_state, GURL(kTestUrl), error,
                               /*is_post=*/false,

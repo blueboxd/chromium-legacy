@@ -21,6 +21,11 @@ class PrefRegistrySimple;
 class Profile;
 
 namespace chromeos {
+
+namespace platform_keys {
+class PlatformKeysService;
+}  // namespace platform_keys
+
 namespace cert_provisioning {
 
 // Used for both DeleteVaKey and DeleteVaKeysByPrefix
@@ -130,6 +135,16 @@ void DeleteVaKeysByPrefix(CertScope scope,
 scoped_refptr<net::X509Certificate> CreateSingleCertificateFromBytes(
     const char* data,
     size_t length);
+
+// Returns the PlatformKeysService to be used.
+// If |scope| is CertScope::kDevice, |profile| is ignored and the
+// device-wide PlatformKeysService is returned.
+// If |scope| is CertScope::kUser, returns the service for |profile|.
+// The returned object is owned by the Profile (user-specific) or globally
+// (device-wide) and may only be used until it notifies its observers that it is
+// being shut down.
+platform_keys::PlatformKeysService* GetPlatformKeysService(CertScope scope,
+                                                           Profile* profile);
 
 }  // namespace cert_provisioning
 }  // namespace chromeos

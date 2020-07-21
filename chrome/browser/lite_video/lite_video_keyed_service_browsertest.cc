@@ -223,6 +223,7 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
             0);
   histogram_tester()->ExpectUniqueSample("LiteVideo.Navigation.HasHint", false,
                                          1);
+  histogram_tester()->ExpectTotalCount("LiteVideo.HintAgent.HasHint", 0);
   histogram_tester()->ExpectUniqueSample(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
       lite_video::LiteVideoBlocklistReason::kAllowed, 1);
@@ -256,9 +257,11 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
   ui_test_utils::NavigateToURL(browser(), navigation_url);
 
   EXPECT_GT(RetryForHistogramUntilCountReached(
-                *histogram_tester(), "LiteVideo.Navigation.HasHint", 1),
+                *histogram_tester(), "LiteVideo.HintAgent.HasHint", 1),
             0);
   histogram_tester()->ExpectUniqueSample("LiteVideo.Navigation.HasHint", true,
+                                         1);
+  histogram_tester()->ExpectUniqueSample("LiteVideo.HintAgent.HasHint", true,
                                          1);
   histogram_tester()->ExpectUniqueSample(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
@@ -295,6 +298,7 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
             0);
   histogram_tester()->ExpectUniqueSample("LiteVideo.Navigation.HasHint", false,
                                          1);
+  histogram_tester()->ExpectTotalCount("LiteVideo.HintAgent.HasHint", 0);
   histogram_tester()->ExpectUniqueSample(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
       lite_video::LiteVideoBlocklistReason::kNavigationReload, 1);
@@ -312,6 +316,7 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
             0);
   histogram_tester()->ExpectUniqueSample("LiteVideo.Navigation.HasHint", false,
                                          2);
+  histogram_tester()->ExpectTotalCount("LiteVideo.HintAgent.HasHint", 0);
   histogram_tester()->ExpectBucketCount(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
       lite_video::LiteVideoBlocklistReason::kNavigationBlocklisted, 1);
@@ -359,6 +364,7 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
             0);
   histogram_tester()->ExpectUniqueSample("LiteVideo.Navigation.HasHint", false,
                                          1);
+  histogram_tester()->ExpectTotalCount("LiteVideo.HintAgent.HasHint", 0);
   histogram_tester()->ExpectUniqueSample(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
       lite_video::LiteVideoBlocklistReason::kNavigationForwardBack, 1);
@@ -376,6 +382,7 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
             0);
   histogram_tester()->ExpectUniqueSample("LiteVideo.Navigation.HasHint", false,
                                          2);
+  histogram_tester()->ExpectTotalCount("LiteVideo.HintAgent.HasHint", 0);
   histogram_tester()->ExpectBucketCount(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
       lite_video::LiteVideoBlocklistReason::kNavigationBlocklisted, 1);
@@ -420,9 +427,11 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
   ui_test_utils::NavigateToURL(&params);
 
   EXPECT_GT(RetryForHistogramUntilCountReached(
-                *histogram_tester(), "LiteVideo.Navigation.HasHint", 1),
+                *histogram_tester(), "LiteVideo.HintAgent.HasHint", 1),
             0);
   histogram_tester()->ExpectUniqueSample("LiteVideo.Navigation.HasHint", true,
+                                         1);
+  histogram_tester()->ExpectUniqueSample("LiteVideo.HintAgent.HasHint", true,
                                          1);
   histogram_tester()->ExpectUniqueSample(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
@@ -434,10 +443,11 @@ IN_PROC_BROWSER_TEST_F(LiteVideoKeyedServiceBrowserTest,
   ui_test_utils::NavigateToURL(&params);
 
   EXPECT_GT(RetryForHistogramUntilCountReached(
-                *histogram_tester(), "LiteVideo.Navigation.HasHint", 2),
+                *histogram_tester(), "LiteVideo.HintAgent.HasHint", 2),
             0);
   histogram_tester()->ExpectBucketCount("LiteVideo.Navigation.HasHint", true,
                                         2);
+  histogram_tester()->ExpectBucketCount("LiteVideo.HintAgent.HasHint", true, 2);
   histogram_tester()->ExpectBucketCount(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
       lite_video::LiteVideoBlocklistReason::kAllowed, 2);
@@ -568,6 +578,7 @@ IN_PROC_BROWSER_TEST_F(LiteVideoNetworkConnectionBrowserTest,
 
   histogram_tester()->ExpectUniqueSample("LiteVideo.Navigation.HasHint", false,
                                          1);
+  histogram_tester()->ExpectTotalCount("LiteVideo.HintAgent.HasHint", 0);
   histogram_tester()->ExpectTotalCount(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame", 0);
   histogram_tester()->ExpectTotalCount(
@@ -595,6 +606,7 @@ IN_PROC_BROWSER_TEST_F(
             0);
   histogram_tester()->ExpectUniqueSample("LiteVideo.Navigation.HasHint", false,
                                          1);
+  histogram_tester()->ExpectTotalCount("LiteVideo.HintAgent.HasHint", 0);
   histogram_tester()->ExpectTotalCount(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame", 0);
   histogram_tester()->ExpectTotalCount(

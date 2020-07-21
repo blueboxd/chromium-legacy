@@ -299,6 +299,11 @@ class WebWidgetClient {
   // Indicate composition is complete to pepper.
   virtual void ImeFinishComposingTextForPepper(bool keep_selection) {}
 
+  // Called only for main frame widgets; updates the widget client about
+  // whether it is currently nested inside a frame tree. Main frames can be
+  // nested in cases like Portals or GuestViews.
+  virtual void SetIsNestedMainFrameWidget(bool is_nested) {}
+
   // Called to indicate a syntehtic event was queued.
   virtual void WillQueueSyntheticEvent(const WebCoalescedInputEvent& event) {}
 

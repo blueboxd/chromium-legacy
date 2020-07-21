@@ -15,6 +15,7 @@ class FileSystemGetDirectoryOptions;
 class FileSystemGetFileOptions;
 class FileSystemRemoveOptions;
 class GetSystemDirectoryOptions;
+class NativeFileSystemDirectoryIterator;
 
 class NativeFileSystemDirectoryHandle final : public NativeFileSystemHandle {
   DEFINE_WRAPPERTYPEINFO();
@@ -24,6 +25,11 @@ class NativeFileSystemDirectoryHandle final : public NativeFileSystemHandle {
       ExecutionContext* context,
       const String& name,
       mojo::PendingRemote<mojom::blink::NativeFileSystemDirectoryHandle>);
+
+  // FileSystemDirectoryHandle IDL interface:
+  NativeFileSystemDirectoryIterator* entries();
+  NativeFileSystemDirectoryIterator* keys();
+  NativeFileSystemDirectoryIterator* values();
 
   bool isDirectory() const override { return true; }
 

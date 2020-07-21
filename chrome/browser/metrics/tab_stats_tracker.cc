@@ -252,7 +252,7 @@ class TabStatsTracker::WebContentsUsageObserver
     }
   }
 
-  void DidGetUserInteraction(const blink::WebInputEvent::Type type) override {
+  void DidGetUserInteraction(const blink::WebInputEvent& event) override {
     tab_stats_tracker_->tab_stats_data_store()->OnTabInteraction(
         web_contents());
   }

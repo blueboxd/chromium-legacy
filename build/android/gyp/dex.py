@@ -88,6 +88,12 @@ def _ParseArgs(args):
       'main dex and keeps all line number information, and then some.')
   parser.add_argument(
       '--min-api', help='Minimum Android API level compatibility.')
+  parser.add_argument('--force-enable-assertions',
+                      action='store_true',
+                      help='Forcefully enable javac generated assertion code.')
+  parser.add_argument('--warnings-as-errors',
+                      action='store_true',
+                      help='Treat all warnings as errors.')
 
   group = parser.add_argument_group('Dexlayout')
   group.add_argument(
@@ -108,11 +114,6 @@ def _ParseArgs(args):
       help=('Path to proguard map from obfuscated symbols in the jar to '
             'unobfuscated symbols present in the code. If not present, the jar '
             'is assumed not to be obfuscated.'))
-
-  parser.add_argument(
-      '--force-enable-assertions',
-      action='store_true',
-      help='Forcefully enable javac generated assertion code.')
 
   options = parser.parse_args(args)
 
@@ -165,7 +166,7 @@ def CreateStderrFilter(show_desugar_default_interface_warnings):
   return filter_stderr
 
 
-def _RunD8(dex_cmd, input_paths, output_path,
+def _RunD8(dex_cmd, input_paths, output_path, warnings_as_errors,
            show_desugar_default_interface_warnings):
   dex_cmd = dex_cmd + ['--output', output_path] + input_paths
 
@@ -182,7 +183,9 @@ def _RunD8(dex_cmd, input_paths, output_path,
 
     # stdout sometimes spams with things like:
     # Stripped invalid locals information from 1 method.
-    build_utils.CheckOutput(dex_cmd, stderr_filter=stderr_filter)
+    build_utils.CheckOutput(dex_cmd,
+                            stderr_filter=stderr_filter,
+                            fail_on_output=warnings_as_errors)
 
 
 def _EnvWithArtLibPath(binary_path):
@@ -363,6 +366,7 @@ def _CreateFinalDex(d8_inputs, output, tmp_dir, dex_cmd, options=None):
     tmp_dex_dir = os.path.join(tmp_dir, 'tmp_dex_dir')
     os.mkdir(tmp_dex_dir)
     _RunD8(dex_cmd, d8_inputs, tmp_dex_dir,
+           (not options or options.warnings_as_errors),
            (options and options.show_desugar_default_interface_warnings))
     logging.debug('Performed dex merging')
 
@@ -446,6 +450,7 @@ def _CreateIntermediateDexFiles(changes, options, tmp_dir, dex_cmd):
     # Dex necessary classes into intermediate dex files.
     dex_cmd = dex_cmd + ['--intermediate', '--file-per-class-file']
     _RunD8(dex_cmd, class_files, options.incremental_dir,
+           options.warnings_as_errors,
            options.show_desugar_default_interface_warnings)
     logging.debug('Dexed class files.')
 

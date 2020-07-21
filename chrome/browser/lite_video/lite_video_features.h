@@ -31,11 +31,14 @@ base::Optional<base::Value> GetLiteVideoOriginHintsFromFieldTrial();
 
 // The target for of the round-trip time for media requests used when
 // throttling media requests.
-int LiteVideoTargetDownlinkRTTLatencyMs();
+base::TimeDelta LiteVideoTargetDownlinkRTTLatency();
 
 // The number of kilobytes to be buffered before starting to throttle media
 // requests.
 int LiteVideoKilobytesToBufferBeforeThrottle();
+
+// The maximum delay a throttle can introduce for a media request.
+base::TimeDelta LiteVideoMaxThrottlingDelay();
 
 // The maximum number of hosts maintained for each blocklist for the LiteVideo
 // optimization.

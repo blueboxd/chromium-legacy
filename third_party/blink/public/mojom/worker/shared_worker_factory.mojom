@@ -80,5 +80,9 @@ interface SharedWorkerFactory {
 
       // BrowserInterfaceBroker for providing browser interfaces.
       pending_remote<blink.mojom.BrowserInterfaceBroker>
-          browser_interface_broker);
+          browser_interface_broker,
+
+      // The UKM SourceId associated with the SharedWorkerHost. This is distinct
+      // from the IDs that are associated with the connected clients.
+      int64 ukm_source_id);
 };

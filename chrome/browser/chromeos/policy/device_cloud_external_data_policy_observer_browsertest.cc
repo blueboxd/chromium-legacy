@@ -34,7 +34,7 @@ const char kExternalDataPathUpdated[] =
     "policy/printers_configuration_updated.json";
 
 // The name of an External Data Policy in Device Policy.
-const char* const kPolicyName = key::kDeviceNativePrinters;
+const char* const kPolicyName = key::kDevicePrinters;
 
 class MockDeviceCloudExternalDataPolicyObserverDelegate
     : public DeviceCloudExternalDataPolicyObserver::Delegate {

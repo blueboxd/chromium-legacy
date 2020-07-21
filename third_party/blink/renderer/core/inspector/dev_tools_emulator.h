@@ -7,9 +7,9 @@
 
 #include <memory>
 #include "base/optional.h"
+#include "third_party/blink/public/common/widget/device_emulation_params.h"
 #include "third_party/blink/public/platform/pointer_properties.h"
 #include "third_party/blink/public/platform/web_viewport_style.h"
-#include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -49,7 +49,7 @@ class CORE_EXPORT DevToolsEmulator final
 
   // Enables and/or sets the parameters for emulation. Returns the emulation
   // transform to be used as a result.
-  TransformationMatrix EnableDeviceEmulation(const WebDeviceEmulationParams&);
+  TransformationMatrix EnableDeviceEmulation(const DeviceEmulationParams&);
   // Disables emulation.
   void DisableDeviceEmulation();
 
@@ -106,7 +106,7 @@ class CORE_EXPORT DevToolsEmulator final
 
   bool device_metrics_enabled_;
   bool emulate_mobile_enabled_;
-  WebDeviceEmulationParams emulation_params_;
+  DeviceEmulationParams emulation_params_;
 
   struct ViewportOverride {
     FloatPoint position;

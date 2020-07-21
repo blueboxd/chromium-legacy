@@ -532,7 +532,7 @@ async function processOtherFilesInDirectory(
   const relatedFiles = [];
   // TODO(b/158149714): Clear out old tokens as well? Care needs to be taken to
   // ensure any file currently open with unsaved changes can still be saved.
-  for await (const /** !FileSystemHandle */ handle of directory.getEntries()) {
+  for await (const /** !FileSystemHandle */ handle of directory.values()) {
     if (localLaunchNumber !== globalLaunchNumber) {
       // Abort, another more up to date launch in progress.
       return ProcessOtherFilesResult.ABORT;
@@ -565,7 +565,7 @@ async function processOtherFilesInDirectory(
     return ProcessOtherFilesResult.ABORT;
   }
 
-  // Iteration order is not guaranteed using `directory.getEntries()`, so we
+  // Iteration order is not guaranteed using `directory.entries()`, so we
   // sort it afterwards by modification time to ensure a consistent and logical
   // order. More recent (i.e. higher timestamp) files should appear first.
   relatedFiles.sort((a, b) => {

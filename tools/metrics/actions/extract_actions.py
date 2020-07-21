@@ -34,7 +34,7 @@ import sys
 from xml.dom import minidom
 
 import action_utils
-import actions_print_style
+import actions_model
 
 # Import the metrics/common module for pretty print xml.
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
@@ -760,7 +760,7 @@ def PrettyPrint(actions_dict, comment_nodes, suffixes):
   for suffix_tag in suffixes:
     actions_element.appendChild(suffix_tag)
 
-  return actions_print_style.GetPrintStyle().PrettyPrintXml(doc)
+  return actions_model.PrettifyTree(doc)
 
 
 def UpdateXml(original_xml):
@@ -770,12 +770,7 @@ def UpdateXml(original_xml):
   AddComputedActions(actions)
   AddWebUIActions(actions)
   AddDevToolsActions(actions)
-
   AddLiteralActions(actions)
-
-  # print("Scanned {0} number of files".format(number_of_files_total))
-  # print("Found {0} entries".format(len(actions)))
-
   AddAutomaticResetBannerActions(actions)
   AddBookmarkManagerActions(actions)
   AddChromeOSActions(actions)

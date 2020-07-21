@@ -46,6 +46,8 @@ class WebState;
 
 // Handles common form processing logic of password controller for both
 // ios/chrome and ios/web_view.
+// TODO(crbug.com/1097353): Consider folding this class into
+// SharedPasswordController.
 @interface PasswordFormHelper
     : NSObject<FormActivityObserver, CRWWebStateObserver>
 
@@ -64,6 +66,9 @@ class WebState;
 // by user, etc. (see FieldPropertiesMask).
 @property(nonatomic, readonly) scoped_refptr<autofill::FieldDataManager>
     fieldDataManager;
+
+// The associated delegate.
+@property(nonatomic, nullable, weak) id<PasswordFormHelperDelegate> delegate;
 
 // Uses JavaScript to find password forms. Calls |completionHandler| with the
 // extracted information used for matching and saving passwords. Calls
@@ -113,10 +118,8 @@ class WebState;
 - (void)updateFieldDataOnUserInput:(autofill::FieldRendererId)field_id
                         inputValue:(NSString*)field_value;
 
-// Creates a instance with the given WebState, observer and delegate.
+// Creates a instance with the given |webState|.
 - (instancetype)initWithWebState:(web::WebState*)webState
-                        delegate:
-                            (nullable id<PasswordFormHelperDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

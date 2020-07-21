@@ -16,8 +16,7 @@
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
-#import "ios/chrome/browser/drag_and_drop/drop_and_navigate_delegate.h"
-#import "ios/chrome/browser/drag_and_drop/drop_and_navigate_interaction.h"
+#import "ios/chrome/browser/drag_and_drop/url_drag_drop_handler.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/favicon/large_icon_cache.h"
@@ -49,11 +48,10 @@
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/voice/voice_search_availability.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/discover_feed/discover_feed_provider.h"
-#import "ios/web/public/navigation/navigation_manager.h"
-#import "ios/web/public/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -61,8 +59,8 @@
 
 @interface ContentSuggestionsCoordinator () <
     ContentSuggestionsViewControllerAudience,
-    DropAndNavigateDelegate,
-    OverscrollActionsControllerDelegate> {
+    OverscrollActionsControllerDelegate,
+    URLDropDelegate> {
   // Helper object managing the availability of the voice search feature.
   VoiceSearchAvailability _voiceSearchAvailability;
 }
@@ -76,6 +74,7 @@
 @property(nonatomic, strong) ContentSuggestionsMetricsRecorder* metricsRecorder;
 @property(nonatomic, strong) NTPHomeMediator* NTPMediator;
 @property(nonatomic, strong) UIViewController* discoverFeedViewController;
+@property(nonatomic, strong) URLDragDropHandler* dragDropHandler;
 
 // Redefined as readwrite.
 @property(nonatomic, strong, readwrite)
@@ -239,15 +238,18 @@
       self.headerCollectionInteractionHandler;
 
   if (DragAndDropIsEnabled()) {
+    self.dragDropHandler = [[URLDragDropHandler alloc] init];
+    self.dragDropHandler.dropDelegate = self;
     [self.suggestionsViewController.collectionView
-        addInteraction:[[DropAndNavigateInteraction alloc]
-                           initWithDelegate:self]];
+        addInteraction:[[UIDropInteraction alloc]
+                           initWithDelegate:self.dragDropHandler]];
   }
 }
 
 - (void)stop {
   [self.NTPMediator shutdown];
   self.NTPMediator = nil;
+  [self.contentSuggestionsMediator disconnect];
   self.contentSuggestionsMediator = nil;
   self.headerController = nil;
   _visible = NO;
@@ -327,12 +329,15 @@
   return nullptr;
 }
 
-#pragma mark - DropAndNavigateDelegate
+#pragma mark - URLDropDelegate
 
-- (void)URLWasDropped:(GURL const&)URL {
-  web::NavigationManager::WebLoadParams params(URL);
-  params.transition_type = ui::PAGE_TRANSITION_TYPED;
-  self.webState->GetNavigationManager()->LoadURLWithParams(params);
+- (BOOL)canHandleURLDropInView:(UIView*)view {
+  return YES;
+}
+
+- (void)view:(UIView*)view didDropURL:(const GURL&)URL atPoint:(CGPoint)point {
+  UrlLoadingBrowserAgent::FromBrowser(self.browser)
+      ->Load(UrlLoadParams::InCurrentTab(URL));
 }
 
 #pragma mark - Public methods

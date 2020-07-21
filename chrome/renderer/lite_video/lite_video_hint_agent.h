@@ -10,6 +10,7 @@
 #include "chrome/renderer/lite_video/lite_video_url_loader_throttle.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
+#include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom.h"
 #include "url/gurl.h"
 
 namespace lite_video {
@@ -37,20 +38,36 @@ class LiteVideoHintAgent
   base::TimeDelta CalculateLatencyForResourceResponse(
       const network::mojom::URLResponseHead& response_head);
 
-  bool have_lite_video_hint() const { return have_lite_video_hint_; }
+  // Updates the LiteVideo throttling parameters for calculating
+  // the latency to add to media requests.
+  void SetLiteVideoHint(blink::mojom::LiteVideoHintPtr lite_video_hint);
+
+  // Returns whether |this| has been provided a LiteVideoHint and
+  // has the parameters needed for calculating the throttling latency.
+  bool HasLiteVideoHint() const;
 
  private:
   // content::RenderFrameObserver overrides
   void OnDestruct() override;
 
-  bool have_lite_video_hint_ = false;
+  // The network downlink bandwidth target in kilobytes per second used to
+  // calculate the throttling delay on media requests
+  base::Optional<int> target_downlink_bandwidth_kbps_;
 
-  int target_downlink_bandwidth_kbps_;
-  base::TimeDelta target_downlink_rtt_latency_;
-  int kilobytes_to_buffer_before_throttle_;
+  // The network downlink rtt target latency used to calculate the
+  // throttling delay on media requests
+  base::Optional<base::TimeDelta> target_downlink_rtt_latency_;
 
-  // How many initial media KB should be left unthrottled to alleviate pauses
-  // in the initial video play.
+  // The number of kilobytes for media to be observed before starting to
+  // throttle requests.
+  base::Optional<int> kilobytes_to_buffer_before_throttle_;
+
+  // The maximum delay a throttle can introduce for a media request in
+  // milliseconds.
+  base::Optional<base::TimeDelta> max_throttling_delay_;
+
+  // The number of media KB that have been left unthrottled before starting
+  // to introduce a throttling delay.
   int kilobytes_buffered_before_throttle_ = 0;
 };
 

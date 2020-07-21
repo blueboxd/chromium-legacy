@@ -56,6 +56,7 @@
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/page/web_drag_operation.h"
+#include "third_party/blink/public/common/widget/device_emulation_params.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
@@ -66,7 +67,6 @@
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_console_message.h"
-#include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -690,8 +690,8 @@ TEST_F(WebViewTest, PlatformColorsChangedOnDeviceEmulation) {
       base_url);
   UpdateAllLifecyclePhases();
 
-  WebDeviceEmulationParams params;
-  params.screen_position = WebDeviceEmulationParams::kMobile;
+  DeviceEmulationParams params;
+  params.screen_type = mojom::EmulatedScreenType::kMobile;
 
   Document& document =
       *web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
@@ -2405,8 +2405,8 @@ TEST_F(WebViewTest, ExitingDeviceEmulationResetsPageScale) {
 
   float page_scale_expected = web_view_impl->PageScaleFactor();
 
-  WebDeviceEmulationParams params;
-  params.screen_position = WebDeviceEmulationParams::kDesktop;
+  DeviceEmulationParams params;
+  params.screen_type = mojom::EmulatedScreenType::kDesktop;
   params.device_scale_factor = 0;
   params.scale = 1;
 
@@ -5042,7 +5042,7 @@ TEST_F(WebViewTest, ViewportOverrideIntegratesDeviceMetricsOffsetAndScale) {
   expected_matrix.MakeIdentity();
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
 
-  WebDeviceEmulationParams emulation_params;
+  DeviceEmulationParams emulation_params;
   emulation_params.scale = 2.f;
   web_view_impl->EnableDeviceEmulation(emulation_params);
   expected_matrix.MakeIdentity().Scale(2.f);
@@ -5080,7 +5080,7 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
       ScrollOffset(100, 150), mojom::blink::ScrollType::kProgrammatic,
       mojom::blink::ScrollBehavior::kInstant);
 
-  WebDeviceEmulationParams emulation_params;
+  DeviceEmulationParams emulation_params;
   emulation_params.viewport_offset = gfx::PointF(50, 55);
   emulation_params.viewport_scale = 2.f;
   web_view_impl->EnableDeviceEmulation(emulation_params);
@@ -5267,8 +5267,8 @@ TEST_F(WebViewTest, DeviceEmulationResetScrollbars) {
   EXPECT_FALSE(frame_view->VisualViewportSuppliesScrollbars());
   EXPECT_NE(nullptr, frame_view->LayoutViewport()->VerticalScrollbar());
 
-  WebDeviceEmulationParams params;
-  params.screen_position = WebDeviceEmulationParams::kMobile;
+  DeviceEmulationParams params;
+  params.screen_type = mojom::EmulatedScreenType::kMobile;
   params.device_scale_factor = 0;
   params.scale = 1;
 

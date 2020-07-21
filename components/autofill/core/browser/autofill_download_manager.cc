@@ -1055,13 +1055,13 @@ void AutofillDownloadManager::OnSimpleLoaderComplete(
 }
 
 void AutofillDownloadManager::InitActiveExperiments() {
-  auto* variations_http_header_provider =
-      variations::VariationsHttpHeaderProvider::GetInstance();
-  DCHECK(variations_http_header_provider != nullptr);
+  auto* variations_ids_provider =
+      variations::VariationsIdsProvider::GetInstance();
+  DCHECK(variations_ids_provider != nullptr);
 
   delete active_experiments_;
   active_experiments_ = new std::vector<variations::VariationID>(
-      variations_http_header_provider->GetVariationsVector(
+      variations_ids_provider->GetVariationsVector(
           variations::GOOGLE_WEB_PROPERTIES_TRIGGER));
   base::EraseIf(*active_experiments_, [](variations::VariationID id) {
     return !IsAutofillExperimentId(id);

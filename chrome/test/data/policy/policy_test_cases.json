@@ -5645,6 +5645,20 @@
     ]
   },
 
+  "DevicePrinters": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "DevicePrinters": {
+            "url": "https://example.com/policyfile",
+            "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+          }
+        }
+      }
+    ]
+  },
+
   "DevicePrintersAccessMode": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [

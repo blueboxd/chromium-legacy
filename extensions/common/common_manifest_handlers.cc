@@ -18,6 +18,7 @@
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/manifest_handlers/csp_info.h"
 #include "extensions/common/manifest_handlers/default_locale_handler.h"
+#include "extensions/common/manifest_handlers/extension_action_handler.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/common/manifest_handlers/file_handler_info.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -62,6 +63,7 @@ void RegisterCommonManifestHandlers() {
   registry->RegisterHandler(std::make_unique<DeclarativeManifestHandler>());
   registry->RegisterHandler(std::make_unique<DefaultLocaleHandler>());
   registry->RegisterHandler(std::make_unique<ExternallyConnectableHandler>());
+  registry->RegisterHandler(std::make_unique<ExtensionActionHandler>());
   registry->RegisterHandler(std::make_unique<FileHandlersParser>());
   registry->RegisterHandler(std::make_unique<IconsHandler>());
   registry->RegisterHandler(std::make_unique<IncognitoHandler>());

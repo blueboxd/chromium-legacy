@@ -11,6 +11,10 @@
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+namespace content {
+class BrowserContext;
+}
+
 namespace chromeos {
 namespace platform_keys {
 
@@ -20,6 +24,16 @@ class MockPlatformKeysService : public PlatformKeysService {
   MockPlatformKeysService(const MockPlatformKeysService&) = delete;
   MockPlatformKeysService& operator=(const MockPlatformKeysService&) = delete;
   ~MockPlatformKeysService() override;
+
+  MOCK_METHOD(void,
+              AddObserver,
+              (PlatformKeysServiceObserver * observer),
+              (override));
+
+  MOCK_METHOD(void,
+              RemoveObserver,
+              (PlatformKeysServiceObserver * observer),
+              (override));
 
   MOCK_METHOD(void,
               GenerateRSAKey,

@@ -16,16 +16,12 @@ class GURL;
 
 namespace password_manager {
 class PasswordGenerationFrameHelper;
-class PasswordManager;
 }  // namespace password_manager
 
 // C++ to ObjC bridge for methods of PasswordManagerDriver.
 @protocol PasswordManagerDriverBridge
 
 @property(readonly, nonatomic) const GURL& lastCommittedURL;
-
-@property(readonly, nonatomic)
-    password_manager::PasswordManager* passwordManager;
 
 // Finds and fills the password form using the supplied |formData| to
 // match the password form and to populate the field values. Calls

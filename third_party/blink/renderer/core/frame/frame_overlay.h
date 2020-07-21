@@ -83,9 +83,8 @@ class CORE_EXPORT FrameOverlay : public GraphicsLayerClient,
   // Services any animations that the overlay may be managing.
   void ServiceScriptedAnimations(base::TimeTicks monotonic_frame_begin_time);
 
-  // DisplayItemClient methods.
+  // DisplayItemClient.
   String DebugName() const final { return "FrameOverlay"; }
-  IntRect VisualRect() const override;
 
   // GraphicsLayerClient implementation. Not needed for CompositeAfterPaint.
   bool NeedsRepaint(const GraphicsLayer&) const override { return true; }

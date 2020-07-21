@@ -1321,6 +1321,16 @@ message ShowGenericUiProto {
     repeated LoginOption login_options = 1;
     optional string model_identifier = 2;
   }
+  message RequestUserData {
+    message AdditionalValue {
+      // The client memory identifier (from |UserData|).
+      optional string source_identifier = 1;
+      // The model identifier to write the value to (to |UserModel|).
+      optional string model_identifier = 2;
+    }
+    // Additional values to write from |UserData| to |UserModel|.
+    repeated AdditionalValue additional_values = 1;
+  }
   message Result {
     // The model containing the values for all keys specified in
     // |output_model_identifiers|.
@@ -1365,6 +1375,11 @@ message ShowGenericUiProto {
   // If true, run scripts flagged with |interrupt=true| as soon as their
   // preconditions match, then go back to the parent action.
   optional bool allow_interrupt = 8;
+  // If specified, will write the requested values from |UserData| to
+  // |UserModel|. Will fail the action with PRECONDITION_FAILED if any of the
+  // requested values is missing. Note that all values will have
+  // |is_client_side_only| set to true.
+  optional RequestUserData request_user_data = 9;
 }
 
 // Allow choosing one or more possibility. If FocusElement was called just

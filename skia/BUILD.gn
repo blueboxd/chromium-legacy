@@ -314,6 +314,15 @@ component("skia") {
     ]
   }
 
+  # The *_public variables should be added to 'public' not 'sources'.
+  # However, Skia does not export enough *_public variables to make Chromium
+  # 'gn check' clean. Until that can be done add the *_public variables to
+  # 'sources' so that the buildbot 'analyze' step is aware of their existence.
+  sources += skia_core_public
+  sources += skia_utils_public
+  sources += skia_effects_public
+  sources += skia_effects_imagefilter_public
+
   # The imported Skia gni source paths are made absolute by gn.
   defines = skia_core_defines
   sources += skia_sksl_sources

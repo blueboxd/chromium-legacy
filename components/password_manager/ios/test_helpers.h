@@ -10,6 +10,7 @@
 namespace autofill {
 struct FormData;
 struct PasswordFormFillData;
+struct FormData;
 }  // namespace autofill
 
 namespace password_manager {
@@ -50,6 +51,9 @@ void SetFormData(const std::string& origin,
                  uint32_t password_field_id,
                  const char* password_value,
                  autofill::FormData* form_data);
+
+// Returns a simple FormData with test values.
+autofill::FormData MakeSimpleFormData();
 
 }  // namespace test_helpers
 

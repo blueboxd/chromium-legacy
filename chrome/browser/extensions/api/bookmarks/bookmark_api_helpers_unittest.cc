@@ -42,9 +42,17 @@ class ExtensionBookmarksTest : public testing::Test {
         folder_(nullptr) {}
 
   void SetUp() override {
-    profile_.CreateBookmarkModel(false);
-    model_ = BookmarkModelFactory::GetForBrowserContext(&profile_);
-    managed_ = ManagedBookmarkServiceFactory::GetForProfile(&profile_);
+    TestingProfile::Builder profile_builder;
+    profile_builder.AddTestingFactory(
+        BookmarkModelFactory::GetInstance(),
+        BookmarkModelFactory::GetDefaultFactory());
+    profile_builder.AddTestingFactory(
+        ManagedBookmarkServiceFactory::GetInstance(),
+        ManagedBookmarkServiceFactory::GetDefaultFactory());
+
+    profile_ = profile_builder.Build();
+    model_ = BookmarkModelFactory::GetForBrowserContext(profile_.get());
+    managed_ = ManagedBookmarkServiceFactory::GetForProfile(profile_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
 
     node_ = model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("Digg"),
@@ -66,7 +74,7 @@ class ExtensionBookmarksTest : public testing::Test {
   }
 
   content::BrowserTaskEnvironment task_environment_;
-  TestingProfile profile_;
+  std::unique_ptr<TestingProfile> profile_;
   bookmarks::ManagedBookmarkService* managed_;
   BookmarkModel* model_;
   const BookmarkNode* node_;

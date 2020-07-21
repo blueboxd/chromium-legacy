@@ -603,8 +603,14 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   // Layer assignment is needed for allocating or removing composited
   // layers related to this PaintLayer; hence the below conditions.
   if (reasons_to_composite || layer->GetCompositingState() != kNotComposited ||
-      layer->LostGroupedMapping())
+      layer->LostGroupedMapping()) {
     layer->SetNeedsCompositingLayerAssignment();
+  } else if (contains_composited_layer) {
+    // If this is an iframe whose content document is composited, then we need
+    // CompositedLayerAssigner to process this layer, to ensure that we don't
+    // squash layers painted before the iframe with layers painted after it.
+    layer->PropagateDescendantNeedsCompositingLayerAssignment();
+  }
 
   // At this point we have finished collecting all reasons to composite this
   // layer.

@@ -36,7 +36,7 @@
 #include "components/variations/service/safe_seed_manager.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/service/variations_service_client.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "components/variations/variations_seed_processor.h"
 #include "components/variations/variations_switches.h"
 #include "ui/base/device_form_factor.h"
@@ -481,24 +481,24 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
     }
   }
 
-  VariationsHttpHeaderProvider* http_header_provider =
-      VariationsHttpHeaderProvider::GetInstance();
+  VariationsIdsProvider* http_header_provider =
+      VariationsIdsProvider::GetInstance();
   // Force the variation ids selected in chrome://flags and/or specified using
   // the command-line flag.
   auto result = http_header_provider->ForceVariationIds(
       variation_ids,
       command_line->GetSwitchValueASCII(switches::kForceVariationIds));
   switch (result) {
-    case VariationsHttpHeaderProvider::ForceIdsResult::INVALID_SWITCH_ENTRY:
+    case VariationsIdsProvider::ForceIdsResult::INVALID_SWITCH_ENTRY:
       ExitWithMessage(base::StringPrintf("Invalid --%s list specified.",
                                          switches::kForceVariationIds));
       break;
-    case VariationsHttpHeaderProvider::ForceIdsResult::INVALID_VECTOR_ENTRY:
+    case VariationsIdsProvider::ForceIdsResult::INVALID_VECTOR_ENTRY:
       // It should not be possible to have invalid variation ids from the
       // vector param (which corresponds to chrome://flags).
       NOTREACHED();
       break;
-    case VariationsHttpHeaderProvider::ForceIdsResult::SUCCESS:
+    case VariationsIdsProvider::ForceIdsResult::SUCCESS:
       break;
   }
 

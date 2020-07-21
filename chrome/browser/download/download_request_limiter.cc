@@ -205,9 +205,9 @@ void DownloadRequestLimiter::TabDownloadState::DidFinishNavigation(
 }
 
 void DownloadRequestLimiter::TabDownloadState::DidGetUserInteraction(
-    const blink::WebInputEvent::Type type) {
+    const blink::WebInputEvent& event) {
   if (is_showing_prompt() ||
-      type == blink::WebInputEvent::Type::kGestureScrollBegin) {
+      event.GetType() == blink::WebInputEvent::Type::kGestureScrollBegin) {
     // Don't change state if a prompt is showing or if the user has scrolled.
     return;
   }

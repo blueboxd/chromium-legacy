@@ -60,6 +60,7 @@ class ExtensionServiceTestBase : public testing::Test {
     bool extensions_enabled = true;
     bool is_first_run = true;
     bool profile_is_supervised = false;
+    bool enable_bookmark_model = false;
 
     // Though you could use this constructor, you probably want to use
     // CreateDefaultInitParams(), and then make a change or two.

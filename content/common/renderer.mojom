@@ -21,6 +21,17 @@ import "third_party/blink/public/mojom/widget/visual_properties.mojom";
 import "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
+// A View (i.e. a "main frame") can be created for a few different cases, these
+// values are used to specify which it is.
+enum ViewWidgetType {
+  // A standard view that's the top-level widget in a frame hierarchy.
+  kTopLevel,
+  // A GuestView used to render contents inside a <webview> element.
+  kGuestView,
+  // A view used to render contents inside a <portal> element.
+  kPortal
+};
+
 struct CreateViewParams {
   // Renderer-wide preferences.
   blink.mojom.RendererPreferences renderer_preferences;
@@ -109,8 +120,9 @@ struct CreateViewParams {
   // beyond the usual opener-relationship-based BrowsingInstance boundaries).
   bool renderer_wide_named_frame_lookup;
 
-  // Set this to true when creating a RenderView inside a portal.
-  bool inside_portal;
+  // Indicates whether the view is a regular top-level widget or some other
+  // nested "main frame" widget type.
+  ViewWidgetType type;
 
   // Endpoint for any messages that are broadcast to all views in a WebContents.
   pending_associated_receiver<blink.mojom.PageBroadcast> blink_page_broadcast;

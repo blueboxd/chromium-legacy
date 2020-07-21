@@ -494,8 +494,10 @@ String GetProtocol(const GURL& url,
   return protocol;
 }
 
-bool GetPostData(const network::ResourceRequestBody& request_body,
-                 std::string* result) {
+bool GetPostData(
+    const network::ResourceRequestBody& request_body,
+    protocol::Array<protocol::Network::PostDataEntry>* data_entries,
+    std::string* result) {
   const std::vector<network::DataElement>* elements = request_body.elements();
   if (elements->empty())
     return false;
@@ -503,7 +505,11 @@ bool GetPostData(const network::ResourceRequestBody& request_body,
     // TODO(caseq): Also support blobs.
     if (element.type() != network::mojom::DataElementType::kBytes)
       return false;
-    // TODO(caseq): This should rather be sent as Binary.
+    auto bytes = protocol::Binary::fromSpan(
+        reinterpret_cast<const uint8_t*>(element.bytes()), element.length());
+    auto data_entry = protocol::Network::PostDataEntry::Create().Build();
+    data_entry->SetBytes(std::move(bytes));
+    data_entries->push_back(std::move(data_entry));
     result->append(element.bytes(), element.length());
   }
   return true;
@@ -1630,10 +1636,17 @@ void NetworkHandler::NavigationRequestWillBeSent(
   if (!url_fragment.empty())
     request->SetUrlFragment(url_fragment);
 
-  std::string post_data;
-  if (common_params.post_data &&
-      GetPostData(*common_params.post_data, &post_data)) {
-    request->SetPostData(post_data);
+  if (common_params.post_data) {
+    std::string post_data;
+    auto data_entries =
+        std::make_unique<protocol::Array<protocol::Network::PostDataEntry>>();
+    if (GetPostData(*common_params.post_data, data_entries.get(), &post_data)) {
+      if (!post_data.empty())
+        request->SetPostData(post_data);
+      if (data_entries->size())
+        request->SetPostDataEntries(std::move(data_entries));
+      request->SetHasPostData(true);
+    }
   }
   // TODO(caseq): report potentially blockable types
   request->SetMixedContentType(Security::MixedContentTypeEnum::None);
@@ -2040,9 +2053,18 @@ NetworkHandler::CreateRequestFromResourceRequest(
           .Build();
   if (!url_fragment.empty())
     request_object->SetUrlFragment(url_fragment);
-  std::string post_data;
-  if (request.request_body && GetPostData(*request.request_body, &post_data))
-    request_object->SetPostData(std::move(post_data));
+  if (request.request_body) {
+    std::string post_data;
+    auto data_entries =
+        std::make_unique<protocol::Array<protocol::Network::PostDataEntry>>();
+    if (GetPostData(*request.request_body, data_entries.get(), &post_data)) {
+      if (!post_data.empty())
+        request_object->SetPostData(std::move(post_data));
+      if (data_entries->size())
+        request_object->SetPostDataEntries(std::move(data_entries));
+      request_object->SetHasPostData(true);
+    }
+  }
   return request_object;
 }
 

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "third_party/blink/public/mojom/widget/device_emulation_params.mojom-blink.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
@@ -217,10 +218,10 @@ void DevToolsEmulator::SetPrimaryHoverType(HoverType hover_type) {
 }
 
 TransformationMatrix DevToolsEmulator::EnableDeviceEmulation(
-    const WebDeviceEmulationParams& params) {
+    const DeviceEmulationParams& params) {
   if (device_metrics_enabled_ &&
       emulation_params_.view_size == params.view_size &&
-      emulation_params_.screen_position == params.screen_position &&
+      emulation_params_.screen_type == params.screen_type &&
       emulation_params_.device_scale_factor == params.device_scale_factor &&
       emulation_params_.scale == params.scale &&
       emulation_params_.viewport_offset == params.viewport_offset &&
@@ -235,11 +236,11 @@ TransformationMatrix DevToolsEmulator::EnableDeviceEmulation(
   device_metrics_enabled_ = true;
 
   web_view_->GetPage()->GetSettings().SetDeviceScaleAdjustment(
-      calculateDeviceScaleAdjustment(params.view_size.width,
-                                     params.view_size.height,
+      calculateDeviceScaleAdjustment(params.view_size.width(),
+                                     params.view_size.height(),
                                      params.device_scale_factor));
 
-  if (params.screen_position == WebDeviceEmulationParams::kMobile)
+  if (params.screen_type == mojom::blink::EmulatedScreenType::kMobile)
     EnableMobileEmulation();
   else
     DisableMobileEmulation();

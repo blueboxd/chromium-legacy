@@ -2458,6 +2458,9 @@ extern const char kWebGL2ComputeContextDescription[];
 extern const char kEnableMediaFeedsName[];
 extern const char kEnableMediaFeedsDescription[];
 
+extern const char kEnableMediaFeedsBackgroundFetchName[];
+extern const char kEnableMediaFeedsBackgroundFetchDescription[];
+
 extern const char kRemoteCopyReceiverName[];
 extern const char kRemoteCopyReceiverDescription[];
 

@@ -4,10 +4,6 @@
 
 #include "chrome/browser/ui/views/tab_search/tab_search_bubble_view.h"
 
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
 #include "chrome/common/webui_url_constants.h"
 #include "ui/views/controls/webview/webview.h"
@@ -16,6 +12,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
+#include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
 #endif
 
@@ -30,8 +27,9 @@ constexpr gfx::Size kMaxSize(800, 600);
 
 class TabSearchWebView : public views::WebView {
  public:
-  TabSearchWebView(Profile* profile, TabSearchBubbleView* parent)
-      : WebView(profile), parent_(parent) {}
+  TabSearchWebView(content::BrowserContext* browser_context,
+                   TabSearchBubbleView* parent)
+      : WebView(browser_context), parent_(parent) {}
 
   ~TabSearchWebView() override = default;
 
@@ -119,19 +117,21 @@ class TabSearchBubbleView::TabSearchWindowObserverAura
 };
 #endif
 
-void TabSearchBubbleView::CreateTabSearchBubble(Browser* browser) {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  DCHECK(browser_view);
+void TabSearchBubbleView::CreateTabSearchBubble(
+    content::BrowserContext* browser_context,
+    views::View* anchor_view) {
   auto delegate =
-      std::make_unique<TabSearchBubbleView>(browser, browser_view->toolbar());
+      std::make_unique<TabSearchBubbleView>(browser_context, anchor_view);
   BubbleDialogDelegateView::CreateBubble(delegate.release());
 }
 
-TabSearchBubbleView::TabSearchBubbleView(Browser* browser,
-                                         views::View* anchor_view)
+TabSearchBubbleView::TabSearchBubbleView(
+    content::BrowserContext* browser_context,
+    views::View* anchor_view)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       web_view_(AddChildView(
-          std::make_unique<TabSearchWebView>(browser->profile(), this))) {
+          std::make_unique<TabSearchWebView>(browser_context, this))) {
+  DCHECK(anchor_view);
   observed_anchor_widget_.Add(anchor_view->GetWidget());
 
   set_close_on_deactivate(false);

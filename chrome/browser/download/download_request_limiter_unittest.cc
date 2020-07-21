@@ -26,6 +26,10 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_touch_event.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/flags/android/chrome_feature_list.h"
@@ -90,8 +94,27 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
                             blink::WebInputEvent::Type type) {
     DownloadRequestLimiter::TabDownloadState* state =
         download_request_limiter_->GetDownloadState(web_contents, false);
-    if (state)
-      state->DidGetUserInteraction(type);
+    if (!state)
+      return;
+    std::unique_ptr<blink::WebInputEvent> event;
+    switch (type) {
+      case blink::WebInputEvent::Type::kRawKeyDown:
+        event = std::make_unique<blink::WebKeyboardEvent>();
+        break;
+      case blink::WebInputEvent::Type::kGestureScrollBegin:
+        event = std::make_unique<blink::WebGestureEvent>();
+        break;
+      case blink::WebInputEvent::Type::kMouseDown:
+        event = std::make_unique<blink::WebMouseEvent>();
+        break;
+      case blink::WebInputEvent::Type::kTouchStart:
+        event = std::make_unique<blink::WebTouchEvent>();
+        break;
+      default:
+        NOTREACHED();
+    }
+    event->SetType(type);
+    state->DidGetUserInteraction(*event);
   }
 
   void ExpectAndResetCounts(

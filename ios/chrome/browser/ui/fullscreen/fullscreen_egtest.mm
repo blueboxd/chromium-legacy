@@ -61,6 +61,23 @@ void AssertURLIs(const GURL& expectedURL) {
              description);
 }
 
+// A PDF itself can take a little longer to appear even after the page is loaded.  Instead, do an
+// additional wait for the internal PDF class to appear in the view hierarchy.
+void WaitforPDFExtensionView() {
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:grey_kindOfClass(NSClassFromString(
+                                            @"PDFExtensionTopView"))]
+        assertWithMatcher:grey_notNil()
+                    error:&error];
+    return error == nil;
+  };
+
+  NSString* errorMessage = @"PDFExtensionTopView was not visible";
+  GREYAssert(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, condition),
+             errorMessage);
+}
+
 }  // namespace
 
 #pragma mark - Tests
@@ -84,24 +101,8 @@ void AssertURLIs(const GURL& expectedURL) {
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/two_pages.pdf");
   [ChromeEarlGrey loadURL:URL];
-
+  WaitforPDFExtensionView();
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
-
-  // Waiting for the toolbar to be visible is not enough -- the PDF itself can
-  // take a little longer to load.  Instead, wait for an internal PDF class to
-  // appear in the view hierarchy.
-  ConditionBlock condition = ^{
-    NSError* error = nil;
-    [[EarlGrey selectElementWithMatcher:grey_kindOfClass(NSClassFromString(
-                                            @"PDFExtensionTopView"))]
-        assertWithMatcher:grey_notNil()
-                    error:&error];
-    return error == nil;
-  };
-
-  NSString* errorMessage = @"PDFExtensionTopView was not visible";
-  GREYAssert(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, condition),
-             errorMessage);
 
   // Initial y scroll positions are set to make room for the toolbar.
   CGFloat yOffset = -[FullscreenAppInterface currentViewportInsets].top;
@@ -130,6 +131,7 @@ void AssertURLIs(const GURL& expectedURL) {
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/single_page_wide.pdf");
   [ChromeEarlGrey loadURL:URL];
+  WaitforPDFExtensionView();
 
   {
     // TODO(crbug.com/852393): Investigate why synchronization isn't working. Is
@@ -163,6 +165,7 @@ void AssertURLIs(const GURL& expectedURL) {
   GURL URL = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/two_pages.pdf");
   [ChromeEarlGrey loadURL:URL];
+  WaitforPDFExtensionView();
 
   // Test that the toolbar is hidden after a user swipes up.
   HideToolbarUsingUI();

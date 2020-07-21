@@ -191,7 +191,7 @@ def _OnStaleMd5(options):
         rjava_build_options.ExportAllResources()
         rjava_build_options.ExportAllStyleables()
         if options.shared_resources:
-          rjava_build_options.GenerateOnResourcesLoaded()
+          rjava_build_options.GenerateOnResourcesLoaded(fake=True)
 
         # Not passing in custom_root_package_name or parent to keep
         # file names unique.

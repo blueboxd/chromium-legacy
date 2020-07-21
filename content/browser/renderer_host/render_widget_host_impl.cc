@@ -2813,7 +2813,7 @@ blink::mojom::InputEventResultState RenderWidgetHostImpl::FilterInputEvent(
         event.GetType() == WebInputEvent::Type::kGestureTap) {
       delegate_->FocusOwningWebContents(this);
     }
-    delegate_->DidReceiveInputEvent(this, event.GetType());
+    delegate_->DidReceiveInputEvent(this, event);
   }
 
   return view_ ? view_->FilterInputEvent(event)

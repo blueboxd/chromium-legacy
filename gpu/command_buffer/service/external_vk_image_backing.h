@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
+#include "gpu/command_buffer/service/external_semaphore.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_memory_region_wrapper.h"
@@ -83,20 +84,17 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
       const {
     return texture_passthrough_;
   }
+  viz::VulkanContextProvider* context_provider() const {
+    return context_state()->vk_context_provider();
+  }
   VulkanImplementation* vulkan_implementation() const {
-    return context_state()->vk_context_provider()->GetVulkanImplementation();
+    return context_provider()->GetVulkanImplementation();
   }
   VulkanFenceHelper* fence_helper() const {
-    return context_state()
-        ->vk_context_provider()
-        ->GetDeviceQueue()
-        ->GetFenceHelper();
+    return context_provider()->GetDeviceQueue()->GetFenceHelper();
   }
   VkDevice device() const {
-    return context_state()
-        ->vk_context_provider()
-        ->GetDeviceQueue()
-        ->GetVulkanDevice();
+    return context_provider()->GetDeviceQueue()->GetVulkanDevice();
   }
   bool use_separate_gl_texture() const { return use_separate_gl_texture_; }
   bool need_synchronization() const {
@@ -116,13 +114,15 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
   // currently any other conflict access in progress. Otherwise, returns true
   // and semaphore handles which will be waited on before accessing.
   bool BeginAccess(bool readonly,
-                   std::vector<SemaphoreHandle>* semaphore_handles,
+                   std::vector<ExternalSemaphore>* external_semaphores,
                    bool is_gl);
 
   // Notifies the backing that an access has ended. The representation must
   // provide a semaphore handle that has been signaled at the end of the write
   // access.
-  void EndAccess(bool readonly, SemaphoreHandle semaphore_handle, bool is_gl);
+  void EndAccess(bool readonly,
+                 ExternalSemaphore external_semaphore,
+                 bool is_gl);
 
   // SharedImageBacking implementation.
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
@@ -143,8 +143,8 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
 
   void UpdateContent(uint32_t content_flags);
   bool BeginAccessInternal(bool readonly,
-                           std::vector<SemaphoreHandle>* semaphore_handles);
-  void EndAccessInternal(bool readonly, SemaphoreHandle semaphore_handle);
+                           std::vector<ExternalSemaphore>* external_semaphores);
+  void EndAccessInternal(bool readonly, ExternalSemaphore external_semaphore);
 
   // SharedImageBacking implementation.
   std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
@@ -191,8 +191,8 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
   VulkanCommandPool* const command_pool_;
   const bool use_separate_gl_texture_;
 
-  SemaphoreHandle write_semaphore_handle_;
-  std::vector<SemaphoreHandle> read_semaphore_handles_;
+  ExternalSemaphore write_semaphore_;
+  std::vector<ExternalSemaphore> read_semaphores_;
 
   bool is_write_in_progress_ = false;
   uint32_t reads_in_progress_ = 0;

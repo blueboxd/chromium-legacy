@@ -476,6 +476,10 @@ class CORE_EXPORT WebFrameWidgetBase
   // Called when the widget should get targeting input.
   void SetMouseCapture(bool capture);
 
+  // Called when a main frame widget is promoted or demoted from being the top
+  // level widget in a tab/window. E.g. a portal is activated or deactivated.
+  void SetIsNestedMainFrameWidget(bool is_nested);
+
  protected:
   enum DragAction { kDragEnter, kDragOver };
 

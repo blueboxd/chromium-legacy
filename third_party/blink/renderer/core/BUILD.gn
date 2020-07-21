@@ -229,6 +229,8 @@ jumbo_source_set("testing") {
   sources = [
     "$blink_core_output_dir/testing/internal_settings_generated.cc",
     "$blink_core_output_dir/testing/internal_settings_generated.h",
+    "dom/testing/internals_storage_access.cc",
+    "dom/testing/internals_storage_access.h",
     "fetch/testing/internals_fetch.cc",
     "fetch/testing/internals_fetch.h",
     "fetch/testing/worker_internals_fetch.cc",

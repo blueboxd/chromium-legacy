@@ -15,6 +15,7 @@
 #include "base/thread_annotations.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
+#include "third_party/abseil-cpp/absl/time/time.h"
 #include "third_party/nearby/src/cpp/platform_v2/api/scheduled_executor.h"
 
 namespace location {

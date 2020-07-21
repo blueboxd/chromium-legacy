@@ -53,6 +53,16 @@ base::Value NetLogSpdyStreamWindowUpdateParams(spdy::SpdyStreamId stream_id,
   return dict;
 }
 
+base::Value NetLogSpdyDataParams(spdy::SpdyStreamId stream_id,
+                                 int size,
+                                 bool fin) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("stream_id", static_cast<int>(stream_id));
+  dict.SetIntKey("size", size);
+  dict.SetBoolKey("fin", fin);
+  return dict;
+}
+
 }  // namespace
 
 // A wrapper around a stream that calls into ProduceHeadersFrame().
@@ -850,9 +860,12 @@ void SpdyStream::QueueNextDataFrame() {
   spdy::SpdyDataFlags flags = (pending_send_status_ == NO_MORE_DATA_TO_SEND)
                                   ? spdy::DATA_FLAG_FIN
                                   : spdy::DATA_FLAG_NONE;
+  int effective_len;
+  bool end_stream;
   std::unique_ptr<SpdyBuffer> data_buffer(
       session_->CreateDataBuffer(stream_id_, pending_send_data_.get(),
-                                 pending_send_data_->BytesRemaining(), flags));
+                                 pending_send_data_->BytesRemaining(), flags,
+                                 &effective_len, &end_stream));
   // We'll get called again by PossiblyResumeIfSendStalled().
   if (!data_buffer)
     return;
@@ -877,6 +890,10 @@ void SpdyStream::QueueNextDataFrame() {
       delegate_->CanGreaseFrameType()) {
     session_->EnqueueGreasedFrame(GetWeakPtr());
   }
+
+  net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_SEND_DATA, [&] {
+    return NetLogSpdyDataParams(stream_id_, effective_len, end_stream);
+  });
 
   session_->EnqueueStreamWrite(
       GetWeakPtr(), spdy::SpdyFrameType::DATA,

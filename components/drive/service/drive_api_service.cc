@@ -25,11 +25,12 @@
 using google_apis::AboutResourceCallback;
 using google_apis::AuthStatusCallback;
 using google_apis::CancelCallback;
+using google_apis::CancelCallbackOnce;
 using google_apis::ChangeList;
 using google_apis::ChangeListCallback;
+using google_apis::DownloadActionCallback;
 using google_apis::DRIVE_OTHER_ERROR;
 using google_apis::DRIVE_PARSE_ERROR;
-using google_apis::DownloadActionCallback;
 using google_apis::DriveApiErrorCode;
 using google_apis::EntryActionCallback;
 using google_apis::FileList;
@@ -499,7 +500,7 @@ CancelCallback DriveAPIService::GetStartPageToken(
   return sender_->StartRequestWithAuthRetry(std::move(request));
 }
 
-CancelCallback DriveAPIService::DownloadFile(
+CancelCallbackOnce DriveAPIService::DownloadFile(
     const base::FilePath& local_cache_path,
     const std::string& resource_id,
     const DownloadActionCallback& download_action_callback,

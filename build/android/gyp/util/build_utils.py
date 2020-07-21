@@ -234,10 +234,14 @@ def FilterReflectiveAccessJavaWarnings(output):
 # This can be used in most cases like subprocess.check_output(). The output,
 # particularly when the command fails, better highlights the command's failure.
 # If the command fails, raises a build_utils.CalledProcessError.
-def CheckOutput(args, cwd=None, env=None,
-                print_stdout=False, print_stderr=True,
+def CheckOutput(args,
+                cwd=None,
+                env=None,
+                print_stdout=False,
+                print_stderr=True,
                 stdout_filter=None,
                 stderr_filter=None,
+                fail_on_output=True,
                 fail_func=lambda returncode, stderr: returncode != 0):
   if not cwd:
     cwd = os.getcwd()
@@ -252,13 +256,28 @@ def CheckOutput(args, cwd=None, env=None,
   if stderr_filter is not None:
     stderr = stderr_filter(stderr)
 
-  if fail_func(child.returncode, stderr):
+  if fail_func and fail_func(child.returncode, stderr):
     raise CalledProcessError(cwd, args, stdout + stderr)
 
   if print_stdout:
     sys.stdout.write(stdout)
   if print_stderr:
     sys.stderr.write(stderr)
+
+  has_stdout = print_stdout and stdout
+  has_stderr = print_stderr and stderr
+  if fail_on_output and (has_stdout or has_stderr):
+    MSG = """\
+Command failed because it wrote to {}.
+You can often set treat_warnings_as_errors=false to not treat output as \
+failure (useful when developing locally)."""
+    if has_stdout and has_stderr:
+      stream_string = 'stdout and stderr'
+    elif has_stdout:
+      stream_string = 'stdout'
+    else:
+      stream_string = 'stderr'
+    raise CalledProcessError(cwd, args, MSG.format(stream_string))
 
   return stdout
 

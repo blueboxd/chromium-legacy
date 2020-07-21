@@ -31,6 +31,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/password_manager/ios/js_password_manager.h"
 #import "components/password_manager/ios/password_form_helper.h"
+#import "components/password_manager/ios/shared_password_controller.h"
 #include "components/password_manager/ios/test_helpers.h"
 #include "components/password_manager/ios/unique_id_tab_helper.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -79,6 +80,7 @@ using password_manager::prefs::kPasswordManagerOnboardingState;
 using password_manager::prefs::kWasOnboardingFeatureCheckedBefore;
 using password_manager::prefs::kPasswordLeakDetectionEnabled;
 using test_helpers::SetPasswordFormFillData;
+using test_helpers::MakeSimpleFormData;
 using testing::NiceMock;
 using testing::Return;
 using base::ASCIIToUTF16;
@@ -183,20 +185,6 @@ ACTION(InvokeEmptyConsumerWithForms) {
 }
 
 }  // namespace
-
-@interface PasswordController (Testing) <CRWWebStateObserver,
-                                         FormSuggestionProvider,
-                                         FormActivityObserver>
-
-// Provides access to common form helper logic for testing with mocks.
-@property(readonly) PasswordFormHelper* formHelper;
-
-- (void)fillPasswordForm:(const PasswordFormFillData&)formData
-       completionHandler:(void (^)(BOOL))completionHandler;
-
-- (void)onNoSavedCredentials;
-
-@end
 
 @interface PasswordFormHelper (Testing)
 
@@ -327,9 +315,9 @@ class PasswordControllerTest : public ChromeWebTest {
     FormActivityParams params;
     params.type = "form_changed";
     params.frame_id = mainFrameID;
-    [passwordController_ webState:web_state()
-          didRegisterFormActivity:params
-                          inFrame:frame];
+    [passwordController_.sharedPasswordController webState:web_state()
+                                   didRegisterFormActivity:params
+                                                   inFrame:frame];
   }
 
  protected:
@@ -372,13 +360,14 @@ class PasswordControllerTest : public ChromeWebTest {
                         type:@"input"
                   typedValue:SysUTF8ToNSString(typed_value)
                      frameID:SysUTF8ToNSString(main_frame_id)];
-    [passwordController_ checkIfSuggestionsAvailableForForm:form_query
-                                                isMainFrame:YES
-                                             hasUserGesture:YES
-                                                   webState:web_state()
-                                          completionHandler:^(BOOL success) {
-                                            completion_handler_called = YES;
-                                          }];
+    [passwordController_.sharedPasswordController
+        checkIfSuggestionsAvailableForForm:form_query
+                               isMainFrame:YES
+                            hasUserGesture:YES
+                                  webState:web_state()
+                         completionHandler:^(BOOL success) {
+                           completion_handler_called = YES;
+                         }];
     // Wait until the expected handler is called.
     EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
       return completion_handler_called;
@@ -391,7 +380,8 @@ class PasswordControllerTest : public ChromeWebTest {
     context.SetHasCommitted(true);
     context.SetIsSameDocument(false);
     context.SetIsRendererInitiated(true);
-    [passwordController_ webState:web_state() didFinishNavigation:&context];
+    [passwordController_.sharedPasswordController webState:web_state()
+                                       didFinishNavigation:&context];
     if (gurl.is_empty())
       LoadHtml(html);
     else
@@ -421,32 +411,6 @@ struct FindPasswordFormTestData {
   const char* expected_form_name;
   const uint32_t maxID;
 };
-
-FormData MakeSimpleFormData() {
-  FormData form_data;
-  form_data.url = GURL("http://www.google.com/a/LoginAuth");
-  form_data.action = GURL("http://www.google.com/a/Login");
-  form_data.name = ASCIIToUTF16("login_form");
-
-  FormFieldData field;
-  field.name = ASCIIToUTF16("Username");
-  field.id_attribute = field.name;
-  field.name_attribute = field.name;
-  field.value = ASCIIToUTF16("googleuser");
-  field.form_control_type = "text";
-  field.unique_id = field.id_attribute;
-  form_data.fields.push_back(field);
-
-  field.name = ASCIIToUTF16("Passwd");
-  field.id_attribute = field.name;
-  field.name_attribute = field.name;
-  field.value = ASCIIToUTF16("p4ssword");
-  field.form_control_type = "password";
-  field.unique_id = field.id_attribute;
-  form_data.fields.push_back(field);
-
-  return form_data;
-}
 
 PasswordForm MakeSimpleForm() {
   PasswordForm form;
@@ -511,7 +475,7 @@ TEST_F(PasswordControllerTest, FLAKY_FindPasswordFormsInView) {
     __block std::vector<FormData> forms;
     __block BOOL block_was_called = NO;
     __block uint32_t maxExtractedID;
-    [passwordController_.formHelper
+    [passwordController_.sharedPasswordController.formHelper
         findPasswordFormsWithCompletionHandler:^(
             const std::vector<FormData>& result, uint32_t maxID) {
           block_was_called = YES;
@@ -817,11 +781,12 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
                             nullptr, nullptr, false, &form_data);
 
     __block BOOL block_was_called = NO;
-    [passwordController_ fillPasswordForm:form_data
-                        completionHandler:^(BOOL success) {
-                          block_was_called = YES;
-                          EXPECT_EQ(data.should_succeed, success);
-                        }];
+    [passwordController_.sharedPasswordController
+         fillPasswordForm:form_data
+        completionHandler:^(BOOL success) {
+          block_was_called = YES;
+          EXPECT_EQ(data.should_succeed, success);
+        }];
     EXPECT_TRUE(
         WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool() {
           return block_was_called;
@@ -841,11 +806,12 @@ BOOL PasswordControllerTest::BasicFormFill(NSString* html) {
                           &form_data);
   __block BOOL block_was_called = NO;
   __block BOOL return_value = NO;
-  [passwordController_ fillPasswordForm:form_data
-                      completionHandler:^(BOOL success) {
-                        block_was_called = YES;
-                        return_value = success;
-                      }];
+  [passwordController_.sharedPasswordController
+       fillPasswordForm:form_data
+      completionHandler:^(BOOL success) {
+        block_was_called = YES;
+        return_value = success;
+      }];
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
     return block_was_called;
   }));
@@ -983,12 +949,13 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
                           2, "password0", "abc", "def", true, &form_data);
 
   __block BOOL block_was_called = NO;
-  [passwordController_ fillPasswordForm:form_data
-                      completionHandler:^(BOOL success) {
-                        block_was_called = YES;
-                        // Verify that the fill reports failed.
-                        EXPECT_FALSE(success);
-                      }];
+  [passwordController_.sharedPasswordController
+       fillPasswordForm:form_data
+      completionHandler:^(BOOL success) {
+        block_was_called = YES;
+        // Verify that the fill reports failed.
+        EXPECT_FALSE(success);
+      }];
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool() {
     return block_was_called;
   }));
@@ -1110,12 +1077,13 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
         "abc", "def", true, &form_data);
 
     __block BOOL block_was_called = NO;
-    [passwordController_ fillPasswordForm:form_data
-                        completionHandler:^(BOOL success) {
-                          block_was_called = YES;
-                          // Verify that the fill reports failed.
-                          EXPECT_FALSE(success);
-                        }];
+    [passwordController_.sharedPasswordController
+         fillPasswordForm:form_data
+        completionHandler:^(BOOL success) {
+          block_was_called = YES;
+          // Verify that the fill reports failed.
+          EXPECT_FALSE(success);
+        }];
     EXPECT_TRUE(
         WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool() {
           return block_was_called;
@@ -1157,7 +1125,7 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
                         type:@"focus"
                   typedValue:@""
                      frameID:SysUTF8ToNSString(mainFrameID)];
-    [passwordController_
+    [passwordController_.sharedPasswordController
         retrieveSuggestionsForForm:form_query
                           webState:web_state()
                  completionHandler:^(NSArray* suggestions,
@@ -1187,13 +1155,14 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
       EXPECT_NSEQ(@"abc[]=def, onkeyup=true, onchange=true",
                   ExecuteJavaScript(kUsernamePasswordVerificationScript));
     };
-    [passwordController_ didSelectSuggestion:suggestion
-                                        form:SysUTF8ToNSString(FormName(0))
-                                uniqueFormID:form_renderer_id
-                             fieldIdentifier:@"u"
-                               uniqueFieldID:username_renderer_id
-                                     frameID:SysUTF8ToNSString(mainFrameID)
-                           completionHandler:completion];
+    [passwordController_.sharedPasswordController
+        didSelectSuggestion:suggestion
+                       form:SysUTF8ToNSString(FormName(0))
+               uniqueFormID:form_renderer_id
+            fieldIdentifier:@"u"
+              uniqueFieldID:username_renderer_id
+                    frameID:SysUTF8ToNSString(mainFrameID)
+          completionHandler:completion];
     EXPECT_TRUE(
         WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool() {
           return block_was_called;
@@ -1245,9 +1214,11 @@ class PasswordControllerTestSimple : public PlatformTest {
 TEST_F(PasswordControllerTestSimple, SaveOnNonHTMLLandingPage) {
   // Have a form observed and submitted.
   FormData formData = MakeSimpleFormData();
-  [passwordController_ formHelper:passwordController_.formHelper
-                    didSubmitForm:formData
-                      inMainFrame:true];
+  SharedPasswordController* sharedPasswordController =
+      passwordController_.sharedPasswordController;
+  [sharedPasswordController formHelper:sharedPasswordController.formHelper
+                         didSubmitForm:formData
+                           inMainFrame:YES];
 
   std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
   EXPECT_CALL(*weak_client_, PromptUserToSaveOrUpdatePasswordPtr)
@@ -1256,7 +1227,7 @@ TEST_F(PasswordControllerTestSimple, SaveOnNonHTMLLandingPage) {
   // Save password prompt shpuld be shown after navigation to a non-HTML page.
   web_state_.SetContentIsHTML(false);
   web_state_.SetCurrentURL(GURL("https://google.com/success"));
-  [passwordController_ webState:&web_state_ didLoadPageWithSuccess:YES];
+  [sharedPasswordController webState:&web_state_ didLoadPageWithSuccess:YES];
 
   auto& form_manager_check = form_manager_to_save;
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
@@ -1449,15 +1420,15 @@ TEST_F(PasswordControllerTest, CheckAsyncSuggestions) {
                         type:@"focus"
                   typedValue:@""
                      frameID:SysUTF8ToNSString(mainFrameID)];
-    [passwordController_ checkIfSuggestionsAvailableForForm:form_query
-                                                isMainFrame:YES
-                                             hasUserGesture:YES
-                                                   webState:web_state()
-                                          completionHandler:^(BOOL success) {
-                                            completion_handler_success =
-                                                success;
-                                            completion_handler_called = YES;
-                                          }];
+    [passwordController_.sharedPasswordController
+        checkIfSuggestionsAvailableForForm:form_query
+                               isMainFrame:YES
+                            hasUserGesture:YES
+                                  webState:web_state()
+                         completionHandler:^(BOOL success) {
+                           completion_handler_success = success;
+                           completion_handler_called = YES;
+                         }];
     // Wait until the expected handler is called.
     EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
       return completion_handler_called;
@@ -1494,14 +1465,15 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNonUsernameField) {
                   type:@"focus"
             typedValue:@""
                frameID:SysUTF8ToNSString(mainFrameID)];
-  [passwordController_ checkIfSuggestionsAvailableForForm:form_query
-                                              isMainFrame:YES
-                                           hasUserGesture:YES
-                                                 webState:web_state()
-                                        completionHandler:^(BOOL success) {
-                                          completion_handler_success = success;
-                                          completion_handler_called = YES;
-                                        }];
+  [passwordController_.sharedPasswordController
+      checkIfSuggestionsAvailableForForm:form_query
+                             isMainFrame:YES
+                          hasUserGesture:YES
+                                webState:web_state()
+                       completionHandler:^(BOOL success) {
+                         completion_handler_success = success;
+                         completion_handler_called = YES;
+                       }];
   // Wait until the expected handler is called.
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
     return completion_handler_called;
@@ -1529,14 +1501,15 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNoPasswordForms) {
                   type:@"focus"
             typedValue:@""
                frameID:SysUTF8ToNSString(mainFrameID)];
-  [passwordController_ checkIfSuggestionsAvailableForForm:form_query
-                                              isMainFrame:YES
-                                           hasUserGesture:YES
-                                                 webState:web_state()
-                                        completionHandler:^(BOOL success) {
-                                          completion_handler_success = success;
-                                          completion_handler_called = YES;
-                                        }];
+  [passwordController_.sharedPasswordController
+      checkIfSuggestionsAvailableForForm:form_query
+                             isMainFrame:YES
+                          hasUserGesture:YES
+                                webState:web_state()
+                       completionHandler:^(BOOL success) {
+                         completion_handler_success = success;
+                         completion_handler_called = YES;
+                       }];
   // Wait until the expected handler is called.
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
     return completion_handler_called;
@@ -1569,12 +1542,13 @@ TEST_F(PasswordControllerTest, CheckPasswordGenerationSuggestion) {
                           2, "password0", "abc", "def", true, &form_data);
 
   __block BOOL block_was_called = NO;
-  [passwordController_ fillPasswordForm:form_data
-                      completionHandler:^(BOOL success) {
-                        block_was_called = YES;
-                        // Verify that the fill reports failed.
-                        EXPECT_FALSE(success);
-                      }];
+  [passwordController_.sharedPasswordController
+       fillPasswordForm:form_data
+      completionHandler:^(BOOL success) {
+        block_was_called = YES;
+        // Verify that the fill reports failed.
+        EXPECT_FALSE(success);
+      }];
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool() {
     return block_was_called;
   }));
@@ -1654,7 +1628,8 @@ TEST_F(PasswordControllerTest, IncognitoPasswordGenerationDisabled) {
     [[PasswordController alloc] initWithWebState:web_state()
                                           client:std::move(client)];
 
-    EXPECT_FALSE([passwordController_ passwordGenerationHelper]);
+    EXPECT_FALSE(passwordController_.passwordManagerDriver
+                     ->GetPasswordGenerationHelper());
 }
 
 // Tests that the user is prompted to save or update password on a succesful
@@ -1848,7 +1823,8 @@ TEST_F(PasswordControllerTest, SavingOnNavigateMainFrame) {
         context.SetHasCommitted(has_commited);
         context.SetIsSameDocument(is_same_document);
         context.SetIsRendererInitiated(is_renderer_initiated);
-        [passwordController_ webState:web_state() didFinishNavigation:&context];
+        [passwordController_.sharedPasswordController webState:web_state()
+                                           didFinishNavigation:&context];
 
         // Simulate a successful submission by loading the landing page without
         // a form.
@@ -1899,7 +1875,8 @@ TEST_F(PasswordControllerTest, NoSavingOnNavigateMainFrameFailedSubmission) {
   context.SetHasCommitted(true);
   context.SetIsSameDocument(false);
   context.SetIsRendererInitiated(true);
-  [passwordController_ webState:web_state() didFinishNavigation:&context];
+  [passwordController_.sharedPasswordController webState:web_state()
+                                     didFinishNavigation:&context];
 
   // Simulate a failed submission by loading the same form again.
   LoadHtml(SysUTF8ToNSString(kHtml));
@@ -1945,9 +1922,9 @@ TEST_F(PasswordControllerTest, DetectSubmissionOnRemovedForm) {
   params.unique_form_id = 0;
   params.frame_id = mainFrameID;
 
-  [passwordController_ webState:web_state()
-        didRegisterFormActivity:params
-                        inFrame:frame];
+  [passwordController_.sharedPasswordController webState:web_state()
+                                 didRegisterFormActivity:params
+                                                 inFrame:frame];
 
   auto& form_manager_check = form_manager_to_save;
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
@@ -1984,9 +1961,9 @@ TEST_F(PasswordControllerTest,
   params.unique_form_id = 0;
   params.frame_id = mainFrameID;
 
-  [passwordController_ webState:web_state()
-        didRegisterFormActivity:params
-                        inFrame:frame];
+  [passwordController_.sharedPasswordController webState:web_state()
+                                 didRegisterFormActivity:params
+                                                 inFrame:frame];
 }
 
 // Tests that submission is detected on removal of the form that had user input.
@@ -2139,7 +2116,7 @@ TEST_F(PasswordControllerTest, PasswordMetricsNoSavedCredentials) {
 TEST_F(PasswordControllerTest, PasswordMetricsAutomatic) {
   base::HistogramTester histogram_tester;
 
-  passwordController_.formHelper.jsPasswordManager =
+  passwordController_.sharedPasswordController.formHelper.jsPasswordManager =
       [[FakeJsPasswordManager alloc] init];
 
   PasswordForm form(CreatePasswordForm(BaseUrl().c_str(), "user", "pw"));
@@ -2161,11 +2138,12 @@ TEST_F(PasswordControllerTest, PasswordMetricsAutomatic) {
                           &form_data);
   __block BOOL block_was_called = NO;
   __block BOOL return_value = NO;
-  [passwordController_ fillPasswordForm:form_data
-                      completionHandler:^(BOOL success) {
-                        block_was_called = YES;
-                        return_value = success;
-                      }];
+  [passwordController_.sharedPasswordController
+       fillPasswordForm:form_data
+      completionHandler:^(BOOL success) {
+        block_was_called = YES;
+        return_value = success;
+      }];
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool() {
     return block_was_called;
   }));
@@ -2176,7 +2154,8 @@ TEST_F(PasswordControllerTest, PasswordMetricsAutomatic) {
   LoadHtmlWithRendererInitiatedNavigation(@"<html><body>Success</body></html>");
 
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
-    return passwordController_.formHelper.jsPasswordManager.noFormsSeen;
+    return passwordController_.sharedPasswordController.formHelper
+        .jsPasswordManager.noFormsSeen;
   }));
 
   histogram_tester.ExpectUniqueSample("PasswordManager.FillingAssistance",

@@ -37,19 +37,19 @@ namespace policy {
 
 // Contains a set of filters to block and allow certain URLs, and matches GURLs
 // against this set. The filters are currently kept in memory.
-class POLICY_EXPORT URLBlacklist {
+class POLICY_EXPORT URLBlocklist {
  public:
-  // Indicates if the URL matches a pattern defined in blacklist, in whitelist
-  // or doesn't match anything in either list as defined in URLBlacklist and
-  // URLWhitelist policies.
-  enum URLBlacklistState {
-    URL_IN_WHITELIST,
-    URL_IN_BLACKLIST,
+  // Indicates if the URL matches a pattern defined in blocklist, in allowlist
+  // or doesn't match anything in either list as defined in URLBlocklist and
+  // URLAllowlist policies.
+  enum URLBlocklistState {
+    URL_IN_ALLOWLIST,
+    URL_IN_BLOCKLIST,
     URL_NEUTRAL_STATE,
   };
 
-  URLBlacklist();
-  virtual ~URLBlacklist();
+  URLBlocklist();
+  virtual ~URLBlocklist();
 
   // URLs matching one of the |filters| will be blocked. The filter format is
   // documented at
@@ -63,7 +63,7 @@ class POLICY_EXPORT URLBlacklist {
   // Returns true if the URL is blocked.
   bool IsURLBlocked(const GURL& url) const;
 
-  URLBlacklistState GetURLBlacklistState(const GURL& url) const;
+  URLBlocklistState GetURLBlocklistState(const GURL& url) const;
 
   // Returns the number of items in the list.
   size_t Size() const;
@@ -79,39 +79,39 @@ class POLICY_EXPORT URLBlacklist {
       filters_;
   std::unique_ptr<url_matcher::URLMatcher> url_matcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(URLBlacklist);
+  DISALLOW_COPY_AND_ASSIGN(URLBlocklist);
 };
 
-// Tracks the blacklist policies for a given profile, and updates it on changes.
-class POLICY_EXPORT URLBlacklistManager {
+// Tracks the blocklist policies for a given profile, and updates it on changes.
+class POLICY_EXPORT URLBlocklistManager {
  public:
   // Must be constructed on the UI thread.
-  explicit URLBlacklistManager(PrefService* pref_service);
-  virtual ~URLBlacklistManager();
+  explicit URLBlocklistManager(PrefService* pref_service);
+  virtual ~URLBlocklistManager();
 
-  // Returns true if |url| is blocked by the current blacklist.
+  // Returns true if |url| is blocked by the current blocklist.
   bool IsURLBlocked(const GURL& url) const;
 
-  URLBlacklist::URLBlacklistState GetURLBlacklistState(const GURL& url) const;
+  URLBlocklist::URLBlocklistState GetURLBlocklistState(const GURL& url) const;
 
-  // Replaces the current blacklist.
+  // Replaces the current blocklist.
   // Virtual for testing.
-  virtual void SetBlacklist(std::unique_ptr<URLBlacklist> blacklist);
+  virtual void SetBlocklist(std::unique_ptr<URLBlocklist> blocklist);
 
-  // Registers the preferences related to blacklisting in the given PrefService.
+  // Registers the preferences related to blocklisting in the given PrefService.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  protected:
-  // Used to delay updating the blacklist while the preferences are
+  // Used to delay updating the blocklist while the preferences are
   // changing, and execute only one update per simultaneous prefs changes.
   void ScheduleUpdate();
 
-  // Updates the blacklist using the current preference values.
+  // Updates the blocklist using the current preference values.
   // Virtual for testing.
   virtual void Update();
 
  private:
-  // Used to track the policies and update the blacklist on changes.
+  // Used to track the policies and update the blocklist on changes.
   PrefChangeRegistrar pref_change_registrar_;
   PrefService* pref_service_;  // Weak.
 
@@ -120,19 +120,19 @@ class POLICY_EXPORT URLBlacklistManager {
 
   // Used to schedule tasks on the main loop to avoid rebuilding the blocklist
   // multiple times during a message loop process. This can happen if two
-  // preferences that change the blacklist are updated in one message loop
+  // preferences that change the blocklist are updated in one message loop
   // cycle.  In addition, we use this task runner to ensure that the
   // URLBlocklistManager is only access from the thread call the constructor for
   // data accesses.
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
-  // The current blacklist.
-  std::unique_ptr<URLBlacklist> blacklist_;
+  // The current blocklist.
+  std::unique_ptr<URLBlocklist> blocklist_;
 
   // Used to post update tasks to the UI thread.
-  base::WeakPtrFactory<URLBlacklistManager> ui_weak_ptr_factory_{this};
+  base::WeakPtrFactory<URLBlocklistManager> ui_weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(URLBlacklistManager);
+  DISALLOW_COPY_AND_ASSIGN(URLBlocklistManager);
 };
 
 }  // namespace policy

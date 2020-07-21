@@ -349,8 +349,7 @@ LocalExtensionCache::CacheMap::iterator LocalExtensionCache::InsertCacheEntry(
       // Case #1 or #4, remove all instances from cache.
       while ((it != cache.end()) && (it->first == id)) {
         if (delete_files) {
-          base::DeleteFile(base::FilePath(it->second.file_path),
-                           true /* recursive */);
+          base::DeletePathRecursively(base::FilePath(it->second.file_path));
           VLOG(1) << "Remove older version " << it->second.version
                   << " for extension id " << id;
         }

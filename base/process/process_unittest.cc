@@ -17,6 +17,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
+#if defined(OS_WIN)
+#include "base/win/base_win_buildflags.h"
+#include "base/win/windows_version.h"
+#endif
+
 namespace {
 
 #if defined(OS_WIN)
@@ -385,6 +390,22 @@ TEST_F(ProcessTest, MAYBE_HeapCorruption) {
   EXPECT_EXIT(base::debug::win::TerminateWithHeapCorruption(),
               ::testing::ExitedWithCode(STATUS_HEAP_CORRUPTION), "");
 }
+
+#if BUILDFLAG(WIN_ENABLE_CFG_GUARDS)
+#define MAYBE_ControlFlowViolation ControlFlowViolation
+#else
+#define MAYBE_ControlFlowViolation DISABLED_ControlFlowViolation
+#endif
+TEST_F(ProcessTest, MAYBE_ControlFlowViolation) {
+  // CFG is only supported on Windows 8.1 or greater.
+  if (base::win::GetVersion() < base::win::Version::WIN8_1)
+    return;
+  // CFG causes ntdll!RtlFailFast2 to be called resulting in uncatchable
+  // 0xC0000409 (STATUS_STACK_BUFFER_OVERRUN) exception.
+  EXPECT_EXIT(base::debug::win::TerminateWithControlFlowViolation(),
+              ::testing::ExitedWithCode(STATUS_STACK_BUFFER_OVERRUN), "");
+}
+
 #endif  // OS_WIN
 
 TEST_F(ProcessTest, ChildProcessIsRunning) {

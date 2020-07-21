@@ -11,6 +11,10 @@
 namespace blink {
 
 class CompositedLayerAssignerTest : public RenderingTest {
+ public:
+  CompositedLayerAssignerTest()
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
+
  private:
   void SetUp() override {
     EnableCompositing();
@@ -95,6 +99,25 @@ TEST_F(CompositedLayerAssignerTest,
   PaintLayer* squashed =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("squashed"))->Layer();
   EXPECT_EQ(kPaintsIntoOwnBacking, squashed->GetCompositingState());
+}
+
+TEST_F(CompositedLayerAssignerTest,
+       SquashingAcrossCompositedInnerDocumentDisallowed) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="bottom" style="position: absolute; will-change: transform">Bottom</div>
+    <div id="middle" style="position: absolute">
+      <iframe style="border: 10px solid magenta"></iframe>
+    </div>
+    <div id="top" style="position: absolute; width: 200px; height: 200px; background: green;">Top</div>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>body {will-change: transform; background: blue}</style>
+  )HTML");
+  LocalFrameView* frame_view = GetDocument().View();
+  frame_view->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+  PaintLayer* top =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("top"))->Layer();
+  EXPECT_EQ(kPaintsIntoOwnBacking, top->GetCompositingState());
 }
 
 }  // namespace blink

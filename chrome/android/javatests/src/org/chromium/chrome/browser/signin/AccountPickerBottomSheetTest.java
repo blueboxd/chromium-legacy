@@ -166,7 +166,7 @@ public class AccountPickerBottomSheetTest {
 
     @Test
     @MediumTest
-    public void testAccountDisappearedInCollapsedSheet() {
+    public void testAccountDisappearedOnCollapsedSheet() {
         buildAndShowCollapsedBottomSheet();
         mAccountManagerTestRule.removeAccountAndWaitForSeeding(PROFILE_DATA1.getAccountName());
         mAccountManagerTestRule.removeAccountAndWaitForSeeding(PROFILE_DATA2.getAccountName());
@@ -176,7 +176,7 @@ public class AccountPickerBottomSheetTest {
 
     @Test
     @MediumTest
-    public void testAccountDisappearedInExpandedSheet() {
+    public void testAccountDisappearedOnExpandedSheet() {
         buildAndShowExpandedBottomSheet();
         mAccountManagerTestRule.removeAccountAndWaitForSeeding(PROFILE_DATA1.getAccountName());
         mAccountManagerTestRule.removeAccountAndWaitForSeeding(PROFILE_DATA2.getAccountName());
@@ -186,7 +186,7 @@ public class AccountPickerBottomSheetTest {
 
     @Test
     @MediumTest
-    public void testAccountReappearedInCollapsedSheet() {
+    public void testAccountReappearedOnCollapsedSheet() {
         mAccountManagerTestRule.removeAccountAndWaitForSeeding(PROFILE_DATA1.getAccountName());
         mAccountManagerTestRule.removeAccountAndWaitForSeeding(PROFILE_DATA2.getAccountName());
         buildAndShowCollapsedBottomSheet();
@@ -199,7 +199,7 @@ public class AccountPickerBottomSheetTest {
 
     @Test
     @MediumTest
-    public void testOtherAccountsChangeInCollapsedSheet() {
+    public void testOtherAccountsChangeOnCollapsedSheet() {
         buildAndShowCollapsedBottomSheet();
         checkCollapsedAccountList(PROFILE_DATA1);
         mAccountManagerTestRule.removeAccountAndWaitForSeeding(PROFILE_DATA2.getAccountName());
@@ -209,7 +209,7 @@ public class AccountPickerBottomSheetTest {
 
     @Test
     @MediumTest
-    public void testSelectedAccountChangeInCollapsedSheet() {
+    public void testSelectedAccountChangeOnCollapsedSheet() {
         buildAndShowCollapsedBottomSheet();
         mAccountManagerTestRule.removeAccountAndWaitForSeeding(PROFILE_DATA1.getAccountName());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
@@ -218,7 +218,7 @@ public class AccountPickerBottomSheetTest {
 
     @Test
     @MediumTest
-    public void testProfileDataUpdateInExpandedSheet() {
+    public void testProfileDataUpdateOnExpandedSheet() {
         buildAndShowExpandedBottomSheet();
         String newFullName = "New Full Name1";
         String newGivenName = "New Given Name1";

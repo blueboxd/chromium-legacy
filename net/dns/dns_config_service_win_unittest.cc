@@ -17,19 +17,19 @@ namespace {
 
 TEST(DnsConfigServiceWinTest, ParseSearchList) {
   const struct TestCase {
-    const base::char16* input;
+    const wchar_t* input;
     const char* output[4];  // NULL-terminated, empty if expected false
   } cases[] = {
-      {STRING16_LITERAL("chromium.org"), {"chromium.org", nullptr}},
-      {STRING16_LITERAL("chromium.org,org"), {"chromium.org", "org", nullptr}},
+      {L"chromium.org", {"chromium.org", nullptr}},
+      {L"chromium.org,org", {"chromium.org", "org", nullptr}},
       // Empty suffixes terminate the list
-      {STRING16_LITERAL("crbug.com,com,,org"), {"crbug.com", "com", nullptr}},
+      {L"crbug.com,com,,org", {"crbug.com", "com", nullptr}},
       // IDN are converted to punycode
-      {STRING16_LITERAL("\u017c\xf3\u0142ta.pi\u0119\u015b\u0107.pl,pl"),
+      {L"\u017c\xf3\u0142ta.pi\u0119\u015b\u0107.pl,pl",
        {"xn--ta-4ja03asj.xn--pi-wla5e0q.pl", "pl", nullptr}},
       // Empty search list is invalid
-      {STRING16_LITERAL(""), {nullptr}},
-      {STRING16_LITERAL(",,"), {nullptr}},
+      {L"", {nullptr}},
+      {L",,", {nullptr}},
   };
 
   for (const auto& t : cases) {
@@ -219,11 +219,10 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
       {
           // Policy SearchList override.
           {
-              {true,
-               STRING16_LITERAL("policy.searchlist.a,policy.searchlist.b")},
-              {true, STRING16_LITERAL("tcpip.searchlist.a,tcpip.searchlist.b")},
-              {true, STRING16_LITERAL("tcpip.domain")},
-              {true, STRING16_LITERAL("primary.dns.suffix")},
+              {true, L"policy.searchlist.a,policy.searchlist.b"},
+              {true, L"tcpip.searchlist.a,tcpip.searchlist.b"},
+              {true, L"tcpip.domain"},
+              {true, L"primary.dns.suffix"},
           },
           {"policy.searchlist.a", "policy.searchlist.b"},
       },
@@ -231,18 +230,18 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
           // User-specified SearchList override.
           {
               {false},
-              {true, STRING16_LITERAL("tcpip.searchlist.a,tcpip.searchlist.b")},
-              {true, STRING16_LITERAL("tcpip.domain")},
-              {true, STRING16_LITERAL("primary.dns.suffix")},
+              {true, L"tcpip.searchlist.a,tcpip.searchlist.b"},
+              {true, L"tcpip.domain"},
+              {true, L"primary.dns.suffix"},
           },
           {"tcpip.searchlist.a", "tcpip.searchlist.b"},
       },
       {
           // Void SearchList. Using tcpip.domain
           {
-              {true, STRING16_LITERAL(",bad.searchlist,parsed.as.empty")},
-              {true, STRING16_LITERAL("tcpip.searchlist,good.but.overridden")},
-              {true, STRING16_LITERAL("tcpip.domain")},
+              {true, L",bad.searchlist,parsed.as.empty"},
+              {true, L"tcpip.searchlist,good.but.overridden"},
+              {true, L"tcpip.domain"},
               {false},
           },
           {"tcpip.domain", "connection.suffix"},
@@ -250,10 +249,10 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
       {
           // Void SearchList. Using primary.dns.suffix
           {
-              {true, STRING16_LITERAL(",bad.searchlist,parsed.as.empty")},
-              {true, STRING16_LITERAL("tcpip.searchlist,good.but.overridden")},
-              {true, STRING16_LITERAL("tcpip.domain")},
-              {true, STRING16_LITERAL("primary.dns.suffix")},
+              {true, L",bad.searchlist,parsed.as.empty"},
+              {true, L"tcpip.searchlist,good.but.overridden"},
+              {true, L"tcpip.domain"},
+              {true, L"primary.dns.suffix"},
           },
           {"primary.dns.suffix", "connection.suffix"},
       },
@@ -261,19 +260,19 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
           // Void SearchList. Using tcpip.domain when primary.dns.suffix is
           // empty
           {
-              {true, STRING16_LITERAL(",bad.searchlist,parsed.as.empty")},
-              {true, STRING16_LITERAL("tcpip.searchlist,good.but.overridden")},
-              {true, STRING16_LITERAL("tcpip.domain")},
-              {true, STRING16_LITERAL("")},
+              {true, L",bad.searchlist,parsed.as.empty"},
+              {true, L"tcpip.searchlist,good.but.overridden"},
+              {true, L"tcpip.domain"},
+              {true, L""},
           },
           {"tcpip.domain", "connection.suffix"},
       },
       {
           // Void SearchList. Using tcpip.domain when primary.dns.suffix is NULL
           {
-              {true, STRING16_LITERAL(",bad.searchlist,parsed.as.empty")},
-              {true, STRING16_LITERAL("tcpip.searchlist,good.but.overridden")},
-              {true, STRING16_LITERAL("tcpip.domain")},
+              {true, L",bad.searchlist,parsed.as.empty"},
+              {true, L"tcpip.searchlist,good.but.overridden"},
+              {true, L"tcpip.domain"},
               {true},
           },
           {"tcpip.domain", "connection.suffix"},
@@ -294,7 +293,7 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
           {
               {false},
               {false},
-              {true, STRING16_LITERAL("a.b.c.d.e")},
+              {true, L"a.b.c.d.e"},
               {false},
               {{true, 1}, {false}},    // policy_devolution: enabled, level
               {{true, 0}, {true, 3}},  // dnscache_devolution
@@ -307,8 +306,8 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
           {
               {false},
               {false},
-              {true, STRING16_LITERAL("a.b.c.d.e")},
-              {true, STRING16_LITERAL("f.g.i.l.j")},
+              {true, L"a.b.c.d.e"},
+              {true, L"f.g.i.l.j"},
               {{false}, {true, 4}},
               {{true, 1}, {false}},
               {{true, 0}, {true, 3}},
@@ -320,7 +319,7 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
           {
               {false},
               {false},
-              {true, STRING16_LITERAL("a.b.c.d.e")},
+              {true, L"a.b.c.d.e"},
               {false},
               {{false}, {false}},
               {{false}, {true, 3}},
@@ -333,7 +332,7 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
           {
               {false},
               {false},
-              {true, STRING16_LITERAL("a.b")},
+              {true, L"a.b"},
               {false},
               {{false}, {false}},
               {{false}, {true, 2}},
@@ -346,7 +345,7 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
           {
               {false},
               {false},
-              {true, STRING16_LITERAL("a.b.c.d.e")},
+              {true, L"a.b.c.d.e"},
               {false},
               {{true, 1}, {false}},
               {{true, 1}, {false}},
@@ -359,7 +358,7 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
           {
               {false},
               {false},
-              {true, STRING16_LITERAL("a.b.c.d.e")},
+              {true, L"a.b.c.d.e"},
               {false},
               {{false}, {true, 1}},
               {{true, 1}, {true, 3}},
@@ -372,7 +371,7 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
           {
               {false},
               {false},
-              {true, STRING16_LITERAL("a.b.c.d.e")},
+              {true, L"a.b.c.d.e"},
               {false},
               {{false}, {true, 3}},
               {{false}, {true, 3}},

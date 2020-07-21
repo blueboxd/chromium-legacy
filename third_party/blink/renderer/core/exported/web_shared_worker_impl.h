@@ -37,6 +37,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/content_security_policy.mojom-blink-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
@@ -92,7 +93,8 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
   WebSharedWorkerImpl(
       const base::UnguessableToken& appcache_host_id,
       CrossVariantMojoRemote<mojom::SharedWorkerHostInterfaceBase> host,
-      WebSharedWorkerClient*);
+      WebSharedWorkerClient*,
+      ukm::SourceId ukm_source_id);
 
   void StartWorkerContext(
       const WebURL&,

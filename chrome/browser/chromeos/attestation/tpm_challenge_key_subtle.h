@@ -38,6 +38,8 @@ class TpmChallengeKeySubtleFactory final {
   // has successfully finished before and that only one call of
   // |StartSignChallengeStep| and/or |StartRegisterKeyStep| for a prepared key
   // pair will ever happen.
+  // |profile| may be nullptr - then it is assumed that this is a device-wide
+  // instance that is only intended to be used with machine keys.
   static std::unique_ptr<TpmChallengeKeySubtle> CreateForPreparedKey(
       AttestationKeyType key_type,
       bool will_register_key,
@@ -149,6 +151,8 @@ class TpmChallengeKeySubtleImpl final : public TpmChallengeKeySubtle {
 
   // Returns true if the user is managed and is affiliated with the domain the
   // device is enrolled to.
+  // If this is a device-wide instance without a user-associated |profile_|,
+  // returns false.
   bool IsUserAffiliated() const;
   // Returns true if remote attestation is allowed and the setting is managed.
   bool IsRemoteAttestationEnabledForUser() const;
@@ -156,7 +160,11 @@ class TpmChallengeKeySubtleImpl final : public TpmChallengeKeySubtle {
   // Returns the enterprise domain the device is enrolled to or user email.
   std::string GetEmail() const;
   AttestationCertificateProfile GetCertificateProfile() const;
+  // Returns the User* associated with |profile_|. May return nullptr (if there
+  // is no |profile_| or if e.g. |profile_| is a sign-in profile).
   const user_manager::User* GetUser() const;
+  // Returns the AccountId associated with |profile_|. Will return
+  // EmptyAccountId() if GetUser() returns nullptr.
   AccountId GetAccountId() const;
 
   // Actually prepares a key after all checks are passed.
@@ -194,6 +202,8 @@ class TpmChallengeKeySubtleImpl final : public TpmChallengeKeySubtle {
   AttestationFlow* attestation_flow_ = nullptr;
 
   TpmChallengeKeyCallback callback_;
+  // |profile_| may be nullptr if this is an instance that is used device-wide
+  // and only intended to work with machine keys.
   Profile* profile_ = nullptr;
 
   AttestationKeyType key_type_ = AttestationKeyType::KEY_DEVICE;

@@ -67,7 +67,7 @@ class WebSettings;
 class WebString;
 class WebViewClient;
 class WebWidget;
-struct WebDeviceEmulationParams;
+struct DeviceEmulationParams;
 struct WebRect;
 struct WebSize;
 struct WebTextAutosizerPageInfo;
@@ -341,7 +341,7 @@ class WebView {
   // Developer tools -----------------------------------------------------
 
   // Enables device emulation as specified in params.
-  virtual void EnableDeviceEmulation(const WebDeviceEmulationParams&) = 0;
+  virtual void EnableDeviceEmulation(const DeviceEmulationParams&) = 0;
 
   // Cancel emulation started via |enableDeviceEmulation| call.
   virtual void DisableDeviceEmulation() = 0;

@@ -117,7 +117,9 @@ void KaleidoscopeDataProviderImpl::GetMediaFeedContents(
               feed_id, kMediaFeedsItemsMaxCount,
               // Require Safe Search checking if the integration is enabled.
               base::FeatureList::IsEnabled(media::kMediaFeedsSafeSearch)),
-      std::move(callback));
+      base::BindOnce(&KaleidoscopeDataProviderImpl::OnGotMediaFeedContents,
+                     weak_ptr_factory.GetWeakPtr(), std::move(callback),
+                     feed_id));
 }
 
 void KaleidoscopeDataProviderImpl::GetContinueWatchingMediaFeedItems(
@@ -128,7 +130,9 @@ void KaleidoscopeDataProviderImpl::GetContinueWatchingMediaFeedItems(
               kMediaFeedsItemsMaxCount,
               // Require Safe Search checking if the integration is enabled.
               base::FeatureList::IsEnabled(media::kMediaFeedsSafeSearch)),
-      std::move(callback));
+      base::BindOnce(
+          &KaleidoscopeDataProviderImpl::OnGotContinueWatchingMediaFeedItems,
+          weak_ptr_factory.GetWeakPtr(), std::move(callback)));
 }
 
 media_history::MediaHistoryKeyedService*
@@ -150,4 +154,32 @@ void KaleidoscopeDataProviderImpl::OnAccessTokenAvailable(
     std::move(callback).Run(credentials_.Clone());
 
   pending_callbacks_.clear();
+}
+
+void KaleidoscopeDataProviderImpl::OnGotMediaFeedContents(
+    GetMediaFeedContentsCallback callback,
+    const int64_t feed_id,
+    std::vector<media_feeds::mojom::MediaFeedItemPtr> items) {
+  std::set<int64_t> ids;
+  for (auto& item : items)
+    ids.insert(item->id);
+
+  // Mark the returned feed and feed items as having been displayed.
+  GetMediaHistoryService()->UpdateMediaFeedDisplayTime(feed_id);
+  GetMediaHistoryService()->IncrementMediaFeedItemsShownCount(ids);
+
+  std::move(callback).Run(std::move(items));
+}
+
+void KaleidoscopeDataProviderImpl::OnGotContinueWatchingMediaFeedItems(
+    GetContinueWatchingMediaFeedItemsCallback callback,
+    std::vector<media_feeds::mojom::MediaFeedItemPtr> items) {
+  std::set<int64_t> ids;
+  for (auto& item : items)
+    ids.insert(item->id);
+
+  // Mark the returned feed items as having been displayed.
+  GetMediaHistoryService()->IncrementMediaFeedItemsShownCount(ids);
+
+  std::move(callback).Run(std::move(items));
 }

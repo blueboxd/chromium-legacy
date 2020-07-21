@@ -157,6 +157,17 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             'crbug.com/626703 [ Mac10.10 ] external/wpt/test/path.html [ Timeout ]\n'
         )
 
+    def test_cmd_arg_include_unexpected_pass_raieses_exception(self):
+        host = self.mock_host()
+        expectations_path = \
+            host.port_factory.get().path_to_generic_test_expectations_file()
+        host.filesystem.write_text_file(expectations_path,
+                                        WPTExpectationsUpdater.MARKER_COMMENT + '\n')
+        updater = WPTExpectationsUpdater(host, args=['--include-unexpected-pass'])
+        with self.assertRaises(AssertionError) as ctx:
+            updater.run()
+        self.assertIn('--include-unexpected-pass', str(ctx.exception))
+
     def test_get_failing_results_dict_only_passing_results(self):
         host = self.mock_host()
         host.results_fetcher.set_results(
@@ -1039,8 +1050,6 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             }
         }
         tests_to_rebaseline, _ = updater.get_tests_to_rebaseline(two)
-        # external/wpt/test/zzzz.html is another possible candidate, but it
-        # is not listed in the results dict, so it shall not be rebaselined.
         self.assertEqual(tests_to_rebaseline, ['external/wpt/test/path.html'])
 
     def test_get_test_to_rebaseline_does_not_return_ref_tests(self):

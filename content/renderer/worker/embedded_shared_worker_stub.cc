@@ -54,6 +54,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker,
+    ukm::SourceId ukm_source_id,
     const std::vector<std::string>& cors_exempt_header_list)
     : receiver_(this, std::move(receiver)),
       url_(info->url),
@@ -137,7 +138,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
           info->outside_fetch_client_settings_object),
       appcache_host_id, devtools_worker_token, std::move(content_settings),
       std::move(browser_interface_broker), pause_on_start,
-      std::move(worker_main_script_load_params), std::move(host), this);
+      std::move(worker_main_script_load_params), std::move(host), this,
+      ukm_source_id);
 
   // If the host drops its connection, then self-destruct.
   receiver_.set_disconnect_handler(base::BindOnce(

@@ -59,6 +59,12 @@ void MicGainSliderController::SliderValueChanged(
   if (reason != views::SliderChangeReason::kByUser)
     return;
 
+  // Unmute if muted.
+  if (CrasAudioHandler::Get()->IsInputMuted()) {
+    CrasAudioHandler::Get()->SetMuteForDevice(
+        CrasAudioHandler::Get()->GetPrimaryActiveInputNode(), false);
+  }
+
   CrasAudioHandler::Get()->SetInputGainPercent(value * 100);
 }
 

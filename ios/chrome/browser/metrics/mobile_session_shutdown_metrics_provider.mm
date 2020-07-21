@@ -8,13 +8,19 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/task/post_task.h"
 #include "base/version.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/version_info/version_info.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
+#include "ios/chrome/browser/crash_report/features.h"
 #include "ios/chrome/browser/crash_report/main_thread_freeze_detector.h"
+#include "ios/chrome/browser/crash_report/synthetic_crash_report_util.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -220,6 +226,29 @@ void MobileSessionShutdownMetricsProvider::ProvidePreviousSessionData(
         "Stability.iOS.UTE.MobileSessionOOMShutdownHint",
         GetMobileSessionOomShutdownHint(possible_explanation),
         MobileSessionOomShutdownHint::kMaxValue);
+    if (!possible_explanation &&
+        base::FeatureList::IsEnabled(kSyntheticCrashReportsForUte) &&
+        GetApplicationContext()->GetLocalState()->GetBoolean(
+            metrics::prefs::kMetricsReportingEnabled)) {
+      // UTEs are so common that there will be a little or no value from
+      // generating crash reports for XTEs.
+
+      base::FilePath cache_dir_path;
+      base::PathService::Get(base::DIR_CACHE, &cache_dir_path);
+      NSDictionary* info_dict = NSBundle.mainBundle.infoDictionary;
+
+      base::ThreadPool::PostTask(
+          FROM_HERE, {base::MayBlock()},
+          base::BindOnce(
+              &CreateSyntheticCrashReportForUte,
+              cache_dir_path.Append(FILE_PATH_LITERAL("Breakpad")),
+              base::SysNSStringToUTF8(info_dict[@"BreakpadProductDisplay"]),
+              base::SysNSStringToUTF8(info_dict[@"BreakpadVersion"]),
+              // Separate product makes throttling on the server easier.
+              base::SysNSStringToUTF8([NSString
+                  stringWithFormat:@"%@_UTE", info_dict[@"BreakpadProduct"]]),
+              base::SysNSStringToUTF8(info_dict[@"BreakpadURL"])));
+    }
   }
   [session_info resetSessionRestorationFlag];
 }

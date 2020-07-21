@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/css/resolver/cascade_origin.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_priority.h"
 #include "third_party/blink/renderer/core/css/resolver/match_result.h"
+#include "third_party/blink/renderer/core/frame/web_feature_forward.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -323,6 +324,10 @@ class CORE_EXPORT StyleCascade {
   const CSSProperty& ResolveSurrogate(const CSSProperty& surrogate);
 
   bool ShouldRevert(const CSSProperty&, const CSSValue&, CascadeOrigin);
+
+  void CountUse(WebFeature);
+  void MaybeUseCountRevert(const CSSValue&);
+  void MaybeUseCountSummaryDisplayBlock();
 
   StyleResolverState& state_;
   MatchResult match_result_;

@@ -140,11 +140,6 @@ BrowserAccessibility* BrowserAccessibilityManagerMac::GetFocus() const {
   if (!focus)
     return nullptr;
 
-  // For editable combo boxes, focus should stay on the combo box so the user
-  // will not be taken out of the combo box while typing.
-  if (focus->GetRole() == ax::mojom::Role::kTextFieldWithComboBox)
-    return focus;
-
   // Otherwise, follow the active descendant.
   return GetActiveDescendant(focus);
 }

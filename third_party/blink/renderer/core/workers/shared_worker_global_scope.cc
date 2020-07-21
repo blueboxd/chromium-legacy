@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "base/feature_list.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
@@ -55,8 +56,12 @@ SharedWorkerGlobalScope::SharedWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     SharedWorkerThread* thread,
     base::TimeTicks time_origin,
-    const base::UnguessableToken& appcache_host_id)
-    : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {
+    const base::UnguessableToken& appcache_host_id,
+    ukm::SourceId ukm_source_id)
+    : WorkerGlobalScope(std::move(creation_params),
+                        thread,
+                        time_origin,
+                        ukm_source_id) {
   appcache_host_ = MakeGarbageCollected<ApplicationCacheHostForWorker>(
       appcache_host_id, GetBrowserInterfaceBroker(),
       GetTaskRunner(TaskType::kInternalLoading), this);
@@ -76,7 +81,6 @@ void SharedWorkerGlobalScope::Initialize(
     const Vector<CSPHeaderAndType>& response_csp_headers,
     const Vector<String>* response_origin_trial_tokens,
     int64_t appcache_id) {
-
   // Step 12.3. "Set worker global scope's url to response's url."
   InitializeURL(response_url);
 
@@ -278,5 +282,4 @@ void SharedWorkerGlobalScope::Trace(Visitor* visitor) const {
   visitor->Trace(appcache_host_);
   WorkerGlobalScope::Trace(visitor);
 }
-
 }  // namespace blink

@@ -211,10 +211,13 @@ class CORE_EXPORT WorkerGlobalScope
   std::unique_ptr<WorkerMainScriptLoadParameters>
   TakeWorkerMainScriptLoadingParametersForModules();
 
+  ukm::SourceId UkmSourceID() const override { return ukm_source_id_; }
+
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                     WorkerThread*,
-                    base::TimeTicks time_origin);
+                    base::TimeTicks time_origin,
+                    ukm::SourceId);
 
   // ExecutionContext
   void ExceptionThrown(ErrorEvent*) override;
@@ -302,6 +305,8 @@ class CORE_EXPORT WorkerGlobalScope
   // shared worker when kLoadMainScriptForPlzDedicatedWorkerByParams is enabled.
   std::unique_ptr<WorkerMainScriptLoadParameters>
       worker_main_script_load_params_for_modules_;
+
+  const ukm::SourceId ukm_source_id_;
 };
 
 template <>

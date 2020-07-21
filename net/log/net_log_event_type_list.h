@@ -1567,6 +1567,16 @@ EVENT_TYPE(HTTP2_SESSION_INITIAL_WINDOW_SIZE_OUT_OF_RANGE)
 //   }
 EVENT_TYPE(HTTP2_SESSION_UPDATE_STREAMS_SEND_WINDOW_SIZE)
 
+// Sending a greased frame (a frame of reserved type)
+//   {
+//     "stream_id": <The stream ID for the window update>,
+//     "type"     : <Frame type>,
+//     "flags"    : <Frame flags>,
+//     "length"   : <Frame payload length>,
+//     "priority" : <RequestPriority of the stream>,
+//   }
+EVENT_TYPE(HTTP2_SESSION_SEND_GREASED_FRAME)
+
 // ------------------------------------------------------------------------
 // SpdySessionPool
 // ------------------------------------------------------------------------

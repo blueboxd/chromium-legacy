@@ -250,6 +250,11 @@ public class StartSurfaceTest {
 
         TabUiTestHelper.createTabs(cta, true, 1);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 1);
+        if (isInstantReturn()) {
+            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
+            // omnibox.
+            return;
+        }
         TabUiTestHelper.enterTabSwitcher(cta);
         if (!isInstantReturn()) {
             // TODO(crbug.com/1076274): fix toolbar to make incognito switch part of the view.
@@ -305,7 +310,11 @@ public class StartSurfaceTest {
 
         TabUiTestHelper.createTabs(cta, true, 1);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 1);
-
+        if (isInstantReturn()) {
+            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
+            // omnibox.
+            return;
+        }
         TabUiTestHelper.enterTabSwitcher(cta);
         if (!isInstantReturn()) {
             // TODO(crbug.com/1076274): fix toolbar to make incognito switch part of the view.
@@ -397,15 +406,14 @@ public class StartSurfaceTest {
             fail("Failed to tap 'more tabs' " + e.toString());
         }
         onViewWaiting(withId(R.id.secondary_tasks_surface_view));
+        if (isInstantReturn()) {
+            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
+            // omnibox.
+            return;
+        }
 
         pressBack();
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
-
-        if (isInstantReturn()) {
-            // TODO(crbug.com/1092642): Fix androidx.test.espresso.PerformException issue when
-            // performing a single click on position: 0. See code below.
-            return;
-        }
 
         OverviewModeBehaviorWatcher hideWatcher =
                 TabUiTestHelper.createOverviewHideWatcher(mActivityTestRule.getActivity());
@@ -465,15 +473,14 @@ public class StartSurfaceTest {
             fail("Failed to tap 'more tabs' " + e.toString());
         }
         onViewWaiting(withId(R.id.secondary_tasks_surface_view));
+        if (isInstantReturn()) {
+            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
+            // omnibox.
+            return;
+        }
 
         pressBack();
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
-
-        if (isInstantReturn()) {
-            // TODO(crbug.com/1092642): Fix androidx.test.espresso.PerformException issue when
-            // performing a single click on position: 0. See code below.
-            return;
-        }
 
         OverviewModeBehaviorWatcher hideWatcher =
                 TabUiTestHelper.createOverviewHideWatcher(mActivityTestRule.getActivity());
@@ -538,6 +545,11 @@ public class StartSurfaceTest {
         }
         onViewWaiting(withId(R.id.secondary_tasks_surface_view));
 
+        if (isInstantReturn()) {
+            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
+            // omnibox.
+            return;
+        }
         pressBack();
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
 
@@ -623,15 +635,13 @@ public class StartSurfaceTest {
             // Single surface is shown as homepage. Exit in order to get into tab switcher later.
             pressBack();
         }
-
-        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
-        onViewWaiting(allOf(withId(R.id.secondary_tasks_surface_view), isDisplayed()));
-
         if (isInstantReturn()) {
-            // TODO(crbug.com/1092642): Fix androidx.test.espresso.PerformException issue when
-            // performing a single click on position: 0. See code below.
+            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
+            // omnibox.
             return;
         }
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        onViewWaiting(allOf(withId(R.id.secondary_tasks_surface_view), isDisplayed()));
 
         OverviewModeBehaviorWatcher hideWatcher =
                 TabUiTestHelper.createOverviewHideWatcher(mActivityTestRule.getActivity());

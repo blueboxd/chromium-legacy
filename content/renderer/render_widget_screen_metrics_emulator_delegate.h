@@ -9,7 +9,7 @@
 #include "third_party/blink/public/common/widget/screen_info.h"
 
 namespace blink {
-struct WebDeviceEmulationParams;
+struct DeviceEmulationParams;
 }
 
 namespace content {
@@ -21,7 +21,7 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulatorDelegate {
   // Passes device emulation parameters to the delegate.
   virtual void SetScreenMetricsEmulationParameters(
       bool enabled,
-      const blink::WebDeviceEmulationParams& params) = 0;
+      const blink::DeviceEmulationParams& params) = 0;
 
   // Passes an updated ScreenInfo and sizes to the delegate.
   virtual void SetScreenInfoAndSize(const blink::ScreenInfo& screen_info,

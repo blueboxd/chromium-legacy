@@ -38,6 +38,8 @@ views::MdTextButton* CreatePillButton(
       ChromeLayoutProvider::Get()->GetInsetsMetric(INSETS_OMNIBOX_PILL_BUTTON));
   button->SetCornerRadius(button->GetInsets().height() +
                           GetLayoutConstant(LOCATION_BAR_ICON_SIZE));
+  views::HighlightPathGenerator::Install(
+      button, std::make_unique<views::PillHighlightPathGenerator>());
   return button;
 }
 
@@ -73,18 +75,12 @@ OmniboxSuggestionButtonRowView::OmniboxSuggestionButtonRowView(
     };
   };
   keyword_button_focus_ring_ = views::FocusRing::Install(keyword_button_);
-  keyword_button_focus_ring_->SetPathGenerator(
-      std::make_unique<views::PillHighlightPathGenerator>());
   keyword_button_focus_ring_->SetHasFocusPredicate(
       make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_KEYWORD));
   pedal_button_focus_ring_ = views::FocusRing::Install(pedal_button_);
-  pedal_button_focus_ring_->SetPathGenerator(
-      std::make_unique<views::PillHighlightPathGenerator>());
   pedal_button_focus_ring_->SetHasFocusPredicate(
       make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_PEDAL));
   tab_switch_button_focus_ring_ = views::FocusRing::Install(tab_switch_button_);
-  tab_switch_button_focus_ring_->SetPathGenerator(
-      std::make_unique<views::PillHighlightPathGenerator>());
   tab_switch_button_focus_ring_->SetHasFocusPredicate(
       make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH));
 }

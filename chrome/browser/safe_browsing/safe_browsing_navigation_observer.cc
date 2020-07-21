@@ -245,7 +245,7 @@ void SafeBrowsingNavigationObserver::DidFinishNavigation(
 }
 
 void SafeBrowsingNavigationObserver::DidGetUserInteraction(
-    const blink::WebInputEvent::Type type) {
+    const blink::WebInputEvent& event) {
   OnUserInteraction();
 }
 

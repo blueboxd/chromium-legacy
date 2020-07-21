@@ -9,7 +9,7 @@
 
 namespace blink {
 class WebWidget;
-struct WebDeviceEmulationParams;
+struct DeviceEmulationParams;
 }  // namespace blink
 
 namespace content {
@@ -72,7 +72,7 @@ class CONTENT_EXPORT RenderWidgetDelegate {
   // SetScreenMetricsEmulationParameters().
   virtual void SetScreenMetricsEmulationParametersForWidget(
       bool enabled,
-      const blink::WebDeviceEmulationParams& params) = 0;
+      const blink::DeviceEmulationParams& params) = 0;
 };
 
 }  // namespace content

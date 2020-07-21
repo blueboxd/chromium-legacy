@@ -26,7 +26,7 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/variations/variations_client.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/resource_context.h"
@@ -285,7 +285,7 @@ class BrowserContextImpl::WebLayerVariationsClient
   }
 
   std::string GetVariationsHeader() const override {
-    return variations::VariationsHttpHeaderProvider::GetInstance()
+    return variations::VariationsIdsProvider::GetInstance()
         ->GetClientDataHeader(IsSignedIn());
   }
 

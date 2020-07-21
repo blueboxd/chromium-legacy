@@ -29,7 +29,7 @@
 
 #define IPC_MESSAGE_START WidgetMsgStart
 
-// Traits for WebDeviceEmulationParams.
+// Traits for DeviceEmulationParams.
 IPC_STRUCT_TRAITS_BEGIN(blink::WebFloatRect)
   IPC_STRUCT_TRAITS_MEMBER(x)
   IPC_STRUCT_TRAITS_MEMBER(y)
@@ -42,8 +42,8 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebSize)
   IPC_STRUCT_TRAITS_MEMBER(height)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(blink::WebDeviceEmulationParams)
-  IPC_STRUCT_TRAITS_MEMBER(screen_position)
+IPC_STRUCT_TRAITS_BEGIN(blink::DeviceEmulationParams)
+  IPC_STRUCT_TRAITS_MEMBER(screen_type)
   IPC_STRUCT_TRAITS_MEMBER(screen_size)
   IPC_STRUCT_TRAITS_MEMBER(view_position)
   IPC_STRUCT_TRAITS_MEMBER(device_scale_factor)
@@ -64,9 +64,9 @@ IPC_STRUCT_TRAITS_END()
 // Expects a Close_ACK message when finished.
 IPC_MESSAGE_ROUTED0(WidgetMsg_Close)
 
-// Enables device emulation. See WebDeviceEmulationParams for description.
+// Enables device emulation. See DeviceEmulationParams for description.
 IPC_MESSAGE_ROUTED1(WidgetMsg_EnableDeviceEmulation,
-                    blink::WebDeviceEmulationParams /* params */)
+                    blink::DeviceEmulationParams /* params */)
 
 // Disables device emulation, enabled previously by EnableDeviceEmulation.
 IPC_MESSAGE_ROUTED0(WidgetMsg_DisableDeviceEmulation)

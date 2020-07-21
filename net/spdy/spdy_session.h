@@ -456,12 +456,16 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
       spdy::SpdyHeaderBlock headers,
       NetLogSource source_dependency);
 
-  // Creates and returns a SpdyBuffer holding a data frame with the
-  // given data. May return NULL if stalled by flow control.
+  // Creates and returns a SpdyBuffer holding a data frame with the given data.
+  // Sets |*effective_len| to number of bytes sent, and |*end_stream| to the
+  // value of the END_STREAM (also known as fin) flag.  Returns nullptr if
+  // session is draining or if session or stream is stalled by flow control.
   std::unique_ptr<SpdyBuffer> CreateDataBuffer(spdy::SpdyStreamId stream_id,
                                                IOBuffer* data,
                                                int len,
-                                               spdy::SpdyDataFlags flags);
+                                               spdy::SpdyDataFlags flags,
+                                               int* effective_len,
+                                               bool* end_stream);
 
   // Send PRIORITY frames according to the new priority of an existing stream.
   void UpdateStreamPriority(SpdyStream* stream,

@@ -89,17 +89,6 @@ View* ViewTargeterDelegate::TargetForRect(View* root, const gfx::Rect& rect) {
   if (views::UsePointBasedTargeting(rect) || (!rect_view && !point_view))
     return root;
 
-  // If |root| is a suitable candidate for rect-based targeting, check to
-  // see if it is closer than the current best suitable candidate so far.
-  gfx::Rect local_bounds(root->GetLocalBounds());
-  if (views::PercentCoveredBy(local_bounds, rect) >= kRectTargetOverlap) {
-    gfx::Point touch_center(rect.CenterPoint());
-    int cur_dist =
-        views::DistanceSquaredFromCenterToPoint(touch_center, local_bounds);
-    if (!rect_view || cur_dist < rect_view_distance)
-      rect_view = root;
-  }
-
   return rect_view ? rect_view : point_view;
 }
 

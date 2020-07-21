@@ -26,7 +26,6 @@
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -105,7 +104,7 @@ CertProvisioningSchedulerImpl::CreateUserCertProvisioningScheduler(
   policy::CloudPolicyClient* cloud_policy_client =
       GetCloudPolicyClientForUser(profile);
   platform_keys::PlatformKeysService* platform_keys_service =
-      platform_keys::PlatformKeysServiceFactory::GetForBrowserContext(profile);
+      GetPlatformKeysService(CertScope::kUser, profile);
   NetworkStateHandler* network_state_handler = GetNetworkStateHandler();
 
   if (!profile || !pref_service || !cloud_policy_client ||
@@ -125,23 +124,22 @@ std::unique_ptr<CertProvisioningScheduler>
 CertProvisioningSchedulerImpl::CreateDeviceCertProvisioningScheduler(
     policy::AffiliatedInvalidationServiceProvider*
         invalidation_service_provider) {
-  Profile* profile = ProfileHelper::GetSigninProfile();
   PrefService* pref_service = g_browser_process->local_state();
   policy::CloudPolicyClient* cloud_policy_client =
       GetCloudPolicyClientForDevice();
   platform_keys::PlatformKeysService* platform_keys_service =
-      platform_keys::PlatformKeysServiceFactory::GetForBrowserContext(profile);
+      GetPlatformKeysService(CertScope::kDevice, /*profile=*/nullptr);
   NetworkStateHandler* network_state_handler = GetNetworkStateHandler();
 
-  if (!profile || !pref_service || !cloud_policy_client ||
-      !network_state_handler || !platform_keys_service) {
+  if (!pref_service || !cloud_policy_client || !network_state_handler ||
+      !platform_keys_service) {
     LOG(ERROR) << "Failed to create device certificate provisioning scheduler";
     return nullptr;
   }
 
   return std::make_unique<CertProvisioningSchedulerImpl>(
-      CertScope::kDevice, profile, pref_service, cloud_policy_client,
-      platform_keys_service, network_state_handler,
+      CertScope::kDevice, /*profile=*/nullptr, pref_service,
+      cloud_policy_client, platform_keys_service, network_state_handler,
       std::make_unique<CertProvisioningDeviceInvalidatorFactory>(
           invalidation_service_provider));
 }
@@ -163,7 +161,7 @@ CertProvisioningSchedulerImpl::CertProvisioningSchedulerImpl(
       certs_with_ids_getter_(cert_scope, platform_keys_service),
       cert_deleter_(cert_scope, platform_keys_service),
       invalidator_factory_(std::move(invalidator_factory)) {
-  CHECK(profile);
+  CHECK(profile_ || cert_scope_ == CertScope::kDevice);
   CHECK(pref_service_);
   CHECK(cloud_policy_client_);
   CHECK(platform_keys_service_);
@@ -172,6 +170,8 @@ CertProvisioningSchedulerImpl::CertProvisioningSchedulerImpl(
 
   pref_name_ = GetPrefNameForCertProfiles(cert_scope);
   CHECK(pref_name_);
+
+  scoped_platform_keys_service_observer_.Add(platform_keys_service_);
 
   network_state_handler_->AddObserver(this, FROM_HERE);
 
@@ -238,6 +238,10 @@ void CertProvisioningSchedulerImpl::InitialUpdateCerts() {
 
 void CertProvisioningSchedulerImpl::DeleteCertsWithoutPolicy() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // No-op if the PlatformKeysService has already been shut down.
+  if (!platform_keys_service_) {
+    return;
+  }
 
   base::flat_set<CertProfileId> cert_profile_ids_to_keep;
   {
@@ -390,6 +394,11 @@ void CertProvisioningSchedulerImpl::UpdateAllCerts() {
 void CertProvisioningSchedulerImpl::UpdateCertList(
     std::vector<CertProfile> profiles) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // No-op if the PlatformKeysService has already been shut down.
+  if (!platform_keys_service_) {
+    return;
+  }
 
   if (!MaybeWaitForInternetConnection()) {
     return;
@@ -675,6 +684,23 @@ void CertProvisioningSchedulerImpl::UpdateFailedCertProfiles(
   info.last_update_time = worker.GetLastUpdateTime();
 
   failed_cert_profiles_[worker.GetCertProfile().profile_id] = std::move(info);
+}
+
+void CertProvisioningSchedulerImpl::OnPlatformKeysServiceShutDown() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // The |platform_keys_service_| will only return errors going forward, so
+  // stop using it. Shutdown all workers, as if this CertProvisioningScheduler
+  // was destroyed, and stop pending tasks that may depend on
+  // |platform_keys_service_|.
+  workers_.clear();
+  certs_with_ids_getter_.Cancel();
+  cert_deleter_.Cancel();
+  pref_change_registrar_.RemoveAll();
+  weak_factory_.InvalidateWeakPtrs();
+
+  scoped_platform_keys_service_observer_.RemoveAll();
+  platform_keys_service_ = nullptr;
 }
 
 void CertProvisioningSchedulerImpl::CancelWorkersWithoutPolicy(

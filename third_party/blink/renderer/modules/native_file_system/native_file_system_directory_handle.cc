@@ -12,6 +12,7 @@
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_file_system_directory_handle.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_file_system_get_directory_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_file_system_get_file_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_file_system_remove_options.h"
@@ -41,6 +42,24 @@ NativeFileSystemDirectoryHandle::NativeFileSystemDirectoryHandle(
   mojo_ptr_.Bind(std::move(mojo_ptr),
                  context->GetTaskRunner(TaskType::kMiscPlatformAPI));
   DCHECK(mojo_ptr_.is_bound());
+}
+
+NativeFileSystemDirectoryIterator* NativeFileSystemDirectoryHandle::entries() {
+  return MakeGarbageCollected<NativeFileSystemDirectoryIterator>(
+      this, NativeFileSystemDirectoryIterator::Mode::kKeyValue,
+      GetExecutionContext());
+}
+
+NativeFileSystemDirectoryIterator* NativeFileSystemDirectoryHandle::keys() {
+  return MakeGarbageCollected<NativeFileSystemDirectoryIterator>(
+      this, NativeFileSystemDirectoryIterator::Mode::kKey,
+      GetExecutionContext());
+}
+
+NativeFileSystemDirectoryIterator* NativeFileSystemDirectoryHandle::values() {
+  return MakeGarbageCollected<NativeFileSystemDirectoryIterator>(
+      this, NativeFileSystemDirectoryIterator::Mode::kValue,
+      GetExecutionContext());
 }
 
 ScriptPromise NativeFileSystemDirectoryHandle::getFileHandle(
@@ -119,7 +138,8 @@ void ReturnDataFunction(const v8::FunctionCallbackInfo<v8::Value>& info) {
 ScriptValue NativeFileSystemDirectoryHandle::getEntries(
     ScriptState* script_state) {
   auto* iterator = MakeGarbageCollected<NativeFileSystemDirectoryIterator>(
-      this, ExecutionContext::From(script_state));
+      this, NativeFileSystemDirectoryIterator::Mode::kValue,
+      ExecutionContext::From(script_state));
   auto* isolate = script_state->GetIsolate();
   auto context = script_state->GetContext();
   v8::Local<v8::Object> result = v8::Object::New(isolate);

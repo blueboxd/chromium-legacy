@@ -3211,6 +3211,166 @@
       'ui_base_unittests': {},
     },
 
+    # This suite is the combination of several test suites with
+    # some experimental enabled.
+    # TODO(crbug.com/1104291): Remove this when all tests can
+    # pass on CI/CQ.
+    'lacros_gtests':  {
+      'absl_hardening_tests': {},
+      'accessibility_unittests': {},
+      'angle_unittests': {},
+      'app_shell_unittests': {
+        'experiment_percentage': 100,
+      },
+      'aura_unittests': {
+        'experiment_percentage': 100,
+      },
+      'base_unittests': {},
+      'base_util_unittests': {},
+      'blink_common_unittests': {},
+      'blink_fuzzer_unittests': {},
+      'blink_heap_unittests': {},
+      'blink_platform_unittests': {},
+      'boringssl_crypto_tests': {},
+      'boringssl_ssl_tests': {},
+      'browser_tests': {
+        'swarming': {
+          'shards': 10,
+        },
+        'experiment_percentage': 100,
+      },
+      'capture_unittests': {
+        'args': [
+          '--gtest_filter=-*UsingRealWebcam*',
+        ],
+      },
+      'cast_unittests': {},
+      'cc_unittests': {},
+      'chrome_app_unittests': {},
+      'chromedriver_unittests': {},
+      'components_browsertests': {
+        'experiment_percentage': 100,
+      },
+      'components_unittests': {
+        'experiment_percentage': 100,
+      },
+      'compositor_unittests': {
+        'experiment_percentage': 100,
+      },
+      'content_browsertests': {
+        'android_swarming': {
+          'shards': 9,
+        },
+        'swarming': {
+          'shards': 6,
+        },
+        'experiment_percentage': 100,
+      },
+      'content_unittests': {
+        'experiment_percentage': 100,
+      },
+      'crypto_unittests': {},
+      'device_unittests': {},
+      'display_unittests': {},
+      'events_unittests': {},
+      'extensions_browsertests': {
+        'experiment_percentage': 100,
+      },
+      'extensions_unittests': {
+        'experiment_percentage': 100,
+      },
+      'filesystem_service_unittests': {},
+      'gcm_unit_tests': {},
+      'gfx_unittests': {},
+      'gin_unittests': {},
+      'google_apis_unittests': {},
+      'gpu_unittests': {},
+      'gwp_asan_unittests': {},
+      'ipc_tests': {},
+      'jingle_unittests': {},
+      'latency_unittests': {},
+      'libjingle_xmpp_unittests': {},
+      'media_blink_unittests': {},
+      'media_unittests': {},
+      'message_center_unittests': {
+        'experiment_percentage': 100,
+      },
+      'midi_unittests': {},
+      'mojo_unittests': {},
+      'nacl_loader_unittests': {},
+      'native_theme_unittests': {},
+      'net_unittests': {},
+      'pdf_unittests': {},
+      'perfetto_unittests': {},
+      'ppapi_unittests': {},
+      'printing_unittests': {},
+      'remoting_unittests': {},
+      'service_manager_unittests': {},
+      'services_unittests': {},
+      'shell_dialogs_unittests': {},
+      'skia_unittests': {},
+      'snapshot_unittests': {
+        'experiment_percentage': 100,
+      },
+      'sql_unittests': {},
+      'storage_service_unsandboxed_content_browsertests': {
+        'args': [
+          '--enable-features=StorageServiceOutOfProcess',
+        ],
+        'swarming': {
+          'shards': 2,
+        },
+        'test': 'content_browsertests',
+        'experiment_percentage': 100,
+      },
+      'storage_service_unsandboxed_extensions_browsertests': {
+        'args': [
+          '--enable-features=StorageServiceOutOfProcess',
+        ],
+        'test': 'extensions_browsertests',
+        'experiment_percentage': 100,
+      },
+      # TODO(crbug.com/1104291): Re-enable this.
+      # 'storage_service_unsandboxed_interactive_ui_tests': {
+      #  'args': [
+      #    '--enable-features=StorageServiceOutOfProcess'
+      #  ],
+      #  'swarming': {
+      #    'shards': 3,
+      #  },
+      #  'test': 'interactive_ui_tests',
+      # },
+      'storage_unittests': {},
+      'sync_integration_tests': {
+        'experiment_percentage': 100,
+      },
+      'ui_base_unittests': {},
+      'ui_touch_selection_unittests': {},
+      'unit_tests': {
+        'experiment_percentage': 100,
+      },
+      'url_unittests': {
+        'experiment_percentage': 100,
+      },
+      'views_unittests': {
+        'experiment_percentage': 100,
+      },
+      'viz_unittests': {},
+      'webkit_unit_tests': {
+        'test': 'blink_unittests',
+      },
+      'wm_unittests': {
+        'experiment_percentage': 100,
+      },
+      'wtf_unittests': {},
+      # TODO(crbug.com/1104291): Re-enable this.
+      # 'interactive_ui_tests': {
+      #  'swarming': {
+      #    'shards': 3,
+      #  },
+      # },
+    },
+
     # END tests which run on the GPU bots
     'layout_ng_gtests': {
       'webkit_unit_tests_ng': {
@@ -5390,14 +5550,18 @@
       # This is:
       #   linux_chromeos_gtests
       #   - linux_chromeos_specific_gtests
-      'aura_gtests',
-      'chromium_gtests',
-      'chromium_gtests_for_devices_with_graphical_output',
+      # TODO(crbug.com/1104291): Following test suites should be
+      # added and delete lacros_gtests.
+      #   - chromium_gtests
+      #   - chromium_gtests_for_devices_with_graphical_output
+      #   - non_android_chromium_gtests
+      #   - aura_gtests
+      #   - storage_service_gtests
+      #   - aura_gtests
       'chromium_gtests_for_linux_and_chromeos_only',
       'chromium_gtests_for_win_and_linux_only',
+      'lacros_gtests',
       'linux_flavor_specific_chromium_gtests',
-      'non_android_chromium_gtests',
-      'storage_service_gtests',
     ],
 
     'linux_viz_gtests': [

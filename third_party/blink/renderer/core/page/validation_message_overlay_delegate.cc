@@ -99,7 +99,8 @@ void ValidationMessageOverlayDelegate::PaintFrameOverlay(
   if (DrawingRecorder::UseCachedDrawingIfPossible(context, overlay,
                                                   DisplayItem::kFrameOverlay))
     return;
-  DrawingRecorder recorder(context, overlay, DisplayItem::kFrameOverlay);
+  DrawingRecorder recorder(context, overlay, DisplayItem::kFrameOverlay,
+                           IntRect(IntPoint(), view_size));
 
   const_cast<ValidationMessageOverlayDelegate*>(this)->UpdateFrameViewState(
       overlay, view_size);

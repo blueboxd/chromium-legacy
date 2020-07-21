@@ -185,7 +185,7 @@ class SafeBrowsingPrivateEventRouterTest : public testing::Test {
 
   void TriggerOnDangerousDownloadWarningEventBypass() {
     SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
-        ->OnDangerousDownloadWarning(
+        ->OnDangerousDownloadWarningBypassed(
             GURL("https://bypassevil.com/bypass.exe"), "/path/to/bypass.exe",
             "sha256_of_bypass_exe", "BYPASSED_WARNING", "exe", 890);
   }
@@ -373,6 +373,9 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnDangerousDownloadOpened) {
                       SafeBrowsingPrivateEventRouter::kKeyContentSize));
   EXPECT_EQ(SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
             *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyTrigger));
+  EXPECT_EQ(
+      safe_browsing::EventResultToString(safe_browsing::EventResult::BYPASSED),
+      *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyEventResult));
 }
 
 TEST_F(SafeBrowsingPrivateEventRouterTest,
@@ -492,6 +495,9 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnDangerousDownloadWarning) {
   EXPECT_EQ(
       "POTENTIALLY_UNWANTED",
       *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyThreatType));
+  EXPECT_EQ(
+      safe_browsing::EventResultToString(safe_browsing::EventResult::WARNED),
+      *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyEventResult));
 }
 
 TEST_F(SafeBrowsingPrivateEventRouterTest,
@@ -531,6 +537,9 @@ TEST_F(SafeBrowsingPrivateEventRouterTest,
   EXPECT_EQ(
       "BYPASSED_WARNING",
       *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyThreatType));
+  EXPECT_EQ(
+      safe_browsing::EventResultToString(safe_browsing::EventResult::BYPASSED),
+      *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyEventResult));
 }
 
 TEST_F(SafeBrowsingPrivateEventRouterTest, PolicyControlOnToOffIsDynamic) {
@@ -733,10 +742,6 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnSensitiveDataEvent_Allowed) {
   ASSERT_NE(nullptr, triggered_rule_info);
   ASSERT_EQ(1u, triggered_rule_info->GetList().size());
   base::Value triggered_rule = std::move(triggered_rule_info->GetList()[0]);
-  EXPECT_EQ(12345, triggered_rule.FindIntKey(
-                       SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleId));
-  EXPECT_EQ(3, triggered_rule.FindIntKey(
-                   SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleAction));
   EXPECT_EQ(
       safe_browsing::EventResultToString(safe_browsing::EventResult::ALLOWED),
       *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyEventResult));
@@ -787,10 +792,6 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnSensitiveDataEvent_Blocked) {
   ASSERT_NE(nullptr, triggered_rule_info);
   ASSERT_EQ(1u, triggered_rule_info->GetList().size());
   base::Value triggered_rule = std::move(triggered_rule_info->GetList()[0]);
-  EXPECT_EQ(12345, triggered_rule.FindIntKey(
-                       SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleId));
-  EXPECT_EQ(3, triggered_rule.FindIntKey(
-                   SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleAction));
   EXPECT_EQ(
       safe_browsing::EventResultToString(safe_browsing::EventResult::BLOCKED),
       *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyEventResult));

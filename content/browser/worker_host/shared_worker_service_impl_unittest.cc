@@ -42,6 +42,7 @@ using blink::MessagePortChannel;
 namespace content {
 
 namespace {
+const ukm::SourceId kClientUkmSourceId = 1;
 
 void ConnectToSharedWorker(
     mojo::Remote<blink::mojom::SharedWorkerConnector> connector,
@@ -67,7 +68,7 @@ void ConnectToSharedWorker(
 
   connector->Connect(std::move(info), std::move(client_proxy),
                      blink::mojom::SharedWorkerCreationContextType::kSecure,
-                     pipe.TakePort1(), mojo::NullRemote());
+                     pipe.TakePort1(), mojo::NullRemote(), kClientUkmSourceId);
 }
 
 // Helper to delete the given WebContents and shut down its process. This is

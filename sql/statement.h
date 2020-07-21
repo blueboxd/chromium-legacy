@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece_forward.h"
 #include "sql/database.h"
 
 namespace sql {
@@ -111,7 +112,7 @@ class COMPONENT_EXPORT(SQL) Statement {
   bool BindDouble(int col, double val);
   bool BindCString(int col, const char* val);
   bool BindString(int col, const std::string& val);
-  bool BindString16(int col, const base::string16& value);
+  bool BindString16(int col, base::StringPiece16 value);
   bool BindBlob(int col, const void* value, int value_len);
 
   // Retrieving ----------------------------------------------------------------

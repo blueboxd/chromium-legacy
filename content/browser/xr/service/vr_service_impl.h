@@ -142,8 +142,9 @@ class CONTENT_EXPORT VRServiceImpl : public device::mojom::VRService,
   void GetPermissionStatus(SessionRequestData request,
                            BrowserXRRuntimeImpl* runtime);
 
-  void OnPermissionResult(SessionRequestData request,
-                          blink::mojom::PermissionStatus permission_status);
+  void OnPermissionResults(
+      SessionRequestData request,
+      const std::vector<blink::mojom::PermissionStatus>& permission_statuses);
 
   void EnsureRuntimeInstalled(SessionRequestData request,
                               BrowserXRRuntimeImpl* runtime);

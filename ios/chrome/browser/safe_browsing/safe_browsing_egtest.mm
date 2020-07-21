@@ -428,7 +428,8 @@ const char kMalwareWarningDetails[] =
 
 // Tests that performing session restoration to a Safe Browsing warning page
 // preserves navigation history.
-- (void)testRestoreToWarningPagePreservesHistory {
+// TODO(crbug.com/1106498): Re-enable this test after fixing flakiness.
+- (void)DISABLED_testRestoreToWarningPagePreservesHistory {
   // Build up navigation history that consists of a safe URL, a warning page,
   // and another safe URL.
   [ChromeEarlGrey loadURL:_safeURL1];

@@ -184,7 +184,7 @@ void PluginVmDriveImageDownloadService::DispatchDownloadFile() {
 
 void PluginVmDriveImageDownloadService::CancelDownload() {
   DCHECK(cancel_callback_);
-  cancel_callback_.Run();
+  std::move(cancel_callback_).Run();
 }
 
 void PluginVmDriveImageDownloadService::ResetState() {

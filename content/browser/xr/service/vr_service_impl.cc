@@ -36,16 +36,29 @@ device::mojom::XRRuntimeSessionOptionsPtr GetRuntimeOptions(
   return runtime_options;
 }
 
-content::PermissionType GetRequiredPermission(
-    device::mojom::XRSessionMode mode) {
+std::vector<content::PermissionType> GetRequiredPermissions(
+    device::mojom::XRSessionMode mode,
+    const std::set<device::mojom::XRSessionFeature>& enabled_features) {
+  std::vector<content::PermissionType> permissions;
+
   switch (mode) {
     case device::mojom::XRSessionMode::kInline:
-      return content::PermissionType::SENSORS;
+      permissions.push_back(content::PermissionType::SENSORS);
+      break;
     case device::mojom::XRSessionMode::kImmersiveVr:
-      return content::PermissionType::VR;
+      permissions.push_back(content::PermissionType::VR);
+      break;
     case device::mojom::XRSessionMode::kImmersiveAr:
-      return content::PermissionType::AR;
+      permissions.push_back(content::PermissionType::AR);
+      break;
   }
+
+  if (base::Contains(enabled_features,
+                     device::mojom::XRSessionFeature::CAMERA_ACCESS)) {
+    permissions.push_back(content::PermissionType::VIDEO_CAPTURE);
+  }
+
+  return permissions;
 }
 
 }  // namespace
@@ -360,6 +373,7 @@ void VRServiceImpl::RequestSession(
   // features.
   std::set<device::mojom::XRSessionFeature> requested_features;
   for (const auto& feature : options->required_features) {
+    DVLOG(2) << __func__ << ": required_feature=" << feature;
     requested_features.insert(feature);
   }
 
@@ -394,22 +408,28 @@ void VRServiceImpl::GetPermissionStatus(SessionRequestData request,
           GetWebContents()->GetBrowserContext());
   DCHECK(permission_controller);
 
-  // Need to calculate the permission before the call below, as otherwise
-  // std::move nulls options out before GetRequiredPermission runs.
-  PermissionType permission = GetRequiredPermission(request.options->mode);
-  permission_controller->RequestPermission(
-      permission, render_frame_host_, render_frame_host_->GetLastCommittedURL(),
-      true,
-      base::BindOnce(&VRServiceImpl::OnPermissionResult,
+  // Need to calculate the permissions before the call below, as otherwise
+  // std::move nulls options out before GetRequiredPermissions runs.
+  const std::vector<PermissionType> permissions =
+      GetRequiredPermissions(request.options->mode, request.enabled_features);
+  permission_controller->RequestPermissions(
+      permissions, render_frame_host_,
+      render_frame_host_->GetLastCommittedURL(), true,
+      base::BindOnce(&VRServiceImpl::OnPermissionResults,
                      weak_ptr_factory_.GetWeakPtr(), std::move(request)));
 }
 
-void VRServiceImpl::OnPermissionResult(
+void VRServiceImpl::OnPermissionResults(
     SessionRequestData request,
-    blink::mojom::PermissionStatus permission_status) {
+    const std::vector<blink::mojom::PermissionStatus>& permission_statuses) {
   DVLOG(2) << __func__;
-  bool is_consent_granted =
-      (permission_status == blink::mojom::PermissionStatus::GRANTED);
+  bool is_consent_granted = true;
+  for (auto& permission_status : permission_statuses) {
+    if (permission_status != blink::mojom::PermissionStatus::GRANTED) {
+      is_consent_granted = false;
+      break;
+    }
+  }
 
   if (!is_consent_granted) {
     std::move(request.callback)

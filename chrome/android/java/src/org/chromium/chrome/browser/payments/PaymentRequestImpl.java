@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.NormalizedAddressRequestDelegate;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
@@ -76,6 +75,7 @@ import org.chromium.components.payments.PaymentDetailsConverter;
 import org.chromium.components.payments.PaymentDetailsUpdateServiceHelper;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentHandlerHost;
+import org.chromium.components.payments.PaymentRequestParams;
 import org.chromium.components.payments.PaymentRequestSpec;
 import org.chromium.components.payments.PaymentRequestUpdateEventListener;
 import org.chromium.components.payments.PaymentValidator;
@@ -133,9 +133,8 @@ public class PaymentRequestImpl
                    PaymentRequestUpdateEventListener, PaymentApp.AbortCallback,
                    PaymentApp.InstrumentDetailsCallback,
                    PaymentResponseHelper.PaymentResponseRequesterDelegate, FocusChangedObserver,
-                   NormalizedAddressRequestDelegate, SettingsAutofillAndPaymentsObserver.Observer,
-                   PaymentDetailsConverter.MethodChecker, PaymentHandlerUiObserver,
-                   PaymentAppComparator.ParamsProvider {
+                   NormalizedAddressRequestDelegate, PaymentDetailsConverter.MethodChecker,
+                   PaymentHandlerUiObserver, PaymentRequestParams, PaymentUIsManager.Delegate {
     /**
      * A delegate to ask questions about the system, that allows tests to inject behaviour without
      * having to modify the entire system. This partially mirrors a similar C++
@@ -505,8 +504,8 @@ public class PaymentRequestImpl
         mSkipUiForNonUrlPaymentMethodIdentifiers = mDelegate.skipUiForBasicCard();
 
         if (sObserverForTest != null) sObserverForTest.onPaymentRequestCreated(this);
-        mPaymentUIsManager = new PaymentUIsManager(addressEditor, cardEditor);
-        mPaymentAppComparator = new PaymentAppComparator(/*paramsProvider=*/this);
+        mPaymentUIsManager = new PaymentUIsManager(/*delegate=*/this, addressEditor, cardEditor);
+        mPaymentAppComparator = new PaymentAppComparator(/*params=*/this);
     }
 
     // Implement ComponentPaymentRequestDelegate:
@@ -527,6 +526,7 @@ public class PaymentRequestImpl
             boolean googlePayBridgeEligible) {
         assert getClient() != null;
         mMethodData = new HashMap<>();
+        mComponentPaymentRequestImpl.registerPaymentRequestLifecycleObserver(mPaymentUIsManager);
 
         if (!OriginSecurityChecker.isOriginSecure(mWebContents.getLastCommittedUrl())) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
@@ -609,15 +609,12 @@ public class PaymentRequestImpl
         }
         mId = details.id;
 
-        // Checks whether the merchant supports autofill cards before show is called.
-        boolean merchantSupportsAutofillCards =
-                AutofillPaymentAppFactory.merchantSupportsBasicCard(mMethodData);
-        // If in strict mode, don't give user an option to add an autofill card during the checkout
-        // to avoid the "unhappy" basic-card flow.
-        mPaymentUIsManager.setCanUserAddCreditCard(merchantSupportsAutofillCards
-                && !PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(
-                        PaymentFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT));
-        mPaymentUIsManager.setMerchantSupportsAutofillCards(merchantSupportsAutofillCards);
+        // The first time initializations and validation of all of the parameters of {@link
+        // PaymentRequestParams} should be done before {@link
+        // PaymentRequestLifeCycleObserver#onPaymentRequestParamsInitiated}.
+        mComponentPaymentRequestImpl.getPaymentRequestLifecycleObserver()
+                .onPaymentRequestParamsInitiated(
+                        /*params=*/this);
 
         if (mRequestShipping || mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail) {
             mAutofillProfiles = Collections.unmodifiableList(
@@ -660,7 +657,7 @@ public class PaymentRequestImpl
         // Log the various types of payment methods that were requested by the merchant.
         boolean requestedMethodGoogle = false;
         // Not to record requestedMethodBasicCard because JourneyLogger ignore the case where the
-        // specified networks are unsupported. mPaymentUIsManager.isMerchantSupportsAutofillCards()
+        // specified networks are unsupported. mPaymentUIsManager.merchantSupportsAutofillCards()
         // better captures this group of interest than requestedMethodBasicCard.
         boolean requestedMethodOther = false;
         mURLPaymentMethodIdentifiersSupported = false;
@@ -673,7 +670,7 @@ public class PaymentRequestImpl
                     break;
                 case MethodStrings.BASIC_CARD:
                     // Not to record requestedMethodBasicCard because
-                    // mPaymentUIsManager.isMerchantSupportsAutofillCards() is used instead.
+                    // mPaymentUIsManager.merchantSupportsAutofillCards() is used instead.
                     break;
                 default:
                     // "Other" includes https url, http url(when certifate check is bypassed) and
@@ -1245,25 +1242,31 @@ public class PaymentRequestImpl
         return true;
     }
 
-    // Implement PaymentAppComparator.ParamsProvider:
+    // Implement PaymentRequestParams:
+    @Override
+    public Map<String, PaymentMethodData> getMethodDataMap() {
+        return getMethodData();
+    }
+
+    // Implement PaymentRequestParams:
     @Override
     public boolean requestShipping() {
         return mRequestShipping;
     }
 
-    // Implement PaymentAppComparator.ParamsProvider:
+    // Implement PaymentRequestParams:
     @Override
     public boolean requestPayerName() {
         return mRequestPayerName;
     }
 
-    // Implement PaymentAppComparator.ParamsProvider:
+    // Implement PaymentRequestParams:
     @Override
     public boolean requestPayerEmail() {
         return mRequestPayerEmail;
     }
 
-    // Implement PaymentAppComparator.ParamsProvider:
+    // Implement PaymentRequestParams:
     @Override
     public boolean requestPayerPhone() {
         return mRequestPayerPhone;
@@ -1534,8 +1537,9 @@ public class PaymentRequestImpl
         return true;
     }
 
-    /** Updates the modifiers for payment apps and order summary. */
-    private void updateAppModifiedTotals() {
+    // Implement PaymentUIsManager.Delegate:
+    @Override
+    public void updateAppModifiedTotals() {
         if (!PaymentFeatureList.isEnabled(PaymentFeatureList.WEB_PAYMENTS_MODIFIERS)) return;
         if (mModifiers == null) return;
         if (mPaymentUIsManager.getPaymentMethodsSection() == null) return;
@@ -1721,7 +1725,8 @@ public class PaymentRequestImpl
         // origin completely.
         mPaymentUIsManager.getPaymentMethodsSection()
                 .setDisplaySelectedItemSummaryInSingleLineInNormalMode(
-                        getSelectedPaymentAppType() != PaymentAppType.SERVICE_WORKER_APP);
+                        mPaymentUIsManager.getSelectedPaymentAppType()
+                        != PaymentAppType.SERVICE_WORKER_APP);
         mPaymentInformationCallback.onResult(new PaymentInformation(mUiShoppingCart,
                 mPaymentUIsManager.getShippingAddressesSection(), mUiShippingOptions,
                 mPaymentUIsManager.getContactSection(),
@@ -2067,17 +2072,9 @@ public class PaymentRequestImpl
             return;
         }
 
-        assert getSelectedPaymentAppType() == PaymentAppType.AUTOFILL;
+        assert mPaymentUIsManager.getSelectedPaymentAppType() == PaymentAppType.AUTOFILL;
 
         mPaymentUIsManager.getPaymentRequestUI().showProcessingMessage();
-    }
-
-    private @PaymentAppType int getSelectedPaymentAppType() {
-        return mPaymentUIsManager.getPaymentMethodsSection() != null
-                        && mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem() != null
-                ? ((PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem())
-                          .getPaymentAppType()
-                : PaymentAppType.UNDEFINED;
     }
 
     @Override
@@ -2351,83 +2348,6 @@ public class PaymentRequestImpl
 
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
         settingsLauncher.launchSettingsActivity(context);
-    }
-
-    @Override
-    public void onAddressUpdated(AutofillAddress address) {
-        if (getClient() == null) return;
-
-        address.setShippingAddressLabelWithCountry();
-        mPaymentUIsManager.getCardEditor().updateBillingAddressIfComplete(address);
-
-        if (mPaymentUIsManager.getShippingAddressesSection() != null) {
-            mPaymentUIsManager.getShippingAddressesSection().addAndSelectOrUpdateItem(address);
-            mPaymentUIsManager.getPaymentRequestUI().updateSection(
-                    PaymentRequestUI.DataType.SHIPPING_ADDRESSES,
-                    mPaymentUIsManager.getShippingAddressesSection());
-        }
-
-        if (mPaymentUIsManager.getContactSection() != null) {
-            mPaymentUIsManager.getContactSection().addOrUpdateWithAutofillAddress(address);
-            mPaymentUIsManager.getPaymentRequestUI().updateSection(
-                    PaymentRequestUI.DataType.CONTACT_DETAILS,
-                    mPaymentUIsManager.getContactSection());
-        }
-    }
-
-    @Override
-    public void onAddressDeleted(String guid) {
-        if (getClient() == null) return;
-
-        // TODO: Delete the address from mPaymentUIsManager.getShippingAddressesSection() and
-        // mPaymentUIsManager.getContactSection(). Note that we only displayed SUGGESTIONS_LIMIT
-        // addresses, so we may want to add back previously ignored addresses.
-    }
-
-    @Override
-    public void onCreditCardUpdated(CreditCard card) {
-        if (getClient() == null || !mPaymentUIsManager.merchantSupportsAutofillCards()
-                || mPaymentUIsManager.getPaymentMethodsSection() == null
-                || mPaymentUIsManager.getAutofillPaymentAppCreator() == null) {
-            return;
-        }
-
-        PaymentApp updatedAutofillCard =
-                mPaymentUIsManager.getAutofillPaymentAppCreator().createPaymentAppForCard(card);
-
-        // Can be null when the card added through settings does not match the requested card
-        // network or is invalid, because autofill settings do not perform the same level of
-        // validation as Basic Card implementation in Chrome.
-        if (updatedAutofillCard == null) return;
-
-        mPaymentUIsManager.getPaymentMethodsSection().addAndSelectOrUpdateItem(updatedAutofillCard);
-
-        updateAppModifiedTotals();
-
-        if (mPaymentUIsManager.getPaymentRequestUI() != null) {
-            mPaymentUIsManager.getPaymentRequestUI().updateSection(
-                    PaymentRequestUI.DataType.PAYMENT_METHODS,
-                    mPaymentUIsManager.getPaymentMethodsSection());
-        }
-    }
-
-    @Override
-    public void onCreditCardDeleted(String guid) {
-        if (getClient() == null) return;
-        if (!mPaymentUIsManager.merchantSupportsAutofillCards()
-                || mPaymentUIsManager.getPaymentMethodsSection() == null) {
-            return;
-        }
-
-        mPaymentUIsManager.getPaymentMethodsSection().removeAndUnselectItem(guid);
-
-        updateAppModifiedTotals();
-
-        if (mPaymentUIsManager.getPaymentRequestUI() != null) {
-            mPaymentUIsManager.getPaymentRequestUI().updateSection(
-                    PaymentRequestUI.DataType.PAYMENT_METHODS,
-                    mPaymentUIsManager.getPaymentMethodsSection());
-        }
     }
 
     // Implement ComponentPaymentRequestDelegate:
@@ -2759,7 +2679,11 @@ public class PaymentRequestImpl
 
         int missingFields = 0;
         if (mPendingApps.isEmpty()) {
-            if (mPaymentUIsManager.merchantSupportsAutofillCards()) {
+            // TODO(crbug.com/1107039): This value could be null when this method is entered from
+            // PaymentRequest#init. We should turn it into boolean after correcting this bug.
+            Boolean merchantSupportsAutofillCards =
+                    mPaymentUIsManager.merchantSupportsAutofillCards();
+            if (merchantSupportsAutofillCards != null && merchantSupportsAutofillCards) {
                 // Record all fields if basic-card is supported but no card exists.
                 missingFields = AutofillPaymentInstrument.CompletionStatus.CREDIT_CARD_EXPIRED
                         | AutofillPaymentInstrument.CompletionStatus.CREDIT_CARD_NO_CARDHOLDER
@@ -2778,7 +2702,7 @@ public class PaymentRequestImpl
 
         updateAppModifiedTotals();
 
-        SettingsAutofillAndPaymentsObserver.getInstance().registerObserver(this);
+        SettingsAutofillAndPaymentsObserver.getInstance().registerObserver(mPaymentUIsManager);
 
         if (mIsCurrentPaymentRequestShowing) {
             // Send AppListReady signal when all apps are created and request.show() is called.
@@ -3065,7 +2989,7 @@ public class PaymentRequestImpl
             mOverviewModeBehavior = null;
         }
 
-        SettingsAutofillAndPaymentsObserver.getInstance().unregisterObserver(this);
+        SettingsAutofillAndPaymentsObserver.getInstance().unregisterObserver(mPaymentUIsManager);
 
         // Destroy native objects.
         for (CurrencyFormatter formatter : mCurrencyFormatterMap.values()) {

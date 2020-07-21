@@ -8,6 +8,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lite_video/lite_video_switches.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -82,6 +83,8 @@ class LiteVideoBrowserTest : public InProcessBrowserTest {
         switches::autoplay::kNoUserGestureRequiredPolicy);
     if (enable_lite_mode_)
       command_line->AppendSwitch("enable-spdy-proxy-auth");
+    command_line->AppendSwitch(
+        lite_video::switches::kLiteVideoForceOverrideDecision);
   }
 
   void SetUp() override {

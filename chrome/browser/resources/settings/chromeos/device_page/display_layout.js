@@ -70,6 +70,9 @@ Polymer({
   allowDisplayAlignmentApi_:
       loadTimeData.getBoolean('allowDisplayAlignmentApi'),
 
+  /** @private {string} */
+  invalidDisplayId_: loadTimeData.getString('invalidDisplayId'),
+
   /** @override */
   created() {
     if (this.allowDisplayAlignmentApi_) {
@@ -272,7 +275,14 @@ Polymer({
       this.finishUpdateDisplayBounds(id);
       newBounds = this.getCalculatedDisplayBounds(id);
       this.lastDragCoordinates_ = null;
+      if (this.allowDisplayIdentificationApi_) {
+        // When the drag stops, remove the highlight around the display.
+        this.browserProxy_.highlightDisplay(this.invalidDisplayId_);
+      }
     } else {
+      if (this.allowDisplayIdentificationApi_) {
+        this.browserProxy_.highlightDisplay(id);
+      }
       // Make sure the dragged display is also selected.
       if (id != this.selectedDisplay.id) {
         this.fire('select-display', id);

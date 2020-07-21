@@ -18,7 +18,7 @@ class ExternalProtocolObserver
   ~ExternalProtocolObserver() override;
 
   // content::WebContentsObserver overrides.
-  void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
+  void DidGetUserInteraction(const blink::WebInputEvent& event) override;
 
  private:
   explicit ExternalProtocolObserver(content::WebContents* web_contents);

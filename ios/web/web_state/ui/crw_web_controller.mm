@@ -6,6 +6,7 @@
 
 #import <WebKit/WebKit.h>
 
+#include "base/bind.h"
 #import "base/ios/block_types.h"
 #include "base/ios/ios_util.h"
 #include "base/json/string_escape.h"
@@ -858,6 +859,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                       completion(snapshot);
                     }
                   }];
+}
+
+- (void)createFullPagePDFWithCompletion:(void (^)(NSData*))completionBlock {
+  web::CreateFullPagePdf(self.webView, base::BindOnce(completionBlock));
 }
 
 #pragma mark - CRWTouchTrackingDelegate (Public)

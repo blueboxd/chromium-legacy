@@ -29,7 +29,7 @@ start](/android_webview/docs/quick-start.md)).
 The WebView we ship to users is based on downstream (private) build targets. If
 you need to test the GMS-based implementation which we use to block real
 malware, you need to build one of the downstream targets. See [Google-internal
-instructions](http://go/clank-webview/building-webview/android_webview-tests).
+instructions](http://go/clank-webview/build_instructions.md).
 
 ## Opt-in/consent/requirements
 

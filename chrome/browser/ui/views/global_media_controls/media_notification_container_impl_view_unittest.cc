@@ -64,7 +64,7 @@ class MediaNotificationContainerImplViewTest : public ChromeViewsTestBase {
 
     notification_container_ = widget_->SetContentsView(
         std::make_unique<MediaNotificationContainerImplView>(
-            kTestNotificationId, nullptr));
+            kTestNotificationId, nullptr, nullptr));
 
     observer_ = std::make_unique<MockMediaNotificationContainerObserver>();
     notification_container_->AddObserver(observer_.get());
@@ -381,7 +381,7 @@ TEST_F(MediaNotificationContainerImplViewTest, SendsMetadataUpdates) {
 
 TEST_F(MediaNotificationContainerImplViewTest, SendsDestroyedUpdates) {
   auto container = std::make_unique<MediaNotificationContainerImplView>(
-      kOtherTestNotificationId, nullptr);
+      kOtherTestNotificationId, nullptr, nullptr);
   MockMediaNotificationContainerObserver observer;
   container->AddObserver(&observer);
 

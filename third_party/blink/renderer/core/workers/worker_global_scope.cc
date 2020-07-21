@@ -476,7 +476,8 @@ void WorkerGlobalScope::ReceiveMessage(BlinkTransferableMessage message) {
 WorkerGlobalScope::WorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     WorkerThread* thread,
-    base::TimeTicks time_origin)
+    base::TimeTicks time_origin,
+    ukm::SourceId ukm_source_id)
     : WorkerOrWorkletGlobalScope(
           thread->GetIsolate(),
           CreateSecurityOrigin(creation_params.get(), GetExecutionContext()),
@@ -498,7 +499,8 @@ WorkerGlobalScope::WorkerGlobalScope(
       thread_(thread),
       time_origin_(time_origin),
       font_selector_(MakeGarbageCollected<OffscreenFontSelector>(this)),
-      script_eval_state_(ScriptEvalState::kPauseAfterFetch) {
+      script_eval_state_(ScriptEvalState::kPauseAfterFetch),
+      ukm_source_id_(ukm_source_id) {
   InstanceCounters::IncrementCounter(
       InstanceCounters::kWorkerGlobalScopeCounter);
 

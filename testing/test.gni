@@ -42,6 +42,7 @@ if ((is_linux && !is_chromeos) || is_mac || is_win ||
 # Variable:
 #   use_raw_android_executable: Use executable() rather than android_apk().
 #   use_native_activity: Test implements ANativeActivity_onCreate().
+#   win_test_enable_cfi_linker: (Win) Enable CFI linker for this test binary.
 template("test") {
   if (is_android) {
     _use_raw_android_executable = defined(invoker.use_raw_android_executable) &&
@@ -437,6 +438,14 @@ template("test") {
         _use_xvfb = false
       }
 
+      if (is_win) {
+        if (defined(invoker.win_test_enable_cfi_linker)) {
+          _win_test_enable_cfi_linker = invoker.win_test_enable_cfi_linker
+        } else {
+          _win_test_enable_cfi_linker = false
+        }
+      }
+
       generate_wrapper(_gen_runner_target) {
         testonly = true
         wrapper_script = "$root_build_dir/bin/run_" + _executable
@@ -478,10 +487,14 @@ template("test") {
       }
 
       if (is_win) {
-        # Initializing CFG data during process creation is a significant
-        # bottleneck for large test binaries, and CFG is not needed for tests,
-        # so disable it. See https://crbug.com/950923 for details.
-        configs -= [ "//build/config/win:cfi_linker" ]
+        if (!_win_test_enable_cfi_linker) {
+          # Initializing CFG data during process creation is a significant
+          # bottleneck for large test binaries, and CFG is not needed for
+          # most tests, so disable it. See https://crbug.com/950923 for
+          # details. This can be overridden by specifying
+          # win_test_enable_cfi_linker.
+          configs -= [ "//build/config/win:cfi_linker" ]
+        }
       }
       testonly = true
       deps += [

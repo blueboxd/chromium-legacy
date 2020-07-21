@@ -109,9 +109,30 @@ void LiteVideoObserver::DidFinishNavigation(
 
   LOCAL_HISTOGRAM_BOOLEAN("LiteVideo.Navigation.HasHint", hint ? true : false);
 
-  // TODO(crbug/1082553): Add logic to pass the hint via the
-  // ResourceLoadingAgent to the LiteVideoAgent for use when throttling media
-  // requests. Only pass a hint if the decision is kAllowed.
+  if (!hint)
+    return;
+
+  content::RenderFrameHost* render_frame_host =
+      navigation_handle->GetRenderFrameHost();
+  if (!render_frame_host || !render_frame_host->GetProcess())
+    return;
+
+  mojo::AssociatedRemote<blink::mojom::PreviewsResourceLoadingHintsReceiver>
+      loading_hints_agent;
+
+  auto hint_ptr = blink::mojom::LiteVideoHint::New();
+  hint_ptr->target_downlink_bandwidth_kbps =
+      hint->target_downlink_bandwidth_kbps();
+  hint_ptr->kilobytes_to_buffer_before_throttle =
+      hint->kilobytes_to_buffer_before_throttle();
+  hint_ptr->target_downlink_rtt_latency = hint->target_downlink_rtt_latency();
+  hint_ptr->max_throttling_delay = hint->max_throttling_delay();
+
+  if (render_frame_host->GetRemoteAssociatedInterfaces()) {
+    render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
+        &loading_hints_agent);
+    loading_hints_agent->SetLiteVideoHint(std::move(hint_ptr));
+  }
 }
 
 lite_video::LiteVideoDecision LiteVideoObserver::MakeLiteVideoDecision(

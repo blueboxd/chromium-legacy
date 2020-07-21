@@ -49,9 +49,9 @@ std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildHandlerList(
           policy::key::kURLAllowlist, policy::policy_prefs::kUrlWhitelist,
           base::Value::Type::LIST)));
   handlers->AddHandler(std::make_unique<policy::SimpleDeprecatingPolicyHandler>(
-      std::make_unique<policy::URLBlacklistPolicyHandler>(
+      std::make_unique<policy::URLBlocklistPolicyHandler>(
           policy::key::kURLBlacklist),
-      std::make_unique<policy::URLBlacklistPolicyHandler>(
+      std::make_unique<policy::URLBlocklistPolicyHandler>(
           policy::key::kURLBlocklist)));
 
   // HTTP Negotiate authentication

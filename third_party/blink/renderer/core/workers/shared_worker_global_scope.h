@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_GLOBAL_SCOPE_H_
 
 #include <memory>
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
@@ -51,7 +52,8 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
   SharedWorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                           SharedWorkerThread*,
                           base::TimeTicks time_origin,
-                          const base::UnguessableToken& appcache_host_id);
+                          const base::UnguessableToken& appcache_host_id,
+                          ukm::SourceId ukm_source_id);
 
   ~SharedWorkerGlobalScope() override;
 

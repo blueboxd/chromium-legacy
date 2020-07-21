@@ -30,13 +30,6 @@ using password_manager::FillData;
 typedef void (^PasswordSuggestionsAvailableCompletion)(
     const password_manager::AccountSelectFillData* __nullable);
 
-@interface PasswordSuggestionHelper ()
-// Delegate to receive callbacks.
-@property(nonatomic, weak, readonly) id<PasswordSuggestionHelperDelegate>
-    delegate;
-
-@end
-
 @implementation PasswordSuggestionHelper {
   // The C++ interface to cache and retrieve password suggestions.
   AccountSelectFillData _fillData;
@@ -50,14 +43,10 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
   PasswordSuggestionsAvailableCompletion _suggestionsAvailableCompletion;
 }
 
-@synthesize delegate = _delegate;
-
-- (instancetype)initWithDelegate:
-    (id<PasswordSuggestionHelperDelegate>)delegate {
+- (instancetype)init {
   self = [super init];
   if (self) {
     _sentPasswordFormToPasswordManager = NO;
-    _delegate = delegate;
   }
   return self;
 }

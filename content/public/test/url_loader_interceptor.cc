@@ -587,16 +587,8 @@ void URLLoaderInterceptor::WriteResponse(
   if (headers) {
     headers_str = *headers;
   } else {
-    base::FilePath::StringPieceType mock_headers_extension;
-#if defined(OS_WIN)
-    base::string16 temp =
-        base::ASCIIToUTF16(net::test_server::kMockHttpHeadersExtension);
-    mock_headers_extension = temp;
-#else
-    mock_headers_extension = net::test_server::kMockHttpHeadersExtension;
-#endif
-
-    base::FilePath headers_path(file_path.AddExtension(mock_headers_extension));
+    base::FilePath headers_path(
+        file_path.AddExtension(net::test_server::kMockHttpHeadersExtension));
     if (base::PathExists(headers_path)) {
       headers_str = ReadFile(headers_path);
     } else {

@@ -37,7 +37,7 @@ void RenderWidgetScreenMetricsEmulator::DisableAndApply() {
 }
 
 void RenderWidgetScreenMetricsEmulator::ChangeEmulationParams(
-    const blink::WebDeviceEmulationParams& params) {
+    const blink::DeviceEmulationParams& params) {
   emulation_params_ = params;
   Apply();
 }
@@ -61,14 +61,14 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
 
   // If either the width or height are specified by the emulator, then we use
   // that size, and assume that they have the scale pre-applied to them.
-  if (emulation_params_.view_size.width) {
-    widget_size.set_width(emulation_params_.view_size.width);
+  if (emulation_params_.view_size.width()) {
+    widget_size.set_width(emulation_params_.view_size.width());
   } else {
     widget_size.set_width(
         base::ClampRound(widget_size.width() / emulation_params_.scale));
   }
-  if (emulation_params_.view_size.height) {
-    widget_size.set_height(emulation_params_.view_size.height);
+  if (emulation_params_.view_size.height()) {
+    widget_size.set_height(emulation_params_.view_size.height());
   } else {
     widget_size.set_height(
         base::ClampRound(widget_size.height() / emulation_params_.scale));
@@ -122,7 +122,7 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
   // Pass three emulation parameters to the blink side:
   // - we keep the real device scale factor in compositor to produce sharp image
   //   even when emulating different scale factor;
-  blink::WebDeviceEmulationParams modified_emulation_params = emulation_params_;
+  blink::DeviceEmulationParams modified_emulation_params = emulation_params_;
   modified_emulation_params.device_scale_factor =
       original_screen_info().device_scale_factor;
   delegate_->SetScreenMetricsEmulationParameters(true,

@@ -115,9 +115,9 @@ bool File::Init(const base::FilePath& name) {
 
   DWORD sharing = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
   DWORD access = GENERIC_READ | GENERIC_WRITE | DELETE;
-  base_file_ = base::File(CreateFile(base::as_wcstr(name.value()), access,
-                                     sharing, nullptr, OPEN_EXISTING,
-                                     FILE_FLAG_OVERLAPPED, nullptr));
+  base_file_ =
+      base::File(CreateFile(name.value().c_str(), access, sharing, nullptr,
+                            OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr));
 
   if (!base_file_.IsValid())
     return false;
@@ -126,9 +126,8 @@ bool File::Init(const base::FilePath& name) {
                                                   CompletionHandler::Get());
 
   init_ = true;
-  sync_base_file_ =
-      base::File(CreateFile(base::as_wcstr(name.value()), access, sharing,
-                            nullptr, OPEN_EXISTING, 0, nullptr));
+  sync_base_file_ = base::File(CreateFile(name.value().c_str(), access, sharing,
+                                          nullptr, OPEN_EXISTING, 0, nullptr));
 
   if (!sync_base_file_.IsValid())
     return false;

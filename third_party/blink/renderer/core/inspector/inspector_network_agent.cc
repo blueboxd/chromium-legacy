@@ -523,9 +523,11 @@ static std::unique_ptr<protocol::Network::ResourceTiming> BuildObjectForTiming(
       .build();
 }
 
-static bool FormDataToString(scoped_refptr<EncodedFormData> body,
-                             size_t max_body_size,
-                             String* content) {
+static bool FormDataToString(
+    scoped_refptr<EncodedFormData> body,
+    size_t max_body_size,
+    protocol::Array<protocol::Network::PostDataEntry>* data_entries,
+    String* content) {
   *content = "";
   if (!body || body->IsEmpty())
     return false;
@@ -540,6 +542,15 @@ static bool FormDataToString(scoped_refptr<EncodedFormData> body,
   if (max_body_size != 0 && body->SizeInBytes() > max_body_size)
     return true;
 
+  for (const auto& element : body->Elements()) {
+    auto data_entry = protocol::Network::PostDataEntry::create().build();
+    auto bytes = protocol::Binary::fromSpan(
+        reinterpret_cast<const uint8_t*>(element.data_.data()),
+        element.data_.size());
+    data_entry->setBytes(std::move(bytes));
+    data_entries->push_back(std::move(data_entry));
+  }
+
   Vector<char> bytes;
   body->Flatten(bytes);
   *content = String::FromUTF8WithLatin1Fallback(bytes.data(), bytes.size());
@@ -550,8 +561,11 @@ static std::unique_ptr<protocol::Network::Request>
 BuildObjectForResourceRequest(const ResourceRequest& request,
                               scoped_refptr<EncodedFormData> post_data,
                               size_t max_body_size) {
-  String postData;
-  bool hasPostData = FormDataToString(post_data, max_body_size, &postData);
+  String data_string;
+  auto data_entries =
+      std::make_unique<protocol::Array<protocol::Network::PostDataEntry>>();
+  bool has_post_data = FormDataToString(post_data, max_body_size,
+                                        data_entries.get(), &data_string);
   KURL url = request.Url();
   // protocol::Network::Request doesn't have a separate referrer string member
   // like blink::ResourceRequest, so here we add ResourceRequest's referrer
@@ -572,9 +586,11 @@ BuildObjectForResourceRequest(const ResourceRequest& request,
           .build();
   if (url.FragmentIdentifier())
     result->setUrlFragment("#" + url.FragmentIdentifier());
-  if (!postData.IsEmpty())
-    result->setPostData(postData);
-  if (hasPostData)
+  if (!data_string.IsEmpty())
+    result->setPostData(data_string);
+  if (data_entries->size())
+    result->setPostDataEntries(std::move(data_entries));
+  if (has_post_data)
     result->setHasPostData(true);
   return result;
 }

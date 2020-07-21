@@ -138,6 +138,7 @@ source_set("metric_kit_subscriber") {
   deps = [
     ":ios_enable_metrickit_buildflags",
     "//base",
+    "//components/version_info",
   ]
 }
 
@@ -234,6 +235,8 @@ source_set("test_support") {
     "fake_startup_information.h",
     "fake_startup_information.mm",
     "metrics_mediator_testing.h",
+    "mock_metrickit_metric_payload.h",
+    "mock_metrickit_metric_payload.mm",
     "mock_tab_opener.h",
     "mock_tab_opener.mm",
   ]
@@ -242,14 +245,19 @@ source_set("test_support") {
     ":tab_opening",
     "//base",
     "//base/test:test_support",
+    "//components/version_info",
     "//ios/chrome/app",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app:mode",
     "//ios/chrome/browser",
     "//ios/chrome/browser/url_loading",
     "//net",
+    "//third_party/ocmock",
     "//ui/base",
     "//url",
   ]
-  frameworks = [ "UIKit.framework" ]
+  frameworks = [
+    "MetricKit.framework",
+    "UIKit.framework",
+  ]
 }

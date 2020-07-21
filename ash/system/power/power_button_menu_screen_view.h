@@ -38,6 +38,15 @@ class ASH_EXPORT PowerButtonMenuScreenView : public views::View,
   // Schedules an animation to show or hide the view.
   void ScheduleShowHideAnimation(bool show);
 
+  // Resets the shield and menu's opacity to 0. Used when dismissing the menu
+  // without animation to prepare for the next fade in animation.
+  void ResetOpacity();
+
+  // Called when the associated widget is shown. Updates power button related
+  // info and calculates |menu_bounds_origins_| if needed. Recreates menu items.
+  void OnWidgetShown(PowerButtonController::PowerButtonPosition position,
+                     double offset_percentage);
+
   // views::View:
   const char* GetClassName() const override;
 
@@ -60,8 +69,8 @@ class ASH_EXPORT PowerButtonMenuScreenView : public views::View,
   // Lays out the view without animation transform.
   void LayoutWithoutTransform();
 
-  // Initializes |menu_bounds_origins_| according to power button position info.
-  void InitializeMenuBoundsOrigins();
+  // Updates |menu_bounds_origins_| according to power button position info.
+  void UpdateMenuBoundsOrigins();
 
   // Gets the bounds of power button menu.
   gfx::Rect GetMenuBounds();

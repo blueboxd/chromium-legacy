@@ -863,7 +863,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AlignedAlloc(size_t alignment,
   // Handle cases such as size = 16, alignment = 64.
   // Wastes memory when a large alignment is requested with a small size, but
   // this is hard to avoid, and should not be too common.
-  if (size < alignment) {
+  if (UNLIKELY(size < alignment)) {
     ptr = Alloc(alignment, "");
   } else {
     // PartitionAlloc only guarantees alignment for power-of-two sized
@@ -875,7 +875,10 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AlignedAlloc(size_t alignment,
     ptr = Alloc(size_rounded_up, "");
   }
 
-  PA_CHECK(reinterpret_cast<uintptr_t>(ptr) % alignment == 0ull);
+  // |alignment| is a power of two, but the compiler doesn't necessarily know
+  // that. A regular % operation is very slow, make sure to use the equivalent,
+  // faster form.
+  PA_CHECK(!(reinterpret_cast<uintptr_t>(ptr) & (alignment - 1)));
 
   return ptr;
 }

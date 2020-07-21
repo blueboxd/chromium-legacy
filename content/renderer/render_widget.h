@@ -34,6 +34,7 @@
 #include "content/common/content_export.h"
 #include "content/common/content_to_visible_time_reporter.h"
 #include "content/common/drag_event_source_info.h"
+#include "content/common/renderer.mojom-forward.h"
 #include "content/public/common/drop_data.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_widget_delegate.h"
@@ -71,7 +72,7 @@ class SyncMessageFilter;
 
 namespace blink {
 struct VisualProperties;
-struct WebDeviceEmulationParams;
+struct DeviceEmulationParams;
 class WebDragData;
 class WebFrameWidget;
 class WebInputMethodController;
@@ -190,20 +191,15 @@ class CONTENT_EXPORT RenderWidget
   // the WebFrameWidget), for a frame that is a main frame.
   void InitForMainFrame(ShowCallback show_callback,
                         blink::WebFrameWidget* web_frame_widget,
-                        const blink::ScreenInfo& screen_info);
+                        const blink::ScreenInfo& screen_info,
+                        mojom::ViewWidgetType view_widget_type,
+                        RenderWidgetDelegate& delegate);
 
   // Initialize a new RenderWidget that will be attached to a RenderFrame (via
   // the WebFrameWidget), for a frame that is a local root, but not the main
   // frame.
   void InitForChildLocalRoot(blink::WebFrameWidget* web_frame_widget,
                              const blink::ScreenInfo& screen_info);
-
-  // Sets a delegate to handle certain RenderWidget operations that need an
-  // escape to the RenderView.
-  void set_delegate(RenderWidgetDelegate* delegate) {
-    DCHECK(!delegate_);
-    delegate_ = delegate;
-  }
 
   RenderWidgetDelegate* delegate() const { return delegate_; }
 
@@ -257,7 +253,7 @@ class CONTENT_EXPORT RenderWidget
   // RenderWidgetScreenMetricsEmulatorDelegate
   void SetScreenMetricsEmulationParameters(
       bool enabled,
-      const blink::WebDeviceEmulationParams& params) override;
+      const blink::DeviceEmulationParams& params) override;
   void SetScreenInfoAndSize(const blink::ScreenInfo& screen_info,
                             const gfx::Size& widget_size,
                             const gfx::Size& visible_viewport_size) override;
@@ -330,6 +326,7 @@ class CONTENT_EXPORT RenderWidget
       const blink::VisualProperties& properties) override;
   void UpdateScreenRects(const gfx::Rect& widget_screen_rect,
                          const gfx::Rect& window_screen_rect) override;
+  void SetIsNestedMainFrameWidget(bool is_nested) override;
 
   // Returns the scale being applied to the document in blink by the device
   // emulator. Returns 1 if there is no emulation active. Use this to position
@@ -466,7 +463,7 @@ class CONTENT_EXPORT RenderWidget
   // RenderWidget IPC message handlers.
   void OnClose();
   void OnCreatingNewAck();
-  void OnEnableDeviceEmulation(const blink::WebDeviceEmulationParams& params);
+  void OnEnableDeviceEmulation(const blink::DeviceEmulationParams& params);
   void OnDisableDeviceEmulation();
   void OnWasHidden();
   void OnWasShown(
@@ -711,8 +708,13 @@ class CONTENT_EXPORT RenderWidget
   // unique_ptr back in Close(). In the latter cases, the browser process takes
   // ownership via IPC.  These booleans exist to allow us to confirm than an IPC
   // message to kill the render widget is coming for a popup or fullscreen.
-  bool popup_ = false;
-  bool pepper_fullscreen_ = false;
+  bool for_popup_ = false;
+  bool for_pepper_fullscreen_ = false;
+  // If this widget is for a main frame (i.e. has a delegate_), this bit is
+  // used to tell if this is a nested widget (an "inner web contents") like a
+  // <webview> or <portal> widget. If false, the widget is either not a main
+  // frame (delegate_ == nullptr) or it is the top level widget.
+  bool for_nested_main_frame_ = false;
 
   // A callback into the creator/opener of this widget, to be executed when
   // WebWidgetClient::Show() occurs.

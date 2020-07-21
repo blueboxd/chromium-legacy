@@ -63,7 +63,7 @@ google_apis::CancelCallback DriveServiceOnWorker::DeleteResource(
   return google_apis::CancelCallback();
 }
 
-google_apis::CancelCallback DriveServiceOnWorker::DownloadFile(
+google_apis::CancelCallbackOnce DriveServiceOnWorker::DownloadFile(
     const base::FilePath& local_cache_path,
     const std::string& resource_id,
     const google_apis::DownloadActionCallback& download_action_callback,
@@ -83,7 +83,7 @@ google_apis::CancelCallback DriveServiceOnWorker::DownloadFile(
           RelayCallbackToTaskRunner(worker_task_runner_.get(), FROM_HERE,
                                     progress_callback)));
 
-  return google_apis::CancelCallback();
+  return google_apis::CancelCallbackOnce();
 }
 
 google_apis::CancelCallback DriveServiceOnWorker::GetAboutResource(

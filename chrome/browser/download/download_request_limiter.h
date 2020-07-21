@@ -127,7 +127,7 @@ class DownloadRequestLimiter
         content::NavigationHandle* navigation_handle) override;
     void DidFinishNavigation(
         content::NavigationHandle* navigation_handle) override;
-    void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
+    void DidGetUserInteraction(const blink::WebInputEvent& event) override;
     void WebContentsDestroyed() override;
 
     // Asks the user if they really want to allow the download.

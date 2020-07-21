@@ -49,6 +49,9 @@ class TestOptOutBlocklistDelegate : public OptOutBlocklistDelegate {
   void OnUserBlocklistedStatusChange(bool blocklisted) override {
     user_blocklisted_ = blocklisted;
   }
+  void OnLoadingStateChanged(bool is_loaded) override {
+    blocklist_loaded_ = is_loaded;
+  }
   void OnBlocklistCleared(base::Time time) override {
     blocklist_cleared_ = true;
     blocklist_cleared_time_ = time;
@@ -62,6 +65,9 @@ class TestOptOutBlocklistDelegate : public OptOutBlocklistDelegate {
   // Gets the state of user blocklisted status.
   bool user_blocklisted() const { return user_blocklisted_; }
 
+  // Gets the load state of blocklist.
+  bool blocklist_loaded() const { return blocklist_loaded_; }
+
   // Gets the state of blocklisted cleared status of |this| for testing.
   bool blocklist_cleared() const { return blocklist_cleared_; }
 
@@ -71,6 +77,9 @@ class TestOptOutBlocklistDelegate : public OptOutBlocklistDelegate {
  private:
   // The user blocklisted status of |this| blocklist_delegate.
   bool user_blocklisted_ = false;
+
+  // The blocklist load status of |this| blocklist_delegate.
+  bool blocklist_loaded_ = false;
 
   // Check if the blocklist is notified as cleared on |this| blocklist_delegate.
   bool blocklist_cleared_ = false;
@@ -952,6 +961,7 @@ TEST_F(OptOutBlocklistTest, ObserverIsNotifiedWhenLoadBlocklistDone) {
   opt_out_store->SetBlocklistData(std::move(data));
 
   EXPECT_FALSE(blocklist_delegate_.user_blocklisted());
+  EXPECT_FALSE(blocklist_delegate_.blocklist_loaded());
   allowed_types.clear();
   allowed_types[1] = 0;
   auto block_list = std::make_unique<TestOptOutBlocklist>(
@@ -966,6 +976,7 @@ TEST_F(OptOutBlocklistTest, ObserverIsNotifiedWhenLoadBlocklistDone) {
   block_list->Init();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(blocklist_delegate_.user_blocklisted());
+  EXPECT_TRUE(blocklist_delegate_.blocklist_loaded());
 }
 
 TEST_F(OptOutBlocklistTest, ObserverIsNotifiedOfHistoricalBlocklistedHosts) {

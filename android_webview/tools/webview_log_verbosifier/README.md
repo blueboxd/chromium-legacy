@@ -22,8 +22,8 @@ relevant).
 
 We no longer support building the log verbosifier from source. Googlers can get
 a [prebuilt copy of the log
-verbosifier](http://go/clank-webview/zzarchive/webview-manual-testing). External
-contributors can request a precompiled copy by [emailing the WebView
+verbosifier](http://go/clank-webview-legacy/zzarchive/webview-manual-testing).
+External contributors can request a precompiled copy by [emailing the WebView
 team](https://groups.google.com/a/chromium.org/forum/#!forum/android-webview-dev).
 
 ## Searching logcat

@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "content/common/content_export.h"
+#include "third_party/blink/public/common/widget/device_emulation_params.h"
 #include "third_party/blink/public/common/widget/screen_info.h"
-#include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -57,7 +57,7 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
   void DisableAndApply();
 
   // Sets new parameters and applies them to the RenderWidget.
-  void ChangeEmulationParams(const blink::WebDeviceEmulationParams& params);
+  void ChangeEmulationParams(const blink::DeviceEmulationParams& params);
 
   void OnSynchronizeVisualProperties(
       const blink::ScreenInfo& screen_info,
@@ -70,8 +70,8 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
 
  private:
   bool emulating_desktop() const {
-    return emulation_params_.screen_position ==
-           blink::WebDeviceEmulationParams::kDesktop;
+    return emulation_params_.screen_type ==
+           blink::mojom::EmulatedScreenType::kDesktop;
   }
 
   // Applies emulated values to the RenderWidget.
@@ -80,7 +80,7 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
   RenderWidgetScreenMetricsEmulatorDelegate* const delegate_;
 
   // Parameters as passed by RenderWidget::EnableScreenMetricsEmulation.
-  blink::WebDeviceEmulationParams emulation_params_;
+  blink::DeviceEmulationParams emulation_params_;
 
   // Original values to restore back after emulation ends.
   blink::ScreenInfo original_screen_info_;

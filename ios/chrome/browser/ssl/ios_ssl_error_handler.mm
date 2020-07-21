@@ -102,17 +102,27 @@ void IOSSSLErrorHandler::StartHandlingError() {
       CaptivePortalDetectorTabHelper::FromWebState(web_state_);
   // TODO(crbug.com/760873): replace test with DCHECK when this method is only
   // called on WebStates attached to tabs.
-  if (tab_helper) {
-    base::WeakPtr<IOSSSLErrorHandler> weak_error_handler =
-        weak_factory_.GetWeakPtr();
-
-    tab_helper->detector()->DetectCaptivePortal(
-        GURL(CaptivePortalDetector::kDefaultURL),
-        base::BindRepeating(
-            &IOSSSLErrorHandler::HandleCaptivePortalDetectionResult,
-            weak_error_handler),
-        NO_TRAFFIC_ANNOTATION_YET);
+  if (!tab_helper) {
+    // This WebState has not been inserted into a WebStateList. This can
+    // happen, for example, when a reading list entry is being loaded in the
+    // background. Since this WebState is not visible to the user, it doesn't
+    // make sense to display an interstitial, since the interstitial will not
+    // be seen.
+    if (!callback_.is_null()) {
+      std::move(callback_).Run(/*proceed=*/false);
+    }
+    return;
   }
+
+  base::WeakPtr<IOSSSLErrorHandler> weak_error_handler =
+      weak_factory_.GetWeakPtr();
+
+  tab_helper->detector()->DetectCaptivePortal(
+      GURL(CaptivePortalDetector::kDefaultURL),
+      base::BindRepeating(
+          &IOSSSLErrorHandler::HandleCaptivePortalDetectionResult,
+          weak_error_handler),
+      NO_TRAFFIC_ANNOTATION_YET);
 
   // Default to presenting the SSL interstitial if Captive Portal detection
   // takes too long.
@@ -140,11 +150,7 @@ void IOSSSLErrorHandler::ShowSSLInterstitial() {
   // the case if |timer_| triggered the call of this method.
   CaptivePortalDetectorTabHelper* tab_helper =
       CaptivePortalDetectorTabHelper::FromWebState(web_state_);
-  // TODO(crbug.com/760873): replace test with DCHECK when this method is only
-  // called on WebStates attached to tabs.
-  if (tab_helper) {
-    tab_helper->detector()->Cancel();
-  }
+  tab_helper->detector()->Cancel();
 
   int options_mask =
       overridable_

@@ -46,11 +46,20 @@ so on. The waterfalls we’re interested in are:
         compare the `got_angle_revision` buildbot property on the GPU builders
         or `parent_got_angle_revision` on the testers. This revision can be
         used to do a `git log` in the `third_party/angle` repository.
+*   [Chromium SwANGLE]
+    *   These bots run GPU tests on top of ANGLE's GLES implementation running
+        on top of SwiftShader's Vulkan implementation purely in software.
+        Regressions should mostly be handled by the [ANGLE Wrangler], but some
+        failures fall into Pixel Wrangler's domain, for example, WebGL failures
+        due to Chromium-side and WebGL-side changes on
+        linux-swangle-chromium-x64, mac-swangle-chromium-x64 and
+        win-swangle-chromium-x86 bots.
 
 <!-- TODO(kainino): update link when the page is migrated -->
 [Tour of the Chromium Buildbot Waterfall]: http://www.chromium.org/developers/testing/chromium-build-infrastructure/tour-of-the-chromium-buildbot
 [Chromium GPU]: https://ci.chromium.org/p/chromium/g/chromium.gpu/console?reload=120
 [Chromium GPU FYI]: https://ci.chromium.org/p/chromium/g/chromium.gpu.fyi/console?reload=120
+[Chromium SwANGLE]: https://ci.chromium.org/p/chromium/g/chromium.swangle/console?reload=120
 [ANGLE tryservers]: https://build.chromium.org/p/tryserver.chromium.angle/waterfall
 [ANGLE Wrangler]: https://chromium.googlesource.com/angle/angle/+/master/infra/ANGLEWrangling.md
 
@@ -128,9 +137,9 @@ shift, and a calendar appointment.
 ### How to Keep the Bots Green
 
 1.  Watch for redness on the tree.
-    1.  [Sheriff-O-Matic now has support for the chromium.gpu.fyi waterfall]!
-    1.  The chromium.gpu bots are covered under Sheriff-O-Matic's [Chromium
-        tab]. As pixel wrangler, ignore any non-GPU test failures in this tab.
+    1.  [Sheriff-O-Matic] now has support for all the
+        [GPU Bots' Waterfalls](#GPU-Bots_Waterfalls) under the
+        [Chromium GPU][Sheriff-O-Matic] tab!
     1.  The bots are expected to be green all the time. Flakiness on these bots
         is neither expected nor acceptable.
     1.  If a bot goes consistently red, it's necessary to figure out whether a
@@ -259,8 +268,7 @@ shift, and a calendar appointment.
 1.  For the remaining Gtest-style tests, use the [`DISABLED_`
     modifier][gtest-DISABLED] to suppress any failures if necessary.
 
-[Sheriff-O-Matic now has support for the chromium.gpu.fyi waterfall]: https://sheriff-o-matic.appspot.com/chromium.gpu.fyi
-[Chromium tab]: https://sheriff-o-matic.appspot.com/chromium
+[Sheriff-O-Matic]: https://sheriff-o-matic.appspot.com/chromium.gpu
 [tree sheriffing page]: https://sites.google.com/a/chromium.org/dev/developers/tree-sheriffs
 [linux-rel]: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-rel
 [luci.chromium.try]: https://ci.chromium.org/p/chromium/g/luci.chromium.try/builders

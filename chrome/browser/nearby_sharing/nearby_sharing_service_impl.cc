@@ -9,10 +9,10 @@
 #include "base/bind.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/nearby_sharing/fast_initiation_manager.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
-#include "chrome/browser/nearby_sharing/nearby_sharing_prefs.h"
 #include "chrome/services/sharing/public/cpp/advertisement.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections_types.mojom.h"
 #include "components/prefs/pref_service.h"
@@ -645,4 +645,24 @@ void NearbySharingServiceImpl::StopAdvertising() {
   advertising_data_usage_preference_ = DataUsage::kUnknown;
   advertising_power_level_ = PowerLevel::kUnknown;
   NS_LOG(VERBOSE) << __func__ << ": Advertising has stopped";
+}
+
+void NearbySharingServiceImpl::OnIncomingTransferUpdate(
+    const ShareTarget& share_target,
+    TransferMetadata metadata) {
+  // TODO(himanshujaju) - Implement.
+}
+
+IncomingShareTargetInfo& NearbySharingServiceImpl::GetIncomingShareTargetInfo(
+    const ShareTarget& share_target) {
+  auto ret = incoming_share_target_info_map_.insert(
+      {share_target.id(), IncomingShareTargetInfo()});
+  DCHECK(ret.first != incoming_share_target_info_map_.end());
+
+  return ret.first->second;
+}
+
+NearbyConnection* NearbySharingServiceImpl::GetIncomingConnection(
+    const ShareTarget& share_target) {
+  return GetIncomingShareTargetInfo(share_target).nearby_connection();
 }

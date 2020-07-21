@@ -124,7 +124,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Notification that an input event from the user was dispatched to the
   // widget.
   virtual void DidReceiveInputEvent(RenderWidgetHostImpl* render_widget_host,
-                                    const blink::WebInputEvent::Type type) {}
+                                    const blink::WebInputEvent& event) {}
 
   // Asks whether the page is in a state of ignoring input events.
   virtual bool ShouldIgnoreInputEvents();

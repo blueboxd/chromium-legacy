@@ -32,12 +32,12 @@
 #include "base/optional.h"
 #include "cc/layers/picture_layer.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "third_party/blink/public/common/widget/device_emulation_params.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
-#include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -3447,7 +3447,7 @@ void Internals::setDeviceEmulationScale(float scale,
         "The document's page cannot be retrieved.");
     return;
   }
-  WebDeviceEmulationParams params;
+  DeviceEmulationParams params;
   params.scale = scale;
   page->GetChromeClient().GetWebView()->EnableDeviceEmulation(params);
 }

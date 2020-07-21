@@ -510,6 +510,9 @@ if (is_linux && is_clang) {
     configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
     configs -= [ "//build/config/coverage:default_coverage" ]
 
+    # Do not use PGO as it also requires a few symbols.
+    configs -= [ "//build/config/compiler/pgo:default_pgo_flags" ]
+
     # Disable default_init_stack_vars because it inserts memset() calls, but
     # memset() is not available in this libc-free context.
     configs -= [ "//build/config/compiler:default_init_stack_vars" ]

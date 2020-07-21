@@ -27,8 +27,9 @@ base::Optional<LiteVideoHint> LiteVideoHintCache::GetHintForNavigationURL(
     return base::nullopt;
 
   return LiteVideoHint(*target_downlink_bandwidth_kbps,
-                       features::LiteVideoTargetDownlinkRTTLatencyMs(),
-                       features::LiteVideoKilobytesToBufferBeforeThrottle());
+                       features::LiteVideoTargetDownlinkRTTLatency(),
+                       features::LiteVideoKilobytesToBufferBeforeThrottle(),
+                       features::LiteVideoMaxThrottlingDelay());
 }
 
 }  // namespace lite_video

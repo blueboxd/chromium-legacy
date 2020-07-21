@@ -2445,12 +2445,15 @@ interface FileReader : EventTarget
     setter onprogress
 interface FileSystemDirectoryHandle : FileSystemHandle
     attribute @@toStringTag
+    method @@asyncIterator
     method constructor
+    method entries
     method getDirectoryHandle
-    method getEntries
     method getFileHandle
+    method keys
     method removeEntry
     method resolve
+    method values
 interface FileSystemFileHandle : FileSystemHandle
     attribute @@toStringTag
     method constructor

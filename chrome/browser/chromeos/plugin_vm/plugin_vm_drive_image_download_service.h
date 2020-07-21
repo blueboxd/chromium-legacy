@@ -79,7 +79,7 @@ class PluginVmDriveImageDownloadService {
   int64_t total_bytes_downloaded_ = 0;
   base::FilePath download_directory_{kPluginVmDriveDownloadDirectory};
   base::FilePath download_file_path_;
-  google_apis::CancelCallback cancel_callback_;
+  google_apis::CancelCallbackOnce cancel_callback_;
 
   base::WeakPtrFactory<PluginVmDriveImageDownloadService> weak_ptr_factory_{
       this};

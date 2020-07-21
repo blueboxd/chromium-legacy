@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/global_media_controls/media_dialog_delegate.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_impl.h"
+#include "chrome/browser/ui/global_media_controls/media_notification_device_provider_impl.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service_observer.h"
 #include "chrome/browser/ui/global_media_controls/overlay_media_notification.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -268,7 +269,9 @@ void MediaNotificationService::Session::MarkActiveIfNecessary() {
 }
 
 MediaNotificationService::MediaNotificationService(Profile* profile)
-    : overlay_media_notifications_manager_(this) {
+    : overlay_media_notifications_manager_(this),
+      device_provider_(
+          std::make_unique<MediaNotificationDeviceProviderImpl>()) {
   if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsForCast) &&
       media_router::MediaRouterEnabled(profile)) {
     cast_notification_provider_ =
@@ -694,6 +697,18 @@ void MediaNotificationService::OnSessionBecameInactive(const std::string& id) {
   inactive_session_ids_.insert(id);
 
   HideNotification(id);
+}
+
+std::unique_ptr<
+    MediaNotificationDeviceProvider::GetOutputDevicesCallbackList::Subscription>
+MediaNotificationService::GetOutputDevices(
+    MediaNotificationDeviceProvider::GetOutputDevicesCallback callback) {
+  return device_provider_->GetOutputDeviceDescriptions(std::move(callback));
+}
+
+void MediaNotificationService::set_device_provider_for_testing(
+    std::unique_ptr<MediaNotificationDeviceProvider> device_provider) {
+  device_provider_ = std::move(device_provider);
 }
 
 void MediaNotificationService::OnItemUnfrozen(const std::string& id) {

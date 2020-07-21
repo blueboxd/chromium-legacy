@@ -224,8 +224,8 @@ class PopulateRequestContextHistogramTest
 
   // Required to use ObserverListThreadSafe::AddObserver() from:
   //    base::FieldTrialList::AddObserver
-  //    variations::VariationsHttpHeaderProvider::InitVariationIDsCacheIfNeeded
-  //    variations::VariationsHttpHeaderProvider::GetClientDataHeader
+  //    variations::VariationsIdsProvider::InitVariationIDsCacheIfNeeded
+  //    variations::VariationsIdsProvider::GetClientDataHeader
   //    variations::VariationsHeaderHelper::VariationsHeaderHelper
   //    variations::AppendVariationsHeaderUnknownSignedIn
   base::test::SingleThreadTaskEnvironment task_environment_;

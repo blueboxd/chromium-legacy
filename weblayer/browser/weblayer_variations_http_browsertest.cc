@@ -4,7 +4,7 @@
 
 #include "weblayer/test/weblayer_browser_test.h"
 
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "content/public/test/network_connection_change_simulator.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -87,7 +87,7 @@ class WebLayerVariationsHttpBrowserTest : public WebLayerBrowserTest {
 
   void SetUpOnMainThread() override {
     auto* variations_provider =
-        variations::VariationsHttpHeaderProvider::GetInstance();
+        variations::VariationsIdsProvider::GetInstance();
     variations_provider->ForceVariationIds({"12", "456", "t789"}, "");
 
     // The test makes requests to google.com which we want to redirect to the

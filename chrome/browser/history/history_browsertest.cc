@@ -787,3 +787,28 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, OneHistoryTabPerWindow) {
       browser()->tab_strip_model()->GetWebContentsAt(1);
   ASSERT_NE(history_url, second_tab->GetVisibleURL());
 }
+
+// Verifies history.replaceState() to the same url without a user gesture does
+// not log a visit.
+IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, ReplaceStateSamePageIsNotRecorded) {
+  // Use the default embedded_test_server() for this test because replaceState
+  // requires a real, non-file URL.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("foo.com", "/title3.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Do a replaceState() to create a new navigation entry.
+  ASSERT_TRUE(content::ExecuteScript(web_contents,
+                                     "history.replaceState({foo: 'bar'},'')"));
+  content::WaitForLoadStop(web_contents);
+
+  // Because there was no user gesture and the url did not change, there should
+  // be a single url with a single visit.
+  std::vector<GURL> urls(GetHistoryContents());
+  ASSERT_EQ(1u, urls.size());
+  EXPECT_EQ(url, urls[0]);
+  history::QueryURLResult url_result = QueryURL(url);
+  EXPECT_EQ(1u, url_result.visits.size());
+}

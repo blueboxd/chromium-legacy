@@ -56,9 +56,8 @@ class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
       cc::PaintCanvas&,
       const PropertyTreeState& replay_state = PropertyTreeState::Root());
 
-  // DisplayItemClient methods
+  // DisplayItemClient.
   String DebugName() const final { return "PaintRecordBuilder"; }
-  IntRect VisualRect() const final { return IntRect(); }
 
  private:
   PaintController* paint_controller_;

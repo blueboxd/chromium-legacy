@@ -18,12 +18,12 @@
 
 namespace policy {
 
-URLBlacklistPolicyHandler::URLBlacklistPolicyHandler(const char* policy_name)
+URLBlocklistPolicyHandler::URLBlocklistPolicyHandler(const char* policy_name)
     : TypeCheckingPolicyHandler(policy_name, base::Value::Type::LIST) {}
 
-URLBlacklistPolicyHandler::~URLBlacklistPolicyHandler() {}
+URLBlocklistPolicyHandler::~URLBlocklistPolicyHandler() = default;
 
-bool URLBlacklistPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
+bool URLBlocklistPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
                                                     PolicyErrorMap* errors) {
   // This policy is deprecated but still supported so check it first.
   const base::Value* disabled_schemes =
@@ -44,7 +44,7 @@ bool URLBlacklistPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
   return true;
 }
 
-void URLBlacklistPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
+void URLBlocklistPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                     PrefValueMap* prefs) {
   const base::Value* url_blocklist_policy = policies.GetValue(policy_name());
   const base::ListValue* url_blocklist = nullptr;

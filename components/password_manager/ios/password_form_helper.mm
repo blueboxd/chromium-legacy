@@ -56,8 +56,6 @@ constexpr char kCommandPrefix[] = "passwordForm";
 
 @interface PasswordFormHelper ()
 
-@property(nonatomic, weak) id<PasswordFormHelperDelegate> delegate;
-
 // Handler for injected JavaScript callbacks.
 - (BOOL)handleScriptCommand:(const base::DictionaryValue&)JSONCommand;
 
@@ -95,7 +93,6 @@ constexpr char kCommandPrefix[] = "passwordForm";
 
 #pragma mark - Properties
 
-@synthesize delegate = _delegate;
 @synthesize jsPasswordManager = _jsPasswordManager;
 @synthesize fieldDataManager = _fieldDataManager;
 
@@ -105,13 +102,11 @@ constexpr char kCommandPrefix[] = "passwordForm";
 
 #pragma mark - Initialization
 
-- (instancetype)initWithWebState:(web::WebState*)webState
-                        delegate:(id<PasswordFormHelperDelegate>)delegate {
+- (instancetype)initWithWebState:(web::WebState*)webState {
   self = [super init];
   if (self) {
     DCHECK(webState);
     _webState = webState;
-    _delegate = delegate;
     _webStateObserverBridge =
         std::make_unique<web::WebStateObserverBridge>(self);
     _webState->AddObserver(_webStateObserverBridge.get());

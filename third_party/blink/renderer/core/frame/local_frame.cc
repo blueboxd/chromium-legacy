@@ -2024,7 +2024,8 @@ class FrameColorOverlay final : public FrameOverlay::Delegate {
             graphics_context, frame_overlay, DisplayItem::kFrameOverlay))
       return;
     DrawingRecorder recorder(graphics_context, frame_overlay,
-                             DisplayItem::kFrameOverlay);
+                             DisplayItem::kFrameOverlay,
+                             IntRect(IntPoint(), view->Size()));
     FloatRect rect(0, 0, view->Width(), view->Height());
     graphics_context.FillRect(rect, color_);
   }

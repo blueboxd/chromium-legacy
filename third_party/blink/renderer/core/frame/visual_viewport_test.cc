@@ -15,11 +15,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/widget/device_emulation_params.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_ax_context.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
-#include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_script_source.h"
@@ -2538,7 +2538,7 @@ TEST_P(VisualViewportTest, DeviceEmulation) {
   EXPECT_FALSE(visual_viewport.GetDeviceEmulationTransformNode());
   EXPECT_FALSE(GetFrame()->View()->VisualViewportNeedsRepaint());
 
-  WebDeviceEmulationParams params;
+  DeviceEmulationParams params;
   params.viewport_offset = gfx::PointF();
   params.viewport_scale = 1.f;
   WebView()->EnableDeviceEmulation(params);
@@ -2577,7 +2577,7 @@ TEST_P(VisualViewportTest, DeviceEmulation) {
 
   // Set an identity device emulation transform and ensure the transform
   // paint property node is cleared and repaint visual viewport.
-  WebView()->EnableDeviceEmulation(WebDeviceEmulationParams());
+  WebView()->EnableDeviceEmulation(DeviceEmulationParams());
   UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(GetFrame()->View()->VisualViewportNeedsRepaint());
   EXPECT_FALSE(visual_viewport.GetDeviceEmulationTransformNode());
@@ -2630,7 +2630,7 @@ TEST_P(VisualViewportTest, PaintScrollbar) {
   check_scrollbar(scrollbar, 1.f);
 
   // Apply device emulation scale.
-  WebDeviceEmulationParams params;
+  DeviceEmulationParams params;
   params.viewport_offset = gfx::PointF();
   params.viewport_scale = 1.5f;
   WebView()->EnableDeviceEmulation(params);

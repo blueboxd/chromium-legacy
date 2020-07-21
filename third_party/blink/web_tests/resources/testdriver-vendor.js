@@ -410,6 +410,10 @@
                                    permission_params.state);
   }
 
+  window.test_driver_internal.set_storage_access = function(origin, embedding_origin, blocked) {
+    return internals.setStorageAccess(origin, embedding_origin, blocked);
+  }
+
   // Enable automation so we don't wait for user input on unimplemented APIs
   window.test_driver_internal.in_automation = true;
 

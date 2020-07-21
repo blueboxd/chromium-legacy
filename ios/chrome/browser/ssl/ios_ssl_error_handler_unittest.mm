@@ -183,3 +183,46 @@ TEST_F(IOSSSLErrorHandlerTest, CommittedInterstitialErrorHtml) {
   EXPECT_FALSE(WaitForInterstitialDisplayed());
   EXPECT_TRUE(blocking_page_callback_called);
 }
+
+// Test fixture for IOSSSLErrorHander when used with a WebState that hasn't
+// been inserted into a WebStateList and hence doesn't have the usual set of
+// tab helpers.
+class IOSSSLErrorHandlerWithoutTabHelpersTest
+    : public web::WebTestWithWebState {
+ protected:
+  IOSSSLErrorHandlerWithoutTabHelpersTest()
+      : cert_(net::ImportCertFromFile(net::GetTestCertsDirectory(),
+                                      kTestCertFileName)) {}
+
+  // Returns certificate.
+  scoped_refptr<net::X509Certificate> cert() { return cert_; }
+
+ private:
+  scoped_refptr<net::X509Certificate> cert_;
+};
+
+// Tests that error handling is short-circuited when the associated WebState
+// isn't in a WebStateList.
+TEST_F(IOSSSLErrorHandlerWithoutTabHelpersTest, HandleError) {
+  net::SSLInfo ssl_info;
+  ssl_info.cert = cert();
+  GURL url(kTestHostName);
+  __block bool proceed_callback_called = false;
+  __block bool should_proceed = false;
+  __block bool blocking_page_callback_called = false;
+  base::OnceCallback<void(bool)> proceed_callback =
+      base::BindOnce(^(bool proceed) {
+        proceed_callback_called = true;
+        should_proceed = proceed;
+      });
+  base::OnceCallback<void(NSString*)> blocking_page_callback =
+      base::BindOnce(^(NSString* blocking_page) {
+        blocking_page_callback_called = true;
+      });
+  IOSSSLErrorHandler::HandleSSLError(
+      web_state(), net::ERR_CERT_AUTHORITY_INVALID, ssl_info, url, true, 0,
+      std::move(proceed_callback), std::move(blocking_page_callback));
+  EXPECT_TRUE(proceed_callback_called);
+  EXPECT_FALSE(should_proceed);
+  EXPECT_FALSE(blocking_page_callback_called);
+}

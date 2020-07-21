@@ -698,6 +698,9 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
       <message name="IDS_IOS_DISCONNECT_DIALOG_TITLE_UNITY" desc="The title of the disconnect dialog [Length: 30em].">
         Sign out and turn off sync?
       </message>
+      <message name="IDS_IOS_DISCOVER_SETTING_TITLE" desc="The title of the settings to toggle the Discover feed on the NTP on/off">
+        Discover
+      </message>
       <message name="IDS_IOS_DOWNLOAD_MANAGER_CANNOT_DETERMINE_FILE_SIZE" desc="Message displayed when the size of the file to be downloaded is unknown. [Length: 30em] [iOS only]">
         Cannot determine file size.
       </message>

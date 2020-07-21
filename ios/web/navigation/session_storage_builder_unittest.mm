@@ -1,0 +1,137 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "ios/web/navigation/session_storage_builder.h"
+
+#import "ios/web/navigation/wk_navigation_util.h"
+#import "ios/web/public/session/crw_navigation_item_storage.h"
+#import "ios/web/public/session/crw_session_storage.h"
+#include "ios/web/public/test/web_test.h"
+#import "ios/web/test/fakes/crw_fake_back_forward_list.h"
+#import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
+#import "ios/web/web_state/web_state_impl.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+namespace web {
+
+using wk_navigation_util::kMaxSessionSize;
+
+// WebState that provides Mock CRWWebViewNavigationProxy object.
+class WebStateWithMockProxy : public WebStateImpl {
+ public:
+  explicit WebStateWithMockProxy(const CreateParams& params)
+      : WebStateImpl(params),
+        mock_web_view_(OCMProtocolMock(@protocol(CRWWebViewNavigationProxy))),
+        fake_wk_list_([[CRWFakeBackForwardList alloc] init]) {
+    OCMStub([mock_web_view_ backForwardList]).andReturn(fake_wk_list_);
+  }
+
+  id<CRWWebViewNavigationProxy> mock_web_view() { return mock_web_view_; }
+
+  CRWFakeBackForwardList* fake_wk_list() { return fake_wk_list_; }
+
+ private:
+  id<CRWWebViewNavigationProxy> GetWebViewNavigationProxy() const override {
+    return mock_web_view_;
+  }
+
+  id mock_web_view_ = nil;
+  CRWFakeBackForwardList* fake_wk_list_ = nil;
+};
+
+using SessionStorageBuilderTest = WebTest;
+
+// Tests building storage for session that is longer than kMaxSessionSize with
+// last committed item at the end of the session.
+TEST_F(SessionStorageBuilderTest, BuildStorageForExtraLongSession) {
+  // Create WebState with navigation item count that exceeds kMaxSessionSize.
+  WebState::CreateParams params(GetBrowserState());
+  WebStateWithMockProxy web_state(params);
+
+  NSMutableArray* back_urls = [NSMutableArray array];
+  for (int i = 0; i < kMaxSessionSize; i++) {
+    [back_urls addObject:[NSString stringWithFormat:@"http://%d.test", i]];
+  }
+  NSString* const current_url = @"http://current.test";
+  [web_state.fake_wk_list() setCurrentURL:current_url
+                             backListURLs:back_urls
+                          forwardListURLs:nil];
+  OCMStub([web_state.mock_web_view() URL])
+      .andReturn([NSURL URLWithString:current_url]);
+  NavigationManager* navigation_manager = web_state.GetNavigationManager();
+  int original_item_count = navigation_manager->GetItemCount();
+  ASSERT_EQ(kMaxSessionSize + 1, original_item_count);
+
+  // Verify that storage item count does not exceed kMaxSessionSize.
+  SessionStorageBuilder builder;
+  CRWSessionStorage* storage = builder.BuildStorage(&web_state);
+  ASSERT_TRUE(storage);
+  int stored_item_count = storage.itemStorages.count;
+  ASSERT_EQ(kMaxSessionSize, stored_item_count);
+
+  // Walk backwards and verify that URLs in the storage match original URLs.
+  for (int i = 0; i < kMaxSessionSize; i++) {
+    NavigationItem* item =
+        navigation_manager->GetItemAtIndex(original_item_count - i - 1);
+    CRWNavigationItemStorage* item_storage =
+        [storage.itemStorages objectAtIndex:stored_item_count - i - 1];
+    EXPECT_EQ(item->GetURL(), item_storage.URL) << "index: " << i;
+  }
+}
+
+// Tests building storage for session that has items with
+// ShouldSkipSerialization flag. The session length after skipping the items is
+// not longer than kMaxSessionSize.
+TEST_F(SessionStorageBuilderTest, ShouldSkipSerializationItems) {
+  // Create WebState with navigation item count that exceeds kMaxSessionSize.
+  WebState::CreateParams params(GetBrowserState());
+  WebStateWithMockProxy web_state(params);
+
+  NSMutableArray* back_urls = [NSMutableArray array];
+  for (int i = 0; i < kMaxSessionSize; i++) {
+    [back_urls addObject:[NSString stringWithFormat:@"http://%d.test", i]];
+  }
+  NSString* const current_url = @"http://current.test";
+  [web_state.fake_wk_list() setCurrentURL:current_url
+                             backListURLs:back_urls
+                          forwardListURLs:nil];
+  OCMStub([web_state.mock_web_view() URL])
+      .andReturn([NSURL URLWithString:current_url]);
+  NavigationManager* navigation_manager = web_state.GetNavigationManager();
+  int original_item_count = navigation_manager->GetItemCount();
+  ASSERT_EQ(kMaxSessionSize + 1, original_item_count);
+
+  const int kSkippedItemIndex = kMaxSessionSize - 1;
+  web_state.GetNavigationManagerImpl()
+      .GetNavigationItemImplAtIndex(kSkippedItemIndex)
+      ->SetShouldSkipSerialization(true);
+
+  // Verify that storage item count does not exceed kMaxSessionSize.
+  SessionStorageBuilder builder;
+  CRWSessionStorage* storage = builder.BuildStorage(&web_state);
+  ASSERT_TRUE(storage);
+  int stored_item_count = storage.itemStorages.count;
+  ASSERT_EQ(kMaxSessionSize, stored_item_count);
+
+  // Verify that URLs in the storage match original URLs without skipped item.
+  for (int storage_index = 0, item_index = 0;
+       storage_index < kMaxSessionSize &&
+       item_index < web_state.GetNavigationManagerImpl().GetItemCount();
+       storage_index++, item_index++) {
+    if (item_index == kSkippedItemIndex) {
+      item_index++;
+    }
+    NavigationItem* item = navigation_manager->GetItemAtIndex(item_index);
+
+    CRWNavigationItemStorage* item_storage =
+        [storage.itemStorages objectAtIndex:storage_index];
+    EXPECT_EQ(item->GetURL(), item_storage.URL) << "item_index: " << item_index;
+  }
+}
+
+}  // namespace web

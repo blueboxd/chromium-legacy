@@ -1291,6 +1291,13 @@ message DeviceNativePrintersWhitelistProto {
   repeated string whitelist = 1;
 }
 
+// The url and hash specified in JSON format that can be used to retrieve
+// the device-level printers configuration file.
+message DevicePrintersProto {
+  // External policy blob encoded as JSON.
+  optional string external_policy = 1;
+}
+
 // A collection of ids for the list of print servers which are accessible.
 // The policy which determines the type of access restriction that is applied to
 // the devicel-level printers list.
@@ -1799,4 +1806,5 @@ message ChromeDeviceSettingsProto {
   optional DevicePrintersAccessModeProto device_printers_access_mode = 107;
   optional DevicePrintersBlocklistProto device_printers_blocklist = 108;
   optional DevicePrintersAllowlistProto device_printers_allowlist = 109;
+  optional DevicePrintersProto device_printers = 110;
 }

@@ -221,5 +221,5 @@ quick start.
 _TODO(ntfschr): document cases here which could arise generally, but wouldn't
 for the quick start._
 
-[1]: http://go/clank-webview/building-webview/android_webview-tests
+[1]: http://go/clank-webview/build_instructions.md
 [2]: https://groups.google.com/a/chromium.org/forum/#!forum/android-webview-dev

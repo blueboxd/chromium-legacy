@@ -1021,6 +1021,7 @@
         'DeviceNativePrintersAccessMode',
         'DeviceNativePrintersBlacklist',
         'DeviceNativePrintersWhitelist',
+        'DevicePrinters',
         'DevicePrintersAccessMode',
         'DevicePrintersBlocklist',
         'DevicePrintersAllowlist',
@@ -14596,6 +14597,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': {
         "url": "https://example.com/printerpolicy",
         "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeafdeadbeefdeadbeef"
@@ -14611,13 +14613,15 @@
 
       The file is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
 
-      If this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will download the file for printer configurations and make printers available in accordance with <ph name="DEVICE_PRINTERS_ACCESS_MODE">DeviceNativePrintersAccessMode</ph>, <ph name="DEVICE_PRINTERS_ALLOWLIST">DevicePrintersAllowlist</ph>, and <ph name="DEVICE_PRINTERS_BLOCKLIST">DevicePrintersBlocklist</ph>.
+      If this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will download the file for printer configurations and make printers available in accordance with <ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE">DeviceNativePrintersAccessMode</ph>, <ph name="DEVICE_PRINTERS_ALLOWLIST">DevicePrintersAllowlist</ph>, and <ph name="DEVICE_PRINTERS_BLOCKLIST">DevicePrintersBlocklist</ph>.
 
       This policy has no effect on whether users can configure printers on individual devices.  It is intended to be supplementary to the configuration of printers by individual users.
 
       This policy is additive to the <ph name="BULK_PRINTERS_POLICY">NativePrintersBulkConfiguration</ph>.
 
-      If this policy is unset, there will be no device printers and the other <ph name="DEVICE_PRINTERS_POLICY_PATTERN">DeviceNativePrinter*</ph> policies will be ignored.
+      If this policy is unset, there will be no device printers and the other <ph name="DEVICE_NATIVE_PRINTERS_POLICY_PATTERN">DeviceNativePrinter*</ph> policies will be ignored.
+
+      This policy is deprecated, please use <ph name="DEVICE_PRINTERS">DevicePrinters</ph> instead.
       ''',
     },
     {
@@ -14718,6 +14722,48 @@
       If this policy is used, only the printers with ids matching the values in this policy are available to the user. The ids must correspond to the "id" or "guid" fields in the file specified in <ph name="DEVICE_PRINTERS_POLICY">DeviceNativePrinters</ph>.
 
       This policy is deprecated, please use <ph name="DEVICE_PRINTERS_ALLOWLIST">DevicePrintersAllowlist</ph> instead.
+      ''',
+    },
+    {
+      'name': 'DevicePrinters',
+      'owners': ['skau@chromium.org', 'nikitapodguzov@chromium.org', 'bmalcolm@chromium.org'],
+      'id': 743,
+      'device_only': True,
+      'type': 'external',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'url': { 'type': 'string' },
+          'hash': { 'type': 'string' }
+        },
+      },
+      'supported_on': ['chrome_os:86-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': {
+        "url": "https://example.com/printerpolicy",
+        "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeafdeadbeefdeadbeef"
+      },
+      'max_size': 5242880,
+      'caption': '''Enterprise printer configuration file for devices''',
+      'tags': [],
+      'desc': '''Provides configurations for enterprise printers bound to devices.
+
+      This policy allows you to provide printer configurations to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices.  The format is the same as the NativePrinters dictionary, with an additional required "id" or "guid" field per printer for whitelisting or blacklisting.
+
+      The size of the file must not exceed 5MB and must be encoded in JSON.  It is estimated that a file containing approximately 21,000 printers will encode as a 5MB file.  The cryptographic hash is used to verify the integrity of the download.
+
+      The file is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
+
+      If this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will download the file for printer configurations and make printers available in accordance with <ph name="DEVICE_PRINTERS_ACCESS_MODE">DevicePrintersAccessMode</ph>, <ph name="DEVICE_PRINTERS_ALLOWLIST">DevicePrintersAllowlist</ph>, and <ph name="DEVICE_PRINTERS_BLOCKLIST">DevicePrintersBlocklist</ph>.
+
+      This policy has no effect on whether users can configure printers on individual devices.  It is intended to be supplementary to the configuration of printers by individual users.
+
+      This policy is additive to the <ph name="BULK_PRINTERS_POLICY">NativePrintersBulkConfiguration</ph>.
+
+      If this policy is unset, there will be no device printers and the other <ph name="DEVICE_PRINTERS_POLICY_PATTERN">DevicePrinter*</ph> policies will be ignored.
       ''',
     },
     {
@@ -22361,7 +22407,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceSecondFactorAuthentication': 'device_second_factor_authentication.mode',
     'CastReceiverName': 'cast_receiver_name.name',
     'DeviceNativePrintersAccessMode': 'native_device_printers_access_mode.access_mode',
-    'DevicePrintersAccessMode': 'device_printers_access_mode.access_mode',
     'MinimumRequiredChromeVersion': 'minimum_required_version.chrome_version',
     'DeviceUserPolicyLoopbackProcessingMode': 'device_user_policy_loopback_processing_mode.mode',
     'DeviceLoginScreenIsolateOrigins': 'device_login_screen_isolate_origins.isolate_origins',
@@ -22369,6 +22414,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceMachinePasswordChangeRate': 'device_machine_password_change_rate.rate_days',
     'DeviceNativePrintersBlacklist': 'native_device_printers_blacklist.blacklist',
     'DeviceNativePrintersWhitelist': 'native_device_printers_whitelist.whitelist',
+    'DevicePrinters': 'device_printers.external_policy',
+    'DevicePrintersAccessMode': 'device_printers_access_mode.access_mode',
     'DevicePrintersBlocklist': 'device_printers_blocklist.blocklist',
     'DevicePrintersAllowlist': 'device_printers_allowlist.allowlist',
     'HeartbeatEnabled': 'device_heartbeat_settings.heartbeat_enabled',
@@ -22955,6 +23002,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 742,
+  'highest_id_currently_used': 743,
   'highest_atomic_group_id_currently_used': 38
 }

@@ -131,13 +131,12 @@ void PopupTracker::OnVisibilityChanged(content::Visibility visibility) {
     visibility_tracker_.OnShown();
 }
 
-void PopupTracker::DidGetUserInteraction(
-    const blink::WebInputEvent::Type type) {
+void PopupTracker::DidGetUserInteraction(const blink::WebInputEvent& event) {
   // TODO(csharrison): It would be nice if ctrl-W could be filtered out here,
   // but the initial ctrl key press is registered as a kRawKeyDown.
   num_interactions_++;
 
-  if (type == blink::WebInputEvent::Type::kGestureScrollBegin) {
+  if (event.GetType() == blink::WebInputEvent::Type::kGestureScrollBegin) {
     num_gesture_scroll_begin_events_++;
   } else {
     num_activation_events_++;

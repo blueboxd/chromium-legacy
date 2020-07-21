@@ -89,6 +89,12 @@ class CreateViewParams;
 // When the main frame is part of this RenderViewImpl's frame tree, then this
 // object acts as the RenderWidgetDelegate for that frame's RenderWidget. Other
 // RenderWidgets would have a null RenderWidgetDelegate.
+//
+// Note: There are cases where there may be multiple main frames in tab. For
+// example, both Portals and GuestViews create their own RenderView that's
+// nested within another RenderView's frame tree. In these cases, the
+// RenderWidget for the nested view will have a non-null RenderWidgetDelegate,
+// despite the fact that it isn't the root of the hierarchy.
 class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
                                       public IPC::Listener,
                                       public RenderWidgetDelegate,
@@ -361,7 +367,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
       cc::BrowserControlsParams browser_controls_params) override;
   void SetScreenMetricsEmulationParametersForWidget(
       bool enabled,
-      const blink::WebDeviceEmulationParams& params) override;
+      const blink::DeviceEmulationParams& params) override;
 
   // Old WebLocalFrameClient implementations
   // ----------------------------------------

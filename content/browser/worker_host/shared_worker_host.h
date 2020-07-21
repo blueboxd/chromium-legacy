@@ -28,6 +28,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
@@ -45,7 +46,7 @@ class GURL;
 namespace blink {
 class MessagePortChannel;
 class PendingURLLoaderFactoryBundle;
-}
+}  // namespace blink
 
 namespace content {
 
@@ -118,7 +119,8 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
 
   void AddClient(mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
                  GlobalFrameRoutingId client_render_frame_host_id,
-                 const blink::MessagePortChannel& port);
+                 const blink::MessagePortChannel& port,
+                 ukm::SourceId client_ukm_source_id);
 
   void SetAppCacheHandle(
       std::unique_ptr<AppCacheNavigationHandle> appcache_handle);
@@ -252,6 +254,8 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
   bool started_ = false;
 
   GURL final_response_url_;
+
+  const ukm::SourceId ukm_source_id_;
 
   base::WeakPtrFactory<SharedWorkerHost> weak_factory_{this};
 

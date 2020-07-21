@@ -740,8 +740,7 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
   auto shared_context_state = base::MakeRefCounted<SharedContextState>(
       std::move(share_group), std::move(surface), std::move(context),
       use_virtualized_gl_contexts,
-      base::BindOnce(&GpuChannelManager::OnContextLost, base::Unretained(this),
-                     /*synthetic_loss=*/false),
+      base::BindOnce(&GpuChannelManager::OnContextLost, base::Unretained(this)),
       gpu_preferences_.gr_context_type, vulkan_context_provider_,
       metal_context_provider_, dawn_context_provider_,
       peak_memory_monitor_.GetWeakPtr());

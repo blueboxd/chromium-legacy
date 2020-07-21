@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
+import("//build/config/win/control_flow_guard.gni")
 import("//build/config/win/visual_studio_version.gni")
 import("//build/timestamp.gni")
 import("//build/toolchain/goma.gni")
@@ -89,11 +90,15 @@ config("compiler") {
     # Tell clang which version of MSVC to emulate.
     cflags += [ "-fmsc-version=1916" ]
 
-    # Emit table of address-taken functions for Control-Flow Guard (CFG). We
-    # don't emit the CFG checks themselves, but this enables the functions to
-    # be called by code that is built with those checks enabled, such as system
-    # libraries.
-    cflags += [ "/guard:cf,nochecks" ]
+    # Emit table of address-taken functions for Control-Flow Guard (CFG).
+    # This is needed to allow functions to be called by code that is built
+    # with CFG enabled, such as system libraries.
+    # The CFG guards are only emitted if |win_enable_cfg_guards| is enabled.
+    if (win_enable_cfg_guards) {
+      cflags += [ "/guard:cf" ]
+    } else {
+      cflags += [ "/guard:cf,nochecks" ]
+    }
 
     if (is_component_build) {
       cflags += [

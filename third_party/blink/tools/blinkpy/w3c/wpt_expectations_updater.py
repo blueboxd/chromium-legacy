@@ -44,7 +44,6 @@ class WPTExpectationsUpdater(object):
         self.git_cl = GitCL(host)
         self.git = self.host.git(self.finder.chromium_base())
         self.configs_with_no_results = []
-        self.configs_with_all_pass = []
         self.patchset = None
 
         # Get options from command line arguments.
@@ -83,6 +82,11 @@ class WPTExpectationsUpdater(object):
         log_level = logging.DEBUG if self.options.verbose else logging.INFO
         configure_logging(logging_level=log_level, include_time=True)
 
+        if not(self.options.android_product or
+                self.options.update_android_expectations_only):
+            assert not self.options.include_unexpected_pass, (
+                'Command line argument --include-unexpected-pass is not '
+                'supported in desktop mode.')
         self.patchset = self.options.patchset
 
         if (self.options.clean_up_test_expectations or
@@ -132,6 +136,12 @@ class WPTExpectationsUpdater(object):
             '--android-product', action='append', default=[],
             help='Android products whose baselines will be updated.',
             choices=PRODUCTS)
+        parser.add_argument(
+            '--include-unexpected-pass',
+            action='store_true',
+            help='Adds Pass to tests with failure expectations. '
+                 'This command line argument can be used to mark tests '
+                 'as flaky.')
 
     def update_expectations(self):
         """Downloads text new baselines and adds test expectations lines.
@@ -153,9 +163,8 @@ class WPTExpectationsUpdater(object):
         # Here we build up a dict of failing test results for all platforms.
         test_expectations = {}
         for build, job_status in build_to_status.iteritems():
-            if job_status.result == 'SUCCESS':
-                self.configs_with_all_pass.extend(
-                    self.get_builder_configs(build))
+            if (job_status.result == 'SUCCESS' and
+                    not self.options.include_unexpected_pass):
                 continue
             result_dicts = self.get_failing_results_dicts(build)
             for result_dict in result_dicts:
@@ -236,13 +245,13 @@ class WPTExpectationsUpdater(object):
             self.configs_with_no_results.extend(self.get_builder_configs(build))
             return []
 
-        failing_test_results = []
+        unexpected_test_results = []
         for results_set in test_results_list:
             results_dict = self.generate_failing_results_dict(
                 build, results_set)
             if results_dict:
-                failing_test_results.append(results_dict)
-        return failing_test_results
+                unexpected_test_results.append(results_dict)
+        return unexpected_test_results
 
     def _get_web_test_results(self, build):
         """Gets web tests results for a builder.
@@ -291,9 +300,6 @@ class WPTExpectationsUpdater(object):
             raise ScriptError('No configuration was found for builder and web test'
                               ' step combination ')
         config = configs[0]
-        if config in self.configs_with_all_pass:
-            return {}
-
         for result in web_test_results.didnt_run_as_expected_results():
             # TODO(rmhasan) If a test fails unexpectedly then it runs multiple
             # times until, it passes or a retry limit is reached. Even though
@@ -301,7 +307,11 @@ class WPTExpectationsUpdater(object):
             # creating test expectations for. Maybe we should add a mode
             # which creates expectations for tests that are flaky but still
             # pass in a web test step.
-            if result.did_pass():
+
+            # Create flaky expectations for flaky tests on Android. In order to
+            # do this we should add 'Pass' to all tests with failing
+            # expectations that pass in the patchset's try job.
+            if result.did_pass() and not self.options.include_unexpected_pass:
                 continue
 
             test_name = result.test_name()

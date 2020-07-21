@@ -8,8 +8,6 @@ digraph LatencyInfo {
     node[style="dotted,rounded"];
 
     "Event.Latency.EventToRender.TouchpadPinch";
-    "Event.Latency.QueueingTime.<event_name><default_action_status>";
-    "Event.Latency.BlockingTime.<event_name><default_action_status>";
     end_to_end_metrics
       [label="\
 Event.Latency.EndToEnd.KeyPress\n\
@@ -56,11 +54,7 @@ INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT"];
   // Layout the rest of the components.
   INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT->
   "Event.Latency.EventToRender.TouchpadPinch"->
-  INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT->
-  "Event.Latency.QueueingTime.<event_name><default_action_status>"->
-  INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT->
-  "Event.Latency.BlockingTime.<event_name><default_action_status>"->
-  INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT
+  INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT
     [weight=3];
 
   INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT->
@@ -94,7 +88,7 @@ INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT"];
   "Event.Latency.<scroll_name>.Touch.RAFTimeToFrameSwapEnd"->
   INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT;
 
-  // Add legend and position it under INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT.
+  // Add legend and position it under INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT.
   legend
     [shape=plaintext,label="\
 LEGEND:\l\
@@ -102,7 +96,7 @@ LEGEND:\l\
   <input_modality> = (Wheel | Touch)\l\
   <scroll_name> = (ScrollBegin | ScrollUpdate)\l\
   <thread_name> = (Main | Impl)\l"];
-  INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT->
+  INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT->
   legend
-    [style=invis,minlen=3];
+    [style=invis,minlen=7];
 }

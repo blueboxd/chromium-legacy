@@ -213,8 +213,9 @@ TEST_F(LiteVideoDeciderTest, CanApplyLiteVideo) {
   navigation_handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
   lite_video::LiteVideoHint seeded_hint(
       /*target_downlink_bandwidth_kbps=*/123,
-      /*target_downlink_rtt_latency_ms=*/2500,
-      /*kilobytes_to_buffer_before_throttle=*/500);
+      /*target_downlink_rtt_latency=*/base::TimeDelta::FromMilliseconds(2500),
+      /*kilobytes_to_buffer_before_throttle=*/500,
+      /*max_throttling_delay=*/base::TimeDelta::FromMilliseconds(5000));
   SeedLiteVideoHintCache(url, seeded_hint);
 
   lite_video::LiteVideoBlocklistReason blocklist_reason;
@@ -226,10 +227,11 @@ TEST_F(LiteVideoDeciderTest, CanApplyLiteVideo) {
   EXPECT_EQ(blocklist_reason, lite_video::LiteVideoBlocklistReason::kAllowed);
   EXPECT_EQ(seeded_hint.target_downlink_bandwidth_kbps(),
             hint->target_downlink_bandwidth_kbps());
-  EXPECT_EQ(seeded_hint.target_downlink_rtt_latency_ms(),
-            hint->target_downlink_rtt_latency_ms());
+  EXPECT_EQ(seeded_hint.target_downlink_rtt_latency(),
+            hint->target_downlink_rtt_latency());
   EXPECT_EQ(seeded_hint.kilobytes_to_buffer_before_throttle(),
             hint->kilobytes_to_buffer_before_throttle());
+  EXPECT_EQ(seeded_hint.max_throttling_delay(), hint->max_throttling_delay());
   histogram_tester.ExpectUniqueSample(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.MainFrame",
       lite_video::LiteVideoBlocklistReason::kAllowed, 1);
@@ -249,8 +251,9 @@ TEST_F(LiteVideoDeciderTest, LiteVideoDisabled) {
   navigation_handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
   lite_video::LiteVideoHint seeded_hint(
       /*target_downlink_bandwidth_kbps=*/123,
-      /*target_downlink_rtt_latency_ms=*/2500,
-      /*kilobytes_to_buffer_before_throttle=*/500);
+      /*target_downlink_rtt_latency=*/base::TimeDelta::FromMilliseconds(2500),
+      /*kilobytes_to_buffer_before_throttle=*/500,
+      /*max_throttling_delay=*/base::TimeDelta::FromMilliseconds(5000));
   SeedLiteVideoHintCache(url, seeded_hint);
 
   lite_video::LiteVideoBlocklistReason blocklist_reason;
@@ -277,8 +280,9 @@ TEST_F(LiteVideoDeciderTest, LiteVideoCanApplyOnSubframeNavigation) {
   navigation_handle.set_page_transition(ui::PAGE_TRANSITION_TYPED);
   lite_video::LiteVideoHint seeded_hint(
       /*target_downlink_bandwidth_kbps=*/123,
-      /*target_downlink_rtt_latency_ms=*/2500,
-      /*kilobytes_to_buffer_before_throttle=*/500);
+      /*target_downlink_rtt_latency=*/base::TimeDelta::FromMilliseconds(2500),
+      /*kilobytes_to_buffer_before_throttle=*/500,
+      /*max_throttling_delay=*/base::TimeDelta::FromMilliseconds(5000));
   SeedLiteVideoHintCache(url, seeded_hint);
 
   lite_video::LiteVideoBlocklistReason blocklist_reason;
@@ -289,10 +293,11 @@ TEST_F(LiteVideoDeciderTest, LiteVideoCanApplyOnSubframeNavigation) {
   EXPECT_EQ(blocklist_reason, lite_video::LiteVideoBlocklistReason::kAllowed);
   EXPECT_EQ(seeded_hint.target_downlink_bandwidth_kbps(),
             hint->target_downlink_bandwidth_kbps());
-  EXPECT_EQ(seeded_hint.target_downlink_rtt_latency_ms(),
-            hint->target_downlink_rtt_latency_ms());
+  EXPECT_EQ(seeded_hint.target_downlink_rtt_latency(),
+            hint->target_downlink_rtt_latency());
   EXPECT_EQ(seeded_hint.kilobytes_to_buffer_before_throttle(),
             hint->kilobytes_to_buffer_before_throttle());
+  EXPECT_EQ(seeded_hint.max_throttling_delay(), hint->max_throttling_delay());
   histogram_tester.ExpectUniqueSample(
       "LiteVideo.CanApplyLiteVideo.UserBlocklist.SubFrame",
       lite_video::LiteVideoBlocklistReason::kAllowed, 1);
@@ -313,8 +318,9 @@ TEST_F(LiteVideoDeciderTest, CanApplyOnReload) {
 
   lite_video::LiteVideoHint seeded_hint(
       /*target_downlink_bandwidth_kbps=*/123,
-      /*target_downlink_rtt_latency_ms=*/2500,
-      /*kilobytes_to_buffer_before_throttle=*/500);
+      /*target_downlink_rtt_latency=*/base::TimeDelta::FromMilliseconds(2500),
+      /*kilobytes_to_buffer_before_throttle=*/500,
+      /*max_throttling_delay=*/base::TimeDelta::FromMilliseconds(5000));
   SeedLiteVideoHintCache(url, seeded_hint);
 
   lite_video::LiteVideoBlocklistReason blocklist_reason;
@@ -344,8 +350,9 @@ TEST_F(LiteVideoDeciderTest, CanApplyOnBackForwardNavigation) {
 
   lite_video::LiteVideoHint seeded_hint(
       /*target_downlink_bandwidth_kbps=*/123,
-      /*target_downlink_rtt_latency_ms=*/2500,
-      /*kilobytes_to_buffer_before_throttle=*/500);
+      /*target_downlink_rtt_latency=*/base::TimeDelta::FromMilliseconds(2500),
+      /*kilobytes_to_buffer_before_throttle=*/500,
+      /*max_throttling_delay=*/base::TimeDelta::FromMilliseconds(5000));
   SeedLiteVideoHintCache(url, seeded_hint);
 
   lite_video::LiteVideoBlocklistReason blocklist_reason;

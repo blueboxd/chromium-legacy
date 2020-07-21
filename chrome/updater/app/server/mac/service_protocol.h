@@ -47,12 +47,12 @@
 
 @end
 
-// Protocol for the XPC control tasks of the Updater.
-@protocol CRUControlling <NSObject>
+// Protocol for the XPC administration tasks of the Updater.
+@protocol CRUAdministering <NSObject>
 
-// Performs the control task (activate service, uninstall service, or no-op)
-// that is relevant to the state of the Updater.
-- (void)performControlTasksWithReply:(void (^_Nullable)(void))reply;
+// Performs the admin task (activate service, uninstall service, or no opp) that
+// is relevant to the state of the Updater.
+- (void)performAdminTasks;
 
 @end
 
@@ -62,9 +62,9 @@ namespace updater {
 // CRUUpdateStateObserving protocols.
 NSXPCInterface* _Nonnull GetXPCUpdateCheckingInterface();
 
-// Constructs an NSXPCInterface for a connection using CRUControlling
+// Constructs an NSXPCInterface for a connection using CRUAdministering
 // protocol.
-NSXPCInterface* _Nonnull GetXPCControllingInterface();
+NSXPCInterface* _Nonnull GetXPCAdministeringInterface();
 
 }  // namespace updater
 

@@ -10,6 +10,14 @@
     RuntimeEnabled=NativeFileSystem,
     ImplementedAs=NativeFileSystemDirectoryHandle
 ] interface FileSystemDirectoryHandle : FileSystemHandle {
+    // TODO(https://crbug.com/1087157): This interface defines an async
+    // iterable, however that isn't supported yet by the bindings. So for now
+    // just explicitly define what an async iterable definition implies.
+    //async iterable<USVString, FileSystemHandle>;
+    NativeFileSystemDirectoryIterator entries();
+    NativeFileSystemDirectoryIterator keys();
+    NativeFileSystemDirectoryIterator values();
+
     [CallWith=ScriptState, RuntimeEnabled=LegacyNativeFileSystem, ImplementedAs=getFileHandle]
     Promise<FileSystemFileHandle> getFile(USVString name, optional FileSystemGetFileOptions options = {});
     [CallWith=ScriptState, RuntimeEnabled=LegacyNativeFileSystem, ImplementedAs=getDirectoryHandle]
@@ -18,7 +26,7 @@
     [CallWith=ScriptState] Promise<FileSystemFileHandle> getFileHandle(USVString name, optional FileSystemGetFileOptions options = {});
     [CallWith=ScriptState] Promise<FileSystemDirectoryHandle> getDirectoryHandle(USVString name, optional FileSystemGetDirectoryOptions options = {});
 
-    [CallWith=ScriptState] object getEntries();
+    [CallWith=ScriptState, RuntimeEnabled=LegacyNativeFileSystem] object getEntries();
 
     [CallWith=ScriptState] Promise<void> removeEntry(USVString name, optional FileSystemRemoveOptions options = {});
 

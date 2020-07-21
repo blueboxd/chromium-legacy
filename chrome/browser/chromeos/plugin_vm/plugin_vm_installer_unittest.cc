@@ -123,7 +123,7 @@ class SimpleFakeDriveService : public drive::DummyDriveService {
   bool cancel_callback_called() const { return cancel_callback_called_; }
 
   // DriveServiceInterface override.
-  google_apis::CancelCallback DownloadFile(
+  google_apis::CancelCallbackOnce DownloadFile(
       const base::FilePath& /*cache_path*/,
       const std::string& /*resource_id*/,
       const DownloadActionCallback& download_action_callback,
@@ -135,8 +135,8 @@ class SimpleFakeDriveService : public drive::DummyDriveService {
 
     // It is safe to use base::Unretained as this object will not get deleted
     // before the end of the test.
-    return base::BindRepeating(&SimpleFakeDriveService::CancelCallback,
-                               base::Unretained(this));
+    return base::BindOnce(&SimpleFakeDriveService::CancelCallback,
+                          base::Unretained(this));
   }
 
  private:

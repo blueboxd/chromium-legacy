@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
+#include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller.h"
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
 #include "chrome/browser/ui/views/global_media_controls/media_notification_audio_device_selector_view.h"
@@ -73,11 +74,13 @@ class MediaNotificationContainerImplView::DismissButton
 
 MediaNotificationContainerImplView::MediaNotificationContainerImplView(
     const std::string& id,
-    base::WeakPtr<media_message_center::MediaNotificationItem> item)
+    base::WeakPtr<media_message_center::MediaNotificationItem> item,
+    MediaNotificationService* service)
     : views::Button(this),
       id_(id),
       foreground_color_(kDefaultForegroundColor),
-      background_color_(kDefaultBackgroundColor) {
+      background_color_(kDefaultBackgroundColor),
+      service_(service) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
   SetPreferredSize(kNormalSize);
@@ -124,7 +127,7 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
           media::kGlobalMediaControlsSeamlessTransfer)) {
     auto audio_device_selector_view =
         std::make_unique<MediaNotificationAudioDeviceSelectorView>(
-            this, gfx::Size(kWidth, kAudioDeviceSelectorViewHeight));
+            this, service_, gfx::Size(kWidth, kAudioDeviceSelectorViewHeight));
     audio_device_selector_view_ =
         AddChildView(std::move(audio_device_selector_view));
     view_->UpdateCornerRadius(message_center::kNotificationCornerRadius, 0);

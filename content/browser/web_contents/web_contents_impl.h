@@ -780,7 +780,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   blink::mojom::RendererPreferences GetRendererPrefs(
       BrowserContext* browser_context) const override;
   void DidReceiveInputEvent(RenderWidgetHostImpl* render_widget_host,
-                            const blink::WebInputEvent::Type type) override;
+                            const blink::WebInputEvent& event) override;
   bool ShouldIgnoreInputEvents() override;
   void OnIgnoredUIEvent() override;
   void Activate() override;

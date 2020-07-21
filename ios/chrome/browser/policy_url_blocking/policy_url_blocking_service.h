@@ -14,21 +14,21 @@ namespace web {
 class BrowserState;
 }
 
-// Associates a policy::URLBlacklistManager instance with a BrowserState.
+// Associates a policy::URLBlocklistManager instance with a BrowserState.
 class PolicyBlocklistService : public KeyedService {
  public:
   explicit PolicyBlocklistService(
       web::BrowserState* browser_state,
-      std::unique_ptr<policy::URLBlacklistManager> url_blacklist_manager);
+      std::unique_ptr<policy::URLBlocklistManager> url_blocklist_manager);
   ~PolicyBlocklistService() override;
 
   // Returns the blocking state for |url|.
-  policy::URLBlacklist::URLBlacklistState GetURLBlocklistState(
+  policy::URLBlocklist::URLBlocklistState GetURLBlocklistState(
       const GURL& url) const;
 
  private:
-  // The URLBlacklistManager associated with |browser_state|.
-  std::unique_ptr<policy::URLBlacklistManager> url_blacklist_manager_;
+  // The URLBlocklistManager associated with |browser_state|.
+  std::unique_ptr<policy::URLBlocklistManager> url_blocklist_manager_;
 
   PolicyBlocklistService(const PolicyBlocklistService&) = delete;
   PolicyBlocklistService& operator=(const PolicyBlocklistService&) = delete;

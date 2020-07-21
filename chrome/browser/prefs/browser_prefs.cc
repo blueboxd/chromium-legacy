@@ -237,7 +237,7 @@
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/browser/media/unified_autoplay_config.h"
 #include "chrome/browser/metrics/tab_stats_tracker.h"
-#include "chrome/browser/nearby_sharing/nearby_sharing_prefs.h"
+#include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/promos/promo_service.h"
 #include "chrome/browser/search/search_suggest/search_suggest_service.h"
@@ -909,7 +909,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   PermissionBubbleMediaAccessHandler::RegisterProfilePrefs(registry);
   PlatformNotificationServiceImpl::RegisterProfilePrefs(registry);
   policy::DeveloperToolsPolicyHandler::RegisterProfilePrefs(registry);
-  policy::URLBlacklistManager::RegisterProfilePrefs(registry);
+  policy::URLBlocklistManager::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
   PrefsTabHelper::RegisterProfilePrefs(registry, locale);
   PreviewsHTTPSNotificationInfoBarDecider::RegisterProfilePrefs(registry);

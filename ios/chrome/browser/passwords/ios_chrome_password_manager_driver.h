@@ -26,7 +26,8 @@ class IOSChromePasswordManagerDriver
     : public password_manager::PasswordManagerDriver {
  public:
   explicit IOSChromePasswordManagerDriver(
-      id<PasswordManagerDriverBridge> bridge);
+      id<PasswordManagerDriverBridge> bridge,
+      password_manager::PasswordManager* password_manager);
   ~IOSChromePasswordManagerDriver() override;
 
   // password_manager::PasswordManagerDriver implementation.
@@ -55,6 +56,7 @@ class IOSChromePasswordManagerDriver
 
  private:
   __weak id<PasswordManagerDriverBridge> bridge_;  // (weak)
+  password_manager::PasswordManager* password_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromePasswordManagerDriver);
 };

@@ -51,12 +51,18 @@ class PLATFORM_EXPORT DrawingRecorder {
                         DisplayItem::PaintPhaseToDrawingType(phase),
                         visual_rect) {}
 
-  // TODO(crbug.com/1104064): Remove this after we can calculate visual rects
-  // for all display items during paint.
+  // This form is for recording with a transient paint controller, e.g. when
+  // we are recording into a PaintRecordBuilder, where visual rect doesn't
+  // matter.
   DrawingRecorder(GraphicsContext& context,
                   const DisplayItemClient& client,
                   DisplayItem::Type type)
-      : DrawingRecorder(context, client, type, client.VisualRect()) {}
+      : DrawingRecorder(context, client, type, IntRect()) {
+#if DCHECK_IS_ON()
+    DCHECK_EQ(PaintController::kTransient,
+              context.GetPaintController().GetUsage());
+#endif
+  }
   DrawingRecorder(GraphicsContext& context,
                   const DisplayItemClient& client,
                   PaintPhase phase)

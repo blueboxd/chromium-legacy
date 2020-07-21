@@ -50,8 +50,8 @@ TEST_F(LiteVideoHintCacheTest, ValidHintAvailable) {
   EXPECT_EQ(123, hint->target_downlink_bandwidth_kbps());
   EXPECT_EQ(lite_video::features::LiteVideoKilobytesToBufferBeforeThrottle(),
             hint->kilobytes_to_buffer_before_throttle());
-  EXPECT_EQ(lite_video::features::LiteVideoTargetDownlinkRTTLatencyMs(),
-            hint->target_downlink_rtt_latency_ms());
+  EXPECT_EQ(lite_video::features::LiteVideoTargetDownlinkRTTLatency(),
+            hint->target_downlink_rtt_latency());
   histogram_tester.ExpectUniqueSample("LiteVideo.OriginHints.ParseResult", true,
                                       1);
 }

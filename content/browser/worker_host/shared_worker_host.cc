@@ -110,7 +110,9 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerServiceImpl* service,
           std::make_unique<ScopedProcessHostRef>(worker_process_host)),
       scoped_process_host_observer_(this),
       next_connection_request_id_(1),
-      devtools_handle_(std::make_unique<ScopedDevToolsHandle>(this)) {
+      devtools_handle_(std::make_unique<ScopedDevToolsHandle>(this)),
+      ukm_source_id_(ukm::ConvertToSourceId(ukm::AssignNewSourceId(),
+                                            ukm::SourceIdType::WORKER_ID)) {
   DCHECK(worker_process_host_);
   DCHECK(worker_process_host_->IsInitializedAndNotDead());
 
@@ -123,6 +125,9 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerServiceImpl* service,
 
   service_->NotifyWorkerCreated(id_, worker_process_host_->GetID(),
                                 devtools_handle_->dev_tools_token());
+
+  // TODO(crbug.com/1085645): Emit UKM event notifying of the creation of the
+  // |ukm_source_id_| source.
 }
 
 SharedWorkerHost::~SharedWorkerHost() {
@@ -230,7 +235,7 @@ void SharedWorkerHost::Start(
       std::move(main_script_load_params),
       std::move(subresource_loader_factories), std::move(controller),
       receiver_.BindNewPipeAndPassRemote(), std::move(worker_receiver_),
-      std::move(browser_interface_broker));
+      std::move(browser_interface_broker), ukm_source_id_);
 
   // |service_worker_remote_object| is an associated interface ptr, so calls
   // can't be made on it until its request endpoint is sent. Now that the
@@ -448,7 +453,8 @@ void SharedWorkerHost::ReportNoBinderForInterface(const std::string& error) {
 void SharedWorkerHost::AddClient(
     mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
     GlobalFrameRoutingId client_render_frame_host_id,
-    const blink::MessagePortChannel& port) {
+    const blink::MessagePortChannel& port,
+    ukm::SourceId client_ukm_source_id) {
   mojo::Remote<blink::mojom::SharedWorkerClient> remote_client(
       std::move(client));
 
@@ -463,6 +469,9 @@ void SharedWorkerHost::AddClient(
   // Observe when the client goes away.
   info.client.set_disconnect_handler(base::BindOnce(
       &SharedWorkerHost::OnClientConnectionLost, weak_factory_.GetWeakPtr()));
+
+  // TODO(crbug.com/1085645): Emit UKM event linking |client_ukm_source_id| and
+  // |ukm_source_id_|.
 
   worker_->Connect(info.connection_request_id, port.ReleaseHandle());
 

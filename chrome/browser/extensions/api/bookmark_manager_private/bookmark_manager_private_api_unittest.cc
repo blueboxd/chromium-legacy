@@ -22,8 +22,11 @@ class BookmarkManagerPrivateApiUnitTest : public ExtensionServiceTestBase {
 
   void SetUp() override {
     ExtensionServiceTestBase::SetUp();
-    InitializeEmptyExtensionService();
-    profile_->CreateBookmarkModel(false);
+
+    ExtensionServiceInitParams params = CreateDefaultInitParams();
+    params.enable_bookmark_model = true;
+    InitializeExtensionService(params);
+
     model_ = BookmarkModelFactory::GetForBrowserContext(profile());
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
 

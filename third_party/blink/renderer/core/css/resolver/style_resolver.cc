@@ -948,22 +948,6 @@ void StyleResolver::ApplyBaseStyle(
     MatchAllRules(state, collector,
                   matching_behavior != kMatchAllRulesExcludingSMIL);
 
-    // TODO(dominicc): Remove this counter when Issue 590014 is fixed.
-    if (element->HasTagName(html_names::kSummaryTag)) {
-      MatchedPropertiesRange matched_range = match_result.AuthorRules();
-      for (const auto& matched : matched_range) {
-        const CSSValue* value =
-            matched.properties->GetPropertyCSSValue(CSSPropertyID::kDisplay);
-        auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-        if (identifier_value &&
-            identifier_value->GetValueID() == CSSValueID::kBlock) {
-          UseCounter::Count(
-              element->GetDocument(),
-              WebFeature::kSummaryElementWithDisplayBlockAuthorRule);
-        }
-      }
-    }
-
     if (tracker_)
       AddMatchedRulesToTracker(collector);
 

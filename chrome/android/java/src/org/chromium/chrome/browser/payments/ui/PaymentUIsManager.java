@@ -4,29 +4,48 @@
 
 package org.chromium.chrome.browser.payments.ui;
 
+import androidx.annotation.Nullable;
+
+import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.AddressEditor;
+import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.AutofillPaymentAppCreator;
+import org.chromium.chrome.browser.payments.AutofillPaymentAppFactory;
 import org.chromium.chrome.browser.payments.CardEditor;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl;
+import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
+import org.chromium.components.payments.PaymentApp;
+import org.chromium.components.payments.PaymentAppType;
+import org.chromium.components.payments.PaymentFeatureList;
+import org.chromium.components.payments.PaymentRequestLifecycleObserver;
+import org.chromium.components.payments.PaymentRequestParams;
 
 /**
  * This class manages all of the UIs related to payment. The UI logic of {@link PaymentRequestImpl}
  * should be moved into this class.
  */
-public class PaymentUIsManager {
-    private PaymentRequestUI mPaymentRequestUI;
-    private PaymentUisShowStateReconciler mPaymentUisShowStateReconciler;
-
+public class PaymentUIsManager
+        implements SettingsAutofillAndPaymentsObserver.Observer, PaymentRequestLifecycleObserver {
+    private final Delegate mDelegate;
     private final AddressEditor mAddressEditor;
     private final CardEditor mCardEditor;
+    private final PaymentUisShowStateReconciler mPaymentUisShowStateReconciler;
 
-    private boolean mMerchantSupportsAutofillCards;
+    private PaymentRequestUI mPaymentRequestUI;
+
+    private Boolean mMerchantSupportsAutofillCards;
     private SectionInformation mPaymentMethodsSection;
     private SectionInformation mShippingAddressesSection;
     private ContactDetailsSection mContactSection;
     private AutofillPaymentAppCreator mAutofillPaymentAppCreator;
 
-    private boolean mCanUserAddCreditCard;
+    private Boolean mCanUserAddCreditCard;
+
+    /** The delegate of this class. */
+    public interface Delegate {
+        /** Updates the modifiers for payment apps and order summary. */
+        void updateAppModifiedTotals();
+    }
 
     /**
      * This class is to coordinate the show state of a bottom sheet UI (either expandable payment
@@ -84,10 +103,16 @@ public class PaymentUIsManager {
 
     /**
      * Create PaymentUIsManager.
+     * @param delegate The delegate of this class.
      * @param addressEditor The AddressEditor of the PaymentRequest UI.
      * @param cardEditor The CardEditor of the PaymentRequest UI.
      */
-    public PaymentUIsManager(AddressEditor addressEditor, CardEditor cardEditor) {
+    // TODO(crbug.com/1107102): AddressEditor and CardEditor should be initialized in this
+    // constructor instead of the caller of the constructor, once CardEditor's "ForTest" symbols
+    // have been removed from the production code.
+    public PaymentUIsManager(
+            Delegate delegate, AddressEditor addressEditor, CardEditor cardEditor) {
+        mDelegate = delegate;
         mAddressEditor = addressEditor;
         mCardEditor = cardEditor;
         mPaymentUisShowStateReconciler = new PaymentUisShowStateReconciler();
@@ -122,13 +147,11 @@ public class PaymentUIsManager {
     }
 
     /** @return Whether the merchant supports autofill cards. */
-    public boolean merchantSupportsAutofillCards() {
+    @Nullable
+    public Boolean merchantSupportsAutofillCards() {
+        // TODO(crbug.com/1107039): this value should be asserted not null to avoid being used
+        // before defined, after this bug is fixed.
         return mMerchantSupportsAutofillCards;
-    }
-
-    /** Set whether the merchant supports autofill cards. */
-    public void setMerchantSupportsAutofillCards(boolean merchantSupportsAutofillCards) {
-        mMerchantSupportsAutofillCards = merchantSupportsAutofillCards;
     }
 
     /** @return Get the PaymentMethodsSection of the PaymentRequest UI. */
@@ -173,11 +196,97 @@ public class PaymentUIsManager {
 
     /** @return Whether user can add credit card. */
     public boolean canUserAddCreditCard() {
+        assert mCanUserAddCreditCard != null;
         return mCanUserAddCreditCard;
     }
 
-    /** Set whether user can add credit card. */
-    public void setCanUserAddCreditCard(boolean canUserAddCreditCard) {
-        mCanUserAddCreditCard = canUserAddCreditCard;
+    // Implement SettingsAutofillAndPaymentsObserver.Observer:
+    @Override
+    public void onAddressUpdated(AutofillAddress address) {
+        address.setShippingAddressLabelWithCountry();
+        mCardEditor.updateBillingAddressIfComplete(address);
+
+        if (mShippingAddressesSection != null) {
+            mShippingAddressesSection.addAndSelectOrUpdateItem(address);
+            mPaymentRequestUI.updateSection(
+                    PaymentRequestUI.DataType.SHIPPING_ADDRESSES, mShippingAddressesSection);
+        }
+
+        if (mContactSection != null) {
+            mContactSection.addOrUpdateWithAutofillAddress(address);
+            mPaymentRequestUI.updateSection(
+                    PaymentRequestUI.DataType.CONTACT_DETAILS, mContactSection);
+        }
+    }
+
+    // Implement SettingsAutofillAndPaymentsObserver.Observer:
+    @Override
+    public void onAddressDeleted(String guid) {
+        // TODO: Delete the address from getShippingAddressesSection() and
+        // getContactSection(). Note that we only displayed
+        // SUGGESTIONS_LIMIT addresses, so we may want to add back previously ignored addresses.
+    }
+
+    // Implement SettingsAutofillAndPaymentsObserver.Observer:
+    @Override
+    public void onCreditCardUpdated(CreditCard card) {
+        assert mMerchantSupportsAutofillCards != null;
+        if (!mMerchantSupportsAutofillCards || mPaymentMethodsSection == null
+                || mAutofillPaymentAppCreator == null) {
+            return;
+        }
+
+        PaymentApp updatedAutofillCard = mAutofillPaymentAppCreator.createPaymentAppForCard(card);
+
+        // Can be null when the card added through settings does not match the requested card
+        // network or is invalid, because autofill settings do not perform the same level of
+        // validation as Basic Card implementation in Chrome.
+        if (updatedAutofillCard == null) return;
+
+        mPaymentMethodsSection.addAndSelectOrUpdateItem(updatedAutofillCard);
+
+        mDelegate.updateAppModifiedTotals();
+
+        if (mPaymentRequestUI != null) {
+            mPaymentRequestUI.updateSection(
+                    PaymentRequestUI.DataType.PAYMENT_METHODS, mPaymentMethodsSection);
+        }
+    }
+
+    // Implement SettingsAutofillAndPaymentsObserver.Observer:
+    @Override
+    public void onCreditCardDeleted(String guid) {
+        assert mMerchantSupportsAutofillCards != null;
+        if (!mMerchantSupportsAutofillCards || mPaymentMethodsSection == null) return;
+
+        mPaymentMethodsSection.removeAndUnselectItem(guid);
+
+        mDelegate.updateAppModifiedTotals();
+
+        if (mPaymentRequestUI != null) {
+            mPaymentRequestUI.updateSection(
+                    PaymentRequestUI.DataType.PAYMENT_METHODS, mPaymentMethodsSection);
+        }
+    }
+
+    // Implement PaymentRequestLifecycleObserver:
+    @Override
+    public void onPaymentRequestParamsInitiated(PaymentRequestParams params) {
+        // Checks whether the merchant supports autofill cards before show is called.
+        mMerchantSupportsAutofillCards =
+                AutofillPaymentAppFactory.merchantSupportsBasicCard(params.getMethodDataMap());
+
+        // If in strict mode, don't give user an option to add an autofill card during the checkout
+        // to avoid the "unhappy" basic-card flow.
+        mCanUserAddCreditCard = mMerchantSupportsAutofillCards
+                && !PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(
+                        PaymentFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT);
+    }
+
+    /** @return The selected payment app type. */
+    public @PaymentAppType int getSelectedPaymentAppType() {
+        return mPaymentMethodsSection != null && mPaymentMethodsSection.getSelectedItem() != null
+                ? ((PaymentApp) mPaymentMethodsSection.getSelectedItem()).getPaymentAppType()
+                : PaymentAppType.UNDEFINED;
     }
 }

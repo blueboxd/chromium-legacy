@@ -50,6 +50,7 @@ class HomeButton;
 class MediaToolbarButtonView;
 class ReloadButton;
 class SharesheetButton;
+class TabSearchButton;
 class ToolbarButton;
 class ToolbarAccountIconContainerView;
 
@@ -152,6 +153,7 @@ class ToolbarView : public views::AccessiblePaneView,
   }
   BrowserAppMenuButton* app_menu_button() const { return app_menu_button_; }
   HomeButton* home_button() const { return home_; }
+  TabSearchButton* tab_search_button() const { return tab_search_button_; }
   AppMenuIconController* app_menu_icon_controller() {
     return &app_menu_icon_controller_;
   }
@@ -276,6 +278,7 @@ class ToolbarView : public views::AccessiblePaneView,
   SharesheetButton* sharesheet_button_ = nullptr;
   MediaToolbarButtonView* media_button_ = nullptr;
   BrowserAppMenuButton* app_menu_button_ = nullptr;
+  TabSearchButton* tab_search_button_ = nullptr;
 
   Browser* const browser_;
   BrowserView* const browser_view_;

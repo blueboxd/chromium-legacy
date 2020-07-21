@@ -55,20 +55,20 @@ using url_util::FilterToComponents;
 namespace {
 
 // List of schemes of URLs that should not be blocked by the "*" wildcard in
-// the blacklist. Note that URLs with these schemes can still be blocked with
+// the blocklist. Note that URLs with these schemes can still be blocked with
 // a more specific filter e.g. "chrome-extension://*".
 // The schemes are hardcoded here to avoid dependencies on //extensions and
 // //chrome.
-const char* kBypassBlacklistWildcardForSchemes[] = {
-  // For internal extension URLs e.g. the Bookmark Manager and the File
-  // Manager on Chrome OS.
-  "chrome-extension",
+const char* kBypassBlocklistWildcardForSchemes[] = {
+    // For internal extension URLs e.g. the Bookmark Manager and the File
+    // Manager on Chrome OS.
+    "chrome-extension",
 
-  // NTP on Android.
-  "chrome-native",
+    // NTP on Android.
+    "chrome-native",
 
-  // NTP on other platforms.
-  "chrome-search",
+    // NTP on other platforms.
+    "chrome-search",
 };
 
 #if defined(OS_IOS)
@@ -79,19 +79,19 @@ constexpr char kIosNtpChromeScheme[] = "chrome";
 constexpr char kIosNtpHost[] = "newtab";
 #endif
 
-// Returns a blacklist based on the given |block| and |allow| pattern lists.
-std::unique_ptr<URLBlacklist> BuildBlacklist(const base::ListValue* block,
+// Returns a blocklist based on the given |block| and |allow| pattern lists.
+std::unique_ptr<URLBlocklist> BuildBlocklist(const base::ListValue* block,
                                              const base::ListValue* allow) {
-  auto blacklist = std::make_unique<URLBlacklist>();
-  blacklist->Block(block);
-  blacklist->Allow(allow);
-  return blacklist;
+  auto blocklist = std::make_unique<URLBlocklist>();
+  blocklist->Block(block);
+  blocklist->Allow(allow);
+  return blocklist;
 }
 
-bool BypassBlacklistWildcardForURL(const GURL& url) {
+bool BypassBlocklistWildcardForURL(const GURL& url) {
   const std::string& scheme = url.scheme();
-  for (size_t i = 0; i < base::size(kBypassBlacklistWildcardForSchemes); ++i) {
-    if (scheme == kBypassBlacklistWildcardForSchemes[i])
+  for (const char* bypass_scheme : kBypassBlocklistWildcardForSchemes) {
+    if (scheme == bypass_scheme)
       return true;
   }
 #if defined(OS_IOS)
@@ -114,24 +114,24 @@ bool BypassBlacklistWildcardForURL(const GURL& url) {
 
 }  // namespace
 
-URLBlacklist::URLBlacklist() : id_(0), url_matcher_(new URLMatcher) {}
+URLBlocklist::URLBlocklist() : id_(0), url_matcher_(new URLMatcher) {}
 
-URLBlacklist::~URLBlacklist() {}
+URLBlocklist::~URLBlocklist() = default;
 
-void URLBlacklist::Block(const base::ListValue* filters) {
+void URLBlocklist::Block(const base::ListValue* filters) {
   url_util::AddFilters(url_matcher_.get(), false, &id_, filters, &filters_);
 }
 
-void URLBlacklist::Allow(const base::ListValue* filters) {
+void URLBlocklist::Allow(const base::ListValue* filters) {
   url_util::AddFilters(url_matcher_.get(), true, &id_, filters, &filters_);
 }
 
-bool URLBlacklist::IsURLBlocked(const GURL& url) const {
-  return URLBlacklist::GetURLBlacklistState(url) ==
-         URLBlacklist::URLBlacklistState::URL_IN_BLACKLIST;
+bool URLBlocklist::IsURLBlocked(const GURL& url) const {
+  return URLBlocklist::GetURLBlocklistState(url) ==
+         URLBlocklist::URLBlocklistState::URL_IN_BLOCKLIST;
 }
 
-URLBlacklist::URLBlacklistState URLBlacklist::GetURLBlacklistState(
+URLBlocklist::URLBlocklistState URLBlocklist::GetURLBlocklistState(
     const GURL& url) const {
   std::set<URLMatcherConditionSet::ID> matching_ids =
       url_matcher_->MatchURL(url);
@@ -147,28 +147,27 @@ URLBlacklist::URLBlacklistState URLBlacklist::GetURLBlacklistState(
 
   // Default neutral.
   if (!max)
-    return URLBlacklist::URLBlacklistState::URL_NEUTRAL_STATE;
+    return URLBlocklist::URLBlocklistState::URL_NEUTRAL_STATE;
 
   // Some of the internal Chrome URLs are not affected by the "*" in the
-  // blacklist. Note that the "*" is the lowest priority filter possible, so
+  // blocklist. Note that the "*" is the lowest priority filter possible, so
   // any higher priority filter will be applied first.
-  if (max->IsBlacklistWildcard() && BypassBlacklistWildcardForURL(url))
-    return URLBlacklist::URLBlacklistState::URL_IN_WHITELIST;
+  if (max->IsBlocklistWildcard() && BypassBlocklistWildcardForURL(url))
+    return URLBlocklist::URLBlocklistState::URL_IN_ALLOWLIST;
 
-  return max->allow ?
-      URLBlacklist::URLBlacklistState::URL_IN_WHITELIST :
-      URLBlacklist::URLBlacklistState::URL_IN_BLACKLIST;
+  return max->allow ? URLBlocklist::URLBlocklistState::URL_IN_ALLOWLIST
+                    : URLBlocklist::URLBlocklistState::URL_IN_BLOCKLIST;
 }
 
-size_t URLBlacklist::Size() const {
+size_t URLBlocklist::Size() const {
   return filters_.size();
 }
 
 // static
-bool URLBlacklist::FilterTakesPrecedence(const FilterComponents& lhs,
+bool URLBlocklist::FilterTakesPrecedence(const FilterComponents& lhs,
                                          const FilterComponents& rhs) {
   // The "*" wildcard is the lowest priority filter.
-  if (rhs.IsBlacklistWildcard())
+  if (rhs.IsBlocklistWildcard())
     return true;
 
   if (lhs.match_subdomains && !rhs.match_subdomains)
@@ -195,8 +194,8 @@ bool URLBlacklist::FilterTakesPrecedence(const FilterComponents& lhs,
   return false;
 }
 
-URLBlacklistManager::URLBlacklistManager(PrefService* pref_service)
-    : pref_service_(pref_service), blacklist_(new URLBlacklist) {
+URLBlocklistManager::URLBlocklistManager(PrefService* pref_service)
+    : pref_service_(pref_service), blocklist_(new URLBlocklist) {
   // This class assumes that it is created on the same thread that
   // |pref_service_| lives on.
   ui_task_runner_ = base::SequencedTaskRunnerHandle::Get();
@@ -205,7 +204,7 @@ URLBlacklistManager::URLBlacklistManager(PrefService* pref_service)
 
   pref_change_registrar_.Init(pref_service_);
   base::RepeatingClosure callback = base::BindRepeating(
-      &URLBlacklistManager::ScheduleUpdate, base::Unretained(this));
+      &URLBlocklistManager::ScheduleUpdate, base::Unretained(this));
   pref_change_registrar_.Add(policy_prefs::kUrlBlacklist, callback);
   pref_change_registrar_.Add(policy_prefs::kUrlWhitelist, callback);
 
@@ -213,67 +212,67 @@ URLBlacklistManager::URLBlacklistManager(PrefService* pref_service)
   // startup.
   if (pref_service_->HasPrefPath(policy_prefs::kUrlBlacklist) ||
       pref_service_->HasPrefPath(policy_prefs::kUrlWhitelist)) {
-    SetBlacklist(
-        BuildBlacklist(pref_service_->GetList(policy_prefs::kUrlBlacklist),
+    SetBlocklist(
+        BuildBlocklist(pref_service_->GetList(policy_prefs::kUrlBlacklist),
                        pref_service_->GetList(policy_prefs::kUrlWhitelist)));
   }
 }
 
-URLBlacklistManager::~URLBlacklistManager() {
+URLBlocklistManager::~URLBlocklistManager() {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   pref_change_registrar_.RemoveAll();
 }
 
-void URLBlacklistManager::ScheduleUpdate() {
+void URLBlocklistManager::ScheduleUpdate() {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   // Cancel pending updates, if any. This can happen if two preferences that
-  // change the blacklist are updated in one message loop cycle. In those cases,
-  // only rebuild the blacklist after all the preference updates are processed.
+  // change the blocklist are updated in one message loop cycle. In those cases,
+  // only rebuild the blocklist after all the preference updates are processed.
   ui_weak_ptr_factory_.InvalidateWeakPtrs();
   ui_task_runner_->PostTask(FROM_HERE,
-                            base::BindOnce(&URLBlacklistManager::Update,
+                            base::BindOnce(&URLBlocklistManager::Update,
                                            ui_weak_ptr_factory_.GetWeakPtr()));
 }
 
-void URLBlacklistManager::Update() {
+void URLBlocklistManager::Update() {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
 
-  // The URLBlacklist is built in the background. Once it's ready, it is passed
-  // to the URLBlacklistManager back on ui_task_runner_.
+  // The URLBlocklist is built in the background. Once it's ready, it is passed
+  // to the URLBlocklistManager back on ui_task_runner_.
   base::PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
       base::BindOnce(
-          &BuildBlacklist,
+          &BuildBlocklist,
           base::Owned(
               pref_service_->GetList(policy_prefs::kUrlBlacklist)->DeepCopy()),
           base::Owned(
               pref_service_->GetList(policy_prefs::kUrlWhitelist)->DeepCopy())),
-      base::BindOnce(&URLBlacklistManager::SetBlacklist,
+      base::BindOnce(&URLBlocklistManager::SetBlocklist,
                      ui_weak_ptr_factory_.GetWeakPtr()));
 }
 
-void URLBlacklistManager::SetBlacklist(
-    std::unique_ptr<URLBlacklist> blacklist) {
+void URLBlocklistManager::SetBlocklist(
+    std::unique_ptr<URLBlocklist> blocklist) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
-  blacklist_ = std::move(blacklist);
+  blocklist_ = std::move(blocklist);
 }
 
-bool URLBlacklistManager::IsURLBlocked(const GURL& url) const {
+bool URLBlocklistManager::IsURLBlocked(const GURL& url) const {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   // Ignore blob scheme for two reasons:
   // 1) Its used to deliver the response to the renderer.
-  // 2) A whitelisted page can use blob URLs internally.
-  return !url.SchemeIs(url::kBlobScheme) && blacklist_->IsURLBlocked(url);
+  // 2) A page on the allowlist can use blob URLs internally.
+  return !url.SchemeIs(url::kBlobScheme) && blocklist_->IsURLBlocked(url);
 }
 
-URLBlacklist::URLBlacklistState URLBlacklistManager::GetURLBlacklistState(
+URLBlocklist::URLBlocklistState URLBlocklistManager::GetURLBlocklistState(
     const GURL& url) const {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
-  return blacklist_->GetURLBlacklistState(url);
+  return blocklist_->GetURLBlocklistState(url);
 }
 
 // static
-void URLBlacklistManager::RegisterProfilePrefs(
+void URLBlocklistManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(policy_prefs::kUrlBlacklist);
   registry->RegisterListPref(policy_prefs::kUrlWhitelist);

@@ -93,9 +93,9 @@ TEST_F(DeviceNativePrintersExternalDataHandlerTest, OnDataFetched) {
   EXPECT_TRUE(external_printers_->GetPrinters().empty());
 
   device_native_printers_external_data_handler_->OnDeviceExternalDataSet(
-      key::kDeviceNativePrinters);
+      key::kDevicePrinters);
   device_native_printers_external_data_handler_->OnDeviceExternalDataFetched(
-      key::kDeviceNativePrinters,
+      key::kDevicePrinters,
       std::make_unique<std::string>(kDeviceNativePrintersContentsJson),
       base::FilePath());
   task_environment_.RunUntilIdle();
@@ -112,13 +112,13 @@ TEST_F(DeviceNativePrintersExternalDataHandlerTest, OnDataCleared) {
   EXPECT_TRUE(external_printers_->GetPrinters().empty());
 
   device_native_printers_external_data_handler_->OnDeviceExternalDataSet(
-      key::kDeviceNativePrinters);
+      key::kDevicePrinters);
   device_native_printers_external_data_handler_->OnDeviceExternalDataFetched(
-      key::kDeviceNativePrinters,
+      key::kDevicePrinters,
       std::make_unique<std::string>(kDeviceNativePrintersContentsJson),
       base::FilePath());
   device_native_printers_external_data_handler_->OnDeviceExternalDataCleared(
-      key::kDeviceNativePrinters);
+      key::kDevicePrinters);
   task_environment_.RunUntilIdle();
 
   // Check that policy was cleared.

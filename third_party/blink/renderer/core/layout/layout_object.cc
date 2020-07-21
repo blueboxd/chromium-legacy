@@ -1655,10 +1655,6 @@ IntRect LayoutObject::FragmentsVisualRectBoundingBox() const {
   return visual_rect;
 }
 
-IntRect LayoutObject::VisualRect() const {
-  return FragmentsVisualRectBoundingBox();
-}
-
 bool LayoutObject::IsPaintInvalidationContainer() const {
   return HasLayer() &&
          ToLayoutBoxModelObject(this)->Layer()->IsPaintInvalidationContainer();

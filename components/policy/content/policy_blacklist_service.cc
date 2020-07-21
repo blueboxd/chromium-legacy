@@ -19,9 +19,9 @@
 
 namespace {
 
-// Calls the PolicyBlacklistService callback with the result of the Safe Search
+// Calls the PolicyBlocklistService callback with the result of the Safe Search
 // API check.
-void OnCheckURLDone(PolicyBlacklistService::CheckSafeSearchCallback callback,
+void OnCheckURLDone(PolicyBlocklistService::CheckSafeSearchCallback callback,
                     const GURL& /* url */,
                     safe_search_api::Classification classification,
                     bool /* uncertain */) {
@@ -31,20 +31,20 @@ void OnCheckURLDone(PolicyBlacklistService::CheckSafeSearchCallback callback,
 
 }  // namespace
 
-PolicyBlacklistService::PolicyBlacklistService(
+PolicyBlocklistService::PolicyBlocklistService(
     content::BrowserContext* browser_context,
-    std::unique_ptr<policy::URLBlacklistManager> url_blacklist_manager)
+    std::unique_ptr<policy::URLBlocklistManager> url_blocklist_manager)
     : browser_context_(browser_context),
-      url_blacklist_manager_(std::move(url_blacklist_manager)) {}
+      url_blocklist_manager_(std::move(url_blocklist_manager)) {}
 
-PolicyBlacklistService::~PolicyBlacklistService() = default;
+PolicyBlocklistService::~PolicyBlocklistService() = default;
 
-policy::URLBlacklist::URLBlacklistState
-PolicyBlacklistService::GetURLBlacklistState(const GURL& url) const {
-  return url_blacklist_manager_->GetURLBlacklistState(url);
+policy::URLBlocklist::URLBlocklistState
+PolicyBlocklistService::GetURLBlocklistState(const GURL& url) const {
+  return url_blocklist_manager_->GetURLBlocklistState(url);
 }
 
-bool PolicyBlacklistService::CheckSafeSearchURL(
+bool PolicyBlocklistService::CheckSafeSearchURL(
     const GURL& url,
     CheckSafeSearchCallback callback) {
   if (!safe_search_url_checker_) {
@@ -86,39 +86,39 @@ bool PolicyBlacklistService::CheckSafeSearchURL(
       base::BindOnce(&OnCheckURLDone, std::move(callback)));
 }
 
-void PolicyBlacklistService::SetSafeSearchURLCheckerForTest(
+void PolicyBlocklistService::SetSafeSearchURLCheckerForTest(
     std::unique_ptr<safe_search_api::URLChecker> safe_search_url_checker) {
   safe_search_url_checker_ = std::move(safe_search_url_checker);
 }
 
 // static
-PolicyBlacklistFactory* PolicyBlacklistFactory::GetInstance() {
-  return base::Singleton<PolicyBlacklistFactory>::get();
+PolicyBlocklistFactory* PolicyBlocklistFactory::GetInstance() {
+  return base::Singleton<PolicyBlocklistFactory>::get();
 }
 
 // static
-PolicyBlacklistService* PolicyBlacklistFactory::GetForBrowserContext(
+PolicyBlocklistService* PolicyBlocklistFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<PolicyBlacklistService*>(
+  return static_cast<PolicyBlocklistService*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
-PolicyBlacklistFactory::PolicyBlacklistFactory()
+PolicyBlocklistFactory::PolicyBlocklistFactory()
     : BrowserContextKeyedServiceFactory(
-          "PolicyBlacklist",
+          "PolicyBlocklist",
           BrowserContextDependencyManager::GetInstance()) {}
 
-PolicyBlacklistFactory::~PolicyBlacklistFactory() = default;
+PolicyBlocklistFactory::~PolicyBlocklistFactory() = default;
 
-KeyedService* PolicyBlacklistFactory::BuildServiceInstanceFor(
+KeyedService* PolicyBlocklistFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   PrefService* pref_service = user_prefs::UserPrefs::Get(context);
-  auto url_blacklist_manager =
-      std::make_unique<policy::URLBlacklistManager>(pref_service);
-  return new PolicyBlacklistService(context, std::move(url_blacklist_manager));
+  auto url_blocklist_manager =
+      std::make_unique<policy::URLBlocklistManager>(pref_service);
+  return new PolicyBlocklistService(context, std::move(url_blocklist_manager));
 }
 
-content::BrowserContext* PolicyBlacklistFactory::GetBrowserContextToUse(
+content::BrowserContext* PolicyBlocklistFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return context;
 }

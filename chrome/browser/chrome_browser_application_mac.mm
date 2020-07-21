@@ -21,7 +21,6 @@
 #include "content/public/browser/native_event_processor_mac.h"
 #include "content/public/browser/native_event_processor_observer_mac.h"
 #include "ui/base/cocoa/accessibility_focus_overrider.h"
-#include "ui/events/base_event_utils.h"
 
 namespace chrome_browser_application_mac {
 
@@ -95,16 +94,6 @@ std::string DescriptionForNSEvent(NSEvent* event) {
     default:
       break;
   }
-
-  // TODO(bokan): Added temporarily to debug https://crbug.com/1039833.
-  base::TimeTicks event_timestamp =
-      ui::EventTimeStampFromSeconds([event timestamp]);
-  base::TimeTicks now = ui::EventTimeForNow();
-  base::TimeDelta diff = now - event_timestamp;
-  desc += base::StringPrintf(" Now: %lld Diff: %lld",
-                             (now - base::TimeTicks()).InSeconds(),
-                             diff.InSeconds());
-
   return desc;
 }
 

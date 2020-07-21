@@ -13,6 +13,7 @@ include_rules = [
 
 specific_include_rules = {
     "service_worker_global_scope\.cc": [
+        "+services/metrics/public/cpp/ukm_source_id.h",
         "+third_party/blink/renderer/modules/background_fetch",
         "+third_party/blink/renderer/modules/background_sync",
         "+third_party/blink/renderer/modules/content_index",

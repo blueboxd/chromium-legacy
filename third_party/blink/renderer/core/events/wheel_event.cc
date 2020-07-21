@@ -46,13 +46,6 @@ unsigned ConvertDeltaMode(const WebMouseWheelEvent& event) {
              : WheelEvent::kDomDeltaPixel;
 }
 
-// Negate a long value without integer overflow.
-int32_t NegateIfPossible(int32_t value) {
-  if (value == std::numeric_limits<int32_t>::min())
-    return value;
-  return -value;
-}
-
 MouseEventInit* GetMouseEventInitForWheel(const WebMouseWheelEvent& event,
                                           AbstractView* view) {
   MouseEventInit* initializer = MouseEventInit::Create();
@@ -98,16 +91,16 @@ WheelEvent::WheelEvent(const AtomicString& type,
     : MouseEvent(type, initializer),
       wheel_delta_(initializer->wheelDeltaX()
                        ? initializer->wheelDeltaX()
-                       : NegateIfPossible(-initializer->deltaX()),
+                       : static_cast<int32_t>(initializer->deltaX()),
                    initializer->wheelDeltaY()
                        ? initializer->wheelDeltaY()
-                       : NegateIfPossible(-initializer->deltaY())),
+                       : static_cast<int32_t>(initializer->deltaY())),
       delta_x_(initializer->deltaX()
                    ? initializer->deltaX()
-                   : NegateIfPossible(initializer->wheelDeltaX())),
+                   : -static_cast<int32_t>(initializer->wheelDeltaX())),
       delta_y_(initializer->deltaY()
                    ? initializer->deltaY()
-                   : NegateIfPossible(initializer->wheelDeltaY())),
+                   : -static_cast<int32_t>(initializer->wheelDeltaY())),
       delta_z_(initializer->deltaZ()),
       delta_mode_(initializer->deltaMode()) {}
 

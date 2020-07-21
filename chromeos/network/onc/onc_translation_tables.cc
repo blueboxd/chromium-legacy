@@ -147,7 +147,6 @@ const FieldTranslationEntry wifi_fields[] = {
     // { ::onc::wifi::kEAP, shill::kEap*},
     {::onc::wifi::kFrequency, shill::kWifiFrequency},
     {::onc::wifi::kFrequencyList, shill::kWifiFrequencyListProperty},
-    {::onc::wifi::kFTEnabled, shill::kWifiFTEnabled},
     {::onc::wifi::kHexSSID, shill::kWifiHexSsid},
     {::onc::wifi::kHiddenSSID, shill::kWifiHiddenSsid},
     {::onc::wifi::kPassphrase, shill::kPassphraseProperty},

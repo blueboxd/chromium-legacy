@@ -74,7 +74,6 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
 
   // Implements ExecutionContext.
   bool IsDedicatedWorkerGlobalScope() const override { return true; }
-  ukm::SourceId UkmSourceID() const override { return ukm_source_id_; }
 
   // Implements EventTarget
   // (via WorkerOrWorkletGlobalScope -> EventTargetWithInlineData).
@@ -142,8 +141,6 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
 
   Member<WorkerAnimationFrameProvider> animation_frame_provider_;
   RejectCoepUnsafeNone reject_coep_unsafe_none_ = RejectCoepUnsafeNone(false);
-
-  ukm::SourceId ukm_source_id_;
 };
 
 template <>

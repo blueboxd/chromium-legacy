@@ -596,6 +596,11 @@ TEST(ChromeContentBrowserClientTest, HandleWebUI) {
   GURL should_redirect = chrome_help;
   test_content_browser_client.HandleWebUI(&should_redirect, nullptr);
   EXPECT_NE(chrome_help, should_redirect);
+
+  // Confirm that the deprecated cookies settings URL is rewritten.
+  GURL cookies_url = GURL(chrome::kChromeUICookieSettingsDeprecatedURL);
+  test_content_browser_client.HandleWebUI(&cookies_url, nullptr);
+  EXPECT_EQ(GURL(chrome::kChromeUICookieSettingsURL), cookies_url);
 }
 
 TEST(ChromeContentBrowserClientTest, HandleWebUIReverse) {

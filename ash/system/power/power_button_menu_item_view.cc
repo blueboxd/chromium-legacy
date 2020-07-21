@@ -42,8 +42,6 @@ PowerButtonMenuItemView::PowerButtonMenuItemView(
       title_(new views::Label) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetFocusPainter(nullptr);
-  SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
 
   const AshColorProvider* color_provider = AshColorProvider::Get();
   icon_view_->SetImage(gfx::CreateVectorIcon(

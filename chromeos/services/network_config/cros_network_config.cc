@@ -1432,7 +1432,6 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       wifi->frequency = GetInt32(wifi_dict, ::onc::wifi::kFrequency);
       wifi->frequency_list =
           GetInt32List(wifi_dict, ::onc::wifi::kFrequencyList);
-      wifi->ft_enabled = GetManagedBoolean(wifi_dict, ::onc::wifi::kFTEnabled);
       wifi->hex_ssid = GetManagedString(wifi_dict, ::onc::wifi::kHexSSID);
       wifi->hidden_ssid =
           GetManagedBoolean(wifi_dict, ::onc::wifi::kHiddenSSID);

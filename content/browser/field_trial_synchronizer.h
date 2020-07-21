@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 
 namespace content {
 class RenderProcessHost;
@@ -26,13 +26,13 @@ class RenderProcessHost;
 // method sends the FieldTrial's name and the group to all renderer processes.
 // Each renderer process creates the FieldTrial, and by using a 100% probability
 // for the FieldTrial, forces the FieldTrial to have the same group string.
-// This class also registers itself as a VariationsHttpHeaderProvider Observer
+// This class also registers itself as a VariationsIdsProvider Observer
 // and updates the renderers if the variations header changes.
 
 class FieldTrialSynchronizer
     : public base::RefCountedThreadSafe<FieldTrialSynchronizer>,
       public base::FieldTrialList::Observer,
-      public variations::VariationsHttpHeaderProvider::Observer {
+      public variations::VariationsIdsProvider::Observer {
  public:
   // Construction also sets up the global singleton instance.  This instance is
   // used to communicate between the UI and other threads, and is destroyed only
@@ -51,7 +51,7 @@ class FieldTrialSynchronizer
   void OnFieldTrialGroupFinalized(const std::string& name,
                                   const std::string& group_name) override;
 
-  // VariationsHttpHeaderProvider::Observer methods:
+  // VariationsIdsProvider::Observer methods:
   void VariationIdsHeaderUpdated() override;
 
   // Sends the current variations header to |host|'s renderer.

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/media/kaleidoscope/mojom/kaleidoscope.mojom.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -52,6 +53,14 @@ class KaleidoscopeDataProviderImpl
   void OnAccessTokenAvailable(GoogleServiceAuthError error,
                               signin::AccessTokenInfo access_token_info);
 
+  void OnGotMediaFeedContents(
+      GetMediaFeedContentsCallback callback,
+      const int64_t feed_id,
+      std::vector<media_feeds::mojom::MediaFeedItemPtr> items);
+  void OnGotContinueWatchingMediaFeedItems(
+      GetContinueWatchingMediaFeedItemsCallback callback,
+      std::vector<media_feeds::mojom::MediaFeedItemPtr> items);
+
   // Helper for fetching OAuth2 access tokens. This is non-null iff an access
   // token request is currently in progress.
   std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher> token_fetcher_;
@@ -67,6 +76,8 @@ class KaleidoscopeDataProviderImpl
   Profile* const profile_;
 
   mojo::Receiver<media::mojom::KaleidoscopeDataProvider> receiver_;
+
+  base::WeakPtrFactory<KaleidoscopeDataProviderImpl> weak_ptr_factory{this};
 };
 
 #endif  // CHROME_BROWSER_MEDIA_KALEIDOSCOPE_KALEIDOSCOPE_DATA_PROVIDER_IMPL_H_

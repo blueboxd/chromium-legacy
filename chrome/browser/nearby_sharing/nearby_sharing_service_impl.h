@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NEARBY_SHARING_NEARBY_SHARING_SERVICE_IMPL_H_
 #define CHROME_BROWSER_NEARBY_SHARING_NEARBY_SHARING_SERVICE_IMPL_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -14,8 +15,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
+#include "chrome/browser/nearby_sharing/common/nearby_share_enums.h"
+#include "chrome/browser/nearby_sharing/incoming_share_target_info.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
-#include "chrome/browser/nearby_sharing/nearby_constants.h"
 #include "chrome/browser/nearby_sharing/nearby_notification_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_process_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
@@ -102,6 +104,12 @@ class NearbySharingServiceImpl
   void InvalidateReceiveSurfaceState();
   void InvalidateAdvertisingState();
   void StopAdvertising();
+  void OnIncomingTransferUpdate(const ShareTarget& share_target,
+                                TransferMetadata metadata);
+
+  IncomingShareTargetInfo& GetIncomingShareTargetInfo(
+      const ShareTarget& share_target);
+  NearbyConnection* GetIncomingConnection(const ShareTarget& share_target);
 
   PrefService* prefs_;
   Profile* profile_;
@@ -141,6 +149,11 @@ class NearbySharingServiceImpl
   bool is_scanning_ = false;
   // True if we're currently sending or receiving a file.
   bool is_transferring_files_ = false;
+
+  // A map of ShareTarget id to IncomingShareTargetInfo. This lets us know which
+  // Nearby Connections endpoint and public certificate are related to the
+  // incoming share target.
+  std::map<int, IncomingShareTargetInfo> incoming_share_target_info_map_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<NearbySharingServiceImpl> weak_ptr_factory_{this};

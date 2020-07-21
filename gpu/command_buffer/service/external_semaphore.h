@@ -1,0 +1,72 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef GPU_COMMAND_BUFFER_SERVICE_EXTERNAL_SEMAPHORE_H_
+#define GPU_COMMAND_BUFFER_SERVICE_EXTERNAL_SEMAPHORE_H_
+
+#include <vulkan/vulkan.h>
+
+#include "base/util/type_safety/pass_key.h"
+#include "gpu/vulkan/semaphore_handle.h"
+
+namespace viz {
+class VulkanContextProvider;
+}
+
+namespace gpu {
+
+class ExternalSemaphore {
+ public:
+  static ExternalSemaphore Create(viz::VulkanContextProvider* context_provider);
+
+  static ExternalSemaphore CreateFromHandle(
+      viz::VulkanContextProvider* context_provider,
+      SemaphoreHandle handle);
+
+  ExternalSemaphore();
+  ExternalSemaphore(ExternalSemaphore&& other);
+  ExternalSemaphore(util::PassKey<ExternalSemaphore>,
+                    viz::VulkanContextProvider* context_provider,
+                    VkSemaphore semaphore,
+                    SemaphoreHandle handle);
+  ~ExternalSemaphore();
+
+  ExternalSemaphore& operator=(ExternalSemaphore&& other);
+  ExternalSemaphore(const ExternalSemaphore&) = delete;
+  ExternalSemaphore& operator=(const ExternalSemaphore&) = delete;
+  explicit operator bool() const { return is_valid(); }
+
+  void Reset();
+
+  // Take the GL semaphore. The ownership is transferred to caller. The caller
+  // is responsible for releasing it.
+  unsigned int TakeGLSemaphore();
+
+  // Get a VkSemaphore. The ownership is not transferred to caller.
+  VkSemaphore GetVkSemaphore();
+
+  // Take the VkSemaphore. The ownership is transferred to caller. The caller is
+  // responsible for releasing it.
+  VkSemaphore TakeVkSemaphore();
+
+  bool is_valid() const { return context_provider_ && handle_.is_valid(); }
+  SemaphoreHandle handle() { return handle_.Duplicate(); }
+
+ private:
+  // GL semaphore cannot be shared between passthrough GL contexts,
+  // since gl contexts are not created with the same global shared group with
+  // passthrough. So we cannot reuse GL semaphores safely.
+  // TODO(penghuang): share GL semaphore across GL contexts and reuse
+  // GL semaphores.
+  unsigned int GetGLSemaphore();
+
+  viz::VulkanContextProvider* context_provider_ = nullptr;
+  VkSemaphore semaphore_ = VK_NULL_HANDLE;
+  SemaphoreHandle handle_;
+  unsigned int gl_semaphore_ = 0;
+};
+
+}  // namespace gpu
+
+#endif  // GPU_COMMAND_BUFFER_SERVICE_EXTERNAL_SEMAPHORE_H_

@@ -15,7 +15,7 @@
 #include "components/feedback/feedback_uploader_factory.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_associated_data.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "net/http/http_util.h"
@@ -87,7 +87,7 @@ TEST_F(FeedbackUploaderDispatchTest, VariationHeaders) {
   // Register a trial and variation id, so that there is data in variations
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
   CreateFieldTrialWithId("Test", "Group1", 123);
 
   FeedbackUploader uploader(
@@ -103,7 +103,7 @@ TEST_F(FeedbackUploaderDispatchTest, VariationHeaders) {
   QueueReport(&uploader, "test");
   base::RunLoop().RunUntilIdle();
 
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
 }
 
 TEST_F(FeedbackUploaderDispatchTest, 204Response) {

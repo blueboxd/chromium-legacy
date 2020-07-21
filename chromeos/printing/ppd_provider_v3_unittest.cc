@@ -82,6 +82,38 @@ struct PpdProviderComposedMembers {
 
 class PpdProviderTest : public ::testing::Test {
  public:
+  // *  Determines where the PpdCache class runs.
+  //    * If set to kOnTestThread, the PpdCache class will use the
+  //      task environment of the test fixture.
+  //    * If set to kInBackgroundThreads, the PpdCache class will
+  //      spawn its own background threads.
+  //    * Prefer only to run cache on the test thread if you need to
+  //      manipulate its sequencing independently of PpdProvider;
+  //      otherwise, allowing it spawn its own background threads
+  //      should be safe and good for exercising its codepaths.
+  enum class PpdCacheRunLocation {
+    kOnTestThread,
+    kInBackgroundThreads,
+  };
+
+  // *  Determines whether the browser locale given to PpdProvider
+  //    should be propagated to the composed PpdMetadataManager as its
+  //    metadata locale as well.
+  // *  Useful to the caller depending on whether or not one is
+  //    interested in the codepaths that fetch and parse the locales
+  //    metadata.
+  enum class PropagateLocaleToMetadataManager {
+    kDoNotPropagate,
+    kDoPropagate,
+  };
+
+  // Options passed to CreateProvider().
+  struct CreateProviderOptions {
+    std::string browser_locale;
+    PpdCacheRunLocation where_ppd_cache_runs;
+    PropagateLocaleToMetadataManager propagate_locale;
+  };
+
   PpdProviderTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
   }
@@ -90,34 +122,46 @@ class PpdProviderTest : public ::testing::Test {
     ASSERT_TRUE(ppd_cache_temp_dir_.CreateUniqueTempDir());
   }
 
-  // Create and return a provider for a test that uses the given |locale|.  If
-  // run_cache_on_test_thread is true, we'll run the cache using the
-  // task_environment_; otherwise we'll let it spawn it's own background
-  // threads.  You should only run the cache on the test thread if you need to
-  // explicitly drain cache actions independently of draining ppd provider
-  // actions; otherwise letting the cache spawn its own thread should be safe,
-  // and better exercises the code paths under test.
-  scoped_refptr<PpdProvider> CreateProvider(const std::string& locale,
-                                            bool run_cache_on_test_thread) {
-    if (run_cache_on_test_thread) {
-      ppd_cache_ = PpdCache::CreateForTesting(
-          ppd_cache_temp_dir_.GetPath(),
-          task_environment_.GetMainThreadTaskRunner());
-    } else {
-      ppd_cache_ = PpdCache::Create(ppd_cache_temp_dir_.GetPath());
+  // Creates and return a provider for a test that uses the given |options|.
+  scoped_refptr<PpdProvider> CreateProvider(
+      const CreateProviderOptions& options) {
+    switch (options.where_ppd_cache_runs) {
+      case PpdCacheRunLocation::kOnTestThread:
+        ppd_cache_ = PpdCache::CreateForTesting(
+            ppd_cache_temp_dir_.GetPath(),
+            task_environment_.GetMainThreadTaskRunner());
+        break;
+      case PpdCacheRunLocation::kInBackgroundThreads:
+      default:
+        ppd_cache_ = PpdCache::Create(ppd_cache_temp_dir_.GetPath());
+        break;
     }
 
     auto manager_config_cache = std::make_unique<FakePrinterConfigCache>();
     provider_backdoor_.manager_config_cache = manager_config_cache.get();
 
-    auto manager = PpdMetadataManager::Create(locale, &clock_,
+    auto manager = PpdMetadataManager::Create(options.browser_locale, &clock_,
                                               std::move(manager_config_cache));
     provider_backdoor_.metadata_manager = manager.get();
+
+    switch (options.propagate_locale) {
+      case PropagateLocaleToMetadataManager::kDoNotPropagate:
+        // Nothing to do; the no-propagate case allows the
+        // PpdMetadataManager to acquire the metadata locale (or fail to
+        // do so) by natural means.
+        break;
+      case PropagateLocaleToMetadataManager::kDoPropagate:
+      default:
+        provider_backdoor_.metadata_manager->SetLocaleForTesting(
+            options.browser_locale);
+        break;
+    }
 
     auto config_cache = std::make_unique<FakePrinterConfigCache>();
     provider_backdoor_.config_cache = config_cache.get();
 
-    return CreateV3Provider(locale, base::Version("40.8.6753.09"), ppd_cache_,
+    return CreateV3Provider(options.browser_locale,
+                            base::Version("40.8.6753.09"), ppd_cache_,
                             std::move(manager), std::move(config_cache));
   }
 
@@ -343,7 +387,9 @@ class PpdProviderTest : public ::testing::Test {
 // ResolveManufacturers() and fails the oldest call when the queue is
 // deemed full (implementation-specified detail).
 TEST_F(PpdProviderTest, FailsOldestQueuedResolveManufacturers) {
-  auto provider = CreateProvider("en", false);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   for (int i = kMethodDeferralLimitForTesting; i >= 0; i--) {
     provider->ResolveManufacturers(base::BindOnce(
         &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
@@ -358,7 +404,9 @@ TEST_F(PpdProviderTest, FailsOldestQueuedResolveManufacturers) {
 // ReverseLookup() and fails the oldest call when the queue is deemed
 // full (implementation-specified detail).
 TEST_F(PpdProviderTest, FailsOldestQueuedReverseLookup) {
-  auto provider = CreateProvider("en", false);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   for (int i = kMethodDeferralLimitForTesting; i >= 0; i--) {
     provider->ReverseLookup(
         "some effective-make-and-model string",
@@ -373,7 +421,9 @@ TEST_F(PpdProviderTest, FailsOldestQueuedReverseLookup) {
 
 // Test that we get back manufacturer maps as expected.
 TEST_F(PpdProviderTest, ManufacturersFetch) {
-  auto provider = CreateProvider("en", false);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   StartFakePpdServer();
   // Issue two requests at the same time, both should be resolved properly.
   provider->ResolveManufacturers(base::BindOnce(
@@ -394,7 +444,9 @@ TEST_F(PpdProviderTest, ManufacturersFetch) {
 // is almost exactly the same as the above test, we just don't bring up the fake
 // server first.
 TEST_F(PpdProviderTest, ManufacturersFetchNoServer) {
-  auto provider = CreateProvider("en", false);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   // Issue two requests at the same time, both should be resolved properly.
   provider->ResolveManufacturers(base::BindOnce(
       &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
@@ -413,7 +465,9 @@ TEST_F(PpdProviderTest, ManufacturersFetchNoServer) {
 // Tests that mutiples requests for make-and-model resolution can be fulfilled
 // simultaneously.
 TEST_F(PpdProviderTest, RepeatedMakeModel) {
-  auto provider = CreateProvider("en", false);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   StartFakePpdServer();
 
   PrinterSearchData unrecognized_printer;
@@ -454,7 +508,9 @@ TEST_F(PpdProviderTest, RepeatedMakeModel) {
 
 // Test successful and unsuccessful usb resolutions.
 TEST_F(PpdProviderTest, UsbResolution) {
-  auto provider = CreateProvider("en", false);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   StartFakePpdServer();
 
   PrinterSearchData search_data;
@@ -510,7 +566,9 @@ void ResolveManufacturersNop(PpdProvider::CallbackResultCode code,
 // Test basic ResolvePrinters() functionality.  At the same time, make
 // sure we can get the PpdReference for each of the resolved printers.
 TEST_F(PpdProviderTest, ResolvePrinters) {
-  auto provider = CreateProvider("en", false);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   StartFakePpdServer();
 
   // Grab the manufacturer list, but don't bother to save it, we know what
@@ -556,7 +614,9 @@ TEST_F(PpdProviderTest, ResolvePrinters) {
 // Test that if we give a bad reference to ResolvePrinters(), we get an
 // INTERNAL_ERROR.
 TEST_F(PpdProviderTest, ResolvePrintersBadReference) {
-  auto provider = CreateProvider("en", false);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   StartFakePpdServer();
   provider->ResolveManufacturers(base::BindOnce(&ResolveManufacturersNop));
   task_environment_.RunUntilIdle();
@@ -572,7 +632,9 @@ TEST_F(PpdProviderTest, ResolvePrintersBadReference) {
 
 // Test that if the server is unavailable, we get SERVER_ERRORs back out.
 TEST_F(PpdProviderTest, ResolvePrintersNoServer) {
-  auto provider = CreateProvider("en", false);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   StartFakePpdServer();
   provider->ResolveManufacturers(base::BindOnce(&ResolveManufacturersNop));
   task_environment_.RunUntilIdle();
@@ -595,7 +657,9 @@ TEST_F(PpdProviderTest, ResolvePrintersNoServer) {
 
 // Test a successful ppd resolution from an effective_make_and_model reference.
 TEST_F(PpdProviderTest, ResolveServerKeyPpd) {
-  auto provider = CreateProvider("en", false);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   StartFakePpdServer();
   Printer::PpdReference ref;
   ref.effective_make_and_model = "printer_b_ref";
@@ -618,7 +682,9 @@ TEST_F(PpdProviderTest, ResolveServerKeyPpd) {
 // disallowed because we're not sure we completely understand the security
 // implications.
 TEST_F(PpdProviderTest, ResolveUserSuppliedUrlPpdFromNetworkFails) {
-  auto provider = CreateProvider("en", false);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   StartFakePpdServer();
 
   Printer::PpdReference ref;
@@ -637,7 +703,9 @@ TEST_F(PpdProviderTest, ResolveUserSuppliedUrlPpdFromNetworkFails) {
 // reading from a file.  Note we shouldn't need the server to be up
 // to do this successfully, as we should be able to do this offline.
 TEST_F(PpdProviderTest, ResolveUserSuppliedUrlPpdFromFile) {
-  auto provider = CreateProvider("en", false);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath filename = temp_dir.GetPath().Append("my_spiffy.ppd");
@@ -661,7 +729,9 @@ TEST_F(PpdProviderTest, ResolveUserSuppliedUrlPpdFromFile) {
 // Test that we cache ppd resolutions when we fetch them and that we can resolve
 // from the cache without the server available.
 TEST_F(PpdProviderTest, ResolvedPpdsGetCached) {
-  auto provider = CreateProvider("en", false);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   std::string user_ppd_contents = "Woohoo";
   Printer::PpdReference ref;
   {
@@ -690,7 +760,9 @@ TEST_F(PpdProviderTest, ResolvedPpdsGetCached) {
 
   // Recreate the provider to make sure we don't have any memory caches which
   // would mask problems with disk persistence.
-  provider = CreateProvider("en", false);
+  provider =
+      CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
 
   // Re-resolve.
   provider->ResolvePpd(ref, base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
@@ -705,7 +777,9 @@ TEST_F(PpdProviderTest, ResolvedPpdsGetCached) {
 // Test that all entrypoints will correctly work with case-insensitve
 // effective-make-and-model strings.
 TEST_F(PpdProviderTest, CaseInsensitiveMakeAndModel) {
-  auto provider = CreateProvider("en", false);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   StartFakePpdServer();
   std::string ref = "pRiNteR_A_reF";
 
@@ -746,7 +820,9 @@ TEST_F(PpdProviderTest, CaseInsensitiveMakeAndModel) {
 // determine the name of the PPD license associated with the given effecive make
 // and model (if any).
 TEST_F(PpdProviderTest, ResolvePpdLicense) {
-  auto provider = CreateProvider("en", false);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   StartFakePpdServer();
 
   // For this effective_make_and_model, we expect that there is associated
@@ -775,7 +851,9 @@ TEST_F(PpdProviderTest, ResolvePpdLicense) {
 // Verifies that we can extract the Manufacturer and Model selectison for a
 // given effective make and model.
 TEST_F(PpdProviderTest, ReverseLookup) {
-  auto provider = CreateProvider("en", false);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   StartFakePpdServer();
   std::string ref = "printer_a_ref";
   provider->ReverseLookup(ref,
@@ -807,7 +885,9 @@ TEST_F(PpdProviderTest, FreshCacheHitNoNetworkTraffic) {
   // Explicitly *not* starting a fake server.
   std::string cached_ppd_contents =
       "These cached contents are different from what's being served";
-  auto provider = CreateProvider("en", true);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kOnTestThread,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   Printer::PpdReference ref;
   ref.effective_make_and_model = "printer_a_ref";
   std::string cache_key = PpdProvider::PpdReferenceToCacheKey(ref);
@@ -831,7 +911,9 @@ TEST_F(PpdProviderTest, FreshCacheHitNoNetworkTraffic) {
 TEST_F(PpdProviderTest, StaleCacheGetsRefreshed) {
   std::string cached_ppd_contents =
       "These cached contents are different from what's being served";
-  auto provider = CreateProvider("en", true);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kOnTestThread,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   StartFakePpdServer();
   // printer_ref_a resolves to kCupsFilterPpdContents on the server.
   std::string expected_ppd = kCupsFilterPpdContents;
@@ -875,7 +957,9 @@ TEST_F(PpdProviderTest, StaleCacheGetsUsedIfNetworkFails) {
   // Note that we're explicitly *not* starting the Fake ppd server in this test.
   std::string cached_ppd_contents =
       "These cached contents are different from what's being served";
-  auto provider = CreateProvider("en", true);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kOnTestThread,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   Printer::PpdReference ref;
   ref.effective_make_and_model = "printer_a_ref";
   std::string cache_key = PpdProvider::PpdReferenceToCacheKey(ref);
@@ -916,7 +1000,9 @@ TEST_F(PpdProviderTest, UserPpdAlwaysRefreshedIfAvailable) {
   base::ScopedTempDir temp_dir;
   std::string cached_ppd_contents = "Cached Ppd Contents";
   std::string disk_ppd_contents = "Updated Ppd Contents";
-  auto provider = CreateProvider("en", true);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kOnTestThread,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   StartFakePpdServer();
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath filename = temp_dir.GetPath().Append("my_spiffy.ppd");
@@ -957,7 +1043,9 @@ TEST_F(PpdProviderTest, UserPpdAlwaysRefreshedIfAvailable) {
 
 // Test resolving usb manufacturer when failed to resolve PpdReference.
 TEST_F(PpdProviderTest, ResolveUsbManufacturer) {
-  auto provider = CreateProvider("en", false);
+  auto provider =
+      CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
+                      PropagateLocaleToMetadataManager::kDoNotPropagate});
   StartFakePpdServer();
 
   PrinterSearchData search_data;

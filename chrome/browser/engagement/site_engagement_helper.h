@@ -108,7 +108,7 @@ class SiteEngagementService::Helper
     bool is_tracking_;
 
     // content::WebContentsObserver overrides.
-    void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
+    void DidGetUserInteraction(const blink::WebInputEvent& event) override;
 
     DISALLOW_COPY_AND_ASSIGN(InputTracker);
   };

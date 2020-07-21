@@ -57,6 +57,8 @@ class ShowGenericUiActionTest : public content::RenderViewHostTestHarness {
     ON_CALL(mock_action_delegate_, ClearGenericUi()).WillByDefault(Return());
     ON_CALL(mock_action_delegate_, GetUserModel())
         .WillByDefault(Return(&user_model_));
+    ON_CALL(mock_action_delegate_, GetUserData())
+        .WillByDefault(Return(&user_data_));
     ON_CALL(mock_action_delegate_, GetPersonalDataManager)
         .WillByDefault(Return(&mock_personal_data_manager_));
     ON_CALL(mock_action_delegate_, GetWebsiteLoginManager)
@@ -83,6 +85,7 @@ class ShowGenericUiActionTest : public content::RenderViewHostTestHarness {
     return action;
   }
 
+  UserData user_data_;
   UserModel user_model_;
   MockPersonalDataManager mock_personal_data_manager_;
   MockWebsiteLoginManager mock_website_login_manager_;
@@ -518,6 +521,44 @@ TEST_F(ShowGenericUiActionTest, BreakingNavigationBeforeUiIsSet) {
 
   proto_.set_end_on_navigation(true);
   Run();
+}
+
+TEST_F(ShowGenericUiActionTest, RequestUserDataFailsOnMissingValues) {
+  auto* request_user_data = proto_.mutable_request_user_data();
+  auto* additional_value = request_user_data->add_additional_values();
+  additional_value->set_source_identifier("client_memory");
+  additional_value->set_model_identifier("target");
+
+  EXPECT_CALL(callback_, Run(Pointee(Property(&ProcessedActionProto::status,
+                                              PRECONDITION_FAILED))));
+  Run();
+}
+
+TEST_F(ShowGenericUiActionTest, RequestUserData) {
+  auto* request_user_data = proto_.mutable_request_user_data();
+  auto* additional_value = request_user_data->add_additional_values();
+  additional_value->set_source_identifier("client_memory_1");
+  additional_value->set_model_identifier("target_1");
+  additional_value = request_user_data->add_additional_values();
+  additional_value->set_source_identifier("client_memory_2");
+  additional_value->set_model_identifier("target_2");
+
+  user_data_.additional_values_["client_memory_1"] =
+      SimpleValue(std::string("value_1"));
+  user_data_.additional_values_["client_memory_2"] = SimpleValue(123);
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+  Run();
+
+  auto expected_value_1 = SimpleValue(std::string("value_1"));
+  expected_value_1.set_is_client_side_only(true);
+  auto expected_value_2 = SimpleValue(123);
+  expected_value_2.set_is_client_side_only(true);
+
+  EXPECT_EQ(*user_model_.GetValue("target_1"), expected_value_1);
+  EXPECT_EQ(*user_model_.GetValue("target_2"), expected_value_2);
 }
 
 // TODO(b/161652848): Add test coverage for element checks and interrupts.

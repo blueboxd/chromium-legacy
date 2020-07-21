@@ -22,6 +22,7 @@ def _CreateRJava(resource_zips, package_name, srcjar_out, rtxt_out):
     rjava_build_options = resource_utils.RJavaBuildOptions()
     rjava_build_options.ExportAllResources()
     rjava_build_options.ExportAllStyleables()
+    rjava_build_options.GenerateOnResourcesLoaded(fake=True)
     resource_utils.CreateRJavaFiles(build.srcjar_dir,
                                     package_name,
                                     rtxt_out,

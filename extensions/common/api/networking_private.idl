@@ -648,7 +648,6 @@ namespace networkingPrivate {
     EAPProperties? EAP;
     long? Frequency;
     long[]? FrequencyList;
-    boolean? FTEnabled;
     DOMString? HexSSID;
     boolean? HiddenSSID;
     DOMString? Passphrase;
@@ -665,7 +664,6 @@ namespace networkingPrivate {
     ManagedEAPProperties? EAP;
     long? Frequency;
     long[]? FrequencyList;
-    ManagedBoolean? FTEnabled;
     ManagedDOMString? HexSSID;
     ManagedBoolean? HiddenSSID;
     ManagedDOMString? Passphrase;

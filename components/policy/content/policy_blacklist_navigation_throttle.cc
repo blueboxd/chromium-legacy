@@ -17,22 +17,23 @@
 #include "content/public/browser/navigation_handle.h"
 #include "url/gurl.h"
 
-using URLBlacklistState = policy::URLBlacklist::URLBlacklistState;
+using URLBlocklistState = policy::URLBlocklist::URLBlocklistState;
 using SafeSitesFilterBehavior = policy::SafeSitesFilterBehavior;
 
-PolicyBlacklistNavigationThrottle::PolicyBlacklistNavigationThrottle(
+PolicyBlocklistNavigationThrottle::PolicyBlocklistNavigationThrottle(
     content::NavigationHandle* navigation_handle,
     content::BrowserContext* context)
     : NavigationThrottle(navigation_handle) {
-  blacklist_service_ = PolicyBlacklistFactory::GetForBrowserContext(context);
+  blocklist_service_ = PolicyBlocklistFactory::GetForBrowserContext(context);
   prefs_ = user_prefs::UserPrefs::Get(context);
   DCHECK(prefs_);
 }
 
-PolicyBlacklistNavigationThrottle::~PolicyBlacklistNavigationThrottle() {}
+PolicyBlocklistNavigationThrottle::~PolicyBlocklistNavigationThrottle() =
+    default;
 
 content::NavigationThrottle::ThrottleCheckResult
-PolicyBlacklistNavigationThrottle::WillStartRequest() {
+PolicyBlocklistNavigationThrottle::WillStartRequest() {
   GURL url = navigation_handle()->GetURL();
 
   // Ignore blob scheme because we may use it to deliver navigation responses
@@ -40,14 +41,14 @@ PolicyBlacklistNavigationThrottle::WillStartRequest() {
   if (url.SchemeIs(url::kBlobScheme))
     return PROCEED;
 
-  URLBlacklistState blacklist_state =
-      blacklist_service_->GetURLBlacklistState(url);
-  if (blacklist_state == URLBlacklistState::URL_IN_BLACKLIST) {
+  URLBlocklistState blocklist_state =
+      blocklist_service_->GetURLBlocklistState(url);
+  if (blocklist_state == URLBlocklistState::URL_IN_BLOCKLIST) {
     return ThrottleCheckResult(BLOCK_REQUEST,
                                net::ERR_BLOCKED_BY_ADMINISTRATOR);
   }
 
-  if (blacklist_state == URLBlacklistState::URL_IN_WHITELIST)
+  if (blocklist_state == URLBlocklistState::URL_IN_ALLOWLIST)
     return PROCEED;
 
   // Safe Sites filter applies to top-level HTTP[S] requests.
@@ -66,10 +67,10 @@ PolicyBlacklistNavigationThrottle::WillStartRequest() {
   if (!effective_url.is_valid())
     effective_url = url;
 
-  bool synchronous = blacklist_service_->CheckSafeSearchURL(
+  bool synchronous = blocklist_service_->CheckSafeSearchURL(
       effective_url,
       base::BindOnce(
-          &PolicyBlacklistNavigationThrottle::CheckSafeSearchCallback,
+          &PolicyBlocklistNavigationThrottle::CheckSafeSearchCallback,
           weak_ptr_factory_.GetWeakPtr()));
   if (!synchronous) {
     deferred_ = true;
@@ -82,15 +83,15 @@ PolicyBlacklistNavigationThrottle::WillStartRequest() {
 }
 
 content::NavigationThrottle::ThrottleCheckResult
-PolicyBlacklistNavigationThrottle::WillRedirectRequest() {
+PolicyBlocklistNavigationThrottle::WillRedirectRequest() {
   return WillStartRequest();
 }
 
-const char* PolicyBlacklistNavigationThrottle::GetNameForLogging() {
-  return "PolicyBlacklistNavigationThrottle";
+const char* PolicyBlocklistNavigationThrottle::GetNameForLogging() {
+  return "PolicyBlocklistNavigationThrottle";
 }
 
-void PolicyBlacklistNavigationThrottle::CheckSafeSearchCallback(bool is_safe) {
+void PolicyBlocklistNavigationThrottle::CheckSafeSearchCallback(bool is_safe) {
   if (!deferred_) {
     should_cancel_ = !is_safe;
     return;

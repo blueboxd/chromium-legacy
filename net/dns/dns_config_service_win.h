@@ -19,6 +19,7 @@
 #include "base/memory/free_deleter.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece_forward.h"
 #include "net/base/net_export.h"
 #include "net/dns/dns_config_service.h"
 
@@ -40,14 +41,14 @@ namespace internal {
 // Converts a UTF-16 domain name to ASCII, possibly using punycode.
 // Returns true if the conversion succeeds and output is not empty. In case of
 // failure, |domain| might become dirty.
-bool NET_EXPORT_PRIVATE ParseDomainASCII(base::StringPiece16 widestr,
+bool NET_EXPORT_PRIVATE ParseDomainASCII(base::WStringPiece widestr,
                                          std::string* domain);
 
 // Parses |value| as search list (comma-delimited list of domain names) from
 // a registry key and stores it in |out|. Returns true on success. Empty
 // entries (e.g., "chromium.org,,org") terminate the list. Non-ascii hostnames
 // are converted to punycode.
-bool NET_EXPORT_PRIVATE ParseSearchList(const base::string16& value,
+bool NET_EXPORT_PRIVATE ParseSearchList(const std::wstring& value,
                                         std::vector<std::string>* out);
 
 // All relevant settings read from registry and IP Helper. This isolates our
@@ -57,7 +58,7 @@ struct NET_EXPORT_PRIVATE DnsSystemSettings {
   // The |set| flag distinguishes between empty and unset values.
   struct RegString {
     bool set;
-    base::string16 value;
+    std::wstring value;
   };
 
   struct RegDword {

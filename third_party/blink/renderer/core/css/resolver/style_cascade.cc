@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -227,6 +228,8 @@ void StyleCascade::AnalyzeMatchResult() {
       map_.Add(property.GetCSSPropertyName(), e.Priority());
     }
   }
+
+  MaybeUseCountSummaryDisplayBlock();
 }
 
 void StyleCascade::AnalyzeInterpolations() {
@@ -698,11 +701,7 @@ const CSSValue* StyleCascade::ResolveRevert(const CSSProperty& property,
                                             const CSSValue& value,
                                             CascadeOrigin origin,
                                             CascadeResolver& resolver) {
-  // In forced colors mode, we can behave like 'revert' any value [1], but we
-  // should only use-count the true uses of 'revert'.
-  // [1] https://drafts.csswg.org/css-color-adjust-1/#forced-colors-properties
-  if (IsRevert(value))
-    GetDocument().CountUse(WebFeature::kCSSKeywordRevert);
+  MaybeUseCountRevert(value);
 
   CascadeOrigin target_origin = TargetOriginForRevert(origin);
 
@@ -927,6 +926,32 @@ const CSSProperty& StyleCascade::ResolveSurrogate(const CSSProperty& property) {
       state_.Style()->Direction(), state_.Style()->GetWritingMode());
   DCHECK(original);
   return *original;
+}
+
+void StyleCascade::CountUse(WebFeature feature) {
+  GetDocument().CountUse(feature);
+}
+
+void StyleCascade::MaybeUseCountRevert(const CSSValue& value) {
+  // In forced colors mode, any value can behave like 'revert' [1], but we
+  // should only use-count the true uses of 'revert'.
+  // [1] https://drafts.csswg.org/css-color-adjust-1/#forced-colors-properties
+  if (IsRevert(value))
+    CountUse(WebFeature::kCSSKeywordRevert);
+}
+
+// TODO(crbug.com/590014): Remove this when display type of <summary> is fixed
+void StyleCascade::MaybeUseCountSummaryDisplayBlock() {
+  if (!state_.GetElement().HasTagName(html_names::kSummaryTag))
+    return;
+  CascadePriority priority = map_.At(CSSPropertyName(CSSPropertyID::kDisplay));
+  if (priority.GetOrigin() == CascadeOrigin::kUserAgent)
+    return;
+  const CSSValue* value = ValueAt(match_result_, priority.GetPosition());
+  if (auto* identifier = DynamicTo<CSSIdentifierValue>(value)) {
+    if (identifier->GetValueID() == CSSValueID::kBlock)
+      CountUse(WebFeature::kSummaryElementWithDisplayBlockAuthorRule);
+  }
 }
 
 }  // namespace blink

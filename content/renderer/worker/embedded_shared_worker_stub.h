@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-forward.h"
@@ -78,6 +79,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker,
+      ukm::SourceId ukm_source_id,
       const std::vector<std::string>& cors_exempt_header_list);
   ~EmbeddedSharedWorkerStub() override;
 

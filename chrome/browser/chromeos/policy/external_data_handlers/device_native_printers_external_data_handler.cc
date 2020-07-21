@@ -20,7 +20,7 @@ DeviceNativePrintersExternalDataHandler::
       device_native_printers_observer_(
           std::make_unique<DeviceCloudExternalDataPolicyObserver>(
               policy_service,
-              key::kDeviceNativePrinters,
+              key::kDevicePrinters,
               this)) {}
 
 DeviceNativePrintersExternalDataHandler::

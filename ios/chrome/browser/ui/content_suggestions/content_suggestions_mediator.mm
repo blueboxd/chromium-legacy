@@ -14,6 +14,8 @@
 #include "components/ntp_tiles/metrics.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/ntp_tile.h"
+#import "components/prefs/ios/pref_observer_bridge.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/reading_list/core/reading_list_model.h"
 #import "components/reading_list/ios/reading_list_model_bridge_observer.h"
 #include "ios/chrome/browser/application_context.h"
@@ -60,6 +62,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
                                           ContentSuggestionsItemDelegate,
                                           ContentSuggestionsServiceObserver,
                                           MostVisitedSitesObserving,
+                                          PrefObserverDelegate,
                                           ReadingListModelBridgeObserver> {
   // Bridge for this class to become an observer of a ContentSuggestionsService.
   std::unique_ptr<ContentSuggestionsServiceBridge> _suggestionBridge;
@@ -67,6 +70,10 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   std::unique_ptr<ntp_tiles::MostVisitedSitesObserverBridge> _mostVisitedBridge;
   std::unique_ptr<NotificationPromoWhatsNew> _notificationPromo;
   std::unique_ptr<ReadingListModelBridge> _readingListModelBridge;
+  // Pref observer to track changes to prefs.
+  std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
+  // Registrar for pref changes notifications.
+  std::unique_ptr<PrefChangeRegistrar> _prefChangeRegistrar;
 }
 
 // Whether the contents section should be hidden completely.
@@ -174,10 +181,22 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
         std::make_unique<ntp_tiles::MostVisitedSitesObserverBridge>(self);
     _mostVisitedSites->SetMostVisitedURLsObserver(_mostVisitedBridge.get(),
                                                   kMaxNumMostVisitedTiles);
+
+    _prefChangeRegistrar = std::make_unique<PrefChangeRegistrar>();
+    _prefChangeRegistrar->Init(prefService);
+    _prefObserverBridge.reset(new PrefObserverBridge(self));
+    _prefObserverBridge->ObserveChangesForPreference(
+        prefs::kArticlesForYouEnabled, _prefChangeRegistrar.get());
+
     _readingListModelBridge =
         std::make_unique<ReadingListModelBridge>(self, readingListModel);
   }
   return self;
+}
+
+- (void)disconnect {
+  _prefChangeRegistrar.reset();
+  _prefObserverBridge.reset();
 }
 
 - (void)blockMostVisitedURL:(GURL)URL {
@@ -720,6 +739,14 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     return;
   _contentArticlesExpanded = contentArticlesExpanded;
   [contentArticlesExpanded setObserver:self];
+}
+
+#pragma mark - PrefObserverDelegate
+
+- (void)onPreferenceChanged:(const std::string&)preferenceName {
+  if (preferenceName == prefs::kArticlesForYouEnabled) {
+    [self.dataSink reloadAllData];
+  }
 }
 
 #pragma mark - ReadingListModelBridgeObserver

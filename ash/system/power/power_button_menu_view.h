@@ -64,13 +64,14 @@ class ASH_EXPORT PowerButtonMenuView : public views::View,
   // Gets the transform displacement, which contains direction and distance.
   TransformDisplacement GetTransformDisplacement() const;
 
+  // Called whenever the associated widget is shown and when |this| is
+  // constructed. Adds/removes menu items as needed.
+  void RecreateItems();
+
   // views::View:
   const char* GetClassName() const override;
 
  private:
-  // Creates the items that in the menu.
-  void CreateItems();
-
   // views::View:
   void Layout() override;
   void OnPaint(gfx::Canvas* canvas) override;

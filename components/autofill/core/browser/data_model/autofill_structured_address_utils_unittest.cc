@@ -92,14 +92,14 @@ TEST(AutofillStructuredAddressUtils,
 }
 
 TEST(AutofillStructuredAddressUtils,
-     TestParseValueByRegularExpression_InvalidExpression) {
+     TestParseValueByRegularExpression_InvalidRegEx) {
   std::string regex = "(!<INVALID";
   std::string value = "first middle1 middle2 middle3 last";
 
   std::map<std::string, std::string> result_map;
 
   EXPECT_FALSE(ParseValueByRegularExpression(value, regex, &result_map));
-  auto expression = BuildExpressionFromPattern(regex);
+  auto expression = BuildRegExFromPattern(regex);
   EXPECT_FALSE(
       ParseValueByRegularExpression(value, expression.get(), &result_map));
 }
@@ -121,21 +121,19 @@ TEST(AutofillStructuredAddressUtils, TestIsPartialMatch) {
 }
 
 // Test the matching of a value against an invalid regular expression.
-TEST(AutofillStructuredAddressUtils, TestIsPartialMatch_InvalidExpression) {
+TEST(AutofillStructuredAddressUtils, TestIsPartialMatch_InvalidRegEx) {
   EXPECT_FALSE(IsPartialMatch("123 sdf 123", "(!<sdf"));
 }
 
 // Test the caching of regular expressions.
-TEST(AutofillStructuredAddressUtils, TestExpressionCaching) {
+TEST(AutofillStructuredAddressUtils, TestRegExCaching) {
   std::string pattern = "(?P<SOME_EXPRESSION>.)";
   // Verify that the pattern is not cached yet.
-  EXPECT_FALSE(
-      Re2ExpressionCache::Instance()->IsExpressionCachedForTesting(pattern));
+  EXPECT_FALSE(Re2RegExCache::Instance()->IsRegExCachedForTesting(pattern));
 
   // Request the regular expression and verify that it is cached afterwards.
-  Re2ExpressionCache::Instance()->GetExpression(pattern);
-  EXPECT_TRUE(
-      Re2ExpressionCache::Instance()->IsExpressionCachedForTesting(pattern));
+  Re2RegExCache::Instance()->GetRegEx(pattern);
+  EXPECT_TRUE(Re2RegExCache::Instance()->IsRegExCachedForTesting(pattern));
 }
 
 TEST(AutofillStructuredAddressUtils, TestGetAllPartialMatches) {
@@ -192,6 +190,21 @@ TEST(AutofillStructuredAddressUtils,
 
 TEST(AutofillStructuredAddressUtils, TestGetPlaceholderToken) {
   EXPECT_EQ("${VAR}", GetPlaceholderToken("VAR"));
+}
+
+TEST(AutofillStructuredAddressUtils, CaptureTypeWithPattern) {
+  EXPECT_EQ("(?:(?P<NAME_FULL>abs\\w)(?:\\s|$))?",
+            CaptureTypeWithPattern(NAME_FULL, {"abs", "\\w"},
+                                   {.quantifier = MATCH_OPTIONAL}));
+  EXPECT_EQ("(?:(?P<NAME_FULL>abs\\w)(?:\\s|$))",
+            CaptureTypeWithPattern(NAME_FULL, {"abs", "\\w"}));
+  EXPECT_EQ("(?:(?P<NAME_FULL>abs\\w)(?:\\s|$))??",
+            CaptureTypeWithPattern(NAME_FULL, "abs\\w",
+                                   {.quantifier = MATCH_LAZY_OPTIONAL}));
+  EXPECT_EQ("(?:(?P<NAME_FULL>abs\\w)(?:\\s|$))",
+            CaptureTypeWithPattern(NAME_FULL, "abs\\w"));
+  EXPECT_EQ("(?:(?P<NAME_FULL>abs\\w)(?:_))",
+            CaptureTypeWithPattern(NAME_FULL, "abs\\w", {.separator = "_"}));
 }
 
 }  // namespace structured_address

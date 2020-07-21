@@ -112,7 +112,8 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     const blink::MessagePortChannel& message_port,
-    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+    ukm::SourceId client_ukm_source_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderFrameHostImpl* render_frame_host =
@@ -174,7 +175,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     }
 
     host->AddClient(std::move(client), client_render_frame_host_id,
-                    message_port);
+                    message_port, client_ukm_source_id);
     return;
   }
 
@@ -200,7 +201,8 @@ void SharedWorkerServiceImpl::ConnectToWorker(
                       client_render_frame_host_id,
                       storage_partition_config.partition_domain(), message_port,
                       std::move(blob_url_loader_factory));
-  host->AddClient(std::move(client), client_render_frame_host_id, message_port);
+  host->AddClient(std::move(client), client_render_frame_host_id, message_port,
+                  client_ukm_source_id);
 }
 
 void SharedWorkerServiceImpl::DestroyHost(SharedWorkerHost* host) {

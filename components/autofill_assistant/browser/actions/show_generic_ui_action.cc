@@ -145,6 +145,22 @@ void ShowGenericUiAction::OnViewInflationFinished(const ClientStatus& status) {
   // Note: it is important to write autofill profiles etc. to the model AFTER
   // the UI has been inflated, otherwise the UI won't get change notifications
   // for them.
+  for (const auto& additional_value :
+       proto_.show_generic_ui().request_user_data().additional_values()) {
+    if (!delegate_->GetUserData()->has_additional_value(
+            additional_value.source_identifier())) {
+      EndAction(ClientStatus(PRECONDITION_FAILED));
+      return;
+    }
+  }
+  for (const auto& additional_value :
+       proto_.show_generic_ui().request_user_data().additional_values()) {
+    ValueProto value = *delegate_->GetUserData()->additional_value(
+        additional_value.source_identifier());
+    value.set_is_client_side_only(true);
+    delegate_->GetUserModel()->SetValue(additional_value.model_identifier(),
+                                        value);
+  }
   if (proto_.show_generic_ui().has_request_login_options()) {
     auto login_options =
         proto_.show_generic_ui().request_login_options().login_options();

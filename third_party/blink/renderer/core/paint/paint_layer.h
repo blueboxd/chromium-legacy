@@ -250,7 +250,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // DisplayItemClient methods
   String DebugName() const final;
   DOMNodeId OwnerNodeId() const final;
-  IntRect VisualRect() const final;
 
   LayoutBoxModelObject& GetLayoutObject() const { return *layout_object_; }
   LayoutBox* GetLayoutBox() const {
@@ -1106,6 +1105,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   void SetNeedsCompositingLayerAssignment();
   void ClearNeedsCompositingLayerAssignment();
+  void PropagateDescendantNeedsCompositingLayerAssignment();
 
   bool NeedsCompositingLayerAssignment() const {
     return needs_compositing_layer_assignment_;

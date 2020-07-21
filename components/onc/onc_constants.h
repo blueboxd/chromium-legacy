@@ -236,7 +236,6 @@ ONC_EXPORT extern const char kBSSID[];
 ONC_EXPORT extern const char kEAP[];
 ONC_EXPORT extern const char kFrequency[];
 ONC_EXPORT extern const char kFrequencyList[];
-ONC_EXPORT extern const char kFTEnabled[];
 ONC_EXPORT extern const char kHexSSID[];
 ONC_EXPORT extern const char kHiddenSSID[];
 ONC_EXPORT extern const char kPassphrase[];

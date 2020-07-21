@@ -30,58 +30,59 @@ namespace policy {
 
 namespace {
 
-class TestingURLBlacklistManager : public URLBlacklistManager {
+class TestingURLBlocklistManager : public URLBlocklistManager {
  public:
-  explicit TestingURLBlacklistManager(PrefService* pref_service)
-      : URLBlacklistManager(pref_service),
+  explicit TestingURLBlocklistManager(PrefService* pref_service)
+      : URLBlocklistManager(pref_service),
         update_called_(0),
-        set_blacklist_called_(false) {}
+        set_blocklist_called_(false) {}
 
-  ~TestingURLBlacklistManager() override {}
+  ~TestingURLBlocklistManager() override = default;
 
   // Make this method public for testing.
-  using URLBlacklistManager::ScheduleUpdate;
+  using URLBlocklistManager::ScheduleUpdate;
 
-  // URLBlacklistManager overrides:
-  void SetBlacklist(std::unique_ptr<URLBlacklist> blacklist) override {
-    set_blacklist_called_ = true;
-    URLBlacklistManager::SetBlacklist(std::move(blacklist));
+  // URLBlocklistManager overrides:
+  void SetBlocklist(std::unique_ptr<URLBlocklist> blocklist) override {
+    set_blocklist_called_ = true;
+    URLBlocklistManager::SetBlocklist(std::move(blocklist));
   }
 
   void Update() override {
     update_called_++;
-    URLBlacklistManager::Update();
+    URLBlocklistManager::Update();
   }
 
   int update_called() const { return update_called_; }
-  bool set_blacklist_called() const { return set_blacklist_called_; }
+  bool set_blocklist_called() const { return set_blocklist_called_; }
 
  private:
   int update_called_;
-  bool set_blacklist_called_;
+  bool set_blocklist_called_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestingURLBlacklistManager);
+  DISALLOW_COPY_AND_ASSIGN(TestingURLBlocklistManager);
 };
 
-class URLBlacklistManagerTest : public testing::Test {
+class URLBlocklistManagerTest : public testing::Test {
  protected:
-  URLBlacklistManagerTest() {}
+  URLBlocklistManagerTest() = default;
 
   void SetUp() override {
     pref_service_.registry()->RegisterListPref(policy_prefs::kUrlBlacklist);
     pref_service_.registry()->RegisterListPref(policy_prefs::kUrlWhitelist);
-    blacklist_manager_.reset(new TestingURLBlacklistManager(&pref_service_));
+    blocklist_manager_ =
+        std::make_unique<TestingURLBlocklistManager>(&pref_service_);
     task_environment_.RunUntilIdle();
   }
 
   void TearDown() override {
-    if (blacklist_manager_)
+    if (blocklist_manager_)
       task_environment_.RunUntilIdle();
-    blacklist_manager_.reset();
+    blocklist_manager_.reset();
   }
 
   TestingPrefServiceSimple pref_service_;
-  std::unique_ptr<TestingURLBlacklistManager> blacklist_manager_;
+  std::unique_ptr<TestingURLBlocklistManager> blocklist_manager_;
 
   base::test::TaskEnvironment task_environment_;
 };
@@ -90,72 +91,72 @@ class URLBlacklistManagerTest : public testing::Test {
 
 // Returns whether |url| matches the |pattern|.
 bool IsMatch(const std::string& pattern, const std::string& url) {
-  URLBlacklist blacklist;
+  URLBlocklist blocklist;
 
-  // Add the pattern to blacklist.
+  // Add the pattern to blocklist.
   std::unique_ptr<base::ListValue> blocked(new base::ListValue);
   blocked->AppendString(pattern);
-  blacklist.Block(blocked.get());
+  blocklist.Block(blocked.get());
 
-  return blacklist.IsURLBlocked(GURL(url));
+  return blocklist.IsURLBlocked(GURL(url));
 }
 
-// Returns the state from blacklist after adding |pattern| to be blocked or
-// allowed depending on |use_whitelist| and checking |url|.
-policy::URLBlacklist::URLBlacklistState GetMatch(const std::string& pattern,
+// Returns the state from blocklist after adding |pattern| to be blocked or
+// allowed depending on |use_allowlist| and checking |url|.
+policy::URLBlocklist::URLBlocklistState GetMatch(const std::string& pattern,
                                                  const std::string& url,
-                                                 const bool use_whitelist) {
-  URLBlacklist blacklist;
+                                                 const bool use_allowlist) {
+  URLBlocklist blocklist;
 
   // Add the pattern to list.
   std::unique_ptr<base::ListValue> blocked(new base::ListValue);
   blocked->AppendString(pattern);
 
-  if (use_whitelist) {
-    blacklist.Allow(blocked.get());
+  if (use_allowlist) {
+    blocklist.Allow(blocked.get());
   } else {
-    blacklist.Block(blocked.get());
+    blocklist.Block(blocked.get());
   }
 
-  return blacklist.GetURLBlacklistState(GURL(url));
+  return blocklist.GetURLBlocklistState(GURL(url));
 }
 
-TEST_F(URLBlacklistManagerTest, LoadBlacklistOnCreate) {
+TEST_F(URLBlocklistManagerTest, LoadBlocklistOnCreate) {
   auto list = std::make_unique<base::ListValue>();
   list->AppendString("example.com");
   pref_service_.SetManagedPref(policy_prefs::kUrlBlacklist, std::move(list));
-  auto manager = std::make_unique<URLBlacklistManager>(&pref_service_);
+  auto manager = std::make_unique<URLBlocklistManager>(&pref_service_);
   task_environment_.RunUntilIdle();
-  EXPECT_EQ(URLBlacklist::URL_IN_BLACKLIST,
-            manager->GetURLBlacklistState(GURL("http://example.com")));
+  EXPECT_EQ(URLBlocklist::URL_IN_BLOCKLIST,
+            manager->GetURLBlocklistState(GURL("http://example.com")));
 }
 
-TEST_F(URLBlacklistManagerTest, LoadWhitelistOnCreate) {
+TEST_F(URLBlocklistManagerTest, LoadAllowlistOnCreate) {
   auto list = std::make_unique<base::ListValue>();
   list->AppendString("example.com");
   pref_service_.SetManagedPref(policy_prefs::kUrlWhitelist, std::move(list));
-  auto manager = std::make_unique<URLBlacklistManager>(&pref_service_);
+  auto manager = std::make_unique<URLBlocklistManager>(&pref_service_);
   task_environment_.RunUntilIdle();
-  EXPECT_EQ(URLBlacklist::URL_IN_WHITELIST,
-            manager->GetURLBlacklistState(GURL("http://example.com")));
+  EXPECT_EQ(URLBlocklist::URL_IN_ALLOWLIST,
+            manager->GetURLBlocklistState(GURL("http://example.com")));
 }
 
-TEST_F(URLBlacklistManagerTest, SingleUpdateForTwoPrefChanges) {
-  auto blacklist = std::make_unique<base::ListValue>();
-  blacklist->AppendString("*.google.com");
-  auto whitelist = std::make_unique<base::ListValue>();
-  whitelist->AppendString("mail.google.com");
+TEST_F(URLBlocklistManagerTest, SingleUpdateForTwoPrefChanges) {
+  auto blocklist = std::make_unique<base::ListValue>();
+  blocklist->AppendString("*.google.com");
+  auto allowlist = std::make_unique<base::ListValue>();
+  allowlist->AppendString("mail.google.com");
   pref_service_.SetManagedPref(policy_prefs::kUrlBlacklist,
-                               std::move(blacklist));
+                               std::move(blocklist));
   pref_service_.SetManagedPref(policy_prefs::kUrlBlacklist,
-                               std::move(whitelist));
+                               std::move(allowlist));
   task_environment_.RunUntilIdle();
 
-  EXPECT_EQ(1, blacklist_manager_->update_called());
+  EXPECT_EQ(1, blocklist_manager_->update_called());
 }
 
-TEST_F(URLBlacklistManagerTest, Filtering) {
-  URLBlacklist blacklist;
+TEST_F(URLBlocklistManagerTest, Filtering) {
+  URLBlocklist blocklist;
 
   // Block domain and all subdomains, for any filtered scheme.
   EXPECT_TRUE(IsMatch("google.com", "http://google.com"));
@@ -217,227 +218,227 @@ TEST_F(URLBlacklistManagerTest, Filtering) {
   allowed->AppendString("s.xxx.com/a/b");
   blocked->AppendString("https://s.xxx.com/a/b/c");
   allowed->AppendString("https://s.xxx.com/a/b/c/d");
-  blacklist.Block(blocked.get());
-  blacklist.Allow(allowed.get());
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://s.xxx.com/a")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://s.xxx.com/a/x")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("https://s.xxx.com/a/x")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://s.xxx.com/a/b")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("https://s.xxx.com/a/b")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://s.xxx.com/a/b/x")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://s.xxx.com/a/b/c")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("https://s.xxx.com/a/b/c")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("https://s.xxx.com/a/b/c/x")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("https://s.xxx.com/a/b/c/d")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://s.xxx.com/a/b/c/d")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("https://s.xxx.com/a/b/c/d/x")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://s.xxx.com/a/b/c/d/x")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://xxx.com/a")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://xxx.com/a/b")));
+  blocklist.Block(blocked.get());
+  blocklist.Allow(allowed.get());
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://s.xxx.com/a")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://s.xxx.com/a/x")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("https://s.xxx.com/a/x")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://s.xxx.com/a/b")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("https://s.xxx.com/a/b")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://s.xxx.com/a/b/x")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://s.xxx.com/a/b/c")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("https://s.xxx.com/a/b/c")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("https://s.xxx.com/a/b/c/x")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("https://s.xxx.com/a/b/c/d")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://s.xxx.com/a/b/c/d")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("https://s.xxx.com/a/b/c/d/x")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://s.xxx.com/a/b/c/d/x")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://xxx.com/a")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://xxx.com/a/b")));
 
   // Open an exception.
-  blocked.reset(new base::ListValue);
+  blocked = std::make_unique<base::ListValue>();
   blocked->AppendString("google.com");
-  allowed.reset(new base::ListValue);
+  allowed = std::make_unique<base::ListValue>();
   allowed->AppendString("plus.google.com");
-  blacklist.Block(blocked.get());
-  blacklist.Allow(allowed.get());
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://google.com/")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://www.google.com/")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://plus.google.com/")));
+  blocklist.Block(blocked.get());
+  blocklist.Allow(allowed.get());
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://google.com/")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://www.google.com/")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://plus.google.com/")));
 
   // Open an exception only when using https for mail.
-  allowed.reset(new base::ListValue);
+  allowed = std::make_unique<base::ListValue>();
   allowed->AppendString("https://mail.google.com");
-  blacklist.Allow(allowed.get());
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://google.com/")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://mail.google.com/")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://www.google.com/")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("https://www.google.com/")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("https://mail.google.com/")));
+  blocklist.Allow(allowed.get());
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://google.com/")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://mail.google.com/")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://www.google.com/")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("https://www.google.com/")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("https://mail.google.com/")));
 
   // Match exactly "google.com", only for http. Subdomains without exceptions
   // are still blocked.
-  allowed.reset(new base::ListValue);
+  allowed = std::make_unique<base::ListValue>();
   allowed->AppendString("http://.google.com");
-  blacklist.Allow(allowed.get());
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://google.com/")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("https://google.com/")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://www.google.com/")));
+  blocklist.Allow(allowed.get());
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://google.com/")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("https://google.com/")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://www.google.com/")));
 
   // A smaller path match in an exact host overrides a longer path for hosts
   // that also match subdomains.
-  blocked.reset(new base::ListValue);
+  blocked = std::make_unique<base::ListValue>();
   blocked->AppendString("yyy.com/aaa");
-  blacklist.Block(blocked.get());
-  allowed.reset(new base::ListValue);
+  blocklist.Block(blocked.get());
+  allowed = std::make_unique<base::ListValue>();
   allowed->AppendString(".yyy.com/a");
-  blacklist.Allow(allowed.get());
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://yyy.com")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://yyy.com/aaa")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://yyy.com/aaa2")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://www.yyy.com")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://www.yyy.com/aaa")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://www.yyy.com/aaa2")));
+  blocklist.Allow(allowed.get());
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://yyy.com")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://yyy.com/aaa")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://yyy.com/aaa2")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://www.yyy.com")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://www.yyy.com/aaa")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://www.yyy.com/aaa2")));
 
   // If the exact entry is both allowed and blocked, allowing takes precedence.
-  blocked.reset(new base::ListValue);
+  blocked = std::make_unique<base::ListValue>();
   blocked->AppendString("example.com");
-  blacklist.Block(blocked.get());
-  allowed.reset(new base::ListValue);
+  blocklist.Block(blocked.get());
+  allowed = std::make_unique<base::ListValue>();
   allowed->AppendString("example.com");
-  blacklist.Allow(allowed.get());
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://example.com")));
+  blocklist.Allow(allowed.get());
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://example.com")));
 
   // Devtools should not be blocked.
-  blocked.reset(new base::ListValue);
+  blocked = std::make_unique<base::ListValue>();
   blocked->AppendString("*");
-  blacklist.Block(blocked.get());
-  allowed.reset(new base::ListValue);
+  blocklist.Block(blocked.get());
+  allowed = std::make_unique<base::ListValue>();
   allowed->AppendString("devtools://*");
-  blacklist.Allow(allowed.get());
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("devtools://something.com")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("https://something.com")));
+  blocklist.Allow(allowed.get());
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("devtools://something.com")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("https://something.com")));
 }
 
-TEST_F(URLBlacklistManagerTest, QueryParameters) {
-  URLBlacklist blacklist;
+TEST_F(URLBlocklistManagerTest, QueryParameters) {
+  URLBlocklist blocklist;
   std::unique_ptr<base::ListValue> blocked(new base::ListValue);
   std::unique_ptr<base::ListValue> allowed(new base::ListValue);
 
   // Block domain and all subdomains, for any filtered scheme.
   blocked->AppendString("youtube.com");
   allowed->AppendString("youtube.com/watch?v=XYZ");
-  blacklist.Block(blocked.get());
-  blacklist.Allow(allowed.get());
+  blocklist.Block(blocked.get());
+  blocklist.Allow(allowed.get());
 
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://youtube.com")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://youtube.com/watch?v=123")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://youtube.com")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://youtube.com/watch?v=123")));
   EXPECT_TRUE(
-      blacklist.IsURLBlocked(GURL("http://youtube.com/watch?v=123&v=XYZ")));
+      blocklist.IsURLBlocked(GURL("http://youtube.com/watch?v=123&v=XYZ")));
   EXPECT_TRUE(
-      blacklist.IsURLBlocked(GURL("http://youtube.com/watch?v=XYZ&v=123")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://youtube.com/watch?v=XYZ")));
+      blocklist.IsURLBlocked(GURL("http://youtube.com/watch?v=XYZ&v=123")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://youtube.com/watch?v=XYZ")));
   EXPECT_FALSE(
-      blacklist.IsURLBlocked(GURL("http://youtube.com/watch?v=XYZ&foo=bar")));
+      blocklist.IsURLBlocked(GURL("http://youtube.com/watch?v=XYZ&foo=bar")));
   EXPECT_FALSE(
-      blacklist.IsURLBlocked(GURL("http://youtube.com/watch?foo=bar&v=XYZ")));
+      blocklist.IsURLBlocked(GURL("http://youtube.com/watch?foo=bar&v=XYZ")));
 
-  allowed.reset(new base::ListValue);
+  allowed = std::make_unique<base::ListValue>();
   allowed->AppendString("youtube.com/watch?av=XYZ&ag=123");
-  blacklist.Allow(allowed.get());
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://youtube.com")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://youtube.com/watch?av=123")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://youtube.com/watch?av=XYZ")));
+  blocklist.Allow(allowed.get());
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://youtube.com")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://youtube.com/watch?av=123")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://youtube.com/watch?av=XYZ")));
   EXPECT_TRUE(
-      blacklist.IsURLBlocked(GURL("http://youtube.com/watch?av=123&ag=XYZ")));
+      blocklist.IsURLBlocked(GURL("http://youtube.com/watch?av=123&ag=XYZ")));
   EXPECT_TRUE(
-      blacklist.IsURLBlocked(GURL("http://youtube.com/watch?ag=XYZ&av=123")));
+      blocklist.IsURLBlocked(GURL("http://youtube.com/watch?ag=XYZ&av=123")));
   EXPECT_FALSE(
-      blacklist.IsURLBlocked(GURL("http://youtube.com/watch?av=XYZ&ag=123")));
+      blocklist.IsURLBlocked(GURL("http://youtube.com/watch?av=XYZ&ag=123")));
   EXPECT_FALSE(
-      blacklist.IsURLBlocked(GURL("http://youtube.com/watch?ag=123&av=XYZ")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(
+      blocklist.IsURLBlocked(GURL("http://youtube.com/watch?ag=123&av=XYZ")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(
       GURL("http://youtube.com/watch?av=XYZ&ag=123&av=123")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(
+  EXPECT_TRUE(blocklist.IsURLBlocked(
       GURL("http://youtube.com/watch?av=XYZ&ag=123&ag=1234")));
 
-  allowed.reset(new base::ListValue);
+  allowed = std::make_unique<base::ListValue>();
   allowed->AppendString("youtube.com/watch?foo=bar*&vid=2*");
-  blacklist.Allow(allowed.get());
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://youtube.com")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://youtube.com/watch?vid=2")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://youtube.com/watch?foo=bar")));
+  blocklist.Allow(allowed.get());
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://youtube.com")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://youtube.com/watch?vid=2")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://youtube.com/watch?foo=bar")));
   EXPECT_FALSE(
-      blacklist.IsURLBlocked(GURL("http://youtube.com/watch?vid=2&foo=bar")));
+      blocklist.IsURLBlocked(GURL("http://youtube.com/watch?vid=2&foo=bar")));
   EXPECT_FALSE(
-      blacklist.IsURLBlocked(GURL("http://youtube.com/watch?vid=2&foo=bar1")));
+      blocklist.IsURLBlocked(GURL("http://youtube.com/watch?vid=2&foo=bar1")));
   EXPECT_FALSE(
-      blacklist.IsURLBlocked(GURL("http://youtube.com/watch?vid=234&foo=bar")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(
+      blocklist.IsURLBlocked(GURL("http://youtube.com/watch?vid=234&foo=bar")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(
       GURL("http://youtube.com/watch?vid=234&foo=bar23")));
 
-  blocked.reset(new base::ListValue);
+  blocked = std::make_unique<base::ListValue>();
   blocked->AppendString("youtube1.com/disallow?v=44678");
-  blacklist.Block(blocked.get());
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://youtube1.com")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://youtube1.com?v=123")));
+  blocklist.Block(blocked.get());
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://youtube1.com")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://youtube1.com?v=123")));
   // Path does not match
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://youtube1.com?v=44678")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://youtube1.com?v=44678")));
   EXPECT_TRUE(
-      blacklist.IsURLBlocked(GURL("http://youtube1.com/disallow?v=44678")));
+      blocklist.IsURLBlocked(GURL("http://youtube1.com/disallow?v=44678")));
   EXPECT_FALSE(
-      blacklist.IsURLBlocked(GURL("http://youtube1.com/disallow?v=4467")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(
+      blocklist.IsURLBlocked(GURL("http://youtube1.com/disallow?v=4467")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(
       GURL("http://youtube1.com/disallow?v=4467&v=123")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(
+  EXPECT_TRUE(blocklist.IsURLBlocked(
       GURL("http://youtube1.com/disallow?v=4467&v=123&v=44678")));
 
-  blocked.reset(new base::ListValue);
+  blocked = std::make_unique<base::ListValue>();
   blocked->AppendString("youtube1.com/disallow?g=*");
-  blacklist.Block(blocked.get());
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://youtube1.com")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://youtube1.com?ag=123")));
+  blocklist.Block(blocked.get());
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://youtube1.com")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://youtube1.com?ag=123")));
   EXPECT_TRUE(
-      blacklist.IsURLBlocked(GURL("http://youtube1.com/disallow?g=123")));
+      blocklist.IsURLBlocked(GURL("http://youtube1.com/disallow?g=123")));
   EXPECT_TRUE(
-      blacklist.IsURLBlocked(GURL("http://youtube1.com/disallow?ag=13&g=123")));
+      blocklist.IsURLBlocked(GURL("http://youtube1.com/disallow?ag=13&g=123")));
 
-  blocked.reset(new base::ListValue);
+  blocked = std::make_unique<base::ListValue>();
   blocked->AppendString("youtube2.com/disallow?a*");
-  blacklist.Block(blocked.get());
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://youtube2.com")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(
+  blocklist.Block(blocked.get());
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://youtube2.com")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(
       GURL("http://youtube2.com/disallow?b=123&a21=467")));
   EXPECT_TRUE(
-      blacklist.IsURLBlocked(GURL("http://youtube2.com/disallow?abba=true")));
+      blocklist.IsURLBlocked(GURL("http://youtube2.com/disallow?abba=true")));
   EXPECT_FALSE(
-      blacklist.IsURLBlocked(GURL("http://youtube2.com/disallow?baba=true")));
+      blocklist.IsURLBlocked(GURL("http://youtube2.com/disallow?baba=true")));
 
-  allowed.reset(new base::ListValue);
-  blocked.reset(new base::ListValue);
+  allowed = std::make_unique<base::ListValue>();
+  blocked = std::make_unique<base::ListValue>();
   blocked->AppendString("youtube3.com");
   allowed->AppendString("youtube3.com/watch?fo*");
-  blacklist.Block(blocked.get());
-  blacklist.Allow(allowed.get());
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://youtube3.com")));
+  blocklist.Block(blocked.get());
+  blocklist.Allow(allowed.get());
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://youtube3.com")));
   EXPECT_TRUE(
-      blacklist.IsURLBlocked(GURL("http://youtube3.com/watch?b=123&a21=467")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(
+      blocklist.IsURLBlocked(GURL("http://youtube3.com/watch?b=123&a21=467")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(
       GURL("http://youtube3.com/watch?b=123&a21=467&foo1")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(
+  EXPECT_FALSE(blocklist.IsURLBlocked(
       GURL("http://youtube3.com/watch?b=123&a21=467&foo=bar")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(
+  EXPECT_FALSE(blocklist.IsURLBlocked(
       GURL("http://youtube3.com/watch?b=123&a21=467&fo=ba")));
   EXPECT_FALSE(
-      blacklist.IsURLBlocked(GURL("http://youtube3.com/watch?foriegn=true")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://youtube3.com/watch?fold")));
+      blocklist.IsURLBlocked(GURL("http://youtube3.com/watch?foreign=true")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://youtube3.com/watch?fold")));
 
-  allowed.reset(new base::ListValue);
-  blocked.reset(new base::ListValue);
+  allowed = std::make_unique<base::ListValue>();
+  blocked = std::make_unique<base::ListValue>();
   blocked->AppendString("youtube4.com");
   allowed->AppendString("youtube4.com?*");
-  blacklist.Block(blocked.get());
-  blacklist.Allow(allowed.get());
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://youtube4.com")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://youtube4.com/?hello")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://youtube4.com/?foo")));
+  blocklist.Block(blocked.get());
+  blocklist.Allow(allowed.get());
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://youtube4.com")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://youtube4.com/?hello")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://youtube4.com/?foo")));
 
-  allowed.reset(new base::ListValue);
-  blocked.reset(new base::ListValue);
+  allowed = std::make_unique<base::ListValue>();
+  blocked = std::make_unique<base::ListValue>();
   blocked->AppendString("youtube5.com?foo=bar");
   allowed->AppendString("youtube5.com?foo1=bar1&foo2=bar2&");
-  blacklist.Block(blocked.get());
-  blacklist.Allow(allowed.get());
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://youtube5.com")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://youtube5.com/?foo=bar&a=b")));
+  blocklist.Block(blocked.get());
+  blocklist.Allow(allowed.get());
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://youtube5.com")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://youtube5.com/?foo=bar&a=b")));
   // More specific filter is given precedence.
-  EXPECT_FALSE(blacklist.IsURLBlocked(
+  EXPECT_FALSE(blocklist.IsURLBlocked(
       GURL("http://youtube5.com/?a=b&foo=bar&foo1=bar1&foo2=bar2")));
 }
 
-TEST_F(URLBlacklistManagerTest, BlockAllWithExceptions) {
-  URLBlacklist blacklist;
+TEST_F(URLBlocklistManagerTest, BlockAllWithExceptions) {
+  URLBlocklist blocklist;
 
   std::unique_ptr<base::ListValue> blocked(new base::ListValue);
   std::unique_ptr<base::ListValue> allowed(new base::ListValue);
@@ -446,63 +447,63 @@ TEST_F(URLBlacklistManagerTest, BlockAllWithExceptions) {
   allowed->AppendString("plus.google.com");
   allowed->AppendString("https://mail.google.com");
   allowed->AppendString("https://very.safe/path");
-  blacklist.Block(blocked.get());
-  blacklist.Allow(allowed.get());
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://random.com")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://google.com")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://s.www.google.com")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://www.google.com")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://plus.google.com")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://s.plus.google.com")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://mail.google.com")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("https://mail.google.com")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("https://s.mail.google.com")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("https://very.safe/")));
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://very.safe/path")));
-  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("https://very.safe/path")));
+  blocklist.Block(blocked.get());
+  blocklist.Allow(allowed.get());
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://random.com")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://google.com")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://s.www.google.com")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://www.google.com")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://plus.google.com")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("http://s.plus.google.com")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://mail.google.com")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("https://mail.google.com")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("https://s.mail.google.com")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("https://very.safe/")));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://very.safe/path")));
+  EXPECT_FALSE(blocklist.IsURLBlocked(GURL("https://very.safe/path")));
 }
 
-TEST_F(URLBlacklistManagerTest, DefaultBlacklistExceptions) {
-  URLBlacklist blacklist;
+TEST_F(URLBlocklistManagerTest, DefaultBlocklistExceptions) {
+  URLBlocklist blocklist;
   std::unique_ptr<base::ListValue> blocked(new base::ListValue);
 
-  // Blacklist everything:
+  // Blocklist everything:
   blocked->AppendString("*");
-  blacklist.Block(blocked.get());
+  blocklist.Block(blocked.get());
 
   // Internal NTP and extension URLs are not blocked by the "*":
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://www.google.com")));
-  EXPECT_FALSE((blacklist.IsURLBlocked(GURL("chrome-extension://xyz"))));
-  EXPECT_FALSE((blacklist.IsURLBlocked(GURL("chrome-search://local-ntp"))));
-  EXPECT_FALSE((blacklist.IsURLBlocked(GURL("chrome-native://ntp"))));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://www.google.com")));
+  EXPECT_FALSE((blocklist.IsURLBlocked(GURL("chrome-extension://xyz"))));
+  EXPECT_FALSE((blocklist.IsURLBlocked(GURL("chrome-search://local-ntp"))));
+  EXPECT_FALSE((blocklist.IsURLBlocked(GURL("chrome-native://ntp"))));
 #if defined(OS_IOS)
   // Ensure that the NTP is not blocked on iOS by "*".
   // TODO(crbug.com/1073291): On iOS, the NTP can not be blocked even by
   // explicitly listing it as a blocked URL. This is due to the usage of
   // "about:newtab" as its URL which is not recognized and filtered by the
-  // URLBlacklist code.
-  EXPECT_FALSE((blacklist.IsURLBlocked(GURL("about:newtab"))));
-  EXPECT_FALSE((blacklist.IsURLBlocked(GURL("about://newtab/"))));
-  EXPECT_FALSE((blacklist.IsURLBlocked(GURL("chrome://newtab"))));
+  // URLBlocklist code.
+  EXPECT_FALSE((blocklist.IsURLBlocked(GURL("about:newtab"))));
+  EXPECT_FALSE((blocklist.IsURLBlocked(GURL("about://newtab/"))));
+  EXPECT_FALSE((blocklist.IsURLBlocked(GURL("chrome://newtab"))));
 #endif
 
-  // Unless they are explicitly blacklisted:
+  // Unless they are explicitly on the blocklist:
   blocked->AppendString("chrome-extension://*");
   std::unique_ptr<base::ListValue> allowed(new base::ListValue);
   allowed->AppendString("chrome-extension://abc");
-  blacklist.Block(blocked.get());
-  blacklist.Allow(allowed.get());
+  blocklist.Block(blocked.get());
+  blocklist.Allow(allowed.get());
 
-  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://www.google.com")));
-  EXPECT_TRUE((blacklist.IsURLBlocked(GURL("chrome-extension://xyz"))));
-  EXPECT_FALSE((blacklist.IsURLBlocked(GURL("chrome-extension://abc"))));
-  EXPECT_FALSE((blacklist.IsURLBlocked(GURL("chrome-search://local-ntp"))));
-  EXPECT_FALSE((blacklist.IsURLBlocked(GURL("chrome-native://ntp"))));
+  EXPECT_TRUE(blocklist.IsURLBlocked(GURL("http://www.google.com")));
+  EXPECT_TRUE((blocklist.IsURLBlocked(GURL("chrome-extension://xyz"))));
+  EXPECT_FALSE((blocklist.IsURLBlocked(GURL("chrome-extension://abc"))));
+  EXPECT_FALSE((blocklist.IsURLBlocked(GURL("chrome-search://local-ntp"))));
+  EXPECT_FALSE((blocklist.IsURLBlocked(GURL("chrome-native://ntp"))));
 }
 
-TEST_F(URLBlacklistManagerTest, BlacklistBasicCoverage) {
+TEST_F(URLBlocklistManagerTest, BlocklistBasicCoverage) {
   // Tests to cover the documentation from
-  // http://www.chromium.org/administrators/url-blacklist-filter-format
+  // http://www.chromium.org/administrators/url-blocklist-filter-format
 
   // [scheme://][.]host[:port][/path][@query]
   // Scheme can be http, https, ftp, chrome, etc. This field is optional, and
@@ -616,23 +617,23 @@ TEST_F(URLBlacklistManagerTest, BlacklistBasicCoverage) {
   EXPECT_FALSE(IsMatch("host/path?Query=1", "http://host/path?query=1"));
 }
 
-// Test for GetURLBlacklistState method.
-TEST_F(URLBlacklistManagerTest, UseBlacklistState) {
-  const policy::URLBlacklist::URLBlacklistState in_blacklist =
-      policy::URLBlacklist::URLBlacklistState::URL_IN_BLACKLIST;
-  const policy::URLBlacklist::URLBlacklistState in_whitelist =
-      policy::URLBlacklist::URLBlacklistState::URL_IN_WHITELIST;
-  const policy::URLBlacklist::URLBlacklistState neutral_state =
-      policy::URLBlacklist::URLBlacklistState::URL_NEUTRAL_STATE;
+// Test for GetURLBlocklistState method.
+TEST_F(URLBlocklistManagerTest, UseBlocklistState) {
+  const policy::URLBlocklist::URLBlocklistState in_blocklist =
+      policy::URLBlocklist::URLBlocklistState::URL_IN_BLOCKLIST;
+  const policy::URLBlocklist::URLBlocklistState in_allowlist =
+      policy::URLBlocklist::URLBlocklistState::URL_IN_ALLOWLIST;
+  const policy::URLBlocklist::URLBlocklistState neutral_state =
+      policy::URLBlocklist::URLBlocklistState::URL_NEUTRAL_STATE;
 
-  // Test whitelist states.
-  EXPECT_EQ(in_whitelist, GetMatch("example.com", "http://example.com", true));
-  EXPECT_EQ(in_whitelist, GetMatch("http://*", "http://example.com", true));
-  EXPECT_EQ(in_whitelist, GetMatch("custom://*", "custom://app", true));
-  EXPECT_EQ(in_whitelist, GetMatch("custom:*", "custom://app/play", true));
-  EXPECT_EQ(in_whitelist, GetMatch("custom:*", "custom://app:8080", true));
-  // Test blacklist states.
-  EXPECT_EQ(in_blacklist, GetMatch("ftp:*", "ftp://server", false));
+  // Test allowlist states.
+  EXPECT_EQ(in_allowlist, GetMatch("example.com", "http://example.com", true));
+  EXPECT_EQ(in_allowlist, GetMatch("http://*", "http://example.com", true));
+  EXPECT_EQ(in_allowlist, GetMatch("custom://*", "custom://app", true));
+  EXPECT_EQ(in_allowlist, GetMatch("custom:*", "custom://app/play", true));
+  EXPECT_EQ(in_allowlist, GetMatch("custom:*", "custom://app:8080", true));
+  // Test blocklist states.
+  EXPECT_EQ(in_blocklist, GetMatch("ftp:*", "ftp://server", false));
   // Test neutral states.
   EXPECT_EQ(neutral_state, GetMatch("file:*", "http://example.com", true));
   EXPECT_EQ(neutral_state, GetMatch("https://*", "http://example.com", false));

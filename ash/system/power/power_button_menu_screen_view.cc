@@ -67,6 +67,7 @@ class PowerButtonMenuScreenView::PowerButtonMenuBackgroundView
     layer()->SetColor(AshColorProvider::Get()->DeprecatedGetShieldLayerColor(
         AshColorProvider::ShieldLayerType::kShield60,
         kPowerButtonMenuFullscreenShieldColor));
+    layer()->SetOpacity(0.f);
   }
 
   ~PowerButtonMenuBackgroundView() override = default;
@@ -84,8 +85,8 @@ class PowerButtonMenuScreenView::PowerButtonMenuBackgroundView
   }
 
   void ScheduleShowHideAnimation(bool show) {
+    SetVisible(true);
     layer()->GetAnimator()->AbortAllAnimations();
-    layer()->SetOpacity(show ? 0.f : layer()->opacity());
 
     ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
     animation.AddObserver(this);
@@ -93,7 +94,8 @@ class PowerButtonMenuScreenView::PowerButtonMenuBackgroundView
                                 : gfx::Tween::FAST_OUT_LINEAR_IN);
     animation.SetTransitionDuration(
         PowerButtonMenuView::kMenuAnimationDuration);
-
+    animation.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     layer()->SetOpacity(show ? kPowerButtonMenuOpacity : 0.f);
   }
 
@@ -123,9 +125,6 @@ PowerButtonMenuScreenView::PowerButtonMenuScreenView(
 
   display::Screen::GetScreen()->AddObserver(this);
 
-  if (power_button_position_ != PowerButtonPosition::NONE)
-    InitializeMenuBoundsOrigins();
-
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 }
 
@@ -136,6 +135,25 @@ PowerButtonMenuScreenView::~PowerButtonMenuScreenView() {
 void PowerButtonMenuScreenView::ScheduleShowHideAnimation(bool show) {
   power_button_screen_background_shield_->ScheduleShowHideAnimation(show);
   power_button_menu_view_->ScheduleShowHideAnimation(show);
+}
+
+void PowerButtonMenuScreenView::ResetOpacity() {
+  for (ui::Layer* layer : {power_button_screen_background_shield_->layer(),
+                           power_button_menu_view_->layer()}) {
+    DCHECK(layer);
+    layer->SetOpacity(0.f);
+  }
+}
+
+void PowerButtonMenuScreenView::OnWidgetShown(
+    PowerButtonController::PowerButtonPosition position,
+    double offset_percentage) {
+  power_button_position_ = position;
+  power_button_offset_percentage_ = offset_percentage;
+  if (power_button_position_ != PowerButtonPosition::NONE)
+    UpdateMenuBoundsOrigins();
+  power_button_menu_view_->RecreateItems();
+  Layout();
 }
 
 const char* PowerButtonMenuScreenView::GetClassName() const {
@@ -197,7 +215,7 @@ void PowerButtonMenuScreenView::LayoutWithoutTransform() {
   power_button_menu_view_->SetBoundsRect(GetMenuBounds());
 }
 
-void PowerButtonMenuScreenView::InitializeMenuBoundsOrigins() {
+void PowerButtonMenuScreenView::UpdateMenuBoundsOrigins() {
   // Power button position offset in pixels from the top when the button is at
   // the left/right of the screen after rotation.
   int left_power_button_y = 0, right_power_button_y = 0;
@@ -270,6 +288,7 @@ void PowerButtonMenuScreenView::InitializeMenuBoundsOrigins() {
       return;
   }
 
+  menu_bounds_origins_.clear();
   const gfx::Size menu_size = power_button_menu_view_->GetPreferredSize();
   // Power button position offset from the left when the button is at the left
   // is always zero.

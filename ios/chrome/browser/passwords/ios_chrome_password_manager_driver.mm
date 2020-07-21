@@ -18,8 +18,9 @@ using password_manager::PasswordAutofillManager;
 using password_manager::PasswordManager;
 
 IOSChromePasswordManagerDriver::IOSChromePasswordManagerDriver(
-    id<PasswordManagerDriverBridge> bridge)
-    : bridge_(bridge) {}
+    id<PasswordManagerDriverBridge> bridge,
+    password_manager::PasswordManager* password_manager)
+    : bridge_(bridge), password_manager_(password_manager) {}
 
 IOSChromePasswordManagerDriver::~IOSChromePasswordManagerDriver() = default;
 
@@ -74,7 +75,7 @@ IOSChromePasswordManagerDriver::GetPasswordGenerationHelper() {
 }
 
 PasswordManager* IOSChromePasswordManagerDriver::GetPasswordManager() {
-  return [bridge_ passwordManager];
+  return password_manager_;
 }
 
 PasswordAutofillManager*

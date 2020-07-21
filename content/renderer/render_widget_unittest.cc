@@ -39,11 +39,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
+#include "third_party/blink/public/common/widget/device_emulation_params.h"
 #include "third_party/blink/public/common/widget/visual_properties.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-test-utils.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_external_widget.h"
 #include "third_party/blink/public/web/web_external_widget_client.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -579,7 +579,7 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
                                 cc::BrowserControlsParams) override {}
   void SetScreenMetricsEmulationParametersForWidget(
       bool enabled,
-      const blink::WebDeviceEmulationParams& params) override {}
+      const blink::DeviceEmulationParams& params) override {}
 };
 
 // Tests that the value of VisualProperties::is_pinch_gesture_active is

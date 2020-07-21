@@ -251,9 +251,10 @@ TEST(PageAllocatorTest, PageTagging) {
 }
 #endif  // defined(OS_ANDROID)
 
-#if !defined(OS_MACOSX)
-
 TEST(PageAllocatorTest, DecommitErasesMemory) {
+  if (!kDecommittedPagesAreAlwaysZeroed)
+    return;
+
   size_t size = kPageAllocationGranularity;
   void* buffer = AllocPages(nullptr, size, kPageAllocationGranularity,
                             PageReadWrite, PageTag::kChromium, true);
@@ -273,8 +274,6 @@ TEST(PageAllocatorTest, DecommitErasesMemory) {
 
   FreePages(buffer, size);
 }
-
-#endif  // defined(OS_MACOSX)
 
 TEST(PageAllocatorTest, MappedPagesAccounting) {
   size_t size = kPageAllocationGranularity;

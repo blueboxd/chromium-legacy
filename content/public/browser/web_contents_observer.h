@@ -357,13 +357,13 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   virtual void NavigationStopped() {}
 
   // Called when there has been direct user interaction with the WebContents.
-  // The type argument specifies the kind of interaction. Direct user input
+  // The type of the event specifies the kind of interaction. Direct user input
   // signalled through this callback includes:
   // 1) any mouse down event (blink::WebInputEvent::MouseDown);
   // 2) the start of a scroll (blink::WebInputEvent::GestureScrollBegin);
   // 3) any raw key down event (blink::WebInputEvent::RawKeyDown); and
   // 4) any touch event (inc. scrolls) (blink::WebInputEvent::TouchStart).
-  virtual void DidGetUserInteraction(const blink::WebInputEvent::Type type) {}
+  virtual void DidGetUserInteraction(const blink::WebInputEvent& event) {}
 
   // This method is invoked when a RenderViewHost of this WebContents was
   // configured to ignore UI events, and an UI event took place.

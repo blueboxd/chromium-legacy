@@ -36,19 +36,19 @@ constexpr size_t kCacheSize = 2;
 
 }  // namespace
 
-class PolicyBlacklistNavigationThrottleTest
+class PolicyBlocklistNavigationThrottleTest
     : public content::RenderViewHostTestHarness,
       public content::WebContentsObserver {
  public:
-  PolicyBlacklistNavigationThrottleTest() = default;
-  ~PolicyBlacklistNavigationThrottleTest() override = default;
+  PolicyBlocklistNavigationThrottleTest() = default;
+  ~PolicyBlocklistNavigationThrottleTest() override = default;
 
   // content::RenderViewHostTestHarness:
   void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
 
     user_prefs::UserPrefs::Set(browser_context(), &pref_service_);
-    policy::URLBlacklistManager::RegisterProfilePrefs(pref_service_.registry());
+    policy::URLBlocklistManager::RegisterProfilePrefs(pref_service_.registry());
 
     // Prevent crashes in BrowserContextDependencyManager caused when tests
     // that run in serial happen to reuse a memory address for a BrowserContext
@@ -58,7 +58,7 @@ class PolicyBlacklistNavigationThrottleTest
     BrowserContextDependencyManager::GetInstance()->MarkBrowserContextLive(
         browser_context());
 
-    PolicyBlacklistFactory::GetInstance()
+    PolicyBlocklistFactory::GetInstance()
         ->GetForBrowserContext(browser_context())
         ->SetSafeSearchURLCheckerForTest(
             stub_url_checker_.BuildURLChecker(kCacheSize));
@@ -76,7 +76,7 @@ class PolicyBlacklistNavigationThrottleTest
   // content::WebContentsObserver:
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override {
-    auto throttle = std::make_unique<PolicyBlacklistNavigationThrottle>(
+    auto throttle = std::make_unique<PolicyBlocklistNavigationThrottle>(
         navigation_handle, browser_context());
 
     navigation_handle->RegisterThrottleForTesting(std::move(throttle));
@@ -93,7 +93,7 @@ class PolicyBlacklistNavigationThrottleTest
     return navigation_simulator;
   }
 
-  void SetBlacklistUrlPattern(const std::string& pattern) {
+  void SetBlocklistUrlPattern(const std::string& pattern) {
     auto value = std::make_unique<base::Value>(base::Value::Type::LIST);
     value->Append(base::Value(pattern));
     pref_service_.SetManagedPref(policy::policy_prefs::kUrlBlacklist,
@@ -101,7 +101,7 @@ class PolicyBlacklistNavigationThrottleTest
     task_environment()->RunUntilIdle();
   }
 
-  void SetWhitelistUrlPattern(const std::string& pattern) {
+  void SetAllowlistUrlPattern(const std::string& pattern) {
     auto value = std::make_unique<base::Value>(base::Value::Type::LIST);
     value->Append(base::Value(pattern));
     pref_service_.SetManagedPref(policy::policy_prefs::kUrlWhitelist,
@@ -120,31 +120,31 @@ class PolicyBlacklistNavigationThrottleTest
   safe_search_api::StubURLChecker stub_url_checker_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PolicyBlacklistNavigationThrottleTest);
+  DISALLOW_COPY_AND_ASSIGN(PolicyBlocklistNavigationThrottleTest);
 };
 
-TEST_F(PolicyBlacklistNavigationThrottleTest, Blacklist) {
-  SetBlacklistUrlPattern("example.com");
+TEST_F(PolicyBlocklistNavigationThrottleTest, Blocklist) {
+  SetBlocklistUrlPattern("example.com");
 
-  // Block a blacklisted site.
+  // Block a blocklisted site.
   auto navigation_simulator = StartNavigation(GURL("http://www.example.com/"));
   ASSERT_FALSE(navigation_simulator->IsDeferred());
   EXPECT_EQ(content::NavigationThrottle::BLOCK_REQUEST,
             navigation_simulator->GetLastThrottleCheckResult());
 }
 
-TEST_F(PolicyBlacklistNavigationThrottleTest, Whitelist) {
-  SetWhitelistUrlPattern("www.example.com");
-  SetBlacklistUrlPattern("example.com");
+TEST_F(PolicyBlocklistNavigationThrottleTest, Whitelist) {
+  SetAllowlistUrlPattern("www.example.com");
+  SetBlocklistUrlPattern("example.com");
 
-  // Allow a whitelisted exception to a blacklisted domain.
+  // Allow a allowlisted exception to a blocklisted domain.
   auto navigation_simulator = StartNavigation(GURL("http://www.example.com/"));
   ASSERT_FALSE(navigation_simulator->IsDeferred());
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
             navigation_simulator->GetLastThrottleCheckResult());
 }
 
-TEST_F(PolicyBlacklistNavigationThrottleTest, Safe) {
+TEST_F(PolicyBlocklistNavigationThrottleTest, Safe) {
   SetSafeSitesFilterBehavior(SafeSitesFilterBehavior::kSafeSitesFilterEnabled);
   stub_url_checker_.SetUpValidResponse(false /* is_porn */);
 
@@ -156,7 +156,7 @@ TEST_F(PolicyBlacklistNavigationThrottleTest, Safe) {
             navigation_simulator->GetLastThrottleCheckResult());
 }
 
-TEST_F(PolicyBlacklistNavigationThrottleTest, Porn) {
+TEST_F(PolicyBlocklistNavigationThrottleTest, Porn) {
   SetSafeSitesFilterBehavior(SafeSitesFilterBehavior::kSafeSitesFilterEnabled);
   stub_url_checker_.SetUpValidResponse(true /* is_porn */);
 
@@ -168,19 +168,19 @@ TEST_F(PolicyBlacklistNavigationThrottleTest, Porn) {
             navigation_simulator->GetLastThrottleCheckResult());
 }
 
-TEST_F(PolicyBlacklistNavigationThrottleTest, Whitelisted) {
-  SetWhitelistUrlPattern("example.com");
+TEST_F(PolicyBlocklistNavigationThrottleTest, Allowlisted) {
+  SetAllowlistUrlPattern("example.com");
   SetSafeSitesFilterBehavior(SafeSitesFilterBehavior::kSafeSitesFilterEnabled);
   stub_url_checker_.SetUpValidResponse(true /* is_porn */);
 
-  // Even with SafeSites enabled, a whitelisted site is immediately allowed.
+  // Even with SafeSites enabled, a allowlisted site is immediately allowed.
   auto navigation_simulator = StartNavigation(GURL("http://example.com/"));
   ASSERT_FALSE(navigation_simulator->IsDeferred());
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
             navigation_simulator->GetLastThrottleCheckResult());
 }
 
-TEST_F(PolicyBlacklistNavigationThrottleTest, Schemes) {
+TEST_F(PolicyBlocklistNavigationThrottleTest, Schemes) {
   SetSafeSitesFilterBehavior(SafeSitesFilterBehavior::kSafeSitesFilterEnabled);
   stub_url_checker_.SetUpValidResponse(true /* is_porn */);
 
@@ -197,7 +197,7 @@ TEST_F(PolicyBlacklistNavigationThrottleTest, Schemes) {
             navigation_simulator->GetLastThrottleCheckResult());
 }
 
-TEST_F(PolicyBlacklistNavigationThrottleTest, PolicyChange) {
+TEST_F(PolicyBlocklistNavigationThrottleTest, PolicyChange) {
   stub_url_checker_.SetUpValidResponse(true /* is_porn */);
 
   // The safe sites filter is initially disabled.
@@ -228,7 +228,7 @@ TEST_F(PolicyBlacklistNavigationThrottleTest, PolicyChange) {
   }
 }
 
-TEST_F(PolicyBlacklistNavigationThrottleTest, DISABLED_Failure) {
+TEST_F(PolicyBlocklistNavigationThrottleTest, DISABLED_Failure) {
   SetSafeSitesFilterBehavior(SafeSitesFilterBehavior::kSafeSitesFilterEnabled);
   stub_url_checker_.SetUpFailedResponse();
 
@@ -240,7 +240,7 @@ TEST_F(PolicyBlacklistNavigationThrottleTest, DISABLED_Failure) {
             navigation_simulator->GetLastThrottleCheckResult());
 }
 
-TEST_F(PolicyBlacklistNavigationThrottleTest, CachedSites) {
+TEST_F(PolicyBlocklistNavigationThrottleTest, CachedSites) {
   SetSafeSitesFilterBehavior(SafeSitesFilterBehavior::kSafeSitesFilterEnabled);
 
   // Check a couple of sites.

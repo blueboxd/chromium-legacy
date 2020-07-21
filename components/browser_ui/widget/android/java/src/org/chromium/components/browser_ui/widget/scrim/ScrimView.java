@@ -30,6 +30,7 @@ class ScrimView extends View {
     /**
      * @param context An Android {@link Context} for creating the view.
      * @param parent The {@link ViewGroup} the scrim should exist in.
+     * @param eventDelegate A means of passing motion events back to the mediator for processing.
      */
     public ScrimView(Context context, ViewGroup parent, @ColorInt int defaultColor,
             ScrimCoordinator.TouchEventDelegate eventDelegate) {
@@ -38,6 +39,7 @@ class ScrimView extends View {
         setFocusable(false);
         setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
         mDefaultBackgroundColor = defaultColor;
+        mEventDelegate = eventDelegate;
 
         setAlpha(0.0f);
         setVisibility(View.GONE);
@@ -75,7 +77,7 @@ class ScrimView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
-        if (mEventDelegate != null) return mEventDelegate.onTouchEvent(e);
+        if (mEventDelegate.onTouchEvent(e)) return true;
         return super.onTouchEvent(e);
     }
 }

@@ -18,7 +18,6 @@
 
 namespace blink {
 
-class AbortSignal;
 class ExecutionContext;
 class NFCProxy;
 class NDEFScanOptions;
@@ -61,7 +60,7 @@ class MODULES_EXPORT NDEFReader : public EventTargetWithInlineData,
   // ExecutionContextLifecycleObserver overrides.
   void ContextDestroyed() override;
 
-  void Abort(AbortSignal* signal);
+  void Abort();
 
   NFCProxy* GetNfcProxy() const;
 
@@ -79,11 +78,8 @@ class MODULES_EXPORT NDEFReader : public EventTargetWithInlineData,
   // case the callback passed to Watch() won't be called and
   // mojo::WrapCallbackWithDefaultInvokeIfNotRun() is forbidden in Blink.
   Member<ScriptPromiseResolver> resolver_;
-
-  // Currently AbortSignal has no method to remove an algorithm so this
-  // field tracks the most recently configured AbortSignal so that others
-  // can be ignored.
-  Member<AbortSignal> signal_;
+  // To reject if there is already an ongoing scan.
+  bool has_pending_scan_request_ = false;
 };
 
 }  // namespace blink

@@ -218,11 +218,33 @@ class FakeFileSystemDirectoryHandle extends FakeFileSystemHandle {
   getDirectoryHandle(name, options) {}
   /**
    * @override
+   * @return {!AsyncIterable<!Array<string|!FileSystemHandle>>}
+   * @suppress {reportUnknownTypes} suppress [JSC_UNKNOWN_EXPR_TYPE] for `yield
+   * [file.name, file]`.
+   */
+  async * entries() {
+    for (const file of this.files) {
+      yield [file.name, file];
+    }
+  }
+  /**
+   * @override
+   * @return {!AsyncIterable<string>}
+   * @suppress {reportUnknownTypes} suppress [JSC_UNKNOWN_EXPR_TYPE] for `yield
+   * file.name`.
+   */
+  async * keys() {
+    for (const file of this.files) {
+      yield file.name;
+    }
+  }
+  /**
+   * @override
    * @return {!AsyncIterable<!FileSystemHandle>}
    * @suppress {reportUnknownTypes} suppress [JSC_UNKNOWN_EXPR_TYPE] for `yield
    * file`.
    */
-  async * getEntries() {
+  async * values() {
     for (const file of this.files) {
       yield file;
     }

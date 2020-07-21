@@ -298,8 +298,11 @@ bool PowerButtonController::IsMenuOpened() const {
 }
 
 void PowerButtonController::DismissMenu() {
-  if (IsMenuOpened())
+  if (IsMenuOpened()) {
+    static_cast<PowerButtonMenuScreenView*>(menu_widget_->GetContentsView())
+        ->ResetOpacity();
     menu_widget_->Hide();
+  }
 
   show_menu_animation_done_ = false;
   active_window_paint_as_active_lock_.reset();
@@ -437,12 +440,17 @@ void PowerButtonController::StartPowerMenuAnimation() {
       active_toplevel_widget ? active_toplevel_widget->LockPaintAsActive()
                              : nullptr;
 
-  if (!menu_widget_)
+  if (!menu_widget_) {
     menu_widget_ = CreateMenuWidget();
-  menu_widget_->SetContentsView(std::make_unique<PowerButtonMenuScreenView>(
-      power_button_position_, power_button_offset_percentage_,
-      base::BindRepeating(&PowerButtonController::SetShowMenuAnimationDone,
-                          base::Unretained(this))));
+    menu_widget_->SetContentsView(std::make_unique<PowerButtonMenuScreenView>(
+        power_button_position_, power_button_offset_percentage_,
+        base::BindRepeating(&PowerButtonController::SetShowMenuAnimationDone,
+                            base::Unretained(this))));
+  }
+  auto* contents_view =
+      static_cast<PowerButtonMenuScreenView*>(menu_widget_->GetContentsView());
+  contents_view->OnWidgetShown(power_button_position_,
+                               power_button_offset_percentage_);
   menu_widget_->Show();
 
   // Hide cursor, but let it reappear if the mouse moves.
@@ -450,8 +458,7 @@ void PowerButtonController::StartPowerMenuAnimation() {
   if (shell->cursor_manager())
     shell->cursor_manager()->HideCursor();
 
-  static_cast<PowerButtonMenuScreenView*>(menu_widget_->GetContentsView())
-      ->ScheduleShowHideAnimation(true);
+  contents_view->ScheduleShowHideAnimation(true);
 }
 
 void PowerButtonController::ProcessCommandLine() {

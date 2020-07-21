@@ -65,8 +65,7 @@ UpdateClientImpl::UpdateClientImpl(
     scoped_refptr<PingManager> ping_manager,
     UpdateChecker::Factory update_checker_factory,
     CrxDownloader::Factory crx_downloader_factory)
-    : is_stopped_(false),
-      config_(config),
+    : config_(config),
       ping_manager_(ping_manager),
       update_engine_(base::MakeRefCounted<UpdateEngine>(
           config,

@@ -42,7 +42,7 @@ class Image;
 }  // namespace gfx
 
 namespace blink {
-struct WebDeviceEmulationParams;
+struct DeviceEmulationParams;
 }
 
 namespace content {
@@ -186,14 +186,13 @@ class PageHandler : public DevToolsDomainHandler,
       std::unique_ptr<Page::ScreencastFrameMetadata> metadata,
       const protocol::Binary& data);
 
-  void ScreenshotCaptured(
-      std::unique_ptr<CaptureScreenshotCallback> callback,
-      const std::string& format,
-      int quality,
-      const gfx::Size& original_view_size,
-      const gfx::Size& requested_image_size,
-      const blink::WebDeviceEmulationParams& original_params,
-      const gfx::Image& image);
+  void ScreenshotCaptured(std::unique_ptr<CaptureScreenshotCallback> callback,
+                          const std::string& format,
+                          int quality,
+                          const gfx::Size& original_view_size,
+                          const gfx::Size& requested_image_size,
+                          const blink::DeviceEmulationParams& original_params,
+                          const gfx::Image& image);
 
   void GotManifest(std::unique_ptr<GetAppManifestCallback> callback,
                    const GURL& manifest_url,

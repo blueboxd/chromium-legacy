@@ -69,11 +69,11 @@ void ProcessQueryToConditions(
   url::Component query_left = url::MakeRange(0, query.length());
   url::Component key;
   url::Component value;
-  // Depending on the filter type being black-list or white-list, the matcher
-  // choose any or every match. The idea is a URL should be black-listed if
-  // there is any occurrence of the key value pair. It should be white-listed
+  // Depending on the filter type being block-list or allow-list, the matcher
+  // choose any or every match. The idea is a URL should be blocked if
+  // there is any occurrence of the key value pair. It should be allowed
   // only if every occurrence of the key is followed by the value. This avoids
-  // situations such as a user appending a white-listed video parameter in the
+  // situations such as a user appending an allowed video parameter in the
   // end of the query and watching a video of their choice (the last parameter
   // is ignored by some web servers like youtube's).
   URLQueryElementMatcherCondition::Type match_type =
@@ -234,7 +234,7 @@ FilterComponents::FilterComponents()
 FilterComponents::~FilterComponents() = default;
 FilterComponents::FilterComponents(FilterComponents&&) = default;
 
-bool FilterComponents::IsBlacklistWildcard() const {
+bool FilterComponents::IsBlocklistWildcard() const {
   return !allow && host.empty() && scheme.empty() && path.empty() &&
          query.empty() && port == 0 && number_of_key_value_pairs == 0 &&
          match_subdomains;

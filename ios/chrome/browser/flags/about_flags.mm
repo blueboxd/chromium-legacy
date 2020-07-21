@@ -56,6 +56,7 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
+#include "ios/chrome/browser/crash_report/features.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
@@ -470,6 +471,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"ios-breadcrumbs", flag_descriptions::kLogBreadcrumbsName,
      flag_descriptions::kLogBreadcrumbsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kLogBreadcrumbs)},
+    {"ios-synthetic-crash-reports",
+     flag_descriptions::kSyntheticCrashReportsForUteName,
+     flag_descriptions::kSyntheticCrashReportsForUteDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kSyntheticCrashReportsForUte)},
     {"force-startup-signin-promo",
      flag_descriptions::kForceStartupSigninPromoName,
      flag_descriptions::kForceStartupSigninPromoDescription, flags_ui::kOsIos,

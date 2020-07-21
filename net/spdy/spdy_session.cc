@@ -429,6 +429,20 @@ base::Value NetLogSpdyPriorityParams(spdy::SpdyStreamId stream_id,
   return dict;
 }
 
+base::Value NetLogSpdyGreasedFrameParams(spdy::SpdyStreamId stream_id,
+                                         uint8_t type,
+                                         uint8_t flags,
+                                         size_t length,
+                                         RequestPriority priority) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("stream_id", stream_id);
+  dict.SetIntKey("type", type);
+  dict.SetIntKey("flags", flags);
+  dict.SetIntKey("length", length);
+  dict.SetStringKey("priority", RequestPriorityToString(priority));
+  return dict;
+}
+
 // Helper function to return the total size of an array of objects
 // with .size() member functions.
 template <typename T, size_t N>
@@ -1125,6 +1139,13 @@ void SpdySession::EnqueueGreasedFrame(const base::WeakPtr<SpdyStream>& stream) {
   if (availability_state_ == STATE_DRAINING)
     return;
 
+  net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_SEND_GREASED_FRAME, [&] {
+    return NetLogSpdyGreasedFrameParams(
+        stream->stream_id(), greased_http2_frame_.value().type,
+        greased_http2_frame_.value().flags,
+        greased_http2_frame_.value().payload.length(), stream->priority());
+  });
+
   EnqueueWrite(
       stream->priority(),
       static_cast<spdy::SpdyFrameType>(greased_http2_frame_.value().type),
@@ -1196,7 +1217,9 @@ std::unique_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(
     spdy::SpdyStreamId stream_id,
     IOBuffer* data,
     int len,
-    spdy::SpdyDataFlags flags) {
+    spdy::SpdyDataFlags flags,
+    int* effective_len,
+    bool* end_stream) {
   if (availability_state_ == STATE_DRAINING) {
     return std::unique_ptr<SpdyBuffer>();
   }
@@ -1211,7 +1234,7 @@ std::unique_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(
     return std::unique_ptr<SpdyBuffer>();
   }
 
-  int effective_len = std::min(len, kMaxSpdyFrameChunkSize);
+  *effective_len = std::min(len, kMaxSpdyFrameChunkSize);
 
   bool send_stalled_by_stream = (stream->send_window_size() <= 0);
   bool send_stalled_by_session = IsSendStalled();
@@ -1251,7 +1274,7 @@ std::unique_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(
     return std::unique_ptr<SpdyBuffer>();
   }
 
-  effective_len = std::min(effective_len, stream->send_window_size());
+  *effective_len = std::min(*effective_len, stream->send_window_size());
 
   // Obey send window size of the session.
   if (send_stalled_by_session) {
@@ -1263,42 +1286,39 @@ std::unique_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(
     return std::unique_ptr<SpdyBuffer>();
   }
 
-  effective_len = std::min(effective_len, session_send_window_size_);
+  *effective_len = std::min(*effective_len, session_send_window_size_);
 
-  DCHECK_GE(effective_len, 0);
+  DCHECK_GE(*effective_len, 0);
 
   // Clear FIN flag if only some of the data will be in the data
   // frame.
-  if (effective_len < len)
+  if (*effective_len < len)
     flags = static_cast<spdy::SpdyDataFlags>(flags & ~spdy::DATA_FLAG_FIN);
 
-  net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_SEND_DATA, [&] {
-    return NetLogSpdyDataParams(stream_id, effective_len,
-                                (flags & spdy::DATA_FLAG_FIN) != 0);
-  });
 
   // Send PrefacePing for DATA_FRAMEs with nonzero payload size.
-  if (effective_len > 0)
+  if (*effective_len > 0)
     MaybeSendPrefacePing();
 
   // TODO(mbelshe): reduce memory copies here.
   DCHECK(buffered_spdy_framer_.get());
   std::unique_ptr<spdy::SpdySerializedFrame> frame(
       buffered_spdy_framer_->CreateDataFrame(
-          stream_id, data->data(), static_cast<uint32_t>(effective_len),
+          stream_id, data->data(), static_cast<uint32_t>(*effective_len),
           flags));
 
   auto data_buffer = std::make_unique<SpdyBuffer>(std::move(frame));
 
   // Send window size is based on payload size, so nothing to do if this is
   // just a FIN with no payload.
-  if (effective_len != 0) {
-    DecreaseSendWindowSize(static_cast<int32_t>(effective_len));
+  if (*effective_len != 0) {
+    DecreaseSendWindowSize(static_cast<int32_t>(*effective_len));
     data_buffer->AddConsumeCallback(base::BindRepeating(
         &SpdySession::OnWriteBufferConsumed, weak_factory_.GetWeakPtr(),
-        static_cast<size_t>(effective_len)));
+        static_cast<size_t>(*effective_len)));
   }
 
+  *end_stream = (flags & spdy::DATA_FLAG_FIN) == spdy::DATA_FLAG_FIN;
   return data_buffer;
 }
 
@@ -2790,6 +2810,13 @@ void SpdySession::EnqueueSessionWrite(
                base::WeakPtr<SpdyStream>(),
                kSpdySessionCommandsTrafficAnnotation);
   if (greased_http2_frame_ && frame_type == spdy::SpdyFrameType::SETTINGS) {
+    net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_SEND_GREASED_FRAME, [&] {
+      return NetLogSpdyGreasedFrameParams(
+          /* stream_id = */ 0, greased_http2_frame_.value().type,
+          greased_http2_frame_.value().flags,
+          greased_http2_frame_.value().payload.length(), priority);
+    });
+
     EnqueueWrite(
         priority,
         static_cast<spdy::SpdyFrameType>(greased_http2_frame_.value().type),

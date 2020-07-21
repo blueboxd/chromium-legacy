@@ -11,16 +11,19 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/optional.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/cert/x509_certificate.h"
 
-namespace content {
-class BrowserContext;
-}
+namespace net {
+class NSSCertDatabase;
+class ClientCertStore;
+}  // namespace net
 
 namespace chromeos {
 namespace platform_keys {
@@ -178,16 +181,39 @@ using GetAttributeForKeyCallback =
     base::OnceCallback<void(const base::Optional<std::string>& attribute_value,
                             const std::string& error_message)>;
 
+// An observer that gets notified when the PlatformKeysService is being shut
+// down.
+class PlatformKeysServiceObserver : public base::CheckedObserver {
+ public:
+  // Called when the PlatformKeysService is being shut down.
+  // It may not be used after this call - any usage except for removing the
+  // observer will DCHECK.
+  virtual void OnPlatformKeysServiceShutDown() = 0;
+};
+
 // Functions of this class shouldn't be called directly from the context of
 // an extension. Instead use ExtensionPlatformKeysService which enforces
 // restrictions upon extensions.
 // All public methods of this class should be called on the UI thread.
+// When the underlying key store is not available anymore, a PlatformKeysService
+// is shut down. Any function called after that will fail with an error.
+// For a Profile-specific PlatformKeysService, this will be when the Profile is
+// being destroyed.
+// For a device-wide PlatformKeysService, this will be at some point during
+// chrome shut down.
+// Use AddObserver to get a notification when the service shuts down.
 class PlatformKeysService : public KeyedService {
  public:
   PlatformKeysService() = default;
   PlatformKeysService(const PlatformKeysService&) = delete;
   PlatformKeysService& operator=(const PlatformKeysService&) = delete;
   ~PlatformKeysService() override = default;
+
+  // Adds |observer| which will be notified when this service is being shut
+  // down.
+  virtual void AddObserver(PlatformKeysServiceObserver* observer) = 0;
+  // Removes a previously added |observer|.
+  virtual void RemoveObserver(PlatformKeysServiceObserver* observer) = 0;
 
   // Generates a RSA key pair with |modulus_length_bits|. |token_id| specifies
   // the token to store the key pair on. |callback| will be invoked with the
@@ -328,12 +354,55 @@ class PlatformKeysService : public KeyedService {
       const bool map_to_softoken_attrs_for_testing) = 0;
 };
 
+class PlatformKeysServiceImplDelegate {
+ public:
+  PlatformKeysServiceImplDelegate();
+  virtual ~PlatformKeysServiceImplDelegate();
+  PlatformKeysServiceImplDelegate(
+      const PlatformKeysServiceImplDelegate& other) = delete;
+  PlatformKeysServiceImplDelegate& operator=(
+      const PlatformKeysServiceImplDelegate& other) = delete;
+
+  // |on_shutdown_callback| will be called when the underlying key/certificate
+  // store is shut down. It is an error to call this twice, or after the
+  // delegate has been shut down.
+  void SetOnShutdownCallback(base::OnceClosure on_shutdown_callback);
+
+  // This callback is invoked by GetNSSCertDatabase.
+  using OnGotNSSCertDatabase = base::OnceCallback<void(net::NSSCertDatabase*)>;
+
+  // Retrieves the NSSCertDatabase that should be used for certificate
+  // operations. |callback| will be called on the thread that GetNSSCertDatabase
+  // has been called on.
+  virtual void GetNSSCertDatabase(OnGotNSSCertDatabase callback) = 0;
+
+  // Creates a ClientCertStore that should be used to list / operate on client
+  // certificates.
+  virtual std::unique_ptr<net::ClientCertStore> CreateClientCertStore() = 0;
+
+  bool IsShutDown() const;
+
+ protected:
+  void ShutDown();
+
+ private:
+  // A callback that should be called when the underlying key/certificate store
+  // is shut down.
+  base::OnceClosure on_shutdown_callback_;
+
+  // True if the underlying key/certificate store has already been shut down.
+  bool shut_down_ = false;
+};
+
 class PlatformKeysServiceImpl final : public PlatformKeysService {
  public:
-  explicit PlatformKeysServiceImpl(content::BrowserContext* context);
+  explicit PlatformKeysServiceImpl(
+      std::unique_ptr<PlatformKeysServiceImplDelegate> delegate);
   ~PlatformKeysServiceImpl() override;
 
   // PlatformKeysService
+  void AddObserver(PlatformKeysServiceObserver* observer) override;
+  void RemoveObserver(PlatformKeysServiceObserver* observer) override;
   void GenerateRSAKey(TokenId token_id,
                       unsigned int modulus_length_bits,
                       const GenerateKeyCallback& callback) override;
@@ -386,7 +455,11 @@ class PlatformKeysServiceImpl final : public PlatformKeysService {
   bool IsSetMapToSoftokenAttrsForTesting();
 
  private:
-  content::BrowserContext* const browser_context_;
+  void OnDelegateShutDown();
+
+  std::unique_ptr<PlatformKeysServiceImplDelegate> const delegate_;
+  // List of observers that will be notified when the service is shut down.
+  base::ObserverList<PlatformKeysServiceObserver> observers_;
   bool map_to_softoken_attrs_for_testing_ = false;
   base::WeakPtrFactory<PlatformKeysServiceImpl> weak_factory_{this};
 };

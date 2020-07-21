@@ -87,6 +87,7 @@ function isWebIDLConstructor(propertyKey) {
 }
 
 var wellKnownSymbols = new Map([
+    [Symbol.asyncIterator, "@@asyncIterator"],
     [Symbol.hasInstance, "@@hasInstance"],
     [Symbol.isConcatSpreadable, "@@isConcatSpreadable"],
     [Symbol.iterator, "@@iterator"],

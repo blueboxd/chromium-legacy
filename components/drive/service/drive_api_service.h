@@ -175,7 +175,7 @@ class DriveAPIService : public DriveServiceInterface,
   google_apis::CancelCallback TrashResource(
       const std::string& resource_id,
       const google_apis::EntryActionCallback& callback) override;
-  google_apis::CancelCallback DownloadFile(
+  google_apis::CancelCallbackOnce DownloadFile(
       const base::FilePath& local_cache_path,
       const std::string& resource_id,
       const google_apis::DownloadActionCallback& download_action_callback,

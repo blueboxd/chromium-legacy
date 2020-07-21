@@ -96,4 +96,30 @@ void SetFormData(const std::string& origin,
   form_data->fields.push_back(field);
 }
 
+autofill::FormData MakeSimpleFormData() {
+  autofill::FormData form_data;
+  form_data.url = GURL("http://www.google.com/a/LoginAuth");
+  form_data.action = GURL("http://www.google.com/a/Login");
+  form_data.name = base::ASCIIToUTF16("login_form");
+
+  autofill::FormFieldData field;
+  field.name = base::ASCIIToUTF16("Username");
+  field.id_attribute = field.name;
+  field.name_attribute = field.name;
+  field.value = base::ASCIIToUTF16("googleuser");
+  field.form_control_type = "text";
+  field.unique_id = field.id_attribute;
+  form_data.fields.push_back(field);
+
+  field.name = base::ASCIIToUTF16("Passwd");
+  field.id_attribute = field.name;
+  field.name_attribute = field.name;
+  field.value = base::ASCIIToUTF16("p4ssword");
+  field.form_control_type = "password";
+  field.unique_id = field.id_attribute;
+  form_data.fields.push_back(field);
+
+  return form_data;
+}
+
 }  // namespace  test_helpers

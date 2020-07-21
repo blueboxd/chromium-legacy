@@ -86,7 +86,8 @@ void SharedWorkerClientHolder::Connect(
     MessagePortChannel port,
     const KURL& url,
     mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token,
-    mojom::blink::WorkerOptionsPtr options) {
+    mojom::blink::WorkerOptionsPtr options,
+    ukm::SourceId client_ukm_source_id) {
   DCHECK(IsMainThread());
   DCHECK(options);
 
@@ -137,7 +138,8 @@ void SharedWorkerClientHolder::Connect(
           : mojom::SharedWorkerCreationContextType::kNonsecure,
       port.ReleaseHandle(),
       mojo::PendingRemote<mojom::blink::BlobURLToken>(
-          blob_url_token.PassPipe(), mojom::blink::BlobURLToken::Version_));
+          blob_url_token.PassPipe(), mojom::blink::BlobURLToken::Version_),
+      client_ukm_source_id);
 }
 
 void SharedWorkerClientHolder::Trace(Visitor* visitor) const {

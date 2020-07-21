@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/strings/string_util.h"
@@ -27,7 +28,8 @@
 
 namespace net {
 namespace test_server {
-const char kMockHttpHeadersExtension[] = "mock-http-headers";
+constexpr base::FilePath::CharType kMockHttpHeadersExtension[] =
+    FILE_PATH_LITERAL("mock-http-headers");
 
 std::string GetContentType(const base::FilePath& path) {
   if (path.MatchesExtension(FILE_PATH_LITERAL(".crx")))
@@ -209,15 +211,8 @@ std::unique_ptr<HttpResponse> HandleFileRequest(
   if (!UpdateReplacedText(query, &file_contents))
     return failed_response;
 
-  base::FilePath::StringPieceType mock_headers_extension;
-#if defined(OS_WIN)
-  base::string16 temp = base::ASCIIToUTF16(kMockHttpHeadersExtension);
-  mock_headers_extension = temp;
-#else
-  mock_headers_extension = kMockHttpHeadersExtension;
-#endif
-
-  base::FilePath headers_path(file_path.AddExtension(mock_headers_extension));
+  base::FilePath headers_path(
+      file_path.AddExtension(kMockHttpHeadersExtension));
 
   if (base::PathExists(headers_path)) {
     std::string headers_contents;

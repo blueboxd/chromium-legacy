@@ -677,6 +677,7 @@ message PolicyData {
     K12 = 1;
     UNIVERSITY = 2;
     NONPROFIT = 3;
+    ENTERPRISE = 4;
   }
 
   // Indicates the segment the user's metrics should be logged under,

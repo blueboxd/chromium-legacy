@@ -30,7 +30,7 @@ _JAVAC_EXTRACTOR = os.path.join(build_utils.DIR_SOURCE_ROOT, 'third_party',
                                 'framework', 'javac_extractor.jar')
 
 # Full list of checks: https://errorprone.info/bugpatterns
-ERRORPRONE_WARNINGS_TO_TURN_OFF = [
+ERRORPRONE_WARNINGS_TO_DISABLE = [
     # These should really be turned on.
     'ParameterNotNullable',
     'CollectionUndefinedEquality',
@@ -175,8 +175,8 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
 
 # Full list of checks: https://errorprone.info/bugpatterns
 # Only those marked as "experimental" need to be listed here in order to be
-# enabled. We build with -Werror, so all default checks cause builds to fail.
-ERRORPRONE_WARNINGS_TO_ERROR = [
+# enabled.
+ERRORPRONE_WARNINGS_TO_ENABLE = [
     'BinderIdentityRestoredDangerously',
     'EmptyIf',
     'EqualsBrokenForNull',
@@ -509,7 +509,8 @@ def _RunCompiler(options, javac_cmd, java_files, classpath, jar_path,
       build_utils.CheckOutput(cmd,
                               print_stdout=options.chromium_code,
                               stdout_filter=ProcessJavacOutput,
-                              stderr_filter=stderr_filter)
+                              stderr_filter=stderr_filter,
+                              fail_on_output=options.warnings_as_errors)
       end = time.time() - start
       logging.info('Java compilation took %ss', end)
 
@@ -671,12 +672,13 @@ def main(argv):
   if options.enable_errorprone:
     # All errorprone args are passed space-separated in a single arg.
     errorprone_flags = ['-Xplugin:ErrorProne']
-    for warning in ERRORPRONE_WARNINGS_TO_TURN_OFF:
+    # Make everything a warning so that when treat_warnings_as_errors is false,
+    # they do not fail the build.
+    errorprone_flags += ['-XepAllErrorsAsWarnings']
+    for warning in ERRORPRONE_WARNINGS_TO_DISABLE:
       errorprone_flags.append('-Xep:{}:OFF'.format(warning))
-    for warning in ERRORPRONE_WARNINGS_TO_ERROR:
-      errorprone_flags.append('-Xep:{}:ERROR'.format(warning))
-    if not options.warnings_as_errors:
-      errorprone_flags.append('-XepAllErrorsAsWarnings')
+    for warning in ERRORPRONE_WARNINGS_TO_ENABLE:
+      errorprone_flags.append('-Xep:{}:WARN'.format(warning))
     javac_args += ['-XDcompilePolicy=simple', ' '.join(errorprone_flags)]
     # This flag quits errorprone after checks and before code generation, since
     # we do not need errorprone outputs, this speeds up errorprone by 4 seconds
@@ -693,14 +695,6 @@ def main(argv):
   if options.java_version == '1.8':
     # Android's boot jar doesn't contain all java 8 classes.
     options.bootclasspath.append(build_utils.RT_JAR_PATH)
-
-  if options.warnings_as_errors:
-    javac_args.extend(['-Werror'])
-  else:
-    # XDignore.symbol.file makes javac compile against rt.jar instead of
-    # ct.sym. This means that using a java internal package/class will not
-    # trigger a compile warning or error.
-    javac_args.extend(['-XDignore.symbol.file'])
 
   if options.processors:
     javac_args.extend(['-processor', ','.join(options.processors)])
@@ -737,9 +731,9 @@ def main(argv):
       options.jar_path + '.info',
   ]
 
-  input_strings = javac_cmd + javac_args + options.classpath + java_files
-  if options.jar_info_exclude_globs:
-    input_strings.append(options.jar_info_exclude_globs)
+  input_strings = javac_cmd + javac_args + options.classpath + java_files + [
+      options.warnings_as_errors, options.jar_info_exclude_globs
+  ]
 
   md5_check.CallAndWriteDepfileIfStale(
       lambda: _OnStaleMd5(options, javac_cmd, javac_args, java_files),

@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/cert_provisioning/mock_cert_provisioning_worker.h"
 #include "chrome/browser/chromeos/platform_keys/mock_platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
@@ -33,6 +32,7 @@ using testing::Invoke;
 using testing::Mock;
 using testing::Return;
 using testing::ReturnRef;
+using testing::SaveArg;
 using testing::StrictMock;
 
 namespace chromeos {
@@ -898,6 +898,56 @@ TEST_F(CertProvisioningSchedulerTest, CertRenewal) {
   // should create a new worker to provision a replacement.
   FastForwardBy(TimeDelta::FromHours(1));
   ASSERT_EQ(scheduler.GetWorkers().size(), 1U);
+}
+
+TEST_F(CertProvisioningSchedulerTest, PlatformKeysServiceShutDown) {
+  CertScope kCertScope = CertScope::kDevice;
+
+  platform_keys::PlatformKeysServiceObserver* observer = nullptr;
+  EXPECT_CALL(platform_keys_service_, AddObserver(_))
+      .WillOnce(SaveArg<0>(&observer));
+  CertProvisioningSchedulerImpl scheduler(
+      kCertScope, GetProfile(), &pref_service_, &cloud_policy_client_,
+      &platform_keys_service_,
+      network_state_test_helper_.network_state_handler(),
+      MakeFakeInvalidationFactory());
+
+  ASSERT_TRUE(observer);
+
+  // Add 1 certificate profile to the policy.
+  base::Value config = ParseJson(
+      R"([{"name": "Certificate Profile 1",
+           "cert_profile_id":"cert_profile_id_1",
+           "policy_version":"cert_profile_version_1",
+           "key_algorithm":"rsa" }])");
+  pref_service_.Set(prefs::kRequiredClientCertificateForDevice, config);
+
+  // Same as in the policy.
+  const char kCertProfileId[] = "cert_profile_id_1";
+  const char kCertProfileVersion[] = "cert_profile_version_1";
+  CertProfile cert_profile{kCertProfileId, kCertProfileVersion,
+                           /*is_va_enabled=*/true, kCertProfileRenewalPeriod};
+
+  MockCertProvisioningWorker* worker =
+      mock_factory_.ExpectCreateReturnMock(kCertScope, cert_profile);
+  worker->SetExpectations(/*do_step_times=*/AtLeast(1), /*is_waiting=*/false,
+                          cert_profile);
+  scheduler.UpdateAllCerts();
+
+  // Now 1 worker should be created.
+  EXPECT_EQ(scheduler.GetWorkers().size(), 1U);
+
+  // PlatformKeysService notifies that it is shutting down.
+  EXPECT_CALL(platform_keys_service_, RemoveObserver(observer));
+  observer->OnPlatformKeysServiceShutDown();
+
+  // The worker should be deleted.
+  EXPECT_EQ(scheduler.GetWorkers().size(), 0U);
+
+  // Check one more time that scheduler doesn't create new workers after
+  // PlatformKeysService has been shut down (the factory will fail on an attempt
+  // to do so).
+  scheduler.UpdateAllCerts();
 }
 
 }  // namespace

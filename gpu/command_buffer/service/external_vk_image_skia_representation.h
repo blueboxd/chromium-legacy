@@ -9,6 +9,7 @@
 
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "gpu/command_buffer/service/external_semaphore.h"
 #include "gpu/command_buffer/service/external_vk_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
@@ -38,39 +39,14 @@ class ExternalVkImageSkiaRepresentation : public SharedImageRepresentationSkia {
   void EndReadAccess() override;
 
  private:
-  gpu::VulkanImplementation* vk_implementation() {
-    return backing_impl()
-        ->context_state()
-        ->vk_context_provider()
-        ->GetVulkanImplementation();
-  }
-
-  VkDevice vk_device() {
-    return backing_impl()
-        ->context_state()
-        ->vk_context_provider()
-        ->GetDeviceQueue()
-        ->GetVulkanDevice();
-  }
-
-  VkQueue vk_queue() {
-    return backing_impl()
-        ->context_state()
-        ->vk_context_provider()
-        ->GetDeviceQueue()
-        ->GetVulkanQueue();
-  }
-
-  VulkanFenceHelper* fence_helper() {
-    return backing_impl()
-        ->context_state()
-        ->vk_context_provider()
-        ->GetDeviceQueue()
-        ->GetFenceHelper();
-  }
-
-  ExternalVkImageBacking* backing_impl() {
+  ExternalVkImageBacking* backing_impl() const {
     return static_cast<ExternalVkImageBacking*>(backing());
+  }
+  viz::VulkanContextProvider* context_provider() const {
+    return backing_impl()->context_provider();
+  }
+  VulkanFenceHelper* fence_helper() const {
+    return backing_impl()->fence_helper();
   }
 
   sk_sp<SkPromiseImageTexture> BeginAccess(
@@ -87,7 +63,7 @@ class ExternalVkImageSkiaRepresentation : public SharedImageRepresentationSkia {
   };
   AccessMode access_mode_ = kNone;
   int surface_msaa_count_ = 0;
-  VkSemaphore end_access_semaphore_ = VK_NULL_HANDLE;
+  ExternalSemaphore end_access_semaphore_;
 };
 
 }  // namespace gpu

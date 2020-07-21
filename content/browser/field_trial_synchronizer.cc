@@ -36,7 +36,7 @@ FieldTrialSynchronizer::FieldTrialSynchronizer() {
   // Ensure the observer was actually registered.
   DCHECK(success);
 
-  variations::VariationsHttpHeaderProvider::GetInstance()->AddObserver(this);
+  variations::VariationsIdsProvider::GetInstance()->AddObserver(this);
   NotifyAllRenderersOfVariationsHeader();
 }
 
@@ -131,7 +131,7 @@ void FieldTrialSynchronizer::VariationIdsHeaderUpdated() {
 
 FieldTrialSynchronizer::~FieldTrialSynchronizer() {
   base::FieldTrialList::RemoveObserver(this);
-  variations::VariationsHttpHeaderProvider::GetInstance()->RemoveObserver(this);
+  variations::VariationsIdsProvider::GetInstance()->RemoveObserver(this);
 }
 
 }  // namespace content

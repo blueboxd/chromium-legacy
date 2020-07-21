@@ -344,6 +344,9 @@ class CertProvisioningWorkerTest : public ::testing::Test {
                     base::BindRepeating(
                         &platform_keys::BuildMockPlatformKeysService)));
     ASSERT_TRUE(platform_keys_service_);
+    platform_keys::PlatformKeysServiceFactory::GetInstance()
+        ->SetDeviceWideServiceForTesting(platform_keys_service_);
+
     // Only explicitly expected removals are allowed.
     EXPECT_CALL(*platform_keys_service_, RemoveCertificate).Times(0);
     EXPECT_CALL(*platform_keys_service_, RemoveKey).Times(0);

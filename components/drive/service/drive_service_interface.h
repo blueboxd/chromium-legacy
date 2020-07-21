@@ -426,7 +426,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   //
   // |download_action_callback| must not be null.
   // |get_content_callback| and |progress_callback| may be null.
-  virtual google_apis::CancelCallback DownloadFile(
+  virtual google_apis::CancelCallbackOnce DownloadFile(
       const base::FilePath& local_cache_path,
       const std::string& resource_id,
       const google_apis::DownloadActionCallback& download_action_callback,

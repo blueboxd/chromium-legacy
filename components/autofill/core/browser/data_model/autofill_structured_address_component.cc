@@ -307,8 +307,8 @@ bool AddressComponent::ParseValueAndAssignSubcomponentsByMethod() {
   return false;
 }
 
-std::vector<const RE2*> AddressComponent::GetParseExpressionsByRelevance()
-    const {
+std::vector<const RE2*>
+AddressComponent::GetParseRegularExpressionsByRelevance() const {
   return {};
 }
 
@@ -323,15 +323,15 @@ void AddressComponent::ParseValueAndAssignSubcomponents() {
     return;
 
   // Second attempt, try to parse by expressions.
-  if (ParseValueAndAssignSubcomponentsByExpressions())
+  if (ParseValueAndAssignSubcomponentsByRegularExpressions())
     return;
 
   // As a final fallback, parse using the fallback method.
   ParseValueAndAssignSubcomponentsByFallbackMethod();
 }
 
-bool AddressComponent::ParseValueAndAssignSubcomponentsByExpressions() {
-  for (const auto* parse_expression : GetParseExpressionsByRelevance()) {
+bool AddressComponent::ParseValueAndAssignSubcomponentsByRegularExpressions() {
+  for (const auto* parse_expression : GetParseRegularExpressionsByRelevance()) {
     if (!parse_expression)
       continue;
     std::map<std::string, std::string> result_map;

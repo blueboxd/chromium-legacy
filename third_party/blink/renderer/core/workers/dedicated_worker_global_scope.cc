@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "base/feature_list.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/worker_main_script_load_parameters.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
@@ -107,12 +108,14 @@ DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
     std::unique_ptr<Vector<String>> outside_origin_trial_tokens,
     const BeginFrameProviderParams& begin_frame_provider_params,
     ukm::SourceId ukm_source_id)
-    : WorkerGlobalScope(std::move(creation_params), thread, time_origin),
+    : WorkerGlobalScope(std::move(creation_params),
+                        thread,
+                        time_origin,
+                        ukm_source_id),
       animation_frame_provider_(
           MakeGarbageCollected<WorkerAnimationFrameProvider>(
               this,
-              begin_frame_provider_params)),
-      ukm_source_id_(ukm_source_id) {
+              begin_frame_provider_params)) {
   // Dedicated workers don't need to pause after script fetch.
   ReadyToRunWorkerScript();
   // Inherit the outside's origin trial tokens.

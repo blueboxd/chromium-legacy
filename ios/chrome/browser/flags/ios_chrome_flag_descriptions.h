@@ -106,6 +106,11 @@ extern const char kBlockPopupInfobarMessagesUIDescription[];
 extern const char kLogBreadcrumbsName[];
 extern const char kLogBreadcrumbsDescription[];
 
+// Title and description for the flag that controls synthetic crash reports
+// generation for Unexplained Termination Events.
+extern const char kSyntheticCrashReportsForUteName[];
+extern const char kSyntheticCrashReportsForUteDescription[];
+
 // Title and description for the flag to control if initial uploading of crash
 // reports is delayed.
 extern const char kBreakpadNoDelayInitialUploadName[];

@@ -720,9 +720,9 @@ IN_PROC_BROWSER_TEST_P(
       web_contents,
       "(async function() {"
       "  let fileNames = [];"
-      "  const files = await window.launchParams.files[0].getEntries();"
-      "  for await (const f of files)"
-      "    fileNames.push(f.name);"
+      "  const files = await window.launchParams.files[0].keys();"
+      "  for await (const name of files)"
+      "    fileNames.push(name);"
       "  domAutomationController.send(fileNames.sort().join(';'));"
       "})();",
       &file_names));

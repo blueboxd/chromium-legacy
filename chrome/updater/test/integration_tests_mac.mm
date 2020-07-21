@@ -53,31 +53,25 @@ bool Run(base::CommandLine command_line, int* exit_code) {
 void Clean() {
   EXPECT_TRUE(base::DeletePathRecursively(GetProductPath()));
   EXPECT_TRUE(Launchd::GetInstance()->DeletePlist(
-      Launchd::User, Launchd::Agent, updater::CopyWakeLaunchdName()));
+      Launchd::User, Launchd::Agent, updater::CopyAdministrationLaunchDName()));
   EXPECT_TRUE(Launchd::GetInstance()->DeletePlist(
-      Launchd::User, Launchd::Agent, updater::CopyControlLaunchdName()));
-  EXPECT_TRUE(Launchd::GetInstance()->DeletePlist(
-      Launchd::User, Launchd::Agent, updater::CopyServiceLaunchdName()));
+      Launchd::User, Launchd::Agent, updater::CopyServiceLaunchDName()));
 }
 
 void ExpectClean() {
   // Files must not exist on the file system.
   EXPECT_FALSE(base::PathExists(GetProductPath()));
   EXPECT_FALSE(Launchd::GetInstance()->PlistExists(
-      Launchd::User, Launchd::Agent, updater::CopyWakeLaunchdName()));
+      Launchd::User, Launchd::Agent, updater::CopyAdministrationLaunchDName()));
   EXPECT_FALSE(Launchd::GetInstance()->PlistExists(
-      Launchd::User, Launchd::Agent, updater::CopyControlLaunchdName()));
-  EXPECT_FALSE(Launchd::GetInstance()->PlistExists(
-      Launchd::User, Launchd::Agent, updater::CopyServiceLaunchdName()));
+      Launchd::User, Launchd::Agent, updater::CopyServiceLaunchDName()));
 }
 
 void ExpectInstalled() {
   // Files must exist on the file system.
   EXPECT_TRUE(base::PathExists(GetProductPath()));
-  EXPECT_TRUE(Launchd::GetInstance()->PlistExists(Launchd::User, Launchd::Agent,
-                                                  CopyWakeLaunchdName()));
-  EXPECT_TRUE(Launchd::GetInstance()->PlistExists(Launchd::User, Launchd::Agent,
-                                                  CopyControlLaunchdName()));
+  EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
+      Launchd::User, Launchd::Agent, CopyAdministrationLaunchDName()));
 }
 
 void Install() {
@@ -94,7 +88,7 @@ void ExpectActive() {
   // Files must exist on the file system.
   EXPECT_TRUE(base::PathExists(GetProductPath()));
   EXPECT_TRUE(Launchd::GetInstance()->PlistExists(Launchd::User, Launchd::Agent,
-                                                  CopyServiceLaunchdName()));
+                                                  CopyServiceLaunchDName()));
 }
 
 void PromoteCandidate() {

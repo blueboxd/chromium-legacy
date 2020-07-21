@@ -369,6 +369,11 @@ class WebState : public base::SupportsUserData {
   virtual void TakeSnapshot(const gfx::RectF& rect,
                             SnapshotCallback callback) = 0;
 
+  // Creates PDF representation of the web page and invokes the |callback| with
+  // the NSData of the PDF or nil if a PDF couldn't be generated.
+  virtual void CreateFullPagePdf(
+      base::OnceCallback<void(NSData*)> callback) = 0;
+
   // Adds and removes observers for page navigation notifications. The order in
   // which notifications are sent to observers is undefined. Clients must be
   // sure to remove the observer before they go away.

@@ -170,6 +170,7 @@ void DeleteGrBackendTexture(SharedContextState* context_state,
   DCHECK(!context_state->gr_context()->abandoned());
 
   if (!context_state->GrContextIsVulkan()) {
+    DCHECK(context_state->gr_context());
     context_state->gr_context()->deleteBackendTexture(
         std::move(*backend_texture));
     return;

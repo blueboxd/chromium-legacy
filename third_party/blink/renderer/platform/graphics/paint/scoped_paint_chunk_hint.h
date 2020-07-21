@@ -28,21 +28,24 @@ class ScopedPaintChunkHint {
  public:
   ScopedPaintChunkHint(PaintController& paint_controller,
                        const DisplayItemClient& client,
-                       DisplayItem::Type type)
+                       DisplayItem::Type type,
+                       const IntRect& visual_rect)
       : ScopedPaintChunkHint(paint_controller,
                              paint_controller.CurrentPaintChunkProperties(),
                              client,
-                             type) {}
+                             type,
+                             visual_rect) {}
 
   ScopedPaintChunkHint(PaintController& paint_controller,
                        const PropertyTreeStateOrAlias& properties,
                        const DisplayItemClient& client,
-                       DisplayItem::Type type)
+                       DisplayItem::Type type,
+                       const IntRect& visual_rect)
       : paint_controller_(paint_controller),
         previous_num_chunks_(paint_controller_.NumNewChunks()),
         previous_force_new_chunk_(paint_controller_.WillForceNewChunk()) {
     if (!previous_force_new_chunk_ && previous_num_chunks_ &&
-        !paint_controller_.LastChunkBounds().Contains(client.VisualRect()))
+        !paint_controller_.LastChunkBounds().Contains(visual_rect))
       paint_controller_.SetForceNewChunk(true);
     // This is after SetForceNewChunk(true) so that the possible new chunk will
     // use the specified id.

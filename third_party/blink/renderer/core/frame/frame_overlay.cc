@@ -94,10 +94,6 @@ IntSize FrameOverlay::Size() const {
       frame_->View()->Size());
 }
 
-IntRect FrameOverlay::VisualRect() const {
-  return IntRect(IntPoint(), Size());
-}
-
 IntRect FrameOverlay::ComputeInterestRect(const GraphicsLayer* graphics_layer,
                                           const IntRect&) const {
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());

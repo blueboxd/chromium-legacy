@@ -15,6 +15,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_garbage_collector_factory.h"
@@ -78,6 +80,15 @@ std::unique_ptr<TestingProfile> BuildTestingProfile(
 #else
     profile_builder.SetSupervisedUserId("asdf");
 #endif
+  }
+
+  if (params.enable_bookmark_model) {
+    profile_builder.AddTestingFactory(
+        BookmarkModelFactory::GetInstance(),
+        BookmarkModelFactory::GetDefaultFactory());
+    profile_builder.AddTestingFactory(
+        ManagedBookmarkServiceFactory::GetInstance(),
+        ManagedBookmarkServiceFactory::GetDefaultFactory());
   }
 
   profile_builder.AddTestingFactories(

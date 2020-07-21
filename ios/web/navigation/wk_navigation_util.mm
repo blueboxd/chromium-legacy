@@ -4,6 +4,8 @@
 
 #import "ios/web/navigation/wk_navigation_util.h"
 
+#include <algorithm>
+
 #include "base/json/json_writer.h"
 #include "base/mac/bundle_locations.h"
 #include "base/strings/string_util.h"
@@ -34,48 +36,15 @@ const char kRestoreSessionTargetUrlHashPrefix[] = "targetUrl=";
 const char kOriginalUrlKey[] = "for";
 NSString* const kReferrerHeaderName = @"Referer";
 
-namespace {
-// Returns begin and end iterators and an updated last committed index for the
-// given navigation items. The length of these iterators range will not exceed
-// kMaxSessionSize. If |items.size()| is greater than kMaxSessionSize, then this
-// function will trim navigation items, which are the furthest to
-// |last_committed_item_index|.
-int GetSafeItemIterators(
-    int last_committed_item_index,
-    const std::vector<std::unique_ptr<NavigationItem>>& items,
-    std::vector<std::unique_ptr<NavigationItem>>::const_iterator* begin,
-    std::vector<std::unique_ptr<NavigationItem>>::const_iterator* end) {
-  if (items.size() <= kMaxSessionSize) {
-    // No need to trim anything.
-    *begin = items.begin();
-    *end = items.end();
-    return last_committed_item_index;
-  }
-
-  if (last_committed_item_index < kMaxSessionSize / 2) {
-    // Items which are the furthest to |last_committed_item_index| are located
-    // on the right side of the vector. Trim those.
-    *begin = items.begin();
-    *end = items.begin() + kMaxSessionSize;
-    return last_committed_item_index;
-  }
-
-  if (items.size() - last_committed_item_index <= kMaxSessionSize / 2) {
-    // Items which are the furthest to |last_committed_item_index| are located
-    // on the left side of the vector. Trim those.
-    *begin = items.end() - kMaxSessionSize;
-    *end = items.end();
-  } else {
-    // Trim items from both sides of the vector. Keep the same number of items
-    // on the left and right side of |last_committed_item_index|.
-    *begin = items.begin() + last_committed_item_index - kMaxSessionSize / 2;
-    *end = items.begin() + last_committed_item_index + kMaxSessionSize / 2 + 1;
-  }
-
-  // The beginning of the vector has been trimmed, so move up the last committed
-  // item index by whatever was trimmed from the left.
-  return last_committed_item_index - (*begin - items.begin());
-}
+int GetSafeItemRange(int last_committed_item_index,
+                     int item_count,
+                     int* offset,
+                     int* size) {
+  *size = std::min(kMaxSessionSize, item_count);
+  *offset = std::min(last_committed_item_index - kMaxSessionSize / 2,
+                     item_count - kMaxSessionSize);
+  *offset = std::max(*offset, 0);
+  return last_committed_item_index - *offset;
 }
 
 bool IsWKInternalUrl(const GURL& url) {
@@ -130,25 +99,26 @@ void CreateRestoreSessionUrl(
   DCHECK(last_committed_item_index >= 0 &&
          last_committed_item_index < static_cast<int>(items.size()));
 
-  std::vector<std::unique_ptr<NavigationItem>>::const_iterator begin;
-  std::vector<std::unique_ptr<NavigationItem>>::const_iterator end;
+  int first_restored_item_offset = 0;
+  int new_size = 0;
   int new_last_committed_item_index =
-      GetSafeItemIterators(last_committed_item_index, items, &begin, &end);
-  size_t new_size = end - begin;
+      GetSafeItemRange(last_committed_item_index, items.size(),
+                       &first_restored_item_offset, &new_size);
 
   // The URLs and titles of the restored entries are stored in two separate
   // lists instead of a single list of objects to reduce the size of the JSON
   // string to be included in the query parameter.
   base::Value restored_urls(base::Value::Type::LIST);
   base::Value restored_titles(base::Value::Type::LIST);
-  for (auto it = begin; it != end; ++it) {
-    NavigationItem* item = (*it).get();
+  for (int i = first_restored_item_offset;
+       i < new_size + first_restored_item_offset; i++) {
+    NavigationItem* item = items[i].get();
     restored_urls.Append(item->GetURL().spec());
     restored_titles.Append(item->GetTitle());
   }
   base::Value session(base::Value::Type::DICTIONARY);
-  int offset = new_last_committed_item_index + 1 - new_size;
-  session.SetKey("offset", base::Value(offset));
+  int committed_item_offset = new_last_committed_item_index + 1 - new_size;
+  session.SetKey("offset", base::Value(committed_item_offset));
   session.SetKey("urls", std::move(restored_urls));
   session.SetKey("titles", std::move(restored_titles));
 
@@ -159,7 +129,7 @@ void CreateRestoreSessionUrl(
       net::EscapeQueryParamValue(session_json, false /* use_plus */);
   GURL::Replacements replacements;
   replacements.SetRefStr(ref);
-  *first_index = begin - items.begin();
+  *first_index = first_restored_item_offset;
   *url = GetRestoreSessionBaseUrl().ReplaceComponents(replacements);
 }
 

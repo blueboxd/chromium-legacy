@@ -1194,11 +1194,19 @@ void DecodeExternalDataPolicies(
     }
   }
 
-  if (policy.has_native_device_printers()) {
+  // Use DevicePrinters policy if present, fallback to DeviceNativePrinters.
+  if (policy.has_device_printers()) {
+    const em::DevicePrintersProto& container(policy.device_printers());
+    if (container.has_external_policy()) {
+      SetExternalDataDevicePolicy(key::kDevicePrinters,
+                                  container.external_policy(),
+                                  external_data_manager, policies);
+    }
+  } else if (policy.has_native_device_printers()) {
     const em::DeviceNativePrintersProto& container(
         policy.native_device_printers());
     if (container.has_external_policy()) {
-      SetExternalDataDevicePolicy(key::kDeviceNativePrinters,
+      SetExternalDataDevicePolicy(key::kDevicePrinters,
                                   container.external_policy(),
                                   external_data_manager, policies);
     }
@@ -1430,40 +1438,78 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     base::Value(container.name()), nullptr);
   }
 
-  if (policy.has_native_device_printers_access_mode()) {
+  // Use DevicePrintersAccessMode if present, fallback to
+  //  DeviceNativePrintersAccessMode.
+  if (policy.has_device_printers_access_mode()) {
+    const em::DevicePrintersAccessModeProto& container(
+        policy.device_printers_access_mode());
+    if (container.has_access_mode()) {
+      std::unique_ptr<base::Value> value(
+          DecodeIntegerValue(container.access_mode()));
+      if (value) {
+        policies->Set(key::kDevicePrintersAccessMode, POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::move(*value), nullptr);
+      }
+    }
+  } else if (policy.has_native_device_printers_access_mode()) {
     const em::DeviceNativePrintersAccessModeProto& container(
         policy.native_device_printers_access_mode());
     if (container.has_access_mode()) {
       std::unique_ptr<base::Value> value(
           DecodeIntegerValue(container.access_mode()));
       if (value) {
-        policies->Set(key::kDeviceNativePrintersAccessMode,
-                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                      POLICY_SOURCE_CLOUD, std::move(*value), nullptr);
+        policies->Set(key::kDevicePrintersAccessMode, POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::move(*value), nullptr);
       }
     }
   }
 
-  if (policy.has_native_device_printers_blacklist()) {
+  // Use DevicePrintersBlocklist if present, fallback to
+  // DeviceNativePrintersBlacklist.
+  if (policy.has_device_printers_blocklist()) {
+    const em::DevicePrintersBlocklistProto& container(
+        policy.device_printers_blocklist());
+    base::Value blocklist(base::Value::Type::LIST);
+    for (const auto& entry : container.blocklist())
+      blocklist.Append(entry);
+
+    policies->Set(key::kDevicePrintersBlocklist, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                  std::move(blocklist), nullptr);
+  } else if (policy.has_native_device_printers_blacklist()) {
     const em::DeviceNativePrintersBlacklistProto& container(
         policy.native_device_printers_blacklist());
     base::Value blacklist(base::Value::Type::LIST);
     for (const auto& entry : container.blacklist())
       blacklist.Append(entry);
 
-    policies->Set(key::kDeviceNativePrintersBlacklist, POLICY_LEVEL_MANDATORY,
+    policies->Set(key::kDevicePrintersBlocklist, POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                   std::move(blacklist), nullptr);
   }
 
-  if (policy.has_native_device_printers_whitelist()) {
+  // Use DevicePrintersAllowlist if present, fallback to
+  // DeviceNativePrintersWhitelist.
+  if (policy.has_device_printers_allowlist()) {
+    const em::DevicePrintersAllowlistProto& container(
+        policy.device_printers_allowlist());
+    base::Value allowlist(base::Value::Type::LIST);
+    for (const auto& entry : container.allowlist())
+      allowlist.Append(entry);
+
+    policies->Set(key::kDevicePrintersAllowlist, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                  std::move(allowlist), nullptr);
+  } else if (policy.has_native_device_printers_whitelist()) {
     const em::DeviceNativePrintersWhitelistProto& container(
         policy.native_device_printers_whitelist());
     base::Value whitelist(base::Value::Type::LIST);
     for (const auto& entry : container.whitelist())
       whitelist.Append(entry);
 
-    policies->Set(key::kDeviceNativePrintersWhitelist, POLICY_LEVEL_MANDATORY,
+    policies->Set(key::kDevicePrintersAllowlist, POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                   std::move(whitelist), nullptr);
   }

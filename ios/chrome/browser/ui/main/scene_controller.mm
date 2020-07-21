@@ -118,9 +118,6 @@ enum class EnterTabSwitcherSnapshotResult {
 // that it can be set to |NONE| when not in use.
 enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 
-// Constants for deferred promo display.
-const NSTimeInterval kDisplayPromoDelay = 0.1;
-
 // Key of the UMA IOS.MultiWindow.OpenInNewWindow histogram.
 const char kMultiWindowOpenInNewWindowHistogram[] =
     "IOS.MultiWindow.OpenInNewWindow";
@@ -289,7 +286,9 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   }
 
   if (level == SceneActivationLevelForegroundActive) {
-    [self presentSignInAccountsViewControllerIfNecessary];
+    if (![self presentSigninUpgradePromoIfPossible]) {
+      [self presentSignInAccountsViewControllerIfNecessary];
+    }
     // Mitigation for crbug.com/1092326, where a nil browser state is passed
     // (presumably because mainInterface is nil as well).
     // TODO(crbug.com/1094916): Handle this more cleanly.
@@ -679,8 +678,6 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     [self showFirstRunUI];
     // Do not ever show the 'restore' infobar during first run.
     self.mainController.restoreHelper = nil;
-  } else {
-    [self scheduleShowPromo];
   }
 }
 
@@ -766,42 +763,44 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   }
 }
 
-#pragma mark - Promo support
-
-// Schedules presentation of the first eligible promo found, if any.
-- (void)scheduleShowPromo {
+// Presents the sign-in upgrade promo if is relevant and possible.
+// Returns YES if the promo is shown.
+- (BOOL)presentSigninUpgradePromoIfPossible {
+  if (!SigninShouldPresentUserSigninUpgrade(
+          self.mainController.mainBrowserState))
+    return NO;
   // Don't show promos if first run is shown in any scene.  (Note:  This flag
   // is only YES while the first run UI is visible.  However, as this function
   // is called immediately after the UI is shown, it's a safe check.)
   for (SceneState* sceneState in self.sceneState.appState.connectedScenes) {
     if (sceneState.presentingFirstRunUI) {
-      return;
+      return NO;
     }
   }
-  // Don't show promos in Incognito mode.
+  // Don't show the promo if there is a blocking task in process.
+  if (self.sceneState.appState.sceneShowingBlockingUI)
+    return NO;
+  // Don't show the promo in Incognito mode.
   if (self.currentInterface == self.incognitoInterface)
-    return;
+    return NO;
   // Don't show promos if the app was launched from a URL.
   if (self.startupParameters)
-    return;
-
-  // Show the sign-in promo if needed
-  if (SigninShouldPresentUserSigninUpgrade(
-          self.mainController.mainBrowserState)) {
-    Browser* browser = self.mainInterface.browser;
-    self.signinCoordinator = [SigninCoordinator
-        upgradeSigninPromoCoordinatorWithBaseViewController:self.mainInterface
-                                                                .viewController
-                                                    browser:browser];
-
-    __weak SceneController* weakSelf = self;
-    dispatch_after(
-        dispatch_time(DISPATCH_TIME_NOW,
-                      static_cast<int64_t>(kDisplayPromoDelay * NSEC_PER_SEC)),
-        dispatch_get_main_queue(), ^{
-          [weakSelf startSigninCoordinatorWithCompletion:nil];
-        });
-  }
+    return NO;
+  // Don't show the promo if the window is not active.
+  if (self.sceneState.activationLevel < SceneActivationLevelForegroundActive)
+    return NO;
+  // Don't show the promo if already presented.
+  if (self.sceneState.appState.signinUpgradePromoPresentedOnce)
+    return NO;
+  self.sceneState.appState.signinUpgradePromoPresentedOnce = YES;
+  DCHECK(!self.signinCoordinator);
+  Browser* browser = self.mainInterface.browser;
+  self.signinCoordinator = [SigninCoordinator
+      upgradeSigninPromoCoordinatorWithBaseViewController:self.mainInterface
+                                                              .viewController
+                                                  browser:browser];
+  [self startSigninCoordinatorWithCompletion:nil];
+  return YES;
 }
 
 #pragma mark - ApplicationCommands
@@ -958,6 +957,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
 - (void)showAdvancedSigninSettingsFromViewController:
     (UIViewController*)baseViewController {
+  DCHECK(!self.signinCoordinator);
   Browser* mainBrowser = self.mainInterface.browser;
   self.signinCoordinator = [SigninCoordinator
       advancedSettingsSigninCoordinatorWithBaseViewController:baseViewController
@@ -971,6 +971,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                                       retrievalTrigger:
                                           (syncer::KeyRetrievalTriggerForUMA)
                                               retrievalTrigger {
+  DCHECK(!self.signinCoordinator);
   Browser* mainBrowser = self.mainInterface.browser;
   self.signinCoordinator = [SigninCoordinator
       trustedVaultReAuthenticationCoordiantorWithBaseViewController:
@@ -983,6 +984,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
 // TODO(crbug.com/779791) : Remove settings commands from MainController.
 - (void)showAddAccountFromViewController:(UIViewController*)baseViewController {
+  DCHECK(!self.signinCoordinator);
   self.signinCoordinator = [SigninCoordinator
       addAccountCoordinatorWithBaseViewController:baseViewController
                                           browser:self.mainInterface.browser

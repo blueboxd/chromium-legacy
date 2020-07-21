@@ -4003,6 +4003,16 @@ void NavigationRequest::DidCommitNavigation(
   common_params_->url = params.url;
   did_replace_entry_ = did_replace_entry;
   should_update_history_ = params.should_update_history;
+  // A same document navigation with the same url, and no user-gesture is
+  // typically the result of 'history.replaceState().' As the page is
+  // controlling this, the user doesn't really think of this as a navigation
+  // and it doesn't make sense to log this in history. Logging this in history
+  // would lead to lots of visits to a particular page, which impacts the
+  // visit count.
+  if (should_update_history_ && IsSameDocument() && !HasUserGesture() &&
+      params.url == previous_url) {
+    should_update_history_ = false;
+  }
   previous_url_ = previous_url;
   navigation_type_ = navigation_type;
 

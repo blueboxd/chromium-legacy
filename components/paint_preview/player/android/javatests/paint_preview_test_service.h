@@ -14,15 +14,20 @@ namespace paint_preview {
 // A simple implementation of PaintPreviewBaseService used in tests.
 class PaintPreviewTestService : public PaintPreviewBaseService {
  public:
-  PaintPreviewTestService(const base::FilePath& test_data_dir);
+  PaintPreviewTestService(const base::FilePath& path);
   ~PaintPreviewTestService() override;
 
   PaintPreviewTestService(const PaintPreviewTestService&) = delete;
   PaintPreviewTestService& operator=(const PaintPreviewTestService&) = delete;
 
-  void GetCapturedPaintPreviewProto(
-      const DirectoryKey& key,
-      OnReadProtoCallback on_read_proto_callback) override;
+  jboolean CreateSingleSkpForKey(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jstring>& j_key,
+      const base::android::JavaParamRef<jstring>& j_url,
+      jint j_width,
+      jint j_height,
+      const base::android::JavaParamRef<jintArray>& j_link_rects,
+      const base::android::JavaParamRef<jobjectArray>& j_link_urls);
 
  private:
   base::FilePath test_data_dir_;

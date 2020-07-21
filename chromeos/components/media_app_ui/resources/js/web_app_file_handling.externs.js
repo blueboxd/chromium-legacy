@@ -140,8 +140,12 @@ class FileSystemDirectoryHandle extends FileSystemHandle {
    */
   getDirectoryHandle(name, options) {}
 
+  /** @return {!AsyncIterable<!Array<string|!FileSystemHandle>>} */
+  entries() {}
+  /** @return {!AsyncIterable<string>} */
+  keys() {}
   /** @return {!AsyncIterable<!FileSystemHandle>} */
-  getEntries() {}
+  values() {}
 
   /**
    * @param {string} name

@@ -91,6 +91,7 @@ class TestWebState : public WebState {
   void SetHasOpener(bool has_opener) override;
   bool CanTakeSnapshot() const override;
   void TakeSnapshot(const gfx::RectF& rect, SnapshotCallback callback) override;
+  void CreateFullPagePdf(base::OnceCallback<void(NSData*)> callback) override;
 
   // Setters for test data.
   void SetBrowserState(BrowserState* browser_state);

@@ -25,7 +25,7 @@
 #include "ui/views/widget/widget.h"
 
 namespace {
-constexpr int kInterceptionBubbleHeight = 362;
+constexpr int kInterceptionBubbleHeight = 342;
 constexpr int kInterceptionBubbleWidth = 290;
 }  // namespace
 

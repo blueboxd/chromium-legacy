@@ -21,6 +21,7 @@
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 #include "third_party/blink/public/mojom/clipboard/raw_clipboard.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission_automation.mojom-forward.h"
+#include "third_party/blink/public/mojom/storage_access/storage_access_automation.mojom-forward.h"
 
 namespace content {
 class FakeBluetoothChooser;
@@ -125,6 +126,10 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
 
   void BindPermissionAutomation(
       mojo::PendingReceiver<blink::test::mojom::PermissionAutomation> receiver);
+
+  void BindStorageAccessAutomation(
+      mojo::PendingReceiver<blink::test::mojom::StorageAccessAutomation>
+          receiver);
 
   void BindWebTestControlHost(
       mojo::PendingAssociatedReceiver<mojom::WebTestControlHost> receiver);

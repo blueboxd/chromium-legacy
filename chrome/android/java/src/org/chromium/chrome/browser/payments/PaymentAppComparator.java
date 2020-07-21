@@ -6,31 +6,20 @@ package org.chromium.chrome.browser.payments;
 
 import org.chromium.components.autofill.Completable;
 import org.chromium.components.payments.PaymentApp;
+import org.chromium.components.payments.PaymentRequestParams;
 
 import java.util.Comparator;
 
 /** A comparator that is used to rank the payment apps to be listed in the payment sheet. */
 /* package */ class PaymentAppComparator implements Comparator<PaymentApp> {
-    private final ParamsProvider mParamsProvider;
-
-    /** The provider of the parameters needed by this class. */
-    /* package */ interface ParamsProvider {
-        /** @return The requestShipping set by the merchant. */
-        boolean requestShipping();
-        /** @return The requestPayerName set by the merchant.  */
-        boolean requestPayerName();
-        /** @return The requestPayerEmail set by the merchant.  */
-        boolean requestPayerEmail();
-        /** @return The requestPayerPhone set by the merchant.  */
-        boolean requestPayerPhone();
-    }
+    private final PaymentRequestParams mParams;
 
     /**
      * Create an instance of PaymentAppComparator.
-     * @param paramsProvider The provider of the params needed by this class.
+     * @param params The parameters of PaymentRequest specified by the merchant.
      */
-    /* package */ PaymentAppComparator(ParamsProvider paramsProvider) {
-        mParamsProvider = paramsProvider;
+    /* package */ PaymentAppComparator(PaymentRequestParams params) {
+        mParams = params;
     }
 
     /**
@@ -89,7 +78,7 @@ import java.util.Comparator;
         if (completeness != 0) return completeness;
 
         // Payment apps which handle shipping address before others.
-        if (mParamsProvider.requestShipping()) {
+        if (mParams.requestShipping()) {
             int canHandleShipping =
                     (b.handlesShippingAddress() ? 1 : 0) - (a.handlesShippingAddress() ? 1 : 0);
             if (canHandleShipping != 0) return canHandleShipping;
@@ -98,15 +87,15 @@ import java.util.Comparator;
         // Payment apps which handle more contact information fields come first.
         int aSupportedContactDelegationsNum = 0;
         int bSupportedContactDelegationsNum = 0;
-        if (mParamsProvider.requestPayerName()) {
+        if (mParams.requestPayerName()) {
             if (a.handlesPayerName()) aSupportedContactDelegationsNum++;
             if (b.handlesPayerName()) bSupportedContactDelegationsNum++;
         }
-        if (mParamsProvider.requestPayerEmail()) {
+        if (mParams.requestPayerEmail()) {
             if (a.handlesPayerEmail()) aSupportedContactDelegationsNum++;
             if (b.handlesPayerEmail()) bSupportedContactDelegationsNum++;
         }
-        if (mParamsProvider.requestPayerPhone()) {
+        if (mParams.requestPayerPhone()) {
             if (a.handlesPayerPhone()) aSupportedContactDelegationsNum++;
             if (b.handlesPayerPhone()) bSupportedContactDelegationsNum++;
         }

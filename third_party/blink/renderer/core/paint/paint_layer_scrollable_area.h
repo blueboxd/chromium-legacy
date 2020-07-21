@@ -777,7 +777,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
     void Trace(Visitor* visitor) const { visitor->Trace(scrollable_area_); }
 
    private:
-    IntRect VisualRect() const final;
     String DebugName() const final;
     DOMNodeId OwnerNodeId() const final;
 

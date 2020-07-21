@@ -393,7 +393,7 @@ class UserInteractionObserver : public WebContentsObserver {
 
  private:
   // WebContentsObserver
-  void DidGetUserInteraction(const blink::WebInputEvent::Type type) override {
+  void DidGetUserInteraction(const blink::WebInputEvent& event) override {
     user_interaction_received_ = true;
   }
 

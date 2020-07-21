@@ -475,7 +475,7 @@ void RenderViewImpl::Initialize(
 
   // We pass this state to Page, but it's only used by the main frame in the
   // page.
-  if (params->inside_portal)
+  if (params->type == mojom::ViewWidgetType::kPortal)
     GetWebView()->SetInsidePortal(true);
 
 #if defined(OS_ANDROID)
@@ -1089,7 +1089,7 @@ void RenderViewImpl::ResizeWebWidgetForWidget(
 
 void RenderViewImpl::SetScreenMetricsEmulationParametersForWidget(
     bool enabled,
-    const blink::WebDeviceEmulationParams& params) {
+    const blink::DeviceEmulationParams& params) {
   if (enabled)
     GetWebView()->EnableDeviceEmulation(params);
   else

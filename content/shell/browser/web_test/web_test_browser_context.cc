@@ -20,6 +20,7 @@
 #include "content/shell/browser/web_test/web_test_download_manager_delegate.h"
 #include "content/shell/browser/web_test/web_test_permission_manager.h"
 #include "content/shell/browser/web_test/web_test_push_messaging_service.h"
+#include "content/shell/browser/web_test/web_test_storage_access_manager.h"
 #include "content/test/mock_background_sync_controller.h"
 #include "content/test/mock_client_hints_controller_delegate.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
@@ -90,6 +91,13 @@ BackgroundSyncController* WebTestBrowserContext::GetBackgroundSyncController() {
 WebTestPermissionManager* WebTestBrowserContext::GetWebTestPermissionManager() {
   return static_cast<WebTestPermissionManager*>(
       GetPermissionControllerDelegate());
+}
+
+WebTestStorageAccessManager*
+WebTestBrowserContext::GetWebTestStorageAccessManager() {
+  if (!storage_access_.get())
+    storage_access_ = std::make_unique<WebTestStorageAccessManager>(this);
+  return storage_access_.get();
 }
 
 ClientHintsControllerDelegate*

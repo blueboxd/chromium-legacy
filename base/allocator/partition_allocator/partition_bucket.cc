@@ -567,6 +567,7 @@ void* PartitionBucket<thread_safe>::SlowPathAlloc(
       PartitionExcessiveAllocationSize(size);
     }
     new_page = PartitionDirectMap(root, flags, size);
+    // New pages from PageAllocator are always zeroed.
     *is_already_zeroed = true;
   } else if (LIKELY(SetNewActivePage())) {
     // First, did we find an active page in the active pages list?
@@ -598,9 +599,7 @@ void* PartitionBucket<thread_safe>::SlowPathAlloc(
       void* addr = PartitionPage<thread_safe>::ToPointer(new_page);
       root->RecommitSystemPages(addr, new_page->bucket->get_bytes_per_span());
       new_page->Reset();
-      // TODO(https://crbug.com/890752): Optimizing here might cause pages to
-      // not be zeroed.
-      // *is_already_zeroed = true;
+      *is_already_zeroed = kDecommittedPagesAreAlwaysZeroed;
     }
     PA_DCHECK(new_page);
   } else {
@@ -611,9 +610,8 @@ void* PartitionBucket<thread_safe>::SlowPathAlloc(
       new_page =
           PartitionPage<thread_safe>::FromPointerNoAlignmentCheck(raw_pages);
       InitializeSlotSpan(new_page);
-      // TODO(https://crbug.com/890752): Optimizing here causes pages to not be
-      // zeroed on at least macOS.
-      // *is_already_zeroed = true;
+      // New pages from PageAllocator are always zeroed.
+      *is_already_zeroed = true;
     }
   }
 

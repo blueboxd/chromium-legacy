@@ -243,15 +243,16 @@ void TestWebContents::SetIsCurrentlyAudible(bool audible) {
   OnAudioStateChanged();
 }
 
-void TestWebContents::TestDidReceiveInputEvent(
-    blink::WebInputEvent::Type type) {
+void TestWebContents::TestDidReceiveMouseDownEvent() {
+  blink::WebMouseEvent event;
+  event.SetType(blink::WebInputEvent::Type::kMouseDown);
   // Use the first RenderWidgetHost from the frame tree to make sure that the
   // interaction doesn't get ignored.
   DCHECK(frame_tree_.Nodes().begin() != frame_tree_.Nodes().end());
   RenderWidgetHostImpl* render_widget_host = (*frame_tree_.Nodes().begin())
                                                  ->current_frame_host()
                                                  ->GetRenderWidgetHost();
-  DidReceiveInputEvent(render_widget_host, type);
+  DidReceiveInputEvent(render_widget_host, event);
 }
 
 void TestWebContents::TestDidFinishLoad(const GURL& url) {

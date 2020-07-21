@@ -23,6 +23,7 @@ import org.chromium.payments.mojom.PaymentValidationErrors;
 public class ComponentPaymentRequestImpl implements PaymentRequest {
     private final ComponentPaymentRequestDelegate mDelegate;
     private PaymentRequestClient mClient;
+    private PaymentRequestLifecycleObserver mPaymentRequestLifecycleObserver;
 
     /**
      * The delegate of {@link ComponentPaymentRequestImpl}.
@@ -159,5 +160,19 @@ public class ComponentPaymentRequestImpl implements PaymentRequest {
     public void closeClient() {
         if (mClient != null) mClient.close();
         mClient = null;
+    }
+
+    /**
+     * Register an observer for the PaymentRequest lifecycle.
+     * @param paymentRequestLifecycleObserver The observer.
+     */
+    public void registerPaymentRequestLifecycleObserver(
+            PaymentRequestLifecycleObserver paymentRequestLifecycleObserver) {
+        mPaymentRequestLifecycleObserver = paymentRequestLifecycleObserver;
+    }
+
+    /** @return The observer for the PaymentRequest lifecycle. */
+    public PaymentRequestLifecycleObserver getPaymentRequestLifecycleObserver() {
+        return mPaymentRequestLifecycleObserver;
     }
 }

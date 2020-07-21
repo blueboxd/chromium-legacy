@@ -152,10 +152,13 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
   if (!cull_rect.Intersects(FrameRect()))
     return;
 
+  IntRect visual_rect = FrameRect();
+  visual_rect.Move(paint_offset);
+
   if (WantsWheelEvents()) {
     context.GetPaintController().RecordScrollHitTestData(
         *GetLayoutEmbeddedContent(), DisplayItem::kPluginScrollHitTest, nullptr,
-        GetLayoutEmbeddedContent()->FirstFragment().VisualRect());
+        visual_rect);
   }
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() && layer_) {
@@ -176,7 +179,7 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
     return;
 
   DrawingRecorder recorder(context, *element_->GetLayoutObject(),
-                           DisplayItem::kWebPlugin);
+                           DisplayItem::kWebPlugin, visual_rect);
   context.Save();
 
   // The plugin is positioned in the root frame's coordinates, so it needs to
@@ -379,9 +382,8 @@ void WebPluginContainerImpl::PrintPage(int page_number, GraphicsContext& gc) {
           gc, *element_->GetLayoutObject(), DisplayItem::kWebPlugin))
     return;
 
-  // TODO(wkorman): Do we still need print_rect at all?
   DrawingRecorder recorder(gc, *element_->GetLayoutObject(),
-                           DisplayItem::kWebPlugin);
+                           DisplayItem::kWebPlugin, FrameRect());
   gc.Save();
 
   cc::PaintCanvas* canvas = gc.Canvas();

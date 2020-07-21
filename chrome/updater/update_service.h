@@ -11,10 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/version.h"
 
-namespace update_client {
-class Configurator;
-}  // namespace update_client
-
 namespace updater {
 
 struct RegistrationRequest;
@@ -199,10 +195,6 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
 
   virtual ~UpdateService() = default;
 };
-
-// A factory method to create an UpdateService class instance.
-scoped_refptr<UpdateService> CreateUpdateService(
-    scoped_refptr<update_client::Configurator> config);
 
 }  // namespace updater
 

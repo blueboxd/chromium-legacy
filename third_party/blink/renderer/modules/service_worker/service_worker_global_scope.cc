@@ -40,6 +40,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
 #include "third_party/blink/public/common/features.h"
@@ -219,7 +220,10 @@ ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
         installed_scripts_manager,
     mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
     base::TimeTicks time_origin)
-    : WorkerGlobalScope(std::move(creation_params), thread, time_origin),
+    : WorkerGlobalScope(std::move(creation_params),
+                        thread,
+                        time_origin,
+                        ukm::kInvalidSourceId),
       installed_scripts_manager_(std::move(installed_scripts_manager)),
       cache_storage_remote_(std::move(cache_storage_remote)) {
   // Create the event queue. At this point its timer is not started. It will be

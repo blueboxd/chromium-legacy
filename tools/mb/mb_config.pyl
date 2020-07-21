@@ -58,7 +58,7 @@
       'fuchsia-official': 'fuchsia_official_optimize_goma',
       'linux-archive-rel': 'release_bot',
       'linux-archive-dbg': 'debug_bot',
-      'linux-official': 'official_optimize_goma',
+      'linux-official': 'linux_official_optimize_goma',
       'mac-archive-rel': 'release_bot_mac_strip_minimal_symbols',
       'mac-archive-dbg': 'debug_bot',
       'win32-official': 'x86_official_optimize_goma',
@@ -1196,7 +1196,7 @@
     ],
 
     'android_debug_trybot_compile_only': [
-      'android', 'debug_bot', 'compile_only', 'java_warnings_as_errors',
+      'android', 'debug_bot', 'compile_only',
     ],
 
     'android_debug_trybot_compile_only_arm64_fastbuild': [
@@ -2067,6 +2067,10 @@
       'libfuzzer', 'asan', 'release_trybot', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'mojo_fuzzer',
     ],
 
+    'linux_official_optimize_goma': [
+      'official_optimize_goma', 'linux_official_link_jobs',
+    ],
+
     'mac_arm64_release_bot': [
       'release_bot', 'arm64',
     ],
@@ -2621,10 +2625,6 @@
       'args_file': '//build/args/chromeos/eve-arc-r.gni',
     },
 
-    'java_warnings_as_errors': {
-      'gn_args': ('java_warnings_as_errors=true'),
-    },
-
     'enable_vulkan': {
       'gn_args': 'enable_vulkan=true',
     },
@@ -2757,6 +2757,14 @@
 
     'link_jobs_32': {
       'gn_args': 'max_jobs_per_link=32',
+    },
+
+    # Without this, linux-official uses too many concurrent links with the
+    # available RAM. We want to adjust this number to mitigate possible memory
+    # issues related to linking.
+    # See https://bugs.chromium.org/p/chromium/issues/detail?id=1103490
+    'linux_official_link_jobs': {
+      'gn_args': 'concurrent_links=6',
     },
 
     'lsan': {

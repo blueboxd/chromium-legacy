@@ -19,16 +19,11 @@ Polymer({
 
   _template: html`{__html_template__}`,
 
-  /** @override */
-  attached() {
-    this.$.dialog.showModal();
-  },
-
   /**
-   * Tap handler for the "OK" button.
+   * Click handler for the "OK" button.
    * @private
    */
-  onOkTap_() {
+  onOkClick_() {
     this.$.dialog.close();
   },
 });

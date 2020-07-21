@@ -26,7 +26,7 @@ ExternalVkImageSkiaRepresentation::ExternalVkImageSkiaRepresentation(
 
 ExternalVkImageSkiaRepresentation::~ExternalVkImageSkiaRepresentation() {
   DCHECK_EQ(access_mode_, kNone) << "Previous access hasn't end yet.";
-  DCHECK(end_access_semaphore_ == VK_NULL_HANDLE);
+  DCHECK(!end_access_semaphore_);
   backing_impl()->context_state()->EraseCachedSkSurface(this);
 }
 
@@ -148,16 +148,16 @@ sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores) {
   DCHECK_EQ(access_mode_, kNone);
-  DCHECK(end_access_semaphore_ == VK_NULL_HANDLE);
+  DCHECK(!end_access_semaphore_);
 
-  std::vector<SemaphoreHandle> handles;
-  if (!backing_impl()->BeginAccess(readonly, &handles, false /* is_gl */))
+  std::vector<ExternalSemaphore> external_semaphores;
+  if (!backing_impl()->BeginAccess(readonly, &external_semaphores,
+                                   false /* is_gl */))
     return nullptr;
 
-  for (auto& handle : handles) {
-    DCHECK(handle.is_valid());
-    VkSemaphore semaphore = vk_implementation()->ImportSemaphoreHandle(
-        vk_device(), std::move(handle));
+  for (auto& external_semaphore : external_semaphores) {
+    DCHECK(external_semaphore.is_valid());
+    VkSemaphore semaphore = external_semaphore.TakeVkSemaphore();
     DCHECK(semaphore != VK_NULL_HANDLE);
     // The ownership of semaphore is passed to caller.
     begin_semaphores->emplace_back();
@@ -166,11 +166,10 @@ sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
 
   if (backing_impl()->need_synchronization() && end_semaphores) {
     // Create an |end_access_semaphore_| which will be signalled by the caller.
-    end_access_semaphore_ =
-        vk_implementation()->CreateExternalSemaphore(backing_impl()->device());
-    DCHECK(end_access_semaphore_ != VK_NULL_HANDLE);
+    end_access_semaphore_ = ExternalSemaphore::Create(context_provider());
+    DCHECK(end_access_semaphore_);
     end_semaphores->emplace_back();
-    end_semaphores->back().initVulkan(end_access_semaphore_);
+    end_semaphores->back().initVulkan(end_access_semaphore_.GetVkSemaphore());
   }
 
   return SkPromiseImageTexture::Make(backing_impl()->backend_texture());
@@ -178,23 +177,19 @@ sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
 
 void ExternalVkImageSkiaRepresentation::EndAccess(bool readonly) {
   DCHECK_NE(access_mode_, kNone);
-  DCHECK(backing_impl()->need_synchronization() ||
-         end_access_semaphore_ == VK_NULL_HANDLE);
+  DCHECK(backing_impl()->need_synchronization() || !end_access_semaphore_);
 
-  SemaphoreHandle handle;
-  if (backing_impl()->need_synchronization() &&
-      end_access_semaphore_ != VK_NULL_HANDLE) {
-    handle = vk_implementation()->GetSemaphoreHandle(vk_device(),
-                                                     end_access_semaphore_);
-    DCHECK(handle.is_valid());
+  if (backing_impl()->need_synchronization() && end_access_semaphore_) {
+    DCHECK(end_access_semaphore_);
 
     // We're done with the semaphore, enqueue deferred cleanup.
+    // TODO(penghuang): reuse VkSemaphore.
     fence_helper()->EnqueueSemaphoreCleanupForSubmittedWork(
-        end_access_semaphore_);
-    end_access_semaphore_ = VK_NULL_HANDLE;
+        end_access_semaphore_.TakeVkSemaphore());
   }
 
-  backing_impl()->EndAccess(readonly, std::move(handle), false /* is_gl */);
+  backing_impl()->EndAccess(readonly, std::move(end_access_semaphore_),
+                            false /* is_gl */);
 }
 
 }  // namespace gpu

@@ -951,8 +951,9 @@ Browser* CreateBrowserWithTabs(int num_tabs) {
 
 }  // namespace
 
-// Do not run in debug builds to avoid timeouts due to multiple navigations.
-#if !defined(NDEBUG)
+// Do not run in debug or ASAN builds to avoid timeouts due to multiple
+// navigations. https://crbug.com/1106485
+#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER)
 #define MAYBE_DiscardTabsWithMinimizedWindow \
   DISABLED_DiscardTabsWithMinimizedWindow
 #else
@@ -988,13 +989,13 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_DiscardTabsWithMinimizedWindow) {
       IsTabDiscarded(browser()->tab_strip_model()->GetWebContentsAt(1)));
 }
 
-// Do not run in debug builds to avoid timeouts due to multiple navigations.
-#if !defined(NDEBUG)
+// Do not run in debug or ASAN builds to avoid timeouts due to multiple
+// navigations. https://crbug.com/1106485
+#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER)
 #define MAYBE_DiscardTabsWithOccludedWindow \
   DISABLED_DiscardTabsWithOccludedWindow
 #else
-// TODO(https://crbug.com/1106485): The test is flaky on release builds.
-#define MAYBE_DiscardTabsWithOccludedWindow DISABLED_DiscardTabsWithOccludedWindow
+#define MAYBE_DiscardTabsWithOccludedWindow DiscardTabsWithOccludedWindow
 #endif
 IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_DiscardTabsWithOccludedWindow) {
   // Occluded browser.

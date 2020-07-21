@@ -16,14 +16,13 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.ScalableTimeout;
-import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -37,21 +36,21 @@ import org.chromium.url.GURL;
 public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
     private static final long TIMEOUT_MS = ScalableTimeout.scaleTimeout(5000);
 
-    private static final String TEST_DATA_DIR = "components/test/data/";
-    private static final String TEST_DIRECTORY_KEY = "wikipedia";
-    private static final String TEST_URL = "https://en.m.wikipedia.org/wiki/Main_Page";
-    private static final String TEST_MAIN_PICTURE_LINK_URL =
-            "https://en.m.wikipedia.org/wiki/File:Volc%C3%A1n_Ubinas,_Arequipa,_Per%C3%BA,_2015-08-02,_DD_50.JPG";
-    private static final String TEST_IN_VIEWPORT_LINK_URL =
-            "https://en.m.wikipedia.org/wiki/Arequipa";
-    private static final String TEST_OUT_OF_VIEWPORT_LINK_URL =
-            "https://foundation.wikimedia.org/wiki/Privacy_policy";
+    private static final String TEST_DIRECTORY_KEY = "test_dir";
+    private static final String TEST_URL = "https://www.chromium.org";
+    private static final String TEST_IN_VIEWPORT_LINK_URL = "http://www.google.com/";
+    private static final String TEST_OUT_OF_VIEWPORT_LINK_URL = "http://example.com/";
+    private final Rect mInViewportLinkRect = new Rect(700, 650, 900, 700);
+    private final Rect mOutOfViewportLinkRect = new Rect(300, 4900, 450, 5000);
 
     private static final int TEST_PAGE_WIDTH = 1082;
     private static final int TEST_PAGE_HEIGHT = 5019;
 
     @Rule
     public PaintPreviewTestRule mPaintPreviewTestRule = new PaintPreviewTestRule();
+
+    @Rule
+    public TemporaryFolder mTempFolder = new TemporaryFolder();
 
     private PlayerManager mPlayerManager;
     private TestLinkClickHandler mLinkClickHandler;
@@ -85,7 +84,6 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1106035")
     public void singleFrameDisplayTest() {
         initPlayerManager();
         final View playerHostView = mPlayerManager.getView();
@@ -107,32 +105,24 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1106035")
     public void linkClickTest() {
         initPlayerManager();
         final View playerHostView = mPlayerManager.getView();
 
-        // Click on the top left picture and assert it directs to the correct link.
-        assertLinkUrl(playerHostView, 92, 424, TEST_MAIN_PICTURE_LINK_URL);
-        assertLinkUrl(playerHostView, 67, 527, TEST_MAIN_PICTURE_LINK_URL);
-        assertLinkUrl(playerHostView, 466, 668, TEST_MAIN_PICTURE_LINK_URL);
-        assertLinkUrl(playerHostView, 412, 432, TEST_MAIN_PICTURE_LINK_URL);
-
         // Click on a link that is visible in the default viewport.
-        assertLinkUrl(playerHostView, 732, 698, TEST_IN_VIEWPORT_LINK_URL);
-        assertLinkUrl(playerHostView, 876, 716, TEST_IN_VIEWPORT_LINK_URL);
-        assertLinkUrl(playerHostView, 798, 711, TEST_IN_VIEWPORT_LINK_URL);
+        assertLinkUrl(playerHostView, 720, 670, TEST_IN_VIEWPORT_LINK_URL);
+        assertLinkUrl(playerHostView, 880, 675, TEST_IN_VIEWPORT_LINK_URL);
+        assertLinkUrl(playerHostView, 800, 680, TEST_IN_VIEWPORT_LINK_URL);
 
         // Scroll to the bottom, and click on a link.
         scrollToBottom();
-        assertLinkUrl(playerHostView, 322, 4946, TEST_OUT_OF_VIEWPORT_LINK_URL);
-        assertLinkUrl(playerHostView, 376, 4954, TEST_OUT_OF_VIEWPORT_LINK_URL);
-        assertLinkUrl(playerHostView, 422, 4965, TEST_OUT_OF_VIEWPORT_LINK_URL);
+        assertLinkUrl(playerHostView, 320, 4920, TEST_OUT_OF_VIEWPORT_LINK_URL);
+        assertLinkUrl(playerHostView, 375, 4950, TEST_OUT_OF_VIEWPORT_LINK_URL);
+        assertLinkUrl(playerHostView, 430, 4980, TEST_OUT_OF_VIEWPORT_LINK_URL);
     }
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1106035")
     public void overscrollRefreshTest() throws Exception {
         initPlayerManager();
         UiDevice uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
@@ -157,7 +147,7 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         mLinkClickHandler = new TestLinkClickHandler();
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             PaintPreviewTestService service =
-                    new PaintPreviewTestService(UrlUtils.getIsolatedTestFilePath(TEST_DATA_DIR));
+                    new PaintPreviewTestService(mTempFolder.getRoot().getPath());
             // Use the wrong URL to simulate a failure.
             mPlayerManager = new PlayerManager(new GURL("about:blank"), getActivity(), service,
                     TEST_DIRECTORY_KEY, mLinkClickHandler,
@@ -217,7 +207,11 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         CallbackHelper viewReady = new CallbackHelper();
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             PaintPreviewTestService service =
-                    new PaintPreviewTestService(UrlUtils.getIsolatedTestFilePath(TEST_DATA_DIR));
+                    new PaintPreviewTestService(mTempFolder.getRoot().getPath());
+            Assert.assertTrue(service.createSingleSkpForKey(TEST_DIRECTORY_KEY, TEST_URL,
+                    TEST_PAGE_WIDTH, TEST_PAGE_HEIGHT,
+                    new Rect[] {mInViewportLinkRect, mOutOfViewportLinkRect},
+                    new String[] {TEST_IN_VIEWPORT_LINK_URL, TEST_OUT_OF_VIEWPORT_LINK_URL}));
             mPlayerManager = new PlayerManager(new GURL(TEST_URL), getActivity(), service,
                     TEST_DIRECTORY_KEY, mLinkClickHandler,
                     () -> { mRefreshedCallback.notifyCalled(); },

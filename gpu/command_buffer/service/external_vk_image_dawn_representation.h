@@ -35,8 +35,11 @@ class ExternalVkImageDawnRepresentation : public SharedImageRepresentationDawn {
   // created and pass a pointer to them around?
   const DawnProcTable dawn_procs_;
 
-  ExternalVkImageBacking* backing_impl() {
+  ExternalVkImageBacking* backing_impl() const {
     return static_cast<ExternalVkImageBacking*>(backing());
+  }
+  viz::VulkanContextProvider* context_provider() const {
+    return backing_impl()->context_provider();
   }
 
   DISALLOW_COPY_AND_ASSIGN(ExternalVkImageDawnRepresentation);

@@ -58,6 +58,64 @@ base::JSONReader::ValueWithError ExtractSessionDict(GURL restore_session_url) {
 
 typedef PlatformTest WKNavigationUtilTest;
 
+// Tests various inputs for GetSafeItemRange.
+TEST_F(WKNavigationUtilTest, GetSafeItemRange) {
+  // Session size does not exceed kMaxSessionSize and last_committed_item_index
+  // is in range.
+  for (int item_count = 0; item_count <= kMaxSessionSize; item_count++) {
+    for (int item_index = 0; item_index < item_count; item_index++) {
+      int offset = 0;
+      int size = 0;
+      EXPECT_EQ(item_index,
+                GetSafeItemRange(item_index, item_count, &offset, &size))
+          << "item_count: " << item_count << " item_index: " << item_index;
+      EXPECT_EQ(0, offset) << "item_count: " << item_count
+                           << " item_index: " << item_index;
+      EXPECT_EQ(item_count, size)
+          << "item_count: " << item_count << " item_index: " << item_index;
+    }
+  }
+
+  // Session size is 1 item longer than kMaxSessionSize.
+  int offset = 0;
+  int size = 0;
+  EXPECT_EQ(0, GetSafeItemRange(0, kMaxSessionSize + 1, &offset, &size));
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(kMaxSessionSize, size);
+
+  offset = 0;
+  size = 0;
+  EXPECT_EQ(
+      kMaxSessionSize - 1,
+      GetSafeItemRange(kMaxSessionSize, kMaxSessionSize + 1, &offset, &size));
+  EXPECT_EQ(1, offset);
+  EXPECT_EQ(kMaxSessionSize, size);
+
+  offset = 0;
+  size = 0;
+  EXPECT_EQ(kMaxSessionSize / 2,
+            GetSafeItemRange(kMaxSessionSize / 2, kMaxSessionSize + 1, &offset,
+                             &size));
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(kMaxSessionSize, size);
+
+  offset = 0;
+  size = 0;
+  EXPECT_EQ(kMaxSessionSize / 2,
+            GetSafeItemRange(kMaxSessionSize / 2 + 1, kMaxSessionSize + 1,
+                             &offset, &size));
+  EXPECT_EQ(1, offset);
+  EXPECT_EQ(kMaxSessionSize, size);
+
+  offset = 0;
+  size = 0;
+  EXPECT_EQ(kMaxSessionSize / 2 - 1,
+            GetSafeItemRange(kMaxSessionSize / 2 - 1, kMaxSessionSize + 1,
+                             &offset, &size));
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(kMaxSessionSize, size);
+}
+
 TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrl) {
   auto item0 = std::make_unique<NavigationItemImpl>();
   item0->SetURL(GURL("http://www.0.com"));

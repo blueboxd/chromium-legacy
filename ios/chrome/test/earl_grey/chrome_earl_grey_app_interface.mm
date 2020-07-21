@@ -17,7 +17,7 @@
 #include "components/prefs/pref_service.h"
 #import "components/ukm/ios/features.h"
 #include "components/variations/variations_associated_data.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
@@ -693,16 +693,16 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
 }
 
 + (BOOL)isVariationEnabled:(int)variationID {
-  variations::VariationsHttpHeaderProvider* provider =
-      variations::VariationsHttpHeaderProvider::GetInstance();
+  variations::VariationsIdsProvider* provider =
+      variations::VariationsIdsProvider::GetInstance();
   std::vector<variations::VariationID> ids =
       provider->GetVariationsVector(variations::GOOGLE_WEB_PROPERTIES);
   return std::find(ids.begin(), ids.end(), variationID) != ids.end();
 }
 
 + (BOOL)isTriggerVariationEnabled:(int)variationID {
-  variations::VariationsHttpHeaderProvider* provider =
-      variations::VariationsHttpHeaderProvider::GetInstance();
+  variations::VariationsIdsProvider* provider =
+      variations::VariationsIdsProvider::GetInstance();
   std::vector<variations::VariationID> ids =
       provider->GetVariationsVector(variations::GOOGLE_WEB_PROPERTIES_TRIGGER);
   return std::find(ids.begin(), ids.end(), variationID) != ids.end();

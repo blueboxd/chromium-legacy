@@ -223,7 +223,6 @@ const char kBSSID[] = "BSSID";
 const char kEAP[] = "EAP";
 const char kFrequency[] = "Frequency";
 const char kFrequencyList[] = "FrequencyList";
-const char kFTEnabled[] = "FTEnabled";
 const char kHexSSID[] = "HexSSID";
 const char kHiddenSSID[] = "HiddenSSID";
 const char kPassphrase[] = "Passphrase";

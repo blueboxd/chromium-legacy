@@ -4,6 +4,7 @@
 
 #include "base/debug/invalid_access_win.h"
 
+#include <intrin.h>
 #include <stdlib.h>
 #include <windows.h>
 
@@ -15,6 +16,22 @@ namespace debug {
 namespace win {
 
 namespace {
+
+// Function that can be jumped midway into safely.
+__attribute__((naked)) int nop_sled() {
+  __asm {
+     nop
+     nop
+     ret
+  }
+}
+
+using FuncType = decltype(&nop_sled);
+
+void IndirectCall(FuncType* func) {
+  // This code always generates CFG guards.
+  (*func)();
+}
 
 void CreateSyntheticHeapCorruption() {
   EXCEPTION_RECORD record = {};
@@ -48,6 +65,21 @@ void TerminateWithHeapCorruption() {
     CHECK(false);
   }
   // Should never reach here.
+  abort();
+}
+
+void TerminateWithControlFlowViolation() {
+  // Call into the middle of the NOP sled.
+  FuncType func =
+      reinterpret_cast<FuncType>((reinterpret_cast<uintptr_t>(nop_sled)) + 0x1);
+  __try {
+    // Generates a STATUS_STACK_BUFFER_OVERRUN exception if CFG triggers.
+    IndirectCall(&func);
+  } __except (EXCEPTION_EXECUTE_HANDLER) {
+    // CFG fast fail should never be caught.
+    CHECK(false);
+  }
+  // Should only reach here if CFG is disabled.
   abort();
 }
 

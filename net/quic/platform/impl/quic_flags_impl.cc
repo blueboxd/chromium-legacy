@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 
 #define QUIC_FLAG(type, flag, value) type flag = value;
@@ -34,19 +35,21 @@ ToQuicStringVector(const std::vector<std::string>& v) {
   return v;
 }
 
-// Overload for platforms where base::CommandLine::StringType == base::string16.
+#if defined(WCHAR_T_IS_UTF16)
+// Overload for platforms where base::CommandLine::StringType == std::wstring.
 std::vector<std::string> __attribute__((unused))
-ToQuicStringVector(const std::vector<base::string16>& v) {
+ToQuicStringVector(const std::vector<std::wstring>& v) {
   std::vector<std::string> qsv;
   for (const auto& s : v) {
     if (!base::IsStringASCII(s)) {
       QUIC_LOG(ERROR) << "Unable to convert to ASCII: " << s;
       continue;
     }
-    qsv.push_back(base::UTF16ToASCII(s));
+    qsv.push_back(base::WideToASCII(s));
   }
   return qsv;
 }
+#endif  // defined(WCHAR_T_IS_UTF16)
 
 size_t FindLineWrapPosition(const std::string& s, size_t desired_len) {
   if (s.length() <= desired_len) {

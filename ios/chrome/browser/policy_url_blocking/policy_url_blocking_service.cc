@@ -11,14 +11,14 @@
 
 PolicyBlocklistService::PolicyBlocklistService(
     web::BrowserState* browser_state,
-    std::unique_ptr<policy::URLBlacklistManager> url_blacklist_manager)
-    : url_blacklist_manager_(std::move(url_blacklist_manager)) {}
+    std::unique_ptr<policy::URLBlocklistManager> url_blocklist_manager)
+    : url_blocklist_manager_(std::move(url_blocklist_manager)) {}
 
 PolicyBlocklistService::~PolicyBlocklistService() = default;
 
-policy::URLBlacklist::URLBlacklistState
+policy::URLBlocklist::URLBlocklistState
 PolicyBlocklistService::GetURLBlocklistState(const GURL& url) const {
-  return url_blacklist_manager_->GetURLBlacklistState(url);
+  return url_blocklist_manager_->GetURLBlocklistState(url);
 }
 
 // static
@@ -46,10 +46,10 @@ PolicyBlocklistServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* browser_state) const {
   PrefService* prefs =
       ChromeBrowserState::FromBrowserState(browser_state)->GetPrefs();
-  auto url_blacklist_manager =
-      std::make_unique<policy::URLBlacklistManager>(prefs);
+  auto url_blocklist_manager =
+      std::make_unique<policy::URLBlocklistManager>(prefs);
   return std::make_unique<PolicyBlocklistService>(
-      browser_state, std::move(url_blacklist_manager));
+      browser_state, std::move(url_blocklist_manager));
 }
 
 web::BrowserState* PolicyBlocklistServiceFactory::GetBrowserStateToUse(

@@ -120,23 +120,21 @@ class TestCompoundNameMethodParsedAddressComponent : public AddressComponent {
 
 // Creates a compound name for testing purposes that uses an expression to
 // parse.
-class TestCompoundNameExpressionParsedAddressComponent
-    : public AddressComponent {
+class TestCompoundNameRegExParsedAddressComponent : public AddressComponent {
  public:
-  TestCompoundNameExpressionParsedAddressComponent()
-      : TestCompoundNameExpressionParsedAddressComponent(nullptr) {
+  TestCompoundNameRegExParsedAddressComponent()
+      : TestCompoundNameRegExParsedAddressComponent(nullptr) {
     expression1_ =
-        BuildExpressionFromPattern("(?P<NAME_FULL>(?P<NAME_MIDDLE>\\d*))");
-    expression2_ =
-        BuildExpressionFromPattern("(?P<NAME_FULL>(?P<NAME_LAST>.*))");
+        BuildRegExFromPattern("(?P<NAME_FULL>(?P<NAME_MIDDLE>\\d*))");
+    expression2_ = BuildRegExFromPattern("(?P<NAME_FULL>(?P<NAME_LAST>.*))");
   }
-  explicit TestCompoundNameExpressionParsedAddressComponent(
-      AddressComponent* parent)
+  explicit TestCompoundNameRegExParsedAddressComponent(AddressComponent* parent)
       : AddressComponent(NAME_FULL,
                          parent,
                          {&first_name_, &middle_name_, &last_name_}) {}
 
-  std::vector<const RE2*> GetParseExpressionsByRelevance() const override {
+  std::vector<const RE2*> GetParseRegularExpressionsByRelevance()
+      const override {
     // The first two expressions will fail and the last one will be
     // successful.
     return {nullptr, expression1_.get(), expression2_.get()};
@@ -765,8 +763,8 @@ TEST(AutofillStructuredAddressAddressComponent,
 
 // Tests parsing using a defined method.
 TEST(AutofillStructuredAddressAddressComponent,
-     TestParseValueAndAssignSubcomponentsByExpression) {
-  TestCompoundNameExpressionParsedAddressComponent compound_component;
+     TestParseValueAndAssignSubcomponentsByRegEx) {
+  TestCompoundNameRegExParsedAddressComponent compound_component;
   compound_component.SetValue(ASCIIToUTF16("Dr. Strangelove"),
                               VerificationStatus::kObserved);
   compound_component.ParseValueAndAssignSubcomponents();

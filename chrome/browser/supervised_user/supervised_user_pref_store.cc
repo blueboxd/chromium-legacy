@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -167,6 +168,9 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
                            &permissions_disallowed);
       prefs_->SetBoolean(prefs::kSupervisedUserExtensionsMayRequestPermissions,
                          !permissions_disallowed);
+      base::UmaHistogramBoolean(
+          "SupervisedUsers.ExtensionsMayRequestPermissions",
+          !permissions_disallowed);
     }
 #endif
   }

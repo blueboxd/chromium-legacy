@@ -1,0 +1,12 @@
+Test post data interception
+[
+    [0] : {
+        bytes : AQIDBAU=
+    }
+]
+[
+    [0] : {
+        bytes : AQIDBAU=
+    }
+]
+

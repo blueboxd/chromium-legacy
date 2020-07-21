@@ -112,7 +112,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   void SetMainFrameMimeType(const std::string& mime_type) override;
   const std::string& GetContentsMimeType() override;
   void SetIsCurrentlyAudible(bool audible) override;
-  void TestDidReceiveInputEvent(blink::WebInputEvent::Type type) override;
+  void TestDidReceiveMouseDownEvent() override;
   void TestDidFinishLoad(const GURL& url) override;
   void TestDidFailLoadWithError(const GURL& url, int error_code) override;
 

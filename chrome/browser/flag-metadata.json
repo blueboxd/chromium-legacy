@@ -1709,6 +1709,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "enable-media-feeds-background-fetch",
+    "owners": [ "beccahughes", "media-dev" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-media-foundation-video-capture",
     "owners": [ "armax", "guidou" ],
     "expiry_milestone": 90
@@ -2784,6 +2789,11 @@
     "name": "ios-lookalike-url-navigation-suggestions-ui",
     "owners": [ "livvielin" ],
     "expiry_milestone": 85
+  },
+  {
+    "name": "ios-synthetic-crash-reports",
+    "owners": [ "eugenebut", "olivierrobin" ],
+    "expiry_milestone": 95
   },
   {
     "name": "isolate-origins",

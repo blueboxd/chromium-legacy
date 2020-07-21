@@ -34,6 +34,8 @@ source_set("content_suggestions") {
     "//components/feed/core/shared_prefs:feed_shared_prefs",
     "//components/ntp_snippets",
     "//components/ntp_tiles",
+    "//components/prefs",
+    "//components/prefs/ios",
     "//components/reading_list/core",
     "//components/reading_list/ios:ios",
     "//components/signin/public/identity_manager",

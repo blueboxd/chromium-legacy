@@ -156,7 +156,7 @@ class OmniboxViewViews : public OmniboxView,
 
   // content::WebContentsObserver:
   void DidFinishNavigation(content::NavigationHandle* navigation) override;
-  void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
+  void DidGetUserInteraction(const blink::WebInputEvent& event) override;
 
   // For testing only.
   OmniboxPopupContentsView* GetPopupContentsViewForTesting() const {
@@ -190,6 +190,7 @@ class OmniboxViewViews : public OmniboxView,
   FRIEND_TEST_ALL_PREFIXES(
       OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
       VerticalAndHorizontalPosition);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsHideOnInteractionTest, ModifierKeys);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsHideOnInteractionTest,
                            SameDocNavigations);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsHideOnInteractionTest,

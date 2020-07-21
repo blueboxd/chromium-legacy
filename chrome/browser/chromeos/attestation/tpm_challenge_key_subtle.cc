@@ -133,6 +133,10 @@ void TpmChallengeKeySubtleImpl::RestorePreparedKeyState(
     const std::string& key_name,
     Profile* profile) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // For user keys, a |profile| is strictly necessary.
+  DCHECK(key_type != KEY_USER || profile);
+
   key_type_ = key_type;
   will_register_key_ = will_register_key;
   key_name_ = GetKeyNameWithDefault(key_type, key_name);
@@ -151,6 +155,9 @@ void TpmChallengeKeySubtleImpl::StartPrepareKeyStep(
   // empty, if |register_key| is false, |key_name| will not be used.
   DCHECK((key_type != KEY_DEVICE) || (will_register_key == !key_name.empty()))
       << "Invalid arguments: " << will_register_key << " " << !key_name.empty();
+
+  // For user keys, a |profile| is strictly necessary.
+  DCHECK(key_type != KEY_USER || profile);
 
   key_type_ = key_type;
   will_register_key_ = will_register_key;
@@ -179,7 +186,7 @@ void TpmChallengeKeySubtleImpl::PrepareMachineKey() {
     return;
   }
 
-  // Check whether the user is managed unless the signin profile is used.
+  // Check whether the user is managed unless this is a device-wide instance.
   if (GetUser() && !IsUserAffiliated()) {
     std::move(callback_).Run(
         Result::MakeError(ResultCode::kUserNotManagedError));
@@ -236,6 +243,7 @@ bool TpmChallengeKeySubtleImpl::IsUserAffiliated() const {
 
 bool TpmChallengeKeySubtleImpl::IsRemoteAttestationEnabledForUser() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(profile_);
 
   PrefService* prefs = profile_->GetPrefs();
   // TODO(crbug.com/1000589): Check it's mandatory after fixing corp policy.
@@ -272,6 +280,8 @@ AttestationCertificateProfile TpmChallengeKeySubtleImpl::GetCertificateProfile()
 
 const user_manager::User* TpmChallengeKeySubtleImpl::GetUser() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!profile_)
+    return nullptr;
   return ProfileHelper::Get()->GetUserByProfile(profile_);
 }
 

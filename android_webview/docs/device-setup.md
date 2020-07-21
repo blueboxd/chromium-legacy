@@ -45,7 +45,7 @@ developer hurdles.
 ### Flash a prebuilt image
 
 Googlers can consult internal instructions
-[here](http://go/clank-webview/building-webview/device-setup).
+[here](http://go/clank-webview/device_setup.md).
 
 External contributors can flash a prebuilt userdebug image (based off
 aosp-master) onto a Pixel device with [Android Flash

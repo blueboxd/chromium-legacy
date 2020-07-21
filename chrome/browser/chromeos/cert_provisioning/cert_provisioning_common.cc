@@ -9,7 +9,9 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
@@ -205,6 +207,18 @@ scoped_refptr<net::X509Certificate> CreateSingleCertificateFromBytes(
   }
 
   return cert_list[0];
+}
+
+platform_keys::PlatformKeysService* GetPlatformKeysService(CertScope scope,
+                                                           Profile* profile) {
+  switch (scope) {
+    case CertScope::kUser:
+      return platform_keys::PlatformKeysServiceFactory::GetForBrowserContext(
+          profile);
+    case CertScope::kDevice:
+      return platform_keys::PlatformKeysServiceFactory::GetInstance()
+          ->GetDeviceWideService();
+  }
 }
 
 }  // namespace cert_provisioning

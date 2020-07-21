@@ -9,7 +9,7 @@
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/emulation.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
-#include "third_party/blink/public/web/web_device_emulation_params.h"
+#include "third_party/blink/public/common/widget/device_emulation_params.h"
 
 namespace net {
 class HttpRequestHeaders;
@@ -75,8 +75,8 @@ class EmulationHandler : public DevToolsDomainHandler,
 
   Response SetFocusEmulationEnabled(bool) override;
 
-  blink::WebDeviceEmulationParams GetDeviceEmulationParams();
-  void SetDeviceEmulationParams(const blink::WebDeviceEmulationParams& params);
+  blink::DeviceEmulationParams GetDeviceEmulationParams();
+  void SetDeviceEmulationParams(const blink::DeviceEmulationParams& params);
 
   bool device_emulation_enabled() { return device_emulation_enabled_; }
 
@@ -95,7 +95,7 @@ class EmulationHandler : public DevToolsDomainHandler,
   std::string touch_emulation_configuration_;
   bool device_emulation_enabled_;
   bool focus_emulation_enabled_;
-  blink::WebDeviceEmulationParams device_emulation_params_;
+  blink::DeviceEmulationParams device_emulation_params_;
   std::string user_agent_;
 
   // |user_agent_metadata_| is meaningful if |user_agent_| is non-empty.

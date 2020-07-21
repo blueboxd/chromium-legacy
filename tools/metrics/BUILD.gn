@@ -75,7 +75,8 @@ group("metrics_python_tests") {
     "//tools/metrics/metrics_python_tests.py",
 
     "//tools/metrics/actions/action_utils.py",
-    "//tools/metrics/actions/actions_print_style.py",
+    "//tools/metrics/actions/actions_model.py",
+    "//tools/metrics/actions/actions_model_test.py",
     "//tools/metrics/actions/extract_actions.py",
     "//tools/metrics/actions/extract_actions_test.py",
 

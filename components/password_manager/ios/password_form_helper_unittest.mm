@@ -74,8 +74,7 @@ class PasswordFormHelperTest : public web::WebTestWithWebState {
 
   void SetUp() override {
     WebTestWithWebState::SetUp();
-    helper_ =
-        [[PasswordFormHelper alloc] initWithWebState:web_state() delegate:nil];
+    helper_ = [[PasswordFormHelper alloc] initWithWebState:web_state()];
   }
 
   void TearDown() override {

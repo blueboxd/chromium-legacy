@@ -458,4 +458,9 @@ void TestWebState::TakeSnapshot(const gfx::RectF& rect,
   std::move(callback).Run(gfx::Image([[UIImage alloc] init]));
 }
 
+void TestWebState::CreateFullPagePdf(
+    base::OnceCallback<void(NSData*)> callback) {
+  std::move(callback).Run([[NSData alloc] init]);
+}
+
 }  // namespace web

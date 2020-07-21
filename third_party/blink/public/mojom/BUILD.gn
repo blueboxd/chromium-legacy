@@ -158,6 +158,7 @@ mojom("mojom_platform") {
     "speech/speech_recognition_result.mojom",
     "speech/speech_recognizer.mojom",
     "speech/speech_synthesis.mojom",
+    "storage_access/storage_access_automation.mojom",
     "timing/performance_mark_or_measure.mojom",
     "timing/resource_timing.mojom",
     "timing/worker_timing_container.mojom",
@@ -171,6 +172,7 @@ mojom("mojom_platform") {
     "webdatabase/web_database.mojom",
     "websockets/websocket_connector.mojom",
     "webtransport/quic_transport_connector.mojom",
+    "widget/device_emulation_params.mojom",
     "widget/screen_info.mojom",
     "widget/screen_orientation.mojom",
     "widget/visual_properties.mojom",
@@ -304,6 +306,15 @@ mojom("mojom_platform") {
         },
       ]
       traits_headers = [ "//third_party/blink/public/common/widget/visual_properties_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.DeviceEmulationParams"
+          cpp = "::blink::DeviceEmulationParams"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/widget/device_emulation_params_mojom_traits.h" ]
     },
   ]
   cpp_typemaps = [

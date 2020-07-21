@@ -36,6 +36,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -551,7 +552,7 @@ TEST_F(BlockTabUnderTest, TabUnderWithSubsequentGesture_IsNotBlocked) {
   // members.
   static_cast<content::WebContentsObserver*>(
       blocked_content::PopupOpenerTabHelper::FromWebContents(web_contents()))
-      ->DidGetUserInteraction(blink::WebInputEvent::Type::kMouseDown);
+      ->DidGetUserInteraction(blink::WebMouseEvent());
 
   // A subsequent navigation should be allowed, even if it is classified as a
   // suspicious redirect.

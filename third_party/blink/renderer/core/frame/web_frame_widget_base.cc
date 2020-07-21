@@ -1486,6 +1486,11 @@ void WebFrameWidgetBase::SetMouseCapture(bool capture) {
   }
 }
 
+void WebFrameWidgetBase::SetIsNestedMainFrameWidget(bool is_nested) {
+  if (client_)
+    client_->SetIsNestedMainFrameWidget(is_nested);
+}
+
 gfx::Range WebFrameWidgetBase::CompositionRange() {
   WebLocalFrame* focused_frame = FocusedWebLocalFrameInWidget();
   if (!focused_frame)

@@ -37,7 +37,8 @@ void SharedWorkerConnectorImpl::Connect(
     mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     blink::MessagePortDescriptor message_port,
-    mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token) {
+    mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
+    ukm::SourceId client_ukm_source_id) {
   RenderProcessHost* host =
       RenderProcessHost::FromID(client_render_frame_host_id_.child_id);
   // The render process was already terminated.
@@ -60,10 +61,10 @@ void SharedWorkerConnectorImpl::Connect(
   SharedWorkerServiceImpl* service =
       static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
           ->GetSharedWorkerService();
-  service->ConnectToWorker(client_render_frame_host_id_, std::move(info),
-                           std::move(client), creation_context_type,
-                           blink::MessagePortChannel(std::move(message_port)),
-                           std::move(blob_url_loader_factory));
+  service->ConnectToWorker(
+      client_render_frame_host_id_, std::move(info), std::move(client),
+      creation_context_type, blink::MessagePortChannel(std::move(message_port)),
+      std::move(blob_url_loader_factory), client_ukm_source_id);
 }
 
 }  // namespace content

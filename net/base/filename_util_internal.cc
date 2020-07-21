@@ -207,7 +207,7 @@ void EnsureSafeExtension(const std::string& mime_type,
 
 bool FilePathToString16(const base::FilePath& path, base::string16* converted) {
 #if defined(OS_WIN)
-  *converted = path.value();
+  converted->assign(path.value().begin(), path.value().end());
   return true;
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   std::string component8 = path.AsUTF8Unsafe();
@@ -266,8 +266,8 @@ base::string16 GetSuggestedFilenameImpl(
   base::FilePath::StringType result_str, default_name_str;
 #if defined(OS_WIN)
   replace_trailing = true;
-  result_str = base::UTF8ToUTF16(filename);
-  default_name_str = base::UTF8ToUTF16(default_name);
+  result_str = base::UTF8ToWide(filename);
+  default_name_str = base::UTF8ToWide(default_name);
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   result_str = filename;
   default_name_str = default_name;
@@ -319,7 +319,7 @@ base::FilePath GenerateFileNameImpl(
       replace_illegal_characters_function);
 
 #if defined(OS_WIN)
-  base::FilePath generated_name(file_name);
+  base::FilePath generated_name(base::AsWStringPiece(file_name));
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   base::FilePath generated_name(
       base::SysWideToNativeMB(base::UTF16ToWide(file_name)));

@@ -31,18 +31,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "chrome/browser/chromeos/net/client_cert_store_chromeos.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/system_token_cert_db_initializer.h"
 #include "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h"
-#include "chrome/browser/net/nss_context.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_context.h"
 #include "crypto/nss_key_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_nss_types.h"
@@ -71,6 +65,7 @@ const char kErrorInternal[] = "Internal Error.";
 const char kErrorKeyNotFound[] = "Key not found.";
 const char kErrorCertificateNotFound[] = "Certificate could not be found.";
 const char kErrorAlgorithmNotSupported[] = "Algorithm not supported.";
+const char kErrorShutDown[] = "Delegate shut down.";
 
 // The current maximal RSA modulus length that ChromeOS's TPM supports for key
 // generation.
@@ -116,17 +111,16 @@ class NSSOperationState {
   DISALLOW_COPY_AND_ASSIGN(NSSOperationState);
 };
 
-using GetCertDBCallback = base::Callback<void(net::NSSCertDatabase* cert_db)>;
+using GetCertDBCallback =
+    base::OnceCallback<void(net::NSSCertDatabase* cert_db)>;
 
-// Used by GetCertDatabaseOnIoThread and called back with the requested
-// NSSCertDatabase.
-// If |token_id| is provided, sets |slot_| of |state| accordingly and calls
-// |callback| if the database was successfully retrieved.
-void DidGetCertDbOnIoThread(base::Optional<TokenId> token_id,
-                            const GetCertDBCallback& callback,
+// Called on the UI thread with certificate database.
+void DidGetCertDbOnUiThread(base::Optional<TokenId> token_id,
+                            GetCertDBCallback callback,
                             NSSOperationState* state,
                             net::NSSCertDatabase* cert_db) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   if (!cert_db) {
     LOG(ERROR) << "Couldn't get NSSCertDatabase.";
     state->OnError(FROM_HERE, kErrorInternal);
@@ -151,63 +145,25 @@ void DidGetCertDbOnIoThread(base::Optional<TokenId> token_id,
     }
   }
 
-  callback.Run(cert_db);
-}
-
-// Retrieves the NSSCertDatabase from |context| and, if |token_id| is provided,
-// the slot for |token_id|.
-// Must be called on the IO thread.
-void GetCertDatabaseOnIoThread(base::Optional<TokenId> token_id,
-                               const GetCertDBCallback& callback,
-                               content::ResourceContext* context,
-                               NSSOperationState* state) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  net::NSSCertDatabase* cert_db = GetNSSCertDatabaseForResourceContext(
-      context, base::Bind(&DidGetCertDbOnIoThread, token_id, callback, state));
-
-  if (cert_db)
-    DidGetCertDbOnIoThread(token_id, callback, state, cert_db);
-}
-
-// Called by SystemTokenCertDBInitializer on the UI thread with the system token
-// certificate database when it is initialized.
-void DidGetSystemTokenCertDbOnUiThread(base::Optional<TokenId> token_id,
-                                       const GetCertDBCallback& callback,
-                                       NSSOperationState* state,
-                                       net::NSSCertDatabase* cert_db) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   // Sets |slot_| of |state| accordingly and calls |callback| on the IO thread
   // if the database was successfully retrieved.
   content::GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&DidGetCertDbOnIoThread, token_id, callback,
-                                state, cert_db));
+      FROM_HERE, base::BindOnce(std::move(callback), cert_db));
 }
 
-// Asynchronously fetches the NSSCertDatabase for |browser_context| and, if
-// |token_id| is provided, the slot for |token_id|. Stores the slot in |state|
+// Asynchronously fetches the NSSCertDatabase using |delegate| and, if
+// |token_id| is not empty, the slot for |token_id|. Stores the slot in |state|
 // and passes the database to |callback|. Will run |callback| on the IO thread.
 // TODO(omorsi): Introduce timeout for retrieving certificate database in
 // platform keys.
 void GetCertDatabase(base::Optional<TokenId> token_id,
-                     const GetCertDBCallback& callback,
-                     BrowserContext* browser_context,
+                     GetCertDBCallback callback,
+                     PlatformKeysServiceImplDelegate* delegate,
                      NSSOperationState* state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  // There will be no public or private slots initialized if no user is logged
-  // in. In this case, an NSS certificate database that has the system slot
-  // should be used for system token operations.
-  if (ProfileHelper::IsSigninProfile(profile)) {
-    SystemTokenCertDBInitializer::Get()->GetSystemTokenCertDb(base::BindOnce(
-        &DidGetSystemTokenCertDbOnUiThread, token_id, callback, state));
-    return;
-  }
-
-  content::GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&GetCertDatabaseOnIoThread, token_id, callback,
-                                browser_context->GetResourceContext(), state));
+  delegate->GetNSSCertDatabase(base::BindOnce(&DidGetCertDbOnUiThread, token_id,
+                                              std::move(callback), state));
 }
 
 class GenerateRSAKeyState : public NSSOperationState {
@@ -1422,7 +1378,10 @@ void PlatformKeysServiceImpl::GenerateRSAKey(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto state = std::make_unique<GenerateRSAKeyState>(
       weak_factory_.GetWeakPtr(), modulus_length_bits, callback);
-
+  if (delegate_->IsShutDown()) {
+    state->OnError(FROM_HERE, kErrorShutDown);
+    return;
+  }
   if (modulus_length_bits > kMaxRSAModulusLengthBits) {
     state->OnError(FROM_HERE, kErrorAlgorithmNotSupported);
     return;
@@ -1431,8 +1390,8 @@ void PlatformKeysServiceImpl::GenerateRSAKey(
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
   GetCertDatabase(token_id,
-                  base::Bind(&GenerateRSAKeyWithDB, base::Passed(&state)),
-                  browser_context_, state_ptr);
+                  base::BindOnce(&GenerateRSAKeyWithDB, base::Passed(&state)),
+                  delegate_.get(), state_ptr);
 }
 
 void PlatformKeysServiceImpl::GenerateECKey(
@@ -1442,12 +1401,15 @@ void PlatformKeysServiceImpl::GenerateECKey(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto state = std::make_unique<GenerateECKeyState>(weak_factory_.GetWeakPtr(),
                                                     named_curve, callback);
-
+  if (delegate_->IsShutDown()) {
+    state->OnError(FROM_HERE, kErrorShutDown);
+    return;
+  }
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
   GetCertDatabase(token_id,
-                  base::Bind(&GenerateECKeyWithDB, base::Passed(&state)),
-                  browser_context_, state_ptr);
+                  base::BindOnce(&GenerateECKeyWithDB, base::Passed(&state)),
+                  delegate_.get(), state_ptr);
 }
 
 void PlatformKeysServiceImpl::SignRSAPKCS1Digest(
@@ -1461,6 +1423,10 @@ void PlatformKeysServiceImpl::SignRSAPKCS1Digest(
       weak_factory_.GetWeakPtr(), data, public_key_spki_der,
       /*raw_pkcs1=*/false, hash_algorithm,
       /*key_type=*/KeyType::kRsassaPkcs1V15, callback);
+  if (delegate_->IsShutDown()) {
+    state->OnError(FROM_HERE, kErrorShutDown);
+    return;
+  }
 
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
@@ -1468,8 +1434,8 @@ void PlatformKeysServiceImpl::SignRSAPKCS1Digest(
   // The NSSCertDatabase object is not required. But in case it's not available
   // we would get more informative error messages and we can double check that
   // we use a key of the correct token.
-  GetCertDatabase(token_id, base::Bind(&SignWithDB, base::Passed(&state)),
-                  browser_context_, state_ptr);
+  GetCertDatabase(token_id, base::BindOnce(&SignWithDB, base::Passed(&state)),
+                  delegate_.get(), state_ptr);
 }
 
 void PlatformKeysServiceImpl::SignRSAPKCS1Raw(
@@ -1482,6 +1448,10 @@ void PlatformKeysServiceImpl::SignRSAPKCS1Raw(
       weak_factory_.GetWeakPtr(), data, public_key_spki_der,
       /*raw_pkcs1=*/true, HASH_ALGORITHM_NONE,
       /*key_type=*/KeyType::kRsassaPkcs1V15, callback);
+  if (delegate_->IsShutDown()) {
+    state->OnError(FROM_HERE, kErrorShutDown);
+    return;
+  }
 
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
@@ -1489,8 +1459,8 @@ void PlatformKeysServiceImpl::SignRSAPKCS1Raw(
   // The NSSCertDatabase object is not required. But in case it's not available
   // we would get more informative error messages and we can double check that
   // we use a key of the correct token.
-  GetCertDatabase(token_id, base::Bind(&SignWithDB, base::Passed(&state)),
-                  browser_context_, state_ptr);
+  GetCertDatabase(token_id, base::BindOnce(&SignWithDB, base::Passed(&state)),
+                  delegate_.get(), state_ptr);
 }
 
 void PlatformKeysServiceImpl::SignECDSADigest(
@@ -1504,6 +1474,10 @@ void PlatformKeysServiceImpl::SignECDSADigest(
       weak_factory_.GetWeakPtr(), data, public_key_spki_der,
       /*raw_pkcs1=*/false, hash_algorithm,
       /*key_type=*/KeyType::kEcdsa, callback);
+  if (delegate_->IsShutDown()) {
+    state->OnError(FROM_HERE, kErrorShutDown);
+    return;
+  }
 
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
@@ -1511,8 +1485,8 @@ void PlatformKeysServiceImpl::SignECDSADigest(
   // The NSSCertDatabase object is not required. But in case it's not available
   // we would get more informative error messages and we can double check that
   // we use a key of the correct token.
-  GetCertDatabase(token_id, base::Bind(&SignWithDB, base::Passed(&state)),
-                  browser_context_, state_ptr);
+  GetCertDatabase(token_id, base::BindOnce(&SignWithDB, base::Passed(&state)),
+                  delegate_.get(), state_ptr);
 }
 
 void PlatformKeysServiceImpl::SelectClientCertificates(
@@ -1528,21 +1502,14 @@ void PlatformKeysServiceImpl::SelectClientCertificates(
   // filtering afterwards.
   cert_request_info->cert_authorities = certificate_authorities;
 
-  const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(
-          Profile::FromBrowserContext(browser_context_));
-
-  // Use the device-wide system key slot only if the user is affiliated on the
-  // device.
-  const bool use_system_key_slot = user->IsAffiliated();
-
   auto state = std::make_unique<SelectCertificatesState>(
       weak_factory_.GetWeakPtr(), cert_request_info, callback);
+  if (delegate_->IsShutDown()) {
+    state->OnError(FROM_HERE, kErrorShutDown);
+    return;
+  }
 
-  state->cert_store_ = std::make_unique<ClientCertStoreChromeOS>(
-      nullptr,  // no additional provider
-      use_system_key_slot, user->username_hash(),
-      ClientCertStoreChromeOS::PasswordDelegateFactory());
+  state->cert_store_ = delegate_->CreateClientCertStore();
 
   // Note DidSelectCertificates() may be called synchronously.
   SelectCertificatesState* state_ptr = state.get();
@@ -1683,11 +1650,15 @@ void PlatformKeysServiceImpl::GetCertificates(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto state = std::make_unique<GetCertificatesState>(
       weak_factory_.GetWeakPtr(), callback);
+  if (delegate_->IsShutDown()) {
+    state->OnError(FROM_HERE, kErrorShutDown);
+    return;
+  }
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
   GetCertDatabase(token_id,
-                  base::Bind(&GetCertificatesWithDB, base::Passed(&state)),
-                  browser_context_, state_ptr);
+                  base::BindOnce(&GetCertificatesWithDB, base::Passed(&state)),
+                  delegate_.get(), state_ptr);
 }
 
 void PlatformKeysServiceImpl::GetAllKeys(TokenId token_id,
@@ -1696,11 +1667,15 @@ void PlatformKeysServiceImpl::GetAllKeys(TokenId token_id,
 
   auto state = std::make_unique<GetAllKeysState>(weak_factory_.GetWeakPtr(),
                                                  std::move(callback));
+  if (delegate_->IsShutDown()) {
+    state->OnError(FROM_HERE, kErrorShutDown);
+    return;
+  }
 
   NSSOperationState* state_ptr = state.get();
   GetCertDatabase(token_id,
-                  base::BindRepeating(&GetAllKeysWithDb, base::Passed(&state)),
-                  browser_context_, state_ptr);
+                  base::BindOnce(&GetAllKeysWithDb, base::Passed(&state)),
+                  delegate_.get(), state_ptr);
 }
 
 void PlatformKeysServiceImpl::ImportCertificate(
@@ -1710,15 +1685,19 @@ void PlatformKeysServiceImpl::ImportCertificate(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto state = std::make_unique<ImportCertificateState>(
       weak_factory_.GetWeakPtr(), certificate, callback);
+  if (delegate_->IsShutDown()) {
+    state->OnError(FROM_HERE, kErrorShutDown);
+    return;
+  }
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
 
   // The NSSCertDatabase object is not required. But in case it's not available
   // we would get more informative error messages and we can double check that
   // we use a key of the correct token.
-  GetCertDatabase(token_id,
-                  base::Bind(&ImportCertificateWithDB, base::Passed(&state)),
-                  browser_context_, state_ptr);
+  GetCertDatabase(
+      token_id, base::BindOnce(&ImportCertificateWithDB, base::Passed(&state)),
+      delegate_.get(), state_ptr);
 }
 
 void PlatformKeysServiceImpl::RemoveCertificate(
@@ -1728,14 +1707,18 @@ void PlatformKeysServiceImpl::RemoveCertificate(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto state = std::make_unique<RemoveCertificateState>(
       weak_factory_.GetWeakPtr(), certificate, callback);
+  if (delegate_->IsShutDown()) {
+    state->OnError(FROM_HERE, kErrorShutDown);
+    return;
+  }
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
 
   // The NSSCertDatabase object is not required. But in case it's not available
   // we would get more informative error messages.
-  GetCertDatabase(token_id,
-                  base::Bind(&RemoveCertificateWithDB, base::Passed(&state)),
-                  browser_context_, state_ptr);
+  GetCertDatabase(
+      token_id, base::BindOnce(&RemoveCertificateWithDB, base::Passed(&state)),
+      delegate_.get(), state_ptr);
 }
 
 void PlatformKeysServiceImpl::RemoveKey(TokenId token_id,
@@ -1745,25 +1728,34 @@ void PlatformKeysServiceImpl::RemoveKey(TokenId token_id,
 
   auto state = std::make_unique<RemoveKeyState>(
       weak_factory_.GetWeakPtr(), public_key_spki_der, std::move(callback));
+  if (delegate_->IsShutDown()) {
+    state->OnError(FROM_HERE, kErrorShutDown);
+    return;
+  }
 
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
 
   // The NSSCertDatabase object is not required. But in case it's not available
   // we would get more informative error messages.
-  GetCertDatabase(token_id, base::Bind(&RemoveKeyWithDb, base::Passed(&state)),
-                  browser_context_, state_ptr);
+  GetCertDatabase(token_id,
+                  base::BindOnce(&RemoveKeyWithDb, base::Passed(&state)),
+                  delegate_.get(), state_ptr);
 }
 
 void PlatformKeysServiceImpl::GetTokens(const GetTokensCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto state =
       std::make_unique<GetTokensState>(weak_factory_.GetWeakPtr(), callback);
+  if (delegate_->IsShutDown()) {
+    state->OnError(FROM_HERE, kErrorShutDown);
+    return;
+  }
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
   GetCertDatabase(/*token_id=*/base::nullopt /* don't get any specific slot */,
                   base::Bind(&GetTokensWithDB, base::Passed(&state)),
-                  browser_context_, state_ptr);
+                  delegate_.get(), state_ptr);
 }
 
 void PlatformKeysServiceImpl::GetKeyLocations(
@@ -1772,12 +1764,16 @@ void PlatformKeysServiceImpl::GetKeyLocations(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto state = std::make_unique<GetKeyLocationsState>(
       weak_factory_.GetWeakPtr(), public_key_spki_der, callback);
+  if (delegate_->IsShutDown()) {
+    state->OnError(FROM_HERE, kErrorShutDown);
+    return;
+  }
   NSSOperationState* state_ptr = state.get();
 
   GetCertDatabase(
       /*token_id=*/base::nullopt /* don't get any specific slot */,
       base::BindRepeating(&GetKeyLocationsWithDB, base::Passed(&state)),
-      browser_context_, state_ptr);
+      delegate_.get(), state_ptr);
 }
 
 void PlatformKeysServiceImpl::SetAttributeForKey(
@@ -1795,6 +1791,10 @@ void PlatformKeysServiceImpl::SetAttributeForKey(
   auto state = std::make_unique<SetAttributeForKeyState>(
       weak_factory_.GetWeakPtr(), public_key_spki_der, ck_attribute_type,
       attribute_value, std::move(callback));
+  if (delegate_->IsShutDown()) {
+    state->OnError(FROM_HERE, kErrorShutDown);
+    return;
+  }
 
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
@@ -1802,9 +1802,8 @@ void PlatformKeysServiceImpl::SetAttributeForKey(
   // The NSSCertDatabase object is not required. Only setting the state slot is
   // required.
   GetCertDatabase(
-      token_id,
-      base::BindRepeating(&SetAttributeForKeyWithDb, base::Passed(&state)),
-      browser_context_, state_ptr);
+      token_id, base::BindOnce(&SetAttributeForKeyWithDb, base::Passed(&state)),
+      delegate_.get(), state_ptr);
 }
 
 void PlatformKeysServiceImpl::GetAttributeForKey(
@@ -1821,6 +1820,10 @@ void PlatformKeysServiceImpl::GetAttributeForKey(
   auto state = std::make_unique<GetAttributeForKeyState>(
       weak_factory_.GetWeakPtr(), public_key_spki_der, ck_attribute_type,
       std::move(callback));
+  if (delegate_->IsShutDown()) {
+    state->OnError(FROM_HERE, kErrorShutDown);
+    return;
+  }
 
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
@@ -1828,9 +1831,8 @@ void PlatformKeysServiceImpl::GetAttributeForKey(
   // The NSSCertDatabase object is not required. Only setting the state slot is
   // required.
   GetCertDatabase(
-      token_id,
-      base::BindRepeating(&GetAttributeForKeyWithDb, base::Passed(&state)),
-      browser_context_, state_ptr);
+      token_id, base::BindOnce(&GetAttributeForKeyWithDb, base::Passed(&state)),
+      delegate_.get(), state_ptr);
 }
 
 void PlatformKeysServiceImpl::SetMapToSoftokenAttrsForTesting(

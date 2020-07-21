@@ -28,7 +28,11 @@ class NativeFileSystemDirectoryIterator final
   USING_GARBAGE_COLLECTED_MIXIN(NativeFileSystemDirectoryIterator);
 
  public:
+  // Should this iterator returns keys, values or both?
+  enum Mode { kKey, kValue, kKeyValue };
+
   NativeFileSystemDirectoryIterator(NativeFileSystemDirectoryHandle* directory,
+                                    Mode mode,
                                     ExecutionContext* execution_context);
 
   ScriptPromise next(ScriptState*);
@@ -40,6 +44,7 @@ class NativeFileSystemDirectoryIterator final
                         Vector<mojom::blink::NativeFileSystemEntryPtr> entries,
                         bool has_more_entries) override;
 
+  Mode mode_;
   mojom::blink::NativeFileSystemErrorPtr error_;
   bool waiting_for_more_entries_ = true;
   HeapDeque<Member<NativeFileSystemHandle>> entries_;

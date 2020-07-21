@@ -124,7 +124,7 @@ struct FeatureEntry {
     const FeatureParam* params;
     int num_params;
     // A variation id number in the format of
-    // VariationsHttpHeaderProvider::ForceVariationIds() or nullptr if you do
+    // VariationsIdsProvider::ForceVariationIds() or nullptr if you do
     // not need to set any variation_id for this feature variation.
     const char* variation_id;
   };

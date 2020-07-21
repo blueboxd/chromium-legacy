@@ -155,6 +155,9 @@ def _ParseOptions():
       action='append',
       dest='feature_names',
       help='The name of the feature module.')
+  parser.add_argument('--warnings-as-errors',
+                      action='store_true',
+                      help='Treat all warnings as errors.')
   parser.add_argument('--show-desugar-default-interface-warnings',
                       action='store_true',
                       help='Enable desugaring warnings.')
@@ -257,16 +260,6 @@ class _DexPathContext(object):
     shutil.move(tmp_jar_output, self._final_output_path)
 
 
-def _CreateStderrFilter(show_desugar_default_interface_warnings):
-  d8_filter = dex.CreateStderrFilter(show_desugar_default_interface_warnings)
-
-  def filter_stderr(output):
-    output = re.sub(r'.*_JAVA_OPTIONS.*\n?', '', output)
-    return d8_filter(output)
-
-  return filter_stderr
-
-
 def _OptimizeWithR8(options,
                     config_paths,
                     libraries,
@@ -303,6 +296,11 @@ def _OptimizeWithR8(options,
 
     cmd = [
         build_utils.JAVA_PATH,
+        '-Dcom.android.tools.r8.allowTestProguardOptions=1',
+    ]
+    if options.disable_outlining:
+      cmd += [' -Dcom.android.tools.r8.disableOutlining=1']
+    cmd += [
         '-cp',
         options.r8_path,
         'com.android.tools.r8.R8',
@@ -351,18 +349,13 @@ def _OptimizeWithR8(options,
     extra_jars = set(options.input_paths) - module_input_jars
     cmd += sorted(extra_jars)
 
-    env = os.environ.copy()
-    env['_JAVA_OPTIONS'] = '-Dcom.android.tools.r8.allowTestProguardOptions=1'
-    if options.disable_outlining:
-      env['_JAVA_OPTIONS'] += ' -Dcom.android.tools.r8.disableOutlining=1'
-
     try:
-      stderr_filter = _CreateStderrFilter(
+      stderr_filter = dex.CreateStderrFilter(
           options.show_desugar_default_interface_warnings)
       build_utils.CheckOutput(cmd,
-                              env=env,
                               print_stdout=print_stdout,
-                              stderr_filter=stderr_filter)
+                              stderr_filter=stderr_filter,
+                              fail_on_output=options.warnings_as_errors)
     except build_utils.CalledProcessError as err:
       debugging_link = ('\n\nR8 failed. Please see {}.'.format(
           'https://chromium.googlesource.com/chromium/src/+/HEAD/build/'

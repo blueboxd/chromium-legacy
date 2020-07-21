@@ -119,7 +119,7 @@ std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildPolicyHandlerList(
   }
 
   if (ShouldInstallURLBlocklistPolicyHandlers()) {
-    handlers->AddHandler(std::make_unique<policy::URLBlacklistPolicyHandler>(
+    handlers->AddHandler(std::make_unique<policy::URLBlocklistPolicyHandler>(
         policy::key::kURLBlocklist));
   }
 

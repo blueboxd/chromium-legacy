@@ -12,16 +12,19 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.signin.MockChangeEventChecker;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -36,6 +39,8 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 public class SyncTest {
     @Rule
     public SyncTestRule mSyncTestRule = new SyncTestRule();
+    @Rule
+    public TestRule mProcessorRule = new Features.JUnitProcessor();
 
     private static final String TAG = "SyncTest";
 
@@ -152,6 +157,7 @@ public class SyncTest {
 
     @Test
     @LargeTest
+    @Features.DisableFeatures(ChromeFeatureList.DECOUPLE_SYNC_FROM_ANDROID_MASTER_SYNC)
     @Feature({"Sync"})
     public void testStopAndStartSyncThroughAndroidMasterSync() {
         mSyncTestRule.setUpAccountAndSignInForTesting();
@@ -171,6 +177,7 @@ public class SyncTest {
     @Test
     @LargeTest
     @Feature({"Sync"})
+    @Features.DisableFeatures(ChromeFeatureList.DECOUPLE_SYNC_FROM_ANDROID_MASTER_SYNC)
     @DisabledTest(message = "Test is flaky crbug.com/1100890")
     public void testReenableMasterSyncFirst() {
         Account account = mSyncTestRule.setUpAccountAndSignInForTesting();
@@ -203,6 +210,7 @@ public class SyncTest {
 
     @Test
     @LargeTest
+    @Features.DisableFeatures(ChromeFeatureList.DECOUPLE_SYNC_FROM_ANDROID_MASTER_SYNC)
     @Feature({"Sync"})
     public void testReenableChromeSyncFirst() {
         Account account = mSyncTestRule.setUpAccountAndSignInForTesting();
@@ -240,6 +248,7 @@ public class SyncTest {
 
     @Test
     @LargeTest
+    @Features.DisableFeatures(ChromeFeatureList.DECOUPLE_SYNC_FROM_ANDROID_MASTER_SYNC)
     @Feature({"Sync"})
     public void testMasterSyncBlocksSyncStart() {
         mSyncTestRule.setUpAccountAndSignInForTesting();

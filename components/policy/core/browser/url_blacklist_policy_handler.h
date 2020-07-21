@@ -19,12 +19,12 @@ enum class SafeSitesFilterBehavior {
   kSafeSitesFilterEnabled = 1,
 };
 
-// Handles URLBlacklist policies.
-class POLICY_EXPORT URLBlacklistPolicyHandler
+// Handles URLBlocklist policies.
+class POLICY_EXPORT URLBlocklistPolicyHandler
     : public TypeCheckingPolicyHandler {
  public:
-  explicit URLBlacklistPolicyHandler(const char* policy_name);
-  ~URLBlacklistPolicyHandler() override;
+  explicit URLBlocklistPolicyHandler(const char* policy_name);
+  ~URLBlocklistPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
   bool CheckPolicySettings(const PolicyMap& policies,
@@ -33,7 +33,7 @@ class POLICY_EXPORT URLBlacklistPolicyHandler
                            PrefValueMap* prefs) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(URLBlacklistPolicyHandler);
+  DISALLOW_COPY_AND_ASSIGN(URLBlocklistPolicyHandler);
 };
 
 }  // namespace policy

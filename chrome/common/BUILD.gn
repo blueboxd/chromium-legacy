@@ -295,8 +295,6 @@ static_library("common") {
       "extensions/manifest_handlers/app_launch_info.h",
       "extensions/manifest_handlers/app_theme_color_info.cc",
       "extensions/manifest_handlers/app_theme_color_info.h",
-      "extensions/manifest_handlers/extension_action_handler.cc",
-      "extensions/manifest_handlers/extension_action_handler.h",
       "extensions/manifest_handlers/linked_app_icons.cc",
       "extensions/manifest_handlers/linked_app_icons.h",
       "extensions/manifest_handlers/minimum_chrome_version_checker.cc",

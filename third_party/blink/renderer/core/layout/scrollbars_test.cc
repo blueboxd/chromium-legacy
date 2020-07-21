@@ -1398,8 +1398,8 @@ TEST_F(ScrollbarsTest, CustomScrollbarChangeToMobileByEmulator) {
   DCHECK(!div_scrollable->VerticalScrollbar()->GetTheme().IsMockTheme());
 
   // Turn on mobile emulator.
-  WebDeviceEmulationParams params;
-  params.screen_position = WebDeviceEmulationParams::kMobile;
+  DeviceEmulationParams params;
+  params.screen_type = mojom::EmulatedScreenType::kMobile;
   WebView().EnableDeviceEmulation(params);
 
   // For root Scrollbar, mobile emulator will change them to page VisualViewport
@@ -1652,8 +1652,8 @@ TEST_P(ScrollbarAppearanceTest, NativeScrollbarChangeToMobileByEmulator) {
   DCHECK(!div_scrollable->VerticalScrollbar()->GetTheme().IsMockTheme());
 
   // Turn on mobile emulator.
-  WebDeviceEmulationParams params;
-  params.screen_position = WebDeviceEmulationParams::kMobile;
+  DeviceEmulationParams params;
+  params.screen_type = mojom::EmulatedScreenType::kMobile;
   WebView().EnableDeviceEmulation(params);
 
   // For root Scrollbar, mobile emulator will change them to page VisualViewport

@@ -58,7 +58,7 @@ GURL FilePathToFileURL(const base::FilePath& path) {
       &url_string, 0, FILE_PATH_LITERAL("\\"), FILE_PATH_LITERAL("%5C"));
 #endif
 
-  return GURL(url_string);
+  return GURL(base::AsCrossPlatformPiece(url_string));
 }
 
 bool FileURLToFilePath(const GURL& url, base::FilePath* file_path) {
@@ -132,7 +132,7 @@ bool FileURLToFilePath(const GURL& url, base::FilePath* file_path) {
 
 #if defined(OS_WIN)
   if (base::IsStringUTF8(path)) {
-    file_path_str.assign(base::UTF8ToUTF16(path));
+    file_path_str.assign(base::UTF8ToWide(path));
     // We used to try too hard and see if |path| made up entirely of
     // the 1st 256 characters in the Unicode was a zero-extended UTF-16.
     // If so, we converted it to 'Latin-1' and checked if the result was UTF-8.
@@ -144,7 +144,7 @@ bool FileURLToFilePath(const GURL& url, base::FilePath* file_path) {
     // are giving the conversion function a nonempty string, and it may fail if
     // the given string is not in the current encoding and give us an empty
     // string back. We detect this and report failure.
-    file_path_str = base::WideToUTF16(base::SysNativeMBToWide(path));
+    file_path_str = base::SysNativeMBToWide(path);
   }
 #else  // defined(OS_WIN)
   // Collapse multiple path slashes into a single path slash.
@@ -193,7 +193,7 @@ bool IsReservedNameOnWindows(const base::FilePath::StringType& filename) {
       "com5", "com6", "com7", "com8", "com9", "lpt1", "lpt2",  "lpt3",
       "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9", "clock$"};
 #if defined(OS_WIN)
-  std::string filename_lower = base::ToLowerASCII(base::UTF16ToUTF8(filename));
+  std::string filename_lower = base::ToLowerASCII(base::WideToUTF8(filename));
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   std::string filename_lower = base::ToLowerASCII(filename);
 #endif

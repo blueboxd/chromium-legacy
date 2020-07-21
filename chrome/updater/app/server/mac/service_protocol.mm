@@ -30,8 +30,8 @@ NSXPCInterface* GetXPCUpdateCheckingInterface() {
   return updateCheckingInterface;
 }
 
-NSXPCInterface* GetXPCControllingInterface() {
-  return [NSXPCInterface interfaceWithProtocol:@protocol(CRUControlling)];
+NSXPCInterface* GetXPCAdministeringInterface() {
+  return [NSXPCInterface interfaceWithProtocol:@protocol(CRUAdministering)];
 }
 
 }  // namespace updater

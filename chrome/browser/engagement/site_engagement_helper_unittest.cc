@@ -20,6 +20,10 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_touch_event.h"
 
 using content::NavigationSimulator;
 
@@ -47,14 +51,32 @@ class SiteEngagementHelperTest : public ChromeRenderViewHostTestHarness {
   // Simulate a user interaction event and handle it.
   void HandleUserInput(SiteEngagementService::Helper* helper,
                        blink::WebInputEvent::Type type) {
-    helper->input_tracker_.DidGetUserInteraction(type);
+    std::unique_ptr<blink::WebInputEvent> event;
+    switch (type) {
+      case blink::WebInputEvent::Type::kRawKeyDown:
+        event = std::make_unique<blink::WebKeyboardEvent>();
+        break;
+      case blink::WebInputEvent::Type::kGestureScrollBegin:
+        event = std::make_unique<blink::WebGestureEvent>();
+        break;
+      case blink::WebInputEvent::Type::kMouseDown:
+        event = std::make_unique<blink::WebMouseEvent>();
+        break;
+      case blink::WebInputEvent::Type::kTouchStart:
+        event = std::make_unique<blink::WebTouchEvent>();
+        break;
+      default:
+        NOTREACHED();
+    }
+    event->SetType(type);
+    helper->input_tracker_.DidGetUserInteraction(*event);
   }
 
   // Simulate a user interaction event and handle it. Reactivates tracking
   // immediately.
   void HandleUserInputAndRestartTracking(SiteEngagementService::Helper* helper,
                                          blink::WebInputEvent::Type type) {
-    helper->input_tracker_.DidGetUserInteraction(type);
+    HandleUserInput(helper, type);
     helper->input_tracker_.TrackingStarted();
   }
 

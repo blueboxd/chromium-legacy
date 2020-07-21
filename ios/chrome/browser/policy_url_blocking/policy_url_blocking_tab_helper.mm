@@ -28,7 +28,7 @@ PolicyUrlBlockingTabHelper::ShouldAllowRequest(
       PolicyBlocklistServiceFactory::GetForBrowserState(
           web_state()->GetBrowserState());
   if (blocklistService->GetURLBlocklistState(gurl) ==
-      policy::URLBlacklist::URLBlacklistState::URL_IN_BLACKLIST) {
+      policy::URLBlocklist::URLBlocklistState::URL_IN_BLOCKLIST) {
     return web::WebStatePolicyDecider::PolicyDecision::CancelAndDisplayError(
         policy_url_blocking_util::CreateBlockedUrlError());
   }

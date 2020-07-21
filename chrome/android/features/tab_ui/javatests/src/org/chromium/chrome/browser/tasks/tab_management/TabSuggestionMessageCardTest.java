@@ -192,6 +192,7 @@ public class TabSuggestionMessageCardTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1085452")
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/baseline_group_tab_suggestions/true" +
             "/baseline_close_tab_suggestions/true/min_time_between_prefetches/0"})

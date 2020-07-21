@@ -52,7 +52,7 @@ const char kExternalDataPathUpdated[] =
 const char kExternalDataPathOverSizeLimit[] =
     "policy/printers_configuration_over_size_limit.json";
 // The name of an External Data Policy in Device Policy.
-const char* const kPolicyName = policy::key::kDeviceNativePrinters;
+const char* const kPolicyName = policy::key::kDevicePrinters;
 
 const int64_t kTestCacheMaxSize = 64;
 

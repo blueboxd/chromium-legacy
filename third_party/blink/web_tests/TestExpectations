@@ -6941,3 +6941,7 @@ crbug.com/1107634 [ Mac10.10 ] virtual/scalefactor200/css3/filters/backdrop-filt
 crbug.com/1107634 [ Mac10.10 ] virtual/text-antialias/selection/select-ligature-vertical-1.html [ Pass Failure ]
 crbug.com/1107634 [ Mac10.10 ] virtual/text-antialias/selection/select-ligature-vertical-2.html [ Pass Failure ]
 crbug.com/1107634 [ Mac10.10 ] virtual/text-antialias/selection/select-ligature-vertical-3.html [ Pass Failure ]
+
+# Sheriff 2020-07-21
+crbug.com/1107923 [ Mac10.15 ] inspector-protocol/debugger/wasm-streaming-url.js [ Pass Failure ]
+

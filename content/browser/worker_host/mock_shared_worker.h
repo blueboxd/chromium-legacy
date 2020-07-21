@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/content_security_policy.mojom-forward.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -96,7 +97,8 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
       mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
       mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
-          browser_interface_broker) override;
+          browser_interface_broker,
+      ukm::SourceId ukm_source_id) override;
 
   struct CreateParams {
     CreateParams();
@@ -107,6 +109,7 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
         content_settings;
     mojo::PendingRemote<blink::mojom::SharedWorkerHost> host;
     mojo::PendingReceiver<blink::mojom::SharedWorker> receiver;
+    ukm::SourceId ukm_source_id;
   };
 
   mojo::Receiver<blink::mojom::SharedWorkerFactory> receiver_;

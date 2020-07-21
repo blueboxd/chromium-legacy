@@ -134,14 +134,13 @@ class FormControlsBrowserTest : public ContentBrowserTest {
   std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
 };
 
+// Flaky: https://crbug.com/1091661.
 #if defined(OS_ANDROID)
-#define DISABLED_ON_ANDROID(name) DISABLED##name
+#define MAYBE_Checkbox DISABLED_CheckBox
 #else
-#define DISABLED_ON_ANDROID(name) name
+#define MAYBE_Checkbox CheckBox
 #endif
-
-// Flaky: https://crbug.com/1091661
-IN_PROC_BROWSER_TEST_F(FormControlsBrowserTest, DISABLED_ON_ANDROID(Checkbox)) {
+IN_PROC_BROWSER_TEST_F(FormControlsBrowserTest, MAYBE_Checkbox) {
   RunFormControlsTest(
       "form_controls_browsertest_checkbox",
       "<input type=checkbox>"
@@ -156,8 +155,13 @@ IN_PROC_BROWSER_TEST_F(FormControlsBrowserTest, DISABLED_ON_ANDROID(Checkbox)) {
       /* screenshot_height */ 40);
 }
 
-// Flaky: https://crbug.com/1091661
-IN_PROC_BROWSER_TEST_F(FormControlsBrowserTest, DISABLED_ON_ANDROID(Radio)) {
+// Flaky: https://crbug.com/1091661.
+#if defined(OS_ANDROID)
+#define MAYBE_Radio DISABLED_Radio
+#else
+#define MAYBE_Radio Radio
+#endif
+IN_PROC_BROWSER_TEST_F(FormControlsBrowserTest, MAYBE_Radio) {
   RunFormControlsTest(
       "form_controls_browsertest_radio",
       "<input type=radio>"

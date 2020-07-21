@@ -6,11 +6,8 @@ variant = "blink"
 
 for_blink = true
 
-_typemap_imports = [
-  "//media/learning/mojo/public/cpp/typemaps.gni",
-  "//skia/public/mojom/typemaps.gni",
-  "//third_party/blink/renderer/platform/mojo/blink_typemaps.gni",
-]
+_typemap_imports =
+    [ "//third_party/blink/renderer/platform/mojo/blink_typemaps.gni" ]
 _typemaps = []
 
 foreach(typemap_import, _typemap_imports) {

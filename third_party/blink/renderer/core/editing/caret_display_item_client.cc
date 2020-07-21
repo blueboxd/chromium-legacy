@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/paint/find_paint_offset_and_visual_rect_needing_update.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_invalidator.h"
@@ -126,14 +125,12 @@ void CaretDisplayItemClient::UpdateStyleAndLayoutIfNeeded(
     const PositionWithAffinity& caret_position) {
   // This method may be called multiple times (e.g. in partial lifecycle
   // updates) before a paint invalidation. We should save previous_layout_block_
-  // and visual_rect_in_previous_layout_block only if they have not been saved
-  // since the last paint invalidation to ensure the caret painted in the
-  // previous paint invalidated block will be invalidated. We don't care about
-  // intermediate changes of LayoutBlock because they are not painted.
-  if (!previous_layout_block_) {
+  // if it has not been saved since the last paint invalidation to ensure the
+  // caret painted in the previous paint invalidated block will be invalidated.
+  // We don't care about intermediate changes of LayoutBlock because they are
+  // not painted.
+  if (!previous_layout_block_)
     previous_layout_block_ = layout_block_;
-    visual_rect_in_previous_layout_block_ = visual_rect_;
-  }
 
   CaretRectAndPainterBlock rect_and_block =
       ComputeCaretRectAndPainterBlock(caret_position);
@@ -142,17 +139,8 @@ void CaretDisplayItemClient::UpdateStyleAndLayoutIfNeeded(
     if (layout_block_)
       layout_block_->SetShouldCheckForPaintInvalidation();
     layout_block_ = new_layout_block;
-    visual_rect_ = IntRect();
-    if (new_layout_block) {
+    if (new_layout_block)
       needs_paint_invalidation_ = true;
-      if (new_layout_block == previous_layout_block_) {
-        // The caret has disappeared and is reappearing in the same block,
-        // since the last paint invalidation. Set visual_rect_ as if the caret
-        // has always been there as paint invalidation doesn't care about the
-        // intermediate changes.
-        visual_rect_ = visual_rect_in_previous_layout_block_;
-      }
-    }
   }
 
   if (!new_layout_block) {
@@ -209,42 +197,20 @@ void CaretDisplayItemClient::InvalidatePaintInCurrentLayoutBlock(
     const PaintInvalidatorContext& context) {
   DCHECK(layout_block_);
 
-  IntRect new_visual_rect;
-#if DCHECK_IS_ON()
-  FindVisualRectNeedingUpdateScope finder(*layout_block_, context, visual_rect_,
-                                          new_visual_rect);
-#endif
-  if (context.NeedsVisualRectUpdate(*layout_block_)) {
-    if (!local_rect_.IsEmpty()) {
-      new_visual_rect =
-          context.MapLocalRectToVisualRect(*layout_block_, local_rect_);
-    }
-  } else {
-    new_visual_rect = visual_rect_;
-  }
-
   if (layout_block_ == previous_layout_block_)
     previous_layout_block_ = nullptr;
 
-  ObjectPaintInvalidatorWithContext object_invalidator(*layout_block_, context);
-  if (!needs_paint_invalidation_ && new_visual_rect == visual_rect_) {
-    // The caret may change paint offset without changing visual rect, and we
-    // need to invalidate the display item client if the block is doing full
-    // paint invalidation.
-    if (layout_block_->ShouldDoFullPaintInvalidation()) {
-      object_invalidator.InvalidateDisplayItemClient(
-          *this, PaintInvalidationReason::kCaret);
-    }
+  needs_paint_invalidation_ |= layout_block_->ShouldDoFullPaintInvalidation();
+  needs_paint_invalidation_ |=
+      context.fragment_data->PaintOffset() != context.old_paint_offset;
+
+  if (!needs_paint_invalidation_)
     return;
-  }
 
   needs_paint_invalidation_ = false;
-
   context.painting_layer->SetNeedsRepaint();
-  object_invalidator.InvalidateDisplayItemClient(
-      *this, PaintInvalidationReason::kCaret);
-
-  visual_rect_ = new_visual_rect;
+  ObjectPaintInvalidatorWithContext(*layout_block_, context)
+      .InvalidateDisplayItemClient(*this, PaintInvalidationReason::kCaret);
 }
 
 void CaretDisplayItemClient::PaintCaret(
@@ -258,7 +224,8 @@ void CaretDisplayItemClient::PaintCaret(
   PhysicalRect drawing_rect = local_rect_;
   drawing_rect.Move(paint_offset);
 
-  DrawingRecorder recorder(context, *this, display_item_type, visual_rect_);
+  DrawingRecorder recorder(context, *this, display_item_type,
+                           EnclosingIntRect(drawing_rect));
   IntRect paint_rect = PixelSnappedIntRect(drawing_rect);
   context.FillRect(paint_rect, color_, DarkModeFilter::ElementRole::kText);
 }

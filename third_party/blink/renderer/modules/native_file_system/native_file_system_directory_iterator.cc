@@ -4,8 +4,9 @@
 
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_iterator.h"
 
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_native_file_system_directory_iterator_entry.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_handle.h"
@@ -17,8 +18,10 @@ namespace blink {
 
 NativeFileSystemDirectoryIterator::NativeFileSystemDirectoryIterator(
     NativeFileSystemDirectoryHandle* directory,
+    Mode mode,
     ExecutionContext* execution_context)
     : ExecutionContextClient(execution_context),
+      mode_(mode),
       directory_(directory),
       receiver_(this, execution_context) {
   directory_->MojoHandle()->GetEntries(receiver_.BindNewPipeAndPassRemote(
@@ -35,10 +38,25 @@ ScriptPromise NativeFileSystemDirectoryIterator::next(
   }
 
   if (!entries_.IsEmpty()) {
-    NativeFileSystemDirectoryIteratorEntry* result =
-        NativeFileSystemDirectoryIteratorEntry::Create();
-    result->setValue(entries_.TakeFirst());
-    return ScriptPromise::Cast(script_state, ToV8(result, script_state));
+    NativeFileSystemHandle* handle = entries_.TakeFirst();
+    ScriptValue result;
+    switch (mode_) {
+      case Mode::kKey:
+        result = V8IteratorResult(script_state, handle->name());
+        break;
+      case Mode::kValue:
+        result = V8IteratorResult(script_state, handle);
+        break;
+      case Mode::kKeyValue:
+        HeapVector<ScriptValue, 2> keyvalue;
+        keyvalue.push_back(ScriptValue(script_state->GetIsolate(),
+                                       ToV8(handle->name(), script_state)));
+        keyvalue.push_back(ScriptValue(script_state->GetIsolate(),
+                                       ToV8(handle, script_state)));
+        result = V8IteratorResult(script_state, keyvalue);
+        break;
+    }
+    return ScriptPromise::Cast(script_state, result);
   }
 
   if (waiting_for_more_entries_) {
@@ -47,10 +65,7 @@ ScriptPromise NativeFileSystemDirectoryIterator::next(
     return pending_next_->Promise();
   }
 
-  NativeFileSystemDirectoryIteratorEntry* result =
-      NativeFileSystemDirectoryIteratorEntry::Create();
-  result->setDone(true);
-  return ScriptPromise::Cast(script_state, ToV8(result, script_state));
+  return ScriptPromise::Cast(script_state, V8IteratorResultDone(script_state));
 }
 
 void NativeFileSystemDirectoryIterator::Trace(Visitor* visitor) const {

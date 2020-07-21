@@ -245,7 +245,7 @@ static const char* FindMimeType(const MimeInfo (&mappings)[num_mappings],
 static base::FilePath::StringType StringToFilePathStringType(
     const base::StringPiece& string_piece) {
 #if defined(OS_WIN)
-  return base::UTF8ToUTF16(string_piece);
+  return base::UTF8ToWide(string_piece);
 #else
   return string_piece.as_string();
 #endif

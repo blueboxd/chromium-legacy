@@ -30,7 +30,7 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/variations/variations_client.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/storage_partition.h"
@@ -93,7 +93,7 @@ class ChromeVariationsClient : public variations::VariationsClient {
   }
 
   std::string GetVariationsHeader() const override {
-    return variations::VariationsHttpHeaderProvider::GetInstance()
+    return variations::VariationsIdsProvider::GetInstance()
         ->GetClientDataHeader(IsSignedIn());
   }
 

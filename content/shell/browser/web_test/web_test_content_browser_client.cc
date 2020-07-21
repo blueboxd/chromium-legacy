@@ -40,6 +40,7 @@
 #include "content/shell/browser/web_test/web_test_client_impl.h"
 #include "content/shell/browser/web_test/web_test_control_host.h"
 #include "content/shell/browser/web_test/web_test_permission_manager.h"
+#include "content/shell/browser/web_test/web_test_storage_access_manager.h"
 #include "content/shell/browser/web_test/web_test_tts_platform.h"
 #include "content/shell/common/web_test/web_test_bluetooth_fake_adapter_setter.mojom.h"
 #include "content/shell/common/web_test/web_test_switches.h"
@@ -225,6 +226,12 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
           base::Unretained(this)),
       ui_task_runner);
 
+  registry->AddInterface(
+      base::BindRepeating(
+          &WebTestContentBrowserClient::BindStorageAccessAutomation,
+          base::Unretained(this)),
+      ui_task_runner);
+
   associated_registry->AddInterface(
       base::BindRepeating(&WebTestContentBrowserClient::BindWebTestControlHost,
                           base::Unretained(this)));
@@ -237,6 +244,13 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
 void WebTestContentBrowserClient::BindPermissionAutomation(
     mojo::PendingReceiver<blink::test::mojom::PermissionAutomation> receiver) {
   GetWebTestBrowserContext()->GetWebTestPermissionManager()->Bind(
+      std::move(receiver));
+}
+
+void WebTestContentBrowserClient::BindStorageAccessAutomation(
+    mojo::PendingReceiver<blink::test::mojom::StorageAccessAutomation>
+        receiver) {
+  GetWebTestBrowserContext()->GetWebTestStorageAccessManager()->Bind(
       std::move(receiver));
 }
 

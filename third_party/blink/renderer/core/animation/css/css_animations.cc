@@ -1795,6 +1795,7 @@ bool CSSAnimations::IsAnimationAffectingProperty(const CSSProperty& property) {
     case CSSPropertyID::kWebkitWritingMode:
     case CSSPropertyID::kWillChange:
     case CSSPropertyID::kWritingMode:
+    case CSSPropertyID::kTextCombineUpright:
       return true;
     default:
       return false;

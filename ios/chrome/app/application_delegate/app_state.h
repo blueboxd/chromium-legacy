@@ -54,6 +54,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // application has been woken up by the system for background work.
 @property(nonatomic, readonly) BOOL userInteracted;
 
+// YES if the sign-in upgrade promo has been presented to the user, once.
+@property(nonatomic) BOOL signinUpgradePromoPresentedOnce;
+
 // When multiwindow is unavailable, this is the only scene state. It is created
 // by the app delegate.
 @property(nonatomic, strong) SceneState* mainSceneState;

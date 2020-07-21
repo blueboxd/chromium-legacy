@@ -4,7 +4,6 @@
   "Name": "",
   "WiFi": {
     "Security": "WPA-EAP",
-    "FTEnabled": true,
     "EAP": {
       "ClientCertType": "PKCS11Id",
       "ClientCertPKCS11Id": "1:123456abcdef",

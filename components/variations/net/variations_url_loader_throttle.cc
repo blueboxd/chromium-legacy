@@ -7,7 +7,7 @@
 #include "components/google/core/common/google_util.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_client.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 

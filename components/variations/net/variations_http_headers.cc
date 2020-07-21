@@ -16,7 +16,7 @@
 #include "base/strings/string_util.h"
 #include "components/google/core/common/google_util.h"
 #include "components/variations/net/omnibox_http_headers.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "net/base/isolation_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
@@ -235,7 +235,7 @@ class VariationsHeaderHelper {
 
  private:
   static std::string CreateVariationsHeader(SignedIn signed_in) {
-    return VariationsHttpHeaderProvider::GetInstance()->GetClientDataHeader(
+    return VariationsIdsProvider::GetInstance()->GetClientDataHeader(
         signed_in == SignedIn::kYes);
   }
 

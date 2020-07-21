@@ -59,7 +59,7 @@ class PopupTracker : public content::WebContentsObserver,
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
-  void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
+  void DidGetUserInteraction(const blink::WebInputEvent& event) override;
 
   // subresource_filter::SubresourceFilterObserver:
   void OnSafeBrowsingChecksComplete(

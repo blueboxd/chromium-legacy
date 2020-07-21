@@ -3919,13 +3919,13 @@ TEST_F(DiskCacheBackendTest, FileSharing) {
 #if defined(OS_WIN)
   DWORD sharing = FILE_SHARE_READ | FILE_SHARE_WRITE;
   DWORD access = GENERIC_READ | GENERIC_WRITE;
-  base::win::ScopedHandle file2(CreateFile(base::as_wcstr(name.value()), access,
+  base::win::ScopedHandle file2(CreateFile(name.value().c_str(), access,
                                            sharing, nullptr, OPEN_EXISTING, 0,
                                            nullptr));
   EXPECT_FALSE(file2.IsValid());
 
   sharing |= FILE_SHARE_DELETE;
-  file2.Set(CreateFile(base::as_wcstr(name.value()), access, sharing, nullptr,
+  file2.Set(CreateFile(name.value().c_str(), access, sharing, nullptr,
                        OPEN_EXISTING, 0, nullptr));
   EXPECT_TRUE(file2.IsValid());
 #endif

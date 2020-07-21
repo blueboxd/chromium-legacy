@@ -1458,7 +1458,6 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
       params->main_frame_widget_routing_id, compositor_deps,
       render_view->widgets_never_composited());
-  render_widget->set_delegate(render_view);
 
   // Non-owning pointer that is self-referencing and destroyed by calling
   // Close(). The RenderViewImpl has a RenderWidget already, but not a
@@ -1469,7 +1468,8 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
       std::move(params->widget));
 
   render_widget->InitForMainFrame(std::move(show_callback), web_frame_widget,
-                                  params->visual_properties.screen_info);
+                                  params->visual_properties.screen_info,
+                                  params->type, *render_view);
 
   // The WebFrame created here was already attached to the Page as its main
   // frame, and the WebFrameWidget has been initialized, so we can call
@@ -1620,7 +1620,6 @@ void RenderFrameImpl::CreateFrame(
     std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
         widget_params->routing_id, compositor_deps,
         render_view->widgets_never_composited());
-    render_widget->set_delegate(render_view);
 
     // Non-owning pointer that is self-referencing and destroyed by calling
     // Close(). The RenderViewImpl has a RenderWidget already, but not a
@@ -1634,7 +1633,8 @@ void RenderFrameImpl::CreateFrame(
 
     render_widget->InitForMainFrame(
         RenderWidget::ShowCallback(), web_frame_widget,
-        widget_params->visual_properties.screen_info);
+        widget_params->visual_properties.screen_info,
+        mojom::ViewWidgetType::kTopLevel, *render_view);
     // The RenderWidget should start with valid VisualProperties, including a
     // non-zero size. While RenderWidget would not normally receive IPCs and
     // thus would not get VisualProperty updates while the frame is provisional,

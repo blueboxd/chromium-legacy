@@ -853,12 +853,17 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
 SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // |context_provider_| and clients want either the context to be lost or made
-  // current on destruction.
-  if (context_state_ && MakeCurrent(false /* need_fbo0 */)) {
-    // This ensures any outstanding callbacks for promise images are performed.
-    gr_context()->flushAndSubmit();
-    release_current_last_.emplace(gl_surface_, context_state_);
+  if (context_state_) {
+    context_state_->RemoveContextLostObserver(this);
+
+    // |context_provider_| and clients want either the context to be lost or
+    // made current on destruction.
+    if (MakeCurrent(false /* need_fbo0 */)) {
+      // This ensures any outstanding callbacks for promise images are
+      // performed.
+      gr_context()->flushAndSubmit();
+      release_current_last_.emplace(gl_surface_, context_state_);
+    }
   }
 
   if (copier_) {
@@ -1478,6 +1483,9 @@ bool SkiaOutputSurfaceImplOnGpu::Initialize() {
                             !features::IsUsingSkiaForGLReadback();
   max_resource_cache_bytes_ =
       context_state_->gr_context()->getResourceCacheLimit();
+  if (context_state_)
+    context_state_->AddContextLostObserver(this);
+
   return true;
 }
 
@@ -1825,6 +1833,10 @@ SkiaOutputSurfaceImplOnGpu::DidSwapBufferCompleteCallback
 SkiaOutputSurfaceImplOnGpu::GetDidSwapBuffersCompleteCallback() {
   return base::BindRepeating(
       &SkiaOutputSurfaceImplOnGpu::DidSwapBuffersCompleteInternal, weak_ptr_);
+}
+
+void SkiaOutputSurfaceImplOnGpu::OnContextLost() {
+  MarkContextLost(ContextLostReason::CONTEXT_LOST_UNKNOWN);
 }
 
 void SkiaOutputSurfaceImplOnGpu::MarkContextLost(ContextLostReason reason) {

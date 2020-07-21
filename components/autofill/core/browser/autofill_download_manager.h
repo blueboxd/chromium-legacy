@@ -22,7 +22,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/signatures.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "net/base/backoff_entry.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"

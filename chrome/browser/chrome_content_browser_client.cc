@@ -259,7 +259,7 @@
 #include "components/ukm/app_source_url_recorder.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/variations/variations_associated_data.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
 #include "components/viz/common/features.h"
@@ -994,14 +994,14 @@ void LaunchURL(const GURL& url,
     return;
 
   bool is_whitelisted = false;
-  PolicyBlacklistService* service =
-      PolicyBlacklistFactory::GetForBrowserContext(
+  PolicyBlocklistService* service =
+      PolicyBlocklistFactory::GetForBrowserContext(
           web_contents->GetBrowserContext());
   if (ShouldHonorPolicies() && service) {
-    const policy::URLBlacklist::URLBlacklistState url_state =
-        service->GetURLBlacklistState(url);
+    const policy::URLBlocklist::URLBlocklistState url_state =
+        service->GetURLBlocklistState(url);
     is_whitelisted =
-        url_state == policy::URLBlacklist::URLBlacklistState::URL_IN_WHITELIST;
+        url_state == policy::URLBlocklist::URLBlocklistState::URL_IN_ALLOWLIST;
   }
 
   // If the URL is in whitelist, we launch it without asking the user and
@@ -4027,7 +4027,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 
   MaybeAddThrottle(TabUnderNavigationThrottle::MaybeCreate(handle), &throttles);
 
-  throttles.push_back(std::make_unique<PolicyBlacklistNavigationThrottle>(
+  throttles.push_back(std::make_unique<PolicyBlocklistNavigationThrottle>(
       handle, handle->GetWebContents()->GetBrowserContext()));
 
   // Before setting up SSL error detection, configure SSLErrorHandler to invoke
@@ -5042,6 +5042,12 @@ bool ChromeContentBrowserClient::HandleWebUI(
     return true;  // Return true to update the displayed URL.
   }
 
+  // Replace deprecated cookie settings URL with the current version.
+  if (*url == GURL(chrome::kChromeUICookieSettingsDeprecatedURL)) {
+    *url = GURL(chrome::kChromeUICookieSettingsURL);
+    return true;
+  }
+
 #if defined(OS_WIN)
   // TODO(crbug.com/1003960): Remove when issue is resolved.
   if (url->SchemeIs(content::kChromeUIScheme) &&
@@ -5510,12 +5516,12 @@ bool ChromeContentBrowserClient::IsBuiltinComponent(
 bool ChromeContentBrowserClient::ShouldBlockRendererDebugURL(
     const GURL& url,
     content::BrowserContext* context) {
-  PolicyBlacklistService* service =
-      PolicyBlacklistFactory::GetForBrowserContext(context);
+  PolicyBlocklistService* service =
+      PolicyBlocklistFactory::GetForBrowserContext(context);
 
-  using URLBlacklistState = policy::URLBlacklist::URLBlacklistState;
-  URLBlacklistState blacklist_state = service->GetURLBlacklistState(url);
-  return blacklist_state == URLBlacklistState::URL_IN_BLACKLIST;
+  using URLBlocklistState = policy::URLBlocklist::URLBlocklistState;
+  URLBlocklistState blocklist_state = service->GetURLBlocklistState(url);
+  return blocklist_state == URLBlocklistState::URL_IN_BLOCKLIST;
 }
 
 ui::AXMode ChromeContentBrowserClient::GetAXModeForBrowserContext(

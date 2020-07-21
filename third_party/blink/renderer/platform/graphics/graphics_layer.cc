@@ -111,11 +111,6 @@ GraphicsLayer::~GraphicsLayer() {
   SetElementId(CompositorElementId());
 }
 
-IntRect GraphicsLayer::VisualRect() const {
-  DCHECK(layer_state_);
-  return IntRect(layer_state_->offset, IntSize(Size()));
-}
-
 void GraphicsLayer::AppendAdditionalInfoAsJSON(LayerTreeFlags flags,
                                                const cc::Layer& layer,
                                                JSONObject& json) const {

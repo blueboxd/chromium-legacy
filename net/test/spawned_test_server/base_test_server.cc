@@ -15,6 +15,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
@@ -419,7 +420,8 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
 
   arguments->SetString("host", host_port_pair_.host());
   arguments->SetInteger("port", host_port_pair_.port());
-  arguments->SetString("data-dir", document_root_.value());
+  arguments->SetStringKey("data-dir",
+                          base::AsCrossPlatformPiece(document_root_.value()));
 
   if (VLOG_IS_ON(1) || log_to_console_)
     arguments->Set("log-to-console", std::make_unique<base::Value>());
@@ -452,7 +454,9 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
                    << " doesn't exist. Can't launch https server.";
         return false;
       }
-      arguments->SetString("cert-and-key-file", certificate_path.value());
+      arguments->SetStringKey(
+          "cert-and-key-file",
+          base::AsCrossPlatformPiece(certificate_path.value()));
     }
 
     // Check the client certificate related arguments.
@@ -468,7 +472,7 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
                    << " doesn't exist. Can't launch https server.";
         return false;
       }
-      ssl_client_certs->AppendString(it->value());
+      ssl_client_certs->Append(base::AsCrossPlatformPiece(it->value()));
     }
 
     if (ssl_client_certs->GetSize())

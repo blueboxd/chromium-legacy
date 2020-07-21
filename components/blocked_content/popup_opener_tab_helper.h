@@ -66,7 +66,7 @@ class PopupOpenerTabHelper
   void OnVisibilityChanged(content::Visibility visibility) override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
+  void DidGetUserInteraction(const blink::WebInputEvent& event) override;
 
   // Logs user popup content settings if the last committed URL is valid and
   // we have not recorded the settings for the opener id of the helper's

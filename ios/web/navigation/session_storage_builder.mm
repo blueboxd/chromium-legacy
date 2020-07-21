@@ -11,6 +11,7 @@
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_storage_builder.h"
 #include "ios/web/navigation/navigation_manager_impl.h"
+#import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
 #import "ios/web/public/web_client.h"
@@ -56,9 +57,16 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
     }
     [item_storages addObject:item_storage_builder.BuildStorage(item)];
   }
+
+  int loc = 0;
+  int len = 0;
+  session_storage.lastCommittedItemIndex = wk_navigation_util::GetSafeItemRange(
+      session_storage.lastCommittedItemIndex, item_storages.count, &loc, &len);
+
   DCHECK_LT(session_storage.lastCommittedItemIndex,
-            static_cast<NSInteger>(item_storages.count));
-  session_storage.itemStorages = item_storages;
+            static_cast<NSInteger>(len));
+  session_storage.itemStorages =
+      [item_storages subarrayWithRange:NSMakeRange(loc, len)];
   SessionCertificatePolicyCacheStorageBuilder cert_builder;
   session_storage.certPolicyCacheStorage = cert_builder.BuildStorage(
       &web_state->GetSessionCertificatePolicyCacheImpl());

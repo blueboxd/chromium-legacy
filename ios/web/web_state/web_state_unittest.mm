@@ -217,6 +217,39 @@ TEST_F(WebStateTest, Snapshot) {
   });
 }
 
+// Tests that the create PDF method retuns an PDF of a rendered html page of the
+// appropriate size.
+TEST_F(WebStateTest, CreateFullPagePdf) {
+  CGFloat kSaveAreaTopInset =
+      UIApplication.sharedApplication.keyWindow.safeAreaInsets.top;
+
+  ASSERT_TRUE(LoadHtml("<html><div style='background-color:#FF0000; width:50%; "
+                       "height:100%;'></div></html>"));
+  [[[UIApplication sharedApplication] keyWindow]
+      addSubview:web_state()->GetView()];
+  // The subview is added but not immediately painted, so a small delay is
+  // necessary.
+  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.2));
+
+  __block NSData* callback_data = nil;
+  web_state()->CreateFullPagePdf(base::BindOnce(^(NSData* pdf_document_data) {
+    callback_data = [pdf_document_data copy];
+  }));
+
+  ASSERT_TRUE(callback_data);
+
+  CGPDFDocumentRef pdf = CGPDFDocumentCreateWithProvider(
+      CGDataProviderCreateWithCFData((CFDataRef)callback_data));
+  CGSize pdf_size =
+      CGPDFPageGetBoxRect(CGPDFDocumentGetPage(pdf, 1), kCGPDFMediaBox).size;
+
+  EXPECT_EQ(pdf_size.height,
+            UIScreen.mainScreen.bounds.size.height - kSaveAreaTopInset);
+  EXPECT_EQ(pdf_size.width, [[UIScreen mainScreen] bounds].size.width);
+
+  CGPDFDocumentRelease(pdf);
+}
+
 // Tests that message sent from main frame triggers the ScriptCommandCallback
 // with |is_main_frame| = true.
 TEST_F(WebStateTest, MessageFromMainFrame) {

@@ -317,6 +317,28 @@ interface. At present, this set of objects is restricted to Element and
 derived classes. Refer to the web-animation section under animation types for a
 description of Element.animate.
 
+The animatable interface also includes a getAniamtions method, which returns all
+active animations associated with the element in composite ordering. The rules
+for composite ordering are quite involved and presently span three
+specifications:
+
+* [web animations -- the effect stack](
+https://drafts.csswg.org/web-animations/#the-effect-stack
+)
+* [css animations -- animation composite order](
+https://drafts.csswg.org/css-animations-2/#animation-composite-order
+)
+* [css transitions -- animation composite order](
+https://drafts.csswg.org/css-transitions-2/#animation-composite-order
+)
+
+Style updates for CSS transitions, are applied before updates for CSS
+animations, which in turn are applied before generic web animations. Each
+affect, when applied, can replace or combine with the previous effects in the
+effect stack depending on the composite mode (refer to discussion of composite
+modes in the KeyframeEffect section). Additional rules apply for sorting CSS
+transitions and CSS animations.
+
 [Animatable]: https://drafts.csswg.org/web-animations/#the-animatable-interface-mixin
 
 ### Animation
@@ -850,7 +872,274 @@ the current value of the effect stack up to an including the animation.
 [Animation::RemoveReplacedAnimation]: https://cs.chromium.org/search/?q=function:blink::Animation::RemoveReplacedAnimation$
 [microtask checkpoint]: https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide
 
-TODO: Summarize remaining interfaces that comprise the web-animations-api.
+
+### AnimationEffect
+
+The [AnimationEffect interface][] contains methods for querying and updating
+the timing of an animation. Refer to the discussion on 'timing model' in the
+section titled 'web animation model' for a high level overview of animation
+timing.
+
+* **[getTiming method][]**: returns an [EffectTiming][] object that contains a
+dictionary of optional specified timing parameters. This object has methods of
+the form: hasParam(), param(), and setPararm() in C++. In JavaScript, each of
+the parameters has a getter/setter pair. If the effect is associated with a CSS
+animation, the style is flushed prior to fetching the timing since timimg
+parameters may be set via CSS properties. The properties are as follows:
+
+    * **delay**: The start delay of the animation and equivalent to the CSS
+      animation property animation-delay. An animation with a negative start
+      delay will appear to have started ahead of when it was applied. The delay
+      is expressed in milliseconds.
+    * **direction**: The direction for playing the animation, which may be one
+      of the following: 'forward', 'reverse', 'alternate' or
+      'reverse-alternate'. The parameter is equivalent to the CSS animation
+      property animation-direction.
+    * **duration**: The duration for a single iteration of the animation,
+      which may be expressed as a double or a string. If string valued, it
+      contains the time unit as part of the value. Otherwise the value is a time
+      expressed in milliseconds. The corresponding CSS parameter is
+      animation-duration.
+    * **easing**: The default timing function of the animation. This timing
+      function is used for keyframes if not overridden within the keyframe
+      properties. Refer to the sections titled 'CSS animation', 'web
+      animation model', and 'keyframeEffect' for more details on keyframes.
+      This parameter deviates from the normal naming convention when mapping to
+      the CSS property name. The name of the equivalent CSS property is
+      animation-timing-function.
+    * **endDelay**: The end delay of the animation. There is no CSS property
+      counterpart for this parameter. If set, the end delay specifies the
+      number of milliseconds between the active phase and the end time (sounds
+      ominous).
+    * **fill**: The fill mode of an animation, which defines whether the
+      animation persists once finished. The fill mode can be one of the
+      following: 'none', 'forwards', 'backwards', 'both', or 'auto'.
+      An animation with fill 'forwards' will persist after finishing if playing
+      in the forward direction. Conversely, an animation with fill 'backwards'
+      will persist after finishing if playing in the reverse direction. An
+      animation with fill 'both' will persist when playing in either direction.
+      The persistence of a fill mode animation may be overruled if the animation
+      is marked as replaceable as outlined in the section on the Animation API.
+      The corresponding CSS property is animation-fill-mode.
+    * **iterationStart**: If set, this parameter indicates where the animation
+      starts within the iteration cycle. The animation will still complete the
+      number of iterations specified in the 'iterations' parameter, but may
+      start and end part way through an iteration cycle. There is no CSS
+      property associated with this parameter. Unlike start delay, this
+      parameter does not affect the runtime of the animation.
+    * **iterations**: Specified the number of iterations to complete in the
+      animation. The corresponding CSS property is animation-iteration-count.
+
+* **[getComputedTiming method][]**: returns a [ComputedEffectTiming][] object
+that contains a dictionary of computed timing parameters. As
+[ComputedEffectTiming][] extends [EffectTiming][], this dictionary contains
+ a superset of properties; however, values may differ from [EffectTiming][] due
+ to being evaluated. Default values for missing properties are resolved, the
+ duration is expressed solely in milliseconds, and a fill mode of 'auto' is
+ resolved to fill 'none'. All values needed for the 'timing model' portion of
+ the web animation model are included. The follow are the set of additional
+ properties:
+
+    * **endTime**: In the absence of a start or end delay, the endTime would be
+      the total runtime of the animation (iteration duration * iteration count).
+      A positive value for start or end delay extends the runtime of an
+      animation; however, only the end delay factors into the calculation of
+      endTime. The value for endTime is calculated as the duration of the
+      active phase plus the end delay.
+    * **activeDuration**: The active duration of the animation is simply the
+      product of the iteration duration and iteration count.
+    * **localTime**: The value for localTime is Animation.currentTime if
+      the effect is associated with an animation, otherwise unresolved.
+    * **progress**: Specifies the [transformed progress][]. Steps in calculating
+      the progress of an animation are also outlined in the section titled
+      'web animation model'.
+    * **currentIteration**: Indicates the current (zero-based) index of the
+      animation.
+
+* **[updateTiming method][]**: used to update one or more specified timing
+properties. Any property updated in this manner for a CSS animation is marked
+so that subsequent updates via CSS are ignored. In other words, explicit use
+of the web-animation API takes precedence over CSS.
+
+   ```javascript
+   target.style.animation = 'spinner 1s infinite linear';
+   const animation = target.getAnimations()[0];
+   assert_equals(animation.effect.getTiming().duration, 1000);
+
+   // Update via CSS property. Style changed properly flushed when fetching
+   // timing properties.
+   target.style.animationDuration = '3s';
+   assert_equals(animation.effect.getTiming().duration, 3000);
+
+   // Update via web animation API.
+   animation.effect.updateTiming( {duration: 2000 });
+   assert_equals(animation.effect.getTiming().duration, 2000);
+
+   // Attempted update via CSS property is now ignored.
+   target.style.animationDuration = '3s';
+   assert_equals(animation.effect.getTiming().duration, 2000);
+   ```
+
+[AnimationEffect interface]: https://cs.chromium.org/search/?q=file:core/animation/animation_effect.idl
+[getTiming method]: https://cs.chromium.org/search/?q=function:blink::AnimationEffect::getTiming$
+[getComputedTiming method]: https://cs.chromium.org/search/?q=function:blink::AnimationEffect::getComputedTiming$
+[updateTiming method]: https://cs.chromium.org/search/?q=function:blink::AnimationEffect::updateTiming$
+[EffectTiming]: https://cs.chromium.org/search/?q=class:blink::EffectTiming$
+[ComputedEffectTiming]: https://cs.chromium.org/search/?q=class:blink::ComputedEffectTiming$
+[transformed progress]: https://drafts.csswg.org/web-animations/#calculating-the-transformed-progress
+
+
+### KeyframeEffect
+
+The [KeyframeEffect interface][] extends the [AnimationEffect interface][]
+including attributes and methods specific to keyframes. A brief overview of
+keyframes is presented in the section on animation types and in the example for
+the web animation model.
+
+* **[KeyframeEffect constructor][]**: creates a new [KeyframeEffect object][].
+The constructor takes an element, set of keyframes, and an optional set
+[KeyframeEffectOptions][] or a numeric value (duration). All options available
+for AnimationEffects may also be used for KeyframeEffects. In addition,
+[KeyframeEffectOptions][] contains 'composite' and 'pseudoElement' attributes
+that are described below.
+
+* **[target attribute][]**: gets or sets the target element for the animation
+effect. If animating a CSS transition or CSS animation, transition/animation
+events after a target change are directed back to the original target element.
+
+* **[pseudoElement attribute][]**: gets or sets the pseudo-element specifier for
+the target element. For example, an animation triggered by a "div::hover" CSS
+rule will have the parent element as the target element and "::hover" as the
+pseudoElement specification. The pseudoElement attribute is empty if not
+animating a pseudoElement.
+
+* **[composite attribute][]**: gets or sets the composite mode for the animation
+effect. The composite mode is not to be confused with compositing (accelerated
+rendering off of the main-thread). The composite mode may be one of the
+following: 'replace', 'add', 'accumulate', or 'auto'. The default mode is
+'replace', where the effect replaces any underlying property value. The 'add'
+composite mode combines the effect with the underlying value. For list valued
+properties such as transforms, 'add' appends the effect to the list. For
+additive properties such as width, the output is the sum of the effect with the
+underlying value. The 'accumulate' option also combines the effect with the
+underlying value. In the case of a list valued property such transform, the
+combination is on a per transform basis, combining scales, translations,
+rotations etc. For additive properties such as translate and rotate, the result
+is the sum of the effect and underlying value. For multiplicative properties
+such as scale, the output is the addition of deltas. A scale(2) operation is a
+100% size increase over the base. So 'accumulating' scale(3) on top of scale(2)
+= 200% increase + 100% increase = 300% increase = scale(4).
+
+* **[getKeyframes method][]**: retrieves the list of kefyrames. Internally,
+Blink maintains two styles of keyframes: 1) [TransitionKeyframes][] (used
+solely for CSS transitions), and 2) [StringKeyframes][]. Values stored in
+transition keyframes are fairly low-level, being tightly coupled with Blinks
+implementation of the interpolation stack. Conversely, string keyframes can
+hold any parse-able value, and thus can represent the richness of expressions
+available to @keyframes rules. Each KeyframeEffect is associated with a
+[KeyframeEffectModel][] that is templated based on the type of keyframe stored.
+Keyframes rules for CSS animations cannot be precisely represented in the
+dictionary form returned by the getkeyframes call. Various substitutes need to
+be made such as resolving variable references, shorthand property values, and
+filling in missing keyframe values. These substitutions cannot be made at parse
+time when creating the animation since they depend on the style cascade.
+Instead, the resolution is done on demand when getKeyframes is called. CSS
+animations use a specialized keyframe model ([CssKeyframeEffectModel][]) which
+overrides [getComputedKeyframes][] to perform the necessary resolution.
+
+* **[setKeyframes method][]**: replaces the keyframes associated with the
+effect. The effect is updated to use a StringKefyrameModel (i.e.
+KeyframeEffectModel<StringKeyframe>) regardless of the original format for the
+keyframes. Note that CSS transitions can be updated to animate properties
+other than the one specified in CssTransition.transitionProperty. In the event
+of transition retargeting, the transition's current time is used for computing
+the current progress even if no longer transitioning the property.
+
+[KeyframeEffect interface]: https://cs.chromium.org/search/?q=file:core/animation/keyframe_effect.idl
+[KeyframeEffect object]: https://cs.chromium.org/search/?q=class:blink::KeyframeEffect$
+[KeyframeEffect constructor]: https://cs.chromium.org/search/?q=function:blink::KeyframeEffect::Create$
+[target attribute]: https://cs.chromium.org/search/?q=function:blink::KeyframeEffect::(setT|t)arget$
+[pseudoElement attribute]: https://cs.chromium.org/search/?q=function:blink::KeyframeEffect::(setP|p)seudoElement$
+[composite attribute]: https://cs.chromium.org/search/?q=function:blink::KeyframeEffect::(setC|c)omposite$
+[getKefyrames method]: https://cs.chromium.org/search/?q=function:blink::KeyframeEffect::getKeyframes$
+[setKefyrames method]: https://cs.chromium.org/search/?q=function:blink::KeyframeEffect::setKeyframes$
+[KeyframeEffectOptions]: https://drafts.csswg.org/web-animations/#the-keyframeeffectoptions-dictionary
+[TransitionKeyframes]: https://cs.chromium.org/search/?q=class:blink::TransitionKeyframe$
+[StringKeyframes]: https://cs.chromium.org/search/?q=class:blink::StringKeyframe$
+[KeyframeEffectModel]: https://cs.chromium.org/search/?q=class:blink::KeyframeEffectModel$
+[CssKeyframeEffectModel]: https://cs.chromium.org/search/?q=class:blink::CssKeyframeEffectModel$
+[getComputedKeyframes]: https://cs.chromium.org/search/?q=function:blink::(CSS|)KeyframeEffectModel(Base|)::getComputedKeyframes$
+
+## AnimationTimeline / DocumentTimeline
+
+The [AnimationTimeline interface][] provides access to the current time and
+phase of a timeline. A timeline provides a real (DocumentTimeline) or abstract
+(ScrollTimeline) notion of time and is used to synchronize timing updates to
+animations.
+
+The [DocumentTimeline interface][] extends the [AnimationTimeline interface][]
+to add an originTime option for its constructor. The originTime is the time
+offset in milliseconds relative to the time origin (zero time) and may be used
+to synchronize animations across multiple document timelines.
+
+In addition to supporting the JavaScript interfaces the
+[AnimationTimeline class][] has a number of other responsibilities. These
+include: 1) maintaining a set of attached animations, 2) keeping
+track of which animations require an update during the next cycle, 3)
+flagging and removing replaced animations, and 4) retrieving a list of active
+animations in support of getAnimations calls.
+
+* **[currentTime attribute](
+https://cs.chromium.org/search/?q=function:blink::AnimationTimeline::currentTime$)**:
+gets the current time for the timeline or null if unresolved. The current time
+may be relative to a time origin in the case of a monotonically increasing
+timeline or proportional to the scroll position in the case of a non-monotonic
+timeline. The value of currentTime is updated each animation frame. Within the
+context of script execution, however, the value returned for currentTime must
+remain fixed. This restriction ensures consistent behavior if multiple calls to
+fetch the currentTime are performed within a script.
+
+* **[phase attribute](
+https://cs.chromium.org/search/?q=function:blink::AnimationTimeline::phase$
+)**: gets the phase of a timeline. A timeline that is not associated with the
+active document is in the 'inactive' phase. A DocumentTimeline has an additional
+constraint that the time origin needs to be initialized for the timeline to be
+active. A timeline in the 'inactive' phase has an unresolved value for
+currentTime.
+
+[AnimationTimeline interface]: https://drafts.csswg.org/web-animations/#the-animationtimeline-interface
+[DocumentTimeline interface]: hhttps://drafts.csswg.org/web-animations/#the-documenttimeline-interface
+[AnimationTimeline class]: https://cs.chromium.org/search/?q=class:blink::AnimationTimeline$
+
+TODO: Document ScrollTimeline
+
+
+## Document extension
+
+Each document has an associated DocumentTimeline, which is the default document
+timeline that will be used if an element is started via element.animate or
+CSS rules. An alternate timeline may be used by calling the Animation
+constructor rather than Element.animate to create the animation.
+
+* **[timeline](
+https://cs.chromium.org/search/?q=function:blink::Document::Timeline$)**: the
+default document timeline.
+
+
+## DocumentOrShadowRoot extension
+
+Documents and ShadowRoots support an API call to retrieve all animations
+associated with the document or shadow root.
+
+* **[getAnimations](
+https://cs.chromium.org/search/?q=function:blink::DocumentOrShadowRoot::getAnimations$)**: retrieves the list of all active animations associated with the document
+in composite ordering. See Animatable.getAnimations for a brief overview of
+composite ordering. DocumentOrShadowRoot::getAnimations calls
+[DocumentAnimations::getAnimations][], which walks the timelines associated with
+the document and extracts the active ones.
+
+[DocumentAnimations::getAnimations]: https://cs.chromium.org/search/?q=function:blink::DocumentAnimations::getAnimations$
+
 
 ## Integration with Chromium
 

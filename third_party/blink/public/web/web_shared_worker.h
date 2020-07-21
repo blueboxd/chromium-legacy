@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "base/unguessable_token.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/content_security_policy.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
@@ -85,7 +86,8 @@ class BLINK_EXPORT WebSharedWorker {
       std::unique_ptr<blink::WorkerMainScriptLoadParameters>
           worker_main_script_load_params,
       CrossVariantMojoRemote<mojom::SharedWorkerHostInterfaceBase>,
-      WebSharedWorkerClient*);
+      WebSharedWorkerClient*,
+      ukm::SourceId ukm_source_id);
 
   // Sends a connect event to the SharedWorker context.
   virtual void Connect(int connection_request_id,

@@ -30,6 +30,7 @@
 #include "components/drive/drive_api_util.h"
 #include "components/drive/file_system_core_util.h"
 #include "google_apis/drive/drive_api_parser.h"
+#include "google_apis/drive/drive_common_callbacks.h"
 #include "google_apis/drive/test_util.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
@@ -38,14 +39,15 @@ using google_apis::AboutResource;
 using google_apis::AboutResourceCallback;
 using google_apis::AuthStatusCallback;
 using google_apis::CancelCallback;
+using google_apis::CancelCallbackOnce;
 using google_apis::ChangeList;
 using google_apis::ChangeListCallback;
 using google_apis::ChangeListOnceCallback;
 using google_apis::ChangeResource;
+using google_apis::DownloadActionCallback;
 using google_apis::DRIVE_FILE_ERROR;
 using google_apis::DRIVE_NO_CONNECTION;
 using google_apis::DRIVE_OTHER_ERROR;
-using google_apis::DownloadActionCallback;
 using google_apis::DriveApiErrorCode;
 using google_apis::EntryActionCallback;
 using google_apis::FileList;
@@ -56,8 +58,8 @@ using google_apis::GetContentCallback;
 using google_apis::HTTP_BAD_REQUEST;
 using google_apis::HTTP_CREATED;
 using google_apis::HTTP_FORBIDDEN;
-using google_apis::HTTP_NOT_FOUND;
 using google_apis::HTTP_NO_CONTENT;
+using google_apis::HTTP_NOT_FOUND;
 using google_apis::HTTP_PRECONDITION;
 using google_apis::HTTP_RESUME_INCOMPLETE;
 using google_apis::HTTP_SUCCESS;
@@ -759,7 +761,7 @@ CancelCallback FakeDriveService::TrashResource(
   return CancelCallback();
 }
 
-CancelCallback FakeDriveService::DownloadFile(
+CancelCallbackOnce FakeDriveService::DownloadFile(
     const base::FilePath& local_cache_path,
     const std::string& resource_id,
     const DownloadActionCallback& download_action_callback,
@@ -773,7 +775,7 @@ CancelCallback FakeDriveService::DownloadFile(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(download_action_callback, DRIVE_NO_CONNECTION,
                                   base::FilePath()));
-    return CancelCallback();
+    return CancelCallbackOnce();
   }
 
   EntryInfo* entry = FindEntryByResourceId(resource_id);
@@ -781,7 +783,7 @@ CancelCallback FakeDriveService::DownloadFile(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(download_action_callback, HTTP_NOT_FOUND,
                                   base::FilePath()));
-    return CancelCallback();
+    return CancelCallbackOnce();
   }
 
   const FileResource* file = entry->change_resource.file();
@@ -806,7 +808,7 @@ CancelCallback FakeDriveService::DownloadFile(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(download_action_callback, DRIVE_FILE_ERROR,
                                   base::FilePath()));
-    return CancelCallback();
+    return CancelCallbackOnce();
   }
 
   if (!progress_callback.is_null()) {
@@ -821,7 +823,7 @@ CancelCallback FakeDriveService::DownloadFile(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(download_action_callback, HTTP_SUCCESS, local_cache_path));
-  return CancelCallback();
+  return google_apis::CancelCallbackOnce();
 }
 
 CancelCallback FakeDriveService::CopyResource(

@@ -29,6 +29,7 @@ class SlideOutController;
 
 class MediaNotificationAudioDeviceSelectorView;
 class MediaNotificationContainerObserver;
+class MediaNotificationService;
 
 // MediaNotificationContainerImplView holds a media notification for display
 // within the MediaDialogView. The media notification shows metadata for a media
@@ -43,7 +44,8 @@ class MediaNotificationContainerImplView
  public:
   MediaNotificationContainerImplView(
       const std::string& id,
-      base::WeakPtr<media_message_center::MediaNotificationItem> item);
+      base::WeakPtr<media_message_center::MediaNotificationItem> item,
+      MediaNotificationService* service);
   ~MediaNotificationContainerImplView() override;
 
   // views::Button:
@@ -182,6 +184,8 @@ class MediaNotificationContainerImplView
   OverlayMediaNotificationView* overlay_ = nullptr;
 
   views::UniqueWidgetPtr drag_image_widget_;
+
+  MediaNotificationService* const service_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationContainerImplView);
 };

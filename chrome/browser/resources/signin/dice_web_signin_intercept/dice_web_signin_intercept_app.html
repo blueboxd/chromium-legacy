@@ -1,13 +1,53 @@
-<div>
-  <h1>$i18n{diceWebSigninInterceptTitle}</h1>
+<style include="signin-dialog-shared">
+  :host {
+    color: var(--cr-primary-text-color);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  #header {
+    /**
+     * TODO(crbug.com/1076880): replace the hardcoded background color with the
+     * browser-provided one.
+     */
+    background-color: rgb(206, 234, 214);
+    border-radius: 8px;
+    margin: 8px;
+    min-height: 128px;
+  }
+
+  #body {
+    flex-grow: 1;
+    font-size: 13px;
+    line-height: 20px;
+    margin: 0 16px;
+  }
+
+  #title {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 22px;
+    margin: 0 0 8px;
+  }
+
+  cr-button {
+    font-size: 12px;
+  }
+</style>
+<div id="header"></div>
+
+<div id="body">
+  <div id="title">$i18n{diceWebSigninInterceptTitle}</div>
   <div>$i18n{diceWebSigninInterceptDesc}</div>
 </div>
-<div>
-  <cr-button id="cancelButton" on-click="onCancel_">
-    $i18n{diceWebSigninInterceptCancelLabel}
-  </cr-button>
+
+<div class="action-container">
   <cr-button id="acceptButton" class="action-button" on-click="onAccept_"
       autofocus>
     $i18n{diceWebSigninInterceptAcceptLabel}
+  </cr-button>
+  <cr-button id="cancelButton" on-click="onCancel_">
+    $i18n{diceWebSigninInterceptCancelLabel}
   </cr-button>
 </div>

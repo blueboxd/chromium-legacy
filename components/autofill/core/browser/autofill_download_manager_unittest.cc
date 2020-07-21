@@ -40,7 +40,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/signatures.h"
 #include "components/prefs/pref_service.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -1390,10 +1390,10 @@ class AutofillServerCommunicationTest
     if (server_.Started())
       ASSERT_TRUE(server_.ShutdownAndWaitUntilComplete());
 
-    auto* variations_http_header_provider =
-        variations::VariationsHttpHeaderProvider::GetInstance();
-    if (variations_http_header_provider != nullptr)
-      variations_http_header_provider->ResetForTesting();
+    auto* variations_ids_provider =
+        variations::VariationsIdsProvider::GetInstance();
+    if (variations_ids_provider != nullptr)
+      variations_ids_provider->ResetForTesting();
   }
 
   // AutofillDownloadManager::Observer implementation.
@@ -1632,10 +1632,10 @@ TEST_P(AutofillQueryTest, SendsExperiment) {
   }
 
   // Add experiment/variation idd from the range reserved for autofill.
-  auto* variations_http_header_provider =
-      variations::VariationsHttpHeaderProvider::GetInstance();
-  ASSERT_TRUE(variations_http_header_provider != nullptr);
-  variations_http_header_provider->ForceVariationIds(
+  auto* variations_ids_provider =
+      variations::VariationsIdsProvider::GetInstance();
+  ASSERT_TRUE(variations_ids_provider != nullptr);
+  variations_ids_provider->ForceVariationIds(
       {"t3314883", "t3312923", "t3314885"},  // first two valid, out-of-order
       {});
 

@@ -736,6 +736,120 @@ TEST(RangesTest, Shuffle) {
   EXPECT_THAT(input, ::testing::UnorderedElementsAre(0, 1, 2, 3, 4));
 }
 
+TEST(RangesTest, Sort) {
+  int input[] = {3, 1, 2, 0, 4};
+  EXPECT_EQ(input + 4, ranges::sort(input, input + 4));
+  EXPECT_THAT(input, ElementsAre(0, 1, 2, 3, 4));
+
+  EXPECT_EQ(input + 5, ranges::sort(input, input + 5, ranges::greater()));
+  EXPECT_THAT(input, ElementsAre(4, 3, 2, 1, 0));
+
+  Int ints[] = {6, 7, 9, 8, 5};
+  EXPECT_EQ(ints + 5, ranges::sort(ints, {}, &Int::value));
+  EXPECT_THAT(ints, ElementsAre(5, 6, 7, 8, 9));
+
+  EXPECT_EQ(ints + 5, ranges::sort(ints, ranges::greater(), &Int::value));
+  EXPECT_THAT(ints, ElementsAre(9, 8, 7, 6, 5));
+}
+
+TEST(RangesTest, StableSort) {
+  // Integer divide each element by 2 to check stability of elements that
+  // compare equal.
+  auto idiv2 = [](int i) { return i / 2; };
+
+  int input[] = {3, 1, 2, 0, 4};
+  EXPECT_EQ(input + 4, ranges::stable_sort(input, input + 4, {}, idiv2));
+  EXPECT_THAT(input, ElementsAre(1, 0, 3, 2, 4));
+
+  EXPECT_EQ(input + 5,
+            ranges::stable_sort(input, input + 5, ranges::greater()));
+  EXPECT_THAT(input, ElementsAre(4, 3, 2, 1, 0));
+
+  auto Idiv2 = [](Int i) { return i.value / 2; };
+  Int ints[] = {6, 7, 9, 8, 5};
+  EXPECT_EQ(ints + 5, ranges::stable_sort(ints, {}, Idiv2));
+  EXPECT_THAT(ints, ElementsAre(5, 6, 7, 9, 8));
+
+  EXPECT_EQ(ints + 5, ranges::stable_sort(ints, ranges::greater(), Idiv2));
+  EXPECT_THAT(ints, ElementsAre(9, 8, 6, 7, 5));
+}
+
+TEST(RangesTest, PartialSort) {
+  int input[] = {3, 1, 2, 0, 4};
+  EXPECT_EQ(input + 4, ranges::partial_sort(input, input + 2, input + 4));
+  EXPECT_EQ(input[0], 0);
+  EXPECT_EQ(input[1], 1);
+
+  EXPECT_EQ(input + 5, ranges::partial_sort(input, input + 3, input + 5,
+                                            ranges::greater()));
+  EXPECT_EQ(input[0], 4);
+  EXPECT_EQ(input[1], 3);
+  EXPECT_EQ(input[2], 2);
+
+  Int ints[] = {6, 7, 9, 8, 5};
+  EXPECT_EQ(ints + 5, ranges::partial_sort(ints, ints + 4, {}, &Int::value));
+  EXPECT_EQ(ints[0], 5);
+  EXPECT_EQ(ints[1], 6);
+  EXPECT_EQ(ints[2], 7);
+  EXPECT_EQ(ints[3], 8);
+
+  EXPECT_EQ(ints + 5, ranges::partial_sort(ints, ints + 3, ranges::greater(),
+                                           &Int::value));
+  EXPECT_EQ(ints[0], 9);
+  EXPECT_EQ(ints[1], 8);
+  EXPECT_EQ(ints[2], 7);
+}
+
+TEST(RangesTest, PartialSortCopy) {
+  int input[] = {3, 1, 2, 0, 4};
+  int output[] = {0, 0, 0, 0, 0};
+  EXPECT_EQ(output + 2,
+            ranges::partial_sort_copy(input, input + 2, output, output + 4));
+  EXPECT_THAT(input, ElementsAre(3, 1, 2, 0, 4));
+  EXPECT_THAT(output, ElementsAre(1, 3, 0, 0, 0));
+
+  EXPECT_EQ(output + 5,
+            ranges::partial_sort_copy(input, input + 3, output + 3, output + 5,
+                                      ranges::greater()));
+  EXPECT_THAT(input, ElementsAre(3, 1, 2, 0, 4));
+  EXPECT_THAT(output, ElementsAre(1, 3, 0, 3, 2));
+
+  Int ints[] = {3, 1, 2, 0, 4};
+  Int outs[] = {0, 0, 0};
+  EXPECT_EQ(outs + 3, ranges::partial_sort_copy(ints, outs, {}, &Int::value));
+  EXPECT_THAT(ints, ElementsAre(3, 1, 2, 0, 4));
+  EXPECT_THAT(outs, ElementsAre(0, 1, 2));
+
+  EXPECT_EQ(outs + 3, ranges::partial_sort_copy(ints, outs, ranges::greater(),
+                                                &Int::value));
+  EXPECT_THAT(ints, ElementsAre(3, 1, 2, 0, 4));
+  EXPECT_THAT(outs, ElementsAre(4, 3, 2));
+}
+
+TEST(RangesTest, IsSorted) {
+  int input[] = {3, 1, 2, 0, 4};
+  EXPECT_TRUE(ranges::is_sorted(input + 1, input + 3));
+  EXPECT_FALSE(ranges::is_sorted(input + 1, input + 4));
+  EXPECT_TRUE(ranges::is_sorted(input, input + 2, ranges::greater()));
+
+  Int ints[] = {0, 1, 2, 3, 4};
+  EXPECT_TRUE(ranges::is_sorted(ints, {}, &Int::value));
+  EXPECT_FALSE(ranges::is_sorted(ints, ranges::greater(), &Int::value));
+}
+
+TEST(RangesTest, IsSortedUntil) {
+  int input[] = {3, 1, 2, 0, 4};
+  EXPECT_EQ(input + 3, ranges::is_sorted_until(input + 1, input + 3));
+  EXPECT_EQ(input + 3, ranges::is_sorted_until(input + 1, input + 4));
+  EXPECT_EQ(input + 2,
+            ranges::is_sorted_until(input, input + 2, ranges::greater()));
+
+  Int ints[] = {0, 1, 2, 3, 4};
+  EXPECT_EQ(ints + 5, ranges::is_sorted_until(ints, {}, &Int::value));
+  EXPECT_EQ(ints + 1,
+            ranges::is_sorted_until(ints, ranges::greater(), &Int::value));
+}
+
 TEST(RangesTest, LowerBound) {
   int array[] = {0, 0, 1, 1, 2, 2};
 

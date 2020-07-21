@@ -7,31 +7,37 @@
 
 #include <stdint.h>
 
+#include "base/time/time.h"
+
 namespace lite_video {
 
 class LiteVideoHint {
  public:
   LiteVideoHint(int target_downlink_bandwidth_kbps,
-                int target_downlink_rtt_latency_ms,
-                int kilobytes_to_buffer_before_throttle);
+                base::TimeDelta target_downlink_rtt_latency,
+                int kilobytes_to_buffer_before_throttle,
+                base::TimeDelta max_throttling_delay);
   ~LiteVideoHint() = default;
 
   int target_downlink_bandwidth_kbps() const {
     return target_downlink_bandwidth_kbps_;
   }
 
-  int target_downlink_rtt_latency_ms() const {
-    return target_downlink_rtt_latency_ms_;
+  base::TimeDelta target_downlink_rtt_latency() const {
+    return target_downlink_rtt_latency_;
   }
 
   int kilobytes_to_buffer_before_throttle() const {
     return kilobytes_to_buffer_before_throttle_;
   }
 
+  base::TimeDelta max_throttling_delay() const { return max_throttling_delay_; }
+
  private:
   const int target_downlink_bandwidth_kbps_;
-  const int target_downlink_rtt_latency_ms_;
+  const base::TimeDelta target_downlink_rtt_latency_;
   const int kilobytes_to_buffer_before_throttle_;
+  const base::TimeDelta max_throttling_delay_;
 };
 
 }  // namespace lite_video

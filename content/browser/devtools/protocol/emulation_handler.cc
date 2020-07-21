@@ -281,9 +281,9 @@ Response EmulationHandler::SetDeviceMetricsOverride(
     }
   }
 
-  blink::WebDeviceEmulationParams params;
-  params.screen_position = mobile ? blink::WebDeviceEmulationParams::kMobile
-                                  : blink::WebDeviceEmulationParams::kDesktop;
+  blink::DeviceEmulationParams params;
+  params.screen_type = mobile ? blink::mojom::EmulatedScreenType::kMobile
+                              : blink::mojom::EmulatedScreenType::kDesktop;
   params.screen_size =
       blink::WebSize(screen_width.fromMaybe(0), screen_height.fromMaybe(0));
   if (position_x.isJust() && position_y.isJust()) {
@@ -356,7 +356,7 @@ Response EmulationHandler::ClearDeviceMetricsOverride() {
     return Response::ServerError("Can't find the associated web contents");
   GetWebContents()->ClearDeviceEmulationSize();
   device_emulation_enabled_ = false;
-  device_emulation_params_ = blink::WebDeviceEmulationParams();
+  device_emulation_params_ = blink::DeviceEmulationParams();
   UpdateDeviceEmulationState();
   // Renderer should answer after emulation was disabled, so that the response
   // is only sent to the client once updates were applied.
@@ -459,13 +459,13 @@ Response EmulationHandler::SetFocusEmulationEnabled(bool enabled) {
   return Response::FallThrough();
 }
 
-blink::WebDeviceEmulationParams EmulationHandler::GetDeviceEmulationParams() {
+blink::DeviceEmulationParams EmulationHandler::GetDeviceEmulationParams() {
   return device_emulation_params_;
 }
 
 void EmulationHandler::SetDeviceEmulationParams(
-    const blink::WebDeviceEmulationParams& params) {
-  bool enabled = params != blink::WebDeviceEmulationParams();
+    const blink::DeviceEmulationParams& params) {
+  bool enabled = params != blink::DeviceEmulationParams();
   bool enable_changed = enabled != device_emulation_enabled_;
   bool params_changed = params != device_emulation_params_;
   if (!device_emulation_enabled_ && !enable_changed)

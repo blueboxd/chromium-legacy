@@ -108,11 +108,13 @@ void SiteEngagementService::Helper::InputTracker::TrackingStopped() {
 // Once the timer finishes running, the callbacks detecting user input will be
 // registered again.
 void SiteEngagementService::Helper::InputTracker::DidGetUserInteraction(
-    const blink::WebInputEvent::Type type) {
+    const blink::WebInputEvent& event) {
   // Only respond to raw key down to avoid multiple triggering on a single input
   // (e.g. keypress is a key down then key up).
   if (!is_tracking_)
     return;
+
+  const blink::WebInputEvent::Type type = event.GetType();
 
   // This switch has a default NOTREACHED case because it will not test all
   // of the values of the WebInputEvent::Type enum (hence it won't require the

@@ -318,13 +318,6 @@ cr.define('settings.display', function() {
         this.browserProxy_.highlightDisplay(this.invalidDisplayId_);
         return;
       }
-
-      // When navigating back into the display page, re-select a display.
-      if (this.selectedDisplay && opt_newRoute == settings.routes.DISPLAY &&
-          opt_oldRoute != settings.routes.DISPLAY) {
-        // setSelectedDisplay_ doesn't trigger again if it is not reattaching.
-        this.browserProxy_.highlightDisplay(this.selectedDisplay.id);
-      }
     },
 
     /**
@@ -742,12 +735,6 @@ cr.define('settings.display', function() {
       this.set(
           'selectedZoomPref_.value',
           this.getSelectedDisplayZoom_(selectedDisplay));
-
-      if (this.allowDisplayIdentificationApi_ &&
-          this.selectedDisplay != selectedDisplay &&
-          this.currentRoute_ == settings.routes.DISPLAY) {
-        this.browserProxy_.highlightDisplay(selectedDisplay.id);
-      }
 
       this.updateDisplayModeStructures_(selectedDisplay);
 

@@ -46,9 +46,10 @@ ExternalVkImageDawnRepresentation::~ExternalVkImageDawnRepresentation() {
 
 WGPUTexture ExternalVkImageDawnRepresentation::BeginAccess(
     WGPUTextureUsage usage) {
-  std::vector<SemaphoreHandle> handles;
+  std::vector<ExternalSemaphore> external_semaphores;
 
-  if (!backing_impl()->BeginAccess(false, &handles, false /* is_gl */)) {
+  if (!backing_impl()->BeginAccess(false, &external_semaphores,
+                                   false /* is_gl */)) {
     return nullptr;
   }
 
@@ -72,9 +73,9 @@ WGPUTexture ExternalVkImageDawnRepresentation::BeginAccess(
   // TODO(http://crbug.com/dawn/200): We may not be obeying all of the rules
   // specified by Vulkan for external queue transfer barriers. Investigate this.
 
-  // Take ownership of file descriptors and transfer to dawn
-  for (SemaphoreHandle& handle : handles) {
-    descriptor.waitFDs.push_back(handle.TakeHandle().release());
+  for (auto& external_semaphore : external_semaphores) {
+    descriptor.waitFDs.push_back(
+        external_semaphore.handle().TakeHandle().release());
   }
 
   texture_ = dawn_native::vulkan::WrapVulkanImage(device_, &descriptor);
@@ -102,11 +103,12 @@ void ExternalVkImageDawnRepresentation::EndAccess() {
   }
 
   // Wrap file descriptor in a handle
-  SemaphoreHandle signal_semaphore(
-      VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT_KHR,
-      base::ScopedFD(signal_semaphore_fd));
+  SemaphoreHandle handle(VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT_KHR,
+                         base::ScopedFD(signal_semaphore_fd));
 
-  backing_impl()->EndAccess(false, std::move(signal_semaphore),
+  backing_impl()->EndAccess(false,
+                            ExternalSemaphore::CreateFromHandle(
+                                context_provider(), std::move(handle)),
                             false /* is_gl */);
 
   // Destroy the texture, signaling the semaphore in dawn

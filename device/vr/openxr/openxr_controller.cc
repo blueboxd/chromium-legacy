@@ -236,10 +236,8 @@ mojom::XRInputSourceDescriptionPtr OpenXrController::GetDescription(
         path_helper_->GetInputProfiles(interaction_profile_);
   }
 
-  if (!description_->input_from_pointer) {
-    description_->input_from_pointer =
-        GetPointerFromGripTransform(predicted_display_time);
-  }
+  description_->input_from_pointer =
+      GetPointerFromGripTransform(predicted_display_time);
 
   return description_.Clone();
 }

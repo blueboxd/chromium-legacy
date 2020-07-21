@@ -1455,8 +1455,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<BrowsingHistoryPolicyHandler>());
 
   handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
-      std::make_unique<URLBlacklistPolicyHandler>(key::kURLBlacklist),
-      std::make_unique<URLBlacklistPolicyHandler>(key::kURLBlocklist)));
+      std::make_unique<URLBlocklistPolicyHandler>(key::kURLBlacklist),
+      std::make_unique<URLBlocklistPolicyHandler>(key::kURLBlocklist)));
   handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
       std::make_unique<SimplePolicyHandler>(key::kURLWhitelist,
                                             policy_prefs::kUrlWhitelist,

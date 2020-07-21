@@ -14,7 +14,7 @@
 #include "build/build_config.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/common/translate_switches.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
@@ -34,7 +34,7 @@ class TranslateScriptTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+    variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
     script_ = std::make_unique<TranslateScript>();
     auto* translate_download_manager = TranslateDownloadManager::GetInstance();
     translate_download_manager->set_application_locale("en");

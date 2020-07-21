@@ -40,7 +40,8 @@ class EventReportValidator {
       const std::string& expected_threat_type,
       const std::string& expected_trigger,
       const std::set<std::string>* expected_mimetypes,
-      int expected_content_size);
+      int expected_content_size,
+      const std::string& expected_result);
 
   void ExpectSensitiveDataEvent(
       const std::string& expected_url,

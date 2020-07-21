@@ -168,6 +168,9 @@ void OptOutBlocklist::ClearBlockListSync(base::Time begin_time,
   blocklist_data_->ClearData();
   loaded_ = false;
 
+  // Notify |blocklist_delegate_| on blocklist load status
+  blocklist_delegate_->OnLoadingStateChanged(loaded_);
+
   // Notify |blocklist_delegate_| that the blocklist is cleared.
   blocklist_delegate_->OnBlocklistCleared(clock_->Now());
 
@@ -216,6 +219,9 @@ void OptOutBlocklist::LoadBlockListDone(
     std::move(pending_callbacks_.front()).Run();
     pending_callbacks_.pop();
   }
+
+  // Notify |blocklist_delegate_| on blocklist load status
+  blocklist_delegate_->OnLoadingStateChanged(loaded_);
 }
 
 }  // namespace blocklist

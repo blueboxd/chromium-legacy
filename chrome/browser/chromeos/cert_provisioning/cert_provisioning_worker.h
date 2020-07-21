@@ -254,6 +254,10 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
   // because of it).
   static constexpr int kVersion = 1;
 
+  // Unowned PlatformKeysService. Note that the CertProvisioningWorker does not
+  // observe the PlatformKeysService for shutdown events. Instead, it relies on
+  // the CertProvisioningScheduler to destroy all CertProvisioningWorker
+  // instances when the corresponding PlatformKeysService is shutting down.
   platform_keys::PlatformKeysService* platform_keys_service_ = nullptr;
   std::unique_ptr<attestation::TpmChallengeKeySubtle>
       tpm_challenge_key_subtle_impl_;

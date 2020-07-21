@@ -6,6 +6,7 @@
 #define CHROME_SERVICES_SHARING_NEARBY_PLATFORM_V2_CONDITION_VARIABLE_H_
 
 #include "base/synchronization/condition_variable.h"
+#include "third_party/abseil-cpp/absl/time/time.h"
 #include "third_party/nearby/src/cpp/platform_v2/api/condition_variable.h"
 
 namespace location {

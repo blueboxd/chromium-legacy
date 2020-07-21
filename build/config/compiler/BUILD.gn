@@ -43,12 +43,6 @@ if (is_nacl) {
 }
 
 declare_args() {
-  # Default to warnings as errors for default workflow, where we catch
-  # warnings with known toolchains. Allow overriding this e.g. for Chromium
-  # builds on Linux that could use a different version of the compiler.
-  # With GCC, warnings in no-Chromium code are always not treated as errors.
-  treat_warnings_as_errors = true
-
   # Normally, Android builds are lightly optimized, even for debug builds, to
   # keep binary size down. Setting this flag to true disables such optimization
   android_full_debug = false
@@ -92,8 +86,9 @@ declare_args() {
   # We currently only have default profiles for Chromium in-tree, so we disable
   # this by default for all downstream projects, since these profiles are likely
   # nonsensical for said projects.
-  clang_use_default_sample_profile = build_with_chromium && is_official_build &&
-                                     (is_android || is_desktop_linux)
+  clang_use_default_sample_profile =
+      chrome_pgo_phase == 0 && build_with_chromium && is_official_build &&
+      (is_android || is_desktop_linux)
 
   # This configuration is used to select a default profile in Chrome OS based on
   # the microarchitectures we are using. This is only used if
@@ -2202,6 +2197,7 @@ config("afdo") {
       }
     }
     if (_clang_sample_profile != "") {
+      assert(chrome_pgo_phase == 0, "AFDO can't be used in PGO builds")
       rebased_clang_sample_profile =
           rebase_path(_clang_sample_profile, root_build_dir)
       cflags += [ "-fprofile-sample-use=${rebased_clang_sample_profile}" ]

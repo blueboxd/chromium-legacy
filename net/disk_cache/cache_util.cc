@@ -10,6 +10,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -124,7 +125,7 @@ bool DelayedCacheCleanup(const base::FilePath& full_path) {
   base::FilePath name = current_path.BaseName();
 #if defined(OS_WIN)
   // We created this file so it should only contain ASCII.
-  std::string name_str = base::UTF16ToASCII(name.value());
+  std::string name_str = base::WideToASCII(name.value());
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   std::string name_str = name.value();
 #endif

@@ -33,14 +33,8 @@
 
 namespace ui {
 
-namespace {
-
-const size_t kMaxClipboardSize = 1;
-
-}  // namespace
-
 // Simple, internal implementation of a clipboard, handling things like format
-// conversion, versioning, etc.
+// conversion, sequence numbers, etc.
 class ClipboardInternal {
  public:
   ClipboardInternal() = default;
@@ -48,41 +42,35 @@ class ClipboardInternal {
   ~ClipboardInternal() = default;
 
   void Clear() {
-    sequence_number_++;
-    data_list_.clear();
+    ++sequence_number_;
+    data_.reset();
     ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
   }
 
   uint64_t sequence_number() const { return sequence_number_; }
 
-  // Returns the data currently on the top of the clipboard stack, nullptr if
-  // the clipboard stack is empty.
-  const ClipboardData* GetData() const {
-    if (data_list_.empty())
-      return nullptr;
-    return data_list_.front().get();
-  }
+  // Returns the current clipboard data, which may be nullptr if nothing has
+  // been written since the last Clear().
+  const ClipboardData* GetData() const { return data_.get(); }
 
   // Returns true if the data on top of the clipboard stack has format |format|
   // or another format that can be converted to |format|.
   bool IsFormatAvailable(ClipboardInternalFormat format) const {
-    switch (format) {
-      case ClipboardInternalFormat::kText:
-        return HasFormat(ClipboardInternalFormat::kText) ||
-               HasFormat(ClipboardInternalFormat::kBookmark);
-      default:
-        return HasFormat(format);
+    if (format == ClipboardInternalFormat::kText) {
+      return HasFormat(ClipboardInternalFormat::kText) ||
+             HasFormat(ClipboardInternalFormat::kBookmark);
     }
+    return HasFormat(format);
   }
 
-  // Reads text from the data at the top of clipboard stack.
+  // Reads text from the ClipboardData.
   void ReadText(base::string16* result) const {
     std::string utf8_result;
     ReadAsciiText(&utf8_result);
     *result = base::UTF8ToUTF16(utf8_result);
   }
 
-  // Reads ASCII text from the data at the top of clipboard stack.
+  // Reads ASCII text from the ClipboardData.
   void ReadAsciiText(std::string* result) const {
     result->clear();
     const ClipboardData* data = GetData();
@@ -96,7 +84,7 @@ class ClipboardInternal {
       *result = data->bookmark_url();
   }
 
-  // Reads HTML from the data at the top of clipboard stack.
+  // Reads HTML from the ClipboardData.
   void ReadHTML(base::string16* markup,
                 std::string* src_url,
                 uint32_t* fragment_start,
@@ -119,7 +107,7 @@ class ClipboardInternal {
     *fragment_end = static_cast<uint32_t>(markup->length());
   }
 
-  // Reads RTF from the data at the top of clipboard stack.
+  // Reads RTF from the ClipboardData.
   void ReadRTF(std::string* result) const {
     result->clear();
     const ClipboardData* data = GetData();
@@ -129,7 +117,7 @@ class ClipboardInternal {
     *result = data->rtf_data();
   }
 
-  // Reads image from the data at the top of clipboard stack.
+  // Reads image from the ClipboardData.
   SkBitmap ReadImage() const {
     SkBitmap img;
     if (!HasFormat(ClipboardInternalFormat::kBitmap))
@@ -144,7 +132,7 @@ class ClipboardInternal {
     return img;
   }
 
-  // Reads data of type |type| from the data at the top of clipboard stack.
+  // Reads data of type |type| from the ClipboardData.
   void ReadCustomData(const base::string16& type,
                       base::string16* result) const {
     result->clear();
@@ -156,7 +144,7 @@ class ClipboardInternal {
                           data->custom_data_data().size(), type, result);
   }
 
-  // Reads bookmark from the data at the top of clipboard stack.
+  // Reads bookmark from the ClipboardData.
   void ReadBookmark(base::string16* title, std::string* url) const {
     if (title)
       title->clear();
@@ -182,10 +170,11 @@ class ClipboardInternal {
     *result = data->custom_data_data();
   }
 
-  // Writes |data| to the top of the clipboard stack.
+  // Writes |data| to the ClipboardData.
   void WriteData(std::unique_ptr<ClipboardData> data) {
     DCHECK(data);
-    AddToListEnsuringSize(std::move(data));
+    ++sequence_number_;
+    data_ = std::move(data);
     ClipboardMonitor::GetInstance()->NotifyClipboardDataChanged();
   }
 
@@ -201,26 +190,14 @@ class ClipboardInternal {
   }
 
  private:
-  // True if the data on top of the clipboard stack has format |format|.
+  // True if the ClipboardData has format |format|.
   bool HasFormat(ClipboardInternalFormat format) const {
     const ClipboardData* data = GetData();
     return data ? data->format() & static_cast<int>(format) : false;
   }
 
-  void AddToListEnsuringSize(std::unique_ptr<ClipboardData> data) {
-    DCHECK(data);
-    sequence_number_++;
-    data_list_.push_front(std::move(data));
-
-    // If the size of list becomes more than the maximum allowed, we delete the
-    // last element.
-    if (data_list_.size() > kMaxClipboardSize) {
-      data_list_.pop_back();
-    }
-  }
-
-  // Stack containing various versions of ClipboardData.
-  std::list<std::unique_ptr<ClipboardData>> data_list_;
+  // Current ClipboardData.
+  std::unique_ptr<ClipboardData> data_;
 
   // Sequence number uniquely identifying clipboard state.
   uint64_t sequence_number_ = 0;

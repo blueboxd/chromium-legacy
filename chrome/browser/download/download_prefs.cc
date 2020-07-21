@@ -608,8 +608,8 @@ void DownloadPrefs::UpdateAutoOpenByPolicy() {
 }
 
 void DownloadPrefs::UpdateAllowedURLsForOpenByPolicy() {
-  std::unique_ptr<policy::URLBlacklist> allowed_urls =
-      std::make_unique<policy::URLBlacklist>();
+  std::unique_ptr<policy::URLBlocklist> allowed_urls =
+      std::make_unique<policy::URLBlocklist>();
 
   PrefService* prefs = profile_->GetPrefs();
   const auto* list = prefs->GetList(prefs::kDownloadAllowedURLsForOpenByPolicy);

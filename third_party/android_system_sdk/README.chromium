@@ -12,7 +12,7 @@ System SDK stubs for compiling Android Webview and Monochrome targets.
 Revision is the BUILD ID of the Android release build.
 
 Because prebuilt system SDKs are not distributed publicly, Googlers will need to
-follow http://go/clank-webview/next-layers to update this.
+follow http://go/clank-webview/rolling_the_android_sdk.md to update this.
 
 Local Modifications:
 None

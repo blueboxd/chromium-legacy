@@ -37,7 +37,7 @@
 #include "components/variations/service/variations_service.h"
 #include "components/variations/synthetic_trials_active_group_id_provider.h"
 #include "components/variations/variations_crash_keys.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "ios/chrome/browser/application_context_impl.h"
 #include "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -285,7 +285,7 @@ void IOSChromeMainParts::SetupFieldTrials() {
 void IOSChromeMainParts::SetupMetrics() {
   metrics::MetricsService* metrics = application_context_->GetMetricsService();
   metrics->synthetic_trial_registry()->AddSyntheticTrialObserver(
-      variations::VariationsHttpHeaderProvider::GetInstance());
+      variations::VariationsIdsProvider::GetInstance());
   metrics->synthetic_trial_registry()->AddSyntheticTrialObserver(
       variations::SyntheticTrialsActiveGroupIdProvider::GetInstance());
   // Now that field trials have been created, initializes metrics recording.

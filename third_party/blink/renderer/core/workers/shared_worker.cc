@@ -141,7 +141,7 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
 
   SharedWorkerClientHolder::From(*window)->Connect(
       worker, std::move(remote_port), script_url, std::move(blob_url_token),
-      std::move(options));
+      std::move(options), context->UkmSourceID());
 
   return worker;
 }

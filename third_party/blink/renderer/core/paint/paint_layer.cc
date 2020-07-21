@@ -254,10 +254,6 @@ DOMNodeId PaintLayer::OwnerNodeId() const {
   return static_cast<const DisplayItemClient&>(GetLayoutObject()).OwnerNodeId();
 }
 
-IntRect PaintLayer::VisualRect() const {
-  return layout_object_->FragmentsVisualRectBoundingBox();
-}
-
 PaintLayerCompositor* PaintLayer::Compositor() const {
   if (!GetLayoutObject().View())
     return nullptr;
@@ -2360,7 +2356,10 @@ bool PaintLayer::IsReplacedNormalFlowStacking() const {
 
 void PaintLayer::SetNeedsCompositingLayerAssignment() {
   needs_compositing_layer_assignment_ = true;
+  PropagateDescendantNeedsCompositingLayerAssignment();
+}
 
+void PaintLayer::PropagateDescendantNeedsCompositingLayerAssignment() {
   for (PaintLayer* curr = CompositingContainer();
        curr && !curr->StackingDescendantNeedsCompositingLayerAssignment();
        curr = curr->CompositingContainer()) {

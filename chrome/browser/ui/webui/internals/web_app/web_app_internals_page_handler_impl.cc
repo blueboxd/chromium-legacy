@@ -37,13 +37,17 @@ void WebAppInternalsPageHandlerImpl::IsBmoEnabled(
 
 void WebAppInternalsPageHandlerImpl::GetWebApps(GetWebAppsCallback callback) {
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile_);
-  if (!provider)
+  if (!provider) {
     std::move(callback).Run({});
+    return;
+  }
 
   web_app::AppRegistrar& registrar_base = provider->registrar();
   web_app::WebAppRegistrar* registrar = registrar_base.AsWebAppRegistrar();
-  if (!registrar)
+  if (!registrar) {
     std::move(callback).Run({});
+    return;
+  }
 
   std::vector<mojom::web_app_internals::WebAppPtr> result;
   for (const web_app::WebApp& web_app : registrar->AllApps()) {

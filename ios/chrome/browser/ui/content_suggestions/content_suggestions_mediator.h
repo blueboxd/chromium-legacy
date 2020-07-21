@@ -75,6 +75,9 @@ class ReadingListModel;
 // ViewController created by the Discover provider containing the Discover feed.
 @property(nonatomic, strong) UIViewController* discoverFeed;
 
+// Disconnects the mediator.
+- (void)disconnect;
+
 // The notification promo owned by this mediator.
 - (NotificationPromoWhatsNew*)notificationPromo;
 

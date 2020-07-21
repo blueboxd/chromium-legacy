@@ -363,7 +363,8 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateSimpleBrowserTest, Files) {
       /*threat_type*/ "DANGEROUS",
       /*trigger*/ SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
       /*mimetypes*/ ExeMimeTypes(),
-      /*size*/ std::string("bad file content").size());
+      /*size*/ std::string("bad file content").size(),
+      /*result*/ EventResultToString(EventResult::BLOCKED));
 
   if (use_legacy_protos()) {
     DeepScanningClientResponse ok_response;

@@ -3150,11 +3150,6 @@ IntRect PaintLayerScrollableArea::ScrollingBackgroundVisualRect(
   // Ensure scrolling contents are at least as large as the scroll clip
   scroll_size = scroll_size.ExpandedTo(overflow_clip_rect.Size());
   IntRect result(overflow_clip_rect.Location(), scroll_size);
-#if DCHECK_IS_ON()
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    DCHECK_EQ(result, layer_->GraphicsLayerBacking()->VisualRect());
-  }
-#endif
 
   // The HTML element of a document is special, in that it can have a transform,
   // but the bounds of the painted area of the element still extends beyond
@@ -3184,13 +3179,6 @@ IntRect PaintLayerScrollableArea::ScrollingBackgroundVisualRect(
   }
 
   return result;
-}
-
-IntRect
-PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::VisualRect()
-    const {
-  return scrollable_area_->ScrollingBackgroundVisualRect(
-      scrollable_area_->GetLayoutBox()->FirstFragment().PaintOffset());
 }
 
 String

@@ -136,6 +136,12 @@ extern const char kLogBreadcrumbsName[] = "Log Breadcrumb Events";
 extern const char kLogBreadcrumbsDescription[] =
     "When enabled, breadcrumb events will be logged.";
 
+const char kSyntheticCrashReportsForUteName[] =
+    "Generate synthetic crash reports for UTE";
+const char kSyntheticCrashReportsForUteDescription[] =
+    "When enabled the app will create synthetic crash report when chrome "
+    "starts up after Unexplained Termination Event (UTE).";
+
 const char kBreakpadNoDelayInitialUploadName[] =
     "Remove delay on initial crash upload";
 const char kBreakpadNoDelayInitialUploadDescription[] =

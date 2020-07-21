@@ -35,6 +35,10 @@ LookalikeUrlBlockingPage::LookalikeUrlBlockingPage(
       source_id_(source_id),
       match_type_(match_type) {
   DCHECK(web_state_);
+  controller_->metrics_helper()->RecordUserDecision(
+      security_interstitials::MetricsHelper::SHOW);
+  controller_->metrics_helper()->RecordUserInteraction(
+      security_interstitials::MetricsHelper::TOTAL_VISITS);
 
   // Creating an interstitial without showing it (e.g. from
   // chrome://interstitials) leaks memory, so don't create it here.

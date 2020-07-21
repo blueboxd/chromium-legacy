@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_pref_store.h"
@@ -170,6 +171,11 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
   // Currently tested indirectly by enabling geolocation requests.
   // TODO(crbug/1024646): Update Kids Management server to set a new bit for
   // extension permissions and update this test.
+
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(
+      "SupervisedUsers.ExtensionsMayRequestPermissions", 0);
+
   fixture.changed_prefs()->Clear();
   service_.SetLocalSetting(supervised_users::kGeolocationDisabled,
                            std::make_unique<base::Value>(false));
@@ -178,6 +184,26 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
       prefs::kSupervisedUserExtensionsMayRequestPermissions,
       &extensions_may_request_permissions));
   EXPECT_TRUE(extensions_may_request_permissions);
+
+  histogram_tester.ExpectUniqueSample(
+      "SupervisedUsers.ExtensionsMayRequestPermissions", /*enabled=*/true, 1);
+  histogram_tester.ExpectTotalCount(
+      "SupervisedUsers.ExtensionsMayRequestPermissions", 1);
+
+  fixture.changed_prefs()->Clear();
+  service_.SetLocalSetting(supervised_users::kGeolocationDisabled,
+                           std::make_unique<base::Value>(true));
+  EXPECT_EQ(1u, fixture.changed_prefs()->size());
+  EXPECT_TRUE(fixture.changed_prefs()->GetBoolean(
+      prefs::kSupervisedUserExtensionsMayRequestPermissions,
+      &extensions_may_request_permissions));
+  EXPECT_FALSE(extensions_may_request_permissions);
+
+  histogram_tester.ExpectBucketCount(
+      "SupervisedUsers.ExtensionsMayRequestPermissions", /*enabled=*/false, 1);
+  histogram_tester.ExpectTotalCount(
+      "SupervisedUsers.ExtensionsMayRequestPermissions", 2);
+
 #endif
 }
 

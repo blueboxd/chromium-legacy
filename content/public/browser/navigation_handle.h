@@ -246,7 +246,9 @@ class CONTENT_EXPORT NavigationHandle {
   virtual bool DidReplaceEntry() = 0;
 
   // Returns true if the browser history should be updated. Otherwise only
-  // the session history will be updated. E.g., on unreachable urls.
+  // the session history will be updated. E.g., on unreachable urls or other
+  // navigations that the users may not think of as navigations (such as
+  // happens with 'history.replaceState()').
   virtual bool ShouldUpdateHistory() = 0;
 
   // The previous main frame URL that the user was on. This may be empty if

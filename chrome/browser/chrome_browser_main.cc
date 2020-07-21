@@ -146,7 +146,7 @@
 #include "components/variations/synthetic_trials_active_group_id_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_crash_keys.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
@@ -516,7 +516,7 @@ void ChromeBrowserMainParts::SetupMetrics() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::SetupMetrics");
   metrics::MetricsService* metrics = browser_process_->metrics_service();
   metrics->synthetic_trial_registry()->AddSyntheticTrialObserver(
-      variations::VariationsHttpHeaderProvider::GetInstance());
+      variations::VariationsIdsProvider::GetInstance());
   metrics->synthetic_trial_registry()->AddSyntheticTrialObserver(
       variations::SyntheticTrialsActiveGroupIdProvider::GetInstance());
   // Now that field trials have been created, initializes metrics recording.

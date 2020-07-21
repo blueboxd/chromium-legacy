@@ -7,6 +7,7 @@
 
 #include "base/atomic_ref_count.h"
 #include "base/synchronization/waitable_event.h"
+#include "third_party/abseil-cpp/absl/time/time.h"
 #include "third_party/nearby/src/cpp/platform_v2/api/count_down_latch.h"
 
 namespace location {

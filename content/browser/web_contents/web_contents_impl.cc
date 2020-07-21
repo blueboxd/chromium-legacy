@@ -6504,19 +6504,19 @@ bool WebContentsImpl::DidAddMessageToConsole(
 
 void WebContentsImpl::DidReceiveInputEvent(
     RenderWidgetHostImpl* render_widget_host,
-    const blink::WebInputEvent::Type type) {
-  if (!IsUserInteractionInputType(type))
+    const blink::WebInputEvent& event) {
+  if (!IsUserInteractionInputType(event.GetType()))
     return;
 
   // Ignore unless the widget is currently in the frame tree.
   if (!HasMatchingWidgetHost(&frame_tree_, render_widget_host))
     return;
 
-  if (type != blink::WebInputEvent::Type::kGestureScrollBegin)
+  if (event.GetType() != blink::WebInputEvent::Type::kGestureScrollBegin)
     last_interactive_input_event_time_ = ui::EventTimeForNow();
 
   for (auto& observer : observers_)
-    observer.DidGetUserInteraction(type);
+    observer.DidGetUserInteraction(event);
 }
 
 bool WebContentsImpl::ShouldIgnoreInputEvents() {

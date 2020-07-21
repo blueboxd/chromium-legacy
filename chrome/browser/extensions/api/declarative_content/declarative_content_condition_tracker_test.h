@@ -40,7 +40,11 @@ class DeclarativeContentConditionTrackerTest : public testing::Test {
   content::MockRenderProcessHost* GetMockRenderProcessHost(
       content::WebContents* contents);
 
-  TestingProfile* profile() { return profile_.get(); }
+  // Can only be used before calling profile().
+  TestingProfile::Builder* profile_builder() { return &profile_builder_; }
+
+  // Returns a TestingProfile constructed lazily (upon first call).
+  TestingProfile* profile();
 
   const void* GeneratePredicateGroupID();
 
@@ -50,7 +54,8 @@ class DeclarativeContentConditionTrackerTest : public testing::Test {
   // Enables MockRenderProcessHosts.
   content::RenderViewHostTestEnabler render_view_host_test_enabler_;
 
-  const std::unique_ptr<TestingProfile> profile_;
+  TestingProfile::Builder profile_builder_;
+  std::unique_ptr<TestingProfile> profile_;
 
   uintptr_t next_predicate_group_id_;
 

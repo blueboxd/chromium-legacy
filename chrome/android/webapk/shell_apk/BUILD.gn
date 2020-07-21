@@ -307,7 +307,7 @@ webapk_tmpl("new_splash_webapk") {
   config_file = "manifest/bound_manifest_config.json"
   manifest_to_upload_dep = ":generate_new_style_manifest_for_upload"
   apk_name = "NewSplashWebApk"
-  apk_package_name = "org.chromium.webapk.new.splash"
+  apk_package_name = "org.chromium.webapk.new_splash"
 }
 
 # Used by javatests

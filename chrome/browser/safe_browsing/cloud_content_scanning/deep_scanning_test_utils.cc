@@ -166,7 +166,8 @@ void EventReportValidator::ExpectDangerousDeepScanningResult(
     const std::string& expected_threat_type,
     const std::string& expected_trigger,
     const std::set<std::string>* expected_mimetypes,
-    int expected_content_size) {
+    int expected_content_size,
+    const std::string& expected_result) {
   event_key_ = SafeBrowsingPrivateEventRouter::kKeyDangerousDownloadEvent;
   url_ = expected_url;
   filename_ = expected_filename;
@@ -175,6 +176,7 @@ void EventReportValidator::ExpectDangerousDeepScanningResult(
   mimetypes_ = expected_mimetypes;
   trigger_ = expected_trigger;
   content_size_ = expected_content_size;
+  result_ = expected_result;
   EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
       .WillOnce([this](base::Value& report,
                        base::OnceCallback<void(bool)>& callback) {
@@ -230,18 +232,18 @@ void EventReportValidator::
   trigger_ = expected_trigger;
   mimetypes_ = expected_mimetypes;
   content_size_ = expected_content_size;
+  result_ = expected_result;
   EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
       .WillOnce([this](base::Value& report,
                        base::OnceCallback<void(bool)>& callback) {
         ValidateReport(&report);
       })
       .WillOnce(
-          [this, expected_dlp_verdict, expected_result](
+          [this, expected_dlp_verdict](
               base::Value& report, base::OnceCallback<void(bool)>& callback) {
             event_key_ = SafeBrowsingPrivateEventRouter::kKeySensitiveDataEvent;
             threat_type_ = base::nullopt;
             dlp_verdict_ = expected_dlp_verdict;
-            result_ = expected_result;
             ValidateReport(&report);
             if (!done_closure_.is_null())
               done_closure_.Run();
@@ -314,14 +316,8 @@ void EventReportValidator::ValidateDlpVerdict(base::Value* value) {
 void EventReportValidator::ValidateDlpRule(
     base::Value* value,
     const ContentAnalysisTrigger& expected_rule) {
-  ValidateField(value, SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleAction,
-                base::Optional<int>(expected_rule.action));
   ValidateField(value, SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleName,
                 expected_rule.name);
-  int64_t rule_id;
-  ASSERT_TRUE(base::StringToInt64(expected_rule.id, &rule_id));
-  ValidateField(value, SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleId,
-                base::Optional<int>(rule_id));
 }
 
 void EventReportValidator::ValidateField(

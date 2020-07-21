@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -49,7 +50,8 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
       WorkerThread* thread)
       : WorkerGlobalScope(std::move(creation_params),
                           thread,
-                          base::TimeTicks::Now()) {
+                          base::TimeTicks::Now(),
+                          ukm::kInvalidSourceId) {
     ReadyToRunWorkerScript();
   }
 
@@ -121,11 +123,10 @@ class WorkerThreadForTest : public WorkerThread {
   }
   void ClearWorkerBackingThread() override { worker_backing_thread_.reset(); }
 
-  void StartWithSourceCode(
-      const SecurityOrigin* security_origin,
-      const String& source,
-      const KURL& script_url = KURL("http://fake.url/"),
-      WorkerClients* worker_clients = nullptr) {
+  void StartWithSourceCode(const SecurityOrigin* security_origin,
+                           const String& source,
+                           const KURL& script_url = KURL("http://fake.url/"),
+                           WorkerClients* worker_clients = nullptr) {
     Vector<CSPHeaderAndType> headers{
         {"contentSecurityPolicy",
          network::mojom::ContentSecurityPolicyType::kReport}};

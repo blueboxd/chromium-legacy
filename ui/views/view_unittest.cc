@@ -1532,7 +1532,8 @@ TEST_F(ViewTest, GetEventHandlerForRect) {
   // the center points of |v4| and |v41|.
   touch_rect.SetRect(310, 210, 80, 80);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
-  EXPECT_EQ(v41, result_view);
+  // |v411| is the deepest view that is completely contained by |touch_rect|.
+  EXPECT_EQ(v411, result_view);
   result_view = nullptr;
 
   // Intersects all of |v4|, |v41|, and |v411| but only covers
@@ -1603,21 +1604,19 @@ TEST_F(ViewTest, GetEventHandlerForRect) {
 
   // Intersects all of |v2|, |v3|, |v32|, |v4|, |v41|, and |v411|.
   // Covers |v2|, |v32|, |v4|, |v41|, and |v411| by at least 60%.
-  // The center point of |touch_rect| is closest to the center
-  // point of |root_view|.
   touch_rect.SetRect(110, 15, 375, 450);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
-  EXPECT_EQ(root_view, result_view);
+  // Target is |v411| as it is the deepest view touched by at least 60% of the
+  // rect.
+  EXPECT_EQ(v411, result_view);
   result_view = nullptr;
 
   // Covers all views (except |v5| and |v51|) by at least 60%. The
   // center point of |touch_rect| is equally close to the center
-  // points of |v2| and |v32|. One is not a descendant of the other,
-  // so in this case the view selected is arbitrary (i.e.,
-  // it depends only on the ordering of nodes in the views
-  // hierarchy).
+  // points of |v2| and |v32|.
   touch_rect.SetRect(0, 0, 400, 300);
   result_view = root_view->GetEventHandlerForRect(touch_rect);
+  // |v32| is the deepest view that is contained by the rest.
   EXPECT_EQ(v32, result_view);
   result_view = nullptr;
 

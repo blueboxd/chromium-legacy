@@ -73,7 +73,7 @@ bool CanApplyOnCurrentNetworkConditions(
 
 // The default downlink bandwidth estimate used for throttling media requests.
 // Only used when forcing LiteVideos to be allowed.
-constexpr double kLiteVideoDefaultDownlinkBandwidthKbps = 250.0;
+constexpr double kLiteVideoDefaultDownlinkBandwidthKbps = 400.0;
 
 }  // namespace
 
@@ -129,8 +129,9 @@ base::Optional<LiteVideoHint> LiteVideoDecider::CanApplyLiteVideo(
   if (switches::ShouldOverrideLiteVideoDecision()) {
     // Return a default configured hint.
     return LiteVideoHint(kLiteVideoDefaultDownlinkBandwidthKbps,
-                         features::LiteVideoTargetDownlinkRTTLatencyMs(),
-                         features::LiteVideoKilobytesToBufferBeforeThrottle());
+                         features::LiteVideoTargetDownlinkRTTLatency(),
+                         features::LiteVideoKilobytesToBufferBeforeThrottle(),
+                         features::LiteVideoMaxThrottlingDelay());
   }
 
   if (!CanApplyOnCurrentNetworkConditions(is_cellular_network_,

@@ -15,16 +15,20 @@ class Widget;
 class WidgetObserver;
 }  // namespace views
 
-class Browser;
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 class TabSearchBubbleView : public views::BubbleDialogDelegateView,
                             public views::WidgetObserver {
  public:
   // TODO(tluk): Since the Bubble is shown asynchronously, we shouldn't call
   // this if the Widget is hidden and yet to be revealed.
-  static void CreateTabSearchBubble(Browser* browser);
+  static void CreateTabSearchBubble(content::BrowserContext* browser_context,
+                                    views::View* anchor_view);
 
-  TabSearchBubbleView(Browser* browser, views::View* anchor_view);
+  TabSearchBubbleView(content::BrowserContext* browser_context,
+                      views::View* anchor_view);
   ~TabSearchBubbleView() override;
 
   // views::BubbleDialogDelegateView:

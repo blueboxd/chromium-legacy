@@ -27,10 +27,10 @@ class OptOutBlocklistDelegate {
 
   // Notifies |this| that the user blocklisted has changed, and it is
   // guaranteed to be called when the user blocklisted status is changed.
-  //
-  // TODO(crbug/1099030): Update the comment and interface to support providing
-  // a signal that the blocklist is loaded and available.
   virtual void OnUserBlocklistedStatusChange(bool blocklisted) {}
+
+  // Notifies |this| the blocklist loaded state changed to |is_loaded|.
+  virtual void OnLoadingStateChanged(bool is_load) {}
 
   // Notifies |this| that the blocklist is cleared at |time|.
   virtual void OnBlocklistCleared(base::Time time) {}

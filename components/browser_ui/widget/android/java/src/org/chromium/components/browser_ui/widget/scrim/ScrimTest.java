@@ -13,6 +13,8 @@ import static org.junit.Assert.assertTrue;
 
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -36,6 +38,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /** This class tests the behavior of the scrim component. */
@@ -55,6 +58,9 @@ public class ScrimTest extends DummyUiActivityTestCase {
     private final Callback<Boolean> mVisibilityChangeCallback =
             (v) -> mVisibilityChangeCallbackHelper.notifyCalled();
 
+    private GestureDetector mCustomGestureDetector;
+    private CallbackHelper mDelegatedEventHelper;
+
     @Before
     public void setUp() throws TimeoutException {
         ThreadUtils.runOnUiThreadBlocking(() -> {
@@ -68,6 +74,16 @@ public class ScrimTest extends DummyUiActivityTestCase {
 
             mScrimCoordinator =
                     new ScrimCoordinator(getActivity(), mScrimDelegate, mParent, Color.RED);
+
+            mDelegatedEventHelper = new CallbackHelper();
+            mCustomGestureDetector =
+                    new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
+                        @Override
+                        public boolean onDown(MotionEvent e) {
+                            mDelegatedEventHelper.notifyCalled();
+                            return true;
+                        }
+                    });
         });
     }
 
@@ -138,14 +154,41 @@ public class ScrimTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @Feature({"Scrim"})
-    public void testObserver_clickEvent() throws TimeoutException {
+    public void testObserver_clickEvent() throws ExecutionException, TimeoutException {
         showScrim(buildModel(true, false, true, Color.RED), false);
 
         int callCount = mScrimClickCallbackHelper.getCallCount();
-        ScrimMediator mediator = mScrimCoordinator.getMediatorForTesting();
         ScrimView scrimView = mScrimCoordinator.getViewForTesting();
-        ThreadUtils.runOnUiThreadBlocking(() -> mediator.onClick(scrimView));
+        ThreadUtils.runOnUiThreadBlocking(() -> scrimView.callOnClick());
         mScrimClickCallbackHelper.waitForCallback(callCount, 1);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Scrim"})
+    public void testGestureDetector() throws ExecutionException, TimeoutException {
+        ColorDrawable customDrawable = new ColorDrawable(Color.BLUE);
+        PropertyModel model =
+                new PropertyModel.Builder(ScrimProperties.ALL_KEYS)
+                        .with(ScrimProperties.TOP_MARGIN, 0)
+                        .with(ScrimProperties.AFFECTS_STATUS_BAR, false)
+                        .with(ScrimProperties.ANCHOR_VIEW, mAnchorView)
+                        .with(ScrimProperties.SHOW_IN_FRONT_OF_ANCHOR_VIEW, false)
+                        .with(ScrimProperties.CLICK_DELEGATE, mClickDelegate)
+                        .with(ScrimProperties.VISIBILITY_CALLBACK, mVisibilityChangeCallback)
+                        .with(ScrimProperties.BACKGROUND_COLOR, Color.RED)
+                        .with(ScrimProperties.BACKGROUND_DRAWABLE, customDrawable)
+                        .with(ScrimProperties.GESTURE_DETECTOR, mCustomGestureDetector)
+                        .build();
+        showScrim(model, false);
+
+        int gestureCallCount = mDelegatedEventHelper.getCallCount();
+        int callCount = mScrimClickCallbackHelper.getCallCount();
+        ScrimView scrimView = mScrimCoordinator.getViewForTesting();
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> scrimView.dispatchTouchEvent(
+                        MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 0, 0, 0)));
+        mDelegatedEventHelper.waitForCallback(gestureCallCount, 1);
     }
 
     @Test

@@ -674,7 +674,7 @@ TEST_P(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         /*dlp_verdict*/ dlp_verdict,
         /*mimetypes*/ ExeMimeTypes(),
         /*size*/ std::string("download contents").size(),
-        EventResultToString(EventResult::WARNED));
+        /*result*/ EventResultToString(EventResult::WARNED));
 
     request.Start();
 
@@ -739,7 +739,7 @@ TEST_P(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         /*dlp_verdict*/ dlp_verdict,
         /*mimetypes*/ ExeMimeTypes(),
         /*size*/ std::string("download contents").size(),
-        EventResultToString(EventResult::WARNED));
+        /*result*/ EventResultToString(EventResult::WARNED));
 
     request.Start();
 

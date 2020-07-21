@@ -51,7 +51,13 @@ class BASE_EXPORT UkmSourceId {
     // be recorded within the same report interval; it will not be kept in
     // memory between different reports.
     DESKTOP_WEB_APP_ID = 6,
-    kMaxValue = DESKTOP_WEB_APP_ID,
+    // Source ID for web workers, namely SharedWorkers and ServiceWorkers. Web
+    // workers may inherit a source ID from the spawner context (in the case of
+    // dedicated workers), or may have their own source IDs (in the case of
+    // shared workers and service workers). Shared workers and service workers
+    // can be connected to multiple clients (e.g. documents or other workers).
+    WORKER_ID = 7,
+    kMaxValue = WORKER_ID,
   };
 
   // Default constructor has the invalid value.

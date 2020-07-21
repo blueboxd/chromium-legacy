@@ -12,15 +12,15 @@
 #include "content/common/frame_messages.h"
 #include "ipc/ipc_message_macros.h"
 #include "services/device/public/mojom/screen_orientation_lock_types.mojom-shared.h"
+#include "third_party/blink/public/common/widget/device_emulation_params.h"
 #include "third_party/blink/public/common/widget/visual_properties.h"
-#include "third_party/blink/public/web/web_device_emulation_params.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 // Traits for VisualProperties.
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebDeviceEmulationParams::ScreenPosition,
-                          blink::WebDeviceEmulationParams::kScreenPositionLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::EmulatedScreenType,
+                          blink::mojom::EmulatedScreenType::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(device::mojom::ScreenOrientationLockType,
                           device::mojom::ScreenOrientationLockType::kMaxValue)

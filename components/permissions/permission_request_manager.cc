@@ -79,14 +79,28 @@ bool isMediaRequest(PermissionRequestType type) {
          type == PermissionRequestType::PERMISSION_CAMERA_PAN_TILT_ZOOM;
 }
 
-// We only group together media requests. We don't display grouped requests for
-// any other permissions at present.
+bool isArOrCameraRequest(PermissionRequestType type) {
+  return type == PermissionRequestType::PERMISSION_AR ||
+         type == PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA;
+}
+
 bool ShouldGroupRequests(PermissionRequest* a, PermissionRequest* b) {
   if (a->GetOrigin() != b->GetOrigin())
     return false;
 
-  return isMediaRequest(a->GetPermissionRequestType()) &&
-         isMediaRequest(b->GetPermissionRequestType());
+  // Group if both requests are media requests.
+  if (isMediaRequest(a->GetPermissionRequestType()) &&
+      isMediaRequest(b->GetPermissionRequestType())) {
+    return true;
+  }
+
+  // Group if the requests are an AR and a Camera Access request.
+  if (isArOrCameraRequest(a->GetPermissionRequestType()) &&
+      isArOrCameraRequest(b->GetPermissionRequestType())) {
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace

@@ -70,7 +70,9 @@ struct RenderPassGeometry;
 
 // The SkiaOutputSurface implementation running on the GPU thread. This class
 // should be created, used and destroyed on the GPU thread.
-class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
+class SkiaOutputSurfaceImplOnGpu
+    : public gpu::ImageTransportSurfaceDelegate,
+      public gpu::SharedContextState::ContextLostObserver {
  public:
   class ScopedUseContextProvider;
 
@@ -185,6 +187,9 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
       const OutputSurface::Capabilities& capabilities);
 
   bool IsDisplayedAsOverlay();
+
+  // gpu::SharedContextState::ContextLostObserver implementation:
+  void OnContextLost() override;
 
   // gpu::ImageTransportSurfaceDelegate implementation:
 #if defined(OS_WIN)

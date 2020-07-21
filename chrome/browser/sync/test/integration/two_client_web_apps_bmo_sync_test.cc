@@ -56,7 +56,8 @@ class TwoClientWebAppsBMOSyncTest : public SyncTest {
     info.app_url = url;
     AppId dummy_app_id = InstallApp(info, profile1);
     EXPECT_EQ(
-        WebAppInstallObserver(profile2, {dummy_app_id}).AwaitNextInstall(),
+        WebAppInstallObserver::CreateInstallListener(profile2, {dummy_app_id})
+            ->AwaitNextInstall(),
         dummy_app_id);
     return dummy_app_id;
   }
@@ -461,7 +462,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
   ASSERT_NE(app_id1, app_id2);
 
   // Wait for both of the webapps to be installed on profile 1.
-  WebAppInstallObserver(GetProfile(1), {app_id1, app_id2}).AwaitNextInstall();
+  WebAppInstallObserver::CreateInstallListener(GetProfile(1),
+                                               {app_id1, app_id2})
+      ->AwaitNextInstall();
   EXPECT_TRUE(AllProfilesHaveSameWebAppIds());
 
   syncer::StringOrdinal page_ordinal =
@@ -497,6 +500,45 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
   // But the launch ordinal must be different.
   EXPECT_NE(GetAppSorting(GetProfile(0))->GetAppLaunchOrdinal(app_id1),
             GetAppSorting(GetProfile(0))->GetAppLaunchOrdinal(app_id2));
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, UninstallSynced) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameWebAppIds());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Install & uninstall on profile 0, and validate profile 1 sees it.
+  AppId app_id = InstallAppAsUserInitiated(GetProfile(0));
+
+  // Wait for it to arrive on profile 1.
+  WebAppInstallObserver::CreateInstallListener(GetProfile(1), {app_id})
+      ->AwaitNextInstall();
+  EXPECT_TRUE(AllProfilesHaveSameWebAppIds());
+
+  // Uninstall the webapp.
+  UninstallWebApp(GetProfile(0), app_id);
+
+  // Wait for it to uninstall on profile 1.
+  WebAppInstallObserver::AwaitNextUninstall(
+      WebAppInstallObserver::CreateUninstallListener(GetProfile(1), {app_id})
+          .get());
+  EXPECT_TRUE(AllProfilesHaveSameWebAppIds());
+
+  // Next, install on profile 1, uninstall on profile 0, and validate that
+  // profile 1 sees it.
+  app_id = InstallAppAsUserInitiated(GetProfile(1));
+  WebAppInstallObserver::CreateInstallListener(GetProfile(0), {app_id})
+      ->AwaitNextInstall();
+  EXPECT_TRUE(AllProfilesHaveSameWebAppIds());
+
+  // Uninstall the webapp.
+  UninstallWebApp(GetProfile(0), app_id);
+
+  // Wait for it to uninstall on profile 1.
+  WebAppInstallObserver::AwaitNextUninstall(
+      WebAppInstallObserver::CreateUninstallListener(GetProfile(1), {app_id})
+          .get());
+  EXPECT_TRUE(AllProfilesHaveSameWebAppIds());
 }
 
 }  // namespace

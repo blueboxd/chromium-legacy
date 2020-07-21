@@ -446,6 +446,9 @@ std::unique_ptr<SharedImageRepresentationSkia> WrappedSkImage::ProduceSkia(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     scoped_refptr<SharedContextState> context_state) {
+  if (context_state_->context_lost())
+    return nullptr;
+
   DCHECK_EQ(context_state_, context_state.get());
   return std::make_unique<WrappedSkImageRepresentation>(manager, this, tracker);
 }

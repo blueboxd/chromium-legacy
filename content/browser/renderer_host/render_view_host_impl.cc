@@ -414,7 +414,20 @@ bool RenderViewHostImpl::CreateRenderView(
   params->devtools_main_frame_token = frame_tree_node->devtools_frame_token();
   // GuestViews in the same StoragePartition need to find each other's frames.
   params->renderer_wide_named_frame_lookup = GetSiteInstance()->IsGuest();
-  params->inside_portal = delegate_->IsPortal();
+
+  bool is_portal = delegate_->IsPortal();
+  bool is_guest_view = GetSiteInstance()->IsGuest();
+
+  // A view cannot be inside both a <portal> and inside a <webview>.
+  DCHECK(!is_portal || !is_guest_view);
+  if (is_portal) {
+    params->type = mojom::ViewWidgetType::kPortal;
+  } else if (is_guest_view) {
+    params->type = mojom::ViewWidgetType::kGuestView;
+  } else {
+    params->type = mojom::ViewWidgetType::kTopLevel;
+  }
+
   // RenderViweHostImpls is reused after a crash, so reset any endpoint that
   // might be a leftover from a crash.
   page_broadcast_.reset();

@@ -480,11 +480,6 @@ field **WiFi** must be set to an object of type [WiFi](#WiFi-type).
         *WEP-8021X* or *WPA-EAP*, otherwise ignored) - [EAP](#EAP-type)
     * EAP settings.
 
-* **FTEnabled**
-    * (optional, defaults to *false*) - **boolean**
-    * Indicating if the client should attempt to use Fast Transition with the
-    * network.
-
 * **HexSSID**
     * (optional if **SSID** is set, if so defaults to a hex representation of
       **SSID**) - **string**

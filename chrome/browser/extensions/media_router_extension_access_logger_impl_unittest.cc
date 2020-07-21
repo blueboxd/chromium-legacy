@@ -45,9 +45,10 @@ TEST(MediaRouterExtensionAccessLoggerImplTest, LogsUkmCorrectly) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   base::HistogramTester uma_recorder;
 
-  std::unique_ptr<TestingProfile> testing_profile =
-      TestingProfile::Builder().Build();
-  ASSERT_TRUE(testing_profile->CreateHistoryService(true, false));
+  TestingProfile::Builder profile_builder;
+  profile_builder.AddTestingFactory(HistoryServiceFactory::GetInstance(),
+                                    HistoryServiceFactory::GetDefaultFactory());
+  std::unique_ptr<TestingProfile> testing_profile = profile_builder.Build();
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(testing_profile.get(),
                                            ServiceAccessType::EXPLICIT_ACCESS);

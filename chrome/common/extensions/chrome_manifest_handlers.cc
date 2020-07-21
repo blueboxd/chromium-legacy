@@ -19,7 +19,6 @@
 #include "chrome/common/extensions/manifest_handlers/app_icon_color_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
-#include "chrome/common/extensions/manifest_handlers/extension_action_handler.h"
 #include "chrome/common/extensions/manifest_handlers/linked_app_icons.h"
 #include "chrome/common/extensions/manifest_handlers/minimum_chrome_version_checker.h"
 #include "chrome/common/extensions/manifest_handlers/natively_connectable_handler.h"
@@ -53,7 +52,6 @@ void RegisterChromeManifestHandlers() {
   registry->RegisterHandler(std::make_unique<AutomationHandler>());
   registry->RegisterHandler(std::make_unique<CommandsHandler>());
   registry->RegisterHandler(std::make_unique<DevToolsPageHandler>());
-  registry->RegisterHandler(std::make_unique<ExtensionActionHandler>());
   registry->RegisterHandler(std::make_unique<HomepageURLHandler>());
   registry->RegisterHandler(std::make_unique<LinkedAppIconsHandler>());
   registry->RegisterHandler(std::make_unique<MinimumChromeVersionChecker>());

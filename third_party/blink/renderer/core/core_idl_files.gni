@@ -787,6 +787,7 @@ webcore_testing_idl_with_modules_dependency_files =
 
 webcore_testing_dependency_idl_files =
     get_path_info([
+                    "dom/testing/internals_storage_access.idl",
                     "fetch/testing/internals_fetch.idl",
                     "fetch/testing/worker_internals_fetch.idl",
                     "testing/origin_trials_test_partial.idl",

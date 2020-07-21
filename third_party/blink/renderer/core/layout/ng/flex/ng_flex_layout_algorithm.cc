@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -570,8 +571,11 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
           // is not exactly correct.
           // TODO(dgrogan): Replace with a variant of ComputeReplacedSize that
           // ignores min-width, width, max-width.
+          MinMaxSizesInput input(child_percentage_size_.block_size,
+                                 MinMaxSizesType::kContent);
           flex_base_border_box =
-              child.GetLayoutBox()->PreferredLogicalWidths().max_size;
+              ComputeMinAndMaxContentContribution(Style(), child, input)
+                  .sizes.max_size;
         } else {
           flex_base_border_box =
               MinMaxSizesFunc(MinMaxSizesType::kContent).sizes.max_size;

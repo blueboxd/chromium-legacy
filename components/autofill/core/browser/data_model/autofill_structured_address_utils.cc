@@ -1,7 +1,6 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
 
 #include "components/autofill/core/browser/data_model/autofill_structured_address_utils.h"
 
@@ -18,46 +17,46 @@
 namespace autofill {
 namespace structured_address {
 
-Re2ExpressionCache::Re2ExpressionCache() = default;
+Re2RegExCache::Re2RegExCache() = default;
 
 // static
-Re2ExpressionCache* Re2ExpressionCache::Instance() {
-  static base::NoDestructor<Re2ExpressionCache> g_re2regex_cache;
+Re2RegExCache* Re2RegExCache::Instance() {
+  static base::NoDestructor<Re2RegExCache> g_re2regex_cache;
   return g_re2regex_cache.get();
 }
 
-const RE2* Re2ExpressionCache::GetExpression(const std::string& pattern) {
+const RE2* Re2RegExCache::GetRegEx(const std::string& pattern) {
   // For thread safety, acquire a lock to prevent concurrent access.
   base::AutoLock lock(lock_);
 
-  auto it = expression_map_.find(pattern);
-  if (it != expression_map_.end()) {
-    const RE2* expression = it->second.get();
-    return expression;
+  auto it = regex_map_.find(pattern);
+  if (it != regex_map_.end()) {
+    const RE2* regex = it->second.get();
+    return regex;
   }
 
   // Build the expression and verify it is correct.
-  auto expression_ptr = BuildExpressionFromPattern(pattern);
+  auto regex_ptr = BuildRegExFromPattern(pattern);
 
   // Insert the expression into the map, check the success and return the
   // pointer.
-  auto result = expression_map_.emplace(pattern, std::move(expression_ptr));
+  auto result = regex_map_.emplace(pattern, std::move(regex_ptr));
   DCHECK(result.second);
   return result.first->second.get();
 }
 
-std::unique_ptr<const RE2> BuildExpressionFromPattern(std::string pattern) {
+std::unique_ptr<const RE2> BuildRegExFromPattern(std::string pattern) {
   RE2::Options opt;
   opt.set_case_sensitive(false);
 
-  auto expression = std::make_unique<const RE2>(pattern, opt);
+  auto regex = std::make_unique<const RE2>(pattern, opt);
 
-  if (!expression->ok()) {
+  if (!regex->ok()) {
     DEBUG_ALIAS_FOR_CSTR(pattern_copy, pattern.c_str(), 128);
     base::debug::DumpWithoutCrashing();
   }
 
-  return expression;
+  return regex;
 }
 
 bool ParseValueByRegularExpression(
@@ -66,22 +65,21 @@ bool ParseValueByRegularExpression(
     std::map<std::string, std::string>* result_map) {
   DCHECK(result_map);
 
-  const RE2* expression =
-      Re2ExpressionCache::Instance()->GetExpression(pattern);
+  const RE2* regex = Re2RegExCache::Instance()->GetRegEx(pattern);
 
-  return ParseValueByRegularExpression(value, expression, result_map);
+  return ParseValueByRegularExpression(value, regex, result_map);
 }
 
 bool ParseValueByRegularExpression(
     const std::string& value,
-    const RE2* expression,
+    const RE2* regex,
     std::map<std::string, std::string>* result_map) {
-  if (!expression || !expression->ok())
+  if (!regex || !regex->ok())
     return false;
 
   // Get the number of capturing groups in the expression.
   // Note, the capturing group for the full match is not counted.
-  size_t number_of_capturing_groups = expression->NumberOfCapturingGroups() + 1;
+  size_t number_of_capturing_groups = regex->NumberOfCapturingGroups() + 1;
 
   // Create result vectors to get the matches for the capturing groups.
   std::vector<std::string> results(number_of_capturing_groups);
@@ -96,14 +94,14 @@ bool ParseValueByRegularExpression(
   }
 
   // One capturing group is not counted since it holds the full match.
-  if (!RE2::FullMatchN(value, *expression, match_results_ptr.data(),
+  if (!RE2::FullMatchN(value, *regex, match_results_ptr.data(),
                        number_of_capturing_groups - 1))
     return false;
 
   // If successful, write the values into the results map.
   // Note, the capturing group for the full match creates an off-by-one scenario
   // in the indexing.
-  for (auto named_group : expression->NamedCapturingGroups())
+  for (auto named_group : regex->NamedCapturingGroups())
     (*result_map)[named_group.first] =
         std::move(results.at(named_group.second - 1));
 
@@ -111,24 +109,22 @@ bool ParseValueByRegularExpression(
 }
 
 bool IsPartialMatch(const std::string& value, const std::string& pattern) {
-  const RE2* expression =
-      Re2ExpressionCache::Instance()->GetExpression(pattern);
-  if (!expression || !expression->ok())
+  const RE2* regex = Re2RegExCache::Instance()->GetRegEx(pattern);
+  if (!regex || !regex->ok())
     return false;
 
-  return RE2::PartialMatch(value, *expression);
+  return RE2::PartialMatch(value, *regex);
 }
 
 std::vector<std::string> GetAllPartialMatches(const std::string& value,
                                               const std::string& pattern) {
-  const RE2* expression =
-      Re2ExpressionCache::Instance()->GetExpression(pattern);
-  if (!expression || !expression->ok())
+  const RE2* regex = Re2RegExCache::Instance()->GetRegEx(pattern);
+  if (!regex || !regex->ok())
     return {};
   re2::StringPiece input(value);
   std::string match;
   std::vector<std::string> matches;
-  while (re2::RE2::FindAndConsume(&input, *expression, &match)) {
+  while (re2::RE2::FindAndConsume(&input, *regex, &match)) {
     matches.emplace_back(match);
   }
   return matches;
@@ -140,6 +136,49 @@ std::vector<std::string> ExtractAllPlaceholders(const std::string& value) {
 
 std::string GetPlaceholderToken(const std::string& value) {
   return base::StrCat({"${", value, "}"});
+}
+
+std::string CaptureTypeWithPattern(
+    const ServerFieldType& type,
+    std::initializer_list<base::StringPiece> pattern_span_initializer_list) {
+  return CaptureTypeWithPattern(type, pattern_span_initializer_list,
+                                CaptureOptions());
+}
+
+std::string CaptureTypeWithPattern(
+    const ServerFieldType& type,
+    std::initializer_list<base::StringPiece> pattern_span_initializer_list,
+    const CaptureOptions& options) {
+  return CaptureTypeWithPattern(
+      type, base::StrCat(base::make_span(pattern_span_initializer_list)),
+      options);
+}
+
+std::string CaptureTypeWithPattern(const ServerFieldType& type,
+                                   const std::string& pattern,
+                                   const CaptureOptions& options) {
+  std::string quantifier;
+  switch (options.quantifier) {
+    // Makes the match optional.
+    case MATCH_OPTIONAL:
+      quantifier = "?";
+      break;
+    // Makes the match lazy meaning that it is avoided if possible.
+    case MATCH_LAZY_OPTIONAL:
+      quantifier = "??";
+      break;
+    // Makes the match required.
+    case MATCH_REQUIRED:
+      quantifier = "";
+  }
+
+  return base::StrCat({"(?:(?P<", AutofillType(type).ToString(), ">", pattern,
+                       ")(?:", options.separator, "))", quantifier});
+}
+
+std::string CaptureTypeWithPattern(const ServerFieldType& type,
+                                   const std::string& pattern) {
+  return CaptureTypeWithPattern(type, pattern, CaptureOptions());
 }
 
 }  // namespace structured_address

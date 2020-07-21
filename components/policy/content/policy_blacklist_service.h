@@ -18,20 +18,20 @@ namespace safe_search_api {
 class URLChecker;
 }  // namespace safe_search_api
 
-// PolicyBlacklistService and PolicyBlacklistFactory provide a way for
-// us to access URLBlacklistManager, a policy block list service based on
-// the Preference Service. The URLBlacklistManager responds to permission
+// PolicyBlocklistService and PolicyBlocklistFactory provide a way for
+// us to access URLBlocklistManager, a policy block list service based on
+// the Preference Service. The URLBlocklistManager responds to permission
 // changes and is per-Profile.
-class PolicyBlacklistService : public KeyedService {
+class PolicyBlocklistService : public KeyedService {
  public:
   using CheckSafeSearchCallback = base::OnceCallback<void(bool is_safe)>;
 
-  PolicyBlacklistService(
+  PolicyBlocklistService(
       content::BrowserContext* browser_context,
-      std::unique_ptr<policy::URLBlacklistManager> url_blacklist_manager);
-  ~PolicyBlacklistService() override;
+      std::unique_ptr<policy::URLBlocklistManager> url_blocklist_manager);
+  ~PolicyBlocklistService() override;
 
-  policy::URLBlacklist::URLBlacklistState GetURLBlacklistState(
+  policy::URLBlocklist::URLBlocklistState GetURLBlocklistState(
       const GURL& url) const;
 
   // Starts a call to the Safe Search API for the given URL to determine whether
@@ -45,22 +45,22 @@ class PolicyBlacklistService : public KeyedService {
 
  private:
   content::BrowserContext* const browser_context_;
-  std::unique_ptr<policy::URLBlacklistManager> url_blacklist_manager_;
+  std::unique_ptr<policy::URLBlocklistManager> url_blocklist_manager_;
   std::unique_ptr<safe_search_api::URLChecker> safe_search_url_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(PolicyBlacklistService);
+  DISALLOW_COPY_AND_ASSIGN(PolicyBlocklistService);
 };
 
-class PolicyBlacklistFactory : public BrowserContextKeyedServiceFactory {
+class PolicyBlocklistFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static PolicyBlacklistFactory* GetInstance();
-  static PolicyBlacklistService* GetForBrowserContext(
+  static PolicyBlocklistFactory* GetInstance();
+  static PolicyBlocklistService* GetForBrowserContext(
       content::BrowserContext* context);
 
  private:
-  PolicyBlacklistFactory();
-  ~PolicyBlacklistFactory() override;
-  friend struct base::DefaultSingletonTraits<PolicyBlacklistFactory>;
+  PolicyBlocklistFactory();
+  ~PolicyBlocklistFactory() override;
+  friend struct base::DefaultSingletonTraits<PolicyBlocklistFactory>;
 
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
@@ -70,7 +70,7 @@ class PolicyBlacklistFactory : public BrowserContextKeyedServiceFactory {
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 
-  DISALLOW_COPY_AND_ASSIGN(PolicyBlacklistFactory);
+  DISALLOW_COPY_AND_ASSIGN(PolicyBlocklistFactory);
 };
 
 #endif  // COMPONENTS_POLICY_CONTENT_POLICY_BLACKLIST_SERVICE_H_

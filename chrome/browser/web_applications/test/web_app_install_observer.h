@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_TEST_WEB_APP_INSTALL_OBSERVER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_TEST_WEB_APP_INSTALL_OBSERVER_H_
 
+#include <memory>
 #include <set>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
@@ -25,14 +25,38 @@ class WebAppInstallObserver final : public AppRegistrarObserver {
   explicit WebAppInstallObserver(AppRegistrar* registrar);
   explicit WebAppInstallObserver(Profile* profile);
 
-  // Restricts this observer to only listen for the given |listen_for_app_id|.
-  explicit WebAppInstallObserver(AppRegistrar* registrar,
-                                 const std::set<AppId>& listen_for_app_ids);
-  explicit WebAppInstallObserver(Profile* profile,
-                                 const std::set<AppId>& listen_for_app_ids);
+  // Restricts this observer to only listen for the given
+  // |listening_for_install_app_ids|. Settings these means that the
+  // WebAppInstalledDelegate doesn't get called until all of the ids in
+  // |listening_for_install_app_ids| are installed. This also applies to
+  // AwaitNextInstall().
+  static std::unique_ptr<WebAppInstallObserver> CreateInstallListener(
+      Profile* registrar,
+      const std::set<AppId>& listening_for_install_app_ids);
+
+  // Restricts this observer to only listen for the given
+  // |listening_for_uninstall_app_ids|. Settings these means that the
+  // WebAppUninstalledDelegate doesn't get called until all of the ids in
+  // |listening_for_uninstall_app_ids| are uninstalled. This also applies to
+  // AwaitNextUninstall().
+  static std::unique_ptr<WebAppInstallObserver> CreateUninstallListener(
+      Profile* registrar,
+      const std::set<AppId>& listening_for_uninstall_app_ids);
+
   ~WebAppInstallObserver() override;
 
+  // Convenience method to wait for the next install, or for all installations
+  // of |listening_for_install_app_ids| specified above. Calls
+  // SetWebAppInstalledDelegate with a base::RunLoop quit closure, and then runs
+  // the loop. Will DCHECK if an install delegate is already populated.
+  // TODO(dmurph): Refactor to be static like AwaitNextUninstall().
   AppId AwaitNextInstall();
+
+  // Convenience method to wait for the next uninstall, or for all
+  // uninstallations of |listening_for_uninstall_app_ids| specified above. Calls
+  // SetWebAppUninstalledDelegate with a base::RunLoop quit closure, and then
+  // runs the loop. Will DCHECK if an uninstall delegate is already populated.
+  static AppId AwaitNextUninstall(WebAppInstallObserver* install_observer);
 
   using WebAppInstalledDelegate =
       base::RepeatingCallback<void(const AppId& app_id)>;
@@ -60,9 +84,24 @@ class WebAppInstallObserver final : public AppRegistrarObserver {
   void OnWebAppProfileWillBeDeleted(const AppId& app_id) override;
 
  private:
-  base::RunLoop run_loop_;
-  AppId app_id_;
-  std::set<AppId> listening_for_app_ids_;
+  // Restricts this observer to only listen for the given
+  // |listening_for_install_app_ids| and |listening_for_uninstall_app_ids|.
+  // Settings these means that the WebAppInstalledDelegate or the
+  // WebAppUninstalledDelegate don't get called until all of the ids in
+  // |listening_for_install_app_ids| or |listening_for_uninstall_app_ids| are
+  // installed or uninstalled (respectively). This also applies to
+  // AwaitNextInstall() and AwaitNextUninstall().
+  explicit WebAppInstallObserver(
+      AppRegistrar* registrar,
+      const std::set<AppId>& listening_for_install_app_ids,
+      const std::set<AppId>& listening_for_uninstall_app_ids);
+  explicit WebAppInstallObserver(
+      Profile* profile,
+      const std::set<AppId>& listening_for_install_app_ids,
+      const std::set<AppId>& listening_for_uninstall_app_ids);
+
+  std::set<AppId> listening_for_install_app_ids_;
+  std::set<AppId> listening_for_uninstall_app_ids_;
 
   WebAppInstalledDelegate app_installed_delegate_;
   WebAppWillBeUpdatedFromSyncDelegate app_will_be_updated_from_sync_delegate_;

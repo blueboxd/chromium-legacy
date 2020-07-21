@@ -38,8 +38,6 @@ ResourceLoadingHintsAgent::ResourceLoadingHintsAgent(
       content::RenderFrameObserverTracker<ResourceLoadingHintsAgent>(
           render_frame) {
   DCHECK(render_frame);
-  DCHECK(IsMainFrame());
-
   associated_interfaces->AddInterface(base::BindRepeating(
       &ResourceLoadingHintsAgent::SetReceiver, base::Unretained(this)));
 }
@@ -51,17 +49,23 @@ GURL ResourceLoadingHintsAgent::GetDocumentURL() const {
 void ResourceLoadingHintsAgent::DidStartNavigation(
     const GURL& url,
     base::Optional<blink::WebNavigationType> navigation_type) {
+  if (!IsMainFrame())
+    return;
   subresource_redirect_hints_agent_.DidStartNavigation();
 }
 
 void ResourceLoadingHintsAgent::ReadyToCommitNavigation(
     blink::WebDocumentLoader* document_loader) {
+  if (!IsMainFrame())
+    return;
+
   subresource_redirect_hints_agent_.ReadyToCommitNavigation(
       render_frame()->GetRoutingID());
 }
 
 void ResourceLoadingHintsAgent::DidCreateNewDocument() {
-  DCHECK(IsMainFrame());
+  if (!IsMainFrame())
+    return;
   if (!GetDocumentURL().SchemeIsHTTPOrHTTPS())
     return;
 
@@ -101,7 +105,8 @@ bool ResourceLoadingHintsAgent::IsMainFrame() const {
 
 void ResourceLoadingHintsAgent::SetResourceLoadingHints(
     blink::mojom::PreviewsResourceLoadingHintsPtr resource_loading_hints) {
-  DCHECK(IsMainFrame());
+  if (!IsMainFrame())
+    return;
 
   UMA_HISTOGRAM_COUNTS_100(
       "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -117,8 +122,18 @@ void ResourceLoadingHintsAgent::SetResourceLoadingHints(
 
 void ResourceLoadingHintsAgent::SetCompressPublicImagesHints(
     blink::mojom::CompressPublicImagesHintsPtr images_hints) {
+  if (!IsMainFrame())
+    return;
   subresource_redirect_hints_agent_.SetCompressPublicImagesHints(
       std::move(images_hints));
+}
+
+void ResourceLoadingHintsAgent::SetLiteVideoHint(
+    blink::mojom::LiteVideoHintPtr lite_video_hint) {
+  auto* lite_video_hint_agent =
+      lite_video::LiteVideoHintAgent::Get(render_frame());
+  if (lite_video_hint_agent)
+    lite_video_hint_agent->SetLiteVideoHint(std::move(lite_video_hint));
 }
 
 }  // namespace previews

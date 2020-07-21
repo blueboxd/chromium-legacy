@@ -91,7 +91,7 @@ void PopupOpenerTabHelper::OnVisibilityChanged(content::Visibility visibility) {
 }
 
 void PopupOpenerTabHelper::DidGetUserInteraction(
-    const blink::WebInputEvent::Type type) {
+    const blink::WebInputEvent& event) {
   has_opened_popup_since_last_user_gesture_ = false;
 }
 

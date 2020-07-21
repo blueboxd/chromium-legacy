@@ -4,6 +4,7 @@
 
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_helper.h"
 
+#include "base/test/metrics/histogram_tester.h"
 #include "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
 #include "ios/components/security_interstitials/lookalikes/lookalike_url_tab_allow_list.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
@@ -51,6 +52,8 @@ class LookalikeUrlTabHelperTest : public PlatformTest {
 
   LookalikeUrlTabAllowList* allow_list() { return allow_list_; }
 
+  base::HistogramTester histogram_tester_;
+
  private:
   web::TestWebState web_state_;
   LookalikeUrlTabAllowList* allow_list_;
@@ -59,12 +62,18 @@ class LookalikeUrlTabHelperTest : public PlatformTest {
 // Tests that ShouldAllowResponse properly blocks lookalike navigations and
 // allows subframe navigations, non-HTTP/S navigations, and navigations
 // to allowed domains. ShouldAllowRequest should always allow the navigation.
+// Also tests that UMA records correctly.
 TEST_F(LookalikeUrlTabHelperTest, ShouldAllowResponse) {
   GURL lookalike_url("https://xn--googl-fsa.com/");
 
   // Lookalike IDNs should be blocked.
   EXPECT_FALSE(ShouldAllowResponseUrl(lookalike_url, /*main_frame=*/true)
                    .ShouldAllowNavigation());
+  histogram_tester_.ExpectUniqueSample(
+      lookalikes::kHistogramName,
+      static_cast<base::HistogramBase::Sample>(
+          NavigationSuggestionEvent::kMatchSkeletonTop500),
+      1);
 
   // Non-main frame navigations should be allowed.
   EXPECT_TRUE(ShouldAllowResponseUrl(lookalike_url, /*main_frame=*/false)
@@ -79,4 +88,6 @@ TEST_F(LookalikeUrlTabHelperTest, ShouldAllowResponse) {
   allow_list()->AllowDomain("xn--googl-fsa.com");
   EXPECT_TRUE(ShouldAllowResponseUrl(lookalike_url, /*main_frame=*/true)
                   .ShouldAllowNavigation());
+
+  histogram_tester_.ExpectTotalCount(lookalikes::kHistogramName, 1);
 }

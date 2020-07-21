@@ -20,6 +20,7 @@ include_rules = [
   "+components/search_engines",
   "+components/suggestions",
   "+components/sync/driver",
+  "+components/version_info",
   "+components/ukm/ios",
   "+components/unified_consent",
   "+components/url_formatter",

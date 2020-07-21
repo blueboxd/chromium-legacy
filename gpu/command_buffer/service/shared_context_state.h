@@ -61,6 +61,8 @@ class GPU_GLES2_EXPORT SharedContextState
       public base::RefCounted<SharedContextState>,
       public GrContextOptions::ShaderErrorHandler {
  public:
+  using ContextLostCallback = base::OnceCallback<void(bool)>;
+
   // TODO: Refactor code to have seperate constructor for GL and Vulkan and not
   // initialize/use GL related info for vulkan and vice-versa.
   SharedContextState(
@@ -68,7 +70,7 @@ class GPU_GLES2_EXPORT SharedContextState
       scoped_refptr<gl::GLSurface> surface,
       scoped_refptr<gl::GLContext> context,
       bool use_virtualized_gl_contexts,
-      base::OnceClosure context_lost_callback,
+      ContextLostCallback context_lost_callback,
       GrContextType gr_context_type = GrContextType::kGL,
       viz::VulkanContextProvider* vulkan_context_provider = nullptr,
       viz::MetalContextProvider* metal_context_provider = nullptr,
@@ -250,7 +252,7 @@ class GPU_GLES2_EXPORT SharedContextState
 
   bool use_virtualized_gl_contexts_ = false;
   bool support_vulkan_external_object_ = false;
-  base::OnceClosure context_lost_callback_;
+  ContextLostCallback context_lost_callback_;
   GrContextType gr_context_type_ = GrContextType::kGL;
   MemoryTracker memory_tracker_;
   viz::VulkanContextProvider* const vk_context_provider_;
@@ -289,6 +291,7 @@ class GPU_GLES2_EXPORT SharedContextState
   base::MRUCache<void*, sk_sp<SkSurface>> sk_surface_cache_;
 
   bool device_needs_reset_ = false;
+  bool context_lost_by_robustness_extension = false;
   base::Time last_gl_check_graphics_reset_status_;
   bool disable_check_reset_status_throttling_for_test_ = false;
 

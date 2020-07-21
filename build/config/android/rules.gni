@@ -978,9 +978,6 @@ if (enable_java_templates) {
       # No package means resources override their deps.
       if (defined(custom_package) || defined(android_manifest)) {
         r_text = _r_text_out_path
-      } else {
-        assert(defined(invoker.deps),
-               "Must specify deps when custom_package is omitted.")
       }
       if (defined(_srcjar_path)) {
         srcjar = _srcjar_path

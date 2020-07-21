@@ -13,6 +13,7 @@
 #include "chrome/services/sharing/public/mojom/webrtc_signaling_messenger.mojom.h"
 #include "services/network/public/mojom/mdns_responder.mojom.h"
 #include "services/network/public/mojom/p2p.mojom.h"
+#include "third_party/abseil-cpp/absl/strings/string_view.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 
 namespace sharing {

@@ -338,6 +338,8 @@ target(link_target_type, "gles2_sources") {
 
     if (is_linux || is_fuchsia || is_android || is_win) {
       sources += [
+        "external_semaphore.cc",
+        "external_semaphore.h",
         "external_vk_image_backing.cc",
         "external_vk_image_backing.h",
         "external_vk_image_factory.cc",

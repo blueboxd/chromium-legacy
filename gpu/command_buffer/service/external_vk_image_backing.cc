@@ -357,7 +357,7 @@ ExternalVkImageBacking::~ExternalVkImageBacking() {
 
 bool ExternalVkImageBacking::BeginAccess(
     bool readonly,
-    std::vector<SemaphoreHandle>* semaphore_handles,
+    std::vector<ExternalSemaphore>* external_semaphores,
     bool is_gl) {
   DLOG_IF(ERROR, gl_reads_in_progress_ != 0 && !is_gl)
       << "Backing is being accessed by both GL and Vulkan.";
@@ -373,14 +373,14 @@ bool ExternalVkImageBacking::BeginAccess(
       UpdateContent(kInGLTexture);
   }
 
-  if (!BeginAccessInternal(readonly, semaphore_handles))
+  if (!BeginAccessInternal(readonly, external_semaphores))
     return false;
 
   if (!is_gl)
     return true;
 
-  if (need_synchronization() && semaphore_handles->empty()) {
-    // For the first time GL BeginAccess(), semaphore_handles could be empty,
+  if (need_synchronization() && external_semaphores->empty()) {
+    // For the first time GL BeginAccess(), external_semaphores could be empty,
     // since the Vulkan usage will not provide semaphore for EndAccess() call,
     // if ProduceGL*() is never called. In this case, image layout and queue
     // family will not be ready for GL access as well.
@@ -406,7 +406,8 @@ bool ExternalVkImageBacking::BeginAccess(
     auto handle =
         vulkan_implementation()->GetSemaphoreHandle(device(), semaphore);
     DCHECK(handle.is_valid());
-    semaphore_handles->push_back(std::move(handle));
+    external_semaphores->push_back(ExternalSemaphore::CreateFromHandle(
+        context_provider(), std::move(handle)));
     // We're done with the semaphore, enqueue deferred cleanup.
     fence_helper()->EnqueueSemaphoreCleanupForSubmittedWork(semaphore);
   }
@@ -419,17 +420,17 @@ bool ExternalVkImageBacking::BeginAccess(
 }
 
 void ExternalVkImageBacking::EndAccess(bool readonly,
-                                       SemaphoreHandle semaphore_handle,
+                                       ExternalSemaphore external_semaphore,
                                        bool is_gl) {
   if (is_gl && readonly) {
     DCHECK(gl_reads_in_progress_);
     if (--gl_reads_in_progress_ > 0) {
-      DCHECK(!semaphore_handle.is_valid());
+      DCHECK(!external_semaphore);
       return;
     }
   }
 
-  EndAccessInternal(readonly, std::move(semaphore_handle));
+  EndAccessInternal(readonly, std::move(external_semaphore));
   if (!readonly) {
     if (use_separate_gl_texture()) {
       latest_content_ = is_gl ? kInGLTexture : kInVkImage;
@@ -706,8 +707,8 @@ bool ExternalVkImageBacking::WritePixelsWithCallback(
   std::move(callback).Run(buffer);
   vma::UnmapMemory(allocator, stage_allocation);
 
-  std::vector<gpu::SemaphoreHandle> handles;
-  if (!BeginAccessInternal(false /* readonly */, &handles)) {
+  std::vector<ExternalSemaphore> external_semaphores;
+  if (!BeginAccessInternal(false /* readonly */, &external_semaphores)) {
     DLOG(ERROR) << "BeginAccess() failed.";
     vma::DestroyBuffer(allocator, stage_buffer, stage_allocation);
     return false;
@@ -736,9 +737,9 @@ bool ExternalVkImageBacking::WritePixelsWithCallback(
   SetCleared();
 
   if (!need_synchronization()) {
-    DCHECK(handles.empty());
+    DCHECK(external_semaphores.empty());
     command_buffer->Submit(0, nullptr, 0, nullptr);
-    EndAccessInternal(false /* readonly */, SemaphoreHandle());
+    EndAccessInternal(false /* readonly */, ExternalSemaphore());
 
     fence_helper()->EnqueueVulkanObjectCleanupForSubmittedWork(
         std::move(command_buffer));
@@ -748,28 +749,22 @@ bool ExternalVkImageBacking::WritePixelsWithCallback(
   }
 
   std::vector<VkSemaphore> begin_access_semaphores;
-  begin_access_semaphores.reserve(handles.size() + 1);
-  for (auto& handle : handles) {
-    VkSemaphore semaphore = vulkan_implementation()->ImportSemaphoreHandle(
-        device(), std::move(handle));
-    begin_access_semaphores.emplace_back(semaphore);
+  begin_access_semaphores.reserve(external_semaphores.size() + 1);
+  for (auto& external_semaphore : external_semaphores) {
+    begin_access_semaphores.emplace_back(external_semaphore.TakeVkSemaphore());
   }
 
-  VkSemaphore end_access_semaphore =
-      vulkan_implementation()->CreateExternalSemaphore(device());
+  auto end_access_semaphore = ExternalSemaphore::Create(context_provider());
+  VkSemaphore vk_end_access_semaphore = end_access_semaphore.TakeVkSemaphore();
   command_buffer->Submit(begin_access_semaphores.size(),
                          begin_access_semaphores.data(), 1,
-                         &end_access_semaphore);
-
-  auto end_access_semaphore_handle =
-      vulkan_implementation()->GetSemaphoreHandle(device(),
-                                                  end_access_semaphore);
-  EndAccessInternal(false /* readonly */,
-                    std::move(end_access_semaphore_handle));
+                         &vk_end_access_semaphore);
+  EndAccessInternal(false /* readonly */, std::move(end_access_semaphore));
 
   fence_helper()->EnqueueVulkanObjectCleanupForSubmittedWork(
       std::move(command_buffer));
-  begin_access_semaphores.emplace_back(end_access_semaphore);
+  // TODO(penghuang): reuse vk_end_access_semaphore.
+  begin_access_semaphores.emplace_back(vk_end_access_semaphore);
   fence_helper()->EnqueueSemaphoresCleanupForSubmittedWork(
       begin_access_semaphores);
   fence_helper()->EnqueueBufferCleanupForSubmittedWork(stage_buffer,
@@ -780,19 +775,19 @@ bool ExternalVkImageBacking::WritePixelsWithCallback(
 bool ExternalVkImageBacking::WritePixelsWithData(
     base::span<const uint8_t> pixel_data,
     size_t stride) {
-  std::vector<gpu::SemaphoreHandle> handles;
-  if (!BeginAccessInternal(false /* readonly */, &handles)) {
+  std::vector<ExternalSemaphore> external_semaphores;
+  if (!BeginAccessInternal(false /* readonly */, &external_semaphores)) {
     DLOG(ERROR) << "BeginAccess() failed.";
     return false;
   }
 
   std::vector<GrBackendSemaphore> begin_access_semaphores;
-  begin_access_semaphores.reserve(handles.size() + 1);
-  for (auto& handle : handles) {
-    VkSemaphore semaphore = vulkan_implementation()->ImportSemaphoreHandle(
-        device(), std::move(handle));
+  begin_access_semaphores.reserve(external_semaphores.size() + 1);
+  for (auto& external_semaphore : external_semaphores) {
+    // TODO(penghuang): reuse vk_semaphore
+    VkSemaphore vk_semaphore = external_semaphore.TakeVkSemaphore();
     begin_access_semaphores.emplace_back();
-    begin_access_semaphores.back().initVulkan(semaphore);
+    begin_access_semaphores.back().initVulkan(vk_semaphore);
   }
 
   auto* gr_context = context_state_->gr_context();
@@ -810,34 +805,34 @@ bool ExternalVkImageBacking::WritePixelsWithData(
   }
 
   if (!need_synchronization()) {
-    DCHECK(handles.empty());
-    EndAccessInternal(false /* readonly */, SemaphoreHandle());
+    DCHECK(external_semaphores.empty());
+    EndAccessInternal(false /* readonly */, ExternalSemaphore());
     return true;
   }
 
-  VkSemaphore end_access_semaphore =
-      vulkan_implementation()->CreateExternalSemaphore(device());
-  GrBackendSemaphore end_access_backend_semaphore;
-  end_access_backend_semaphore.initVulkan(end_access_semaphore);
-
-  GrFlushInfo flush_info = {
-      .fNumSemaphores = 1,
-      .fSignalSemaphores = &end_access_backend_semaphore,
-  };
-
-  gr_context->flush(flush_info);
+  gr_context->flush({});
   gr_context->setBackendTextureState(
       backend_texture_,
       GrBackendSurfaceMutableState(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                    VK_QUEUE_FAMILY_EXTERNAL));
+
+  auto end_access_semaphore = ExternalSemaphore::Create(context_provider());
+  VkSemaphore vk_end_access_semaphore = end_access_semaphore.TakeVkSemaphore();
+  GrBackendSemaphore end_access_backend_semaphore;
+  end_access_backend_semaphore.initVulkan(vk_end_access_semaphore);
+  GrFlushInfo flush_info = {
+      .fNumSemaphores = 1,
+      .fSignalSemaphores = &end_access_backend_semaphore,
+  };
+  gr_context->flush(flush_info);
+
   // Submit so the |end_access_semaphore| is ready for waiting.
   gr_context->submit();
 
-  auto end_access_semaphore_handle =
-      vulkan_implementation()->GetSemaphoreHandle(device(),
-                                                  end_access_semaphore);
-  EndAccessInternal(false /* readonly */,
-                    std::move(end_access_semaphore_handle));
+  // TODO(penghuang): reuse vk_end_access_semaphore.
+  fence_helper()->EnqueueSemaphoreCleanupForSubmittedWork(
+      vk_end_access_semaphore);
+  EndAccessInternal(false /* readonly */, std::move(end_access_semaphore));
   return true;
 }
 
@@ -954,9 +949,9 @@ void ExternalVkImageBacking::CopyPixelsFromShmToGLTexture() {
 
 bool ExternalVkImageBacking::BeginAccessInternal(
     bool readonly,
-    std::vector<SemaphoreHandle>* semaphore_handles) {
-  DCHECK(semaphore_handles);
-  DCHECK(semaphore_handles->empty());
+    std::vector<ExternalSemaphore>* external_semaphores) {
+  DCHECK(external_semaphores);
+  DCHECK(external_semaphores->empty());
   if (is_write_in_progress_) {
     DLOG(ERROR) << "Unable to begin read or write access because another write "
                    "access is in progress";
@@ -974,32 +969,32 @@ bool ExternalVkImageBacking::BeginAccessInternal(
         << "Concurrent reading may cause problem.";
     ++reads_in_progress_;
     // If a shared image is read repeatedly without any write access,
-    // |read_semaphore_handles_| will never be consumed and released, and then
+    // |read_semaphores_| will never be consumed and released, and then
     // chrome will run out of file descriptors. To avoid this problem, we wait
     // on read semaphores for readonly access too. And in most cases, a shared
     // image is only read from one vulkan device queue, so it should not have
     // performance impact.
     // TODO(penghuang): avoid waiting on read semaphores.
-    *semaphore_handles = std::move(read_semaphore_handles_);
-    read_semaphore_handles_.clear();
+    *external_semaphores = std::move(read_semaphores_);
+    read_semaphores_.clear();
 
     // A semaphore will become unsignaled, when it has been signaled and waited,
     // so it is not safe to reuse it.
-    if (write_semaphore_handle_.is_valid())
-      semaphore_handles->push_back(std::move(write_semaphore_handle_));
+    if (write_semaphore_)
+      external_semaphores->push_back(std::move(write_semaphore_));
   } else {
     is_write_in_progress_ = true;
-    *semaphore_handles = std::move(read_semaphore_handles_);
-    read_semaphore_handles_.clear();
-    if (write_semaphore_handle_.is_valid())
-      semaphore_handles->push_back(std::move(write_semaphore_handle_));
+    *external_semaphores = std::move(read_semaphores_);
+    read_semaphores_.clear();
+    if (write_semaphore_)
+      external_semaphores->push_back(std::move(write_semaphore_));
   }
   return true;
 }
 
 void ExternalVkImageBacking::EndAccessInternal(
     bool readonly,
-    SemaphoreHandle semaphore_handle) {
+    ExternalSemaphore external_semaphore) {
   if (readonly) {
     DCHECK_GT(reads_in_progress_, 0u);
     --reads_in_progress_;
@@ -1011,13 +1006,13 @@ void ExternalVkImageBacking::EndAccessInternal(
   // synchronization is not needed if it is not the last gl access.
   if (need_synchronization() && reads_in_progress_ == 0) {
     DCHECK(!is_write_in_progress_);
-    DCHECK(semaphore_handle.is_valid());
+    DCHECK(external_semaphore);
     if (readonly) {
-      read_semaphore_handles_.push_back(std::move(semaphore_handle));
+      read_semaphores_.push_back(std::move(external_semaphore));
     } else {
-      DCHECK(!write_semaphore_handle_.is_valid());
-      DCHECK(read_semaphore_handles_.empty());
-      write_semaphore_handle_ = std::move(semaphore_handle);
+      DCHECK(!write_semaphore_);
+      DCHECK(read_semaphores_.empty());
+      write_semaphore_ = std::move(external_semaphore);
     }
   }
 }

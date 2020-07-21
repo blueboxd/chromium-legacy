@@ -133,7 +133,7 @@ def _RunLint(lint_binary_path,
              lint_gen_dir,
              baseline,
              testonly_target=False,
-             can_fail_build=False,
+             warnings_as_errors=False,
              silent=False):
   logging.info('Lint starting')
 
@@ -234,10 +234,10 @@ def _RunLint(lint_binary_path,
             ' - For more information about lint and how to fix lint issues,'
             ' please refer to {}\n'.format(_SrcRelative(project_xml_path),
                                            _LINT_MD_URL))
-    if can_fail_build:
-      raise
-    else:
-      print(e)
+      if warnings_as_errors:
+        raise
+      else:
+        print(e)
   else:
     # Lint succeeded, no need to keep generated files for debugging purposes.
     shutil.rmtree(resource_root_dir, ignore_errors=True)
@@ -277,10 +277,9 @@ def _ParseArgs(argv):
                       'targets.')
   parser.add_argument('--manifest-package',
                       help='Package name of the AndroidManifest.xml.')
-  parser.add_argument('--can-fail-build',
+  parser.add_argument('--warnings-as-errors',
                       action='store_true',
-                      help='If set, script will exit with nonzero exit status'
-                      ' if lint errors are present')
+                      help='Treat all warnings as errors.')
   parser.add_argument('--silent',
                       action='store_true',
                       help='If set, script will not log anything.')
@@ -347,7 +346,7 @@ def main():
            args.lint_gen_dir,
            args.baseline,
            testonly_target=args.testonly,
-           can_fail_build=args.can_fail_build,
+           warnings_as_errors=args.warnings_as_errors,
            silent=args.silent)
   logging.info('Creating stamp file')
   build_utils.Touch(args.stamp)

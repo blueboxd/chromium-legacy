@@ -32,6 +32,9 @@ def main(argv):
   parser.add_argument('--stamp')
   parser.add_argument('-v', '--verbose', action='store_true')
   parser.add_argument('--missing-classes-allowlist')
+  parser.add_argument('--warnings-as-errors',
+                      action='store_true',
+                      help='Treat all warnings as errors.')
   _AddSwitch(parser, '--is-prebuilt')
   args = parser.parse_args(argv)
 
@@ -57,7 +60,10 @@ def main(argv):
   cmd += args.full_classpath_jars
   cmd += [str(len(args.full_classpath_gn_targets))]
   cmd += args.full_classpath_gn_targets
-  subprocess.check_call(cmd)
+  build_utils.CheckOutput(cmd,
+                          print_stdout=True,
+                          fail_func=None,
+                          fail_on_output=args.warnings_as_errors)
 
   if args.stamp:
     build_utils.Touch(args.stamp)

@@ -36,6 +36,7 @@
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
@@ -1683,8 +1684,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
                  kSimplifiedDomainDisplayUrl.size())));
 
   // Simulate a user interaction and check that the fade-out animation runs.
-  omnibox_view()->DidGetUserInteraction(
-      blink::WebInputEvent::Type::kGestureScrollBegin);
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
   OmniboxViewViews::ElideAnimation* elide_animation =
       omnibox_view()->GetElideAfterInteractionAnimationForTesting();
   EXPECT_TRUE(elide_animation->IsAnimating());
@@ -1709,8 +1709,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   }
 
   // A second user interaction should not run the animation again.
-  omnibox_view()->DidGetUserInteraction(
-      blink::WebInputEvent::Type::kGestureScrollBegin);
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
   EXPECT_FALSE(omnibox_view()
                    ->GetElideAfterInteractionAnimationForTesting()
                    ->IsAnimating());
@@ -1776,8 +1775,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest, BoundsChanged) {
   // Simulate a user interaction and change the bounds during the animation. The
   // animation should be cancelled and immediately transition to the animation's
   // end state (simplified domain).
-  omnibox_view()->DidGetUserInteraction(
-      blink::WebInputEvent::Type::kGestureScrollBegin);
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
   OmniboxViewViews::ElideAnimation* elide_animation =
       omnibox_view()->GetElideAfterInteractionAnimationForTesting();
   ASSERT_TRUE(elide_animation);
@@ -1887,8 +1885,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
 
   // Simulate a user interaction and check that the URL gets elided to the
   // simplified domain.
-  omnibox_view()->DidGetUserInteraction(
-      blink::WebInputEvent::Type::kGestureScrollBegin);
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
   elide_animation =
       omnibox_view()->GetElideAfterInteractionAnimationForTesting();
   EXPECT_TRUE(elide_animation->IsAnimating());
@@ -2095,8 +2092,7 @@ TEST_P(OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
         render_text,
         gfx::Range(std::string("https://www.").size(), kFullUrl.size()));
     // Simulate a user interaction and check the fade-out animation.
-    omnibox_view()->DidGetUserInteraction(
-        blink::WebInputEvent::Type::kGestureScrollBegin);
+    omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
     OmniboxViewViews::ElideAnimation* elide_animation =
         omnibox_view()->GetElideAfterInteractionAnimationForTesting();
     ASSERT_TRUE(elide_animation);
@@ -2141,8 +2137,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
                  kSimplifiedDomainDisplayUrl.size())));
 
   // Simulate a user interaction and check that the fade-out animation runs.
-  omnibox_view()->DidGetUserInteraction(
-      blink::WebInputEvent::Type::kGestureScrollBegin);
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
   OmniboxViewViews::ElideAnimation* elide_animation =
       omnibox_view()->GetElideAfterInteractionAnimationForTesting();
   EXPECT_TRUE(elide_animation->IsAnimating());
@@ -2185,8 +2180,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   // Simulate a user interaction to elide to simplified domain and advance
   // through the animation; the vertical position should still be unchanged, and
   // the text should still start at the some position (the same x value).
-  omnibox_view()->DidGetUserInteraction(
-      blink::WebInputEvent::Type::kGestureScrollBegin);
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
   OmniboxViewViews::ElideAnimation* elide_animation =
       omnibox_view()->GetElideAfterInteractionAnimationForTesting();
   gfx::AnimationContainerElement* elide_as_element =
@@ -2212,6 +2206,34 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   unelide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
   const gfx::Rect& unelided_display_rect = render_text->display_rect();
   EXPECT_EQ(original_display_rect, unelided_display_rect);
+}
+
+// Tests that modifier keys don't count as user interactions in the
+// hide-on-interaction field trial.
+TEST_P(OmniboxViewViewsHideOnInteractionTest, ModifierKeys) {
+  SetUpSimplifiedDomainTest();
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
+
+  content::MockNavigationHandle navigation;
+  navigation.set_is_same_document(false);
+  omnibox_view()->DidFinishNavigation(&navigation);
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      render_text, gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                              kSimplifiedDomainDisplayUrl.size())));
+
+  // Simulate a user interaction with a modifier key and check that the elide
+  // animation doesn't run.
+  blink::WebKeyboardEvent event(
+      blink::WebInputEvent::Type::kRawKeyDown,
+      blink::WebInputEvent::kControlKey,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  omnibox_view()->DidGetUserInteraction(event);
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      render_text, gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                              kSimplifiedDomainDisplayUrl.size())));
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  EXPECT_FALSE(elide_animation);
 }
 
 // Tests that in the hide-on-interaction field trial, the URL is simplified on
@@ -2244,8 +2266,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
   }
 
   // Simulate a user interaction to elide to the simplified domain.
-  omnibox_view()->DidGetUserInteraction(
-      blink::WebInputEvent::Type::kGestureScrollBegin);
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
   OmniboxViewViews::ElideAnimation* elide_animation =
       omnibox_view()->GetElideAfterInteractionAnimationForTesting();
   ASSERT_TRUE(elide_animation);
@@ -2267,8 +2288,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
 
   // Simulate another user interaction to elide to the simplified domain, and
   // advance the clock all the way through the animation.
-  omnibox_view()->DidGetUserInteraction(
-      blink::WebInputEvent::Type::kGestureScrollBegin);
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
   elide_animation =
       omnibox_view()->GetElideAfterInteractionAnimationForTesting();
   ASSERT_TRUE(elide_animation);
@@ -2319,8 +2339,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest,
                               kSimplifiedDomainDisplayUrl.size())));
 
   // Simulate a user interaction to begin animating to the simplified domain.
-  omnibox_view()->DidGetUserInteraction(
-      blink::WebInputEvent::Type::kGestureScrollBegin);
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
   OmniboxViewViews::ElideAnimation* elide_animation =
       omnibox_view()->GetElideAfterInteractionAnimationForTesting();
   ASSERT_TRUE(elide_animation);
@@ -2382,8 +2401,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, UserInteractionDuringAnimation) {
                               kSimplifiedDomainDisplayUrl.size())));
 
   // Simulate a user interaction to begin animating to the simplified domain.
-  omnibox_view()->DidGetUserInteraction(
-      blink::WebInputEvent::Type::kGestureScrollBegin);
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
   OmniboxViewViews::ElideAnimation* elide_animation =
       omnibox_view()->GetElideAfterInteractionAnimationForTesting();
   ASSERT_TRUE(elide_animation);
@@ -2409,8 +2427,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, UserInteractionDuringAnimation) {
   double animation_value =
       elide_animation->GetAnimationForTesting()->GetCurrentValue();
 
-  omnibox_view()->DidGetUserInteraction(
-      blink::WebInputEvent::Type::kGestureScrollBegin);
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
   elide_animation =
       omnibox_view()->GetElideAfterInteractionAnimationForTesting();
   ASSERT_TRUE(elide_animation);
@@ -2441,8 +2458,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SubframeNavigations) {
 
   // Simulate a user interaction to elide to the simplified domain, and advance
   // the clock all the way through the animation.
-  omnibox_view()->DidGetUserInteraction(
-      blink::WebInputEvent::Type::kGestureScrollBegin);
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
   OmniboxViewViews::ElideAnimation* elide_animation =
       omnibox_view()->GetElideAfterInteractionAnimationForTesting();
   ASSERT_TRUE(elide_animation);
@@ -2491,8 +2507,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   omnibox_view()->DidFinishNavigation(&navigation);
 
   // Simulate a user interaction to fade out the path.
-  omnibox_view()->DidGetUserInteraction(
-      blink::WebInputEvent::Type::kGestureScrollBegin);
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
   OmniboxViewViews::ElideAnimation* elide_animation =
       omnibox_view()->GetElideAfterInteractionAnimationForTesting();
   gfx::AnimationContainerElement* elide_as_element =
@@ -2531,8 +2546,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
 
   // After a post-blur user interaction, the URL should animate to the
   // simplified domain.
-  omnibox_view()->DidGetUserInteraction(
-      blink::WebInputEvent::Type::kGestureScrollBegin);
+  omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
   elide_animation =
       omnibox_view()->GetElideAfterInteractionAnimationForTesting();
   EXPECT_TRUE(elide_animation->IsAnimating());

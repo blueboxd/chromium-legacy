@@ -33,6 +33,8 @@ class NearbyShareDecryptedPublicCertificate {
 
   NearbyShareDecryptedPublicCertificate(
       NearbyShareDecryptedPublicCertificate&&);
+  NearbyShareDecryptedPublicCertificate& operator=(
+      NearbyShareDecryptedPublicCertificate&&);
 
   virtual ~NearbyShareDecryptedPublicCertificate();
 

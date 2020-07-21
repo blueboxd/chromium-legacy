@@ -402,6 +402,7 @@ class RJavaBuildOptions:
     self.has_on_resources_loaded = False
     self.export_const_styleable = False
     self.final_package_id = None
+    self.fake_on_resources_loaded = False
 
   def ExportNoResources(self):
     """Make all resource IDs final, and don't generate a method."""
@@ -435,15 +436,20 @@ class RJavaBuildOptions:
     """
     self.export_const_styleable = True
 
-  def GenerateOnResourcesLoaded(self):
+  def GenerateOnResourcesLoaded(self, fake=False):
     """Generate an onResourcesLoaded() method.
 
     This Java method will be called at runtime by the framework when
     the corresponding library (which includes the R.java source file)
     will be loaded at runtime. This corresponds to the --shared-resources
     or --app-as-shared-lib flags of 'aapt package'.
+
+    if |fake|, then the method will be empty bodied to compile faster. This
+    useful for dummy R.java files that will eventually be replaced by real
+    ones.
     """
     self.has_on_resources_loaded = True
+    self.fake_on_resources_loaded = fake
 
   def SetFinalPackageId(self, package_id):
     """Sets a package ID to be used for resources marked final."""
@@ -669,8 +675,7 @@ def _RenderRootRJavaSource(package, all_resources_by_type, rjava_build_options,
     extends_string = 'extends {{ parent_path }}.R.{{ resource_type }} '
     dep_path = GetCustomPackagePath(grandparent_custom_package_name)
 
-  template = Template(
-      """/* AUTO-GENERATED FILE.  DO NOT MODIFY. */
+  template = Template("""/* AUTO-GENERATED FILE.  DO NOT MODIFY. */
 
 package {{ package }};
 
@@ -690,6 +695,10 @@ public final class R {
     }
     {% endfor %}
     {% if has_on_resources_loaded %}
+      {% if fake_on_resources_loaded %}
+    public static void onResourcesLoaded(int packageId) {
+    }
+      {% else %}
     private static boolean sResourcesDidLoad;
     public static void onResourcesLoaded(int packageId) {
         if (sResourcesDidLoad) {
@@ -718,15 +727,17 @@ public final class R {
         {% endfor %}
     }
     {% endfor %}
+      {% endif %}
     {% endif %}
 }
 """,
-      trim_blocks=True,
-      lstrip_blocks=True)
+                      trim_blocks=True,
+                      lstrip_blocks=True)
   return template.render(
       package=package,
       resource_types=sorted(_ALL_RESOURCE_TYPES),
       has_on_resources_loaded=rjava_build_options.has_on_resources_loaded,
+      fake_on_resources_loaded=rjava_build_options.fake_on_resources_loaded,
       final_resources=final_resources_by_type,
       non_final_resources=non_final_resources_by_type,
       startIndex=_GetNonSystemIndex,

@@ -176,6 +176,7 @@ static_library("libweston") {
     ":weston_touch_calibration_protocol",
     "//third_party/libdrm",
     "//third_party/wayland:wayland_server",
+    "//third_party/wayland:wayland_util",
     "//third_party/wayland-protocols:input_method_protocol",
     "//third_party/wayland-protocols:input_timestamps_protocol",
     "//third_party/wayland-protocols:linux_dmabuf_protocol",

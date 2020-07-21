@@ -32,7 +32,7 @@
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_associated_data.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
@@ -686,14 +686,14 @@ TEST_F(PaymentsClientTest, GetUploadDetailsVariationsTest) {
   // Register a trial and variation id, so that there is data in variations
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartGettingUploadDetails();
 
   // Note that experiment information is stored in X-Client-Data.
   EXPECT_TRUE(HasVariationsHeader());
 
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
 }
 
 TEST_F(PaymentsClientTest, GetDetailsIncludeBillableServiceNumber) {
@@ -779,7 +779,7 @@ TEST_F(PaymentsClientTest, UploadCardVariationsTest) {
   // Register a trial and variation id, so that there is data in variations
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartUploading(/*include_cvc=*/true);
   IssueOAuthToken();
@@ -787,14 +787,14 @@ TEST_F(PaymentsClientTest, UploadCardVariationsTest) {
   // Note that experiment information is stored in X-Client-Data.
   EXPECT_TRUE(HasVariationsHeader());
 
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
 }
 
 TEST_F(PaymentsClientTest, UnmaskCardVariationsTest) {
   // Register a trial and variation id, so that there is data in variations
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
@@ -802,7 +802,7 @@ TEST_F(PaymentsClientTest, UnmaskCardVariationsTest) {
   // Note that experiment information is stored in X-Client-Data.
   EXPECT_TRUE(HasVariationsHeader());
 
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
 }
 
 TEST_F(PaymentsClientTest, UploadSuccessWithoutServerId) {
@@ -1047,7 +1047,7 @@ TEST_F(PaymentsClientTest, MigrateCardsVariationsTest) {
   // Register a trial and variation id, so that there is data in variations
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartMigrating(/*has_cardholder_name=*/true);
   IssueOAuthToken();
@@ -1055,7 +1055,7 @@ TEST_F(PaymentsClientTest, MigrateCardsVariationsTest) {
   // Note that experiment information is stored in X-Client-Data.
   EXPECT_TRUE(HasVariationsHeader());
 
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
 }
 
 TEST_F(PaymentsClientTest, MigrationRequestIncludesUniqueId) {

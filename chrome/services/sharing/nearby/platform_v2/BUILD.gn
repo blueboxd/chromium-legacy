@@ -41,6 +41,7 @@ source_set("platform_v2") {
     "//chrome/services/sharing/webrtc",
     "//crypto",
     "//jingle:webrtc_glue",
+    "//third_party/abseil-cpp:absl",
   ]
 }
 

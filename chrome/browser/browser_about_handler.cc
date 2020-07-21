@@ -49,11 +49,10 @@ bool WillHandleBrowserAboutURL(GURL* url,
   std::string host(url->host());
   std::string path;
 
-#if !defined(OS_CHROMEOS)
-  // Handle chrome://settings.
+  // Do not handle chrome://settings rewrites, they are handled in the
+  // HandleWebUI handler.
   if (host == chrome::kChromeUISettingsHost)
-    return true;  // Prevent further rewriting - this is a valid URL.
-#endif            // !defined(OS_CHROMEOS)
+    return false;
 
   // Do not handle chrome://help.
   if (host == chrome::kChromeUIHelpHost)

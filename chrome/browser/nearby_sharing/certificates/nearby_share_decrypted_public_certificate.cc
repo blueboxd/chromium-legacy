@@ -183,6 +183,10 @@ NearbyShareDecryptedPublicCertificate::NearbyShareDecryptedPublicCertificate(
 NearbyShareDecryptedPublicCertificate::NearbyShareDecryptedPublicCertificate(
     NearbyShareDecryptedPublicCertificate&&) = default;
 
+NearbyShareDecryptedPublicCertificate&
+NearbyShareDecryptedPublicCertificate::operator=(
+    NearbyShareDecryptedPublicCertificate&&) = default;
+
 NearbyShareDecryptedPublicCertificate::
     ~NearbyShareDecryptedPublicCertificate() = default;
 

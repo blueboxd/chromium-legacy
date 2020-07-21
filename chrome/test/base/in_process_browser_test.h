@@ -69,6 +69,10 @@ class ScopedBundleSwizzlerMac;
 //   SetUpOnMainThread(), SetUpInProcessBrowserTestFixture(), and other related
 //   methods for a cleaner alternative).
 //
+// To include the default implementation of RunTestOnMainThread() and TestBody()
+// for Gtests, it's also necessary to include the file
+// "content/public/test/browser_test.h"
+//
 // The following hook methods are called in sequence before BrowserMain(), so
 // no browser has been created yet. They are mainly for setting up the
 // environment for running the browser.

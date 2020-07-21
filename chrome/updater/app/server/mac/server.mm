@@ -19,7 +19,6 @@
 #import "chrome/updater/app/server/mac/app_server.h"
 #include "chrome/updater/app/server/mac/service_delegate.h"
 #include "chrome/updater/configurator.h"
-#include "chrome/updater/control_service_in_process.h"
 #include "chrome/updater/mac/setup/setup.h"
 #import "chrome/updater/mac/xpc_service_names.h"
 #include "chrome/updater/prefs.h"
@@ -35,7 +34,7 @@ void AppServerMac::Uninitialize() {
   // These delegates need to have a reference to the AppServer. To break the
   // circular reference, we need to reset them.
   update_check_delegate_.reset();
-  control_service_delegate_.reset();
+  administration_delegate_.reset();
 
   AppServer::Uninitialize();
 }
@@ -50,7 +49,7 @@ void AppServerMac::ActiveDuty() {
   @autoreleasepool {
     // Sets up a listener and delegate for the CRUUpdateChecking XPC
     // connection
-    update_check_delegate_.reset([[CRUUpdateCheckServiceXPCDelegate alloc]
+    update_check_delegate_.reset([[CRUUpdateCheckXPCServiceDelegate alloc]
         initWithUpdateService:base::MakeRefCounted<UpdateServiceInProcess>(
                                   config_)
                     appServer:scoped_refptr<AppServerMac>(this)]);
@@ -61,17 +60,18 @@ void AppServerMac::ActiveDuty() {
 
     [update_check_listener_ resume];
 
-    // Sets up a listener and delegate for the CRUControlling XPC connection
-    control_service_delegate_.reset([[CRUControlServiceXPCDelegate alloc]
-        initWithControlService:base::MakeRefCounted<ControlServiceInProcess>()
-                     appServer:scoped_refptr<AppServerMac>(this)]);
+    // Sets up a listener and delegate for the CRUAdministering XPC connection
+    administration_delegate_.reset([[CRUAdministrationXPCServiceDelegate alloc]
+        initWithUpdateService:base::MakeRefCounted<UpdateServiceInProcess>(
+                                  config_)
+                    appServer:scoped_refptr<AppServerMac>(this)]);
 
-    control_service_listener_.reset([[NSXPCListener alloc]
+    administration_listener_.reset([[NSXPCListener alloc]
         initWithMachServiceName:base::mac::CFToNSCast(
-                                    CopyControlLaunchdName().get())]);
-    control_service_listener_.get().delegate = control_service_delegate_.get();
+                                    CopyAdministrationLaunchDName().get())]);
+    administration_listener_.get().delegate = administration_delegate_.get();
 
-    [control_service_listener_ resume];
+    [administration_listener_ resume];
   }
 }
 

@@ -126,7 +126,7 @@ class SafeBrowsingNavigationObserver : public base::SupportsUserData::Data,
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
+  void DidGetUserInteraction(const blink::WebInputEvent& event) override;
   void WebContentsDestroyed() override;
   void DidOpenRequestedURL(content::WebContents* new_contents,
                            content::RenderFrameHost* source_render_frame_host,

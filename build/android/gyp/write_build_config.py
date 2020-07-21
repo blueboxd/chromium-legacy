@@ -1211,10 +1211,7 @@ def main(argv):
   if options.type == 'android_apk' and options.tested_apk_config:
     tested_apk_deps = Deps([options.tested_apk_config])
     tested_apk_config = tested_apk_deps.Direct()[0]
-    tested_apk_resources_deps = tested_apk_deps.All('android_resources')
     gradle['apk_under_test'] = tested_apk_config['name']
-    all_resources_deps = [
-        d for d in all_resources_deps if not d in tested_apk_resources_deps]
 
   if options.type == 'android_app_bundle_module':
     deps_info['is_base_module'] = bool(options.is_base_module)
@@ -1402,7 +1399,6 @@ def main(argv):
             c['package_name'] for c in all_library_deps if 'package_name' in c
         ])
 
-
     # For feature modules, remove any resources that already exist in the base
     # module.
     if base_module_build_config:
@@ -1415,13 +1411,20 @@ def main(argv):
           base_module_build_config['deps_info']['extra_package_names']
       ]
 
-    config['deps_info']['dependency_zips'] = dependency_zips
-    config['deps_info']['extra_package_names'] = extra_package_names
     if options.type == 'android_apk' and options.tested_apk_config:
       config['deps_info']['arsc_package_name'] = (
           tested_apk_config['package_name'])
+      # We should not shadow the actual R.java files of the apk_under_test by
+      # creating new R.java files with the same package names in the tested apk.
+      extra_package_names = [
+          package for package in extra_package_names
+          if package not in tested_apk_config['extra_package_names']
+      ]
     if options.res_size_info:
       config['deps_info']['res_size_info'] = options.res_size_info
+
+    config['deps_info']['dependency_zips'] = dependency_zips
+    config['deps_info']['extra_package_names'] = extra_package_names
 
   if options.type == 'group':
     if options.extra_classpath_jars:

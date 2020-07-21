@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -386,6 +387,16 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
           true;
     }
   }
+
+  // If this is an iframe whose content document is composited, then we can't
+  // squash layers painted after the iframe with layers painted before it.
+  if (layer->GetLayoutObject().IsLayoutEmbeddedContent() &&
+      ToLayoutEmbeddedContent(layer->GetLayoutObject())
+          .ContentDocumentIsCompositing()) {
+    squashing_state.have_assigned_backings_to_entire_squashing_layer_subtree =
+        false;
+  }
+
   layer->ClearNeedsCompositingLayerAssignment();
 }
 

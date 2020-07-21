@@ -110,7 +110,7 @@
 
 - (CommandDispatcher*)strictCallableForProtocol:(Protocol*)protocol {
   CHECK([self dispatchingForProtocol:protocol])
-      << "Dispatcher failed protocol confromance";
+      << "Dispatcher failed protocol conformance";
   return self;
 }
 

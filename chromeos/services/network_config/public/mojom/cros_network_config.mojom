@@ -536,7 +536,6 @@ struct ManagedWiFiProperties {
   ManagedEAPProperties? eap;
   int32 frequency = 0;
   array<int32>? frequency_list;
-  ManagedBoolean? ft_enabled;
   ManagedString? hex_ssid;
   ManagedBoolean? hidden_ssid;
   // Note: |passphrase| contains a placeholder if set to avoid leaking secrets.

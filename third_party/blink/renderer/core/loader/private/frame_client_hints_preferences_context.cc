@@ -27,10 +27,10 @@ static constexpr WebFeature kWebFeatureMapping[] = {
     WebFeature::kClientHintsUA,
     WebFeature::kClientHintsUAArch,
     WebFeature::kClientHintsUAPlatform,
-    WebFeature::kClientHintsUAPlatformVersion,
     WebFeature::kClientHintsUAModel,
     WebFeature::kClientHintsUAMobile,
     WebFeature::kClientHintsUAFullVersion,
+    WebFeature::kClientHintsUAPlatformVersion,
 };
 
 static_assert(static_cast<int>(network::mojom::WebClientHintsType::kMaxValue) +

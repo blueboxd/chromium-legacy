@@ -60,8 +60,8 @@ class DistillerViewerTest : public dom_distiller::DistillerViewerInterface {
 };
 
 void RemoveOfflineFilesDirectory(base::FilePath base_directory) {
-  base::DeleteFile(reading_list::OfflineRootDirectoryPath(base_directory),
-                   true);
+  base::DeletePathRecursively(
+      reading_list::OfflineRootDirectoryPath(base_directory));
 }
 
 }  // namespace

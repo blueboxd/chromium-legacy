@@ -28,7 +28,7 @@ namespace android_webview {
 
 namespace {
 
-void OnContextLost() {
+void OnContextLost(bool synthetic_loss) {
   NOTREACHED() << "Non owned context lost!";
 }
 

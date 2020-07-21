@@ -43,6 +43,15 @@ extern const char kRestoreSessionTargetUrlHashPrefix[];
 // The "Referer" [sic] HTTP header.
 extern NSString* const kReferrerHeaderName;
 
+// Sets (offset, size) and returns an updated last committed index, so the final
+// size is less or equal to kMaxSessionSize. If item_count is greater than
+// kMaxSessionSize, then this function will trim navigation items, which are the
+// furthest to |last_committed_item_index|.
+int GetSafeItemRange(int last_committed_item_index,
+                     int item_count,
+                     int* offset,
+                     int* size);
+
 // Returns true if |url| is a placeholder URL or restore_session.html URL.
 bool IsWKInternalUrl(const GURL& url);
 bool IsWKInternalUrl(NSURL* url);

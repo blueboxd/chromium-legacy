@@ -6,6 +6,7 @@
 
 #include "base/strings/string16.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl_view.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -42,9 +43,10 @@ constexpr gfx::Insets kDeviceButtonInsets = gfx::Insets(5);
 MediaNotificationAudioDeviceSelectorView::
     MediaNotificationAudioDeviceSelectorView(
         MediaNotificationContainerImplView* container,
+        MediaNotificationService* service,
         gfx::Size size)
-    : container_(container) {
-  DCHECK(container_);
+    : container_(container), service_(service) {
+  DCHECK(service);
   SetPreferredSize(size);
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -93,10 +95,23 @@ MediaNotificationAudioDeviceSelectorView::
   views::SetToggledImageFromVectorIconWithColor(
       expand_button_, kKeyboardArrowUpIcon, kExpandButtonSize, SK_ColorBLACK,
       SK_ColorBLACK);
+
+  // Get a list of the connected audio output devices
+  audio_device_subscription_ = service_->GetOutputDevices(base::BindOnce(
+      &MediaNotificationAudioDeviceSelectorView::UpdateAvailableAudioDevices,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
+MediaNotificationAudioDeviceSelectorView::
+    ~MediaNotificationAudioDeviceSelectorView() = default;
+
 void MediaNotificationAudioDeviceSelectorView::UpdateAvailableAudioDevices(
-    const media::AudioDeviceDescriptions& device_descriptions) {}
+    const media::AudioDeviceDescriptions& device_descriptions) {
+  device_button_container_->RemoveAllChildViews(true);
+  for (auto description : device_descriptions) {
+    CreateDeviceButton(description);
+  }
+}
 
 void MediaNotificationAudioDeviceSelectorView::ButtonPressed(
     views::Button* sender,

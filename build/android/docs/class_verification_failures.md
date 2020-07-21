@@ -187,7 +187,7 @@ android.support.design.widget.TextInputLayout
 ```
 
 Googlers can also download mappings for [official
-builds](http://go/clank-webview/official-builds).
+builds](http://go/webview-official-builds).
 
 ### Understanding the reason for the failure
 

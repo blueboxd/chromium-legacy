@@ -157,7 +157,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ntp_tiles::PopularSitesImpl::RegisterProfilePrefs(registry);
   password_manager::PasswordManager::RegisterProfilePrefs(registry);
   payments::RegisterProfilePrefs(registry);
-  policy::URLBlacklistManager::RegisterProfilePrefs(registry);
+  policy::URLBlocklistManager::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
   RegisterVoiceSearchBrowserStatePrefs(registry);
   safe_browsing::RegisterProfilePrefs(registry);

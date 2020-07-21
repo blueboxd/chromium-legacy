@@ -63,7 +63,7 @@ void MaybeCleanupMetadataFolder(const base::FilePath& extension_path) {
   const std::vector<base::FilePath> reserved_filepaths =
       file_util::GetReservedMetadataFilePaths(extension_path);
   for (const auto& file : reserved_filepaths)
-    base::DeleteFile(file, true /*recursive*/);
+    base::DeletePathRecursively(file);
 
   const base::FilePath& metadata_dir = extension_path.Append(kMetadataFolder);
   if (base::IsDirectoryEmpty(metadata_dir))

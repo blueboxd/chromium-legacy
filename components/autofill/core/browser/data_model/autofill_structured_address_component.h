@@ -197,9 +197,9 @@ class AddressComponent {
   // to catch special cases and may fail. The method is virtual and can be
   // implemented on the type level.
   //
-  // * Use |ParseValueAndAssignSubcomponentsByExpressions()|. This stage uses a
-  // list of regular expressions acquired by the virtual method
-  // |GetParseExpressionsByRelevance()|. This stage my fail.
+  // * Use |ParseValueAndAssignSubcomponentsByRegularExpressions()|. This stage
+  // uses a list of regular expressions acquired by the virtual method
+  // |GetParseRegularExpressionsByRelevance()|. This stage my fail.
   //
   // * Use |ParseValueAndAssignSubcomponentsByFallbackMethod()| as the last
   // resort to parse |value_|. This method must produce a valid result.
@@ -247,8 +247,8 @@ class AddressComponent {
   }
 
   // Returns the parse expressions by relevance for testing.
-  std::vector<const RE2*> GetParseExpressionsByRelevanceForTesting() {
-    return GetParseExpressionsByRelevance();
+  std::vector<const RE2*> GetParseRegularExpressionsByRelevanceForTesting() {
+    return GetParseRegularExpressionsByRelevance();
   }
 
   // Returns a reference to the root node of the tree for testing.
@@ -279,7 +279,7 @@ class AddressComponent {
 
   // Returns pointers to regular expressions sorted by their relevance.
   // This method is virtual and can be reimplemented for each type.
-  virtual std::vector<const RE2*> GetParseExpressionsByRelevance() const;
+  virtual std::vector<const RE2*> GetParseRegularExpressionsByRelevance() const;
 
   // Method to parse |value_| into the values of |subcomponents_|. The
   // purpose of this method is to cover special cases. This method returns true
@@ -338,9 +338,9 @@ class AddressComponent {
       const base::string16& format) const;
 
   // This method uses regular expressions acquired by
-  // |GetParseExpressionsByRelevance| to parse |value_| into the values of the
-  // subcomponents. Returns true on success and is allowed to fail.
-  bool ParseValueAndAssignSubcomponentsByExpressions();
+  // |GetParseRegularExpressionsByRelevance| to parse |value_| into the values
+  // of the subcomponents. Returns true on success and is allowed to fail.
+  bool ParseValueAndAssignSubcomponentsByRegularExpressions();
 
   // Returns the maximum number of components with assigned values on the path
   // from the component to a leaf node.

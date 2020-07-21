@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/test/bind_test_util.h"
 #include "components/variations/net/variations_http_headers.h"
-#include "components/variations/variations_http_header_provider.h"
+#include "components/variations/variations_ids_provider.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
@@ -616,7 +616,7 @@ class NavigationBrowserTest2 : public NavigationBrowserTest {
 
     // Forces variations code to set the header.
     auto* variations_provider =
-        variations::VariationsHttpHeaderProvider::GetInstance();
+        variations::VariationsIdsProvider::GetInstance();
     variations_provider->ForceVariationIds({"12", "456", "t789"}, "");
   }
 

@@ -47,6 +47,15 @@ static constexpr size_t kSystemPageBaseMask = ~kSystemPageOffsetMask;
 static constexpr size_t kPageMetadataShift = 5;  // 32 bytes per partition page.
 static constexpr size_t kPageMetadataSize = 1 << kPageMetadataShift;
 
+// See DecommitSystemPages(), this is not guaranteed to be synchronous on all
+// platforms.
+static constexpr bool kDecommittedPagesAreAlwaysZeroed =
+#if defined(OS_MACOSX)
+    false;
+#else
+    true;
+#endif
+
 }  // namespace base
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PAGE_ALLOCATOR_CONSTANTS_H_

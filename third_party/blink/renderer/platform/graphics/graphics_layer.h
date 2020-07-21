@@ -195,7 +195,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
 
   // DisplayItemClient methods
   String DebugName() const final { return client_.DebugName(this); }
-  IntRect VisualRect() const override;
   DOMNodeId OwnerNodeId() const final { return owner_node_id_; }
 
   // LayerAsJSONClient implementation.

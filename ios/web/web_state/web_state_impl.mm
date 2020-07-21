@@ -804,6 +804,18 @@ void WebStateImpl::TakeSnapshot(const gfx::RectF& rect,
                              }];
 }
 
+void WebStateImpl::CreateFullPagePdf(
+    base::OnceCallback<void(NSData*)> callback) {
+  // Move the callback to a __block pointer, which will be in scope as long
+  // as the callback is retained.
+  __block base::OnceCallback<void(NSData*)> callback_for_block =
+      std::move(callback);
+  [web_controller_
+      createFullPagePDFWithCompletion:^(NSData* pdf_document_data) {
+        std::move(callback_for_block).Run(pdf_document_data);
+      }];
+}
+
 void WebStateImpl::OnNavigationStarted(web::NavigationContextImpl* context) {
   // Navigation manager loads internal URLs to restore session history and
   // create back-forward entries for WebUI. Do not trigger external callbacks.

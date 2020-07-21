@@ -6,6 +6,7 @@
 # Some projects (e.g. V8) do not have non-build directories DEPS'ed in.
 import("//build/config/android/config.gni")
 import("//build/config/android/copy_ex.gni")
+import("//build/config/compiler/compiler.gni")
 import("//build/config/coverage/coverage.gni")
 import("//build/config/dcheck_always_on.gni")
 import("//build/config/python.gni")
@@ -596,7 +597,11 @@ template("generate_android_wrapper") {
 
 template("generate_r_java") {
   action_with_pydeps(target_name) {
-    forward_variables_from(invoker, [ "deps" ])
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "testonly",
+                           ])
     if (!defined(deps)) {
       deps = []
     }
@@ -1037,8 +1042,8 @@ if (enable_java_templates) {
         args += [ "--manifest-package=${invoker.manifest_package}" ]
       }
 
-      if (java_warnings_as_errors) {
-        args += [ "--can-fail-build" ]
+      if (treat_warnings_as_errors) {
+        args += [ "--warnings-as-errors" ]
       }
 
       _stamp_path = "$target_out_dir/$target_name/build.lint.stamp"
@@ -1133,6 +1138,9 @@ if (enable_java_templates) {
       "--r8-path",
       rebase_path(_r8_path, root_build_dir),
     ]
+    if (treat_warnings_as_errors) {
+      _args += [ "--warnings-as-errors" ]
+    }
 
     if (enable_proguard_obfuscation) {
       # This is generally the apk name, and serves to identify the mapping
@@ -1591,6 +1599,9 @@ if (enable_java_templates) {
           "--r8-jar-path",
           rebase_path(_r8_path, root_build_dir),
         ]
+        if (treat_warnings_as_errors) {
+          args += [ "--warnings-as-errors" ]
+        }
 
         if (enable_incremental_d8 && !(defined(invoker.disable_incremental) &&
                                        invoker.disable_incremental)) {
@@ -2018,11 +2029,14 @@ if (enable_java_templates) {
         "--full-classpath-jars=@FileArg($_rebased_build_config:deps_info:javac_full_classpath)",
         "--full-classpath-gn-targets=@FileArg($_rebased_build_config:deps_info:javac_full_classpath_targets)",
       ]
+      if (invoker.requires_android) {
+        args += [ "--sdk-classpath-jars=@FileArg($_rebased_build_config:android:sdk_jars)" ]
+      }
       if (invoker.is_prebuilt) {
         args += [ "--is-prebuilt" ]
       }
-      if (invoker.requires_android) {
-        args += [ "--sdk-classpath-jars=@FileArg($_rebased_build_config:android:sdk_jars)" ]
+      if (treat_warnings_as_errors) {
+        args += [ "--warnings-as-errors" ]
       }
       if (defined(invoker.missing_classes_allowlist)) {
         args += [
@@ -3131,7 +3145,7 @@ if (enable_java_templates) {
       }
       if (_chromium_code) {
         args += [ "--chromium-code=1" ]
-        if (java_warnings_as_errors &&
+        if (treat_warnings_as_errors &&
             !defined(invoker.errorprone_expected_warning_regex)) {
           args += [ "--warnings-as-errors" ]
         }

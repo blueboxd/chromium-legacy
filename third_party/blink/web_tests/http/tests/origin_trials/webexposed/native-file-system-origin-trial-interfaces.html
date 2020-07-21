@@ -13,7 +13,7 @@ test(t => {
   OriginTrialsHelper.check_properties_exist(this, {
     'FileSystemHandle': ['kind', 'name', 'queryPermission', 'requestPermission'],
     'FileSystemFileHandle': ['getFile', 'createWritable'],
-    'FileSystemDirectoryHandle': ['getFileHandle', 'getDirectoryHandle', 'getEntries', 'removeEntry'],
+    'FileSystemDirectoryHandle': ['getFileHandle', 'getDirectoryHandle', 'entries', 'removeEntry'],
     'FileSystemWritableFileStream': ['write', 'truncate', 'close', 'seek'],
     'global': ['showOpenFilePicker', 'showSaveFilePicker', 'showDirectoryPicker', 'getOriginPrivateDirectory'],
   });

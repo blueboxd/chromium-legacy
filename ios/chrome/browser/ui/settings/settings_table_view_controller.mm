@@ -45,6 +45,7 @@
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/settings/about_chrome_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_profile_table_view_controller.h"
@@ -683,10 +684,14 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 }
 
 - (SettingsSwitchItem*)articlesForYouSwitchItem {
+  NSString* settingTitle =
+      IsDiscoverFeedEnabled()
+          ? l10n_util::GetNSString(IDS_IOS_DISCOVER_SETTING_TITLE)
+          : l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_SETTING_TITLE);
+
   SettingsSwitchItem* articlesForYouSwitchItem =
       [self switchItemWithType:ItemTypeArticlesForYou
-                            title:l10n_util::GetNSString(
-                                      IDS_IOS_CONTENT_SUGGESTIONS_SETTING_TITLE)
+                            title:settingTitle
                     iconImageName:kSettingsArticleSuggestionsImageName
                   withDefaultsKey:nil
           accessibilityIdentifier:kSettingsArticleSuggestionsCellId];

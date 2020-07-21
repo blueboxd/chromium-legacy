@@ -21262,6 +21262,7 @@ Called by update_document_policy_enum.py.-->
   <int value="740" label="ExtensionInstallBlocklist"/>
   <int value="741" label="ReportDeviceSystemInfo"/>
   <int value="742" label="AutoplayAllowlist"/>
+  <int value="743" label="DevicePrinters"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -40463,6 +40464,7 @@ from previous Chrome versions.
       label="AutofillSaveCreditCardUsesImprovedMessaging:enabled"/>
   <int value="-1309066678" label="ServiceWorkerOnUI:enabled"/>
   <int value="-1308600417" label="NewNetErrorPageUI:disabled"/>
+  <int value="-1308184869" label="MediaFeedsBackgroundFetching:enabled"/>
   <int value="-1304957199" label="OfflinePagesShowAlternateDinoPage:enabled"/>
   <int value="-1304758527" label="SyncSendTabToSelf:disabled"/>
   <int value="-1302904242" label="enable-navigation-tracing"/>
@@ -43212,6 +43214,7 @@ from previous Chrome versions.
   <int value="1698089268" label="WebXRMultiGpu:disabled"/>
   <int value="1699180023" label="PaymentRequestOptionalTotal:disabled"/>
   <int value="1699182601" label="DockedMagnifier:disabled"/>
+  <int value="1700117535" label="MediaFeedsBackgroundFetching:disabled"/>
   <int value="1700394127" label="OverlayScrollbar:disabled"/>
   <int value="1701972870" label="NTPSnippetsIncreasedVisibility:enabled"/>
   <int value="1702090999" label="ClearOldBrowsingData:disabled"/>
@@ -46333,6 +46336,19 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="HandheldFriendly meta"/>
   <int value="5" label="MobileOptimized meta"/>
   <int value="6" label="XHTML-MP document type"/>
+</enum>
+
+<enum name="MetricKitExitData">
+  <int value="0" label="App exited normally"/>
+  <int value="1" label="App exited abnormally"/>
+  <int value="2" label="Watchdog terminated the app"/>
+  <int value="3" label="App used too much CPU time"/>
+  <int value="4" label="App used too much memory"/>
+  <int value="5" label="Terminated to free up memory"/>
+  <int value="6" label="Suspended while having file locks"/>
+  <int value="7" label="Invalid memory access"/>
+  <int value="8" label="Illegal or undefined instruction"/>
+  <int value="9" label="Exceeded allocated time for background task"/>
 </enum>
 
 <enum name="MetricsReportingChange">

@@ -23,7 +23,6 @@ modules_dictionary_idl_files = [
   "file_system_remove_options.idl",
   "get_system_directory_options.idl",
   "open_file_picker_options.idl",
-  "native_file_system_directory_iterator_entry.idl",
   "save_file_picker_options.idl",
   "write_params.idl",
 ]

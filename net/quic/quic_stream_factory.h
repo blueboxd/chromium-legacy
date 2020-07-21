@@ -75,6 +75,7 @@ class QuicCryptoClientStreamFactory;
 class QuicServerInfo;
 class QuicStreamFactory;
 class QuicContext;
+class SCTAuditingDelegate;
 class SocketPerformanceWatcherFactory;
 class SocketTag;
 class TransportSecurityState;
@@ -243,6 +244,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       CTPolicyEnforcer* ct_policy_enforcer,
       TransportSecurityState* transport_security_state,
       CTVerifier* cert_transparency_verifier,
+      SCTAuditingDelegate* sct_auditing_delegate,
       SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
       QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
       QuicContext* context);
@@ -495,6 +497,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   CTPolicyEnforcer* const ct_policy_enforcer_;
   TransportSecurityState* const transport_security_state_;
   CTVerifier* const cert_transparency_verifier_;
+  SCTAuditingDelegate* const sct_auditing_delegate_;
   QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory_;
   quic::QuicRandom* random_generator_;  // Unowned.
   const quic::QuicClock* clock_;        // Unowned.

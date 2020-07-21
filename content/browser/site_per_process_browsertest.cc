@@ -5643,7 +5643,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // When ProactivelySwapBrowsingInstance A1 and A3 aren't using the same
   // BrowsingInstance.
-  if (IsProactivelySwapBrowsingInstanceEnabled())
+  if (CanCrossSiteNavigationsProactivelySwapBrowsingInstances())
     EXPECT_NE(site_instance, pending_rvh->GetSiteInstance());
   else
     EXPECT_EQ(site_instance, pending_rvh->GetSiteInstance());
@@ -7418,7 +7418,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // The test expect the BrowsingInstance to be kept across cross-site main
   // frame navigations. ProactivelySwapBrowsingInstance will provide a new one.
   // To prevent this, a popup is opened.
-  if (IsProactivelySwapBrowsingInstanceEnabled()) {
+  if (CanCrossSiteNavigationsProactivelySwapBrowsingInstances()) {
     GURL popup_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
     EXPECT_TRUE(OpenPopup(root, popup_url, "foo"));
   }
@@ -10192,7 +10192,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // Check that all frames have proxies for b.com at this point. The proxy for
   // |child2| is important to create since |child| has to use it to communicate
   // with |child2| if |child| commits first.
-  if (IsProactivelySwapBrowsingInstanceEnabled()) {
+  if (CanCrossSiteNavigationsProactivelySwapBrowsingInstances()) {
     // With ProactivelySwapBrowsingInstance, the new main document and the new
     // iframe don't have the same SiteInstance, because they belong to two
     // unrelated pages. The two page use different BrowsingInstances.
@@ -10225,7 +10225,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   EXPECT_EQ(new_url_2, child->current_frame_host()->GetLastCommittedURL());
 
   // Recheck the proxies.  Main frame should still be pending.
-  if (IsProactivelySwapBrowsingInstanceEnabled()) {
+  if (CanCrossSiteNavigationsProactivelySwapBrowsingInstances()) {
     EXPECT_EQ(
         " Site A (B speculative) -- proxies for B C\n"
         "   |--Site C ------- proxies for A\n"

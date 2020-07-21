@@ -24,8 +24,7 @@ base::OnceCallback<void(
 {%-   endif -%}
 {%- endmacro -%}
 
-{%- macro trace_event(prefix, method_parameters, qualified_method_name,
-                      value="input_params_for_tracing") -%}
+{%- macro trace_event(prefix, method_parameters, qualified_method_name) -%}
 {#- This macro assumes that the argument names are the ones declared by -#}
 {#- |declare_request_params|. Namely the |prefix| should be the same here as -#}
 {#- in |declare_request_params|. -#}
@@ -33,15 +32,17 @@ base::OnceCallback<void(
   TRACE_EVENT1(
     "mojom", "{{qualified_method_name}}", "input_parameters",
     [&](){
-      auto {{value}} = std::make_unique<base::trace_event::TracedValue>();
+      auto value = std::make_unique<base::trace_event::TracedValue>();
+      base::trace_event::TracedValue* raw_value = value.get();
 {%-     for param in method_parameters %}
-{%-       for line in param.kind|write_input_param_for_tracing(prefix,
-                                                               param.name,
-                                                               value) %}
+{%-       for line in param.kind|write_input_param_for_tracing(
+                                   parameter_name=param.name,
+                                   cpp_parameter_name=prefix+param.name,
+                                   value='raw_value') %}
       {{line}}
 {%-       endfor -%}
 {%-     endfor %}
-      return {{value}};
+      return value;
     }());
 {%-   else -%}
   TRACE_EVENT0("mojom", "{{qualified_method_name}}");

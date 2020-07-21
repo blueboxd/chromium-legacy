@@ -728,7 +728,7 @@ TEST(AXEventGeneratorTest, TextAttributeChanged) {
   update.nodes[2].AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor, 0);
   update.nodes[3].AddIntAttribute(
       ax::mojom::IntAttribute::kTextDirection,
-      static_cast<int32_t>(ax::mojom::TextDirection::kRtl));
+      static_cast<int32_t>(ax::mojom::WritingDirection::kRtl));
   update.nodes[4].AddIntAttribute(
       ax::mojom::IntAttribute::kTextPosition,
       static_cast<int32_t>(ax::mojom::TextPosition::kSuperscript));

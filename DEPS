@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '6d0ab954e90cb963c73dc84bbe7e9e3da54c19eb',
+  'skia_revision': '68e5f29d849a36edd9e9243dc05b88e4b288dd9b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '5ee5fa86c4ae4c1dbd16e993c100034fda855bd1',
+  'v8_revision': 'f75b12bfed2d782dc9b003eae2ed554a9e666070',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,15 +207,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '49108a1283c31d649e40484bc8a3e3f1c1ec5ebb',
+  'angle_revision': 'cd5489ad46bd1a3f9e80073a8cb1760ed8b17f96',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'd71ded6e61c7ad1f6b7d6aebd05f9947b995f4bc',
+  'swiftshader_revision': '97f9923235cf5a24d8ce49f93bd22429d2a68548',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '9a3f345ba7c49cdc78e8caf4e667d94da8fcbbd9',
+  'pdfium_revision': 'f6437f54c9f0215f4241e81eba6a19e349b7fb4b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -318,7 +318,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '3ed44f56c5bfb58571608738c8bd6dd0461911c6',
+  'dawn_revision': 'c4cebc7efae1e00f5b15e18aab6c4c0e61c9a1ad',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -946,7 +946,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'e46493b9148e0d1e63f55b5890bff503822616e5',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '9eef54b2513ca6b40b47b07d24f453848b65c0df',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'b99a6a7273181deeb08859c0fdb0c77c7e8a4500',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1326,7 +1326,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': '53Ps2Qo0mizBNjRI9qS90a_RTYhxglcY6H9yccc0ckcC'
+              'version': 'dOv-cP7Iqrr9QqppeGdHqAO3EEhTVVBb_hVADr88ZJQC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1476,7 +1476,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'fa504e744f9be405e7fb00ff7a2f1d72e5a3263e',
+    Var('webrtc_git') + '/src.git' + '@' + '539e8783de6228a56ec3ea5d84ce348082352210',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1548,7 +1548,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@62a87ddd43fa9d2ff95360d06cf3902adf0a7a63',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f9491204a8a8d6e82c4c6efc53a982dc6e1aafb9',
     'condition': 'checkout_src_internal',
   },
 

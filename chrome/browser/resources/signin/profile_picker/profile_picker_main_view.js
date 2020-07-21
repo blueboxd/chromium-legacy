@@ -6,6 +6,7 @@ import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import './icons.js';
 import './profile_card.js';
+import './profile_picker_shared_css.js';
 
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -45,6 +46,18 @@ Polymer({
     this.addWebUIListener(
         'profiles-list-changed', this.handleProfilesListChanged_.bind(this));
     this.manageProfilesBrowserProxy_.initializeMainView();
+  },
+
+  /** @private */
+  onProductLogoTap_() {
+    this.$['product-logo'].animate(
+        {
+          transform: ['none', 'rotate(-10turn)'],
+        },
+        {
+          duration: 500,
+          easing: 'cubic-bezier(1, 0, 0, 1)',
+        });
   },
 
   /**

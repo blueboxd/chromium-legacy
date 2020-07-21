@@ -28,6 +28,7 @@ bool IsSupportedPlaybackToMemoryFormat(viz::ResourceFormat format) {
     case viz::RGBA_4444:
     case viz::RGBA_8888:
     case viz::BGRA_8888:
+    case viz::RGBA_F16:
       return true;
     case viz::ALPHA_8:
     case viz::LUMINANCE_8:
@@ -35,7 +36,6 @@ bool IsSupportedPlaybackToMemoryFormat(viz::ResourceFormat format) {
     case viz::ETC1:
     case viz::RED_8:
     case viz::LUMINANCE_F16:
-    case viz::RGBA_F16:
     case viz::R16_EXT:
     case viz::BGR_565:
     case viz::RG_88:

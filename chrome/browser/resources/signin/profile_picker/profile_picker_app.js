@@ -5,6 +5,7 @@
 import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
 import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 import './profile_picker_main_view.js';
+import './profile_picker_shared_css.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';

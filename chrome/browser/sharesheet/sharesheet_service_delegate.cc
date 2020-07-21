@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sharesheet/sharesheet_service_delegate.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharesheet/sharesheet_service.h"
@@ -24,21 +26,21 @@ SharesheetServiceDelegate::SharesheetServiceDelegate(
 
 SharesheetServiceDelegate::~SharesheetServiceDelegate() = default;
 
-uint32_t SharesheetServiceDelegate::GetId() {
-  return id_;
-}
-
-void SharesheetServiceDelegate::ShowBubble() {
-  sharesheet_bubble_view_->ShowBubble();
-}
-
-void SharesheetServiceDelegate::ShareActionCompleted() {
-  sharesheet_bubble_view_->CloseBubble();
+void SharesheetServiceDelegate::ShowBubble(std::vector<TargetInfo> targets) {
+  sharesheet_bubble_view_->ShowBubble(std::move(targets));
 }
 
 void SharesheetServiceDelegate::OnBubbleClosed() {
   sharesheet_bubble_view_.release();
   sharesheet_service_->OnBubbleClosed(id_);
+}
+
+uint32_t SharesheetServiceDelegate::GetId() {
+  return id_;
+}
+
+void SharesheetServiceDelegate::ShareActionCompleted() {
+  sharesheet_bubble_view_->CloseBubble();
 }
 
 }  // namespace sharesheet

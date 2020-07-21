@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -112,6 +113,74 @@ public class AutofillAssistantOverlayIntegrationTest {
 
         waitUntil(() -> checkElementOnScreen(mTestRule, "touch_area_one"));
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
+
+        // Tapping on the element should remove it from the DOM.
+        assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_one"), is(true));
+        tapElement(mTestRule, "touch_area_one");
+        waitUntil(() -> !checkElementExists(mTestRule.getWebContents(), "touch_area_one"));
+        // Tapping on the element should be blocked by the overlay.
+        tapElement(mTestRule, "touch_area_four");
+        assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_four"), is(true));
+    }
+
+    /**
+     * Showcasts the same element twice in a row, and taps it the second time. Tests that the second
+     * showcast works correctly, even though the showcasted area hasn't changed (see b/161471176).
+     */
+    @Test
+    @MediumTest
+    public void testRepeatedShowCastOnSameElement() throws Exception {
+        SelectorProto element =
+                (SelectorProto) SelectorProto.newBuilder()
+                        .addFilters(
+                                SelectorProto.Filter.newBuilder().setCssSelector("#touch_area_one"))
+                        .build();
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setFocusElement(FocusElementProto.newBuilder()
+                                                 .setElement(element)
+                                                 .setTouchableElementArea(
+                                                         ElementAreaProto.newBuilder().addTouchable(
+                                                                 Rectangle.newBuilder().addElements(
+                                                                         element))))
+                        .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder()
+                                            .setMessage("First Prompt")
+                                            .addChoices(PromptProto.Choice.newBuilder().setChip(
+                                                    ChipProto.newBuilder().setText("Continue"))))
+                         .build());
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setFocusElement(FocusElementProto.newBuilder()
+                                                 .setElement(element)
+                                                 .setTouchableElementArea(
+                                                         ElementAreaProto.newBuilder().addTouchable(
+                                                                 Rectangle.newBuilder().addElements(
+                                                                         element))))
+                        .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder()
+                                            .setMessage("Second Prompt")
+                                            .addChoices(PromptProto.Choice.newBuilder().setChip(
+                                                    ChipProto.newBuilder().setText("Done"))))
+                         .build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("autofill_assistant_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Done")))
+                        .build(),
+                list);
+        runScript(script);
+
+        waitUntil(() -> checkElementOnScreen(mTestRule, "touch_area_one"));
+        waitUntilViewMatchesCondition(withText("First Prompt"), isCompletelyDisplayed());
+        onView(withContentDescription("Continue")).perform(click());
+        waitUntilViewMatchesCondition(withText("Second Prompt"), isCompletelyDisplayed());
 
         // Tapping on the element should remove it from the DOM.
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_one"), is(true));

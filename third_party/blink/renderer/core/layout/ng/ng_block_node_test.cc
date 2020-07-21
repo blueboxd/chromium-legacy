@@ -184,5 +184,32 @@ TEST_F(NGBlockNodeForTest, MinAndMaxContent) {
   EXPECT_EQ(LayoutUnit(kWidth), sizes.min_size);
   EXPECT_EQ(LayoutUnit(kWidth), sizes.max_size);
 }
+
+// crbug.com/1107291
+TEST_F(NGBlockNodeForTest, MinContentForControls) {
+  SetBodyInnerHTML(R"HTML(
+    <div style="display: flex;">
+      <select id="box1" style="border: solid 2px blue; flex: 0; width: 10%;">
+      </select>
+      <input id="box2" type=file
+          style="border: solid 2px blue; flex: 0; width: 10%;">
+      <marquee id="box3" style="border: solid 2px blue; flex: 0;">foo</marquee>
+    </div>)HTML");
+  const char* ids[] = {"box1", "box2", "box3"};
+  constexpr int kExpectedMinWidth = 4;
+
+  for (const auto* id : ids) {
+    NGBlockNode box(ToLayoutBox(GetLayoutObjectByElementId(id)));
+    MinMaxSizes sizes =
+        box.ComputeMinMaxSizes(
+               WritingMode::kHorizontalTb,
+               MinMaxSizesInput(
+                   /* percentage_resolution_block_size */ LayoutUnit(-1),
+                   MinMaxSizesType::kContent))
+            .sizes;
+    EXPECT_EQ(LayoutUnit(kExpectedMinWidth), sizes.min_size);
+  }
+}
+
 }  // namespace
 }  // namespace blink

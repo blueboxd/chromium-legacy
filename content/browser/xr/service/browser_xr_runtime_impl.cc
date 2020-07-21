@@ -8,6 +8,10 @@
 #include <memory>
 #include <utility>
 
+#if defined(OS_ANDROID)
+#include "base/android/android_hardware_buffer_compat.h"
+#endif
+
 #include "base/bind_helpers.h"
 #include "base/numerics/ranges.h"
 #include "build/build_config.h"
@@ -163,7 +167,6 @@ constexpr device::mojom::XRSessionFeature kARCoreDeviceFeatures[] = {
     device::mojom::XRSessionFeature::DOM_OVERLAY,
     device::mojom::XRSessionFeature::LIGHT_ESTIMATION,
     device::mojom::XRSessionFeature::ANCHORS,
-    device::mojom::XRSessionFeature::CAMERA_ACCESS,
 };
 
 #if BUILDFLAG(ENABLE_OPENVR)
@@ -265,6 +268,15 @@ bool BrowserXRRuntimeImpl::SupportsFeature(
       if (feature == device::mojom::XRSessionFeature::HIT_TEST) {
         return base::FeatureList::IsEnabled(features::kWebXrHitTest);
       }
+
+#if defined(OS_ANDROID)
+      // Only support camera access if the feature flag is enabled & the device
+      // supports shared buffers.
+      if (feature == device::mojom::XRSessionFeature::CAMERA_ACCESS) {
+        return base::FeatureList::IsEnabled(features::kWebXrIncubations) &&
+               base::AndroidHardwareBufferCompat::IsSupportAvailable();
+      }
+#endif
 
       return ContainsFeature(kARCoreDeviceFeatures, feature);
     case device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID:

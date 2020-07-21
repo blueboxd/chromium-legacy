@@ -325,11 +325,6 @@ class WebView {
   // Turn off auto-resize.
   virtual void DisableAutoResizeMode() = 0;
 
-  // Media ---------------------------------------------------------------
-
-  // Notifies WebView when audio is started or stopped.
-  virtual void AudioStateChanged(bool is_audio_playing) = 0;
-
   // Data exchange -------------------------------------------------------
 
   // Do a hit test equivalent to what would be done for a GestureTap event

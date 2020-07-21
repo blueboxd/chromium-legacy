@@ -1573,9 +1573,8 @@ class LoadingPredictorBrowserTestWithOptimizationGuide
   LoadingPredictorBrowserTestWithOptimizationGuide() {
     feature_list_.InitWithFeaturesAndParameters(
         {{features::kLoadingPredictorUseOptimizationGuide,
-          {{"use_predictions_for_preconnect",
-            ShouldPreconnectUsingOptimizationGuidePredictions() ? "true"
-                                                                : "false"}}},
+          {{"use_predictions",
+            ShouldUseOptimizationGuidePredictions() ? "true" : "false"}}},
          {optimization_guide::features::kOptimizationHints, {}}},
         {});
     if (IsLocalPredictionEnabled()) {
@@ -1589,7 +1588,7 @@ class LoadingPredictorBrowserTestWithOptimizationGuide
 
   bool IsLocalPredictionEnabled() const { return std::get<0>(GetParam()); }
 
-  bool ShouldPreconnectUsingOptimizationGuidePredictions() const {
+  bool ShouldUseOptimizationGuidePredictions() const {
     return std::get<1>(GetParam());
   }
 
@@ -1600,12 +1599,19 @@ class LoadingPredictorBrowserTestWithOptimizationGuide
   // A predicted subresource.
   struct Subresource {
     explicit Subresource(std::string url)
-        : url(url), type(optimization_guide::proto::RESOURCE_TYPE_UNKNOWN) {}
+        : url(url),
+          type(optimization_guide::proto::RESOURCE_TYPE_UNKNOWN),
+          preconnect_only(false) {}
     Subresource(std::string url, optimization_guide::proto::ResourceType type)
-        : url(url), type(type) {}
+        : url(url), type(type), preconnect_only(false) {}
+    Subresource(std::string url,
+                optimization_guide::proto::ResourceType type,
+                bool preconnect_only)
+        : url(url), type(type), preconnect_only(preconnect_only) {}
 
     std::string url;
     optimization_guide::proto::ResourceType type;
+    bool preconnect_only;
   };
 
   void SetUpOptimizationHint(
@@ -1620,6 +1626,7 @@ class LoadingPredictorBrowserTestWithOptimizationGuide
       auto* added = loading_predictor_metadata.add_subresources();
       added->set_url(subresource.url);
       added->set_resource_type(subresource.type);
+      added->set_preconnect_only(subresource.preconnect_only);
     }
 
     optimization_guide::OptimizationMetadata optimization_metadata;
@@ -1714,7 +1721,7 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorBrowserTestWithOptimizationGuide,
   if (IsLocalPredictionEnabled()) {
     // Should use subresources that were learned.
     expected_subresource_hosts = {"baz.com", "foo.com"};
-  } else if (ShouldPreconnectUsingOptimizationGuidePredictions()) {
+  } else if (ShouldUseOptimizationGuidePredictions()) {
     // Should use subresources from optimization hint.
     expected_subresource_hosts = {"subresource.com", "otherresource.com"};
   }
@@ -1761,18 +1768,18 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorBrowserTestWithOptimizationGuide,
       origin.GetURL()));
 
   for (auto* const host : {"subresource.com", "otherresource.com"}) {
-    if (ShouldPreconnectUsingOptimizationGuidePredictions()) {
+    if (ShouldUseOptimizationGuidePredictions()) {
       // Both subresource hosts should be preconnected to.
       preconnect_manager_observer()->WaitUntilHostLookedUp(
           host, network_isolation_key);
     }
     EXPECT_EQ(
         preconnect_manager_observer()->HostFound(host, network_isolation_key),
-        ShouldPreconnectUsingOptimizationGuidePredictions());
+        ShouldUseOptimizationGuidePredictions());
 
     EXPECT_EQ(preconnect_manager_observer()->HasOriginAttemptedToPreconnect(
                   GURL(base::StringPrintf("http://%s/", host))),
-              ShouldPreconnectUsingOptimizationGuidePredictions());
+              ShouldUseOptimizationGuidePredictions());
   }
 
   EXPECT_TRUE(observer->WaitForResponse());
@@ -1852,8 +1859,7 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorBrowserTestWithOptimizationGuide,
 
   std::vector<std::string> expected_opt_guide_subresource_hosts = {
       "subresource.com", "otherresource.com"};
-  if (!IsLocalPredictionEnabled() &&
-      ShouldPreconnectUsingOptimizationGuidePredictions()) {
+  if (!IsLocalPredictionEnabled() && ShouldUseOptimizationGuidePredictions()) {
     // Should use subresources from optimization hint.
     for (const auto& host : expected_opt_guide_subresource_hosts) {
       preconnect_manager_observer()->WaitUntilHostLookedUp(
@@ -2004,7 +2010,10 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorPrefetchBrowserTest,
       {embedded_test_server()->GetURL("subresource.com", "/image").spec(),
        optimization_guide::proto::RESOURCE_TYPE_UNKNOWN},
       {embedded_test_server()->GetURL("otherresource.com", "/js").spec(),
-       optimization_guide::proto::RESOURCE_TYPE_SCRIPT}};
+       optimization_guide::proto::RESOURCE_TYPE_SCRIPT},
+      {embedded_test_server()->GetURL("preconnect.com", "/other").spec(),
+       optimization_guide::proto::RESOURCE_TYPE_UNKNOWN, true},
+  };
   SetUpOptimizationHint(url, hints);
 
   // Expect these prefetches.
@@ -2025,6 +2034,16 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorPrefetchBrowserTest,
   auto observer = NavigateToURLAsync(url);
   EXPECT_TRUE(observer->WaitForRequestStart());
   WaitForRequests();
+
+  // preconnect.com should be preconnected to.
+  url::Origin origin = url::Origin::Create(url);
+  net::NetworkIsolationKey network_isolation_key(origin, origin);
+  preconnect_manager_observer()->WaitUntilHostLookedUp("preconnect.com",
+                                                       network_isolation_key);
+  EXPECT_TRUE(preconnect_manager_observer()->HostFound("preconnect.com",
+                                                       network_isolation_key));
+  EXPECT_TRUE(preconnect_manager_observer()->HasOriginAttemptedToPreconnect(
+      origin.GetURL()));
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -2032,7 +2051,7 @@ INSTANTIATE_TEST_SUITE_P(
     LoadingPredictorPrefetchBrowserTest,
     testing::Combine(
         /*IsLocalPredictionEnabled()=*/testing::Values(false),
-        /*ShouldPreconnectUsingOptimizationGuidePredictions()=*/
+        /*ShouldUseOptimizationGuidePredictions()=*/
         testing::Values(true),
         /*GetSubresourceType()=*/testing::Values("all", "css", "js_css")));
 

@@ -383,7 +383,8 @@ void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
     if (!subresource_url.is_valid())
       continue;
     predicted_subresources.push_back(subresource_url);
-    if (base::FeatureList::IsEnabled(features::kLoadingPredictorPrefetch)) {
+    if (!subresource.preconnect_only() &&
+        base::FeatureList::IsEnabled(features::kLoadingPredictorPrefetch)) {
       network::mojom::RequestDestination destination =
           GetDestination(subresource.resource_type());
       if (ShouldPrefetchDestination(destination)) {
@@ -410,10 +411,10 @@ void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
   last_optimization_guide_prediction_->predicted_subresources =
       predicted_subresources;
 
-  // Only preconnect if the navigation is still pending and we want to use the
-  // predictions to preconnect to subresource origins.
+  // Only prepare page load if the navigation is still pending and we want to
+  // use the predictions to pre* subresources.
   if (current_navigation_id_.is_valid() &&
-      features::ShouldUseOptimizationGuidePredictionsToPreconnect()) {
+      features::ShouldUseOptimizationGuidePredictions()) {
     predictor_->PrepareForPageLoad(navigation_id.main_frame_url,
                                    HintOrigin::OPTIMIZATION_GUIDE,
                                    /*preconnectable=*/false, prediction);

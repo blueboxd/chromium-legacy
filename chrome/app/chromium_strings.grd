@@ -1145,6 +1145,16 @@ Chromium is unable to recover your settings.
 
       </if>
 
+      <!-- Profile Picker -->
+      <if expr="not chromeos and not is_android">
+        <message name="IDS_PROFILE_PICKER_MAIN_VIEW_TITLE" desc="Profile picker main view title">
+          Pick your Chromium Space
+        </message>
+        <message name="IDS_PROFILE_PICKER_MAIN_VIEW_SUBTITLE" desc="Profile picker main view subtitle">
+          Use Chromium Spaces to keep your browsing organized on this device
+        </message>
+      </if>
+
     </messages>
   </release>
 </grit>

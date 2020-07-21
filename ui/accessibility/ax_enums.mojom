@@ -906,7 +906,7 @@ enum TextAlign {
   kJustify,
 };
 
-enum TextDirection {
+enum WritingDirection {
   kNone,
   kLtr,
   kRtl,

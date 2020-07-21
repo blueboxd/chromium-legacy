@@ -286,7 +286,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
         socket_context_.transport_security_state.get(),
         socket_context_.ct_verifier.get(),
         socket_context_.ct_policy_enforcer.get(),
-        nullptr /* no session caching */);
+        nullptr /* no session caching */, nullptr /* no sct auditing */);
 
     net::SSLConfig ssl_config;
     ssl_config.require_ecdhe = true;

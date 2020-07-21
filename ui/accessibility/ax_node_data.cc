@@ -904,15 +904,15 @@ void AXNodeData::SetTextAlign(ax::mojom::TextAlign text_align) {
                   static_cast<int32_t>(text_align));
 }
 
-ax::mojom::TextDirection AXNodeData::GetTextDirection() const {
-  return static_cast<ax::mojom::TextDirection>(
+ax::mojom::WritingDirection AXNodeData::GetTextDirection() const {
+  return static_cast<ax::mojom::WritingDirection>(
       GetIntAttribute(ax::mojom::IntAttribute::kTextDirection));
 }
 
-void AXNodeData::SetTextDirection(ax::mojom::TextDirection text_direction) {
+void AXNodeData::SetTextDirection(ax::mojom::WritingDirection text_direction) {
   if (HasIntAttribute(ax::mojom::IntAttribute::kTextDirection))
     RemoveIntAttribute(ax::mojom::IntAttribute::kTextDirection);
-  if (text_direction != ax::mojom::TextDirection::kNone) {
+  if (text_direction != ax::mojom::WritingDirection::kNone) {
     AddIntAttribute(ax::mojom::IntAttribute::kTextDirection,
                     static_cast<int32_t>(text_direction));
   }
@@ -1260,17 +1260,18 @@ std::string AXNodeData::ToString() const {
             static_cast<ax::mojom::TextAlign>(int_attribute.second));
         break;
       case ax::mojom::IntAttribute::kTextDirection:
-        switch (static_cast<ax::mojom::TextDirection>(int_attribute.second)) {
-          case ax::mojom::TextDirection::kLtr:
+        switch (
+            static_cast<ax::mojom::WritingDirection>(int_attribute.second)) {
+          case ax::mojom::WritingDirection::kLtr:
             result += " text_direction=ltr";
             break;
-          case ax::mojom::TextDirection::kRtl:
+          case ax::mojom::WritingDirection::kRtl:
             result += " text_direction=rtl";
             break;
-          case ax::mojom::TextDirection::kTtb:
+          case ax::mojom::WritingDirection::kTtb:
             result += " text_direction=ttb";
             break;
-          case ax::mojom::TextDirection::kBtt:
+          case ax::mojom::WritingDirection::kBtt:
             result += " text_direction=btt";
             break;
           default:

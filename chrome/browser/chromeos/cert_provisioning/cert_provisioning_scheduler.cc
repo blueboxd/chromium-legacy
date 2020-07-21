@@ -99,7 +99,7 @@ NetworkStateHandler* GetNetworkStateHandler() {
 
 // static
 std::unique_ptr<CertProvisioningScheduler>
-CertProvisioningScheduler::CreateUserCertProvisioningScheduler(
+CertProvisioningSchedulerImpl::CreateUserCertProvisioningScheduler(
     Profile* profile) {
   PrefService* pref_service = profile->GetPrefs();
   policy::CloudPolicyClient* cloud_policy_client =
@@ -114,7 +114,7 @@ CertProvisioningScheduler::CreateUserCertProvisioningScheduler(
     return nullptr;
   }
 
-  return std::make_unique<CertProvisioningScheduler>(
+  return std::make_unique<CertProvisioningSchedulerImpl>(
       CertScope::kUser, profile, pref_service, cloud_policy_client,
       platform_keys_service, network_state_handler,
       std::make_unique<CertProvisioningUserInvalidatorFactory>(profile));
@@ -122,7 +122,7 @@ CertProvisioningScheduler::CreateUserCertProvisioningScheduler(
 
 // static
 std::unique_ptr<CertProvisioningScheduler>
-CertProvisioningScheduler::CreateDeviceCertProvisioningScheduler(
+CertProvisioningSchedulerImpl::CreateDeviceCertProvisioningScheduler(
     policy::AffiliatedInvalidationServiceProvider*
         invalidation_service_provider) {
   Profile* profile = ProfileHelper::GetSigninProfile();
@@ -139,14 +139,14 @@ CertProvisioningScheduler::CreateDeviceCertProvisioningScheduler(
     return nullptr;
   }
 
-  return std::make_unique<CertProvisioningScheduler>(
+  return std::make_unique<CertProvisioningSchedulerImpl>(
       CertScope::kDevice, profile, pref_service, cloud_policy_client,
       platform_keys_service, network_state_handler,
       std::make_unique<CertProvisioningDeviceInvalidatorFactory>(
           invalidation_service_provider));
 }
 
-CertProvisioningScheduler::CertProvisioningScheduler(
+CertProvisioningSchedulerImpl::CertProvisioningSchedulerImpl(
     CertScope cert_scope,
     Profile* profile,
     PrefService* pref_service,
@@ -179,42 +179,44 @@ CertProvisioningScheduler::CertProvisioningScheduler(
   ScheduleDailyUpdate();
 }
 
-CertProvisioningScheduler::~CertProvisioningScheduler() {
+CertProvisioningSchedulerImpl::~CertProvisioningSchedulerImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   network_state_handler_->RemoveObserver(this, FROM_HERE);
 }
 
-void CertProvisioningScheduler::ScheduleInitialUpdate() {
+void CertProvisioningSchedulerImpl::ScheduleInitialUpdate() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&CertProvisioningScheduler::InitialUpdateCerts,
+      FROM_HERE, base::Bind(&CertProvisioningSchedulerImpl::InitialUpdateCerts,
                             weak_factory_.GetWeakPtr()));
 }
 
-void CertProvisioningScheduler::ScheduleDailyUpdate() {
+void CertProvisioningSchedulerImpl::ScheduleDailyUpdate() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&CertProvisioningScheduler::DailyUpdateCerts,
+      base::Bind(&CertProvisioningSchedulerImpl::DailyUpdateCerts,
                  weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromDays(1));
 }
 
-void CertProvisioningScheduler::ScheduleRetry(const CertProfileId& profile_id) {
+void CertProvisioningSchedulerImpl::ScheduleRetry(
+    const CertProfileId& profile_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&CertProvisioningScheduler::UpdateOneCertImpl,
+      base::Bind(&CertProvisioningSchedulerImpl::UpdateOneCertImpl,
                  weak_factory_.GetWeakPtr(), profile_id),
       kInconsistentDataErrorRetryDelay);
 }
 
-void CertProvisioningScheduler::ScheduleRenewal(const CertProfileId& profile_id,
-                                                base::TimeDelta delay) {
+void CertProvisioningSchedulerImpl::ScheduleRenewal(
+    const CertProfileId& profile_id,
+    base::TimeDelta delay) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (base::Contains(scheduled_renewals_, profile_id)) {
@@ -223,18 +225,18 @@ void CertProvisioningScheduler::ScheduleRenewal(const CertProfileId& profile_id,
 
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&CertProvisioningScheduler::InitiateRenewal,
+      base::Bind(&CertProvisioningSchedulerImpl::InitiateRenewal,
                  weak_factory_.GetWeakPtr(), profile_id),
       delay);
 }
 
-void CertProvisioningScheduler::InitialUpdateCerts() {
+void CertProvisioningSchedulerImpl::InitialUpdateCerts() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DeleteCertsWithoutPolicy();
 }
 
-void CertProvisioningScheduler::DeleteCertsWithoutPolicy() {
+void CertProvisioningSchedulerImpl::DeleteCertsWithoutPolicy() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::flat_set<CertProfileId> cert_profile_ids_to_keep;
@@ -249,11 +251,12 @@ void CertProvisioningScheduler::DeleteCertsWithoutPolicy() {
 
   cert_deleter_.DeleteCerts(
       cert_profile_ids_to_keep,
-      base::BindOnce(&CertProvisioningScheduler::OnDeleteCertsWithoutPolicyDone,
-                     weak_factory_.GetWeakPtr()));
+      base::BindOnce(
+          &CertProvisioningSchedulerImpl::OnDeleteCertsWithoutPolicyDone,
+          weak_factory_.GetWeakPtr()));
 }
 
-void CertProvisioningScheduler::OnDeleteCertsWithoutPolicyDone(
+void CertProvisioningSchedulerImpl::OnDeleteCertsWithoutPolicyDone(
     const std::string& error_message) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -266,7 +269,7 @@ void CertProvisioningScheduler::OnDeleteCertsWithoutPolicyDone(
   CleanVaKeysIfIdle();
 }
 
-void CertProvisioningScheduler::CleanVaKeysIfIdle() {
+void CertProvisioningSchedulerImpl::CleanVaKeysIfIdle() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!workers_.empty()) {
@@ -276,11 +279,11 @@ void CertProvisioningScheduler::CleanVaKeysIfIdle() {
 
   DeleteVaKeysByPrefix(
       cert_scope_, profile_, kKeyNamePrefix,
-      base::BindOnce(&CertProvisioningScheduler::OnCleanVaKeysIfIdleDone,
+      base::BindOnce(&CertProvisioningSchedulerImpl::OnCleanVaKeysIfIdleDone,
                      weak_factory_.GetWeakPtr()));
 }
 
-void CertProvisioningScheduler::OnCleanVaKeysIfIdleDone(
+void CertProvisioningSchedulerImpl::OnCleanVaKeysIfIdleDone(
     base::Optional<bool> delete_result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -292,16 +295,17 @@ void CertProvisioningScheduler::OnCleanVaKeysIfIdleDone(
   UpdateAllCerts();
 }
 
-void CertProvisioningScheduler::RegisterForPrefsChanges() {
+void CertProvisioningSchedulerImpl::RegisterForPrefsChanges() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
-      pref_name_, base::BindRepeating(&CertProvisioningScheduler::OnPrefsChange,
-                                      weak_factory_.GetWeakPtr()));
+      pref_name_,
+      base::BindRepeating(&CertProvisioningSchedulerImpl::OnPrefsChange,
+                          weak_factory_.GetWeakPtr()));
 }
 
-void CertProvisioningScheduler::DailyUpdateCerts() {
+void CertProvisioningSchedulerImpl::DailyUpdateCerts() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   failed_cert_profiles_.clear();
@@ -309,7 +313,7 @@ void CertProvisioningScheduler::DailyUpdateCerts() {
   ScheduleDailyUpdate();
 }
 
-void CertProvisioningScheduler::DeserializeWorkers() {
+void CertProvisioningSchedulerImpl::DeserializeWorkers() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const base::Value* saved_workers =
@@ -325,7 +329,7 @@ void CertProvisioningScheduler::DeserializeWorkers() {
         CertProvisioningWorkerFactory::Get()->Deserialize(
             cert_scope_, profile_, pref_service_, saved_worker,
             cloud_policy_client_, invalidator_factory_->Create(),
-            base::BindOnce(&CertProvisioningScheduler::OnProfileFinished,
+            base::BindOnce(&CertProvisioningSchedulerImpl::OnProfileFinished,
                            weak_factory_.GetWeakPtr()));
     if (!worker) {
       // Deserialization error message was already logged.
@@ -336,19 +340,19 @@ void CertProvisioningScheduler::DeserializeWorkers() {
   }
 }
 
-void CertProvisioningScheduler::OnPrefsChange() {
+void CertProvisioningSchedulerImpl::OnPrefsChange() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   UpdateAllCerts();
 }
 
-void CertProvisioningScheduler::InitiateRenewal(
+void CertProvisioningSchedulerImpl::InitiateRenewal(
     const CertProfileId& cert_profile_id) {
   scheduled_renewals_.erase(cert_profile_id);
   UpdateOneCertImpl(cert_profile_id);
 }
 
-void CertProvisioningScheduler::UpdateOneCert(
+void CertProvisioningSchedulerImpl::UpdateOneCert(
     const CertProfileId& cert_profile_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -356,7 +360,7 @@ void CertProvisioningScheduler::UpdateOneCert(
   UpdateOneCertImpl(cert_profile_id);
 }
 
-void CertProvisioningScheduler::UpdateOneCertImpl(
+void CertProvisioningSchedulerImpl::UpdateOneCertImpl(
     const CertProfileId& cert_profile_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -370,7 +374,7 @@ void CertProvisioningScheduler::UpdateOneCertImpl(
   UpdateCertList({std::move(cert_profile).value()});
 }
 
-void CertProvisioningScheduler::UpdateAllCerts() {
+void CertProvisioningSchedulerImpl::UpdateAllCerts() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::vector<CertProfile> profiles = GetCertProfiles();
@@ -383,7 +387,7 @@ void CertProvisioningScheduler::UpdateAllCerts() {
   UpdateCertList(std::move(profiles));
 }
 
-void CertProvisioningScheduler::UpdateCertList(
+void CertProvisioningSchedulerImpl::UpdateCertList(
     std::vector<CertProfile> profiles) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -398,11 +402,11 @@ void CertProvisioningScheduler::UpdateCertList(
   }
 
   certs_with_ids_getter_.GetCertsWithIds(base::BindOnce(
-      &CertProvisioningScheduler::UpdateCertListWithExistingCerts,
+      &CertProvisioningSchedulerImpl::UpdateCertListWithExistingCerts,
       weak_factory_.GetWeakPtr(), std::move(profiles)));
 }
 
-void CertProvisioningScheduler::UpdateCertListWithExistingCerts(
+void CertProvisioningSchedulerImpl::UpdateCertListWithExistingCerts(
     std::vector<CertProfile> profiles,
     base::flat_map<CertProfileId, scoped_refptr<net::X509Certificate>>
         existing_certs_with_ids,
@@ -450,7 +454,7 @@ void CertProvisioningScheduler::UpdateCertListWithExistingCerts(
   }
 }
 
-void CertProvisioningScheduler::ProcessProfile(
+void CertProvisioningSchedulerImpl::ProcessProfile(
     const CertProfile& cert_profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -478,7 +482,7 @@ void CertProvisioningScheduler::ProcessProfile(
   return;
 }
 
-void CertProvisioningScheduler::CreateCertProvisioningWorker(
+void CertProvisioningSchedulerImpl::CreateCertProvisioningWorker(
     CertProfile cert_profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -486,14 +490,14 @@ void CertProvisioningScheduler::CreateCertProvisioningWorker(
       CertProvisioningWorkerFactory::Get()->Create(
           cert_scope_, profile_, pref_service_, cert_profile,
           cloud_policy_client_, invalidator_factory_->Create(),
-          base::BindOnce(&CertProvisioningScheduler::OnProfileFinished,
+          base::BindOnce(&CertProvisioningSchedulerImpl::OnProfileFinished,
                          weak_factory_.GetWeakPtr()));
   CertProvisioningWorker* worker_unowned = worker.get();
   workers_[cert_profile.profile_id] = std::move(worker);
   worker_unowned->DoStep();
 }
 
-void CertProvisioningScheduler::OnProfileFinished(
+void CertProvisioningSchedulerImpl::OnProfileFinished(
     const CertProfile& profile,
     CertProvisioningWorkerState state) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -527,7 +531,7 @@ void CertProvisioningScheduler::OnProfileFinished(
   workers_.erase(worker_iter);
 }
 
-CertProvisioningWorker* CertProvisioningScheduler::FindWorker(
+CertProvisioningWorker* CertProvisioningSchedulerImpl::FindWorker(
     CertProfileId profile_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -539,7 +543,7 @@ CertProvisioningWorker* CertProvisioningScheduler::FindWorker(
   return iter->second.get();
 }
 
-base::Optional<CertProfile> CertProvisioningScheduler::GetOneCertProfile(
+base::Optional<CertProfile> CertProvisioningSchedulerImpl::GetOneCertProfile(
     const CertProfileId& cert_profile_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -561,7 +565,7 @@ base::Optional<CertProfile> CertProvisioningScheduler::GetOneCertProfile(
   return base::nullopt;
 }
 
-std::vector<CertProfile> CertProvisioningScheduler::GetCertProfiles() {
+std::vector<CertProfile> CertProvisioningSchedulerImpl::GetCertProfiles() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const base::Value* profile_list = pref_service_->Get(pref_name_);
@@ -584,20 +588,20 @@ std::vector<CertProfile> CertProvisioningScheduler::GetCertProfiles() {
   return result_profiles;
 }
 
-const WorkerMap& CertProvisioningScheduler::GetWorkers() const {
+const WorkerMap& CertProvisioningSchedulerImpl::GetWorkers() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   return workers_;
 }
 
 const base::flat_map<CertProfileId, FailedWorkerInfo>&
-CertProvisioningScheduler::GetFailedCertProfileIds() const {
+CertProvisioningSchedulerImpl::GetFailedCertProfileIds() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   return failed_cert_profiles_;
 }
 
-bool CertProvisioningScheduler::MaybeWaitForInternetConnection() {
+bool CertProvisioningSchedulerImpl::MaybeWaitForInternetConnection() {
   const NetworkState* network = network_state_handler_->DefaultNetwork();
   bool is_online = network && network->IsOnline();
 
@@ -610,7 +614,7 @@ bool CertProvisioningScheduler::MaybeWaitForInternetConnection() {
   return false;
 }
 
-void CertProvisioningScheduler::WaitForInternetConnection() {
+void CertProvisioningSchedulerImpl::WaitForInternetConnection() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (is_waiting_for_online_) {
@@ -628,7 +632,7 @@ void CertProvisioningScheduler::WaitForInternetConnection() {
   }
 }
 
-void CertProvisioningScheduler::OnNetworkChange(
+void CertProvisioningSchedulerImpl::OnNetworkChange(
     const chromeos::NetworkState* network) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -647,21 +651,21 @@ void CertProvisioningScheduler::OnNetworkChange(
   }
 }
 
-void CertProvisioningScheduler::DefaultNetworkChanged(
+void CertProvisioningSchedulerImpl::DefaultNetworkChanged(
     const chromeos::NetworkState* network) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   OnNetworkChange(network);
 }
 
-void CertProvisioningScheduler::NetworkConnectionStateChanged(
+void CertProvisioningSchedulerImpl::NetworkConnectionStateChanged(
     const chromeos::NetworkState* network) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   OnNetworkChange(network);
 }
 
-void CertProvisioningScheduler::UpdateFailedCertProfiles(
+void CertProvisioningSchedulerImpl::UpdateFailedCertProfiles(
     const CertProvisioningWorker& worker) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -673,7 +677,7 @@ void CertProvisioningScheduler::UpdateFailedCertProfiles(
   failed_cert_profiles_[worker.GetCertProfile().profile_id] = std::move(info);
 }
 
-void CertProvisioningScheduler::CancelWorkersWithoutPolicy(
+void CertProvisioningSchedulerImpl::CancelWorkersWithoutPolicy(
     const std::vector<CertProfile>& profiles) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

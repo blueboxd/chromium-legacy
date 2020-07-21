@@ -61,6 +61,7 @@
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
 #include "services/network/public/cpp/load_info_util.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/sct_auditing_cache.h"
 #include "services/network/url_loader.h"
 
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
@@ -365,6 +366,12 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
   doh_probe_activator_ = std::make_unique<DelayedDohProbeActivator>(this);
 
   trust_token_key_commitments_ = std::make_unique<TrustTokenKeyCommitments>();
+
+#if BUILDFLAG(IS_CT_SUPPORTED)
+  constexpr size_t kMaxSCTAuditingCacheEntries = 1024;
+  sct_auditing_cache_ =
+      std::make_unique<SCTAuditingCache>(kMaxSCTAuditingCacheEntries);
+#endif
 }
 
 NetworkService::~NetworkService() {

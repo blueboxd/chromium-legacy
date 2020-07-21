@@ -12,6 +12,7 @@
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "components/feed/core/proto/v2/store.pb.h"
+#include "components/feed/core/proto/v2/wire/capability.pb.h"
 #include "components/feed/core/proto/v2/wire/feed_request.pb.h"
 #include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/v2/feed_stream.h"
@@ -120,6 +121,7 @@ feedwire::Request CreateFeedQueryRequest(
   feed_request.add_client_capability(feedwire::Capability::DOWNLOAD_LINK);
   feed_request.add_client_capability(feedwire::Capability::INFINITE_FEED);
   feed_request.add_client_capability(feedwire::Capability::DISMISS_COMMAND);
+  feed_request.add_client_capability(feedwire::Capability::UI_THEME_V2);
   feed_request.add_client_capability(
       feedwire::Capability::UNDO_FOR_DISMISS_COMMAND);
 

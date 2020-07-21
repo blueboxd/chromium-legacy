@@ -466,7 +466,7 @@ void BrowserPolicyConnectorChromeOS::OnDeviceCloudPolicyManagerConnected() {
   // CertProvisioningScheduler does not depend on SignIn Profile.
   if (!device_cert_provisioning_scheduler_) {
     device_cert_provisioning_scheduler_ = chromeos::cert_provisioning::
-        CertProvisioningScheduler::CreateDeviceCertProvisioningScheduler(
+        CertProvisioningSchedulerImpl::CreateDeviceCertProvisioningScheduler(
             affiliated_invalidation_service_provider_.get());
   }
 }

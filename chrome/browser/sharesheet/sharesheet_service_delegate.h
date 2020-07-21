@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "chrome/browser/sharesheet/sharesheet_controller.h"
+#include "chrome/browser/sharesheet/sharesheet_types.h"
 
 class SharesheetBubbleView;
 
@@ -31,16 +32,15 @@ class SharesheetServiceDelegate : public SharesheetController {
   SharesheetServiceDelegate& operator=(const SharesheetServiceDelegate&) =
       delete;
 
-  uint32_t GetId();
-
-  void ShowBubble();
+  void ShowBubble(std::vector<TargetInfo> targets);
   void OnBubbleClosed();
 
   // SharesheetController overrides
+  uint32_t GetId() override;
   void ShareActionCompleted() override;
 
  private:
-  uint32_t id_;
+  const uint32_t id_;
   std::unique_ptr<SharesheetBubbleView> sharesheet_bubble_view_;
   SharesheetService* sharesheet_service_;
 };

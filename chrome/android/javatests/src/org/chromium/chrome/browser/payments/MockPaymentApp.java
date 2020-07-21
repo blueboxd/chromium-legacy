@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.task.PostTask;
 import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentAppType;
+import org.chromium.components.payments.SupportedDelegations;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;

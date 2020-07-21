@@ -3355,6 +3355,21 @@
             ]
         }
     ],
+    "IOSPageInfoRefactoring": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PageInfoRefactoring"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSReloadSadTab": [
         {
             "platforms": [

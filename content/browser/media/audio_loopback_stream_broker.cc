@@ -25,7 +25,7 @@ AudioLoopbackStreamBroker::AudioLoopbackStreamBroker(
     uint32_t shared_memory_count,
     bool mute_source,
     AudioStreamBroker::DeleterCallback deleter,
-    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+    mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
         renderer_factory_client)
     : AudioStreamBroker(render_process_id, render_frame_id),
       source_(source),

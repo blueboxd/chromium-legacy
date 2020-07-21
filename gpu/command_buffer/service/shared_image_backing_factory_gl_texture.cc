@@ -25,7 +25,8 @@
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
-#include "gpu/command_buffer/service/shared_image_backing_factory_gl_texture_internal.h"
+#include "gpu/command_buffer/service/shared_image_backing_gl_image.h"
+#include "gpu/command_buffer/service/shared_image_backing_gl_texture.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
@@ -58,149 +59,113 @@
 
 namespace gpu {
 
-namespace {
-
-using UnpackStateAttribs =
-    SharedImageBackingFactoryGLTexture::UnpackStateAttribs;
-
-class ScopedResetAndRestoreUnpackState {
- public:
-  ScopedResetAndRestoreUnpackState(gl::GLApi* api,
-                                   const UnpackStateAttribs& attribs,
-                                   bool uploading_data)
-      : api_(api) {
-    if (attribs.es3_capable) {
-      // Need to unbind any GL_PIXEL_UNPACK_BUFFER for the nullptr in
-      // glTexImage2D to mean "no pixels" (as opposed to offset 0 in the
-      // buffer).
-      api_->glGetIntegervFn(GL_PIXEL_UNPACK_BUFFER_BINDING, &unpack_buffer_);
-      if (unpack_buffer_)
-        api_->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, 0);
-    }
-    if (uploading_data) {
-      api_->glGetIntegervFn(GL_UNPACK_ALIGNMENT, &unpack_alignment_);
-      if (unpack_alignment_ != 4)
-        api_->glPixelStoreiFn(GL_UNPACK_ALIGNMENT, 4);
-
-      if (attribs.es3_capable || attribs.supports_unpack_subimage) {
-        api_->glGetIntegervFn(GL_UNPACK_ROW_LENGTH, &unpack_row_length_);
-        if (unpack_row_length_)
-          api_->glPixelStoreiFn(GL_UNPACK_ROW_LENGTH, 0);
-        api_->glGetIntegervFn(GL_UNPACK_SKIP_ROWS, &unpack_skip_rows_);
-        if (unpack_skip_rows_)
-          api_->glPixelStoreiFn(GL_UNPACK_SKIP_ROWS, 0);
-        api_->glGetIntegervFn(GL_UNPACK_SKIP_PIXELS, &unpack_skip_pixels_);
-        if (unpack_skip_pixels_)
-          api_->glPixelStoreiFn(GL_UNPACK_SKIP_PIXELS, 0);
-      }
-
-      if (attribs.es3_capable) {
-        api_->glGetIntegervFn(GL_UNPACK_SKIP_IMAGES, &unpack_skip_images_);
-        if (unpack_skip_images_)
-          api_->glPixelStoreiFn(GL_UNPACK_SKIP_IMAGES, 0);
-        api_->glGetIntegervFn(GL_UNPACK_IMAGE_HEIGHT, &unpack_image_height_);
-        if (unpack_image_height_)
-          api_->glPixelStoreiFn(GL_UNPACK_IMAGE_HEIGHT, 0);
-      }
-
-      if (attribs.desktop_gl) {
-        api->glGetBooleanvFn(GL_UNPACK_SWAP_BYTES, &unpack_swap_bytes_);
-        if (unpack_swap_bytes_)
-          api->glPixelStoreiFn(GL_UNPACK_SWAP_BYTES, GL_FALSE);
-        api->glGetBooleanvFn(GL_UNPACK_LSB_FIRST, &unpack_lsb_first_);
-        if (unpack_lsb_first_)
-          api->glPixelStoreiFn(GL_UNPACK_LSB_FIRST, GL_FALSE);
-      }
-    }
-  }
-
-  ~ScopedResetAndRestoreUnpackState() {
+SharedImageBackingGLCommon::ScopedResetAndRestoreUnpackState::
+    ScopedResetAndRestoreUnpackState(gl::GLApi* api,
+                                     const UnpackStateAttribs& attribs,
+                                     bool uploading_data)
+    : api_(api) {
+  if (attribs.es3_capable) {
+    // Need to unbind any GL_PIXEL_UNPACK_BUFFER for the nullptr in
+    // glTexImage2D to mean "no pixels" (as opposed to offset 0 in the
+    // buffer).
+    api_->glGetIntegervFn(GL_PIXEL_UNPACK_BUFFER_BINDING, &unpack_buffer_);
     if (unpack_buffer_)
-      api_->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, unpack_buffer_);
+      api_->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, 0);
+  }
+  if (uploading_data) {
+    api_->glGetIntegervFn(GL_UNPACK_ALIGNMENT, &unpack_alignment_);
     if (unpack_alignment_ != 4)
-      api_->glPixelStoreiFn(GL_UNPACK_ALIGNMENT, unpack_alignment_);
-    if (unpack_row_length_)
-      api_->glPixelStoreiFn(GL_UNPACK_ROW_LENGTH, unpack_row_length_);
-    if (unpack_image_height_)
-      api_->glPixelStoreiFn(GL_UNPACK_IMAGE_HEIGHT, unpack_image_height_);
-    if (unpack_skip_rows_)
-      api_->glPixelStoreiFn(GL_UNPACK_SKIP_ROWS, unpack_skip_rows_);
-    if (unpack_skip_images_)
-      api_->glPixelStoreiFn(GL_UNPACK_SKIP_IMAGES, unpack_skip_images_);
-    if (unpack_skip_pixels_)
-      api_->glPixelStoreiFn(GL_UNPACK_SKIP_PIXELS, unpack_skip_pixels_);
-    if (unpack_swap_bytes_)
-      api_->glPixelStoreiFn(GL_UNPACK_SWAP_BYTES, unpack_swap_bytes_);
-    if (unpack_lsb_first_)
-      api_->glPixelStoreiFn(GL_UNPACK_LSB_FIRST, unpack_lsb_first_);
-  }
+      api_->glPixelStoreiFn(GL_UNPACK_ALIGNMENT, 4);
 
- private:
-  gl::GLApi* const api_;
-
-  // Always used if |es3_capable|.
-  GLint unpack_buffer_ = 0;
-
-  // Always used when |uploading_data|.
-  GLint unpack_alignment_ = 4;
-
-  // Used when |uploading_data_| and (|es3_capable| or
-  // |supports_unpack_subimage|).
-  GLint unpack_row_length_ = 0;
-  GLint unpack_skip_pixels_ = 0;
-  GLint unpack_skip_rows_ = 0;
-
-  // Used when |uploading_data| and |es3_capable|.
-  GLint unpack_skip_images_ = 0;
-  GLint unpack_image_height_ = 0;
-
-  // Used when |desktop_gl|.
-  GLboolean unpack_swap_bytes_ = GL_FALSE;
-  GLboolean unpack_lsb_first_ = GL_FALSE;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedResetAndRestoreUnpackState);
-};
-
-class ScopedRestoreTexture {
- public:
-  ScopedRestoreTexture(gl::GLApi* api, GLenum target)
-      : api_(api), target_(target) {
-    GLenum get_target = GL_TEXTURE_BINDING_2D;
-    switch (target) {
-      case GL_TEXTURE_2D:
-        get_target = GL_TEXTURE_BINDING_2D;
-        break;
-      case GL_TEXTURE_RECTANGLE_ARB:
-        get_target = GL_TEXTURE_BINDING_RECTANGLE_ARB;
-        break;
-      case GL_TEXTURE_EXTERNAL_OES:
-        get_target = GL_TEXTURE_BINDING_EXTERNAL_OES;
-        break;
-      default:
-        NOTREACHED();
-        break;
+    if (attribs.es3_capable || attribs.supports_unpack_subimage) {
+      api_->glGetIntegervFn(GL_UNPACK_ROW_LENGTH, &unpack_row_length_);
+      if (unpack_row_length_)
+        api_->glPixelStoreiFn(GL_UNPACK_ROW_LENGTH, 0);
+      api_->glGetIntegervFn(GL_UNPACK_SKIP_ROWS, &unpack_skip_rows_);
+      if (unpack_skip_rows_)
+        api_->glPixelStoreiFn(GL_UNPACK_SKIP_ROWS, 0);
+      api_->glGetIntegervFn(GL_UNPACK_SKIP_PIXELS, &unpack_skip_pixels_);
+      if (unpack_skip_pixels_)
+        api_->glPixelStoreiFn(GL_UNPACK_SKIP_PIXELS, 0);
     }
-    GLint old_texture_binding = 0;
-    api->glGetIntegervFn(get_target, &old_texture_binding);
-    old_binding_ = old_texture_binding;
+
+    if (attribs.es3_capable) {
+      api_->glGetIntegervFn(GL_UNPACK_SKIP_IMAGES, &unpack_skip_images_);
+      if (unpack_skip_images_)
+        api_->glPixelStoreiFn(GL_UNPACK_SKIP_IMAGES, 0);
+      api_->glGetIntegervFn(GL_UNPACK_IMAGE_HEIGHT, &unpack_image_height_);
+      if (unpack_image_height_)
+        api_->glPixelStoreiFn(GL_UNPACK_IMAGE_HEIGHT, 0);
+    }
+
+    if (attribs.desktop_gl) {
+      api->glGetBooleanvFn(GL_UNPACK_SWAP_BYTES, &unpack_swap_bytes_);
+      if (unpack_swap_bytes_)
+        api->glPixelStoreiFn(GL_UNPACK_SWAP_BYTES, GL_FALSE);
+      api->glGetBooleanvFn(GL_UNPACK_LSB_FIRST, &unpack_lsb_first_);
+      if (unpack_lsb_first_)
+        api->glPixelStoreiFn(GL_UNPACK_LSB_FIRST, GL_FALSE);
+    }
   }
+}
 
-  ~ScopedRestoreTexture() { api_->glBindTextureFn(target_, old_binding_); }
+SharedImageBackingGLCommon::ScopedResetAndRestoreUnpackState::
+    ~ScopedResetAndRestoreUnpackState() {
+  if (unpack_buffer_)
+    api_->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, unpack_buffer_);
+  if (unpack_alignment_ != 4)
+    api_->glPixelStoreiFn(GL_UNPACK_ALIGNMENT, unpack_alignment_);
+  if (unpack_row_length_)
+    api_->glPixelStoreiFn(GL_UNPACK_ROW_LENGTH, unpack_row_length_);
+  if (unpack_image_height_)
+    api_->glPixelStoreiFn(GL_UNPACK_IMAGE_HEIGHT, unpack_image_height_);
+  if (unpack_skip_rows_)
+    api_->glPixelStoreiFn(GL_UNPACK_SKIP_ROWS, unpack_skip_rows_);
+  if (unpack_skip_images_)
+    api_->glPixelStoreiFn(GL_UNPACK_SKIP_IMAGES, unpack_skip_images_);
+  if (unpack_skip_pixels_)
+    api_->glPixelStoreiFn(GL_UNPACK_SKIP_PIXELS, unpack_skip_pixels_);
+  if (unpack_swap_bytes_)
+    api_->glPixelStoreiFn(GL_UNPACK_SWAP_BYTES, unpack_swap_bytes_);
+  if (unpack_lsb_first_)
+    api_->glPixelStoreiFn(GL_UNPACK_LSB_FIRST, unpack_lsb_first_);
+}
 
- private:
-  gl::GLApi* api_;
-  GLenum target_;
-  GLuint old_binding_ = 0;
-  DISALLOW_COPY_AND_ASSIGN(ScopedRestoreTexture);
-};
+SharedImageBackingGLCommon::ScopedRestoreTexture::ScopedRestoreTexture(
+    gl::GLApi* api,
+    GLenum target)
+    : api_(api), target_(target) {
+  GLenum get_target = GL_TEXTURE_BINDING_2D;
+  switch (target) {
+    case GL_TEXTURE_2D:
+      get_target = GL_TEXTURE_BINDING_2D;
+      break;
+    case GL_TEXTURE_RECTANGLE_ARB:
+      get_target = GL_TEXTURE_BINDING_RECTANGLE_ARB;
+      break;
+    case GL_TEXTURE_EXTERNAL_OES:
+      get_target = GL_TEXTURE_BINDING_EXTERNAL_OES;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  GLint old_texture_binding = 0;
+  api->glGetIntegervFn(get_target, &old_texture_binding);
+  old_binding_ = old_texture_binding;
+}
 
-std::unique_ptr<SharedImageRepresentationDawn> ProduceDawnCommon(
-    SharedImageFactory* factory,
-    SharedImageManager* manager,
-    MemoryTypeTracker* tracker,
-    WGPUDevice device,
-    SharedImageBacking* backing,
-    bool use_passthrough) {
+SharedImageBackingGLCommon::ScopedRestoreTexture::~ScopedRestoreTexture() {
+  api_->glBindTextureFn(target_, old_binding_);
+}
+
+std::unique_ptr<SharedImageRepresentationDawn>
+SharedImageBackingGLCommon::ProduceDawnCommon(SharedImageFactory* factory,
+                                              SharedImageManager* manager,
+                                              MemoryTypeTracker* tracker,
+                                              WGPUDevice device,
+                                              SharedImageBacking* backing,
+                                              bool use_passthrough) {
   DCHECK(factory);
   // Make SharedContextState from factory the current context
   SharedContextState* shared_context_state = factory->GetSharedContextState();
@@ -290,11 +255,23 @@ std::unique_ptr<SharedImageRepresentationDawn> ProduceDawnCommon(
   return manager->ProduceDawn(dst_mailbox, tracker, device);
 }
 
+namespace {
+
 size_t EstimatedSize(viz::ResourceFormat format, const gfx::Size& size) {
   size_t estimated_size = 0;
   viz::ResourceSizes::MaybeSizeInBytes(size, format, &estimated_size);
   return estimated_size;
 }
+
+using UnpackStateAttribs = SharedImageBackingGLCommon::UnpackStateAttribs;
+
+using ScopedResetAndRestoreUnpackState =
+    SharedImageBackingGLCommon::ScopedResetAndRestoreUnpackState;
+
+using ScopedRestoreTexture = SharedImageBackingGLCommon::ScopedRestoreTexture;
+
+using InitializeGLTextureParams =
+    SharedImageBackingGLCommon::InitializeGLTextureParams;
 
 }  // anonymous namespace
 
@@ -467,7 +444,7 @@ sk_sp<SkSurface> SharedImageRepresentationSkiaImpl::BeginWriteAccess(
       /*gpu_compositing=*/true, format());
   auto surface = SkSurface::MakeFromBackendTexture(
       context_state_->gr_context(), promise_texture_->backendTexture(),
-      backing()->surface_origin(), final_msaa_count, sk_color_type,
+      surface_origin(), final_msaa_count, sk_color_type,
       backing()->color_space().ToSkColorSpace(), &surface_props);
   write_surface_ = surface.get();
   return surface;
@@ -649,8 +626,8 @@ SharedImageBackingGLTexture::ProduceDawn(SharedImageManager* manager,
     return nullptr;
   }
 
-  return ProduceDawnCommon(factory(), manager, tracker, device, this,
-                           IsPassthrough());
+  return SharedImageBackingGLCommon::ProduceDawnCommon(
+      factory(), manager, tracker, device, this, IsPassthrough());
 }
 
 std::unique_ptr<SharedImageRepresentationSkia>
@@ -674,7 +651,7 @@ void SharedImageBackingGLTexture::Update(
 
 void SharedImageBackingGLTexture::InitializeGLTexture(
     GLuint service_id,
-    const SharedImageBackingGLCommon::InitializeGLTextureParams& params) {
+    const InitializeGLTextureParams& params) {
   SharedImageBackingGLCommon::MakeTextureAndSetParameters(
       params.target, service_id, params.framebuffer_attachment_angle,
       IsPassthrough() ? &passthrough_texture_ : nullptr,
@@ -709,7 +686,7 @@ SharedImageBackingGLImage::SharedImageBackingGLImage(
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
     uint32_t usage,
-    const SharedImageBackingGLCommon::InitializeGLTextureParams& params,
+    const InitializeGLTextureParams& params,
     const UnpackStateAttribs& attribs,
     bool is_passthrough)
     : SharedImageBacking(mailbox,
@@ -910,8 +887,8 @@ SharedImageBackingGLImage::ProduceDawn(SharedImageManager* manager,
     return nullptr;
   }
 
-  return ProduceDawnCommon(factory(), manager, tracker, device, this,
-                           IsPassthrough());
+  return SharedImageBackingGLCommon::ProduceDawnCommon(
+      factory(), manager, tracker, device, this, IsPassthrough());
 }
 
 std::unique_ptr<SharedImageRepresentationSkia>
@@ -1338,7 +1315,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
                 SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT)) != 0;
   const bool is_rgb_emulation = (usage & SHARED_IMAGE_USAGE_RGB_EMULATION) != 0;
 
-  SharedImageBackingGLCommon::InitializeGLTextureParams params;
+  InitializeGLTextureParams params;
   params.target = target;
   params.internal_format =
       is_rgb_emulation ? GL_RGB : image->GetInternalFormat();
@@ -1365,7 +1342,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImageForTest(
   auto result = std::make_unique<SharedImageBackingGLTexture>(
       mailbox, format, size, gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin,
       kPremul_SkAlphaType, usage, false /* is_passthrough */);
-  SharedImageBackingGLCommon::InitializeGLTextureParams params;
+  InitializeGLTextureParams params;
   params.target = target;
   params.internal_format = viz::GLInternalFormat(format);
   params.format = viz::GLDataFormat(format);
@@ -1574,7 +1551,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImageInternal(
       image->SetColorSpace(color_space);
   }
 
-  SharedImageBackingGLCommon::InitializeGLTextureParams params;
+  InitializeGLTextureParams params;
   params.target = target;
   params.internal_format = level_info_internal_format;
   params.format = format_info.gl_format;

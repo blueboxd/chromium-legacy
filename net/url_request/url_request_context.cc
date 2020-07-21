@@ -43,6 +43,7 @@ URLRequestContext::URLRequestContext()
       transport_security_state_(nullptr),
       cert_transparency_verifier_(nullptr),
       ct_policy_enforcer_(nullptr),
+      sct_auditing_delegate_(nullptr),
       http_transaction_factory_(nullptr),
       job_factory_(nullptr),
       throttler_manager_(nullptr),

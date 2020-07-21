@@ -28,7 +28,34 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
+namespace {
+
 using bookmarks::BookmarkModel;
+
+std::unique_ptr<KeyedService> BuildBookmarkModel(
+    content::BrowserContext* context,
+    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  auto bookmark_model =
+      std::make_unique<BookmarkModel>(std::make_unique<ChromeBookmarkClient>(
+          profile, ManagedBookmarkServiceFactory::GetForProfile(profile),
+          BookmarkSyncServiceFactory::GetForProfile(profile)));
+  bookmark_model->Load(profile->GetPrefs(), profile->GetPath(), io_task_runner,
+                       content::GetUIThreadTaskRunner({}));
+  BookmarkUndoServiceFactory::GetForProfile(profile)->Start(
+      bookmark_model.get());
+  return bookmark_model;
+}
+
+std::unique_ptr<KeyedService> BuildBookmarkModelForTesting(
+    content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  // During testing, avoid deferring I/O tasks and having to explicitly
+  // invoke StartupTaskRunnerService:: StartDeferredTaskRunners().
+  return BuildBookmarkModel(context, profile->GetIOTaskRunner());
+}
+
+}  // namespace
 
 // static
 BookmarkModel* BookmarkModelFactory::GetForBrowserContext(
@@ -49,6 +76,12 @@ BookmarkModelFactory* BookmarkModelFactory::GetInstance() {
   return base::Singleton<BookmarkModelFactory>::get();
 }
 
+// static
+BrowserContextKeyedServiceFactory::TestingFactory
+BookmarkModelFactory::GetDefaultFactory() {
+  return base::BindRepeating(&BuildBookmarkModelForTesting);
+}
+
 BookmarkModelFactory::BookmarkModelFactory()
     : BrowserContextKeyedServiceFactory(
         "BookmarkModel",
@@ -65,17 +98,10 @@ BookmarkModelFactory::~BookmarkModelFactory() {
 KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  BookmarkModel* bookmark_model =
-      new BookmarkModel(std::make_unique<ChromeBookmarkClient>(
-          profile, ManagedBookmarkServiceFactory::GetForProfile(profile),
-          BookmarkSyncServiceFactory::GetForProfile(profile)));
-  bookmark_model->Load(profile->GetPrefs(), profile->GetPath(),
-                       StartupTaskRunnerServiceFactory::GetForProfile(profile)
-                           ->GetBookmarkTaskRunner(),
-                       content::GetUIThreadTaskRunner({}));
-  BookmarkUndoServiceFactory::GetForProfile(profile)->Start(bookmark_model);
-
-  return bookmark_model;
+  return BuildBookmarkModel(
+             context, StartupTaskRunnerServiceFactory::GetForProfile(profile)
+                          ->GetBookmarkTaskRunner())
+      .release();
 }
 
 void BookmarkModelFactory::RegisterProfilePrefs(

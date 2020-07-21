@@ -414,6 +414,12 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 @synthesize serverRespondsWithContent = _serverRespondsWithContent;
 @synthesize serverResponseDelay = _serverResponseDelay;
 
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+  config.features_enabled.push_back(kPageInfoRefactoring);
+  return config;
+}
+
 - (void)setUp {
   [super setUp];
   GREYAssertNil([ReadingListAppInterface clearEntries],
@@ -483,9 +489,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   // Verify that the Page Info is about offline pages.
   id<GREYMatcher> pageInfoTitleMatcher =
       chrome_test_util::StaticTextWithAccessibilityLabelId(
-          base::FeatureList::IsEnabled(kPageInfoRefactoring)
-              ? IDS_IOS_PAGE_INFO_OFFLINE_PAGE_LABEL
-              : IDS_IOS_PAGE_INFO_OFFLINE_TITLE);
+          IDS_IOS_PAGE_INFO_OFFLINE_PAGE_LABEL);
   [[EarlGrey selectElementWithMatcher:pageInfoTitleMatcher]
       assertWithMatcher:grey_notNil()];
 

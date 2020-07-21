@@ -70,6 +70,7 @@ class QuicCryptoClientStreamFactory;
 #if BUILDFLAG(ENABLE_REPORTING)
 class ReportingService;
 #endif
+class SCTAuditingDelegate;
 class SocketPerformanceWatcherFactory;
 class SSLConfigService;
 class TransportSecurityState;
@@ -166,6 +167,7 @@ class NET_EXPORT HttpNetworkSession {
     TransportSecurityState* transport_security_state;
     CTVerifier* cert_transparency_verifier;
     CTPolicyEnforcer* ct_policy_enforcer;
+    SCTAuditingDelegate* sct_auditing_delegate;
     ProxyResolutionService* proxy_resolution_service;
     ProxyDelegate* proxy_delegate;
     const HttpUserAgentSettings* http_user_agent_settings;

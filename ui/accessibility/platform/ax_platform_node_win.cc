@@ -4879,17 +4879,17 @@ LONG AXPlatformNodeWin::AXListStyleToUIAStyleId(
 
 // static
 FlowDirections AXPlatformNodeWin::TextDirectionToFlowDirections(
-    ax::mojom::TextDirection text_direction) {
+    ax::mojom::WritingDirection text_direction) {
   switch (text_direction) {
-    case ax::mojom::TextDirection::kNone:
+    case ax::mojom::WritingDirection::kNone:
       return FlowDirections::FlowDirections_Default;
-    case ax::mojom::TextDirection::kLtr:
+    case ax::mojom::WritingDirection::kLtr:
       return FlowDirections::FlowDirections_Default;
-    case ax::mojom::TextDirection::kRtl:
+    case ax::mojom::WritingDirection::kRtl:
       return FlowDirections::FlowDirections_RightToLeft;
-    case ax::mojom::TextDirection::kTtb:
+    case ax::mojom::WritingDirection::kTtb:
       return FlowDirections::FlowDirections_Vertical;
-    case ax::mojom::TextDirection::kBtt:
+    case ax::mojom::WritingDirection::kBtt:
       return FlowDirections::FlowDirections_BottomToTop;
   }
 }

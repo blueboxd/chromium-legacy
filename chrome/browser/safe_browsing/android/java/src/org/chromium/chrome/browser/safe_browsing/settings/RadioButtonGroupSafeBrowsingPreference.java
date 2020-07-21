@@ -20,17 +20,38 @@ import org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionAndAu
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionLayout;
 
 /**
+ * <p>
  * A radio button group used for Safe Browsing. Currently, it has 3 options: Enhanced Protection,
  * Standard Protection and No Protection. When the Enhanced Protection flag is disabled, the
  * Enhanced Protection option will be removed.
+ * </p>
+ *
+ * <p>
+ * This preference also provides an interface {@link
+ * RadioButtonGroupSafeBrowsingPreference.OnSafeBrowsingModeDetailsRequested} that is triggered when
+ * more information of a Safe Browsing mode is requested.
+ * </p>
  */
-public class RadioButtonGroupSafeBrowsingPreference
-        extends Preference implements RadioGroup.OnCheckedChangeListener {
+public class RadioButtonGroupSafeBrowsingPreference extends Preference
+        implements RadioGroup.OnCheckedChangeListener,
+                   RadioButtonWithDescriptionAndAuxButton.OnAuxButtonClickedListener {
+    /**
+     * Interface that will subscribe to Safe Browsing mode details requested events.
+     */
+    public interface OnSafeBrowsingModeDetailsRequested {
+        /**
+         * Notify that details of a Safe Browsing mode are requested.
+         * @param safeBrowsingState The Safe Browsing mode that is requested for more details.
+         */
+        void onSafeBrowsingModeDetailsRequested(@SafeBrowsingState int safeBrowsingState);
+    }
+
     private @Nullable RadioButtonWithDescriptionAndAuxButton mEnhancedProtection;
     private RadioButtonWithDescriptionAndAuxButton mStandardProtection;
     private RadioButtonWithDescription mNoProtection;
     private @SafeBrowsingState int mSafeBrowsingState;
     private boolean mIsEnhancedProtectionEnabled;
+    private OnSafeBrowsingModeDetailsRequested mSafeBrowsingModeDetailsRequestedListener;
 
     public RadioButtonGroupSafeBrowsingPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -72,9 +93,11 @@ public class RadioButtonGroupSafeBrowsingPreference
             mEnhancedProtection = (RadioButtonWithDescriptionAndAuxButton) holder.findViewById(
                     R.id.enhanced_protection);
             mEnhancedProtection.setVisibility(View.VISIBLE);
+            mEnhancedProtection.setAuxButtonClickedListener(this);
         }
         mStandardProtection = (RadioButtonWithDescriptionAndAuxButton) holder.findViewById(
                 R.id.standard_protection);
+        mStandardProtection.setAuxButtonClickedListener(this);
         mNoProtection = (RadioButtonWithDescription) holder.findViewById(R.id.no_protection);
         RadioButtonWithDescriptionLayout groupLayout =
                 (RadioButtonWithDescriptionLayout) mNoProtection.getRootView();
@@ -89,6 +112,31 @@ public class RadioButtonGroupSafeBrowsingPreference
         }
         mStandardProtection.setChecked(mSafeBrowsingState == SafeBrowsingState.STANDARD_PROTECTION);
         mNoProtection.setChecked(mSafeBrowsingState == SafeBrowsingState.NO_SAFE_BROWSING);
+    }
+
+    @Override
+    public void onAuxButtonClicked(int clickedButtonId) {
+        assert mSafeBrowsingModeDetailsRequestedListener
+                != null : "The listener should be set if the aux button is clickable.";
+        if (mIsEnhancedProtectionEnabled && clickedButtonId == mEnhancedProtection.getId()) {
+            mSafeBrowsingModeDetailsRequestedListener.onSafeBrowsingModeDetailsRequested(
+                    SafeBrowsingState.ENHANCED_PROTECTION);
+        } else if (clickedButtonId == mStandardProtection.getId()) {
+            mSafeBrowsingModeDetailsRequestedListener.onSafeBrowsingModeDetailsRequested(
+                    SafeBrowsingState.STANDARD_PROTECTION);
+        } else {
+            assert false : "Should not be reached.";
+        }
+    }
+
+    /**
+     * Sets a listener that will be notified when details of a Safe Browsing mode are requested.
+     * @param listener New listener that will be notified when details of a Safe Browsing mode are
+     *         requested.
+     */
+    public void setSafeBrowsingModeDetailsRequestedListener(
+            OnSafeBrowsingModeDetailsRequested listener) {
+        mSafeBrowsingModeDetailsRequestedListener = listener;
     }
 
     @VisibleForTesting

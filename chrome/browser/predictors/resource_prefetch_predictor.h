@@ -93,8 +93,9 @@ struct PrefetchRequest {
   network::mojom::RequestDestination destination;
 };
 
-// Stores a result of preconnect prediction. The |requests| vector is the main
-// result of prediction and other fields are used for histograms reporting.
+// Stores a result of pre* prediction. The |requests| vector is the main
+// result for preconnects, while the |prefetch_requests| vector is the main
+// result for prefetches. Other fields are used for metrics reporting.
 struct PreconnectPrediction {
   PreconnectPrediction();
   PreconnectPrediction(const PreconnectPrediction& other);
@@ -107,9 +108,6 @@ struct PreconnectPrediction {
   bool is_redirected = false;
   std::string host;
   std::vector<PreconnectRequest> requests;
-
-  // For LoadingPredictorPrefetch. When |prefetch_requests| is non-empty, it is
-  // used instead of |requests|.
   std::vector<PrefetchRequest> prefetch_requests;
 };
 

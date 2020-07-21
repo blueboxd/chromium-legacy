@@ -17,6 +17,7 @@ import org.chromium.base.annotations.CalledByNativeJavaTest;
 import org.chromium.chrome.browser.UnitTestUtils;
 import org.chromium.components.payments.PayerData;
 import org.chromium.components.payments.PaymentApp;
+import org.chromium.components.payments.SupportedDelegations;
 import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;

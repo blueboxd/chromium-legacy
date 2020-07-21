@@ -2222,17 +2222,227 @@ constexpr auto unique_copy(Range&& range,
 // [alg.reverse] Reverse
 // Reference: https://wg21.link/alg.reverse
 
-// TODO(crbug.com/1071094): Implement.
+// Effects: For each non-negative integer `i < (last - first) / 2`, applies
+// `std::iter_swap` to all pairs of iterators `first + i, (last - i) - 1`.
+//
+// Returns: `last`.
+//
+// Complexity: Exactly `(last - first)/2` swaps.
+//
+// Reference: https://wg21.link/alg.reverse#:~:text=ranges::reverse(I
+template <typename BidirectionalIterator,
+          typename = internal::iterator_category_t<BidirectionalIterator>>
+constexpr auto reverse(BidirectionalIterator first,
+                       BidirectionalIterator last) {
+  std::reverse(first, last);
+  return last;
+}
+
+// Effects: For each non-negative integer `i < size(range) / 2`, applies
+// `std::iter_swap` to all pairs of iterators
+// `begin(range) + i, (end(range) - i) - 1`.
+//
+// Returns: `end(range)`.
+//
+// Complexity: Exactly `size(range)/2` swaps.
+//
+// Reference: https://wg21.link/alg.reverse#:~:text=ranges::reverse(R
+template <typename Range, typename = internal::range_category_t<Range>>
+constexpr auto reverse(Range&& range) {
+  return ranges::reverse(ranges::begin(range), ranges::end(range));
+}
+
+// Let `N` be `last - first`.
+//
+// Preconditions: The ranges `[first, last)` and `[result, result + N)` do not
+// overlap.
+//
+// Effects: Copies the range `[first, last)` to the range `[result, result + N)`
+// such that for every non-negative integer `i < N` the following assignment
+// takes place: `*(result + N - 1 - i) = *(first + i)`.
+//
+// Returns: `result + N`.
+//
+// Complexity: Exactly `N` assignments.
+//
+// Reference: https://wg21.link/alg.reverse#:~:text=ranges::reverse_copy(I
+template <typename BidirectionalIterator,
+          typename OutputIterator,
+          typename = internal::iterator_category_t<BidirectionalIterator>,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto reverse_copy(BidirectionalIterator first,
+                            BidirectionalIterator last,
+                            OutputIterator result) {
+  return std::reverse_copy(first, last, result);
+}
+
+// Let `N` be `size(range)`.
+//
+// Preconditions: The ranges `range` and `[result, result + N)` do not
+// overlap.
+//
+// Effects: Copies `range` to the range `[result, result + N)` such that for
+// every non-negative integer `i < N` the following assignment takes place:
+// `*(result + N - 1 - i) = *(begin(range) + i)`.
+//
+// Returns: `result + N`.
+//
+// Complexity: Exactly `N` assignments.
+//
+// Reference: https://wg21.link/alg.reverse#:~:text=ranges::reverse_copy(R
+template <typename Range,
+          typename OutputIterator,
+          typename = internal::range_category_t<Range>,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto reverse_copy(Range&& range, OutputIterator result) {
+  return ranges::reverse_copy(ranges::begin(range), ranges::end(range), result);
+}
 
 // [alg.rotate] Rotate
 // Reference: https://wg21.link/alg.rotate
 
-// TODO(crbug.com/1071094): Implement.
+// Preconditions: `[first, middle)` and `[middle, last)` are valid ranges.
+//
+// Effects: For each non-negative integer `i < (last - first)`, places the
+// element from the position `first + i` into position
+// `first + (i + (last - middle)) % (last - first)`.
+//
+// Returns: `first + (last - middle)`.
+//
+// Complexity: At most `last - first` swaps.
+//
+// Reference: https://wg21.link/alg.rotate#:~:text=ranges::rotate(I
+template <typename ForwardIterator,
+          typename = internal::iterator_category_t<ForwardIterator>>
+constexpr auto rotate(ForwardIterator first,
+                      ForwardIterator middle,
+                      ForwardIterator last) {
+  return std::rotate(first, middle, last);
+}
+
+// Preconditions: `[begin(range), middle)` and `[middle, end(range))` are valid
+// ranges.
+//
+// Effects: For each non-negative integer `i < size(range)`, places the element
+// from the position `begin(range) + i` into position
+// `begin(range) + (i + (end(range) - middle)) % size(range)`.
+//
+// Returns: `begin(range) + (end(range) - middle)`.
+//
+// Complexity: At most `size(range)` swaps.
+//
+// Reference: https://wg21.link/alg.rotate#:~:text=ranges::rotate(R
+template <typename Range, typename = internal::range_category_t<Range>>
+constexpr auto rotate(Range&& range, iterator_t<Range> middle) {
+  return ranges::rotate(ranges::begin(range), middle, ranges::end(range));
+}
+
+// Let `N` be `last - first`.
+//
+// Preconditions: `[first, middle)` and `[middle, last)` are valid ranges. The
+// ranges `[first, last)` and `[result, result + N)` do not overlap.
+//
+// Effects: Copies the range `[first, last)` to the range `[result, result + N)`
+// such that for each non-negative integer `i < N` the following assignment
+// takes place: `*(result + i) = *(first + (i + (middle - first)) % N)`.
+//
+// Returns: `result + N`.
+//
+// Complexity: Exactly `N` assignments.
+//
+// Reference: https://wg21.link/alg.rotate#:~:text=ranges::rotate_copy(I
+template <typename ForwardIterator,
+          typename OutputIterator,
+          typename = internal::iterator_category_t<ForwardIterator>,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto rotate_copy(ForwardIterator first,
+                           ForwardIterator middle,
+                           ForwardIterator last,
+                           OutputIterator result) {
+  return std::rotate_copy(first, middle, last, result);
+}
+
+// Let `N` be `size(range)`.
+//
+// Preconditions: `[begin(range), middle)` and `[middle, end(range))` are valid
+// ranges. The ranges `range` and `[result, result + N)` do not overlap.
+//
+// Effects: Copies `range` to the range `[result, result + N)` such that for
+// each non-negative integer `i < N` the following assignment takes place:
+// `*(result + i) = *(begin(range) + (i + (middle - begin(range))) % N)`.
+//
+// Returns: `result + N`.
+//
+// Complexity: Exactly `N` assignments.
+//
+// Reference: https://wg21.link/alg.rotate#:~:text=ranges::rotate_copy(R
+template <typename Range,
+          typename OutputIterator,
+          typename = internal::range_category_t<Range>,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto rotate_copy(Range&& range,
+                           iterator_t<Range> middle,
+                           OutputIterator result) {
+  return ranges::rotate_copy(ranges::begin(range), middle, ranges::end(range),
+                             result);
+}
+
+// [alg.random.sample] Sample
+// Reference: https://wg21.link/alg.random.sample
+
+// Currently not implemented due to lack of std::sample in C++14.
+// TODO(crbug.com/1071094): Consider implementing a hand-rolled version.
 
 // [alg.random.shuffle] Shuffle
 // Reference: https://wg21.link/alg.random.shuffle
 
-// TODO(crbug.com/1071094): Implement.
+// Preconditions: The type `std::remove_reference_t<UniformRandomBitGenerator>`
+// meets the uniform random bit generator requirements.
+//
+// Effects: Permutes the elements in the range `[first, last)` such that each
+// possible permutation of those elements has equal probability of appearance.
+//
+// Returns: `last`.
+//
+// Complexity: Exactly `(last - first) - 1` swaps.
+//
+// Remarks: To the extent that the implementation of this function makes use of
+// random numbers, the object referenced by g shall serve as the
+// implementation's source of randomness.
+//
+// Reference: https://wg21.link/alg.random.shuffle#:~:text=ranges::shuffle(I
+template <typename RandomAccessIterator,
+          typename UniformRandomBitGenerator,
+          typename = internal::iterator_category_t<RandomAccessIterator>>
+constexpr auto shuffle(RandomAccessIterator first,
+                       RandomAccessIterator last,
+                       UniformRandomBitGenerator&& g) {
+  std::shuffle(first, last, std::forward<UniformRandomBitGenerator>(g));
+  return last;
+}
+
+// Preconditions: The type `std::remove_reference_t<UniformRandomBitGenerator>`
+// meets the uniform random bit generator requirements.
+//
+// Effects: Permutes the elements in `range` such that each possible permutation
+// of those elements has equal probability of appearance.
+//
+// Returns: `end(range)`.
+//
+// Complexity: Exactly `size(range) - 1` swaps.
+//
+// Remarks: To the extent that the implementation of this function makes use of
+// random numbers, the object referenced by g shall serve as the
+// implementation's source of randomness.
+//
+// Reference: https://wg21.link/alg.random.shuffle#:~:text=ranges::shuffle(R
+template <typename Range,
+          typename UniformRandomBitGenerator,
+          typename = internal::range_category_t<Range>>
+constexpr auto shuffle(Range&& range, UniformRandomBitGenerator&& g) {
+  return ranges::shuffle(ranges::begin(range), ranges::end(range),
+                         std::forward<UniformRandomBitGenerator>(g));
+}
 
 // [alg.nonmodifying] Sorting and related operations
 // Reference: https://wg21.link/alg.sorting

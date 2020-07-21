@@ -22,9 +22,6 @@ class WebHTTPBody;
 
 namespace content {
 
-net::HttpRequestHeaders GetWebURLRequestHeaders(
-    const blink::WebURLRequest& request);
-
 std::string GetWebURLRequestHeadersAsString(
     const blink::WebURLRequest& request);
 
@@ -44,8 +41,6 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebURLRequest(
 
 // Helper functions to convert enums from the blink type to the content
 // type.
-std::string GetFetchIntegrityForWebURLRequest(
-    const blink::WebURLRequest& request);
 blink::mojom::RequestContextType GetRequestContextTypeForWebURLRequest(
     const blink::WebURLRequest& request);
 network::mojom::RequestDestination GetRequestDestinationForWebURLRequest(

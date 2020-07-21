@@ -69,5 +69,6 @@ html_to_js("web_components_local") {
     "profile_picker_app.js",
     "profile_picker_main_view.js",
     "profile_card.js",
+    "profile_picker_shared_css.js",
   ]
 }

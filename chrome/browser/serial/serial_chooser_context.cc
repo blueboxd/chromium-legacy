@@ -7,10 +7,12 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/serial/serial_chooser_histograms.h"
 #include "content/public/browser/device_service.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
@@ -41,28 +43,21 @@ base::UnguessableToken DecodeToken(base::StringPiece input) {
   return base::UnguessableToken::Deserialize(data[0], data[1]);
 }
 
-bool CanStorePersistentEntry(const device::mojom::SerialPortInfo& port) {
-  // If there is no display name then the path name will be used instead. The
-  // path name is not guaranteed to be stable. For example, on Linux the name
-  // "ttyUSB0" is reused for any USB serial device. A name like that would be
-  // confusing to show in settings when the device is disconnected.
-  if (!port.display_name || port.display_name->empty())
-    return false;
-
-  return port.persistent_id && !port.persistent_id->empty();
-}
-
 base::Value PortInfoToValue(const device::mojom::SerialPortInfo& port) {
   base::Value value(base::Value::Type::DICTIONARY);
   if (port.display_name && !port.display_name->empty())
     value.SetStringKey(kPortNameKey, *port.display_name);
   else
     value.SetStringKey(kPortNameKey, port.path.LossyDisplayName());
-  if (CanStorePersistentEntry(port))
+  if (SerialChooserContext::CanStorePersistentEntry(port))
     value.SetStringKey(kPersistentIdKey, port.persistent_id.value());
   else
     value.SetStringKey(kTokenKey, EncodeToken(port.token));
   return value;
+}
+
+void RecordPermissionRevocation(SerialPermissionRevoked type) {
+  UMA_HISTOGRAM_ENUMERATION("Permissions.Serial.Revoked", type);
 }
 
 }  // namespace
@@ -151,6 +146,7 @@ void SerialChooserContext::RevokeObjectPermission(
   if (!token) {
     ChooserContextBase::RevokeObjectPermission(requesting_origin,
                                                embedding_origin, object);
+    RecordPermissionRevocation(SerialPermissionRevoked::kPersistent);
     return;
   }
 
@@ -161,6 +157,7 @@ void SerialChooserContext::RevokeObjectPermission(
 
   DCHECK(IsValidObject(object));
   ports.erase(DecodeToken(*token));
+  RecordPermissionRevocation(SerialPermissionRevoked::kEphemeralByUser);
   NotifyPermissionRevoked(requesting_origin, embedding_origin);
 }
 
@@ -209,6 +206,19 @@ bool SerialChooserContext::HasPortPermission(
   return false;
 }
 
+// static
+bool SerialChooserContext::CanStorePersistentEntry(
+    const device::mojom::SerialPortInfo& port) {
+  // If there is no display name then the path name will be used instead. The
+  // path name is not guaranteed to be stable. For example, on Linux the name
+  // "ttyUSB0" is reused for any USB serial device. A name like that would be
+  // confusing to show in settings when the device is disconnected.
+  if (!port.display_name || port.display_name->empty())
+    return false;
+
+  return port.persistent_id && !port.persistent_id->empty();
+}
+
 device::mojom::SerialPortManager* SerialChooserContext::GetPortManager() {
   EnsurePortManagerConnection();
   return port_manager_.get();
@@ -248,8 +258,11 @@ void SerialChooserContext::OnPortRemoved(
   std::vector<std::pair<url::Origin, url::Origin>> revoked_url_pairs;
   for (auto& map_entry : ephemeral_ports_) {
     std::set<base::UnguessableToken>& ports = map_entry.second;
-    if (ports.erase(port->token) > 0)
+    if (ports.erase(port->token) > 0) {
+      RecordPermissionRevocation(
+          SerialPermissionRevoked::kEphemeralByDisconnect);
       revoked_url_pairs.push_back(map_entry.first);
+    }
   }
 
   port_info_.erase(port->token);

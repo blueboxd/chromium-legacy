@@ -41,19 +41,11 @@
 
 # Not triaged
 -All/SitePerProcessBrowserTest.ActiveSandboxFlagsRetainedAfterUnload/*
--All/SitePerProcessBrowserTest.NavigateMainFrameToChildSite/*
 -All/SitePerProcessBrowserTest.RenderViewHostIsNotReusedAfterDelayedUnloadACK/*
--All/SitePerProcessBrowserTest.TwoCrossSitePendingNavigationsAndSubframeWins/*
 
 # https://crbug.com/1102629
 # Needs investigation.
--All/RenderFrameHostManagerDefaultProcessTest.NavigationRacesWithSitelessCommitInDefaultProcess/*
--All/RenderFrameHostManagerTest.BrowserInitiatedNavigationsSwapBrowsingInstance/*
--All/RenderFrameHostManagerTest.ErrorPageNavigationReloadBrowsingInstanceSwap/*
--All/RenderFrameHostManagerTest.ProactivelySwapBrowsingInstance/*
 -All/RenderFrameHostManagerUnloadBrowserTest.PendingDeleteRFHProcessShutdownDoesNotRemoveSubframes/*
--All/RenderFrameHostManagerTest.DontSwapProcessWithOnlyRelNoOpener/*
--All/RenderFrameHostManagerTest.NavigateToFooThenBarThenAboutBlankThenFoo/*
 -RenderDocumentHostUserDataTest.CheckInPendingDeletionState
 -RenderDocumentHostUserDataTest.CrossSiteNavigation
 -RenderDocumentHostUserDataTest.FailedNavigation
@@ -61,5 +53,3 @@
 -RenderFrameHostImplBeforeUnloadBrowserTest.SubframeShowsDialogWhenMainFrameNavigates
 -RenderFrameHostImplBrowserTest.CheckIsCurrentBeforeAndAfterUnload
 -RenderFrameHostImplBrowserTest.CheckLifecycleStateTransitionOnMainFrame
--NavigationBrowserTest.RendererInitiatedCrossSiteNavigation
--All/RenderFrameHostManagerTest.DontSwapProcessWithOnlyRelNoreferrer/*

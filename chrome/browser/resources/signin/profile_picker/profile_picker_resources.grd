@@ -21,16 +21,19 @@
     <!-- Generated Polymer 3 elements -->
       <include name="IDR_PROFILE_PICKER_PROFILE_PICKER_MAIN_VIEW_JS"
                file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_picker_main_view.js"
-               use_base_dir="false" type="BINDATA" preprocess="true"/>
+               use_base_dir="false" type="BINDATA"/>
       <include name="IDR_PROFILE_PICKER_PROFILE_PICKER_APP_JS"
                file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_picker_app.js"
-               use_base_dir="false" type="BINDATA" preprocess="true"/>
+               use_base_dir="false" type="BINDATA"/>
       <include name="IDR_PROFILE_PICKER_PROFILE_CARD_JS"
                file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_card.js"
                use_base_dir="false" type="BINDATA" preprocess="true"/>
       <include name="IDR_PROFILE_PICKER_PROFILE_CREATION_FLOW_PROFILE_TYPE_CHOICE_JS"
                file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_creation_flow/profile_type_choice.js"
                use_base_dir="false" type="BINDATA"/>
+     <include name="IDR_PROFILE_PICKER_PROFILE_PICKER_SHARED_CSS_JS"
+             file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_picker_shared_css.js"
+             use_base_dir="false" type="BINDATA"/>
     </includes>
     <structures>
       <structure

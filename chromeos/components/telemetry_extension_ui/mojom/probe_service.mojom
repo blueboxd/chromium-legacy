@@ -37,10 +37,11 @@
 //      3.2) use string to store serial in a decimal numeral system instead
 //           of uint32 in case we want to extend serial number range.
 //   4) LogicalCpuInfo:
-//      4.1) rename idle_time_user_hz to idle_time_user, because of typo in
-//           cros_healthd interface;
-//      4.2) use uint64 to store idle_time_user instead of uint32,
-//           idle_time_user can easily be more than uint32 range.
+//      4.1) rename idle_time_user_hz to idle_time_ms and use milliseconds
+//           instead of USER_HZ units, because USER_HZ system constant is not
+//           available in the web.
+//      4.2) use uint64 to store idle_time_ms instead of uint32, idle_time_ms
+//           can easily be more than uint32 range.
 //   5) MemoryInfo: use uint64 to store page_faults_since_last_boot instead of
 //      uint32, it can be more than uint32 range.
 
@@ -252,9 +253,8 @@ struct LogicalCpuInfo {
   UInt32Value? scaling_max_frequency_khz;
   // Current frequency the CPU is running at.
   UInt32Value? scaling_current_frequency_khz;
-  // Idle time since last boot. USER_HZ can be converted to seconds
-  // with the conversion factor given by sysconf(_SC_CLK_TCK).
-  UInt64Value? idle_time_user;
+  // Idle time since last boot, in milliseconds.
+  UInt64Value? idle_time_ms;
   // Information about the logical CPU's time in various C-states.
   array<CpuCStateInfo> c_states;
 };

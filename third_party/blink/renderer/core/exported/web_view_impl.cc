@@ -2430,6 +2430,10 @@ void WebViewImpl::SetPageLifecycleState(
   std::move(callback).Run();
 }
 
+void WebViewImpl::AudioStateChanged(bool is_audio_playing) {
+  GetPage()->GetPageScheduler()->AudioStateChanged(is_audio_playing);
+}
+
 void WebViewImpl::DispatchPagehide() {
   for (Frame* frame = GetPage()->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
@@ -2804,10 +2808,6 @@ void WebViewImpl::ResetScrollAndScaleState() {
   }
 
   GetPageScaleConstraintsSet().SetNeedsReset(true);
-}
-
-void WebViewImpl::AudioStateChanged(bool is_audio_playing) {
-  GetPage()->GetPageScheduler()->AudioStateChanged(is_audio_playing);
 }
 
 WebHitTestResult WebViewImpl::HitTestResultAt(const gfx::PointF& point) {

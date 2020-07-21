@@ -4,7 +4,12 @@
 
 #include "cc/tiles/gpu_image_decode_cache.h"
 
+#include <algorithm>
+#include <limits>
+#include <map>
 #include <memory>
+#include <string>
+#include <tuple>
 #include <vector>
 
 #include "base/feature_list.h"
@@ -1052,6 +1057,97 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDraw) {
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_TRUE(decoded_draw_image.is_budgeted());
+  EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
+
+  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+  cache->UnrefImage(draw_image);
+}
+
+TEST_P(GpuImageDecodeCacheTest, GetHdrDecodedImageForDrawToHdr) {
+  auto cache = CreateCache();
+  auto color_space = gfx::ColorSpace::CreateHDR10();
+  auto size = GetNormalImageSize();
+  auto info =
+      SkImageInfo::Make(size.width(), size.height(), kRGBA_F16_SkColorType,
+                        kPremul_SkAlphaType, color_space.ToSkColorSpace());
+  SkBitmap bitmap;
+  bitmap.allocPixels(info);
+  PaintImage image = PaintImageBuilder::WithDefault()
+                         .set_id(PaintImage::kInvalidId)
+                         .set_is_high_bit_depth(true)
+                         .set_image(SkImage::MakeFromBitmap(bitmap),
+                                    PaintImage::GetNextContentId())
+                         .TakePaintImage();
+
+  DrawImage draw_image = CreateDrawImageInternal(
+      image, CreateMatrix(SkSize::Make(0.5f, 0.5f)), &color_space);
+  ImageDecodeCache::TaskResult result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_EQ(draw_image.target_color_space(), color_space);
+  EXPECT_TRUE(result.need_unref);
+  EXPECT_TRUE(result.task);
+  EXPECT_EQ(result.task->dependencies().size(), 1u);
+  EXPECT_TRUE(result.task->dependencies()[0]);
+
+  TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
+  TestTileTaskRunner::ProcessTask(result.task.get());
+
+  // Must hold context lock before calling GetDecodedImageForDraw /
+  // DrawWithImageFinished.
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  DecodedDrawImage decoded_draw_image =
+      EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+  EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
+  EXPECT_EQ(decoded_draw_image.image()->colorType(), kRGBA_F16_SkColorType);
+
+  EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
+
+  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+  cache->UnrefImage(draw_image);
+}
+
+TEST_P(GpuImageDecodeCacheTest, GetHdrDecodedImageForDrawToSdr) {
+  auto cache = CreateCache();
+  auto image_color_space = gfx::ColorSpace::CreateHDR10();
+  auto size = GetNormalImageSize();
+  auto info = SkImageInfo::Make(size.width(), size.height(),
+                                kRGBA_F16_SkColorType, kPremul_SkAlphaType,
+                                image_color_space.ToSkColorSpace());
+  SkBitmap bitmap;
+  bitmap.allocPixels(info);
+  PaintImage image = PaintImageBuilder::WithDefault()
+                         .set_id(PaintImage::kInvalidId)
+                         .set_is_high_bit_depth(true)
+                         .set_image(SkImage::MakeFromBitmap(bitmap),
+                                    PaintImage::GetNextContentId())
+                         .TakePaintImage();
+
+  auto raster_color_space = gfx::ColorSpace::CreateSRGB();
+  DrawImage draw_image = CreateDrawImageInternal(
+      image, CreateMatrix(SkSize::Make(0.5f, 0.5f)), &raster_color_space);
+  ImageDecodeCache::TaskResult result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_EQ(draw_image.target_color_space(), raster_color_space);
+  EXPECT_TRUE(result.need_unref);
+  EXPECT_TRUE(result.task);
+  EXPECT_EQ(result.task->dependencies().size(), 1u);
+  EXPECT_TRUE(result.task->dependencies()[0]);
+
+  TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
+  TestTileTaskRunner::ProcessTask(result.task.get());
+
+  // Must hold context lock before calling GetDecodedImageForDraw /
+  // DrawWithImageFinished.
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  DecodedDrawImage decoded_draw_image =
+      EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+  EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
+  EXPECT_TRUE(decoded_draw_image.is_budgeted());
+  EXPECT_NE(decoded_draw_image.image()->colorType(), kRGBA_F16_SkColorType);
+
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);

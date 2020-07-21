@@ -165,7 +165,6 @@ class Controller : public ScriptExecutorDelegate,
 
   // Overrides autofill_assistant::UiDelegate:
   AutofillAssistantState GetState() override;
-  int64_t GetErrorCausingNavigationId() const override;
   void OnUserInteractionInsideTouchableArea() override;
   const Details* GetDetails() const override;
   const InfoBox* GetInfoBox() const override;
@@ -342,7 +341,6 @@ class Controller : public ScriptExecutorDelegate,
   std::unique_ptr<TriggerContext> trigger_context_;
 
   AutofillAssistantState state_ = AutofillAssistantState::INACTIVE;
-  int64_t error_causing_navigation_id_ = -1;
 
   // The URL passed to Start(). Used only as long as there's no committed URL.
   // Note that this is the deeplink passed by a caller.

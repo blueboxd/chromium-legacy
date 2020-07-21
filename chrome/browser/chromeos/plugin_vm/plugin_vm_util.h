@@ -33,6 +33,9 @@ extern const char kPluginVmShelfAppId[];
 // Name of the Plugin VM.
 extern const char kPluginVmName[];
 
+// Base directory for shared paths in Plugin VM, formatted for display.
+extern const char kChromeOSBaseDirectoryDisplayText[];
+
 const net::NetworkTrafficAnnotationTag kPluginVmNetworkTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("plugin_vm_image_download", R"(
       semantics {

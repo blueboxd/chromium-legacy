@@ -32,12 +32,29 @@ namespace cert_provisioning {
 
 namespace {
 
+// Returns the per-user CertProvisioningScheduler for |user_profile|, if it has
+// any.
+CertProvisioningScheduler* GetCertProvisioningSchedulerForUser(
+    Profile* user_profile) {
+  CertProvisioningSchedulerUserService* user_service =
+      CertProvisioningSchedulerUserServiceFactory::GetForProfile(user_profile);
+  if (!user_service)
+    return nullptr;
+  return user_service->scheduler();
+}
+
+// Returns the per-device CertProvisioningScheduler, if it exists. No
+// affiliation check is done here.
+CertProvisioningScheduler* GetCertProvisioningSchedulerForDevice() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->GetDeviceCertProvisioningScheduler();
+}
+
 // Returns localized representation for the state of a certificate provisioning
 // process.
-base::string16 GetProvisioningProcessStatus(
-    chromeos::cert_provisioning::CertProvisioningWorkerState state) {
-  using CertProvisioningWorkerState =
-      chromeos::cert_provisioning::CertProvisioningWorkerState;
+base::string16 GetProvisioningProcessStatus(CertProvisioningWorkerState state) {
+  using CertProvisioningWorkerState = CertProvisioningWorkerState;
   switch (state) {
     case CertProvisioningWorkerState ::kInitState:
       return l10n_util::GetStringUTF16(
@@ -90,7 +107,7 @@ base::string16 GetTimeSinceLastUpdate(base::Time last_update_time) {
 base::Value CreateProvisioningProcessEntry(
     const std::string& cert_profile_id,
     bool is_device_wide,
-    chromeos::cert_provisioning::CertProvisioningWorkerState state,
+    CertProvisioningWorkerState state,
     base::Time time_since_last_update,
     const std::string& public_key_spki_der) {
   base::Value entry(base::Value::Type::DICTIONARY);
@@ -123,8 +140,7 @@ void CollectProvisioningProcesses(
   }
   for (const auto& failed_worker_entry :
        cert_provisioning_scheduler->GetFailedCertProfileIds()) {
-    const chromeos::cert_provisioning::FailedWorkerInfo& worker =
-        failed_worker_entry.second;
+    const FailedWorkerInfo& worker = failed_worker_entry.second;
     list_to_append_to->Append(CreateProvisioningProcessEntry(
         failed_worker_entry.first, is_device_wide,
         CertProvisioningWorkerState::kFailed, worker.last_update_time,
@@ -134,7 +150,23 @@ void CollectProvisioningProcesses(
 
 }  // namespace
 
-CertificateProvisioningUiHandler::CertificateProvisioningUiHandler() = default;
+// static
+std::unique_ptr<CertificateProvisioningUiHandler>
+CertificateProvisioningUiHandler::CreateForProfile(Profile* user_profile) {
+  return std::make_unique<CertificateProvisioningUiHandler>(
+      user_profile, GetCertProvisioningSchedulerForUser(user_profile),
+      GetCertProvisioningSchedulerForDevice());
+}
+
+CertificateProvisioningUiHandler::CertificateProvisioningUiHandler(
+    Profile* user_profile,
+    CertProvisioningScheduler* scheduler_for_user,
+    CertProvisioningScheduler* scheduler_for_device)
+    : scheduler_for_user_(scheduler_for_user),
+      scheduler_for_device_(ShouldUseDeviceWideProcesses(user_profile)
+                                ? scheduler_for_device
+                                : nullptr) {}
+
 CertificateProvisioningUiHandler::~CertificateProvisioningUiHandler() = default;
 
 void CertificateProvisioningUiHandler::RegisterMessages() {
@@ -151,31 +183,6 @@ void CertificateProvisioningUiHandler::RegisterMessages() {
       base::BindRepeating(&CertificateProvisioningUiHandler::
                               HandleTriggerCertificateProvisioningProcessUpdate,
                           base::Unretained(this)));
-}
-
-CertProvisioningScheduler*
-CertificateProvisioningUiHandler::GetCertProvisioningSchedulerForUser(
-    Profile* user_profile) {
-  chromeos::cert_provisioning::CertProvisioningSchedulerUserService*
-      user_service = chromeos::cert_provisioning::
-          CertProvisioningSchedulerUserServiceFactory::GetForProfile(
-              user_profile);
-  if (!user_service)
-    return nullptr;
-  return user_service->scheduler();
-}
-
-CertProvisioningScheduler*
-CertificateProvisioningUiHandler::GetCertProvisioningSchedulerForDevice(
-    Profile* user_profile) {
-  const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(user_profile);
-  if (!user || !user->IsAffiliated())
-    return nullptr;
-
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return connector->GetDeviceCertProvisioningScheduler();
 }
 
 void CertificateProvisioningUiHandler::
@@ -198,10 +205,11 @@ void CertificateProvisioningUiHandler::
   if (!device_wide.is_bool())
     return;
 
-  Profile* profile = Profile::FromWebUI(web_ui());
+  if (device_wide.GetBool() && !scheduler_for_device_)
+    return;
+
   CertProvisioningScheduler* scheduler =
-      device_wide.GetBool() ? GetCertProvisioningSchedulerForDevice(profile)
-                            : GetCertProvisioningSchedulerForUser(profile);
+      device_wide.GetBool() ? scheduler_for_device_ : scheduler_for_user_;
   if (!scheduler)
     return;
 
@@ -225,23 +233,27 @@ void CertificateProvisioningUiHandler::
 
 void CertificateProvisioningUiHandler::
     RefreshCertificateProvisioningProcesses() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-
   base::ListValue all_processes;
-  CertProvisioningScheduler* scheduler_for_user =
-      GetCertProvisioningSchedulerForUser(profile);
-  if (scheduler_for_user)
-    CollectProvisioningProcesses(&all_processes, scheduler_for_user,
+  if (scheduler_for_user_) {
+    CollectProvisioningProcesses(&all_processes, scheduler_for_user_,
                                  /*is_device_wide=*/false);
+  }
 
-  CertProvisioningScheduler* scheduler_for_device =
-      GetCertProvisioningSchedulerForDevice(profile);
-  if (scheduler_for_device)
-    CollectProvisioningProcesses(&all_processes, scheduler_for_device,
+  if (scheduler_for_device_) {
+    CollectProvisioningProcesses(&all_processes, scheduler_for_device_,
                                  /*is_device_wide=*/true);
+  }
 
   FireWebUIListener("certificate-provisioning-processes-changed",
                     std::move(all_processes));
+}
+
+// static
+bool CertificateProvisioningUiHandler::ShouldUseDeviceWideProcesses(
+    Profile* user_profile) {
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(user_profile);
+  return user && user->IsAffiliated();
 }
 
 }  // namespace cert_provisioning

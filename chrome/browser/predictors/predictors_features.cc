@@ -57,13 +57,12 @@ bool ShouldUseLocalPredictions() {
   return base::FeatureList::IsEnabled(kLoadingPredictorUseLocalPredictions);
 }
 
-bool ShouldUseOptimizationGuidePredictionsToPreconnect() {
+bool ShouldUseOptimizationGuidePredictions() {
   if (!base::FeatureList::IsEnabled(kLoadingPredictorUseOptimizationGuide))
     return false;
 
   return base::GetFieldTrialParamByFeatureAsBool(
-      kLoadingPredictorUseOptimizationGuide, "use_predictions_for_preconnect",
-      true);
+      kLoadingPredictorUseOptimizationGuide, "use_predictions", true);
 }
 
 }  // namespace features

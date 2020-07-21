@@ -168,8 +168,18 @@ TEST_F(EmojiSuggesterTest, ReturnkBrowsingWhenPressingDown) {
             emoji_suggester_->HandleKeyEvent(event));
 }
 
-TEST_F(EmojiSuggesterTest, ReturnkBrowsingWhenPressingUp) {
+TEST_F(EmojiSuggesterTest, ReturnkNotHandledWhenPressingUp) {
   EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
+  InputMethodEngineBase::KeyboardEvent event;
+  event.key = "Up";
+  EXPECT_EQ(SuggestionStatus::kNotHandled,
+            emoji_suggester_->HandleKeyEvent(event));
+}
+
+TEST_F(EmojiSuggesterTest, ReturnkBrowsingWhenPressingDownAndUp) {
+  EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
+  // Go into the window.
+  Press("Down");
   InputMethodEngineBase::KeyboardEvent event;
   event.key = "Up";
   EXPECT_EQ(SuggestionStatus::kBrowsing,
@@ -217,7 +227,7 @@ TEST_F(EmojiSuggesterTest, ReturnkNotHandledWhenPressDownThenNotANumber) {
             emoji_suggester_->HandleKeyEvent(event2));
 }
 
-TEST_F(EmojiSuggesterTest, ReturnkNotHandledWhenPressDownThenUpThenANumber) {
+TEST_F(EmojiSuggesterTest, ReturnkAcceptWhenPressDownThenUpThenANumber) {
   EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
   InputMethodEngineBase::KeyboardEvent event1;
   event1.key = "Down";
@@ -227,7 +237,7 @@ TEST_F(EmojiSuggesterTest, ReturnkNotHandledWhenPressDownThenUpThenANumber) {
   emoji_suggester_->HandleKeyEvent(event2);
   InputMethodEngineBase::KeyboardEvent event3;
   event3.key = "1";
-  EXPECT_EQ(SuggestionStatus::kNotHandled,
+  EXPECT_EQ(SuggestionStatus::kAccept,
             emoji_suggester_->HandleKeyEvent(event3));
 }
 
@@ -253,15 +263,6 @@ TEST_F(EmojiSuggesterTest,
             emoji_suggester_->HandleKeyEvent(event2));
 }
 
-TEST_F(EmojiSuggesterTest,
-       ReturnkAcceptWhenPressingEnterAndACandidateHasBeenChosenByPressingUp) {
-  EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
-  // Press "Up" twice to choose last candidate.
-  Press("Up");
-  Press("Up");
-  EXPECT_EQ(SuggestionStatus::kAccept, Press("Enter"));
-}
-
 TEST_F(EmojiSuggesterTest, HighlightFirstCandidateWhenPressingDown) {
   EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
   Press("Down");
@@ -270,6 +271,9 @@ TEST_F(EmojiSuggesterTest, HighlightFirstCandidateWhenPressingDown) {
 
 TEST_F(EmojiSuggesterTest, HighlightButtonCorrectlyWhenPressingUp) {
   EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
+
+  // Go into the window.
+  Press("Down");
 
   // Press "Up" to choose learn more button.
   Press("Up");
@@ -319,6 +323,8 @@ TEST_F(EmojiSuggesterTest,
        OpenSettingWhenPressingEnterAndLearnMoreButtonIsChosen) {
   EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
 
+  // Go into the window.
+  Press("Down");
   // Choose Learn More Button.
   Press("Up");
   engine_->VerifyLearnMoreButtonHighlighted(true);
@@ -330,13 +336,6 @@ TEST_F(EmojiSuggesterTest, DoesNotShowIndicesWhenFirstSuggesting) {
   EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
 
   engine_->VerifyShowIndices(false);
-}
-
-TEST_F(EmojiSuggesterTest, ShowsIndexAfterPressingUp) {
-  EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
-  Press("Up");
-
-  engine_->VerifyShowIndices(true);
 }
 
 TEST_F(EmojiSuggesterTest, ShowsIndexAfterPressingDown) {

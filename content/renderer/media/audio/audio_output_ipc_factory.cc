@@ -43,7 +43,8 @@ AudioOutputIPCFactory::CreateAudioOutputIPC(
 void AudioOutputIPCFactory::RegisterRemoteFactory(
     const base::UnguessableToken& frame_token,
     blink::BrowserInterfaceBrokerProxy* interface_broker) {
-  mojo::PendingRemote<mojom::RendererAudioOutputStreamFactory> factory_remote;
+  mojo::PendingRemote<blink::mojom::RendererAudioOutputStreamFactory>
+      factory_remote;
   interface_broker->GetInterface(
       factory_remote.InitWithNewPipeAndPassReceiver());
   // Unretained is safe due to the contract at the top of the header file.
@@ -64,7 +65,7 @@ void AudioOutputIPCFactory::MaybeDeregisterRemoteFactory(
           base::Unretained(this), frame_token));
 }
 
-mojom::RendererAudioOutputStreamFactory*
+blink::mojom::RendererAudioOutputStreamFactory*
 AudioOutputIPCFactory::GetRemoteFactory(
     const base::UnguessableToken& frame_token) const {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -74,7 +75,7 @@ AudioOutputIPCFactory::GetRemoteFactory(
 
 void AudioOutputIPCFactory::RegisterRemoteFactoryOnIOThread(
     const base::UnguessableToken& frame_token,
-    mojo::PendingRemote<mojom::RendererAudioOutputStreamFactory>
+    mojo::PendingRemote<blink::mojom::RendererAudioOutputStreamFactory>
         factory_pending_remote) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   std::pair<StreamFactoryMap::iterator, bool> emplace_result =

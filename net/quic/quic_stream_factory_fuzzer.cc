@@ -135,7 +135,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           env->ssl_config_service.get(), &socket_factory,
           &http_server_properties, env->cert_verifier.get(),
           &env->ct_policy_enforcer, &env->transport_security_state,
-          env->cert_transparency_verifier.get(), nullptr,
+          env->cert_transparency_verifier.get(), nullptr, nullptr,
           &env->crypto_client_stream_factory, &env->quic_context);
 
   QuicStreamRequest request(factory.get());

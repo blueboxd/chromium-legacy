@@ -39,7 +39,8 @@ void MojoAudioInputIPC::CreateStream(media::AudioInputIPCDelegate* delegate,
 
   delegate_ = delegate;
 
-  mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client;
+  mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
+      client;
   factory_client_receiver_.Bind(client.InitWithNewPipeAndPassReceiver());
   factory_client_receiver_.set_disconnect_handler(base::BindOnce(
       &media::AudioInputIPCDelegate::OnError, base::Unretained(delegate_)));

@@ -70,6 +70,7 @@ import org.chromium.components.payments.OriginSecurityChecker;
 import org.chromium.components.payments.PackageManagerDelegate;
 import org.chromium.components.payments.PayerData;
 import org.chromium.components.payments.PaymentApp;
+import org.chromium.components.payments.PaymentAppFactoryParams;
 import org.chromium.components.payments.PaymentAppType;
 import org.chromium.components.payments.PaymentDetailsConverter;
 import org.chromium.components.payments.PaymentDetailsUpdateServiceHelper;

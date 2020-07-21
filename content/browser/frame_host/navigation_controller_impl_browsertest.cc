@@ -5664,7 +5664,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, ReloadOriginalRequest) {
   // TODO(lukasza): https://crbug.com/417518: Get tests working with
   // --site-per-process.
   if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites() ||
-      IsProactivelySwapBrowsingInstanceEnabled()) {
+      CanCrossSiteNavigationsProactivelySwapBrowsingInstances()) {
     return;
   }
 

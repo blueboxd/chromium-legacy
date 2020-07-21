@@ -4938,6 +4938,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"display-identification", flag_descriptions::kDisplayIdentificationName,
      flag_descriptions::kDisplayIdentificationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDisplayIdentification)},
+
+    {"display-alignment-assistance",
+     flag_descriptions::kDisplayAlignmentAssistanceName,
+     flag_descriptions::kDisplayAlignmentAssistanceDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kDisplayAlignAssist)},
 #endif  // OS_CHROMEOS
 
     {"autofill-off-no-server-data",

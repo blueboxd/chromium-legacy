@@ -1109,10 +1109,6 @@ AutofillAssistantState Controller::GetState() {
   return state_;
 }
 
-int64_t Controller::GetErrorCausingNavigationId() const {
-  return error_causing_navigation_id_;
-}
-
 bool Controller::ShouldShowOverlay() const {
   return overlay_behavior_ == ConfigureUiStateProto::DEFAULT;
 }
@@ -1698,6 +1694,13 @@ void Controller::DidStartNavigation(
     return;
   }
 
+  if (state_ == AutofillAssistantState::STOPPED &&
+      !navigation_handle->IsRendererInitiated() &&
+      !navigation_handle->WasServerRedirect()) {
+    ShutdownIfNecessary();
+    return;
+  }
+
   // The following types of navigations are allowed for the main frame, when
   // in PROMPT state:
   //  - first-time URL load
@@ -1718,7 +1721,6 @@ void Controller::DidStartNavigation(
       web_contents()->GetLastCommittedURL().is_valid() &&
       !navigation_handle->WasServerRedirect() &&
       !navigation_handle->IsRendererInitiated()) {
-    error_causing_navigation_id_ = navigation_handle->GetNavigationId();
     OnScriptError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
                   Metrics::DropOutReason::NAVIGATION);
     return;
@@ -1731,7 +1733,6 @@ void Controller::DidStartNavigation(
     if (state_ == AutofillAssistantState::RUNNING &&
         !navigation_handle->WasServerRedirect() &&
         !navigation_handle->IsRendererInitiated()) {
-      error_causing_navigation_id_ = navigation_handle->GetNavigationId();
       OnScriptError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
                     Metrics::DropOutReason::NAVIGATION_WHILE_RUNNING);
       return;

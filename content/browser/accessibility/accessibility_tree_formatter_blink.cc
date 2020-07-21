@@ -96,7 +96,7 @@ std::string IntAttrToString(const BrowserAccessibility& node,
     case ax::mojom::IntAttribute::kTextUnderlineStyle:
       return ui::ToString(static_cast<ax::mojom::TextDecorationStyle>(value));
     case ax::mojom::IntAttribute::kTextDirection:
-      return ui::ToString(static_cast<ax::mojom::TextDirection>(value));
+      return ui::ToString(static_cast<ax::mojom::WritingDirection>(value));
     case ax::mojom::IntAttribute::kTextPosition:
       return ui::ToString(static_cast<ax::mojom::TextPosition>(value));
     case ax::mojom::IntAttribute::kImageAnnotationStatus:

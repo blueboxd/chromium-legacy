@@ -125,13 +125,16 @@ const char kTestUserGaiaId[] = "test_gaia_id";
 }  // namespace
 
 ProfileHelperForTesting::ProfileHelperForTesting()
+    : ProfileHelperForTesting(/*user_is_affiilated=*/false) {}
+
+ProfileHelperForTesting::ProfileHelperForTesting(bool user_is_affiliated)
     : testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {
-  Init();
+  Init(user_is_affiliated);
 }
 
 ProfileHelperForTesting::~ProfileHelperForTesting() = default;
 
-void ProfileHelperForTesting::Init() {
+void ProfileHelperForTesting::Init(bool user_is_affiliated) {
   ASSERT_TRUE(testing_profile_manager_.SetUp());
 
   testing_profile_ =
@@ -140,7 +143,8 @@ void ProfileHelperForTesting::Init() {
 
   auto test_account =
       AccountId::FromUserEmailGaiaId(kTestUserEmail, kTestUserGaiaId);
-  fake_user_manager_.AddUser(test_account);
+  user_ = fake_user_manager_.AddUserWithAffiliation(test_account,
+                                                    user_is_affiliated);
 
   ProfileHelper::Get()->SetUserToProfileMappingForTesting(
       fake_user_manager_.GetPrimaryUser(), testing_profile_);
@@ -148,6 +152,10 @@ void ProfileHelperForTesting::Init() {
 
 Profile* ProfileHelperForTesting::GetProfile() const {
   return testing_profile_;
+}
+
+user_manager::User* ProfileHelperForTesting::GetUser() const {
+  return user_;
 }
 
 //================ SpyingFakeCryptohomeClient ==================================

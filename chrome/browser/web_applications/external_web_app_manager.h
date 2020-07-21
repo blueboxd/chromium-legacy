@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
+#include "chrome/browser/web_applications/components/pending_app_manager.h"
 
 namespace base {
 class FilePath;
@@ -44,6 +45,12 @@ class ExternalWebAppManager {
       base::OnceCallback<void(std::vector<ExternalInstallOptions>)>;
 
   void ScanForExternalWebApps(ScanCallback callback);
+
+  static void SkipStartupScanForTesting();
+
+  void SynchronizeAppsForTesting(
+      std::vector<std::string> app_configs,
+      PendingAppManager::SynchronizeCallback callback);
 
  private:
   void OnScanForExternalWebApps(std::vector<ExternalInstallOptions>);

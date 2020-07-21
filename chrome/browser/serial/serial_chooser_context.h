@@ -58,6 +58,8 @@ class SerialChooserContext : public permissions::ChooserContextBase,
   bool HasPortPermission(const url::Origin& requesting_origin,
                          const url::Origin& embedding_origin,
                          const device::mojom::SerialPortInfo& port);
+  static bool CanStorePersistentEntry(
+      const device::mojom::SerialPortInfo& port);
 
   device::mojom::SerialPortManager* GetPortManager();
 

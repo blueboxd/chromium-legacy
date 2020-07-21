@@ -248,6 +248,7 @@ component("net") {
     "cert/ocsp_verify_result.h",
     "cert/pem.cc",
     "cert/pem.h",
+    "cert/sct_auditing_delegate.h",
     "cert/sct_status_flags.cc",
     "cert/sct_status_flags.h",
     "cert/signed_certificate_timestamp.cc",

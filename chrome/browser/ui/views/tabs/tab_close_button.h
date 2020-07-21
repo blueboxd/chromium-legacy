@@ -44,6 +44,7 @@ class TabCloseButton : public views::ImageButton,
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseMoved(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
  protected:
   // views::ImageButton:

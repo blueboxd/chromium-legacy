@@ -115,7 +115,7 @@ static_library("client") {
   if (crashpad_is_fuchsia) {
     deps += [ "../third_party/fuchsia" ]
     if (crashpad_is_in_fuchsia) {
-      deps += [ "//sdk/lib/fdio" ]
+      deps += [ "//zircon/public/lib/fdio" ]
     }
   }
 }
@@ -173,13 +173,5 @@ source_set("client_test") {
 
   if (crashpad_is_win) {
     data_deps += [ "../handler:crashpad_handler_console" ]
-  }
-}
-
-if (crashpad_is_linux || crashpad_is_android) {
-  source_set("pthread_create") {
-    sources = [ "pthread_create_linux.cc" ]
-
-    deps = [ ":client" ]
   }
 }

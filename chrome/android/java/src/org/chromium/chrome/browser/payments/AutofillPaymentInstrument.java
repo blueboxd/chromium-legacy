@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.NormalizedAddres
 import org.chromium.components.payments.ErrorStrings;
 import org.chromium.components.payments.PayerData;
 import org.chromium.components.payments.PaymentApp;
-import org.chromium.components.payments.PaymentApp.InstrumentDetailsCallback;
 import org.chromium.components.payments.PaymentAppType;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.content_public.browser.WebContents;

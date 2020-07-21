@@ -164,6 +164,17 @@ TEST_F(ElementAreaTest, CallOnUpdate) {
   EXPECT_THAT(reported_area_, ElementsAre(MatchingRectF(25, 25, 75, 75)));
 }
 
+TEST_F(ElementAreaTest, CallOnUpdateAfterSetFromProto) {
+  EXPECT_CALL(mock_web_controller_,
+              OnGetElementPosition(Eq(Selector({"#found"}).MustBeVisible()), _))
+      .WillRepeatedly(RunOnceCallback<1>(true, RectF(25, 25, 75, 75)));
+
+  SetElement("#found");
+  EXPECT_EQ(on_update_call_count_, 1);
+  SetElement("#found");
+  EXPECT_EQ(on_update_call_count_, 2);
+}
+
 TEST_F(ElementAreaTest, DontCallOnUpdateWhenViewportMissing) {
   // Swallowing calls to OnGetVisualViewport guarantees that the viewport
   // position will never be known.

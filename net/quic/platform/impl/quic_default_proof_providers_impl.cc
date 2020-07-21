@@ -65,6 +65,7 @@ class ProofVerifierChromiumWithOwnership : public net::ProofVerifierChromium {
                                    &ct_policy_enforcer_,
                                    &transport_security_state_,
                                    &ct_verifier_,
+                                   /*sct_auditing_delegate=*/nullptr,
                                    UnknownRootAllowlistForHost(host),
                                    // Fine to use an empty NetworkIsolationKey
                                    // here, since this isn't used in Chromium.

@@ -175,7 +175,8 @@ void AssistiveWindowController::SetButtonHighlighted(
         return;
 
       suggestion_window_view_->SetButtonHighlighted(button, highlighted);
-      tts_handler_->Announce(button.announce_string);
+      if (highlighted)
+        tts_handler_->Announce(button.announce_string);
       break;
     case ui::ime::AssistiveWindowType::kUndoWindow:
       if (!undo_window_)

@@ -450,10 +450,10 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
     EXPECT_EQ(initiator_routing_id, observer.last_initiator_routing_id());
   }
 
-  // The RenderFrameHost should not have changed unless site-per-process is
-  // enabled.
+  // The RenderFrameHost should not have changed unless site-per-process or
+  // proactive BrowsingInstance swap is enabled.
   if (AreAllSitesIsolatedForTesting() ||
-      IsProactivelySwapBrowsingInstanceEnabled()) {
+      CanCrossSiteNavigationsProactivelySwapBrowsingInstances()) {
     EXPECT_NE(initial_rfh,
               static_cast<WebContentsImpl*>(shell()->web_contents())
                   ->GetFrameTree()

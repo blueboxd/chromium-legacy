@@ -646,9 +646,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAutoplayAllowed,
     prefs::kAutoplayAllowed,
     base::Value::Type::BOOLEAN },
-  { key::kAutoplayWhitelist,
-    prefs::kAutoplayWhitelist,
-    base::Value::Type::LIST },
   { key::kBrowserGuestModeEnforced,
     prefs::kBrowserGuestModeEnforced,
     base::Value::Type::BOOLEAN },
@@ -1493,6 +1490,14 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
+
+  handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
+      std::make_unique<SimplePolicyHandler>(key::kAutoplayWhitelist,
+                                            prefs::kAutoplayWhitelist,
+                                            base::Value::Type::LIST),
+      std::make_unique<SimplePolicyHandler>(key::kAutoplayAllowlist,
+                                            prefs::kAutoplayWhitelist,
+                                            base::Value::Type::LIST)));
 
   // Handlers for policies with embedded JSON strings. These handlers are very
   // lenient - as long as the root value is of the right type, they only display

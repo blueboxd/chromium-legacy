@@ -2996,40 +2996,49 @@ void RenderFrameHostManager::SendPageMessage(IPC::Message* msg,
     return;
   }
 
-  auto send_msg = [instance_to_skip](IPC::Sender* sender, int routing_id,
-                                     IPC::Message* msg,
-                                     SiteInstance* sender_instance) {
-    if (sender_instance == instance_to_skip)
-      return;
+  auto callback = base::BindRepeating(
+      [](IPC::Message* msg, RenderViewHostImpl* render_view_host) {
+        IPC::Message* copy = new IPC::Message(*msg);
+        copy->set_routing_id(render_view_host->GetRoutingID());
+        render_view_host->Send(copy);
+      },
+      msg);
 
-    IPC::Message* copy = new IPC::Message(*msg);
-    copy->set_routing_id(routing_id);
-    sender->Send(copy);
-  };
+  ExecutePageBroadcastMethod(std::move(callback), instance_to_skip);
 
-  // When sending a PageMessage for an inner WebContents, we don't want to also
-  // send it to the outer WebContent's frame as well.
+  // Delete |msg| so that |msg| doesn't leak.
+  delete msg;
+}
+
+void RenderFrameHostManager::ExecutePageBroadcastMethod(
+    PageBroadcastMethodCallback callback,
+    SiteInstance* instance_to_skip) {
+  // TODO(dcheng): Now that RenderView and RenderWidget are increasingly
+  // separated, it might be possible/desirable to just route to the view.
+  DCHECK(!frame_tree_node_->parent());
+
+  if (frame_tree_node_->parent())
+    return;
+
+  // When calling a PageBroadcast Mojo method for an inner WebContents, we don't
+  // want to also call it for the outer WebContent's frame as well.
   RenderFrameProxyHost* outer_delegate_proxy =
       IsMainFrameForInnerDelegate() ? GetProxyToOuterDelegate() : nullptr;
   for (const auto& pair : proxy_hosts_) {
     if (outer_delegate_proxy != pair.second.get()) {
-      send_msg(pair.second.get(), pair.second->GetRoutingID(), msg,
-               pair.second->GetSiteInstance());
+      if (pair.second->GetSiteInstance() == instance_to_skip)
+        continue;
+      callback.Run(pair.second->GetRenderViewHost());
     }
   }
 
-  if (speculative_render_frame_host_) {
-    send_msg(speculative_render_frame_host_.get(),
-             speculative_render_frame_host_->GetRoutingID(), msg,
-             speculative_render_frame_host_->GetSiteInstance());
+  if (speculative_render_frame_host_ &&
+      speculative_render_frame_host_->GetSiteInstance() != instance_to_skip) {
+    callback.Run(speculative_render_frame_host_->render_view_host());
   }
 
   if (render_frame_host_->GetSiteInstance() != instance_to_skip) {
-    // Send directly instead of using send_msg() so that |msg| doesn't leak.
-    msg->set_routing_id(render_frame_host_->GetRoutingID());
-    render_frame_host_->Send(msg);
-  } else {
-    delete msg;
+    callback.Run(render_frame_host_->render_view_host());
   }
 }
 

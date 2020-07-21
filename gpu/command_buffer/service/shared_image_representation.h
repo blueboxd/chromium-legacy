@@ -109,6 +109,9 @@ class GPU_GLES2_EXPORT SharedImageRepresentation {
     }
 
     RepresentationClass* representation() { return representation_; }
+    const RepresentationClass* representation() const {
+      return representation_;
+    }
 
    private:
     RepresentationClass* const representation_;
@@ -255,6 +258,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
     SkPromiseImageTexture* promise_image_texture() const {
       return promise_image_texture_.get();
     }
+    sk_sp<SkImage> CreateSkImage(GrContext* context) const;
     GrBackendSurfaceMutableState* end_state() const { return end_state_.get(); }
 
    private:

@@ -62,6 +62,7 @@ class NetLogProxySink;
 class NetworkContext;
 class NetworkService;
 class NetworkUsageAccumulator;
+class SCTAuditingCache;
 
 // DataPipeUseTracker tracks the mojo data pipe usage in the network
 // service.
@@ -283,6 +284,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
     return trust_token_key_commitments_.get();
   }
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
+  SCTAuditingCache* sct_auditing_cache() { return sct_auditing_cache_.get(); }
+#endif
+
   void OnDataPipeCreated(DataPipeUser user);
   void OnDataPipeDropped(DataPipeUser user);
   void StopMetricsTimerForTesting();
@@ -406,6 +411,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   std::unique_ptr<TrustTokenKeyCommitments> trust_token_key_commitments_;
 
   std::unique_ptr<DelayedDohProbeActivator> doh_probe_activator_;
+
+#if BUILDFLAG(IS_CT_SUPPORTED)
+  std::unique_ptr<SCTAuditingCache> sct_auditing_cache_;
+#endif
 
   // Map from a renderer process id, to the set of plugin origins embedded by
   // that renderer process (the renderer will proxy requests from PPAPI - such

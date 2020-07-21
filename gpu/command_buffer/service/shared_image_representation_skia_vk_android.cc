@@ -78,9 +78,9 @@ sk_sp<SkSurface> SharedImageRepresentationSkiaVkAndroid::BeginWriteAccess(
     SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
         /*gpu_compositing=*/true, format());
     surface_ = SkSurface::MakeFromBackendTexture(
-        gr_context, promise_texture_->backendTexture(),
-        kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type,
-        color_space().ToSkColorSpace(), &surface_props);
+        gr_context, promise_texture_->backendTexture(), surface_origin(),
+        final_msaa_count, sk_color_type, color_space().ToSkColorSpace(),
+        &surface_props);
     if (!surface_) {
       LOG(ERROR) << "MakeFromBackendTexture() failed.";
       return nullptr;

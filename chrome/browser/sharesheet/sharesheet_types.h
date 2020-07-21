@@ -1,0 +1,50 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_SHARESHEET_SHARESHEET_TYPES_H_
+#define CHROME_BROWSER_SHARESHEET_SHARESHEET_TYPES_H_
+
+#include "base/strings/string16.h"
+#include "ui/gfx/image/image.h"
+
+namespace sharesheet {
+
+// The type of a target.
+enum class TargetType {
+  kUnknown = 0,
+  kApp,
+  kAction,
+};
+
+struct TargetInfo {
+  TargetInfo(TargetType type,
+             const gfx::Image& icon,
+             const base::string16& launch_name,
+             const base::string16& display_name);
+  // Allow move.
+  TargetInfo(TargetInfo&& other);
+  TargetInfo& operator=(TargetInfo&& other);
+
+  // Disallow copy and assign.
+  TargetInfo(const TargetInfo&) = delete;
+  TargetInfo& operator=(const TargetInfo&) = delete;
+
+  // The type of target that this object represents.
+  TargetType type;
+
+  // The icon to be displayed for this target in the sharesheet bubble.
+  gfx::Image icon;
+
+  // The string used to launch this target. Represents an Android package name
+  // when the app type is kArc.
+  base::string16 launch_name;
+
+  // The string shown to the user to identify this target in the sharesheet
+  // bubble.
+  base::string16 display_name;
+};
+
+}  // namespace sharesheet
+
+#endif  // CHROME_BROWSER_SHARESHEET_SHARESHEET_TYPES_H_

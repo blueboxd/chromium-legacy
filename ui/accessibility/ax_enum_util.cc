@@ -2349,35 +2349,35 @@ ax::mojom::TextAlign ParseTextAlign(const char* text_align) {
   return ax::mojom::TextAlign::kNone;
 }
 
-const char* ToString(ax::mojom::TextDirection text_direction) {
+const char* ToString(ax::mojom::WritingDirection text_direction) {
   switch (text_direction) {
-    case ax::mojom::TextDirection::kNone:
+    case ax::mojom::WritingDirection::kNone:
       return "none";
-    case ax::mojom::TextDirection::kLtr:
+    case ax::mojom::WritingDirection::kLtr:
       return "ltr";
-    case ax::mojom::TextDirection::kRtl:
+    case ax::mojom::WritingDirection::kRtl:
       return "rtl";
-    case ax::mojom::TextDirection::kTtb:
+    case ax::mojom::WritingDirection::kTtb:
       return "ttb";
-    case ax::mojom::TextDirection::kBtt:
+    case ax::mojom::WritingDirection::kBtt:
       return "btt";
   }
 
   return "";
 }
 
-ax::mojom::TextDirection ParseTextDirection(const char* text_direction) {
+ax::mojom::WritingDirection ParseTextDirection(const char* text_direction) {
   if (0 == strcmp(text_direction, "none"))
-    return ax::mojom::TextDirection::kNone;
+    return ax::mojom::WritingDirection::kNone;
   if (0 == strcmp(text_direction, "ltr"))
-    return ax::mojom::TextDirection::kLtr;
+    return ax::mojom::WritingDirection::kLtr;
   if (0 == strcmp(text_direction, "rtl"))
-    return ax::mojom::TextDirection::kRtl;
+    return ax::mojom::WritingDirection::kRtl;
   if (0 == strcmp(text_direction, "ttb"))
-    return ax::mojom::TextDirection::kTtb;
+    return ax::mojom::WritingDirection::kTtb;
   if (0 == strcmp(text_direction, "btt"))
-    return ax::mojom::TextDirection::kBtt;
-  return ax::mojom::TextDirection::kNone;
+    return ax::mojom::WritingDirection::kBtt;
+  return ax::mojom::WritingDirection::kNone;
 }
 
 const char* ToString(ax::mojom::TextPosition text_position) {

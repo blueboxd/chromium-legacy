@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.payments.PaymentFeatureList;
+import org.chromium.components.payments.SupportedDelegations;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 

@@ -80,6 +80,9 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
 
     private static boolean sActivityNotExportedChecked;
 
+    /** An instance of settings launcher that can be injected into a fragment */
+    private SettingsLauncher mSettingsLauncher = new SettingsLauncherImpl();
+
     @SuppressLint("InlinedApi")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -270,6 +273,9 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         if (fragment instanceof SiteSettingsPreferenceFragment) {
             ((SiteSettingsPreferenceFragment) fragment)
                     .setSiteSettingsClient(new ChromeSiteSettingsClient(this));
+        } else if (fragment instanceof FragmentSettingsLauncher) {
+            FragmentSettingsLauncher framentSettingsLauncher = (FragmentSettingsLauncher) fragment;
+            framentSettingsLauncher.setSettingsLauncher(mSettingsLauncher);
         } else if (fragment instanceof SafetyCheckSettingsFragment) {
             SafetyCheckCoordinator.create((SafetyCheckSettingsFragment) fragment,
                     new SafetyCheckUpdatesDelegateImpl(this));

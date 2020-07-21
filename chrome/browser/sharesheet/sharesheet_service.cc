@@ -6,7 +6,9 @@
 
 #include <utility>
 
+#include "chrome/browser/sharesheet/share_action.h"
 #include "chrome/browser/sharesheet/sharesheet_service_delegate.h"
+#include "chrome/browser/sharesheet/sharesheet_types.h"
 #include "ui/views/view.h"
 
 namespace sharesheet {
@@ -21,7 +23,17 @@ void SharesheetService::ShowBubble(views::View* bubble_anchor_view) {
       std::make_unique<SharesheetServiceDelegate>(
           delegate_counter_++, std::move(bubble_anchor_view), this);
 
-  sharesheet_service_delegate->ShowBubble();
+  std::vector<TargetInfo> targets;
+  auto& actions = sharesheet_action_cache_->GetShareActions();
+  auto iter = actions.begin();
+  while (iter != actions.end()) {
+    targets.emplace(targets.begin(), TargetType::kAction,
+                    (*iter)->GetActionIcon(), (*iter)->GetActionName(),
+                    (*iter)->GetActionName());
+    ++iter;
+  }
+
+  sharesheet_service_delegate->ShowBubble(std::move(targets));
 
   active_delegates_.push_back(std::move(sharesheet_service_delegate));
 }

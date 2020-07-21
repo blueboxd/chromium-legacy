@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/shared_image_backing_factory.h"
+#include "gpu/command_buffer/service/shared_image_backing_gl_common.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/gpu_gles2_export.h"
 #include "ui/gfx/buffer_types.h"
@@ -37,12 +38,6 @@ class ImageFactory;
 class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
     : public SharedImageBackingFactory {
  public:
-  struct UnpackStateAttribs {
-    bool es3_capable = false;
-    bool desktop_gl = false;
-    bool supports_unpack_subimage = false;
-  };
-
   SharedImageBackingFactoryGLTexture(
       const GpuPreferences& gpu_preferences,
       const GpuDriverBugWorkarounds& workarounds,
@@ -172,7 +167,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
   GpuMemoryBufferFormatSet gpu_memory_buffer_formats_;
   int32_t max_texture_size_ = 0;
   bool texture_usage_angle_ = false;
-  UnpackStateAttribs attribs;
+  SharedImageBackingGLCommon::UnpackStateAttribs attribs;
   GpuDriverBugWorkarounds workarounds_;
 
 #if defined(OS_ANDROID)

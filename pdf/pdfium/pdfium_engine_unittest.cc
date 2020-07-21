@@ -47,9 +47,11 @@ class MockTestClient : public TestClient {
         });
   }
 
-  // TODO(crbug.com/989095): MOCK_METHOD() triggers static_assert on Windows.
-  MOCK_METHOD1(ProposeDocumentLayout, void(const DocumentLayout& layout));
-  MOCK_METHOD1(ScrollToPage, void(int page));
+  MOCK_METHOD(void,
+              ProposeDocumentLayout,
+              (const DocumentLayout& layout),
+              (override));
+  MOCK_METHOD(void, ScrollToPage, (int page), (override));
 };
 
 class PDFiumEngineTest : public PDFiumTestBase {
@@ -309,7 +311,7 @@ class TabbingTestClient : public TestClient {
   TabbingTestClient& operator=(const TabbingTestClient&) = delete;
 
   // Mock PDFEngine::Client methods.
-  MOCK_METHOD1(DocumentFocusChanged, void(bool));
+  MOCK_METHOD(void, DocumentFocusChanged, (bool), (override));
 };
 
 class PDFiumEngineTabbingTest : public PDFiumTestBase {
@@ -838,8 +840,8 @@ class ScrollingTestClient : public TestClient {
   ScrollingTestClient& operator=(const ScrollingTestClient&) = delete;
 
   // Mock PDFEngine::Client methods.
-  MOCK_METHOD1(ScrollToX, void(int));
-  MOCK_METHOD2(ScrollToY, void(int, bool));
+  MOCK_METHOD(void, ScrollToX, (int), (override));
+  MOCK_METHOD(void, ScrollToY, (int, bool), (override));
 };
 
 TEST_F(PDFiumEngineTabbingTest, MaintainViewportWhenFocusIsUpdated) {

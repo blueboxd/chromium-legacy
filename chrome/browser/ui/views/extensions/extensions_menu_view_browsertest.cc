@@ -201,13 +201,20 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
           container->GetViewForId(extensions()[0]->id())->GetVisible());
     }
   }
+
   void TriggerSingleExtensionButton() {
+    ASSERT_EQ(1u, GetExtensionsMenuItemViews().size());
+    TriggerExtensionButton(0u);
+  }
+
+  void TriggerExtensionButton(size_t item_index) {
     auto menu_items = GetExtensionsMenuItemViews();
-    ASSERT_EQ(1u, menu_items.size());
+    ASSERT_LT(item_index, menu_items.size());
+
     ui::MouseEvent click_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
                                gfx::Point(), base::TimeTicks(),
                                ui::EF_LEFT_MOUSE_BUTTON, 0);
-    menu_items[0]
+    menu_items[item_index]
         ->primary_action_button_for_testing()
         ->button_controller()
         ->OnMouseReleased(click_event);
@@ -475,6 +482,33 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
 
   EXPECT_EQ(nullptr, extensions_container->GetPoppedOutAction());
   EXPECT_TRUE(GetVisibleToolbarActionViews().empty());
+}
+
+// Test for crbug.com/1099456.
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
+                       RemoveMultipleExtensionsWhileShowingPopup) {
+  auto& id1 = LoadTestExtension("extensions/simple_with_popup")->id();
+  auto& id2 = LoadTestExtension("extensions/uitest/window_open")->id();
+  ShowUi("");
+  VerifyUi();
+  TriggerExtensionButton(0u);
+
+  ExtensionsContainer* const extensions_container =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->toolbar()
+          ->extensions_container();
+  ASSERT_NE(nullptr, extensions_container->GetPoppedOutAction());
+
+  auto* extension_service =
+      extensions::ExtensionSystem::Get(browser()->profile())
+          ->extension_service();
+
+  extension_service->DisableExtension(
+      id1, extensions::disable_reason::DISABLE_USER_ACTION);
+  extension_service->DisableExtension(
+      id2, extensions::disable_reason::DISABLE_USER_ACTION);
+
+  EXPECT_EQ(nullptr, extensions_container->GetPoppedOutAction());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,

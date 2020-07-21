@@ -25,6 +25,7 @@ namespace net {
 class CTPolicyEnforcer;
 class CertVerifier;
 class CTVerifier;
+class SCTAuditingDelegate;
 class TransportSecurityState;
 
 // ProofVerifyDetailsChromium is the implementation-specific information that a
@@ -75,6 +76,7 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public quic::ProofVerifier {
                         CTPolicyEnforcer* ct_policy_enforcer,
                         TransportSecurityState* transport_security_state,
                         CTVerifier* cert_transparency_verifier,
+                        SCTAuditingDelegate* sct_auditing_delegate,
                         std::set<std::string> hostnames_to_allow_unknown_roots,
                         const NetworkIsolationKey& network_isolation_key);
   ~ProofVerifierChromium() override;
@@ -119,6 +121,8 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public quic::ProofVerifier {
 
   TransportSecurityState* const transport_security_state_;
   CTVerifier* const cert_transparency_verifier_;
+
+  SCTAuditingDelegate* const sct_auditing_delegate_;
 
   std::set<std::string> hostnames_to_allow_unknown_roots_;
 

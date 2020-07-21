@@ -2042,6 +2042,9 @@ extern const char kDisableCryptAuthV1DeviceSyncDescription[];
 extern const char kDisableExplicitDmaFencesName[];
 extern const char kDisableExplicitDmaFencesDescription[];
 
+extern const char kDisplayAlignmentAssistanceName[];
+extern const char kDisplayAlignmentAssistanceDescription[];
+
 extern const char kDisplayIdentificationName[];
 extern const char kDisplayIdentificationDescription[];
 

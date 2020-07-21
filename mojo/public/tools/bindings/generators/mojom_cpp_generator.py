@@ -670,22 +670,21 @@ class Generator(generator.Generator):
         GetCppPodType(constant.kind), constant.name,
         self._ConstantValue(constant))
 
-  def _WriteInputParamForTracing(self, kind, mojo_prefix, parameter_name,
+  def _WriteInputParamForTracing(self, kind, parameter_name, cpp_parameter_name,
                                  value):
     """Generates lines of C++ to log parameter |parameter_name| into TracedValue
     |value|.
 
     Args:
       kind: {Kind} The kind of the parameter (corresponds to its C++ type).
-      mojo_prefix: {string} The prefix of the auto-generated parameter.
-      parameter_name: {string} The mojom parameter name to be logged
-        (auto-generated C++ parameter name is |mojo_prefix+parameter_name|).
+      parameter_name: {string} The name of the mojom parameter to be logged.
+      cpp_parameter_name: {string} The actual C++ variable name corresponding to
+        the mojom parameter |parameter_name|.
       value: {string} The C++ TracedValue* variable name to be logged into.
 
     Yields:
       {string} C++ lines of code that trace |parameter_name| into |value|.
     """
-    cpp_parameter_name = mojo_prefix + parameter_name
     value_name_cppname = (value, parameter_name, cpp_parameter_name)
     # TODO(crbug.com/1103623): Support more involved types.
     if mojom.IsEnumKind(kind):
@@ -728,6 +727,15 @@ class Generator(generator.Generator):
       return
     if mojom.IsFloatKind(kind) or mojom.IsDoubleKind(kind):
       yield '%s->SetDouble("%s", %s);' % value_name_cppname
+      return
+    if (mojom.IsStructKind(kind) and not self._IsTypemappedKind(kind)
+        and not IsNativeOnlyKind(kind)):
+      yield 'if (%s.is_null()) {' % cpp_parameter_name
+      yield '  %s->SetString("%s", "nullptr");' % (value, parameter_name)
+      yield '} else {'
+      yield '  %s->ToTracedValue(%s, "%s");' % (cpp_parameter_name, value,
+                                                parameter_name)
+      yield '}'
       return
     yield '%s->SetString("%s", "<value of type %s>");' % (
         value, parameter_name, self._GetCppWrapperParamType(kind))

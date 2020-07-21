@@ -45,6 +45,7 @@ CertificateManagerDialogUI::CertificateManagerDialogUI(content::WebUI* web_ui)
     : WebDialogUI(web_ui) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUICertificateManagerHost);
+  Profile* profile = Profile::FromWebUI(web_ui);
 
   AddCertificateManagerStrings(source);
   source->AddBoolean(
@@ -61,10 +62,10 @@ CertificateManagerDialogUI::CertificateManagerDialogUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(
       std::make_unique<certificate_manager::CertificatesHandler>());
   web_ui->AddMessageHandler(
-      std::make_unique<
-          chromeos::cert_provisioning::CertificateProvisioningUiHandler>());
+      chromeos::cert_provisioning::CertificateProvisioningUiHandler::
+          CreateForProfile(profile));
 
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
+  content::WebUIDataSource::Add(profile, source);
 }
 
 CertificateManagerDialogUI::~CertificateManagerDialogUI() {}

@@ -34,7 +34,6 @@
 #include "content/common/download/mhtml_file_writer.mojom.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_delete_intention.h"
-#include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/common/render_accessibility.mojom.h"
 #include "content/common/renderer.mojom.h"
@@ -92,6 +91,7 @@
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info_notifier.mojom.h"
+#include "third_party/blink/public/mojom/media/renderer_audio_input_stream_factory.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom.h"
@@ -745,7 +745,7 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebString UserAgentOverride() override;
   base::Optional<blink::UserAgentMetadata> UserAgentMetadataOverride() override;
   blink::WebString DoNotTrackValue() override;
-  mojom::RendererAudioInputStreamFactory* GetAudioInputStreamFactory();
+  blink::mojom::RendererAudioInputStreamFactory* GetAudioInputStreamFactory();
   bool AllowContentInitiatedDataUrlNavigations(
       const blink::WebURL& url) override;
   void PostAccessibilityEvent(const ui::AXEvent& event) override;
@@ -1364,7 +1364,7 @@ class CONTENT_EXPORT RenderFrameImpl
   std::unique_ptr<blink::WebMediaStreamDeviceObserver>
       web_media_stream_device_observer_;
 
-  mojo::Remote<mojom::RendererAudioInputStreamFactory>
+  mojo::Remote<blink::mojom::RendererAudioInputStreamFactory>
       audio_input_stream_factory_;
 
   // The media permission dispatcher attached to this frame.

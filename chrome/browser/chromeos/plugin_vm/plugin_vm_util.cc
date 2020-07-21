@@ -36,6 +36,7 @@ namespace plugin_vm {
 
 const char kPluginVmShelfAppId[] = "lgjpclljbbmphhnalkeplcmnjpfmmaek";
 const char kPluginVmName[] = "PvmDefault";
+const char kChromeOSBaseDirectoryDisplayText[] = "Network \u203a ChromeOS";
 
 namespace {
 

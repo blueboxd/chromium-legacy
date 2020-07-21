@@ -111,8 +111,14 @@ var CrSettingsClearBrowsingDataV3Test = class extends CrSettingsV3BrowserTest {
   }
 };
 
+// TODO(crbug.com/1107652): Flaky on Mac.
+GEN('#if defined(OS_MACOSX)');
+GEN('#define MAYBE_ClearBrowsingDataAllPlatforms DISABLED_ClearBrowsingDataAllPlatforms');
+GEN('#else');
+GEN('#define MAYBE_ClearBrowsingDataAllPlatforms ClearBrowsingDataAllPlatforms');
+GEN('#endif');
 TEST_F(
-    'CrSettingsClearBrowsingDataV3Test', 'ClearBrowsingDataAllPlatforms',
+    'CrSettingsClearBrowsingDataV3Test', 'MAYBE_ClearBrowsingDataAllPlatforms',
     function() {
       runMochaSuite('ClearBrowsingDataAllPlatforms');
     });

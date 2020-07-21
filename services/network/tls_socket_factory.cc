@@ -51,7 +51,8 @@ TLSSocketFactory::TLSSocketFactory(
                           url_request_context->transport_security_state(),
                           url_request_context->cert_transparency_verifier(),
                           url_request_context->ct_policy_enforcer(),
-                          nullptr /* Disables SSL session caching */),
+                          nullptr /* Disables SSL session caching */,
+                          url_request_context->sct_auditing_delegate()),
       client_socket_factory_(nullptr),
       ssl_config_service_(url_request_context->ssl_config_service()) {
   if (http_context) {
@@ -132,7 +133,8 @@ void TLSSocketFactory::CreateTLSClientSocket(
                 no_verification_transport_security_state_.get(),
                 no_verification_cert_transparency_verifier_.get(),
                 no_verification_ct_policy_enforcer_.get(),
-                nullptr /* no session cache */);
+                nullptr /* no session cache */,
+                nullptr /* disable sct auditing */);
       }
       ssl_client_context = no_verification_ssl_client_context_.get();
       send_ssl_info = true;

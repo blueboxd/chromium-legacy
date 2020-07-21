@@ -256,10 +256,10 @@ class MockClient : public TestClient {
  public:
   MockClient() = default;
 
-  MOCK_METHOD0(OnPendingRequestComplete, void());
-  MOCK_METHOD0(OnNewDataReceived, void());
-  MOCK_METHOD0(OnDocumentComplete, void());
-  MOCK_METHOD0(OnDocumentCanceled, void());
+  MOCK_METHOD(void, OnPendingRequestComplete, (), (override));
+  MOCK_METHOD(void, OnNewDataReceived, (), (override));
+  MOCK_METHOD(void, OnDocumentComplete, (), (override));
+  MOCK_METHOD(void, OnDocumentCanceled, (), (override));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClient);

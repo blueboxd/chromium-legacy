@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "content/public/browser/browser_thread.h"
@@ -43,8 +44,11 @@ class PartnerBookmarksShimTest : public testing::Test {
  protected:
   // testing::Test
   void SetUp() override {
-    profile_.reset(new TestingProfile());
-    profile_->CreateBookmarkModel(true);
+    TestingProfile::Builder profile_builder;
+    profile_builder.AddTestingFactory(
+        BookmarkModelFactory::GetInstance(),
+        BookmarkModelFactory::GetDefaultFactory());
+    profile_ = profile_builder.Build();
   }
 
   void TearDown() override {

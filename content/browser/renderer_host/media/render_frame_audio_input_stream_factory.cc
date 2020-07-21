@@ -98,20 +98,22 @@ void GetSaltOriginAndPermissionsOnUIThread(
 }  // namespace
 
 class RenderFrameAudioInputStreamFactory::Core final
-    : public mojom::RendererAudioInputStreamFactory {
+    : public blink::mojom::RendererAudioInputStreamFactory {
  public:
-  Core(mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver,
+  Core(mojo::PendingReceiver<blink::mojom::RendererAudioInputStreamFactory>
+           receiver,
        MediaStreamManager* media_stream_manager,
        RenderFrameHost* render_frame_host);
 
   ~Core() final;
 
-  void Init(
-      mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver);
+  void Init(mojo::PendingReceiver<blink::mojom::RendererAudioInputStreamFactory>
+                receiver);
 
   // mojom::RendererAudioInputStreamFactory implementation.
   void CreateStream(
-      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
+      mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
+          client,
       const base::UnguessableToken& session_id,
       const media::AudioParameters& audio_params,
       bool automatic_gain_control,
@@ -122,7 +124,8 @@ class RenderFrameAudioInputStreamFactory::Core final
       const std::string& output_device_id) final;
 
   void CreateLoopbackStream(
-      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
+      mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
+          client,
       const media::AudioParameters& audio_params,
       uint32_t shared_memory_count,
       bool disable_local_echo,
@@ -153,7 +156,8 @@ class RenderFrameAudioInputStreamFactory::Core final
 };
 
 RenderFrameAudioInputStreamFactory::RenderFrameAudioInputStreamFactory(
-    mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver,
+    mojo::PendingReceiver<blink::mojom::RendererAudioInputStreamFactory>
+        receiver,
     MediaStreamManager* media_stream_manager,
     RenderFrameHost* render_frame_host)
     : core_(new Core(std::move(receiver),
@@ -174,7 +178,8 @@ RenderFrameAudioInputStreamFactory::~RenderFrameAudioInputStreamFactory() {
 }
 
 RenderFrameAudioInputStreamFactory::Core::Core(
-    mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver,
+    mojo::PendingReceiver<blink::mojom::RendererAudioInputStreamFactory>
+        receiver,
     MediaStreamManager* media_stream_manager,
     RenderFrameHost* render_frame_host)
     : media_stream_manager_(media_stream_manager),
@@ -207,13 +212,15 @@ RenderFrameAudioInputStreamFactory::Core::~Core() {
 }
 
 void RenderFrameAudioInputStreamFactory::Core::Init(
-    mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver) {
+    mojo::PendingReceiver<blink::mojom::RendererAudioInputStreamFactory>
+        receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   receiver_.Bind(std::move(receiver));
 }
 
 void RenderFrameAudioInputStreamFactory::Core::CreateStream(
-    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
+    mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
+        client,
     const base::UnguessableToken& session_id,
     const media::AudioParameters& audio_params,
     bool automatic_gain_control,
@@ -273,7 +280,8 @@ void RenderFrameAudioInputStreamFactory::Core::CreateStream(
 }
 
 void RenderFrameAudioInputStreamFactory::Core::CreateLoopbackStream(
-    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
+    mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
+        client,
     const media::AudioParameters& audio_params,
     uint32_t shared_memory_count,
     bool disable_local_echo,

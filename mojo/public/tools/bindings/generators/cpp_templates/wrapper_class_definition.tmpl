@@ -32,6 +32,26 @@ size_t {{struct.name}}::Hash(size_t seed) const {
 }
 {%- endif %}
 
+#if BUILDFLAG(MOJO_TRACE_ENABLED)
+void {{struct.name}}::ToTracedValue(base::trace_event::TracedValue* value,
+    const char* parameter_name) {
+  if (parameter_name) {
+    value->BeginDictionary(parameter_name);
+  } else {
+    value->BeginDictionary();
+  }
+{%-  for field in struct.fields %}
+{%-    for line in field.kind|write_input_param_for_tracing(
+                                parameter_name=field.name,
+                                cpp_parameter_name='this->'+field.name,
+                                value='value') %}
+  {{line}}
+{%-    endfor -%}
+{%-  endfor %}
+  value->EndDictionary();
+}
+#endif  // BUILDFLAG(MOJO_TRACE_ENABLED)
+
 bool {{struct.name}}::Validate(
     const void* data,
     mojo::internal::ValidationContext* validation_context) {

@@ -922,7 +922,7 @@ String AXLayoutObject::GetText() const {
   return AXNodeObject::GetText();
 }
 
-ax::mojom::blink::TextDirection AXLayoutObject::GetTextDirection() const {
+ax::mojom::blink::WritingDirection AXLayoutObject::GetTextDirection() const {
   if (!GetLayoutObject())
     return AXNodeObject::GetTextDirection();
 
@@ -933,16 +933,16 @@ ax::mojom::blink::TextDirection AXLayoutObject::GetTextDirection() const {
   if (style->IsHorizontalWritingMode()) {
     switch (style->Direction()) {
       case TextDirection::kLtr:
-        return ax::mojom::blink::TextDirection::kLtr;
+        return ax::mojom::blink::WritingDirection::kLtr;
       case TextDirection::kRtl:
-        return ax::mojom::blink::TextDirection::kRtl;
+        return ax::mojom::blink::WritingDirection::kRtl;
     }
   } else {
     switch (style->Direction()) {
       case TextDirection::kLtr:
-        return ax::mojom::blink::TextDirection::kTtb;
+        return ax::mojom::blink::WritingDirection::kTtb;
       case TextDirection::kRtl:
-        return ax::mojom::blink::TextDirection::kBtt;
+        return ax::mojom::blink::WritingDirection::kBtt;
     }
   }
 

@@ -22,5 +22,10 @@ struct PageLifecycleState {
 // be multiple blink::WebViewImpls when there are out-of-process iframes.
 interface PageBroadcast {
   // Notifies the renderer about a change in the lifecycle state of the page.
-  SetPageLifecycleState(PageLifecycleState state, mojo_base.mojom.TimeTicks? navigation_start) => ();
+  SetPageLifecycleState(
+      PageLifecycleState state,
+      mojo_base.mojom.TimeTicks? navigation_start) => ();
+
+  // Notifies the renderer when audio is started or stopped.
+  AudioStateChanged(bool is_audio_playing);
 };

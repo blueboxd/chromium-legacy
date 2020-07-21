@@ -79,7 +79,7 @@ void ForwardingAudioStreamFactory::Core::CreateInputStream(
     const media::AudioParameters& params,
     uint32_t shared_memory_count,
     bool enable_agc,
-    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+    mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
         renderer_factory_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -134,7 +134,7 @@ void ForwardingAudioStreamFactory::Core::CreateLoopbackStream(
     const media::AudioParameters& params,
     uint32_t shared_memory_count,
     bool mute_source,
-    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+    mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
         renderer_factory_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(loopback_source);

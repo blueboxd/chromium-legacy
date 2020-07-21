@@ -54,6 +54,7 @@ class TestProofVerifierChromium : public ProofVerifierChromium {
                               ct_policy_enforcer.get(),
                               transport_security_state.get(),
                               cert_transparency_verifier.get(),
+                              /*sct_auditing_delegate=*/nullptr,
                               {"test.example.com"},
                               NetworkIsolationKey()),
         cert_verifier_(std::move(cert_verifier)),

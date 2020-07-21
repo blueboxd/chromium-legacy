@@ -24,7 +24,7 @@ CreateRemoteAndStoreReceiver(
 }  // namespace
 
 AudioInputStreamHandle::AudioInputStreamHandle(
-    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+    mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
         client_pending_remote,
     media::MojoAudioInputStream::CreateDelegateCallback
         create_delegate_callback,

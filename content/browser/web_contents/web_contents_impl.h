@@ -1549,6 +1549,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Sends a Page message IPC.
   void SendPageMessage(IPC::Message* msg);
 
+  // Execute a PageBroadcast Mojo method.
+  void ExecutePageBroadcastMethod(PageBroadcastMethodCallback callback);
+
   void SetOpenerForNewContents(FrameTreeNode* opener, bool opener_suppressed);
 
   // Tracking loading progress -------------------------------------------------

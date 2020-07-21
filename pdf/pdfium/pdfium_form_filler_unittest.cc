@@ -24,9 +24,12 @@ class FormFillerTestClient : public TestClient {
   FormFillerTestClient& operator=(const FormFillerTestClient&) = delete;
 
   // Mock PDFEngine::Client methods.
-  MOCK_METHOD1(ScrollToX, void(int));
-  MOCK_METHOD2(ScrollToY, void(int, bool));
-  MOCK_METHOD2(NavigateTo, void(const std::string&, WindowOpenDisposition));
+  MOCK_METHOD(void, ScrollToX, (int), (override));
+  MOCK_METHOD(void, ScrollToY, (int, bool), (override));
+  MOCK_METHOD(void,
+              NavigateTo,
+              (const std::string&, WindowOpenDisposition),
+              (override));
 };
 
 }  // namespace

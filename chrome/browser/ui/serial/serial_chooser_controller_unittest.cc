@@ -9,11 +9,13 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "build/build_config.h"
 #include "chrome/browser/chooser_controller/mock_chooser_controller_view.h"
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
+#include "chrome/browser/serial/serial_chooser_histograms.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -68,6 +70,8 @@ TEST_F(SerialChooserControllerTest, GetPortsLateResponse) {
 }
 
 TEST_F(SerialChooserControllerTest, PortsAddedAndRemoved) {
+  base::HistogramTester histogram_tester;
+
   std::vector<blink::mojom::SerialPortFilterPtr> filters;
   auto controller = std::make_unique<SerialChooserController>(
       main_rfh(), std::move(filters), base::DoNothing());
@@ -138,9 +142,15 @@ TEST_F(SerialChooserControllerTest, PortsAddedAndRemoved) {
   EXPECT_EQ(1u, controller->NumOptions());
   EXPECT_EQ(base::ASCIIToUTF16("Test Port 2 (ttyS1)"),
             controller->GetOption(0));
+
+  controller.reset();
+  histogram_tester.ExpectUniqueSample("Permissions.Serial.ChooserClosed",
+                                      SerialChooserOutcome::kCancelled, 1);
 }
 
 TEST_F(SerialChooserControllerTest, PortSelected) {
+  base::HistogramTester histogram_tester;
+
   auto port = device::mojom::SerialPortInfo::New();
   port->token = base::UnguessableToken::Create();
   port->display_name = "Test Port";
@@ -178,4 +188,7 @@ TEST_F(SerialChooserControllerTest, PortSelected) {
                   controller->GetOption(0));
       }));
   controller->Select({0});
+  histogram_tester.ExpectUniqueSample(
+      "Permissions.Serial.ChooserClosed",
+      SerialChooserOutcome::kEphemeralPermissionGranted, 1);
 }

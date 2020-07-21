@@ -928,6 +928,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "display-alignment-assistance",
+    "owners": [ "baileyberro", "cros-peripherals@google.com" ],
+    "expiry_milestone": 89
+  },
+  {
     "name": "display-identification",
     "owners": [ "baileyberro", "cros-peripherals@google.com" ],
     "expiry_milestone": 89

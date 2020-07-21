@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/media/audio_stream_broker.h"
 #include "content/common/content_export.h"
-#include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "media/base/audio_parameters.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
@@ -20,6 +19,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
+#include "third_party/blink/public/mojom/media/renderer_audio_input_stream_factory.mojom.h"
 
 namespace media {
 class UserInputMonitorBase;
@@ -42,7 +42,7 @@ class CONTENT_EXPORT AudioInputStreamBroker final
       media::UserInputMonitorBase* user_input_monitor,
       bool enable_agc,
       AudioStreamBroker::DeleterCallback deleter,
-      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+      mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
           renderer_factory_client);
 
   ~AudioInputStreamBroker() final;
@@ -74,7 +74,7 @@ class CONTENT_EXPORT AudioInputStreamBroker final
 
   DeleterCallback deleter_;
 
-  mojo::Remote<mojom::RendererAudioInputStreamFactoryClient>
+  mojo::Remote<blink::mojom::RendererAudioInputStreamFactoryClient>
       renderer_factory_client_;
   mojo::Receiver<AudioInputStreamObserver> observer_receiver_{this};
   mojo::PendingReceiver<media::mojom::AudioInputStreamClient>

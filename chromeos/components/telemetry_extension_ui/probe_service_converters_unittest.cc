@@ -285,7 +285,10 @@ TEST(ProbeServiceConvertors, LogicalCpuInfoPtr) {
   constexpr uint32_t kMaxClockSpeedKhz = (1 << 31) + 10000;
   constexpr uint32_t kScalingMaxFrequencyKhz = (1 << 30) + 20000;
   constexpr uint32_t kScalingCurrentFrequencyKhz = (1 << 29) + 30000;
-  constexpr uint32_t kIdleTimeUserHz = (1 << 28) + 40000;
+
+  // Idle time cannot be tested with ConvertPtr, because it requires USER_HZ
+  // system constant to convert idle_time_user_hz to milliseconds.
+  constexpr uint32_t kIdleTime = 0;
 
   constexpr char kCpuCStateName[] = "C1";
   constexpr uint64_t kCpuCStateTime = (1 << 27) + 50000;
@@ -299,7 +302,7 @@ TEST(ProbeServiceConvertors, LogicalCpuInfoPtr) {
     input->max_clock_speed_khz = kMaxClockSpeedKhz;
     input->scaling_max_frequency_khz = kScalingMaxFrequencyKhz;
     input->scaling_current_frequency_khz = kScalingCurrentFrequencyKhz;
-    input->idle_time_user_hz = kIdleTimeUserHz;
+    input->idle_time_user_hz = kIdleTime;
     input->c_states.push_back(std::move(c_state));
   }
 
@@ -312,8 +315,21 @@ TEST(ProbeServiceConvertors, LogicalCpuInfoPtr) {
                 health::mojom::UInt32Value::New(kMaxClockSpeedKhz),
                 health::mojom::UInt32Value::New(kScalingMaxFrequencyKhz),
                 health::mojom::UInt32Value::New(kScalingCurrentFrequencyKhz),
-                health::mojom::UInt64Value::New(kIdleTimeUserHz),
+                health::mojom::UInt64Value::New(kIdleTime),
                 std::move(expected_c_states)));
+}
+
+TEST(ProbeServiceConvertors, LogicalCpuInfoPtrNonZeroIdleTime) {
+  constexpr uint64_t kUserHz = 100;
+  constexpr uint32_t kIdleTimeUserHz = 4291234295;
+  constexpr uint64_t kIdleTimeMs = 42912342950;
+
+  auto input = cros_healthd::mojom::LogicalCpuInfo::New();
+  input->idle_time_user_hz = kIdleTimeUserHz;
+
+  const auto output = unchecked::UncheckedConvertPtr(std::move(input), kUserHz);
+  ASSERT_TRUE(output);
+  EXPECT_EQ(output->idle_time_ms, health::mojom::UInt64Value::New(kIdleTimeMs));
 }
 
 TEST(ProbeServiceConvertors, PhysicalCpuInfoPtr) {
@@ -322,7 +338,10 @@ TEST(ProbeServiceConvertors, PhysicalCpuInfoPtr) {
   constexpr uint32_t kMaxClockSpeedKhz = (1 << 31) + 11111;
   constexpr uint32_t kScalingMaxFrequencyKhz = (1 << 30) + 22222;
   constexpr uint32_t kScalingCurrentFrequencyKhz = (1 << 29) + 33333;
-  constexpr uint32_t kIdleTimeUserHz = (1 << 28) + 44444;
+
+  // Idle time cannot be tested with ConvertPtr, because it requires USER_HZ
+  // system constant to convert idle_time_user_hz to milliseconds.
+  constexpr uint32_t kIdleTime = 0;
 
   auto input = cros_healthd::mojom::PhysicalCpuInfo::New();
   {
@@ -330,7 +349,7 @@ TEST(ProbeServiceConvertors, PhysicalCpuInfoPtr) {
     logical_info->max_clock_speed_khz = kMaxClockSpeedKhz;
     logical_info->scaling_max_frequency_khz = kScalingMaxFrequencyKhz;
     logical_info->scaling_current_frequency_khz = kScalingCurrentFrequencyKhz;
-    logical_info->idle_time_user_hz = kIdleTimeUserHz;
+    logical_info->idle_time_user_hz = kIdleTime;
 
     input->model_name = kModelName;
     input->logical_cpus.push_back(std::move(logical_info));
@@ -341,7 +360,7 @@ TEST(ProbeServiceConvertors, PhysicalCpuInfoPtr) {
       health::mojom::UInt32Value::New(kMaxClockSpeedKhz),
       health::mojom::UInt32Value::New(kScalingMaxFrequencyKhz),
       health::mojom::UInt32Value::New(kScalingCurrentFrequencyKhz),
-      health::mojom::UInt64Value::New(kIdleTimeUserHz),
+      health::mojom::UInt64Value::New(kIdleTime),
       std::vector<health::mojom::CpuCStateInfoPtr>{}));
 
   EXPECT_EQ(ConvertPtr(std::move(input)),

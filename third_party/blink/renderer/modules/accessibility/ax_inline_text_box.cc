@@ -160,19 +160,19 @@ AXObject* AXInlineTextBox::ComputeParent() const {
 
 // In addition to LTR and RTL direction, edit fields also support
 // top to bottom and bottom to top via the CSS writing-mode property.
-ax::mojom::TextDirection AXInlineTextBox::GetTextDirection() const {
+ax::mojom::blink::WritingDirection AXInlineTextBox::GetTextDirection() const {
   if (!inline_text_box_)
     return AXObject::GetTextDirection();
 
   switch (inline_text_box_->GetDirection()) {
     case AbstractInlineTextBox::kLeftToRight:
-      return ax::mojom::TextDirection::kLtr;
+      return ax::mojom::blink::WritingDirection::kLtr;
     case AbstractInlineTextBox::kRightToLeft:
-      return ax::mojom::TextDirection::kRtl;
+      return ax::mojom::blink::WritingDirection::kRtl;
     case AbstractInlineTextBox::kTopToBottom:
-      return ax::mojom::TextDirection::kTtb;
+      return ax::mojom::blink::WritingDirection::kTtb;
     case AbstractInlineTextBox::kBottomToTop:
-      return ax::mojom::TextDirection::kBtt;
+      return ax::mojom::blink::WritingDirection::kBtt;
   }
 
   return AXObject::GetTextDirection();

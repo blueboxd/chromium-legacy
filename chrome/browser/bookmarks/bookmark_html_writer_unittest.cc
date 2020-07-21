@@ -154,13 +154,19 @@ class BookmarksObserver : public BookmarksExportObserver {
 TEST_F(BookmarkHTMLWriterTest, Test) {
   content::BrowserTaskEnvironment task_environment;
 
-  TestingProfile profile;
-  ASSERT_TRUE(profile.CreateHistoryService(true, false));
-  profile.BlockUntilHistoryProcessesPendingRequests();
-  profile.CreateFaviconService();
-  profile.CreateBookmarkModel(true);
+  TestingProfile::Builder profile_builder;
+  profile_builder.AddTestingFactory(BookmarkModelFactory::GetInstance(),
+                                    BookmarkModelFactory::GetDefaultFactory());
+  profile_builder.AddTestingFactory(FaviconServiceFactory::GetInstance(),
+                                    FaviconServiceFactory::GetDefaultFactory());
+  profile_builder.AddTestingFactory(HistoryServiceFactory::GetInstance(),
+                                    HistoryServiceFactory::GetDefaultFactory());
 
-  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(&profile);
+  std::unique_ptr<TestingProfile> profile = profile_builder.Build();
+  profile->BlockUntilHistoryProcessesPendingRequests();
+
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForBrowserContext(profile.get());
   bookmarks::test::WaitForBookmarkModelToLoad(model);
 
   // Create test PNG representing favicon for url1.
@@ -208,10 +214,10 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   const BookmarkNode* f1 = model->AddFolder(
       model->bookmark_bar_node(), 0, f1_title);
   model->AddURL(f1, 0, url1_title, url1, nullptr, t1);
-  HistoryServiceFactory::GetForProfile(&profile,
+  HistoryServiceFactory::GetForProfile(profile.get(),
                                        ServiceAccessType::EXPLICIT_ACCESS)
       ->AddPage(url1, base::Time::Now(), history::SOURCE_BROWSED);
-  FaviconServiceFactory::GetForProfile(&profile,
+  FaviconServiceFactory::GetForProfile(profile.get(),
                                        ServiceAccessType::EXPLICIT_ACCESS)
       ->SetFavicons({url1}, url1_favicon, favicon_base::IconType::kFavicon,
                     gfx::Image::CreateFrom1xBitmap(bitmap));
@@ -233,7 +239,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
 
   // Write to a temp file.
   BookmarksObserver observer(&run_loop);
-  bookmark_html_writer::WriteBookmarks(&profile, path_, &observer);
+  bookmark_html_writer::WriteBookmarks(profile.get(), path_, &observer);
   run_loop.Run();
   if (HasFailure()) {
     // WriteBookmarks has failed, no point in trying to read the file.
@@ -241,7 +247,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   }
 
   // Clear favicon so that it would be read from file.
-  FaviconServiceFactory::GetForProfile(&profile,
+  FaviconServiceFactory::GetForProfile(profile.get(),
                                        ServiceAccessType::EXPLICIT_ACCESS)
       ->SetFavicons({url1}, url1_favicon, favicon_base::IconType::kFavicon,
                     gfx::Image());

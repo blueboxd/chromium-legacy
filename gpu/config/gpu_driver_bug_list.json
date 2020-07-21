@@ -3427,6 +3427,15 @@
       "features": [
         "unbind_attachments_on_bound_render_fbo_delete"
       ]
+    },
+    {
+      "id": 343,
+      "description": "Disable using GPU backed resource for imageBitmap from video on d3d9",
+      "cr_bugs": [1098445, 1105923],
+      "gl_renderer": ".*Direct3D9.*",
+      "features": [
+        "disable_imagebitmap_from_video_using_gpu"
+      ]
     }
   ]
 }

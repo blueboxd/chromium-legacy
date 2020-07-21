@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CERTIFICATE_PROVISIONING_UI_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CERTIFICATE_PROVISIONING_UI_HANDLER_H_
 
+#include <utility>
+
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -18,7 +20,26 @@ class CertProvisioningScheduler;
 
 class CertificateProvisioningUiHandler : public content::WebUIMessageHandler {
  public:
-  CertificateProvisioningUiHandler();
+  // Creates a CertificateProvisioningUiHandler for |user_profile|, which uses:
+  // (*) The CertProvisioningScheduler associated with |user_profile|, if any.
+  // (*) The device-wide CertProvisioningScheduler, if it exists and the
+  //     |user_profile| is affiliated.
+  static std::unique_ptr<CertificateProvisioningUiHandler> CreateForProfile(
+      Profile* user_profile);
+
+  // The constructed CertificateProvisioningUiHandler will use
+  // |scheduler_for_user| to list certificate provisioning processes that belong
+  // to the user, and |scheduler_for_device|, to list certificatge provisioning
+  // processes that are device-wide. Both can be nullptr. Note: Intended to be
+  // called directly for testing. Use CreateForProfile in production code
+  // instead.
+  // |user_profile| is used to determine if the current user is affiliated and
+  // decide if |scheduler_for_device| should be used based on that. This pattern
+  // is useful for unit-testing the affiliation detection logic.
+  CertificateProvisioningUiHandler(
+      Profile* user_profile,
+      CertProvisioningScheduler* scheduler_for_user,
+      CertProvisioningScheduler* scheduler_for_device);
 
   CertificateProvisioningUiHandler(
       const CertificateProvisioningUiHandler& other) = delete;
@@ -31,16 +52,6 @@ class CertificateProvisioningUiHandler : public content::WebUIMessageHandler {
   void RegisterMessages() override;
 
  private:
-  // Returns the per-user CertProvisioningScheduler for |user_profile|, if it
-  // has any.
-  chromeos::cert_provisioning::CertProvisioningScheduler*
-  GetCertProvisioningSchedulerForUser(Profile* user_profile);
-
-  // Returns the per-device CertProvisioningScheduler, if |user_profile| is
-  // associated with a user that has access to device-wide client certificates.
-  chromeos::cert_provisioning::CertProvisioningScheduler*
-  GetCertProvisioningSchedulerForDevice(Profile* user_profile);
-
   // Send the list of certificate provisioning processes to the UI, triggered by
   // the UI when it loads.
   // |args| is expected to be empty.
@@ -58,6 +69,18 @@ class CertificateProvisioningUiHandler : public content::WebUIMessageHandler {
 
   // Send the list of certificate provisioning processes to the UI.
   void RefreshCertificateProvisioningProcesses();
+
+  // Returns true if device-wide certificate provisioning processes should be
+  // displayed, i.e. if the |user_profile| is affiliated.
+  static bool ShouldUseDeviceWideProcesses(Profile* user_profile);
+
+  // The user-specific CertProvisioningScheduler. Can be nullptr.
+  // Unowned.
+  CertProvisioningScheduler* const scheduler_for_user_;
+
+  // The device-wide CertProvisioningScheduler. Can be nullptr.
+  // Unowned.
+  CertProvisioningScheduler* const scheduler_for_device_;
 
   base::WeakPtrFactory<CertificateProvisioningUiHandler> weak_ptr_factory_{
       this};

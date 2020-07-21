@@ -80,6 +80,7 @@ class ContentSettingsPattern {
     SCHEME_CHROMESEARCH,
     SCHEME_CHROME,
     SCHEME_CHROMEUNTRUSTED,
+    SCHEME_DEVTOOLS,
     SCHEME_MAX,
   };
 

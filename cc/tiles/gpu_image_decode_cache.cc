@@ -2605,7 +2605,19 @@ SkImageInfo GpuImageDecodeCache::CreateImageInfoForDrawImage(
     int upload_scale_mip_level) const {
   gfx::Size mip_size =
       CalculateSizeForMipLevel(draw_image, upload_scale_mip_level);
-  return SkImageInfo::Make(mip_size.width(), mip_size.height(), color_type_,
+
+  // Decode HDR images to half float when targeting HDR.
+  //
+  // TODO(crbug.com/1076568): Once we have access to the display's buffer format
+  // via gfx::DisplayColorSpaces, we should also do this for HBD images.
+  auto color_type = color_type_;
+  if (draw_image.paint_image().GetContentColorUsage() ==
+          gfx::ContentColorUsage::kHDR &&
+      draw_image.target_color_space().IsHDR()) {
+    color_type = kRGBA_F16_SkColorType;
+  }
+
+  return SkImageInfo::Make(mip_size.width(), mip_size.height(), color_type,
                            kPremul_SkAlphaType);
 }
 

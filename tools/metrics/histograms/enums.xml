@@ -21261,6 +21261,7 @@ Called by update_document_policy_enum.py.-->
   <int value="739" label="ShowFullUrlsInAddressBar"/>
   <int value="740" label="ExtensionInstallBlocklist"/>
   <int value="741" label="ReportDeviceSystemInfo"/>
+  <int value="742" label="AutoplayAllowlist"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -41477,6 +41478,7 @@ from previous Chrome versions.
   <int value="-204355195" label="secondary-ui-md"/>
   <int value="-203968600" label="SyncSupportSecondaryAccount:disabled"/>
   <int value="-202007318" label="AndroidAIAFetching:enabled"/>
+  <int value="-201633741" label="DisplayAlignAssist:enabled"/>
   <int value="-200805659" label="ContextualSuggestionsButton:enabled"/>
   <int value="-199690952" label="PageInfoV2:enabled"/>
   <int value="-196110497" label="force-text-direction"/>
@@ -42275,6 +42277,7 @@ from previous Chrome versions.
   <int value="679931272" label="DcheckIsFatal:enabled"/>
   <int value="680070635"
       label="enable-fullscreen-handwriting-virtual-keyboard:disabled"/>
+  <int value="680300401" label="DisplayAlignAssist:disabled"/>
   <int value="681622885" label="FullscreenExitUI:enabled"/>
   <int value="682549212" label="ash-enable-cursor-motion-blur"/>
   <int value="683013217" label="AllowPopupsDuringPageUnload:disabled"/>
@@ -62656,6 +62659,19 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="0" label="Allowed"/>
   <int value="1" label="Blocked, try again"/>
   <int value="2" label="Blocked"/>
+</enum>
+
+<enum name="SerialChooserOutcome">
+  <int value="0" label="Chooser cancelled"/>
+  <int value="1" label="Chooser cancelled, no options available"/>
+  <int value="2" label="Permission granted"/>
+  <int value="3" label="Ephemeral permission granted"/>
+</enum>
+
+<enum name="SerialPermissionRevoked">
+  <int value="0" label="Persistent permission revoked by user"/>
+  <int value="1" label="Ephemeral permission revoked by user"/>
+  <int value="2" label="Ephemeral permission revoked on disconnect"/>
 </enum>
 
 <enum name="ServiceProcessEventType">

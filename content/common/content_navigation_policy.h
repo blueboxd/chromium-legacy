@@ -15,6 +15,11 @@ namespace content {
 CONTENT_EXPORT bool IsBackForwardCacheEnabled();
 CONTENT_EXPORT bool DeviceHasEnoughMemoryForBackForwardCache();
 
+// Whether proactive BrowsingInstance swap can happen on cross-site navigations.
+// This can be caused by either the ProactivelySwapBrowsingInstance or the
+// BackForwardCache flag.
+CONTENT_EXPORT bool CanCrossSiteNavigationsProactivelySwapBrowsingInstances();
+
 // Levels of ProactivelySwapBrowsingInstance support.
 // These are additive; features enabled at lower levels remain enabled at all
 // higher levels.
@@ -37,8 +42,8 @@ CONTENT_EXPORT std::array<
     static_cast<size_t>(ProactivelySwapBrowsingInstanceLevel::kMaxValue)>
 ProactivelySwapBrowsingInstanceFeatureEnabledLevelValues();
 
-// Whether ProactivelySwapBrowsingInstance is enabled or not. Will return true
-// if the value is set to either of {kCrossSiteSwapProcess,
+// Whether the ProactivelySwapBrowsingInstance flag is enabled or not. Will
+// return true if the value is set to either of {kCrossSiteSwapProcess,
 // kCrossSiteReuseProcess, kSameSite}.
 CONTENT_EXPORT bool IsProactivelySwapBrowsingInstanceEnabled();
 

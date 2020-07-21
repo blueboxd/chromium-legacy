@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/shared_image_representation.h"
 
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 
@@ -151,6 +152,18 @@ SharedImageRepresentationSkia::ScopedReadAccess::ScopedReadAccess(
 
 SharedImageRepresentationSkia::ScopedReadAccess::~ScopedReadAccess() {
   representation()->EndReadAccess();
+}
+
+sk_sp<SkImage> SharedImageRepresentationSkia::ScopedReadAccess::CreateSkImage(
+    GrContext* context) const {
+  auto surface_origin = representation()->surface_origin();
+  auto color_type =
+      viz::ResourceFormatToClosestSkColorType(true, representation()->format());
+  auto alpha_type = representation()->alpha_type();
+  auto sk_color_space = representation()->color_space().ToSkColorSpace();
+  return SkImage::MakeFromTexture(
+      context, promise_image_texture_->backendTexture(), surface_origin,
+      color_type, alpha_type, sk_color_space);
 }
 
 std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>

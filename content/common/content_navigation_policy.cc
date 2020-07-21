@@ -39,6 +39,11 @@ bool IsBackForwardCacheEnabled() {
   return base::FeatureList::IsEnabled(features::kBackForwardCache);
 }
 
+bool CanCrossSiteNavigationsProactivelySwapBrowsingInstances() {
+  return IsProactivelySwapBrowsingInstanceEnabled() ||
+         IsBackForwardCacheEnabled();
+}
+
 const char kProactivelySwapBrowsingInstanceLevelParameterName[] = "level";
 
 constexpr base::FeatureParam<ProactivelySwapBrowsingInstanceLevel>::Option

@@ -13,6 +13,10 @@ class SharesheetController {
  public:
   virtual ~SharesheetController() = default;
 
+  // Each Controller is assigned a unique id used to distinuish between
+  // different invocations of the sharesheet.
+  virtual uint32_t GetId() = 0;
+
   // Called by ShareAction to notify SharesheetBubbleView that ShareAction
   // has completed.
   virtual void ShareActionCompleted() = 0;

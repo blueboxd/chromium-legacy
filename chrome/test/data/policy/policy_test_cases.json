@@ -6074,8 +6074,35 @@
             "https://mydomain.com",
             "https://test.mydomain.com"
           ]
-        },
-        "prefs": { "media.autoplay_whitelist": {} }
+        }, "prefs": {
+          "media.autoplay_whitelist": {
+            "value": [
+              "https://mydomain.com",
+              "https://test.mydomain.com"
+            ]
+          }
+        }
+      }
+    ]
+  },
+
+  "AutoplayAllowlist": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "AutoplayAllowlist": [
+            "https://mydomain.com",
+            "https://test.mydomain.com"
+          ]
+        }, "prefs": {
+          "media.autoplay_whitelist": {
+            "value": [
+              "https://mydomain.com",
+              "https://test.mydomain.com"
+            ]
+          }
+        }
       }
     ]
   },

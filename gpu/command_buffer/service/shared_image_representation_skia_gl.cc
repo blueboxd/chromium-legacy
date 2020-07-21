@@ -98,7 +98,7 @@ sk_sp<SkSurface> SharedImageRepresentationSkiaGL::BeginWriteAccess(
       /*gpu_compositing=*/true, format());
   auto surface = SkSurface::MakeFromBackendTexture(
       context_state_->gr_context(), promise_texture_->backendTexture(),
-      kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type,
+      surface_origin(), final_msaa_count, sk_color_type,
       backing()->color_space().ToSkColorSpace(), &surface_props);
   surface_ = surface;
   return surface;

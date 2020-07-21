@@ -1882,13 +1882,9 @@ gfx::ColorSpace LayerTreeHostImpl::GetRasterColorSpace(
   if (!result.IsValid())
     return srgb;
 
-  // Rasterization doesn't support more than 8 bit unorm values. If the output
-  // space has an extended range, use Display P3 for the rasterization space,
-  // to get a somewhat wider color gamut.
-  //
-  // TODO(crbug.com/1076568): Actually use the HDR color space when we have HDR
-  // content to display.
-  if (result.IsHDR())
+  // It's expensive to rasterize in HDR, so we only want to do so when we know
+  // we have HDR content to rasterize.
+  if (result.IsHDR() && content_color_usage != gfx::ContentColorUsage::kHDR)
     return gfx::ColorSpace::CreateDisplayP3D65();
 
   return result;

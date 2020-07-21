@@ -536,6 +536,8 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
   // Check that this page is neither full nor freed.
   PA_DCHECK(page);
   PA_DCHECK(page->num_allocated_slots >= 0);
+  size_t new_slot_size = bucket->slot_size;
+
   void* ret = page->freelist_head;
   if (LIKELY(ret)) {
     // If these DCHECKs fire, you probably corrupted memory. TODO(palmer): See
@@ -550,24 +552,23 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
             page->freelist_head->next);
     page->freelist_head = new_head;
     page->num_allocated_slots++;
+
+    PA_DCHECK(page->bucket == bucket);
   } else {
     ret = bucket->SlowPathAlloc(this, flags, size, &is_already_zeroed);
     // TODO(palmer): See if we can afford to make this a CHECK.
     PA_DCHECK(!ret || IsValidPage(Page::FromPointer(ret)));
-  }
 
-  if (!ret) {
-    return nullptr;
-  }
+    if (UNLIKELY(!ret))
+      return nullptr;
 
-  page = Page::FromPointer(ret);
-  // TODO(ajwong): Can |page->bucket| ever not be |bucket|? If not, can this
-  // just be bucket->slot_size?
-  size_t new_slot_size = page->bucket->slot_size;
-  size_t raw_size = page->get_raw_size();
-  if (raw_size) {
-    PA_DCHECK(raw_size == size);
-    new_slot_size = raw_size;
+    page = Page::FromPointer(ret);
+    if (UNLIKELY(page->get_raw_size())) {
+      PA_DCHECK(page->get_raw_size() == size);
+      new_slot_size = size;
+    } else {
+      new_slot_size = page->bucket->slot_size;
+    }
   }
   // Layout inside the slot: |[tag]|cookie|object|[empty]|cookie|
   //                                      <--a--->

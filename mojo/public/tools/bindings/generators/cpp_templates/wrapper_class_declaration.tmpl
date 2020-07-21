@@ -128,6 +128,19 @@ class {{export_attribute}} {{struct.name}} {
   {{type}} {{name}};
 {%- endfor %}
 
+#if BUILDFLAG(MOJO_TRACE_ENABLED)
+  // Write this structure into |value|. The members are represented as a
+  // dictionary |member name|: |member value|.
+  //
+  // |value| The TracedValue to be written into.
+  // |parameter_name| Name of the variable holding this structure,
+  //   used as the name of the dictionary representing this structure.
+  //   If nullptr, then the dictionary representing this structure has no name
+  //   (used in arrays of structures).
+  void ToTracedValue(base::trace_event::TracedValue* value,
+    const char* parameter_name = nullptr);
+#endif  // BUILDFLAG(MOJO_TRACE_ENABLED)
+
  private:
   static bool Validate(const void* data,
                        mojo::internal::ValidationContext* validation_context);

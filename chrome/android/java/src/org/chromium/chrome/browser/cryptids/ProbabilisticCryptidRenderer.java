@@ -4,14 +4,21 @@
 
 package org.chromium.chrome.browser.cryptids;
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.enterprise.util.ManagedBrowserUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
+
+import jp.tomorrowkey.android.gifplayer.BaseGifDrawable;
+import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 
 /**
  * Allows for cryptids to be displayed on the New Tab Page under certain probabilistic conditions.
@@ -30,6 +37,12 @@ public class ProbabilisticCryptidRenderer {
     private static final int DEFAULT_MAX_PROBABILITY = 20000; // 2%
 
     private static final String TAG = "ProbabilisticCryptid";
+
+    private static ProbabilisticCryptidRenderer sInstance = new ProbabilisticCryptidRenderer();
+
+    public static ProbabilisticCryptidRenderer getInstance() {
+        return sInstance;
+    }
 
     /**
      * Determines whether cryptid should be rendered on this NTP instance, based on probability
@@ -54,6 +67,28 @@ public class ProbabilisticCryptidRenderer {
      */
     public void recordRenderEvent() {
         recordRenderEvent(System.currentTimeMillis());
+    }
+
+    /**
+     * Creates an ImageView which will render a cryptid, suitable for use in/around the space of the
+     * logo on the NTP.
+     * @param layout A callback which will insert this Drawable into an ImageView in the appropriate
+     *     location. The callback should handle null Drawables, which will be passed if a cryptid is
+     *     not available or shouldn't be used.
+     */
+    public void getCryptidForLogo(Profile profile, Callback<Drawable> callback) {
+        if (!shouldUseCryptidRendering(profile)) {
+            callback.onResult(null);
+            return;
+        }
+
+        // TODO(crbug.com/1061949): Fetch an actual image, and have its callback handle the rest of
+        // the work.
+        BaseGifImage image = new BaseGifImage("".getBytes(), 0);
+        BaseGifDrawable drawable = new BaseGifDrawable(image, Bitmap.Config.ARGB_8888);
+        drawable.setLoopCount(1); // Plays only once/does not loop.
+        drawable.setAnimateOnLoad(true);
+        callback.onResult(drawable);
     }
 
     // Protected for testing

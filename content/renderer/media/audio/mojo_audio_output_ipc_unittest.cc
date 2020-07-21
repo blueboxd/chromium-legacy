@@ -46,7 +46,9 @@ media::AudioParameters Params() {
 
 MojoAudioOutputIPC::FactoryAccessorCB NullAccessor() {
   return base::BindRepeating(
-      []() -> mojom::RendererAudioOutputStreamFactory* { return nullptr; });
+      []() -> blink::mojom::RendererAudioOutputStreamFactory* {
+        return nullptr;
+      });
 }
 
 class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
@@ -94,7 +96,8 @@ class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
   base::CancelableSyncSocket socket_;
 };
 
-class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
+class TestRemoteFactory
+    : public blink::mojom::RendererAudioOutputStreamFactory {
  public:
   TestRemoteFactory()
       : expect_request_(false),
@@ -165,14 +168,17 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
   }
 
  private:
-  mojom::RendererAudioOutputStreamFactory* get() { return this_remote_.get(); }
+  blink::mojom::RendererAudioOutputStreamFactory* get() {
+    return this_remote_.get();
+  }
 
   bool expect_request_;
   base::Optional<base::UnguessableToken> expected_session_id_;
   std::string expected_device_id_;
 
-  mojo::Remote<mojom::RendererAudioOutputStreamFactory> this_remote_;
-  mojo::Receiver<mojom::RendererAudioOutputStreamFactory> receiver_{this};
+  mojo::Remote<blink::mojom::RendererAudioOutputStreamFactory> this_remote_;
+  mojo::Receiver<blink::mojom::RendererAudioOutputStreamFactory> receiver_{
+      this};
   std::unique_ptr<TestStreamProvider> provider_;
   base::Optional<mojo::Receiver<media::mojom::AudioOutputStreamProvider>>
       provider_receiver_;

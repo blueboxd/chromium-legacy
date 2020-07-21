@@ -54,6 +54,7 @@
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
+#include "services/network/sct_auditing_cache.h"
 #include "services/network/socket_factory.h"
 #include "services/network/url_request_context_owner.h"
 
@@ -258,6 +259,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void GetExpectCTState(const std::string& domain,
                         const net::NetworkIsolationKey& network_isolation_key,
                         GetExpectCTStateCallback callback) override;
+  void MaybeEnqueueSCTReport(
+      const net::HostPortPair& host_port_pair,
+      const net::X509Certificate* validated_certificate_chain,
+      const net::SignedCertificateTimestampAndStatusList&
+          signed_certificate_timestamps);
+  bool is_sct_auditing_enabled() { return is_sct_auditing_enabled_; }
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
   void CreateUDPSocket(
       mojo::PendingReceiver<mojom::UDPSocket> receiver,
@@ -494,6 +501,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     return trust_token_store_.get();
   }
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
+  void SetIsSCTAuditingEnabledForTesting(bool enabled) {
+    is_sct_auditing_enabled_ = enabled;
+  }
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
+
  private:
   URLRequestContextOwner MakeURLRequestContext(
       mojo::PendingRemote<mojom::URLLoaderFactory>
@@ -647,6 +660,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   std::queue<SetExpectCTTestReportCallback>
       outstanding_set_expect_ct_callbacks_;
+
+  bool is_sct_auditing_enabled_ = false;
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 #if defined(OS_CHROMEOS)

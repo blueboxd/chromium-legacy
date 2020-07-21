@@ -46,11 +46,9 @@ class EmojiSuggester : public Suggester {
   void LoadEmojiMap();
   void OnEmojiDataLoaded(const std::string& emoji_data);
   void RecordAcceptanceIndex(int index);
-  void ResetState();
-  void BuildCandidateAnnounceString();
 
-  void SetCandidateButtonHighlighted(bool highlighted);
-  void SetLearnMoreButtonHighlighted(bool highlighted);
+  void SetButtonHighlighted(const ui::ime::AssistiveWindowButton& button,
+                            bool highlighted);
 
   int GetPrefValue(const std::string& pref_name);
 
@@ -59,7 +57,7 @@ class EmojiSuggester : public Suggester {
   // max_value.
   void IncrementPrefValueTilCapped(const std::string& pref_name, int max_value);
 
-  SuggestionHandlerInterface* const engine_;
+  SuggestionHandlerInterface* const suggestion_handler_;
   Profile* profile_;
 
   // ID of the focused text field, 0 if none is focused.
@@ -68,15 +66,14 @@ class EmojiSuggester : public Suggester {
   // If we are showing a suggestion right now.
   bool suggestion_shown_ = false;
 
-  std::string last_event_key_;
-
   // The current list of candidates.
   std::vector<base::string16> candidates_;
   AssistiveWindowProperties properties_;
 
-  ui::ime::AssistiveWindowButton current_candidate_;
+  std::vector<ui::ime::AssistiveWindowButton> buttons_;
+  int highlighted_index_;
+  ui::ime::AssistiveWindowButton suggestion_button_;
   ui::ime::AssistiveWindowButton learn_more_button_;
-  bool is_learn_more_button_chosen_ = false;
 
   // The map holding one-word-mapping to emojis.
   std::map<std::string, std::vector<base::string16>> emoji_map_;

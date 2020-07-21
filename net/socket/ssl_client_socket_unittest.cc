@@ -45,6 +45,7 @@
 #include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/mock_client_cert_verifier.h"
+#include "net/cert/sct_auditing_delegate.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_util.h"
@@ -639,6 +640,16 @@ class MockRequireCTDelegate : public TransportSecurityState::RequireCTDelegate {
                                   const HashValueVector& hashes));
 };
 
+class MockSCTAuditingDelegate : public SCTAuditingDelegate {
+ public:
+  MOCK_METHOD(bool, IsSCTAuditingEnabled, ());
+  MOCK_METHOD(void,
+              MaybeEnqueueReport,
+              (const net::HostPortPair&,
+               const net::X509Certificate*,
+               const net::SignedCertificateTimestampAndStatusList&));
+};
+
 class ManySmallRecordsHttpResponse : public test_server::HttpResponse {
  public:
   static std::unique_ptr<test_server::HttpResponse> HandleRequest(
@@ -700,13 +711,14 @@ class SSLClientSocketTest : public PlatformTest, public WithTaskEnvironment {
         ct_policy_enforcer_(std::make_unique<MockCTPolicyEnforcer>()),
         ssl_client_session_cache_(std::make_unique<SSLClientSessionCache>(
             SSLClientSessionCache::Config())),
-        context_(std::make_unique<SSLClientContext>(
-            ssl_config_service_.get(),
-            cert_verifier_.get(),
-            transport_security_state_.get(),
-            ct_verifier_.get(),
-            ct_policy_enforcer_.get(),
-            ssl_client_session_cache_.get())) {
+        context_(
+            std::make_unique<SSLClientContext>(ssl_config_service_.get(),
+                                               cert_verifier_.get(),
+                                               transport_security_state_.get(),
+                                               ct_verifier_.get(),
+                                               ct_policy_enforcer_.get(),
+                                               ssl_client_session_cache_.get(),
+                                               nullptr)) {
     cert_verifier_->set_default_result(OK);
     cert_verifier_->set_async(true);
 
@@ -1531,7 +1543,7 @@ TEST_P(SSLClientSocketVersionTest, SocketDestroyedDuringVerify) {
   context_ = std::make_unique<SSLClientContext>(
       ssl_config_service_.get(), &verifier, transport_security_state_.get(),
       ct_verifier_.get(), ct_policy_enforcer_.get(),
-      ssl_client_session_cache_.get());
+      ssl_client_session_cache_.get(), nullptr);
 
   TestCompletionCallback callback;
   auto transport =
@@ -2779,7 +2791,7 @@ TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsTLSExtension) {
   context_ = std::make_unique<SSLClientContext>(
       ssl_config_service_.get(), cert_verifier_.get(),
       transport_security_state_.get(), &ct_verifier, ct_policy_enforcer_.get(),
-      ssl_client_session_cache_.get());
+      ssl_client_session_cache_.get(), nullptr);
 
   // Check that the SCT list is extracted from the TLS extension as expected,
   // while also simulating that it was an unparsable response.
@@ -4572,6 +4584,51 @@ TEST_P(SSLClientSocketVersionTest, PKPMoreImportantThanCT) {
   EXPECT_TRUE(ssl_info.cert_status &
               CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED);
   EXPECT_FALSE(sock_->IsConnected());
+}
+
+// Tests that the SCTAuditingDelegate is called to enqueue SCT reports.
+TEST_P(SSLClientSocketVersionTest, SCTAuditingReportCollected) {
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, GetServerConfig()));
+  scoped_refptr<X509Certificate> server_cert =
+      embedded_test_server()->GetCertificate();
+
+  // Certificate is trusted and chains to a public root.
+  CertVerifyResult verify_result;
+  verify_result.is_issued_by_known_root = true;
+  verify_result.verified_cert = server_cert;
+  verify_result.public_key_hashes =
+      MakeHashValueVector(kGoodHashValueVectorInput);
+  cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
+
+  // Set up CT and auditing delegate.
+  MockRequireCTDelegate require_ct_delegate;
+  transport_security_state_->SetRequireCTDelegate(&require_ct_delegate);
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_, _, _))
+      .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
+                                 CTRequirementLevel::REQUIRED));
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(server_cert.get(), _, _))
+      .WillRepeatedly(
+          Return(ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS));
+
+  MockSCTAuditingDelegate sct_auditing_delegate;
+  context_ = std::make_unique<SSLClientContext>(
+      ssl_config_service_.get(), cert_verifier_.get(),
+      transport_security_state_.get(), ct_verifier_.get(),
+      ct_policy_enforcer_.get(), ssl_client_session_cache_.get(),
+      &sct_auditing_delegate);
+
+  EXPECT_CALL(sct_auditing_delegate, IsSCTAuditingEnabled())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(sct_auditing_delegate,
+              MaybeEnqueueReport(host_port_pair(), server_cert.get(), _))
+      .Times(1);
+
+  SSLConfig ssl_config;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  EXPECT_THAT(rv, 0);
+  EXPECT_TRUE(sock_->IsConnected());
 }
 
 // Test that handshake_failure alerts at the ServerHello are mapped to

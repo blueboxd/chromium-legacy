@@ -43,7 +43,8 @@ namespace {
 // Not using kExtensionScheme and kChromeSearchScheme to avoid the dependency
 // to extensions and chrome/common.
 const char* const kNonWildcardDomainNonPortSchemes[] = {
-    "chrome-extension", "chrome-search", "chrome", "chrome-untrusted"};
+    "chrome-extension", "chrome-search", "chrome", "chrome-untrusted",
+    "devtools"};
 
 class ComponentsTestSuite : public base::TestSuite {
  public:
@@ -75,6 +76,7 @@ class ComponentsTestSuite : public base::TestSuite {
     }
 #else
     url::AddStandardScheme("chrome", url::SCHEME_WITH_HOST);
+    url::AddStandardScheme("chrome-untrusted", url::SCHEME_WITH_HOST);
     url::AddStandardScheme("devtools", url::SCHEME_WITH_HOST);
 
 #endif

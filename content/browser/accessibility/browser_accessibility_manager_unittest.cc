@@ -136,7 +136,7 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRange) {
   inline_text1.role = ax::mojom::Role::kInlineTextBox;
   inline_text1.SetName("Hello, ");
   inline_text1.relative_bounds.bounds = gfx::RectF(100, 100, 29, 9);
-  inline_text1.SetTextDirection(ax::mojom::TextDirection::kLtr);
+  inline_text1.SetTextDirection(ax::mojom::WritingDirection::kLtr);
   std::vector<int32_t> character_offsets1;
   character_offsets1.push_back(6);   // 0
   character_offsets1.push_back(11);  // 1
@@ -154,7 +154,7 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRange) {
   inline_text2.role = ax::mojom::Role::kInlineTextBox;
   inline_text2.SetName("world.");
   inline_text2.relative_bounds.bounds = gfx::RectF(100, 109, 28, 9);
-  inline_text2.SetTextDirection(ax::mojom::TextDirection::kLtr);
+  inline_text2.SetTextDirection(ax::mojom::WritingDirection::kLtr);
   std::vector<int32_t> character_offsets2;
   character_offsets2.push_back(5);
   character_offsets2.push_back(10);
@@ -242,7 +242,7 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeMultiElement) {
   inline_text1.role = ax::mojom::Role::kInlineTextBox;
   inline_text1.SetName("ABC");
   inline_text1.relative_bounds.bounds = gfx::RectF(0, 20, 33, 9);
-  inline_text1.SetTextDirection(ax::mojom::TextDirection::kLtr);
+  inline_text1.SetTextDirection(ax::mojom::WritingDirection::kLtr);
   std::vector<int32_t> character_offsets{10, 21, 33};
   inline_text1.AddIntListAttribute(
       ax::mojom::IntListAttribute::kCharacterOffsets, character_offsets);
@@ -260,7 +260,7 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeMultiElement) {
   inline_text2.role = ax::mojom::Role::kInlineTextBox;
   inline_text2.SetName("ABC");
   inline_text2.relative_bounds.bounds = gfx::RectF(10, 40, 33, 9);
-  inline_text2.SetTextDirection(ax::mojom::TextDirection::kLtr);
+  inline_text2.SetTextDirection(ax::mojom::WritingDirection::kLtr);
   inline_text2.AddIntListAttribute(
       ax::mojom::IntListAttribute::kCharacterOffsets, character_offsets);
   static_text2.child_ids.push_back(5);
@@ -360,7 +360,7 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
   inline_text1.role = ax::mojom::Role::kInlineTextBox;
   inline_text1.SetName("123");
   inline_text1.relative_bounds.bounds = gfx::RectF(100, 100, 30, 20);
-  inline_text1.SetTextDirection(ax::mojom::TextDirection::kLtr);
+  inline_text1.SetTextDirection(ax::mojom::WritingDirection::kLtr);
   std::vector<int32_t> character_offsets1;
   character_offsets1.push_back(10);  // 0
   character_offsets1.push_back(20);  // 1
@@ -374,7 +374,7 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
   inline_text2.role = ax::mojom::Role::kInlineTextBox;
   inline_text2.SetName("abc");
   inline_text2.relative_bounds.bounds = gfx::RectF(130, 100, 30, 20);
-  inline_text2.SetTextDirection(ax::mojom::TextDirection::kRtl);
+  inline_text2.SetTextDirection(ax::mojom::WritingDirection::kRtl);
   std::vector<int32_t> character_offsets2;
   character_offsets2.push_back(10);
   character_offsets2.push_back(20);
@@ -457,7 +457,7 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeScrolledWindow) {
   inline_text.role = ax::mojom::Role::kInlineTextBox;
   inline_text.SetName("ABC");
   inline_text.relative_bounds.bounds = gfx::RectF(100, 100, 16, 9);
-  inline_text.SetTextDirection(ax::mojom::TextDirection::kLtr);
+  inline_text.SetTextDirection(ax::mojom::WritingDirection::kLtr);
   std::vector<int32_t> character_offsets1;
   character_offsets1.push_back(6);   // 0
   character_offsets1.push_back(11);  // 1
@@ -536,7 +536,7 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeOnParentElement) {
   inline_text1.role = ax::mojom::Role::kInlineTextBox;
   inline_text1.SetName("AB");
   inline_text1.relative_bounds.bounds = gfx::RectF(100, 100, 40, 20);
-  inline_text1.SetTextDirection(ax::mojom::TextDirection::kLtr);
+  inline_text1.SetTextDirection(ax::mojom::WritingDirection::kLtr);
   std::vector<int32_t> character_offsets1;
   character_offsets1.push_back(20);  // 0
   character_offsets1.push_back(40);  // 1
@@ -548,7 +548,7 @@ TEST_F(BrowserAccessibilityManagerTest, BoundsForRangeOnParentElement) {
   inline_text2.role = ax::mojom::Role::kInlineTextBox;
   inline_text2.SetName("CD");
   inline_text2.relative_bounds.bounds = gfx::RectF(160, 100, 40, 20);
-  inline_text2.SetTextDirection(ax::mojom::TextDirection::kLtr);
+  inline_text2.SetTextDirection(ax::mojom::WritingDirection::kLtr);
   std::vector<int32_t> character_offsets2;
   character_offsets2.push_back(20);  // 0
   character_offsets2.push_back(40);  // 1

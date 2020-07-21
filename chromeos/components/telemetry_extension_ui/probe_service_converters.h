@@ -58,6 +58,10 @@ health::mojom::CpuCStateInfoPtr UncheckedConvertPtr(
 health::mojom::LogicalCpuInfoPtr UncheckedConvertPtr(
     cros_healthd::mojom::LogicalCpuInfoPtr input);
 
+health::mojom::LogicalCpuInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::LogicalCpuInfoPtr input,
+    uint64_t user_hz);
+
 health::mojom::PhysicalCpuInfoPtr UncheckedConvertPtr(
     cros_healthd::mojom::PhysicalCpuInfoPtr input);
 

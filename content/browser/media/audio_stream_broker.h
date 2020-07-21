@@ -13,10 +13,10 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
-#include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/blink/public/mojom/media/renderer_audio_input_stream_factory.mojom.h"
 
 namespace audio {
 namespace mojom {
@@ -106,7 +106,7 @@ class CONTENT_EXPORT AudioStreamBrokerFactory {
       media::UserInputMonitorBase* user_input_monitor,
       bool enable_agc,
       AudioStreamBroker::DeleterCallback deleter,
-      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+      mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
           renderer_factory_client) = 0;
 
   virtual std::unique_ptr<AudioStreamBroker> CreateAudioLoopbackStreamBroker(
@@ -117,7 +117,7 @@ class CONTENT_EXPORT AudioStreamBrokerFactory {
       uint32_t shared_memory_count,
       bool mute_source,
       AudioStreamBroker::DeleterCallback deleter,
-      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+      mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
           renderer_factory_client) = 0;
 
   virtual std::unique_ptr<AudioStreamBroker> CreateAudioOutputStreamBroker(

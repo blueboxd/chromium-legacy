@@ -3616,7 +3616,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                             0xDEADBEEFU);
   text_data.AddIntAttribute(ax::mojom::IntAttribute::kColor, 0xDEADC0DEU);
   text_data.AddStringAttribute(ax::mojom::StringAttribute::kLanguage, "fr-CA");
-  text_data.SetTextDirection(ax::mojom::TextDirection::kRtl);
+  text_data.SetTextDirection(ax::mojom::WritingDirection::kRtl);
   text_data.AddTextStyle(ax::mojom::TextStyle::kItalic);
   text_data.SetTextPosition(ax::mojom::TextPosition::kSubscript);
   text_data.SetRestriction(ax::mojom::Restriction::kReadOnly);
@@ -3637,7 +3637,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   heading_data.AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
                                0xDEADBEEFU);
   heading_data.AddIntAttribute(ax::mojom::IntAttribute::kColor, 0xDEADC0DEU);
-  heading_data.SetTextDirection(ax::mojom::TextDirection::kRtl);
+  heading_data.SetTextDirection(ax::mojom::WritingDirection::kRtl);
   heading_data.SetTextPosition(ax::mojom::TextPosition::kSuperscript);
   heading_data.AddState(ax::mojom::State::kEditable);
   heading_data.child_ids = {4};
@@ -3650,7 +3650,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                                     0xDEADBEEFU);
   heading_text_data.AddIntAttribute(ax::mojom::IntAttribute::kColor,
                                     0xDEADC0DEU);
-  heading_text_data.SetTextDirection(ax::mojom::TextDirection::kRtl);
+  heading_text_data.SetTextDirection(ax::mojom::WritingDirection::kRtl);
   heading_text_data.SetTextPosition(ax::mojom::TextPosition::kSuperscript);
   heading_text_data.AddState(ax::mojom::State::kEditable);
   heading_text_data.SetTextAlign(ax::mojom::TextAlign::kJustify);
@@ -3669,7 +3669,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   mark_data.AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
                             0xDEADBEEFU);
   mark_data.AddIntAttribute(ax::mojom::IntAttribute::kColor, 0xDEADC0DEU);
-  mark_data.SetTextDirection(ax::mojom::TextDirection::kRtl);
+  mark_data.SetTextDirection(ax::mojom::WritingDirection::kRtl);
   mark_data.child_ids = {6};
 
   ui::AXNodeData mark_text_data;
@@ -3678,7 +3678,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   mark_text_data.AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
                                  0xDEADBEEFU);
   mark_text_data.AddIntAttribute(ax::mojom::IntAttribute::kColor, 0xDEADC0DEU);
-  mark_text_data.SetTextDirection(ax::mojom::TextDirection::kRtl);
+  mark_text_data.SetTextDirection(ax::mojom::WritingDirection::kRtl);
   mark_text_data.SetTextAlign(ax::mojom::TextAlign::kNone);
   mark_text_data.SetName("marked text");
 

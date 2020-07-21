@@ -118,9 +118,9 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
     if (!surface || final_msaa_count != surface_msaa_count_ ||
         surface_props != surface->props()) {
       surface = SkSurface::MakeFromBackendTexture(
-          context_state_->gr_context(), backend_texture_,
-          kTopLeft_GrSurfaceOrigin, final_msaa_count, GetSkColorType(),
-          color_space().ToSkColorSpace(), &surface_props);
+          context_state_->gr_context(), backend_texture_, surface_origin(),
+          final_msaa_count, GetSkColorType(), color_space().ToSkColorSpace(),
+          &surface_props);
       if (!surface) {
         LOG(ERROR) << "MakeFromBackendTexture() failed.";
         context_state_->EraseCachedSkSurface(this);

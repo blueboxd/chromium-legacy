@@ -145,6 +145,9 @@ class ExtensionAppsBase : public apps::PublisherBase,
                            int64_t display_id) override;
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission) override;
+  void Uninstall(const std::string& app_id,
+                 bool clear_site_data,
+                 bool report_abuse) override;
   void OpenNativeSettings(const std::string& app_id) override;
 
   // content_settings::Observer overrides.

@@ -8,10 +8,12 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
+#include "chrome/browser/serial/serial_chooser_histograms.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -43,7 +45,7 @@ SerialChooserController::SerialChooserController(
 
 SerialChooserController::~SerialChooserController() {
   if (callback_)
-    std::move(callback_).Run(nullptr);
+    RunCallback(/*port=*/nullptr);
 }
 
 base::string16 SerialChooserController::GetNoOptionsText() const {
@@ -93,13 +95,13 @@ void SerialChooserController::Select(const std::vector<size_t>& indices) {
   DCHECK_LT(index, ports_.size());
 
   if (!chooser_context_) {
-    std::move(callback_).Run(nullptr);
+    RunCallback(/*port=*/nullptr);
     return;
   }
 
   chooser_context_->GrantPortPermission(requesting_origin_, embedding_origin_,
                                         *ports_[index]);
-  std::move(callback_).Run(ports_[index]->Clone());
+  RunCallback(ports_[index]->Clone());
 }
 
 void SerialChooserController::Cancel() {}
@@ -163,4 +165,19 @@ bool SerialChooserController::FilterMatchesAny(
   }
 
   return false;
+}
+
+void SerialChooserController::RunCallback(
+    device::mojom::SerialPortInfoPtr port) {
+  auto outcome = ports_.empty() ? SerialChooserOutcome::kCancelledNoDevices
+                                : SerialChooserOutcome::kCancelled;
+
+  if (port) {
+    outcome = SerialChooserContext::CanStorePersistentEntry(*port)
+                  ? SerialChooserOutcome::kPermissionGranted
+                  : SerialChooserOutcome::kEphemeralPermissionGranted;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Permissions.Serial.ChooserClosed", outcome);
+  std::move(callback_).Run(std::move(port));
 }

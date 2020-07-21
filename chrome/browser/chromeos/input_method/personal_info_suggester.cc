@@ -22,6 +22,8 @@
 #include "components/autofill/core/browser/ui/label_formatter_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 
@@ -138,15 +140,16 @@ PersonalInfoSuggester::PersonalInfoSuggester(
               ? personal_data_manager
               : autofill::PersonalDataManagerFactory::GetForProfile(profile)),
       tts_handler_(tts_handler ? std::move(tts_handler)
-                               : std::make_unique<TtsHandler>(profile)) {
+                               : std::make_unique<TtsHandler>(profile)),
+      highlighted_index_(kNoneHighlighted) {
   suggestion_button_.id = ui::ime::ButtonId::kSuggestion;
   suggestion_button_.window_type =
       ui::ime::AssistiveWindowType::kPersonalInfoSuggestion;
   suggestion_button_.index = 0;
-  link_button_.id = ui::ime::ButtonId::kSmartInputsSettingLink;
-  link_button_.window_type =
+  settings_button_.id = ui::ime::ButtonId::kSmartInputsSettingLink;
+  settings_button_.announce_string = l10n_util::GetStringUTF8(IDS_LEARN_MORE);
+  settings_button_.window_type =
       ui::ime::AssistiveWindowType::kPersonalInfoSuggestion;
-  highlighted_index_ = kNoneHighlighted;
 }
 
 PersonalInfoSuggester::~PersonalInfoSuggester() {}
@@ -281,8 +284,7 @@ base::string16 PersonalInfoSuggester::GetSuggestion(
 
 void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
                                            const size_t confirmed_length) {
-  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
-  if (keyboard_client->is_keyboard_enabled()) {
+  if (ChromeKeyboardControllerClient::Get()->is_keyboard_enabled()) {
     const std::vector<std::string> args{base::UTF16ToUTF8(text)};
     suggestion_handler_->OnSuggestionsChanged(args);
     return;
@@ -313,7 +315,7 @@ void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
   buttons_.clear();
   buttons_.push_back(suggestion_button_);
   if (details.show_setting_link)
-    buttons_.push_back(link_button_);
+    buttons_.push_back(settings_button_);
 
   if (suggestion_shown_) {
     first_shown_ = false;

@@ -11,12 +11,12 @@
 #include "base/check_op.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/renderer/media/audio/mojo_audio_input_ipc.h"
 #include "content/renderer/render_frame_impl.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/media/renderer_audio_input_stream_factory.mojom.h"
 
 namespace content {
 
@@ -25,7 +25,8 @@ namespace {
 void CreateMojoAudioInputStreamOnMainThread(
     const base::UnguessableToken& frame_token,
     const media::AudioSourceParameters& source_params,
-    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
+    mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
+        client,
     const media::AudioParameters& params,
     bool automatic_gain_control,
     uint32_t total_segments) {
@@ -42,7 +43,8 @@ void CreateMojoAudioInputStream(
     scoped_refptr<base::SequencedTaskRunner> main_task_runner,
     const base::UnguessableToken& frame_token,
     const media::AudioSourceParameters& source_params,
-    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
+    mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
+        client,
     const media::AudioParameters& params,
     bool automatic_gain_control,
     uint32_t total_segments) {

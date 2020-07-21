@@ -44,6 +44,7 @@
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/internal/parse_certificate.h"
+#include "net/cert/sct_auditing_delegate.h"
 #include "net/cert/x509_certificate_net_log_param.h"
 #include "net/cert/x509_util.h"
 #include "net/der/parse_values.h"
@@ -1665,6 +1666,13 @@ int SSLClientSocketImpl::VerifyCT() {
     }
   } else {
     ct_verify_result_.policy_compliance_required = false;
+  }
+
+  if (context_->sct_auditing_delegate() &&
+      context_->sct_auditing_delegate()->IsSCTAuditingEnabled()) {
+    context_->sct_auditing_delegate()->MaybeEnqueueReport(
+        host_and_port_, server_cert_verify_result_.verified_cert.get(),
+        ct_verify_result_.scts);
   }
 
   switch (ct_requirement_status) {

@@ -158,11 +158,11 @@ gfx::RectF TestAXNodeHelper::GetInlineTextRect(const int start_offset,
   gfx::RectF location = GetLocation();
   gfx::RectF bounds;
 
-  switch (static_cast<ax::mojom::TextDirection>(
+  switch (static_cast<ax::mojom::WritingDirection>(
       GetData().GetIntAttribute(ax::mojom::IntAttribute::kTextDirection))) {
     // Currently only kNone and kLtr are supported text direction.
-    case ax::mojom::TextDirection::kNone:
-    case ax::mojom::TextDirection::kLtr: {
+    case ax::mojom::WritingDirection::kNone:
+    case ax::mojom::WritingDirection::kLtr: {
       int start_pixel_offset =
           start_offset > 0 ? character_offsets[start_offset - 1] : location.x();
       int end_pixel_offset =

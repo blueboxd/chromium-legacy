@@ -48,6 +48,7 @@ class NetworkQualityEstimator;
 class ProxyDelegate;
 class ProxyResolutionService;
 class QuicContext;
+class SCTAuditingDelegate;
 class SSLConfigService;
 class URLRequest;
 class URLRequestJobFactory;
@@ -207,6 +208,13 @@ class NET_EXPORT URLRequestContext
     ct_policy_enforcer_ = enforcer;
   }
 
+  SCTAuditingDelegate* sct_auditing_delegate() const {
+    return sct_auditing_delegate_;
+  }
+  void set_sct_auditing_delegate(SCTAuditingDelegate* delegate) {
+    sct_auditing_delegate_ = delegate;
+  }
+
   const URLRequestJobFactory* job_factory() const { return job_factory_; }
   void set_job_factory(const URLRequestJobFactory* job_factory) {
     job_factory_ = job_factory;
@@ -331,6 +339,7 @@ class NET_EXPORT URLRequestContext
   TransportSecurityState* transport_security_state_;
   CTVerifier* cert_transparency_verifier_;
   CTPolicyEnforcer* ct_policy_enforcer_;
+  SCTAuditingDelegate* sct_auditing_delegate_;
   HttpTransactionFactory* http_transaction_factory_;
   const URLRequestJobFactory* job_factory_;
   URLRequestThrottlerManager* throttler_manager_;

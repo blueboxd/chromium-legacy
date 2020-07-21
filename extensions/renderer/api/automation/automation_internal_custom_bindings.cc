@@ -948,21 +948,21 @@ void AutomationInternalCustomBindings::AddRoutes() {
           int end_offset = end > 0 ? character_offsets[end - 1] : 0;
 
           switch (node->data().GetTextDirection()) {
-            case ax::mojom::TextDirection::kLtr:
+            case ax::mojom::WritingDirection::kLtr:
             default:
               local_bounds.set_x(local_bounds.x() + start_offset);
               local_bounds.set_width(end_offset - start_offset);
               break;
-            case ax::mojom::TextDirection::kRtl:
+            case ax::mojom::WritingDirection::kRtl:
               local_bounds.set_x(local_bounds.x() + local_bounds.width() -
                                  end_offset);
               local_bounds.set_width(end_offset - start_offset);
               break;
-            case ax::mojom::TextDirection::kTtb:
+            case ax::mojom::WritingDirection::kTtb:
               local_bounds.set_y(local_bounds.y() + start_offset);
               local_bounds.set_height(end_offset - start_offset);
               break;
-            case ax::mojom::TextDirection::kBtt:
+            case ax::mojom::WritingDirection::kBtt:
               local_bounds.set_y(local_bounds.y() + local_bounds.height() -
                                  end_offset);
               local_bounds.set_height(end_offset - start_offset);

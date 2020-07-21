@@ -79,10 +79,15 @@ ResponseStatus InvertedIndexSearch::Find(const base::string16& query,
   DCHECK(results);
   results->clear();
   if (query.empty()) {
-    return ResponseStatus::kEmptyQuery;
+    const ResponseStatus status = ResponseStatus::kEmptyQuery;
+    MaybeLogSearchResultsStats(status, 0u);
+    return status;
   }
-  if (GetSize() == 0u)
-    return ResponseStatus::kEmptyIndex;
+  if (GetSize() == 0u) {
+    const ResponseStatus status = ResponseStatus::kEmptyIndex;
+    MaybeLogSearchResultsStats(status, 0u);
+    return status;
+  }
 
   // TODO(jiameng): actual input query may not be the same as default locale.
   // Need another way to determine actual language of the query.
@@ -105,7 +110,10 @@ ResponseStatus InvertedIndexSearch::Find(const base::string16& query,
 
   if (results->size() > max_results && max_results > 0u)
     results->resize(max_results);
-  return ResponseStatus::kSuccess;
+
+  const ResponseStatus status = ResponseStatus::kSuccess;
+  MaybeLogSearchResultsStats(status, results->size());
+  return status;
 }
 
 std::vector<std::pair<std::string, uint32_t>>

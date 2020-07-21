@@ -29,6 +29,8 @@ ProxyResolvingClientSocketFactory::ProxyResolvingClientSocketFactory(
   session_context.cert_transparency_verifier =
       request_context->cert_transparency_verifier();
   session_context.ct_policy_enforcer = request_context->ct_policy_enforcer();
+  session_context.sct_auditing_delegate =
+      request_context->sct_auditing_delegate();
   session_context.proxy_resolution_service =
       request_context->proxy_resolution_service();
   session_context.proxy_delegate = request_context->proxy_delegate();

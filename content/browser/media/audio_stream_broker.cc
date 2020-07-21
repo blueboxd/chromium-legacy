@@ -33,7 +33,7 @@ class AudioStreamBrokerFactoryImpl final : public AudioStreamBrokerFactory {
       media::UserInputMonitorBase* user_input_monitor,
       bool enable_agc,
       AudioStreamBroker::DeleterCallback deleter,
-      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+      mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
           renderer_factory_client) final {
     return std::make_unique<AudioInputStreamBroker>(
         render_process_id, render_frame_id, device_id, params,
@@ -49,7 +49,7 @@ class AudioStreamBrokerFactoryImpl final : public AudioStreamBrokerFactory {
       uint32_t shared_memory_count,
       bool mute_source,
       AudioStreamBroker::DeleterCallback deleter,
-      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+      mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
           renderer_factory_client) final {
     return std::make_unique<AudioLoopbackStreamBroker>(
         render_process_id, render_frame_id, source, params, shared_memory_count,

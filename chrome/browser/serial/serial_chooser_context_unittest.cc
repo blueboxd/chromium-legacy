@@ -6,8 +6,10 @@
 
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
+#include "chrome/browser/serial/serial_chooser_histograms.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/test/chooser_context_base_mock_permission_observer.h"
@@ -80,6 +82,8 @@ class SerialChooserContextTest : public testing::Test {
 }  // namespace
 
 TEST_F(SerialChooserContextTest, GrantAndRevokeEphemeralPermission) {
+  base::HistogramTester histogram_tester;
+
   const auto origin = url::Origin::Create(GURL("https://google.com"));
 
   auto port = device::mojom::SerialPortInfo::New();
@@ -121,9 +125,15 @@ TEST_F(SerialChooserContextTest, GrantAndRevokeEphemeralPermission) {
   EXPECT_EQ(0u, origin_objects.size());
   objects = context()->GetAllGrantedObjects();
   EXPECT_EQ(0u, objects.size());
+
+  histogram_tester.ExpectUniqueSample("Permissions.Serial.Revoked",
+                                      SerialPermissionRevoked::kEphemeralByUser,
+                                      1);
 }
 
 TEST_F(SerialChooserContextTest, GrantAndRevokePersistentPermission) {
+  base::HistogramTester histogram_tester;
+
   const auto origin = url::Origin::Create(GURL("https://google.com"));
 
   auto port = device::mojom::SerialPortInfo::New();
@@ -167,9 +177,14 @@ TEST_F(SerialChooserContextTest, GrantAndRevokePersistentPermission) {
   EXPECT_EQ(0u, origin_objects.size());
   objects = context()->GetAllGrantedObjects();
   EXPECT_EQ(0u, objects.size());
+
+  histogram_tester.ExpectUniqueSample("Permissions.Serial.Revoked",
+                                      SerialPermissionRevoked::kPersistent, 1);
 }
 
 TEST_F(SerialChooserContextTest, EphemeralPermissionRevokedOnDisconnect) {
+  base::HistogramTester histogram_tester;
+
   const auto origin = url::Origin::Create(GURL("https://google.com"));
 
   auto port = device::mojom::SerialPortInfo::New();
@@ -202,6 +217,10 @@ TEST_F(SerialChooserContextTest, EphemeralPermissionRevokedOnDisconnect) {
   EXPECT_EQ(0u, origin_objects.size());
   auto objects = context()->GetAllGrantedObjects();
   EXPECT_EQ(0u, objects.size());
+
+  histogram_tester.ExpectUniqueSample(
+      "Permissions.Serial.Revoked",
+      SerialPermissionRevoked::kEphemeralByDisconnect, 1);
 }
 
 TEST_F(SerialChooserContextTest, PersistenceRequiresDisplayName) {

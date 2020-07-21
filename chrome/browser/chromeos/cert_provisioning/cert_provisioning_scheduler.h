@@ -56,13 +56,34 @@ struct FailedWorkerInfo {
   base::Time last_update_time;
 };
 
+// Interface for the scheduler for client certificate provisioning using device
+// management.
+class CertProvisioningScheduler {
+ public:
+  virtual ~CertProvisioningScheduler() = default;
+
+  // Intended to be called when a user presses a button in certificate manager
+  // UI. Retries provisioning of a specific certificate.
+  virtual void UpdateOneCert(const CertProfileId& cert_profile_id) = 0;
+  virtual void UpdateAllCerts() = 0;
+
+  // Returns all certificate provisioning workers that are currently active.
+  virtual const WorkerMap& GetWorkers() const = 0;
+
+  // Returns a |FailedWorkerInfo| for certificate provisioning processes that
+  // failed and have not been restarted (yet).
+  virtual const base::flat_map<CertProfileId, FailedWorkerInfo>&
+  GetFailedCertProfileIds() const = 0;
+};
+
 // This class is a part of certificate provisioning feature. It tracks updates
 // of |RequiredClientCertificateForUser|, |RequiredClientCertificateForDevice|
 // policies and creates one CertProvisioningWorker for every policy entry.
 // Should work on the UI thread because it interacts with PlatformKeysService
 // and some methods are called from the UI to populate certificate manager
 // settings page.
-class CertProvisioningScheduler : public NetworkStateHandlerObserver {
+class CertProvisioningSchedulerImpl : public CertProvisioningScheduler,
+                                      public NetworkStateHandlerObserver {
  public:
   static std::unique_ptr<CertProvisioningScheduler>
   CreateUserCertProvisioningScheduler(Profile* profile);
@@ -71,7 +92,7 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
       policy::AffiliatedInvalidationServiceProvider*
           invalidation_service_provider);
 
-  CertProvisioningScheduler(
+  CertProvisioningSchedulerImpl(
       CertScope cert_scope,
       Profile* profile,
       PrefService* pref_service,
@@ -79,22 +100,21 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
       platform_keys::PlatformKeysService* platform_keys_service,
       NetworkStateHandler* network_state_handler,
       std::unique_ptr<CertProvisioningInvalidatorFactory> invalidator_factory);
-  ~CertProvisioningScheduler() override;
+  ~CertProvisioningSchedulerImpl() override;
 
-  CertProvisioningScheduler(const CertProvisioningScheduler&) = delete;
-  CertProvisioningScheduler& operator=(const CertProvisioningScheduler&) =
-      delete;
-  // Intended to be called when a user presses a button in certificate manager
-  // UI. Retries provisioning of a specific certificate.
-  void UpdateOneCert(const CertProfileId& cert_profile_id);
-  void UpdateAllCerts();
+  CertProvisioningSchedulerImpl(const CertProvisioningSchedulerImpl&) = delete;
+  CertProvisioningSchedulerImpl& operator=(
+      const CertProvisioningSchedulerImpl&) = delete;
+
+  // CertProvisioningScheduler:
+  void UpdateOneCert(const CertProfileId& cert_profile_id) override;
+  void UpdateAllCerts() override;
+  const WorkerMap& GetWorkers() const override;
+  const base::flat_map<CertProfileId, FailedWorkerInfo>&
+  GetFailedCertProfileIds() const override;
+
   void OnProfileFinished(const CertProfile& profile,
                          CertProvisioningWorkerState state);
-
-  const WorkerMap& GetWorkers() const;
-
-  const base::flat_map<CertProfileId, FailedWorkerInfo>&
-  GetFailedCertProfileIds() const;
 
  private:
   void ScheduleInitialUpdate();
@@ -177,7 +197,7 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
   CertDeleter cert_deleter_;
   std::unique_ptr<CertProvisioningInvalidatorFactory> invalidator_factory_;
 
-  base::WeakPtrFactory<CertProvisioningScheduler> weak_factory_{this};
+  base::WeakPtrFactory<CertProvisioningSchedulerImpl> weak_factory_{this};
 };
 
 }  // namespace cert_provisioning

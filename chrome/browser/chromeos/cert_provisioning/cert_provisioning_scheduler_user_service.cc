@@ -18,8 +18,9 @@ namespace cert_provisioning {
 
 CertProvisioningSchedulerUserService::CertProvisioningSchedulerUserService(
     Profile* profile)
-    : scheduler_(CertProvisioningScheduler::CreateUserCertProvisioningScheduler(
-          profile)) {}
+    : scheduler_(
+          CertProvisioningSchedulerImpl::CreateUserCertProvisioningScheduler(
+              profile)) {}
 
 CertProvisioningSchedulerUserService::~CertProvisioningSchedulerUserService() =
     default;

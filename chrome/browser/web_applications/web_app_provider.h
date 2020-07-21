@@ -94,6 +94,10 @@ class WebAppProvider : public WebAppProviderBase {
     return on_registry_ready_;
   }
 
+  ExternalWebAppManager& external_web_app_manager_for_testing() {
+    return *external_web_app_manager_;
+  }
+
  protected:
   virtual void StartImpl();
   void OnDatabaseMigrationCompleted(bool success);

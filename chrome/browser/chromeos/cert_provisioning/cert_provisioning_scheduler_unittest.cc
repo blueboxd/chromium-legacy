@@ -135,13 +135,13 @@ TEST_F(CertProvisioningSchedulerTest, Success) {
   MockCertProvisioningInvalidatorFactory* mock_invalidation_factory =
       mock_invalidation_factory_obj.get();
 
-  CertProvisioningScheduler scheduler(
+  CertProvisioningSchedulerImpl scheduler(
       kCertScope, GetProfile(), &pref_service_, &cloud_policy_client_,
       &platform_keys_service_,
       network_state_test_helper_.network_state_handler(),
       std::move(mock_invalidation_factory_obj));
 
-  // From CertProvisioningScheduler::CleanVaKeysIfIdle.
+  // From CertProvisioningSchedulerImpl::CleanVaKeysIfIdle.
   EXPECT_CALL(fake_cryptohome_client_,
               OnTpmAttestationDeleteKeysByPrefix(
                   attestation::AttestationKeyType::KEY_USER, kKeyNamePrefix))
@@ -196,13 +196,13 @@ TEST_F(CertProvisioningSchedulerTest, Success) {
 TEST_F(CertProvisioningSchedulerTest, WorkerFailed) {
   const CertScope kCertScope = CertScope::kDevice;
 
-  CertProvisioningScheduler scheduler(
+  CertProvisioningSchedulerImpl scheduler(
       kCertScope, GetProfile(), &pref_service_, &cloud_policy_client_,
       &platform_keys_service_,
       network_state_test_helper_.network_state_handler(),
       MakeFakeInvalidationFactory());
 
-  // From CertProvisioningScheduler::CleanVaKeysIfIdle.
+  // From CertProvisioningSchedulerImpl::CleanVaKeysIfIdle.
   EXPECT_CALL(fake_cryptohome_client_,
               OnTpmAttestationDeleteKeysByPrefix(
                   attestation::AttestationKeyType::KEY_DEVICE, kKeyNamePrefix))
@@ -264,13 +264,13 @@ TEST_F(CertProvisioningSchedulerTest, InitialAndDailyUpdates) {
            "key_algorithm":"rsa"}])");
   pref_service_.Set(GetPrefNameForCertProfiles(kCertScope), config);
 
-  CertProvisioningScheduler scheduler(
+  CertProvisioningSchedulerImpl scheduler(
       kCertScope, GetProfile(), &pref_service_, &cloud_policy_client_,
       &platform_keys_service_,
       network_state_test_helper_.network_state_handler(),
       MakeFakeInvalidationFactory());
 
-  // From CertProvisioningScheduler::CleanVaKeysIfIdle.
+  // From CertProvisioningSchedulerImpl::CleanVaKeysIfIdle.
   EXPECT_CALL(fake_cryptohome_client_,
               OnTpmAttestationDeleteKeysByPrefix(
                   attestation::AttestationKeyType::KEY_USER, kKeyNamePrefix))
@@ -316,13 +316,13 @@ TEST_F(CertProvisioningSchedulerTest, InitialAndDailyUpdates) {
 TEST_F(CertProvisioningSchedulerTest, MultipleWorkers) {
   const CertScope kCertScope = CertScope::kDevice;
 
-  CertProvisioningScheduler scheduler(
+  CertProvisioningSchedulerImpl scheduler(
       kCertScope, GetProfile(), &pref_service_, &cloud_policy_client_,
       &platform_keys_service_,
       network_state_test_helper_.network_state_handler(),
       MakeFakeInvalidationFactory());
 
-  // From CertProvisioningScheduler::CleanVaKeysIfIdle.
+  // From CertProvisioningSchedulerImpl::CleanVaKeysIfIdle.
   EXPECT_CALL(fake_cryptohome_client_,
               OnTpmAttestationDeleteKeysByPrefix(
                   attestation::AttestationKeyType::KEY_DEVICE, kKeyNamePrefix))
@@ -420,7 +420,7 @@ TEST_F(CertProvisioningSchedulerTest, RemoveCertWithoutPolicy) {
 
   certificate_helper_->AddCert(kCertScope, kCertProfileId);
 
-  CertProvisioningScheduler scheduler(
+  CertProvisioningSchedulerImpl scheduler(
       kCertScope, GetProfile(), &pref_service_, &cloud_policy_client_,
       &platform_keys_service_,
       network_state_test_helper_.network_state_handler(),
@@ -474,7 +474,7 @@ TEST_F(CertProvisioningSchedulerTest, DeserializeWorkers) {
   worker->SetExpectations(/*do_step_times=*/AtLeast(1),
                           /*is_waiting=*/true, cert_profile);
 
-  CertProvisioningScheduler scheduler(
+  CertProvisioningSchedulerImpl scheduler(
       kCertScope, GetProfile(), &pref_service_, &cloud_policy_client_,
       &platform_keys_service_,
       network_state_test_helper_.network_state_handler(),
@@ -491,13 +491,13 @@ TEST_F(CertProvisioningSchedulerTest, InconsistentDataErrorHandling) {
   const char kCertProfileVersion1[] = "cert_profile_version_1";
   const char kCertProfileVersion2[] = "cert_profile_version_2";
 
-  CertProvisioningScheduler scheduler(
+  CertProvisioningSchedulerImpl scheduler(
       kCertScope, GetProfile(), &pref_service_, &cloud_policy_client_,
       &platform_keys_service_,
       network_state_test_helper_.network_state_handler(),
       MakeFakeInvalidationFactory());
 
-  // From CertProvisioningScheduler::CleanVaKeysIfIdle.
+  // From CertProvisioningSchedulerImpl::CleanVaKeysIfIdle.
   EXPECT_CALL(fake_cryptohome_client_,
               OnTpmAttestationDeleteKeysByPrefix(
                   attestation::AttestationKeyType::KEY_DEVICE, kKeyNamePrefix))
@@ -614,13 +614,13 @@ TEST_F(CertProvisioningSchedulerTest, RetryAfterNoInternetConnection) {
            "key_algorithm":"rsa"}])");
   pref_service_.Set(GetPrefNameForCertProfiles(kCertScope), config);
 
-  CertProvisioningScheduler scheduler(
+  CertProvisioningSchedulerImpl scheduler(
       kCertScope, GetProfile(), &pref_service_, &cloud_policy_client_,
       &platform_keys_service_,
       network_state_test_helper_.network_state_handler(),
       MakeFakeInvalidationFactory());
 
-  // From CertProvisioningScheduler::CleanVaKeysIfIdle.
+  // From CertProvisioningSchedulerImpl::CleanVaKeysIfIdle.
   EXPECT_CALL(fake_cryptohome_client_,
               OnTpmAttestationDeleteKeysByPrefix(
                   attestation::AttestationKeyType::KEY_DEVICE, kKeyNamePrefix))
@@ -653,13 +653,13 @@ TEST_F(CertProvisioningSchedulerTest, DeleteWorkerWithoutPolicy) {
            "policy_version":"cert_profile_version_1",
            "key_algorithm":"rsa"}])");
 
-  CertProvisioningScheduler scheduler(
+  CertProvisioningSchedulerImpl scheduler(
       kCertScope, GetProfile(), &pref_service_, &cloud_policy_client_,
       &platform_keys_service_,
       network_state_test_helper_.network_state_handler(),
       MakeFakeInvalidationFactory());
 
-  // From CertProvisioningScheduler::CleanVaKeysIfIdle.
+  // From CertProvisioningSchedulerImpl::CleanVaKeysIfIdle.
   EXPECT_CALL(fake_cryptohome_client_,
               OnTpmAttestationDeleteKeysByPrefix(
                   attestation::AttestationKeyType::KEY_DEVICE, kKeyNamePrefix))
@@ -696,13 +696,13 @@ TEST_F(CertProvisioningSchedulerTest, DeleteVaKeysOnIdle) {
   const CertScope kCertScope = CertScope::kDevice;
 
   {
-    CertProvisioningScheduler scheduler(
+    CertProvisioningSchedulerImpl scheduler(
         kCertScope, GetProfile(), &pref_service_, &cloud_policy_client_,
         &platform_keys_service_,
         network_state_test_helper_.network_state_handler(),
         MakeFakeInvalidationFactory());
 
-    // From CertProvisioningScheduler::CleanVaKeysIfIdle.
+    // From CertProvisioningSchedulerImpl::CleanVaKeysIfIdle.
     EXPECT_CALL(
         fake_cryptohome_client_,
         OnTpmAttestationDeleteKeysByPrefix(
@@ -742,7 +742,7 @@ TEST_F(CertProvisioningSchedulerTest, DeleteVaKeysOnIdle) {
     worker->SetExpectations(/*do_step_times=*/Exactly(0),
                             /*is_waiting=*/true, cert_profile);
 
-    CertProvisioningScheduler scheduler(
+    CertProvisioningSchedulerImpl scheduler(
         kCertScope, GetProfile(), &pref_service_, &cloud_policy_client_,
         &platform_keys_service_,
         network_state_test_helper_.network_state_handler(),
@@ -758,7 +758,7 @@ TEST_F(CertProvisioningSchedulerTest, DeleteVaKeysOnIdle) {
 TEST_F(CertProvisioningSchedulerTest, UpdateOneCert) {
   const CertScope kCertScope = CertScope::kUser;
 
-  CertProvisioningScheduler scheduler(
+  CertProvisioningSchedulerImpl scheduler(
       kCertScope, GetProfile(), &pref_service_, &cloud_policy_client_,
       &platform_keys_service_,
       network_state_test_helper_.network_state_handler(),
@@ -767,7 +767,7 @@ TEST_F(CertProvisioningSchedulerTest, UpdateOneCert) {
   CertProfile cert_profile(kCertProfileId, kCertProfileVersion,
                            /*is_va_enabled=*/true, kCertProfileRenewalPeriod);
 
-  // From CertProvisioningScheduler::CleanVaKeysIfIdle.
+  // From CertProvisioningSchedulerImpl::CleanVaKeysIfIdle.
   EXPECT_CALL(fake_cryptohome_client_, OnTpmAttestationDeleteKeysByPrefix);
   FastForwardBy(TimeDelta::FromSeconds(1));
 
@@ -868,7 +868,7 @@ TEST_F(CertProvisioningSchedulerTest, CertRenewal) {
            "renewal_period_seconds": 86400}])");
   pref_service_.Set(GetPrefNameForCertProfiles(kCertScope), config);
 
-  CertProvisioningScheduler scheduler(
+  CertProvisioningSchedulerImpl scheduler(
       kCertScope, GetProfile(), &pref_service_, &cloud_policy_client_,
       &platform_keys_service_,
       network_state_test_helper_.network_state_handler(),

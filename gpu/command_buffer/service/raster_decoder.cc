@@ -264,15 +264,8 @@ class SharedImageProviderImpl final : public cc::SharedImageProvider {
       DCHECK(result);
     }
 
-    // TODO(http://crbug.com/1034086): We should initialize alpha_type and
-    // origin using metadata stored with the shared image.
-    auto sk_image = SkImage::MakeFromTexture(
-        shared_context_state_->gr_context(),
-        scoped_read_access->promise_image_texture()->backendTexture(),
-        kTopLeft_GrSurfaceOrigin,
-        viz::ResourceFormatToClosestSkColorType(true,
-                                                shared_image_skia->format()),
-        kPremul_SkAlphaType, shared_image_skia->color_space().ToSkColorSpace());
+    auto sk_image =
+        scoped_read_access->CreateSkImage(shared_context_state_->gr_context());
     if (!sk_image) {
       ERRORSTATE_SET_GL_ERROR(error_state_, GL_INVALID_OPERATION,
                               "SharedImageProviderImpl::OpenSharedImageForRead",
@@ -2308,15 +2301,16 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALSkia(
     auto color_type = viz::ResourceFormatToClosestSkColorType(
         true /* gpu_compositing */, source_shared_image->format());
 
-    // TODO(http://crbug.com/1034086): We should initialize alpha_type and
-    // origin using metadata stored with the shared image.
-    SkAlphaType alpha_type = kPremul_SkAlphaType;
+    // TODO(nazabris): We should be able to pipe this information through from
+    // the client side when creating the shared image. Make that change in a
+    // follow up CL.
+    SkAlphaType alpha_type = source_shared_image->alpha_type();
     if (unpack_premultiply_alpha)
       alpha_type = kUnpremul_SkAlphaType;
     auto source_image = SkImage::MakeFromTexture(
         shared_context_state_->gr_context(),
         source_scoped_access->promise_image_texture()->backendTexture(),
-        kTopLeft_GrSurfaceOrigin, color_type, alpha_type,
+        source_shared_image->surface_origin(), color_type, alpha_type,
         nullptr /* colorSpace */);
 
     auto* canvas = dest_scoped_access->surface()->getCanvas();
@@ -2543,18 +2537,13 @@ void RasterDecoderImpl::DoReadbackImagePixelsINTERNAL(
     return;
   }
 
-  auto src_color_type = viz::ResourceFormatToClosestSkColorType(
-      true /* gpu_compositing */, source_shared_image->format());
-
-  // TODO(http://crbug.com/1034086): We should initialize alpha_type and
-  // origin using metadata stored with the shared image.
-  SkAlphaType src_alpha_type = kPremul_SkAlphaType;
-  auto src_color_space = source_shared_image->color_space().ToSkColorSpace();
-  auto sk_image = SkImage::MakeFromTexture(
-      shared_context_state_->gr_context(),
-      source_scoped_access->promise_image_texture()->backendTexture(),
-      kTopLeft_GrSurfaceOrigin, src_color_type, src_alpha_type,
-      src_color_space);
+  auto sk_image =
+      source_scoped_access->CreateSkImage(shared_context_state_->gr_context());
+  if (!sk_image) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadbackImagePixels",
+                       "Couldn't create SkImage for reading.");
+    return;
+  }
 
   void* shm_address = GetSharedMemoryAs<void*>(
       shm_id, shm_offset + pixels_offset, dst_info.computeByteSize(row_bytes));

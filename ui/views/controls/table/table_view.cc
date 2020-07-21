@@ -1234,7 +1234,7 @@ void TableView::UpdateVirtualAccessibilityChildren() {
       cell_data.AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnSpan,
                                 1);
       if (base::i18n::IsRTL())
-        cell_data.SetTextDirection(ax::mojom::TextDirection::kRtl);
+        cell_data.SetTextDirection(ax::mojom::WritingDirection::kRtl);
 
       auto sort_direction = ax::mojom::SortDirection::kUnsorted;
       if (column.sortable && primary_sorted_column_id.has_value() &&
@@ -1323,7 +1323,7 @@ void TableView::UpdateVirtualAccessibilityChildren() {
 
       cell_data.SetName(model_->GetText(model_index, column.id));
       if (base::i18n::IsRTL())
-        cell_data.SetTextDirection(ax::mojom::TextDirection::kRtl);
+        cell_data.SetTextDirection(ax::mojom::WritingDirection::kRtl);
 
       auto sort_direction = ax::mojom::SortDirection::kUnsorted;
       if (column.sortable && primary_sorted_column_id.has_value() &&

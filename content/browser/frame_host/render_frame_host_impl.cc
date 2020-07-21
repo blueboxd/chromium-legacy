@@ -7045,7 +7045,8 @@ void RenderFrameHostImpl::ResetFeaturePolicy() {
 }
 
 void RenderFrameHostImpl::CreateAudioInputStreamFactory(
-    mojo::PendingReceiver<mojom::RendererAudioInputStreamFactory> receiver) {
+    mojo::PendingReceiver<blink::mojom::RendererAudioInputStreamFactory>
+        receiver) {
   BrowserMainLoop* browser_main_loop = BrowserMainLoop::GetInstance();
   DCHECK(browser_main_loop);
   MediaStreamManager* msm = browser_main_loop->media_stream_manager();
@@ -7054,7 +7055,8 @@ void RenderFrameHostImpl::CreateAudioInputStreamFactory(
 }
 
 void RenderFrameHostImpl::CreateAudioOutputStreamFactory(
-    mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver) {
+    mojo::PendingReceiver<blink::mojom::RendererAudioOutputStreamFactory>
+        receiver) {
   media::AudioSystem* audio_system =
       BrowserMainLoop::GetInstance()->audio_system();
   MediaStreamManager* media_stream_manager =

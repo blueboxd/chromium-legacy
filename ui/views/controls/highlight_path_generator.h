@@ -50,15 +50,8 @@ class VIEWS_EXPORT HighlightPathGenerator {
   virtual base::Optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect);
   base::Optional<gfx::RRectF> GetRoundRect(const View* view);
 
-  void set_use_contents_bounds(bool use_contents_bounds) {
-    use_contents_bounds_ = use_contents_bounds;
-  }
-
  private:
   const gfx::Insets insets_;
-
-  // When set uses the view's content bounds instead of its local bounds.
-  bool use_contents_bounds_ = false;
 };
 
 // Sets a highlight path that is empty. This is used for ink drops that want to

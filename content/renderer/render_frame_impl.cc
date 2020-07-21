@@ -4862,7 +4862,7 @@ blink::WebString RenderFrameImpl::DoNotTrackValue() {
   return WebString();
 }
 
-mojom::RendererAudioInputStreamFactory*
+blink::mojom::RendererAudioInputStreamFactory*
 RenderFrameImpl::GetAudioInputStreamFactory() {
   if (!audio_input_stream_factory_)
     GetBrowserInterfaceBroker()->GetInterface(

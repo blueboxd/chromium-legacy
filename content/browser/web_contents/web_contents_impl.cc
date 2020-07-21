@@ -1163,6 +1163,11 @@ void WebContentsImpl::SendPageMessage(IPC::Message* msg) {
   frame_tree_.root()->render_manager()->SendPageMessage(msg, nullptr);
 }
 
+void WebContentsImpl::ExecutePageBroadcastMethod(
+    PageBroadcastMethodCallback callback) {
+  frame_tree_.root()->render_manager()->ExecutePageBroadcastMethod(callback);
+}
+
 RenderViewHostImpl* WebContentsImpl::GetRenderViewHost() {
   return GetRenderManager()->current_host();
 }
@@ -1800,8 +1805,12 @@ void WebContentsImpl::OnAudioStateChanged() {
   is_currently_audible_ = is_currently_audible;
   was_ever_audible_ = was_ever_audible_ || is_currently_audible_;
 
-  SendPageMessage(
-      new PageMsg_AudioStateChanged(MSG_ROUTING_NONE, is_currently_audible_));
+  ExecutePageBroadcastMethod(base::BindRepeating(
+      [](bool is_currently_audible, RenderViewHostImpl* rvh) {
+        if (auto& broadcast = rvh->GetAssociatedPageBroadcast())
+          broadcast->AudioStateChanged(is_currently_audible);
+      },
+      is_currently_audible_));
 
   // Notification for UI updates in response to the changed audio state.
   NotifyNavigationStateChanged(INVALIDATE_TYPE_AUDIO);

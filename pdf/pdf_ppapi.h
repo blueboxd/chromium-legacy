@@ -11,11 +11,9 @@
 
 namespace chrome_pdf {
 
-COMPONENT_EXPORT(PDF_PPAPI)
 int PPP_InitializeModule(PP_Module module_id,
                          PPB_GetInterface get_browser_interface);
-COMPONENT_EXPORT(PDF_PPAPI) void PPP_ShutdownModule();
-COMPONENT_EXPORT(PDF_PPAPI)
+void PPP_ShutdownModule();
 const void* PPP_GetInterface(const char* interface_name);
 
 }  // namespace chrome_pdf

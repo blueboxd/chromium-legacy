@@ -285,6 +285,9 @@ void PrefetchManager::OnPrefetchFinished(
 void PrefetchManager::TryToLaunchPrefetchJobs() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  if (queued_jobs_.empty() || inflight_jobs_count_ >= kMaxInflightJobs)
+    return;
+
   // TODO(falken): Is it ok to assume the default partition? Try to plumb the
   // partition here, e.g., from WebContentsObserver. And make a similar change
   // in PreconnectManager.

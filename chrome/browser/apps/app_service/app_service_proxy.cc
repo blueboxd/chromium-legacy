@@ -201,6 +201,8 @@ void AppServiceProxy::Initialize() {
       extension_web_apps_ = std::make_unique<ExtensionApps>(
           app_service_, profile_, apps::mojom::AppType::kWeb);
     }
+    extension_apps_ = std::make_unique<ExtensionApps>(
+        app_service_, profile_, apps::mojom::AppType::kExtension);
 #endif
 
     // Asynchronously add app icon source, so we don't do too much work in the

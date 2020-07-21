@@ -138,6 +138,8 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
       std::pair<int /* connection_request_id */, blink::MessagePortChannel>;
   Vector<PendingChannel> pending_channels_;
 
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_connect_event_;
+
   bool running_ = false;
   bool asked_to_terminate_ = false;
 

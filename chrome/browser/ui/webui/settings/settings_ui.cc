@@ -174,8 +174,8 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 #endif  // defined(USE_NSS_CERTS)
 #if defined(OS_CHROMEOS)
   AddSettingsPageUIHandler(
-      std::make_unique<
-          chromeos::cert_provisioning::CertificateProvisioningUiHandler>());
+      chromeos::cert_provisioning::CertificateProvisioningUiHandler::
+          CreateForProfile(profile));
 #endif
 
   AddSettingsPageUIHandler(std::make_unique<AccessibilityMainHandler>());

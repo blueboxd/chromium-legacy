@@ -121,7 +121,7 @@ class RenderFrameAudioOutputStreamFactoryTest
 };
 
 TEST_F(RenderFrameAudioOutputStreamFactoryTest, ConstructDestruct) {
-  mojo::Remote<mojom::RendererAudioOutputStreamFactory> factory_remote;
+  mojo::Remote<blink::mojom::RendererAudioOutputStreamFactory> factory_remote;
   RenderFrameAudioOutputStreamFactory factory(
       main_rfh(), audio_system_.get(), media_stream_manager_.get(),
       factory_remote.BindNewPipeAndPassReceiver());
@@ -129,7 +129,7 @@ TEST_F(RenderFrameAudioOutputStreamFactoryTest, ConstructDestruct) {
 
 TEST_F(RenderFrameAudioOutputStreamFactoryTest,
        RequestDeviceAuthorizationForDefaultDevice_StatusOk) {
-  mojo::Remote<mojom::RendererAudioOutputStreamFactory> factory_remote;
+  mojo::Remote<blink::mojom::RendererAudioOutputStreamFactory> factory_remote;
   RenderFrameAudioOutputStreamFactory factory(
       main_rfh(), audio_system_.get(), media_stream_manager_.get(),
       factory_remote.BindNewPipeAndPassReceiver());
@@ -151,7 +151,7 @@ TEST_F(RenderFrameAudioOutputStreamFactoryTest,
 TEST_F(
     RenderFrameAudioOutputStreamFactoryTest,
     RequestDeviceAuthorizationForDefaultDeviceAndDestroyProviderPtr_CleansUp) {
-  mojo::Remote<mojom::RendererAudioOutputStreamFactory> factory_remote;
+  mojo::Remote<blink::mojom::RendererAudioOutputStreamFactory> factory_remote;
   RenderFrameAudioOutputStreamFactory factory(
       main_rfh(), audio_system_.get(), media_stream_manager_.get(),
       factory_remote.BindNewPipeAndPassReceiver());
@@ -174,7 +174,7 @@ TEST_F(
 TEST_F(
     RenderFrameAudioOutputStreamFactoryTest,
     RequestDeviceAuthorizationForNondefaultDeviceWithoutAuthorization_Fails) {
-  mojo::Remote<mojom::RendererAudioOutputStreamFactory> factory_remote;
+  mojo::Remote<blink::mojom::RendererAudioOutputStreamFactory> factory_remote;
   RenderFrameAudioOutputStreamFactory factory(
       main_rfh(), audio_system_.get(), media_stream_manager_.get(),
       factory_remote.BindNewPipeAndPassReceiver());
@@ -195,7 +195,7 @@ TEST_F(
 
 TEST_F(RenderFrameAudioOutputStreamFactoryTest,
        CreateStream_CreatesStreamAndFreesProvider) {
-  mojo::Remote<mojom::RendererAudioOutputStreamFactory> factory_remote;
+  mojo::Remote<blink::mojom::RendererAudioOutputStreamFactory> factory_remote;
   RenderFrameAudioOutputStreamFactory factory(
       main_rfh(), audio_system_.get(), media_stream_manager_.get(),
       factory_remote.BindNewPipeAndPassReceiver());
@@ -227,7 +227,7 @@ TEST_F(RenderFrameAudioOutputStreamFactoryTest,
   MockAuthorizationCallback mock_callback;
 
   {
-    mojo::Remote<mojom::RendererAudioOutputStreamFactory> factory_remote;
+    mojo::Remote<blink::mojom::RendererAudioOutputStreamFactory> factory_remote;
     RenderFrameAudioOutputStreamFactory factory(
         main_rfh(), audio_system_.get(), media_stream_manager_.get(),
         factory_remote.BindNewPipeAndPassReceiver());

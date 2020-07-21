@@ -1609,6 +1609,13 @@ void QuicChromiumClientSession::OnOneRttKeysAvailable() {
 void QuicChromiumClientSession::OnNewEncryptionKeyAvailable(
     quic::EncryptionLevel level,
     std::unique_ptr<quic::QuicEncrypter> encrypter) {
+  if (!attempted_zero_rtt_ && (level == quic::ENCRYPTION_ZERO_RTT ||
+                               level == quic::ENCRYPTION_FORWARD_SECURE)) {
+    base::TimeTicks now = tick_clock_->NowTicks();
+    DCHECK_LE(connect_timing_.connect_start, now);
+    UMA_HISTOGRAM_TIMES("Net.QuicSession.EncryptionEstablishedTime",
+                        now - connect_timing_.connect_start);
+  }
   if (level == quic::ENCRYPTION_ZERO_RTT)
     attempted_zero_rtt_ = true;
   QuicSpdySession::OnNewEncryptionKeyAvailable(level, std::move(encrypter));

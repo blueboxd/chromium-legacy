@@ -45,7 +45,7 @@ class CONTENT_EXPORT AudioLoopbackStreamBroker final
       uint32_t shared_memory_count,
       bool mute_source,
       AudioStreamBroker::DeleterCallback deleter,
-      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+      mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
           renderer_factory_client);
 
   ~AudioLoopbackStreamBroker() final;
@@ -76,7 +76,7 @@ class CONTENT_EXPORT AudioLoopbackStreamBroker final
   // loopback stream is running.
   base::Optional<AudioMutingSession> muter_;
 
-  mojo::Remote<mojom::RendererAudioInputStreamFactoryClient>
+  mojo::Remote<blink::mojom::RendererAudioInputStreamFactoryClient>
       renderer_factory_client_;
   mojo::Receiver<AudioInputStreamObserver> observer_receiver_{this};
   mojo::PendingReceiver<media::mojom::AudioInputStreamClient> client_receiver_;

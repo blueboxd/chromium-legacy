@@ -10,8 +10,8 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "third_party/blink/public/mojom/media/renderer_audio_output_stream_factory.mojom.h"
 
 namespace media {
 class AudioSystem;
@@ -46,7 +46,8 @@ class CONTENT_EXPORT RenderFrameAudioOutputStreamFactory final {
       RenderFrameHost* frame,
       media::AudioSystem* audio_system,
       MediaStreamManager* media_stream_manager,
-      mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver);
+      mojo::PendingReceiver<blink::mojom::RendererAudioOutputStreamFactory>
+          receiver);
 
   ~RenderFrameAudioOutputStreamFactory();
 

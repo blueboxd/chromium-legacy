@@ -1117,10 +1117,6 @@ void RenderViewImpl::OnSetHistoryOffsetAndLength(int history_offset,
   history_list_length_ = history_length;
 }
 
-void RenderViewImpl::OnAudioStateChanged(bool is_audio_playing) {
-  GetWebView()->AudioStateChanged(is_audio_playing);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 void RenderViewImpl::ShowCreatedPopupWidget(RenderWidget* popup_widget,
@@ -1175,7 +1171,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     // Page messages.
     IPC_MESSAGE_HANDLER(PageMsg_SetHistoryOffsetAndLength,
                         OnSetHistoryOffsetAndLength)
-    IPC_MESSAGE_HANDLER(PageMsg_AudioStateChanged, OnAudioStateChanged)
     IPC_MESSAGE_HANDLER(PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames,
                         OnTextAutosizerPageInfoChanged)
     IPC_MESSAGE_HANDLER(PageMsg_SetRendererPrefs, OnSetRendererPrefs)

@@ -14,6 +14,10 @@
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+namespace user_manager {
+class User;
+}
+
 namespace chromeos {
 namespace cert_provisioning {
 
@@ -70,19 +74,23 @@ struct CertificateHelperForTesting {
 
 class ProfileHelperForTesting {
  public:
+  // Equivalent to ProfileHelperForTesting(/*user_is_affiliated=*/false)
   ProfileHelperForTesting();
+  explicit ProfileHelperForTesting(bool user_is_affiliated);
   ProfileHelperForTesting(const ProfileHelperForTesting&) = delete;
   ProfileHelperForTesting& operator=(const ProfileHelperForTesting&) = delete;
   ~ProfileHelperForTesting();
 
   Profile* GetProfile() const;
+  user_manager::User* GetUser() const;
 
  private:
-  void Init();
+  void Init(bool user_is_affiliated);
 
   TestingProfileManager testing_profile_manager_;
   FakeChromeUserManager fake_user_manager_;
   TestingProfile* testing_profile_ = nullptr;
+  user_manager::User* user_ = nullptr;
 };
 
 //================ SpyingFakeCryptohomeClient ==================================

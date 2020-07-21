@@ -2082,21 +2082,21 @@ ui::TextAttributeList AXPlatformNodeBase::ComputeTextAttributes() const {
     attributes.push_back(std::make_pair("language", language));
   }
 
-  auto text_direction = static_cast<ax::mojom::TextDirection>(
+  auto text_direction = static_cast<ax::mojom::WritingDirection>(
       GetIntAttribute(ax::mojom::IntAttribute::kTextDirection));
   switch (text_direction) {
-    case ax::mojom::TextDirection::kNone:
+    case ax::mojom::WritingDirection::kNone:
       break;
-    case ax::mojom::TextDirection::kLtr:
+    case ax::mojom::WritingDirection::kLtr:
       attributes.push_back(std::make_pair("writing-mode", "lr"));
       break;
-    case ax::mojom::TextDirection::kRtl:
+    case ax::mojom::WritingDirection::kRtl:
       attributes.push_back(std::make_pair("writing-mode", "rl"));
       break;
-    case ax::mojom::TextDirection::kTtb:
+    case ax::mojom::WritingDirection::kTtb:
       attributes.push_back(std::make_pair("writing-mode", "tb"));
       break;
-    case ax::mojom::TextDirection::kBtt:
+    case ax::mojom::WritingDirection::kBtt:
       // Not listed in the IA2 Spec.
       attributes.push_back(std::make_pair("writing-mode", "bt"));
       break;

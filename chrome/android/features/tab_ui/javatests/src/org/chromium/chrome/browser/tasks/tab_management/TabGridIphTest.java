@@ -78,7 +78,18 @@ import java.io.IOException;
 /** End-to-end tests for TabGridIph component. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 // clang-format off
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        "enable-features=IPH_TabGroupsDragAndDrop<TabGroupsDragAndDrop",
+        "force-fieldtrials=TabGroupsDragAndDrop/Enabled",
+        "force-fieldtrial-params=TabGroupsDragAndDrop.Enabled:availability/any/" +
+        "event_trigger/" +
+        "name%3Aiph_tabgroups_drag_and_drop;comparator%3A==0;window%3A30;storage%3A365/" +
+        "event_trigger2/" +
+        "name%3Aiph_tabgroups_drag_and_drop;comparator%3A<2;window%3A90;storage%3A365/" +
+        "event_used/" +
+        "name%3Atab_drag_and_drop_to_group;comparator%3A==0;window%3A365;storage%3A365/" +
+        "session_rate/<1"
+})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
 @Features.DisableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS)

@@ -688,7 +688,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   scoped_refptr<SiteInstance> noref_site_instance(
       shell()->web_contents()->GetSiteInstance());
   if (AreAllSitesIsolatedForTesting() ||
-      IsProactivelySwapBrowsingInstanceEnabled()) {
+      CanCrossSiteNavigationsProactivelySwapBrowsingInstances()) {
     EXPECT_NE(orig_site_instance, noref_site_instance);
   } else {
     EXPECT_EQ(orig_site_instance, noref_site_instance);
@@ -727,7 +727,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   scoped_refptr<SiteInstance> noref_site_instance(
       shell()->web_contents()->GetSiteInstance());
   if (AreAllSitesIsolatedForTesting() ||
-      IsProactivelySwapBrowsingInstanceEnabled()) {
+      CanCrossSiteNavigationsProactivelySwapBrowsingInstances()) {
     EXPECT_NE(orig_site_instance, noref_site_instance);
   } else {
     EXPECT_EQ(orig_site_instance, noref_site_instance);
@@ -4218,7 +4218,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
     popup->web_contents()->GetController().LoadURLWithParams(params);
     observer.Wait();
 
-    if (IsProactivelySwapBrowsingInstanceEnabled()) {
+    if (CanCrossSiteNavigationsProactivelySwapBrowsingInstances()) {
       EXPECT_FALSE(curr_instance->IsRelatedSiteInstance(
           popup->web_contents()->GetSiteInstance()));
     } else {
@@ -4313,7 +4313,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // BrowsingInstances, and create a new foo.com SiteInstance, distinct from
   // the initial one.
   if (!AreAllSitesIsolatedForTesting() &&
-      !IsProactivelySwapBrowsingInstanceEnabled()) {
+      !CanCrossSiteNavigationsProactivelySwapBrowsingInstances()) {
     EXPECT_EQ(site_instance, shell()->web_contents()->GetSiteInstance());
   } else {
     EXPECT_NE(site_instance, shell()->web_contents()->GetSiteInstance());
@@ -5431,7 +5431,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
       shell()->web_contents()->GetMainFrame()->GetSiteInstance();
   EXPECT_EQ(GURL(kUnreachableWebDataURL), initial_instance->GetSiteURL());
   EXPECT_TRUE(IsMainFrameOriginOpaqueAndCompatibleWithURL(shell(), error_url));
-  if (IsProactivelySwapBrowsingInstanceEnabled()) {
+  if (CanCrossSiteNavigationsProactivelySwapBrowsingInstances()) {
     EXPECT_FALSE(
         success_site_instance->IsRelatedSiteInstance(initial_instance.get()));
   } else {
@@ -7263,7 +7263,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   scoped_refptr<SiteInstance> b_site_instance =
       web_contents->GetMainFrame()->GetSiteInstance();
 
-  if (IsProactivelySwapBrowsingInstanceEnabled())
+  if (CanCrossSiteNavigationsProactivelySwapBrowsingInstances())
     EXPECT_FALSE(a_site_instance->IsRelatedSiteInstance(b_site_instance.get()));
   else
     EXPECT_TRUE(a_site_instance->IsRelatedSiteInstance(b_site_instance.get()));
@@ -7325,10 +7325,10 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerDefaultProcessTest,
                                   ->GetSiteInstance()
                                   ->GetDefaultProcessIfUsable());
 
-  // This test expect a cross-site navigation to by same BrowsingInstance. With
+  // This test expect a cross-site navigation to be same BrowsingInstance. With
   // ProactivelySwapBrowsingInstance, it won't be the case. Opening a popup
   // prevent the BrowsingInstance to change.
-  if (IsProactivelySwapBrowsingInstanceEnabled()) {
+  if (CanCrossSiteNavigationsProactivelySwapBrowsingInstances()) {
     GURL popup_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
     EXPECT_TRUE(OpenPopup(web_contents->GetMainFrame(), popup_url, ""));
   }

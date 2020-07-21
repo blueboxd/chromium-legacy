@@ -25,6 +25,7 @@ class CTPolicyEnforcer;
 class CertVerifier;
 class CTVerifier;
 class HostPortPair;
+class SCTAuditingDelegate;
 class SSLClientSessionCache;
 struct SSLConfig;
 class SSLKeyLogger;
@@ -98,13 +99,14 @@ class NET_EXPORT SSLClientContext : public SSLConfigService::Observer,
   //
   // |ssl_config_service| may be null to always use the default
   // SSLContextConfig. |ssl_client_session_cache| may be null to disable session
-  // caching.
+  // caching. |sct_auditing_delegate| may be null to disable SCT auditing.
   SSLClientContext(SSLConfigService* ssl_config_service,
                    CertVerifier* cert_verifier,
                    TransportSecurityState* transport_security_state,
                    CTVerifier* cert_transparency_verifier,
                    CTPolicyEnforcer* ct_policy_enforcer,
-                   SSLClientSessionCache* ssl_client_session_cache);
+                   SSLClientSessionCache* ssl_client_session_cache,
+                   SCTAuditingDelegate* sct_auditing_delegate);
   ~SSLClientContext() override;
 
   const SSLContextConfig& config() { return config_; }
@@ -120,6 +122,9 @@ class NET_EXPORT SSLClientContext : public SSLConfigService::Observer,
   CTPolicyEnforcer* ct_policy_enforcer() { return ct_policy_enforcer_; }
   SSLClientSessionCache* ssl_client_session_cache() {
     return ssl_client_session_cache_;
+  }
+  SCTAuditingDelegate* sct_auditing_delegate() {
+    return sct_auditing_delegate_;
   }
 
   // Creates a new SSLClientSocket which can then be used to establish an SSL
@@ -184,6 +189,7 @@ class NET_EXPORT SSLClientContext : public SSLConfigService::Observer,
   CTVerifier* cert_transparency_verifier_;
   CTPolicyEnforcer* ct_policy_enforcer_;
   SSLClientSessionCache* ssl_client_session_cache_;
+  SCTAuditingDelegate* sct_auditing_delegate_;
 
   SSLClientAuthCache ssl_client_auth_cache_;
 

@@ -186,7 +186,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void EnableAutoResizeMode(const WebSize& min_size,
                             const WebSize& max_size) override;
   void DisableAutoResizeMode() override;
-  void AudioStateChanged(bool is_audio_playing) override;
   WebHitTestResult HitTestResultAt(const gfx::PointF&);
   WebHitTestResult HitTestResultForTap(const gfx::Point&,
                                        const WebSize&) override;
@@ -222,6 +221,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetPageLifecycleState(mojom::blink::PageLifecycleStatePtr state,
                              base::Optional<base::TimeTicks> navigation_start,
                              SetPageLifecycleStateCallback callback) override;
+  void AudioStateChanged(bool is_audio_playing) override;
 
   void DispatchPagehide();
   void DispatchPageshow(base::TimeTicks navigation_start);

@@ -28,6 +28,9 @@ class BookmarkModelFactory : public BrowserContextKeyedServiceFactory {
 
   static BookmarkModelFactory* GetInstance();
 
+  // Returns the default factory, useful in tests where it's null by default.
+  static TestingFactory GetDefaultFactory();
+
  private:
   friend struct base::DefaultSingletonTraits<BookmarkModelFactory>;
 

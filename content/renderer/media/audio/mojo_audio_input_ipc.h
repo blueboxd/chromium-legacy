@@ -13,7 +13,6 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_source_parameters.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
@@ -22,6 +21,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/media/renderer_audio_input_stream_factory.mojom.h"
 
 namespace content {
 
@@ -30,7 +30,7 @@ namespace content {
 // thread.
 class CONTENT_EXPORT MojoAudioInputIPC
     : public media::AudioInputIPC,
-      public mojom::RendererAudioInputStreamFactoryClient,
+      public blink::mojom::RendererAudioInputStreamFactoryClient,
       public media::mojom::AudioInputStreamClient {
  public:
   // This callback is used by MojoAudioInputIPC to create streams.
@@ -38,7 +38,8 @@ class CONTENT_EXPORT MojoAudioInputIPC
   // called or |client| is destructed.
   using StreamCreatorCB = base::RepeatingCallback<void(
       const media::AudioSourceParameters& source_params,
-      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
+      mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
+          client,
       const media::AudioParameters& params,
       bool automatic_gain_control,
       uint32_t total_segments)>;
@@ -85,7 +86,7 @@ class CONTENT_EXPORT MojoAudioInputIPC
   // Initialized on StreamCreated.
   base::Optional<base::UnguessableToken> stream_id_;
   mojo::Receiver<AudioInputStreamClient> stream_client_receiver_{this};
-  mojo::Receiver<RendererAudioInputStreamFactoryClient>
+  mojo::Receiver<blink::mojom::RendererAudioInputStreamFactoryClient>
       factory_client_receiver_{this};
   media::AudioInputIPCDelegate* delegate_ = nullptr;
 

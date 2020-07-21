@@ -27,6 +27,10 @@ message Resource {
   optional string url = 1;
   // The resource type of the resource.
   optional ResourceType resource_type = 2;
+  // Specifies that this resource should only be preconnected to and not
+  // prefetched due to low confidence that this resource will actually be
+  // fetched for the page load.
+  optional bool preconnect_only = 3;
 }
 
 // Optimization metadata associated with improving the loading predictor.

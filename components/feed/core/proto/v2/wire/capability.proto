@@ -30,7 +30,8 @@ enum Capability {
   PAID_CONTENT = 15;
   // Enable open video command.
   OPEN_VIDEO_COMMAND = 16;
-  REDACTED_17 = 17;
+  // Enable alternate UI theming.
+  UI_THEME_V2 = 17;
   // Enable inline video autoplay.
   INLINE_VIDEO_AUTOPLAY = 18;
   // Enable the card menu.

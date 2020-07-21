@@ -15,6 +15,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/json/json_reader.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
@@ -81,6 +82,8 @@ const base::FilePath::CharType kWebAppsSubDirectory[] =
     FILE_PATH_LITERAL("web_apps");
 #endif
 
+bool g_skip_startup_scan_for_testing_ = false;
+
 bool IsFeatureEnabled(const std::string& feature_name) {
   // The feature system ensures there is only ever one Feature instance for each
   // given feature name. To enable multiple apps to be gated by the same field
@@ -105,6 +108,120 @@ bool IsFeatureEnabled(const std::string& feature_name) {
   return base::FeatureList::IsEnabled(*it->second);
 }
 
+base::Optional<ExternalInstallOptions> ParseConfig(
+    base::FilePath file,
+    const std::string& user_type,
+    const base::Value& app_config) {
+  if (app_config.type() != base::Value::Type::DICTIONARY) {
+    LOG(ERROR) << file << " was not a dictionary as the top level";
+    return base::nullopt;
+  }
+
+  if (!apps::UserTypeMatchesJsonUserType(
+          user_type, /*app_id=*/file.MaybeAsASCII(), &app_config,
+          /*default_user_types=*/nullptr)) {
+    // Already logged.
+    return base::nullopt;
+  }
+
+  const base::Value* value =
+      app_config.FindKeyOfType(kFeatureName, base::Value::Type::STRING);
+  if (value) {
+    std::string feature_name = value->GetString();
+    VLOG(1) << file << " checking feature " << feature_name;
+    if (!IsFeatureEnabled(feature_name)) {
+      VLOG(1) << file << " feature not enabled";
+      return base::nullopt;
+    }
+  }
+
+  value = app_config.FindKeyOfType(kAppUrl, base::Value::Type::STRING);
+  if (!value) {
+    LOG(ERROR) << file << " had a missing " << kAppUrl;
+    return base::nullopt;
+  }
+  GURL app_url(value->GetString());
+  if (!app_url.is_valid()) {
+    LOG(ERROR) << file << " had an invalid " << kAppUrl;
+    return base::nullopt;
+  }
+
+  bool hide_from_user = false;
+  value = app_config.FindKey(kHideFromUser);
+  if (value) {
+    if (!value->is_bool()) {
+      LOG(ERROR) << file << " had an invalid " << kHideFromUser;
+      return base::nullopt;
+    }
+    hide_from_user = value->GetBool();
+  }
+
+  bool create_shortcuts = false;
+  value = app_config.FindKey(kCreateShortcuts);
+  if (value) {
+    if (!value->is_bool()) {
+      LOG(ERROR) << file << " had an invalid " << kCreateShortcuts;
+      return base::nullopt;
+    }
+    create_shortcuts = value->GetBool();
+  }
+
+  // It doesn't make sense to hide the app and also create shortcuts for it.
+  DCHECK(!(hide_from_user && create_shortcuts));
+
+  value = app_config.FindKeyOfType(kLaunchContainer, base::Value::Type::STRING);
+  if (!value) {
+    LOG(ERROR) << file << " had an invalid " << kLaunchContainer;
+    return base::nullopt;
+  }
+  std::string launch_container_str = value->GetString();
+  auto user_display_mode = DisplayMode::kBrowser;
+  if (launch_container_str == kLaunchContainerTab) {
+    user_display_mode = DisplayMode::kBrowser;
+  } else if (launch_container_str == kLaunchContainerWindow) {
+    user_display_mode = DisplayMode::kStandalone;
+  } else {
+    LOG(ERROR) << file << " had an invalid " << kLaunchContainer;
+    return base::nullopt;
+  }
+
+  value = app_config.FindKey(kUninstallAndReplace);
+  std::vector<AppId> uninstall_and_replace_ids;
+  if (value) {
+    if (!value->is_list()) {
+      LOG(ERROR) << file << " had an invalid " << kUninstallAndReplace;
+      return base::nullopt;
+    }
+    base::Value::ConstListView uninstall_and_replace_values = value->GetList();
+
+    bool had_error = false;
+    for (const auto& app_id_value : uninstall_and_replace_values) {
+      if (!app_id_value.is_string()) {
+        had_error = true;
+        LOG(ERROR) << file << " had an invalid " << kUninstallAndReplace
+                   << " entry";
+        break;
+      }
+      uninstall_and_replace_ids.push_back(app_id_value.GetString());
+    }
+    if (had_error)
+      return base::nullopt;
+  }
+
+  ExternalInstallOptions install_options(
+      std::move(app_url), user_display_mode,
+      ExternalInstallSource::kExternalDefault);
+  install_options.add_to_applications_menu = !hide_from_user;
+  install_options.add_to_search = !hide_from_user;
+  install_options.add_to_management = !hide_from_user;
+  install_options.add_to_desktop = create_shortcuts;
+  install_options.add_to_quick_launch_bar = create_shortcuts;
+  install_options.require_manifest = true;
+  install_options.uninstall_and_replace = std::move(uninstall_and_replace_ids);
+
+  return install_options;
+}
+
 std::vector<ExternalInstallOptions> ScanDir(const base::FilePath& dir,
                                             const std::string& user_type) {
   std::vector<ExternalInstallOptions> install_options_list;
@@ -126,123 +243,16 @@ std::vector<ExternalInstallOptions> ScanDir(const base::FilePath& dir,
 
     JSONFileValueDeserializer deserializer(file);
     std::string error_msg;
-    std::unique_ptr<base::Value> dict =
+    std::unique_ptr<base::Value> app_config =
         deserializer.Deserialize(nullptr, &error_msg);
-    if (!dict) {
+    if (!app_config) {
       LOG(ERROR) << file.value() << " was not valid JSON: " << error_msg;
       continue;
     }
-    if (dict->type() != base::Value::Type::DICTIONARY) {
-      LOG(ERROR) << file.value() << " was not a dictionary as the top level";
-      continue;
-    }
-
-    if (!apps::UserTypeMatchesJsonUserType(
-            user_type, file.MaybeAsASCII() /* app_id */, dict.get(),
-            nullptr /* default_user_types */)) {
-      // Already logged.
-      continue;
-    }
-
-    const base::Value* value =
-        dict->FindKeyOfType(kFeatureName, base::Value::Type::STRING);
-    if (value) {
-      std::string feature_name = value->GetString();
-      VLOG(1) << file.value() << " checking feature " << feature_name;
-      if (!IsFeatureEnabled(feature_name)) {
-        VLOG(1) << file.value() << " feature not enabled";
-        continue;
-      }
-    }
-
-    value = dict->FindKeyOfType(kAppUrl, base::Value::Type::STRING);
-    if (!value) {
-      LOG(ERROR) << file.value() << " had a missing " << kAppUrl;
-      continue;
-    }
-    GURL app_url(value->GetString());
-    if (!app_url.is_valid()) {
-      LOG(ERROR) << file.value() << " had an invalid " << kAppUrl;
-      continue;
-    }
-
-    bool hide_from_user = false;
-    value = dict->FindKey(kHideFromUser);
-    if (value) {
-      if (!value->is_bool()) {
-        LOG(ERROR) << file.value() << " had an invalid " << kHideFromUser;
-        continue;
-      }
-      hide_from_user = value->GetBool();
-    }
-
-    bool create_shortcuts = false;
-    value = dict->FindKey(kCreateShortcuts);
-    if (value) {
-      if (!value->is_bool()) {
-        LOG(ERROR) << file.value() << " had an invalid " << kCreateShortcuts;
-        continue;
-      }
-      create_shortcuts = value->GetBool();
-    }
-
-    // It doesn't make sense to hide the app and also create shortcuts for it.
-    DCHECK(!(hide_from_user && create_shortcuts));
-
-    value = dict->FindKeyOfType(kLaunchContainer, base::Value::Type::STRING);
-    if (!value) {
-      LOG(ERROR) << file.value() << " had an invalid " << kLaunchContainer;
-      continue;
-    }
-    std::string launch_container_str = value->GetString();
-    auto user_display_mode = DisplayMode::kBrowser;
-    if (launch_container_str == kLaunchContainerTab) {
-      user_display_mode = DisplayMode::kBrowser;
-    } else if (launch_container_str == kLaunchContainerWindow) {
-      user_display_mode = DisplayMode::kStandalone;
-    } else {
-      LOG(ERROR) << file.value() << " had an invalid " << kLaunchContainer;
-      continue;
-    }
-
-    value = dict->FindKey(kUninstallAndReplace);
-    std::vector<AppId> uninstall_and_replace_ids;
-    if (value) {
-      if (!value->is_list()) {
-        LOG(ERROR) << file.value() << " had an invalid "
-                   << kUninstallAndReplace;
-        continue;
-      }
-      base::Value::ConstListView uninstall_and_replace_values =
-          value->GetList();
-
-      bool had_error = false;
-      for (const auto& app_id_value : uninstall_and_replace_values) {
-        if (!app_id_value.is_string()) {
-          had_error = true;
-          LOG(ERROR) << file.value() << " had an invalid "
-                     << kUninstallAndReplace << " entry";
-          break;
-        }
-        uninstall_and_replace_ids.push_back(app_id_value.GetString());
-      }
-      if (had_error)
-        continue;
-    }
-
-    ExternalInstallOptions install_options(
-        std::move(app_url), user_display_mode,
-        ExternalInstallSource::kExternalDefault);
-    install_options.add_to_applications_menu = !hide_from_user;
-    install_options.add_to_search = !hide_from_user;
-    install_options.add_to_management = !hide_from_user;
-    install_options.add_to_desktop = create_shortcuts;
-    install_options.add_to_quick_launch_bar = create_shortcuts;
-    install_options.require_manifest = true;
-    install_options.uninstall_and_replace =
-        std::move(uninstall_and_replace_ids);
-
-    install_options_list.push_back(std::move(install_options));
+    base::Optional<ExternalInstallOptions> install_options =
+        ParseConfig(file, user_type, *app_config);
+    if (install_options.has_value())
+      install_options_list.push_back(std::move(*install_options));
   }
 
   return install_options_list;
@@ -292,9 +302,11 @@ void ExternalWebAppManager::SetSubsystems(
 }
 
 void ExternalWebAppManager::Start() {
-  ScanForExternalWebApps(
-      base::BindOnce(&ExternalWebAppManager::OnScanForExternalWebApps,
-                     weak_ptr_factory_.GetWeakPtr()));
+  if (!g_skip_startup_scan_for_testing_) {
+    ScanForExternalWebApps(
+        base::BindOnce(&ExternalWebAppManager::OnScanForExternalWebApps,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 // static
@@ -326,6 +338,32 @@ void ExternalWebAppManager::ScanForExternalWebApps(ScanCallback callback) {
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&ScanDir, dir, apps::DetermineUserType(profile_)),
+      std::move(callback));
+}
+
+void ExternalWebAppManager::SkipStartupScanForTesting() {
+  g_skip_startup_scan_for_testing_ = true;
+}
+
+void ExternalWebAppManager::SynchronizeAppsForTesting(
+    std::vector<std::string> app_configs,
+    PendingAppManager::SynchronizeCallback callback) {
+  std::vector<ExternalInstallOptions> install_options_list;
+  for (const std::string& app_config_string : app_configs) {
+    base::Optional<base::Value> app_config =
+        base::JSONReader::Read(app_config_string);
+    DCHECK(app_config);
+
+    base::Optional<ExternalInstallOptions> install_options =
+        ParseConfig(base::FilePath().AppendASCII("test"),
+                    apps::DetermineUserType(profile_), *app_config);
+    DCHECK(install_options);
+
+    install_options_list.push_back(std::move(*install_options));
+  }
+
+  pending_app_manager_->SynchronizeInstalledApps(
+      std::move(install_options_list), ExternalInstallSource::kExternalDefault,
       std::move(callback));
 }
 

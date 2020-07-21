@@ -10,11 +10,8 @@
 #include <string>
 
 #include "base/feature_list.h"
-#include "base/no_destructor.h"
 #include "base/stl_util.h"
-#include "base/strings/strcat.h"
 #include "base/strings/string16.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context.h"
@@ -47,7 +44,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "url/origin.h"
-#include "url/url_constants.h"
 
 namespace site_settings {
 
@@ -199,13 +195,6 @@ static_assert(base::size(kPolicyIndicatorTypeStringMapping) ==
               "kPolicyIndicatorStringMapping should have "
               "PolicyIndicatorType::kNumIndicators elements");
 
-const std::string& GetDevtoolsPatternPrefix() {
-  static const base::NoDestructor<std::string> kDevtoolsPatternPrefix(
-      base::StrCat({content_settings::kChromeDevToolsScheme,
-                    url::kStandardSchemeSeparator}));
-  return *kDevtoolsPatternPrefix;
-}
-
 // Retrieves the corresponding string, according to the following precedence
 // order from highest to lowest priority:
 //    1. Allowlisted WebUI content setting.
@@ -306,9 +295,8 @@ bool PatternAppliesToWebUISchemes(const ContentSettingPatternSource& pattern) {
              ContentSettingsPattern::SchemeType::SCHEME_CHROME ||
          pattern.primary_pattern.GetScheme() ==
              ContentSettingsPattern::SchemeType::SCHEME_CHROMEUNTRUSTED ||
-         base::StartsWith(pattern.primary_pattern.ToString(),
-                          GetDevtoolsPatternPrefix(),
-                          base::CompareCase::INSENSITIVE_ASCII);
+         pattern.primary_pattern.GetScheme() ==
+             ContentSettingsPattern::SchemeType::SCHEME_DEVTOOLS;
 }
 
 // Retrieves the source of a chooser exception as a string. This method uses the

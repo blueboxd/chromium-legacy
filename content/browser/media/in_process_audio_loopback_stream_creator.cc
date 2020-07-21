@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -20,16 +19,17 @@
 #include "media/base/user_input_monitor.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "third_party/blink/public/mojom/media/renderer_audio_input_stream_factory.mojom.h"
 
 namespace content {
 
 namespace {
 
-// A mojom::RendererAudioInputStreamFactoryClient that holds a
+// A blink::mojom::RendererAudioInputStreamFactoryClient that holds a
 // AudioLoopbackStreamCreator::StreamCreatedCallback. The callback runs when the
 // requested audio stream is created.
 class StreamCreatedCallbackAdapter final
-    : public mojom::RendererAudioInputStreamFactoryClient {
+    : public blink::mojom::RendererAudioInputStreamFactoryClient {
  public:
   explicit StreamCreatedCallbackAdapter(
       const AudioLoopbackStreamCreator::StreamCreatedCallback& callback)
@@ -39,7 +39,7 @@ class StreamCreatedCallbackAdapter final
 
   ~StreamCreatedCallbackAdapter() override {}
 
-  // mojom::RendererAudioInputStreamFactoryClient implementation.
+  // blink::mojom::RendererAudioInputStreamFactoryClient implementation.
   void StreamCreated(
       mojo::PendingRemote<media::mojom::AudioInputStream> stream,
       mojo::PendingReceiver<media::mojom::AudioInputStreamClient>
@@ -63,7 +63,7 @@ void CreateLoopbackStreamHelper(
     AudioStreamBroker::LoopbackSource* loopback_source,
     const media::AudioParameters& params,
     uint32_t total_segments,
-    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+    mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
         client_remote) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -76,7 +76,7 @@ void CreateSystemWideLoopbackStreamHelper(
     ForwardingAudioStreamFactory::Core* factory,
     const media::AudioParameters& params,
     uint32_t total_segments,
-    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+    mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
         client_remote) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -108,7 +108,8 @@ void InProcessAudioLoopbackStreamCreator::CreateLoopbackStream(
     uint32_t total_segments,
     const StreamCreatedCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client;
+  mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
+      client;
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<StreamCreatedCallbackAdapter>(callback),
       client.InitWithNewPipeAndPassReceiver());

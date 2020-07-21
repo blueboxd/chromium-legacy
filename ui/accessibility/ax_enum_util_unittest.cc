@@ -173,7 +173,7 @@ TEST(AXEnumUtilTest, TextBoundary) {
 }
 
 TEST(AXEnumUtilTest, TextDirection) {
-  TestEnumStringConversion<ax::mojom::TextDirection>(ParseTextDirection);
+  TestEnumStringConversion<ax::mojom::WritingDirection>(ParseTextDirection);
 }
 
 TEST(AXEnumUtilTest, TextPosition) {

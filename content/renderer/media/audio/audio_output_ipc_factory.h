@@ -10,9 +10,9 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/media/renderer_audio_output_stream_factory.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -64,16 +64,16 @@ class CONTENT_EXPORT AudioOutputIPCFactory {
       const base::UnguessableToken& frame_token) const;
 
  private:
-  using StreamFactoryMap =
-      base::flat_map<base::UnguessableToken,
-                     mojo::Remote<mojom::RendererAudioOutputStreamFactory>>;
+  using StreamFactoryMap = base::flat_map<
+      base::UnguessableToken,
+      mojo::Remote<blink::mojom::RendererAudioOutputStreamFactory>>;
 
-  mojom::RendererAudioOutputStreamFactory* GetRemoteFactory(
+  blink::mojom::RendererAudioOutputStreamFactory* GetRemoteFactory(
       const base::UnguessableToken& frame_token) const;
 
   void RegisterRemoteFactoryOnIOThread(
       const base::UnguessableToken& frame_token,
-      mojo::PendingRemote<mojom::RendererAudioOutputStreamFactory>
+      mojo::PendingRemote<blink::mojom::RendererAudioOutputStreamFactory>
           factory_pending_remote);
 
   void MaybeDeregisterRemoteFactoryOnIOThread(

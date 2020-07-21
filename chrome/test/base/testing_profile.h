@@ -221,6 +221,7 @@ class TestingProfile : public Profile {
   ~TestingProfile() override;
 
   // Creates the favicon service. Consequent calls would recreate the service.
+  // TODO(crbug.com/1106699): Remove this API and adopt the Builder instead.
   void CreateFaviconService();
 
   // !!!!!!!! WARNING: THIS IS GENERALLY NOT SAFE TO CALL! !!!!!!!!
@@ -236,6 +237,7 @@ class TestingProfile : public Profile {
   // only matters if you're recreating the HistoryService.  If |no_db| is true,
   // the history backend will fail to initialize its database; this is useful
   // for testing error conditions. Returns true on success.
+  // TODO(crbug.com/1106699): Remove this API and adopt the Builder instead.
   bool CreateHistoryService(bool delete_file, bool no_db) WARN_UNUSED_RESULT;
 
   // Creates the BookmarkBarModel. If not invoked the bookmark bar model is
@@ -246,9 +248,14 @@ class TestingProfile : public Profile {
   //
   // NOTE: this does not block until the bookmarks are loaded. For that use
   // WaitForBookmarkModelToLoad().
+  //
+  // DEPRECATED: Use Builder::AddTestingProfile() together with
+  // BookmarkModelFactory::GetDefaultFactory() in new code.
+  // TODO(crbug.com/1106699): Remove this API and adopt the Builder instead.
   void CreateBookmarkModel(bool delete_file);
 
   // Creates a WebDataService. If not invoked, the web data service is NULL.
+  // TODO(crbug.com/1106699): Remove this API and adopt the Builder instead.
   void CreateWebDataService();
 
   // Blocks until the HistoryService finishes restoring its in-memory cache.

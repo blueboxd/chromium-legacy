@@ -254,5 +254,12 @@ bool ShouldEnableOutOfBlinkCorsForTesting() {
 const base::Feature kWebSocketReassembleShortMessages{
     "WebSocketReassembleShortMessages", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether SCT audit reports are queued and the rate at which they
+// should be sampled.
+const base::Feature kSCTAuditing{"SCTAuditing",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+constexpr base::FeatureParam<double> kSCTAuditingSamplingRate{
+    &kSCTAuditing, "sampling_rate", 0.0};
+
 }  // namespace features
 }  // namespace network

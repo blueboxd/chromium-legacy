@@ -175,7 +175,7 @@ if (crashpad_is_in_chromium || crashpad_is_in_fuchsia) {
       ]
     }
   }
-} else if (crashpad_is_standalone || crashpad_is_external) {
+} else if (crashpad_is_standalone) {
   test("crashpad_client_test") {
     deps = [
       "client:client_test",

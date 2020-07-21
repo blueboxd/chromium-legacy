@@ -435,6 +435,7 @@ class AppServiceProxy : public KeyedService,
   // TODO(crbug.com/877898): Erase extension_web_apps_ when BMO is on.
   std::unique_ptr<ExtensionApps> extension_web_apps_;
   std::unique_ptr<WebApps> web_apps_;
+  std::unique_ptr<ExtensionApps> extension_apps_;
 #endif
 
   Profile* profile_;

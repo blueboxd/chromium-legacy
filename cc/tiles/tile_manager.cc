@@ -1168,6 +1168,17 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   const int msaa_sample_count = client_->GetMSAASampleCountForRaster(
       prioritized_tile.raster_source()->GetDisplayItemList());
 
+  // When possible, rasterize HDR content into F16.
+  //
+  // TODO(crbug.com/1076568): Once we have access to the display's buffer format
+  // via gfx::DisplayColorSpaces, we should also do this for HBD images.
+  auto format = DetermineResourceFormat(tile);
+  if (raster_color_space.IsHDR() &&
+      GetContentColorUsageForPrioritizedTile(prioritized_tile) ==
+          gfx::ContentColorUsage::kHDR) {
+    format = viz::ResourceFormat::RGBA_F16;
+  }
+
   // Get the resource.
   ResourcePool::InUsePoolResource resource;
   uint64_t resource_content_id = 0;
@@ -1181,12 +1192,11 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   bool partial_tile_decode = false;
   if (resource) {
     resource_content_id = tile->invalidated_id();
-    DCHECK_EQ(DetermineResourceFormat(tile), resource.format());
+    DCHECK_EQ(format, resource.format());
     partial_tile_decode = true;
   } else {
     resource = resource_pool_->AcquireResource(tile->desired_texture_size(),
-                                               DetermineResourceFormat(tile),
-                                               raster_color_space);
+                                               format, raster_color_space);
     DCHECK(resource);
   }
 

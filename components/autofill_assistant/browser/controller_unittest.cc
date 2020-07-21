@@ -1652,6 +1652,45 @@ TEST_F(ControllerTest, UnexpectedNavigationInRunningState) {
                                    AutofillAssistantState::STOPPED));
 }
 
+TEST_F(ControllerTest, NavigationAfterStopped) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "autostart")
+      ->mutable_presentation()
+      ->set_autostart(true);
+  SetNextScriptResponse(script_response);
+
+  ActionsResponseProto autostart_script;
+  autostart_script.add_actions()
+      ->mutable_prompt()
+      ->add_choices()
+      ->mutable_chip()
+      ->set_text("continue");
+  std::string never_shown = "never shown";
+  autostart_script.add_actions()->mutable_tell()->set_message(never_shown);
+  SetupActionsForScript("autostart", autostart_script);
+
+  Start();
+  EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
+
+  // Unexpected browser initiated navigation will cause an error.
+  EXPECT_CALL(mock_client_, RecordDropOut(Metrics::DropOutReason::NAVIGATION));
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL("http://a.example.com/page"));
+  EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
+
+  // Another navigation will destroy the UI.
+  EXPECT_CALL(mock_client_,
+              Shutdown(Metrics::DropOutReason::UI_CLOSED_UNEXPECTEDLY));
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL("http://b.example.com/page"));
+
+  // Full history of state transitions.
+  EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::STARTING,
+                                   AutofillAssistantState::RUNNING,
+                                   AutofillAssistantState::PROMPT,
+                                   AutofillAssistantState::STOPPED));
+}
+
 TEST_F(ControllerTest, NavigationToGooglePropertyDestroysUI) {
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "autostart")

@@ -819,14 +819,15 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
 
   const auto* node = box_->GetNode();
   const auto* html_marquee_element = DynamicTo<HTMLMarqueeElement>(node);
-  if (UNLIKELY(html_marquee_element && html_marquee_element->IsHorizontal()))
-    result.sizes.min_size = LayoutUnit();
-  else if (UNLIKELY(IsA<HTMLSelectElement>(node) ||
-                    (IsA<HTMLInputElement>(node) &&
-                     To<HTMLInputElement>(node)->type() ==
-                         input_type_names::kFile)) &&
-           Style().LogicalWidth().IsPercentOrCalc())
-    result.sizes.min_size = LayoutUnit();
+  const auto* html_input_element = DynamicTo<HTMLInputElement>(node);
+  if (UNLIKELY((html_marquee_element && html_marquee_element->IsHorizontal()) ||
+               (IsA<HTMLSelectElement>(node) ||
+                (html_input_element &&
+                 html_input_element->type() == input_type_names::kFile)) &&
+                   Style().LogicalWidth().IsPercentOrCalc())) {
+    result.sizes.min_size =
+        (fragment_geometry.border + fragment_geometry.padding).InlineSum();
+  }
 
   bool depends_on_percentage_block_size =
       uses_input_percentage_block_size &&

@@ -890,7 +890,7 @@ std::unique_ptr<AXVirtualView> TreeView::CreateAndSetAccessibilityView(
   ui::AXNodeData& node_data = ax_view->GetCustomData();
   node_data.role = ax::mojom::Role::kTreeItem;
   if (base::i18n::IsRTL())
-    node_data.SetTextDirection(ax::mojom::TextDirection::kRtl);
+    node_data.SetTextDirection(ax::mojom::WritingDirection::kRtl);
 
   base::RepeatingCallback<void(ui::AXNodeData*)> selected_callback =
       base::BindRepeating(&TreeView::PopulateAccessibilityData,

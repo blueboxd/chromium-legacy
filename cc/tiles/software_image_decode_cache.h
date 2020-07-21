@@ -134,6 +134,10 @@ class CC_EXPORT SoftwareImageDecodeCache
 
   void UnrefImage(const CacheKey& key) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
+  SkColorType GetColorTypeForPaintImage(
+      const gfx::ColorSpace& target_color_space,
+      const PaintImage& paint_image);
+
   base::Lock lock_;
   // Decoded images and ref counts (predecode path).
   ImageMRUCache decoded_images_ GUARDED_BY(lock_);

@@ -256,9 +256,9 @@ void LoadingPredictor::MaybeAddPreconnect(const GURL& url,
   if (!prediction.prefetch_requests.empty()) {
     DCHECK(base::FeatureList::IsEnabled(features::kLoadingPredictorPrefetch));
     prefetch_manager()->Start(url, std::move(prediction.prefetch_requests));
-    return;
   }
-  preconnect_manager()->Start(url, std::move(prediction.requests));
+  if (!prediction.requests.empty())
+    preconnect_manager()->Start(url, std::move(prediction.requests));
 }
 
 void LoadingPredictor::MaybeRemovePreconnect(const GURL& url) {

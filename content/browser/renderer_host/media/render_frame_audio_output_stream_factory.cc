@@ -34,17 +34,19 @@
 namespace content {
 
 class RenderFrameAudioOutputStreamFactory::Core final
-    : public mojom::RendererAudioOutputStreamFactory {
+    : public blink::mojom::RendererAudioOutputStreamFactory {
  public:
   Core(RenderFrameHost* frame,
        media::AudioSystem* audio_system,
        MediaStreamManager* media_stream_manager,
-       mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver);
+       mojo::PendingReceiver<blink::mojom::RendererAudioOutputStreamFactory>
+           receiver);
 
   ~Core() final = default;
 
   void Init(
-      mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver);
+      mojo::PendingReceiver<blink::mojom::RendererAudioOutputStreamFactory>
+          receiver);
 
   size_t current_number_of_providers_for_testing() {
     return stream_providers_.size();
@@ -107,7 +109,7 @@ class RenderFrameAudioOutputStreamFactory::Core final
       base::flat_set<std::unique_ptr<media::mojom::AudioOutputStreamProvider>,
                      base::UniquePtrComparator>;
 
-  // mojom::RendererAudioOutputStreamFactory implementation.
+  // blink::mojom::RendererAudioOutputStreamFactory implementation.
   void RequestDeviceAuthorization(
       mojo::PendingReceiver<media::mojom::AudioOutputStreamProvider>
           provider_receiver,
@@ -134,7 +136,8 @@ class RenderFrameAudioOutputStreamFactory::Core final
   const int frame_id_;
   AudioOutputAuthorizationHandler authorization_handler_;
 
-  mojo::Receiver<mojom::RendererAudioOutputStreamFactory> receiver_{this};
+  mojo::Receiver<blink::mojom::RendererAudioOutputStreamFactory> receiver_{
+      this};
   // Always null-check this weak pointer before dereferencing it.
   base::WeakPtr<ForwardingAudioStreamFactory::Core> forwarding_factory_;
 
@@ -154,7 +157,8 @@ RenderFrameAudioOutputStreamFactory::RenderFrameAudioOutputStreamFactory(
     RenderFrameHost* frame,
     media::AudioSystem* audio_system,
     MediaStreamManager* media_stream_manager,
-    mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver)
+    mojo::PendingReceiver<blink::mojom::RendererAudioOutputStreamFactory>
+        receiver)
     : core_(new Core(frame,
                      audio_system,
                      media_stream_manager,
@@ -183,7 +187,8 @@ RenderFrameAudioOutputStreamFactory::Core::Core(
     RenderFrameHost* frame,
     media::AudioSystem* audio_system,
     MediaStreamManager* media_stream_manager,
-    mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver)
+    mojo::PendingReceiver<blink::mojom::RendererAudioOutputStreamFactory>
+        receiver)
     : process_id_(frame->GetProcess()->GetID()),
       frame_id_(frame->GetRoutingID()),
       authorization_handler_(audio_system, media_stream_manager, process_id_) {
@@ -209,7 +214,8 @@ RenderFrameAudioOutputStreamFactory::Core::Core(
 }
 
 void RenderFrameAudioOutputStreamFactory::Core::Init(
-    mojo::PendingReceiver<mojom::RendererAudioOutputStreamFactory> receiver) {
+    mojo::PendingReceiver<blink::mojom::RendererAudioOutputStreamFactory>
+        receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   receiver_.Bind(std::move(receiver));

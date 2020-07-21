@@ -120,7 +120,7 @@ bool {{proxy_name}}::{{method.name}}(
     {{interface_macros.declare_sync_method_params("param_", method)}}) {
 #if BUILDFLAG(MOJO_TRACE_ENABLED)
 {%-     set qualified_method_name = "%s::%s::%s" % (namespace_as_string,
-                                                    class_name, method_name) %}
+                                                    class_name, method.name) %}
   {{interface_macros.trace_event("param_", method.parameters,
                                  qualified_method_name)}}
 #endif
@@ -163,7 +163,7 @@ void {{proxy_name}}::{{method.name}}(
     {{interface_macros.declare_request_params("in_", method)}}) {
 #if BUILDFLAG(MOJO_TRACE_ENABLED)
 {%- set qualified_method_name = "%s::%s::%s" % (namespace_as_string, class_name,
-                                                method_name) %}
+                                                method.name) %}
   {{interface_macros.trace_event("in_", method.parameters,
                                  qualified_method_name)}}
 #endif

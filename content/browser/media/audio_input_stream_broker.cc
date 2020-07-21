@@ -66,7 +66,7 @@ AudioInputStreamBroker::AudioInputStreamBroker(
     media::UserInputMonitorBase* user_input_monitor,
     bool enable_agc,
     AudioStreamBroker::DeleterCallback deleter,
-    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+    mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
         renderer_factory_client)
     : AudioStreamBroker(render_process_id, render_frame_id),
       device_id_(device_id),

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <random>
 #include <utility>
 
 #include "base/util/ranges/functional.h"
@@ -670,6 +671,69 @@ TEST(RangesTest, UniqueCopy) {
   EXPECT_EQ(output + 3, ranges::unique_copy(input, output, {}, &Int::value));
   EXPECT_THAT(input, ElementsAre(0, 0, 1, 2, 2));
   EXPECT_THAT(output, ElementsAre(0, 1, 2, 0, 0));
+}
+
+TEST(RangesTest, Reverse) {
+  int input[] = {0, 1, 2, 3, 4};
+
+  EXPECT_EQ(input + 4, ranges::reverse(input + 2, input + 4));
+  EXPECT_THAT(input, ElementsAre(0, 1, 3, 2, 4));
+
+  EXPECT_EQ(input + 5, ranges::reverse(input));
+  EXPECT_THAT(input, ElementsAre(4, 2, 3, 1, 0));
+}
+
+TEST(RangesTest, ReverseCopy) {
+  int input[] = {0, 1, 2, 3, 4};
+  int output[] = {0, 0, 0, 0, 0};
+
+  EXPECT_EQ(output + 2, ranges::reverse_copy(input + 2, input + 4, output));
+  EXPECT_THAT(input, ElementsAre(0, 1, 2, 3, 4));
+  EXPECT_THAT(output, ElementsAre(3, 2, 0, 0, 0));
+
+  EXPECT_EQ(output + 5, ranges::reverse_copy(input, output));
+  EXPECT_THAT(input, ElementsAre(0, 1, 2, 3, 4));
+  EXPECT_THAT(output, ElementsAre(4, 3, 2, 1, 0));
+}
+
+TEST(RangesTest, Rotate) {
+  int input[] = {0, 1, 2, 3, 4};
+
+  EXPECT_EQ(input + 3, ranges::rotate(input + 2, input + 3, input + 4));
+  EXPECT_THAT(input, ElementsAre(0, 1, 3, 2, 4));
+
+  EXPECT_EQ(input + 3, ranges::rotate(input, input + 2));
+  EXPECT_THAT(input, ElementsAre(3, 2, 4, 0, 1));
+}
+
+TEST(RangesTest, RotateCopy) {
+  int input[] = {0, 1, 2, 3, 4};
+  int output[] = {0, 0, 0, 0, 0};
+
+  EXPECT_EQ(output + 2,
+            ranges::rotate_copy(input + 2, input + 3, input + 4, output));
+  EXPECT_THAT(input, ElementsAre(0, 1, 2, 3, 4));
+  EXPECT_THAT(output, ElementsAre(3, 2, 0, 0, 0));
+
+  EXPECT_EQ(output + 5, ranges::rotate_copy(input, input + 3, output));
+  EXPECT_THAT(input, ElementsAre(0, 1, 2, 3, 4));
+  EXPECT_THAT(output, ElementsAre(3, 4, 0, 1, 2));
+}
+
+TEST(RangesTest, Shuffle) {
+  int input[] = {0, 1, 2, 3, 4};
+
+  // Shuffles input[2] and input[3], thus we can't be certain about their
+  // positions.
+  EXPECT_EQ(input + 4, ranges::shuffle(input + 2, input + 4,
+                                       std::default_random_engine()));
+  EXPECT_EQ(input[0], 0);
+  EXPECT_EQ(input[1], 1);
+  EXPECT_EQ(input[4], 4);
+  EXPECT_THAT(input, ::testing::UnorderedElementsAre(0, 1, 2, 3, 4));
+
+  EXPECT_EQ(input + 5, ranges::shuffle(input, std::default_random_engine()));
+  EXPECT_THAT(input, ::testing::UnorderedElementsAre(0, 1, 2, 3, 4));
 }
 
 TEST(RangesTest, LowerBound) {

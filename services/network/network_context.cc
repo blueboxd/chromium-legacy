@@ -322,6 +322,52 @@ std::string HashesToBase64String(const net::HashValueVector& hashes) {
   return str;
 }
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
+// SCTAuditingDelegate is an implementation of the delegate interface that is
+// aware of per-NetworkContext details (to allow the cache to notify the
+// associated NetworkContextClient of new reports, and to apply
+// per-NetworkContext enabled/disabled status for the auditing feature).
+class SCTAuditingDelegate : public net::SCTAuditingDelegate {
+ public:
+  explicit SCTAuditingDelegate(const base::WeakPtr<NetworkContext>& context);
+  ~SCTAuditingDelegate() override;
+
+  // net::SCTAuditingDelegate:
+  void MaybeEnqueueReport(
+      const net::HostPortPair& host_port_pair,
+      const net::X509Certificate* validated_certificate_chain,
+      const net::SignedCertificateTimestampAndStatusList&
+          signed_certificate_timestamps) override;
+  bool IsSCTAuditingEnabled() override;
+
+ private:
+  base::WeakPtr<NetworkContext> context_;
+};
+
+SCTAuditingDelegate::SCTAuditingDelegate(
+    const base::WeakPtr<NetworkContext>& context)
+    : context_(context) {}
+
+SCTAuditingDelegate::~SCTAuditingDelegate() = default;
+
+void SCTAuditingDelegate::MaybeEnqueueReport(
+    const net::HostPortPair& host_port_pair,
+    const net::X509Certificate* validated_certificate_chain,
+    const net::SignedCertificateTimestampAndStatusList&
+        signed_certificate_timestamps) {
+  if (!context_)
+    return;
+  context_->MaybeEnqueueSCTReport(host_port_pair, validated_certificate_chain,
+                                  signed_certificate_timestamps);
+}
+
+bool SCTAuditingDelegate::IsSCTAuditingEnabled() {
+  if (!context_)
+    return false;
+  return context_->is_sct_auditing_enabled();
+}
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
+
 }  // namespace
 
 constexpr uint32_t NetworkContext::kMaxOutstandingRequestsPerProcess;
@@ -1105,6 +1151,16 @@ void NetworkContext::GetExpectCTState(
   }
 
   std::move(callback).Run(std::move(result));
+}
+
+void NetworkContext::MaybeEnqueueSCTReport(
+    const net::HostPortPair& host_port_pair,
+    const net::X509Certificate* validated_certificate_chain,
+    const net::SignedCertificateTimestampAndStatusList&
+        signed_certificate_timestamps) {
+  network_service()->sct_auditing_cache()->MaybeEnqueueReport(
+      this, host_port_pair, validated_certificate_chain,
+      signed_certificate_timestamps);
 }
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
@@ -2071,6 +2127,9 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
             params_->ct_log_update_time, disqualified_logs,
             operated_by_google_logs));
   }
+
+  builder.set_sct_auditing_delegate(
+      std::make_unique<SCTAuditingDelegate>(weak_factory_.GetWeakPtr()));
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
   builder.set_host_mapping_rules(
@@ -2298,6 +2357,13 @@ void NetworkContext::OnCertVerifyForSignedExchangeComplete(int cert_verify_id,
             net::TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
             ct_verify_result.policy_compliance,
             net::NetworkIsolationKey::Todo());
+
+    if (url_request_context_->sct_auditing_delegate() &&
+        url_request_context_->sct_auditing_delegate()->IsSCTAuditingEnabled()) {
+      url_request_context_->sct_auditing_delegate()->MaybeEnqueueReport(
+          net::HostPortPair::FromURL(pending_cert_verify->url), verified_cert,
+          ct_verify_result.scts);
+    }
 
     switch (ct_requirement_status) {
       case net::TransportSecurityState::CT_REQUIREMENTS_NOT_MET:

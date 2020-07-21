@@ -100,6 +100,11 @@ bool ShouldEnableOutOfBlinkCorsForTesting();
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kWebSocketReassembleShortMessages;
 
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kSCTAuditing;
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::FeatureParam<double> kSCTAuditingSamplingRate;
+
 }  // namespace features
 }  // namespace network
 

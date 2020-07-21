@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
+#include "net/base/completion_once_callback.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 

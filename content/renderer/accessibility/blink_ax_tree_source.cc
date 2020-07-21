@@ -810,7 +810,7 @@ void BlinkAXTreeSource::SerializeStyleAttributes(WebAXObject src,
     dst->SetListStyle(src.GetListStyle());
   }
 
-  if (src.GetTextDirection() != ax::mojom::TextDirection::kNone) {
+  if (src.GetTextDirection() != ax::mojom::WritingDirection::kNone) {
     dst->SetTextDirection(src.GetTextDirection());
   }
 

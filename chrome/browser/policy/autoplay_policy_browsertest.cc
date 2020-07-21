@@ -109,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayWhitelist_Allowed) {
 
   // Update policy to allow autoplay for our test origin.
   PolicyMap policies;
-  SetPolicy(&policies, key::kAutoplayWhitelist, base::Value(whitelist));
+  SetPolicy(&policies, key::kAutoplayAllowlist, base::Value(whitelist));
   UpdateProviderPolicy(policies);
 
   // Check that autoplay was allowed by policy.
@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayWhitelist_PatternAllowed) {
 
   // Update policy to allow autoplay for our test origin.
   PolicyMap policies;
-  SetPolicy(&policies, key::kAutoplayWhitelist, base::Value(whitelist));
+  SetPolicy(&policies, key::kAutoplayAllowlist, base::Value(whitelist));
   UpdateProviderPolicy(policies);
 
   // Check that autoplay was allowed by policy.
@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayWhitelist_Missing) {
 
   // Update policy to allow autoplay for a random origin.
   PolicyMap policies;
-  SetPolicy(&policies, key::kAutoplayWhitelist, base::Value(whitelist));
+  SetPolicy(&policies, key::kAutoplayAllowlist, base::Value(whitelist));
   UpdateProviderPolicy(policies);
 
   // Check that autoplay was not allowed.
@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayDeniedByPolicy) {
   whitelist.push_back(base::Value("https://www.example.com"));
 
   // Update policy to allow autoplay for a random origin.
-  SetPolicy(&policies, key::kAutoplayWhitelist, base::Value(whitelist));
+  SetPolicy(&policies, key::kAutoplayAllowlist, base::Value(whitelist));
   UpdateProviderPolicy(policies);
 
   // Check that autoplay was not allowed.
@@ -215,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayDeniedAllowedWithURL) {
   whitelist.push_back(base::Value(embedded_test_server()->GetURL("/").spec()));
 
   // Update policy to allow autoplay for our test origin.
-  SetPolicy(&policies, key::kAutoplayWhitelist, base::Value(whitelist));
+  SetPolicy(&policies, key::kAutoplayAllowlist, base::Value(whitelist));
   UpdateProviderPolicy(policies);
 
   // Check that autoplay was allowed by policy.
@@ -246,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayAllowedGlobalAndURL) {
   whitelist.push_back(base::Value(embedded_test_server()->GetURL("/").spec()));
 
   // Update policy to allow autoplay for our test origin.
-  SetPolicy(&policies, key::kAutoplayWhitelist, base::Value(whitelist));
+  SetPolicy(&policies, key::kAutoplayAllowlist, base::Value(whitelist));
   UpdateProviderPolicy(policies);
 
   // Check that autoplay was allowed by policy.

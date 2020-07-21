@@ -12,6 +12,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
@@ -19,6 +22,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingBridge;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingState;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescription;
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionAndAuxButton;
@@ -46,18 +50,23 @@ public class SecuritySettingsFragmentTest {
     @Rule
     public TestRule mFeatureProcessor = new Features.InstrumentationProcessor();
 
+    @Mock
+    private SettingsLauncher mSettingsLauncher;
+
+    private SecuritySettingsFragment mSecuritySettingsFragment;
     private RadioButtonGroupSafeBrowsingPreference mSafeBrowsingPreference;
 
     @Before
     public void setUp() {
+        MockitoAnnotations.initMocks(this);
         launchSettingsActivity();
     }
 
     private void launchSettingsActivity() {
         mTestRule.startSettingsActivity();
-        SecuritySettingsFragment fragment = mTestRule.getFragment();
-        mSafeBrowsingPreference =
-                fragment.findPreference(SecuritySettingsFragment.PREF_SAFE_BROWSING);
+        mSecuritySettingsFragment = mTestRule.getFragment();
+        mSafeBrowsingPreference = mSecuritySettingsFragment.findPreference(
+                SecuritySettingsFragment.PREF_SAFE_BROWSING);
         Assert.assertNotNull(
                 "Safe Browsing preference should not be null.", mSafeBrowsingPreference);
     }
@@ -136,6 +145,34 @@ public class SecuritySettingsFragmentTest {
     @Features.DisableFeatures(ChromeFeatureList.SAFE_BROWSING_ENHANCED_PROTECTION_ENABLED)
     public void testEnhancedProtectionDisabled() {
         Assert.assertNull(getEnhancedProtectionButton());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"SafeBrowsing"})
+    @Features.EnableFeatures(ChromeFeatureList.SAFE_BROWSING_ENHANCED_PROTECTION_ENABLED)
+    public void testEnhancedProtectionAuxButtonClicked() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mSecuritySettingsFragment.setSettingsLauncher(mSettingsLauncher);
+            getEnhancedProtectionButton().getAuxButtonForTests().performClick();
+            Mockito.verify(mSettingsLauncher)
+                    .launchSettingsActivity(mSecuritySettingsFragment.getContext(),
+                            EnhancedProtectionSettingsFragment.class);
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"SafeBrowsing"})
+    @Features.EnableFeatures(ChromeFeatureList.SAFE_BROWSING_ENHANCED_PROTECTION_ENABLED)
+    public void testStandardProtectionAuxButtonClicked() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mSecuritySettingsFragment.setSettingsLauncher(mSettingsLauncher);
+            getStandardProtectionButton().getAuxButtonForTests().performClick();
+            Mockito.verify(mSettingsLauncher)
+                    .launchSettingsActivity(mSecuritySettingsFragment.getContext(),
+                            StandardProtectionSettingsFragment.class);
+        });
     }
 
     private @SafeBrowsingState int getSafeBrowsingState() {

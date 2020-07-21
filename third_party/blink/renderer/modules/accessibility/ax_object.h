@@ -657,8 +657,8 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual ax::mojom::blink::TextAlign GetTextAlign() const {
     return ax::mojom::blink::TextAlign::kNone;
   }
-  virtual ax::mojom::blink::TextDirection GetTextDirection() const {
-    return ax::mojom::blink::TextDirection::kLtr;
+  virtual ax::mojom::blink::WritingDirection GetTextDirection() const {
+    return ax::mojom::blink::WritingDirection::kLtr;
   }
   virtual ax::mojom::blink::TextPosition GetTextPosition() const {
     return ax::mojom::blink::TextPosition::kNone;

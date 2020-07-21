@@ -4,6 +4,7 @@
 
 #include "chromeos/components/telemetry_extension_ui/probe_service_converters.h"
 
+#include <unistd.h>
 #include <utility>
 
 #include "base/notreached.h"
@@ -138,13 +139,34 @@ health::mojom::CpuCStateInfoPtr UncheckedConvertPtr(
       std::move(input->name), Convert(input->time_in_state_since_last_boot_us));
 }
 
+namespace {
+
+uint64_t UserHz() {
+  const long user_hz = sysconf(_SC_CLK_TCK);
+  DCHECK(user_hz >= 0);
+  return user_hz;
+}
+
+}  // namespace
+
 health::mojom::LogicalCpuInfoPtr UncheckedConvertPtr(
     cros_healthd::mojom::LogicalCpuInfoPtr input) {
+  return UncheckedConvertPtr(std::move(input), UserHz());
+}
+
+health::mojom::LogicalCpuInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::LogicalCpuInfoPtr input,
+    uint64_t user_hz) {
+  constexpr uint64_t kMillisecondsInSecond = 1000;
+  uint64_t idle_time_user_hz = static_cast<uint64_t>(input->idle_time_user_hz);
+
+  DCHECK(user_hz != 0);
+
   return health::mojom::LogicalCpuInfo::New(
       Convert(input->max_clock_speed_khz),
       Convert(input->scaling_max_frequency_khz),
       Convert(input->scaling_current_frequency_khz),
-      Convert(static_cast<uint64_t>(input->idle_time_user_hz)),
+      Convert(idle_time_user_hz * kMillisecondsInSecond / user_hz),
       ConvertPtrVector<health::mojom::CpuCStateInfoPtr>(
           std::move(input->c_states)));
 }

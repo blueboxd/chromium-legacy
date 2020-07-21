@@ -22,8 +22,8 @@ class FindTextTestClient : public TestClient {
   ~FindTextTestClient() override = default;
 
   // PDFEngine::Client:
-  MOCK_METHOD2(NotifyNumberOfFindResultsChanged, void(int, bool));
-  MOCK_METHOD1(NotifySelectedFindResultChanged, void((int)));
+  MOCK_METHOD(void, NotifyNumberOfFindResultsChanged, (int, bool), (override));
+  MOCK_METHOD(void, NotifySelectedFindResultChanged, (int), (override));
 
   std::vector<SearchStringResult> SearchString(const base::char16* string,
                                                const base::char16* term,

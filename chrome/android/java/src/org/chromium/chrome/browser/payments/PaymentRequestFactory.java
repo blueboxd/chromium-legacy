@@ -15,6 +15,7 @@ import org.chromium.components.payments.ComponentPaymentRequestImpl;
 import org.chromium.components.payments.ErrorStrings;
 import org.chromium.components.payments.OriginSecurityChecker;
 import org.chromium.components.payments.PaymentFeatureList;
+import org.chromium.components.payments.SslValidityChecker;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;

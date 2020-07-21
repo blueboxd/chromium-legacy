@@ -28,8 +28,6 @@ IPC_MESSAGE_ROUTED2(PageMsg_SetHistoryOffsetAndLength,
                     int /* history_offset */,
                     int /* history_length */)
 
-IPC_MESSAGE_ROUTED1(PageMsg_AudioStateChanged, bool /* is_audio_playing */)
-
 // blink::TextAutosizer changes in the main frame's renderer.
 IPC_MESSAGE_ROUTED1(PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames,
                     blink::WebTextAutosizerPageInfo /* page_info */)

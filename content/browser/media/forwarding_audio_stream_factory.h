@@ -18,12 +18,12 @@
 #include "content/browser/media/audio_muting_session.h"
 #include "content/browser/media/audio_stream_broker.h"
 #include "content/common/content_export.h"
-#include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
+#include "third_party/blink/public/mojom/media/renderer_audio_input_stream_factory.mojom.h"
 
 namespace media {
 class AudioParameters;
@@ -73,7 +73,7 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
         const media::AudioParameters& params,
         uint32_t shared_memory_count,
         bool enable_agc,
-        mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+        mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
             renderer_factory_client);
 
     void AssociateInputAndOutputForAec(
@@ -95,7 +95,7 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
         const media::AudioParameters& params,
         uint32_t shared_memory_count,
         bool mute_source,
-        mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+        mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
             renderer_factory_client);
 
     // Sets the muting state for all output streams created through this

@@ -1,4 +1,4 @@
-<style>
+<style include="profile-picker-shared">
   :host {
     --avatar-icon-size: 74px;
     --banner-img-height: 628px;
@@ -24,6 +24,11 @@
   #rightBanner {
     background: url(right_banner_image.svg);
     right: 0;
+  }
+
+  .title-container {
+    margin: 30px auto;
+    text-align: center;
   }
 
   .profiles-container {
@@ -92,6 +97,14 @@
 </style>
 
 <div id="leftBanner" class="banner"></div>
+<div class="title-container">
+  <img id="product-logo" on-click="onProductLogoTap_"
+      srcset="chrome://theme/current-channel-logo@1x 1x,
+              chrome://theme/current-channel-logo@2x 2x"
+      role="presentation">
+  <h2>$i18n{mainViewTitle}</h2>
+  <h3>$i18n{mainViewSubtitle}</h3>
+</div>
 <div class="profiles-container">
   <template is="dom-repeat"
       hidden="[[!profilesList_]]" items="[[profilesList_]]">

@@ -65,7 +65,7 @@ class AXInlineTextBox final : public AXObject {
                          SkMatrix44& out_container_transform,
                          bool* clips_children = nullptr) const override;
   AXObject* ComputeParent() const override;
-  ax::mojom::TextDirection GetTextDirection() const override;
+  ax::mojom::blink::WritingDirection GetTextDirection() const override;
   Node* GetNode() const override;
   AXObject* NextOnLine() const override;
   AXObject* PreviousOnLine() const override;

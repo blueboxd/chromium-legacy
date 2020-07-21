@@ -14,7 +14,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "media/audio/audio_output_ipc.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
@@ -22,6 +21,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/media/renderer_audio_output_stream_factory.mojom.h"
 
 namespace content {
 
@@ -32,8 +32,8 @@ class CONTENT_EXPORT MojoAudioOutputIPC
     : public media::AudioOutputIPC,
       public media::mojom::AudioOutputStreamProviderClient {
  public:
-  using FactoryAccessorCB =
-      base::RepeatingCallback<mojom::RendererAudioOutputStreamFactory*()>;
+  using FactoryAccessorCB = base::RepeatingCallback<
+      blink::mojom::RendererAudioOutputStreamFactory*()>;
 
   // |factory_accessor| is required to provide a
   // RendererAudioOutputStreamFactory* if IPC is possible.
@@ -64,7 +64,7 @@ class CONTENT_EXPORT MojoAudioOutputIPC
  private:
   static constexpr double kDefaultVolume = 1.0;
 
-  using AuthorizationCB = mojom::RendererAudioOutputStreamFactory::
+  using AuthorizationCB = blink::mojom::RendererAudioOutputStreamFactory::
       RequestDeviceAuthorizationCallback;
 
   bool AuthorizationRequested() const;

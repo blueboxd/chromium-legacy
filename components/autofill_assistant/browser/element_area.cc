@@ -50,6 +50,9 @@ void ElementArea::Clear() {
 
 void ElementArea::SetFromProto(const ElementAreaProto& proto) {
   rectangles_.clear();
+  last_visual_viewport_ = RectF();
+  last_rectangles_.clear();
+
   AddRectangles(proto.touchable(), /* restricted= */ false);
   AddRectangles(proto.restricted(), /* restricted= */ true);
 

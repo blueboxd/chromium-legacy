@@ -3417,6 +3417,87 @@ TEST_F(DecodedImageTrackerTileManagerTest, DecodedImageTrackerDropsLocksOnUse) {
                     .NumLockedImagesForTesting());
 }
 
+class HdrImageTileManagerTest : public CheckerImagingTileManagerTest {
+ public:
+  void DecodeHdrImage(const gfx::ColorSpace& raster_cs) {
+    auto color_space = gfx::ColorSpace::CreateHDR10();
+    auto size = gfx::Size(250, 250);
+    auto info =
+        SkImageInfo::Make(size.width(), size.height(), kRGBA_F16_SkColorType,
+                          kPremul_SkAlphaType, color_space.ToSkColorSpace());
+    SkBitmap bitmap;
+    bitmap.allocPixels(info);
+    PaintImage hdr_image = PaintImageBuilder::WithDefault()
+                               .set_id(PaintImage::kInvalidId)
+                               .set_is_high_bit_depth(true)
+                               .set_image(SkImage::MakeFromBitmap(bitmap),
+                                          PaintImage::GetNextContentId())
+                               .TakePaintImage();
+
+    // Add the image to our decoded_image_tracker.
+    host_impl()->tile_manager()->decoded_image_tracker().QueueImageDecode(
+        hdr_image, raster_cs, base::DoNothing());
+    FlushDecodeTasks();
+
+    // Add images to a fake recording source.
+    constexpr gfx::Size kLayerBounds(1000, 500);
+    auto recording_source =
+        FakeRecordingSource::CreateFilledRecordingSource(kLayerBounds);
+    recording_source->set_fill_with_nonsolid_color(true);
+    recording_source->add_draw_image(hdr_image, gfx::Point(0, 0));
+    recording_source->Rerecord();
+
+    auto raster_source = recording_source->CreateRasterSource();
+
+    constexpr gfx::Size kTileSize(500, 500);
+    Region invalidation((gfx::Rect(kLayerBounds)));
+    SetupPendingTree(raster_source, kTileSize, invalidation);
+    pending_layer()->layer_tree_impl()->SetRasterColorSpace(raster_cs);
+
+    PictureLayerTilingSet* tiling_set =
+        pending_layer()->picture_layer_tiling_set();
+    PictureLayerTiling* pending_tiling = tiling_set->tiling_at(0);
+    pending_tiling->set_resolution(HIGH_RESOLUTION);
+    pending_tiling->CreateAllTilesForTesting();
+    pending_tiling->SetTilePriorityRectsForTesting(
+        gfx::Rect(kLayerBounds),   // Visible rect.
+        gfx::Rect(kLayerBounds),   // Skewport rect.
+        gfx::Rect(kLayerBounds),   // Soon rect.
+        gfx::Rect(kLayerBounds));  // Eventually rect.
+
+    host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
+    ASSERT_TRUE(host_impl()->tile_manager()->HasScheduledTileTasksForTesting());
+
+    // Raster all tiles.
+    static_cast<SynchronousTaskGraphRunner*>(task_graph_runner())
+        ->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
+    ASSERT_FALSE(
+        host_impl()->tile_manager()->HasScheduledTileTasksForTesting());
+
+    auto expected_format = raster_cs.IsHDR() ? viz::RGBA_F16 : viz::RGBA_8888;
+    auto all_tiles = host_impl()->tile_manager()->AllTilesForTesting();
+    for (const auto* tile : all_tiles)
+      EXPECT_EQ(expected_format, tile->draw_info().resource_format());
+  }
+};
+
+TEST_F(HdrImageTileManagerTest, DecodeHdrImagesToHdrPq) {
+  DecodeHdrImage(gfx::ColorSpace::CreateHDR10());
+}
+
+TEST_F(HdrImageTileManagerTest, DecodeHdrImagesToHdrHlg) {
+  DecodeHdrImage(gfx::ColorSpace::CreateHLG());
+}
+
+TEST_F(HdrImageTileManagerTest, DecodeHdrImagesToSdrSrgb) {
+  DecodeHdrImage(gfx::ColorSpace::CreateSRGB());
+}
+
+TEST_F(HdrImageTileManagerTest, DecodeHdrImagesToSdrP3) {
+  DecodeHdrImage(gfx::ColorSpace::CreateDisplayP3D65());
+}
+
 class TileManagerCheckRasterQueriesTest : public TileManagerTest {
  public:
   ~TileManagerCheckRasterQueriesTest() override {

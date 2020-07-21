@@ -134,7 +134,7 @@ public class RadioButtonWithDescriptionAndAuxButton extends RadioButtonWithDescr
      * @return the aux button living inside this widget.
      */
     @VisibleForTesting
-    ImageButton getAuxButtonForTests() {
+    public ImageButton getAuxButtonForTests() {
         return mAuxButton;
     }
 }

@@ -13,6 +13,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_verifier.h"
+#include "net/cert/sct_auditing_delegate.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -113,6 +114,12 @@ void URLRequestContextStorage::set_ct_policy_enforcer(
     std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer) {
   context_->set_ct_policy_enforcer(ct_policy_enforcer.get());
   ct_policy_enforcer_ = std::move(ct_policy_enforcer);
+}
+
+void URLRequestContextStorage::set_sct_auditing_delegate(
+    std::unique_ptr<SCTAuditingDelegate> sct_auditing_delegate) {
+  context_->set_sct_auditing_delegate(sct_auditing_delegate.get());
+  sct_auditing_delegate_ = std::move(sct_auditing_delegate);
 }
 
 void URLRequestContextStorage::set_http_network_session(

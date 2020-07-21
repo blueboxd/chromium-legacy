@@ -965,9 +965,9 @@ ax::mojom::ListStyle WebAXObject::GetListStyle() const {
   return private_->GetListStyle();
 }
 
-ax::mojom::TextDirection WebAXObject::GetTextDirection() const {
+ax::mojom::blink::WritingDirection WebAXObject::GetTextDirection() const {
   if (IsDetached())
-    return ax::mojom::TextDirection::kLtr;
+    return ax::mojom::blink::WritingDirection::kLtr;
 
   return private_->GetTextDirection();
 }

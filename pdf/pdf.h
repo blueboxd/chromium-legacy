@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/component_export.h"
 #include "base/containers/span.h"
 #include "base/optional.h"
 #include "base/values.h"
@@ -34,7 +33,6 @@ namespace chrome_pdf {
 // Create a flattened PDF document from an existing PDF document.
 // |input_buffer| is the buffer that contains the entire PDF document to be
 // flattened.
-COMPONENT_EXPORT(PDF)
 std::vector<uint8_t> CreateFlattenedPdf(base::span<const uint8_t> input_buffer);
 #endif  // defined(OS_CHROMEOS)
 
@@ -77,7 +75,6 @@ enum PrintingMode {
 //     the output bound.
 // |use_color| specifies color or grayscale.
 // Returns false if the document or the page number are not valid.
-COMPONENT_EXPORT(PDF)
 bool RenderPDFPageToDC(base::span<const uint8_t> pdf_buffer,
                        int page_number,
                        HDC dc,
@@ -94,20 +91,16 @@ bool RenderPDFPageToDC(base::span<const uint8_t> pdf_buffer,
                        bool autorotate,
                        bool use_color);
 
-COMPONENT_EXPORT(PDF)
 void SetPDFEnsureTypefaceCharactersAccessible(
     PDFEnsureTypefaceCharactersAccessible func);
 
-COMPONENT_EXPORT(PDF)
 void SetPDFUseGDIPrinting(bool enable);
 
-COMPONENT_EXPORT(PDF)
 void SetPDFUsePrintMode(int mode);
 #endif  // defined(OS_WIN)
 
 // |page_count| and |max_page_width| are optional and can be NULL.
 // Returns false if the document is not valid.
-COMPONENT_EXPORT(PDF)
 bool GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
                    int* page_count,
                    double* max_page_width);
@@ -115,12 +108,10 @@ bool GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
 // Whether the PDF is Tagged (see 10.7 "Tagged PDF" in PDF Reference 1.7).
 // Returns true if it's a tagged (accessible) PDF, false if it's a valid
 // PDF but untagged, and nullopt if the PDF can't be parsed.
-COMPONENT_EXPORT(PDF)
 base::Optional<bool> IsPDFDocTagged(base::span<const uint8_t> pdf_buffer);
 
 // Given a tagged PDF (see IsPDFDocTagged, above), return the portion of
 // the structure tree for a given page as a hierarchical tree of base::Values.
-COMPONENT_EXPORT(PDF)
 base::Value GetPDFStructTreeForPage(base::span<const uint8_t> pdf_buffer,
                                     int page_index);
 
@@ -132,7 +123,6 @@ base::Value GetPDFStructTreeForPage(base::span<const uint8_t> pdf_buffer,
 // |width| is the output for the width of the page in points.
 // |height| is the output for the height of the page in points.
 // Returns false if the document or the page number are not valid.
-COMPONENT_EXPORT(PDF)
 bool GetPDFPageSizeByIndex(base::span<const uint8_t> pdf_buffer,
                            int page_number,
                            double* width,
@@ -150,7 +140,6 @@ bool GetPDFPageSizeByIndex(base::span<const uint8_t> pdf_buffer,
 //     the output bound.
 // |use_color| specifies color or grayscale.
 // Returns false if the document or the page number are not valid.
-COMPONENT_EXPORT(PDF)
 bool RenderPDFPageToBitmap(base::span<const uint8_t> pdf_buffer,
                            int page_number,
                            void* bitmap_buffer,
@@ -179,7 +168,6 @@ bool RenderPDFPageToBitmap(base::span<const uint8_t> pdf_buffer,
 // See printing::NupParameters for more details on how the output page
 // orientation is determined, to understand why |page_size| may be swapped in
 // some cases.
-COMPONENT_EXPORT(PDF)
 std::vector<uint8_t> ConvertPdfPagesToNupPdf(
     std::vector<base::span<const uint8_t>> input_buffers,
     size_t pages_per_sheet,
@@ -197,7 +185,6 @@ std::vector<uint8_t> ConvertPdfPagesToNupPdf(
 // Refer to the description of ConvertPdfPagesToNupPdf to understand how the
 // output page size will be calculated.
 // The algorithm used to determine the output page size is the same.
-COMPONENT_EXPORT(PDF)
 std::vector<uint8_t> ConvertPdfDocumentToNupPdf(
     base::span<const uint8_t> input_buffer,
     size_t pages_per_sheet,

@@ -128,12 +128,17 @@ void ExtensionPopup::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UnloadedExtensionReason reason) {
+  CHECK(host_);
   if (extension->id() == host_->extension_id()) {
     // To ensure |extension_view_| cannot receive any messages that cause it to
     // try to access the host during Widget closure, destroy it immediately.
     RemoveChildViewT(extension_view_);
 
     host_.reset();
+    // Stop observing the registry immediately to prevent any subsequent
+    // notifications, since Widget::Close is asynchronous.
+    extension_registry_observer_.RemoveAll();
+
     GetWidget()->Close();
   }
 }

@@ -36,12 +36,12 @@ extern const base::FeatureParam<PrefetchSubresourceType>
 bool ShouldUseLocalPredictions();
 
 // Returns whether optimization guide predictions should be used to make
-// preconnect predictions.
+// loading predictions, such as preconnect or prefetch.
 //
 // In addition to checking whether the feature is enabled, this will
 // additionally check a feature parameter is specified to dictate if the
-// predictions should be used to preconnect to subresource origins.
-bool ShouldUseOptimizationGuidePredictionsToPreconnect();
+// predictions should actually be used.
+bool ShouldUseOptimizationGuidePredictions();
 
 }  // namespace features
 

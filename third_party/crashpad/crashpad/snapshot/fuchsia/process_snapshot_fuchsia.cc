@@ -59,14 +59,9 @@ bool ProcessSnapshotFuchsia::InitializeException(
     zx_koid_t thread_id,
     const zx_exception_report_t& report) {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-
-  std::unique_ptr<internal::ExceptionSnapshotFuchsia> exception(
-      new internal::ExceptionSnapshotFuchsia());
-  if (exception->Initialize(&process_reader_, thread_id, report)) {
-    exception_.swap(exception);
-    return true;
-  }
-  return false;
+  exception_.reset(new internal::ExceptionSnapshotFuchsia());
+  exception_->Initialize(&process_reader_, thread_id, report);
+  return true;
 }
 
 void ProcessSnapshotFuchsia::GetCrashpadOptions(

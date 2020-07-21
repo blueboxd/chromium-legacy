@@ -6928,6 +6928,7 @@ crbug.com/1094436 http/tests/devtools/sources/debugger/navigator-view.js [ Pass 
 crbug.com/1107572 [ Mac ] http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js [ Pass Failure ]
 crbug.com/1107572 [ Mac ] http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.js [ Pass Failure ]
 crbug.com/1107572 [ Mac ] http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidator-invalidations.js [ Pass Failure ]
+crbug.com/1107722 [ Mac ] http/tests/devtools/tracing/timeline-time/timeline-time.js [ Pass Failure ]
 
 crbug.com/1107634 [ Mac10.10 ] virtual/gpu-rasterization/images/color-profile-background-image-cross-fade-png.html [ Pass Failure ]
 crbug.com/1107634 [ Mac10.10 ] virtual/gpu-rasterization/images/color-profile-background-image-cross-fade.html [ Pass Failure ]

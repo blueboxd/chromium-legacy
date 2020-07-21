@@ -44,7 +44,7 @@ class FakeAudioInputDelegate : public media::AudioInputDelegate {
 };
 
 class MockRendererAudioInputStreamFactoryClient
-    : public mojom::RendererAudioInputStreamFactoryClient {
+    : public blink::mojom::RendererAudioInputStreamFactoryClient {
  public:
   MOCK_METHOD0(Created, void());
 
@@ -129,9 +129,10 @@ class AudioInputStreamHandleTest : public Test {
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
   StrictMock<MockRendererAudioInputStreamFactoryClient> client_;
-  mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+  mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
       client_pending_remote_;
-  mojo::Receiver<mojom::RendererAudioInputStreamFactoryClient> client_receiver_;
+  mojo::Receiver<blink::mojom::RendererAudioInputStreamFactoryClient>
+      client_receiver_;
   StrictMock<MockDeleter> deleter_;
   media::AudioInputDelegate::EventHandler* event_handler_ = nullptr;
   std::unique_ptr<AudioInputStreamHandle> handle_;

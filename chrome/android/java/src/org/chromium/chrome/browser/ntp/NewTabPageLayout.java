@@ -22,6 +22,7 @@ import android.widget.LinearLayout;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.CallbackController;
 import org.chromium.base.MathUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.Supplier;
@@ -29,6 +30,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
+import org.chromium.chrome.browser.cryptids.ProbabilisticCryptidRenderer;
 import org.chromium.chrome.browser.download.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.explore_sites.ExperimentalExploreSitesSection;
@@ -79,6 +81,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private View mTileGridPlaceholder;
     private View mNoSearchLogoSpacer;
     private QueryTileSection mQueryTileSection;
+    private ImageView mCryptidHolder;
 
     @Nullable
     private View mExploreSectionView; // View is null if explore flag is disabled.
@@ -93,6 +96,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private TileGroup mTileGroup;
     private UiConfig mUiConfig;
     private Supplier<Tab> mTabProvider;
+    private CallbackController mCallbackController = new CallbackController();
 
     /**
      * Whether the tiles shown in the layout have finished loading.
@@ -509,7 +513,27 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         mSearchProviderLogoView.showSearchProviderInitialView();
 
         mLogoDelegate.getSearchProviderLogo((logo, fromCache) -> {
-            if (logo == null && fromCache) return;
+            if (logo == null) {
+                if (mSearchProviderIsGoogle) {
+                    // We received a null logo and the provider is Google; this means there's no
+                    // doodle.
+                    ProbabilisticCryptidRenderer renderer =
+                            ProbabilisticCryptidRenderer.getInstance();
+                    renderer.getCryptidForLogo(Profile.getLastUsedRegularProfile(),
+                            mCallbackController.makeCancelable((drawable) -> {
+                                if (drawable == null || mCryptidHolder != null) {
+                                    return;
+                                }
+                                ViewStub stub = findViewById(R.id.logo_holder)
+                                                        .findViewById(R.id.cryptid_holder);
+                                ImageView view = (ImageView) stub.inflate();
+                                view.setImageDrawable(drawable);
+                                mCryptidHolder = view;
+                            }));
+                }
+
+                if (fromCache) return;
+            }
 
             mSearchProviderLogoView.setDelegate(mLogoDelegate);
             mSearchProviderLogoView.updateLogo(logo);
@@ -866,6 +890,11 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     }
 
     private void onDestroy() {
+        if (mCallbackController != null) {
+            mCallbackController.destroy();
+            mCallbackController = null;
+        }
+
         if (mExploreOfflineCard != null) mExploreOfflineCard.destroy();
         VrModuleProvider.unregisterVrModeObserver(this);
         // Need to null-check compositor view holder and layout manager since they might've

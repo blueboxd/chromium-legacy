@@ -749,9 +749,13 @@ MockClientSocketFactory::MockClientSocketFactory()
 
 MockClientSocketFactory::~MockClientSocketFactory() = default;
 
-void MockClientSocketFactory::AddSocketDataProvider(
-    SocketDataProvider* data) {
+void MockClientSocketFactory::AddSocketDataProvider(SocketDataProvider* data) {
   mock_data_.Add(data);
+}
+
+void MockClientSocketFactory::AddTcpSocketDataProvider(
+    SocketDataProvider* data) {
+  mock_tcp_data_.Add(data);
 }
 
 void MockClientSocketFactory::AddSSLSocketDataProvider(
@@ -789,7 +793,9 @@ MockClientSocketFactory::CreateTransportClientSocket(
     std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
     NetLog* net_log,
     const NetLogSource& source) {
-  SocketDataProvider* data_provider = mock_data_.GetNext();
+  SocketDataProvider* data_provider = mock_tcp_data_.GetNextWithoutAsserting();
+  if (!data_provider)
+    data_provider = mock_data_.GetNext();
   std::unique_ptr<MockTCPClientSocket> socket(
       new MockTCPClientSocket(addresses, net_log, data_provider));
   if (enable_read_if_ready_)

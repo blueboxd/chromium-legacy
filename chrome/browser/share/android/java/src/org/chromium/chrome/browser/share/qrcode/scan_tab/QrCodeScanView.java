@@ -19,6 +19,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import org.chromium.chrome.R;
 import org.chromium.ui.widget.ButtonCompat;
 
 /**
@@ -61,10 +62,9 @@ class QrCodeScanView {
 
     private View createPermissionView(Context context, PermissionPrompter permissionPrompter) {
         View permissionView = (View) LayoutInflater.from(context).inflate(
-                org.chromium.chrome.browser.share.R.layout.qrcode_permission_layout, null, false);
+                R.layout.qrcode_permission_layout, null, false);
 
-        ButtonCompat cameraPermissionPrompt = permissionView.findViewById(
-                org.chromium.chrome.browser.share.R.id.ask_for_permission);
+        ButtonCompat cameraPermissionPrompt = permissionView.findViewById(R.id.ask_for_permission);
         cameraPermissionPrompt.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -76,7 +76,7 @@ class QrCodeScanView {
 
     private View createCameraErrorView(Context context) {
         return (View) LayoutInflater.from(context).inflate(
-                org.chromium.chrome.browser.share.R.layout.qrcode_camera_error_layout, null, false);
+                R.layout.qrcode_camera_error_layout, null, false);
     }
 
     private final ErrorCallback mCameraErrorCallback = new ErrorCallback() {
@@ -87,16 +87,16 @@ class QrCodeScanView {
                 case Camera.CAMERA_ERROR_EVICTED:
                 case Camera.CAMERA_ERROR_SERVER_DIED:
                 case CameraPreview.CAMERA_IN_USE_ERROR:
-                    stringResource = org.chromium.chrome.R.string.qr_code_in_use_camera_error;
+                    stringResource = R.string.qr_code_in_use_camera_error;
                     break;
                 case CameraPreview.NO_CAMERA_FOUND_ERROR:
-                    stringResource = org.chromium.chrome.R.string.qr_code_no_camera_error;
+                    stringResource = R.string.qr_code_no_camera_error;
                     break;
                 case CameraPreview.CAMERA_DISABLED_ERROR:
-                    stringResource = org.chromium.chrome.R.string.qr_code_disabled_camera_error;
+                    stringResource = R.string.qr_code_disabled_camera_error;
                     break;
                 default:
-                    stringResource = org.chromium.chrome.R.string.qr_code_hardware_camera_error;
+                    stringResource = R.string.qr_code_hardware_camera_error;
             }
             if (mCameraPreview != null) {
                 mCameraPreview.stopCamera();
@@ -118,11 +118,10 @@ class QrCodeScanView {
      */
     private View createOpenSettingsView(Context context) {
         View openSettingsView = (View) LayoutInflater.from(context).inflate(
-                org.chromium.chrome.browser.share.R.layout.qrcode_open_settings_layout, null,
-                false);
+                R.layout.qrcode_open_settings_layout, null, false);
 
-        ButtonCompat cameraPermissionPrompt = openSettingsView.findViewById(
-                org.chromium.chrome.browser.share.R.id.open_settings_button);
+        ButtonCompat cameraPermissionPrompt =
+                openSettingsView.findViewById(R.id.open_settings_button);
         cameraPermissionPrompt.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -236,8 +235,8 @@ class QrCodeScanView {
 
     /** Displays the camera error dialog. */
     private void displayCameraErrorDialog(String errorString) {
-        TextView cameraErrorTextView = (TextView) mCameraErrorView.findViewById(
-                org.chromium.chrome.browser.share.R.id.qrcode_camera_error_text);
+        TextView cameraErrorTextView =
+                (TextView) mCameraErrorView.findViewById(R.id.qrcode_camera_error_text);
         cameraErrorTextView.setText(errorString);
 
         mView.removeAllViews();

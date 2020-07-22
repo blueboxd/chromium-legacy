@@ -36,6 +36,7 @@
 #include "url/gurl.h"
 
 namespace content {
+
 namespace protocol {
 
 namespace {
@@ -480,7 +481,7 @@ void ServiceWorkerHandler::OnWorkerVersionUpdated(
 void ServiceWorkerHandler::OnErrorReported(
     int64_t registration_id,
     int64_t version_id,
-    const ServiceWorkerContextCoreObserver::ErrorInfo& info) {
+    const ServiceWorkerContextObserver::ErrorInfo& info) {
   frontend_->WorkerErrorReported(
       ServiceWorker::ServiceWorkerErrorMessage::Create()
           .SetErrorMessage(base::UTF16ToUTF8(info.error_message))

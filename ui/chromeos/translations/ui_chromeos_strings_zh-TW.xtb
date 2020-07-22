@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">錄音年份</translation>
 <translation id="3338239663705455570">斯洛維尼亞文鍵盤</translation>
 <translation id="3353984535370177728">選取要上傳的資料夾</translation>
+<translation id="3356580349448036450">完成</translation>
 <translation id="3399597614303179694">馬其頓文鍵盤</translation>
 <translation id="3414856743105198592">將卸除式媒體格式化會清除所有資料，你要繼續嗎？</translation>
 <translation id="3437801641691368414">建立時間</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">安裝失敗。</translation>
 <translation id="7040138676081995583">選擇開啟工具...</translation>
-<translation id="7059566040011178088">不到 <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923">已選取 <ph name="COUNT" /> 個項目</translation>
 <translation id="7106346894903675391">購買更多儲存空間...</translation>
 <translation id="7126604456862387217">「&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;」- 搜尋雲端硬碟</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">裝置型號</translation>
 <translation id="8208580316430297579">圖檔</translation>
 <translation id="8223479393428528563">如要儲存這些檔案以供離線使用，請重新上網，在檔案上按一下滑鼠右鍵，然後選取 [<ph name="OFFLINE_CHECKBOX_NAME" />] 選項。</translation>
-<translation id="8231972167769262174">大約 <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">取消</translation>
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8269755669432358899">收合檔案意見回饋面板</translation>

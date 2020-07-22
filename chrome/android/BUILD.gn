@@ -208,6 +208,7 @@ android_resources("chrome_app_java_resources") {
     "//components/javascript_dialogs/android:java_resources",
     "//components/omnibox/browser:java_resources",
     "//components/page_info/android:java_resources",
+    "//components/payments/content/android:java_resources",
     "//components/permissions/android:java_resources",
     "//components/policy:app_restrictions_resources",
     "//components/strings:components_locale_settings_grd",
@@ -221,7 +222,7 @@ android_resources("chrome_app_java_resources") {
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
     "//third_party/android_deps:com_google_android_material_material_java",
   ]
-  custom_package = "org.chromium.chrome"
+  create_srcjar = false
 }
 
 if (enable_vr) {
@@ -558,9 +559,6 @@ android_library("chrome_java") {
   }
 
   srcjar_deps += [ ":chrome_vr_android_java_enums_srcjar" ]
-  if (enable_feed_in_chrome) {
-    deps += [ "//chrome/android/feed:chrome_feed_java_resources" ]
-  }
 
   # Add the actual implementation where necessary so that downstream targets
   # can provide their own implementations.
@@ -576,6 +574,8 @@ android_library("chrome_java") {
   ]
 
   processor_args_javac = [ "dagger.fastInit=enabled" ]
+
+  resources_package = "org.chromium.chrome"
 
   # TODO(crbug/1022172): Instead of adding source files, add it as a separate
   # dependency when circular deps is resolved.
@@ -929,6 +929,7 @@ android_library("chrome_test_util_java") {
 
 android_library("chrome_test_java") {
   testonly = true
+  resources_package = "org.chromium.chrome.test"
 
   # From java_sources.gni.
   sources = chrome_test_java_sources
@@ -954,7 +955,9 @@ android_library("chrome_test_java") {
     "//chrome/android:app_hooks_java",
     "//chrome/android:chrome_java",
     "//chrome/android/features/start_surface/internal:java",
+    "//chrome/android/features/start_surface/internal:java_resources",
     "//chrome/android/features/tab_ui:java",
+    "//chrome/android/features/tab_ui:java_resources",
     "//chrome/android/third_party/compositor_animator:compositor_animator_java",
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",
@@ -982,6 +985,7 @@ android_library("chrome_test_java") {
     "//chrome/browser/settings:javatests",
     "//chrome/browser/settings:test_support_java",
     "//chrome/browser/share:java",
+    "//chrome/browser/share/android:java_resources",
     "//chrome/browser/tab:java",
     "//chrome/browser/tabmodel:java",
     "//chrome/browser/tabpersistence:java",
@@ -1389,8 +1393,8 @@ process_version("version_xml") {
 
 android_resources("product_version_resources") {
   sources = [ version_resource_file ]
-  custom_package = "org.chromium.base"
   deps = [ ":version_xml" ]
+  create_srcjar = false
 }
 
 java_group("chrome_public_non_pak_assets") {
@@ -2160,8 +2164,8 @@ if (android_64bit_target_cpu) {
 # TODO(agrieve): Remove this once we switch to using bundle targets to
 # generate APK stubs.
 android_resources("trichrome_dummy_resources") {
-  custom_package = "org.chromium.trichromelibrary"
   sources = [ "trichrome/res_dummy/values/strings.xml" ]
+  create_srcjar = false
 }
 
 chrome_public_test_apk_manifest =

@@ -12,6 +12,7 @@
 namespace tracing {
 namespace mojom {
 class ConsumerHost;
+class PerfettoService;
 }  // namespace mojom
 
 // The Perfetto tracing backend mediates between the Perfetto client library and
@@ -26,7 +27,9 @@ class ConsumerHost;
 //             .---------->| ConsumerEndpoint |<--->| ConsumerHost |
 //  .--------------.     : `------------------'  :  `--------------'
 //  | TracingMuxer |     :                       :
-//  `--------------'     :                       :
+//  `--------------'     : .------------------.  :  .--------------.
+//             `---------->| ProducerEndpoint |<--->| ProducerHost |
+//                       : `------------------'  :  `--------------'
 //                       :                       :
 class PerfettoTracingBackend : public perfetto::TracingBackend {
  public:
@@ -38,6 +41,12 @@ class PerfettoTracingBackend : public perfetto::TracingBackend {
     // callback may be called on an arbitrary sequence.
     virtual void CreateConsumerConnection(
         base::OnceCallback<void(mojo::PendingRemote<mojom::ConsumerHost>)>) = 0;
+
+    // Called to establish a producer connection to the tracing service. The
+    // callback may be called on an arbitrary sequence.
+    virtual void CreateProducerConnection(
+        base::OnceCallback<
+            void(mojo::PendingRemote<mojom::PerfettoService>)>) = 0;
   };
 
   explicit PerfettoTracingBackend(Delegate&);

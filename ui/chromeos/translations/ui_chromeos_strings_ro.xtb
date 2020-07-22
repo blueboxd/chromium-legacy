@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Anul înregistrării</translation>
 <translation id="3338239663705455570">Tastatură slovenă</translation>
 <translation id="3353984535370177728">Selectați un dosar de încărcat</translation>
+<translation id="3356580349448036450">Finalizat</translation>
 <translation id="3399597614303179694">Tastatură macedoneană</translation>
 <translation id="3414856743105198592">Formatarea suportului media amovibil va șterge toate datele. Doriți să continuați?</translation>
 <translation id="3437801641691368414">Ora creării</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Instalarea nu a reușit.</translation>
 <translation id="7040138676081995583">Deschideți cu...</translation>
-<translation id="7059566040011178088">Mai puțin de <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> elemente selectate</translation>
 <translation id="7106346894903675391">Cumpărați mai mult spațiu de stocare...</translation>
 <translation id="7126604456862387217">„&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;” – &lt;em&gt;căutați în Google Drive&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">Modelul dispozitivului</translation>
 <translation id="8208580316430297579">Grafică</translation>
 <translation id="8223479393428528563">Pentru a salva aceste fișiere pentru utilizare offline, revino online, dă clic dreapta pe fișiere și selectează opțiunea <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
-<translation id="8231972167769262174">Aproximativ <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Abandonați</translation>
 <translation id="8261506727792406068">Șterge</translation>
 <translation id="8269755669432358899">Restrânge panourile cu feedback privind fișierele</translation>

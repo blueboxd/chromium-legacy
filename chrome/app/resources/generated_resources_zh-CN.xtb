@@ -149,7 +149,7 @@
 <translation id="1177863135347784049">自定义</translation>
 <translation id="1178581264944972037">暂停</translation>
 <translation id="117916940443676133">您尚未设置 PIN 码来保护您的安全密钥。要管理登录数据，请先创建一个 PIN 码。</translation>
-<translation id="1181037720776840403">删除</translation>
+<translation id="1181037720776840403">移除</translation>
 <translation id="1183237619868651138">无法将 <ph name="EXTERNAL_CRX_FILE" /> 安装在本地缓存中。</translation>
 <translation id="1185924365081634987">您也可以尝试<ph name="GUEST_SIGNIN_LINK_START" />以访客身份浏览<ph name="GUEST_SIGNIN_LINK_END" />，以便修复该网络错误。</translation>
 <translation id="1186771945450942097">移除有害软件</translation>
@@ -3580,7 +3580,7 @@
 <translation id="5496587651328244253">整理</translation>
 <translation id="5497251278400702716">此文件</translation>
 <translation id="5499313591153584299">此文件可能对您的计算机有害。</translation>
-<translation id="5499453227627332024">您的 Linux 容器有可用的升级。您也可过段时间再从“设置”应用中升级。</translation>
+<translation id="5499453227627332024">Linux 容器有可用的升级，您也可过段时间再从“设置”应用中升级。</translation>
 <translation id="5500709606820808700">今天运行过安全检查</translation>
 <translation id="5502500733115278303">从 Firefox 导入</translation>
 <translation id="5503982651688210506">继续允许 <ph name="HOST" /> 使用和移动您的摄像头，并允许其使用您的麦克风</translation>
@@ -4458,7 +4458,7 @@
 <translation id="6607831829715835317">更多工具(&amp;L)</translation>
 <translation id="6611972847767394631">您可在此处找到自己的标签页</translation>
 <translation id="6612358246767739896">受保护的内容</translation>
-<translation id="6615455863669487791">显示图标</translation>
+<translation id="6615455863669487791">演示一下</translation>
 <translation id="6618097958368085618">仍然保留</translation>
 <translation id="6618744767048954150">正在运行</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>

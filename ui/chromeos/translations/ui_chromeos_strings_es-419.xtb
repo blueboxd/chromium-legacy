@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Año de grabación</translation>
 <translation id="3338239663705455570">Teclado esloveno</translation>
 <translation id="3353984535370177728">Seleccionar una carpeta para cargar</translation>
+<translation id="3356580349448036450">Completo</translation>
 <translation id="3399597614303179694">Teclado macedonio</translation>
 <translation id="3414856743105198592">El formato de los medios extraíbles borrará todos los datos. ¿Deseas continuar?</translation>
 <translation id="3437801641691368414">Hora de creación</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Error de instalación</translation>
 <translation id="7040138676081995583">Abrir con...</translation>
-<translation id="7059566040011178088">Menos de <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> elementos seleccionados</translation>
 <translation id="7106346894903675391">Comprar más almacenamiento...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;unidad de búsqueda&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">Modelo de dispositivo</translation>
 <translation id="8208580316430297579">Material gráfico</translation>
 <translation id="8223479393428528563">Para guardar estos archivos para su uso sin conexión, conéctate nuevamente, haz clic con el botón derecho en los archivos y selecciona la opción <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
-<translation id="8231972167769262174">Alrededor de <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Anular</translation>
 <translation id="8261506727792406068">Borrar</translation>
 <translation id="8269755669432358899">Ocultar paneles de comentarios de archivos</translation>

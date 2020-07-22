@@ -527,6 +527,17 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, PopOutDisabledInIncognito) {
   EXPECT_FALSE(model->IsEnabledAt(index));
 }
 
+// Tests that web app menus don't crash when no tabs are selected.
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, NoTabSelectedMenuCrash) {
+  const GURL app_url = GetSecureAppURL();
+  const AppId app_id = InstallPWA(app_url);
+  Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
+
+  app_browser->tab_strip_model()->CloseAllTabs();
+  auto app_menu_model = std::make_unique<WebAppMenuModel>(nullptr, app_browser);
+  app_menu_model->Init();
+}
+
 // Tests that PWA menus have an uninstall option.
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, UninstallMenuOption) {
   const GURL app_url = GetSecureAppURL();

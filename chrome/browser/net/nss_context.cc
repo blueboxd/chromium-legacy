@@ -20,25 +20,26 @@ namespace {
 // Relays callback to the right message loop.
 void DidGetCertDBOnIOThread(
     const scoped_refptr<base::SequencedTaskRunner>& response_task_runner,
-    const base::Callback<void(net::NSSCertDatabase*)>& callback,
+    base::OnceCallback<void(net::NSSCertDatabase*)> callback,
     net::NSSCertDatabase* cert_db) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  response_task_runner->PostTask(FROM_HERE, base::BindOnce(callback, cert_db));
+  response_task_runner->PostTask(FROM_HERE,
+                                 base::BindOnce(std::move(callback), cert_db));
 }
 
 // Gets NSSCertDatabase for the resource context.
 void GetCertDBOnIOThread(
     content::ResourceContext* context,
-    const scoped_refptr<base::SequencedTaskRunner>& response_task_runner,
-    const base::Callback<void(net::NSSCertDatabase*)>& callback) {
+    scoped_refptr<base::SequencedTaskRunner> response_task_runner,
+    const base::RepeatingCallback<void(net::NSSCertDatabase*)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Note that the callback will be used only if the cert database hasn't yet
   // been initialized.
   net::NSSCertDatabase* cert_db = GetNSSCertDatabaseForResourceContext(
       context,
-      base::Bind(&DidGetCertDBOnIOThread, response_task_runner, callback));
+      base::BindOnce(&DidGetCertDBOnIOThread, response_task_runner, callback));
 
   if (cert_db)
     DidGetCertDBOnIOThread(response_task_runner, callback, cert_db);
@@ -48,7 +49,7 @@ void GetCertDBOnIOThread(
 
 void GetNSSCertDatabaseForProfile(
     Profile* profile,
-    const base::Callback<void(net::NSSCertDatabase*)>& callback) {
+    const base::RepeatingCallback<void(net::NSSCertDatabase*)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::GetIOThreadTaskRunner({})->PostTask(
@@ -56,4 +57,3 @@ void GetNSSCertDatabaseForProfile(
       base::BindOnce(&GetCertDBOnIOThread, profile->GetResourceContext(),
                      base::ThreadTaskRunnerHandle::Get(), callback));
 }
-

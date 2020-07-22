@@ -7,8 +7,11 @@
 
 #include <memory>
 
+#include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace drive {
 
@@ -20,6 +23,16 @@ extern const size_t kDriveFsNativeMessageHostOriginsSize;
 
 std::unique_ptr<extensions::NativeMessageHost> CreateDriveFsNativeMessageHost(
     content::BrowserContext* browser_context);
+
+std::unique_ptr<extensions::NativeMessageHost>
+CreateDriveFsInitiatedNativeMessageHost(
+    mojo::PendingReceiver<drivefs::mojom::NativeMessagingPort>
+        extension_receiver,
+    mojo::PendingRemote<drivefs::mojom::NativeMessagingHost> drivefs_remote);
+
+std::unique_ptr<extensions::NativeMessageHost>
+CreateDriveFsNativeMessageHostForTesting(
+    drivefs::mojom::DriveFs* drivefs_for_testing);
 
 }  // namespace drive
 

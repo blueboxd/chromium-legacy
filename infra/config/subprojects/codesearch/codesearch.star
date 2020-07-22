@@ -59,6 +59,10 @@ try_.builder(
 )
 
 try_.builder(
+    name = 'gen-lacros-try',
+)
+
+try_.builder(
     name = 'gen-linux-try',
 )
 

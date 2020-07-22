@@ -33,6 +33,8 @@ const char kTypeTag[] = "type";
 const char kTemporarySession[] = "temporary";
 const char kPersistentLicenseSession[] = "persistent-license";
 const char kPersistentUsageRecordSession[] = "persistent-usage-record";
+const char kPersistentUsageRecordFirstTime[] = "firstTime";
+const char kPersistentUsageRecordLatestTime[] = "latestTime";
 
 static std::string ShortenTo64Characters(const std::string& input) {
   // Convert |input| into a string with escaped characters replacing any
@@ -67,6 +69,12 @@ static std::unique_ptr<base::DictionaryValue> CreateJSONDictionary(
   jwk->SetString(kKeyTag, key_string);
   jwk->SetString(kKeyIdTag, key_id_string);
   return jwk;
+}
+
+// base::DictionaryValue::Set() does not accept nullptr. A 'null' Value must
+// be used instead if we want to add a key to a JSON with a 'null' value.
+static std::unique_ptr<base::Value> GetNullValue() {
+  return std::make_unique<base::Value>(base::Value::Type::NONE);
 }
 
 std::string GenerateJWKSet(const uint8_t* key,
@@ -380,7 +388,13 @@ void CreateKeyIdsInitData(const KeyIdList& key_ids,
 //    "kids"
 //      An array of key IDs. Each element of the array is the base64url encoding
 //      of the octet sequence containing the key ID value.
-//
+std::vector<uint8_t> CreateLicenseReleaseMessage(const KeyIdList& key_ids) {
+  // Create the init_data.
+  auto dictionary = std::make_unique<base::DictionaryValue>();
+  AddKeyIdsToDictionary(key_ids, dictionary.get());
+  return SerializeDictionaryToVector(dictionary.get());
+}
+
 // For sessions of type "persistent-usage-record" the object shall also contain
 // the following members:
 //
@@ -399,13 +413,20 @@ std::vector<uint8_t> CreateLicenseReleaseMessage(
   auto dictionary = std::make_unique<base::DictionaryValue>();
   AddKeyIdsToDictionary(key_ids, dictionary.get());
 
-  if (!first_decrypt_time.is_null() && !latest_decrypt_time.is_null()) {
+  if (!first_decrypt_time.is_null()) {
     // Persistent-Usage-Record
     // Time need to be millisecond since 01 January, 1970 UTC
-    dictionary->SetDouble("firstTime",
+    dictionary->SetDouble(kPersistentUsageRecordFirstTime,
                           first_decrypt_time.ToJsTimeIgnoringNull());
-    dictionary->SetDouble("latestTime",
+  } else {
+    dictionary->Set(kPersistentUsageRecordFirstTime, GetNullValue());
+  }
+
+  if (!latest_decrypt_time.is_null()) {
+    dictionary->SetDouble(kPersistentUsageRecordLatestTime,
                           latest_decrypt_time.ToJsTimeIgnoringNull());
+  } else {
+    dictionary->Set(kPersistentUsageRecordLatestTime, GetNullValue());
   }
 
   return SerializeDictionaryToVector(dictionary.get());

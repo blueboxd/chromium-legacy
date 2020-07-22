@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> – <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Ota synkronointi käyttöön, niin voit käyttää kirjanmerkkejä kaikilla laitteillasi.</translation>
 <translation id="1687475363370981210">Merkitse kaikki luetuiksi</translation>
+<translation id="1689333818294560261">Lempinimi</translation>
 <translation id="1690731385917361335">Ei kohteita</translation>
 <translation id="1692118695553449118">Synkronointi on päällä</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> valittu</translation>
@@ -206,6 +207,7 @@ Kun olet incognito-tilassa, sivustot eivät näe selaustoimintaasi eri sivustoil
 <translation id="3335947283844343239">Avaa suljettu välilehti uudelleen</translation>
 <translation id="3371831930909698441">Kääntäjä on käytössä. Asetukset löytyvät näytön alalaidasta.</translation>
 <translation id="3393920035788932672">Ponnahdusikk. sallittu</translation>
+<translation id="3425644765244388016">Kortin lempinimi</translation>
 <translation id="3443810440409579745">Välilehti vastaanotettu</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Jaettu näkymä</translation>
@@ -240,6 +242,7 @@ Kun olet incognito-tilassa, sivustot eivät näe selaustoimintaasi eri sivustoil
 <translation id="3783017676699494206">Tallenna kuva</translation>
 <translation id="3789841737615482174">Asenna</translation>
 <translation id="3803696231112616155">Tarjoa tämän sivuston kääntämistä</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Ei vaarantuneita salasanoja}=1{{COUNT} vaarantunut salasana}other{{COUNT} vaarantunutta salasanaa}}</translation>
 <translation id="385051799172605136">Edellinen</translation>
 <translation id="3892144330757387737">Näet historiasi täällä</translation>
 <translation id="3897092660631435901">Valikko</translation>
@@ -529,6 +532,7 @@ Sivustot eivät näe selaustoimintaasi eri sivustoilla evästeiden kautta esim. 
 <translation id="7189598951263744875">Jaa...</translation>
 <translation id="7192050974311852563">Aloita kirjaus</translation>
 <translation id="7203585745079012652">Puhu vastaukset</translation>
+<translation id="721597782417389033">Virheellinen kortin lempinimi</translation>
 <translation id="7265758999917665941">Ei koskaan tälle sivustolle</translation>
 <translation id="7272437679830969316">Henkilöllisyytesi vahvistaminen ei onnistunut. Salasanaa ei kopioitu.</translation>
 <translation id="7291368939935408496">Valmistellaan salasanoja…</translation>

@@ -79,10 +79,10 @@ import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarCoordinator;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
-import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ViewUtils;
 import org.chromium.chrome.test.util.browser.Features;
@@ -661,8 +661,8 @@ public class InstantStartTest {
         CriteriaHelper.pollUiThread(
                 () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
-        View surface = mActivityTestRule.getActivity().findViewById(
-                org.chromium.chrome.start_surface.R.id.primary_tasks_surface_view);
+        View surface =
+                mActivityTestRule.getActivity().findViewById(R.id.primary_tasks_surface_view);
 
         ViewUtils.onViewWaiting(AllOf.allOf(withId(R.id.single_tab_view), isDisplayed()));
         ChromeRenderTestRule.sanitize(surface);
@@ -690,8 +690,7 @@ public class InstantStartTest {
         startMainActivityFromLauncher();
         Assert.assertFalse(mActivityTestRule.getActivity().isTablet());
         Assert.assertTrue(CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START));
-        onView(withId(org.chromium.chrome.start_surface.R.id.placeholders_layout))
-                .check(matches(isDisplayed()));
+        onView(withId(R.id.placeholders_layout)).check(matches(isDisplayed()));
         Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
     }
 
@@ -748,8 +747,7 @@ public class InstantStartTest {
         StartSurfaceConfiguration.setFeedVisibilityForTesting(false);
         startMainActivityFromLauncher();
 
-        onView(withId(org.chromium.chrome.start_surface.R.id.placeholders_layout))
-                .check(doesNotExist());
+        onView(withId(R.id.placeholders_layout)).check(doesNotExist());
     }
 
     @Test
@@ -766,8 +764,7 @@ public class InstantStartTest {
         StartSurfaceConfiguration.setFeedVisibilityForTesting(true);
         startMainActivityFromLauncher();
 
-        onView(withId(org.chromium.chrome.start_surface.R.id.placeholders_layout))
-                .check(matches(isDisplayed()));
+        onView(withId(R.id.placeholders_layout)).check(matches(isDisplayed()));
     }
 
     @Test
@@ -795,16 +792,14 @@ public class InstantStartTest {
      * @param expanded Whether the header should be expanded.
      */
     private void toggleHeader(boolean expanded) {
-        onView(allOf(instanceOf(RecyclerView.class),
-                       withId(org.chromium.chrome.feed.R.id.feed_stream_recycler_view)))
+        onView(allOf(instanceOf(RecyclerView.class), withId(R.id.feed_stream_recycler_view)))
                 .perform(RecyclerViewActions.scrollToPosition(ARTICLE_SECTION_HEADER_POSITION),
                         RecyclerViewActions.actionOnItemAtPosition(
                                 ARTICLE_SECTION_HEADER_POSITION, click()));
 
         waitForView((ViewGroup) mActivityTestRule.getActivity().findViewById(
-                            org.chromium.chrome.feed.R.id.feed_stream_recycler_view),
-                allOf(withId(org.chromium.chrome.R.id.header_status),
-                        withText(expanded ? org.chromium.chrome.R.string.hide
-                                          : org.chromium.chrome.R.string.show)));
+                            R.id.feed_stream_recycler_view),
+                allOf(withId(R.id.header_status),
+                        withText(expanded ? R.string.hide : R.string.show)));
     }
 }

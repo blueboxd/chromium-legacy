@@ -1378,7 +1378,7 @@
             {
               "device_type": "eve",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "chrome.tests"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1403,7 +1403,7 @@
             {
               "device_type": "eve",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "chrome.tests"
             }
           ],
           "idempotent": false,
@@ -1429,7 +1429,7 @@
             {
               "device_type": "eve",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "chrome.tests"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1454,7 +1454,7 @@
             {
               "device_type": "eve",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "chrome.tests"
             }
           ],
           "idempotent": false,
@@ -1487,7 +1487,7 @@
             {
               "device_type": "eve",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "chrome.tests"
             }
           ],
           "idempotent": false,
@@ -1518,7 +1518,7 @@
             {
               "device_type": "eve",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "chrome.tests"
             }
           ],
           "idempotent": false,
@@ -1552,7 +1552,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "chrome.tests"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1577,7 +1577,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "chrome.tests"
             }
           ],
           "idempotent": false,
@@ -1603,7 +1603,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "chrome.tests"
             }
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1628,7 +1628,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "chrome.tests"
             }
           ],
           "idempotent": false,

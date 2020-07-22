@@ -508,6 +508,7 @@ class WaylandBufferManagerHost::Surface {
   }
 
   void MaybeProcessPendingBuffer() {
+    DCHECK_LE(pending_buffers_.size(), 6u);
     // There is nothing to process if there is no pending buffer or the window
     // has been destroyed.
     if (pending_buffers_.empty() || !wayland_surface_)

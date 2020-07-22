@@ -4398,6 +4398,16 @@
     ]
   },
 
+  "NativeMessagingBlocklist": {
+    "os": ["win", "linux", "mac"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "NativeMessagingBlocklist": ["*"] },
+        "prefs": { "native_messaging.blacklist": {} }
+      }
+    ]
+  },
+
   "NativeMessagingWhitelist": {
     "os": ["win", "linux", "mac"],
     "policy_pref_mapping_test": [

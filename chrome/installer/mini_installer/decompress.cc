@@ -11,6 +11,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include "chrome/installer/mini_installer/mini_file.h"
+
 namespace {
 
 // A simple struct to hold data passed to and from FDICopy via its |pvUser|
@@ -19,7 +21,11 @@ struct ExpandContext {
   // The path to the single destination file.
   const wchar_t* const dest_path;
 
-  // Set to true if the file was extracted to |dest_path|.
+  // The destination file; valid once the destination is created.
+  mini_installer::MiniFile dest_file;
+
+  // Set to true if the file was extracted to |dest_path|. Note that |dest_file|
+  // may be valid even in case of failure.
   bool succeeded;
 };
 
@@ -134,11 +140,12 @@ FNFDINOTIFY(Notify) {
 
   switch (fdint) {
     case fdintCOPY_FILE:
+      context.dest_file.Create(context.dest_path);
       // By sheer coincidence, CreateFileW's success/failure results match that
-      // of fdintCOPY_FILE.
-      return reinterpret_cast<INT_PTR>(::CreateFileW(
-          context.dest_path, GENERIC_WRITE, FILE_SHARE_READ, nullptr,
-          CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr));
+      // of fdintCOPY_FILE. The handle given out here is closed either by
+      // FDICopy (in case of error) or below when handling fdintCLOSE_FILE_INFO
+      // (in case of success).
+      return reinterpret_cast<INT_PTR>(context.dest_file.DuplicateHandle());
 
     case fdintCLOSE_FILE_INFO: {
       // Set the file's creation time and file attributes.
@@ -156,6 +163,7 @@ FNFDINOTIFY(Notify) {
       ::SetFileInformationByHandle(reinterpret_cast<HANDLE>(pfdin->hf),
                                    FileBasicInfo, &info, sizeof(info));
 
+      // Close the handle given out above in fdintCOPY_FILE.
       ::CloseHandle(reinterpret_cast<HANDLE>(pfdin->hf));
       context.succeeded = true;
       return -1;  // Break: the one file was extracted.
@@ -266,11 +274,18 @@ bool Expand(const wchar_t* source, const wchar_t* destination) {
   if (!fdi)
     return false;
 
-  ExpandContext context = {destination, /*succeeded=*/false};
+  ExpandContext context = {destination, {}, /*succeeded=*/false};
   g_FDICopy(fdi, source_name_utf8, source_path_utf8, 0, &Notify, nullptr,
             &context);
   g_FDIDestroy(fdi);
-  return context.succeeded;
+  if (context.succeeded)
+    return true;
+
+  // Delete the output file if it was created.
+  if (context.dest_file.IsValid())
+    context.dest_file.DeleteOnClose();
+
+  return false;
 }
 
 }  // namespace mini_installer

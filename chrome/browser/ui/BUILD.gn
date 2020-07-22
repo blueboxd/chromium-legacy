@@ -1477,6 +1477,7 @@ static_library("ui") {
       "//chrome/browser/ui/color:mixers",
       "//chrome/browser/ui/webui/app_management:mojo_bindings",
       "//chrome/browser/ui/webui/internals/web_app:mojo_bindings",
+      "//chrome/browser/ui/webui/nearby_share:mojom",
       "//chrome/common:buildflags",
       "//chrome/common/media_router/mojom:media_router",
       "//chrome/common/search:generate_chrome_colors_info",

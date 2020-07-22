@@ -188,7 +188,7 @@
 <translation id="7000754031042624318">Isključeno u postavkama Androida</translation>
 <translation id="7016516562562142042">Dozvoljeno za trenutni pretraživač</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 izabrana stavka}one{# izabrana stavka}few{# izabrane stavke}other{# izabranih stavki}}</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 odabrana kartica}one{# odabrana kartica}few{# odabrane kartice}other{# odabranih kartica}}</translation>
 <translation id="7087918508125750058">Odabrali ste <ph name="ITEM_COUNT" />.  Opcije su dostupne pri vrhu ekrana</translation>
 <translation id="7128222689758636196">Dozvolite za trenutni pretraživač</translation>
 <translation id="7141896414559753902">Blokiranje prikazivanja skočnih prozora na web lokacijama i preusmjeravanje (preporučeno)</translation>
@@ -219,7 +219,7 @@
 <translation id="7999064672810608036">Jeste li sigurni da želite obrisati sve lokalne podatke, uključujući kolačiće i poništiti sva odobrenja za ovu web lokaciju?</translation>
 <translation id="8007176423574883786">Isključeno za ovaj uređaj</translation>
 <translation id="802154636333426148">Preuzimanje nije uspjelo</translation>
-<translation id="8068648041423924542">Nije moguće izabrati potvrdu.</translation>
+<translation id="8068648041423924542">Nije moguće odabrati potvrdu.</translation>
 <translation id="8087000398470557479">Ovaj sadržaj je iz domene <ph name="DOMAIN_NAME" />, a isporučio ga je Google.</translation>
 <translation id="8116925261070264013">Isključen zvuk</translation>
 <translation id="8131740175452115882">Potvrdi</translation>

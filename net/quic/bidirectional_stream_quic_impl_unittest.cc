@@ -569,7 +569,8 @@ class BidirectionalStreamQuicImplTest
         client_headers_include_h2_stream_dependency_, /*cert_verify_flags=*/0,
         quic::test::DefaultQuicConfig(),
         std::make_unique<TestQuicCryptoClientConfigHandle>(&crypto_config_),
-        "CONNECTION_UNKNOWN", dns_start, dns_end, &push_promise_index_, nullptr,
+        "CONNECTION_UNKNOWN", dns_start, dns_end,
+        std::make_unique<quic::QuicClientPushPromiseIndex>(), nullptr,
         base::DefaultTickClock::GetInstance(),
         base::ThreadTaskRunnerHandle::Get().get(),
         /*socket_performance_watcher=*/nullptr, net_log().bound().net_log()));
@@ -843,7 +844,6 @@ class BidirectionalStreamQuicImplTest
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   std::unique_ptr<StaticSocketDataProvider> socket_data_;
   std::vector<PacketToWrite> writes_;
-  quic::QuicClientPushPromiseIndex push_promise_index_;
   HostPortPair destination_;
   quic::test::NoopQpackStreamSenderDelegate noop_qpack_stream_sender_delegate_;
 };

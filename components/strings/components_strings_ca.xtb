@@ -444,6 +444,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="2824775600643448204">Barra d'adreces i de cerca</translation>
 <translation id="2826760142808435982">La connexió s'ha encriptat i autenticat mitjançant <ph name="CIPHER" /> i fa servir <ph name="KX" /> com a mecanisme d'intercanvi clau.</translation>
 <translation id="2835170189407361413">Esborra el formulari</translation>
+<translation id="2839501879576190149">Aquest lloc web és fals</translation>
 <translation id="2847118875340931228">Obre una finestra d'incògnit</translation>
 <translation id="2850739647070081192">Invite (sobre)</translation>
 <translation id="2856444702002559011">Pot ser que els atacants provin de robar la teva informació del lloc web <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (per exemple, contrasenyes, missatges o targetes de crèdit). <ph name="BEGIN_LEARN_MORE_LINK" />Més informació<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -799,6 +800,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="42981349822642051">Desplega</translation>
 <translation id="4300675098767811073">Encunyació múltiple a la dreta</translation>
 <translation id="4302965934281694568">Chou3 (sobre)</translation>
+<translation id="4305666528087210886">No s'ha pogut accedir al fitxer</translation>
 <translation id="4305817255990598646">Canvia</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Bloqueja (opció predeterminada)</translation>
@@ -817,6 +819,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="4358461427845829800">Gestiona les formes de pagament...</translation>
 <translation id="4359160567981085931">Acabes d'introduir la contrasenya en un lloc web enganyós. Chrome pot ajudar-te. Per canviar la contrasenya i notificar a Google que el compte pot estar en perill, fes clic a Protegeix el compte.</translation>
 <translation id="4367563149485757821">Number-12 (sobre)</translation>
+<translation id="4367839622597707614">{1,plural, =0{La contrasenya que tens desada per a <ph name="ORIGIN" /> ha quedat exposada a causa de la violació de les dades en un lloc web o una aplicació. Chrome et recomana que canviïs ara la contrasenya per a <ph name="ORIGIN" />.}=1{La contrasenya que tens desada per a <ph name="ORIGIN" /> i 1 altre lloc web ha quedat exposada a causa de la violació de les dades en un lloc web o una aplicació. Chrome et recomana que comprovis ara les contrasenyes desades.}other{La contrasenya que tens desada per a <ph name="ORIGIN" /> i <ph name="SITES_COUNT" /> llocs web més ha quedat exposada a causa de la violació de les dades en un lloc web o una aplicació. Chrome et recomana que comprovis ara les contrasenyes desades.}}</translation>
 <translation id="437058704415269440">Saldo del compte</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Valor <ph name="VALUE_TYPE" /> esperat.</translation>
@@ -1287,6 +1290,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Aquest lloc web et pot fer càrrecs.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 suggeriment més}other{# suggeriments més}}</translation>
+<translation id="6387645831795005740">De vegades, els atacants imiten llocs web introduint petits canvis difícils de veure a l'URL.</translation>
 <translation id="6389470377220713856">Titular de la targeta</translation>
 <translation id="6390200185239044127">Plegat en Z fins a la meitat</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1500,6 +1504,7 @@ Detalls addicionals:
 <translation id="7372973238305370288">resultat de la cerca</translation>
 <translation id="7374733840632556089">Aquest problema es produeix a causa d'un certificat que tu o una altra persona heu instal·lat al dispositiu. Se sap que aquest certificat s'utilitza per supervisar i interceptar xarxes, i Chrome no hi confia. Tot i que hi ha casos en què és legítim dur a terme una supervisió, per exemple, en el cas d'una empresa o d'un centre educatiu, Chrome vol assegurar-se que estiguis al cas d'aquesta situació, encara que no la puguis evitar. La supervisió es pot produir en qualsevol navegador o aplicació que accedeixi al web.</translation>
 <translation id="7375818412732305729">S'adjunta un fitxer</translation>
+<translation id="7376551888419889433">Quan Chrome Enterprise Connectors marca esdeveniments de seguretat, se n'envien les dades rellevants a l'administrador. Per exemple, URL de pàgines que visites a Chrome, noms o metadades de fitxers i el nom d'usuari que fas servir per iniciar la sessió al dispositiu i a Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Controls multimèdia</translation>
 <translation id="7378627244592794276">No</translation>
@@ -1896,6 +1901,7 @@ Detalls addicionals:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" />, <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Heu provat d'accedir a <ph name="DOMAIN" />, però el servidor ha presentat un certificat no vàlid.</translation>
 <translation id="9050666287014529139">Frase de contrasenya</translation>
+<translation id="9062620674789239642">És possible que s'hagi mogut, editat o suprimit.</translation>
 <translation id="9065203028668620118">Edita</translation>
 <translation id="9065745800631924235">Cerca de <ph name="TEXT" /> des de l'historial</translation>
 <translation id="9069693763241529744">Bloquejat per una extensió</translation>

@@ -389,17 +389,21 @@ CanvasResourceRasterSharedImage::CanvasResourceRasterSharedImage(
                                gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
   }
 
+  GrSurfaceOrigin surface_origin = is_origin_top_left_
+                                       ? kTopLeft_GrSurfaceOrigin
+                                       : kBottomLeft_GrSurfaceOrigin;
+  SkAlphaType surface_alpha_type = ColorParams().GetSkAlphaType();
   gpu::Mailbox shared_image_mailbox;
   if (gpu_memory_buffer_) {
     shared_image_mailbox = shared_image_interface->CreateSharedImage(
         gpu_memory_buffer_.get(), gpu_memory_buffer_manager,
-        ColorParams().GetStorageGfxColorSpace(), kTopLeft_GrSurfaceOrigin,
-        kPremul_SkAlphaType, shared_image_usage_flags);
+        ColorParams().GetStorageGfxColorSpace(), surface_origin,
+        surface_alpha_type, shared_image_usage_flags);
   } else {
     shared_image_mailbox = shared_image_interface->CreateSharedImage(
         ColorParams().TransferableResourceFormat(), gfx::Size(size),
-        ColorParams().GetStorageGfxColorSpace(), kTopLeft_GrSurfaceOrigin,
-        kPremul_SkAlphaType, shared_image_usage_flags, gpu::kNullSurfaceHandle);
+        ColorParams().GetStorageGfxColorSpace(), surface_origin,
+        surface_alpha_type, shared_image_usage_flags, gpu::kNullSurfaceHandle);
   }
 
   // Wait for the mailbox to be ready to be used.
@@ -738,13 +742,17 @@ CanvasResourceWebGPUSharedImage::CanvasResourceWebGPUSharedImage(
 
   shared_image_usage_flags =
       shared_image_usage_flags | gpu::SHARED_IMAGE_USAGE_WEBGPU;
+  GrSurfaceOrigin surface_origin = is_origin_top_left_
+                                       ? kTopLeft_GrSurfaceOrigin
+                                       : kBottomLeft_GrSurfaceOrigin;
 
   gpu::Mailbox shared_image_mailbox;
 
   shared_image_mailbox = shared_image_interface->CreateSharedImage(
       ColorParams().TransferableResourceFormat(), gfx::Size(size),
-      ColorParams().GetStorageGfxColorSpace(), kTopLeft_GrSurfaceOrigin,
-      kPremul_SkAlphaType, shared_image_usage_flags, gpu::kNullSurfaceHandle);
+      ColorParams().GetStorageGfxColorSpace(), surface_origin,
+      ColorParams().GetSkAlphaType(), shared_image_usage_flags,
+      gpu::kNullSurfaceHandle);
 
   auto* webgpu = WebGPUInterface();
 

@@ -9,6 +9,9 @@
 FakeNearbyShareSchedulerFactory::ExpirationInstance::ExpirationInstance() =
     default;
 
+FakeNearbyShareSchedulerFactory::ExpirationInstance::ExpirationInstance(
+    ExpirationInstance&&) = default;
+
 FakeNearbyShareSchedulerFactory::ExpirationInstance::~ExpirationInstance() =
     default;
 
@@ -37,6 +40,8 @@ FakeNearbyShareSchedulerFactory::CreateExpirationSchedulerInstance(
       std::move(on_request_callback));
   instance.fake_scheduler = scheduler.get();
 
+  pref_name_to_expiration_instance_.emplace(pref_name, std::move(instance));
+
   return scheduler;
 }
 
@@ -58,7 +63,7 @@ FakeNearbyShareSchedulerFactory::CreateOnDemandSchedulerInstance(
       std::make_unique<FakeNearbyShareScheduler>(std::move(callback));
   instance.fake_scheduler = scheduler.get();
 
-  pref_name_to_on_demand_instance_.insert_or_assign(pref_name, instance);
+  pref_name_to_on_demand_instance_.emplace(pref_name, instance);
 
   return scheduler;
 }
@@ -83,7 +88,7 @@ FakeNearbyShareSchedulerFactory::CreatePeriodicSchedulerInstance(
       std::make_unique<FakeNearbyShareScheduler>(std::move(callback));
   instance.fake_scheduler = scheduler.get();
 
-  pref_name_to_periodic_instance_.insert_or_assign(pref_name, instance);
+  pref_name_to_periodic_instance_.emplace(pref_name, instance);
 
   return scheduler;
 }

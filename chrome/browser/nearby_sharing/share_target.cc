@@ -6,15 +6,6 @@
 
 #include <utility>
 
-#include "base/atomic_sequence_num.h"
-
-namespace {
-
-// The last ID given to the previously created ShareTarget.
-base::AtomicSequenceNumber g_id_generator;
-
-}  // namespace
-
 ShareTarget::ShareTarget(std::string device_name,
                          GURL image_url,
                          Type type,
@@ -23,7 +14,7 @@ ShareTarget::ShareTarget(std::string device_name,
                          bool is_incoming,
                          base::Optional<std::string> full_name,
                          bool is_known)
-    : id_(g_id_generator.GetNext()),
+    : id_(base::UnguessableToken::Create()),
       device_name_(std::move(device_name)),
       image_url_(std::move(image_url)),
       type_(type),
@@ -33,6 +24,12 @@ ShareTarget::ShareTarget(std::string device_name,
       full_name_(std::move(full_name)),
       is_known_(is_known) {}
 
-ShareTarget::~ShareTarget() = default;
 ShareTarget::ShareTarget(const ShareTarget&) = default;
+
+ShareTarget::ShareTarget(ShareTarget&&) = default;
+
 ShareTarget& ShareTarget::operator=(const ShareTarget&) = default;
+
+ShareTarget& ShareTarget::operator=(ShareTarget&&) = default;
+
+ShareTarget::~ShareTarget() = default;

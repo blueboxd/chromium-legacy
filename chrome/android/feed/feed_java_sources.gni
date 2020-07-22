@@ -7,6 +7,7 @@ import("//components/feed/features.gni")
 if (enable_feed_in_chrome) {
   feed_deps = [
     "//base:base_java",
+    "//chrome/android/feed:chrome_feed_java_resources",
     "//components/feed/core/proto:proto_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",

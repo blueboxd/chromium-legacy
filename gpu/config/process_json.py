@@ -56,6 +56,16 @@ Legal: "24.20.100.7000", "0.0.100.7000", "0.0.0.7000", "0.0.100.0"
 Illegal: "24.0.0.0", "24.20.0.0", "0.0.99.0"
 '''
 
+NVIDIA_DRIVER_VERSION_SCHEMA = '''
+The version format used by Nvidia is ABC.DE, where A-E are any digit.  When
+queried by Chrome, it will detect XX.XX.XXXA.BCDE, where 'X' is any digit and
+can be ignored.  Chrome will re-format this to ABC.DE, and compare to the
+version listed here.
+
+So, Chrome might detect 26.21.0014.4575, which would be given here as 445.75 in
+the Nvidia version schema.  The 26.21.001 is ignored.
+'''
+
 
 def check_intel_driver_version(version):
   ver_list = version.split('.')
@@ -68,6 +78,20 @@ def check_intel_driver_version(version):
     return False
   return True
 
+def check_nvidia_driver_version(version):
+  ver_list = version.split('.')
+  # Allow "456" to match "456.*", so allow a single-entry list.
+  if len(ver_list) == 0 or len(ver_list) > 2:
+    return False;
+  elif len(ver_list) == 2 and len(ver_list[1]) != 2:
+    return False
+  # Must start with three digits, whether it's "456.*" or "456.78".
+  if len(ver_list[0]) != 3:
+    return False
+  for ver in ver_list:
+    if not ver.isdigit():
+      return False
+  return True
 
 def load_software_rendering_list_features(feature_type_filename):
   header_file = open(feature_type_filename, 'r')
@@ -236,6 +260,7 @@ def write_version(version_info, name_tag, data_file):
   schema_map = {
     'common': 'Common',
     'intel_driver': 'IntelDriver',
+    'nvidia_driver': 'NvidiaDriver',
     '': 'Common',
   }
   assert schema in schema_map
@@ -585,6 +610,16 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
         valid_version = (valid_version and
                          check_intel_driver_version(driver_version['value2']))
       assert valid_version, INTEL_DRIVER_VERSION_SCHEMA
+
+    if driver_version and driver_version.get('schema') == 'nvidia_driver':
+      assert os_type == 'win', 'Nvidia driver schema is only for Windows'
+      is_nvidia = (format(vendor_id, '#04x') == '0x10de')
+      assert is_nvidia, 'Nvidia driver schema is only for Nvidia GPUs'
+      valid_version = check_nvidia_driver_version(driver_version['value'])
+      if driver_version.has_key('value2'):
+        valid_version = (valid_version and
+                         check_nvidia_driver_version(driver_version['value2']))
+      assert valid_version, NVIDIA_DRIVER_VERSION_SCHEMA
 
     write_driver_info(entry_id, is_exception, exception_id, driver_vendor,
                       driver_version, unique_symbol_id,

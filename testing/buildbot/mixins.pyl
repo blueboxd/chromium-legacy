@@ -193,7 +193,7 @@
       'dimensions': {
         'os': 'ChromeOS',
         'device_type': 'kevin',
-        'pool': 'chrome-cros-dut',
+        'pool': 'chromium.tests',
       },
     },
   },

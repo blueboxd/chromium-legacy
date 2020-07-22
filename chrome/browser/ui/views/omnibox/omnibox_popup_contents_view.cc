@@ -7,6 +7,7 @@
 #include <memory>
 #include <numeric>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/optional.h"
@@ -62,7 +63,10 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
         new RoundedOmniboxResultsFrame(contents, contents->location_bar_view_));
   }
 
-  void SetTargetBounds(const gfx::Rect& bounds) { SetBounds(bounds); }
+  void SetTargetBounds(const gfx::Rect& bounds) {
+    base::AutoReset<bool> reset(&is_setting_popup_bounds_, true);
+    SetBounds(bounds);
+  }
 
   void ShowAnimated() {
     // Set the initial opacity to 0 and ease into fully opaque.
@@ -116,6 +120,8 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
     ThemeCopyingWidget::OnGestureEvent(event);
   }
 
+  bool is_setting_popup_bounds() const { return is_setting_popup_bounds_; }
+
  private:
   std::unique_ptr<ui::ScopedLayerAnimationSettings>
   GetScopedAnimationSettings() {
@@ -133,6 +139,9 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
 
   // True if the popup is in the process of closing via animation.
   bool is_animating_closed_ = false;
+
+  // True if the popup's bounds are currently being set.
+  bool is_setting_popup_bounds_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupWidget);
 };
@@ -157,9 +166,10 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
     pref_change_registrar_.Init(pref_service);
     // Unretained is appropriate here. 'this' will outlive the registrar.
     pref_change_registrar_.Add(
-        omnibox::kOmniboxHiddenGroupIds,
-        base::BindRepeating(&OmniboxPopupContentsView::OnHiddenGroupIdsUpdate,
-                            base::Unretained(this)));
+        omnibox::kSuggestionGroupVisibility,
+        base::BindRepeating(
+            &OmniboxPopupContentsView::OnSuggestionGroupVisibilityUpdate,
+            base::Unretained(this)));
   }
 }
 
@@ -464,9 +474,15 @@ void OmniboxPopupContentsView::FireAXEventsForNewActiveDescendant(
 void OmniboxPopupContentsView::OnWidgetBoundsChanged(
     views::Widget* widget,
     const gfx::Rect& new_bounds) {
+  DCHECK_EQ(popup_.get(), widget);
+  DCHECK(popup_);
   // This is called on rotation or device scale change. We have to re-align to
   // the new location bar location.
-  DCHECK_EQ(popup_.get(), widget);
+
+  // Ignore cases when we are internally updating the popup bounds.
+  if (popup_->is_setting_popup_bounds())
+    return;
+
   UpdatePopupAppearance();
 }
 
@@ -532,7 +548,7 @@ size_t OmniboxPopupContentsView::GetIndexForPoint(const gfx::Point& point) {
   return OmniboxPopupModel::kNoMatch;
 }
 
-void OmniboxPopupContentsView::OnHiddenGroupIdsUpdate() {
+void OmniboxPopupContentsView::OnSuggestionGroupVisibilityUpdate() {
   for (size_t i = 0; i < model_->result().size(); ++i) {
     const AutocompleteMatch& match = model_->result().match_at(i);
     bool match_hidden =

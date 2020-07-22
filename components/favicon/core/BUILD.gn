@@ -43,6 +43,25 @@ static_library("core") {
   ]
 }
 
+static_library("database") {
+  sources = [
+    "favicon_database.cc",
+    "favicon_database.h",
+    "favicon_types.cc",
+    "favicon_types.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/database_utils",
+    "//components/favicon_base",
+    "//sql",
+    "//third_party/sqlite",
+    "//ui/gfx",
+    "//url",
+  ]
+}
+
 # This target contains the implementation of FaviconService backed by
 # the HistoryService.
 static_library("history_implementation") {
@@ -66,6 +85,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "fallback_url_util_unittest.cc",
+    "favicon_database_unittest.cc",
     "favicon_handler_unittest.cc",
     "favicon_service_impl_unittest.cc",
     "history_ui_favicon_request_handler_impl_unittest.cc",
@@ -74,6 +94,7 @@ source_set("unit_tests") {
 
   deps = [
     ":core",
+    ":database",
     ":history_implementation",
     "//base",
     "//base/test:test_support",
@@ -86,8 +107,11 @@ source_set("unit_tests") {
     "//components/variations:test_support",
     "//net:test_support",
     "//skia",
+    "//sql",
+    "//sql:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/sqlite",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx:test_support",

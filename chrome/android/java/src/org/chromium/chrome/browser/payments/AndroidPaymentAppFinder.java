@@ -23,6 +23,7 @@ import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
 import org.chromium.components.payments.PaymentManifestWebDataService;
+import org.chromium.components.payments.PaymentOptionsUtils;
 import org.chromium.components.payments.SupportedDelegations;
 import org.chromium.components.payments.intent.WebPaymentIntentHelper;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
@@ -300,7 +301,9 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
         // and, consequently, the {@link PaymentRequest} object.
         ChromeActivity activity =
                 ChromeActivity.fromWebContents(mFactoryDelegate.getParams().getWebContents());
-        if (!mFactoryDelegate.getParams().requestShippingOrPayerContact() && activity != null) {
+        if (!PaymentOptionsUtils.requestAnyInformation(
+                    mFactoryDelegate.getParams().getPaymentOptions())
+                && activity != null) {
             findAppStoreBillingApp(activity, allInstalledPaymentApps);
         }
 

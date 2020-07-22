@@ -998,6 +998,7 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="8970887620466824814">Nešto nije uredu.</translation>
 <translation id="8972098258593396643">Želite li preuzeti u zadanu mapu?</translation>
 <translation id="8988028529677883095">Koristite telefon kao sigurnosni ključ</translation>
+<translation id="8990209962746788689">Nije moguće kreirati QR kôd</translation>
 <translation id="8993760627012879038">Otvori novu karticu u anonimnom načinu rada</translation>
 <translation id="8998729206196772491">Prijavljujete se pomoću računa kojim upravlja domena <ph name="MANAGED_DOMAIN" /> te njenom administratoru dajete kontrolu nad svojim Chrome podacima. Vaši podaci će se trajno povezati s ovim računom. Odjavljivanjem iz Chromea ćete izbrisati podatke s ovog uređaja, ali će oni ostati pohranjeni na vašem Google računu.</translation>
 <translation id="9028914725102941583">Uključite sinhronizaciju da dijelite sadržaj na više uređaja</translation>
@@ -1035,7 +1036,7 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="970715775301869095">Ostalo je još <ph name="MINUTES" /> min</translation>
 <translation id="974555521953189084">Unesite pristupni izraz da počnete sinhronizaciju</translation>
 <translation id="981121421437150478">Van mreže</translation>
-<translation id="983192555821071799">Zatvaranje svih kartica</translation>
+<translation id="983192555821071799">Zatvori sve kartice</translation>
 <translation id="987264212798334818">Opće</translation>
 <translation id="996149300115483134">Meni kartice za sažetak sadržaja je zatvoren</translation>
 </translationbundle>

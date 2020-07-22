@@ -10,7 +10,7 @@ android_resources("partner_browser_customizations_example_apk_resources") {
     "res/values/strings.xml",
   ]
   android_manifest = "AndroidManifest.xml"
-  custom_package = "org.chromium.example.partnercustomizations"
+  create_srcjar = false
 }
 
 android_apk("partner_browser_customizations_example_apk") {

@@ -634,6 +634,11 @@ if (!is_android) {
       "HAS_OUT_OF_PROC_TEST_RUNNER",
       "CHROME_VERSION_MAJOR=" + chrome_version_major,
     ]
+    if (chromeos_is_browser_only) {
+      use_ash_chrome = true
+      use_xvfb = true
+    }
+
     deps = [
       ":browser_tests_runner",
       ":policy_testserver_pyproto",
@@ -2123,6 +2128,14 @@ if (!is_android) {
           [ "//chrome/browser/internal/resources/signin/test_accounts.json" ]
     }
 
+    # Browser tests for functionality that is only intended to be present in
+    # ash-chrome, not lacros-chrome.
+    if (is_chromeos && !chromeos_is_browser_only) {
+      sources += [
+        "../browser/chromeos/crosapi/screen_manager_crosapi_browsertest.cc",
+      ]
+    }
+
     if (is_chromeos) {
       sources += [
         "../browser/apps/platform_apps/app_window_interactive_uitest_base.cc",
@@ -3033,6 +3046,10 @@ if (is_mac) {
 }
 
 test("unit_tests") {
+  if (chromeos_is_browser_only) {
+    use_ash_chrome = true
+  }
+
   inputs = [
     # enums.xml is analyzed by AboutFlagsHistogramTest, so this
     # dependency is needed to make commit bots run unit_tests on
@@ -3644,9 +3661,17 @@ test("unit_tests") {
       "../browser/nearby_sharing/instantmessaging/receive_messages_express_unittest.cc",
       "../browser/nearby_sharing/instantmessaging/send_message_express_unittest.cc",
       "../browser/nearby_sharing/instantmessaging/stream_parser_unittest.cc",
+      "../browser/nearby_sharing/mock_nearby_sharing_service.cc",
+      "../browser/nearby_sharing/mock_nearby_sharing_service.h",
+      "../browser/nearby_sharing/nearby_confirmation_manager_unittest.cc",
       "../browser/nearby_sharing/nearby_notification_manager_unittest.cc",
+      "../browser/nearby_sharing/nearby_per_session_discovery_manager_unittest.cc",
       "../browser/nearby_sharing/nearby_process_manager_unittest.cc",
       "../browser/nearby_sharing/nearby_sharing_service_impl_unittest.cc",
+      "../browser/nearby_sharing/share_target_builder.cc",
+      "../browser/nearby_sharing/share_target_builder.h",
+      "../browser/nearby_sharing/transfer_metadata_builder.cc",
+      "../browser/nearby_sharing/transfer_metadata_builder.h",
       "../browser/nearby_sharing/webrtc_signaling_messenger_unittest.cc",
       "../browser/performance_manager/test_support/page_discarding_utils.cc",
       "../browser/performance_manager/test_support/page_discarding_utils.h",
@@ -6462,6 +6487,11 @@ if (!is_fuchsia) {
 
 if (!is_fuchsia && !is_android) {
   test("sync_integration_tests") {
+    if (chromeos_is_browser_only) {
+      use_ash_chrome = true
+      use_xvfb = true
+    }
+
     sources = [
       "../browser/sync/test/integration/enable_disable_test.cc",
       "../browser/sync/test/integration/local_sync_test.cc",

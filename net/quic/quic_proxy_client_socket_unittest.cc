@@ -272,7 +272,8 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
         client_headers_include_h2_stream_dependency_, /*cert_verify_flags=*/0,
         quic::test::DefaultQuicConfig(),
         std::make_unique<TestQuicCryptoClientConfigHandle>(&crypto_config_),
-        "CONNECTION_UNKNOWN", dns_start, dns_end, &push_promise_index_, nullptr,
+        "CONNECTION_UNKNOWN", dns_start, dns_end,
+        std::make_unique<quic::QuicClientPushPromiseIndex>(), nullptr,
         base::DefaultTickClock::GetInstance(),
         base::ThreadTaskRunnerHandle::Get().get(),
         /*socket_performance_watcher=*/nullptr, net_log_.bound().net_log()));
@@ -621,7 +622,6 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
   testing::StrictMock<quic::test::MockQuicConnectionVisitor> visitor_;
   TransportSecurityState transport_security_state_;
   quic::QuicCryptoClientConfig crypto_config_;
-  quic::QuicClientPushPromiseIndex push_promise_index_;
 
   const quic::QuicConnectionId connection_id_;
   QuicTestPacketMaker client_maker_;

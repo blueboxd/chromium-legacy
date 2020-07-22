@@ -50,6 +50,7 @@ import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
+import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
@@ -106,7 +107,7 @@ public class TabGridDialogMediatorUnitTest {
     @Mock
     TabCreatorManager mTabCreatorManager;
     @Mock
-    TabCreatorManager.TabCreator mTabCreator;
+    TabCreator mTabCreator;
     @Mock
     TabSwitcherMediator.ResetHandler mTabSwitcherResetHandler;
     @Mock

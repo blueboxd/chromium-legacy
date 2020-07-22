@@ -102,6 +102,7 @@ class ServiceWorkerContextAdapter
   void OnVersionStoppedRunning(int64_t version_id) override;
   void OnNoControllees(int64_t version_id, const GURL& scope) override;
   void OnReportConsoleMessage(int64_t version_id,
+                              const GURL& scope,
                               const content::ConsoleMessage& message) override;
   void OnDestruct(ServiceWorkerContext* context) override;
 

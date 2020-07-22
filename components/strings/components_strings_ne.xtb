@@ -45,6 +45,7 @@
 <translation id="115926840831309955">आफ्नो CVC जाँच गरी फेरि प्रयास गर्नुहोस् वा म्याद सकिने मिति अपडेट गर्नुहोस्</translation>
 <translation id="1161325031994447685">Wi-Fi मा पुनः जडान गर्नुहोस्</translation>
 <translation id="1165039591588034296">त्रुटि</translation>
+<translation id="1165174597379888365">पृष्ठ खोलिएको छ</translation>
 <translation id="1175364870820465910">&amp;छाप्नुहोस्...</translation>
 <translation id="1175875016430184367">दायाँपट्टि तीन स्टिच</translation>
 <translation id="1178581264944972037">पज गर्नुहोस्</translation>
@@ -265,6 +266,7 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{र थप १}other{र थप #}}</translation>
 <translation id="2003709556000175978">अहिले आफ्नो पासवर्ड रिसेट गर्नुहोस्</translation>
 <translation id="2003775180883135320">सिरानमा चार प्वाल</translation>
+<translation id="202072848677994234">यो फारम असुरक्षित कनेक्सनमार्फत पेस गरिँदै छ। स्वतः भर्ने सुविधा असक्षम पारिएको छ।</translation>
 <translation id="2025115093177348061">अग्मेन्टेड रियालिटी</translation>
 <translation id="2025186561304664664">प्रोक्सीलाई स्वत: कन्फिगरमा सेट गरिएको छ।</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />प्रोक्सी र फायरवाललाई जाँच गर्नुहोस्<ph name="END_LINK" /></translation>
@@ -332,6 +334,7 @@
 <translation id="2289385804009217824">छाँटकाँट गर्नुहोस्</translation>
 <translation id="2292556288342944218">तपाईंको इन्टरनेट पहुँचमाथि रोक लगाइएको छ</translation>
 <translation id="2293443924986248631">यो सुविधा सक्रिय हुँदा साइटहरूले वेबमा तपाईंलाई ट्र्याक गर्ने कुकीहरू प्रयोग गर्न सक्दैनन्। तर कतिपय साइटका सुविधाहरूले काम नगर्न सक्छन्।</translation>
+<translation id="2295290966866883927">तपाईंले खोल्ने वेबपृष्ठका URL हरू विश्लेषण गर्ने प्रयोजनका लागि Google Cloud मा वा तेस्रा पक्षकहाँ पठाइन्छन्। उदाहरणका लागि, असुरक्षित वेबसाइटहरू पत्ता लगाउन तिनलाई स्क्यान गरिन सक्छ।</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2300306941146563769">अपलोड नगरिएको</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>

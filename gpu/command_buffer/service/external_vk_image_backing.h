@@ -9,17 +9,15 @@
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "base/util/type_safety/pass_key.h"
-#include "build/build_config.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/external_semaphore.h"
+#include "gpu/command_buffer/service/external_semaphore_pool.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_memory_region_wrapper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "gpu/vulkan/semaphore_handle.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -93,8 +91,8 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
   VulkanFenceHelper* fence_helper() const {
     return context_provider()->GetDeviceQueue()->GetFenceHelper();
   }
-  VkDevice device() const {
-    return context_provider()->GetDeviceQueue()->GetVulkanDevice();
+  ExternalSemaphorePool* external_semaphore_pool() {
+    return context_state()->external_semaphore_pool();
   }
   bool use_separate_gl_texture() const { return use_separate_gl_texture_; }
   bool need_synchronization() const {
@@ -112,7 +110,7 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
 
   // Notifies the backing that an access will start. Return false if there is
   // currently any other conflict access in progress. Otherwise, returns true
-  // and semaphore handles which will be waited on before accessing.
+  // and semaphores which will be waited on before accessing.
   bool BeginAccess(bool readonly,
                    std::vector<ExternalSemaphore>* external_semaphores,
                    bool is_gl);
@@ -127,6 +125,14 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
   // SharedImageBacking implementation.
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
+
+  // Add semaphores to a pending list for reusing or being released immediately.
+  void AddSemaphoresToPendingListOrRelease(
+      std::vector<ExternalSemaphore> semaphores);
+  // Return |pending_semaphores_| and passed in |semaphores| to
+  // ExternalSemaphorePool for reusing.
+  void ReturnPendingSemaphoresWithFenceHelper(
+      std::vector<ExternalSemaphore> semaphores);
 
  protected:
   static std::unique_ptr<ExternalVkImageBacking> CreateInternal(
@@ -163,12 +169,6 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
       scoped_refptr<SharedContextState> context_state) override;
 
  private:
-
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-  // Extract file descriptor from image
-  int GetMemoryFd(const GrVkImageInfo& image_info);
-#endif
-
   // Install a shared memory GMB to the backing.
   void InstallSharedMemory(SharedMemoryRegionWrapper shared_memory_wrapper);
   // Returns texture_service_id for ProduceGLTexture and GLTexturePassthrough.
@@ -209,6 +209,11 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
     kInGLTexture = 1 << 2,
   };
   uint32_t latest_content_ = 0;
+
+  // Semaphores pending for returning to ExternalSemaphorePool.
+  // When the backing is accessed by the vulkan device for GrContext, they can
+  // be returned to ExternalSemaphorePool through VulkanFenceHelper.
+  std::vector<ExternalSemaphore> pending_semaphores_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalVkImageBacking);
 };

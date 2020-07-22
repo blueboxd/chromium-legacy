@@ -62,6 +62,8 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
   void GetRegistrationsForOrigin(
       const GURL& origin,
       GetRegistrationsForOriginCallback callback) override;
+  void GetUsageForOrigin(const url::Origin& origin,
+                         GetUsageForOriginCallback callback) override;
   void StoreRegistration(
       storage::mojom::ServiceWorkerRegistrationDataPtr registration,
       std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources,

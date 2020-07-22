@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> dilindən <ph name="TARGET_LANGUAGE" /> dilinə</translation>
 <translation id="168715261339224929">Bütün cihazlarınızda əlfəcinləri əldə etmək üçün sinxronizasiyanı aktiv edin.</translation>
 <translation id="1687475363370981210">Hamısını Oxunmuş Kimi Qeyd Edin</translation>
+<translation id="1689333818294560261">Ləqəb</translation>
 <translation id="1690731385917361335">Element yoxdur</translation>
 <translation id="1692118695553449118">Sinxronizasiya aktivdir</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> seçildi</translation>
@@ -206,6 +207,7 @@ Anonim rejimdə olduqda saytlar müxtəlif saytlarda baxış tarixçənizi görm
 <translation id="3335947283844343239">Bağlanmış Paneli yenidən açın</translation>
 <translation id="3371831930909698441">Tərcümə əlçatandır. Seçimlər ekranın aşağı hissəsində əlçatandır.</translation>
 <translation id="3393920035788932672">Popuplara icazə verilir</translation>
+<translation id="3425644765244388016">Kart Ləqəbi</translation>
 <translation id="3443810440409579745">Tab qəbul edildi.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> dəq</translation>
 <translation id="3448016392200048164">Bölünmüş Görüntü</translation>
@@ -240,6 +242,7 @@ Anonim rejimdə olduqda saytlar müxtəlif saytlarda baxış tarixçənizi görm
 <translation id="3783017676699494206">Şəkli yadda saxlayın</translation>
 <translation id="3789841737615482174">Quraşdırın</translation>
 <translation id="3803696231112616155">Bu saytı tərcümə etməyi təklif edin</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Heç bir parol ələ keçirilməyib}=1{{COUNT} parol ələ keçirilib}other{{COUNT} parol ələ keçirilib}}</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="3892144330757387737">Tarixçəni burada tapa bilərsiniz</translation>
 <translation id="3897092660631435901">Menyu</translation>
@@ -529,6 +532,7 @@ Saytlar müxtəlif saytlarda baxış fəaliyyətinizi görmək üçün kukiləri
 <translation id="7189598951263744875">Paylaşın...</translation>
 <translation id="7192050974311852563">Qeydiyyata Başlayın</translation>
 <translation id="7203585745079012652">Geri Cavab</translation>
+<translation id="721597782417389033">Yanlış Kart Ləqəbi</translation>
 <translation id="7265758999917665941">Bu sayt üçün heç vaxt yadda saxlamayın</translation>
 <translation id="7272437679830969316">Kimliyinizi doğrulamaq mümkün deyil. Parol kopyalanmayıb.</translation>
 <translation id="7291368939935408496">Parollar Hazırlanır...</translation>

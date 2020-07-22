@@ -12,9 +12,13 @@
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/common/web_application_info.h"
 #include "url/gurl.h"
 
 namespace web_app {
+
+using WebApplicationInfoFactory =
+    base::RepeatingCallback<std::unique_ptr<WebApplicationInfo>()>;
 
 enum class ExternalInstallSource;
 
@@ -106,6 +110,12 @@ struct ExternalInstallOptions {
   // Additional keywords that will be used by the OS when searching for the app.
   // Only affects Chrome OS.
   std::vector<std::string> additional_search_terms;
+
+  // A factory callback that returns a unique_ptr<WebApplicationInfo>. If this
+  // is present, the generated WebApplicationInfo is used to install the app
+  // instead of loading the url, retrieving the manifest, and installing from
+  // that.
+  WebApplicationInfoFactory app_info_factory;
 };
 
 std::ostream& operator<<(std::ostream& out,

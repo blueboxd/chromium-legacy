@@ -45,6 +45,10 @@ if (is_ios) {
 # no tests will run) and add a reference here. You can add more than one unit
 # test target if convenient.
 test("components_unittests") {
+  if (chromeos_is_browser_only) {
+    use_ash_chrome = true
+  }
+
   if (is_android || is_linux || is_mac || is_win) {
     data = [ "test/data/" ]
   }

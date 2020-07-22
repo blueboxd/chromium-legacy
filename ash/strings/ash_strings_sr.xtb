@@ -276,7 +276,7 @@
 <translation id="4028481283645788203">Треба да унесете лозинку ради додатне безбедности</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Делите екран</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Искључено за апликацију}one{Искључено за # апликацију}few{Искључено за # апликације}other{Искључено за # апликација}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Иск. за апл.}one{Иск. за # апл.}few{Иск. за # апл.}other{Иск. за # апл.}}</translation>
 <translation id="4072264167173457037">Сигнал средње јачине</translation>
 <translation id="4112140312785995938">Премотај уназад</translation>
 <translation id="4129129681837227511">Да бисте видели обавештења на закључаном екрану, откључајте га како бисте променили подешавање</translation>
@@ -421,7 +421,7 @@
 <translation id="5958529069007801266">Корисник под надзором</translation>
 <translation id="5977415296283489383">Слушалице</translation>
 <translation id="5978382165065462689">Делите контролу над екраном преко Даљинске помоћи.</translation>
-<translation id="5980301590375426705">Изађи из сесије госта</translation>
+<translation id="5980301590375426705">Затвори као гост</translation>
 <translation id="598882571027504733">Да бисте преузели ажурирање, рестартујте Chromebook са прикљученом тастастуром.</translation>
 <translation id="5992218262414051481">Режим високог контраста је омогућен. Притисните Ctrl + тастер за претрагу + H поново да бисте га искључили.</translation>
 <translation id="6018164090099858612">Излазак из режима са пресликавањем</translation>
@@ -598,7 +598,7 @@
 <translation id="8054466585765276473">Израчунавање времена трајања батерије.</translation>
 <translation id="8061464966246066292">Високи контраст</translation>
 <translation id="8098591350844501178">Заустави пребацивање екрана на <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">Укључено, све апликације</translation>
+<translation id="8113423164597455979">Укључено, све</translation>
 <translation id="8131740175452115882">Потврди</translation>
 <translation id="8132793192354020517">Успостављена је веза са <ph name="NAME" /></translation>
 <translation id="813913629614996137">Покреће се…</translation>
@@ -639,7 +639,7 @@
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> – <ph name="FEATURE_STATE" />: <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Притисните Alt + тастер за претрагу или Shift да бисте отказали.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> не подржава резолуцију <ph name="SPECIFIED_RESOLUTION" />. Резолуција је промењена у <ph name="FALLBACK_RESOLUTION" />. Кликните на Потврди да бисте задржали промене. Претходна подешавања ће бити враћена за <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="8513108775083588393">Аутоматско ротирање</translation>
+<translation id="8513108775083588393">Аутом. ротир.</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> се можда неће пунити док је укључен.</translation>
 <translation id="8563862697512465947">Подешавања обавештења</translation>
 <translation id="857201607579416096">Мени је премештен у доњи десни угао екрана.</translation>

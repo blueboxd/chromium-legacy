@@ -25,7 +25,7 @@
 <translation id="1207113853726624428">Шинэ хайлт</translation>
 <translation id="1209206284964581585">Одоо нуух</translation>
 <translation id="1219674500290482172">Интернэтэд холбогдох боломжгүй байна.</translation>
-<translation id="122699739164161391">Бүх чихтэй хуудсыг хаах</translation>
+<translation id="122699739164161391">Бүх табыг хаах</translation>
 <translation id="1231733316453485619">Синк асаах уу?</translation>
 <translation id="1254117744268754948">Хавтсыг сонгох</translation>
 <translation id="1265739287306757398">Заавар харах</translation>
@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> -с <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Хавчуургаа бүх төхөөрөмждөө авах бол синкийг асаана уу.</translation>
 <translation id="1687475363370981210">Бүгдийг уншсан гэж тэмдэглэх</translation>
+<translation id="1689333818294560261">Хоч</translation>
 <translation id="1690731385917361335">Ямар ч зүйл алга</translation>
 <translation id="1692118695553449118">Тохиргоо асаалттай байна.</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> сонгогдсон</translation>
@@ -206,6 +207,7 @@
 <translation id="3335947283844343239">Хаасан Tab-г дахин нээнэ үү.</translation>
 <translation id="3371831930909698441">Орчуулах боломжтой байна. Дэлгэцийн доод хэсгийн ойролцоо сонголт хийх боломжтой.</translation>
 <translation id="3393920035788932672">Мэдээллийн цонх харуулахыг зөвшөөрсөн</translation>
+<translation id="3425644765244388016">Картын хоч</translation>
 <translation id="3443810440409579745">Табыг хүлээн авлаа.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин</translation>
 <translation id="3448016392200048164">Хувааж харах</translation>
@@ -240,6 +242,7 @@
 <translation id="3783017676699494206">Зургийг хадгал</translation>
 <translation id="3789841737615482174">Суулгах</translation>
 <translation id="3803696231112616155">Энэ сайтыг орчуулахыг санал болгох</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Алдагдсан нууц үг алга}=1{{COUNT} нууц үг алдагдсан}other{{COUNT} нууц үг алдагдсан}}</translation>
 <translation id="385051799172605136">Буцах</translation>
 <translation id="3892144330757387737">Та түүхээ эндээс олох болно</translation>
 <translation id="3897092660631435901">Цэс</translation>
@@ -510,14 +513,14 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="6988572888918530647">Google бүртгэлээ удирдах</translation>
 <translation id="6995899638241819463">Өгөгдлийн зөрчлийн улмаас нууц үгийг задруулсан бол танд анхааруулах</translation>
 <translation id="6998989275928107238">руу</translation>
-<translation id="7004499039102548441">Хамгийн сүүлд орсон цонхнууд</translation>
+<translation id="7004499039102548441">Саяхан нээсэн табууд</translation>
 <translation id="7006788746334555276">Агуулгын тохиргоо</translation>
 <translation id="7015203776128479407">Синк хийх анхны тохируулгыг дуусгаагүй байна. Синк хийх унтраалттай байна.</translation>
 <translation id="7029809446516969842">Нууц үг</translation>
 <translation id="7030675613184250187">Та хуудаснуудыг дахин хайж олох эсвэл офлайнаар уншихын тулд тэдгээрийг унших жагсаалтдаа хадгалах боломжтой</translation>
 <translation id="7053983685419859001">Блоклох</translation>
 <translation id="7062545763355031412">Зөвшөөрч, бүртгэлийг шилжүүлэх</translation>
-<translation id="7099761977003084116">Саяхны чихтэй хуудаснууд</translation>
+<translation id="7099761977003084116">Саяхны нээсэн табууд</translation>
 <translation id="7102005569666697658">Татаж байна… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Нуух</translation>
 <translation id="7133798577887235672">Овог нэр</translation>
@@ -528,6 +531,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="7189598951263744875">Хуваалцах...</translation>
 <translation id="7192050974311852563">Лог хийж эхлэх</translation>
 <translation id="7203585745079012652">Хариултыг буцааж хэлэх</translation>
+<translation id="721597782417389033">Картын буруу хоч</translation>
 <translation id="7265758999917665941">Энэ сайтад хэзээ ч хадгалахгүй</translation>
 <translation id="7272437679830969316">Таныг баталгаажуулж чадсангүй. Нууц үгийг хуулаагүй байна.</translation>
 <translation id="7291368939935408496">Нууц үгийг бэлтгэж байна...</translation>
@@ -647,7 +651,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="8756969031206844760">Нууц үгийг шинэчлэх үү?</translation>
 <translation id="8775144690796719618">Хүчингүй URL</translation>
 <translation id="8803639129939845298">Аюулгүй</translation>
-<translation id="8820817407110198400">Хайлтын жагсаалтууд</translation>
+<translation id="8820817407110198400">Хавчуургууд</translation>
 <translation id="8840513115188359703">Таныг Google Бүртгэлээс гаргахгүй.</translation>
 <translation id="8870413625673593573">Саяхан хаагдсан</translation>
 <translation id="8881801611828450202">Энэ зургийг <ph name="SEARCH_ENGINE" />-с хайх</translation>

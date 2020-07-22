@@ -52,7 +52,7 @@
           {
               var entries = har.entries;
               var urls = [];
-              for (var i = 0; i < entries.length; i += 2) {
+              for (var i = 0; i < entries.length; ++i) {
                 var url = entries[i].request.url;
                 // Workaround for GTK DRT that requests favicon.ico along with
                 // the page.

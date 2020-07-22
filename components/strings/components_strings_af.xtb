@@ -450,6 +450,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="2824775600643448204">Adres- en soekbalk</translation>
 <translation id="2826760142808435982">Die verbinding is geënkripteer en gestaaf deur <ph name="CIPHER" /> te gebruik, en gebruik <ph name="KX" /> as die sleuteluitruilmeganisme.</translation>
 <translation id="2835170189407361413">Maak vorm skoon</translation>
+<translation id="2839501879576190149">Vals werf voor</translation>
 <translation id="2847118875340931228">Maak incognitovenster oop</translation>
 <translation id="2850739647070081192">Invite (Envelope)</translation>
 <translation id="2856444702002559011">Aanvallers probeer dalk om jou inligting (byvoorbeeld: wagwoorde, boodskappe of kredietkaartinligting) op <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> te steel. <ph name="BEGIN_LEARN_MORE_LINK" />Kom meer te wete<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -810,6 +811,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="42981349822642051">Vou uit</translation>
 <translation id="4300675098767811073">Veelvuldige pons regs</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
+<translation id="4305666528087210886">Kon nie toegang tot jou lêer kry nie</translation>
 <translation id="4305817255990598646">Skakel oor</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Blokkeer (verstek)</translation>
@@ -828,6 +830,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="4358461427845829800">Bestuur betaalmetodes …</translation>
 <translation id="4359160567981085931">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chrome kan help. Klik Beskerm Rekening om jou wagwoord te verander en stel Google in kennis dat jou rekening dalk in gevaar is.</translation>
 <translation id="4367563149485757821">Number-12 (Envelope)</translation>
+<translation id="4367839622597707614">{1,plural, =0{'n Dataskending op 'n werf of program het jou gestoorde wagwoord vir <ph name="ORIGIN" /> blootgestel. Chrome beveel aan dat jy jou wagwoord op <ph name="ORIGIN" /> nou verander.}=1{'n Dataskending op 'n werf of program het jou gestoorde wagwoord vir <ph name="ORIGIN" /> en een ander werf blootgestel. Chrome beveel aan dat jy jou gestoorde wagwoorde nou nagaan.}other{'n Dataskending op 'n werf of program het jou gestoorde wagwoord vir <ph name="ORIGIN" /> en <ph name="SITES_COUNT" /> ander werwe blootgestel. Chrome beveel aan dat jy jou gestoorde wagwoorde nou nagaan.}}</translation>
 <translation id="437058704415269440">Rekeningsaldo</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Verwagte <ph name="VALUE_TYPE" />-waarde.</translation>
@@ -1298,6 +1301,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Moontlike heffings voor.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 ander voorstel}other{# ander voorstelle}}</translation>
+<translation id="6387645831795005740">Aanvallers boots soms werwe na deur klein veranderinge wat moeilik sigbaar is aan die URL te maak.</translation>
 <translation id="6389470377220713856">Naam op kaart</translation>
 <translation id="6390200185239044127">Halwe Z-vou</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1511,6 +1515,7 @@ Bykomende besonderhede:
 <translation id="7372973238305370288">soekresultaat</translation>
 <translation id="7374733840632556089">Hierdie probleem word veroorsaak deur 'n sertifikaat wat jy of iemand anders op jou toestel geïnstalleer het. Dit is bekend dat hierdie sertifikaat gebruik word om netwerke te monitor en te onderskep, en dit word nie deur Chrome vertrou nie. Terwyl sommige wettige gevalle vir monitering wel bestaan, soos op 'n skool- of maatskappynetwerk, wil Chrome seker maak dat jy weet dit gebeur, selfs al kan jy dit nie keer nie. Monitering kan in enige blaaier of program met toegang tot die web plaasvind.</translation>
 <translation id="7375818412732305729">Lêer is aangeheg</translation>
+<translation id="7376551888419889433">Wanneer sekuriteitsgevalle deur Chrome Enterprise Connectors gevlag word, word relevante data oor die gevalle aan jou administrateur gestuur. Dit kan insluit: URL'e van bladsye wat jy in Chrome besoek, lêername of metadata, en die gebruikernaam wat jy gebruik om op jou toestel en by Chrome aan te meld.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Media-kontroles</translation>
 <translation id="7378627244592794276">Nee</translation>
@@ -1907,6 +1912,7 @@ Bykomende besonderhede:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Jy het probeer om <ph name="DOMAIN" /> te bereik, maar die bediener het 'n ongeldige sertifikaat voorgehou.</translation>
 <translation id="9050666287014529139">Wagfrase</translation>
+<translation id="9062620674789239642">Dit is dalk geskuif, gewysig of uitgevee.</translation>
 <translation id="9065203028668620118">Wysig</translation>
 <translation id="9065745800631924235"><ph name="TEXT" />-soektog uit geskiedenis</translation>
 <translation id="9069693763241529744">Geblokkeer deur 'n uitbreiding</translation>

@@ -51,9 +51,9 @@ void ExecuteQuitAll(
     const std::string& session_id,
     const CommandCallback& callback);
 
-typedef base::Callback<Status(Session* session,
-                              const base::DictionaryValue&,
-                              std::unique_ptr<base::Value>*)>
+typedef base::RepeatingCallback<Status(Session* session,
+                                       const base::DictionaryValue&,
+                                       std::unique_ptr<base::Value>*)>
     SessionCommand;
 
 // Executes a given session command, after acquiring access to the appropriate

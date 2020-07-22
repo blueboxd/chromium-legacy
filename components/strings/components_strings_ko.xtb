@@ -390,7 +390,7 @@
 <translation id="2552295903035773204">지금부터 화면 잠금을 사용하여 카드 확인</translation>
 <translation id="2553853292994445426">보안 DNS 설정을 확인하세요. 연결되지 않는 보안 DNS 서버를 설정했을 수도 있습니다.</translation>
 <translation id="2556876185419854533">수정 실행 취소(&amp;U)</translation>
-<translation id="257674075312929031">그룹</translation>
+<translation id="257674075312929031">그룹화</translation>
 <translation id="2586657967955657006">클립보드</translation>
 <translation id="2587730715158995865"><ph name="ARTICLE_PUBLISHER" />에서 제공한 기사입니다. <ph name="OTHER_ARTICLE_COUNT" />개의 다른 뉴스도 읽어 보세요.</translation>
 <translation id="2587841377698384444">Directory API ID:</translation>
@@ -1628,7 +1628,7 @@
 <translation id="7798389633136518089">클라우드 소스에서 정책을 설정하지 않아 무시되었습니다.</translation>
 <translation id="7800304661137206267">메시지 인증(<ph name="MAC" />)과 키 교환 메커니즘(<ph name="KX" />)을 설정하고 <ph name="CIPHER" />을(를) 사용하여 연결이 암호화되어 있습니다.</translation>
 <translation id="7802523362929240268">정상적인 사이트</translation>
-<translation id="780301667611848630">아니요, 괜찮습니다.</translation>
+<translation id="780301667611848630">취소</translation>
 <translation id="7805768142964895445">상태</translation>
 <translation id="7806344367022510803">Chrome에서 검색엔진 설정을 변경하세요.</translation>
 <translation id="7812922009395017822">Mir</translation>

@@ -556,7 +556,8 @@ class SkiaRenderer::ScopedSkImageBuilder {
   ScopedSkImageBuilder(SkiaRenderer* skia_renderer,
                        ResourceId resource_id,
                        SkAlphaType alpha_type = kPremul_SkAlphaType,
-                       GrSurfaceOrigin origin = kTopLeft_GrSurfaceOrigin);
+                       GrSurfaceOrigin origin = kTopLeft_GrSurfaceOrigin,
+                       bool use_skia_color_conversion = true);
   ~ScopedSkImageBuilder() = default;
 
   const SkImage* sk_image() const { return sk_image_; }
@@ -572,7 +573,8 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
     SkiaRenderer* skia_renderer,
     ResourceId resource_id,
     SkAlphaType alpha_type,
-    GrSurfaceOrigin origin) {
+    GrSurfaceOrigin origin,
+    bool use_skia_color_conversion) {
   if (!resource_id)
     return;
   auto* resource_provider = skia_renderer->resource_provider_;
@@ -584,7 +586,7 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
   } else {
     auto* image_context =
         skia_renderer->lock_set_for_external_use_->LockResource(
-            resource_id, /*is_video_plane=*/false);
+            resource_id, use_skia_color_conversion);
     // |ImageContext::image| provides thread safety: (a) this ImageContext is
     // only accessed by GPU thread after |image| is set and (b) the fields of
     // ImageContext that are accessed by both compositor and GPU thread are no
@@ -625,20 +627,20 @@ class SkiaRenderer::ScopedYUVSkImageBuilder {
     // Skia API ignores the color space information on the individual planes.
     // Dropping them here avoids some LOG spam.
     auto* y_context = skia_renderer->lock_set_for_external_use_->LockResource(
-        quad->y_plane_resource_id(), /*is_video_plane=*/true);
+        quad->y_plane_resource_id(), /*use_skia_color_conversion=*/false);
     contexts.push_back(std::move(y_context));
     auto* u_context = skia_renderer->lock_set_for_external_use_->LockResource(
-        quad->u_plane_resource_id(), /*is_video_plane=*/true);
+        quad->u_plane_resource_id(), /*use_skia_color_conversion=*/false);
     contexts.push_back(std::move(u_context));
     if (is_i420) {
       auto* v_context = skia_renderer->lock_set_for_external_use_->LockResource(
-          quad->v_plane_resource_id(), /*is_video_plane=*/true);
+          quad->v_plane_resource_id(), /*use_skia_color_conversion=*/false);
       contexts.push_back(std::move(v_context));
     }
 
     if (has_alpha) {
       auto* a_context = skia_renderer->lock_set_for_external_use_->LockResource(
-          quad->a_plane_resource_id(), /*is_video_plane=*/true);
+          quad->a_plane_resource_id(), /*use_skia_color_conversion=*/false);
       contexts.push_back(std::move(a_context));
     }
 
@@ -1886,10 +1888,16 @@ void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
 void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
                                    const DrawRPDQParams* rpdq_params,
                                    DrawQuadParams* params) {
+  const gfx::ColorSpace& src_color_space =
+      resource_provider_->GetColorSpace(quad->resource_id());
+  const bool needs_color_conversion_filter =
+      quad->is_video_frame && src_color_space.IsHDR();
+
   ScopedSkImageBuilder builder(
       this, quad->resource_id(),
       quad->premultiplied_alpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType,
-      quad->y_flipped ? kBottomLeft_GrSurfaceOrigin : kTopLeft_GrSurfaceOrigin);
+      quad->y_flipped ? kBottomLeft_GrSurfaceOrigin : kTopLeft_GrSurfaceOrigin,
+      /*use_skia_color_conversion=*/!needs_color_conversion_filter);
   const SkImage* image = builder.sk_image();
   if (!image)
     return;
@@ -1906,16 +1914,18 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
           ? gfx::RectF(image->width(), image->height())
           : gfx::RectF(gfx::SizeF(quad->resource_size_in_pixels()));
 
-  // There are two scenarios where a texture quad cannot be put into a batch:
+  // There are three scenarios where a texture quad cannot be put into a batch:
   // 1. It needs to be blended with a constant background color.
   // 2. The vertex opacities are not all 1s.
-  bool blend_background =
+  // 3. The quad contains video which might need special white level adjustment.
+  const bool blend_background =
       quad->background_color != SK_ColorTRANSPARENT && !image->isOpaque();
-  bool vertex_alpha =
+  const bool vertex_alpha =
       quad->vertex_opacity[0] < 1.f || quad->vertex_opacity[1] < 1.f ||
       quad->vertex_opacity[2] < 1.f || quad->vertex_opacity[3] < 1.f;
 
-  if (!blend_background && !vertex_alpha && !rpdq_params) {
+  if (!blend_background && !vertex_alpha && !needs_color_conversion_filter &&
+      !rpdq_params) {
     // This is a simple texture draw and can go into the batching system
     DCHECK(!MustFlushBatchedQuads(quad, rpdq_params, *params));
     AddQuadToBatch(image, valid_texel_bounds, params);
@@ -2004,6 +2014,14 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
       DCHECK(cf);
     }
     paint.setColorFilter(std::move(cf));
+  }
+
+  if (needs_color_conversion_filter) {
+    // Skia won't perform color conversion.
+    DCHECK(!image->colorSpace());
+    sk_sp<SkColorFilter> color_filter =
+        GetColorFilter(src_color_space, CurrentRenderPassColorSpace());
+    paint.setColorFilter(color_filter->makeComposed(paint.refColorFilter()));
   }
 
   if (!rpdq_params) {
@@ -2118,9 +2136,7 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   sk_sp<SkColorFilter> color_filter =
       GetColorFilter(src_color_space, dst_color_space, quad->resource_offset,
                      quad->resource_multiplier);
-  paint.setColorFilter(paint.getColorFilter()
-                           ? color_filter->makeComposed(paint.refColorFilter())
-                           : color_filter);
+  paint.setColorFilter(color_filter->makeComposed(paint.refColorFilter()));
 
   DrawSingleImage(image, quad->ya_tex_coord_rect, rpdq_params, &paint, params);
 }
@@ -2236,9 +2252,9 @@ sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
                                                   const gfx::ColorSpace& dst,
                                                   float resource_offset,
                                                   float resource_multiplier) {
-  // If the input color space is PQ, and it did not specify a white level,
+  // If the input color space is HDR, and it did not specify a white level,
   // override it with the frame's white level.
-  gfx::ColorSpace adjusted_src = src.GetWithPQSDRWhiteLevel(
+  gfx::ColorSpace adjusted_src = src.GetWithSDRWhiteLevel(
       current_frame()->display_color_spaces.GetSDRWhiteLevel());
 
   sk_sp<SkRuntimeEffect>& effect = color_filter_cache_[dst][adjusted_src];

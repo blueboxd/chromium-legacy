@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_FILE_WRITER_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
+#include "components/download/public/common/quarantine_connection.h"
 #include "components/download/quarantine/quarantine.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "content/browser/native_file_system/native_file_system_file_handle_impl.h"
@@ -33,12 +34,16 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   // materializes the changes in the target file URL only after `Close`
   // is invoked and successfully completes. Assumes that swap_url represents a
   // file, and is valid.
-  NativeFileSystemFileWriterImpl(NativeFileSystemManagerImpl* manager,
-                                 const BindingContext& context,
-                                 const storage::FileSystemURL& url,
-                                 const storage::FileSystemURL& swap_url,
-                                 const SharedHandleState& handle_state,
-                                 bool has_transient_user_activation);
+  // If no |quarantine_connection_callback| is passed in no quarantine is done,
+  // other than setting source information directly if on windows.
+  NativeFileSystemFileWriterImpl(
+      NativeFileSystemManagerImpl* manager,
+      const BindingContext& context,
+      const storage::FileSystemURL& url,
+      const storage::FileSystemURL& swap_url,
+      const SharedHandleState& handle_state,
+      bool has_transient_user_activation,
+      download::QuarantineConnectionCallback quarantine_connection_callback);
   ~NativeFileSystemFileWriterImpl() override;
 
   const storage::FileSystemURL& swap_url() const { return swap_url_; }
@@ -52,10 +57,6 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
 
   void Truncate(uint64_t length, TruncateCallback callback) override;
   void Close(CloseCallback callback) override;
-
-  void SetSkipQuarantineCheckForTesting() {
-    skip_quarantine_check_for_testing_ = true;
-  }
 
   using HashCallback = base::OnceCallback<
       void(base::File::Error error, const std::string& hash, int64_t size)>;
@@ -96,26 +97,17 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
       NativeFileSystemPermissionContext::AfterWriteCheckResult result);
   void DidPassAfterWriteCheck(CloseCallback callback);
   void DidSwapFileBeforeClose(CloseCallback callback, base::File::Error result);
-  void DidAnnotateFile(CloseCallback callback,
-                       quarantine::mojom::QuarantineFileResult result);
+  void DidAnnotateFile(
+      CloseCallback callback,
+      mojo::Remote<quarantine::mojom::Quarantine> quarantine_remote,
+      quarantine::mojom::QuarantineFileResult result);
 
-  // After write checks should apply to paths on all filesystems except
-  // temporary file systems.
+  // After write and quarantine checks should apply to paths on all filesystems
+  // except temporary file systems.
   // TOOD(crbug.com/1103076): Extend this check to non-native paths.
-  bool RequireAfterWriteCheck() const {
+  bool RequireSecurityChecks() const {
     return url().type() == storage::kFileSystemTypeNativeLocal ||
            url().type() == storage::kFileSystemTypeNativeForPlatformApp;
-  }
-
-  // Quarantine checks should apply to paths on all filesystems except
-  // temporary file systems.
-  // TOOD(crbug.com/1103076): Extend this check to non-native paths.
-  bool CanSkipQuarantineCheck() const {
-    bool need_quarantine_check =
-        url().type() == storage::kFileSystemTypeNativeLocal ||
-        url().type() == storage::kFileSystemTypeNativeForPlatformApp;
-
-    return skip_quarantine_check_for_testing_ || !need_quarantine_check;
   }
 
   void ComputeHashForSwapFile(HashCallback callback);
@@ -147,7 +139,7 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   storage::FileSystemURL swap_url_;
   State state_ = State::kOpen;
 
-  bool skip_quarantine_check_for_testing_ = false;
+  download::QuarantineConnectionCallback quarantine_connection_callback_;
 
   // Keeps track of user activation state at creation time for after write
   // checks.

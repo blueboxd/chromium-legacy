@@ -653,6 +653,7 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
                            SK_ColorTRANSPARENT, opacity, flipped,
                            nearest_neighbor, false, protected_video_type);
       texture_quad->set_resource_size_in_pixels(coded_size);
+      texture_quad->is_video_frame = true;
       for (viz::ResourceId resource_id : texture_quad->resources) {
         resource_provider_->ValidateResource(resource_id);
       }

@@ -276,7 +276,7 @@ Evo nekoliko stvari koje možete da probate za početak.</translation>
 <translation id="4028481283645788203">Treba da unesete lozinku radi dodatne bezbednosti</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Delite ekran</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Isključeno za aplikaciju}one{Isključeno za # aplikaciju}few{Isključeno za # aplikacije}other{Isključeno za # aplikacija}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Isk. za apl.}one{Isk. za # apl.}few{Isk. za # apl.}other{Isk. za # apl.}}</translation>
 <translation id="4072264167173457037">Signal srednje jačine</translation>
 <translation id="4112140312785995938">Premotaj unazad</translation>
 <translation id="4129129681837227511">Da biste videli obaveštenja na zaključanom ekranu, otključajte ga kako biste promenili podešavanje</translation>
@@ -421,7 +421,7 @@ Evo nekoliko stvari koje možete da probate za početak.</translation>
 <translation id="5958529069007801266">Korisnik pod nadzorom</translation>
 <translation id="5977415296283489383">Slušalice</translation>
 <translation id="5978382165065462689">Delite kontrolu nad ekranom preko Daljinske pomoći.</translation>
-<translation id="5980301590375426705">Izađi iz sesije gosta</translation>
+<translation id="5980301590375426705">Zatvori kao gost</translation>
 <translation id="598882571027504733">Da biste preuzeli ažuriranje, restartujte Chromebook sa priključenom tastasturom.</translation>
 <translation id="5992218262414051481">Režim visokog kontrasta je omogućen. Pritisnite Ctrl + taster za pretragu + H ponovo da biste ga isključili.</translation>
 <translation id="6018164090099858612">Izlazak iz režima sa preslikavanjem</translation>
@@ -598,7 +598,7 @@ Evo nekoliko stvari koje možete da probate za početak.</translation>
 <translation id="8054466585765276473">Izračunavanje vremena trajanja baterije.</translation>
 <translation id="8061464966246066292">Visoki kontrast</translation>
 <translation id="8098591350844501178">Zaustavi prebacivanje ekrana na <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">Uključeno, sve aplikacije</translation>
+<translation id="8113423164597455979">Uključeno, sve</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8132793192354020517">Uspostavljena je veza sa <ph name="NAME" /></translation>
 <translation id="813913629614996137">Pokreće se…</translation>
@@ -639,7 +639,7 @@ Evo nekoliko stvari koje možete da probate za početak.</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> – <ph name="FEATURE_STATE" />: <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Pritisnite Alt + taster za pretragu ili Shift da biste otkazali.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> ne podržava rezoluciju <ph name="SPECIFIED_RESOLUTION" />. Rezolucija je promenjena u <ph name="FALLBACK_RESOLUTION" />. Kliknite na Potvrdi da biste zadržali promene. Prethodna podešavanja će biti vraćena za <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="8513108775083588393">Automatsko rotiranje</translation>
+<translation id="8513108775083588393">Autom. rotir.</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> se možda neće puniti dok je uključen.</translation>
 <translation id="8563862697512465947">Podešavanja obaveštenja</translation>
 <translation id="857201607579416096">Meni je premešten u donji desni ugao ekrana.</translation>

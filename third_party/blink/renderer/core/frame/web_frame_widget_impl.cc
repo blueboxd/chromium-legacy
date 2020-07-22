@@ -624,6 +624,17 @@ void WebFrameWidgetImpl::FocusChanged(bool enable) {
   Client()->FocusChanged(enable);
 }
 
+void WebFrameWidgetImpl::EnableDeviceEmulation(
+    const DeviceEmulationParams& parameters) {
+  // This message should only be sent to the top level FrameWidget.
+  NOTREACHED();
+}
+
+void WebFrameWidgetImpl::DisableDeviceEmulation() {
+  // This message should only be sent to the top level FrameWidget.
+  NOTREACHED();
+}
+
 bool WebFrameWidgetImpl::SelectionBounds(WebRect& anchor_web,
                                          WebRect& focus_web) const {
   const LocalFrame* local_frame = FocusedLocalFrameInWidget();

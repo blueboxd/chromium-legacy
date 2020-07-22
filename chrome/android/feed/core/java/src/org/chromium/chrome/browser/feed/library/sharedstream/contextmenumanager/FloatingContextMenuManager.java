@@ -13,7 +13,7 @@ import android.widget.ListView;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.feed.R;
+import org.chromium.chrome.R;
 
 import java.util.List;
 

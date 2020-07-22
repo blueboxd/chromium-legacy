@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Godina snimanja</translation>
 <translation id="3338239663705455570">Jezik tastature: slovenački</translation>
 <translation id="3353984535370177728">Izbor direktorijuma za otpremanje</translation>
+<translation id="3356580349448036450">Završeno</translation>
 <translation id="3399597614303179694">Makedonska tastatura</translation>
 <translation id="3414856743105198592">Formatiranjem uklonjivih medija brišete sve podatke. Da li želite da nastavite?</translation>
 <translation id="3437801641691368414">Vreme pravljenja</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Instalacija nije uspela.</translation>
 <translation id="7040138676081995583">Otvori pomoću aplikacije...</translation>
-<translation id="7059566040011178088">Manje od <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923">Izabranih stavki: <ph name="COUNT" /></translation>
 <translation id="7106346894903675391">Kupi još memorijskog prostora...</translation>
 <translation id="7126604456862387217">„&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;“ – &lt;em&gt;pretraži Disk&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">Model uređaja</translation>
 <translation id="8208580316430297579">Ilustracije</translation>
 <translation id="8223479393428528563">Da biste sačuvali ove datoteke za oflajn korišćenje, povežite se ponovo na internet, kliknite desnim tasterom na datoteke i izaberite opciju <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
-<translation id="8231972167769262174">Oko <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Otkaži</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8269755669432358899">Skupi okna za povratne informacije o datotekama</translation>

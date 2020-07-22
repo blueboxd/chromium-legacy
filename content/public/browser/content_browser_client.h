@@ -24,6 +24,7 @@
 #include "base/time/time.h"
 #include "base/util/type_safety/strong_alias.h"
 #include "build/build_config.h"
+#include "components/download/public/common/quarantine_connection.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/allow_service_worker_result.h"
 #include "content/public/browser/certificate_request_result_type.h"
@@ -580,6 +581,11 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns a client GUID used for virus scanning.
   virtual std::string GetApplicationClientGUIDForQuarantineCheck();
+
+  // Gets a callback which can connect to a Quarantine Service instance if
+  // available.
+  virtual download::QuarantineConnectionCallback
+  GetQuarantineConnectionCallback();
 
   // Returns the locale used by the application.
   // This is called on the UI and IO threads.

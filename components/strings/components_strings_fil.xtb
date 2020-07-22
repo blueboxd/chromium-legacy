@@ -450,6 +450,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="2824775600643448204">Address bar at bar sa paghahanap</translation>
 <translation id="2826760142808435982">Ine-encrypt at pinapatotoo ang koneksyon gamit ang <ph name="CIPHER" /> at ginagamit ang <ph name="KX" /> bilang key exchange mechanism.</translation>
 <translation id="2835170189407361413">I-clear ang form</translation>
+<translation id="2839501879576190149">Posibleng peke ang site na ito</translation>
 <translation id="2847118875340931228">Magbukas ng Incognito Window</translation>
 <translation id="2850739647070081192">Invite (Envelope)</translation>
 <translation id="2856444702002559011">Maaaring sinusubukang nakawin ng mga attacker ang iyong impormasyon mula sa <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (halimbawa, mga password, mensahe, o credit card). <ph name="BEGIN_LEARN_MORE_LINK" />Matuto pa<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -810,6 +811,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="42981349822642051">Palawakin</translation>
 <translation id="4300675098767811073">Multiple punch right</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
+<translation id="4305666528087210886">Hindi ma-access ang iyong file</translation>
 <translation id="4305817255990598646">Lumipat</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">I-block (default)</translation>
@@ -828,6 +830,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="4358461427845829800">Pamahalaan ang mga paraan ng pagbabayad...</translation>
 <translation id="4359160567981085931">Kakalagay mo lang ng iyong password sa isang mapanlinang na site. Makakatulong ang Chrome. Para palitan ang iyong password at abisuhan ang Google na posibleng nasa panganib ang iyong account, i-click ang Protektahan ang Account.</translation>
 <translation id="4367563149485757821">Number-12 (Envelope)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Na-expose ang naka-save mong password para sa <ph name="ORIGIN" /> dahil sa isang data breach sa isang site o app. Inirerekomenda ng Chrome na palitan mo ngayon ang iyong password sa <ph name="ORIGIN" />.}=1{Na-expose ang naka-save mong password para sa <ph name="ORIGIN" /> at isa pang site dahil sa isang data breach sa isang site o app. Inirerekomenda ng Chrome na suriin mo ngayon ang iyong mga naka-save na password.}one{Na-expose ang naka-save mong password para sa <ph name="ORIGIN" /> at <ph name="SITES_COUNT" /> pang site dahil sa isang data breach sa isang site o app. Inirerekomenda ng Chrome na suriin mo ngayon ang iyong mga naka-save na password.}other{Na-expose ang naka-save mong password para sa <ph name="ORIGIN" /> at <ph name="SITES_COUNT" /> pang site dahil sa isang data breach sa isang site o app. Inirerekomenda ng Chrome na suriin mo ngayon ang iyong mga naka-save na password.}}</translation>
 <translation id="437058704415269440">Balanse sa Account</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Inaasahang <ph name="VALUE_TYPE" /> na halaga.</translation>
@@ -1298,6 +1301,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Maaaring magkaroon ng singil.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 pang suhestyon}one{# pang suhestyon}other{# pang suhestyon}}</translation>
+<translation id="6387645831795005740">Kung minsan, ginagaya ng mga attacker ang mga site sa pamamagitan ng paggawa ng maliliit at mahirap makitang pagbabago sa URL.</translation>
 <translation id="6389470377220713856">Pangalan sa Card</translation>
 <translation id="6390200185239044127">Z-fold half</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1511,6 +1515,7 @@ Mga karagdagang detalye:
 <translation id="7372973238305370288">resulta ng paghahanap</translation>
 <translation id="7374733840632556089">Nangyayari ang problemang ito dahil sa isang certificate na na-install mo o ng ibang tao sa iyong device. Kilala ang certificate sa pagsubaybay at pag-intercept ng mga network, at hindi ito pinagkakatiwalaan ng Chrome. Bagama't mayroong mga lehitimong kaso ng pagsubaybay, gaya sa network sa paaralan o kumpanya, gustong tiyakin ng Chrome na alam mong nangyayari ito, kahit na hindi mo ito mapipigilan. Posibleng mangyari ang pagsubaybay sa anumang browser o application na nag-a-access ng web.</translation>
 <translation id="7375818412732305729">Nag-attach ng file</translation>
+<translation id="7376551888419889433">Kapag na-flag ng Chrome Enterprise Connectors ang mga event tungkol sa seguridad, ipapadala sa iyong administrator ang nauugnay na data tungkol sa mga event. Puwedeng kabilang dito ang mga URL ng mga page na binibisita mo sa Chrome, mga pangalan ng file o metadata, at ang username na iyong ginagamit para mag-sign in sa device mo at sa Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Mga Kontrol ng Media</translation>
 <translation id="7378627244592794276">Hindi</translation>
@@ -1907,6 +1912,7 @@ Mga karagdagang detalye:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Tinangka mong maabot ang <ph name="DOMAIN" />, ngunit nagpakita ang server ng isang di-wastong certificate.</translation>
 <translation id="9050666287014529139">Passphrase</translation>
+<translation id="9062620674789239642">Posibleng nailipat, na-edit, o na-delete ito.</translation>
 <translation id="9065203028668620118">I-edit</translation>
 <translation id="9065745800631924235">Paghahanap para sa <ph name="TEXT" /> mula sa history</translation>
 <translation id="9069693763241529744">Na-block ng isang extension</translation>

@@ -8,6 +8,7 @@ luci.list_view(
       'codesearch/gen-android-try',
       'codesearch/gen-chromiumos-try',
       'codesearch/gen-fuchsia-try',
+      'codesearch/gen-lacros-try',
       'codesearch/gen-linux-try',
       'codesearch/gen-win-try',
     ],

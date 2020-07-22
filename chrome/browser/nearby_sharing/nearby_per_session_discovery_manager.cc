@@ -1,0 +1,127 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/nearby_sharing/nearby_per_session_discovery_manager.h"
+
+#include <string>
+
+#include "base/bind_helpers.h"
+#include "base/optional.h"
+#include "base/stl_util.h"
+#include "chrome/browser/nearby_sharing/logging/logging.h"
+#include "chrome/browser/nearby_sharing/nearby_confirmation_manager.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
+
+NearbyPerSessionDiscoveryManager::NearbyPerSessionDiscoveryManager(
+    NearbySharingService* nearby_sharing_service)
+    : nearby_sharing_service_(nearby_sharing_service) {}
+
+NearbyPerSessionDiscoveryManager::~NearbyPerSessionDiscoveryManager() {
+  if (!is_registered_)
+    return;
+
+  NearbySharingService::StatusCodes result =
+      nearby_sharing_service_->UnregisterSendSurface(this, this);
+  if (result != NearbySharingService::StatusCodes::kOk)
+    NS_LOG(WARNING) << "Failed to unregister send surface";
+}
+
+void NearbyPerSessionDiscoveryManager::OnTransferUpdate(
+    const ShareTarget& share_target,
+    const TransferMetadata& transfer_metadata) {
+  switch (transfer_metadata.status()) {
+    case TransferMetadata::Status::kAwaitingLocalConfirmation: {
+      DCHECK(select_share_target_callback_);
+      mojo::PendingRemote<nearby_share::mojom::ConfirmationManager> remote;
+      mojo::MakeSelfOwnedReceiver(std::make_unique<NearbyConfirmationManager>(
+                                      nearby_sharing_service_, share_target),
+                                  remote.InitWithNewPipeAndPassReceiver());
+      std::move(select_share_target_callback_)
+          .Run(nearby_share::mojom::SelectShareTargetResult::kOk,
+               transfer_metadata.token(), std::move(remote));
+      break;
+    }
+    case TransferMetadata::Status::kAwaitingRemoteAcceptance:
+      DCHECK(select_share_target_callback_);
+      std::move(select_share_target_callback_)
+          .Run(nearby_share::mojom::SelectShareTargetResult::kOk,
+               /*token=*/base::nullopt, mojo::NullRemote());
+      break;
+    default:
+      break;
+  }
+}
+
+void NearbyPerSessionDiscoveryManager::OnShareTargetDiscovered(
+    ShareTarget share_target) {
+  base::UnguessableToken share_target_id = share_target.id();
+  auto target = nearby_share::mojom::ShareTarget::New(share_target_id);
+
+  base::InsertOrAssign(discovered_share_targets_, share_target_id,
+                       std::move(share_target));
+  share_target_listener_->OnShareTargetDiscovered(std::move(target));
+}
+
+void NearbyPerSessionDiscoveryManager::OnShareTargetLost(
+    ShareTarget share_target) {
+  base::UnguessableToken share_target_id = share_target.id();
+  auto target = nearby_share::mojom::ShareTarget::New(share_target.id());
+
+  discovered_share_targets_.erase(share_target_id);
+  share_target_listener_->OnShareTargetLost(std::move(target));
+}
+
+void NearbyPerSessionDiscoveryManager::StartDiscovery(
+    mojo::PendingRemote<nearby_share::mojom::ShareTargetListener> listener,
+    StartDiscoveryCallback callback) {
+  DCHECK(!is_registered_);
+  NearbySharingService::StatusCodes result =
+      nearby_sharing_service_->RegisterSendSurface(this, this);
+  if (result != NearbySharingService::StatusCodes::kOk) {
+    NS_LOG(WARNING) << "Failed to register send surface";
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+
+  is_registered_ = true;
+  share_target_listener_.Bind(std::move(listener));
+  std::move(callback).Run(/*success=*/true);
+}
+
+void NearbyPerSessionDiscoveryManager::SelectShareTarget(
+    nearby_share::mojom::ShareTargetPtr share_target,
+    SelectShareTargetCallback callback) {
+  DCHECK(!select_share_target_callback_);
+
+  base::UnguessableToken share_target_id = share_target->id;
+  auto iter = discovered_share_targets_.find(share_target_id);
+  if (iter == discovered_share_targets_.end()) {
+    NS_LOG(VERBOSE) << "Unknown share target selected: id=" << share_target_id;
+    std::move(callback).Run(
+        nearby_share::mojom::SelectShareTargetResult::kInvalidShareTarget,
+        /*token=*/base::nullopt, mojo::NullRemote());
+    return;
+  }
+
+  select_share_target_callback_ = std::move(callback);
+  // TODO(crbug.com/1099710): Call correct method and pass attachments.
+  nearby_sharing_service_->SendText(
+      iter->second, "Example Text",
+      base::BindOnce(&NearbyPerSessionDiscoveryManager::OnSend,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void NearbyPerSessionDiscoveryManager::OnSend(
+    NearbySharingService::StatusCodes status) {
+  DCHECK(select_share_target_callback_);
+  // If the send call succeeded, we expect OnTransferUpdate() to be called next.
+  if (status == NearbySharingService::StatusCodes::kOk)
+    return;
+
+  NS_LOG(VERBOSE) << "Failed to select share target";
+  std::move(select_share_target_callback_)
+      .Run(nearby_share::mojom::SelectShareTargetResult::kError,
+           /*token=*/base::nullopt, mojo::NullRemote());
+}

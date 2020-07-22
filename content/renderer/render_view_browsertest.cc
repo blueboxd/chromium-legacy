@@ -289,7 +289,7 @@ class RenderViewImplTest : public RenderViewTest {
     // Emulates receiving an IPC message.
     RenderWidget* widget =
         view->GetMainRenderFrame()->GetLocalRootRenderWidget();
-    widget->OnDisableDeviceEmulation();
+    widget->DisableDeviceEmulation();
   }
 
   void ReceiveEnableDeviceEmulation(
@@ -298,7 +298,7 @@ class RenderViewImplTest : public RenderViewTest {
     // Emulates receiving an IPC message.
     RenderWidget* widget =
         view->GetMainRenderFrame()->GetLocalRootRenderWidget();
-    widget->OnEnableDeviceEmulation(params);
+    widget->EnableDeviceEmulation(params);
   }
 
   void GoToOffsetWithParams(int offset,
@@ -715,11 +715,7 @@ TEST_F(RenderViewImplEmulatingPopupTest, EmulatingPopupRect) {
   emulation_params.screen_type = blink::mojom::EmulatedScreenType::kMobile;
   emulation_params.view_size = emulated_widget_rect.size();
   emulation_params.view_position = emulated_widget_rect.origin();
-  {
-    WidgetMsg_EnableDeviceEmulation msg(main_widget()->routing_id(),
-                                        emulation_params);
-    main_widget()->OnMessageReceived(msg);
-  }
+  main_widget()->EnableDeviceEmulation(emulation_params);
 
   {
     // Make a popup again. It should inherit device emulation params.

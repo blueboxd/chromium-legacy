@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Mwaka iliporekodiwa</translation>
 <translation id="3338239663705455570">Kibodi ya Kislovenia</translation>
 <translation id="3353984535370177728">Chagua folda ya kupakia</translation>
+<translation id="3356580349448036450">Imekamilika</translation>
 <translation id="3399597614303179694">Kibodi ya Kimasedonia</translation>
 <translation id="3414856743105198592">Uumbizaji wa media inayohamishika kutafuta data yote. Je, ungependa kuendelea?</translation>
 <translation id="3437801641691368414">Wakati ilipoundwa</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Usakinishaji haukufaulu.</translation>
 <translation id="7040138676081995583">Fungua kwa...</translation>
-<translation id="7059566040011178088">Chini ya <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923">Vipengee vilivyoteuliwa<ph name="COUNT" /></translation>
 <translation id="7106346894903675391">Nunua hifadhi zaidi...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;Hifadhi ya utafutaji&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">Muundo wa kifaa</translation>
 <translation id="8208580316430297579">Kazi ya sanaa</translation>
 <translation id="8223479393428528563">Ili kuhifadhi faili hizi kwa matumizi ya nje ya mtandao, rudi mtandaoni, bofya faili kulia, na uchague chaguo la <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
-<translation id="8231972167769262174">Kuhusu <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Ghairi</translation>
 <translation id="8261506727792406068">Futa</translation>
 <translation id="8269755669432358899">Kunja vidirisha vya maoni ya faili</translation>

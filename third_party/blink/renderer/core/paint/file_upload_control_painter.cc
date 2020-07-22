@@ -46,7 +46,8 @@ void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
                            : 0;
     LayoutUnit button_and_spacing_width(
         button_width + LayoutFileUploadControl::kAfterButtonSpacing);
-    float text_width = font.Width(text_run);
+    FloatRect text_bounds;
+    float text_width = font.Width(text_run, nullptr, &text_bounds);
     LayoutUnit text_x;
     if (layout_file_upload_control_.StyleRef().IsLeftToRightDirection())
       text_x = content_left + button_and_spacing_width;
@@ -84,8 +85,8 @@ void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
       scoped_paint_timing_detector_block_paint_hook.EmplaceIfNeeded(
           layout_file_upload_control_, paint_info.context.GetPaintController()
                                            .CurrentPaintChunkProperties());
-      PaintTimingDetector::NotifyTextPaint(
-          layout_file_upload_control_.FragmentsVisualRectBoundingBox());
+      text_bounds.Move(text_x, text_y);
+      PaintTimingDetector::NotifyTextPaint(EnclosingIntRect(text_bounds));
     }
   }
 

@@ -75,7 +75,7 @@ import org.chromium.components.payments.PaymentDetailsConverter;
 import org.chromium.components.payments.PaymentDetailsUpdateServiceHelper;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentHandlerHost;
-import org.chromium.components.payments.PaymentRequestParams;
+import org.chromium.components.payments.PaymentOptionsUtils;
 import org.chromium.components.payments.PaymentRequestSpec;
 import org.chromium.components.payments.PaymentRequestUpdateEventListener;
 import org.chromium.components.payments.PaymentValidator;
@@ -134,7 +134,7 @@ public class PaymentRequestImpl
                    PaymentApp.InstrumentDetailsCallback,
                    PaymentResponseHelper.PaymentResponseRequesterDelegate, FocusChangedObserver,
                    NormalizedAddressRequestDelegate, PaymentDetailsConverter.MethodChecker,
-                   PaymentHandlerUiObserver, PaymentRequestParams, PaymentUIsManager.Delegate {
+                   PaymentHandlerUiObserver, PaymentUIsManager.Delegate {
     /**
      * A delegate to ask questions about the system, that allows tests to inject behaviour without
      * having to modify the entire system. This partially mirrors a similar C++
@@ -522,8 +522,8 @@ public class PaymentRequestImpl
      * Called by the merchant website to initialize the payment request data.
      */
     @Override
-    public void init(PaymentMethodData[] methodData, PaymentDetails details, PaymentOptions options,
-            boolean googlePayBridgeEligible) {
+    public void init(PaymentMethodData[] methodData, PaymentDetails details,
+            @Nullable PaymentOptions options, boolean googlePayBridgeEligible) {
         assert getClient() != null;
         mMethodData = new HashMap<>();
         mComponentPaymentRequestImpl.registerPaymentRequestLifecycleObserver(mPaymentUIsManager);
@@ -592,9 +592,8 @@ public class PaymentRequestImpl
                 && PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(
                         PaymentFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT)) {
             PaymentMethodData paymentMethodData = new PaymentMethodData();
-            paymentMethodData.stringifiedData = String.format(
-                    "{payerEmail:%s,payerName:%s,payerPhone:%s,shipping:%s}", mRequestPayerEmail,
-                    mRequestPayerName, mRequestPayerPhone, mRequestShipping);
+            paymentMethodData.stringifiedData =
+                    PaymentOptionsUtils.stringifyRequestedInformation(mPaymentOptions);
             mQueryForQuota.put("basic-card-payment-options", paymentMethodData);
         }
 
@@ -616,7 +615,7 @@ public class PaymentRequestImpl
                 .onPaymentRequestParamsInitiated(
                         /*params=*/this);
 
-        if (mRequestShipping || mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail) {
+        if (PaymentOptionsUtils.requestAnyInformation(mPaymentOptions)) {
             mAutofillProfiles = Collections.unmodifiableList(
                     PersonalDataManager.getInstance().getProfilesToSuggest(
                             false /* includeNameInLabel */));
@@ -1242,36 +1241,6 @@ public class PaymentRequestImpl
         return true;
     }
 
-    // Implement PaymentRequestParams:
-    @Override
-    public Map<String, PaymentMethodData> getMethodDataMap() {
-        return getMethodData();
-    }
-
-    // Implement PaymentRequestParams:
-    @Override
-    public boolean requestShipping() {
-        return mRequestShipping;
-    }
-
-    // Implement PaymentRequestParams:
-    @Override
-    public boolean requestPayerName() {
-        return mRequestPayerName;
-    }
-
-    // Implement PaymentRequestParams:
-    @Override
-    public boolean requestPayerEmail() {
-        return mRequestPayerEmail;
-    }
-
-    // Implement PaymentRequestParams:
-    @Override
-    public boolean requestPayerPhone() {
-        return mRequestPayerPhone;
-    }
-
     /**
      * Called to open a new PaymentHandler UI on the showing PaymentRequest.
      * @param url The url of the payment app to be displayed in the UI.
@@ -1351,7 +1320,7 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (!mRequestShipping && !mRequestPayerName && !mRequestPayerEmail && !mRequestPayerPhone
+        if (!PaymentOptionsUtils.requestAnyInformation(mPaymentOptions)
                 && (mInvokedPaymentApp == null
                         || !mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate())) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
@@ -2539,11 +2508,6 @@ public class PaymentRequestImpl
     }
 
     // PaymentAppFactoryParams implementation.
-    @Override
-    public boolean requestShippingOrPayerContact() {
-        return mRequestShipping || mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail;
-    }
-
     @Override
     public PaymentOptions getPaymentOptions() {
         return mPaymentOptions;

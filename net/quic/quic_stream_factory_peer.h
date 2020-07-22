@@ -22,7 +22,6 @@
 
 namespace quic {
 class QuicAlarmFactory;
-class QuicClientPushPromiseIndex;
 class QuicConfig;
 }  // namespace quic
 
@@ -97,9 +96,6 @@ class QuicStreamFactoryPeer {
       QuicStreamFactory* factory,
       const quic::QuicServerId& quic_server_id,
       const NetworkIsolationKey& network_isolation_key);
-
-  static quic::QuicClientPushPromiseIndex* GetPushPromiseIndex(
-      QuicStreamFactory* factory);
 
   static int GetNumPushStreamsCreated(QuicStreamFactory* factory);
 

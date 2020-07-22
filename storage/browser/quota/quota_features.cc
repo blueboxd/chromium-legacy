@@ -37,5 +37,9 @@ constexpr base::FeatureParam<double> kIncognitoQuotaRatioLowerBound{
 constexpr base::FeatureParam<double> kIncognitoQuotaRatioUpperBound{
     &kIncognitoDynamicQuota, "IncognitoQuotaRatioUpperBound", 0.2};
 
+// Enables Storage Pressure Event.
+const base::Feature kStoragePressureEvent{"StoragePressureEvent",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace storage

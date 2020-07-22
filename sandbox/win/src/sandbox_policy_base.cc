@@ -414,6 +414,16 @@ ResultCode PolicyBase::MakeJobObject(base::win::ScopedHandle* job) {
   return SBOX_ALL_OK;
 }
 
+ResultCode PolicyBase::DropActiveProcessLimit(base::win::ScopedHandle* job) {
+  if (job_level_ >= JOB_INTERACTIVE)
+    return SBOX_ALL_OK;
+
+  if (ERROR_SUCCESS != Job::SetActiveProcessLimit(job, 0))
+    return SBOX_ERROR_CANNOT_UPDATE_JOB_PROCESS_LIMIT;
+
+  return SBOX_ALL_OK;
+}
+
 ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
                                   base::win::ScopedHandle* lockdown,
                                   base::win::ScopedHandle* lowbox) {

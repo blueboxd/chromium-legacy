@@ -41,9 +41,10 @@ android_library("java") {
     "//ui/android:ui_java",
     "//url:gurl_java",
   ]
+  resources_package = "org.chromium.chrome.browser.paint_preview"
 }
 
 android_resources("java_resources") {
   deps = [ "//chrome/browser/ui/android/strings:ui_strings_grd" ]
-  custom_package = "org.chromium.chrome.browser.paint_preview"
+  create_srcjar = false
 }

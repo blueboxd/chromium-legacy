@@ -72,7 +72,7 @@ import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
+import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
@@ -671,7 +671,7 @@ public class ConditionalTabStripTest {
 
     private void createBlankPageWithLaunchType(ChromeTabbedActivity cta, boolean isIncognito,
             @TabLaunchType int type) throws ExecutionException {
-        TabCreatorManager.TabCreator tabCreator = cta.getTabCreator(isIncognito);
+        TabCreator tabCreator = cta.getTabCreator(isIncognito);
         LoadUrlParams loadUrlParams = new LoadUrlParams(UrlConstants.CHROME_BLANK_URL);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> tabCreator.createNewTab(loadUrlParams, type, null));

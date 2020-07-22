@@ -24,7 +24,6 @@ import zipfile
 _SRC_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))
 sys.path.append(os.path.join(_SRC_ROOT, 'third_party', 'depot_tools'))
-import download_from_google_storage
 
 # Base GS URL to store nightly uploaded official Chrome.
 # TODO(crbug.com/1035562): This URL is created for testing purpose only.
@@ -48,6 +47,7 @@ _PREBUILT_ASH_CHROME_DIR = os.path.join(os.path.dirname(__file__),
 _TARGETS_REQUIRE_ASH_CHROME = [
     'browser_tests',
     'components_unittests',
+    'sync_integration_tests',
     'unit_tests',
 ]
 
@@ -93,6 +93,13 @@ def _remove_unused_ash_chrome_versions(version_to_skip):
 def _DownloadAshChromeIfNecessary(version):
   """Download a given version of ash-chrome if not already exists.
 
+  Currently, a special constant version value is support: "for_bots", the reason
+  is that version number is still not pinned to chromium/src, so a constant
+  value is needed to make sure that after the builder who downloads and isolates
+  ash-chrome, the tester knows where to look for the binary to use.
+  TODO(crbug.com/1107010): remove the support once ash-chrome version is pinned
+  to chromium/src.
+
   Args:
     version: A string representing the version, such as "86.0.4187.0".
 
@@ -110,15 +117,19 @@ def _DownloadAshChromeIfNecessary(version):
         os.path.join(ash_chrome_dir, 'chrome'))
 
   ash_chrome_dir = _GetAshChromeDirPath(version)
-  if IsAshChromeDirValid(ash_chrome_dir):
+  if version != 'for_bots' and IsAshChromeDirValid(ash_chrome_dir):
     return
 
   shutil.rmtree(ash_chrome_dir, ignore_errors=True)
   os.makedirs(ash_chrome_dir)
   with tempfile.NamedTemporaryFile() as tmp:
+    import download_from_google_storage
     gsutil = download_from_google_storage.Gsutil(
         download_from_google_storage.GSUTIL_DEFAULT_PATH)
-    gs_path = _GS_URL_BASE + '/' + version + '/' + _GS_ASH_CHROME_PATH
+    gs_version = (_GetLatestVersionOfAshChrome()
+                  if version == 'for_bots' else version)
+    logging.info('Ash-chrome version: %s', gs_version)
+    gs_path = _GS_URL_BASE + '/' + gs_version + '/' + _GS_ASH_CHROME_PATH
     exit_code = gsutil.call('cp', gs_path, tmp.name)
     if exit_code:
       raise RuntimeError('Failed to download: "%s"' % gs_path)
@@ -145,6 +156,7 @@ def _DownloadAshChromeIfNecessary(version):
 def _GetLatestVersionOfAshChrome():
   """Returns the latest version of uploaded official ash-chrome."""
   with tempfile.NamedTemporaryFile() as tmp:
+    import download_from_google_storage
     gsutil = download_from_google_storage.Gsutil(
         download_from_google_storage.GSUTIL_DEFAULT_PATH)
     gsutil.check_call('cp', _GS_ASH_CHROME_LATEST_VERSION_FILE, tmp.name)
@@ -152,32 +164,64 @@ def _GetLatestVersionOfAshChrome():
       return f.read().strip()
 
 
-def _ParseArguments():
+def _RunTest(args, forward_args):
+  """Run tests with given args.
+
+  args (dict): Args for this script.
+  forward_args (dict): Args to be forwarded to the test command.
+
+  Raises:
+      RuntimeError: If the given test binary doesn't exist or the test runner
+          doesn't know how to run it.
+  """
+
+  if not os.path.isfile(args.command):
+    raise RuntimeError('Specified test command: "%s" doesn\'t exist' %
+                       args.command)
+
+  # |_TARGETS_REQUIRE_ASH_CHROME| may not always be accurate as it is updated
+  # with a best effort only, therefore, allow the invoker to override the
+  # behavior with a specified ash-chrome version, which makes sure that
+  # automated CI/CQ builders would always work correctly.
+  if (os.path.basename(args.command) not in _TARGETS_REQUIRE_ASH_CHROME
+      and not args.ash_chrome_version):
+    return subprocess.call([args.command] + forward_args)
+
+  raise RuntimeError('Run tests with ash-chrome is to be implemented')
+
+
+def Main():
+  logging.basicConfig(level=logging.INFO)
   arg_parser = argparse.ArgumentParser()
   arg_parser.usage = __doc__
 
-  arg_parser.add_argument(
+  subparsers = arg_parser.add_subparsers()
+
+  download_parser = subparsers.add_parser(
+      'download_for_bots',
+      help='Download prebuilt ash-chrome for bots so that tests are hermetic '
+      'during execution')
+  download_parser.set_defaults(
+      func=lambda *_: _DownloadAshChromeIfNecessary('for_bots'))
+
+  test_parser = subparsers.add_parser('test', help='Run tests')
+  test_parser.set_defaults(func=_RunTest)
+
+  test_parser.add_argument(
       'command',
       help='A single command to invoke the tests, for example: '
       '"./url_unittests". Any argument unknown to this test runner script will '
       'be forwarded to the command, for example: "--gtest_filter=Suite.Test"')
 
-  arg_parser.add_argument(
+  test_parser.add_argument(
       '-a',
       '--ash-chrome-version',
       type=str,
       help='Version of ash_chrome to use for testing, for example: '
-      '"86.0.4187.0". If not specified, will use the latest version')
+      '"86.0.4187.0". If not specified, will use the latest version available')
 
   args = arg_parser.parse_known_args()
-  return args[0], args[1]
-
-
-def Main():
-  logging.basicConfig(level=logging.INFO)
-  args, forward_args = _ParseArguments()
-  if os.path.basename(args.command) not in _TARGETS_REQUIRE_ASH_CHROME:
-    return subprocess.call([args.command] + forward_args)
+  return args[0].func(args[0], args[1])
 
 
 if __name__ == '__main__':

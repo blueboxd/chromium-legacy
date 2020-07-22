@@ -194,7 +194,6 @@ void WebAppInstallTask::InstallWebAppFromInfo(
     ForInstallableSite for_installable_site,
     WebappInstallSource install_source,
     InstallManager::OnceInstallCallback callback) {
-  DCHECK(AreWebAppsUserInstallable(profile_));
   CheckInstallPreconditions();
 
   FilterAndResizeIconsGenerateMissing(web_application_info.get(),

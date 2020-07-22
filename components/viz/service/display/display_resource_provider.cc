@@ -785,17 +785,11 @@ void DisplayResourceProvider::TryFlushBatchedResources() {
 void DisplayResourceProvider::SetBatchReturnResources(bool batch) {
   if (batch) {
     DCHECK_GE(batch_return_resources_lock_count_, 0);
-    if (!scoped_batch_read_access_) {
-      scoped_batch_read_access_ =
-          std::make_unique<ScopedBatchReadAccess>(ContextGL());
-    }
     batch_return_resources_lock_count_++;
   } else {
     DCHECK_GT(batch_return_resources_lock_count_, 0);
     batch_return_resources_lock_count_--;
     if (batch_return_resources_lock_count_ == 0) {
-      DCHECK(scoped_batch_read_access_);
-      scoped_batch_read_access_.reset();
       TryFlushBatchedResources();
     }
   }
@@ -980,7 +974,7 @@ DisplayResourceProvider::LockSetForExternalUse::~LockSetForExternalUse() {
 ExternalUseClient::ImageContext*
 DisplayResourceProvider::LockSetForExternalUse::LockResource(
     ResourceId id,
-    bool is_video_plane) {
+    bool use_skia_color_conversion) {
   auto it = resource_provider_->resources_.find(id);
   DCHECK(it != resource_provider_->resources_.end());
 
@@ -993,9 +987,10 @@ DisplayResourceProvider::LockSetForExternalUse::LockResource(
 
     if (!resource.image_context) {
       sk_sp<SkColorSpace> image_color_space;
-      // Video color conversion is handled externally in SkiaRenderer using a
-      // special color filter.
-      if (!is_video_plane)
+      // Video (YUV with PQ or half float RGBA with linear HDR) color conversion
+      // is handled externally in SkiaRenderer using a special color filter, and
+      // |use_skia_color_conversion| is false in that case.
+      if (use_skia_color_conversion)
         image_color_space = resource.transferable.color_space.ToSkColorSpace();
       resource.image_context =
           resource_provider_->external_use_client_->CreateImageContext(
@@ -1116,18 +1111,6 @@ void DisplayResourceProvider::ChildResource::UpdateSyncToken(
   // the gpu process or in case of context loss.
   sync_token_ = sync_token;
   synchronization_state_ = sync_token.HasData() ? NEEDS_WAIT : SYNCHRONIZED;
-}
-
-DisplayResourceProvider::ScopedBatchReadAccess::ScopedBatchReadAccess(
-    gpu::gles2::GLES2Interface* gl)
-    : gl_(gl) {
-  if (gl_)
-    gl_->BeginBatchReadAccessSharedImageCHROMIUM();
-}
-
-DisplayResourceProvider::ScopedBatchReadAccess::~ScopedBatchReadAccess() {
-  if (gl_)
-    gl_->EndBatchReadAccessSharedImageCHROMIUM();
 }
 
 }  // namespace viz

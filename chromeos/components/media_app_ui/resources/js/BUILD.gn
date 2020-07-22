@@ -41,6 +41,7 @@ js_library("launch") {
     "media_app.externs.js",
   ]
   deps = [
+    ":error_reporter",
     ":message_types",
     ":mojo_api_bootstrap",
     "//chromeos/components/system_apps/public/js:message_pipe",
@@ -48,6 +49,10 @@ js_library("launch") {
 }
 
 js_library("message_types") {
+}
+
+js_library("error_reporter") {
+  externs_list = [ "$externs_path/crash_report_private.js" ]
 }
 
 js_library("receiver") {

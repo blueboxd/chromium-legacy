@@ -20,15 +20,15 @@
 <translation id="5073204694187207510">Masquer la grille en plein écran</translation>
 <translation id="5082793167783849073">Comparez rapidement des pages en créant un groupe. Commencez par appuyer de manière prolongée sur un lien.</translation>
 <translation id="5533021382642990449">Afficher plus tard</translation>
-<translation id="5580090775658607195"><ph name="TAB_COUNT" /> onglets regroupés</translation>
-<translation id="58326064309361797">Faire glisser les onglets pour les regrouper</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> onglets ont été regroupés</translation>
+<translation id="58326064309361797">Faites glisser les onglets pour les regrouper</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6193448654517602979">Sélectionner des onglets</translation>
 <translation id="6510648526783655549">Fermer la barre d'onglets</translation>
 <translation id="6562820390860419811">Déplacer l'onglet vers la gauche</translation>
 <translation id="6615455863669487791">Démonstration</translation>
 <translation id="6840760312327750441">Pour regrouper des onglets, appuyez de manière prolongée sur un onglet, puis faites-le glisser vers un autre.</translation>
-<translation id="7151209024774799310">Supprimer des onglets</translation>
+<translation id="7151209024774799310">Retirer des onglets du groupe</translation>
 <translation id="7559245342362162951">Afficher les onglets du groupe dans une grille en plein écran</translation>
 <translation id="7792771145871471484">Afficher les suggestions.</translation>
 <translation id="7838146321400849846">{TABS_COUNT,plural, =1{Regrouper <ph name="TABS_COUNT_ONE" /> onglet sélectionné}one{Group <ph name="TABS_COUNT_MANY" /> selected tabs}other{Regrouper les <ph name="TABS_COUNT_MANY" /> onglets sélectionnés}}</translation>

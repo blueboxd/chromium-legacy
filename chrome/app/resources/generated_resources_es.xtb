@@ -1907,7 +1907,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3364986687961713424">De tu administrador: <ph name="ADMIN_MESSAGE" /></translation>
 <translation id="3365598184818502391">Usa Ctrl o Alt</translation>
 <translation id="3367047597842238025">Configura tu <ph name="DEVICE_TYPE" /> a tu gusto y descubre sus increíbles funciones.</translation>
-<translation id="3368922792935385530">Con conexión</translation>
+<translation id="3368922792935385530">Conectado</translation>
 <translation id="3369067987974711168">Mostrar más acciones para este puerto</translation>
 <translation id="3369624026883419694">Resolviendo host...</translation>
 <translation id="3370260763947406229">Autocorrección</translation>
@@ -5986,7 +5986,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8509646642152301857">Se ha producido un error al descargar el diccionario del corrector ortográfico.</translation>
 <translation id="8512476990829870887">Finalizar proceso</translation>
 <translation id="851263357009351303">Permitir siempre que <ph name="HOST" /> muestre imágenes</translation>
-<translation id="8513108775083588393">Girar automáticamente</translation>
+<translation id="8513108775083588393">Girar autom.</translation>
 <translation id="8514746246728959655">Prueba con una llave de seguridad diferente</translation>
 <translation id="8521475323816527629">Accede rápidamente a tus aplicaciones</translation>
 <translation id="8523493869875972733">Mantener cambios</translation>

@@ -4,12 +4,11 @@
 
 #include "gpu/command_buffer/service/external_vk_image_skia_representation.h"
 
-#include <limits>
 #include <utility>
 
-#include "base/trace_event/trace_event.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
-#include "gpu/vulkan/vulkan_function_pointers.h"
+#include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
@@ -150,23 +149,26 @@ sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
   DCHECK_EQ(access_mode_, kNone);
   DCHECK(!end_access_semaphore_);
 
-  std::vector<ExternalSemaphore> external_semaphores;
-  if (!backing_impl()->BeginAccess(readonly, &external_semaphores,
-                                   false /* is_gl */))
+  DCHECK(begin_access_semaphores_.empty());
+  if (!backing_impl()->BeginAccess(readonly, &begin_access_semaphores_,
+                                   false /* is_gl */)) {
     return nullptr;
+  }
 
-  for (auto& external_semaphore : external_semaphores) {
+  for (auto& external_semaphore : begin_access_semaphores_) {
     DCHECK(external_semaphore.is_valid());
     VkSemaphore semaphore = external_semaphore.TakeVkSemaphore();
     DCHECK(semaphore != VK_NULL_HANDLE);
     // The ownership of semaphore is passed to caller.
     begin_semaphores->emplace_back();
-    begin_semaphores->back().initVulkan(semaphore);
+    begin_semaphores->back().initVulkan(external_semaphore.TakeVkSemaphore());
   }
 
-  if (backing_impl()->need_synchronization() && end_semaphores) {
+  if (backing_impl()->need_synchronization()) {
+    DCHECK(end_semaphores);
     // Create an |end_access_semaphore_| which will be signalled by the caller.
-    end_access_semaphore_ = ExternalSemaphore::Create(context_provider());
+    end_access_semaphore_ =
+        backing_impl()->external_semaphore_pool()->GetOrCreateSemaphore();
     DCHECK(end_access_semaphore_);
     end_semaphores->emplace_back();
     end_semaphores->back().initVulkan(end_access_semaphore_.GetVkSemaphore());
@@ -180,16 +182,23 @@ void ExternalVkImageSkiaRepresentation::EndAccess(bool readonly) {
   DCHECK(backing_impl()->need_synchronization() || !end_access_semaphore_);
 
   if (backing_impl()->need_synchronization() && end_access_semaphore_) {
-    DCHECK(end_access_semaphore_);
-
     // We're done with the semaphore, enqueue deferred cleanup.
-    // TODO(penghuang): reuse VkSemaphore.
+    // Reusing this VkSemaphore causes vulkan device lost with NVIDIA GPU for
+    // page content/test/data/gpu/pixel_canvas_low_latency_webgl_draw_image.html
+    // So we have to take the VkSemaphore from it and not reuse it.
+    // TODO(penghuang): reuse VkSemaphore. https://crbug.com/1107558
     fence_helper()->EnqueueSemaphoreCleanupForSubmittedWork(
         end_access_semaphore_.TakeVkSemaphore());
   }
 
   backing_impl()->EndAccess(readonly, std::move(end_access_semaphore_),
                             false /* is_gl */);
+
+  // All pending semaphores have been waited on directly or indirectly. They can
+  // be reused when the next submitted GPU work is done by GPU.
+  backing_impl()->ReturnPendingSemaphoresWithFenceHelper(
+      std::move(begin_access_semaphores_));
+  begin_access_semaphores_.clear();
 }
 
 }  // namespace gpu

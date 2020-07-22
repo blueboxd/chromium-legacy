@@ -59,6 +59,7 @@
 #include "net/third_party/quiche/src/quic/core/crypto/proof_verifier.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_client_promised_info.h"
+#include "net/third_party/quiche/src/quic/core/http/quic_client_push_promise_index.h"
 #include "net/third_party/quiche/src/quic/core/quic_clock.h"
 #include "net/third_party/quiche/src/quic/core/quic_connection.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
@@ -1178,26 +1179,17 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
   DCHECK(HostPortPair(session_key.server_id().host(),
                       session_key.server_id().port())
              .Equals(HostPortPair::FromURL(url)));
-  // Enforce session affinity for promised streams.
-  //
-  // TODO(https://crbug.com/1105544): Both having one promise per URL globally
-  // and deleting them on mismatch leaks data between NetworkIsolationKeys. Fix
-  // that.
-  quic::QuicClientPromisedInfo* promised =
-      push_promise_index_.GetPromised(url.spec());
-  if (promised) {
-    QuicChromiumClientSession* session =
-        static_cast<QuicChromiumClientSession*>(promised->session());
-    DCHECK(session);
-    if (session->quic_session_key().CanUseForAliasing(session_key)) {
-      request->SetSession(session->CreateHandle(destination));
-      ++num_push_streams_created_;
-      return OK;
-    }
-    // This should happen extremely rarely (if ever), but if somehow a
-    // request comes in with a mismatched privacy mode, consider the
-    // promise borked.
-    promised->Cancel();
+
+  // Search sessions for a matching promised stream.
+  for (auto session : active_sessions_) {
+    quic::QuicClientPromisedInfo* promised =
+        session.second->GetPromised(url, session_key);
+    if (!promised)
+      continue;
+    DCHECK_EQ(promised->session(), session.second);
+    request->SetSession(session.second->CreateHandle(destination));
+    ++num_push_streams_created_;
+    return OK;
   }
 
   // Use active session for |session_key| if such exists.
@@ -1831,7 +1823,8 @@ int QuicStreamFactory::CreateSession(
       params_.headers_include_h2_stream_dependency, cert_verify_flags, config,
       std::move(crypto_config_handle),
       network_connection_.connection_description(), dns_resolution_start_time,
-      dns_resolution_end_time, &push_promise_index_, push_delegate_,
+      dns_resolution_end_time,
+      std::make_unique<quic::QuicClientPushPromiseIndex>(), push_delegate_,
       tick_clock_, task_runner_, std::move(socket_performance_watcher),
       net_log.net_log());
 

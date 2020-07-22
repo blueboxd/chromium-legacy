@@ -99,6 +99,7 @@ extern const base::Feature kImmersiveFullscreen;
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAllowDisableMouseAcceleration;
+COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kBorealis;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kCrostini;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kCrostiniAdditionalEnterpriseReporting;

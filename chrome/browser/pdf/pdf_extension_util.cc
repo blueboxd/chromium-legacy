@@ -153,9 +153,6 @@ void AddAdditionalData(base::Value* dict) {
   dict->SetKey("pdfFormSaveEnabled",
                base::Value(base::FeatureList::IsEnabled(
                    chrome_pdf::features::kSaveEditedPDFForm)));
-  dict->SetKey("pdfTwoUpViewEnabled",
-               base::Value(base::FeatureList::IsEnabled(
-                   chrome_pdf::features::kPDFTwoUpView)));
   dict->SetStringKey(
       "pdfViewerUpdateEnabledAttribute",
       base::FeatureList::IsEnabled(chrome_pdf::features::kPDFViewerUpdate)

@@ -160,6 +160,33 @@ bool GpuControlList::Version::Contains(const std::string& version_string,
       if (op == kBetween)
         ref_version2.erase(ref_version2.begin());
     }
+  } else if (schema == kVersionSchemaNvidiaDriver) {
+    // The driver version we get from the os is "XX.XX.XXXA.BBCC", while the
+    // workaround is of the form "ABB.CC".  Drop the first two stanzas from the
+    // detected version, erase all but the last character of the third, and move
+    // "B" to the previous stanza.
+    if (version.size() != 4)
+      return false;
+    // Remember that the detected version might not have leading zeros, so we
+    // have to be a bit careful.  [2] is of the form "001A", where A > 0, so we
+    // just care that there's at least one digit.  However, if there's less than
+    // that, the splitter stops anyway on that stanza, and the check for four
+    // stanzas will fail instead.
+    version.erase(version.begin(), version.begin() + 2);
+    version[0].erase(0, version[0].length() - 1);
+    // The last stanza may be missing leading zeros, so handle them.
+    if (version[1].length() < 3) {
+      // Two or more removed leading zeros, so BB are both zero.
+      version[0] += "00";
+    } else if (version[1].length() < 4) {
+      // One removed leading zero.  BB is 0[1-9].
+      version[0] += "0" + version[1].substr(0, 1);
+      version[1].erase(0, 1);
+    } else {
+      // No leading zeros.
+      version[0] += version[1].substr(0, 2);
+      version[1].erase(0, 2);
+    }
   }
   int relation = Version::Compare(version, ref_version1, style);
   switch (op) {

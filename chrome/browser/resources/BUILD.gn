@@ -233,7 +233,10 @@ if (!is_android) {
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
     ]
 
-    deps = [ "//chrome/browser/resources/nearby_share:web_components" ]
+    deps = [
+      "//chrome/browser/resources/nearby_share:web_components",
+      "//chrome/browser/ui/webui/nearby_share:mojom_js",
+    ]
 
     defines = chrome_grit_defines
     outputs = [

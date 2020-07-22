@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> ወደ <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">የእርስዎን ዕልባቶች በሁሉም መሣሪያዎችዎ ላይ ለማግኘት ስምረትን ያብሩ።</translation>
 <translation id="1687475363370981210">ሁሉም እንደተነበቡ ምልክት አድርግባቸው</translation>
+<translation id="1689333818294560261">ቅጽል ስም</translation>
 <translation id="1690731385917361335">ምንም ንጥሎች የሉም</translation>
 <translation id="1692118695553449118">አመሳስል በርቷል</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ተመርጧል</translation>
@@ -206,6 +207,7 @@
 <translation id="3335947283844343239">የተዘጋውን ትር ዳግም ክፈት</translation>
 <translation id="3371831930909698441">ትርጉም ይገኛል። አማራጮች ከማያው ግርጌ አጠገብ ይገኛሉ።</translation>
 <translation id="3393920035788932672">ብቅ-ባዮች ተፈቅደዋል</translation>
+<translation id="3425644765244388016">የካርድ ቅጽል ስም</translation>
 <translation id="3443810440409579745">ትር ደርሷል።</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> ደቂቃዎች</translation>
 <translation id="3448016392200048164">የተከፈለ ዕይታ</translation>
@@ -240,6 +242,7 @@
 <translation id="3783017676699494206">ምስሉን አስቀምጥ</translation>
 <translation id="3789841737615482174">ጫን  </translation>
 <translation id="3803696231112616155">ወደዚህ ጣቢያ ለመተርጎም ሐሳብ ያቅርቡ</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{ምንም የይለፍ ቃላት አልተጠለፈም}=1{{COUNT} የይለፍ ቃል ተጠልፏል}one{{COUNT} የይለፍ ቃላት ተጠልፏል}other{{COUNT} የይለፍ ቃላት ተጠልፏል}}</translation>
 <translation id="385051799172605136">ተመለስ</translation>
 <translation id="3892144330757387737">ታሪክዎን እዚህ ያገኛሉ</translation>
 <translation id="3897092660631435901">ምናሌ</translation>
@@ -529,6 +532,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="7189598951263744875">አጋራ...</translation>
 <translation id="7192050974311852563">መግባት ይጀምሩ</translation>
 <translation id="7203585745079012652">መልሶችን ተመልሰህ ተናገር</translation>
+<translation id="721597782417389033">ልክ ያልኾነ ቅጽል ስም</translation>
 <translation id="7265758999917665941">ለዚህ ጣቢያ በጭራሽ</translation>
 <translation id="7272437679830969316">የእርስዎን ማንነት ማረጋገጥ አልተቻለም። የይለፍ ቃል አልተቀዳም።</translation>
 <translation id="7291368939935408496">የይለፍ ቃላትን በማዘጋጀት ላይ...</translation>

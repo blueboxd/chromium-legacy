@@ -450,6 +450,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="2824775600643448204">Adress- och sökfält</translation>
 <translation id="2826760142808435982">Anslutningen är krypterad och verifieras med <ph name="CIPHER" /> och använder <ph name="KX" /> som nyckelutbytesmekanism.</translation>
 <translation id="2835170189407361413">Rensa formuläret</translation>
+<translation id="2839501879576190149">Webbplatsen som öppnas är en bluff</translation>
 <translation id="2847118875340931228">Öppna ett inkognitofönster</translation>
 <translation id="2850739647070081192">Invite (kuvert)</translation>
 <translation id="2856444702002559011">En angripare kan försöka stjäla dina uppgifter från <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (t.ex. lösenord, meddelanden eller kreditkortsuppgifter). <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -810,6 +811,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="42981349822642051">Expandera</translation>
 <translation id="4300675098767811073">Flera hål till höger</translation>
 <translation id="4302965934281694568">Chou3 (kuvert)</translation>
+<translation id="4305666528087210886">Ingen åtkomst till filen</translation>
 <translation id="4305817255990598646">Byt</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Blockera (standard)</translation>
@@ -828,6 +830,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="4358461427845829800">Hantera betalningsmetoder …</translation>
 <translation id="4359160567981085931">Du angav just ditt lösenord på en bedräglig webbplats. Du kan få hjälp i Chrome. Klicka på Skydda kontot för att ändra ditt lösenord och meddela Google om att kontot kan vara utsatt för fara.</translation>
 <translation id="4367563149485757821">Number-12 (kuvert)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Det sparade lösenordet för <ph name="ORIGIN" /> har exponerats vid ett dataintrång på en webbplats eller i en app. Du rekommenderas att ändra lösenordet på <ph name="ORIGIN" /> nu.}=1{Det sparade lösenordet för <ph name="ORIGIN" /> och en webbplats till har exponerats vid ett dataintrång på en webbplats eller i en app. Du rekommenderas att kontrollera dina sparade lösenord nu.}other{Det sparade lösenordet för <ph name="ORIGIN" /> och <ph name="SITES_COUNT" /> webbplatser till har exponerats vid ett dataintrång på en webbplats eller i en app. Du rekommenderas att kontrollera dina sparade lösenord nu.}}</translation>
 <translation id="437058704415269440">Kontosaldo</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Ett <ph name="VALUE_TYPE" />-värde förväntades.</translation>
@@ -1298,6 +1301,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Du kan komma att debiteras.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 annat förslag}other{# andra förslag}}</translation>
+<translation id="6387645831795005740">Ibland försöker hackare efterlikna webbplatser genom att göra små, svårupptäckta ändringar i webbadressen.</translation>
 <translation id="6389470377220713856">Namn på kort</translation>
 <translation id="6390200185239044127">Halv Z-falsning</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1511,6 +1515,7 @@ Mer information.
 <translation id="7372973238305370288">sökresultat</translation>
 <translation id="7374733840632556089">Det här problemet uppstår på grund av ett certifikat som du eller någon annan har installerat på enheten. Certifikatet är känt för att användas för att övervaka och fånga upp nätverkstrafik och är inte betrott i Chrome. Även om det kan vara berättigat med övervakning i vissa fall, t.ex. i ett skol- eller företagsnätverk, vill vi göra dig medveten om vad som pågår även om du inte kan göra något åt det. Alla webbläsare och appar som använder internet omfattas av övervakningen.</translation>
 <translation id="7375818412732305729">Fil bifogas</translation>
+<translation id="7376551888419889433">När säkerhetshändelser flaggas av Chrome Enterprise Connectors skickas relevant data om händelserna till administratören. Exempel på sådan data är webbadresser till sidor du besöker i Chrome, filnamn eller metadata och användarnamnet du loggar in med på dina enheter och i Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Mediereglage</translation>
 <translation id="7378627244592794276">Nej</translation>
@@ -1908,6 +1913,7 @@ Mer information:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Du försökte nå <ph name="DOMAIN" /> men servern angav ett ogiltigt certifikat.</translation>
 <translation id="9050666287014529139">Lösenfras</translation>
+<translation id="9062620674789239642">Den kan ha flyttats, ändrats eller tagits bort.</translation>
 <translation id="9065203028668620118">Redigera</translation>
 <translation id="9065745800631924235">Sök efter <ph name="TEXT" /> i historiken</translation>
 <translation id="9069693763241529744">Blockerades av ett tillägg</translation>

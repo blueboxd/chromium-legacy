@@ -44,6 +44,8 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   float pressure() const { return pressure_; }
   int32_t tiltX() const { return tilt_x_; }
   int32_t tiltY() const { return tilt_y_; }
+  double azimuthAngle() const { return azimuth_angle_; }
+  double altitudeAngle() const { return altitude_angle_; }
   float tangentialPressure() const { return tangential_pressure_; }
   int32_t twist() const { return twist_; }
   const String& pointerType() const { return pointer_type_; }
@@ -85,6 +87,8 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   float pressure_;
   int32_t tilt_x_;
   int32_t tilt_y_;
+  double azimuth_angle_;
+  double altitude_angle_;
   float tangential_pressure_;
   int32_t twist_;
   String pointer_type_;

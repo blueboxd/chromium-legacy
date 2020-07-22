@@ -36,13 +36,15 @@ VkSemaphore ImportVkSemaphoreHandle(VkDevice vk_device,
     return VK_NULL_HANDLE;
 
   base::ScopedFD fd = handle.TakeHandle();
+  const auto is_sync_fd =
+      handle_type == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT;
   VkImportSemaphoreFdInfoKHR import = {
-      VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_FD_INFO_KHR};
-  import.semaphore = semaphore;
-  if (handle_type == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT)
-    import.flags = VK_SEMAPHORE_IMPORT_TEMPORARY_BIT_KHR;
-  import.handleType = handle_type;
-  import.fd = fd.get();
+      .sType = VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_FD_INFO_KHR,
+      .semaphore = semaphore,
+      .flags = is_sync_fd ? VK_SEMAPHORE_IMPORT_TEMPORARY_BIT_KHR : 0,
+      .handleType = handle_type,
+      .fd = fd.get(),
+  };
 
   result = vkImportSemaphoreFdKHR(vk_device, &import);
   if (result != VK_SUCCESS) {

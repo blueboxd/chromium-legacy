@@ -2683,6 +2683,10 @@ enum WebFeature {
   kHTMLMetaElementReferrerPolicyMultipleTokensAffectingRequest = 3348,
   kNavigationTimingL2 = 3349,
   kResourceTiming = 3350,
+  kV8PointerEvent_AzimuthAngle_AttributeGetter = 3351,
+  kV8PointerEvent_AltitudeAngle_AttributeGetter = 3352,
+
+
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

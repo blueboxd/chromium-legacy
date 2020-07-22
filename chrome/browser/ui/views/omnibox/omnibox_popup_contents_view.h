@@ -107,8 +107,8 @@ class OmniboxPopupContentsView : public views::View,
   // the specified point.
   size_t GetIndexForPoint(const gfx::Point& point);
 
-  // Update which result views are visible when the hidden group IDs change.
-  void OnHiddenGroupIdsUpdate();
+  // Update which result views are visible when the group visibility changes.
+  void OnSuggestionGroupVisibilityUpdate();
 
   // Gets the pref service for this view. May return nullptr in tests.
   PrefService* GetPrefService() const;

@@ -80,6 +80,7 @@ class RealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
                       RTLookupRequestCallback request_callback,
                       RTLookupResponseCallback response_callback) override;
   std::unique_ptr<RTLookupRequest> FillRequestProto(const GURL& url) override;
+  std::string GetMetricSuffix() const override;
 
   // Called when the access token is obtained from |token_fetcher_|.
   void OnGetAccessToken(

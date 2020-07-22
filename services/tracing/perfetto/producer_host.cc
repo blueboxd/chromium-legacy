@@ -71,7 +71,9 @@ bool ProducerHost::Initialize(
   base::ProcessId pid;
   if (PerfettoService::ParsePidFromProducerName(name, &pid)) {
     bool in_process = (pid == base::Process::Current().Pid());
-    if (in_process) {
+    // TODO(skyostil): Implement arbiter binding for the client API.
+    if (in_process && !base::FeatureList::IsEnabled(
+                          features::kEnablePerfettoClientApiProducer)) {
       PerfettoTracedProcess::Get()
           ->producer_client()
           ->BindInProcessSharedMemoryArbiter(producer_endpoint_.get(),

@@ -44,7 +44,11 @@ mustache_pass("generate_new_style_manifest_for_upload") {
 # name conflict.
 template("webapk_java") {
   android_library(target_name) {
-    forward_variables_from(invoker, [ "deps" ])
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "resources_package",
+                           ])
 
     sources = [
       "src/org/chromium/webapk/shell_apk/ChooseHostBrowserDialog.java",
@@ -133,7 +137,7 @@ template("webapk_tmpl") {
   }
 
   android_resources(_resources_target_name) {
-    custom_package = "org.chromium.webapk.shell_apk"
+    create_srcjar = false
     sources = [
       "res/drawable-hdpi/last_resort_runtime_host_logo.png",
       "res/drawable-hdpi/notification_badge.png",
@@ -220,6 +224,7 @@ template("webapk_tmpl") {
   }
 
   webapk_java(_java_without_services_target_name) {
+    resources_package = "org.chromium.webapk.shell_apk"
     deps = [
       ":$_manifest_target_name",
       ":$_resources_target_name",

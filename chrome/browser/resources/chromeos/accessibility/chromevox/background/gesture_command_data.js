@@ -11,7 +11,7 @@ goog.provide('GestureGranularity');
  * @type {!Object<string,
  *     {
  *     msgId: string,
- *     command: string,
+ *     command: (string|undefined),
  *     menuKeyOverride: ({keyCode: number, modifiers: ({ctrl:
  * boolean}|undefined)}|undefined)
  *    }>}
@@ -47,6 +47,8 @@ GestureCommandData.GESTURE_COMMAND_MAP = {
   'swipeDown3': {msgId: 'swipedown3_gesture', command: 'previousPage'},
   'swipeLeft3': {msgId: 'swipeleft3_gesture', command: 'previousGranularity'},
   'swipeRight3': {msgId: 'swiperight3_gesture', command: 'nextGranularity'},
+
+  'touchExplore': {msgId: 'touch_explore_gesture'},
 
   'tap2': {msgId: 'tap2_gesture', command: 'stopSpeech'},
   'tap4': {msgId: 'tap4_gesture', command: 'showPanelMenuMostRecent'},

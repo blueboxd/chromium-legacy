@@ -258,11 +258,14 @@ void XWindow::Init(const Configuration& config) {
 
   x11::VisualId visual_id = visual_id_;
   uint8_t depth = 0;
+  x11::ColorMap colormap{};
   XVisualManager* visual_manager = XVisualManager::GetInstance();
   if (visual_id_ == x11::VisualId{} ||
-      !visual_manager->GetVisualInfo(visual_id_, &depth, &visual_has_alpha_)) {
-    visual_manager->ChooseVisualForWindow(
-        enable_transparent_visuals, &visual_id, &depth, &visual_has_alpha_);
+      !visual_manager->GetVisualInfo(visual_id_, &depth, &colormap,
+                                     &visual_has_alpha_)) {
+    visual_manager->ChooseVisualForWindow(enable_transparent_visuals,
+                                          &visual_id, &depth, &colormap,
+                                          &visual_has_alpha_);
   }
 
   // x.org will BadMatch if we don't set a border when the depth isn't the
@@ -278,6 +281,7 @@ void XWindow::Init(const Configuration& config) {
   req.depth = depth;
   req.c_class = x11::WindowClass::InputOutput;
   req.visual = visual_id;
+  req.colormap = colormap;
   xwindow_ = connection_->GenerateId<x11::Window>();
   req.wid = xwindow_;
   connection_->CreateWindow(req);

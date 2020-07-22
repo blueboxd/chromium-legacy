@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">ჩაწერის წელი</translation>
 <translation id="3338239663705455570">სლოვენური კლავიატურა</translation>
 <translation id="3353984535370177728">აირჩიეთ საქაღალდე ატვირთვისთვის</translation>
+<translation id="3356580349448036450">დასრულებულია</translation>
 <translation id="3399597614303179694">მაკედონიური კლავიატურა</translation>
 <translation id="3414856743105198592">ამოღებადი მედიის ფორმატირების შემთხვევაში მთლიანი მონაცემები წაიშლება. გსურთ გააგრძელოთ?</translation>
 <translation id="3437801641691368414">შექმნის დრო</translation>
@@ -550,7 +551,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">ინსტალაცია ვერ მოხერხდა.</translation>
 <translation id="7040138676081995583">გახსნა პროგრამით…</translation>
-<translation id="7059566040011178088">ნაკლები, ვიდრე <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> შერჩეული ელემენტები</translation>
 <translation id="7106346894903675391">შეიძინეთ დამატებითი სივრცე…</translation>
 <translation id="7126604456862387217">„&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;“ - &lt;em&gt;ძიება Drive-ზე&lt;/em&gt;</translation>
@@ -661,7 +661,6 @@
 <translation id="8193175696669055101">მოწყობილობის მოდელი</translation>
 <translation id="8208580316430297579">ხელოვნების ნიმუშები</translation>
 <translation id="8223479393428528563">ამ ფაილების ქსელგარე გამოყენებისათვის, დაბრუნდით ქსელში, ფაილზე გმარჯვენა ღილაკზე დააჭირეთ და მონიშნეთ <ph name="OFFLINE_CHECKBOX_NAME" /> ვარიანტი.</translation>
-<translation id="8231972167769262174">დაახლოებით <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">შეწყვეტა</translation>
 <translation id="8261506727792406068">წაშლა</translation>
 <translation id="8269755669432358899">ფაილების გამოხმაურების არეების ჩაკეცვა</translation>

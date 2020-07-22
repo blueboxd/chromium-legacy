@@ -100,7 +100,7 @@
 <translation id="1810845389119482123">ការរៀបចំ​សមកាលកម្ម​ដំបូង​មិនបាន​បញ្ចប់​ទេ</translation>
 <translation id="1821253160463689938">ប្រើ​ខូគី​ដើម្បី​ចងចាំ​ចំណូលចិត្ត​របស់អ្នក បើ​ទោះ​បី​ជា​អ្នក​​មិន​ចូលមើល​ទំព័រ​ទាំងនោះ​ក៏ដោយ</translation>
 <translation id="1829244130665387512">ស្វែងរកក្នុងទំព័រ</translation>
-<translation id="1853692000353488670">ផ្ទាំងអនាមិកថ្មី</translation>
+<translation id="1853692000353488670">ផ្ទាំងឯកជនថ្មី</translation>
 <translation id="1856325424225101786">កំណត់​មុខងារស្រាល​ឡើងវិញឬ?</translation>
 <translation id="1868024384445905608">ឥឡូវនេះ Chrome ទាញយក​ឯកសារ​បានរហ័ស​ជាងមុន</translation>
 <translation id="1883903952484604915">ឯកសារ​របស់ខ្ញុំ</translation>
@@ -309,7 +309,7 @@
 <translation id="3435738964857648380">សុវត្ថិភាព</translation>
 <translation id="3443221991560634068">ផ្ទុកទំព័របច្ចុប្បន្នឡើងវិញ</translation>
 <translation id="3478363558367712427">អ្នកអាច​ជ្រើសរើស​ម៉ាស៊ីន​ស្វែងរក​របស់អ្នក​បាន</translation>
-<translation id="3492207499832628349">ផ្ទាំងអនាមិកថ្មី</translation>
+<translation id="3492207499832628349">ផ្ទាំងឯកជនថ្មី</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LINK" />អំពីមាតិកាដែលបានណែនាំ</translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3507132249039706973">ការការពារស្តង់ដារត្រូវបានបើក</translation>
@@ -577,18 +577,20 @@
 <translation id="5659593005791499971">អ៊ីម៉េល</translation>
 <translation id="5665379678064389456">បង្កើតព្រឹត្តិការណ៍នៅក្នុង <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">បដិសេធសំណើរគេហទំព័រដើម្បីបង្ការការពង្រីក</translation>
+<translation id="5683547024293500885">Chrome មិនអាចពិនិត្យរក​កំណែថ្មីបានទេ</translation>
 <translation id="5686790454216892815">ឈ្មោះ​ឯកសារ​វែងពេក</translation>
 <translation id="5694049548840660018">ត្រឡប់ទៅ​ទំព័រដើមវិញ​បានយ៉ាង​ងាយស្រួល</translation>
 <translation id="569536719314091526">បកប្រែ​ទំព័រនេះ​ទៅជាភាសា​ណាមួយពី​ប៊ូតុងជម្រើស​ច្រើនទៀត</translation>
 <translation id="5696597120588531049">Chrome អាចជួយរក្សាសុវត្ថិភាពរបស់អ្នកពីការបែកធ្លាយទិន្នន័យ គេហទំព័រដែលគ្មានសុវត្ថិភាព និងអ្វីៗជាច្រើនទៀត</translation>
 <translation id="5697688514913266141">ឯកសារ​របស់អ្នក​នឹងត្រូវរក្សាទុក​ទៅក្នុង <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />។ <ph name="BEGIN_LINK2" />កែ<ph name="END_LINK2" />។</translation>
 <translation id="570347048394355941">ប្ដូរ​ទៅ​ផ្ទាំង</translation>
-<translation id="572328651809341494">ផ្ទាំងកន្លងទៅថ្មីៗ</translation>
+<translation id="572328651809341494">ផ្ទាំងថ្មីៗ</translation>
 <translation id="5723735397759933332">ឥឡូវនេះ មុខងារស្រាល​សន្សំសំចៃ​ទិន្នន័យ​ឱ្យអ្នក​បានច្រើនជាងមុន ដោយបង្កើនគុណភាព​រូបភាព​នៅលើ​ទំព័រ HTTPS​។</translation>
 <translation id="5726692708398506830">ធ្វើឲ្យអ្វីគ្រប់យ៉ាងនៅលើទំព័រនេះធំជាងមុន</translation>
 <translation id="5732819098735351888">ការទាញយក​នឹងចាប់ផ្ដើមពេលមាន Wi-Fi។</translation>
 <translation id="5748802427693696783">បានប្តូរទៅផ្ទាំងស្តង់ដារ</translation>
 <translation id="5749068826913805084">Chrome ត្រូវការលទ្ធភាពចូលប្រើទំហំផ្ទុកដើម្បីដោនឡូតឯកសារ</translation>
+<translation id="5749237766298580851">បិទ <ph name="SEPARATOR" /> មិនណែនាំទេ</translation>
 <translation id="5754350196967618083">មិនអាចផ្ទុក Discover ឡើងវិញបានទេ</translation>
 <translation id="5763382633136178763">ផ្ទាំងអនាមិក</translation>
 <translation id="5763514718066511291">ចុច​ដើម្បី​ចម្លង URL សម្រាប់​កម្មវិធី​នេះ</translation>
@@ -953,7 +955,7 @@
 <translation id="8555836665334561807">តាមរយៈ Wi-Fi</translation>
 <translation id="8558485628462305855">ដើម្បី​មើលខ្លឹមសារ AR សូមដំឡើងជំនាន់ ARCore</translation>
 <translation id="8559990750235505898">ផ្តល់ជូន​ការ​បកប្រែ​ទំព័រ​ជាភាសា​ផ្សេងទៀត</translation>
-<translation id="8561196567344536112">1. ចូលទៅកាន់ការកំណត់\n2. ចុច “រុករកកម្មវិធី”\n3. ជ្រើសរើស​ <ph name="APP_NAME" /></translation>
+<translation id="8561196567344536112">1. ចូលទៅកាន់ការកំណត់\n2. ចុច “កម្មវិធីរុករកតាមអ៊ីនធឺណិត”\n3. ជ្រើសរើស​ <ph name="APP_NAME" /></translation>
 <translation id="8562452229998620586">ពាក្យសម្ងាត់ដែលបានរក្សាទុកលេចឡើងទីនេះ។</translation>
 <translation id="8569404424186215731">ចាប់តាំងពីថ្ងៃទី <ph name="DATE" /></translation>
 <translation id="8571213806525832805">4 សប្តាហ៍មុន</translation>
@@ -996,6 +998,7 @@
 <translation id="8970887620466824814">មានអ្វីមួយ​ខុសប្រក្រតី។</translation>
 <translation id="8972098258593396643">ទាញយក​ទៅថត​លំនាំដើម​មែនទេ?</translation>
 <translation id="8988028529677883095">ប្រើ​ទូរសព្ទ​ធ្វើជាសោសុវត្ថិភាព</translation>
+<translation id="8990209962746788689">មិនអាចបង្កើតកូដ QR បានទេ</translation>
 <translation id="8993760627012879038">បើកផ្ទាំងថ្មីនៅក្នុងមុខងារអនាមិក</translation>
 <translation id="8998729206196772491">អ្នកកំពុងចូលដោយប្រើគណនីដែលគ្រប់គ្រងដោយ <ph name="MANAGED_DOMAIN" /> និងកំពុងផ្តល់ឲ្យអ្នកគ្រប់គ្រងរបស់វានូវលទ្ធភាពគ្រប់គ្រងទិន្នន័យ Chrome របស់អ្នក។ ទិន្នន័យរបស់អ្នកនឹងភ្ជាប់ជាមួយគណនីនេះជាអចិន្ត្រៃយ៍។ ការចេញពី Chrome នឹងលុបទិន្នន័យរបស់អ្នកចេញពីឧបករណ៍នេះ ប៉ុន្តែវានឹងនៅតែត្រូវបានរក្សាទុកក្នុងគណនី Google របស់អ្នកដដែល។</translation>
 <translation id="9028914725102941583">បើក​សមកាលកម្ម ដើម្បី​ចែករំលែកនៅលើ​ឧបករណ៍​នានា</translation>

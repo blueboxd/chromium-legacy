@@ -288,39 +288,6 @@ DomainMetricSet::DomainMetricSet(const DomainMetricSet&) = default;
 DomainMetricSet::~DomainMetricSet() {}
 DomainMetricSet& DomainMetricSet::operator=(const DomainMetricSet&) = default;
 
-// IconMapping ----------------------------------------------------------------
-
-IconMapping::IconMapping() {}
-IconMapping::IconMapping(const IconMapping&) = default;
-IconMapping::IconMapping(IconMapping&&) noexcept = default;
-
-IconMapping::~IconMapping() {}
-
-IconMapping& IconMapping::operator=(const IconMapping&) = default;
-
-// FaviconBitmapIDSize ---------------------------------------------------------
-
-FaviconBitmapIDSize::FaviconBitmapIDSize() {}
-
-FaviconBitmapIDSize::~FaviconBitmapIDSize() {}
-
-// IconMappingsForExpiry ------------------------------------------------------
-
-IconMappingsForExpiry::IconMappingsForExpiry() {}
-
-IconMappingsForExpiry::IconMappingsForExpiry(
-    const IconMappingsForExpiry& other) = default;
-
-IconMappingsForExpiry::~IconMappingsForExpiry() {}
-
-// FaviconBitmap --------------------------------------------------------------
-
-FaviconBitmap::FaviconBitmap() {}
-
-FaviconBitmap::FaviconBitmap(const FaviconBitmap& other) = default;
-
-FaviconBitmap::~FaviconBitmap() {}
-
 // ExpireHistoryArgs ----------------------------------------------------------
 
 ExpireHistoryArgs::ExpireHistoryArgs() {

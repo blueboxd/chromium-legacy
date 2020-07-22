@@ -130,7 +130,7 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
     return;
   detector.GetImagePaintTimingDetector()->RecordImage(
       *object, image->Size(), *style_image->CachedImage(),
-      current_paint_chunk_properties, style_image, &image_border);
+      current_paint_chunk_properties, style_image, image_border);
 }
 
 // static
@@ -138,7 +138,8 @@ void PaintTimingDetector::NotifyImagePaint(
     const LayoutObject& object,
     const IntSize& intrinsic_size,
     const ImageResourceContent* cached_image,
-    const PropertyTreeStateOrAlias& current_paint_chunk_properties) {
+    const PropertyTreeStateOrAlias& current_paint_chunk_properties,
+    const IntRect& image_border) {
   if (IgnorePaintTimingScope::ShouldIgnore())
     return;
 
@@ -152,7 +153,7 @@ void PaintTimingDetector::NotifyImagePaint(
     return;
   detector.GetImagePaintTimingDetector()->RecordImage(
       object, intrinsic_size, *cached_image, current_paint_chunk_properties,
-      nullptr, nullptr);
+      nullptr, image_border);
 }
 
 void PaintTimingDetector::NotifyImageFinished(

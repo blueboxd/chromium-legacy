@@ -26,6 +26,8 @@ class DiscoverFeedProvider {
   // Returns the Discover Feed ViewController.
   virtual UIViewController* NewFeedViewController(
       id<ApplicationCommands> handler) NS_RETURNS_RETAINED;
+  // Updates the feed's theme to match the user's theme (light/dark).
+  virtual void UpdateTheme();
   // Refreshes the Discover Feed with completion.
   virtual void RefreshFeedWithCompletion(ProceduralBlock completion);
 };

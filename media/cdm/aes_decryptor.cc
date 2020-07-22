@@ -644,14 +644,14 @@ CdmKeysInfo AesDecryptor::GenerateKeysInfoList(
   return keys_info;
 }
 
-void AesDecryptor::GetRecordOfKeyUsage(const std::string& session_id,
+bool AesDecryptor::GetRecordOfKeyUsage(const std::string& session_id,
                                        KeyIdList& key_ids,
                                        base::Time& first_decryption_time,
                                        base::Time& latest_decryption_time) {
   auto it = open_sessions_.find(session_id);
   if (it == open_sessions_.end() ||
       it->second != CdmSessionType::kPersistentUsageRecord) {
-    return;
+    return false;
   }
 
   base::AutoLock auto_lock(key_map_lock_);
@@ -663,6 +663,8 @@ void AesDecryptor::GetRecordOfKeyUsage(const std::string& session_id,
 
   first_decryption_time = first_decryption_time_;
   latest_decryption_time = latest_decryption_time_;
+
+  return true;
 }
 
 AesDecryptor::DecryptionKey::DecryptionKey(const std::string& secret)

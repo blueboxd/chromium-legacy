@@ -1946,11 +1946,11 @@ IN_PROC_BROWSER_TEST_F(PolicyVariationsServiceTest, VariationsURLIsValid) {
   EXPECT_EQ("restricted", value);
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingBlacklistSelective) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingBlocklistSelective) {
   base::ListValue blacklist;
   blacklist.AppendString("host.name");
   PolicyMap policies;
-  policies.Set(key::kNativeMessagingBlacklist, POLICY_LEVEL_MANDATORY,
+  policies.Set(key::kNativeMessagingBlocklist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, blacklist.Clone(),
                nullptr);
   UpdateProviderPolicy(policies);
@@ -1962,11 +1962,11 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingBlacklistSelective) {
       IsNativeMessagingHostAllowed(browser()->profile(), "other.host.name"));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingBlacklistWildcard) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingBlocklistWildcard) {
   base::ListValue blacklist;
   blacklist.AppendString("*");
   PolicyMap policies;
-  policies.Set(key::kNativeMessagingBlacklist, POLICY_LEVEL_MANDATORY,
+  policies.Set(key::kNativeMessagingBlocklist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, blacklist.Clone(),
                nullptr);
   UpdateProviderPolicy(policies);
@@ -1984,7 +1984,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingWhitelist) {
   base::ListValue whitelist;
   whitelist.AppendString("host.name");
   PolicyMap policies;
-  policies.Set(key::kNativeMessagingBlacklist, POLICY_LEVEL_MANDATORY,
+  policies.Set(key::kNativeMessagingBlocklist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, blacklist.Clone(),
                nullptr);
   policies.Set(key::kNativeMessagingWhitelist, POLICY_LEVEL_MANDATORY,

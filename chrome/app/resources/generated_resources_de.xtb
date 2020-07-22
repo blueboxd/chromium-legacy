@@ -52,7 +52,7 @@
 <translation id="1054153489933238809">&amp;Original in neuem Tab öffnen</translation>
 <translation id="1055806300943943258">Suche nach Bluetooth- und USB-Geräten...</translation>
 <translation id="1056466516655540509">Vor <ph name="MINUTES" /> min aktualisiert</translation>
-<translation id="1056775291175587022">Keine Netzwerke</translation>
+<translation id="1056775291175587022">Keine Netzw.</translation>
 <translation id="1056898198331236512">Warnung</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1060292118287751956">Bestimmt, wie oft das sichtbare Bild auf dem Bildschirm neu aufgebaut wird</translation>
@@ -1208,7 +1208,7 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="247949520305900375">Audio freigeben</translation>
 <translation id="248003956660572823">Passwörter nicht gespeichert</translation>
 <translation id="2480868415629598489">Daten ändern, die Sie kopieren und einfügen</translation>
-<translation id="2482878487686419369">Benachrichtigungen</translation>
+<translation id="2482878487686419369">Benachricht.</translation>
 <translation id="2484959914739448251">Wenn Sie Browserdaten von all Ihren synchronisierten Geräten und aus Ihrem Google-Konto löschen möchten, <ph name="BEGIN_LINK" />geben Sie Ihre Passphrase ein<ph name="END_LINK" />.</translation>
 <translation id="2485005079599453134">Passwort wurde auf diesem Gerät gespeichert</translation>
 <translation id="2485422356828889247">Deinstallieren</translation>
@@ -2724,7 +2724,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4375035964737468845">Heruntergeladene Dateien öffnen</translation>
 <translation id="4377363674125277448">Beim Zertifikat des Servers ist ein Problem aufgetreten.</translation>
 <translation id="4378154925671717803">Telefon</translation>
-<translation id="4378551569595875038">Verbindung wird hergestellt...</translation>
+<translation id="4378551569595875038">Verbindung...</translation>
 <translation id="4378556263712303865">Geräteanforderung</translation>
 <translation id="4379281552162875326">"<ph name="APP_NAME" />" deinstallieren?</translation>
 <translation id="4380648069038809855">Vollbildmodus aktiviert</translation>
@@ -3720,7 +3720,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5659833766619490117">Diese Seite konnte nicht übersetzt werden</translation>
 <translation id="5662513737565158057">Hier können Sie ändern, wie Linux-Apps ausgeführt werden.</translation>
 <translation id="5667546120811588575">Google Play wird eingerichtet...</translation>
-<translation id="5669267381087807207">Wird aktiviert...</translation>
+<translation id="5669267381087807207">Wird aktiviert</translation>
 <translation id="5669691691057771421">Neue PIN eingeben</translation>
 <translation id="5671641761787789573">Bilder blockiert</translation>
 <translation id="5671658447180261823">Vorschlag "<ph name="SUGGESTION_NAME" />" entfernen</translation>
@@ -4459,7 +4459,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6607831829715835317">Weitere Too&amp;ls</translation>
 <translation id="6611972847767394631">Hier finden Sie Ihre Tabs</translation>
 <translation id="6612358246767739896">Geschützte Inhalte</translation>
-<translation id="6615455863669487791">Zeigen</translation>
+<translation id="6615455863669487791">Anzeigen</translation>
 <translation id="6618097958368085618">Trotzdem beibehalten</translation>
 <translation id="6618744767048954150">Läuft</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4750,7 +4750,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6979044105893951891">Verwaltete Gastsitzungen starten und beenden</translation>
 <translation id="6979440798594660689">Stummschalten (Standard)</translation>
 <translation id="6979737339423435258">Gesamte Zeit</translation>
-<translation id="6981982820502123353">Bedienungshilfen</translation>
+<translation id="6981982820502123353">Bedienungsh.</translation>
 <translation id="6983507711977005608">Verbindung mit Instant Tethering-Netzwerk trennen</translation>
 <translation id="6983783921975806247">Registrierte OID</translation>
 <translation id="6984299437918708277">Wählen Sie ein Bild aus, das auf der Anmeldeseite für Ihr Konto zu sehen sein soll</translation>
@@ -4888,7 +4888,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="713888829801648570">Ihr Passwort konnte nicht überprüft werden, da Sie offline sind.</translation>
 <translation id="7140928199327930795">Keine weiteren Geräte vorhanden</translation>
 <translation id="7141105143012495934">Sie konnten nicht angemeldet werden, weil Ihre Kontodetails nicht abgerufen werden konnten. Bitte wenden Sie sich an Ihren Administrator oder versuchen Sie es erneut.</translation>
-<translation id="7143207342074048698">Verbindung wird hergestellt.</translation>
+<translation id="7143207342074048698">Verbindung...</translation>
 <translation id="7144878232160441200">Wiederholen</translation>
 <translation id="7149893636342594995">Letzte 24 Stunden</translation>
 <translation id="715118844758971915">Klassische Drucker</translation>
@@ -5982,7 +5982,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8509646642152301857">Beim Herunterladen des Wörterbuchs für die Rechtschreibprüfung ist ein Fehler aufgetreten.</translation>
 <translation id="8512476990829870887">Prozess beenden</translation>
 <translation id="851263357009351303">Anzeige von Bildern für <ph name="HOST" /> immer zulassen</translation>
-<translation id="8513108775083588393">Automatisch drehen</translation>
+<translation id="8513108775083588393">Autom. drehen</translation>
 <translation id="8514746246728959655">Versuchen Sie es mit einem anderen Sicherheitsschlüssel</translation>
 <translation id="8521475323816527629">Schneller Zugriff auf Ihre Apps</translation>
 <translation id="8523493869875972733">Änderungen beibehalten</translation>
@@ -6292,7 +6292,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8871974300055371298">Inhaltseinstellungen</translation>
 <translation id="8872155268274985541">Ungültige Manifestdatei für externes Kiosk-Update gefunden. Die Kiosk-App konnte nicht aktualisiert werden. Bitte entfernen Sie den USB-Stick.</translation>
 <translation id="8872777911145321141">Nachfragen, wenn eine Website meine Virtual-Reality-Geräte und ‑Daten verwenden möchte (empfohlen)</translation>
-<translation id="8874184842967597500">Nicht verbunden</translation>
+<translation id="8874184842967597500">Nicht verbun.</translation>
 <translation id="8875520811099717934">Linux-Upgrade</translation>
 <translation id="8876307312329369159">Diese Einstellung kann nicht in einer Demositzung geändert werden.</translation>
 <translation id="8877448029301136595">[übergeordnetes Verzeichnis]</translation>

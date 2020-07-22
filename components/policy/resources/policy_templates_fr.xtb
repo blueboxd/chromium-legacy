@@ -198,10 +198,6 @@
 
       Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> n'autorisera pas la création de profils d'invités.</translation>
 <translation id="1363275621236827384">Activer l'envoi de requêtes de profils matériels à Quirks Server</translation>
-<translation id="1363612796557848469">Cette règle accorde à l'Assistant Google l'autorisation d'accéder au contexte de l'écran et d'envoyer les informations correspondantes au serveur.
-      Si cette règle est activée, l'Assistant Google peut accéder au contexte de l'écran.
-      Si elle est désactivée, l'Assistant Google n'a pas accès au contexte de l'écran.
-      Si la règle n'est pas définie, l'utilisateur peut autoriser ou non l'Assistant Google à accéder au contexte de l'écran</translation>
 <translation id="1376119291123231789">Activer le mode avancé de recharge de la batterie</translation>
 <translation id="1384459581748403878">Référence : <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Indiquer l'état de la mise à jour du système</translation>
@@ -300,13 +296,6 @@ Si vous la désactivez, le défilement des pages Web vers des fragments de texte
           Si l'option "DockNicMacAddress" est sélectionnée, l'adresse MAC de la carte d'interface réseau de la station d'accueil est utilisée.
 
           Ce paramètre ne peut pas être modifié par l'utilisateur.</translation>
-<translation id="1507957856411744193">Si cette règle est définie sur "True", <ph name="PRODUCT_NAME" /> se connecte aux appareils Cast sur toutes les adresses IP, et pas seulement sur les adresses privées décrites dans la RFC 1918 ou la RFC 4193.
-
-          Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> ne se connecte aux appareils Cast que sur les adresses privées décrites dans la RFC 1918 ou la RFC 4193.
-
-          Si cette règle n'est pas définie, <ph name="PRODUCT_NAME" /> ne se connecte aux appareils Cast que sur les adresses privées décrites dans la RFC 1918 ou la RFC 4193, sauf si la fonctionnalité "CastAllowAllIPs" est activée.
-
-          Si la règle "EnableMediaRouter" est définie sur "False", la valeur de la règle "MediaRouterCastAllowAIIIPs" n'a aucune incidence.</translation>
 <translation id="1509692106376861764">Cette règle a été supprimée à partir de la version 29 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1514888685242892912">Activer <ph name="PRODUCT_NAME" /></translation>
 <translation id="1515230621229117540">Permet d'activer le menu d'accessibilité flottant</translation>
@@ -1171,23 +1160,6 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
       La disposition de clavier présélectionnée est toujours la plus populaire pour la langue présélectionnée. Enfin, les utilisateurs pourront toujours choisir une langue parmi celles compatibles avec <ph name="PRODUCT_OS_NAME" /> pour leur session.</translation>
 <translation id="2693108589792503178">Configurez l'URL de modification de mot de passe.</translation>
 <translation id="2694143893026486692">Loupe ancrée activée</translation>
-<translation id="2694188263972877487">Permet de configurer les types de téléchargements que <ph name="PRODUCT_NAME" /> bloquera complètement, et pour lesquels les utilisateurs ne sont pas autorisés à ignorer l'avertissement de sécurité.
-
-      Si cette règle est activée, <ph name="PRODUCT_NAME" /> empêche certains types de téléchargements et ne permet pas aux utilisateurs de contourner les avertissements de sécurité.
-
-      Si vous sélectionnez l'option "Bloquer les téléchargements dangereux", tous les téléchargements sont autorisés, sauf ceux déclenchant un avertissement dans le cadre de la navigation sécurisée.
-
-      Si vous sélectionnez l'option "Bloquer les téléchargements potentiellement dangereux", tous les téléchargements sont autorisés, sauf ceux déclenchant un avertissement dans le cadre de la navigation sécurisée de type "téléchargement potentiellement dangereux".
-
-      Si vous sélectionnez l'option "Bloquer tous les téléchargements", tous les téléchargements sont bloqués.
-
-      Si vous sélectionnez l'option "Bloquer les téléchargements malveillants", tous les téléchargements sont autorisés, sauf ceux que la navigation sécurisée identifie comme des logiciels malveillants avec un haut degré de fiabilité. Contrairement aux téléchargements dangereux, le type de fichier n'est pas pris en compte. L'hôte, en revanche, l'est.
-
-      Si cette règle n'est pas configurée, ou si vous sélectionnez l'option "Aucune restriction particulière", les restrictions de sécurité habituelles basées sur les résultats de l'analyse de la navigation sécurisée s'appliquent aux téléchargements.
-
-      Notez que ces restrictions s'appliquent aux téléchargements déclenchés à partir du contenu d'une page Web et de l'option de menu contextuel "Télécharger le lien". Elles ne s'appliquent pas à l'enregistrement ni au téléchargement de la page actuellement affichée, ni à l'enregistrement au format PDF depuis les options d'impression.
-
-      Pour en savoir plus sur la navigation privée, consultez la page https://developers.google.com/safe-browsing.</translation>
 <translation id="2696077732471707315">
       Cette règle a été supprimée dans M77.
       Cette règle s'applique à l'écran de connexion. Veuillez également consulter celle applicable à la session utilisateur (<ph name="SITE_PER_PROCESS_POLICY_NAME" />). Nous vous recommandons d'attribuer la même valeur à ces deux règles. Si les valeurs ne sont pas identiques, la règle relative aux utilisateurs s'applique. Cela peut ralentir l'ouverture de la session utilisateur.
@@ -1523,11 +1495,6 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
           La valeur de la règle doit être indiquée en millisecondes.</translation>
 <translation id="3205825995289802549">Agrandir la première fenêtre du navigateur à la première exécution</translation>
 <translation id="3211426942294667684">Paramètres de connexion au navigateur</translation>
-<translation id="3214164532079860003">Lorsqu'elle est activée, cette règle force l'importation de la page d'accueil à partir du navigateur par défaut actuel. 
-
-Si elle est désactivée, la page d'accueil n'est pas importée. 
-
-Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="3219421230122020860">Mode navigation privée disponible</translation>
 <translation id="3220624000494482595">Si l'application kiosque est une application Android, elle ne contrôlera pas la version <ph name="PRODUCT_OS_NAME" /> même si cette règle est définie sur "<ph name="TRUE" />".</translation>
 <translation id="322359555555487980">Déterminer la disponibilité des variantes de <ph name="PRODUCT_OS_NAME" /></translation>
@@ -1848,11 +1815,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 <translation id="3765260570442823273">Durée du message d'avertissement avant la déconnexion pour cause d'inactivité</translation>
 <translation id="377044054160169374">Application de l'intervention en cas d'expérience abusive</translation>
 <translation id="3780152581321609624">Inclure un port non standard dans le SPN Kerberos</translation>
-<translation id="3780319008680229708">Si cette règle est définie sur "true", l'icône Cast de la barre d'outils s'afficher toujours dans la barre d'outils ou dans le menu à développer et les utilisateurs ne peuvent pas la supprimer.
-
-          Si cette règle est définie sur "false" ou n'est pas définie, les utilisateurs peuvent l'épingler ou la supprimer depuis son menu contextuel.
-
-          Si la règle "EnableMediaRouter" est définie sur "false", la valeur attribuée à la règle "ShowCastIconInToolbar" n'a aucun effet et l'icône de la barre d'outils ne s'affiche pas.</translation>
 <translation id="3788662722837364290">Paramètres de gestion de l'alimentation en cas d'inactivité de l'utilisateur</translation>
 <translation id="3790085888761753785">Si ce paramètre est activé, les utilisateurs seront autorisés à se connecter à leur compte avec Smart Lock. Ce paramètre est plus permissif que le comportement normal de Smart Lock qui permet seulement aux utilisateurs de déverrouiller leur écran.
 
@@ -1867,13 +1829,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 
       Cette règle étant obsolète, veuillez utiliser à la place la règle <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
       </translation>
-<translation id="3800626789999016379">Configure le répertoire que <ph name="PRODUCT_NAME" /> utilise pour télécharger les fichiers.
-
-      Si vous définissez cette règle, <ph name="PRODUCT_NAME" /> utilise le répertoire fourni, que l'utilisateur en ait spécifié un ou non, ou qu'il ait ou non activé l'indicateur permettant d'être invité à renseigner l'emplacement du téléchargement à chaque fois.
-
-      Vous pouvez consulter la liste des variables utilisables à l'adresse https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
-
-      Si vous ne définissez pas cette règle, le répertoire de téléchargement par défaut est utilisé et l'utilisateur est en mesure d'en changer.</translation>
 <translation id="3803171355925844705">Interdire à tous les sites de charger un contenu mixte</translation>
 <translation id="3805659594028420438">Activer l'extension des certificats TLS liés au domaine (obsolète)</translation>
 <translation id="3808945828600697669">Répertorier les plug-ins désactivés</translation>
@@ -1979,13 +1934,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 
       Cette règle n'est appliquée que si l'ordinateur est enregistré avec la règle <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> pour <ph name="PRODUCT_NAME" />.
       Elle est toujours appliquée pour <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="3895557476567727016">Configure le répertoire par défaut utilisé par <ph name="PRODUCT_NAME" /> pour le téléchargement de fichiers.
-
-      Si vous définissez cette règle, le répertoire de téléchargement par défaut utilisé par <ph name="PRODUCT_NAME" /> est donc différent du répertoire habituel. Toutefois, cette règle n'étant pas obligatoire, l'utilisateur peut changer de répertoire.
-
-      Si vous ne configurez pas cette règle, <ph name="PRODUCT_NAME" /> utilise le répertoire par défaut habituel (spécifique à la plate-forme).
-
-      Vous pouvez consulter la liste des variables utilisables à l'adresse https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
 <translation id="3898795800259311780">Autoriser ou interdire la capture d'écran</translation>
 <translation id="3907683835264956726">Permet aux utilisateurs de se connecter en ligne via l'écran de verrouillage. Si cette règle est définie sur "True", la réauthentification en ligne via l'écran de verrouillage est déclenchée, par exemple, par la règle <ph name="POLICY" />.
       Cette réauthentification est appliquée immédiatement lorsque l'utilisateur est sur l'écran de verrouillage ou la prochaine fois qu'il verrouille l'écran une fois la condition remplie.
@@ -2007,9 +1955,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
       Si ce paramètre est désactivé, les utilisateurs ne peuvent pas imprimer sur <ph name="CLOUD_PRINT_NAME" /> depuis la boîte de dialogue d'impression de <ph name="PRODUCT_NAME" />.
 
       Pour que les destinations <ph name="CLOUD_PRINT_NAME" /> restent visibles, cette règle doit être définie sur "True", et le type "<ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />" ne doit pas être ajouté à la règle "<ph name="POLICY_PRINTERTYPEDENYLIST" />".</translation>
-<translation id="391531815696899618">Désactive la synchronisation de Google Drive dans l'application Fichiers de <ph name="PRODUCT_OS_NAME" /> lorsque ce paramètre est défini sur "True". Dans ce cas, aucune donnée n'est importée dans Google Drive.
-
-          Si ce paramètre est défini sur "False" ou s'il n'est pas défini, les utilisateurs ont la possibilité de transférer des fichiers vers Google Drive.</translation>
 <translation id="3915395663995367577">URL d'un fichier .pac de proxy</translation>
 <translation id="3917288538553140422">Permet de spécifier l'action à effectuer lorsque le répertoire personnel de l'utilisateur a été créé avec un chiffrement eCryptfs. À moins que les répertoires personnels chiffrés avec eCryptfs ne fassent l'objet d'une migration vers le chiffrement ext4, les applications Android risquent de cesser de fonctionner.
 
@@ -2393,9 +2338,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
       Si la valeur de cette règle est définie sur 0, la taille du cache par défaut est utilisée, mais l'utilisateur n'est pas en mesure de la modifier.
 
       Si cette règle n'est pas définie, la taille par défaut est utilisée, et l'utilisateur est en mesure de la remplacer à l'aide de l'indicateur "--media-cache-size".</translation>
-<translation id="4508686775017063528">Si cette règle est définie sur "true" ou n'est pas définie, <ph name="PRODUCT_NAME" /> est activé, et les utilisateurs peuvent le lancer depuis le menu de l'application, les menus contextuels des pages, les commandes multimédias sur les sites Web compatibles Cast et l'icône Cast de la barre d'outils (si elle est affichée).
-
-          Si cette règle est définie sur "false", <ph name="PRODUCT_NAME" /> est désactivé.</translation>
 <translation id="4510923771103268849">L'utilisateur est autorisé à accéder à la racine des conteneurs Crostini</translation>
 <translation id="4515404363392014383">Activer la navigation sécurisée pour les sources fiables</translation>
 <translation id="4517928394515633751">Analyser les téléchargements des utilisateurs avec la navigation sécurisée</translation>
@@ -2672,11 +2614,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
       et génère une erreur.</translation>
 <translation id="5032164758660626397">Empêcher l'utilisateur de transférer des fichiers volumineux</translation>
 <translation id="5047604665028708335">Autoriser l'accès aux sites en dehors des packs de contenu</translation>
-<translation id="5052081091120171147">Lorsqu'elle est activée, cette règle force l'importation de l'historique de navigation à partir du navigateur par défaut actuel. Si elle est activée, elle affecte également la boîte de dialogue d'importation. 
-
-Si elle est désactivée, aucun historique de navigation n'est importé. 
-
-Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="5055312535952606505">Permet de configurer les paramètres de proxy pour <ph name="PRODUCT_NAME" />. Ces paramètres de proxy seront également disponibles pour les applications ARC.
 
           Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications ARC ignorent toutes les options liées au proxy spécifiées à partir de la ligne de commande.
@@ -3009,11 +2946,6 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> ignore toutes les opti
       Si la règle est définie sur "False" ou n'est pas configurée, ces informations ne sont pas transmises.
       Si elle est définie sur "True", les informations concernant les applications et l'utilisation de l'appareil sont transmises.</translation>
 <translation id="5422643441807528365">Clé de licence <ph name="PLUGIN_VM_NAME" /></translation>
-<translation id="5423001109873148185">Lorsqu'elle est activée, cette règle force l'importation des moteurs de recherche à partir du navigateur par défaut actuel. Si cette règle est activée, elle affecte également la boîte de dialogue d'importation. 
-
-Si elle est désactivée, le moteur de recherche par défaut n'est pas importé. 
-
-Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="5423197884968724595">Nom de la restriction Android WebView :</translation>
 <translation id="5424147596523390018">Autoriser tous les modes de couleur</translation>
 <translation id="5427879482805712214">Cette règle vous permet de configurer l'image d'avatar représentant l'utilisateur sur l'écran de connexion. Pour définir cette règle, indiquez l'URL à laquelle <ph name="PRODUCT_OS_NAME" /> peut télécharger l'image d'avatar, ainsi qu'un hachage chiffré, utilisé pour vérifier l'intégrité du téléchargement. L'image doit être au format JPEG et ne doit pas dépasser 512 Ko. L'URL doit être accessible sans authentification.
@@ -3309,11 +3241,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="5814301096961727113">Définir l'état par défaut des commentaires audio sur l'écran de connexion</translation>
 <translation id="5815129011704381141">Redémarrer automatiquement après une mise à jour</translation>
 <translation id="582857022372205358">Activer l'impression recto verso bord court</translation>
-<translation id="583091600226586337">
-      Si cette règle est activée, l'utilisateur doit indiquer où enregistrer les fichiers avant de les télécharger.
-      Si elle est désactivée, les téléchargements sont lancés immédiatement, sans que l'utilisateur n'ait à spécifier à quel emplacement enregistrer les fichiers.
-      Si elle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
-      </translation>
 <translation id="5832274826894536455">Règles obsolètes</translation>
 <translation id="5835124959204887277">Précise les URL et les domaines pour lesquels aucune boîte de dialogue ne s'affiche lorsque les certificats d'attestation de la clé de sécurité sont demandés. Un signal est également envoyé à la clé de sécurité pour indiquer qu'une attestation individuelle peut être utilisée. Dans les autres cas, les utilisateurs sont avertis dans Chrome 65 et versions ultérieures lorsque des sites demandent une attestation des clés de sécurité.
 
@@ -3403,11 +3330,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="5961137303188584693">Adresse MAC de la carte d'interface réseau intégrée de l'appareil</translation>
 <translation id="5966615072639944554">Extensions autorisées à utiliser l'API d'attestation à distance</translation>
 <translation id="5983708779415553259">Comportement par défaut des sites ne figurant dans aucun pack de contenu</translation>
-<translation id="599133751116473806">Lorsqu'elle est activée, la fonctionnalité <ph name="PRODUCT_NAME" /> envoie des en-têtes de requête précis qui fournissent des informations sur le navigateur et l'environnement de l'utilisateur.
-
-      Il s'agit d'une fonctionnalité complémentaire. Toutefois, les nouveaux en-têtes peuvent entraîner un dysfonctionnement de certains sites Web qui appliquent des restrictions en ce qui concerne les caractères que peuvent contenir les requêtes.
-
-      Si cette règle est activée ou qu'elle n'est pas configurée, la fonctionnalité <ph name="PRODUCT_NAME" /> est activée. Si cette règle est désactivée, la fonctionnalité n'est pas disponible.</translation>
 <translation id="5997543603646547632">Utiliser le format d'horloge 24 h par défaut</translation>
 <translation id="5997846976342452720">Indiquer si l'outil de recherche de plug-ins doit être désactivé (obsolète)</translation>
 <translation id="5998198091336830580">Cette règle fait partie du groupe atomique suivant (seules les règles issues de la source ayant la plus haute priorité dans le groupe sont appliquées) :</translation>
@@ -3554,11 +3476,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Si ce paramètre n'est pas défini, ou s'il est défini sur "True", les périodes durant lesquelles l'appareil inscrit est utilisé sont régulièrement communiquées par celui-ci. Si ce paramètre est défini sur "False", les périodes d'activité ne sont ni enregistrées, ni communiquées.</translation>
 <translation id="6212868225782276239">Toutes les imprimantes sont affichées à l'exception de celles qui sont répertoriées dans la liste noire.</translation>
-<translation id="6219965209794245435">Cette règle force l'importation des données de saisie automatique à partir du précédent navigateur par défaut. Si elle est activée, elle affecte également la boîte de dialogue d'importation.
-
-      Si elle est désactivée, les données de saisie automatique ne sont pas importées.
-
-      Si cette règle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut s'effectuer de façon automatique.</translation>
 <translation id="6221175752766085998">Autoriser les certificats émis par les ancres d'approbation locales sans l'extension subjectAlternativeName</translation>
 <translation id="6224304369267200483">URL/domaines automatiquement autorisés à recevoir une attestation de clé de sécurité</translation>
 <translation id="6233173491898450179">Définir le répertoire de téléchargement</translation>
@@ -4015,11 +3932,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 
       Si vous sélectionnez "U2F_EXTENDED", le deuxième facteur intégré fournit les fonctionnalités U2F ainsi que certaines extensions pour chaque attestation.</translation>
 <translation id="7002040773317582266">La vérification en temps réel des URL du frame principal est activée.</translation>
-<translation id="7003334574344702284">Lorsqu'elle est activée, cette règle force l'importation des mots de passe enregistrés à partir du navigateur par défaut précédent. Si elle est activée, cette politique affecte également la boîte de dialogue d'importation. 
-
-Si elle est désactivée, les mots de passe enregistrés ne sont pas importés. 
-
-Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="7003746348783715221">Préférences de <ph name="PRODUCT_NAME" /></translation>
 <translation id="7008308728445338159">Contrôles d'interception des requêtes DNS activés</translation>
 <translation id="7016736684656067099">Si cette règle est définie sur "1", tous les sites Web peuvent afficher des images. Si cette règle est définie sur "2", l'affichage d'images est refusé.
@@ -4043,11 +3955,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si cette règle n'est pas configurée, l'étagère est placée par défaut au bas de l'écran. Toutefois, l'utilisateur peut la mettre à un autre endroit.</translation>
 <translation id="7040229947030068419">Exemple de valeur :</translation>
 <translation id="7044883996351280650">Gérer le service de sauvegarde et de restauration Android</translation>
-<translation id="7053678646221257043">Lorsqu'elle est activée, cette règle force l'importation des favoris à partir du navigateur par défaut actuel. Si elle est activée, elle affecte également la boîte de dialogue d'importation. 
-
-Si elle est désactivée, les favoris ne sont pas importés. 
-
-Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="7063895219334505671">Autoriser les fenêtres pop-up sur ces sites</translation>
 <translation id="706669471845501145">Autoriser les sites à afficher des notifications sur le bureau</translation>
 <translation id="7068108874199666656">Permet de transférer l'application de la configuration réseau à tous les utilisateurs d'un appareil fonctionnant avec <ph name="PRODUCT_OS_NAME" />. La configuration réseau correspond à une chaîne formatée par JSON conformément au format de configuration de réseau ouvert.</translation>
@@ -4908,9 +4815,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="829703642501504476">Si cette règle est définie sur "True", <ph name="PRODUCT_NAME" /> utilise les variantes de pages d'erreur intégrées (telles que "Page introuvable"). Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise jamais les variantes de pages d'erreur.
 
       Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier. Si cette règle n'est pas définie, elle est activée par défaut. Toutefois, les utilisateurs peuvent la modifier.</translation>
-<translation id="8300455783946254851">Cette règle désactive la synchronisation avec Google Drive dans l'application Fichiers de <ph name="PRODUCT_OS_NAME" /> en cas de connexion à un réseau mobile lorsque vous la définissez sur "True". Dans ce cas, les données ne sont synchronisées avec Google Drive qu'en cas de connexion Wi-Fi ou Ethernet.
-
-          Si vous ne définissez pas cette règle ou si vous la définissez sur "False", les utilisateurs peuvent transférer des fichiers vers Google Drive via des connexions mobiles.</translation>
 <translation id="8300992833374611099">Contrôler les cas d'utilisation des outils pour les développeurs</translation>
 <translation id="8306117673860983372">Paramètres de connexion</translation>
 <translation id="8312129124898414409">Permet d'indiquer si des sites Web sont autorisés à utiliser la génération de clé. Celle-ci peut être autorisée ou interdite pour tous les sites.
@@ -5186,11 +5090,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8705895771006864851">Si cette règle est définie sur "True", vous pouvez proposer une fonctionnalité de traduction aux utilisateurs, le cas échéant. Une barre d'outils intégrée de traduction s'affiche alors dans <ph name="PRODUCT_NAME" />, ainsi qu'une option de traduction disponible dans le menu contextuel que l'utilisateur peut afficher en effectuant un clic droit. Si cette règle est définie sur "False", toutes les fonctionnalités de traduction intégrées sont fermées.
 
       Si cette règle est configurée, les utilisateurs ne peuvent pas modifier la fonctionnalité. Si elle n'est pas configurée, les utilisateurs peuvent modifier le paramètre.</translation>
-<translation id="8708284670795912158">Si cette règle est définie sur "True", <ph name="PRODUCT_NAME" /> est autorisé à lire automatiquement du contenu multimédia. Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> n'est pas autorisé à lire automatiquement du contenu multimédia.
-
-       Par défaut, <ph name="PRODUCT_NAME" /> ne lit pas automatiquement ce type de contenu. Toutefois, pour certains formats d'URL, la règle <ph name="AUTOPLAY_WHITELIST_POLICY_NAME" /> permet de modifier ce paramètre.
-
-      Si <ph name="PRODUCT_NAME" /> est en cours d'exécution lorsque cette règle est modifiée, la modification n'affectera que les nouveaux onglets ouverts.</translation>
 <translation id="8733448613597049197">Active la création de rapports détaillées dans le cadre de la navigation sécurisée dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier cette règle.
 
       Ces rapports détaillés fournissent aux serveurs Google des informations système et du contenu de pages qui aident à détecter les applications et les sites dangereux.
@@ -5487,12 +5386,6 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications AR
 <translation id="9117826695152538214">Définissez cette règle sur "True" pour maintenir les touches persistantes activées. Définissez cette règle sur "False" pour les maintenir désactivées.
 
       Si vous définissez cette règle, les utilisateurs ne peuvent pas modifier la configuration. Si cette règle n'est pas définie, les touches persistantes sont désactivées par défaut, mais les utilisateurs peuvent les activer à tout moment.</translation>
-<translation id="91196902572559194">Cette règle autorise l'Assistant Google à écouter l'expression servant à activer les commandes vocales.
-
-      Si cette règle est activée, l'Assistant Google écoute l'expression servant à activer les commandes vocales.
-      Si elle est désactivée, l'Assistant Google n'écoute pas cette expression.
-      Si cette règle n'est pas définie, les utilisateurs peuvent décider d'autoriser ou non l'Assistant Google à écouter l'expression servant à activer les commandes vocales.
-      </translation>
 <translation id="9123211093995421438">Spécifie le nombre minimal de versions intermédiaires <ph name="PRODUCT_OS_NAME" /> autorisées pour le rollback à partir de la version stable.
 
       La valeur par défaut s'élève à 0 pour les particuliers et à 4 (environ la moitié d'un an) pour les appareils enregistrés par les entreprises.

@@ -3970,6 +3970,11 @@ const char kOsSettingsPolymer3Name[] = "Enable OS Settings Polymer3";
 const char kOsSettingsPolymer3Description[] =
     "Flips chrome://os-settings to show Polymer3 version.";
 
+const char kPhoneHubName[] = "Enable Phone Hub";
+const char kPhoneHubDescription[] =
+    "Provides a UI for users to view information about their Android phone"
+    "and perform phone-side actions within Chrome OS.";
+
 const char kPrintServerUiName[] = "Print Server UI";
 const char kPrintServerUiDescription[] =
     "Enables users to add their own print server in the printer settings page.";
@@ -4326,10 +4331,6 @@ const char kPdfHonorJsContentSettingsName[] =
 const char kPdfHonorJsContentSettingsDescription[] =
     "Enable whether an origin's JavaScript content settings are honored in "
     "PDFs opened from that origin.";
-
-const char kPdfTwoUpViewName[] = "PDF Two-up View";
-const char kPdfTwoUpViewDescription[] =
-    "Enable a new option to display two pages side by side in the PDF viewer.";
 
 const char kPdfViewerUpdateName[] = "PDF Viewer Update";
 const char kPdfViewerUpdateDescription[] =

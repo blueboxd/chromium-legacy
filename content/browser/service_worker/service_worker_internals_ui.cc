@@ -297,8 +297,10 @@ class ServiceWorkerInternalsUI::PartitionObserver
         "serviceworker.onVersionStateChanged", Value(partition_id_),
         Value(base::NumberToString(version_id)));
   }
-  void OnErrorReported(int64_t version_id,
-                       const ErrorInfo& info) override {
+  void OnErrorReported(
+      int64_t version_id,
+      const GURL& scope,
+      const ServiceWorkerContextObserver::ErrorInfo& info) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     std::vector<std::unique_ptr<const Value>> args;
     args.push_back(std::make_unique<Value>(partition_id_));
@@ -313,6 +315,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
                                           ConvertToRawPtrVector(args));
   }
   void OnReportConsoleMessage(int64_t version_id,
+                              const GURL& scope,
                               const ConsoleMessage& message) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     std::vector<std::unique_ptr<const Value>> args;

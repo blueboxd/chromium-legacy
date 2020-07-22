@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> nyelvről <ph name="TARGET_LANGUAGE" /> nyelvre</translation>
 <translation id="168715261339224929">Ha az összes eszközén szeretné elérni könyvjelzőit, kapcsolja be a szinkronizálást.</translation>
 <translation id="1687475363370981210">Összes megjelölése olvasottként</translation>
+<translation id="1689333818294560261">Egyedi név</translation>
 <translation id="1690731385917361335">Nincsenek elemek</translation>
 <translation id="1692118695553449118">Szinkronizálás bekapcsolva</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> kiválasztva</translation>
@@ -206,6 +207,7 @@ Inkognitó módban a webhelyek nem használhatnak cookie-kat arra, hogy megfigye
 <translation id="3335947283844343239">Bezárt lap megnyitása</translation>
 <translation id="3371831930909698441">Rendelkezésre áll fordítás. A beállítások a képernyő alsó részén találhatók.</translation>
 <translation id="3393920035788932672">Pop-up megengedett</translation>
+<translation id="3425644765244388016">Egyedi kártyanév</translation>
 <translation id="3443810440409579745">Sikerült a lap fogadása.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> perc</translation>
 <translation id="3448016392200048164">Osztott nézet</translation>
@@ -240,6 +242,7 @@ Inkognitó módban a webhelyek nem használhatnak cookie-kat arra, hogy megfigye
 <translation id="3783017676699494206">Kép mentése</translation>
 <translation id="3789841737615482174">Telepítés</translation>
 <translation id="3803696231112616155">A webhely lefordításának felajánlása</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Nincsenek nyilvánosságra került jelszavak}=1{{COUNT} nyilvánosságra került jelszó}other{{COUNT} nyilvánosságra került jelszó}}</translation>
 <translation id="385051799172605136">Vissza</translation>
 <translation id="3892144330757387737">Itt láthatja majd az előzményeit</translation>
 <translation id="3897092660631435901">Menü</translation>
@@ -529,6 +532,7 @@ A webhelyek nem használhatnak cookie-kat arra, hogy megfigyeljék más webhelye
 <translation id="7189598951263744875">Megosztás...</translation>
 <translation id="7192050974311852563">Naplózás indítása</translation>
 <translation id="7203585745079012652">Mondja ki a válaszokat</translation>
+<translation id="721597782417389033">Érvénytelen egyedi kártyanév</translation>
 <translation id="7265758999917665941">Ezen a webhelyen soha</translation>
 <translation id="7272437679830969316">Nem sikerült ellenőrizni a személyazonosságát. A jelszó nem lett másolva.</translation>
 <translation id="7291368939935408496">Jelszavak előkészítése…</translation>

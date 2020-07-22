@@ -44,7 +44,7 @@ android_resources("java_resources") {
     ":java_strings_grd",
     "//chrome/android:chrome_app_java_resources",
   ]
-  custom_package = "org.chromium.chrome.start_surface"
+  create_srcjar = false
 }
 
 android_library("java") {
@@ -95,6 +95,7 @@ android_library("java") {
     ]
 
     deps += [
+      "//chrome/android/feed:chrome_feed_java_resources",
       "//chrome/browser/profiles/android:java",
       "//content/public/android:content_java",
       "//third_party/android_sdk/androidx_browser:androidx_browser_java",
@@ -111,4 +112,5 @@ android_library("java") {
     }
     proguard_configs += [ "proguard.flags" ]
   }
+  resources_package = "org.chromium.chrome.start_surface"
 }

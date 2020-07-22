@@ -6,6 +6,9 @@
 
 #include <string>
 
+#include "chrome/browser/nearby_sharing/nearby_per_session_discovery_manager.h"
+#include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
+#include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
@@ -15,6 +18,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -33,6 +37,8 @@ NearbyShareDialogUI::NearbyShareDialogUI(content::WebUI* web_ui)
   // Nearby Share is not available to incognito or guest profiles.
   DCHECK(profile->IsRegularProfile());
 
+  nearby_service_ = NearbySharingServiceFactory::GetForBrowserContext(profile);
+
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUINearbyShareHost);
 
@@ -42,10 +48,20 @@ NearbyShareDialogUI::NearbyShareDialogUI(content::WebUI* web_ui)
                               kNearbyShareGeneratedPath,
                               IDR_NEARBY_SHARE_NEARBY_SHARE_DIALOG_HTML);
 
+  html_source->AddResourcePath("nearby_share.mojom-lite.js",
+                               IDR_NEARBY_SHARE_MOJO_JS);
+
   content::WebUIDataSource::Add(profile, html_source);
 }
 
 NearbyShareDialogUI::~NearbyShareDialogUI() = default;
+
+void NearbyShareDialogUI::BindInterface(
+    mojo::PendingReceiver<mojom::DiscoveryManager> manager) {
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<NearbyPerSessionDiscoveryManager>(nearby_service_),
+      std::move(manager));
+}
 
 WEB_UI_CONTROLLER_TYPE_IMPL(NearbyShareDialogUI)
 

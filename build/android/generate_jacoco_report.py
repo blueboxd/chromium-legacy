@@ -32,7 +32,10 @@ _PARTIAL_PACKAGE_NAMES = ['com/google', 'org/chromium']
 # 'input_path':
 #   '$CHROMIUM_OUTPUT_DIR/\
 #    obj/chrome/android/features/tab_ui/java__process_prebuilt-filtered.jar'
-_SOURCES_JSON_FILES_SUFFIX = '__jacoco_sources.json'
+
+# TODO (crbug.com/1107004): Remove device when ready to combine host and device
+# __jacoco_sources.
+_SOURCES_JSON_FILES_SUFFIX = 'device__jacoco_sources.json'
 
 
 def _GetFilesWithSuffix(root_dir, suffix):

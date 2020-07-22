@@ -187,6 +187,7 @@ class ServiceWorkerConsoleObserver
  private:
   // ServiceWorkerContextObserver:
   void OnReportConsoleMessage(int64_t version_id,
+                              const GURL& scope,
                               const Message& message) override {
     messages_.push_back(message);
     run_loop_.Quit();

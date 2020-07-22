@@ -419,19 +419,6 @@ void RenderWidget::Initialize(ShowCallback show_callback,
 }
 
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
-  // The EnableDeviceEmulation message is sent to a provisional RenderWidget
-  // before the navigation completes. Some investigation into why is done in
-  // https://chromium-review.googlesource.com/c/chromium/src/+/1853675/5#message-e6edc3fd708d7d267ee981ffe43cae090b37a906
-  // but it's unclear what would need to be done to delay this until after
-  // navigation.
-  bool handled = false;
-  IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
-    IPC_MESSAGE_HANDLER(WidgetMsg_EnableDeviceEmulation,
-                        OnEnableDeviceEmulation)
-  IPC_END_MESSAGE_MAP()
-  if (handled)
-    return true;
-
   // We shouldn't receive IPC messages on provisional frames. It's possible the
   // message was destined for a RenderWidget that was destroyed and then
   // recreated since it keeps the same routing id. Just drop it here if that
@@ -439,9 +426,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   if (IsForProvisionalFrame())
     return false;
 
+  bool handled = false;
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
-    IPC_MESSAGE_HANDLER(WidgetMsg_DisableDeviceEmulation,
-                        OnDisableDeviceEmulation)
     IPC_MESSAGE_HANDLER(WidgetMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(WidgetMsg_WasHidden, OnWasHidden)
     IPC_MESSAGE_HANDLER(WidgetMsg_WasShown, OnWasShown)
@@ -759,14 +745,10 @@ void RenderWidget::UpdateVisualProperties(
   AfterUpdateVisualProperties();
 }
 
-void RenderWidget::OnEnableDeviceEmulation(
+void RenderWidget::EnableDeviceEmulation(
     const blink::DeviceEmulationParams& params) {
   // Device emulation can only be applied to the local main frame render widget.
-  // TODO(https://crbug.com/1006052): We should move emulation into the browser
-  // and send consistent ScreenInfo and ScreenRects to all RenderWidgets based
-  // on emulation.
-  if (!delegate_)
-    return;
+  DCHECK(delegate_);
 
   if (!device_emulator_) {
     device_emulator_ = std::make_unique<RenderWidgetScreenMetricsEmulator>(
@@ -776,12 +758,10 @@ void RenderWidget::OnEnableDeviceEmulation(
   device_emulator_->ChangeEmulationParams(params);
 }
 
-void RenderWidget::OnDisableDeviceEmulation() {
+void RenderWidget::DisableDeviceEmulation() {
   // Device emulation can only be applied to the local main frame render widget.
-  // TODO(https://crbug.com/1006052): We should move emulation into the browser
-  // and send consistent ScreenInfo and ScreenRects to all RenderWidgets based
-  // on emulation.
-  if (!delegate_ || !device_emulator_)
+  DCHECK(delegate_);
+  if (!device_emulator_)
     return;
   device_emulator_->DisableAndApply();
   device_emulator_.reset();

@@ -121,14 +121,6 @@ if (enable_pdf) {
       "pdfium/pdfium_range.h",
       "pdfium/pdfium_unsupported_features.cc",
       "pdfium/pdfium_unsupported_features.h",
-      "ppapi_migration/bitmap.cc",
-      "ppapi_migration/bitmap.h",
-      "ppapi_migration/callback.cc",
-      "ppapi_migration/callback.h",
-      "ppapi_migration/geometry_conversions.cc",
-      "ppapi_migration/geometry_conversions.h",
-      "ppapi_migration/input_event_conversions.cc",
-      "ppapi_migration/input_event_conversions.h",
       "preview_mode_client.cc",
       "preview_mode_client.h",
       "range_set.cc",
@@ -142,6 +134,7 @@ if (enable_pdf) {
 
     deps = [
       ":features",
+      ":ppapi_migration",
       "//base",
       "//base:i18n",
       "//gin",
@@ -174,8 +167,33 @@ if (enable_pdf) {
     deps = [
       ":internal",
       ":pdf",
+      ":ppapi_migration",
       "//ppapi/c",
       "//third_party/pdfium",
+      "//ui/base",
+    ]
+  }
+
+  source_set("ppapi_migration") {
+    visibility = [ ":*" ]
+
+    sources = [
+      "ppapi_migration/bitmap.cc",
+      "ppapi_migration/bitmap.h",
+      "ppapi_migration/callback.cc",
+      "ppapi_migration/callback.h",
+      "ppapi_migration/geometry_conversions.cc",
+      "ppapi_migration/geometry_conversions.h",
+      "ppapi_migration/input_event_conversions.cc",
+      "ppapi_migration/input_event_conversions.h",
+    ]
+
+    configs += [ ":pdf_common_config" ]
+
+    deps = [
+      "//base",
+      "//ppapi/cpp:objects",
+      "//skia",
       "//ui/base",
     ]
   }
@@ -193,6 +211,7 @@ if (enable_pdf) {
     deps = [
       ":features",
       ":internal",
+      ":ppapi_migration",
       "//base",
       "//net",
       "//ppapi/cpp:objects",
@@ -265,6 +284,7 @@ if (enable_pdf) {
       ":out_of_process_instance",
       ":pdf",
       ":pdf_test_utils",
+      ":ppapi_migration",
       "//base",
       "//base/test:run_all_unittests",
       "//base/test:test_support",

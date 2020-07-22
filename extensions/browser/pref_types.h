@@ -12,14 +12,14 @@ namespace extensions {
 enum PrefType {
   kBool,
   kString,
-  kInteger
+  kInteger,
   // TODO(archanasimha): implement Get/SetAsX for the following PrefTypes.
-  //  kGURL,
+  kGURL,
   //  kList,
-  //  kDictionary,
+  kDictionary,
   //  kExtensionIdList,
   //  kPermissionSet,
-  //  kTime
+  kTime
 };
 
 // PrefScope indicates whether an ExtensionPref is profile wide or specific to

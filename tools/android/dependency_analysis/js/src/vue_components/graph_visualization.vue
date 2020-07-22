@@ -13,20 +13,31 @@
 import {CUSTOM_EVENTS} from '../vue_custom_events.js';
 import {GraphView} from '../graph_view.js';
 
+// @vue/component
 const GraphVisualization = {
   props: {
-    graphDataUpdateTicker: Number,
+    /**
+     * `graphUpdateTriggers` is an array of model properties that trigger an
+     * update in the graph.
+     *
+     * Background: The need to trigger updates make it hard to integrate
+     * `graph_view.js` into the reactive Vue framework. This is solved with
+     * `graphUpdateTriggers`, which lists the parts of `pageModel` to observe
+     * and propagate updates to `graph_view`. This makes the graph "reactive" to
+     * changes in members of `graphUpdateTriggers`.
+     *
+     * Note: Observing `pageModel` in entirety is undesirable since it would
+     * lead to circular rerendering.
+     */
+    graphUpdateTriggers: Array,
     pageModel: Object,
   },
   watch: {
-    /**
-     * Watching a "ticker" variable is used for now since we don't always want
-     * `graphView` to be reactive with respect to `pageModel` (eg. if the user
-     * is typing but has not submitted yet). This ticker hence becomes the only
-     * way to force the visualization to update its underlying data.
-     */
-    graphDataUpdateTicker: function() {
-      this.graphView.updateGraphData(this.pageModel.getDataForD3());
+    graphUpdateTriggers: {
+      handler: function() {
+        this.graphView.updateGraphData(this.pageModel.getDataForD3());
+      },
+      deep: true,
     },
   },
   /**

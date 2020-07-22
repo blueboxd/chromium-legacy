@@ -450,6 +450,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="2824775600643448204">Bar alamat dan carian</translation>
 <translation id="2826760142808435982">Sambungan disulitkan dan disahkan menggunakan <ph name="CIPHER" /> dan menggunakan <ph name="KX" /> sebagai mekanisme pertukaran kunci.</translation>
 <translation id="2835170189407361413">Kosongkan borang</translation>
+<translation id="2839501879576190149">Tapak palsu di hadapan</translation>
 <translation id="2847118875340931228">Buka Tetingkap Inkognito</translation>
 <translation id="2850739647070081192">Jemputan (Sampul Surat)</translation>
 <translation id="2856444702002559011">Penyerang mungkin akan cuba mencuri maklumat anda daripada <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (contohnya, kata laluan, mesej atau kad kredit). <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -811,6 +812,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="42981349822642051">Kembangkan</translation>
 <translation id="4300675098767811073">Berbilang tebukan kanan</translation>
 <translation id="4302965934281694568">Chou3 (Sampul Surat)</translation>
+<translation id="4305666528087210886">Fail anda tidak dapat diakses</translation>
 <translation id="4305817255990598646">Tukar</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Sekat (lalai)</translation>
@@ -829,6 +831,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="4358461427845829800">Urus kaedah pembayaran...</translation>
 <translation id="4359160567981085931">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chrome boleh membantu. Untuk menukar kata laluan anda dan memaklumi Google bahawa akaun anda mungkin berisiko, klik Lindungi Akaun.</translation>
 <translation id="4367563149485757821">Number-12 (Sampul Surat)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Pelanggaran data pada tapak atau apl mendedahkan kata laluan anda yang disimpan untuk <ph name="ORIGIN" />. Chrome mengesyorkan supaya anda menukar kata laluan anda pada <ph name="ORIGIN" /> sekarang.}=1{Pelanggaran data pada tapak atau apl mendedahkan kata laluan anda yang disimpan untuk <ph name="ORIGIN" /> dan satu lagi tapak. Chrome mengesyorkan anda menyemak kata laluan anda yang disimpan sekarang.}other{Pelanggaran data pada tapak atau apl mendedahkan kata laluan anda yang disimpan untuk <ph name="ORIGIN" /> dan <ph name="SITES_COUNT" /> tapak yang lain. Chrome mengesyorkan anda menyemak kata laluan anda yang disimpan sekarang.}}</translation>
 <translation id="437058704415269440">Baki Akaun</translation>
 <translation id="4372516964750095882">Fanfold-AS</translation>
 <translation id="4372948949327679948">Nilai <ph name="VALUE_TYPE" /> yang dijangka.</translation>
@@ -1299,6 +1302,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Caj mungkin dikenakan nanti.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 cadangan lain}other{# cadangan lain}}</translation>
+<translation id="6387645831795005740">Penyerang kadangkala meniru tapak dengan melakukan perubahan kecil yang sukar untuk dikesan pada URL.</translation>
 <translation id="6389470377220713856">Nama pada Kad</translation>
 <translation id="6390200185239044127">Lipat dua Z</translation>
 <translation id="6390662030813198813">Kejuruteraan-E</translation>
@@ -1512,6 +1516,7 @@ Butiran tambahan:
 <translation id="7372973238305370288">hasil carian</translation>
 <translation id="7374733840632556089">Masalah ini berlaku disebabkan oleh sijil yang anda pasang atau dipasang oleh orang lain pada peranti anda. Sijil itu diketahui digunakan untuk memantau dan memintas rangkaian, dan tidak dipercayai oleh Chrome. Walaupun terdapat sebab yang munasabah untuk melakukan pemantauan, seperti pada rangkaian institusi pengajian atau syarikat, Chrome ingin memastikan anda menyedari pemantauan berlaku, walaupun anda tidak dapat menghentikan pemantauan itu. Pemantauan boleh berlaku pada mana-mana penyemak imbas atau aplikasi yang mengakses web.</translation>
 <translation id="7375818412732305729">Fail dilampirkan</translation>
+<translation id="7376551888419889433">Apabila acara keselamatan dibenderakan oleh Chrome Enterprise Connectors, data yang berkaitan tentang acara tersebut akan dihantar kepada pentadbir anda. Data ini boleh termasuk URL halaman yang anda lawati dalam Chrome, nama fail atau metadata dan nama pengguna yang anda gunakan untuk melog masuk ke peranti dan Chrome anda.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Kawalan Media</translation>
 <translation id="7378627244592794276">Tidak</translation>
@@ -1909,6 +1914,7 @@ Butiran tambahan:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Anda cuba untuk mencapai <ph name="DOMAIN" />, tetapi pelayan memberikan sijil tidak sah.</translation>
 <translation id="9050666287014529139">Frasa laluan</translation>
+<translation id="9062620674789239642">Ia mungkin telah dipindahkan, diedit atau dipadamkan.</translation>
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9065745800631924235">Carian <ph name="TEXT" /> daripada sejarah</translation>
 <translation id="9069693763241529744">Disekat oleh sambungan</translation>

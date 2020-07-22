@@ -669,7 +669,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6342069812937806050">Przed momentem</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}few{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}many{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="6364438453358674297">Usunąć sugestię z historii?</translation>
-<translation id="6366047038980456022">Technologia i szybkość działania <ph name="APP_NAME" /> pozwolą Ci bezpiecznie znaleźć to, czego szukasz online, i robić to, co chcesz</translation>
+<translation id="6366047038980456022">Technologia i szybkość działania <ph name="APP_NAME" /> pozwolą Ci bezpiecznie tworzyć i poruszać się w internecie</translation>
 <translation id="6369229450655021117">Tutaj możesz wyszukiwać informacje w internecie, udostępniać treści znajomym i przeglądać otwarte strony</translation>
 <translation id="6378173571450987352">Szczegóły: posortowane według wykorzystanych danych</translation>
 <translation id="6379829913050047669">Aplikacja <ph name="APP_NAME" /> zostanie otwarta w Chrome. Przechodząc dalej, wyrażasz zgodę na <ph name="BEGIN_LINK1" />Warunki korzystania z usług Google<ph name="END_LINK1" /> oraz <ph name="BEGIN_LINK2" />Dodatkowe warunki korzystania z Google Chrome i Chrome OS<ph name="END_LINK2" />.</translation>
@@ -998,6 +998,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8970887620466824814">Coś poszło nie tak.</translation>
 <translation id="8972098258593396643">Czy pobrać do folderu domyślnego?</translation>
 <translation id="8988028529677883095">Używaj telefonu jako klucza bezpieczeństwa</translation>
+<translation id="8990209962746788689">Nie udało się utworzyć kodu QR</translation>
 <translation id="8993760627012879038">Otwórz nową kartę w trybie incognito</translation>
 <translation id="8998729206196772491">Logujesz się na konto, którym zarządza <ph name="MANAGED_DOMAIN" />, i przekazujesz jego administratorowi kontrolę nad Twoimi danymi Chrome. Zostaną one trwale przypisane do tego konta. Gdy się wylogujesz, znikną one z tego urządzenia, ale pozostaną zapisane na Twoim koncie Google.</translation>
 <translation id="9028914725102941583">Aby udostępniać treści między urządzeniami, włącz synchronizację</translation>

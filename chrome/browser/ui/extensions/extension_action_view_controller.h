@@ -16,7 +16,6 @@
 #include "ui/gfx/image/image.h"
 
 class Browser;
-class ExtensionAction;
 class ExtensionActionPlatformDelegate;
 class GURL;
 class IconWithBadgeImageSource;
@@ -25,6 +24,7 @@ class ExtensionsContainer;
 namespace extensions {
 class Command;
 class Extension;
+class ExtensionAction;
 class ExtensionRegistry;
 class ExtensionViewHost;
 }
@@ -45,7 +45,7 @@ class ExtensionActionViewController
 
   ExtensionActionViewController(const extensions::Extension* extension,
                                 Browser* browser,
-                                ExtensionAction* extension_action,
+                                extensions::ExtensionAction* extension_action,
                                 ExtensionsContainer* extensions_container,
                                 bool in_overflow_mode);
   ~ExtensionActionViewController() override;
@@ -91,8 +91,10 @@ class ExtensionActionViewController
 
   const extensions::Extension* extension() const { return extension_.get(); }
   Browser* browser() { return browser_; }
-  ExtensionAction* extension_action() { return extension_action_; }
-  const ExtensionAction* extension_action() const { return extension_action_; }
+  extensions::ExtensionAction* extension_action() { return extension_action_; }
+  const extensions::ExtensionAction* extension_action() const {
+    return extension_action_;
+  }
   ToolbarActionViewDelegate* view_delegate() { return view_delegate_; }
 
   std::unique_ptr<IconWithBadgeImageSource> GetIconImageSourceForTesting(
@@ -177,7 +179,7 @@ class ExtensionActionViewController
 
   // The browser action this view represents. The ExtensionAction is not owned
   // by this class.
-  ExtensionAction* const extension_action_;
+  extensions::ExtensionAction* const extension_action_;
 
   // The corresponding ExtensionsContainer on the toolbar.
   ExtensionsContainer* const extensions_container_;

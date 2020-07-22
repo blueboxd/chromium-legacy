@@ -52,6 +52,7 @@ class ChromeEnterpriseRealTimeUrlLookupService
                       RTLookupRequestCallback request_callback,
                       RTLookupResponseCallback response_callback) override;
   std::unique_ptr<RTLookupRequest> FillRequestProto(const GURL& url) override;
+  std::string GetMetricSuffix() const override;
 
   policy::DMToken GetDMToken() const;
 

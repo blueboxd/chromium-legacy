@@ -8,7 +8,7 @@
 <translation id="1046068652463704410">日语输入法（适用于美式键盘）</translation>
 <translation id="1047956942837015229">正在删除<ph name="COUNT" />项内容…</translation>
 <translation id="1049926623896334335">Word 文档</translation>
-<translation id="1060368002126861100">若要使用 <ph name="APP_NAME" /> 打开文件，请先将文件移至“Windows 文件”文件夹。</translation>
+<translation id="1060368002126861100">如需使用 <ph name="APP_NAME" /> 打开文件，请先将文件移至“Windows 文件”文件夹。</translation>
 <translation id="1062407476771304334">替换</translation>
 <translation id="1065449928621190041">法语（加拿大）键盘</translation>
 <translation id="1119069657431255176">bzip2 压缩的 tar 归档</translation>
@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">录制年份</translation>
 <translation id="3338239663705455570">斯洛文尼亚语键盘</translation>
 <translation id="3353984535370177728">选择要上传的文件夹</translation>
+<translation id="3356580349448036450">已完成</translation>
 <translation id="3399597614303179694">马其顿语键盘</translation>
 <translation id="3414856743105198592">格式化可移动设备会删除其中的所有数据。您要继续吗？</translation>
 <translation id="3437801641691368414">创建时间</translation>
@@ -222,7 +223,7 @@
 <translation id="3524311639100184459">警告：这些都是临时文件，可能会被系统自动删除以释放磁盘空间。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">文件夹</translation>
 <translation id="3549797760399244642">转到 drive.google.com...</translation>
-<translation id="3553048479571901246">若要使用 <ph name="APP_NAME" /> 打开文件，请先将文件复制到“Windows 文件”文件夹。</translation>
+<translation id="3553048479571901246">如需使用 <ph name="APP_NAME" /> 打开文件，请先将文件复制到“Windows 文件”文件夹。</translation>
 <translation id="357479282490346887">立陶宛语</translation>
 <translation id="3583509704582854624">字母数字输入法（适用于日语键盘）</translation>
 <translation id="3603385196401704894">加拿大法语</translation>
@@ -546,7 +547,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">安装失败。</translation>
 <translation id="7040138676081995583">打开方式...</translation>
-<translation id="7059566040011178088">不到 <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923">已选择 <ph name="COUNT" /> 项</translation>
 <translation id="7106346894903675391">购买更多存储空间...</translation>
 <translation id="7126604456862387217">&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt; - 搜索云端硬盘&lt;em&gt;&lt;/em&gt;</translation>
@@ -657,7 +657,6 @@
 <translation id="8193175696669055101">设备型号</translation>
 <translation id="8208580316430297579">图片</translation>
 <translation id="8223479393428528563">要保存这些文件以供离线使用，请恢复联网状态，右键点击文件，然后选择<ph name="OFFLINE_CHECKBOX_NAME" />选项。</translation>
-<translation id="8231972167769262174">大约 <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">取消</translation>
 <translation id="8261506727792406068">删除</translation>
 <translation id="8269755669432358899">收起文件反馈面板</translation>

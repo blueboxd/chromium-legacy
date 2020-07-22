@@ -4596,7 +4596,7 @@
     This window will close after cancellation is complete.
   </message>
   <message name="IDS_CROSTINI_UPGRADER_BACKUP_CHECKBOX_MESSAGE" desc="Text shown in the Crostini upgrader dialog next to the backup checkbox.">
-    Back up my apps and files to Downloads folder before upgrading Linux.
+    Back up my apps and files to My Files folder before upgrading Linux.
   </message>
   <message name="IDS_CROSTINI_UPGRADER_BACKUP_CHANGE_LOCATION" desc="Text shown in the Crostini upgrader dialog next to the backup checkbox with a link enabling the user to change the location to which files are backed up.">
     Change location

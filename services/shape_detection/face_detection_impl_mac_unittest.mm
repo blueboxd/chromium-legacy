@@ -148,7 +148,8 @@ TEST_P(FaceDetectionImplMacTest, CreateAndDestroy) {
   }
 }
 
-TEST_P(FaceDetectionImplMacTest, ScanOneFace) {
+// Flakily fails on multiple configurations. https://crbug.com/1107962
+TEST_P(FaceDetectionImplMacTest, DISABLED_ScanOneFace) {
   // Face detection test needs a GPU.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseGpuInTests)) {

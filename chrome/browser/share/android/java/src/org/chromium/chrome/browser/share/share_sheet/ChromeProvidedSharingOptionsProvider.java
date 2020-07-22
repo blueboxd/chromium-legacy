@@ -302,8 +302,7 @@ class ChromeProvidedSharingOptionsProvider {
 
     private FirstPartyOption createHighlightsFirstPartyOption() {
         PropertyModel propertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
-                AppCompatResources.getDrawable(
-                        mActivity, org.chromium.chrome.browser.share.R.drawable.link),
+                AppCompatResources.getDrawable(mActivity, R.drawable.link),
                 mActivity.getResources().getString(R.string.sharing_highlights),
                 (currentActivity)
                         -> {

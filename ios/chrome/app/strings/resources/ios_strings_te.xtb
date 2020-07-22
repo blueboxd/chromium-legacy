@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> నుండి <ph name="TARGET_LANGUAGE" />లోకి</translation>
 <translation id="168715261339224929">మీ బుక్‌మార్క్‌లను మీ అన్ని పరికరాలలోనూ పొందాలంటే, సమకాలీకరణను ఆన్ చేయండి.</translation>
 <translation id="1687475363370981210">అన్నీ చదివినట్లు గుర్తు పెట్టు</translation>
+<translation id="1689333818294560261">మారుపేరు</translation>
 <translation id="1690731385917361335">అంశాలు లేవు</translation>
 <translation id="1692118695553449118">సమకాలీకరణ ఆన్‌లో ఉంది</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ఎంచుకోబడ్డాయి</translation>
@@ -206,6 +207,7 @@
 <translation id="3335947283844343239">మూసిన ట్యాబ్‌ను మళ్లీ తెరువు</translation>
 <translation id="3371831930909698441">అనువాదం అందుబాటులో ఉంది. స్క్రీన్ దిగువ భాగానికి సమీపంలో ఎంపికలు అందుబాటులో ఉంటాయి.</translation>
 <translation id="3393920035788932672">పాప్-అప్‌లు అనుమతించబడ్డాయి</translation>
+<translation id="3425644765244388016">కార్డ్ మారుపేరు</translation>
 <translation id="3443810440409579745">ట్యాబ్‌ను అందుకున్నారు.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> నిమి</translation>
 <translation id="3448016392200048164">విభజన వీక్షణ</translation>
@@ -240,6 +242,7 @@
 <translation id="3783017676699494206">చిత్రాన్ని సేవ్ చేయి</translation>
 <translation id="3789841737615482174">ఇన్‌స్టాల్ చేయి</translation>
 <translation id="3803696231112616155">ఈ సైట్‌కు అనువాదం అందించే సూచన</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{బహిర్గతం అయిన పాస్‌వర్డ్‌లు లేవు}=1{{COUNT} పాస్‌వర్డ్ బహిర్గతం అయ్యింది}other{{COUNT} పాస్‌వర్డ్‌లు బహిర్గతం అయ్యాయి}}</translation>
 <translation id="385051799172605136">వెనుకకు</translation>
 <translation id="3892144330757387737">మీ హిస్టరీని ఇక్కడ చూడగలరు</translation>
 <translation id="3897092660631435901">మెను</translation>
@@ -529,6 +532,7 @@
 <translation id="7189598951263744875">భాగస్వామ్యం చేయి...</translation>
 <translation id="7192050974311852563">లాగ్ చేయడం ప్రారంభించు</translation>
 <translation id="7203585745079012652">సమాధానాలను చదివి వినిపించు</translation>
+<translation id="721597782417389033">కార్డ్ మారుపేరు చెల్లదు</translation>
 <translation id="7265758999917665941">ఈ సైట్ కోసం ఎప్పటికీ వద్దు</translation>
 <translation id="7272437679830969316">మీ గుర్తింపును ధృవీకరించడం సాధ్యపడలేదు. పాస్‌వర్డ్ కాపీ చేయబడలేదు.</translation>
 <translation id="7291368939935408496">పాస్‌వర్డ్‌లను సిద్ధం చేస్తోంది...</translation>

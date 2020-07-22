@@ -17,12 +17,12 @@ import android.widget.FrameLayout;
 import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.RecyclerView.LayoutParams;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.stream.CardConfiguration;
 import org.chromium.chrome.browser.feed.library.common.ui.LayoutUtils;
 import org.chromium.chrome.browser.feed.library.sharedstream.logging.LoggingListener;
 import org.chromium.chrome.browser.feed.library.sharedstream.logging.VisibilityMonitor;
-import org.chromium.chrome.feed.R;
 
 /** {@link androidx.recyclerview.widget.RecyclerView.ViewHolder} for the more button. */
 public class ContinuationViewHolder extends FeedViewHolder {

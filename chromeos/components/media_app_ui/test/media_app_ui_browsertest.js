@@ -181,6 +181,65 @@ TEST_F('MediaAppUIBrowserTest', 'LaunchFile', async () => {
   testDone();
 });
 
+// Tests that console.error()s in the trusted context are sent to the crash
+// reporter. This is also useful to ensure when multiple arguments are provided
+// to console.error, the error message is built up by appending all arguments to
+// the first arguments.
+// Note: unhandledrejection & onerror tests throw JS Errors regardless and are
+// tested in media_app_integration_browsertest.cc.
+TEST_F('MediaAppUIBrowserTest', 'ReportsErrorsFromTrustedContext', async () => {
+  const originalConsoleError = console.error;
+  const reportedErrors = [];
+
+  /**
+   * In tests stub out `chrome.crashReportPrivate.reportError`, check
+   *`reportedErrors` to make sure they are "sent" to the crash reporter.
+   */
+  function suppressConsoleErrorsForErrorTesting() {
+    chrome.crashReportPrivate.reportError = function(e) {
+      reportedErrors.push(e);
+    };
+    // Set `realConsoleError` in `captureConsoleErrors` to console.log to
+    // prevent console.error crashing tests.
+    captureConsoleErrors(console.log, reportCrashError);
+  }
+
+  suppressConsoleErrorsForErrorTesting();
+
+  assertEquals(0, reportedErrors.length);
+
+  const error = new Error('yikes message');
+  error.name = 'yikes error';
+  const extraData = {b: 'b'};
+
+  console.error('a');
+  console.error(error);
+  console.error('b', extraData);
+  console.error(extraData, extraData, extraData);
+  console.error(error, 'foo', extraData, {e: error});
+
+  assertEquals(5, reportedErrors.length);
+  // Test handles console.error(string).
+  assertEquals('Unexpected: "a"', reportedErrors[0].message);
+  // Test handles console.error(Error).
+  assertEquals('Error: yikes error: yikes message', reportedErrors[1].message);
+  // Test handles console.error(string, Object).
+  assertEquals('Unexpected: "b"\n{"b":"b"}', reportedErrors[2].message);
+  // Test handles console.error(Object, Object, Object).
+  assertEquals(
+      'Unexpected: {"b":"b"}\n{"b":"b"}\n{"b":"b"}', reportedErrors[3].message);
+  // Test handles console.error(string, Object, Error, Object).
+  assertEquals(
+      'Error: yikes error: yikes message\n"foo"\n{"b":"b"}\n' +
+          '{"e":{"name":"yikes error"}}',
+      reportedErrors[4].message);
+  // Note: This is not needed i.e. tests pass without this but it is good
+  // practice to reset it since we stub it out for this test.
+
+  console.error = originalConsoleError;
+  testDone();
+});
+
 // Tests that we can launch the MediaApp with the selected (first) file,
 // interact with it by invoking IPC (deletion) that doesn't re-launch the
 // MediaApp i.e. doesn't call `launchWithDirectory`, then the rest of the files

@@ -654,6 +654,7 @@
       'android-code-coverage-native', # https://crbug.com/1018780
       'android-lollipop-arm-rel', # https://crbug.com/1060245
       'android-marshmallow-x86-rel', # crbug.com/1098111
+      'android-pie-arm64-rel', # https://crbug.com/1108071
     ],
     'modifications': {
       'Android CFI': {

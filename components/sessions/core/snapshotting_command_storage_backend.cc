@@ -198,7 +198,7 @@ void SnapshottingCommandStorageBackend::DeleteLastSessionFiles() {
        GetSessionFiles()) {
     if (session.path != path() &&
         (!last_session_info_ || session.path != last_session_info_->path)) {
-      base::DeleteFile(session.path, false);
+      base::DeleteFile(session.path);
     }
   }
 
@@ -207,12 +207,12 @@ void SnapshottingCommandStorageBackend::DeleteLastSessionFiles() {
       GetLegacySessionPath(type_, base_dir_, true);
   if (last_session_info_ && current_session_path != last_session_info_->path &&
       base::PathExists(current_session_path))
-    base::DeleteFile(current_session_path, false);
+    base::DeleteFile(current_session_path);
 
   base::FilePath last_session_path =
       GetLegacySessionPath(type_, base_dir_, false);
   if (base::PathExists(last_session_path))
-    base::DeleteFile(last_session_path, false);
+    base::DeleteFile(last_session_path);
 }
 
 std::vector<SnapshottingCommandStorageBackend::SessionInfo>

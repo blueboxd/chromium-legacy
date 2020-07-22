@@ -16,6 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.RecyclerView.LayoutParams;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feed.library.api.host.action.StreamActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.stream.CardConfiguration;
@@ -33,7 +34,6 @@ import org.chromium.chrome.browser.feed.library.sharedstream.piet.PietEventLogge
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObservable;
 import org.chromium.chrome.browser.feed.library.sharedstream.scroll.PietScrollObserver;
 import org.chromium.chrome.browser.feed.library.sharedstream.scroll.ScrollListenerNotifier;
-import org.chromium.chrome.feed.R;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionPayloadProto.FeedActionPayload;
 import org.chromium.components.feed.core.proto.ui.piet.PietProto.Frame;
 import org.chromium.components.feed.core.proto.ui.piet.PietProto.PietSharedState;

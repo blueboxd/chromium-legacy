@@ -64,6 +64,11 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
+using favicon::FaviconBitmap;
+using favicon::FaviconBitmapID;
+using favicon::FaviconBitmapIDSize;
+using favicon::FaviconBitmapType;
+using favicon::IconMapping;
 using syncer::ClientTagBasedModelTypeProcessor;
 
 /* The HistoryBackend consists of two components:
@@ -830,7 +835,7 @@ void HistoryBackend::InitImpl(
   db_->BeginExclusiveMode();  // Must be after the mem backend read the data.
 
   // Favicon database.
-  favicon_db_ = std::make_unique<FaviconDatabase>();
+  favicon_db_ = std::make_unique<favicon::FaviconDatabase>();
   if (favicon_db_->Init(favicon_name) != sql::INIT_OK) {
     // Unlike the main database, we don't error out when the database is too
     // new because this error is much less severe. Generally, this shouldn't

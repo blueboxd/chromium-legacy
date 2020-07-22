@@ -22,6 +22,8 @@ class FakeAppInstance : public mojom::AppInstance {
   enum class IconResponseType {
     // Generate and send good icon.
     ICON_RESPONSE_SEND_GOOD,
+    // Generate an empty icon.
+    ICON_RESPONSE_SEND_EMPTY,
     // Generate broken bad icon.
     ICON_RESPONSE_SEND_BAD,
     // Don't send icon.
@@ -207,14 +209,13 @@ class FakeAppInstance : public mojom::AppInstance {
   // fill |png_data_as_string| if icon for |dimension| was generated.
   bool GetIconResponse(int dimension, std::string* png_data_as_string);
   // Generates an icon for app or shorcut, determined by |app_icon| and returns:
-  //   false if |icon_response_type_| is IconResponseType::ICON_RESPONSE_SKIP.
-  //   true and valid png content in |png_data_as_string| if
-  //        |icon_response_type_| is IconResponseType::ICON_RESPONSE_SEND_GOOD.
-  //   true and invalid png content in |png_data_as_string| if
+  //   nullptr if |icon_response_type_| is IconResponseType::ICON_RESPONSE_SKIP.
+  //   valid raw icon png data if
+  //         |icon_response_type_| is IconResponseType::ICON_RESPONSE_SEND_GOOD.
+  //   invalid raw icon png data in |png_data_as_string| if
   //         |icon_response_type_| is IconResponseType::ICON_RESPONSE_SEND_BAD.
-  bool GenerateIconResponse(int dimension,
-                            bool app_icon,
-                            std::string* png_data_as_string);
+  arc::mojom::RawIconPngDataPtr GenerateIconResponse(int dimension,
+                                                     bool app_icon);
 
   int start_pai_request_count() const { return start_pai_request_count_; }
 
@@ -305,8 +306,7 @@ class FakeAppInstance : public mojom::AppInstance {
   // routed.
   mojo::Remote<mojom::AppHost> host_remote_;
 
-  bool GetFakeIcon(mojom::ScaleFactor scale_factor,
-                   std::string* png_data_as_string);
+  arc::mojom::RawIconPngDataPtr GetFakeIcon(mojom::ScaleFactor scale_factor);
 
   DISALLOW_COPY_AND_ASSIGN(FakeAppInstance);
 };

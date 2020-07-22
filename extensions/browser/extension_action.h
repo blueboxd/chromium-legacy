@@ -19,15 +19,14 @@
 
 class GURL;
 
-namespace extensions {
-class Extension;
-class IconImage;
-}  // namespace extensions
-
 namespace gfx {
 class Image;
 class ImageSkia;
 }  // namespace gfx
+
+namespace extensions {
+class Extension;
+class IconImage;
 
 // ExtensionAction encapsulates the state of a browser action or page action.
 // Instances can have both global and per-tab state. If a property does not have
@@ -58,19 +57,16 @@ class ExtensionAction {
   // parameter.
   static const int kDefaultTabId;
 
-  ExtensionAction(const extensions::Extension& extension,
-                  const extensions::ActionInfo& manifest_data);
+  ExtensionAction(const Extension& extension, const ActionInfo& manifest_data);
   ~ExtensionAction();
 
   // extension id
   const std::string& extension_id() const { return extension_id_; }
 
   // What kind of action is this?
-  extensions::ActionInfo::Type action_type() const { return action_type_; }
+  ActionInfo::Type action_type() const { return action_type_; }
 
-  extensions::ActionInfo::DefaultState default_state() const {
-    return default_state_;
-  }
+  ActionInfo::DefaultState default_state() const { return default_state_; }
 
   // Set the url which the popup will load when the user clicks this action's
   // icon.  Setting an empty URL will disable the popup for a given tab.
@@ -209,7 +205,7 @@ class ExtensionAction {
   void ClearAllValuesForTab(int tab_id);
 
   // Sets the default IconImage for this action.
-  void SetDefaultIconImage(std::unique_ptr<extensions::IconImage> icon_image);
+  void SetDefaultIconImage(std::unique_ptr<IconImage> icon_image);
 
   // Returns the image to use as the default icon for the action. Can only be
   // called after SetDefaultIconImage().
@@ -229,17 +225,14 @@ class ExtensionAction {
   bool HasIcon(int tab_id) const;
   bool HasDNRActionCount(int tab_id) const;
 
-  extensions::IconImage* default_icon_image() {
-    return default_icon_image_.get();
-  }
+  IconImage* default_icon_image() { return default_icon_image_.get(); }
 
   void SetDefaultIconForTest(std::unique_ptr<ExtensionIconSet> default_icon);
 
  private:
   // Populates the action from the |extension| and |manifest_data|, filling in
   // any missing values (like title or icons) as possible.
-  void Populate(const extensions::Extension& extension,
-                const extensions::ActionInfo& manifest_data);
+  void Populate(const Extension& extension, const ActionInfo& manifest_data);
 
   // Returns width of the current icon for tab_id.
   // TODO(tbarzic): The icon selection is done in ExtensionActionIconFactory.
@@ -284,9 +277,9 @@ class ExtensionAction {
   // The name of the extension.
   const std::string extension_name_;
 
-  const extensions::ActionInfo::Type action_type_;
+  const ActionInfo::Type action_type_;
   // The default state of the action.
-  const extensions::ActionInfo::DefaultState default_state_;
+  const ActionInfo::DefaultState default_state_;
 
   // Each of these data items can have both a global state (stored with the key
   // kDefaultTabId), or tab-specific state (stored with the tab_id as the key).
@@ -326,7 +319,7 @@ class ExtensionAction {
   // SetDefaultIconImage(). Since IconImages depend upon BrowserContexts, we
   // don't have the ExtensionAction load it directly to keep this class's
   // knowledge limited.
-  std::unique_ptr<extensions::IconImage> default_icon_image_;
+  std::unique_ptr<IconImage> default_icon_image_;
 
   // The lazily-initialized image for a placeholder icon, in the event that the
   // extension doesn't have its own icon. (Mutable to allow lazy init in
@@ -344,5 +337,7 @@ template <>
 struct ExtensionAction::ValueTraits<int> {
   static int CreateEmpty() { return -1; }
 };
+
+}  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_EXTENSION_ACTION_H_

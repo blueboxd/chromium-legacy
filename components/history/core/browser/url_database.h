@@ -51,17 +51,6 @@ class URLDatabase {
   // happening to avoid thread-safety problems.
   virtual ~URLDatabase();
 
-  // Converts a GURL to a string used in the history database. We plan to
-  // do more complex operations than just getting the spec out involving
-  // punycode, so this function should be used instead of url.spec() when
-  // interacting with the database.
-  //
-  // TODO(brettw) this should be moved out of the public section and the
-  // entire public HistoryDatabase interface should use GURL. This should
-  // also probably return a string instead since that is what the DB uses
-  // internally and we can avoid the extra conversion.
-  static std::string GURLToDatabaseURL(const GURL& url);
-
   // URL table functions -------------------------------------------------------
 
   // Looks up a url given an id. Fills info with the data. Returns true on

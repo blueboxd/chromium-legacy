@@ -173,7 +173,7 @@
 <translation id="1640180200866533862">Пайдаланушы саясаттары</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />Сайттың негізгі бетіне кіріп<ph name="END_LINK" /> көріңіз.</translation>
 <translation id="1641976391427233992">Шығысты кідірту</translation>
-<translation id="1644574205037202324">Журнал</translation>
+<translation id="1644574205037202324">Тарих</translation>
 <translation id="1645368109819982629">Қолдау көрсетілмейтін протокол</translation>
 <translation id="1652415888492971589">JIS B8</translation>
 <translation id="1656024727720460136">Chrome бұл режимде беттің оқылуын жеңілдетті. Chrome бастапқы бетті қауіпсіз байланыс арқылы алды.</translation>
@@ -450,6 +450,7 @@
 <translation id="2824775600643448204">Мекенжайы және іздеу жолағы</translation>
 <translation id="2826760142808435982">Байланыс <ph name="CIPHER" /> көмегімен шифрланды және аутентификацияланды, сонымен қатар кілт ауыстыру механизмі ретінде <ph name="KX" /> пайдаланады.</translation>
 <translation id="2835170189407361413">Нысанды тазарту</translation>
+<translation id="2839501879576190149">Назар аударыңыз: жалған сайт</translation>
 <translation id="2847118875340931228">Инкогнито терезесін ашу</translation>
 <translation id="2850739647070081192">Invite (Envelope)</translation>
 <translation id="2856444702002559011"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> сайтындағы шабуылдаушылар ақпаратыңызды (мысалы, құпия сөздер, хабарлар немесе несиелік карталар) ұрлауға әрекет етуі мүмкін.<ph name="BEGIN_LEARN_MORE_LINK" />Толығырақ<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -630,7 +631,7 @@
 <translation id="361438452008624280">"<ph name="LANGUAGE_ID" />" тізім жазбасы: тіл белгісіз немесе оған қолдау көрсетілмейді.</translation>
 <translation id="3615877443314183785">Дұрыс жарамдылық мерзімін енгізіңіз</translation>
 <translation id="36224234498066874">Шолу деректерін өшіру…</translation>
-<translation id="362276910939193118">Толық журналды көрсету</translation>
+<translation id="362276910939193118">Тарихты толық көрсету</translation>
 <translation id="3630155396527302611">Ол желіге кіруге рұқсат алған бағдарламалар тізімінде тұрса, оны
       тізімнен өшіріп, қайта қосып көріңіз.</translation>
 <translation id="3631244953324577188">Биометрика</translation>
@@ -809,6 +810,7 @@
 <translation id="42981349822642051">Жаю</translation>
 <translation id="4300675098767811073">Оң жақтан бірнеше рет тесу</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
+<translation id="4305666528087210886">Файлға кіру мүмкін болмады</translation>
 <translation id="4305817255990598646">Ауысу</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Бөгеу (әдепкі)</translation>
@@ -827,6 +829,7 @@
 <translation id="4358461427845829800">Төлем әдістерін басқару...</translation>
 <translation id="4359160567981085931">Жаңа ғана құпия сөзіңізді алаяқтық сайтқа енгіздіңіз. Chrome көмектесе алады. Құпия сөзді өзгертіп, Google-ға есептік жазбаға төніп тұрған қауіп туралы хабарлау үшін "Есептік жазбаны қорғау" түймесін басыңыз.</translation>
 <translation id="4367563149485757821">Number-12 (Envelope)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Сіз пайдаланатын сайттың деректері қолды болды немесе қолданба <ph name="ORIGIN" /> үшін сақталған құпия сөзіңізді пайдаланды. Chrome браузері <ph name="ORIGIN" /> сайтындағы құпия сөзіңізді дереу өзгертуге кеңес береді.}=1{Сіз пайдаланатын сайттың деректері қолды болды немесе қолданба <ph name="ORIGIN" /> және тағы бір сайт үшін сақталған құпия сөзіңізді пайдаланды. Chrome браузері сақталған құпия сөздеріңізді дереу тексеруге кеңес береді.}other{Сіз пайдаланатын сайттың деректері қолды болды немесе қолданба <ph name="ORIGIN" /> және <ph name="SITES_COUNT" /> сайт үшін сақталған құпия сөзіңізді пайдаланды. Chrome браузері сақталған құпия сөздеріңізді дереу тексеруге кеңес береді.}}</translation>
 <translation id="437058704415269440">Есептік жазба балансы</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948"><ph name="VALUE_TYPE" /> мәні қажет.</translation>
@@ -903,7 +906,7 @@
 <translation id="4742407542027196863">Құпия сөздерді басқару...</translation>
 <translation id="4744603770635761495">Орындалатын жол</translation>
 <translation id="4750917950439032686">Бұл сайтқа жіберілетін жеке ақпаратыңыз (мысалы, құпия сөздер не несиелік карта нөмірлері) құпия сақталады.</translation>
-<translation id="4756388243121344051">&amp;Журнал</translation>
+<translation id="4756388243121344051">&amp;Тарих</translation>
 <translation id="4758311279753947758">Контакт ақпаратын қосу</translation>
 <translation id="4761104368405085019">Микрофоныңызды пайдалану</translation>
 <translation id="4764776831041365478"><ph name="URL" /> мекенжайындағы веб-бет уақытша істен шыққан немесе тұрақты түрде басқа мекенжайға көшкен болуы мүмкін.</translation>
@@ -932,7 +935,7 @@
 <translation id="4877422487531841831"><ph name="TEXT" /> іздеу</translation>
 <translation id="4879491255372875719">Автоматты (әдепкі)</translation>
 <translation id="4879725228911483934">Терезелерді ашу және экрандарда орналастыру</translation>
-<translation id="4880827082731008257">Іздеу тарихы</translation>
+<translation id="4880827082731008257">Тарихтан іздеу</translation>
 <translation id="4881695831933465202">Ашу</translation>
 <translation id="4892518386797173871">Артқы</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
@@ -1297,6 +1300,7 @@
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Сізден ақы алынуы мүмкін.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 басқа ұсыныс}other{# басқа ұсыныс}}</translation>
+<translation id="6387645831795005740">Кейде хакерлер белгілі бір сайттарды көшіріп, олардың URL сілтемесіне сіз байқамайтын өзгерістер енгізіп қояды.</translation>
 <translation id="6389470377220713856">Картадағы атау</translation>
 <translation id="6390200185239044127">Z тәрізді жартылай бүктеу</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1510,6 +1514,7 @@
 <translation id="7372973238305370288">іздеу нәтижесі</translation>
 <translation id="7374733840632556089">Құрылғыңызға сіз немесе әлдекім орнатқан сертификатқа байланысты осы қате шығып тұрған болуы мүмкін. Бұл сертификат сенімді болып саналмайды, әдетте ол желідегі деректерді қадағалауға және ұстап қалуға пайдаланылады. Мұндай әрекеттерге құрылғы оқу орнында немесе жұмыста болған кезде рұқсат етіледі. Қалай болғанда да Chrome мұндай сертификаттың болатынын ескертеді. Әрекетті қадағалау интернетке кіретін кез келген браузерде немесе қолданбада жүреді.</translation>
 <translation id="7375818412732305729">Файл тіркелді</translation>
+<translation id="7376551888419889433">Chrome Enterprise Connectors қауіпсіздік іс-шараларын анықтағанда, сол іс-шаралар туралы тиісті дерек сіздің әкімшіңізге жіберіледі. Мұндай деректерге Chrome браузерінде сіз ашатын беттердің URL мекенжайлары, файл атаулары немесе метадеректер, құрылғы мен Chrome браузеріне кіретін пайдаланушы аты жатуы мүмкін.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Медианы басқару элементтері</translation>
 <translation id="7378627244592794276">Жоқ</translation>
@@ -1906,6 +1911,7 @@
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619"><ph name="DOMAIN" /> доменіне қол жеткізуге әрекет еттіңіз, бірақ сервер жарамсыз сертификат ұсынды.</translation>
 <translation id="9050666287014529139">Құпия фраза</translation>
+<translation id="9062620674789239642">Ол басқа орынға көшірілген, өзгертілген немесе жойылған болуы мүмкін.</translation>
 <translation id="9065203028668620118">Өзгерту</translation>
 <translation id="9065745800631924235">Тарихтан <ph name="TEXT" /> сұрауын іздеу</translation>
 <translation id="9069693763241529744">Кеңейтім арқылы тыйым салынған</translation>

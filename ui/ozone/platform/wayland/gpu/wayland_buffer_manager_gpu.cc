@@ -64,16 +64,37 @@ void WaylandBufferManagerGpu::OnPresentation(
 
 void WaylandBufferManagerGpu::RegisterSurface(gfx::AcceleratedWidget widget,
                                               WaylandSurfaceGpu* surface) {
+  if (!io_thread_runner_) {
+    LOG(ERROR) << "WaylandBufferManagerGpu is not initialized. Can't register "
+                  "a surface.";
+    return;
+  }
+
+  io_thread_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &WaylandBufferManagerGpu::SaveTaskRunnerForWidgetOnIOThread,
+          base::Unretained(this), widget, base::ThreadTaskRunnerHandle::Get()));
+
   base::AutoLock scoped_lock(lock_);
   widget_to_surface_map_.emplace(widget, surface);
-  commit_thread_runners_.insert(
-      std::make_pair(widget, base::ThreadTaskRunnerHandle::Get()));
 }
 
 void WaylandBufferManagerGpu::UnregisterSurface(gfx::AcceleratedWidget widget) {
+  if (!io_thread_runner_) {
+    LOG(ERROR) << "WaylandBufferManagerGpu is not initialized. Can't register "
+                  "a surface.";
+    return;
+  }
+
+  io_thread_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &WaylandBufferManagerGpu::ForgetTaskRunnerForWidgetOnIOThread,
+          base::Unretained(this), widget));
+
   base::AutoLock scoped_lock(lock_);
   widget_to_surface_map_.erase(widget);
-  commit_thread_runners_.erase(widget);
 }
 
 WaylandSurfaceGpu* WaylandBufferManagerGpu::GetSurface(
@@ -232,6 +253,21 @@ void WaylandBufferManagerGpu::BindHostInterface(
   remote_host_->SetWaylandBufferManagerGpu(std::move(client_remote));
 }
 
+void WaylandBufferManagerGpu::SaveTaskRunnerForWidgetOnIOThread(
+    gfx::AcceleratedWidget widget,
+    scoped_refptr<base::SingleThreadTaskRunner> origin_runner) {
+  DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
+  DCHECK(io_thread_runner_->BelongsToCurrentThread());
+  commit_thread_runners_.emplace(widget, origin_runner);
+}
+
+void WaylandBufferManagerGpu::ForgetTaskRunnerForWidgetOnIOThread(
+    gfx::AcceleratedWidget widget) {
+  DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
+  DCHECK(io_thread_runner_->BelongsToCurrentThread());
+  commit_thread_runners_.erase(widget);
+}
+
 void WaylandBufferManagerGpu::SubmitSwapResultOnOriginThread(
     gfx::AcceleratedWidget widget,
     uint32_t buffer_id,
@@ -239,15 +275,8 @@ void WaylandBufferManagerGpu::SubmitSwapResultOnOriginThread(
   DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
   auto* surface = GetSurface(widget);
   // The surface might be destroyed by the time the swap result is provided.
-  if (surface) {
-#if DCHECK_IS_ON()
-    base::AutoLock scoped_lock(lock_);
-    DCHECK_EQ(commit_thread_runners_.count(widget), 1u);
-    DCHECK(
-        commit_thread_runners_.find(widget)->second->BelongsToCurrentThread());
-#endif
+  if (surface)
     surface->OnSubmission(buffer_id, swap_result);
-  }
 }
 
 void WaylandBufferManagerGpu::SubmitPresentationOnOriginThread(
@@ -258,15 +287,8 @@ void WaylandBufferManagerGpu::SubmitPresentationOnOriginThread(
   auto* surface = GetSurface(widget);
   // The surface might be destroyed by the time the presentation feedback is
   // provided.
-  if (surface) {
-#if DCHECK_IS_ON()
-    base::AutoLock scoped_lock(lock_);
-    DCHECK_EQ(commit_thread_runners_.count(widget), 1u);
-    DCHECK(
-        commit_thread_runners_.find(widget)->second->BelongsToCurrentThread());
-#endif
+  if (surface)
     surface->OnPresentation(buffer_id, feedback);
-  }
 }
 
 }  // namespace ui

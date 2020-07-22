@@ -577,6 +577,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5659593005791499971">Email</translation>
 <translation id="5665379678064389456">Gumawa ng event sa <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">I-override ang kahilingan ng isang website upang mapigilan ang pagzu-zoom in</translation>
+<translation id="5683547024293500885">Hindi matingnan ng Chrome kung may mga update</translation>
 <translation id="5686790454216892815">Masyadong mahaba ang pangalan ng file</translation>
 <translation id="5694049548840660018">Bumalik sa home nang walang kahirap-hirap</translation>
 <translation id="569536719314091526">Isalin ang page na ito sa anumang wika mula sa button na Higit pang opsyon</translation>
@@ -589,6 +590,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5732819098735351888">Magsisimula ang pag-download sa Wi-Fi.</translation>
 <translation id="5748802427693696783">Lumipat sa mga karaniwang tab</translation>
 <translation id="5749068826913805084">Kailangan ng Chrome ng access sa storage para mag-download ng mga file.</translation>
+<translation id="5749237766298580851">Naka-off <ph name="SEPARATOR" /> Hindi inirerekomenda</translation>
 <translation id="5754350196967618083">Hindi ma-refresh ang Discover</translation>
 <translation id="5763382633136178763">Mga tab na incognito</translation>
 <translation id="5763514718066511291">I-tap upang kopyahin ang URL para sa app na ito</translation>
@@ -996,6 +998,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8970887620466824814">Nagkaproblema.</translation>
 <translation id="8972098258593396643">I-download sa default na folder?</translation>
 <translation id="8988028529677883095">Gamitin ang telepono bilang security key</translation>
+<translation id="8990209962746788689">Hindi magawa ang QR code</translation>
 <translation id="8993760627012879038">Magbukas ng bagong tab sa Incognito mode</translation>
 <translation id="8998729206196772491">Nagsa-sign in ka gamit ang isang account na pinamamahalaan ng <ph name="MANAGED_DOMAIN" /> at binibigyan mo ang administrator nito ng kontrol sa iyong data sa Chrome. Permanenteng mauugnay ang iyong data sa account na ito. Made-delete ang data mo sa device na ito kapag nag-sign out ka sa Chrome, ngunit mananatili itong naka-store sa iyong Google Account.</translation>
 <translation id="9028914725102941583">I-on ang pag-sync para makapagbahagi sa mga device</translation>

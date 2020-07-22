@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Yozilgan yili</translation>
 <translation id="3338239663705455570">Slovyan klaviaturasi</translation>
 <translation id="3353984535370177728">Yuklash uchun jildni tanlang</translation>
+<translation id="3356580349448036450">Tayyor</translation>
 <translation id="3399597614303179694">Makedoncha klaviatura</translation>
 <translation id="3414856743105198592">Tashqi xotira qurilmasini formatlash undagi barcha ma’lumotlarni tozalaydi. Davom etasizmi?</translation>
 <translation id="3437801641691368414">Yaratilgan vaqti</translation>
@@ -550,7 +551,6 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">O‘rnatish amali bajarilmadi.</translation>
 <translation id="7040138676081995583">Quyidagi ilovada ochish...</translation>
-<translation id="7059566040011178088"><ph name="REMAINING_TIME" /> dan kam</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> ta element tanlandi</translation>
 <translation id="7106346894903675391">Qo‘shimcha joy sotib olish...</translation>
 <translation id="7126604456862387217">“&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;” - &lt;em&gt;Google Diskdan qidirish&lt;/em&gt;</translation>
@@ -661,7 +661,6 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="8193175696669055101">Qurilma modeli</translation>
 <translation id="8208580316430297579">Rasmlar</translation>
 <translation id="8223479393428528563">Ushbu fayllar bilan internet yo‘qligida ishlash uchun, internetga ulaning va har bir fayl ustiga sichqonchaning o‘ng tugmasini bosib, <ph name="OFFLINE_CHECKBOX_NAME" /> bandini tanlang.</translation>
-<translation id="8231972167769262174">Taxminan: <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Bekor qilish</translation>
 <translation id="8261506727792406068">O‘chirish</translation>
 <translation id="8269755669432358899">Fayllar holat panelini kichraytirish</translation>

@@ -1856,7 +1856,7 @@ void WebGLRenderingContextBase::attachShader(WebGLProgram* program,
 void WebGLRenderingContextBase::bindAttribLocation(WebGLProgram* program,
                                                    GLuint index,
                                                    const String& name) {
-  if (!ValidateWebGLObject("bindAttribLocation", program))
+  if (!ValidateWebGLProgramOrShader("bindAttribLocation", program))
     return;
   if (!ValidateLocationLength("bindAttribLocation", name))
     return;

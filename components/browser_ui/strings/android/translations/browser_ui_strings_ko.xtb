@@ -207,7 +207,7 @@
 <translation id="7658239707568436148">취소</translation>
 <translation id="7781829728241885113">어제</translation>
 <translation id="7791543448312431591">추가</translation>
-<translation id="780301667611848630">아니요, 괜찮습니다.</translation>
+<translation id="780301667611848630">취소</translation>
 <translation id="7804248752222191302">사이트에서 카메라 사용 중</translation>
 <translation id="7817023149356982970">이 사이트에서 로그아웃됩니다.</translation>
 <translation id="7828557259026017104">쿠키는 방문한 웹사이트에서 생성된 파일로, 사이트에서 사용자의 설정을 기억하기 위해 사용합니다. 타사 쿠키는 다른 사이트, 즉 광고나 이미지 등 방문하는 웹페이지에 표시되는 일부 콘텐츠를 소유하는 사이트에 의해 생성됩니다.</translation>
@@ -236,7 +236,7 @@
 <translation id="8441146129660941386">뒤로 탐색</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" />에서 위치 정보에 액세스하도록 허용하려면 <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서도 위치를 사용 설정하세요.</translation>
 <translation id="8447861592752582886">기기 액세스 권한 취소</translation>
-<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1개 쿠키 사용 중}other{#개 쿠키 사용 중}}</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{쿠키 1개 사용 중}other{쿠키 #개 사용 중}}</translation>
 <translation id="8463851957836045671">사이트 속도 빠름</translation>
 <translation id="851751545965956758">사이트에서 기기에 연결하지 못하도록 차단</translation>
 <translation id="857943718398505171">허용(권장)</translation>

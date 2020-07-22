@@ -97,19 +97,13 @@ ColorSpace::ColorSpace(const SkColorSpace& sk_color_space)
                  TransferID::INVALID,
                  MatrixID::RGB,
                  RangeID::FULL) {
-  // Special case the HDR transfer functions since they're not numerical
-  auto transfer_eq = [](skcms_TransferFunction x, skcms_TransferFunction y) {
-    return x.g == y.g && x.a == y.a && x.b == y.b && x.c == y.c && x.d == y.d &&
-           x.e == y.e && x.f == y.f;
-  };
-
   skcms_TransferFunction fn;
   if (sk_color_space.isNumericalTransferFn(&fn)) {
     transfer_ = TransferID::CUSTOM;
     SetCustomTransferFunction(fn);
-  } else if (transfer_eq(fn, SkNamedTransferFn::kHLG)) {
+  } else if (skcms_TransferFunction_isHLGish(&fn)) {
     transfer_ = TransferID::ARIB_STD_B67;
-  } else if (fn.g == SkNamedTransferFn::kPQ.g) {
+  } else if (skcms_TransferFunction_isPQish(&fn)) {
     transfer_ = TransferID::SMPTEST2084;
     transfer_params_[0] = GetSDRWhiteLevelFromPQSkTransferFunction(fn);
   } else {
@@ -131,23 +125,19 @@ bool ColorSpace::IsValid() const {
 }
 
 // static
-ColorSpace ColorSpace::CreateSCRGBLinear(float slope) {
-  if (slope == 1.f) {
-    return ColorSpace(PrimaryID::BT709, TransferID::LINEAR_HDR, MatrixID::RGB,
-                      RangeID::FULL);
-  }
+ColorSpace ColorSpace::CreateSCRGBLinear(float sdr_white_level) {
   skcms_TransferFunction fn = {0};
-  fn.g = 1.f;
-  fn.a = slope;
+  fn.g = 1.0f;
+  fn.a = kDefaultScrgbLinearSdrWhiteLevel / sdr_white_level;
   return ColorSpace(PrimaryID::BT709, TransferID::CUSTOM_HDR, MatrixID::RGB,
                     RangeID::FULL, nullptr, &fn);
 }
 
 // static
-ColorSpace ColorSpace::CreateHDR10(float sdr_white_point) {
+ColorSpace ColorSpace::CreateHDR10(float sdr_white_level) {
   ColorSpace result(PrimaryID::BT2020, TransferID::SMPTEST2084, MatrixID::RGB,
                     RangeID::FULL);
-  result.transfer_params_[0] = sdr_white_point;
+  result.transfer_params_[0] = sdr_white_level;
   return result;
 }
 
@@ -482,6 +472,12 @@ std::string ColorSpace::ToString() const {
     case TransferID::CUSTOM_HDR: {
       skcms_TransferFunction fn;
       GetTransferFunction(&fn);
+      if (fn.g == 1.0f && fn.a > 0.0f && fn.b == 0.0f && fn.c == 0.0f &&
+          fn.d == 0.0f && fn.e == 0.0f && fn.f == 0.0f) {
+        ss << "LINEAR_HDR (slope " << fn.a << ", SDR white point "
+           << kDefaultScrgbLinearSdrWhiteLevel / fn.a << " nits)";
+        break;
+      }
       ss << fn.c << "*x + " << fn.f << " if |x| < " << fn.d << " else sign(x)*("
          << fn.a << "*|x| + " << fn.b << ")**" << fn.g << " + " << fn.e;
       break;
@@ -597,10 +593,17 @@ ColorSpace ColorSpace::GetWithMatrixAndRange(MatrixID matrix,
   return result;
 }
 
-ColorSpace ColorSpace::GetWithPQSDRWhiteLevel(float sdr_white_level) const {
+ColorSpace ColorSpace::GetWithSDRWhiteLevel(float sdr_white_level) const {
   ColorSpace result = *this;
-  if (transfer_ == TransferID::SMPTEST2084 && transfer_params_[0] == 0.f)
+  if (transfer_ == TransferID::SMPTEST2084 && transfer_params_[0] == 0.f) {
     result.transfer_params_[0] = sdr_white_level;
+  } else if (transfer_ == TransferID::LINEAR_HDR) {
+    result.transfer_ = TransferID::CUSTOM_HDR;
+    skcms_TransferFunction fn = {0};
+    fn.g = 1.f;
+    fn.a = kDefaultScrgbLinearSdrWhiteLevel / sdr_white_level;
+    result.SetCustomTransferFunction(fn);
+  }
   return result;
 }
 

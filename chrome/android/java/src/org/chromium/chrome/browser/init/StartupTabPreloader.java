@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
+import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -164,7 +165,7 @@ public class StartupTabPreloader implements ProfileManager.Observer, Destroyable
 
         // The TabCreatorManager throws an IllegalStateException if it is not ready to provide a
         // TabCreator.
-        TabCreatorManager.TabCreator tabCreator;
+        TabCreator tabCreator;
         try {
             tabCreator = mTabCreatorManager.getTabCreator(incognito);
         } catch (IllegalStateException e) {

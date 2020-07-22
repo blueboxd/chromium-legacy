@@ -75,11 +75,14 @@ VkSemaphore CreateExternalVkSemaphore(
       base::Time::Now()));
 
   VkExportSemaphoreCreateInfo export_info = {
-      VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO};
-  export_info.handleTypes = handle_types;
+      .sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO,
+      .handleTypes = handle_types,
+  };
 
-  VkSemaphoreCreateInfo sem_info = {VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-                                    &export_info};
+  VkSemaphoreCreateInfo sem_info = {
+      .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+      .pNext = &export_info,
+  };
 
   VkSemaphore semaphore = VK_NULL_HANDLE;
   VkResult result =

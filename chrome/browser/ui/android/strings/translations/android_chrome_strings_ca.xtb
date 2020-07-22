@@ -577,6 +577,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5659593005791499971">Correu electrònic</translation>
 <translation id="5665379678064389456">Crea un esdeveniment a <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignora la sol·licitud d'un lloc web per evitar que s'apropi la imatge</translation>
+<translation id="5683547024293500885">Chrome no pot cercar actualitzacions</translation>
 <translation id="5686790454216892815">El nom del fitxer és massa llarg</translation>
 <translation id="5694049548840660018">Torna a l'inici fàcilment</translation>
 <translation id="569536719314091526">Tradueix aquesta pàgina a qualsevol idioma des del botó Més opcions</translation>
@@ -589,6 +590,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5732819098735351888">La baixada començarà quan hi hagi connexió Wi-Fi.</translation>
 <translation id="5748802427693696783">S'ha canviat a les pestanyes estàndard</translation>
 <translation id="5749068826913805084">Chrome necessita accedir a l'emmagatzematge per poder baixar fitxers.</translation>
+<translation id="5749237766298580851">Desactivada <ph name="SEPARATOR" /> Opció no recomanada</translation>
 <translation id="5754350196967618083">Discover no est pot actualitzar</translation>
 <translation id="5763382633136178763">Pestanyes d'incògnit</translation>
 <translation id="5763514718066511291">Toca per copiar l'URL d'aquesta aplicació</translation>
@@ -721,7 +723,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6671495933530132209">Copia la imatge</translation>
 <translation id="6676840375528380067">Vols esborrar les dades de Chrome del dispositiu?</translation>
 <translation id="6689172468748959065">Fotos de perfil</translation>
-<translation id="6691888250440401212">1. Tria <ph name="APP_NAME" />\n2. Toca Estableix com a predeterminat</translation>
+<translation id="6691888250440401212">1. Tria <ph name="APP_NAME" />\n2. Toca Estableix com a predeterminada</translation>
 <translation id="6697492270171225480">Mostra suggeriments de pàgines similars quan no se'n trobi una</translation>
 <translation id="6698801883190606802">Gestiona les dades sincronitzades</translation>
 <translation id="6699370405921460408">Els servidors de Google optimitzaran les pàgines que visitis.</translation>
@@ -996,6 +998,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8970887620466824814">S'ha produït un error.</translation>
 <translation id="8972098258593396643">Vols baixar el fitxer a la carpeta predeterminada?</translation>
 <translation id="8988028529677883095">Fes servir el telèfon com a clau de seguretat</translation>
+<translation id="8990209962746788689">No es pot crear el codi QR</translation>
 <translation id="8993760627012879038">Obre una pestanya nova en mode d'incògnit</translation>
 <translation id="8998729206196772491">Estàs iniciant la sessió amb un compte gestionat per <ph name="MANAGED_DOMAIN" /> i estàs donant a l'administrador el control de les teves dades de Chrome. Les dades passaran a estar vinculades a aquest compte permanentment. Si tanques la sessió de Chrome, se suprimiran les teves dades d'aquest dispositiu, però continuaran emmagatzemades al teu compte de Google.</translation>
 <translation id="9028914725102941583">Activa la sincronització per compartir elements entre dispositius</translation>

@@ -445,7 +445,7 @@
 <translation id="4665282149850138822"><ph name="NAME" /> എന്നയാളെ നിങ്ങളുടെ ഹോം സ്‌ക്രീനിൽ ചേർത്തു</translation>
 <translation id="4684427112815847243">എല്ലാം സമന്വയിപ്പിക്കുക</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 എന്നതും ‌മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> പേയ്‌മെന്റ് രീതികളും}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 എന്നതും ‌മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> പേയ്‌മെന്റ് രീതികളും}}</translation>
-<translation id="4696983787092045100">നിങ്ങളുടെ ഉപകരണങ്ങളിലേക്ക് ടെക്‌സ്‌റ്റ് അയയ്‌ക്കുക</translation>
+<translation id="4696983787092045100">ഉപകരണങ്ങളിലേക്ക് അയയ്ക്കൂ</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" /> ആപ്പിൽ ഓഫ്‌ലൈനായി കാണുക</translation>
 <translation id="4699172675775169585">കാഷെ ചെയ്‌ത ചിത്രങ്ങളും ഫയലുകളും</translation>
 <translation id="4714588616299687897">നിങ്ങളുടെ ഡാറ്റ 60% വരെ ലാഭിക്കൂ</translation>
@@ -1033,7 +1033,7 @@
 <translation id="970715775301869095"><ph name="MINUTES" /> മിനിറ്റ് ശേഷിക്കുന്നു</translation>
 <translation id="974555521953189084">സമന്വയിപ്പിക്കൽ തുടങ്ങുന്നതിന് പാസ്‌ഫ്രെയ്‌സ് നൽകുക</translation>
 <translation id="981121421437150478">ഓഫ്‌ലൈൻ</translation>
-<translation id="983192555821071799">എല്ലാ ടാബുകളും അടയ്‌ക്കുക</translation>
+<translation id="983192555821071799">ടാബെല്ലാം അടയ്‌ക്കൂ</translation>
 <translation id="987264212798334818">പൊതുവായ</translation>
 <translation id="996149300115483134">ഫീഡ് കാർഡ് മെനു അടച്ചു</translation>
 </translationbundle>

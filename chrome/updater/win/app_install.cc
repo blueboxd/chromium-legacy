@@ -62,14 +62,6 @@ constexpr base::char16 kAppNameChrome[] = L"Google Chrome";
 
 class AppInstallController;
 
-scoped_refptr<UpdateService> CreateUpdateService(
-    scoped_refptr<update_client::Configurator> config) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessSwitch))
-    return base::MakeRefCounted<UpdateServiceInProcess>(config);
-  else
-    return base::MakeRefCounted<UpdateServiceOutOfProcess>();
-}
-
 // Implements a simple inter-thread communication protocol based on Windows
 // messages exchanged between the application installer and its UI.
 //

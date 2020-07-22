@@ -48,14 +48,10 @@ const char kAppActivity[] = "test.app.activity";
 const char kAppActivity1[] = "test.app1.activity";
 const char kPackageName1[] = "com.test.app";
 
-const std::vector<uint8_t> GetFakeIconBytes() {
+arc::mojom::RawIconPngDataPtr GetFakeIconBytes() {
   auto fake_app_instance =
       std::make_unique<arc::FakeAppInstance>(/*app_host=*/nullptr);
-  std::string png_data_as_string;
-  EXPECT_TRUE(fake_app_instance->GenerateIconResponse(128, /*app_icon=*/true,
-                                                      &png_data_as_string));
-  return std::vector<uint8_t>(png_data_as_string.begin(),
-                              png_data_as_string.end());
+  return fake_app_instance->GenerateIconResponse(128, /*app_icon=*/true);
 }
 
 }  // namespace

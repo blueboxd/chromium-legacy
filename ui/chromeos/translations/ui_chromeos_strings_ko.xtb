@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">녹음된 연도</translation>
 <translation id="3338239663705455570">슬로베니아어 키보드</translation>
 <translation id="3353984535370177728">업로드할 폴더 선택</translation>
+<translation id="3356580349448036450">완료</translation>
 <translation id="3399597614303179694">마케도니아어 키보드</translation>
 <translation id="3414856743105198592">이동식 미디어를 포맷하면 데이터가 모두 삭제됩니다. 계속하시겠습니까?</translation>
 <translation id="3437801641691368414">만든 시간</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" />(<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">설치에 실패했습니다.</translation>
 <translation id="7040138676081995583">연결 프로그램...</translation>
-<translation id="7059566040011178088"><ph name="REMAINING_TIME" /> 미만</translation>
 <translation id="7100897339030255923"><ph name="COUNT" />개의 항목이 선택됨</translation>
 <translation id="7106346894903675391">추가 저장용량 구입...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;드라이브 검색&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">기기 모델</translation>
 <translation id="8208580316430297579">아트워크</translation>
 <translation id="8223479393428528563">오프라인 사용 목적으로 이 파일을 저장하려면 온라인으로 돌아가서 마우스 오른쪽 버튼으로 파일을 클릭한 다음 <ph name="OFFLINE_CHECKBOX_NAME" /> 옵션을 선택하세요.</translation>
-<translation id="8231972167769262174"><ph name="REMAINING_TIME" /> 정보</translation>
 <translation id="8249296373107784235">중단</translation>
 <translation id="8261506727792406068">삭제</translation>
 <translation id="8269755669432358899">파일 의견 패널 접기</translation>

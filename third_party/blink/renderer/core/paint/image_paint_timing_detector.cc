@@ -218,7 +218,7 @@ void ImagePaintTimingDetector::RecordImage(
     const ImageResourceContent& cached_image,
     const PropertyTreeStateOrAlias& current_paint_chunk_properties,
     const StyleFetchedImage* style_image,
-    const IntRect* image_border) {
+    const IntRect& image_border) {
   Node* node = object.GetNode();
   if (!node)
     return;
@@ -237,9 +237,7 @@ void ImagePaintTimingDetector::RecordImage(
             frame_view_->GetPaintTimingDetector().Visualizer()) {
       FloatRect mapped_visual_rect =
           frame_view_->GetPaintTimingDetector().CalculateVisualRect(
-              image_border ? *image_border
-                           : object.FragmentsVisualRectBoundingBox(),
-              current_paint_chunk_properties);
+              image_border, current_paint_chunk_properties);
       visualizer->DumpImageDebuggingRect(object, mapped_visual_rect,
                                          cached_image);
     }
@@ -248,15 +246,14 @@ void ImagePaintTimingDetector::RecordImage(
 
   if (is_recored_visible_image || !is_recording_)
     return;
-  IntRect visual_rect =
-      image_border ? *image_border : object.FragmentsVisualRectBoundingBox();
+
   // Before the image resource starts loading, <img> has no size info. We wait
   // until the size is known.
-  if (visual_rect.IsEmpty())
+  if (image_border.IsEmpty())
     return;
   FloatRect mapped_visual_rect =
       frame_view_->GetPaintTimingDetector().CalculateVisualRect(
-          visual_rect, current_paint_chunk_properties);
+          image_border, current_paint_chunk_properties);
   if (base::Optional<PaintTimingVisualizer>& visualizer =
           frame_view_->GetPaintTimingDetector().Visualizer()) {
     visualizer->DumpImageDebuggingRect(object, mapped_visual_rect,
@@ -264,7 +261,7 @@ void ImagePaintTimingDetector::RecordImage(
   }
   uint64_t rect_size = mapped_visual_rect.Size().Area();
   // Transform visual rect to window before calling downscale.
-  WebFloatRect float_visual_rect = FloatRect(visual_rect);
+  WebFloatRect float_visual_rect = FloatRect(image_border);
   frame_view_->GetPaintTimingDetector().ConvertViewportToWindow(
       &float_visual_rect);
   rect_size = DownScaleIfIntrinsicSizeIsSmaller(

@@ -99,6 +99,7 @@ class SplitCompatEngine implements InstallEngine {
 
             switch (status) {
                 case SplitInstallSessionStatus.INSTALLED:
+                    mFacade.updateCrashKeys();
                     notifyListeners(moduleName, true);
                     break;
                 case SplitInstallSessionStatus.FAILED:

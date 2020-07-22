@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> en <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Pour synchroniser vos favoris sur tous vos appareils, activez la synchronisation.</translation>
 <translation id="1687475363370981210">Tout marquer comme lu</translation>
+<translation id="1689333818294560261">Pseudo</translation>
 <translation id="1690731385917361335">Aucun élément</translation>
 <translation id="1692118695553449118">La synchronisation est activée</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> sélectionnés</translation>
@@ -206,6 +207,7 @@ Lorsque vous êtes en mode de navigation privée, les sites ne peuvent pas utili
 <translation id="3335947283844343239">Rouvrir l'onglet fermé</translation>
 <translation id="3371831930909698441">La traduction est disponible. Vous trouverez les options vers le bas de l'écran.</translation>
 <translation id="3393920035788932672">Fenêtr context autor</translation>
+<translation id="3425644765244388016">Pseudo de la carte</translation>
 <translation id="3443810440409579745">Onglet reçu.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Vue partagée</translation>
@@ -240,6 +242,7 @@ Lorsque vous êtes en mode de navigation privée, les sites ne peuvent pas utili
 <translation id="3783017676699494206">Enregistrer l'image</translation>
 <translation id="3789841737615482174">Installer</translation>
 <translation id="3803696231112616155">Offrir de traduire ce site</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Aucun mot de passe compromis}=1{{COUNT} mot de passe compromis}one{{COUNT} mot de passe compromis}other{{COUNT} mots de passe compromis}}</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="3892144330757387737">Vous trouverez votre historique ici</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -529,6 +532,7 @@ Les sites ne peuvent pas utiliser de témoins pour voir votre activité de navig
 <translation id="7189598951263744875">Partager…</translation>
 <translation id="7192050974311852563">Commencer la journalisation</translation>
 <translation id="7203585745079012652">Réponses vocales</translation>
+<translation id="721597782417389033">Le pseudo de la carte est incorrect</translation>
 <translation id="7265758999917665941">Jamais pour ce site</translation>
 <translation id="7272437679830969316">Impossible de vérifier votre identité. Le mot de passe n'a pas été copié.</translation>
 <translation id="7291368939935408496">Préparation des mots de passe en cours…</translation>

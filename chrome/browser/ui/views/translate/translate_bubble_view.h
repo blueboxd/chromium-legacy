@@ -82,7 +82,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   TranslateBubbleModel* model() { return model_.get(); }
 
   // LocationBarBubbleDelegateView:
-  base::string16 GetWindowTitle() const override;
   void Init() override;
   View* GetInitiallyFocusedView() override;
   bool ShouldShowCloseButton() const override;
@@ -221,6 +220,14 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   // Get the current always translate checkbox
   views::Checkbox* GetAlwaysTranslateCheckbox();
+
+  // Sets the window title. The window title still needs to be set, even when it
+  // is not shown, for accessiblity purposes.
+  void SetWindowTitle(TranslateBubbleModel::ViewState view_state);
+
+  // Updates the view state. Whenever the view state is updated, the title needs
+  // to be updated for accessibility.
+  void UpdateViewState(TranslateBubbleModel::ViewState view_state);
 
   // Switches the view type.
   void SwitchView(TranslateBubbleModel::ViewState view_state);

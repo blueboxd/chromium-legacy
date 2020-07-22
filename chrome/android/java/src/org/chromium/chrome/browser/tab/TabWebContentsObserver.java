@@ -20,7 +20,7 @@ import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
-import org.chromium.chrome.browser.display_cutout.DisplayCutoutController;
+import org.chromium.chrome.browser.display_cutout.DisplayCutoutTabHelper;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
@@ -347,7 +347,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
 
         @Override
         public void viewportFitChanged(@WebContentsObserver.ViewportFitType int value) {
-            DisplayCutoutController.from(mTab).setViewportFit(value);
+            DisplayCutoutTabHelper.from(mTab).setViewportFit(value);
         }
 
         @Override

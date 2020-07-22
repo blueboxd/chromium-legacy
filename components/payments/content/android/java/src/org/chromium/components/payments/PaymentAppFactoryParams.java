@@ -9,25 +9,17 @@ import androidx.annotation.Nullable;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
-import org.chromium.payments.mojom.PaymentMethodData;
-import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.url.Origin;
 
 import java.util.Map;
 
 /** Interface for providing information to a payment app factory. */
-public interface PaymentAppFactoryParams {
+public interface PaymentAppFactoryParams extends PaymentRequestParams {
     /** @return The web contents where the payment is being requested. */
     WebContents getWebContents();
 
     /** @return The RenderFrameHost for the frame that initiates the payment request. */
     RenderFrameHost getRenderFrameHost();
-
-    /**
-     * @return The unmodifiable mapping of payment method identifier to the method-specific data in
-     * the payment request.
-     */
-    Map<String, PaymentMethodData> getMethodData();
 
     /** @return The PaymentRequest object identifier. */
     default String getId() {
@@ -89,21 +81,6 @@ public interface PaymentAppFactoryParams {
      */
     default PaymentRequestUpdateEventListener getPaymentRequestUpdateEventListener() {
         return null;
-    }
-
-    /**
-     * @return The PaymentOptions of the payment request.
-     */
-    default PaymentOptions getPaymentOptions() {
-        return null;
-    }
-
-    /**
-     * @return Whether the PaymentRequest is requesting delegation of either shipping or payer
-     *         contact.
-     */
-    default boolean requestShippingOrPayerContact() {
-        return false;
     }
 
     /** @return The Payment Request information received from the merchant. */

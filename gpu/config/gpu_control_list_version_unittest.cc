@@ -16,6 +16,7 @@ constexpr auto kLexical = GpuControlList::kVersionStyleLexical;
 
 constexpr auto kCommon = GpuControlList::kVersionSchemaCommon;
 constexpr auto kIntelDriver = GpuControlList::kVersionSchemaIntelDriver;
+constexpr auto kNvidiaDriver = GpuControlList::kVersionSchemaNvidiaDriver;
 
 constexpr auto kBetween = GpuControlList::kBetween;
 constexpr auto kEQ = GpuControlList::kEQ;
@@ -216,6 +217,53 @@ TEST_F(VersionTest, IntelDriverSchema) {
 
     // Doesn't match new drivers.
     EXPECT_FALSE(info.Contains("24.20.100.6346"));
+  }
+}
+
+TEST_F(VersionTest, NvidiaDriverSchema) {
+  {
+    // Nvidia drivers, XX.XX.XXXA.AABB, only AAA.BB is considered.  The version
+    // is specified as "AAA.BB" or "AAA" in the workaround file.
+    {
+      // "AAA.BB" should exactly specify one version.
+      Version info = {kLT, kNumerical, kNvidiaDriver, "234.56", nullptr};
+      EXPECT_TRUE(info.Contains("26.10.0012.3455"));
+      EXPECT_TRUE(info.Contains("00.00.0012.3455"));
+      EXPECT_TRUE(info.Contains("00.00.012.3455"));
+      EXPECT_TRUE(info.Contains("00.00.12.3455"));
+      EXPECT_FALSE(info.Contains("26.10.0012.3456"));
+      EXPECT_FALSE(info.Contains("26.10.012.3456"));
+      EXPECT_FALSE(info.Contains("26.10.12.3456"));
+      EXPECT_FALSE(info.Contains("26.10.0012.3457"));
+      EXPECT_FALSE(info.Contains("00.00.0012.3457"));
+      EXPECT_TRUE(info.Contains("26.10.0012.2457"));
+      EXPECT_TRUE(info.Contains("26.10.0011.3457"));
+
+      // Leading zeros in the third stanza are okay.
+      EXPECT_TRUE(info.Contains("26.10.0002.3455"));
+      EXPECT_FALSE(info.Contains("26.10.0002.3456"));
+      EXPECT_FALSE(info.Contains("26.10.0002.3457"));
+      EXPECT_TRUE(info.Contains("26.10.0010.3457"));
+      EXPECT_TRUE(info.Contains("26.10.0000.3457"));
+
+      // Missing zeros in the fourth stanza are replaced.
+      EXPECT_TRUE(info.Contains("26.10.0012.455"));
+      EXPECT_TRUE(info.Contains("26.10.0012.57"));
+      EXPECT_FALSE(info.Contains("26.10.0013.456"));
+      EXPECT_FALSE(info.Contains("26.10.0013.57"));
+
+      // Too short is rejected.
+      EXPECT_FALSE(info.Contains("26.10..57"));
+      EXPECT_FALSE(info.Contains("26.10.100"));
+      EXPECT_FALSE(info.Contains("26.10.100."));
+    }
+
+    {
+      // "AAA" should allow "AAA.*"
+      Version info = {kEQ, kNumerical, kNvidiaDriver, "234", nullptr};
+      EXPECT_FALSE(info.Contains("26.10.0012.3556"));
+      EXPECT_TRUE(info.Contains("26.10.0012.3456"));
+    }
   }
 }
 

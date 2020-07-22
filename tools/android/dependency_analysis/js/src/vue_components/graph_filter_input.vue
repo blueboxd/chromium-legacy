@@ -18,6 +18,7 @@ import {CUSTOM_EVENTS} from '../vue_custom_events.js';
 
 import Autocomplete from '@trevoreyre/autocomplete-vue';
 
+// @vue/component
 const GraphFilterInput = {
   components: {
     Autocomplete,

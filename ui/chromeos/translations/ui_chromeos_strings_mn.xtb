@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Бүртгэсэн жил</translation>
 <translation id="3338239663705455570">Словени хэлний гар</translation>
 <translation id="3353984535370177728">Татаж оруулах хавтсыг сонгох</translation>
+<translation id="3356580349448036450">Бүрэн</translation>
 <translation id="3399597614303179694">Компьютерийн Македон гар</translation>
 <translation id="3414856743105198592">Зөөврийн хэрэгслийг форматлах нь бүх өгөгдлийг арилгана. Та үйлдлийг үргэжлүүлэх үү?</translation>
 <translation id="3437801641691368414">Үүсгэсэн цаг</translation>
@@ -324,7 +325,7 @@
 <translation id="4747271164117300400">Македон</translation>
 <translation id="4749157430980974800">Гүрж хэлний гар</translation>
 <translation id="4755240240651974342">Финлянд хэлний гар</translation>
-<translation id="4759238208242260848">Татацууд:</translation>
+<translation id="4759238208242260848">Таталтууд:</translation>
 <translation id="4779136857077979611">Онигири</translation>
 <translation id="4784330909746505604">PowerPoint танилцуулга</translation>
 <translation id="4788401404269709922"><ph name="NUMBER_OF_KB" /> КБ</translation>
@@ -548,7 +549,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Суулгах ажиллагаа амжилтгүй боллоо.</translation>
 <translation id="7040138676081995583">Нээх программыг сонгох...</translation>
-<translation id="7059566040011178088"><ph name="REMAINING_TIME" />-с бага</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> зүйлс сонгогдсон байна</translation>
 <translation id="7106346894903675391">Илүү их хадгалалтын санг худалдаж аваарай...</translation>
 <translation id="7126604456862387217">"&lt;b&gt; <ph name="SEARCH_STRING" /> &lt;/ б&gt; '- search &lt;em&gt; Drive &lt;/em&gt;</translation>
@@ -659,7 +659,6 @@
 <translation id="8193175696669055101">Төхөөрөмжийн загвар:</translation>
 <translation id="8208580316430297579">Урлагийн бүтээл</translation>
 <translation id="8223479393428528563">Эдгээр файлыг интернетэд холбогдоогүй байхдаа ашиглахаар хадгалахын тулд интернетэд холбогдсоныхоо дараагаар холбогдох файл дээр очин хулганын баруун талд даран <ph name="OFFLINE_CHECKBOX_NAME" /> сонголтыг сонгоно уу.</translation>
-<translation id="8231972167769262174"><ph name="REMAINING_TIME" />-н тухай</translation>
 <translation id="8249296373107784235">Цуцлах</translation>
 <translation id="8261506727792406068">Устгах</translation>
 <translation id="8269755669432358899">Файлын cанал хүсэлтийн түр зуурын самбарыг буулгах</translation>

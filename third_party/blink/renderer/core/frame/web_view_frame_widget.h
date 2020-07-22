@@ -71,6 +71,10 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   WebURL GetURLForDebugTrace() override;
   WebString GetLastToolTipTextForTesting() const override;
 
+  // blink::mojom::FrameWidget
+  void EnableDeviceEmulation(const DeviceEmulationParams& parameters) override;
+  void DisableDeviceEmulation() override;
+
   // WebFrameWidget overrides:
   void DidDetachLocalFrameTree() override;
   WebInputMethodController* GetActiveWebInputMethodController() const override;

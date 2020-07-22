@@ -61,11 +61,14 @@
 
 namespace {
 
-using ::testing::ElementsAre;
-using ::testing::UnorderedElementsAre;
 using base::HistogramBase;
+using favicon::FaviconBitmap;
+using favicon::FaviconBitmapType;
+using favicon::IconMapping;
 using favicon_base::IconType;
 using favicon_base::IconTypeSet;
+using ::testing::ElementsAre;
+using ::testing::UnorderedElementsAre;
 
 const int kTinyEdgeSize = 10;
 const int kSmallEdgeSize = 16;
@@ -427,11 +430,10 @@ class HistoryBackendTest : public HistoryBackendTestBase {
                                std::vector<FaviconBitmap>* favicon_bitmaps) {
     if (!backend_->favicon_db_->GetFaviconBitmaps(icon_id, favicon_bitmaps))
       return false;
-    std::sort(
-        favicon_bitmaps->begin(), favicon_bitmaps->end(),
-        [](const history::FaviconBitmap& a, const history::FaviconBitmap& b) {
-          return a.pixel_size.GetArea() < b.pixel_size.GetArea();
-        });
+    std::sort(favicon_bitmaps->begin(), favicon_bitmaps->end(),
+              [](const FaviconBitmap& a, const FaviconBitmap& b) {
+                return a.pixel_size.GetArea() < b.pixel_size.GetArea();
+              });
     return true;
   }
 
@@ -1839,7 +1841,7 @@ TEST_F(HistoryBackendTest, SetFaviconMappingsForPageDuplicates) {
   EXPECT_TRUE(backend_->favicon_db_->GetIconMappingsForPageURL(
       url, {IconType::kFavicon}, &icon_mappings));
   EXPECT_EQ(1u, icon_mappings.size());
-  IconMappingID mapping_id = icon_mappings[0].mapping_id;
+  favicon::IconMappingID mapping_id = icon_mappings[0].mapping_id;
 
   backend_->SetFavicons({url}, IconType::kFavicon, icon_url, bitmaps);
 
@@ -1875,11 +1877,11 @@ TEST_F(HistoryBackendTest, SetFaviconsDeleteBitmaps) {
   std::vector<FaviconBitmap> favicon_bitmaps;
   EXPECT_TRUE(GetSortedFaviconBitmaps(favicon_id, &favicon_bitmaps));
   EXPECT_EQ(2u, favicon_bitmaps.size());
-  FaviconBitmapID small_bitmap_id = favicon_bitmaps[0].bitmap_id;
+  favicon::FaviconBitmapID small_bitmap_id = favicon_bitmaps[0].bitmap_id;
   EXPECT_NE(0, small_bitmap_id);
   EXPECT_TRUE(BitmapColorEqual(SK_ColorBLUE, favicon_bitmaps[0].bitmap_data));
   EXPECT_EQ(kSmallSize, favicon_bitmaps[0].pixel_size);
-  FaviconBitmapID large_bitmap_id = favicon_bitmaps[1].bitmap_id;
+  favicon::FaviconBitmapID large_bitmap_id = favicon_bitmaps[1].bitmap_id;
   EXPECT_NE(0, large_bitmap_id);
   EXPECT_TRUE(BitmapColorEqual(SK_ColorRED, favicon_bitmaps[1].bitmap_data));
   EXPECT_EQ(kLargeSize, favicon_bitmaps[1].pixel_size);

@@ -61,6 +61,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_LINUX)
@@ -513,7 +514,7 @@ void PDFiumEngine::ScrolledToXPosition(int position) {
   int old_x = position_.x();
   position_.set_x(position);
   CalculateVisiblePages();
-  client_->DidScroll(pp::Point(old_x - position, 0));
+  client_->DidScroll(gfx::Vector2d(old_x - position, 0));
   OnSelectionPositionChanged();
 }
 
@@ -523,7 +524,7 @@ void PDFiumEngine::ScrolledToYPosition(int position) {
   int old_y = position_.y();
   position_.set_y(position);
   CalculateVisiblePages();
-  client_->DidScroll(pp::Point(0, old_y - position));
+  client_->DidScroll(gfx::Vector2d(0, old_y - position));
   OnSelectionPositionChanged();
 }
 

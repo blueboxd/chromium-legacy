@@ -297,13 +297,16 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
     return shared_geometry_.get();
   }
 
-  // If |dst_color_space| is invalid, then no color conversion (apart from
-  // YUV to RGB conversion) is performed. This explicit argument is available
-  // so that video color conversion can be enabled separately from general color
-  // conversion.
+  // If |dst_color_space| is invalid, then no color conversion (apart from YUV
+  // to RGB conversion) is performed. This explicit argument is available so
+  // that video color conversion can be enabled separately from general color
+  // conversion. If |adjust_src_white_level| is true, then the |src_color_space|
+  // white levels are adjusted to the display SDR white level so that no white
+  // level scaling happens.
   void SetUseProgram(const ProgramKey& program_key,
                      const gfx::ColorSpace& src_color_space,
-                     const gfx::ColorSpace& dst_color_space);
+                     const gfx::ColorSpace& dst_color_space,
+                     bool adjust_src_white_level = false);
 
   bool MakeContextCurrent();
 

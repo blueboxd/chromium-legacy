@@ -19,14 +19,13 @@ class ExternalVkImageGLRepresentationShared {
   static void AcquireTexture(ExternalSemaphore* semaphore,
                              GLuint texture_id,
                              VkImageLayout src_layout);
-  static ExternalSemaphore ReleaseTexture(
-      viz::VulkanContextProvider* context_provider,
-      GLuint texture_id,
-      VkImageLayout dst_layout);
+  static ExternalSemaphore ReleaseTexture(ExternalSemaphorePool* pool,
+                                          GLuint texture_id,
+                                          VkImageLayout dst_layout);
 
   ExternalVkImageGLRepresentationShared(SharedImageBacking* backing,
                                         GLuint texture_service_id);
-  ~ExternalVkImageGLRepresentationShared() = default;
+  ~ExternalVkImageGLRepresentationShared();
 
   bool BeginAccess(GLenum mode);
   void EndAccess();
@@ -41,6 +40,7 @@ class ExternalVkImageGLRepresentationShared {
   ExternalVkImageBacking* const backing_;
   const GLuint texture_service_id_;
   GLenum current_access_mode_ = 0;
+  std::vector<ExternalSemaphore> begin_access_semaphores_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalVkImageGLRepresentationShared);
 };

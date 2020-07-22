@@ -41,9 +41,6 @@
     <!-- Recent tabs page -->
     <dimen name="recent_tabs_visible_separator_padding">28dp</dimen>
 
-    <!-- Payments UI -->
-    <dimen name="payments_ui_max_dialog_width">600dp</dimen>
-
     <!-- Preferences dimensions -->
     <dimen name="pref_spinner_padding_end">16dp</dimen>
 

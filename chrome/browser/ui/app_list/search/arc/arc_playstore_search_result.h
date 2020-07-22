@@ -53,7 +53,7 @@ class ArcPlayStoreSearchResult : public ChromeSearchResult,
   }
   float review_score() const { return data_->review_score; }
   const std::vector<uint8_t>& icon_png_data() const {
-    return data_->icon_png_data;
+    return data_->icon->icon_png_data.value();
   }
 
   // ChromeSearchResult overrides:

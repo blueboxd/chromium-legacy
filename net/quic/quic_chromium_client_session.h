@@ -451,7 +451,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       const char* const connection_description,
       base::TimeTicks dns_resolution_start_time,
       base::TimeTicks dns_resolution_end_time,
-      quic::QuicClientPushPromiseIndex* push_promise_index,
+      std::unique_ptr<quic::QuicClientPushPromiseIndex> push_promise_index,
       ServerPushDelegate* push_delegate,
       const base::TickClock* tick_clock,
       base::SequencedTaskRunner* task_runner,
@@ -715,6 +715,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // TODO(xunjieli): It only tracks |packet_readers_|. Write a better estimate.
   size_t EstimateMemoryUsage() const;
 
+  // Looks for a push that matches the provided parameters.
+  quic::QuicClientPromisedInfo* GetPromised(const GURL& url,
+                                            const QuicSessionKey& session_key);
+
   bool require_confirmation() const { return require_confirmation_; }
 
  protected:
@@ -920,6 +924,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   quic::QuicStreamId max_allowed_push_id_;
 
   bool attempted_zero_rtt_;
+
+  std::unique_ptr<quic::QuicClientPushPromiseIndex> push_promise_index_;
 
   base::WeakPtrFactory<QuicChromiumClientSession> weak_factory_{this};
 

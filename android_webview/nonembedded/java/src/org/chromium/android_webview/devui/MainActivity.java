@@ -49,7 +49,7 @@ public class MainActivity extends FragmentActivity {
     // These values are persisted to logs. Entries should not be renumbered and
     // numeric values should never be reused.
     @IntDef({MenuChoice.SWITCH_PROVIDER, MenuChoice.REPORT_BUG, MenuChoice.CHECK_UPDATES,
-            MenuChoice.CRASHES_REFRESH})
+            MenuChoice.CRASHES_REFRESH, MenuChoice.ABOUT_DEVTOOLS})
     public @interface MenuChoice {
         int SWITCH_PROVIDER = 0;
         int REPORT_BUG = 1;
@@ -205,6 +205,7 @@ public class MainActivity extends FragmentActivity {
 
     @Override
     protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
         // Store the Intent so we can switch Fragments in onResume (which is called next). Only need
         // to switch Fragment if the Intent specifies to do so.
         setIntent(intent);

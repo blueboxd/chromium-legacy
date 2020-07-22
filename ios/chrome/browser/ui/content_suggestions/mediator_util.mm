@@ -136,7 +136,7 @@ ContentSuggestionsSectionInformation* DiscoverSectionInformation() {
   ContentSuggestionsSectionInformation* sectionInfo =
       [[ContentSuggestionsSectionInformation alloc]
           initWithSectionID:ContentSuggestionsSectionDiscover];
-  sectionInfo.title = nil;
+  sectionInfo.title = l10n_util::GetNSString(IDS_IOS_DISCOVER_FEED_TITLE);
   sectionInfo.footerTitle = nil;
   sectionInfo.showIfEmpty = YES;
   sectionInfo.layout = ContentSuggestionsSectionLayoutCustom;

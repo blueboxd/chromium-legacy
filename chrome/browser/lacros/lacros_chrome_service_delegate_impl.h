@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_LACROS_LACROS_CHROME_SERVICE_DELEGATE_IMPL_H_
 #define CHROME_BROWSER_LACROS_LACROS_CHROME_SERVICE_DELEGATE_IMPL_H_
 
-#include "chromeos/lacros/browser/lacros_chrome_service_delegate.h"
+#include "chromeos/lacros/lacros_chrome_service_delegate.h"
 
 // Chrome implementation of LacrosChromeServiceDelegate.
 class LacrosChromeServiceDelegateImpl

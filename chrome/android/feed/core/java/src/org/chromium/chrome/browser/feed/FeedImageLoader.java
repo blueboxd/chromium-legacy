@@ -20,6 +20,7 @@ import org.chromium.base.Consumer;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.SysUtils;
 import org.chromium.base.task.PostTask;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feed.library.api.host.imageloader.BundledAssets;
 import org.chromium.chrome.browser.feed.library.api.host.imageloader.ImageLoaderApi;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
@@ -27,7 +28,6 @@ import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.ThumbnailGradient;
-import org.chromium.chrome.feed.R;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.Iterator;

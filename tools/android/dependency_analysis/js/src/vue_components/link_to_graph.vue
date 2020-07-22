@@ -9,6 +9,7 @@
 <script>
 import {generateUrlFromFilter} from '../url_processor.js';
 
+// @vue/component
 const LinkToGraph = {
   props: {
     filter: Array,

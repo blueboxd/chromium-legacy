@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> na <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Skakel sinkronisering aan om jou boekmerke op al jou toestelle te kry.</translation>
 <translation id="1687475363370981210">Merk alles as gelees</translation>
+<translation id="1689333818294560261">Bynaam</translation>
 <translation id="1690731385917361335">Geen items nie</translation>
 <translation id="1692118695553449118">Sinkronisering is aan</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> gekies</translation>
@@ -206,6 +207,7 @@ Terwyl jy in Incognito is, kan werwe nie webkoekies gebruik om jou blaai-aktiwit
 <translation id="3335947283844343239">Maak toegemaakte oortjie weer oop</translation>
 <translation id="3371831930909698441">Vertaal is beskikbaar. Opsies is naby die onderkant van die skerm beskikbaar.</translation>
 <translation id="3393920035788932672">Opspringers word toegelaat</translation>
+<translation id="3425644765244388016">Kaartbynaam</translation>
 <translation id="3443810440409579745">Oortjie is ontvang.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3448016392200048164">Deelaansig</translation>
@@ -240,6 +242,7 @@ Terwyl jy in Incognito is, kan werwe nie webkoekies gebruik om jou blaai-aktiwit
 <translation id="3783017676699494206">Stoor prent</translation>
 <translation id="3789841737615482174">Installeer</translation>
 <translation id="3803696231112616155">Bied aan om hierdie werf te vertaal</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Geen wagwoorde is gekompromitteer nie}=1{{COUNT} wagwoord is gekompromitteer}other{{COUNT} wagwoorde is gekompromitteer}}</translation>
 <translation id="385051799172605136">Terug</translation>
 <translation id="3892144330757387737">Jy sal jou geskiedenis hier kry</translation>
 <translation id="3897092660631435901">Kieslys</translation>
@@ -529,6 +532,7 @@ Werwe kan nie webkoekies gebruik om jou blaai-aktiwiteit op verskillende werwe t
 <translation id="7189598951263744875">Deel …</translation>
 <translation id="7192050974311852563">Begin aanteken</translation>
 <translation id="7203585745079012652">Praat antwoorde terug</translation>
+<translation id="721597782417389033">Ongeldige kaartbynaam</translation>
 <translation id="7265758999917665941">Nooit vir hierdie werf nie</translation>
 <translation id="7272437679830969316">Kan nie jou identiteit verifieer nie. Wagwoord is nie gekopieer nie.</translation>
 <translation id="7291368939935408496">Maak tans wagwoorde gereed …</translation>

@@ -577,6 +577,7 @@
 <translation id="5659593005791499971">אימייל</translation>
 <translation id="5665379678064389456">צור אירוע ב-<ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">להתעלם מבקשה של אתר שנועדה למנוע את שינוי הזום</translation>
+<translation id="5683547024293500885">‏מערכת Chrome לא יכולה לבדוק אם יש עדכונים</translation>
 <translation id="5686790454216892815">שם הקובץ ארוך מדי</translation>
 <translation id="5694049548840660018">חזרה לדף הבית בקלות</translation>
 <translation id="569536719314091526">דרך לחצן האפשרויות הנוספות אפשר לתרגם את הדף הזה לשפה כלשהי</translation>
@@ -589,6 +590,7 @@
 <translation id="5732819098735351888">‏ההורדה תתחיל בחיבור Wi-Fi.</translation>
 <translation id="5748802427693696783">הוחלף לכרטיסיות רגילות</translation>
 <translation id="5749068826913805084">‏לצורך הורדת קבצים, Chrome זקוק לגישה לאחסון.</translation>
+<translation id="5749237766298580851">כבויה <ph name="SEPARATOR" /> לא מומלץ</translation>
 <translation id="5754350196967618083">‏לא ניתן לרענן את Discover</translation>
 <translation id="5763382633136178763">כרטיסיות גלישה בסתר</translation>
 <translation id="5763514718066511291">הקשה מעתיקה את כתובת האתר של האפליקציה הזו</translation>
@@ -721,7 +723,7 @@
 <translation id="6671495933530132209">העתק את התמונה</translation>
 <translation id="6676840375528380067">‏למחוק את נתוני Chrome שלך מהמכשיר הזה?</translation>
 <translation id="6689172468748959065">תמונות פרופיל</translation>
-<translation id="6691888250440401212">‏1. בוחרים את <ph name="APP_NAME" />.\n2. מקישים על "הגדרה כברירת מחדל".</translation>
+<translation id="6691888250440401212">‏1. בוחרים את <ph name="APP_NAME" />.\n2. מקישים על 'הגדרה כברירת מחדל'.</translation>
 <translation id="6697492270171225480">הצגת הצעות לדפים דומים אם דף מסוים לא נמצא</translation>
 <translation id="6698801883190606802">ניהול נתונים מסונכרנים</translation>
 <translation id="6699370405921460408">‏כשנכנסים לדפים בזמן הגלישה, הם עוברים אופטימיזציה על ידי השרתים של Google.</translation>
@@ -925,7 +927,7 @@
 <translation id="8364299278605033898">הצגת אתרים פופולריים</translation>
 <translation id="8368027906805972958">מכשיר לא ידוע או שאינו נתמך (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">שלח הודעה</translation>
-<translation id="8407396331882458341">‏1. בוחרים את <ph name="APP_NAME" />.\n2. מקישים על "תמיד".</translation>
+<translation id="8407396331882458341">‏1. בוחרים את <ph name="APP_NAME" />.\n2. מקישים על 'תמיד'.</translation>
 <translation id="8413126021676339697">להצגת ההיסטוריה המלאה</translation>
 <translation id="8425213833346101688">שנה</translation>
 <translation id="8427875596167638501">כרטיסיית התצוגה המקדימה פתוחה בחצי גובה המסך</translation>
@@ -953,7 +955,7 @@
 <translation id="8555836665334561807">‏ב-Wi-Fi</translation>
 <translation id="8558485628462305855">‏כדי להציג תוכן של מציאות רבודה, צריך לעדכן את ARCore</translation>
 <translation id="8559990750235505898">הצעה לתרגם דפים בשפות אחרות</translation>
-<translation id="8561196567344536112">‏1. עוברים אל 'הגדרות'\n2. מקישים על "אפליקציית דפדפן"\n3. בוחרים ב-<ph name="APP_NAME" />.</translation>
+<translation id="8561196567344536112">‏1. עוברים אל 'הגדרות'\n2. מקישים על 'אפליקציית דפדפן'\n3. בוחרים ב-<ph name="APP_NAME" />.</translation>
 <translation id="8562452229998620586">הסיסמאות השמורות יופיעו כאן.</translation>
 <translation id="8569404424186215731">מאז <ph name="DATE" /></translation>
 <translation id="8571213806525832805">מארבעת השבועות האחרונים</translation>
@@ -996,6 +998,7 @@
 <translation id="8970887620466824814">משהו השתבש.</translation>
 <translation id="8972098258593396643">האם להוריד לתיקיית ברירת המחדל?</translation>
 <translation id="8988028529677883095">שימוש בטלפון כמפתח אבטחה</translation>
+<translation id="8990209962746788689">‏לא ניתן ליצור קוד QR</translation>
 <translation id="8993760627012879038">פתח חלון חדש במצב גלישה בסתר</translation>
 <translation id="8998729206196772491">‏אתה נכנס עם חשבון המנוהל על-ידי <ph name="MANAGED_DOMAIN" /> ומעניק למנהל שלו שליטה על הנתונים שלך ב-Chrome. הנתונים שלך ישויכו לצמיתות אל החשבון הזה. יציאה מ-Chrome תמחק את הנתונים שלך מהמכשיר הזה, אבל הם יישארו בחשבון Google.</translation>
 <translation id="9028914725102941583">כדי לבצע שיתוף בין מכשירים יש להפעיל את הסנכרון</translation>
@@ -1033,7 +1036,7 @@
 <translation id="970715775301869095">נותרו <ph name="MINUTES" /> דקות</translation>
 <translation id="974555521953189084">הזן את ביטוי הסיסמה כדי להתחיל בסנכרון</translation>
 <translation id="981121421437150478">לא מקוון</translation>
-<translation id="983192555821071799">סגור את כל הכרטיסיות</translation>
+<translation id="983192555821071799">סגירת כל הכרטיסיות</translation>
 <translation id="987264212798334818">כללי</translation>
 <translation id="996149300115483134">תפריט כרטיס הפיד סגור</translation>
 </translationbundle>

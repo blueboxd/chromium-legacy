@@ -335,6 +335,23 @@ class WebAppInstallManagerTest : public WebAppTest {
     return result;
   }
 
+  InstallResult InstallWebAppFromInfo(
+      std::unique_ptr<WebApplicationInfo> web_application_info) {
+    InstallResult result;
+    base::RunLoop run_loop;
+    install_manager().InstallWebAppFromInfo(
+        std::move(web_application_info), ForInstallableSite::kYes,
+        WebappInstallSource::SYSTEM_DEFAULT,
+        base::BindLambdaForTesting(
+            [&](const AppId& installed_app_id, InstallResultCode code) {
+              result.app_id = installed_app_id;
+              result.code = code;
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    return result;
+  }
+
   AppId InstallBookmarkAppFromSync(const GURL& url,
                                    bool server_open_as_window) {
     const AppId bookmark_app_id = GenerateAppIdFromURL(url);
@@ -1287,6 +1304,31 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_ExpectAppIdFailed) {
   // server.
   InstallResult result = InstallBookmarkAppFromSync(
       expected_app_id, std::move(server_web_app_info));
+  EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
+  EXPECT_EQ(expected_app_id, result.app_id);
+
+  const WebApp* web_app = registrar().GetAppById(expected_app_id);
+  ASSERT_TRUE(web_app);
+
+  std::map<SquareSizePx, SkBitmap> icon_bitmaps =
+      ReadIcons(expected_app_id, web_app->downloaded_icon_sizes());
+
+  // Make sure that icons have been generated for all sub sizes.
+  EXPECT_TRUE(ContainsOneIconOfEachSize(icon_bitmaps));
+}
+
+TEST_F(WebAppInstallManagerTest, InstallWebAppFromInfo) {
+  InitEmptyRegistrar();
+
+  const GURL url("https://example.com/path");
+  const AppId expected_app_id = GenerateAppIdFromURL(url);
+
+  auto server_web_app_info = std::make_unique<WebApplicationInfo>();
+  server_web_app_info->app_url = url;
+  server_web_app_info->scope = url;
+  server_web_app_info->title = base::UTF8ToUTF16("Test web app");
+
+  InstallResult result = InstallWebAppFromInfo(std::move(server_web_app_info));
   EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
   EXPECT_EQ(expected_app_id, result.app_id);
 

@@ -577,6 +577,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5659593005791499971">E-pasts</translation>
 <translation id="5665379678064389456">Izveidojiet pasākumu lietotnē <ph name="APP_NAME" />.</translation>
 <translation id="5668404140385795438">Ignorēt vietnes pieprasījumu, lai novērstu tuvināšanu</translation>
+<translation id="5683547024293500885">Pārlūkā Chrome nevar pārbaudīt atjauninājumu pieejamību.</translation>
 <translation id="5686790454216892815">Faila nosaukums ir pārāk garš</translation>
 <translation id="5694049548840660018">Ātra atgriešanās sākumlapā</translation>
 <translation id="569536719314091526">Tulkojiet šīs lapas saturu jebkurā valodā, izmantojot pogu Vairāk opciju.</translation>
@@ -589,6 +590,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5732819098735351888">Lejupielāde tiks sākta, kad būs izveidots Wi-Fi savienojums.</translation>
 <translation id="5748802427693696783">Notika pārslēgšanās uz standarta cilnēm</translation>
 <translation id="5749068826913805084">Chrome ir nepieciešama piekļuve krātuvei, lai varētu lejupielādēt failus.</translation>
+<translation id="5749237766298580851">Izslēgta <ph name="SEPARATOR" /> Nav ieteicams</translation>
 <translation id="5754350196967618083">Nevar atsvaidzināt Discover</translation>
 <translation id="5763382633136178763">Inkognito režīma cilnes</translation>
 <translation id="5763514718066511291">Pieskarieties, lai kopētu šīs lietotnes URL.</translation>
@@ -996,6 +998,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="8970887620466824814">Radās kļūda.</translation>
 <translation id="8972098258593396643">Vai lejupielādēt noklusējuma mapē?</translation>
 <translation id="8988028529677883095">Izmantot tālruni kā drošības atslēgu</translation>
+<translation id="8990209962746788689">Nevar izveidot QR kodu</translation>
 <translation id="8993760627012879038">Atvērt jaunu cilni inkognito režīmā</translation>
 <translation id="8998729206196772491">Jūs pierakstāties kontā, kas tiek pārvaldīts domēnā <ph name="MANAGED_DOMAIN" />, un sniedzat tā administratoram kontroli pār saviem Chrome datiem. Jūsu dati tiks neatgriezeniski saistīti ar šo kontu. Izrakstoties no pārlūka Chrome, jūsu dati tiks dzēsti no šīs ierīces, taču tie tiks saglabāti jūsu Google kontā.</translation>
 <translation id="9028914725102941583">Sinhronizācijas ieslēgšana, lai kopīgotu saturu vairākās ierīcēs</translation>

@@ -47,7 +47,7 @@ using extensions::ExtensionActionRunner;
 ExtensionActionViewController::ExtensionActionViewController(
     const extensions::Extension* extension,
     Browser* browser,
-    ExtensionAction* extension_action,
+    extensions::ExtensionAction* extension_action,
     ExtensionsContainer* extensions_container,
     bool in_overflow_mode)
     : extension_(extension),
@@ -258,7 +258,7 @@ bool ExtensionActionViewController::ExecuteAction(PopupShowAction show_action,
     extensions_container_->CloseOverflowMenuIfOpen();
 
   if (action_runner->RunAction(extension(), grant_tab_permissions) ==
-      ExtensionAction::ACTION_SHOW_POPUP) {
+      extensions::ExtensionAction::ACTION_SHOW_POPUP) {
     GURL popup_url = extension_action_->GetPopupUrl(
         sessions::SessionTabHelper::IdForTab(web_contents).id());
     return GetPreferredPopupViewController()

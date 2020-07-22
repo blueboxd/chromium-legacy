@@ -196,10 +196,6 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
 
       Ist für die Richtlinie "false" festgelegt, erlaubt <ph name="PRODUCT_NAME" /> das Erstellen von Gastprofilen nicht.</translation>
 <translation id="1363275621236827384">Abfragen an Quirks-Server für Hardwareprofile aktivieren</translation>
-<translation id="1363612796557848469">Mit dieser Richtlinie erhält Google Assistant die Berechtigung, auf den Bildschirmkontext zuzugreifen und die Informationen an den Server zu senden.
-      Wenn diese Richtlinie aktiviert ist, darf Google Assistant auf den Bildschirmkontext zugreifen.
-      Wenn diese Richtlinie deaktiviert ist, darf Google Assistant nicht auf den Bildschirmkontext zugreifen.
-      Wenn die Richtlinie nicht konfiguriert ist, können Nutzer selbst entscheiden, ob Google Assistant auf den Bildschirmkontext zugreifen darf.</translation>
 <translation id="1376119291123231789">Intelligenten Akkulademodus aktivieren</translation>
 <translation id="1384459581748403878">Referenz: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Update-Status des Betriebssystems melden</translation>
@@ -288,13 +284,6 @@ Wenn Sie diese Richtlinie deaktivieren, wird das Scrollen zu bestimmten Textfrag
           Ist "DockNicMacAddress" ausgewählt, dann wird die MAC-Adresse der Dock-NIC verwendet.
 
           Diese Einstellung kann vom Nutzer nicht geändert werden.</translation>
-<translation id="1507957856411744193">Wenn diese Richtlinie auf "true" gesetzt ist, stellt <ph name="PRODUCT_NAME" /> eine Verbindung zu Übertragungsgeräten unter allen IP-Adressen her, nicht nur zu jenen unter privaten RFC1918- oder RFC4193-Adressen.
-
-Wenn diese Richtlinie auf "false" gesetzt ist, stellt <ph name="PRODUCT_NAME" /> nur eine Verbindung zu Übertragungsgeräten unter privaten RFC1918- und RFC4193-Adressen her.
-
-Wenn diese Richtlinie nicht festgelegt und die Funktion "CastAllowAllIPs" deaktiviert ist, stellt <ph name="PRODUCT_NAME" /> nur eine Verbindung zu Übertragungsgeräten unter privaten RFC1918- und RFC4193-Adressen her.
-
-Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert dieser Richtlinie keine Wirkung.</translation>
 <translation id="1509692106376861764">Diese Richtlinie wird ab <ph name="PRODUCT_NAME" />-Version 29 nicht mehr verwendet.</translation>
 <translation id="1514888685242892912"><ph name="PRODUCT_NAME" /> aktivieren</translation>
 <translation id="1515230621229117540">Aktiviert das unverankerte Menü für Bedienungshilfen</translation>
@@ -1130,23 +1119,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
       Für vorausgewählte Sprachen wird immer das beliebteste Tastaturlayout für die entsprechende Sprache vorausgewählt. Nutzer haben aber jederzeit die Möglichkeit, für ihre Sitzung eine beliebige von <ph name="PRODUCT_OS_NAME" /> unterstützte Sprache auszuwählen.</translation>
 <translation id="2693108589792503178">Hiermit wird die URL zur Passwortänderung konfiguriert.</translation>
 <translation id="2694143893026486692">Angedockte Lupe aktiviert</translation>
-<translation id="2694188263972877487">Hiermit wird die Art von Downloads konfiguriert, die von <ph name="PRODUCT_NAME" /> vollständig blockiert werden, ohne dass Nutzer die Sicherheitseinstellung überschreiben können.
-
-      Wenn Sie diese Richtlinie konfigurieren, verhindert <ph name="PRODUCT_NAME" /> bestimmte Arten von Downloads und erlaubt dem Nutzer nicht, die Sicherheitswarnungen zu umgehen.
-
-      Wenn die Option "Gefährliche Downloads blockieren" ausgewählt ist, sind alle Downloads zulässig, die keine Safe Browsing-Warnung enthalten.
-
-      Wenn die Option "Potenziell gefährliche Downloads blockieren" ausgewählt ist, sind alle Downloads zulässig, die keine Safe Browsing-Warnung vor potenziell gefährlichen Downloads enthalten.
-
-      Wenn die Option "Alle Downloads blockieren" ausgewählt ist, werden alle Downloads blockiert.
-
-      Wenn die Option "Schädliche Downloads blockieren" ausgewählt ist, sind alle Downloads zulässig, die von Safe Browsing nicht als Malware erkannt werden. Im Gegensatz zu gefährlichen Downloads wird hierbei nicht der Dateityp berücksichtigt, sondern der Host.
-
-      Wenn die Richtlinie nicht konfiguriert wurde oder die Option "Keine besonderen Einschränkungen" ausgewählt ist, unterliegen Downloads den üblichen, auf Safe Browsing-Analyseergebnissen beruhenden Sicherheitseinschränkungen.
-
-      Diese Einschränkungen gelten für Downloads, die durch Websiteinhalte ausgelöst werden, sowie für die Kontextmenüoption "Link herunterladen". Die Einschränkungen gelten aber weder für das Speichern oder Herunterladen der gerade angezeigten Seite noch für die Speicherung als PDF-Datei in den Druckoptionen.
-
-      Weitere Informationen zu Safe Browsing finden Sie unter https://developers.google.com/safe-browsing.</translation>
 <translation id="2696077732471707315">
       Diese Richtlinie wurde in M77 entfernt.
       Diese Richtlinie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="SITE_PER_PROCESS_POLICY_NAME" />" für die eigentliche Nutzersitzung an. Es wird empfohlen, für beide Richtlinien denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, weil der von der Nutzerrichtlinie angegebene Wert erst angewendet werden muss.
@@ -1483,7 +1455,6 @@ Es findet keine Prüfung auf gefährliche Ressourcen wie Phishing, Malware oder 
           Der Wert für die Richtlinie muss in Millisekunden angegeben werden.</translation>
 <translation id="3205825995289802549">Erstes Browserfenster bei der ersten Ausführung maximieren</translation>
 <translation id="3211426942294667684">Einstellungen für die Anmeldung im Browser</translation>
-<translation id="3214164532079860003">Bei Aktivierung erzwingt diese Richtlinie, dass die Startseite vom aktuellen Standardbrowser importiert wird. Wenn sie deaktiviert ist, wird die Startseite nicht importiert. Sollte sie nicht konfiguriert sein, so wird der Nutzer gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="3219421230122020860">Inkognitomodus verfügbar</translation>
 <translation id="3220624000494482595">Wenn die Kiosk-App eine Android-App ist, hat sie keine Kontrolle über die <ph name="PRODUCT_OS_NAME" />-Version, auch wenn diese Richtlinie auf <ph name="TRUE" /> gesetzt ist.</translation>
 <translation id="322359555555487980">Verfügbarkeit von Variationen auf <ph name="PRODUCT_OS_NAME" /> festlegen</translation>
@@ -1807,11 +1778,6 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Wakelock-Anfragen ignorier
 <translation id="3765260570442823273">Dauer der Warnmeldung zur Abmeldung bei Inaktivität</translation>
 <translation id="377044054160169374">Zwingende Maßnahmen bei irreführenden Inhalten</translation>
 <translation id="3780152581321609624">Nicht-Standard-Port in Kerberos-SPN einschließen</translation>
-<translation id="3780319008680229708">Wenn diese Richtlinie auf "true" gesetzt wird, erscheint das Cast-Symbol immer auf der Symbolleiste oder im Dreipunkt-Menü und Nutzer können es nicht entfernen.
-
-          Wenn diese Richtlinie auf "false" gesetzt oder nicht festgelegt wird, können Nutzer das Symbol über das Kontextmenü anpinnen oder entfernen.
-
-          Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt wird, hat der Wert dieser Richtlinie keine Auswirkungen und das Symbol wird nicht auf der Symbolleiste angezeigt.</translation>
 <translation id="3788662722837364290">Einstellungen für die Energieverwaltung bei Inaktivität des Nutzers</translation>
 <translation id="3790085888761753785">Wenn diese Einstellung aktiviert ist, können Nutzer sich mit Smart Lock in Ihren Konten anmelden. Sie haben dann mehr Möglichkeiten als mit den üblichen Smart Lock-Einstellungen, mit denen sie lediglich ihre Bildschirme entsperren können.
 
@@ -1825,13 +1791,6 @@ Wenn diese Richtlinie nicht festgelegt ist, gilt die Standardeinstellung: Vom Un
 
       Diese Richtlinie wurde eingestellt. Bitte verwenden Sie stattdessen "<ph name="DEVICE_PRINTERS_BLOCKLIST" />".
       </translation>
-<translation id="3800626789999016379">Konfiguriert das Verzeichnis, das <ph name="PRODUCT_NAME" /> zum Herunterladen von Dateien verwendet.
-
-      Wenn Sie diese Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> das angegebene Verzeichnis unabhängig davon, ob der Nutzer selbst eines angegeben oder festgelegt hat, dass er den Downloadpfad jedes Mal selbst angeben möchte.
-
-      Unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables finden Sie eine Liste der Variablen, die verwendet werden können.
-
-      Wird diese Richtlinie nicht konfiguriert, wird das Standard-Downloadverzeichnis verwendet, wobei dieses vom Nutzer geändert werden kann.</translation>
 <translation id="3803171355925844705">Keiner Website das Laden von gemischten Inhalten erlauben</translation>
 <translation id="3805659594028420438">Erweiterung für domaingebundene TLS-Zertifikate aktivieren (veraltet)</translation>
 <translation id="3808945828600697669">Liste der deaktivierten Plug-ins angeben</translation>
@@ -1934,13 +1893,6 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
 
       Diese Richtlinie wird nur angewendet, wenn das Gerät für <ph name="PRODUCT_NAME" /> mit <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> registriert ist.
       Für <ph name="PRODUCT_OS_NAME" /> wird diese Richtlinie immer angewendet.</translation>
-<translation id="3895557476567727016">Konfiguriert das Standardverzeichnis, in dem über <ph name="PRODUCT_NAME" /> heruntergeladene Dateien gespeichert werden.
-
-      Wenn Sie diese Richtlinie festlegen, wird ein anderes Standard-Downloadverzeichnis für <ph name="PRODUCT_NAME" /> festgelegt. Diese Richtlinie ist nicht verbindlich, daher kann ein Nutzer das Verzeichnis ändern.
-
-      Sollten Sie diese Richtlinie nicht festlegen, wird für <ph name="PRODUCT_NAME" /> das jeweilige plattformspezifische Verzeichnis verwendet.
-
-      Unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables finden Sie eine Liste mit allen Variablen, die verwendet werden können.</translation>
 <translation id="3898795800259311780">Bildschirmaufnahme gestatten oder ablehnen</translation>
 <translation id="3907683835264956726">Ermöglicht Nutzern, sich online über einen Sperrbildschirm anzumelden. Wenn diese Richtlinie auf "True" gesetzt ist, wird die erneute Online-Authentifizierung auf dem Sperrbildschirm beispielsweise durch <ph name="POLICY" /> ausgelöst.
       Falls der Bildschirm gesperrt ist, wird die erneute Authentifizierung umgehend erzwungen; andernfalls wird sie erzwungen, wenn der Nutzer das nächste Mal nach dem Erfüllen der Bedingung den Bildschirm sperrt.
@@ -1962,9 +1914,6 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
       Ist sie deaktiviert, können Nutzer im <ph name="PRODUCT_NAME" />-Druckdialogfeld über <ph name="CLOUD_PRINT_NAME" /> nicht drucken.
 
       Damit <ph name="CLOUD_PRINT_NAME" />-Ziele sichtbar sind, muss diese Richtlinie auf "true" gesetzt sein und "<ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />" darf nicht in der Richtlinie "<ph name="POLICY_PRINTERTYPEDENYLIST" />" stehen.</translation>
-<translation id="391531815696899618">Bei Festlegung auf "true" wird die Synchronisierung zwischen Google Drive und der App "Dateien" von <ph name="PRODUCT_OS_NAME" /> deaktiviert. Es werden dann keine Daten in Google Drive hochgeladen.
-
-          Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, können die Nutzer Dateien an Google Drive übertragen.</translation>
 <translation id="3915395663995367577">URL einer PAC-Proxy-Datei</translation>
 <translation id="3917288538553140422">Das Festlegen der Richtlinie gibt an, welche Aktion durchgeführt werden soll, wenn das Basisverzeichnis des Nutzers mit eCryptfs-Verschlüsselung erstellt wurde. Sofern eCryptfs-verschlüsselte Basisverzeichnisse nicht auf die ext4-Verschlüsselung umgestellt werden, wird die Ausführung von Android-Apps möglicherweise beendet.
 
@@ -2340,9 +2289,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
       Wenn der Wert dieser Richtlinie 0 beträgt, wird die Standard-Cache-Größe verwendet. Der Nutzer kann diese jedoch nicht ändern.
 
       Wird diese Richtlinie nicht festgelegt, wird die Standardgröße verwendet und der Nutzer kann diese mit dem Parameter "--media-cache-size" überschreiben.</translation>
-<translation id="4508686775017063528">Wird diese Richtlinie auf "true" gesetzt oder nicht definiert, dann wird <ph name="PRODUCT_NAME" /> aktiviert und Nutzer können die Funktion über das App-Menü, Kontextmenüs von Seiten, Mediensteuerelemente auf Cast-fähigen Websites und das Toolbar-Symbol von Cast (falls angezeigt) starten.
-
-          Wird diese Richtlinie auf "false" gesetzt, dann wird <ph name="PRODUCT_NAME" /> deaktiviert.</translation>
 <translation id="4510923771103268849">Nutzer hat Root-Zugriff auf Crostini-Container</translation>
 <translation id="4515404363392014383">Safe Browsing für vertrauenswürdige Quellen aktivieren</translation>
 <translation id="4517928394515633751">Nutzerdownloads mit Safe Browsing scannen</translation>
@@ -2618,7 +2564,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
       Fehler auf.</translation>
 <translation id="5032164758660626397">Verhindern, dass Nutzer große Dateien übertragen</translation>
 <translation id="5047604665028708335">Zugriff auf Websites außerhalb von Inhaltspaketen erlauben</translation>
-<translation id="5052081091120171147">Diese Richtlinie erzwingt, sofern aktiv, den Import des Browserverlaufs aus dem aktuellen Standardbrowser. Ist die Richtlinie aktiviert, wirkt sie sich auch auf den Importdialog aus. Wenn sie deaktiviert ist, erfolgt kein Import des Browserverlaufs. Sollte sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="5055312535952606505">Hiermit werden die Proxyeinstellungen für <ph name="PRODUCT_NAME" /> konfiguriert. Diese Proxyeinstellungen können auch von ARC-Apps verwendet werden.
 
           Wenn Sie diese Einstellung aktivieren, werden alle Proxyoptionen, die über die Befehlszeile eingegeben werden, von <ph name="PRODUCT_NAME" /> und ARC-Apps ignoriert.
@@ -2955,7 +2900,6 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
       Wenn sie auf "false" gesetzt oder nicht konfiguriert ist, werden keine Informationen ausgegeben.
       Ist sie auf "true" gesetzt, werden Informationen zu Anwendungen und zur Verwendung eines Geräts ausgegeben.</translation>
 <translation id="5422643441807528365">Lizenzschlüssel "<ph name="PLUGIN_VM_NAME" />"</translation>
-<translation id="5423001109873148185">Bei Aktivierung erzwingt diese Richtlinie den Import von Suchmaschinen aus dem aktuellen Standardbrowser. Wenn die Richtlinie aktiviert ist, wirkt sich das darüber hinaus auf den Importdialog aus. Wenn sie deaktiviert ist, wird die Standardsuchmaschine nicht importiert. Sollte Sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import stattfinden soll, oder der Import erfolgt automatisch.</translation>
 <translation id="5423197884968724595">Name der Android WebView-Einschränkung:</translation>
 <translation id="5424147596523390018">Alle Farbmodi zulassen</translation>
 <translation id="5427879482805712214">Über diese Richtlinie können Sie das Avatarbild des Nutzers für den Anmeldebildschirm konfigurieren. Zum Festlegen der Richtlinie muss die URL, über die <ph name="PRODUCT_OS_NAME" /> das Avatarbild herunterladen kann, sowie ein kryptografischer Hash angegeben werden, um die Integrität des Downloads zu verifizieren. Das Bild muss im JPEG-Format vorliegen und darf nicht größer als 512 KB sein. Der Zugriff auf die URL muss ohne Authentifizierung möglich sein.
@@ -3243,11 +3187,6 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="5814301096961727113">Standardstatus für das gesprochene Feedback auf der Anmeldeseite festlegen</translation>
 <translation id="5815129011704381141">Nach Update automatisch neu starten</translation>
 <translation id="582857022372205358">Duplexdruck (kurze Kante) aktivieren</translation>
-<translation id="583091600226586337">
-      Wenn die Richtlinie aktiviert ist, wird der Nutzer vor dem Download gefragt, wo die jeweilige Datei gespeichert werden soll.
-      Wenn die Richtlinie deaktiviert ist, startet der Download sofort und der Nutzer wird nicht nach einem Speicherort gefragt.
-      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
-      </translation>
 <translation id="5832274826894536455">Veraltete Richtlinien</translation>
 <translation id="5835124959204887277">In der Richtlinie werden URLs und Domains spezifiziert, für die keine Eingabeaufforderung angezeigt werden, wenn Nachweiszertifikate von Sicherheitsschlüsseln angefordert werden. Zusätzlich wird an den Sicherheitsschlüssel ein Signal gesendet, das angibt, dass individuelle Nachweise verwendet werden können. Andernfalls erhalten Nutzer in Chrome 65 und höher eine Eingabeaufforderung, wenn von Websites ein Nachweis für Sicherheitsschlüssel angefordert wird.
 
@@ -3335,11 +3274,6 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="5961137303188584693">MAC-Adresse der im Gerät verbauten NIC</translation>
 <translation id="5966615072639944554">Erweiterungen, die die Remote Attestation API zur Bestätigung der Nutzeridentität verwenden dürfen</translation>
 <translation id="5983708779415553259">Standardverhalten für Websites, die nicht zu einem Inhaltspaket gehören</translation>
-<translation id="599133751116473806">Wenn aktiviert, sendet die Funktion "<ph name="PRODUCT_NAME" />" detaillierte Anfrageheader mit Informationen über den Browser und die Umgebung des Nutzers.
-
-      Dies ist eine Zusatzfunktion, doch die neuen Header funktionieren auf manchen Websites nicht, die einschränken, wie viele Zeichen eine Anfrage enthalten darf.
-
-      Wenn die Richtlinie aktiviert oder nicht konfiguriert ist, ist die Funktion "<ph name="PRODUCT_NAME" />" aktiviert. Wenn sie deaktiviert ist, ist die Funktion nicht verfügbar.</translation>
 <translation id="5997543603646547632">Standardmäßig 24-Stunden-Uhr verwenden</translation>
 <translation id="5997846976342452720">Angeben, ob Plug-in-Suchfunktion deaktiviert werden soll (eingestellt)</translation>
 <translation id="5998198091336830580">Diese Richtlinie ist Teil der folgenden Atomic-Gruppe (nur Richtlinien aus der Quelle mit der höchsten Priorität in der Gruppe werden angewendet):</translation>
@@ -3487,11 +3421,6 @@ Jedes Listenelement der Richtlinie ist ein Objekt, das aus der obligatorischen K
 
       Wird diese Einstellung nicht konfiguriert oder auf "True" gesetzt, melden registrierte Geräte die Zeiträume, in denen ein Nutzer auf dem Gerät aktiv ist. Wird für diese Einstellung "False" festgelegt, werden die Geräteaktivitätszeiten weder aufgezeichnet noch gemeldet.</translation>
 <translation id="6212868225782276239">Alle Drucker außer denen in der schwarzen Liste werden angezeigt.</translation>
-<translation id="6219965209794245435">Bei einer Aktivierung erzwingt diese Richtlinie den Import von Formulardaten zum automatischen Ausfüllen aus dem vorherigen Standardbrowser. Darüber hinaus wirkt sich die Richtlinie auch auf den Importdialog aus.
-
-      Wenn die Richtlinie deaktiviert ist, erfolgt kein Import der Formulardaten zum automatischen Ausfüllen.
-
-      Ist die Richtlinie nicht konfiguriert, wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="6221175752766085998">Zertifikate zulassen, die von lokalen Vertrauensankern ausgestellt werden, bei denen die "subjectAlternativeName"-Erweiterung fehlt</translation>
 <translation id="6224304369267200483">Automatischer Nachweis des Sicherheitsschlüssels durch URLs/Domains</translation>
 <translation id="6233173491898450179">Downloadverzeichnis festlegen</translation>
@@ -3953,7 +3882,6 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 
       Wenn "U2F_EXTENDED" ausgewählt ist, sind durch die integrierte Hardware die U2F-Funktionen plus einige Erweiterungen zur individuellen Bestätigung verfügbar.</translation>
 <translation id="7002040773317582266">Die Echtzeitüberprüfung für Mainframe-URLs ist aktiviert.</translation>
-<translation id="7003334574344702284">Diese Richtlinie erzwingt, sofern aktiv, den Import von gespeicherten Passwörtern aus dem vorherigen Standardbrowser. Bei einer Aktivierung wirkt sich die Richtlinie auch auf den Importdialog aus. Wenn sie deaktiviert ist, erfolgt kein Import der gespeicherten Passwörter. Sollte sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="7003746348783715221">Einstellungen für <ph name="PRODUCT_NAME" /></translation>
 <translation id="7008308728445338159">DNS-Abfangprüfungen aktiviert</translation>
 <translation id="7016736684656067099">Wenn die Richtlinie auf "1" gesetzt ist, dürfen alle Websites Bilder anzeigen. Ist die Richtlinie auf "2" gesetzt, wird das Anzeigen von Bildern blockiert.
@@ -3977,7 +3905,6 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
       Ist die Richtlinie nicht konfiguriert, erscheint die Ablage standardmäßig unten auf dem Bildschirm und der Nutzer hat die Möglichkeit, diese Position zu ändern.</translation>
 <translation id="7040229947030068419">Beispielwert</translation>
 <translation id="7044883996351280650">Android-Dienst "Sicherung und Wiederherstellung" konfigurieren</translation>
-<translation id="7053678646221257043">Bei Aktivierung erzwingt diese Richtlinie, dass die Lesezeichen vom aktuellen Standardbrowser importiert werden. Wenn Sie deaktiviert ist, werden keine Lesezeichen importiert. Sollte Sie nicht konfiguriert sein, wird der Nutzer gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="7063895219334505671">Pop-ups auf diesen Websites zulassen</translation>
 <translation id="706669471845501145">Anzeige von Desktop-Benachrichtigungen durch Websites zulassen</translation>
 <translation id="7068108874199666656">Diese Richtlinie ermöglicht, Netzwerkkonfigurationen für alle Nutzer eines <ph name="PRODUCT_OS_NAME" />-Geräts zu übernehmen. Die Netzwerkkonfiguration ist ein String im JSON-Format, der der Definition des Open Network Configuration-Formats entspricht.</translation>
@@ -4827,9 +4754,6 @@ Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte
 <translation id="829703642501504476">Wenn für diese Richtlinie "True" festgelegt ist, verwendet <ph name="PRODUCT_NAME" /> alternative Fehlerseiten (z. B. "Seite nicht gefunden"). Wenn für diese Richtlinie "False" festgelegt ist, verwendet <ph name="PRODUCT_NAME" /> niemals alternative Fehlerseiten.
 
       Wenn Sie diese Richtlinie konfigurieren, können Nutzer sie nicht ändern. Wird die Richtlinie nicht konfiguriert, ist sie aktiviert, aber Nutzer können die Einstellung ändern.</translation>
-<translation id="8300455783946254851">Bei Festlegung auf "true" wird die Synchronisierung zwischen Google Drive und der App "Dateien" von <ph name="PRODUCT_OS_NAME" /> per Mobilfunkverbindung deaktiviert. Eine Synchronisierung von Daten mit Google Drive erfolgt dann nur bei bestehender WLAN- oder Ethernet-Verbindung.
-
-          Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, können die Nutzer Dateien per Mobilfunkverbindung an Google Drive übertragen.</translation>
 <translation id="8300992833374611099">Festlegen, wo Entwicklertools verwendet werden können</translation>
 <translation id="8306117673860983372">Anmeldeeinstellungen</translation>
 <translation id="8312129124898414409">Ermöglicht Ihnen, festzulegen, ob die Schlüsselgenerierung für Websites zugelassen wird. Die Schlüsselgenerierung kann entweder für alle Websites zugelassen oder für alle Websites verboten werden.
@@ -5101,11 +5025,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="8705895771006864851">Wenn Sie diese Richtlinie auf "True" setzen, wird eine Übersetzungsfunktion implementiert, wenn dies für Nutzer angemessen ist. In diesem Fall werden in <ph name="PRODUCT_NAME" /> eine integrierte Übersetzungssymbolleiste sowie eine Übersetzungsfunktion im Kontextmenü angezeigt, das mit einem Rechtsklick geöffnet werden kann. Wird die Richtlinie auf "False" gesetzt, werden alle integrierten Übersetzungsfunktionen ausgeschaltet.
 
       Nach dem Konfigurieren der Richtlinie kann diese Funktion von den Nutzern nicht mehr geändert werden. Ist sie dagegen nicht konfiguriert, kann der Nutzer die Einstellung ändern.</translation>
-<translation id="8708284670795912158">Wenn die Richtlinie auf "True" gesetzt ist, kann <ph name="PRODUCT_NAME" /> Medien automatisch abspielen. Wenn die Richtlinie auf "False" gesetzt ist, kann <ph name="PRODUCT_NAME" /> Medien nicht mehr automatisch abspielen.
-
-       Standardmäßig spielt <ph name="PRODUCT_NAME" /> Medien nicht automatisch ab. Aber für bestimmte URL-Muster können Sie diese Einstellung über die Richtlinie <ph name="AUTOPLAY_WHITELIST_POLICY_NAME" /> ändern.
-
-      Wird die Richtlinie während der Ausführung von <ph name="PRODUCT_NAME" /> geändert, wird sie nur auf neu geöffnete Tabs angewendet.</translation>
 <translation id="8733448613597049197">Hiermit wird die erweiterte Berichterstellung bei der Verwendung von Safe Browsing in <ph name="PRODUCT_NAME" /> aktiviert und verhindert, dass Nutzer diese Einstellung ändern.
 
       Bei der erweiterten Berichterstellung werden einige Systeminformationen und Seiteninhalte an die Server von Google gesendet, um bei der Erkennung von gefährlichen Apps und Websites zu helfen.
@@ -5400,12 +5319,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="9117826695152538214">Wenn Sie die Richtlinie auf "True" setzen, bleibt die Einfingerbedienung aktiviert. Wenn Sie die Richtlinie auf "False" setzen, bleibt die Einfingerbedienung deaktiviert.
 
       Wenn Sie diese Richtlinie konfigurieren, kann sie von Nutzern nicht geändert werden. Wird sie nicht konfiguriert, ist die Einfingerbedienung erst einmal deaktiviert, kann aber jederzeit von Nutzern aktiviert werden.</translation>
-<translation id="91196902572559194">Mit dieser Richtlinie erhält Google Assistant die Berechtigung, bei Gesprächen zuzuhören und so zu prüfen, ob die Wortgruppe für die Sprachaktivierung genannt wird.
-
-      Wenn die Richtlinie aktiviert ist, hört Google Assistant bei Gesprächen zu, um zu erkennen, ob die Wortgruppe für die Sprachaktivierung genannt wird.
-      Wenn die Richtlinie deaktiviert ist, hört Google Assistant nicht bei Gesprächen zu, um zu erkennen, ob die Wortgruppe für die Sprachaktivierung genannt wird.
-      Wenn die Richtlinie nicht konfiguriert ist, können die Nutzer entscheiden, ob Google Assistant bei Gesprächen zuhören darf, um zu erkennen, ob die Wortgruppe für die Sprachaktivierung genannt wird.
-      </translation>
 <translation id="9123211093995421438">Gibt die Mindestanzahl der <ph name="PRODUCT_OS_NAME" />-Meilensteine an. Wird diese erreicht, sollte ein Rollback jederzeit von der stabilen Version aus möglich sein.
 
       Standardwert ist 0 für Kundengeräte und 4 (ca. ein halbes Jahr) für unternehmenseigene Geräte.

@@ -121,6 +121,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
                               int64_t quota,
                               blink::mojom::UsageBreakdownPtr usage_breakdown)>;
 
+  static constexpr int64_t kGBytes = 1024 * 1024 * 1024;
   static constexpr int64_t kNoLimit = INT64_MAX;
   static constexpr int64_t kMBytes = 1024 * 1024;
   static constexpr int kMinutesInMilliSeconds = 60 * 1000;
@@ -260,6 +261,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   static constexpr int kEvictionIntervalInMilliSeconds =
       30 * kMinutesInMilliSeconds;
   static constexpr int kThresholdOfErrorsToBeDenylisted = 3;
+  static constexpr int kThresholdRandomizationPercent = 5;
 
   static constexpr char kDatabaseName[] = "QuotaManager";
   static constexpr char kDaysBetweenRepeatedOriginEvictionsHistogram[] =
@@ -432,6 +434,14 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   // Used from quota-internals page to test behavior of the storage pressure
   // callback.
   void SimulateStoragePressure(const url::Origin origin);
+
+  // Evaluates disk statistics to identify storage pressure
+  // (low disk space availability) and starts the storage
+  // pressure event dispatch if appropriate.
+  // TODO(crbug.com/1088004): Implement UsageAndQuotaInfoGatherer::Completed()
+  // to use DetermineStoragePressure().
+  // TODO(crbug.com/1102433): Define and explain StoragePressure in the README.
+  void DetermineStoragePressure(int64_t free_space, int64_t total_space);
 
   void PostTaskAndReplyWithResultForDBThread(
       const base::Location& from_here,

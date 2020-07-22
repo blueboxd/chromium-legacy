@@ -162,16 +162,16 @@ void ExternalSemaphore::Reset() {
     DCHECK(context_provider_);
     VkDevice device = context_provider_->GetDeviceQueue()->GetVulkanDevice();
     vkDestroySemaphore(device, semaphore_, /*pAllocator=*/nullptr);
-    context_provider_ = nullptr;
-    semaphore_ = VK_NULL_HANDLE;
   }
 
   if (gl_semaphore_ != 0) {
     if (gl::GLApi* api = gl::g_current_gl_context)
       api->glDeleteSemaphoresEXTFn(1, &gl_semaphore_);
-    gl_semaphore_ = 0;
   }
 
+  context_provider_ = nullptr;
+  semaphore_ = VK_NULL_HANDLE;
+  gl_semaphore_ = 0;
   handle_ = {};
 }
 

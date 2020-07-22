@@ -122,6 +122,18 @@ void PendingAppInstallTask::Install(content::WebContents* web_contents,
       base::BindOnce(std::move(result_callback), Result(code, base::nullopt)));
 }
 
+void PendingAppInstallTask::InstallFromInfo(ResultCallback result_callback) {
+  auto internal_install_source = ConvertExternalInstallSourceToInstallSource(
+      install_options().install_source);
+
+  install_manager_->InstallWebAppFromInfo(
+      install_options_.app_info_factory.Run(), ForInstallableSite::kYes,
+      internal_install_source,
+      base::BindOnce(&PendingAppInstallTask::OnWebAppInstalled,
+                     weak_ptr_factory_.GetWeakPtr(), /* is_placeholder=*/false,
+                     std::move(result_callback)));
+}
+
 void PendingAppInstallTask::UninstallPlaceholderApp(
     content::WebContents* web_contents,
     ResultCallback result_callback) {
@@ -162,7 +174,6 @@ void PendingAppInstallTask::OnPlaceholderUninstalled(
 void PendingAppInstallTask::ContinueWebAppInstall(
     content::WebContents* web_contents,
     ResultCallback result_callback) {
-
   auto install_params = ConvertExternalInstallOptionsToParams(install_options_);
   auto install_source = ConvertExternalInstallSourceToInstallSource(
       install_options_.install_source);

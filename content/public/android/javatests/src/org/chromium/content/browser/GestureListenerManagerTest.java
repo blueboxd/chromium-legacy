@@ -8,6 +8,7 @@ import android.view.View;
 
 import androidx.test.filters.LargeTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,6 +23,8 @@ import org.chromium.content_public.browser.GestureStateListenerWithScroll;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.RenderFrameHostTestExt;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
@@ -36,8 +39,9 @@ public class GestureListenerManagerTest {
     public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
 
     // The page should be large enough so that scrolling occurs.
-    private static final String TEST_URL =
-            UrlUtils.encodeHtmlDataUri("<html><body style='height: 10000px'>");
+    private static final String TEST_URL = UrlUtils.encodeHtmlDataUri(
+            "<html><body style='height: 10000px'><script>"
+            + "window.addEventListener('load', () => { document.title = 'loaded'; });</script>");
 
     private static final class GestureStateListenerImpl implements GestureStateListenerWithScroll {
         private int mNumOnScrollOffsetOrExtentChangedCalls;
@@ -93,9 +97,11 @@ public class GestureListenerManagerTest {
                 new TestCallbackHelperContainer(webContents);
         mActivityTestRule.loadUrl(webContents.getNavigationController(), callbackHelperContainer,
                 new LoadUrlParams(TEST_URL));
-        // Wait for both a paint and the page to finish loading. These may come in any order.
+        // Wait for the first non-empty visual paint and the title to change. The title changes when
+        // the doc has finished loading, which is a good signal events can be processed.
         callbackHelperContainer.getOnFirstVisuallyNonEmptyPaintHelper().waitForCallback(0);
-        callbackHelperContainer.getOnPageFinishedHelper().waitForCallback(0);
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(webContents.getTitle(), Matchers.is("loaded")));
 
         // At this point the page has finished loading and a non-empty paint occurred. This does not
         // mean the renderer is fully ready to process events (processing events requires layers,

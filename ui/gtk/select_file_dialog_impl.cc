@@ -9,6 +9,7 @@
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/nix/xdg_util.h"
+#include "base/no_destructor.h"
 #include "base/threading/thread_restrictions.h"
 
 namespace {
@@ -16,6 +17,10 @@ namespace {
 enum UseKdeFileDialogStatus { UNKNOWN, NO_KDE, YES_KDE };
 
 UseKdeFileDialogStatus use_kde_ = UNKNOWN;
+std::string& KDialogVersion() {
+  static base::NoDestructor<std::string> version;
+  return *version;
+}
 
 }  // namespace
 
@@ -42,7 +47,8 @@ ui::SelectFileDialog* SelectFileDialogImpl::Create(
       // Check to see if the user dislikes the KDE file dialog.
       if (!env->HasVar("NO_CHROME_KDE_FILE_DIALOG")) {
         // Check to see if the KDE dialog works.
-        if (SelectFileDialogImpl::CheckKDEDialogWorksOnUIThread()) {
+        if (SelectFileDialogImpl::CheckKDEDialogWorksOnUIThread(
+                KDialogVersion())) {
           use_kde_ = YES_KDE;
         }
       }
@@ -58,7 +64,7 @@ ui::SelectFileDialog* SelectFileDialogImpl::Create(
   base::nix::DesktopEnvironment desktop =
       base::nix::GetDesktopEnvironment(env.get());
   return SelectFileDialogImpl::NewSelectFileDialogImplKDE(
-      listener, std::move(policy), desktop);
+      listener, std::move(policy), desktop, KDialogVersion());
 }
 
 SelectFileDialogImpl::SelectFileDialogImpl(

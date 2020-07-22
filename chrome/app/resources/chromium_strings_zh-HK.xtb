@@ -103,6 +103,7 @@
 <translation id="4943838377383847465">Chromium 正在背景模式中執行。</translation>
 <translation id="4987820182225656817">以訪客身分使用 Chromium 不會留下任何記錄。</translation>
 <translation id="4994636714258228724">新增為 Chromium 使用者</translation>
+<translation id="5037694917996535813">您已使用公司帳戶登入。要建立新的公司 Chromium 設定檔以分開保留資料嗎？</translation>
 <translation id="5224391634244552924">沒有已儲存的密碼。儲存密碼時，Chromium 可檢查您的密碼。</translation>
 <translation id="5277894862589591112">如要套用變更，請重新啟動 Chromium</translation>
 <translation id="5358375970380395591">您已登入受管理的帳戶，並將管理控制權授予您的 Chromium 設定檔。您的 Chromium 數據 (例如應用程式、書籤、記錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些數據，但您無法將這些數據與其他帳戶建立關聯。<ph name="LEARN_MORE" /></translation>

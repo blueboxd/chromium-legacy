@@ -264,6 +264,8 @@ public class MediaSessionHelper implements MediaImageCallback {
     }
 
     public void setWebContents(@NonNull WebContents webContents) {
+        if (mWebContents == webContents) return;
+
         mWebContents = webContents;
 
         if (mWebContentsObserver != null) mWebContentsObserver.destroy();

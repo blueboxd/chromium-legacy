@@ -22,6 +22,60 @@ mojom("video_capture") {
   export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
   export_header_blink = "third_party/blink/public/platform/web_common.h"
+
+  shared_video_capture_cpp_typemap = {
+    types = [
+      {
+        mojom = "media.mojom.ResolutionChangePolicy"
+        cpp = "::media::ResolutionChangePolicy"
+      },
+      {
+        mojom = "media.mojom.PowerLineFrequency"
+        cpp = "::media::PowerLineFrequency"
+      },
+      {
+        mojom = "media.mojom.VideoCapturePixelFormat"
+        cpp = "::media::VideoPixelFormat"
+      },
+      {
+        mojom = "media.mojom.VideoCaptureBufferType"
+        cpp = "::media::VideoCaptureBufferType"
+      },
+      {
+        mojom = "media.mojom.VideoCaptureError"
+        cpp = "::media::VideoCaptureError"
+      },
+      {
+        mojom = "media.mojom.VideoCaptureFrameDropReason"
+        cpp = "::media::VideoCaptureFrameDropReason"
+      },
+      {
+        mojom = "media.mojom.VideoCaptureFormat"
+        cpp = "::media::VideoCaptureFormat"
+      },
+      {
+        mojom = "media.mojom.VideoCaptureParams"
+        cpp = "::media::VideoCaptureParams"
+      },
+      {
+        mojom = "media.mojom.VideoCaptureDeviceDescriptor"
+        cpp = "::media::VideoCaptureDeviceDescriptor"
+      },
+      {
+        mojom = "media.mojom.VideoCaptureDeviceInfo"
+        cpp = "::media::VideoCaptureDeviceInfo"
+      },
+      {
+        mojom = "media.mojom.VideoFacingMode"
+        cpp = "::media::VideoFacingMode"
+      },
+    ]
+    traits_headers = [ "video_capture_types_mojom_traits.h" ]
+    traits_public_deps = [ ":video_capture_mojom_support" ]
+  }
+
+  cpp_typemaps = [ shared_video_capture_cpp_typemap ]
+  blink_cpp_typemaps = [ shared_video_capture_cpp_typemap ]
 }
 
 component("video_capture_mojom_support") {

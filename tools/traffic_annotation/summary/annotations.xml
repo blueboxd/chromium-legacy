@@ -238,7 +238,6 @@ Refer to README.md for content description and update process.
  <item id="proxy_config_headless" hash_code="133221587" type="0" content_hash_code="77459277" os_list="linux,windows" file_path="headless/lib/browser/headless_request_context_manager.cc"/>
  <item id="proxy_config_settings" hash_code="136468456" type="0" content_hash_code="19527377" os_list="linux,windows" file_path="components/proxy_config/pref_proxy_config_tracker_impl.cc"/>
  <item id="proxy_config_system" hash_code="11258689" type="0" content_hash_code="77057929" os_list="linux,windows" file_path="net/proxy_resolution/configured_proxy_resolution_service.cc"/>
- <item id="proxy_config_windows_resolver" hash_code="13924805" type="0" content_hash_code="123023599" os_list="windows" file_path="net/proxy_resolution/win/windows_system_proxy_resolution_request.cc"/>
  <item id="proxy_script_fetcher" hash_code="37531401" type="0" deprecated="2018-03-16" content_hash_code="31866133" file_path=""/>
  <item id="puch_client_channel" hash_code="34459548" type="0" deprecated="2020-01-23" content_hash_code="92475475" file_path=""/>
  <item id="qr_code_save" hash_code="87963126" type="0" content_hash_code="72717245" os_list="linux,windows" file_path="chrome/browser/ui/views/qrcode_generator/qrcode_generator_bubble.cc"/>

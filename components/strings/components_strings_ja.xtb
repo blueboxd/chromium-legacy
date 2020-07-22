@@ -45,6 +45,7 @@
 <translation id="115926840831309955">CVC を確認してからもう一度試すか、有効期限を更新してください</translation>
 <translation id="1161325031994447685">Wi-Fi に再度接続する</translation>
 <translation id="1165039591588034296">エラー</translation>
+<translation id="1165174597379888365">ページがアクセスされた</translation>
 <translation id="1175364870820465910">印刷(&amp;P)...</translation>
 <translation id="1175875016430184367">3 か所のステープル（右）</translation>
 <translation id="1178581264944972037">一時停止</translation>
@@ -261,6 +262,7 @@
 <translation id="2001146170449793414">{COUNT,plural, =1{他 1 個}other{他 # 個}}</translation>
 <translation id="2003709556000175978">今すぐパスワードを再設定してください</translation>
 <translation id="2003775180883135320">4 穴パンチ（上）</translation>
+<translation id="202072848677994234">このフォームは保護されていない接続を介して送信されます。自動入力は無効です。</translation>
 <translation id="2025115093177348061">拡張現実（AR）</translation>
 <translation id="2025186561304664664">プロキシは自動設定になっています。</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />プロキシとファイアウォールを確認する<ph name="END_LINK" /></translation>
@@ -328,6 +330,7 @@
 <translation id="2289385804009217824">トリミング</translation>
 <translation id="2292556288342944218">インターネット アクセスがブロックされています</translation>
 <translation id="2293443924986248631">オンにすると、サイトは Cookie を使用してあなたをウェブ上でトラッキングできなくなります。一部サイトの機能が使用できなくなる可能性もあります。</translation>
+<translation id="2295290966866883927">アクセスしたページの URL は分析のため Google Cloud または第三者に送信されます。たとえば、安全でないウェブサイトを検出するためにスキャンされます。</translation>
 <translation id="2297722699537546652">B5（封筒）</translation>
 <translation id="2300306941146563769">アップロードされていません</translation>
 <translation id="2310021320168182093">長2（封筒）</translation>
@@ -387,7 +390,7 @@
 <translation id="2552295903035773204">今後、画面ロックを使用してカードを確認する</translation>
 <translation id="2553853292994445426">セキュア DNS の設定を確認してください。接続できないセキュア DNS サーバーを設定している可能性があります。</translation>
 <translation id="2556876185419854533">編集の取り消し（&amp;U）</translation>
-<translation id="257674075312929031">グループ</translation>
+<translation id="257674075312929031">グループ化</translation>
 <translation id="2586657967955657006">クリップボード</translation>
 <translation id="2587730715158995865">公開元: <ph name="ARTICLE_PUBLISHER" />。この記事と他 <ph name="OTHER_ARTICLE_COUNT" /> 件の記事を読むことができます。</translation>
 <translation id="2587841377698384444">Directory API ID:</translation>

@@ -240,7 +240,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
                    const ImageResourceContent&,
                    const PropertyTreeStateOrAlias& current_paint_properties,
                    const StyleFetchedImage*,
-                   const IntRect* image_border);
+                   const IntRect& image_border);
   void NotifyImageFinished(const LayoutObject&, const ImageResourceContent*);
   void OnPaintFinished();
   void LayoutObjectWillBeDestroyed(const LayoutObject&);

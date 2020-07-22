@@ -1150,7 +1150,7 @@ XVisualManager::XVisualManager() : connection_(x11::Connection::Get()) {
   for (const auto& depth : connection_->default_screen().allowed_depths) {
     for (const auto& visual : depth.visuals) {
       visuals_[visual.visual_id] =
-          std::make_unique<XVisualData>(depth.depth, &visual);
+          std::make_unique<XVisualData>(connection_, depth.depth, &visual);
     }
   }
 
@@ -1181,6 +1181,7 @@ XVisualManager::~XVisualManager() = default;
 void XVisualManager::ChooseVisualForWindow(bool want_argb_visual,
                                            x11::VisualId* visual_id,
                                            uint8_t* depth,
+                                           x11::ColorMap* colormap,
                                            bool* visual_has_alpha) {
   base::AutoLock lock(lock_);
   bool use_argb = want_argb_visual && IsCompositingManagerPresent() &&
@@ -1191,15 +1192,16 @@ void XVisualManager::ChooseVisualForWindow(bool want_argb_visual,
 
   if (visual_id)
     *visual_id = visual;
-  bool success = GetVisualInfoImpl(visual, depth, visual_has_alpha);
+  bool success = GetVisualInfoImpl(visual, depth, colormap, visual_has_alpha);
   DCHECK(success);
 }
 
 bool XVisualManager::GetVisualInfo(x11::VisualId visual_id,
                                    uint8_t* depth,
+                                   x11::ColorMap* colormap,
                                    bool* visual_has_alpha) {
   base::AutoLock lock(lock_);
-  return GetVisualInfoImpl(visual_id, depth, visual_has_alpha);
+  return GetVisualInfoImpl(visual_id, depth, colormap, visual_has_alpha);
 }
 
 bool XVisualManager::OnGPUInfoChanged(bool software_rendering,
@@ -1231,6 +1233,7 @@ bool XVisualManager::ArgbVisualAvailable() const {
 
 bool XVisualManager::GetVisualInfoImpl(x11::VisualId visual_id,
                                        uint8_t* depth,
+                                       x11::ColorMap* colormap,
                                        bool* visual_has_alpha) {
   auto it = visuals_.find(visual_id);
   if (it == visuals_.end())
@@ -1238,8 +1241,12 @@ bool XVisualManager::GetVisualInfoImpl(x11::VisualId visual_id,
   XVisualData& data = *it->second;
   const x11::VisualType& info = *data.info;
 
+  bool is_default_visual = visual_id == default_visual_id_;
+
   if (depth)
     *depth = data.depth;
+  if (colormap)
+    *colormap = is_default_visual ? x11::ColorMap{} : data.GetColormap();
   if (visual_has_alpha) {
     auto popcount = [](auto x) {
       return std::bitset<8 * sizeof(decltype(x))>(x).count();
@@ -1251,10 +1258,22 @@ bool XVisualManager::GetVisualInfoImpl(x11::VisualId visual_id,
   return true;
 }
 
-XVisualManager::XVisualData::XVisualData(uint8_t depth,
+XVisualManager::XVisualData::XVisualData(x11::Connection* connection,
+                                         uint8_t depth,
                                          const x11::VisualType* info)
-    : depth(depth), info(info) {}
+    : depth(depth), info(info), connection_(connection) {}
 
+// Do not free the colormap as this would uninstall the colormap even for
+// non-Chromium clients.
 XVisualManager::XVisualData::~XVisualData() = default;
+
+x11::ColorMap XVisualManager::XVisualData::GetColormap() {
+  if (colormap_ == x11::ColorMap{}) {
+    colormap_ = connection_->GenerateId<x11::ColorMap>();
+    connection_->CreateColormap({x11::ColormapAlloc::None, colormap_,
+                                 connection_->default_root(), info->visual_id});
+  }
+  return colormap_;
+}
 
 }  // namespace ui

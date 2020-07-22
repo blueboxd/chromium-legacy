@@ -269,8 +269,6 @@ error::Error RasterDecoderImpl::HandleCopySubTextureINTERNALImmediate(
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
   GLboolean unpack_flip_y = static_cast<GLboolean>(c.unpack_flip_y);
-  GLboolean unpack_premultiply_alpha =
-      static_cast<GLboolean>(c.unpack_premultiply_alpha);
   uint32_t mailboxes_size;
   if (!gles2::GLES2Util::ComputeDataSize<GLbyte, 32>(1, &mailboxes_size)) {
     return error::kOutOfBounds;
@@ -295,7 +293,7 @@ error::Error RasterDecoderImpl::HandleCopySubTextureINTERNALImmediate(
     return error::kOutOfBounds;
   }
   DoCopySubTextureINTERNAL(xoffset, yoffset, x, y, width, height, unpack_flip_y,
-                           unpack_premultiply_alpha, mailboxes);
+                           mailboxes);
   return error::kNoError;
 }
 

@@ -50,7 +50,8 @@
 //         service.InitWithNewPipeAndPassReceiver();
 //     base::PostTask(
 //         FROM_HERE, {content::BrowserThread::IO},
-//         base::Bind(&Foo::ConnectToService, this, base::Passed(&receiver)));
+//         base::BindOnce(&Foo::ConnectToService, this,
+//         base::Passed(&receiver)));
 //     resource_usage_.reset(new ProcessResourceUsage(std::move(service)));
 //   ...
 //

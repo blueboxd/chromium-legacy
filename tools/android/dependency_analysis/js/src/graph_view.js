@@ -166,18 +166,22 @@ class GraphView {
         .force('chargeForce', d3.forceManyBody().strength(-3000))
         .force('centerXForce',
             d3.forceX(width / 2).strength(node => {
-              if (node.visualizationState.selectedByFilter)
+              if (node.visualizationState.selectedByFilter) {
                 return centeringStrengthX * 20;
-              if (node.visualizationState.outboundDepth <= 1)
+              }
+              if (node.visualizationState.outboundDepth <= 1) {
                 return centeringStrengthX * 5;
+              }
               return centeringStrengthY;
             }))
         .force('centerYForce',
             d3.forceY(height / 2).strength(node => {
-              if (node.visualizationState.selectedByFilter)
+              if (node.visualizationState.selectedByFilter) {
                 return centeringStrengthY * 20;
-              if (node.visualizationState.outboundDepth <= 1)
+              }
+              if (node.visualizationState.outboundDepth <= 1) {
                 return centeringStrengthY * 5;
+              }
               return centeringStrengthY;
             }));
 

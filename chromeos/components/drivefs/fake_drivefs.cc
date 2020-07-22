@@ -446,4 +446,9 @@ void FakeDriveFs::DumpAccountSettings() {}
 
 void FakeDriveFs::LoadAccountSettings() {}
 
+void FakeDriveFs::CreateNativeHostSession(
+    drivefs::mojom::ExtensionConnectionParamsPtr params,
+    mojo::PendingReceiver<drivefs::mojom::NativeMessagingHost> session,
+    mojo::PendingRemote<drivefs::mojom::NativeMessagingPort> port) {}
+
 }  // namespace drivefs

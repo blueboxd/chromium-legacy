@@ -274,23 +274,6 @@ void OnDownloadDialogClosed(
 }
 #endif  // defined(OS_ANDROID)
 
-void ConnectToQuarantineService(
-    mojo::PendingReceiver<quarantine::mojom::Quarantine> receiver) {
-#if defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(quarantine::kOutOfProcessQuarantine)) {
-    content::ServiceProcessHost::Launch(
-        std::move(receiver),
-        content::ServiceProcessHost::Options()
-            .WithDisplayName("Quarantine Service")
-            .Pass());
-    return;
-  }
-#endif
-
-  mojo::MakeSelfOwnedReceiver(std::make_unique<quarantine::QuarantineImpl>(),
-                              std::move(receiver));
-}
-
 void OnCheckExistingDownloadPathDone(
     std::unique_ptr<DownloadTargetInfo> target_info,
     content::DownloadTargetCallback callback,
@@ -1500,7 +1483,8 @@ void ChromeDownloadManagerDelegate::CheckDownloadAllowed(
 
 download::QuarantineConnectionCallback
 ChromeDownloadManagerDelegate::GetQuarantineConnectionCallback() {
-  return base::BindRepeating(&ConnectToQuarantineService);
+  return base::BindRepeating(
+      &ChromeDownloadManagerDelegate::ConnectToQuarantineService);
 }
 
 void ChromeDownloadManagerDelegate::OnCheckDownloadAllowedComplete(
@@ -1530,4 +1514,21 @@ const char ChromeDownloadManagerDelegate::SafeBrowsingState::
 base::WeakPtr<ChromeDownloadManagerDelegate>
 ChromeDownloadManagerDelegate::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+// static
+void ChromeDownloadManagerDelegate::ConnectToQuarantineService(
+    mojo::PendingReceiver<quarantine::mojom::Quarantine> receiver) {
+#if defined(OS_WIN)
+  if (base::FeatureList::IsEnabled(quarantine::kOutOfProcessQuarantine)) {
+    content::ServiceProcessHost::Launch(
+        std::move(receiver), content::ServiceProcessHost::Options()
+                                 .WithDisplayName("Quarantine Service")
+                                 .Pass());
+    return;
+  }
+#endif
+
+  mojo::MakeSelfOwnedReceiver(std::make_unique<quarantine::QuarantineImpl>(),
+                              std::move(receiver));
 }

@@ -52,7 +52,8 @@ class CORE_EXPORT ImageElementTiming final
   void NotifyImagePainted(
       const LayoutObject*,
       const ImageResourceContent* cached_image,
-      const PropertyTreeStateOrAlias& current_paint_chunk_properties);
+      const PropertyTreeStateOrAlias& current_paint_chunk_properties,
+      const IntRect& image_border);
 
   void NotifyBackgroundImagePainted(
       Node*,
@@ -74,7 +75,7 @@ class CORE_EXPORT ImageElementTiming final
       const ImageResourceContent& cached_image,
       const PropertyTreeStateOrAlias& current_paint_chunk_properties,
       base::TimeTicks load_time,
-      const IntRect* image_border);
+      const IntRect& image_border);
 
   // Callback for the swap promise. Reports paint timestamps.
   void ReportImagePaintSwapTime(WebSwapResult, base::TimeTicks timestamp);

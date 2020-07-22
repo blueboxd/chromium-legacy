@@ -1795,10 +1795,13 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       std::make_unique<extensions::NativeMessagingHostListPolicyHandler>(
           key::kNativeMessagingWhitelist,
           extensions::pref_names::kNativeMessagingAllowlist, false));
-  handlers->AddHandler(
+  handlers->AddHandler(std::make_unique<policy::SimpleDeprecatingPolicyHandler>(
       std::make_unique<extensions::NativeMessagingHostListPolicyHandler>(
           key::kNativeMessagingBlacklist,
-          extensions::pref_names::kNativeMessagingBlocklist, true));
+          extensions::pref_names::kNativeMessagingBlocklist, true),
+      std::make_unique<extensions::NativeMessagingHostListPolicyHandler>(
+          key::kNativeMessagingBlocklist,
+          extensions::pref_names::kNativeMessagingBlocklist, true)));
   handlers->AddHandler(
       std::make_unique<AutoLaunchProtocolsPolicyHandler>(chrome_schema));
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)

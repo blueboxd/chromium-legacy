@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">ରେକର୍ଡ କରାଯାଇଥିବା ବର୍ଷ</translation>
 <translation id="3338239663705455570">ସ୍ଲୋଭେନିଆନ୍ କୀ'ବୋର୍ଡ</translation>
 <translation id="3353984535370177728">ଅପ୍‌ଲୋଡ୍‍ କରିବାକୁ ଏକ ଫୋଲ୍ଡର୍‌ ଚୟନ କରନ୍ତୁ</translation>
+<translation id="3356580349448036450">ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି</translation>
 <translation id="3399597614303179694">ମାସେଡୋନିଆନ୍ କୀବୋର୍ଡ</translation>
 <translation id="3414856743105198592">ବାହାର କରାଯାଇପାରୁଥିବା ମେଡ଼ିଆକୁ ଫର୍ମାଟ୍ କଲେ ଏହା ସମସ୍ତ ଡାଟା ଲିଭାଇଦେବ। ଆପଣ ଜାରି ରଖିବା ଚାହାନ୍ତି କି?</translation>
 <translation id="3437801641691368414">ତିଆରି ହୋ‌ଇଥିବାର ସମୟ</translation>
@@ -545,7 +546,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">ଇନ୍‍ଷ୍ଟଲ୍ କରିହେଲା ନାହିଁ</translation>
 <translation id="7040138676081995583">ଏହା ମାଧ୍ୟମରେ ଖୋଲନ୍ତୁ...</translation>
-<translation id="7059566040011178088"><ph name="REMAINING_TIME" />ରୁ କମ୍</translation>
 <translation id="7100897339030255923"><ph name="COUNT" />ଟି ଆଇଟମ୍ ଚୟନ କରାଯାଇଛି</translation>
 <translation id="7106346894903675391">ଅଧିକ ଷ୍ଟୋରେଜ୍ କିଣନ୍ତୁ...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;ଡ୍ରାଇଭ୍‍‍ରେ ଖୋଜନ୍ତୁ&lt;/em&gt;</translation>
@@ -656,7 +656,6 @@
 <translation id="8193175696669055101">ଡିଭାଇସ୍‍ର ମଡେଲ୍</translation>
 <translation id="8208580316430297579">କଳାକୃତି</translation>
 <translation id="8223479393428528563">ଅଫ୍‍ଲାଇନ୍‍‍ରେ ବ୍ୟବହାର କରିବା ପାଇଁ ଏହି ଫାଇଲ୍‍ଗୁଡ଼ିକୁ ସେଭ୍ କରିବାକୁ, ଅନ୍‍ଲାଇନ୍‍‍ରେ ଫେରି ଆସନ୍ତୁ, ଫାଇଲ୍‍ଗୁଡ଼ିକ ଉପରେ ଡାହାଣ-କ୍ଲିକ୍ କରନ୍ତୁ ଏବଂ <ph name="OFFLINE_CHECKBOX_NAME" /> ବିକଳ୍ପ ଚୟନ କରନ୍ତୁ।</translation>
-<translation id="8231972167769262174"><ph name="REMAINING_TIME" /> ବିଷୟରେ</translation>
 <translation id="8249296373107784235">ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="8261506727792406068">ବିଲୋପ</translation>
 <translation id="8269755669432358899">ଫାଇଲ୍ ମତାମତ ପ୍ୟାନେଲ୍‍ଗୁଡ଼ିକୁ ସଙ୍କୁଚିତ କରନ୍ତୁ</translation>

@@ -539,7 +539,6 @@ class RasterDecoderImpl final : public RasterDecoder,
                                 GLsizei width,
                                 GLsizei height,
                                 GLboolean unpack_flip_y,
-                                GLboolean unpack_premultiply_alpha,
                                 const volatile GLbyte* mailboxes);
   void DoCopySubTextureINTERNALGLPassthrough(GLint xoffset,
                                              GLint yoffset,
@@ -548,7 +547,6 @@ class RasterDecoderImpl final : public RasterDecoder,
                                              GLsizei width,
                                              GLsizei height,
                                              GLboolean unpack_flip_y,
-                                             GLboolean unpack_premultiply_alpha,
                                              const Mailbox& source_mailbox,
                                              const Mailbox& dest_mailbox);
   void DoCopySubTextureINTERNALGL(GLint xoffset,
@@ -558,7 +556,6 @@ class RasterDecoderImpl final : public RasterDecoder,
                                   GLsizei width,
                                   GLsizei height,
                                   GLboolean unpack_flip_y,
-                                  GLboolean unpack_premultiply_alpha,
                                   const Mailbox& source_mailbox,
                                   const Mailbox& dest_mailbox);
   void DoCopySubTextureINTERNALSkia(GLint xoffset,
@@ -568,7 +565,6 @@ class RasterDecoderImpl final : public RasterDecoder,
                                     GLsizei width,
                                     GLsizei height,
                                     GLboolean unpack_flip_y,
-                                    GLboolean unpack_premultiply_alpha,
                                     const Mailbox& source_mailbox,
                                     const Mailbox& dest_mailbox);
   void DoWritePixelsINTERNAL(GLint x_offset,
@@ -1888,7 +1884,6 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(
     GLsizei width,
     GLsizei height,
     GLboolean unpack_flip_y,
-    GLboolean unpack_premultiply_alpha,
     const volatile GLbyte* mailboxes) {
   Mailbox source_mailbox = Mailbox::FromVolatile(
       reinterpret_cast<const volatile Mailbox*>(mailboxes)[0]);
@@ -1908,18 +1903,25 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(
   if (!shared_context_state_->GrContextIsGL()) {
     // Use Skia to copy texture if raster's gr_context() is not using GL.
     DoCopySubTextureINTERNALSkia(xoffset, yoffset, x, y, width, height,
-                                 unpack_flip_y, unpack_premultiply_alpha,
-                                 source_mailbox, dest_mailbox);
+                                 unpack_flip_y, source_mailbox, dest_mailbox);
   } else if (use_passthrough_) {
-    DoCopySubTextureINTERNALGLPassthrough(
-        xoffset, yoffset, x, y, width, height, unpack_flip_y,
-        unpack_premultiply_alpha, source_mailbox, dest_mailbox);
+    DoCopySubTextureINTERNALGLPassthrough(xoffset, yoffset, x, y, width, height,
+                                          unpack_flip_y, source_mailbox,
+                                          dest_mailbox);
   } else {
     DoCopySubTextureINTERNALGL(xoffset, yoffset, x, y, width, height,
-                               unpack_flip_y, unpack_premultiply_alpha,
-                               source_mailbox, dest_mailbox);
+                               unpack_flip_y, source_mailbox, dest_mailbox);
   }
 }
+
+namespace {
+
+GLboolean NeedsUnpackPremultiplyAlpha(
+    const SharedImageRepresentation& representation) {
+  return representation.alpha_type() == kUnpremul_SkAlphaType;
+}
+
+}  // namespace
 
 void RasterDecoderImpl::DoCopySubTextureINTERNALGLPassthrough(
     GLint xoffset,
@@ -1929,7 +1931,6 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALGLPassthrough(
     GLsizei width,
     GLsizei height,
     GLboolean unpack_flip_y,
-    GLboolean unpack_premultiply_alpha,
     const Mailbox& source_mailbox,
     const Mailbox& dest_mailbox) {
   DCHECK(source_mailbox != dest_mailbox);
@@ -1995,7 +1996,7 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALGLPassthrough(
       source_texture->service_id(), /*source_level=*/0, dest_texture->target(),
       dest_texture->service_id(),
       /*dest_level=*/0, xoffset, yoffset, x, y, width, height, unpack_flip_y,
-      unpack_premultiply_alpha,
+      NeedsUnpackPremultiplyAlpha(*source_shared_image),
       /*unpack_unmultiply_alpha=*/false);
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glCopySubTexture");
 
@@ -2012,7 +2013,6 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALGL(
     GLsizei width,
     GLsizei height,
     GLboolean unpack_flip_y,
-    GLboolean unpack_premultiply_alpha,
     const Mailbox& source_mailbox,
     const Mailbox& dest_mailbox) {
   DCHECK(source_mailbox != dest_mailbox);
@@ -2169,8 +2169,8 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALGL(
   gles2::CopyTextureMethod method = GetCopyTextureCHROMIUMMethod(
       GetFeatureInfo(), source_target, source_level, source_internal_format,
       source_type, dest_target, dest_level, dest_internal_format, unpack_flip_y,
-      unpack_premultiply_alpha, false /* unpack_unmultiply_alpha */,
-      false /* dither */);
+      NeedsUnpackPremultiplyAlpha(*source_shared_image),
+      false /* unpack_unmultiply_alpha */, false /* dither */);
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   // glDrawArrays is faster than glCopyTexSubImage2D on IA Mesa driver,
   // although opposite in Android.
@@ -2190,7 +2190,8 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALGL(
       source_internal_format, dest_target, dest_texture->service_id(),
       dest_level, dest_internal_format, xoffset, yoffset, x, y, width, height,
       dest_size.width(), dest_size.height(), source_size.width(),
-      source_size.height(), unpack_flip_y, unpack_premultiply_alpha,
+      source_size.height(), unpack_flip_y,
+      NeedsUnpackPremultiplyAlpha(*source_shared_image),
       false /* unpack_unmultiply_alpha */, false /* dither */, method,
       copy_tex_image_blit_.get());
   dest_texture->SetLevelClearedRect(dest_target, dest_level, new_cleared_rect);
@@ -2219,7 +2220,6 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALSkia(
     GLsizei width,
     GLsizei height,
     GLboolean unpack_flip_y,
-    GLboolean unpack_premultiply_alpha,
     const Mailbox& source_mailbox,
     const Mailbox& dest_mailbox) {
   DCHECK(source_mailbox != dest_mailbox);
@@ -2298,20 +2298,12 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALSkia(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
                        "Source shared image is not accessable");
   } else {
-    auto color_type = viz::ResourceFormatToClosestSkColorType(
-        true /* gpu_compositing */, source_shared_image->format());
-
-    // TODO(nazabris): We should be able to pipe this information through from
-    // the client side when creating the shared image. Make that change in a
-    // follow up CL.
-    SkAlphaType alpha_type = source_shared_image->alpha_type();
-    if (unpack_premultiply_alpha)
-      alpha_type = kUnpremul_SkAlphaType;
-    auto source_image = SkImage::MakeFromTexture(
-        shared_context_state_->gr_context(),
-        source_scoped_access->promise_image_texture()->backendTexture(),
-        source_shared_image->surface_origin(), color_type, alpha_type,
-        nullptr /* colorSpace */);
+    auto source_image = source_scoped_access->CreateSkImage(
+        shared_context_state_->gr_context());
+    if (!source_image) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                         "Couldn't create SkImage from source shared image.");
+    }
 
     auto* canvas = dest_scoped_access->surface()->getCanvas();
     SkPaint paint;

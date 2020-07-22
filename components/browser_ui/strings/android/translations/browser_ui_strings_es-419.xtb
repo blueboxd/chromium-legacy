@@ -21,7 +21,7 @@
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1647391597548383849">Acceso a la cámara</translation>
 <translation id="1660204651932907780">Permitir que los sitios reproduzcan sonido (recomendado)</translation>
-<translation id="1677097821151855053">Se utilizan cookies y otros datos del sitio a fin de recordarte, p. ej., para que puedas acceder a tu cuenta o para brindarte anuncios personalizados. Para administrar las cookies de todos los sitios, visita la <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
+<translation id="1677097821151855053">Se utilizan cookies y otros datos del sitio para recordarte. De esta manera, podrás acceder a tu cuenta y ver anuncios personalizados, entre otras cosas. Para administrar las cookies de todos los sitios, visita la <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">¿Quieres borrar los datos del sitio?</translation>
 <translation id="169515064810179024">Impedir que los sitios accedan a los sensores de movimiento</translation>
 <translation id="1717218214683051432">Sensores de movimiento</translation>
@@ -95,7 +95,7 @@
 <translation id="4008040567710660924">Permite las cookies para un sitio específico.</translation>
 <translation id="4046123991198612571">Siguiente pista</translation>
 <translation id="4165986682804962316">Configuración de sitios</translation>
-<translation id="4200726100658658164">Abrir la configuración de ubicación</translation>
+<translation id="4200726100658658164">Abrir la configuración de la ubicación</translation>
 <translation id="4226663524361240545">Es posible que las notificaciones hagan vibrar el dispositivo</translation>
 <translation id="4242533952199664413">Abrir la configuración</translation>
 <translation id="4259722352634471385">Navegación bloqueada: <ph name="URL" /></translation>

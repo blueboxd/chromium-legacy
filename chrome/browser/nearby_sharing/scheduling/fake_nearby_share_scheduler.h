@@ -43,6 +43,7 @@ class FakeNearbyShareScheduler : public NearbyShareScheduler {
   void OnStart() override;
   void OnStop() override;
 
+  bool can_invoke_request_callback_ = false;
   size_t num_immediate_requests_ = 0;
   std::vector<bool> handled_results_;
   base::Optional<base::Time> last_success_time_;

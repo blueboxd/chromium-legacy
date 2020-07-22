@@ -39,7 +39,13 @@ class ArcAppDataSearchResult : public ChromeSearchResult {
     return data_->launch_intent_uri;
   }
   const base::Optional<std::vector<uint8_t>>& icon_png_data() const {
-    return data_->icon_png_data;
+    // TODO(crbug.com/1083331): Remove the checking, when the ARC change is
+    // rolled in Chrome OS.
+    if (!data_->icon || !data_->icon->icon_png_data ||
+        data_->icon->icon_png_data->empty()) {
+      return data_->icon_png_data;
+    }
+    return data_->icon->icon_png_data;
   }
 
   // Set |icon| to SearchResult. |icon| may be customized based on |data_|.

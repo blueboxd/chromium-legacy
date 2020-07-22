@@ -655,14 +655,19 @@ void NearbySharingServiceImpl::OnIncomingTransferUpdate(
 
 IncomingShareTargetInfo& NearbySharingServiceImpl::GetIncomingShareTargetInfo(
     const ShareTarget& share_target) {
-  auto ret = incoming_share_target_info_map_.insert(
-      {share_target.id(), IncomingShareTargetInfo()});
-  DCHECK(ret.first != incoming_share_target_info_map_.end());
-
-  return ret.first->second;
+  return incoming_share_target_info_map_[share_target.id()];
 }
 
 NearbyConnection* NearbySharingServiceImpl::GetIncomingConnection(
     const ShareTarget& share_target) {
   return GetIncomingShareTargetInfo(share_target).nearby_connection();
+}
+
+OutgoingShareTargetInfo& NearbySharingServiceImpl::GetOutgoingShareTargetInfo(
+    ShareTarget share_target) {
+  return outgoing_share_target_info_map_[share_target.id()];
+}
+
+void NearbySharingServiceImpl::ClearOutgoingShareTargetInfoMap() {
+  outgoing_share_target_info_map_.clear();
 }

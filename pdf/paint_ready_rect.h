@@ -6,26 +6,39 @@
 #define PDF_PAINT_READY_RECT_H_
 
 #include "ppapi/cpp/image_data.h"
-#include "ppapi/cpp/rect.h"
+#include "ui/gfx/geometry/rect.h"
+
+namespace pp {
+class Rect;
+}  // namespace pp
 
 namespace chrome_pdf {
 
 // Stores information about a rectangle that has finished painting. The
 // `PaintManager` will paint it only when everything else on the screen is also
 // ready.
-struct PaintReadyRect {
+class PaintReadyRect {
+ public:
   PaintReadyRect(const pp::Rect& rect,
                  const pp::ImageData& image_data,
                  bool flush_now = false);
   PaintReadyRect(const PaintReadyRect& other);
   PaintReadyRect& operator=(const PaintReadyRect& other);
+  ~PaintReadyRect();
 
-  pp::Rect rect;
-  pp::ImageData image_data;
+  const gfx::Rect& rect() const { return rect_; }
+  void set_rect(const gfx::Rect& rect) { rect_ = rect; }
+
+  const pp::ImageData& image_data() const { return image_data_; }
 
   // Whether to flush to screen immediately; otherwise, when the rest of the
   // plugin viewport is ready.
-  bool flush_now;
+  bool flush_now() const { return flush_now_; }
+
+ private:
+  gfx::Rect rect_;
+  pp::ImageData image_data_;
+  bool flush_now_;
 };
 
 }  // namespace chrome_pdf

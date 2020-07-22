@@ -11,9 +11,11 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/public/common/impression.h"
 #include "content/public/common/menu_item.h"
 #include "services/network/public/mojom/referrer_policy.mojom.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
@@ -65,15 +67,19 @@ struct CONTENT_EXPORT UntrustworthyContextMenuParams {
 
   // The text associated with the link. May be an empty string if the contents
   // of the link are an image.
-  // Will be empty if link_url is empty.
+  // Will be empty if |link_url| is empty.
   base::string16 link_text;
+
+  // The impression declared by the link. May be base::nullopt even if
+  // |link_url| is non-empty.
+  base::Optional<Impression> impression;
 
   // The link URL to be used ONLY for "copy link address". We don't validate
   // this field in the frontend process.
   GURL unfiltered_link_url;
 
   // This is the source URL for the element that the context menu was
-  // invoked on.  Example of elements with source URLs are img, audio, and
+  // invoked on. Example of elements with source URLs are img, audio, and
   // video.
   GURL src_url;
 

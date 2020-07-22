@@ -214,7 +214,7 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="334252345105450327">Haz una captura de pantalla</translation>
 <translation id="3351879221545518001">Estás enviando la pantalla.</translation>
 <translation id="3364721542077212959">Herramientas del lápiz óptico</translation>
-<translation id="3368922792935385530">Con conexión</translation>
+<translation id="3368922792935385530">Conectado</translation>
 <translation id="3371140690572404006">Dispositivo USB tipo C (puerto frontal derecho)</translation>
 <translation id="3386978599540877378">la lupa de pantalla completa</translation>
 <translation id="3400357268283240774">Configuración adicional</translation>
@@ -277,7 +277,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4028481283645788203">Introduce la contraseña como medida de seguridad adicional</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Estás compartiendo tu pantalla</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Desactivadas para una aplicación}other{Desactivadas para # aplicaciones}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{No para 1 app}other{No para # apps}}</translation>
 <translation id="4072264167173457037">Señal media</translation>
 <translation id="4112140312785995938">Ir hacia atrás</translation>
 <translation id="4129129681837227511">Para poder ver las notificaciones desde la pantalla de bloqueo, desbloquea el dispositivo para cambiar este ajuste</translation>
@@ -422,7 +422,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5958529069007801266">Usuario supervis.</translation>
 <translation id="5977415296283489383">Auriculares</translation>
 <translation id="5978382165065462689">Compartiendo control de la pantalla a través de Asistencia remota.</translation>
-<translation id="5980301590375426705">Cerrar sesión de invitado</translation>
+<translation id="5980301590375426705">Cerrar como invitado</translation>
 <translation id="598882571027504733">Para recibir la actualización, reinicia tu Chromebook con el teclado conectado.</translation>
 <translation id="5992218262414051481">Se ha habilitado el modo de contraste alto. Pulsa Ctrl + Tecla de búsqueda + H de nuevo para desactivarlo.</translation>
 <translation id="6018164090099858612">Saliendo del modo de proyección</translation>
@@ -599,7 +599,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8054466585765276473">Calculando duración de la batería...</translation>
 <translation id="8061464966246066292">Contraste alto</translation>
 <translation id="8098591350844501178">Dejar de enviar la pantalla a <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">Activadas, todas las aplicaciones</translation>
+<translation id="8113423164597455979">Sí, todas</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicializando…</translation>
@@ -640,7 +640,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> ha <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Pulsa Alt + tecla de búsqueda o Mayús para cancelarlo.</translation>
 <translation id="8492573885090281069">La pantalla <ph name="DISPLAY_NAME" /> no admite <ph name="SPECIFIED_RESOLUTION" />. Se ha cambiado la resolución a <ph name="FALLBACK_RESOLUTION" />. Haz clic en Confirmar para mantener los cambios. La configuración anterior se restaurará en <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="8513108775083588393">Girar automáticamente</translation>
+<translation id="8513108775083588393">Girar autom.</translation>
 <translation id="8517041960877371778">Es posible que tu <ph name="DEVICE_TYPE" /> no se cargue mientras esté encendido.</translation>
 <translation id="8563862697512465947">Configuración de notificaciones</translation>
 <translation id="857201607579416096">Se ha movido el menú a la esquina inferior derecha de la pantalla.</translation>

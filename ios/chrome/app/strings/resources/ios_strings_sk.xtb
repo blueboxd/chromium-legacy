@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> – <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Ak chcete získať záložky vo všetkých zariadeniach, zapnite synchronizáciu.</translation>
 <translation id="1687475363370981210">Označiť všetko ako prečítané</translation>
+<translation id="1689333818294560261">Prezývka</translation>
 <translation id="1690731385917361335">Žiadne položky</translation>
 <translation id="1692118695553449118">Synchronizácia je zapnutá.</translation>
 <translation id="1700629756560807968">Počet vybraných záložiek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -206,6 +207,7 @@ Weby v anonymnom režime nemôžu pomocou súborov cookie zobraziť vašu aktiv
 <translation id="3335947283844343239">Znova otvoriť zatvorenú kartu</translation>
 <translation id="3371831930909698441">Prekladač je k dispozícii. Možnosti nájdete v dolnej časti obrazovky.</translation>
 <translation id="3393920035788932672">Povolené okná</translation>
+<translation id="3425644765244388016">Prezývka karty</translation>
 <translation id="3443810440409579745">Karta bola prijatá.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Rozdelené zobrazenie</translation>
@@ -240,6 +242,7 @@ Weby v anonymnom režime nemôžu pomocou súborov cookie zobraziť vašu aktiv
 <translation id="3783017676699494206">Uložiť obrázok</translation>
 <translation id="3789841737615482174">Inštalovať</translation>
 <translation id="3803696231112616155">Ponúkať preklad tohto webu</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Neboli prelomené žiadne heslá}=1{Bolo prelomené {COUNT} heslo}few{Boli prelomené {COUNT} heslá}many{{COUNT} Passwords compromised}other{Bolo prelomených {COUNT} hesiel}}</translation>
 <translation id="385051799172605136">Naspäť</translation>
 <translation id="3892144330757387737">Tu nájdete svoju históriu</translation>
 <translation id="3897092660631435901">Ponuka</translation>
@@ -529,6 +532,7 @@ Weby si nemôžu na základe súborov cookie zobraziť vašu históriu prehliada
 <translation id="7189598951263744875">Zdieľať...</translation>
 <translation id="7192050974311852563">Spustiť zapisovanie do denníka</translation>
 <translation id="7203585745079012652">Vysloviť odpovede</translation>
+<translation id="721597782417389033">Neplatná prezývka karty</translation>
 <translation id="7265758999917665941">Nikdy pre tento web</translation>
 <translation id="7272437679830969316">Vašu totožnosť nie je možné overiť. Heslo sa neskopírovalo.</translation>
 <translation id="7291368939935408496">Pripravujú sa heslá...</translation>

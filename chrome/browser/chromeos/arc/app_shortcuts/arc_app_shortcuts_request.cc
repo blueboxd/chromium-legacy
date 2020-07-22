@@ -10,7 +10,9 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
+#include "chrome/common/chrome_features.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_bridge_service.h"
 
@@ -77,11 +79,33 @@ void ArcAppShortcutsRequest::OnGetAppShortcutItems(
     item.rank = shortcut_item_ptr->rank;
     items_->emplace_back(std::move(item));
 
+    if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+      apps::ArcRawIconPngDataToImageSkia(
+          std::move(shortcut_item_ptr->icon), kAppShortcutIconSize,
+          base::BindOnce(&ArcAppShortcutsRequest::OnSingleIconDecodeRequestDone,
+                         weak_ptr_factory_.GetWeakPtr(), items_->size() - 1));
+      continue;
+    }
+
+    if (!shortcut_item_ptr->icon || !shortcut_item_ptr->icon->icon_png_data ||
+        shortcut_item_ptr->icon->icon_png_data->empty()) {
+      // TODO(crbug.com/1083331): Remove the icon_png related change, when the
+      // ARC change is rolled in Chrome OS.
+      icon_decode_requests_.emplace_back(std::make_unique<IconDecodeRequest>(
+          base::BindOnce(&ArcAppShortcutsRequest::OnSingleIconDecodeRequestDone,
+                         weak_ptr_factory_.GetWeakPtr(), items_->size() - 1),
+          kAppShortcutIconSize));
+      icon_decode_requests_.back()->StartWithOptions(
+          shortcut_item_ptr->icon_png);
+      continue;
+    }
+
     icon_decode_requests_.emplace_back(std::make_unique<IconDecodeRequest>(
         base::BindOnce(&ArcAppShortcutsRequest::OnSingleIconDecodeRequestDone,
                        weak_ptr_factory_.GetWeakPtr(), items_->size() - 1),
         kAppShortcutIconSize));
-    icon_decode_requests_.back()->StartWithOptions(shortcut_item_ptr->icon_png);
+    icon_decode_requests_.back()->StartWithOptions(
+        shortcut_item_ptr->icon->icon_png_data.value());
   }
 }
 

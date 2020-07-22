@@ -299,11 +299,24 @@ void ApkWebAppService::OnPackageInstalled(
   // The package is a web app but we don't have a corresponding browser-side
   // artifact. Install it.
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_app_list_prefs_->app_connection_holder(), RequestPackageIcon);
-  if (!instance)
-    return;
+      arc_app_list_prefs_->app_connection_holder(), GetPackageIcon);
+  if (!instance) {
+    // TODO(crbug.com/1083331): Remove the RequestPackageIcon related code,
+    // when the ARC change is rolled in Chrome OS.
+    ARC_GET_INSTANCE_FOR_METHOD(arc_app_list_prefs_->app_connection_holder(),
+                                RequestPackageIcon);
+    if (!instance)
+      return;
 
-  instance->RequestPackageIcon(
+    instance->RequestPackageIcon(
+        package_info.package_name, kDefaultIconSize, /*normalize=*/false,
+        base::BindOnce(
+            &ApkWebAppService::OnGetWebAppIcon, weak_ptr_factory_.GetWeakPtr(),
+            package_info.package_name, package_info.web_app_info.Clone()));
+    return;
+  }
+
+  instance->GetPackageIcon(
       package_info.package_name, kDefaultIconSize, /*normalize=*/false,
       base::BindOnce(&ApkWebAppService::OnDidGetWebAppIcon,
                      weak_ptr_factory_.GetWeakPtr(), package_info.package_name,
@@ -439,13 +452,20 @@ void ApkWebAppService::OnWebAppUninstalled(const web_app::AppId& web_app_id) {
   }
 }
 
-void ApkWebAppService::OnDidGetWebAppIcon(
+void ApkWebAppService::OnGetWebAppIcon(
     const std::string& package_name,
     arc::mojom::WebAppInfoPtr web_app_info,
     const std::vector<uint8_t>& icon_png_data) {
   arc::mojom::RawIconPngDataPtr icon = arc::mojom::RawIconPngData::New();
   icon->is_adaptive_icon = false;
   icon->icon_png_data = std::vector<uint8_t>(icon_png_data);
+  OnDidGetWebAppIcon(package_name, std::move(web_app_info), std::move(icon));
+}
+
+void ApkWebAppService::OnDidGetWebAppIcon(
+    const std::string& package_name,
+    arc::mojom::WebAppInfoPtr web_app_info,
+    arc::mojom::RawIconPngDataPtr icon) {
   ApkWebAppInstaller::Install(
       profile_, std::move(web_app_info), std::move(icon),
       base::BindOnce(&ApkWebAppService::OnDidFinishInstall,

@@ -1403,10 +1403,11 @@ class MetaBuildWrapper(object):
                     and not is_fuchsia and not is_cros))
     is_mac = self.platform == 'darwin' and not is_ios
     is_win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
+    is_lacros = 'chromeos_is_browser_only=true' in vals['gn_args']
 
     test_type = isolate_map[target]['type']
-    if test_type.startswith('wrapped_'):
-      if is_mac or is_linux:
+    if test_type.startswith('wrapped_') or is_lacros:
+      if is_mac or is_linux or is_lacros:
         cmdline = ['bin/run_{}'.format(target)]
         return cmdline, []
       elif is_win:

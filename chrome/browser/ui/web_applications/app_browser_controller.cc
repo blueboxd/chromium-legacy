@@ -381,13 +381,7 @@ void AppBrowserController::DidChangeThemeColor() {
     return;
   last_theme_color_ = theme_color;
   UpdateThemePack();
-  browser_->window()->UpdateFrameColor();
-  if (has_tab_strip_) {
-    // TODO(crbug.com/1020050): Add separate change type for this situation, on
-    // Windows this causes the frame to be recreated which is visually
-    // disruptive.
-    browser_->window()->UserChangedTheme(BrowserThemeChangeType::kBrowserTheme);
-  }
+  browser_->window()->UserChangedTheme(BrowserThemeChangeType::kWebAppTheme);
 }
 
 base::Optional<SkColor> AppBrowserController::GetThemeColor() const {

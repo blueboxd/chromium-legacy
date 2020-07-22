@@ -69,6 +69,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/profiling.h"
+#include "ui/base/accelerators/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/models/button_menu_item_model.h"
@@ -134,7 +135,8 @@ base::Optional<base::string16> GetInstallPWAAppMenuItemName(Browser* browser) {
       banners::AppBannerManager::GetInstallableWebAppName(web_contents);
   if (app_name.empty())
     return base::nullopt;
-  return l10n_util::GetStringFUTF16(IDS_INSTALL_TO_OS_LAUNCH_SURFACE, app_name);
+  return l10n_util::GetStringFUTF16(IDS_INSTALL_TO_OS_LAUNCH_SURFACE,
+                                    ui::EscapeMenuLabelAmpersands(app_name));
 }
 
 }  // namespace

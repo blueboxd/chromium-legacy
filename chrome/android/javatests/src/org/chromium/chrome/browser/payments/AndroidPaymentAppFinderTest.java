@@ -34,6 +34,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.url.GURL;
 import org.chromium.url.Origin;
 
@@ -107,7 +108,7 @@ public class AndroidPaymentAppFinderTest
     private List<PaymentApp> mPaymentApps;
     private boolean mAllPaymentAppsCreated;
     private Map<String, PaymentMethodData> mMethodData;
-    private boolean mRequestShippingOrPayerContact;
+    private PaymentOptions mPaymentOptions;
 
     // PaymentAppFactoryDelegate implementation.
     @Override
@@ -175,8 +176,12 @@ public class AndroidPaymentAppFinderTest
 
     // PaymentAppFactoryParams implementation.
     @Override
-    public boolean requestShippingOrPayerContact() {
-        return mRequestShippingOrPayerContact;
+    public PaymentOptions getPaymentOptions() {
+        return mPaymentOptions;
+    }
+
+    public void setRequestShipping(boolean requestShipping) {
+        mPaymentOptions.requestShipping = requestShipping;
     }
 
     @Before
@@ -187,6 +192,7 @@ public class AndroidPaymentAppFinderTest
         mDownloader.setTestServerUrl(new GURL(mServer.getURL("/components/test/data/payments/")));
         mPaymentApps = new ArrayList<>();
         mAllPaymentAppsCreated = false;
+        mPaymentOptions = new PaymentOptions();
     }
 
     @After
@@ -1300,7 +1306,7 @@ public class AndroidPaymentAppFinderTest
         Set<String> methods = new HashSet<>();
         methods.add("https://play.google.com/billing");
         methods.add("https://bobpay.com/webpay");
-        mRequestShippingOrPayerContact = true;
+        setRequestShipping(true);
         mPackageManager.installPaymentApp("MerchantTwaApp", "com.merchant.twa",
                 "https://play.google.com/billing",
                 /*signature=*/"01020304050607080900");

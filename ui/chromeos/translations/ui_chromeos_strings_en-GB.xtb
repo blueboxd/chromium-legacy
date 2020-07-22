@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Year recorded</translation>
 <translation id="3338239663705455570">Slovenian keyboard</translation>
 <translation id="3353984535370177728">Select a folder to upload</translation>
+<translation id="3356580349448036450">Complete</translation>
 <translation id="3399597614303179694">Macedonian keyboard</translation>
 <translation id="3414856743105198592">Formatting the removable media is going to erase all data. Do you wish to continue?</translation>
 <translation id="3437801641691368414">Created time</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Installation failed.</translation>
 <translation id="7040138676081995583">Open with...</translation>
-<translation id="7059566040011178088">Less than <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> items selected</translation>
 <translation id="7106346894903675391">Buy more storage...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;search Drive&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">Device model</translation>
 <translation id="8208580316430297579">Artwork</translation>
 <translation id="8223479393428528563">To save these files for offline use, get back online, right-click the files and select the <ph name="OFFLINE_CHECKBOX_NAME" /> option.</translation>
-<translation id="8231972167769262174">About <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Abort</translation>
 <translation id="8261506727792406068">Delete</translation>
 <translation id="8269755669432358899">Collapse files feedback panels</translation>

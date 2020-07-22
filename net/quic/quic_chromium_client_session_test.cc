@@ -206,8 +206,8 @@ class QuicChromiumClientSessionTest
         /*cert_verify_flags=*/0, quic::test::DefaultQuicConfig(),
         std::make_unique<TestQuicCryptoClientConfigHandle>(&crypto_config_),
         "CONNECTION_UNKNOWN", base::TimeTicks::Now(), base::TimeTicks::Now(),
-        &push_promise_index_, &test_push_delegate_,
-        base::DefaultTickClock::GetInstance(),
+        std::make_unique<quic::QuicClientPushPromiseIndex>(),
+        &test_push_delegate_, base::DefaultTickClock::GetInstance(),
         base::ThreadTaskRunnerHandle::Get().get(),
         /*socket_performance_watcher=*/nullptr, &net_log_));
     if (connectivity_monitor_) {
@@ -292,7 +292,6 @@ class QuicChromiumClientSessionTest
   quic::test::MockAlarmFactory alarm_factory_;
   std::unique_ptr<TransportSecurityState> transport_security_state_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
-  quic::QuicClientPushPromiseIndex push_promise_index_;
   QuicSessionKey session_key_;
   HostPortPair destination_;
   std::unique_ptr<TestingQuicChromiumClientSession> session_;

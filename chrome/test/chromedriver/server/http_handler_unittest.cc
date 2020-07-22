@@ -62,7 +62,7 @@ TEST(HttpHandlerTest, HandleNewSession) {
   handler.command_map_.reset(new HttpHandler::CommandMap());
   handler.command_map_->push_back(
       CommandMapping(kPost, internal::kNewSessionPathPattern,
-                     base::Bind(&DummyCommand, Status(kOk))));
+                     base::BindRepeating(&DummyCommand, Status(kOk))));
   net::HttpServerRequestInfo request;
   request.method = "post";
   request.path = "/base/session";
@@ -81,8 +81,8 @@ TEST(HttpHandlerTest, HandleNewSession) {
 
 TEST(HttpHandlerTest, HandleInvalidPost) {
   HttpHandler handler("/");
-  handler.command_map_->push_back(
-      CommandMapping(kPost, "path", base::Bind(&DummyCommand, Status(kOk))));
+  handler.command_map_->push_back(CommandMapping(
+      kPost, "path", base::BindRepeating(&DummyCommand, Status(kOk))));
   net::HttpServerRequestInfo request;
   request.method = "post";
   request.path = "/path";
@@ -94,9 +94,9 @@ TEST(HttpHandlerTest, HandleInvalidPost) {
 
 TEST(HttpHandlerTest, HandleUnimplementedCommand) {
   HttpHandler handler("/");
-  handler.command_map_->push_back(
-      CommandMapping(kPost, "path",
-                     base::Bind(&DummyCommand, Status(kUnknownCommand))));
+  handler.command_map_->push_back(CommandMapping(
+      kPost, "path",
+      base::BindRepeating(&DummyCommand, Status(kUnknownCommand))));
   net::HttpServerRequestInfo request;
   request.method = "post";
   request.path = "/path";
@@ -108,8 +108,8 @@ TEST(HttpHandlerTest, HandleUnimplementedCommand) {
 
 TEST(HttpHandlerTest, HandleCommand) {
   HttpHandler handler("/");
-  handler.command_map_->push_back(
-      CommandMapping(kPost, "path", base::Bind(&DummyCommand, Status(kOk))));
+  handler.command_map_->push_back(CommandMapping(
+      kPost, "path", base::BindRepeating(&DummyCommand, Status(kOk))));
   net::HttpServerRequestInfo request;
   request.method = "post";
   request.path = "/path";
@@ -134,7 +134,8 @@ TEST(HttpHandlerTest, StandardResponse_ErrorNoMessage) {
 }
 
 TEST(MatchesCommandTest, DiffMethod) {
-  CommandMapping command(kPost, "path", base::Bind(&DummyCommand, Status(kOk)));
+  CommandMapping command(kPost, "path",
+                         base::BindRepeating(&DummyCommand, Status(kOk)));
   std::string session_id;
   base::DictionaryValue params;
   ASSERT_FALSE(internal::MatchesCommand(
@@ -145,7 +146,7 @@ TEST(MatchesCommandTest, DiffMethod) {
 
 TEST(MatchesCommandTest, DiffPathLength) {
   CommandMapping command(kPost, "path/path",
-                         base::Bind(&DummyCommand, Status(kOk)));
+                         base::BindRepeating(&DummyCommand, Status(kOk)));
   std::string session_id;
   base::DictionaryValue params;
   ASSERT_FALSE(internal::MatchesCommand(
@@ -160,7 +161,7 @@ TEST(MatchesCommandTest, DiffPathLength) {
 
 TEST(MatchesCommandTest, DiffPaths) {
   CommandMapping command(kPost, "path/apath",
-                         base::Bind(&DummyCommand, Status(kOk)));
+                         base::BindRepeating(&DummyCommand, Status(kOk)));
   std::string session_id;
   base::DictionaryValue params;
   ASSERT_FALSE(internal::MatchesCommand(
@@ -169,7 +170,7 @@ TEST(MatchesCommandTest, DiffPaths) {
 
 TEST(MatchesCommandTest, Substitution) {
   CommandMapping command(kPost, "path/:sessionId/space/:a/:b",
-                         base::Bind(&DummyCommand, Status(kOk)));
+                         base::BindRepeating(&DummyCommand, Status(kOk)));
   std::string session_id;
   base::DictionaryValue params;
   ASSERT_TRUE(internal::MatchesCommand(
@@ -185,7 +186,7 @@ TEST(MatchesCommandTest, Substitution) {
 
 TEST(MatchesCommandTest, DecodeEscape) {
   CommandMapping command(kPost, "path/:sessionId/attribute/:xyz",
-                         base::Bind(&DummyCommand, Status(kOk)));
+                         base::BindRepeating(&DummyCommand, Status(kOk)));
   std::string session_id;
   base::DictionaryValue params;
   ASSERT_TRUE(internal::MatchesCommand(
@@ -198,7 +199,7 @@ TEST(MatchesCommandTest, DecodeEscape) {
 
 TEST(MatchesCommandTest, DecodePercent) {
   CommandMapping command(kPost, "path/:xyz",
-                         base::Bind(&DummyCommand, Status(kOk)));
+                         base::BindRepeating(&DummyCommand, Status(kOk)));
   std::string session_id;
   base::DictionaryValue params;
   ASSERT_TRUE(internal::MatchesCommand(

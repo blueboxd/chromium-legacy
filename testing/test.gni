@@ -43,6 +43,7 @@ if ((is_linux && !is_chromeos) || is_mac || is_win ||
 #   use_raw_android_executable: Use executable() rather than android_apk().
 #   use_native_activity: Test implements ANativeActivity_onCreate().
 #   win_test_enable_cfi_linker: (Win) Enable CFI linker for this test binary.
+#   use_ash_chrome: Use ash-chrome to run tests, only applicable to lacros.
 template("test") {
   if (is_android) {
     _use_raw_android_executable = defined(invoker.use_raw_android_executable) &&
@@ -393,9 +394,14 @@ template("test") {
 
       executable_args = [
         "@WrappedPath(../../build/lacros/test_runner.py)",
+        "test",
         "@WrappedPath(./${_executable})",
         "--test-launcher-bot-mode",
       ]
+
+      if (defined(invoker.use_ash_chrome) && invoker.use_ash_chrome) {
+        executable_args += [ "--ash-chrome-version=for_bots" ]
+      }
 
       if (is_asan) {
         executable_args += [ "--asan=true" ]
@@ -411,9 +417,13 @@ template("test") {
       }
 
       data = [
+        "//build/lacros/test_runner.py",
         "//testing/test_env.py",
         "//.vpython",
       ]
+      if (defined(invoker.use_ash_chrome) && invoker.use_ash_chrome) {
+        data += [ "//build/lacros/prebuilt_ash_chrome/for_bots" ]
+      }
     }
 
     executable(target_name) {

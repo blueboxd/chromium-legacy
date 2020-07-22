@@ -44,7 +44,7 @@ void PortalCreatedObserver::CreatePortal(
   std::move(callback).Run(
       proxy_host->GetRoutingID(),
       proxy_host->frame_tree_node()->current_replication_state(),
-      proxy_host->GetFrameToken(), portal_->portal_token(),
+      portal_->portal_token(), proxy_host->GetFrameToken(),
       portal_->GetDevToolsFrameToken());
 
   DidCreatePortal();

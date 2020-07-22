@@ -12,15 +12,13 @@
           :node-filter-data="pageModel.nodeFilterData"
           @[CUSTOM_EVENTS.FILTER_ELEMENT_CLICKED]="removeNodeFromFilter"/>
       <GraphInboundInput
-          :inbound-depth-data="pageModel.inboundDepthData"
-          @[CUSTOM_EVENTS.INBOUND_DEPTH_UPDATED]="setInboundDepth"/>
+          :inbound-depth-data="pageModel.inboundDepthData"/>
       <GraphOutboundInput
-          :outbound-depth-data="pageModel.outboundDepthData"
-          @[CUSTOM_EVENTS.OUTBOUND_DEPTH_UPDATED]="setOutboundDepth"/>
+          :outbound-depth-data="pageModel.outboundDepthData"/>
     </div>
     <div id="graph-and-node-details-container">
       <GraphVisualization
-          :graph-data-update-ticker="graphDataUpdateTicker"
+          :graph-update-triggers="graphUpdateTriggers"
           :page-model="pageModel"
           @[CUSTOM_EVENTS.NODE_CLICKED]="graphNodeClicked"/>
       <div id="node-details-container">
@@ -55,6 +53,7 @@ import GraphVisualization from './graph_visualization.vue';
 import PackageDetailsPanel from './package_details_panel.vue';
 import PageUrlGenerator from './page_url_generator.vue';
 
+// @vue/component
 const PackageGraphPage = {
   components: {
     GraphFilterInput,
@@ -75,9 +74,6 @@ const PackageGraphPage = {
    * @typedef {Object} PackagePageData
    * @property {PageModel} pageModel The data store for the page.
    * @property {PagePathName} pagePathName The pathname for the page.
-   * @property {number} graphDataUpdateTicker Incremented every time we want to
-   *     trigger a visualization update. See graph_visualization.js for further
-   *     explanation on this variable.
    */
 
   /**
@@ -90,11 +86,17 @@ const PackageGraphPage = {
     return {
       pageModel,
       pagePathName: PagePathName.PACKAGE,
-      graphDataUpdateTicker: 0,
     };
   },
   computed: {
     CUSTOM_EVENTS: () => CUSTOM_EVENTS,
+    graphUpdateTriggers: function() {
+      return [
+        this.pageModel.nodeFilterData.nodeList,
+        this.pageModel.inboundDepthData.inboundDepth,
+        this.pageModel.outboundDepthData.outboundDepth,
+      ];
+    },
   },
   /**
    * Parses out data from the current URL to initialize the visualization with.
@@ -124,7 +126,6 @@ const PackageGraphPage = {
      */
     addNodeToFilter: function(nodeName) {
       this.pageModel.nodeFilterData.addNode(nodeName);
-      this.graphDataUpdateTicker++;
     },
     /**
      * Adds all supplied nodes to the node filter, then increments
@@ -135,28 +136,24 @@ const PackageGraphPage = {
       for (const nodeName of nodeNames) {
         this.pageModel.nodeFilterData.addNode(nodeName);
       }
-      this.graphDataUpdateTicker++;
     },
     /**
      * @param {string} nodeName The node to remove.
      */
     removeNodeFromFilter: function(nodeName) {
       this.pageModel.nodeFilterData.removeNode(nodeName);
-      this.graphDataUpdateTicker++;
     },
     /**
      * @param {number} depth The new inbound depth.
      */
     setInboundDepth: function(depth) {
       this.pageModel.inboundDepthData.inboundDepth = depth;
-      this.graphDataUpdateTicker++;
     },
     /**
      * @param {number} depth The new outbound depth.
      */
     setOutboundDepth: function(depth) {
       this.pageModel.outboundDepthData.outboundDepth = depth;
-      this.graphDataUpdateTicker++;
     },
     /**
      * @param {?GraphNode} node The selected node. May be `null`, which will

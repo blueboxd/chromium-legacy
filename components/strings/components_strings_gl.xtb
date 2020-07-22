@@ -447,6 +447,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2824775600643448204">Barra de enderezos e de busca</translation>
 <translation id="2826760142808435982">A conexión cífrase e autentícase con <ph name="CIPHER" /> e utiliza <ph name="KX" /> como mecanismo de intercambio de claves.</translation>
 <translation id="2835170189407361413">Borrar formulario</translation>
+<translation id="2839501879576190149">O sitio ao que te dirixes é falso</translation>
 <translation id="2847118875340931228">Abrir ventá do modo de incógnito</translation>
 <translation id="2850739647070081192">Invite (sobre)</translation>
 <translation id="2856444702002559011">É posible que os piratas informáticos tenten roubar a túa información de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (por exemplo, contrasinais, mensaxes ou tarxetas de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Máis información<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -807,6 +808,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="42981349822642051">Ampliar</translation>
 <translation id="4300675098767811073">Varias perforacións na parte dereita</translation>
 <translation id="4302965934281694568">Chou3 (sobre)</translation>
+<translation id="4305666528087210886">Non se puido acceder ao ficheiro</translation>
 <translation id="4305817255990598646">Cambiar</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Bloquear (predeterminado)</translation>
@@ -825,6 +827,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="4358461427845829800">Xestiona os métodos de pago…</translation>
 <translation id="4359160567981085931">Acabas de escribir o teu contrasinal nun sitio enganoso. Chrome pode axudarche. Para cambiar o teu contrasinal e notificarlle a Google que a túa conta pode estar en risco, fai clic en Protexer conta.</translation>
 <translation id="4367563149485757821">Number-12 (Envelope)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Unha violación da seguranza dos datos dun sitio ou dunha aplicación provocou que o teu contrasinal gardado de <ph name="ORIGIN" /> estea en risco. Chrome recoméndache que cambies agora o contrasinal de <ph name="ORIGIN" />.}=1{Unha violación da seguranza dos datos dun sitio ou dunha aplicación provocou que o teu contrasinal gardado de <ph name="ORIGIN" /> e doutro sitio estea en risco. Chrome recoméndache que comprobes agora os teus contrasinais gardados.}other{Unha violación da seguranza dos datos dun sitio ou dunha aplicación provocou que o teu contrasinal gardado de <ph name="ORIGIN" /> e doutros <ph name="SITES_COUNT" /> sitios estea en risco. Chrome recoméndache que comprobes agora os teus contrasinais gardados.}}</translation>
 <translation id="437058704415269440">Saldo da conta</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Valor <ph name="VALUE_TYPE" /> esperado.</translation>
@@ -1295,6 +1298,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Posibles cargos de agora en adiante.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 suxestión máis}other{# suxestións máis}}</translation>
+<translation id="6387645831795005740">Ás veces, os atacantes crean copias de sitios introducindo nos URL cambios pequenos e difíciles de ver.</translation>
 <translation id="6389470377220713856">Nome na tarxeta</translation>
 <translation id="6390200185239044127">Dobrez en Z á metade</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1508,6 +1512,7 @@ Detalles adicionais:
 <translation id="7372973238305370288">resultado da busca</translation>
 <translation id="7374733840632556089">Este problema prodúcese por causa dun certificado instalado por ti ou por outra persoa no teu dispositivo. Sábese que este certificado se utiliza para supervisar e interceptar redes, e Chrome non confía nel. Aínda que existen algunhas situacións lexítimas para a supervisión, como no caso de redes de empresas ou de centros educativos, Chrome quere asegurarse de que sexas consciente do que acontece, inda que non poidas facer nada ao respecto. A supervisión pode levarse a cabo en calquera navegador ou aplicación que acceda á Web.</translation>
 <translation id="7375818412732305729">Anéxase un ficheiro</translation>
+<translation id="7376551888419889433">Cando Chrome Enterprise Connectors marca eventos de seguranza, envíanse datos relevantes sobre os eventos en cuestión ao teu administrador. Pódense incluír URL de páxinas que visitas en Chrome, nomes de ficheiros ou metadatos e o nome de usuario que utilizas para iniciar sesión no teu dispositivo e en Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Controis de contido multimedia</translation>
 <translation id="7378627244592794276">Non</translation>
@@ -1904,6 +1909,7 @@ Detalles adicionais:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" />: <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Intentaches acceder a <ph name="DOMAIN" />, pero o servidor presentou un certificado non válido.</translation>
 <translation id="9050666287014529139">Frase de acceso</translation>
+<translation id="9062620674789239642">É posible que se movese, editase ou eliminase.</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9065745800631924235">Busca de "<ph name="TEXT" />" desde o historial</translation>
 <translation id="9069693763241529744">Bloqueado por unha extensión</translation>

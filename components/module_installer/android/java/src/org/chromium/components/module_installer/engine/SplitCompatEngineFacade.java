@@ -55,4 +55,8 @@ class SplitCompatEngineFacade {
     public SplitInstallRequest createSplitInstallRequest(String moduleName) {
         return SplitInstallRequest.newBuilder().addModule(moduleName).build();
     }
+
+    public void updateCrashKeys() {
+        ModuleUtil.updateCrashKeys();
+    }
 }

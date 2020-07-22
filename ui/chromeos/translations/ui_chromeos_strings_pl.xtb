@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Rok nagrania</translation>
 <translation id="3338239663705455570">Klawiatura słoweńska</translation>
 <translation id="3353984535370177728">Wybierz folder do przesłania</translation>
+<translation id="3356580349448036450">Zakończone</translation>
 <translation id="3399597614303179694">Klawiatura macedońska</translation>
 <translation id="3414856743105198592">Formatowanie nośnika wymiennego spowoduje usunięcie wszystkich danych. Czy chcesz kontynuować?</translation>
 <translation id="3437801641691368414">Godzina utworzenia</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Instalacja nie powiodła się.</translation>
 <translation id="7040138676081995583">Otwórz za pomocą...</translation>
-<translation id="7059566040011178088">Mniej niż <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923">Wybrane elementy: <ph name="COUNT" /></translation>
 <translation id="7106346894903675391">Kup więcej miejsca...</translation>
 <translation id="7126604456862387217">„&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;” – &lt;em&gt;wyszukaj na Dysku&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">Model urządzenia</translation>
 <translation id="8208580316430297579">Dzieła sztuki</translation>
 <translation id="8223479393428528563">Aby zapisać te pliki i używać ich offline, przejdź do trybu online, kliknij pliki prawym przyciskiem myszy i wybierz opcję <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
-<translation id="8231972167769262174">Około <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Przerwij</translation>
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="8269755669432358899">Zwiń panele informacji zwrotnej o plikach</translation>

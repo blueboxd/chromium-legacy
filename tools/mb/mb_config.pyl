@@ -36,6 +36,9 @@
     },
 
     'chrome.pgo': {
+      'linux-pgo-beta': 'official_goma_linux_pgo',
+      'linux-pgo-stable': 'official_goma_linux_pgo',
+      'linux-pgo-trunk': 'official_goma_linux_pgo',
       'mac-pgo-beta': 'official_goma_mac_pgo',
       'mac-pgo-stable': 'official_goma_mac_pgo',
       'mac-pgo-trunk': 'official_goma_mac_pgo',
@@ -452,6 +455,7 @@
       'codesearch-gen-chromium-android': 'codesearch_gen_chromium_android_bot',
       'codesearch-gen-chromium-chromiumos': 'codesearch_gen_chromium_chromiumos_bot',
       'codesearch-gen-chromium-fuchsia': 'codesearch_gen_chromium_fuchsia_bot',
+      'codesearch-gen-chromium-lacros': 'codesearch_gen_chromium_lacros_bot',
       'codesearch-gen-chromium-linux': 'codesearch_gen_chromium_bot',
       'codesearch-gen-chromium-win': 'codesearch_gen_chromium_bot',
     },
@@ -484,11 +488,12 @@
     'chromium.mac': {
       'Mac Builder': 'gpu_tests_release_bot_minimal_symbols_no_nacl',
       'Mac Builder (dbg)': 'gpu_tests_debug_bot',
+      'WebKit Mac10.13 (retina)': 'release_bot',
       'ios-device': 'ios_device_release_rbe_compile_only',
       'ios-simulator': 'ios_simulator_debug_static_rbe_bot',
       'ios-simulator-full-configs': 'ios_simulator_debug_static_bot',
       'ios-simulator-noncq': 'ios_simulator_debug_static_rbe_bot',
-      'WebKit Mac10.13 (retina)': 'release_bot',
+      'mac-arm64': 'mac_arm64_release_bot',
     },
 
     'chromium.memory': {
@@ -790,6 +795,8 @@
       'chromeos-kevin-chrome': 'chromeos_kevin_include_unwind_tables_official',
       'chromeos-kevin-compile-chrome': 'chromeos_kevin_include_unwind_tables_official',
       'linux-chrome': 'official_goma',
+      'linux-chrome-beta': 'official_goma',
+      'linux-chrome-stable': 'official_goma',
       'linux-chromeos-chrome': 'official_goma_chromeos_include_unwind_tables',
       'mac-chrome': 'official_goma',
       'mac-chrome-beta': 'official_goma',
@@ -824,6 +831,7 @@
       'gen-android-try': 'codesearch_gen_chromium_android_bot',
       'gen-chromiumos-try': 'codesearch_gen_chromium_chromiumos_bot',
       'gen-fuchsia-try': 'codesearch_gen_chromium_fuchsia_bot',
+      'gen-lacros-try': 'codesearch_gen_chromium_lacros_bot',
       'gen-linux-try': 'codesearch_gen_chromium_bot',
       'gen-win-try': 'codesearch_gen_chromium_bot',
     },
@@ -1687,6 +1695,12 @@
       'codesearch_release', 'fuchsia',
     ],
 
+    # Lacros uses different gn args to build for chromeOS device vs. Linux. For
+    # simplicity, we only generate codesearch x-refs for lacros on Linux.
+    'codesearch_gen_chromium_lacros_bot': [
+      'codesearch', 'lacros_on_linux',
+    ],
+
     'codesearch_gen_chromium_bot': [
       'codesearch',
     ],
@@ -2110,6 +2124,10 @@
 
     'official_goma_linux_perf': [
       'official', 'goma', 'no_gnome_keyring', 'minimal_symbols',
+    ],
+
+    'official_goma_linux_pgo': [
+      'official', 'goma', 'static', 'no_symbols', 'pgo_phase_1',
     ],
 
     'official_goma_chromeos': [

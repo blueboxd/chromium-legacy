@@ -7,13 +7,9 @@
 
 #include <vector>
 
-#include "components/viz/common/gpu/vulkan_context_provider.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/external_semaphore.h"
 #include "gpu/command_buffer/service/external_vk_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
-#include "gpu/vulkan/vulkan_device_queue.h"
-#include "gpu/vulkan/vulkan_implementation.h"
 
 namespace gpu {
 
@@ -42,9 +38,6 @@ class ExternalVkImageSkiaRepresentation : public SharedImageRepresentationSkia {
   ExternalVkImageBacking* backing_impl() const {
     return static_cast<ExternalVkImageBacking*>(backing());
   }
-  viz::VulkanContextProvider* context_provider() const {
-    return backing_impl()->context_provider();
-  }
   VulkanFenceHelper* fence_helper() const {
     return backing_impl()->fence_helper();
   }
@@ -63,6 +56,7 @@ class ExternalVkImageSkiaRepresentation : public SharedImageRepresentationSkia {
   };
   AccessMode access_mode_ = kNone;
   int surface_msaa_count_ = 0;
+  std::vector<ExternalSemaphore> begin_access_semaphores_;
   ExternalSemaphore end_access_semaphore_;
 };
 

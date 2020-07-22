@@ -29,6 +29,7 @@ import {shortenClassName} from '../chrome_hooks.js';
 
 import LinkToGraph from './link_to_graph.vue';
 
+// @vue/component
 const PackageDetailsPanel = {
   components: {
     LinkToGraph,

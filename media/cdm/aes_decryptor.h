@@ -176,9 +176,10 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
   CdmKeysInfo GenerateKeysInfoList(const std::string& session_id,
                                    CdmKeyInformation::KeyStatus status);
 
-  // Returns the record of key usage for persistent-usage-record session. Used
+  // Gets the record of key usage for persistent-usage-record session. Used
   // by ClearKeyPersistentSessionCdm.
-  void GetRecordOfKeyUsage(const std::string& session_id,
+  // Returns false if the session type is not Persistent-Usage-Record.
+  bool GetRecordOfKeyUsage(const std::string& session_id,
                            KeyIdList& key_ids,
                            base::Time& first_decryption_time,
                            base::Time& latest_decryption_time);

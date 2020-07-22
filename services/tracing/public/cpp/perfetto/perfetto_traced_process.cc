@@ -19,6 +19,7 @@
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "services/tracing/public/cpp/trace_startup.h"
+#include "services/tracing/public/cpp/tracing_features.h"
 #include "services/tracing/public/mojom/tracing_service.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/tracing.h"
 
@@ -95,6 +96,17 @@ void PerfettoTracedProcess::SetConsumerConnectionFactory(
   consumer_connection_task_runner_ = task_runner;
 }
 
+void PerfettoTracedProcess::ConnectProducer(
+    mojo::PendingRemote<mojom::PerfettoService> perfetto_service) {
+  if (base::FeatureList::IsEnabled(
+          features::kEnablePerfettoClientApiProducer)) {
+    DCHECK(pending_producer_callback_);
+    std::move(pending_producer_callback_).Run(std::move(perfetto_service));
+  } else {
+    producer_client_->Connect(std::move(perfetto_service));
+  }
+}
+
 void PerfettoTracedProcess::ClearDataSourcesForTesting() {
   base::AutoLock lock(data_sources_lock_);
   data_sources_.clear();
@@ -123,6 +135,18 @@ void PerfettoTracedProcess::DeleteSoonForTesting(
     std::unique_ptr<PerfettoTracedProcess> perfetto_traced_process) {
   GetTaskRunner()->GetOrCreateTaskRunner()->DeleteSoon(
       FROM_HERE, std::move(perfetto_traced_process));
+}
+
+void PerfettoTracedProcess::CreateProducerConnection(
+    base::OnceCallback<void(mojo::PendingRemote<mojom::PerfettoService>)>
+        callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Perfetto will attempt to create the producer connection as soon as the
+  // client library is initialized, which is before we have a a connection to
+  // the tracing service. Store the connection callback until ConnectProducer()
+  // is called.
+  DCHECK(!pending_producer_callback_);
+  pending_producer_callback_ = std::move(callback);
 }
 
 void PerfettoTracedProcess::CreateConsumerConnection(

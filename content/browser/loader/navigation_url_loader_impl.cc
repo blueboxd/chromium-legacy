@@ -332,8 +332,7 @@ uint32_t NavigationURLLoaderImpl::GetURLLoaderOptions(bool is_main_frame) {
 }
 
 void NavigationURLLoaderImpl::Start(
-    std::unique_ptr<network::PendingSharedURLLoaderFactory>
-        pending_network_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
     AppCacheNavigationHandle* appcache_handle,
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache,
@@ -354,8 +353,7 @@ void NavigationURLLoaderImpl::Start(
                      weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
 
   // TODO(kinuko): This can likely be initialized in the ctor.
-  network_loader_factory_ = network::SharedURLLoaderFactory::Create(
-      std::move(pending_network_loader_factory));
+  network_loader_factory_ = network_loader_factory;
   if (needs_loader_factory_interceptor && g_loader_factory_interceptor.Get()) {
     mojo::PendingRemote<network::mojom::URLLoaderFactory> factory;
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver =
@@ -1152,7 +1150,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
         &factory_receiver, nullptr /* header_client */,
         nullptr /* bypass_redirect_checks */, nullptr /* disable_secure_dns */,
         nullptr /* factory_override */);
-    CreateWebUIURLLoaderBinding(frame_tree_node->current_frame_host(), scheme,
+    CreateWebUIURLLoaderBinding(frame_tree_node, scheme,
                                 std::move(factory_receiver));
   }
 
@@ -1238,21 +1236,20 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     known_schemes_.insert(iter.first);
 
   bool needs_loader_factory_interceptor = false;
-  std::unique_ptr<network::PendingSharedURLLoaderFactory>
-      pending_network_factory =
-          storage_partition_->GetURLLoaderFactoryForBrowserProcess()->Clone();
+  scoped_refptr<network::SharedURLLoaderFactory> network_factory =
+      storage_partition_->GetURLLoaderFactoryForBrowserProcess();
   if (header_client) {
     needs_loader_factory_interceptor = true;
     mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
     CreateURLLoaderFactoryWithHeaderClient(
         std::move(header_client),
         factory_remote.InitWithNewPipeAndPassReceiver(), storage_partition_);
-    pending_network_factory =
-        std::make_unique<network::WrapperPendingSharedURLLoaderFactory>(
+    network_factory =
+        base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
             std::move(factory_remote));
   }
 
-  Start(std::move(pending_network_factory), appcache_handle,
+  Start(network_factory, appcache_handle,
         std::move(prefetched_signed_exchange_cache),
         std::move(signed_exchange_prefetch_metric_recorder),
         std::move(factory_for_webui), std::move(accept_langs),

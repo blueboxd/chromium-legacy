@@ -2316,6 +2316,9 @@ extern const char kMeteredShowToggleDescription[];
 extern const char kOsSettingsPolymer3Name[];
 extern const char kOsSettingsPolymer3Description[];
 
+extern const char kPhoneHubName[];
+extern const char kPhoneHubDescription[];
+
 extern const char kPrintServerUiName[];
 extern const char kPrintServerUiDescription[];
 
@@ -2537,9 +2540,6 @@ extern const char kPdfFormSaveDescription[];
 
 extern const char kPdfHonorJsContentSettingsName[];
 extern const char kPdfHonorJsContentSettingsDescription[];
-
-extern const char kPdfTwoUpViewName[];
-extern const char kPdfTwoUpViewDescription[];
 
 extern const char kPdfViewerUpdateName[];
 extern const char kPdfViewerUpdateDescription[];

@@ -28,9 +28,9 @@
 #include "base/supports_user_data.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "build/build_config.h"
+#include "components/favicon/core/favicon_database.h"
 #include "components/favicon_base/favicon_usage_data.h"
 #include "components/history/core/browser/expire_history_backend.h"
-#include "components/history/core/browser/favicon_database.h"
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
@@ -739,7 +739,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                        favicon_base::IconType icon_type,
                        const GURL& icon_url,
                        const std::vector<SkBitmap>& bitmaps,
-                       FaviconBitmapType type);
+                       favicon::FaviconBitmapType type);
 
   // Used by both UpdateFaviconMappingsAndFetch() and GetFavicon().
   // If there is a favicon stored in the database for |icon_url|, a mapping is
@@ -764,11 +764,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // of calling this method.
   bool SetFaviconBitmaps(favicon_base::FaviconID icon_id,
                          const std::vector<SkBitmap>& bitmaps,
-                         FaviconBitmapType type);
+                         favicon::FaviconBitmapType type);
 
   // Returns true if the bitmap data at |bitmap_id| equals |new_bitmap_data|.
   bool IsFaviconBitmapDataEqual(
-      FaviconBitmapID bitmap_id,
+      favicon::FaviconBitmapID bitmap_id,
       const scoped_refptr<base::RefCountedMemory>& new_bitmap_data);
 
   // Returns true if there are favicons for |page_url| and one of the types in
@@ -901,7 +901,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // vice-versa.
   std::unique_ptr<HistoryDatabase> db_;
   bool scheduled_kill_db_;  // Database is being killed due to error.
-  std::unique_ptr<FaviconDatabase> favicon_db_;
+  std::unique_ptr<favicon::FaviconDatabase> favicon_db_;
 
   // Manages expiration between the various databases.
   ExpireHistoryBackend expirer_;

@@ -444,6 +444,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="2824775600643448204">Barre d'adresse et de recherche</translation>
 <translation id="2826760142808435982">La connexion est chiffrée et authentifiée avec la clé <ph name="CIPHER" />. La méthode d'échange de clés utilisée est <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Effacer le contenu du formulaire</translation>
+<translation id="2839501879576190149">Cette URL mène à un site faux</translation>
 <translation id="2847118875340931228">Ouvrir la fenêtre de navigation privée</translation>
 <translation id="2850739647070081192">Enveloppe d'invitation</translation>
 <translation id="2856444702002559011">Les cyberpirates peuvent essayer de voler vos données à partir de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (par exemple, des mots de passe, des messages ou des numéros de carte de crédit). <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -799,6 +800,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="42981349822642051">Développer</translation>
 <translation id="4300675098767811073">Multiple perforation à droite</translation>
 <translation id="4302965934281694568">Enveloppe Chou3</translation>
+<translation id="4305666528087210886">Impossible d'accéder à votre fichier</translation>
 <translation id="4305817255990598646">Changer</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Bloquer (par défaut)</translation>
@@ -817,6 +819,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="4358461427845829800">Gérer les modes de paiement</translation>
 <translation id="4359160567981085931">Vous venez d'entrer votre mot de passe sur un site trompeur. Chrome peut vous aider. Pour modifier votre mot de passe et avertir Google que votre compte pourrait être en danger, cliquez sur Protéger le compte.</translation>
 <translation id="4367563149485757821">Enveloppe n° 12</translation>
+<translation id="4367839622597707614">{1,plural, =0{Une violation de données sur un site ou dans une application a exposé votre mot de passe enregistré pour <ph name="ORIGIN" />. Chrome vous recommande de changer votre mot de passe sur <ph name="ORIGIN" /> maintenant.}=1{Une violation de données sur un site ou dans une application a exposé votre mot de passe enregistré pour <ph name="ORIGIN" /> et un autre site. Chrome vous recommande de vérifier vos mots de passe enregistrés.}one{Une violation de données sur un site ou dans une application a exposé votre mot de passe enregistré pour <ph name="ORIGIN" /> et <ph name="SITES_COUNT" /> autre site. Chrome vous recommande de vérifier vos mots de passe enregistrés.}other{Une violation de données sur un site ou dans une application a exposé votre mot de passe enregistré pour <ph name="ORIGIN" /> et <ph name="SITES_COUNT" /> autres sites. Chrome vous recommande de vérifier vos mots de passe enregistrés.}}</translation>
 <translation id="437058704415269440">Solde du compte</translation>
 <translation id="4372516964750095882">Pli en éventail, É-U</translation>
 <translation id="4372948949327679948">Valeur <ph name="VALUE_TYPE" /> attendue.</translation>
@@ -1287,6 +1290,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Possibilité de frais facturés plus tard.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 autre suggestion}one{# autre suggestion}other{# autres suggestions}}</translation>
+<translation id="6387645831795005740">Les pirates tentent parfois d'imiter des sites Web en modifiant légèrement l'URL utilisée.</translation>
 <translation id="6389470377220713856">Nom sur carte</translation>
 <translation id="6390200185239044127">Demi-feuille de pli en Z</translation>
 <translation id="6390662030813198813">Ingénierie E</translation>
@@ -1500,6 +1504,7 @@ Détails supplémentaires :
 <translation id="7372973238305370288">résultat de la recherche</translation>
 <translation id="7374733840632556089">Ce problème survient en raison d'un certificat installé, par vous ou quelqu'un d'autre, sur votre appareil. Le certificat n'est pas considéré comme fiable par Chrome, parce qu'on sait qu'il est utilisé pour surveiller et intercepter les réseaux. Certains cas requièrent de la surveillance, comme un réseau scolaire ou d'entreprise, mais Chrome vous le mentionne pour que vous sachiez que cette surveillance se produit, même si vous ne pouvez pas l'empêcher. La surveillance peut se produire dans tous les navigateurs et toutes les applications qui accèdent au Web.</translation>
 <translation id="7375818412732305729">Un fichier est joint</translation>
+<translation id="7376551888419889433">Lorsque les connecteurs Chrome Enterprise signalent des événements relatifs à la sécurité, des données pertinentes concernant ces événements sont envoyées à votre administrateur. Ces données pourraient comprendre les URL des pages que vous visitez dans Chrome, les noms ou les métadonnées des fichiers ainsi que le nom d'utilisateur que vous utilisez pour vous connecter à votre appareil et à Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> — <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Commandes multimédias</translation>
 <translation id="7378627244592794276">Pas maintenant</translation>
@@ -1896,6 +1901,7 @@ Détails supplémentaires :
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Vous avez essayé d'accéder à <ph name="DOMAIN" />, mais le serveur a présenté un certificat non valide.</translation>
 <translation id="9050666287014529139">Phrase de passe</translation>
+<translation id="9062620674789239642">Il a peut-être été déplacé, modifié ou supprimé.</translation>
 <translation id="9065203028668620118">Modifier</translation>
 <translation id="9065745800631924235">Recherche <ph name="TEXT" /> dans l'historique</translation>
 <translation id="9069693763241529744">Bloqué par une extension</translation>

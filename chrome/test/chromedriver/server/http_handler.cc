@@ -973,8 +973,8 @@ void HttpHandler::Handle(const net::HttpServerRequestInfo& request,
 Command HttpHandler::WrapToCommand(const char* name,
                                    const SessionCommand& session_command,
                                    bool w3c_standard_command) {
-  return base::Bind(&ExecuteSessionCommand, &session_thread_map_, name,
-                    session_command, w3c_standard_command, false);
+  return base::BindRepeating(&ExecuteSessionCommand, &session_thread_map_, name,
+                             session_command, w3c_standard_command, false);
 }
 
 Command HttpHandler::WrapToCommand(const char* name,
@@ -1049,12 +1049,10 @@ void HttpHandler::HandleCommand(
     return;
   }
 
-  iter->command.Run(params,
-                    session_id,
-                    base::Bind(&HttpHandler::PrepareResponse,
-                               weak_ptr_factory_.GetWeakPtr(),
-                               trimmed_path,
-                               send_response_func));
+  iter->command.Run(params, session_id,
+                    base::BindRepeating(&HttpHandler::PrepareResponse,
+                                        weak_ptr_factory_.GetWeakPtr(),
+                                        trimmed_path, send_response_func));
 }
 
 void HttpHandler::PrepareResponse(

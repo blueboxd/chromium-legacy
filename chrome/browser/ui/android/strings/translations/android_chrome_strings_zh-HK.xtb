@@ -577,6 +577,7 @@
 <translation id="5659593005791499971">電郵</translation>
 <translation id="5665379678064389456">在「<ph name="APP_NAME" />」中建立活動</translation>
 <translation id="5668404140385795438">覆寫網站禁止放大的要求</translation>
+<translation id="5683547024293500885">Chrome 無法檢查更新</translation>
 <translation id="5686790454216892815">檔案名稱過長</translation>
 <translation id="5694049548840660018">鬆輕返回首頁</translation>
 <translation id="569536719314091526">透過「更多選項」掣，將呢個網頁翻譯成任何語言</translation>
@@ -589,6 +590,7 @@
 <translation id="5732819098735351888">使用 Wi-Fi 時將開始下載。</translation>
 <translation id="5748802427693696783">已切換至標準分頁</translation>
 <translation id="5749068826913805084">Chrome 需要儲存空間的存取權才能下載檔案。</translation>
+<translation id="5749237766298580851">關閉 <ph name="SEPARATOR" /> 不建議</translation>
 <translation id="5754350196967618083">無法重新整理「探索」</translation>
 <translation id="5763382633136178763">無痕式分頁</translation>
 <translation id="5763514718066511291">輕按即可複製此應用程式的網址</translation>
@@ -996,6 +998,7 @@
 <translation id="8970887620466824814">發生錯誤。</translation>
 <translation id="8972098258593396643">要下載至預設資料夾嗎？</translation>
 <translation id="8988028529677883095">讓手機成為安全密鑰</translation>
+<translation id="8990209962746788689">無法建立二維條碼</translation>
 <translation id="8993760627012879038">在無痕模式中開啟新分頁</translation>
 <translation id="8998729206196772491">您即將登入由 <ph name="MANAGED_DOMAIN" /> 管理的帳戶，並讓帳戶管理員控制您的 Chrome 資料。您的資料將與這個帳戶建立永久連結。如果您登出 Chrome，系統將刪除此裝置上的資料，但這些資料仍會保留在您的 Google 帳戶中。</translation>
 <translation id="9028914725102941583">開啟同步功能，即可在所有裝置上分享內容</translation>

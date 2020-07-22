@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 
 namespace blink {
 namespace {
@@ -238,9 +239,11 @@ void AcceleratedStaticBitmapImage::Draw(
 }
 
 bool AcceleratedStaticBitmapImage::IsValid() const {
+  // TODO: Remove explicit cast after http://review.skia.org/304776 lands.
   if (texture_backing_ && (!skia_context_provider_wrapper_ ||
                            !texture_backing_->GetAcceleratedSkImage()->isValid(
-                               ContextProvider()->GetGrContext()))) {
+                               static_cast<GrRecordingContext*>(
+                                   ContextProvider()->GetGrContext())))) {
     return false;
   }
 

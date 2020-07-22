@@ -4,8 +4,7 @@
 import("//build/config/android/rules.gni")
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.chrome.ui.messages"
-
+  create_srcjar = false
   sources = [
     "java/res/drawable/snackbar_background_tablet.xml",
     "java/res/layout/snackbar.xml",
@@ -49,6 +48,7 @@ android_library("java") {
     "//ui/android:ui_utils_java",
   ]
 
+  resources_package = "org.chromium.chrome.ui.messages"
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 

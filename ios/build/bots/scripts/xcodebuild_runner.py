@@ -43,8 +43,6 @@ def erase_all_simulators(path=None):
 
   Args:
     path: (str) A path with simulators
-
-  Fix for DVTCoreSimulatorAdditionsErrorDomain error.
   """
   command = ['xcrun', 'simctl']
   if path:
@@ -52,16 +50,23 @@ def erase_all_simulators(path=None):
     LOGGER.info('Erasing all simulators from folder %s.' % path)
   else:
     LOGGER.info('Erasing all simulators.')
-  subprocess.call(command + ['erase', 'all'])
+
+  try:
+    subprocess.check_call(command + ['erase', 'all'])
+  except subprocess.CalledProcessError as e:
+    # Logging error instead of throwing so we don't cause failures in case
+    # this was indeed failing to clean up.
+    message = 'Failed to erase all simulators. Error: %s' % e.output
+    LOGGER.error(message)
 
 
 def shutdown_all_simulators(path=None):
   """Shutdown all simulator devices.
 
+  Fix for DVTCoreSimulatorAdditionsErrorDomain error.
+
   Args:
     path: (str) A path with simulators
-
-  Fix for DVTCoreSimulatorAdditionsErrorDomain error.
   """
   command = ['xcrun', 'simctl']
   if path:
@@ -69,7 +74,14 @@ def shutdown_all_simulators(path=None):
     LOGGER.info('Shutdown all simulators from folder %s.' % path)
   else:
     LOGGER.info('Shutdown all simulators.')
-  subprocess.call(command + ['shutdown', 'all'])
+
+  try:
+    subprocess.check_call(command + ['shutdown', 'all'])
+  except subprocess.CalledProcessError as e:
+    # Logging error instead of throwing so we don't cause failures in case
+    # this was indeed failing to clean up.
+    message = 'Failed to shutdown all simulators. Error: %s' % e.output
+    LOGGER.error(message)
 
 
 def terminate_process(proc):
@@ -83,7 +95,7 @@ def terminate_process(proc):
   try:
     proc.terminate()
   except OSError as ex:
-    LOGGER.info('Error while killing a process: %s' % ex)
+    LOGGER.error('Error while killing a process: %s' % ex)
 
 
 class LaunchCommand(object):

@@ -164,15 +164,13 @@ class QrCodeShareMediator {
     }
 
     private Bitmap addUrlToBitmap(Bitmap bitmap, String url) {
-        int qrCodeSize = mContext.getResources().getDimensionPixelSize(
-                org.chromium.chrome.browser.share.R.dimen.qrcode_size);
+        int qrCodeSize = mContext.getResources().getDimensionPixelSize(R.dimen.qrcode_size);
         int fontSize = mContext.getResources().getDimensionPixelSize(R.dimen.text_size_large);
-        int sidePadding = mContext.getResources().getDimensionPixelSize(
-                org.chromium.chrome.browser.share.R.dimen.side_padding);
-        int textTopPadding = mContext.getResources().getDimensionPixelSize(
-                org.chromium.chrome.browser.share.R.dimen.url_box_top_padding);
-        int textBottomPadding = mContext.getResources().getDimensionPixelSize(
-                org.chromium.chrome.browser.share.R.dimen.url_box_bottom_padding);
+        int sidePadding = mContext.getResources().getDimensionPixelSize(R.dimen.side_padding);
+        int textTopPadding =
+                mContext.getResources().getDimensionPixelSize(R.dimen.url_box_top_padding);
+        int textBottomPadding =
+                mContext.getResources().getDimensionPixelSize(R.dimen.url_box_bottom_padding);
 
         TextPaint mTextPaint = new TextPaint();
         mTextPaint.setAntiAlias(true);

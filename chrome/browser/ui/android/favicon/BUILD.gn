@@ -29,6 +29,8 @@ android_library("java") {
 
   srcjar_deps = [ "//components/favicon_base:favicon_base_enums_java" ]
 
+  resources_package = "org.chromium.chrome.browser.ui.favicon"
+
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
@@ -40,7 +42,6 @@ generate_jni("jni_headers") {
 }
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.chrome.browser.ui.favicon"
   sources = [
     "java/res/drawable-hdpi/chromelogo16.png",
     "java/res/drawable-hdpi/default_favicon.png",
@@ -55,6 +56,8 @@ android_resources("java_resources") {
     "java/res/values/colors.xml",
     "java/res/values/dimens.xml",
   ]
+
+  create_srcjar = false
 
   deps = [ "//ui/android:ui_java_resources" ]
 }

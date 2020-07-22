@@ -11,6 +11,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
                                 'build', 'android'))
 import devil_chromium
+from devil.android import apk_helper
 from devil.android import device_utils
 
 def main():
@@ -18,11 +19,11 @@ def main():
   parser.add_argument('--shell-apk-path', type=os.path.abspath, required=True,
                       help='Absolute path to the WebLayer shell APK to use.')
   parser.add_argument('--support-apk-path', action='append',
-                      type=os.path.abspath, required=True,
+                      type=os.path.abspath, default=[],
                       help='Absolute path to the WebLayer support APKs to '
                       'use. Specify multiple times for multiple paths.')
   parser.add_argument('--switch-webview-to', type=str, required=False,
-                      help='Package name to set as the WebView implementation.')
+                      help='APK to set as the WebView implementation.')
   parser.add_argument('-d', '--device', dest='devices', action='append',
                       default=[],
                       help='Target device for apk to install on. Enter multiple'
@@ -44,8 +45,12 @@ def main():
       device.Install(path, reinstall=True, allow_downgrade=True)
       print 'Success'
     if args.switch_webview_to:
-      print 'Setting WebView implementation to %s' % args.switch_webview_to
-      device.SetWebViewImplementation(args.switch_webview_to)
+      print 'Installing %s...' % args.switch_webview_to
+      device.Install(args.switch_webview_to, reinstall=True,
+                     allow_downgrade=True)
+      package = apk_helper.GetPackageName(args.switch_webview_to)
+      print 'Setting WebView implementation to %s' % package
+      device.SetWebViewImplementation(package)
       print 'Done'
 
     if os.path.basename(args.shell_apk_path) == 'WebLayerShell.apk':

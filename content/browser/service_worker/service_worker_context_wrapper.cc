@@ -365,13 +365,24 @@ void ServiceWorkerContextWrapper::OnAllRegistrationsDeletedForOrigin(
   registered_origins_.erase(origin);
 }
 
+void ServiceWorkerContextWrapper::OnErrorReported(
+    int64_t version_id,
+    const GURL& scope,
+    const ServiceWorkerContextObserver::ErrorInfo& info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  for (auto& observer : observer_list_)
+    observer.OnErrorReported(version_id, scope, info);
+}
+
 void ServiceWorkerContextWrapper::OnReportConsoleMessage(
     int64_t version_id,
+    const GURL& scope,
     const ConsoleMessage& message) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (auto& observer : observer_list_)
-    observer.OnReportConsoleMessage(version_id, message);
+    observer.OnReportConsoleMessage(version_id, scope, message);
 }
 
 void ServiceWorkerContextWrapper::OnControlleeAdded(

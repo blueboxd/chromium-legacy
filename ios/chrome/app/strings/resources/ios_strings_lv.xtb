@@ -72,6 +72,7 @@
 <translation id="1674504678466460478">No <ph name="SOURCE_LANGUAGE" /> uz <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Lai grāmatzīmes būtu pieejamas visās jūsu ierīcēs, ieslēdziet sinhronizāciju.</translation>
 <translation id="1687475363370981210">Atzīmēt visu kā izlasītu</translation>
+<translation id="1689333818294560261">Apzīmējums</translation>
 <translation id="1690731385917361335">Nav neviena vienuma</translation>
 <translation id="1692118695553449118">Sinhronizācija ieslēgta</translation>
 <translation id="1700629756560807968">Atlasītas: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -206,6 +207,7 @@ Inkognito režīmā vietnes nedrīkst izmantot sīkfailus, lai skatītu jūsu p�
 <translation id="3335947283844343239">Vēlreiz atvērt aizvērto cilni</translation>
 <translation id="3371831930909698441">Ir pieejams tulkojums. Opcijas, kas pieejamas ekrāna apakšējā daļā.</translation>
 <translation id="3393920035788932672">Uznir. logi atļauti</translation>
+<translation id="3425644765244388016">Kredītkartes apzīmējums</translation>
 <translation id="3443810440409579745">Saņemta cilne.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Dalītais skats</translation>
@@ -240,6 +242,7 @@ Inkognito režīmā vietnes nedrīkst izmantot sīkfailus, lai skatītu jūsu p�
 <translation id="3783017676699494206">Saglabāt attēlu</translation>
 <translation id="3789841737615482174">Instalēt</translation>
 <translation id="3803696231112616155">Piedāvāt tulkot šo vietni</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Nav uzlauztu paroļu}=1{{COUNT} uzlauzta parole}zero{{COUNT} uzlauztas paroles}one{{COUNT} uzlauzta parole}other{{COUNT} uzlauztas paroles}}</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
 <translation id="3892144330757387737">Šeit varēsiet skatīt savu vēsturi</translation>
 <translation id="3897092660631435901">Izvēlne</translation>
@@ -529,6 +532,7 @@ Vietnes nedrīkst izmantot sīkfailus, lai skatītu jūsu pārlūkošanas darbī
 <translation id="7189598951263744875">Kopīgot...</translation>
 <translation id="7192050974311852563">Sākt reģistrēšanu</translation>
 <translation id="7203585745079012652">Izrunāt atbildes skaļi</translation>
+<translation id="721597782417389033">Nederīgs kredītkartes apzīmējums</translation>
 <translation id="7265758999917665941">Nekad šai vietnei</translation>
 <translation id="7272437679830969316">Nevar apstiprināt jūsu identitāti. Parole nav nokopēta.</translation>
 <translation id="7291368939935408496">Notiek paroļu sagatavošana...</translation>

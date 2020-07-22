@@ -8,7 +8,7 @@
 #include "base/task/thread_pool.h"
 
 #include "chromeos/crosapi/cpp/window_snapshot.h"
-#include "chromeos/lacros/browser/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
 
 namespace content {
 

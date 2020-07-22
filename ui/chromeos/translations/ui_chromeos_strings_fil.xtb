@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Taon kung kailan na-record</translation>
 <translation id="3338239663705455570">Slovenian na keyboard</translation>
 <translation id="3353984535370177728">Pumili ng folder na i-a-upload</translation>
+<translation id="3356580349448036450">Kumpleto na</translation>
 <translation id="3399597614303179694">Macedonian keyboard</translation>
 <translation id="3414856743105198592">Buburahin ng pag-format sa naaalis na media ang lahat ng data. Nais mo bang magpatuloy?</translation>
 <translation id="3437801641691368414">Oras ng pagkakagawa</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Nabigo ang pag-install.</translation>
 <translation id="7040138676081995583">Buksan gamit ang...</translation>
-<translation id="7059566040011178088">Wala pang <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> (na) item ang pinili</translation>
 <translation id="7106346894903675391">Bumili ng higit pang storage...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;maghanap sa Drive&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">Modelo ng device</translation>
 <translation id="8208580316430297579">Artwork</translation>
 <translation id="8223479393428528563">Upang i-save ang mga file na ito para sa offline na paggamit, mag-online muli, i-right click ang mga file at piliin ang opsyong <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
-<translation id="8231972167769262174">Humigit-kumulang <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">I-abort</translation>
 <translation id="8261506727792406068">I-delete</translation>
 <translation id="8269755669432358899">I-collapse ang mga panel ng feedback ng mga file</translation>

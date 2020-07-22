@@ -28,7 +28,7 @@
 <translation id="6562820390860419811">Pindahkan tab ke kiri</translation>
 <translation id="6615455863669487791">Tunjukkan</translation>
 <translation id="6840760312327750441">Untuk mengelompokkan tab, sentuh lama sebuah tab. Lalu, tarik ke tab lainnya.</translation>
-<translation id="7151209024774799310">Keluarkan tab dari kelompok</translation>
+<translation id="7151209024774799310">Keluarkan tab dari grup</translation>
 <translation id="7559245342362162951">Tampilkan tab grup dalam petak layar penuh</translation>
 <translation id="7792771145871471484">Tinjau saran.</translation>
 <translation id="7838146321400849846">{TABS_COUNT,plural, =1{Masukkan <ph name="TABS_COUNT_ONE" /> tab yang dipilih ke grup}other{Masukkan <ph name="TABS_COUNT_MANY" /> tab yang dipilih ke grup}}</translation>

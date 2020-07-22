@@ -450,6 +450,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="2824775600643448204">Osoite- ja hakupalkki</translation>
 <translation id="2826760142808435982">Yhteys on salattu ja todennettu <ph name="CIPHER" />:n avulla ja se käyttää menetelmää <ph name="KX" /> avainvaihtomekanismina.</translation>
 <translation id="2835170189407361413">Tyhjennä lomake</translation>
+<translation id="2839501879576190149">Tämä on valesivusto</translation>
 <translation id="2847118875340931228">Avaa incognito-ikkuna</translation>
 <translation id="2850739647070081192">Kutsu (kirjekuori)</translation>
 <translation id="2856444702002559011">Sivustolle <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> hyökännyt taho voi yrittää varastaa tietojasi (esimerkiksi salasanoja, viestejä tai luottokorttitietoja). <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -811,6 +812,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="42981349822642051">Laajenna</translation>
 <translation id="4300675098767811073">Useita reikiä oikealla</translation>
 <translation id="4302965934281694568">Chou3 (kirjekuori)</translation>
+<translation id="4305666528087210886">Tiedostoa ei voi käyttää</translation>
 <translation id="4305817255990598646">Vaihda</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Estä (oletus)</translation>
@@ -829,6 +831,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="4358461427845829800">Hallinnoi maksutapoja…</translation>
 <translation id="4359160567981085931">Lisäsit juuri salasanasi petolliselle sivustolle. Chrome voi auttaa. Valitse Suojaa tili, niin voit vaihtaa salasanasi ja Googlelle ilmoitetaan tilin mahdollisesta vaarantumisesta.</translation>
 <translation id="4367563149485757821">Numero-12 (kirjekuori)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Jonkin sivuston tai sovelluksen tietosuojaloukkaus paljasti tallennetun salasanasi (<ph name="ORIGIN" />). Chrome suosittelee, että vaihdat sivuston <ph name="ORIGIN" /> salasanasi heti.}=1{Jonkin sivuston tai sovelluksen tietosuojaloukkaus paljasti tallennetun salasanasi (<ph name="ORIGIN" /> ja yksi muu sivusto). Chrome suosittelee tarkistamaan tallennetut salasanasi nyt.}other{Jonkin sivuston tai sovelluksen tietosuojaloukkaus paljasti tallennetun salasanasi (<ph name="ORIGIN" /> ja <ph name="SITES_COUNT" /> muuta sivustoa). Chrome suosittelee tarkistamaan tallennetut salasanasi nyt.}}</translation>
 <translation id="437058704415269440">Tilin saldo</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Odotettu <ph name="VALUE_TYPE" />-arvo.</translation>
@@ -1299,6 +1302,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Tästä voi seurata kuluja</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 muu ehdotus}other{# muuta ehdotusta}}</translation>
+<translation id="6387645831795005740">Hyökkääjät jäljittelevät joskus sivustoja tekemällä URL-osoitteeseen pieniä muutoksia, joita on vaikea havaita.</translation>
 <translation id="6389470377220713856">Nimi kortissa</translation>
 <translation id="6390200185239044127">Kolmoistaite puoliksi</translation>
 <translation id="6390662030813198813">Insinööri-E</translation>
@@ -1512,6 +1516,7 @@ Lisätietoja:
 <translation id="7372973238305370288">hakutulos</translation>
 <translation id="7374733840632556089">Tämän virheen syynä on varmenne, jonka sinä tai joku muu asensi laitteellesi. Varmennetta on aiemmin käytetty verkkojen valvontaan ja kaappaamiseen, eikä Chrome luota siihen. Valvomiselle voi olla oikea syy esimerkiksi oppilaitoksen tai yrityksen verkossa, mutta Chrome haluaa sinun tietävän valvonnasta, vaikket voi lopettaa sitä. Valvonta voi tapahtua missä tahansa selaimessa tai sovelluksessa, jolla on pääsy verkkoon.</translation>
 <translation id="7375818412732305729">Tiedosto on liitetty</translation>
+<translation id="7376551888419889433">Kun Chrome Enterprise Connectors merkitsee tietoturvatapahtuman, tapahtumista lähetetään olennaista dataa järjestelmänvalvojallesi. Tiedot voivat olla Chromessa avaamiesi sivujen URL-osoitteita, tiedostonimiä tai sisällönkuvaustietoja ja käyttäjänimi, jolla kirjaudut sisään laitteellesi ja Chromeen.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Mediaohjaimet</translation>
 <translation id="7378627244592794276">Ei</translation>
@@ -1909,6 +1914,7 @@ Lisätietoja:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Yritit muodostaa yhteyden verkkotunnukseen <ph name="DOMAIN" />, mutta palvelin esitti virheellisen varmenteen.</translation>
 <translation id="9050666287014529139">Tunnuslause</translation>
+<translation id="9062620674789239642">Sitä on voitu muokata tai se on voitu siirtää tai poistaa.</translation>
 <translation id="9065203028668620118">Muokkaa</translation>
 <translation id="9065745800631924235">Historiasta löydetty haku <ph name="TEXT" /></translation>
 <translation id="9069693763241529744">Laajennuksen estämä</translation>

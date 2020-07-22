@@ -26,7 +26,7 @@ void PreviewModeClient::Invalidate(const pp::Rect& rect) {
   NOTREACHED();
 }
 
-void PreviewModeClient::DidScroll(const pp::Point& point) {
+void PreviewModeClient::DidScroll(const gfx::Vector2d& point) {
   NOTREACHED();
 }
 

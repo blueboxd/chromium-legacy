@@ -15,7 +15,9 @@
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
+#include "chrome/common/web_application_info.h"
 
 class Profile;
 
@@ -72,6 +74,10 @@ class PendingAppInstallTask {
   virtual void Install(content::WebContents* web_contents,
                        WebAppUrlLoader::Result load_url_result,
                        ResultCallback result_callback);
+
+  // Install directly from a fully specified WebApplicationInfo struct. Used
+  // by system apps.
+  virtual void InstallFromInfo(ResultCallback result_callback);
 
   const ExternalInstallOptions& install_options() { return install_options_; }
 

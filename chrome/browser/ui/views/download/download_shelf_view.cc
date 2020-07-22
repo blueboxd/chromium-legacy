@@ -291,18 +291,21 @@ void DownloadShelfView::RemoveDownloadView(View* view) {
 }
 
 void DownloadShelfView::ConfigureButtonForTheme(views::MdTextButton* button) {
-  DCHECK(GetThemeProvider());
+  const auto* const tp = GetThemeProvider();
+  DCHECK(tp);
 
-  button->SetEnabledTextColors(
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
-  // For the normal theme, just use the default button bg color.
+  // If COLOR_DOWNLOAD_SHELF is not customized, just use the default button bg
+  // and text colors.
   base::Optional<SkColor> bg_color;
-  if (!ThemeServiceFactory::GetForProfile(profile())->UsingDefaultTheme()) {
+  if (tp->HasCustomColor(ThemeProperties::COLOR_DOWNLOAD_SHELF)) {
     // For custom themes, we have to make up a background color for the
     // button. Use a slight tint of the shelf background.
     bg_color = color_utils::BlendTowardMaxContrast(
-        GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF),
-        0x10);
+        tp->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF), 0x10);
+    // Text color should be set to an appropriate button color over the button
+    // background, COLOR_BOOKMARK_TEXT is currently used as a convenient hack.
+    button->SetEnabledTextColors(
+        tp->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
   }
   button->SetBgColorOverride(bg_color);
 }

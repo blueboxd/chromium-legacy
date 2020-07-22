@@ -81,7 +81,7 @@ android_resources("java_resources") {
     ":java_strings_grd",
     "//chrome/android:chrome_app_java_resources",
   ]
-  custom_package = "org.chromium.chrome.tab_ui"
+  create_srcjar = false
 }
 
 android_library("java") {
@@ -222,6 +222,7 @@ android_library("java") {
     "//third_party/android_deps:com_google_android_material_material_java",
     "//ui/android:ui_java",
   ]
+  resources_package = "org.chromium.chrome.tab_ui"
 }
 
 module_desc_java("module_desc_java") {

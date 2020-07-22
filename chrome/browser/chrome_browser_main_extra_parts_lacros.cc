@@ -5,7 +5,7 @@
 #include "chrome/browser/chrome_browser_main_extra_parts_lacros.h"
 
 #include "chrome/browser/lacros/lacros_chrome_service_delegate_impl.h"
-#include "chromeos/lacros/browser/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
 
 ChromeBrowserMainExtraPartsLacros::ChromeBrowserMainExtraPartsLacros() =
     default;

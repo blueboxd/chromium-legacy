@@ -584,6 +584,17 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
     return result;
   }
 
+  if (job.IsValid() && policy_base->GetJobLevel() <= JOB_LIMITED_USER) {
+    // Restrict the job from containing any processes. Job restrictions
+    // are only applied at process creation, so the target process is
+    // unaffected.
+    result = policy_base->DropActiveProcessLimit(&job);
+    if (result != SBOX_ALL_OK) {
+      target->Terminate();
+      return result;
+    }
+  }
+
   if (lowbox_token.IsValid()) {
     *last_warning = target->AssignLowBoxToken(lowbox_token);
     // If this fails we continue, but report the error as a warning.

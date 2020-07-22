@@ -117,6 +117,11 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
 
   void LoadAccountSettings() override;
 
+  void CreateNativeHostSession(
+      drivefs::mojom::ExtensionConnectionParamsPtr params,
+      mojo::PendingReceiver<drivefs::mojom::NativeMessagingHost> session,
+      mojo::PendingRemote<drivefs::mojom::NativeMessagingPort> port) override;
+
   const base::FilePath mount_path_;
 
   std::map<base::FilePath, FileMetadata> metadata_;

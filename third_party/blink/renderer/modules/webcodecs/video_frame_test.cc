@@ -47,7 +47,7 @@ TEST_F(VideoFrameTest, ConstructorAndAttributes) {
   EXPECT_EQ(200u, blink_frame->visibleHeight());
   EXPECT_EQ(media_frame, blink_frame->frame());
 
-  blink_frame->release();
+  blink_frame->close();
 
   EXPECT_EQ(0u, blink_frame->timestamp());
   EXPECT_EQ(0u, blink_frame->codedWidth());

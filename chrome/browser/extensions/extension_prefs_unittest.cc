@@ -1341,6 +1341,12 @@ TEST_F(ExtensionPrefsSimpleTest, ProfileExtensionPrefsMapTest) {
                                         PrefScope::kProfile};
   constexpr PrefMap kTestStringPref = {"test.string", PrefType::kString,
                                        PrefScope::kProfile};
+  constexpr PrefMap kTestTimePref = {"test.time", PrefType::kTime,
+                                     PrefScope::kProfile};
+  constexpr PrefMap kTestGURLPref = {"test.gurl", PrefType::kGURL,
+                                     PrefScope::kProfile};
+  constexpr PrefMap kTestDictPref = {"test.dict", PrefType::kDictionary,
+                                     PrefScope::kProfile};
 
   content::BrowserTaskEnvironment task_environment_;
   TestExtensionPrefs prefs(base::ThreadTaskRunnerHandle::Get());
@@ -1349,14 +1355,61 @@ TEST_F(ExtensionPrefsSimpleTest, ProfileExtensionPrefsMapTest) {
   registry->RegisterBooleanPref(kTestBooleanPref.name, false);
   registry->RegisterIntegerPref(kTestIntegerPref.name, 0);
   registry->RegisterStringPref(kTestStringPref.name, std::string());
+  registry->RegisterStringPref(kTestTimePref.name, std::string());
+  registry->RegisterStringPref(kTestGURLPref.name, std::string());
+  registry->RegisterDictionaryPref(kTestDictPref.name);
 
   prefs.prefs()->SetBooleanPref(kTestBooleanPref, true);
   prefs.prefs()->SetIntegerPref(kTestIntegerPref, 1);
   prefs.prefs()->SetStringPref(kTestStringPref, "foo");
+  base::Time time = base::Time::Now();
+  prefs.prefs()->SetTimePref(kTestTimePref, time);
+  GURL url = GURL("https://example/com");
+  prefs.prefs()->SetGURLPref(kTestGURLPref, url);
+  auto dict = std::make_unique<base::DictionaryValue>();
+  dict->SetString("key", "val");
+  prefs.prefs()->SetDictionaryPref(kTestDictPref, std::move(dict));
 
   EXPECT_TRUE(prefs.prefs()->GetPrefAsBoolean(kTestBooleanPref));
   EXPECT_EQ(prefs.prefs()->GetPrefAsInteger(kTestIntegerPref), 1);
   EXPECT_EQ(prefs.prefs()->GetPrefAsString(kTestStringPref), "foo");
+  EXPECT_EQ(prefs.prefs()->GetPrefAsTime(kTestTimePref), time);
+  EXPECT_EQ(prefs.prefs()->GetPrefAsGURL(kTestGURLPref), url);
+  std::string string_val = std::string();
+  prefs.prefs()
+      ->GetPrefAsDictionary(kTestDictPref)
+      ->GetString("key", &string_val);
+  EXPECT_EQ(string_val, "val");
+}
+
+TEST_F(ExtensionPrefsSimpleTest, ExtensionSpecificPrefsMapTest) {
+  constexpr PrefMap kTestBooleanPref = {"test.boolean", PrefType::kBool,
+                                        PrefScope::kExtensionSpecific};
+  constexpr PrefMap kTestIntegerPref = {"test.integer", PrefType::kInteger,
+                                        PrefScope::kExtensionSpecific};
+  constexpr PrefMap kTestStringPref = {"test.string", PrefType::kString,
+                                       PrefScope::kExtensionSpecific};
+
+  content::BrowserTaskEnvironment task_environment_;
+  TestExtensionPrefs prefs(base::ThreadTaskRunnerHandle::Get());
+
+  std::string extension_id = prefs.AddExtensionAndReturnId("1");
+  prefs.prefs()->SetBooleanPref(extension_id, kTestBooleanPref, true);
+  prefs.prefs()->SetIntegerPref(extension_id, kTestIntegerPref, 1);
+  prefs.prefs()->SetStringPref(extension_id, kTestStringPref, "foo");
+
+  bool bool_value = false;
+  EXPECT_TRUE(prefs.prefs()->ReadPrefAsBoolean(extension_id, kTestBooleanPref,
+                                               &bool_value));
+  EXPECT_TRUE(bool_value);
+  int int_value = 0;
+  EXPECT_TRUE(prefs.prefs()->ReadPrefAsInteger(extension_id, kTestIntegerPref,
+                                               &int_value));
+  EXPECT_EQ(int_value, 1);
+  std::string string_value;
+  EXPECT_TRUE(prefs.prefs()->ReadPrefAsString(extension_id, kTestStringPref,
+                                              &string_value));
+  EXPECT_EQ(string_value, "foo");
 }
 
 }  // namespace extensions

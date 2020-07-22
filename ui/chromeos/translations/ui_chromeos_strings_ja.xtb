@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">録音された年</translation>
 <translation id="3338239663705455570">スロベニア語のキーボード</translation>
 <translation id="3353984535370177728">アップロードするフォルダを選択</translation>
+<translation id="3356580349448036450">完了</translation>
 <translation id="3399597614303179694">マケドニア語キーボード</translation>
 <translation id="3414856743105198592">リムーバブル メディアをフォーマットすると、すべてのデータが消去されます。続行しますか？</translation>
 <translation id="3437801641691368414">作成日時</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" />（<ph name="ROOT_SUMMARY" />）</translation>
 <translation id="7014174261166285193">インストールできませんでした。</translation>
 <translation id="7040138676081995583">アプリケーションで開く...</translation>
-<translation id="7059566040011178088"><ph name="REMAINING_TIME" />未満</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> 個のアイテムが選択されています</translation>
 <translation id="7106346894903675391">追加容量を購入...</translation>
 <translation id="7126604456862387217">「&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;」 - &lt;em&gt;&lt;/em&gt;ドライブを検索</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">デバイスモデル</translation>
 <translation id="8208580316430297579">アート</translation>
 <translation id="8223479393428528563">これらのファイルを保存してオフラインで使用できるようにするには、オンラインに戻ってファイルを右クリックし、[<ph name="OFFLINE_CHECKBOX_NAME" />] オプションを選択します。</translation>
-<translation id="8231972167769262174">約 <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">中止</translation>
 <translation id="8261506727792406068">削除</translation>
 <translation id="8269755669432358899">ファイルのフィードバック パネルを折りたたみます</translation>

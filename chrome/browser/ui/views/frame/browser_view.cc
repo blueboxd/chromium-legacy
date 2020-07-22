@@ -1747,6 +1747,13 @@ void BrowserView::ConfirmBrowserCloseWithPendingDownloads(
 }
 
 void BrowserView::UserChangedTheme(BrowserThemeChangeType theme_change_type) {
+  // kWebAppTheme is triggered by web apps and will only change colors, not the
+  // frame type; just refresh the theme on all views in the browser window.
+  if (theme_change_type == BrowserThemeChangeType::kWebAppTheme) {
+    GetWidget()->ThemeChanged();
+    return;
+  }
+
   // When the browser theme changes, the NativeTheme may also change.
   // In Incognito, the usage of dark or normal hinges on the browser theme.
   if (theme_change_type == BrowserThemeChangeType::kBrowserTheme &&

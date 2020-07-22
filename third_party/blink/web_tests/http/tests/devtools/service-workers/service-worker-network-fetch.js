@@ -22,8 +22,7 @@
   function fetchCallback(result) {
     TestRunner.addResult('Fetch in worker result: ' + result);
 
-    const requests =
-        NetworkTestRunner.networkRequests().filter((e, i, a) => i % 2 == 0);
+    const requests = NetworkTestRunner.networkRequests();
     requests.forEach((request) => {
       TestRunner.addResult(request.url());
       TestRunner.addResult('resource.type: ' + request.resourceType());

@@ -7,12 +7,12 @@
 #include "base/bind.h"
 #include "base/i18n/case_conversion.h"
 #include "chrome/browser/history/android/bookmark_model_sql_handler.h"
+#include "components/favicon/core/favicon_database.h"
 #include "components/history/core/browser/android/android_time.h"
 #include "components/history/core/browser/android/android_urls_sql_handler.h"
 #include "components/history/core/browser/android/favicon_sql_handler.h"
 #include "components/history/core/browser/android/urls_sql_handler.h"
 #include "components/history/core/browser/android/visit_sql_handler.h"
-#include "components/history/core/browser/favicon_database.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/history_backend_notifier.h"
@@ -137,7 +137,7 @@ void RunNotifyURLsDeleted(HistoryBackendNotifier* notifier,
 
 AndroidProviderBackend::ScopedTransaction::ScopedTransaction(
     HistoryDatabase* history_db,
-    FaviconDatabase* favicon_db)
+    favicon::FaviconDatabase* favicon_db)
     : history_db_(history_db),
       favicon_db_(favicon_db),
       committed_(false),
@@ -198,7 +198,7 @@ void AndroidProviderBackend::ScopedTransaction::Commit() {
 AndroidProviderBackend::AndroidProviderBackend(
     const base::FilePath& db_name,
     HistoryDatabase* history_db,
-    FaviconDatabase* favicon_db,
+    favicon::FaviconDatabase* favicon_db,
     HistoryBackendClient* backend_client,
     HistoryBackendNotifier* notifier)
     : android_cache_db_filename_(db_name),
@@ -843,12 +843,12 @@ bool AndroidProviderBackend::UpdateFavicon() {
   if (!favicon_db_)
     return true;
 
-  FaviconDatabase::IconMappingEnumerator enumerator;
+  favicon::FaviconDatabase::IconMappingEnumerator enumerator;
   if (!favicon_db_->InitIconMappingEnumerator(favicon_base::IconType::kFavicon,
                                               &enumerator))
     return false;
 
-  IconMapping icon_mapping;
+  favicon::IconMapping icon_mapping;
   while (enumerator.GetNextIconMapping(&icon_mapping)) {
     URLID url_id = history_db_->GetRowForURL(icon_mapping.page_url, NULL);
     if (url_id == 0) {
@@ -1023,7 +1023,7 @@ bool AndroidProviderBackend::SimulateUpdateURL(
 
   favicon_base::FaviconID favicon_id = statement->statement()->ColumnInt64(4);
   if (favicon_id) {
-    std::vector<FaviconBitmap> favicon_bitmaps;
+    std::vector<favicon::FaviconBitmap> favicon_bitmaps;
     if (!favicon_db_ ||
         !favicon_db_->GetFaviconBitmaps(favicon_id, &favicon_bitmaps))
       return false;

@@ -106,6 +106,11 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final
   void SetConsumerConnectionFactory(ConsumerConnectionFactory,
                                     scoped_refptr<base::SequencedTaskRunner>);
 
+  // Connect the current process to the mojo trace producer API. Depending on
+  // the configuration, this will either set up the Perfetto Client API or the
+  // legacy TraceLog to become the trace producer for this process.
+  void ConnectProducer(mojo::PendingRemote<mojom::PerfettoService>);
+
   ProducerClient* producer_client() const;
   SystemProducer* system_producer() const;  // May be null.
 
@@ -178,6 +183,9 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final
   }
 
   // PerfettoTracingBackend::Delegate implementation.
+  void CreateProducerConnection(
+      base::OnceCallback<void(mojo::PendingRemote<mojom::PerfettoService>)>)
+      override;
   void CreateConsumerConnection(
       base::OnceCallback<void(mojo::PendingRemote<mojom::ConsumerHost>)>)
       override;
@@ -208,6 +216,9 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final
 
   scoped_refptr<base::SequencedTaskRunner> consumer_connection_task_runner_;
   ConsumerConnectionFactory consumer_connection_factory_;
+
+  base::OnceCallback<void(mojo::PendingRemote<mojom::PerfettoService>)>
+      pending_producer_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(PerfettoTracedProcess);

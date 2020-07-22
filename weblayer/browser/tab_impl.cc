@@ -610,12 +610,15 @@ void TabImpl::OnAutofillProviderChanged(
   provider->OnJavaAutofillProviderChanged(env, autofill_provider);
 }
 
-void TabImpl::UpdateBrowserControlsState(JNIEnv* env,
-                                         jint raw_new_state,
-                                         jboolean animate) {
-  UpdateBrowserControlsStateImpl(
-      static_cast<content::BrowserControlsState>(raw_new_state),
-      current_browser_controls_state_, animate);
+void TabImpl::UpdateBrowserControlsConstraint(JNIEnv* env,
+                                              jint constraint,
+                                              jboolean animate) {
+  current_browser_controls_visibility_constraint_ =
+      static_cast<content::BrowserControlsState>(constraint);
+  // Passing BOTH here means that it doesn't matter what state the controls are
+  // currently in; don't change the current state unless it's incompatible with
+  // the new constraint.
+  UpdateBrowserControlsState(content::BROWSER_CONTROLS_STATE_BOTH, animate);
 }
 
 ScopedJavaLocalRef<jstring> TabImpl::GetGuid(JNIEnv* env) {
@@ -666,15 +669,15 @@ TabImpl::ScreenShotErrors TabImpl::PrepareForCaptureScreenShot(
   return ScreenShotErrors::kNone;
 }
 
-void TabImpl::UpdateBrowserControlsStateImpl(
+void TabImpl::UpdateBrowserControlsState(
     content::BrowserControlsState new_state,
-    content::BrowserControlsState old_state,
     bool animate) {
-  current_browser_controls_state_ = new_state;
   if (base::FeatureList::IsEnabled(kImmediatelyHideBrowserControlsForTest))
     animate = false;
-  web_contents_->GetMainFrame()->UpdateBrowserControlsState(new_state,
-                                                            old_state, animate);
+  // The constraint is managed by Java code, so re-use the existing constraint
+  // and only update the desired state.
+  web_contents_->GetMainFrame()->UpdateBrowserControlsState(
+      current_browser_controls_visibility_constraint_, new_state, animate);
 }
 
 void TabImpl::CaptureScreenShot(
@@ -1104,19 +1107,18 @@ void TabImpl::OnUpdateBrowserControlsStateBecauseOfProcessSwitch(
   // This matches the logic of updateAfterRendererProcessSwitch() and
   // updateEnabledState() in Chrome's TabBrowserControlsConstraintsHelper.
   if (did_commit &&
-      current_browser_controls_state_ ==
+      current_browser_controls_visibility_constraint_ ==
           content::BROWSER_CONTROLS_STATE_SHOWN &&
       top_controls_container_view_ &&
       top_controls_container_view_->IsFullyVisible()) {
     // The top-control is fully visible, don't animate this else the controls
     // bounce around.
-    UpdateBrowserControlsStateImpl(current_browser_controls_state_,
-                                   current_browser_controls_state_, false);
+    UpdateBrowserControlsState(content::BROWSER_CONTROLS_STATE_SHOWN, false);
   } else {
-    UpdateBrowserControlsStateImpl(current_browser_controls_state_,
-                                   content::BROWSER_CONTROLS_STATE_SHOWN,
-                                   current_browser_controls_state_ !=
-                                       content::BROWSER_CONTROLS_STATE_HIDDEN);
+    UpdateBrowserControlsState(
+        content::BROWSER_CONTROLS_STATE_BOTH,
+        current_browser_controls_visibility_constraint_ !=
+            content::BROWSER_CONTROLS_STATE_HIDDEN);
   }
 }
 

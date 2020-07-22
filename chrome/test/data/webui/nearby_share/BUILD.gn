@@ -12,11 +12,29 @@ js_type_check("closure_compile") {
                     "js_module_root=./gen/chrome/test/data/webui/",
                   ]
   deps = [
+    ":fake_mojo_interfaces",
     ":nearby_confirmation_page_test",
     ":nearby_device_test",
+    ":nearby_discovery_page_test",
     ":nearby_preview_test",
     ":nearby_progress_test",
+    ":nearby_share_app_test",
   ]
+}
+
+js_library("fake_mojo_interfaces") {
+  deps = [
+    "..:test_browser_proxy.m",
+    "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
+  ]
+}
+
+js_library("nearby_confirmation_page_test") {
+  deps = [
+    ":fake_mojo_interfaces",
+    "//chrome/browser/resources/nearby_share:nearby_confirmation_page",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 
 js_library("nearby_device_test") {
@@ -24,8 +42,11 @@ js_library("nearby_device_test") {
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 
-js_library("nearby_confirmation_page_test") {
-  deps = [ "//chrome/browser/resources/nearby_share:nearby_confirmation_page" ]
+js_library("nearby_discovery_page_test") {
+  deps = [
+    ":fake_mojo_interfaces",
+    "//chrome/browser/resources/nearby_share:nearby_discovery_page",
+  ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 
@@ -36,5 +57,10 @@ js_library("nearby_preview_test") {
 
 js_library("nearby_progress_test") {
   deps = [ "//chrome/browser/resources/nearby_share:nearby_progress" ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("nearby_share_app_test") {
+  deps = [ "//chrome/browser/resources/nearby_share:app" ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }

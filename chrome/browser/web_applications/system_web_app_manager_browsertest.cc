@@ -65,10 +65,6 @@ namespace web_app {
 SystemWebAppManagerBrowserTestBase::SystemWebAppManagerBrowserTestBase(
     bool install_mock) {
   scoped_feature_list_.InitWithFeatures({features::kSystemWebApps}, {});
-  if (install_mock) {
-    maybe_installation_ =
-        TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp();
-  }
 }
 
 SystemWebAppManagerBrowserTestBase::~SystemWebAppManagerBrowserTestBase() =
@@ -154,17 +150,44 @@ const GURL& SystemWebAppManagerBrowserTestBase::GetLaunchURL(
 SystemWebAppManagerBrowserTest::SystemWebAppManagerBrowserTest(
     bool install_mock)
     : SystemWebAppManagerBrowserTestBase(install_mock) {
-  if (GetParam() == ProviderType::kWebApps) {
+  if (provider_type() == ProviderType::kWebApps) {
     scoped_feature_list_.InitAndEnableFeature(
         features::kDesktopPWAsWithoutExtensions);
-  } else if (GetParam() == ProviderType::kBookmarkApps) {
+  } else if (provider_type() == ProviderType::kBookmarkApps) {
     scoped_feature_list_.InitAndDisableFeature(
         features::kDesktopPWAsWithoutExtensions);
+  }
+
+  if (install_mock) {
+    maybe_installation_ =
+        TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp();
+  }
+}
+
+SystemWebAppManagerWebAppInfoBrowserTest::
+    SystemWebAppManagerWebAppInfoBrowserTest(bool install_mock)
+    : SystemWebAppManagerBrowserTestBase(install_mock) {
+  if (provider_type() == ProviderType::kWebApps) {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kDesktopPWAsWithoutExtensions);
+  } else if (provider_type() == ProviderType::kBookmarkApps) {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kDesktopPWAsWithoutExtensions);
+  }
+
+  if (install_mock) {
+    if (install_from_web_app_info()) {
+      maybe_installation_ = TestSystemWebAppInstallation::
+          SetUpStandaloneSingleWindowAppFromWebApplicationInfo();
+    } else {
+      maybe_installation_ =
+          TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp();
+    }
   }
 }
 
 // Test that System Apps install correctly with a manifest.
-IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest, Install) {
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerWebAppInfoBrowserTest, Install) {
   Browser* app_browser = WaitForSystemAppInstallAndLaunch(GetMockAppType());
 
   AppId app_id = app_browser->app_controller()->GetAppId();
@@ -195,11 +218,21 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest, Install) {
 #if defined(OS_CHROMEOS)
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+  bool should_show_in_management =
+      install_from_web_app_info() && provider_type() == ProviderType::kWebApps;
   proxy->AppRegistryCache().ForOneApp(
-      app_id, [](const apps::AppUpdate& update) {
+      app_id, [should_show_in_management](const apps::AppUpdate& update) {
         EXPECT_EQ(apps::mojom::OptionalBool::kTrue, update.ShowInLauncher());
         EXPECT_EQ(apps::mojom::OptionalBool::kTrue, update.ShowInSearch());
-        EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInManagement());
+        // TODO(https://crbug.com/1085274): We should never show SWAs in
+        // management.
+        if (should_show_in_management) {
+          EXPECT_EQ(apps::mojom::OptionalBool::kTrue,
+                    update.ShowInManagement());
+        } else {
+          EXPECT_EQ(apps::mojom::OptionalBool::kFalse,
+                    update.ShowInManagement());
+        }
         EXPECT_EQ(apps::mojom::Readiness::kReady, update.Readiness());
       });
 #endif  // defined(OS_CHROMEOS)
@@ -207,7 +240,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest, Install) {
 
 // Check the toolbar is not shown for system web apps for pages on the chrome://
 // scheme but is shown off the chrome:// scheme.
-IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerWebAppInfoBrowserTest,
                        ToolbarVisibilityForSystemWebApp) {
   Browser* app_browser = WaitForSystemAppInstallAndLaunch(GetMockAppType());
   // In scope, the toolbar should not be visible.
@@ -1346,12 +1379,32 @@ INSTANTIATE_TEST_SUITE_P(All,
 #endif  // defined(OS_CHROMEOS)
 
 // We test with and without enabling kDesktopPWAsWithoutExtensions.
+std::string ProviderAndInstallationTypeToString(
+    const ::testing::TestParamInfo<ProviderTypeAndInstallationType>&
+        provider_type) {
+  std::string output;
+  switch (std::get<0>(provider_type.param)) {
+    case ProviderType::kBookmarkApps:
+      output.append("BookmarkApps");
+      break;
+    case ProviderType::kWebApps:
+      output.append("WebApps");
+      break;
+  }
+  if (std::get<1>(provider_type.param)) {
+    output.append("_WebAppInfoInstall");
+  }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SystemWebAppManagerBrowserTest,
-                         ::testing::Values(ProviderType::kBookmarkApps,
-                                           ProviderType::kWebApps),
-                         ProviderTypeParamToString);
+  return output;
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemWebAppManagerWebAppInfoBrowserTest,
+    ::testing::Combine(::testing::Values(ProviderType::kBookmarkApps,
+                                         ProviderType::kWebApps),
+                       ::testing::Bool()),
+    ProviderAndInstallationTypeToString);
 
 INSTANTIATE_TEST_SUITE_P(All,
                          SystemWebAppManagerLaunchFilesBrowserTest,

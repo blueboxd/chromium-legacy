@@ -454,6 +454,9 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
       data.referrer_policy = network::mojom::ReferrerPolicy::kNever;
 
     data.link_text = anchor->innerText();
+
+    if (anchor->HasImpression())
+      data.impression = anchor->GetImpressionForNavigation();
   }
 
   data.input_field_type = ComputeInputFieldType(result);

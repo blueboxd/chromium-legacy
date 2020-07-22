@@ -185,12 +185,21 @@ class COLOR_SPACE_EXPORT ColorSpace {
   }
 
   // scRGB uses the same primaries as sRGB but has a linear transfer function
-  // for all real values. The slope of the transfer function may be specified
-  // by |slope|.
-  static ColorSpace CreateSCRGBLinear(float slope = 1.f);
+  // for all real values, and a white point of kDefaultScrgbLinearSdrWhiteLevel.
+  static constexpr ColorSpace CreateSCRGBLinear() {
+    return ColorSpace(PrimaryID::BT709, TransferID::LINEAR_HDR, MatrixID::RGB,
+                      RangeID::FULL);
+  }
+  // Allows specifying a custom SDR white level.  Only used on Windows.
+  static ColorSpace CreateSCRGBLinear(float sdr_white_level);
 
   // HDR10 uses BT.2020 primaries with SMPTE ST 2084 PQ transfer function.
-  static ColorSpace CreateHDR10(float sdr_white_point = 0.f);
+  static constexpr ColorSpace CreateHDR10() {
+    return ColorSpace(PrimaryID::BT2020, TransferID::SMPTEST2084, MatrixID::RGB,
+                      RangeID::FULL);
+  }
+  // Allows specifying a custom SDR white level.  Only used on Windows.
+  static ColorSpace CreateHDR10(float sdr_white_level);
 
   // HLG uses the BT.2020 primaries with the ARIB_STD_B67 transfer function.
   static ColorSpace CreateHLG();
@@ -227,9 +236,21 @@ class COLOR_SPACE_EXPORT ColorSpace {
   }
 
   // On macOS and on ChromeOS, sRGB's (1,1,1) always coincides with PQ's 100
-  // nits (which may not be 100 physical nits). Life is more complicated on
-  // Windows.
+  // nits (which may not be 100 physical nits). On Windows, sRGB's (1,1,1)
+  // maps to scRGB linear's (1,1,1) when the SDR white level is set to 80 nits.
+  // See also kDefaultScrgbLinearSdrWhiteLevel.
   static constexpr float kDefaultSDRWhiteLevel = 100.f;
+
+  // The default white level in nits for scRGB linear color space. On Windows,
+  // sRGB's (1,1,1) maps to scRGB linear's (1,1,1) when the SDR white level is
+  // set to 80 nits. On Mac and ChromeOS, sRGB's (1,1,1) maps to PQ's 100 nits.
+  // Using a platform specific value here satisfies both constraints.
+#if defined(OS_WIN)
+  static constexpr float kDefaultScrgbLinearSdrWhiteLevel = 80.0f;
+#else
+  static constexpr float kDefaultScrgbLinearSdrWhiteLevel =
+      kDefaultSDRWhiteLevel;
+#endif  // OS_WIN
 
   bool operator==(const ColorSpace& other) const;
   bool operator!=(const ColorSpace& other) const;
@@ -269,10 +290,10 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // the caller but replacing the matrix and range with the given values.
   ColorSpace GetWithMatrixAndRange(MatrixID matrix, RangeID range) const;
 
-  // If this color space has a PQ transfer function that did not specify an
-  // SDR white level, then return |this| with its SDR white level set to
-  // |sdr_white_level|. Otherwise return |this| unmodified.
-  ColorSpace GetWithPQSDRWhiteLevel(float sdr_white_level) const;
+  // If this color space has a PQ or scRGB linear transfer function that did not
+  // specify an SDR white level, then return |this| with its SDR white level set
+  // to |sdr_white_level|. Otherwise return |this| unmodified.
+  ColorSpace GetWithSDRWhiteLevel(float sdr_white_level) const;
 
   // This will return nullptr for non-RGB spaces, spaces with non-FULL
   // range, and unspecified spaces.

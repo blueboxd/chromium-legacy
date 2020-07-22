@@ -450,6 +450,7 @@
 <translation id="2824775600643448204">ແຖບ​ທີ່​ຢູ່​ ແລະ​ຄົ້ນ​ຫາ</translation>
 <translation id="2826760142808435982">ການເຊື່ອມຕໍ່ມີລະຫັດ ແລະໄດ້ຮັບຮອງແລ້ວດ້ວຍການໃຊ້ <ph name="CIPHER" /> ແລະໃຊ້ <ph name="KX" /> ເປັນກົນໄກແລກປ່ຽນປຸ່ມ.</translation>
 <translation id="2835170189407361413">ລຶບແບບຟອມ</translation>
+<translation id="2839501879576190149">ລະວັງເວັບໄຊປອມ</translation>
 <translation id="2847118875340931228">ເປີດໜ້າຈໍທີ່ບໍ່ເປີດເຜີຍຕົວຕົນ</translation>
 <translation id="2850739647070081192">Invite (ຊອງຈົດໝາຍ)</translation>
 <translation id="2856444702002559011">ຜູ້ໂຈມຕີອາດຈະກຳລັງພະຍາຍາມລັກເອົາຂໍ້ມູນຂອງທ່ານຈາກ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (ຕົວຢ່າງ: ລະຫັດຜ່ານ, ຂໍ້ຄວາມ ຫຼື ບັດເຄຣດິດ). <ph name="BEGIN_LEARN_MORE_LINK" />ສຶກສາເພີ່ມເຕີມ<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -810,6 +811,7 @@
 <translation id="42981349822642051">ຂະ​ຫຍາຍ</translation>
 <translation id="4300675098767811073">ເຈາະຮູເບື້ອງຂວາຫຼາຍຮູ</translation>
 <translation id="4302965934281694568">Chou3 (ຊອງຈົດໝາຍ)</translation>
+<translation id="4305666528087210886">ບໍ່ສາມາດເຂົ້າເຖິງໄຟລ໌ຂອງທ່ານໄດ້</translation>
 <translation id="4305817255990598646">ປ່ຽນ</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">ບລັອກ (ຄ່າເລີ່ມຕົ້ນ)</translation>
@@ -828,6 +830,7 @@
 <translation id="4358461427845829800">ຈັດການວິທີການຈ່າຍເງິນ...</translation>
 <translation id="4359160567981085931">ທ່ານຫາກໍປ້ອນລະຫັດຜ່ານຂອງທ່ານໃສ່ເວັບໄຊຫຼອກລວງ. Chrome ສາມາດຊ່ວຍໄດ້. ເພື່ອປ່ຽນລະຫັດຜ່ານຂອງທ່ານ ແລະ ແຈ້ງບອກ Google ວ່າບັນຊີຂອງທ່ານອາດຈະມີຄວາມສ່ຽງ, ກະລຸນາຄລິກປົກປ້ອງບັນຊີ.</translation>
 <translation id="4367563149485757821">Number-12 (ຊອງຈົດໝາຍ)</translation>
+<translation id="4367839622597707614">{1,plural, =0{ການລະເມີດຂໍ້ມູນໃນເວັບໄຊ ຫຼື ແອັບໄດ້ເຮັດໃຫ້ລະຫັດຜ່ານທີ່ທ່ານບັນທຶກໄວ້ສຳລັບ <ph name="ORIGIN" /> ຮົ່ວໄຫຼ. Chrome ແນະນຳໃຫ້ປ່ຽນລະຫັດຜ່ານໃນ <ph name="ORIGIN" /> ດຽວນີ້.}=1{ການລະເມີດຂໍ້ມູນໃນເວັບໄຊ ຫຼື ແອັບໄດ້ເຮັດໃຫ້ລະຫັດຜ່ານທີ່ທ່ານບັນທຶກໄວ້ສຳລັບ <ph name="ORIGIN" /> ແລະ ອີກໜຶ່ງເວັບໄຊອື່ນຮົ່ວໄຫຼ. Chrome ແນະນຳໃຫ້ກວດເບິ່ງລະຫັດຜ່ານທີ່ທ່ານບັນທຶກໄວ້ດຽວນີ້.}other{ການລະເມີດຂໍ້ມູນໃນເວັບໄຊ ຫຼື ແອັບໄດ້ເຮັດໃຫ້ລະຫັດຜ່ານທີ່ທ່ານບັນທຶກໄວ້ສຳລັບ <ph name="ORIGIN" /> ແລະ ອີກ <ph name="SITES_COUNT" /> ເວັບໄຊອື່ນຮົ່ວໄຫຼ. Chrome ແນະນຳໃຫ້ກວດເບິ່ງລະຫັດຜ່ານທີ່ທ່ານບັນທຶກໄວ້ດຽວນີ້.}}</translation>
 <translation id="437058704415269440">ຍອດເງິນໃນບັນຊີ</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">ຄ່າ <ph name="VALUE_TYPE" /> ທີ່ຄາດໄວ້.</translation>
@@ -1298,6 +1301,7 @@
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">ອາດຈະຖືກຮຽກເກັບເງິນ.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 ຄຳແນະນຳອື່ນ}other{# ຄຳແນະນຳອື່ນ}}</translation>
+<translation id="6387645831795005740">ບາງຄັ້ງຜູ້ໂຈມຕີປອມເປັນເວັບໄຊຕ່າງໆໂດຍການເຮັດການປ່ຽນແປງນ້ອຍໆທີ່ເບິ່ງເຫັນໄດ້ຍາກຕໍ່ກັບ URL.</translation>
 <translation id="6389470377220713856">ຊື່​ຢູ່ໃນ​ບັດ</translation>
 <translation id="6390200185239044127">ພັບເຄິ່ງແບບໂຕ Z</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1511,6 +1515,7 @@
 <translation id="7372973238305370288">ຜົນ​ການຄົ້ນ​ຫາ</translation>
 <translation id="7374733840632556089">ບັນຫານີ້ເກີດຂຶ້ນເນື່ອງຈາກໃບຮັບຮອງທີ່ທ່ານ ຫຼື ຄົນອື່ນຕິດຕັ້ງໃນອຸປະກອນຂອງທ່ານ. ເປັນທີ່ຮູ້ກັນວ່າໃບຮັບຮອງນີ້ຖືກໃຊ້ເພື່ອຕິດຕາມ ແລະ ສະກັດກັ້ນເຄືອຂ່າຍ ແລະ Chrome ບໍ່ເຊື່ອຖືໃບຮັບຮອງນີ້. ເຖິງແມ່ນວ່າຈະມີບາງກໍລະນີທີ່ການຕິດຕາມອາດຈະຖືກກົດໝາຍ ເຊັ່ນ: ໃນເຄືອຂ່າຍຂອງໂຮງຮຽນ ຫຼື ບໍລິສັດ, ແຕ່ Chrome ກໍຍັງຕ້ອງການໃຫ້ແນ່ໃຈວ່າທ່ານຮັບຮູ້ວ່າມີການຕິດຕາມເບິ່ງ ເຖິງແມ່ນວ່າທ່ານບໍ່ສາມາດຢຸດມັນໄດ້ກໍຕາມ. ການຕິດຕາມອາດຈະເກີດຂຶ້ນໃນໂປຣແກຣມທ່ອງເວັບ ຫຼື ແອັບພລິເຄຊັນໃດໆກໍຕາມທີ່ເຂົ້າເຖິງເວັບໄຊໄດ້.</translation>
 <translation id="7375818412732305729">ແນບໄຟລ໌ແລ້ວ</translation>
+<translation id="7376551888419889433">ເມື່ອມີການໝາຍທຸງເຫດການຄວາມປອດໄພໂດຍ Chrome Enterprise Connectors, ຂໍ້ມູນກ່ຽວຂ້ອງທີ່ກ່ຽວກັບເຫດການນັ້ນຈະຖືກສົ່ງໃຫ້ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ. ນີ້ສາມາດຮວມມີ URL ຂອງໜ້າທີ່ທ່ານເຂົ້າເບິ່ງໃນ Chrome, ຊື່ ຫຼື ເມຕາເດຕາຂອງໄຟລ໌ ແລະ ຊື່ຜູ້ໃຊ້ທີ່ທ່ານໃຊ້ເພື່ອເຂົ້າສູ່ລະບົບອຸປະກອນ ແລະ Chrome ຂອງທ່ານ.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">ການຄວບຄຸມສື່</translation>
 <translation id="7378627244592794276">ບໍ່ແມ່ນ</translation>
@@ -1907,6 +1912,7 @@
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">ທ່ານໄດ້ພະຍາຍາມເຂົ້າຫາ <ph name="DOMAIN" />, ແຕ່ເຊີບເວີໄດ້ນໍາສະເໜີໃບຢັ້ງຢືນທີ່ໃຊ້ບໍ່ໄດ້.</translation>
 <translation id="9050666287014529139">ວະລີຜ່ານ</translation>
+<translation id="9062620674789239642">ມັນອາດຈະຖືກຍ້າຍ, ແກ້ໄຂ ຫຼື ລຶບອອກແລ້ວ.</translation>
 <translation id="9065203028668620118">ແກ້ໄຂ</translation>
 <translation id="9065745800631924235"><ph name="TEXT" /> ຊອກຫາຈາກປະຫວັດ</translation>
 <translation id="9069693763241529744">ບລັອກໄວ້ໂດຍສ່ວນຂະຫຍາຍ</translation>

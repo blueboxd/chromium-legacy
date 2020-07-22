@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> ನಿಂದ <ph name="TARGET_LANGUAGE" /> ಗೆ</translation>
 <translation id="168715261339224929">ನಿಮ್ಮ ಎಲ್ಲ ಸಾಧನಗಳಲ್ಲಿ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಪಡೆದುಕೊಳ್ಳಲು, ಸಿಂಕ್‌ ಆನ್‌ ಮಾಡಿ.</translation>
 <translation id="1687475363370981210">ಎಲ್ಲವನ್ನೂ ಓದಿದಂತೆ ಗುರುತಿಸಿ</translation>
+<translation id="1689333818294560261">ಅಡ್ಡಹೆಸರು</translation>
 <translation id="1690731385917361335">ಯಾವುದೇ ಐಟಂಗಳಿಲ್ಲ</translation>
 <translation id="1692118695553449118">ಸಿಂಕ್‌ ಆನ್‌ ಆಗಿದೆ</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ</translation>
@@ -206,6 +207,7 @@
 <translation id="3335947283844343239">ಮುಚ್ಚಿದ ಟ್ಯಾಬ್ ಮರುತೆರೆ</translation>
 <translation id="3371831930909698441">ಅನುವಾದ ಲಭ್ಯವಿದೆ. ಪರದೆಯ ಕೆಳಭಾಗದ ಸಮೀಪದಲ್ಲಿ ಆಯ್ಕೆಗಳು ಲಭ್ಯವಿವೆ.</translation>
 <translation id="3393920035788932672">ಪಾಪ್-ಅಪ್‌ಗಳನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ</translation>
+<translation id="3425644765244388016">ಕಾರ್ಡ್ ಅಡ್ಡ ಹೆಸರು</translation>
 <translation id="3443810440409579745">ಟ್ಯಾಬ್ ಅನ್ನು ಸ್ವೀಕರಿಸಲಾಗಿದೆ.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> ನಿಮಿಷ</translation>
 <translation id="3448016392200048164">ವಿಭಜಿತ ವೀಕ್ಷಣೆ</translation>
@@ -240,6 +242,7 @@
 <translation id="3783017676699494206">ಚಿತ್ರವನ್ನು ಉಳಿಸಿ</translation>
 <translation id="3789841737615482174">ಇನ್‌ಸ್ಟಾಲ್</translation>
 <translation id="3803696231112616155">ಈ ಸೈಟ್ ಅನ್ನು ಅನುವಾದಿಸುವ ಕೊಡುಗೆ</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{ಯಾವುದೇ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಅಪಾಯಕ್ಕೀಡಾಗಿಲ್ಲ}=1{{COUNT} ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಅಪಾಯಕ್ಕೀಡಾಗಿವೆ}one{{COUNT} ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಅಪಾಯಕ್ಕೀಡಾಗಿವೆ}other{{COUNT} ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಅಪಾಯಕ್ಕೀಡಾಗಿವೆ}}</translation>
 <translation id="385051799172605136">ಹಿಂದೆ</translation>
 <translation id="3892144330757387737">ನಿಮ್ಮ ಇತಿಹಾಸವನ್ನು ನೀವು ಇಲ್ಲಿ ಕಾಣಬಹುದು</translation>
 <translation id="3897092660631435901">ಮೆನು</translation>
@@ -529,6 +532,7 @@
 <translation id="7189598951263744875">ಹಂಚಿ...</translation>
 <translation id="7192050974311852563">ಲಾಗ್‌ ಮಾಡುವುದನ್ನು ಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="7203585745079012652">ಉತ್ತರಗಳನ್ನು ಮತ್ತೆ ಮಾತನಾಡಿ</translation>
+<translation id="721597782417389033">ಕಾರ್ಡ್ ಅಡ್ಡಹೆಸರು ಅಮಾನ್ಯವಾಗಿದೆ</translation>
 <translation id="7265758999917665941">ಈ ಸೈಟ್‌ಗೆ ಎಂದಿಗೂ ಬೇಡ</translation>
 <translation id="7272437679830969316">ನಿಮ್ಮ ಗುರುತನ್ನು ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ನಕಲಿಸಲಾಗಿಲ್ಲ.</translation>
 <translation id="7291368939935408496">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಸಿದ್ಧಪಡಿಸಲಾಗುತ್ತಿದೆ...</translation>

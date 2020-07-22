@@ -79,6 +79,7 @@ android_library("java") {
 
   srcjar_deps = [ "//chrome:download_enum_javagen" ]
 
+  resources_package = "org.chromium.chrome.browser.download"
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
@@ -235,5 +236,5 @@ android_resources("java_resources") {
     "//components/browser_ui/widget/android:java_resources",
     "//ui/android:ui_java_resources",
   ]
-  custom_package = "org.chromium.chrome.browser.download"
+  create_srcjar = false
 }

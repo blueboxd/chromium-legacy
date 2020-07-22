@@ -143,6 +143,27 @@ TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp() {
       SystemAppInfo("OSSettings", GURL("chrome://test-system-app/pwa.html"))));
 }
 
+std::unique_ptr<WebApplicationInfo> GenerateWebApplicationInfoForTestApp() {
+  auto info = std::make_unique<WebApplicationInfo>();
+  info->app_url = GURL("chrome://test-system-app/");
+  info->scope = GURL("chrome://test-system-app/");
+  info->title = base::UTF8ToUTF16("Test System App");
+  info->theme_color = 0xFF00FF00;
+  info->display_mode = blink::mojom::DisplayMode::kStandalone;
+  info->open_as_window = true;
+  return info;
+}
+
+// static
+std::unique_ptr<TestSystemWebAppInstallation> TestSystemWebAppInstallation::
+    SetUpStandaloneSingleWindowAppFromWebApplicationInfo() {
+  return base::WrapUnique(new TestSystemWebAppInstallation(
+      SystemAppType::SETTINGS,
+      SystemAppInfo(
+          "OSSettings", GURL("chrome://test-system-app/pwa.html"),
+          base::BindRepeating(&GenerateWebApplicationInfoForTestApp))));
+}
+
 // static
 std::unique_ptr<TestSystemWebAppInstallation>
 TestSystemWebAppInstallation::SetUpAppThatReceivesLaunchFiles(

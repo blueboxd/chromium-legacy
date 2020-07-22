@@ -54,6 +54,10 @@ class Job {
   // If the object is not yet initialized, it returns an invalid handle.
   base::win::ScopedHandle Take();
 
+  // Updates the active process limit for |job_handle|.
+  static DWORD SetActiveProcessLimit(base::win::ScopedHandle* job_handle,
+                                     DWORD processes);
+
  private:
   // Handle to the job referenced by the object.
   base::win::ScopedHandle job_handle_;

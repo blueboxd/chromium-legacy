@@ -24,9 +24,12 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace favicon {
+class FaviconDatabase;
+}
+
 namespace history {
 
-class FaviconDatabase;
 class HistoryBackendClient;
 class HistoryBackendNotifier;
 class HistoryDatabase;
@@ -65,7 +68,8 @@ class ExpireHistoryBackend {
   ~ExpireHistoryBackend();
 
   // Completes initialization by setting the databases that this class will use.
-  void SetDatabases(HistoryDatabase* main_db, FaviconDatabase* favicon_db);
+  void SetDatabases(HistoryDatabase* main_db,
+                    favicon::FaviconDatabase* favicon_db);
 
   // Begins periodic expiration of history older than the given threshold. This
   // will continue until the object is deleted.
@@ -267,7 +271,7 @@ class ExpireHistoryBackend {
 
   // Non-owning pointers to the databases we deal with (MAY BE NULL).
   HistoryDatabase* main_db_;       // Main history database.
-  FaviconDatabase* favicon_db_;
+  favicon::FaviconDatabase* favicon_db_;
 
   // The threshold for "old" history where we will automatically delete it.
   base::TimeDelta expiration_threshold_;

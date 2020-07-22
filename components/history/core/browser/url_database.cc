@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/database_utils/url_converter.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/url_formatter/url_formatter.h"
 #include "sql/statement.h"
@@ -47,18 +48,6 @@ URLDatabase::URLDatabase()
 }
 
 URLDatabase::~URLDatabase() {
-}
-
-// static
-std::string URLDatabase::GURLToDatabaseURL(const GURL& gurl) {
-  // TODO(brettw): do something fancy here with encoding, etc.
-
-  // Strip username and password from URL before sending to DB.
-  GURL::Replacements replacements;
-  replacements.ClearUsername();
-  replacements.ClearPassword();
-
-  return (gurl.ReplaceComponents(replacements)).spec();
 }
 
 // Convenience to fill a URLRow. Must be in sync with the fields in
@@ -142,7 +131,7 @@ bool URLDatabase::GetURLRow(URLID url_id, URLRow* info) {
 URLID URLDatabase::GetRowForURL(const GURL& url, URLRow* info) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls WHERE url=?"));
-  std::string url_string = GURLToDatabaseURL(url);
+  std::string url_string = database_utils::GurlToDatabaseUrl(url);
   statement.BindString(0, url_string);
 
   if (!statement.Step())
@@ -190,7 +179,7 @@ URLID URLDatabase::AddURLInternal(const URLRow& info, bool is_temporary) {
 
   sql::Statement statement(GetDB().GetCachedStatement(
       sql::StatementID(__FILE__, statement_line), statement_sql));
-  statement.BindString(0, GURLToDatabaseURL(info.url()));
+  statement.BindString(0, database_utils::GurlToDatabaseUrl(info.url()));
   statement.BindString16(1, info.title());
   statement.BindInt(2, info.visit_count());
   statement.BindInt(3, info.typed_count());
@@ -245,7 +234,7 @@ bool URLDatabase::InsertOrUpdateURLRowByID(const URLRow& info) {
       "VALUES (?, ?, ?, ?, ?, ?, ?)"));
 
   statement.BindInt64(0, info.id());
-  statement.BindString(1, GURLToDatabaseURL(info.url()));
+  statement.BindString(1, database_utils::GurlToDatabaseUrl(info.url()));
   statement.BindString16(2, info.title());
   statement.BindInt(3, info.visit_count());
   statement.BindInt(4, info.typed_count());

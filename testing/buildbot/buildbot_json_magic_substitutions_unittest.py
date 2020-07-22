@@ -31,7 +31,7 @@ class ChromeOSTelemetryRemoteTest(unittest.TestCase):
                      ])
 
   def testPhysicalHardwareSubstitutions(self):
-    test_config = CreateConfigWithPool('chrome-cros-dut')
+    test_config = CreateConfigWithPool('chromium.tests')
     self.assertEqual(magic_substitutions.ChromeOSTelemetryRemote(test_config),
                      ['--remote=variable_chromeos_device_hostname'])
 

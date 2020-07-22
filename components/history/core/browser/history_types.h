@@ -17,7 +17,6 @@
 #include "base/callback.h"
 #include "base/containers/stack_container.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -27,7 +26,6 @@
 #include "components/history/core/common/thumbnail_score.h"
 #include "components/query_parser/query_parser.h"
 #include "ui/base/page_transition_types.h"
-#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 namespace history {
@@ -37,9 +35,7 @@ class PageUsageData;
 // Container for a list of URLs.
 typedef std::vector<GURL> RedirectList;
 
-typedef int64_t FaviconBitmapID;  // Identifier for a bitmap in a favicon.
 typedef int64_t SegmentID;        // URL segments for the most visited view.
-typedef int64_t IconMappingID;    // For page url and icon mapping.
 
 // The enumeration of all possible sources of visits is listed below.
 // The source will be propagated along with a URL or a visit item
@@ -504,100 +500,6 @@ struct HistoryLastVisitToHostResult {
   // |success| is false.
   bool success = false;
   base::Time last_visit;
-};
-
-// Favicons -------------------------------------------------------------------
-
-// Used for the mapping between the page and icon.
-struct IconMapping {
-  IconMapping();
-  IconMapping(const IconMapping&);
-  IconMapping(IconMapping&&) noexcept;
-  ~IconMapping();
-
-  IconMapping& operator=(const IconMapping&);
-
-  // The unique id of the mapping.
-  IconMappingID mapping_id = 0;
-
-  // The url of a web page.
-  GURL page_url;
-
-  // The unique id of the icon.
-  favicon_base::FaviconID icon_id = 0;
-
-  // The url of the icon.
-  GURL icon_url;
-
-  // The type of icon.
-  favicon_base::IconType icon_type = favicon_base::IconType::kInvalid;
-};
-
-// Defines a favicon bitmap and its associated pixel size.
-struct FaviconBitmapIDSize {
-  FaviconBitmapIDSize();
-  ~FaviconBitmapIDSize();
-
-  // The unique id of the favicon bitmap.
-  FaviconBitmapID bitmap_id = 0;
-
-  // The pixel dimensions of the associated bitmap.
-  gfx::Size pixel_size;
-};
-
-enum FaviconBitmapType {
-  // The bitmap gets downloaded while visiting its page. Their life-time is
-  // bound to the life-time of the corresponding visit in history.
-  //  - These bitmaps are re-downloaded when visiting the page again and the
-  //  last_updated timestamp is old enough.
-  ON_VISIT,
-
-  // The bitmap gets downloaded because it is demanded by some Chrome UI (while
-  // not visiting its page). For this reason, their life-time cannot be bound to
-  // the life-time of the corresponding visit in history.
-  // - These bitmaps are evicted from the database based on the last time they
-  //   were requested.
-  // - Furthermore, on-demand bitmaps are immediately marked as expired. Hence,
-  //   they are always replaced by ON_VISIT favicons whenever their page gets
-  //   visited.
-  ON_DEMAND
-};
-
-// Defines all associated mappings of a given favicon.
-struct IconMappingsForExpiry {
-  IconMappingsForExpiry();
-  IconMappingsForExpiry(const IconMappingsForExpiry& other);
-  ~IconMappingsForExpiry();
-
-  // URL of a given favicon.
-  GURL icon_url;
-  // URLs of all pages mapped to a given favicon
-  std::vector<GURL> page_urls;
-};
-
-// Defines a favicon bitmap stored in the history backend.
-struct FaviconBitmap {
-  FaviconBitmap();
-  FaviconBitmap(const FaviconBitmap& other);
-  ~FaviconBitmap();
-
-  // The unique id of the bitmap.
-  FaviconBitmapID bitmap_id = 0;
-
-  // The id of the favicon to which the bitmap belongs to.
-  favicon_base::FaviconID icon_id = 0;
-
-  // Time at which |bitmap_data| was last updated.
-  base::Time last_updated;
-
-  // Time at which |bitmap_data| was last requested.
-  base::Time last_requested;
-
-  // The bits of the bitmap.
-  scoped_refptr<base::RefCountedMemory> bitmap_data;
-
-  // The pixel dimensions of bitmap_data.
-  gfx::Size pixel_size;
 };
 
 struct ExpireHistoryArgs {

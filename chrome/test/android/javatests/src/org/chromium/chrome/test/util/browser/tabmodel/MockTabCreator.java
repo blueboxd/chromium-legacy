@@ -13,14 +13,14 @@ import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tab.TabTestUtils;
-import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
+import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 
 /** MockTabCreator for use in tests. */
-public class MockTabCreator extends TabCreatorManager.TabCreator {
+public class MockTabCreator extends TabCreator {
     public final SparseArray<TabState> created;
     public final CallbackHelper callback;
 

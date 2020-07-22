@@ -89,6 +89,7 @@ chrome.fileManagerPrivate.MountCompletedStatus = {
   ERROR_INVALID_ARCHIVE: 'error_invalid_archive',
   ERROR_AUTHENTICATION: 'error_authentication',
   ERROR_PATH_UNMOUNTED: 'error_path_unmounted',
+  ERROR_NEED_PASSWORD: 'error_need_password',
 };
 
 /** @enum {string} */

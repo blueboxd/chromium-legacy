@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Upptökuár</translation>
 <translation id="3338239663705455570">Slóvenskt lyklaborð</translation>
 <translation id="3353984535370177728">Veldu möppu til að hlaða inn</translation>
+<translation id="3356580349448036450">Ljúka</translation>
 <translation id="3399597614303179694">Makedónskt lyklaborð</translation>
 <translation id="3414856743105198592">Ef lausi geymslumiðillinn er forsniðinn eru öll gögn hreinsuð af honum. Viltu halda áfram?</translation>
 <translation id="3437801641691368414">Búin til</translation>
@@ -550,7 +551,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Uppsetningin mistókst.</translation>
 <translation id="7040138676081995583">Opna með...</translation>
-<translation id="7059566040011178088">Minna en <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> atriði valin</translation>
 <translation id="7106346894903675391">Kaupa meira geymslurými...</translation>
 <translation id="7126604456862387217">„&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;“ – &lt;em&gt;leita í Drive&lt;/em&gt;</translation>
@@ -661,7 +661,6 @@
 <translation id="8193175696669055101">Gerð tækis</translation>
 <translation id="8208580316430297579">Listaverk</translation>
 <translation id="8223479393428528563">Til að vista þessar skrár fyrir notkun án nettengingar skaltu tengjast netinu aftur, hægrismella á skrárnar og velja kostinn <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
-<translation id="8231972167769262174">Um <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Hætta</translation>
 <translation id="8261506727792406068">Eyða</translation>
 <translation id="8269755669432358899">Draga saman svæði með ábendingum fyrir skrár</translation>

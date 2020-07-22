@@ -72,6 +72,7 @@
 <translation id="1674504678466460478">من <ph name="SOURCE_LANGUAGE" /> إلى <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">للحصول على الإشارات المرجعية على جميع أجهزتك، يُرجى تفعيل المزامنة.</translation>
 <translation id="1687475363370981210">وضع العلامة كمقروءة على الكل</translation>
+<translation id="1689333818294560261">اللقب</translation>
 <translation id="1690731385917361335">لا توجد عناصر</translation>
 <translation id="1692118695553449118">المزامنة ممكنة</translation>
 <translation id="1700629756560807968">تم اختيار <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -206,6 +207,7 @@
 <translation id="3335947283844343239">إعادة فتح علامة التبويب المغلقة</translation>
 <translation id="3371831930909698441">الترجمة متوفّرة. الخيارات المتاحة بالقرب من الجزء السفلي من الشاشة</translation>
 <translation id="3393920035788932672">النوافذ المنبثقة المسموح بها</translation>
+<translation id="3425644765244388016">لقب البطاقة</translation>
 <translation id="3443810440409579745">تم استلام علامة تبويب.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> دقيقة</translation>
 <translation id="3448016392200048164">تقسيم العرض</translation>
@@ -240,6 +242,7 @@
 <translation id="3783017676699494206">حفظ الصورة</translation>
 <translation id="3789841737615482174">تثبيت</translation>
 <translation id="3803696231112616155">اقتراح ترجمة هذا الموقع الإلكتروني</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{ما من كلمات مرور معرّضة للاختراق.}=1{كلمة مرور واحدة ({COUNT}) معرّضة للاختراق.}two{كلمتا مرور ({COUNT}) معرّضتان للاختراق.}few{{COUNT} كلمات مرور معرّضة للاختراق.}many{{COUNT} كلمة مرور معرّضة للاختراق.}other{{COUNT} كلمة مرور معرّضة للاختراق.}}</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
 <translation id="3892144330757387737">سيظهر لك السجلّ هنا</translation>
 <translation id="3897092660631435901">قائمة</translation>
@@ -529,6 +532,7 @@
 <translation id="7189598951263744875">مشاركة...</translation>
 <translation id="7192050974311852563">بدء التسجيل</translation>
 <translation id="7203585745079012652">النطق بالإجابات</translation>
+<translation id="721597782417389033">لقب البطاقة غير صالح</translation>
 <translation id="7265758999917665941">عدم حفظ كلمة المرور لهذا الموقع الإلكتروني</translation>
 <translation id="7272437679830969316">تعذَّر التحقق من هويتك. لم يتم نسخ كلمة المرور.</translation>
 <translation id="7291368939935408496">جارٍ تحضير كلمات المرور…</translation>

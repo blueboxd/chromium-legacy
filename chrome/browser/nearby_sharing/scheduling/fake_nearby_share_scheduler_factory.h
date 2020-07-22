@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_NEARBY_SHARING_SCHEDULING_FAKE_NEARBY_SHARE_SCHEDULER_FACTORY_H_
 #define CHROME_BROWSER_NEARBY_SHARING_SCHEDULING_FAKE_NEARBY_SHARE_SCHEDULER_FACTORY_H_
 
+#include <map>
 #include <memory>
 #include <string>
 
-#include "base/containers/flat_map.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/nearby_sharing/scheduling/fake_nearby_share_scheduler.h"
@@ -27,6 +27,7 @@ class FakeNearbyShareSchedulerFactory : public NearbyShareSchedulerFactory {
  public:
   struct ExpirationInstance {
     ExpirationInstance();
+    ExpirationInstance(ExpirationInstance&&);
     ~ExpirationInstance();
 
     FakeNearbyShareScheduler* fake_scheduler = nullptr;
@@ -58,17 +59,17 @@ class FakeNearbyShareSchedulerFactory : public NearbyShareSchedulerFactory {
   FakeNearbyShareSchedulerFactory();
   ~FakeNearbyShareSchedulerFactory() override;
 
-  const base::flat_map<std::string, ExpirationInstance>&
+  const std::map<std::string, ExpirationInstance>&
   pref_name_to_expiration_instance() const {
     return pref_name_to_expiration_instance_;
   }
 
-  const base::flat_map<std::string, OnDemandInstance>&
+  const std::map<std::string, OnDemandInstance>&
   pref_name_to_on_demand_instance() const {
     return pref_name_to_on_demand_instance_;
   }
 
-  const base::flat_map<std::string, PeriodicInstance>&
+  const std::map<std::string, PeriodicInstance>&
   pref_name_to_periodic_instance() const {
     return pref_name_to_periodic_instance_;
   }
@@ -100,11 +101,9 @@ class FakeNearbyShareSchedulerFactory : public NearbyShareSchedulerFactory {
       NearbyShareScheduler::OnRequestCallback callback,
       const base::Clock* clock) override;
 
-  base::flat_map<std::string, ExpirationInstance>
-      pref_name_to_expiration_instance_;
-  base::flat_map<std::string, OnDemandInstance>
-      pref_name_to_on_demand_instance_;
-  base::flat_map<std::string, PeriodicInstance> pref_name_to_periodic_instance_;
+  std::map<std::string, ExpirationInstance> pref_name_to_expiration_instance_;
+  std::map<std::string, OnDemandInstance> pref_name_to_on_demand_instance_;
+  std::map<std::string, PeriodicInstance> pref_name_to_periodic_instance_;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_SCHEDULING_FAKE_NEARBY_SHARE_SCHEDULER_FACTORY_H_

@@ -135,7 +135,11 @@ interface ServiceWorkerStorageControl {
       (ServiceWorkerDatabaseStatus status,
        array<SerializedServiceWorkerRegistration> registrations);
 
-  // Stores |registration_data| and |resources| on persistent storage.
+  // Returns the total resource size for a given origin.
+  GetUsageForOrigin(url.mojom.Origin origin) =>
+      (ServiceWorkerDatabaseStatus status, int64 usage);
+
+  // Stores |registration_data| and |resources|.
   StoreRegistration(ServiceWorkerRegistrationData registration,
                     array<ServiceWorkerResourceRecord> resources) =>
       (ServiceWorkerDatabaseStatus status);

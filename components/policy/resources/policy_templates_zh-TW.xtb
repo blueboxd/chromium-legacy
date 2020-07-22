@@ -187,10 +187,6 @@
 
       如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 將會禁止啟動訪客設定檔。</translation>
 <translation id="1363275621236827384">允許在 Quirks Server 中查詢硬體設定檔</translation>
-<translation id="1363612796557848469">這項政策可讓 Google 助理存取畫面內容，並將內容資訊傳送給伺服器。
-      如果啟用這項政策，Google 助理將可以存取畫面內容。
-      如果停用這項政策，Google 助理將無法存取畫面內容。
-      如果不設定這項政策，使用者可自行決定是否要允許 Google 助理存取畫面內容</translation>
 <translation id="1376119291123231789">啟用進階充電模式</translation>
 <translation id="1384459581748403878">參考頁面：<ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">回報作業系統的更新狀態</translation>
@@ -271,13 +267,6 @@
           如果你選取了「DockNicMacAddress」，系統會使用座架的 NIC MAC 位址。
 
           使用者無法變更這項設定。</translation>
-<translation id="1507957856411744193">如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 會連線至所有 IP 位址上的 Cast 裝置，而不是只有 RFC1918/RFC4193 私人位址上的 Cast 裝置。
-
-          如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 將只會連線至 RFC1918/RFC4193 私人位址上的 Cast 裝置。
-
-          如果未設定這項政策，除非啟用 CastAllowAllIPs 功能，否則 <ph name="PRODUCT_NAME" /> 只會連線至 RFC1918/RFC4193 私人位址上的 Cast 裝置。
-
-          如果將「EnableMediaRouter」政策設為 False，則這項政策的值不會有任何效果。</translation>
 <translation id="1509692106376861764">我們已於 <ph name="PRODUCT_NAME" /> 版本 29 中移除這項政策。</translation>
 <translation id="1514888685242892912">啟用 <ph name="PRODUCT_NAME" /></translation>
 <translation id="1515230621229117540">啟用浮動式無障礙選單</translation>
@@ -1108,23 +1097,6 @@
       預先選取的鍵盤配置一律會是最常與預先選取的語言代碼搭配使用的配置。使用者隨時可為工作階段選擇 <ph name="PRODUCT_OS_NAME" />支援的語言代碼。</translation>
 <translation id="2693108589792503178">設定變更密碼網址。</translation>
 <translation id="2694143893026486692">停駐放大鏡已啟用</translation>
-<translation id="2694188263972877487">設定 <ph name="PRODUCT_NAME" /> 將完全封鎖的下載作業類型，不讓使用者覆寫這項安全決策。
-
-      如果設定了這項政策，<ph name="PRODUCT_NAME" /> 就會禁止特定類型的下載作業，不讓使用者略過安全性警告。
-
-      選擇 [封鎖危險下載作業] 選項後，除了會引發「安全瀏覽」警告的下載作業以外，其他下載作業均可正常執行。
-
-      選擇 [封鎖有安全疑慮的下載作業] 選項後，除了有安全疑慮而會引發「安全瀏覽」警告的下載作業外，其他下載作業都可正常執行。
-
-      選擇 [封鎖所有下載作業] 選項後，所有下載作業都會遭到封鎖。
-
-      選擇 [封鎖惡意下載作業] 選項後，除了「安全瀏覽」功能判定為極有可能是惡意軟體的檔案以外，其他下載作業都可正常執行。與危險下載作業不同的是，這項評估不會將檔案類型納入考量，但會將主機納入考量。
-
-      如不設定這項政策 (或選擇了 [無特殊限制] 選項)，系統就會根據「安全瀏覽」的分析結果，檢查下載作業是否符合一般安全限制。
-
-      請注意，這些限制適用於由網頁內容以及 [下載連結...] 內容選單選項所觸發的下載作業，但不適用於目前顯示網頁的儲存/下載作業，或是透過列印選項儲存為 PDF 檔的作業。
-
-      如要進一步瞭解安全瀏覽功能，請前往 https://developers.google.com/safe-browsing。</translation>
 <translation id="2696077732471707315">
       這項政策已在 M77 版中移除。
       這項政策適用於登入畫面。另請查看適用於使用者工作階段的 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 政策。建議你為這兩項政策設定相同的值，如果兩者的值不相符，進入使用者工作階段時，系統可能會因為套用使用者政策指定的值而發生延遲。
@@ -1459,7 +1431,6 @@
           指定政策值時需以毫秒為單位。</translation>
 <translation id="3205825995289802549">首次執行時將第一個瀏覽器視窗最大化</translation>
 <translation id="3211426942294667684">瀏覽器登入設定</translation>
-<translation id="3214164532079860003">如果啟用這項政策，則會強制從目前的預設瀏覽器匯入首頁。如果停用這項政策，則不會匯入首頁。如果未設定這項政策，系統會自動匯入首頁，或詢問使用者是否要匯入首頁。</translation>
 <translation id="3219421230122020860">可使用無痕模式</translation>
 <translation id="3220624000494482595">如果資訊站應用程式是 Android 應用程式，即使將這項政策設為 <ph name="TRUE" />，仍無法控制 <ph name="PRODUCT_OS_NAME" />版本。</translation>
 <translation id="322359555555487980">指定變化版本在 <ph name="PRODUCT_OS_NAME" />上的可用性</translation>
@@ -1775,11 +1746,6 @@
 <translation id="3765260570442823273">閒置登出時間警告訊息</translation>
 <translation id="377044054160169374">強制干預濫用行為</translation>
 <translation id="3780152581321609624">Kerberos SPN 包含非標準通訊埠</translation>
-<translation id="3780319008680229708">如果這項政策設為 True，工具列或溢位選單就一定會顯示 Cast 工具列圖示，而且使用者無法移除這個圖示。
-
-          如果這項政策設為 False 或未設定，使用者就可以在內容相關選單中固定或移除 Cast 工具列圖示。
-
-          如果「EnableMediaRouter」政策設為 False，這項政策的值則沒有效用，系統不會顯示工具列圖示。</translation>
 <translation id="3788662722837364290">使用者進入閒置狀態時的電源管理設定</translation>
 <translation id="3790085888761753785">如果啟用這項設定，使用者將可透過 Smart Lock 登入帳戶。一般 Smart Lock 只能讓使用者解鎖螢幕畫面，相較之下這項設定提供了更高的權限。
 
@@ -1794,13 +1760,6 @@
 
       這項政策已遭淘汰，請改用 <ph name="DEVICE_PRINTERS_BLOCKLIST" />。
       </translation>
-<translation id="3800626789999016379">設定 <ph name="PRODUCT_NAME" /> 下載檔案時所使用的目錄。
-
-      如果設定這項政策，無論使用者是否指定政策或啟用每次均提示下載位置的標記，<ph name="PRODUCT_NAME" /> 都會使用您所提供的目錄。
-
-      如需可使用的變數清單，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
-
-      如未設定這項政策，系統會使用預設的下載目錄，日後使用者可以自行變更這個目錄。</translation>
 <translation id="3803171355925844705">不允許任何網站載入複合型內容</translation>
 <translation id="3805659594028420438">啟用 TLS 網域專屬憑證擴充功能 (已不適用)</translation>
 <translation id="3808945828600697669">指定停用的外掛程式清單</translation>
@@ -1845,9 +1804,9 @@
           根據預設，所有內建訊息傳遞主機都會列入許可清單。不過，如果透過政策將所有內建訊息傳遞主機列入黑名單，則可使用許可清單來覆寫政策。</translation>
 <translation id="3835692988507803626">針對指定語言強制停用拼字檢查功能</translation>
 <translation id="3837424079837455272">這項政策可控管是否能在 <ph name="PRODUCT_OS_NAME" />中新增使用者，但不會禁止使用者在 Android 應用程式中登入其他 Google 帳戶。如要禁止使用者登入其他 Google 帳戶，你可以在 <ph name="ARC_POLICY_POLICY_NAME" /> 中設定 Android 專屬的 <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> 政策。</translation>
-<translation id="3838094946886335701">你可以透過這項政策 (只能設為「建議」) 註冊通訊協定處理常式的清單，其中的通訊協定處理常式會與使用者所註冊的合併，二種皆可供使用。請將「protocol」(通訊協定) 屬性設為「mailto」等類型的網路通訊協定，並將「URL」(網址) 屬性設為處理該網路通訊協定的應用程式所使用的網址模式 (這裡的網路通訊協定指的是「通訊協定」欄位中所指定的網路通訊協定)。模式可包含「%s」預留位置，將替換為受處理的網址。
+<translation id="3838094946886335701">你可以透過這項政策 (只能設為「建議」) 註冊通訊協定處理常式的清單，其中的通訊協定處理常式會與使用者所註冊的合併，二種皆可供使用。請將「protocol」(通訊協定) 屬性設為「mailto」等類型的網路通訊協定配置，並將「URL」(網址) 屬性設為處理該網路通訊協定的應用程式所使用的網址模式 (這裡的網路通訊協定指的是「通訊協定」欄位中所指定的網路通訊協定配置)。模式可包含「%s」預留位置，將替換為受處理的網址。
 
-      使用者無法移除透過政策註冊的通訊協定處理常式，但可透過安裝新的預設處理常式，來變更透過政策安裝的通訊協定處理常式。</translation>
+      使用者無法移除透過政策註冊的通訊協定處理常式，但可透過安裝新的預設處理常式，變更透過政策安裝的通訊協定處理常式。</translation>
 <translation id="3851039766298741586">回報執行中資訊站工作階段的相關資訊，例如
       應用程式 ID 和版本。
 
@@ -1905,13 +1864,6 @@
 
       如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊裝置的情況下，這項政策才會生效。
       如果是 <ph name="PRODUCT_OS_NAME" />，這項政策會一律生效。</translation>
-<translation id="3895557476567727016">設定 <ph name="PRODUCT_NAME" /> 下載檔案時所使用的預設目錄。
-
-      如果設定這項政策，<ph name="PRODUCT_NAME" /> 所使用的檔案下載預設目錄將有所變更。這不是強制設定的政策，因此使用者可以變更目錄。
-
-      如果不設定這項政策，<ph name="PRODUCT_NAME" /> 將使用一般的預設目錄 (依平台區分)。
-
-      如需可使用的變數清單，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。</translation>
 <translation id="3898795800259311780">允許或拒絕螢幕擷取</translation>
 <translation id="3907683835264956726">在螢幕鎖定畫面上啟用線上使用者登入功能。如果將這項政策設為 True，<ph name="POLICY" /> 等政策會觸發螢幕鎖定畫面上的線上重新驗證功能。
       當使用者停留在螢幕鎖定畫面上，或下次在符合條件後鎖定螢幕時，系統會立即強制執行重新驗證。
@@ -1933,9 +1885,6 @@
       如果停用這項政策，使用者就不能透過 <ph name="PRODUCT_NAME" /> 列印對話方塊將列印工作提交至 <ph name="CLOUD_PRINT_NAME" />。
 
       如要讓系統搜尋到 <ph name="CLOUD_PRINT_NAME" /> 目的地，這項政策必須設為 True，且「<ph name="POLICY_PRINTERTYPEDENYLIST" />」政策中不得包含「<ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" />」。</translation>
-<translation id="391531815696899618">如果你設為 Ture，<ph name="PRODUCT_OS_NAME" />的「檔案」應用程式就會停用 Google 雲端硬碟同步功能。這種情形下，系統無法將資料上傳至 Google 雲端硬碟。
-
-          如果你設為 False 或未設定，使用者即可將檔案傳輸至 Google 雲端硬碟。</translation>
 <translation id="3915395663995367577">Proxy .pac 檔案的網址</translation>
 <translation id="3917288538553140422">你可以透過這項政策指定當使用者的主目錄採用 eCryptfs 加密機制建立時，系統要採取的動作。除非將採用 eCryptfs 加密的主目錄遷移至 ext4 加密，否則 Android 應用程式可能會停止運作。
 
@@ -2304,9 +2253,6 @@
       如果這項政策的值為 0，系統會使用預設快取大小，但使用者無法變更。
 
       如果未設定這項政策，系統會使用預設大小，使用者則可使用 -media-cache-size 參數予以覆寫。</translation>
-<translation id="4508686775017063528">如果這項政策設為 True 或未設定，系統將啟用「<ph name="PRODUCT_NAME" />」，使用者則可從應用程式選單、頁面內容選單以及 Cast 工具列圖示 (假設不是隱藏狀態) 啟動這項功能，或是在支援投放功能的網站上使用媒體控制項啟動這項功能。
-
-          如果這項政策設為 False，「<ph name="PRODUCT_NAME" />」會遭到停用。</translation>
 <translation id="4510923771103268849">允許使用者擁有 Crostini 容器的 Root 權限</translation>
 <translation id="4515404363392014383">針對信任的來源啟用「安全瀏覽」</translation>
 <translation id="4517928394515633751">透過安全瀏覽功能掃描使用者下載的內容</translation>
@@ -2581,7 +2527,6 @@
       如果停用這項政策，網頁將無法呼叫任何螢幕畫面分享 API，且系統會傳回錯誤訊息。</translation>
 <translation id="5032164758660626397">禁止使用者傳輸大型檔案</translation>
 <translation id="5047604665028708335">允許存取內容套件以外的網站</translation>
-<translation id="5052081091120171147">如果啟用這項政策，則會強制從目前的預設瀏覽器匯入瀏覽記錄 (也會影響匯入對話方塊的選項)。如果停用這項政策，則不會匯入瀏覽記錄。如果未設定這項政策，系統會自動匯入瀏覽記錄，或詢問使用者是否要匯入瀏覽記錄。</translation>
 <translation id="5055312535952606505">這項政策可設定 <ph name="PRODUCT_NAME" /> 的 Proxy 設定。ARC 應用程式也能使用這些 Proxy 設定。
 
           如果啟用這項設定，<ph name="PRODUCT_NAME" /> 和 ARC 應用程式會忽略所有從命令列指定的 Proxy 相關選項。
@@ -2915,7 +2860,6 @@
       如果將這項政策設為 False 或未設定，系統將不會回報這項資訊。
       如果設為 True，系統會回報裝置的應用程式和使用情況。</translation>
 <translation id="5422643441807528365"><ph name="PLUGIN_VM_NAME" /> 授權金鑰</translation>
-<translation id="5423001109873148185">如果啟用這項政策，則會強制從目前的預設瀏覽器匯入搜尋引擎，並影響匯入對話方塊。如果停用這項政策，則不會匯入搜尋引擎。如果未設定這項政策，系統會自動匯入搜尋引擎，或詢問使用者是否要匯入搜尋引擎。</translation>
 <translation id="5423197884968724595">Android WebView 限制名稱：</translation>
 <translation id="5424147596523390018">允許所有色彩模式</translation>
 <translation id="5427879482805712214">這項政策可讓你設定登入畫面上代表使用者的顯示圖片。如要設定這項政策，請指定可供 <ph name="PRODUCT_OS_NAME" />下載的顯示圖片網址，並指定用於驗證下載內容完整性的加密編譯雜湊值。圖片必須是 JPEG 格式，且大小不得超過 512 KB。網址必須未設定任何驗證機制，可直接存取。
@@ -3202,11 +3146,6 @@
 <translation id="5814301096961727113">設定互動朗讀在登入畫面的預設狀態</translation>
 <translation id="5815129011704381141">更新完成後自動重新啟動</translation>
 <translation id="582857022372205358">啟用短邊雙面列印</translation>
-<translation id="583091600226586337">
-      如果啟用這項政策，系統在下載檔案前一律會詢問使用者儲存位置。
-      如果停用這項政策，系統會立即開始下載檔案，而不會詢問使用者儲存位置。
-      如果未設定這項政策，使用者則可變更這項設定。
-      </translation>
 <translation id="5832274826894536455">已淘汰的政策</translation>
 <translation id="5835124959204887277">指定在必須取得安全金鑰認證憑證的情況下不會顯示提示的網址和網域。此外，系統會傳送信號給安全金鑰，指出可能會使用個別認證。如未設定這項政策，當網站要求安全金鑰認證時，Chrome 65 以上版本的使用者會收到提示。
 
@@ -3294,11 +3233,6 @@
 <translation id="5961137303188584693">裝置內建的 NIC MAC 位址</translation>
 <translation id="5966615072639944554">允許擴充功能使用 Remote Attestation API</translation>
 <translation id="5983708779415553259">非任何內容套件中網站的預設行為</translation>
-<translation id="599133751116473806">啟用「<ph name="PRODUCT_NAME" />」功能時，系統會傳送詳細的要求標頭，提供與使用者的瀏覽器和環境有關的資訊。
-
-      這是附加功能，但如果遇到對於要求的字元數設有限制的網站，新的標頭可能會導致這類網站無法正常運作。
-
-      如果啟用或不設定這項政策，系統會啟用<ph name="PRODUCT_NAME" />功能。如果停用這項政策，這項功能將無法使用。</translation>
 <translation id="5997543603646547632">預設使用 24 小時制時鐘</translation>
 <translation id="5997846976342452720">指定是否要停用外掛程式尋找工具 (已淘汰)</translation>
 <translation id="5998198091336830580">這項政策屬於下列不可部分完成的群組 (系統僅會套用群組中最高優先來源所設定的政策)：</translation>
@@ -3407,15 +3341,15 @@
 
       這項政策會允許存取列出的網址，這些網址是網址封鎖清單的例外狀況。
 
-      請參閱「<ph name="URL_BLOCKLIST_POLICY_NAME" />」政策的說明，瞭解這份清單所含項目的格式。
+      請參閱「<ph name="URL_BLOCKLIST_POLICY_NAME" />」政策說明，瞭解這份清單所含項目格式。
 
-      這項政策可用於設定嚴格封鎖清單的例外狀況。舉例來說，你可以使用「*」來封鎖所有要求，並透過這項政策允許存取有限的網址清單。你可以透過這項政策，將特定網路通訊協定、其他網域的子網域、通訊埠或特定路徑設為例外狀況。
+      這項政策可用於設定嚴格封鎖清單的例外狀況。舉例來說，你可以使用「*」封鎖所有要求，並透過這項政策允許存取有限的網址清單。你可以透過這項政策，將特定網路通訊協定、其他網域的子網域、通訊埠或特定路徑設為例外狀況。
 
       最精確的篩選器會判定系統要封鎖還是允許網址。允許清單的優先順序高於封鎖清單。
 
-      這項政策中最多只能輸入 1000 個項目；超過的項目會遭到忽略。
+      這項政策最多只能輸入 1000 個項目；超過的項目會遭到忽略。
 
-      你也可以透過這項政策列出「tel:」或「ssh:」等通訊協定，針對註冊為通訊協定處理常式的外部應用程式，啟用瀏覽器的自動叫用功能。這項功能僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體、或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體，以及已透過行動裝置管理 (MDM) 所管理或已透過 MCX 加入某個網域的 macOS 執行個體。
+      你也可以透過這項政策列出「tel:」或「ssh:」等通訊協定，針對註冊為通訊協定處理常式的外部應用程式，啟用瀏覽器的自動叫用功能。這項功能僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體、或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。如果是 macOS 執行個體，必須透過行動裝置管理 (MDM) 或利用 MCX 加入網域才能使用。
 
       如果不設定這項政策，「<ph name="URL_BLOCKLIST_POLICY_NAME" />」政策的封鎖清單不會有任何例外狀況。</translation>
 <translation id="6183327369896253878">你可以透過這項政策修正 <ph name="PRODUCT_OS_NAME" />在啟動器列中顯示為固定應用程式的應用程式 ID，且使用者無法進行變更。
@@ -3447,11 +3381,6 @@
 
       如果這項政策未設定或設為 True，註冊的裝置會回報使用者在裝置上活動的時段。如果設為 False，則不會記錄或回報裝置活動時間。</translation>
 <translation id="6212868225782276239">顯示所有印表機 (黑名單中的印表機除外)。</translation>
-<translation id="6219965209794245435">如果啟用這項政策，會強制從先前的預設瀏覽器匯入自動填入表單資料 (也會影響匯入對話方塊的選項)。
-
-      如果停用這項政策，則不會匯入自動填入表單資料。
-
-      如果未設定這項政策，系統會自動匯入自動填入表單資料，或詢問使用者是否要匯入自動填入表單資料。</translation>
 <translation id="6221175752766085998">允許由本機信任錨點核發但缺少 subjectAlternativeName 擴充功能的憑證</translation>
 <translation id="6224304369267200483">自動允許直接安全金鑰認證的網址/網域</translation>
 <translation id="6233173491898450179">設定下載目錄</translation>
@@ -3514,11 +3443,11 @@
           只有當閒置動作設為登出或關機時，系統才會顯示警告訊息。</translation>
 <translation id="6337782882143073193">這項政策已遭淘汰，請改用 <ph name="URL_BLOCKLIST_POLICY_NAME" />。
 
-      這項政策會在 <ph name="PRODUCT_NAME" /> 中停用列出的網路通訊協定。
+      這項政策會在 <ph name="PRODUCT_NAME" /> 中停用列出的網路通訊協定配置。
 
-      如果網址使用了這份清單中的網路通訊協定，系統將無法載入或前往該網址。
+      如果網址使用了這份清單中的網路通訊協定配置，系統將無法載入或前往該網址。
 
-      如果不設定這項政策或是清單保留空白，系統將可在 <ph name="PRODUCT_NAME" /> 中存取所有網路通訊協定。</translation>
+      如果不設定這項政策或是清單保留空白，系統將可在 <ph name="PRODUCT_NAME" /> 中存取所有網路通訊協定配置。</translation>
 <translation id="6342187235303612558">禁止使用者上傳或下載目前不支援 DLP 或惡意軟體掃描的檔案。</translation>
 <translation id="6352543686437322588">要在延遲時間過後自動登入的裝置本機帳戶。
 
@@ -3573,7 +3502,7 @@
 <translation id="645425387487868471">啟用 <ph name="PRODUCT_NAME" /> 的強制登入功能</translation>
 <translation id="646376229090051440">你可以設定一組通訊協定清單，並且為每個通訊協定設定相關聯的允許來源格式清單，清單中的通訊協定無須提示使用者即可啟動外部應用程式。列出通訊協定時，請勿加入結尾分隔符，因此請列出「skype」而非「skype:」或「skype://」。
 
-      如果設定這項政策，只有當通訊協定已列於清單中，且嘗試啟動通訊協定的網站來源符合該通訊協定 allowed_origins 清單中的其中一個來源格式時，系統才會依照政策規定，允許通訊協定在不提示使用者的情況下啟動外部應用程式。如果未達成其中一項條件，系統就不會依照政策規定，省略外部通訊協定啟動提示。
+      如果設定這項政策，只有當通訊協定已列於清單中，且嘗試啟動通訊協定的網站來源符合該通訊協定 allowed_origins 清單中的其中一個來源格式時，系統才會依照政策規定，允許通訊協定在不提示使用者的情況下啟動外部應用程式。如果未符合其中一項條件，系統就不會依照政策規定，省略外部通訊協定啟動提示。
 
       如果不設定這項政策，依預設沒有任何通訊協定可以在不提示使用者的情況下啟動。除非 <ph name="EXTERNAL_PROTOCOL_DIALOG_SHOW_ALWAYS_OPEN_CHECKBOX_POLICY_NAME" /> 政策已設為停用，否則使用者可以選擇不接收個別通訊協定或網站的提示。這項政策不會影響使用者不接收個別通訊協定或網站提示的設定。
 
@@ -3685,7 +3614,7 @@
 
       只有在為 <ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE" /> 選擇 <ph name="PRINTERS_WHITELIST" /> 的情況下，系統才會使用這項政策。
 
-      如果使用這項政策，只有 ID 與這項政策的值相符的印表機可供使用。ID 必須與 <ph name="DEVICE_PRINTERS_POLICY" /> 政策中指定檔案的「id」或「guid」欄位相符。
+      如果使用這項政策，只有 ID 與這項政策值相符的印表機可供使用。ID 必須與 <ph name="DEVICE_PRINTERS_POLICY" /> 政策中指定檔案的「id」或「guid」欄位相符。
 
       這項政策已遭淘汰，請改用 <ph name="DEVICE_PRINTERS_ALLOWLIST" />。
       </translation>
@@ -3906,7 +3835,6 @@
 
       如果選取 [U2F_EXTENDED]，整合式雙重驗證會為個人認證提供 U2F 功能和一些擴充功能。</translation>
 <translation id="7002040773317582266">已啟用主頁框網址的即時檢查功能。</translation>
-<translation id="7003334574344702284">如果啟用這項政策，則會強制從之前的預設瀏覽器匯入儲存的密碼，並影響匯入對話方塊。如果停用這項政策，則不會匯入儲存的密碼。如果未設定這項政策，系統會自動匯入儲存的密碼，或詢問使用者是否要匯入儲存的密碼。</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME" /> 偏好設定</translation>
 <translation id="7008308728445338159">已啟用 DNS 攔截檢查功能</translation>
 <translation id="7016736684656067099">如果將這項政策設為 1，所有網站皆可顯示圖片。如果將這項政策設為 2，所有網站都無法顯示圖片。
@@ -3930,7 +3858,6 @@
           如果不設定這項政策，檔案櫃預設會顯示在畫面底部，且使用者可以變更檔案櫃的位置。</translation>
 <translation id="7040229947030068419">範例值：</translation>
 <translation id="7044883996351280650">控制 Android 備份與還原服務</translation>
-<translation id="7053678646221257043">如果啟用的話，這項政策會強迫系統從目前預設的瀏覽器匯入書籤，並且會影響匯入對話方塊。如果停用的話，系統不會匯入任何書籤。如果未設定的話，系統會自動匯入書籤，或詢問使用者是否要匯入書籤。</translation>
 <translation id="7063895219334505671">允許這些網站的彈出式視窗</translation>
 <translation id="706669471845501145">允許網站顯示桌面通知</translation>
 <translation id="7068108874199666656">這項政策可將網路設定強制套用至 <ph name="PRODUCT_OS_NAME" />裝置的所有使用者。這個網路設定是根據「開放式網路設定」格式所定義的 JSON 格式字串。</translation>
@@ -4408,7 +4335,7 @@
       如果啟用這項設定，安全瀏覽功能將信任這些網域。
       如果停用或不指定這項設定，則系統會對所有資源套用預設的安全瀏覽防護功能。
 
-      這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體、或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體，以及已透過行動裝置管理 (MDM) 所管理或已透過 MCX 加入某個網域的 macOS 執行個體。</translation>
+      這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體、或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。如果是 macOS 執行個體，必須透過行動裝置管理 (MDM) 或利用 MCX 加入網域才能使用。</translation>
 <translation id="7721944091689270995"><ph name="PLUGIN_VM_NAME" /> 使用者 ID</translation>
 <translation id="7724161903134898864">如果將這項政策設為 1，網站即可顯示彈出式視窗。如果將這項政策設為 2，網站將無法顯示彈出式視窗。
 
@@ -4773,9 +4700,6 @@
 <translation id="829703642501504476">如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 會使用內建的替代錯誤頁面 (例如「找不到網頁」)。如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 一律不會使用替代錯誤頁面。
 
       如果設定這項政策，使用者將無法變更。如果未設定，系統會啟用這項政策，但使用者可以變更這項設定。</translation>
-<translation id="8300455783946254851">如果你設為 Ture，<ph name="PRODUCT_OS_NAME" />的「檔案」應用程式就會在使用行動網路連線時停用 Google 雲端硬碟同步功能。這種情形下，系統只有在連上 WiFi 或乙太網路連線時才會將資料同步處理至 Google 雲端硬碟。
-
-          如果你設為 False 或未設定，使用者即可透過行動網路連線將檔案傳輸至 Google 雲端硬碟。</translation>
 <translation id="8300992833374611099">控制是否能使用開發人員工具</translation>
 <translation id="8306117673860983372">登入設定</translation>
 <translation id="8312129124898414409">允許您設定網站是否可以使用金鑰產生功能。您可以允許或禁止所有網站使用金鑰產生功能。
@@ -5055,11 +4979,6 @@
 <translation id="8705895771006864851">如果將這項政策設為 True，系統會適時在 <ph name="PRODUCT_NAME" /> 中顯示整合式翻譯工具列，為使用者提供翻譯功能。使用者也可以按一下滑鼠右鍵開啟內容選單，選擇其中的翻譯選項。如果將這項政策設為 False，系統會關閉所有內建的翻譯功能。
 
       如果設定這項政策，使用者將無法變更此功能。如果不設定，使用者將可變更這項設定。</translation>
-<translation id="8708284670795912158">如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 即可自動播放媒體。如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 不會自動播放媒體。
-
-       根據預設，<ph name="PRODUCT_NAME" /> 不會自動播放媒體。不過，你可以針對特定網址模式，使用 <ph name="AUTOPLAY_WHITELIST_POLICY_NAME" /> 政策來變更這項設定。
-
-      如果這項政策在 <ph name="PRODUCT_NAME" /> 執行時有所變動，變更只會套用到新開啟的分頁。</translation>
 <translation id="8733448613597049197">啟用 <ph name="PRODUCT_NAME" /> 安全瀏覽模式的進階回報功能，並禁止使用者變更這項設定。
 
       進階回報功能會將部分系統資訊和網頁內容傳送至 Google 伺服器，協助偵測危險的應用程式和網站。
@@ -5152,15 +5071,15 @@
 <translation id="886645881209114007">允許使用者在 <ph name="PRODUCT_OS_NAME" />上使用 <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="8867533754744915440">這項政策會允許存取列出的網址，這些網址是網址封鎖清單的例外狀況。
 
-      請參閱「<ph name="URL_BLOCKLIST_POLICY_NAME" />」政策的說明，瞭解這份清單所含項目的格式。
+      請參閱「<ph name="URL_BLOCKLIST_POLICY_NAME" />」政策說明，瞭解這份清單所含項目格式。
 
-      這項政策可用於設定嚴格封鎖清單的例外狀況。舉例來說，你可以使用「*」來封鎖所有要求，並透過這項政策允許存取有限的網址清單。你可以透過這項政策，將特定網路通訊協定、其他網域的子網域、通訊埠或特定路徑設為例外狀況。
+      這項政策可用於設定嚴格封鎖清單的例外狀況。舉例來說，你可以使用「*」封鎖所有要求，並透過這項政策允許存取有限的網址清單。你可以透過這項政策，將特定網路通訊協定、其他網域的子網域、通訊埠或特定路徑設為例外狀況。
 
       最精確的篩選器會判定系統要封鎖還是允許網址。允許清單的優先順序高於封鎖清單。
 
-      這項政策中最多只能輸入 1000 個項目；超過的項目會遭到忽略。
+      這項政策最多只能輸入 1000 個項目；超過的項目會遭到忽略。
 
-      你也可以透過這項政策列出「tel:」或「ssh:」等通訊協定，針對註冊為通訊協定處理常式的外部應用程式，啟用瀏覽器的自動叫用功能。這項功能僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體、或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體，以及已透過行動裝置管理 (MDM) 所管理或已透過 MCX 加入某個網域的 macOS 執行個體。
+      你也可以透過這項政策列出「tel:」或「ssh:」等通訊協定，針對註冊為通訊協定處理常式的外部應用程式，啟用瀏覽器的自動叫用功能。這項功能僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體、或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。如果是 macOS 執行個體，必須透過行動裝置管理 (MDM) 或利用 MCX 加入網域才能使用。
 
       如果不設定這項政策，「<ph name="URL_BLOCKLIST_POLICY_NAME" />」政策的封鎖清單不會有任何例外狀況。</translation>
 <translation id="8871974300055371298">內容設定</translation>
@@ -5340,12 +5259,6 @@
 <translation id="9117826695152538214">將這項政策設為 True 時，系統會讓相黏鍵保持在啟用狀態。將這項政策設為 False 時，系統會讓相黏鍵保持在停用狀態。
 
       如果設定這項政策，使用者將無法變更。如果未設定，系統會先停用相黏鍵，但使用者隨時可以啟用。</translation>
-<translation id="91196902572559194">這項政策可授予 Google 助理聽取語音啟動字詞的權限。
-
-      如果啟用這項政策，Google 助理將會聽取語音啟動字詞。
-      如果停用這項政策，Google 助理將不會聽取語音啟動字詞。
-      如果不設定這項政策，使用者可以決定是否讓 Google 助理聽取語音啟動字詞。
-      </translation>
 <translation id="9123211093995421438">指定隨時可從穩定版復原的最少 <ph name="PRODUCT_OS_NAME" />重要事件數。
 
       一般使用者裝置的預設值為 0，企業註冊裝置的預設值為 4 (約半年)。

@@ -17,11 +17,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/rand_util.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -60,6 +60,12 @@ constexpr double kStoragePressureThresholdRatio = 2;
 constexpr base::TimeDelta kStoragePressureCheckDiskStatsInterval =
     base::TimeDelta::FromMinutes(5);
 
+// Modifies a given value by a uniformly random amount from
+// -percent to +percent.
+int64_t RandomizeByPercent(int64_t value, int percent) {
+  double random_percent = (base::RandDouble() - 0.5) * percent * 2;
+  return value * (1 + (random_percent / 100.0));
+}
 }  // namespace
 
 // Heuristics: assuming average cloud server allows a few Gigs storage
@@ -185,10 +191,12 @@ void DidGetUsageAndQuotaStripBreakdown(
 
 }  // namespace
 
+constexpr int64_t QuotaManager::kGBytes;
 constexpr int64_t QuotaManager::kNoLimit;
 constexpr int64_t QuotaManager::kPerHostPersistentQuotaLimit;
 constexpr int QuotaManager::kEvictionIntervalInMilliSeconds;
 constexpr int QuotaManager::kThresholdOfErrorsToBeDenylisted;
+constexpr int QuotaManager::kThresholdRandomizationPercent;
 constexpr char QuotaManager::kDatabaseName[];
 constexpr char QuotaManager::kDaysBetweenRepeatedOriginEvictionsHistogram[];
 constexpr char QuotaManager::kEvictedOriginAccessedCountHistogram[];
@@ -1483,6 +1491,25 @@ void QuotaManager::MaybeRunStoragePressureCallback(const url::Origin& origin,
 
 void QuotaManager::SimulateStoragePressure(const url::Origin origin) {
   storage_pressure_callback_.Run(origin);
+}
+
+void QuotaManager::DetermineStoragePressure(int64_t free_space,
+                                            int64_t total_space) {
+  if (!base::FeatureList::IsEnabled(features::kStoragePressureEvent)) {
+    return;
+  }
+  int64_t threshold_bytes =
+      RandomizeByPercent(kGBytes, kThresholdRandomizationPercent);
+  int64_t threshold = RandomizeByPercent(
+      static_cast<int64_t>(total_space *
+                           (kThresholdRandomizationPercent / 100.0)),
+      kThresholdRandomizationPercent);
+  threshold = std::min(threshold_bytes, threshold);
+
+  if (free_space < threshold) {
+    // TODO(https://crbug.com/1096549): Implement StoragePressureEvent
+    // dispatching.
+  }
 }
 
 void QuotaManager::SetStoragePressureCallback(

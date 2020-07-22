@@ -374,7 +374,10 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      */
     @VisibleForTesting
     boolean onUpdate(long timeMs, long dtMs) {
-        if (!mUpdateRequested) return false;
+        if (!mUpdateRequested) {
+            mFrameRequestSupplier.set(timeMs);
+            return false;
+        }
         mUpdateRequested = false;
 
         // TODO(mdjones): Remove the time related params from this method. The new animation system

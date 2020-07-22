@@ -544,7 +544,7 @@
 <translation id="164936512206786300">Dessincronizar dispositivo Bluetooth</translation>
 <translation id="1650371550981945235">Mostrar opções de introdução</translation>
 <translation id="1651008383952180276">Tem de introduzir a mesma frase de acesso duas vezes</translation>
-<translation id="1652326691684645429">Ativar a Partilha próxima</translation>
+<translation id="1652326691684645429">Ativar a funcionalidade Partilhar com Nearby</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Adicione a impressora ao Google Cloud Print para poder imprimir em qualquer local.}other{Adicione # impressoras ao Google Cloud Print para poder imprimir em qualquer local.}}</translation>
 <translation id="1656528038316521561">Opacidade do fundo</translation>
 <translation id="1657406563541664238">Ajude a melhorar o <ph name="PRODUCT_NAME" /> enviando automaticamente estatísticas de utilização e relatórios de falhas para a Google</translation>
@@ -1677,7 +1677,7 @@ Pretende pará-lo?</translation>
 <translation id="3022978424994383087">Não entendido.</translation>
 <translation id="3023464535986383522">Selecionar para falar</translation>
 <translation id="3024374909719388945">Utilizar relógio de 24h</translation>
-<translation id="3027296729579831126">Ativar a Partilha próxima</translation>
+<translation id="3027296729579831126">Ativar a funcionalidade Partilhar com Nearby</translation>
 <translation id="3029466929721441205">Mostrar ferramentas da caneta stylus na prateleira</translation>
 <translation id="3031417829280473749">Agente X</translation>
 <translation id="3031557471081358569">Selecione os itens a importar:</translation>
@@ -2981,7 +2981,7 @@ Pretende pará-lo?</translation>
 <translation id="4673442866648850031">Abra as ferramentas da caneta stylus quando a caneta stylus for removida</translation>
 <translation id="4677772697204437347">Memória de GPU</translation>
 <translation id="4680105648806843642">O som foi desativado nesta página.</translation>
-<translation id="4681453295291708042">Desativar a Partilha próxima</translation>
+<translation id="4681453295291708042">Desativar a funcionalidade Partilhar com Nearby</translation>
 <translation id="4681930562518940301">Abrir &amp;imagem original num novo separador</translation>
 <translation id="4682551433947286597">As imagens de fundo aparecem no Ecrã de início de sessão.</translation>
 <translation id="4683947955326903992"><ph name="PERCENTAGE" />% (predefinição)</translation>
@@ -3806,7 +3806,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5739017626473506901">Inicie sessão para ajudar <ph name="USER_NAME" /> a adicionar uma conta escolar.</translation>
 <translation id="5739235828260127894">A aguardar a validação. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Muito grande</translation>
-<translation id="5740328398383587084">Partilha próxima</translation>
+<translation id="5740328398383587084">Partilhar com Nearby</translation>
 <translation id="574104302965107104">Espelhamento do ecrã</translation>
 <translation id="574209121243317957">Tonalidade</translation>
 <translation id="5746169159649715125">Guardar como PDF</translation>
@@ -4766,7 +4766,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="696780070563539690">Os sites não podem utilizar cookies para ver a sua atividade de navegação em diferentes sites, por exemplo, para personalizar anúncios.</translation>
 <translation id="6968288415730398122">Introduza a sua palavra-passe para configurar o bloqueio de ecrã</translation>
-<translation id="6969047215179982698">Desativar a Partilha próxima</translation>
+<translation id="6969047215179982698">Desativar a funcionalidade Partilhar com Nearby</translation>
 <translation id="6970480684834282392">Tipo de arranque</translation>
 <translation id="6970856801391541997">Imprimir Páginas Específicas</translation>
 <translation id="6972180789171089114">Áudio/Vídeo</translation>
@@ -6576,7 +6576,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9180380851667544951">O site pode partilhar o ecrã.</translation>
 <translation id="9188732951356337132">Envie dados de utilização e diagnósticos. Agora, este dispositivo está a enviar automaticamente dados de diagnóstico, de utilização de aplicações e do dispositivo para a Google. Estes dados não serão utilizados para identificar a criança e ajudarão a melhorar a estabilidade das aplicações e do sistema, entre outras melhorias. Alguns dados agregados também ajudarão as aplicações e os parceiros Google, como os programadores Android. Se a definição Atividade da Web e de apps adicional estiver ativada para a criança, estes dados podem ser guardados na respetiva Conta Google. <ph name="BEGIN_LINK2" />Saiba mais<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPSec + chave pré-partilhada</translation>
-<translation id="9198090666959937775">Utilize o telemóvel como uma chave de segurança</translation>
+<translation id="9198090666959937775">Utilize o telemóvel Android como uma chave de segurança</translation>
 <translation id="920045321358709304">Pesquisar no <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Todos os dados offline serão limpos.</translation>
 <translation id="9201220332032049474">Opções do bloqueio de ecrã</translation>

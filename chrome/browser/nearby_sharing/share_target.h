@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "chrome/browser/nearby_sharing/file_attachment.h"
 #include "chrome/browser/nearby_sharing/text_attachment.h"
 #include "url/gurl.h"
@@ -26,11 +27,13 @@ class ShareTarget {
               bool is_incoming,
               base::Optional<std::string> full_name,
               bool is_known);
-  ~ShareTarget();
   ShareTarget(const ShareTarget&);
+  ShareTarget(ShareTarget&&);
   ShareTarget& operator=(const ShareTarget&);
+  ShareTarget& operator=(ShareTarget&&);
+  ~ShareTarget();
 
-  int id() const { return id_; }
+  base::UnguessableToken id() const { return id_; }
   const std::string& device_name() const { return device_name_; }
 
   // Returns a Uri that points to an image of the ShareTarget, if one exists.
@@ -51,7 +54,7 @@ class ShareTarget {
   bool is_known() const { return is_known_; }
 
  private:
-  int id_;
+  base::UnguessableToken id_;
   std::string device_name_;
   base::Optional<GURL> image_url_;
   Type type_;

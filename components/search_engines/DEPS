@@ -1,5 +1,6 @@
 include_rules = [
   "+components/country_codes",
+  "+components/database_utils",
   "+components/google/core",
   "+components/history/core",
   "+components/infobars/core",

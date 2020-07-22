@@ -3218,11 +3218,16 @@
     {
       "id": 328,
       "cr_bugs": [1041166],
-      "description": "Disable D3D11VideoDecoder due to crashes on NVIDIA",
+      "description": "Disable D3D11VideoDecoder due to crashes on NVIDIA on older drivers",
       "os": {
         "type": "win"
       },
       "vendor_id": "0x10de",
+      "driver_version": {
+        "schema": "nvidia_driver",
+        "op": "<",
+        "value": "451.48"
+      },
       "features": [
         "disable_d3d11_video_decoder"
       ]

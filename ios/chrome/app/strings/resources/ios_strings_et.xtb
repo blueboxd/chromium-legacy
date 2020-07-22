@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> &gt; <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Järjehoidjate hankimiseks kõigisse oma seadmetesse lülitage sünkroonimine sisse.</translation>
 <translation id="1687475363370981210">Märgi kõik loetuks</translation>
+<translation id="1689333818294560261">Hüüdnimi</translation>
 <translation id="1690731385917361335">Üksuseid pole</translation>
 <translation id="1692118695553449118">Sünkroonimine on sisse lülitatud</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> valitud</translation>
@@ -206,6 +207,7 @@ Inkognito režiimis ei saa saidid küpsisefailide abil eri saitidel teie sirvimi
 <translation id="3335947283844343239">Ava uuesti suletud vaheleht</translation>
 <translation id="3371831930909698441">Tõlkimine on saadaval. Valikud on saadaval ekraanikuva allosas.</translation>
 <translation id="3393920035788932672">Hüpikud on lubatud</translation>
+<translation id="3425644765244388016">Kaardi hüüdnimi</translation>
 <translation id="3443810440409579745">Vaheleht võeti vastu.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Poolitatud vaade</translation>
@@ -240,6 +242,7 @@ Inkognito režiimis ei saa saidid küpsisefailide abil eri saitidel teie sirvimi
 <translation id="3783017676699494206">Salvesta kujutis</translation>
 <translation id="3789841737615482174">Installi</translation>
 <translation id="3803696231112616155">Selle saidi tõlkimise pakkumine</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Ükski parool pole ohus}=1{{COUNT} parool on ohus}other{{COUNT} parooli on ohus}}</translation>
 <translation id="385051799172605136">Tagasi</translation>
 <translation id="3892144330757387737">Leiate oma ajaloo siit</translation>
 <translation id="3897092660631435901">Menüü</translation>
@@ -529,6 +532,7 @@ Saidid ei saa küpsisefailide abil eri saitidel teie sirvimistegevust jälgida (
 <translation id="7189598951263744875">Jaga ...</translation>
 <translation id="7192050974311852563">Alusta logimist</translation>
 <translation id="7203585745079012652">Vastuste esitamine</translation>
+<translation id="721597782417389033">Kaardi sobimatu hüüdnimi</translation>
 <translation id="7265758999917665941">Selle saidi puhul mitte kunagi</translation>
 <translation id="7272437679830969316">Teie isikut ei õnnestu tuvastada. Parooli ei kopeeritud.</translation>
 <translation id="7291368939935408496">Paroolide ettevalmistamine …</translation>

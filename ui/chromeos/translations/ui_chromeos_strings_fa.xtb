@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">سال ضبط</translation>
 <translation id="3338239663705455570">صفحه‌کلید اسلوونیایی</translation>
 <translation id="3353984535370177728">انتخاب یک پوشه برای بارگذاری</translation>
+<translation id="3356580349448036450">کامل</translation>
 <translation id="3399597614303179694">صفحه‌کلید مقدونی</translation>
 <translation id="3414856743105198592">قالب‌بندی رسانه حذف شدنی سبب پاک شدن تمام داده‌ها می‌شود. ادامه می‌دهید؟</translation>
 <translation id="3437801641691368414">زمان ایجاد</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">نصب انجام نشد.</translation>
 <translation id="7040138676081995583">باز کردن با...</translation>
-<translation id="7059566040011178088">کمتر از <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> مورد انتخاب شدند</translation>
 <translation id="7106346894903675391">خرید فضای ذخیره بیشتر...</translation>
 <translation id="7126604456862387217">‏'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;جستجوی Drive&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">مدل دستگاه</translation>
 <translation id="8208580316430297579">کار هنری</translation>
 <translation id="8223479393428528563">برای ذخیره این فایل‌ها جهت استفاده آفلاین، دوباره آنلاین شوید، روی فایل‌ها کلیک راست کنید و گزینه <ph name="OFFLINE_CHECKBOX_NAME" /> را انتخاب کنید.</translation>
-<translation id="8231972167769262174">حدود <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">لغو</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8269755669432358899">کوچک کردن پانل بازخورد فایل‌ها</translation>

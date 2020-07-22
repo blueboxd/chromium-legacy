@@ -194,10 +194,6 @@
 
       Se esta política é definida como "false", o <ph name="PRODUCT_NAME" /> não permite que perfis de convidados sejam iniciados.</translation>
 <translation id="1363275621236827384">Permitir consultas no Servidor Quirks para perfis de hardware</translation>
-<translation id="1363612796557848469">Esta política concede ao Google Assistente permissão para acessar o contexto da tela e enviar informações ao servidor.
-      Se a política estiver ativada, o Google Assistente terá permissão para acessar o contexto da tela.
-      Se a política estiver desativada, o Google Assistente não terá permissão para acessar o contexto da tela.
-      Se ela não for definida, os usuários poderão decidir se o Google Assistente terá permissão para acessar o contexto da tela ou não.</translation>
 <translation id="1376119291123231789">Ativar o modo avançado de carregamento da bateria</translation>
 <translation id="1384459581748403878">Referência: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Informar o status de atualização do SO</translation>
@@ -286,13 +282,6 @@ Se você desativar a política, essa rolagem será desativada.</translation>
           Se "DockNicMacAddress" for selecionada, o endereço MAC da placa de rede da base será usado.
 
           Essa configuração não pode ser alterada pelo usuário.</translation>
-<translation id="1507957856411744193">Se esta política estiver definida como verdadeira, o <ph name="PRODUCT_NAME" /> fará a conexão com os dispositivos de transmissão em todos os endereços IP, não apenas nos endereços privados RFC1918/RFC4193.
-
-          Se esta política estiver definida como falsa, o <ph name="PRODUCT_NAME" /> fará a conexão com os dispositivos de transmissão somente em endereços privados RFC1918/RFC4193.
-
-          Se esta política não estiver definida, o <ph name="PRODUCT_NAME" /> fará a conexão com os dispositivos de transmissão somente em endereços privados RFC1918/RFC4193, a menos que o recurso CastAllowAllIPs esteja ativado.
-
-          Se a política EnableMediaRouter estiver definida como falsa, o valor desta política não terá nenhum efeito.</translation>
 <translation id="1509692106376861764">Esta política teve o uso suspenso a partir da versão 29 do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1514888685242892912">Ativar <ph name="PRODUCT_NAME" /></translation>
 <translation id="1515230621229117540">Ativa o menu de acessibilidade flutuante</translation>
@@ -1136,23 +1125,6 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
       O layout pré-selecionado é sempre o mais comum e que tem a maior correspondência com a localidade pré-selecionada. Os usuários sempre podem escolher qualquer localidade disponível no <ph name="PRODUCT_OS_NAME" /> para as sessões deles.</translation>
 <translation id="2693108589792503178">Configure o URL de alteração de senha.</translation>
 <translation id="2694143893026486692">Lupa em área fixa ativada</translation>
-<translation id="2694188263972877487">Configurar o tipo de download que o <ph name="PRODUCT_NAME" /> bloqueará totalmente sem permitir que os usuários substituam a decisão de segurança.
-
-      Se você definir esta política, o <ph name="PRODUCT_NAME" /> impedirá certos tipos de downloads e não permitirá que o usuário ignore os avisos de segurança.
-
-      Quando a opção "Bloquear downloads perigosos" for escolhida, todos os downloads serão permitidos, exceto os que tiverem avisos do "Navegação segura".
-
-      Quando a opção "Bloquear downloads possivelmente perigosos" for escolhida, todos os downloads serão permitidos, exceto os que tiverem avisos de download possivelmente perigoso do "Navegação segura".
-
-      Quando a opção "Bloquear todos os downloads" for escolhida, todos os downloads serão bloqueados.
-
-      Quando a opção "Bloquear downloads maliciosos" for escolhida, todos os downloads serão permitidos, exceto os que o "Navegação segura" avaliar com alta confiança como malware. Diferentemente dos downloads perigosos, esta política não considera o tipo de arquivo, mas sim o host.
-
-      Quando esta política não for definida (ou a opção "Nenhuma restrição especial" for escolhida), as restrições de segurança normais dos downloads terão como base os resultados da análise do "Navegação segura".
-
-      Essas restrições são válidas para downloads acionados a partir do conteúdo da página da Web, assim como da opção do menu de contexto "link para download". Essas restrições não são válidas para as opções de salvar / fazer o download da página exibida no momento, nem se aplicam à opção de salvar como PDF nas opções de impressão.
-
-      Consulte https://developers.google.com/safe-browsing para ver mais informações sobre o recurso "Navegação segura".</translation>
 <translation id="2696077732471707315">
       Esta política foi removida na versão M77.
       Ela se aplica à tela de login. Consulte também a política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que se aplica à sessão do usuário. É recomendado definir as duas com o mesmo valor. Se os valores não forem iguais, poderá haver um atraso ao entrar em uma sessão enquanto o valor especificado pela política do usuário estiver sendo aplicado.
@@ -1489,7 +1461,6 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
           O valor da política precisa ser especificado em milissegundos.</translation>
 <translation id="3205825995289802549">Maximizar a primeira janela do navegador na primeira execução</translation>
 <translation id="3211426942294667684">Configurações de login no navegador</translation>
-<translation id="3214164532079860003">Caso ativada, esta política força a página inicial a ser importada do navegador padrão atual. Se desativada, a página inicial não é importada. Caso não seja definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="3219421230122020860">Modo de navegação anônima disponível</translation>
 <translation id="3220624000494482595">Se o aplicativo de quiosque for um app Android, ele não terá nenhum controle sobre a versão do <ph name="PRODUCT_OS_NAME" />, mesmo se esta política estiver definida como <ph name="TRUE" />.</translation>
 <translation id="322359555555487980">Determina a disponibilidade de variações no <ph name="PRODUCT_OS_NAME" /></translation>
@@ -1808,11 +1779,6 @@ Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não usa
 <translation id="3765260570442823273">Duração da mensagem de aviso de saída de usuário ocioso</translation>
 <translation id="377044054160169374">Aplicação de intervenção de experiência ofensiva</translation>
 <translation id="3780152581321609624">Incluir porta não padrão no SPN Kerberos</translation>
-<translation id="3780319008680229708">Se esta política for definida como true, o ícone do Google Cast sempre será exibido na barra de ferramentas ou no menu flutuante, e os usuários não poderão removê-lo.
-
-          Se esta política for definida como false ou não for configurada, os usuários poderão fixar ou remover o ícone usando o menu contextual dele.
-
-          Se a política "EnableMediaRouter" for definida como false, o valor desta política não terá nenhum efeito, e o ícone da barra de ferramentas não será exibido.</translation>
 <translation id="3788662722837364290">Configurações de gerenciamento de energia quando o usuário se torna inativo</translation>
 <translation id="3790085888761753785">Se esta configuração estiver ativada, os usuários poderão fazer login nas próprias contas com o Smart Lock. Esse é um comportamento mais permissivo do que o esperado para o Smart Lock, que permite apenas que usuários desbloqueiem as respectivas telas.
 
@@ -1827,13 +1793,6 @@ Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não usa
 
       Esta política está obsoleta. Use <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
       </translation>
-<translation id="3800626789999016379">Configura o diretório que o <ph name="PRODUCT_NAME" /> usará para fazer o download de arquivos.
-
-      Se você definir esta política, o <ph name="PRODUCT_NAME" /> usará o diretório fornecido, independentemente de o usuário ter especificado um ou ter definido que a sinalização deve ser sempre solicitada para o local do download.
-
-      Consulte https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables (link em inglês) para ver uma lista de variáveis que podem ser usadas. 
-
-      Se esta política não for definida, será usado o diretório de download padrão, e o usuário poderá alterá-lo.</translation>
 <translation id="3803171355925844705">Não permitir que nenhum site carregue conteúdo misto</translation>
 <translation id="3805659594028420438">Ativar extensão dos certificados vinculados ao domínio TLS (obsoleto)</translation>
 <translation id="3808945828600697669">Especificar uma lista de plug-ins desativados</translation>
@@ -1939,13 +1898,6 @@ Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não usa
 
       Esta política só é eficaz quando a máquina está registrada na <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> do <ph name="PRODUCT_NAME" />.
       Para o <ph name="PRODUCT_OS_NAME" />, ela sempre é eficaz.</translation>
-<translation id="3895557476567727016">Configura o diretório que o <ph name="PRODUCT_NAME" /> usará para armazenar dados do usuário.
-
-      Se você definir esta política, o diretório padrão usado para os downloads do <ph name="PRODUCT_NAME" /> será alterado. Ela não é obrigatória, sendo que o usuário poderá alterar o diretório posteriormente.
-
-      Se você não definir esta política, o <ph name="PRODUCT_NAME" /> usará o diretório padrão (específico da plataforma).
-
-      Consulte http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables (link em inglês) para ver uma lista de variáveis que podem ser usadas.</translation>
 <translation id="3898795800259311780">Permitir ou negar captura de tela</translation>
 <translation id="3907683835264956726">Permite o login do usuário on-line em uma tela de bloqueio. Se a política for definida como verdadeira, a reautenticação on-line na tela de bloqueio será acionada, por exemplo, pela <ph name="POLICY" />.
       A reautenticação será aplicada imediatamente na tela de bloqueio ou na próxima vez que o usuário bloquear a tela, a partir do momento em que a autenticação atual expirar.
@@ -1967,9 +1919,6 @@ Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não usa
       Se essa configuração for desativada, os usuários não poderão imprimir na <ph name="CLOUD_PRINT_NAME" /> usando a caixa de diálogo de impressão do <ph name="PRODUCT_NAME" />.
 
       Para que os destinos da <ph name="CLOUD_PRINT_NAME" /> continuem disponíveis, é necessário que esta política seja definida como verdadeira e que <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" /> não seja incluída na política <ph name="POLICY_PRINTERTYPEDENYLIST" />.</translation>
-<translation id="391531815696899618">Desativa a sincronização do Google Drive no aplicativo Files do <ph name="PRODUCT_OS_NAME" /> quando definida como "true". Nesse caso, nenhum dado é transferido por upload para o Google Drive.
-
-         Se não está definida como "false", os usuários podem transferir arquivos para o Google Drive.</translation>
 <translation id="3915395663995367577">URL de um arquivo proxy .pac</translation>
 <translation id="3917288538553140422">A definição da política especifica a ação a ser tomada quando o diretório principal do usuário tiver sido criado com criptografia ecryptfs. A não ser que seja realizada a migração de diretórios principais da criptografia ecryptfs para ext4, os apps para Android poderão parar de funcionar.
 
@@ -2343,9 +2292,6 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
       Se o valor desta política for 0, o tamanho de cache padrão será usado, porém o usuário não poderá alterá-lo.
 
       Se esta política não for definida, o tamanho padrão será usado e o usuário poderá modificá-lo com a sinalização --media-cache-size.</translation>
-<translation id="4508686775017063528">Se essa política for definida como verdadeira ou não for definida, o <ph name="PRODUCT_NAME" /> será ativado, e os usuários poderão iniciá-lo no menu do app, nos menus de contexto da página, nos controles de mídia em sites compatíveis com o Cast e (se mostrado) no ícone da barra de ferramentas do Google Cast.
-
-          Se essa política for definida como falsa, o <ph name="PRODUCT_NAME" /> será desativado.</translation>
 <translation id="4510923771103268849">O usuário tem permissão de acesso root aos contêineres do Crostini</translation>
 <translation id="4515404363392014383">Ativar a Navegação segura para fontes confiáveis</translation>
 <translation id="4517928394515633751">Verificar downloads de usuários com o "Navegação segura"</translation>
@@ -2618,7 +2564,6 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
       Quando esta política estiver desativada, as chamadas para APIs de compartilhamento de tela falharão com erro.</translation>
 <translation id="5032164758660626397">Impedir que o usuário transfira arquivos grandes</translation>
 <translation id="5047604665028708335">Permitir acesso a sites fora de pacotes de conteúdo</translation>
-<translation id="5052081091120171147">Se ativada, esta política força a importação do histórico de navegação a partir do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, nenhum histórico de navegação é importado. Caso não seja definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="5055312535952606505">Define as configurações de proxy do <ph name="PRODUCT_NAME" />. Essas configurações de proxy também estarão disponíveis para apps ARC.
 
           Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC ignorarão todas as opções relacionadas a proxy especificadas na linha de comando.
@@ -2946,7 +2891,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
       Se a política for definida como falsa ou se não for definida, as informações não serão enviadas.
       Se ela for definida como verdadeira, os aplicativos e o uso do dispositivo serão informados.</translation>
 <translation id="5422643441807528365">Chave de licença de <ph name="PLUGIN_VM_NAME" /></translation>
-<translation id="5423001109873148185">Caso ativada, esta política força mecanismos de pesquisa a serem importados do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Caso seja desativada, o mecanismo de pesquisa padrão não é importado. Se não for definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="5423197884968724595">Nome de restrição do Android WebView:</translation>
 <translation id="5424147596523390018">Permitir todos os modos de cor</translation>
 <translation id="5427879482805712214">Esta política permite que você configure a imagem de avatar que representa o usuário na tela de login. A política é definida especificando o URL do qual o <ph name="PRODUCT_OS_NAME" /> pode fazer o download da imagem de avatar e de uma hash criptográfica usada para verificar a integridade do download. A imagem precisa estar no formato JPEG. O tamanho não pode ser superior a 512 KB. É necessário que o URL possa ser acessado sem qualquer tipo de autenticação.
@@ -3235,11 +3179,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="5814301096961727113">Definir estado padrão do feedback falado na tela de login</translation>
 <translation id="5815129011704381141">Reinicializar automaticamente após a atualização</translation>
 <translation id="582857022372205358">Ativar impressão duplex de borda curta</translation>
-<translation id="583091600226586337">
-      Se a política for ativada, o usuário poderá escolher onde salvar cada arquivo antes de fazer o download.
-      Se a política for desativada, os downloads começarão imediatamente, e o usuário não poderá escolher onde salvar o arquivo.
-      Se a política não for configurada, o usuário poderá alterar a configuração.
-      </translation>
 <translation id="5832274826894536455">Políticas suspensas</translation>
 <translation id="5835124959204887277">Especifica os URLs e domínios para os quais nenhuma solicitação será exibida quando os certificados de declaração das chaves de segurança forem solicitados. Além disso, um sinal será enviado para a chave de segurança indicando que a declaração individual pode ser usada. Sem isso, os usuários receberão uma solicitação no Chrome 65 ou versão posterior quando os sites solicitarem a declaração das chaves de segurança.
 
@@ -3327,11 +3266,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="5961137303188584693">Endereço MAC da placa de rede integrada do dispositivo</translation>
 <translation id="5966615072639944554">Extensões que podem usar a API de declaração remota</translation>
 <translation id="5983708779415553259">Comportamento padrão para sites fora de pacotes de conteúdo</translation>
-<translation id="599133751116473806">Quando ativado, o recurso "<ph name="PRODUCT_NAME" />" enviará cabeçalhos de solicitação granulares fornecendo informações sobre o ambiente e o navegador do usuário.
-
-      Esse é um recurso complementar, mas os novos cabeçalhos podem corromper alguns sites que restringem os caracteres contidos em algumas solicitações.
-
-      Se esta política for ativada ou não for definida, o recurso "<ph name="PRODUCT_NAME" />" será ativado. Se a política for desativada, o recurso ficará indisponível.</translation>
 <translation id="5997543603646547632">Usar relógido de 24 horas por padrão</translation>
 <translation id="5997846976342452720">Especifica se o localizador de plug-ins deve ser desativado (uso suspenso)</translation>
 <translation id="5998198091336830580">Esta política faz parte do seguinte grupo atômico (apenas as políticas da fonte de maior prioridade presentes no grupo são aplicadas):</translation>
@@ -3479,11 +3413,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 
       Se essa configuração não for definida ou for definida como "True", os dispositivos inscritos informarão os períodos de tempo em que um usuário estiver ativo no dispositivo. Se essa configuração for definida como "False", os horários das atividades do dispositivo não serão gravados ou informados.</translation>
 <translation id="6212868225782276239">Todas as impressoras são mostradas, exceto as da lista de proibições.</translation>
-<translation id="6219965209794245435">Se ativada, esta política força a importação de dados de preenchimento automático de formulários a partir do navegador padrão anterior, além de afetar a caixa de diálogo de importação.
-
-      Se desativada, os dados de preenchimento automático não são importados.
-
-      Se não estiver configurada, o usuário poderá ter que responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="6221175752766085998">Permitir certificados emitidos pelas âncoras de confiança locais sem a extensão subjectAlternativeName</translation>
 <translation id="6224304369267200483">Os URLs/domínios permitidos automaticamente direcionam a declaração da chave de segurança</translation>
 <translation id="6233173491898450179">Definir diretório de download</translation>
@@ -3940,7 +3869,6 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 
       Se a opção U2F_EXTENDED for selecionada, o segundo fator integrado fornecerá as funções de U2F, além de algumas extensões para declaração individual.</translation>
 <translation id="7002040773317582266">A verificação em tempo real de URLs do frame principal está ativada.</translation>
-<translation id="7003334574344702284">Se ativada, esta política força a importação de senhas a partir do navegador padrão anterior. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, as senhas salvas não são importadas. Se não for definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="7003746348783715221">Preferências do <ph name="PRODUCT_NAME" /></translation>
 <translation id="7008308728445338159">Verificação de interceptações de DNS ativada</translation>
 <translation id="7016736684656067099">Se a política for definida como 1, todos os sites exibirão imagens. Se ela for definida como 2, as imagens não serão exibidas.
@@ -3964,7 +3892,6 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
       Se esta política não for definida, a estante será posicionada na parte inferior da tela por padrão, e o usuário poderá mudar a posição da estante.</translation>
 <translation id="7040229947030068419">Exemplo de valor:</translation>
 <translation id="7044883996351280650">Controla o serviço de backup e restauração do Android</translation>
-<translation id="7053678646221257043">Se ativada, esta política força a importação dos favoritos a partir do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, nenhum favorito é importado. Se não for definida, o usuário pode ser solicitado a responder se deseja importar ou a importação pode ocorrer automaticamente.</translation>
 <translation id="7063895219334505671">Permitir pop-ups nestes sites</translation>
 <translation id="706669471845501145">Permitir que os sites exibam notificações da área de trabalho</translation>
 <translation id="7068108874199666656">Permite que a configuração de rede seja aplicada a todos os usuários de dispositivos <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma string formatada em JSON, conforme definido pelo formato Open Network Configuration.</translation>
@@ -4818,9 +4745,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="829703642501504476">Se a política for definida como verdadeira, o <ph name="PRODUCT_NAME" /> usará páginas de erro alternativas integradas no navegador, como "Página não encontrada". Se a política for definida como falsa, o <ph name="PRODUCT_NAME" /> nunca usará páginas de erro alternativas.
 
       Se você definir a política, os usuários não poderão mudá-la. Se ela não for definida, ficará ativa, mas os usuários poderão mudá-la.</translation>
-<translation id="8300455783946254851">Desativa a sincronização do Google Drive no aplicativo Files do <ph name="PRODUCT_OS_NAME" /> quando o uso de uma conexão via dispositivo móvel está configurada como "true". Nesse caso, os dados são sincronizados no Google Drive apenas quando a conexão é via WiFi ou Ethernet.
-
-          Se não está configurado ou está definida como "False", os usuários podem transferir arquivos para o Google Drive por conexões via celular.</translation>
 <translation id="8300992833374611099">Controla onde as Ferramentas para Desenvolvedores podem ser usadas</translation>
 <translation id="8306117673860983372">Configurações de login</translation>
 <translation id="8312129124898414409">Permite que você defina se os websites estão autorizados a usar a geração de chaves. O uso da geração de chaves pode ser permitido para todos os websites ou negado para todos eles.
@@ -5104,11 +5028,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8705895771006864851">Se esta política for definida como verdadeira, funcionalidades de tradução serão fornecidas quando for adequado para os usuários, mostrando uma barra de ferramentas de tradução integrada no <ph name="PRODUCT_NAME" /> e uma opção de tradução no menu de contexto que aparece ao clicar com o botão direito do mouse. Se esta política for definida como falsa, todos os recursos de tradução integrados serão desativados.
 
       Se você definir a política, os usuários não poderão mudar essa função. Se ela não for definida, os usuários poderão mudar a configuração.</translation>
-<translation id="8708284670795912158">Se a política for definida como verdadeira, o <ph name="PRODUCT_NAME" /> poderá tocar mídia automaticamente. Se a política for definida como falsa, o <ph name="PRODUCT_NAME" /> será impedido de tocar mídia automaticamente.
-
-       Por padrão, o <ph name="PRODUCT_NAME" /> não toca mídia automaticamente, mas você pode usar a política <ph name="AUTOPLAY_WHITELIST_POLICY_NAME" /> para mudar essa configuração para padrões de URL específicos.
-
-      Se a política for modificada enquanto o <ph name="PRODUCT_NAME" /> estiver em execução, ela se aplicará apenas a guias abertas recentemente.</translation>
 <translation id="8733448613597049197">Ativa os relatórios estendidos do Navegação segura do <ph name="PRODUCT_NAME" /> e impede que os usuários mudem esta configuração.
 
       Os relatórios estendidos enviam algumas informações do sistema e o conteúdo da página aos servidores do Google para ajudar a detectar apps e sites perigosos.
@@ -5401,12 +5320,6 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
 <translation id="9117826695152538214">Se esta política for definida como verdadeira, as teclas de aderência serão ativadas. Se esta política for definida como falsa, as teclas de aderência serão desativadas.
 
       Se você definir a política, os usuários não poderão mudá-la. Se a política não for definida, as teclas de aderência serão desativadas inicialmente, mas os usuários poderão ativá-las quando quiserem.</translation>
-<translation id="91196902572559194">Esta política concede ao Google Assistente a permissão para ouvir a frase de ativação por voz.
-
-      Se a política for ativada, a frase de ativação por voz será ouvida pelo Google Assistente.
-      Se a política for desativada, a frase de ativação por voz não será ouvida pelo Google Assistente.
-      Se a política não for definida, os usuários poderão decidir se permitem que o Google Assistente ouça a frase de ativação por voz.
-      </translation>
 <translation id="9123211093995421438">Especifica o número mínimo de marcos do <ph name="PRODUCT_OS_NAME" /> em que a reversão deve ser permitida a partir da versão estável a qualquer momento.
 
       O padrão é 0 para o consumidor, 4 (aproximadamente um semestre) para dispositivos inscritos na empresa.

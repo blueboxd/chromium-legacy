@@ -589,10 +589,12 @@ class COMPONENT_EXPORT(UI_BASE_X) XVisualManager {
   void ChooseVisualForWindow(bool want_argb_visual,
                              x11::VisualId* visual_id,
                              uint8_t* depth,
+                             x11::ColorMap* colormap,
                              bool* visual_has_alpha);
 
   bool GetVisualInfo(x11::VisualId visual_id,
                      uint8_t* depth,
+                     x11::ColorMap* colormap,
                      bool* visual_has_alpha);
 
   // Called by GpuDataManagerImplPrivate when GPUInfo becomes available.  It is
@@ -613,17 +615,26 @@ class COMPONENT_EXPORT(UI_BASE_X) XVisualManager {
 
   class XVisualData {
    public:
-    XVisualData(uint8_t depth, const x11::VisualType* info);
+    XVisualData(x11::Connection* connection,
+                uint8_t depth,
+                const x11::VisualType* info);
     ~XVisualData();
 
-    uint8_t depth = 0;
-    const x11::VisualType* info = nullptr;
+    x11::ColorMap GetColormap();
+
+    const uint8_t depth;
+    const x11::VisualType* const info;
+
+   private:
+    x11::ColorMap colormap_{};
+    x11::Connection* const connection_;
   };
 
   XVisualManager();
 
   bool GetVisualInfoImpl(x11::VisualId visual_id,
                          uint8_t* depth,
+                         x11::ColorMap* colormap,
                          bool* visual_has_alpha);
 
   mutable base::Lock lock_;

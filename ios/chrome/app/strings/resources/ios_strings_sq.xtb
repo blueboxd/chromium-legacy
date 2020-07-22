@@ -72,6 +72,7 @@
 <translation id="1674504678466460478">Nga <ph name="SOURCE_LANGUAGE" /> në <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Për të marrë faqeshënuesit e tu në të gjitha pajisjet e tua, aktivizo sinkronizimin.</translation>
 <translation id="1687475363370981210">Shëno të gjitha si të lexuara</translation>
+<translation id="1689333818294560261">Pseudonimi</translation>
 <translation id="1690731385917361335">Nuk ka elementë</translation>
 <translation id="1692118695553449118">Sinkronizimi është aktiv</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> u zgjodhën</translation>
@@ -206,6 +207,7 @@ Në modalitetin "i fshehtë", sajtet nuk mund t'i përdorin kukit për të parë
 <translation id="3335947283844343239">Rihap skedën e mbyllur</translation>
 <translation id="3371831930909698441">Ofrohet "Përkthe". Opsionet ofrohen pranë fundit të ekranit</translation>
 <translation id="3393920035788932672">Lejohen dritaret kërcyese</translation>
+<translation id="3425644765244388016">Pseudonimi i kartës</translation>
 <translation id="3443810440409579745">Skeda u mor.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Pamja e ndarë</translation>
@@ -240,6 +242,7 @@ Në modalitetin "i fshehtë", sajtet nuk mund t'i përdorin kukit për të parë
 <translation id="3783017676699494206">Ruaj imazhin</translation>
 <translation id="3789841737615482174">Instalo</translation>
 <translation id="3803696231112616155">Ofro përkthimin për këtë sajt</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Asnjë fjalëkalim i komprometuar}=1{{COUNT} fjalëkalim i komprometuar}other{{COUNT} fjalëkalime të komprometuara}}</translation>
 <translation id="385051799172605136">Prapa</translation>
 <translation id="3892144330757387737">Këtu do të gjesh historikun tënd</translation>
 <translation id="3897092660631435901">Menyja</translation>
@@ -529,6 +532,7 @@ Sajtet nuk mund t'i përdorin kukit për të parë aktivitetin tënd të shfleti
 <translation id="7189598951263744875">Ndaj...</translation>
 <translation id="7192050974311852563">Fillo regjistrimin</translation>
 <translation id="7203585745079012652">Thuaji përgjigjet mbrapsht</translation>
+<translation id="721597782417389033">Pseudonim i pavlefshëm karte</translation>
 <translation id="7265758999917665941">Asnjëherë për këtë faqe</translation>
 <translation id="7272437679830969316">Nuk mund të verifikohet identiteti yt. Fjalëkalimi nuk u kopjua.</translation>
 <translation id="7291368939935408496">Po përgatit fjalëkalimet...</translation>

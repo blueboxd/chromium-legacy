@@ -3309,6 +3309,8 @@ static_library("browser") {
       "nearby_sharing/instantmessaging/stream_parser.h",
       "nearby_sharing/instantmessaging/token_fetcher.cc",
       "nearby_sharing/instantmessaging/token_fetcher.h",
+      "nearby_sharing/nearby_confirmation_manager.cc",
+      "nearby_sharing/nearby_confirmation_manager.h",
       "nearby_sharing/nearby_connection.h",
       "nearby_sharing/nearby_connections_manager.h",
       "nearby_sharing/nearby_connections_manager_impl.cc",
@@ -3317,6 +3319,8 @@ static_library("browser") {
       "nearby_sharing/nearby_notification_handler.h",
       "nearby_sharing/nearby_notification_manager.cc",
       "nearby_sharing/nearby_notification_manager.h",
+      "nearby_sharing/nearby_per_session_discovery_manager.cc",
+      "nearby_sharing/nearby_per_session_discovery_manager.h",
       "nearby_sharing/nearby_process_manager.cc",
       "nearby_sharing/nearby_process_manager.h",
       "nearby_sharing/nearby_sharing_service.h",
@@ -3324,6 +3328,8 @@ static_library("browser") {
       "nearby_sharing/nearby_sharing_service_factory.h",
       "nearby_sharing/nearby_sharing_service_impl.cc",
       "nearby_sharing/nearby_sharing_service_impl.h",
+      "nearby_sharing/outgoing_share_target_info.cc",
+      "nearby_sharing/outgoing_share_target_info.h",
       "nearby_sharing/share_target.cc",
       "nearby_sharing/share_target.h",
       "nearby_sharing/share_target_discovered_callback.h",
@@ -4012,7 +4018,7 @@ static_library("browser") {
     ]
     deps += [
       "//chromeos/crosapi/mojom",
-      "//chromeos/lacros/browser",
+      "//chromeos/lacros",
     ]
   }
 
@@ -6240,6 +6246,8 @@ static_library("test_support") {
 
   if (enable_service_discovery) {
     sources += [
+      "local_discovery/fake_service_discovery_device_lister.cc",
+      "local_discovery/fake_service_discovery_device_lister.h",
       "local_discovery/test_service_discovery_client.cc",
       "local_discovery/test_service_discovery_client.h",
     ]

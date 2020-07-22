@@ -66,6 +66,7 @@
 #endif  // defined(USE_OZONE) || defined(USE_X11)
 
 #if defined(OS_WIN)
+#include "base/win/base_win_buildflags.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/shell_integration_win.h"
@@ -469,8 +470,8 @@ void OnIsPinnedToTaskbarResult(bool succeeded,
 // startup.
 void RecordIsPinnedToTaskbarHistogram() {
   shell_integration::win::GetIsPinnedToTaskbarState(
-      base::Bind(&OnShellHandlerConnectionError),
-      base::Bind(&OnIsPinnedToTaskbarResult));
+      base::BindOnce(&OnShellHandlerConnectionError),
+      base::BindOnce(&OnIsPinnedToTaskbarResult));
 }
 
 class ScHandleTraits {
@@ -564,7 +565,17 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
     ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial("WinSegmentHeap",
                                                               "NotSupported");
   }
+
+  // Records whether or not CFG indirect call dispatch guards are present
+  // or not.
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial("WinCFG",
+#if BUILDFLAG(WIN_ENABLE_CFG_GUARDS)
+                                                            "Enabled"
+#else
+                                                            "Disabled"
 #endif
+  );
+#endif  // defined(OS_WIN)
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {

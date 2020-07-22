@@ -111,4 +111,8 @@ ChromeEnterpriseRealTimeUrlLookupService::GetTrafficAnnotationTag() const {
         })");
 }
 
+std::string ChromeEnterpriseRealTimeUrlLookupService::GetMetricSuffix() const {
+  return ".Enterprise";
+}
+
 }  // namespace safe_browsing

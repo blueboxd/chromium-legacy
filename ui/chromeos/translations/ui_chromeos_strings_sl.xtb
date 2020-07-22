@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Leto snemanja</translation>
 <translation id="3338239663705455570">Slovenska tipkovnica</translation>
 <translation id="3353984535370177728">Izberite mapo za prenos</translation>
+<translation id="3356580349448036450">Dokončano</translation>
 <translation id="3399597614303179694">Makedonska tipkovnica</translation>
 <translation id="3414856743105198592">S formatiranjem izmenljivega medija boste izbrisali vse podatke. Ali želite nadaljevati?</translation>
 <translation id="3437801641691368414">Čas ustvarjanja</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Namestitev ni uspela.</translation>
 <translation id="7040138676081995583">Odpri z aplikacijo ...</translation>
-<translation id="7059566040011178088">Manj kot <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923">Št. izbranih elementov: <ph name="COUNT" /></translation>
 <translation id="7106346894903675391">Nakup dodatnega prostora za shranjevanje ...</translation>
 <translation id="7126604456862387217">»&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;« – &lt;em&gt;iskanje v storitvi Google Drive&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">Model naprave</translation>
 <translation id="8208580316430297579">Slikovni material</translation>
 <translation id="8223479393428528563">Če želite te datoteke shraniti za uporabo brez povezave, vzpostavite povezavo, z desnim gumbom miške kliknite datoteke in izberite možnost <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
-<translation id="8231972167769262174">Približno <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Prekini</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8269755669432358899">Strnitev datotek podoken povratnih informacij</translation>

@@ -14,6 +14,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
+#include "ui/base/accelerators/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/image_model.h"
 #include "url/gurl.h"
@@ -50,11 +51,12 @@ void WebAppMenuModel::Build() {
   AddItemWithStringId(IDC_WEB_APP_MENU_APP_INFO,
                       IDS_APP_CONTEXT_MENU_SHOW_INFO);
   int app_info_index = GetItemCount() - 1;
-  SetMinorText(app_info_index, web_app::AppBrowserController::FormatUrlOrigin(
-                                   browser()
-                                       ->tab_strip_model()
-                                       ->GetActiveWebContents()
-                                       ->GetVisibleURL()));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  if (web_contents) {
+    SetMinorText(app_info_index, web_app::AppBrowserController::FormatUrlOrigin(
+                                     web_contents->GetVisibleURL()));
+  }
   SetMinorIcon(app_info_index,
                ui::ImageModel::FromVectorIcon(
                    browser()->location_bar_model()->GetVectorIcon()));
@@ -72,7 +74,8 @@ void WebAppMenuModel::Build() {
     AddItem(kUninstallAppCommandId,
             l10n_util::GetStringFUTF16(
                 IDS_UNINSTALL_FROM_OS_LAUNCH_SURFACE,
-                browser()->app_controller()->GetAppShortName()));
+                ui::EscapeMenuLabelAmpersands(
+                    browser()->app_controller()->GetAppShortName())));
   }
 #endif  // !defined(OS_CHROMEOS)
   AddSeparator(ui::LOWER_SEPARATOR);

@@ -541,7 +541,7 @@
 <translation id="164936512206786300">බ්ලූටූත් උපාංගය යුගලන නොකරන්න</translation>
 <translation id="1650371550981945235">ආදාන විකල්ප පෙන්වන්න</translation>
 <translation id="1651008383952180276">ඔබ එකම මුරවැකිකඩ දෙවරක් ඇතුළු කළ යුතුය</translation>
-<translation id="1652326691684645429">අවට බෙදා ගැනීම සබල කරන්න</translation>
+<translation id="1652326691684645429">ළඟ බෙදා ගැනීම සබල කරන්න</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{ඔබට ඕනෑම තැනක සිට මුද්‍රණයට මුද්‍රණ යන්ත්‍රය Google වළාකුළු මුද්‍රණය වෙත එක් කරන්න.}one{ඔබට ඕනෑම තැනක සිට මුද්‍රණයට මුද්‍රණ යන්ත්‍ර # ක් Google වළාකුළු මුද්‍රණය වෙත එක් කරන්න.}other{ඔබට ඕනෑම තැනක සිට මුද්‍රණයට මුද්‍රණ යන්ත්‍ර # ක් Google වළාකුළු මුද්‍රණය වෙත එක් කරන්න.}}</translation>
 <translation id="1656528038316521561">පසුබිම් පාරාන්ධතාව</translation>
 <translation id="1657406563541664238">Google වෙත භාවිත සංඛ්‍යාල්ඛන සහ කඩිනම් වාර්තා ස්වයංක්‍රියව යවා <ph name="PRODUCT_NAME" /> වඩා යහපත් කිරීමට උපකාර වන්න.</translation>
@@ -2979,7 +2979,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="4673442866648850031">පන්හිඳ ඉවත් කළ විට පන්හිඳ මෙවලම් විවෘත කරන්න</translation>
 <translation id="4677772697204437347">GPU මතකය</translation>
 <translation id="4680105648806843642">මෙම පිටුවෙහි ශබ්දය නිහඬ කර ඇත</translation>
-<translation id="4681453295291708042">අවට බෙදා ගැනීම අබල කරන්න</translation>
+<translation id="4681453295291708042">ළඟ බෙදා ගැනීම අබල කරන්න</translation>
 <translation id="4681930562518940301">මුල් පින්තූරය නව පටිත්තක විවෘත කරන්න</translation>
 <translation id="4682551433947286597">පිරිමේ තිරය මත පෙනෙන බිතුපත්.</translation>
 <translation id="4683947955326903992"><ph name="PERCENTAGE" />% (පෙරනිමි)</translation>
@@ -3804,7 +3804,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="5739017626473506901"><ph name="USER_NAME" /> හට පාසල් ගිණුමක් එක් කිරීමට උදවු කිරීමට පුරන්න</translation>
 <translation id="5739235828260127894">සත්‍යාපනය බලාපොරොත්තුවෙන් <ph name="LINK_BEGIN" />තවත් දැන ගන්න.<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">ඉතා විශාල</translation>
-<translation id="5740328398383587084">අවට බෙදා ගැනීම</translation>
+<translation id="5740328398383587084">ළඟ බෙදා ගැනීම</translation>
 <translation id="574104302965107104">සංදර්ශක දර්පණය</translation>
 <translation id="574209121243317957">තාරතාව</translation>
 <translation id="5746169159649715125">PDF ලෙස සුරකින්න</translation>
@@ -4304,7 +4304,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="6362853299801475928">ගැටළුවක් වාර්තා කරන්න...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">පවුල සහ මිතුරන් එක් කරන්න</translation>
-<translation id="6367985768157257101">ආසන්නබෙදා ගැනීම සමගින් ලබන්නද?</translation>
+<translation id="6367985768157257101">ළඟ බෙදා ගැනීම සමගින් ලබන්නද?</translation>
 <translation id="636850387210749493">ව්‍යාපාරික බඳවාගැනීම</translation>
 <translation id="6370021412472292592">ලේඛනය පැටවිය නොහැකි විය.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4762,7 +4762,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="6965978654500191972">උපාංගය</translation>
 <translation id="696780070563539690">විවිධ වෙබ් අඩවි අතරින් ඔබේ බ්‍රවුස් කිරීමේ ක්‍රියාකාරකම් බැලීමට, උදාහරණයක් වශයෙන්, දැන්වීම් පුද්ගලායන කිරීමට වෙබ් අඩවිවලට ඔබේ කුකී භාවිත නොකළ හැක</translation>
 <translation id="6968288415730398122">තිර අගුල වින්‍යාස කිරීමට ඔබගේ මුරපදය ඇතුළු කරන්න</translation>
-<translation id="6969047215179982698">අවට බෙදා ගැනීම අක්‍රිය කරන්න</translation>
+<translation id="6969047215179982698">ළඟ බෙදා ගැනීම අක්‍රිය කරන්න</translation>
 <translation id="6970480684834282392">ස්ටාටප් වර්ගය</translation>
 <translation id="6970856801391541997">නිශ්චිත පිටු මුද්‍රණය කරන්න</translation>
 <translation id="6972180789171089114">ශ්‍රව්‍ය/වීඩියෝ</translation>

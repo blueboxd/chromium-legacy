@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/database_utils/url_converter.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
@@ -128,14 +129,16 @@ void BindURLToStatement(const TemplateURLData& data,
   s->BindInt64(id_column, data.id);
   s->BindString16(starting_column, data.short_name());
   s->BindString16(starting_column + 1, data.keyword());
-  s->BindString(starting_column + 2, data.favicon_url.is_valid() ?
-      history::URLDatabase::GURLToDatabaseURL(data.favicon_url) :
-      std::string());
+  s->BindString(starting_column + 2,
+                data.favicon_url.is_valid()
+                    ? database_utils::GurlToDatabaseUrl(data.favicon_url)
+                    : std::string());
   s->BindString(starting_column + 3, data.url());
   s->BindBool(starting_column + 4, data.safe_for_autoreplace);
-  s->BindString(starting_column + 5, data.originating_url.is_valid() ?
-      history::URLDatabase::GURLToDatabaseURL(data.originating_url) :
-      std::string());
+  s->BindString(starting_column + 5,
+                data.originating_url.is_valid()
+                    ? database_utils::GurlToDatabaseUrl(data.originating_url)
+                    : std::string());
   s->BindInt64(starting_column + 6,
                data.date_created.since_origin().InMicroseconds());
   s->BindInt(starting_column + 7, data.usage_count);

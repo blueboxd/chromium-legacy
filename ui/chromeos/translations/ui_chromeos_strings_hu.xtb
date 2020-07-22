@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Felvétel éve</translation>
 <translation id="3338239663705455570">Szlovén billentyűzet</translation>
 <translation id="3353984535370177728">Válassza ki a feltölteni kívánt mappát</translation>
+<translation id="3356580349448036450">Kész</translation>
 <translation id="3399597614303179694">Macedón billentyűzet</translation>
 <translation id="3414856743105198592">A cserélhető adathordozók formázása minden adatot töröl. Szeretné folytatni?</translation>
 <translation id="3437801641691368414">Létrehozás ideje</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">A telepítés nem sikerült.</translation>
 <translation id="7040138676081995583">Megnyitás ezzel:...</translation>
-<translation id="7059566040011178088">Kevesebb mint <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> elem kiválasztva</translation>
 <translation id="7106346894903675391">További tárhely vásárlása...</translation>
 <translation id="7126604456862387217">„&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;” – &lt;em&gt;keresés a Drive-ban&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">Eszköz modellje</translation>
 <translation id="8208580316430297579">Grafikák</translation>
 <translation id="8223479393428528563">A fájlok offline használatra való mentéséhez lépjen fel újra az online felületre, kattintson jobb gombbal a fájlokra, és válassza a(z) <ph name="OFFLINE_CHECKBOX_NAME" /> lehetőséget.</translation>
-<translation id="8231972167769262174">Kb. <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Megszakítás</translation>
 <translation id="8261506727792406068">Törlés</translation>
 <translation id="8269755669432358899">A fájlokhoz tartozó visszajelzési párbeszédpanel összecsukása</translation>

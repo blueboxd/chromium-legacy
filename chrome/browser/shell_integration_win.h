@@ -64,11 +64,10 @@ base::string16 GetChromiumModelIdForProfile(const base::FilePath& profile_path);
 // bool is true if Chrome is pinned to the taskbar (with verb check)
 // The ConnectionErrorCallback is called instead if something wrong happened
 // with the connection to the remote process.
-using ConnectionErrorCallback = base::Closure;
-using IsPinnedToTaskbarCallback = base::Callback<void(bool, bool, bool)>;
-void GetIsPinnedToTaskbarState(
-    const ConnectionErrorCallback& on_error_callback,
-    const IsPinnedToTaskbarCallback& result_callback);
+using ConnectionErrorCallback = base::OnceClosure;
+using IsPinnedToTaskbarCallback = base::OnceCallback<void(bool, bool, bool)>;
+void GetIsPinnedToTaskbarState(ConnectionErrorCallback on_error_callback,
+                               IsPinnedToTaskbarCallback result_callback);
 
 // Migrates existing chrome taskbar pins by tagging them with correct app id.
 // see http://crbug.com/28104. Migrates taskbar pins via a task and runs

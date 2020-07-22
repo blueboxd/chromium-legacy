@@ -143,7 +143,7 @@ base::string16 GetAppShortcutsSubdirName();
 // The type of callback used to communicate processing state to consumers of
 // DefaultBrowserWorker and DefaultProtocolClientWorker.
 using DefaultWebClientWorkerCallback =
-    base::Callback<void(DefaultWebClientState)>;
+    base::RepeatingCallback<void(DefaultWebClientState)>;
 
 //  Helper objects that handle checking if Chrome is the default browser
 //  or application for a url protocol on Windows and Linux, and also setting

@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">பதிவுசெய்த ஆண்டு</translation>
 <translation id="3338239663705455570">ஸ்லோவேனியன் விசைப்பலகை</translation>
 <translation id="3353984535370177728">பதிவேற்ற கோப்புறையைத் தேர்வுசெய்யவும்</translation>
+<translation id="3356580349448036450">முடிந்தது</translation>
 <translation id="3399597614303179694">மாஸிடோனியன் விசைப்பலகை</translation>
 <translation id="3414856743105198592">அகற்றத்தக்க மீடியாவை வடிவமைப்பதானது எல்லா தரவையும் அழிக்கும். தொடர விரும்புகிறீர்களா?</translation>
 <translation id="3437801641691368414">உருவாக்கிய நேரம்</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">நிறுவல் தோல்வியடைந்தது.</translation>
 <translation id="7040138676081995583">இதனுடன் திற...</translation>
-<translation id="7059566040011178088"><ph name="REMAINING_TIME" />க்கும் குறைவு</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> உருப்படிகள் தேர்ந்தெடுக்கப்பட்டுள்ளன.</translation>
 <translation id="7106346894903675391">கூடுதல் சேமிப்பிடத்தை வாங்கு...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;இயக்ககத்தில் தேடு&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">சாதனத்தின் மாடல்</translation>
 <translation id="8208580316430297579">கலைப்பணி</translation>
 <translation id="8223479393428528563">இந்தக் கோப்புகளை ஆஃப்லைனில் பயன்படுத்துவதற்காகச் சேமிக்க, ஆன்லைனிற்கு சென்று, கோப்புகளில் வலது-கிளிக் செய்து, <ph name="OFFLINE_CHECKBOX_NAME" /> விருப்பத்தைத் தேர்தெடுக்கவும்.</translation>
-<translation id="8231972167769262174">இன்னும் <ph name="REMAINING_TIME" /> உள்ளது</translation>
 <translation id="8249296373107784235">கைவிடு</translation>
 <translation id="8261506727792406068">நீக்கு</translation>
 <translation id="8269755669432358899">கோப்புகள் காட்டப்படும் பேனல்களைச் சுருக்கும்</translation>

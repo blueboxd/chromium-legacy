@@ -25,6 +25,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/version.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/x/x11.h"
@@ -49,7 +50,8 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
  public:
   SelectFileDialogImplKDE(Listener* listener,
                           std::unique_ptr<ui::SelectFilePolicy> policy,
-                          base::nix::DesktopEnvironment desktop);
+                          base::nix::DesktopEnvironment desktop,
+                          const std::string& kdialog_version);
 
  protected:
   ~SelectFileDialogImplKDE() override;
@@ -174,6 +176,11 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
   // dialogs. This should only be accessed on the UI thread.
   std::set<gfx::AcceleratedWidget> parents_;
 
+  // Set to true if the kdialog version is new enough to support passing
+  // multiple extensions with descriptions, eliminating the need for the lossy
+  // conversion of extensions to mime-types.
+  bool kdialog_supports_multiple_extensions_ = false;
+
   // A task runner for blocking pipe reads.
   scoped_refptr<base::SequencedTaskRunner> pipe_task_runner_;
 
@@ -183,7 +190,8 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
 };
 
 // static
-bool SelectFileDialogImpl::CheckKDEDialogWorksOnUIThread() {
+bool SelectFileDialogImpl::CheckKDEDialogWorksOnUIThread(
+    std::string& kdialog_version) {
   // No choice. UI thread can't continue without an answer here. Fortunately we
   // only do this once, the first time a file dialog is displayed.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
@@ -192,22 +200,24 @@ bool SelectFileDialogImpl::CheckKDEDialogWorksOnUIThread() {
   cmd_vector.push_back(kKdialogBinary);
   cmd_vector.push_back("--version");
   base::CommandLine command_line(cmd_vector);
-  std::string dummy;
-  return base::GetAppOutput(command_line, &dummy);
+  return base::GetAppOutput(command_line, &kdialog_version);
 }
 
 // static
 SelectFileDialogImpl* SelectFileDialogImpl::NewSelectFileDialogImplKDE(
     Listener* listener,
     std::unique_ptr<ui::SelectFilePolicy> policy,
-    base::nix::DesktopEnvironment desktop) {
-  return new SelectFileDialogImplKDE(listener, std::move(policy), desktop);
+    base::nix::DesktopEnvironment desktop,
+    const std::string& kdialog_version) {
+  return new SelectFileDialogImplKDE(listener, std::move(policy), desktop,
+                                     kdialog_version);
 }
 
 SelectFileDialogImplKDE::SelectFileDialogImplKDE(
     Listener* listener,
     std::unique_ptr<ui::SelectFilePolicy> policy,
-    base::nix::DesktopEnvironment desktop)
+    base::nix::DesktopEnvironment desktop,
+    const std::string& kdialog_version)
     : SelectFileDialogImpl(listener, std::move(policy)),
       desktop_(desktop),
       pipe_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
@@ -216,6 +226,19 @@ SelectFileDialogImplKDE::SelectFileDialogImplKDE(
   DCHECK(desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE3 ||
          desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE4 ||
          desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE5);
+  // |kdialog_version| should be of the form "kdialog 1.2.3", so split on
+  // whitespace and then try to parse a version from the second piece. If
+  // parsing fails for whatever reason, we fall back to the behavior that works
+  // with all currently known versions of kdialog.
+  std::vector<base::StringPiece> version_pieces = base::SplitStringPiece(
+      kdialog_version, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (version_pieces.size() >= 2) {
+    base::Version parsed_version(version_pieces[1]);
+    if (parsed_version.IsValid()) {
+      kdialog_supports_multiple_extensions_ =
+          parsed_version >= base::Version("19.12");
+    }
+  }
 }
 
 SelectFileDialogImplKDE::~SelectFileDialogImplKDE() = default;
@@ -288,27 +311,70 @@ bool SelectFileDialogImplKDE::HasMultipleFileTypeChoicesImpl() {
 
 std::string SelectFileDialogImplKDE::GetMimeTypeFilterString() {
   DCHECK(pipe_task_runner_->RunsTasksInCurrentSequence());
-  // We need a filter set because the same mime type can appear multiple times.
-  std::set<std::string> filter_set;
-  for (auto& extensions : file_types_.extensions) {
-    for (auto& extension : extensions) {
-      if (!extension.empty()) {
-        std::string mime_type = base::nix::GetFileMimeType(
-            base::FilePath("name").ReplaceExtension(extension));
-        filter_set.insert(mime_type);
+
+  if (!kdialog_supports_multiple_extensions_) {
+    // We need a filter set because the same mime type can appear multiple
+    // times.
+    std::set<std::string> filter_set;
+    for (auto& extensions : file_types_.extensions) {
+      for (auto& extension : extensions) {
+        if (!extension.empty()) {
+          std::string mime_type = base::nix::GetFileMimeType(
+              base::FilePath("name").ReplaceExtension(extension));
+          filter_set.insert(mime_type);
+        }
       }
     }
+    std::vector<std::string> filter_vector(filter_set.cbegin(),
+                                           filter_set.cend());
+    // Add the *.* filter, but only if we have added other filters (otherwise it
+    // is implied). It needs to be added last to avoid being picked as the
+    // default filter.
+    if (file_types_.include_all_files && !file_types_.extensions.empty()) {
+      DCHECK(filter_set.find("application/octet-stream") == filter_set.end());
+      filter_vector.push_back("application/octet-stream");
+    }
+    return base::JoinString(filter_vector, " ");
   }
-  std::vector<std::string> filter_vector(filter_set.cbegin(),
-                                         filter_set.cend());
-  // Add the *.* filter, but only if we have added other filters (otherwise it
-  // is implied). It needs to be added last to avoid being picked as the default
-  // filter.
-  if (file_types_.include_all_files && !file_types_.extensions.empty()) {
-    DCHECK(filter_set.find("application/octet-stream") == filter_set.end());
-    filter_vector.push_back("application/octet-stream");
+
+  std::vector<std::string> filters;
+  for (size_t i = 0; i < file_types_.extensions.size(); ++i) {
+    std::set<std::string> extension_filters;
+    for (const auto& extension : file_types_.extensions[i]) {
+      if (extension.empty())
+        continue;
+      extension_filters.insert(std::string("*.") + extension);
+    }
+
+    // We didn't find any non-empty extensions to filter on.
+    if (extension_filters.empty())
+      continue;
+
+    std::vector<std::string> extension_filters_vector(extension_filters.begin(),
+                                                      extension_filters.end());
+
+    std::string description;
+    // The description vector may be blank, in which case we are supposed to
+    // use some sort of default description based on the filter.
+    if (i < file_types_.extension_description_overrides.size()) {
+      description =
+          base::UTF16ToUTF8(file_types_.extension_description_overrides[i]);
+      // Filter out any characters that would mess up kdialog's parsing.
+      base::ReplaceChars(description, "|()", "", &description);
+    } else {
+      // There is no system default filter description so we use
+      // the extensions themselves if the description is blank.
+      description = base::JoinString(extension_filters_vector, ",");
+    }
+
+    filters.push_back(description + " (" +
+                      base::JoinString(extension_filters_vector, " ") + ")");
   }
-  return base::JoinString(filter_vector, " ");
+
+  if (file_types_.include_all_files && !file_types_.extensions.empty())
+    filters.push_back(l10n_util::GetStringUTF8(IDS_SAVEAS_ALL_FILES) + " (*)");
+
+  return base::JoinString(filters, "|");
 }
 
 std::unique_ptr<SelectFileDialogImplKDE::KDialogOutputParams>

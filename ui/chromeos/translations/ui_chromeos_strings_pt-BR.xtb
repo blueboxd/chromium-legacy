@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Ano da gravação</translation>
 <translation id="3338239663705455570">Teclado esloveno</translation>
 <translation id="3353984535370177728">Selecionar uma pasta para upload</translation>
+<translation id="3356580349448036450">Concluído</translation>
 <translation id="3399597614303179694">Teclado macedônio</translation>
 <translation id="3414856743105198592">A formatação da mídia removível apagará todos os dados. Quer continuar?</translation>
 <translation id="3437801641691368414">Hora da criação</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Falha na instalação.</translation>
 <translation id="7040138676081995583">Abrir com...</translation>
-<translation id="7059566040011178088">Menos de <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> itens selecionados</translation>
 <translation id="7106346894903675391">Adquirir mais espaço de armazenamento...</translation>
 <translation id="7126604456862387217">"&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;" - &lt;em&gt;pesquisar no Google Drive&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">Modelo do dispositivo</translation>
 <translation id="8208580316430297579">Capa do álbum</translation>
 <translation id="8223479393428528563">Para salvar esses arquivos para uso off-line, fique on-line novamente, clique com o botão direito nos arquivos e selecione a opção <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
-<translation id="8231972167769262174">Cerca de <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Cancelar</translation>
 <translation id="8261506727792406068">Excluir</translation>
 <translation id="8269755669432358899">Recolher painéis de feedback de arquivos</translation>

@@ -107,20 +107,26 @@ Utils.extractFirstLicenseKeyId = function(message) {
 };
 
 Utils.verifyUsageRecord =
-    function(message) {
+    function(message, expectNullTime) {
   try {
     var json = JSON.parse(convertToString(message));
-    var first_decrypt_time = new Date(json.firstTime);
-    var last_decrypt_time = new Date(json.latestTime);
-    Utils.timeLog('First decrypt time: ' + first_decrypt_time.toISOString());
-    Utils.timeLog('Last decrypt time: ' + last_decrypt_time.toISOString());
-
-    var delta = json.latestTime - json.firstTime;
-    // The video used for the tests is roughly 2.5 seconds.
-    if (delta < 2000 || delta > 3000) {
+    if (expectNullTime && (json.firstTime != null || json.latestTime != null)) {
       Utils.failTest(
-          'The usage record reported by the CDM was not in the' +
-          'expected range')
+          'Expecting null time for usage record but got firstTime=' +
+          json.firstTime + ', latestTime=' + json.latestTime);
+    } else if (!expectNullTime) {
+      var first_decrypt_time = new Date(json.firstTime);
+      var last_decrypt_time = new Date(json.latestTime);
+      Utils.timeLog('First decrypt time: ' + first_decrypt_time.toISOString());
+      Utils.timeLog('Last decrypt time: ' + last_decrypt_time.toISOString());
+
+      var delta = json.latestTime - json.firstTime;
+      // The video used for the tests is roughly 2.5 seconds.
+      if (delta < 2000 || delta > 3000) {
+        Utils.failTest(
+            'The usage record reported by the CDM was not in the ' +
+            'expected range')
+      }
     }
 
   } catch (error) {

@@ -362,6 +362,9 @@ class NET_EXPORT ConfiguredProxyResolutionService
   base::Optional<ProxyConfigWithAnnotation> fetched_config_;
   base::Optional<ProxyConfigWithAnnotation> config_;
 
+  // The time when the proxy configuration was last read from the system.
+  base::TimeTicks config_last_update_time_;
+
   // Map of the known bad proxies and the information about the retry time.
   ProxyRetryInfoMap proxy_retry_info_;
 

@@ -21,7 +21,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
-#include "components/history/core/browser/favicon_database.h"
+#include "components/favicon/core/favicon_database.h"
 #include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_database.h"
@@ -178,7 +178,7 @@ ExpireHistoryBackend::~ExpireHistoryBackend() {
 }
 
 void ExpireHistoryBackend::SetDatabases(HistoryDatabase* main_db,
-                                        FaviconDatabase* favicon_db) {
+                                        favicon::FaviconDatabase* favicon_db) {
   main_db_ = main_db;
   favicon_db_ = favicon_db;
 }
@@ -347,13 +347,14 @@ void ExpireHistoryBackend::ClearOldOnDemandFaviconsIfPossible(
 
   last_on_demand_expiration_threshold_ = expiration_threshold;
 
-  std::map<favicon_base::FaviconID, IconMappingsForExpiry> icon_mappings =
-      favicon_db_->GetOldOnDemandFavicons(expiration_threshold);
+  std::map<favicon_base::FaviconID, favicon::IconMappingsForExpiry>
+      icon_mappings = favicon_db_->GetOldOnDemandFavicons(expiration_threshold);
   DeleteEffects effects;
 
   for (auto id_and_mappings_pair : icon_mappings) {
     favicon_base::FaviconID icon_id = id_and_mappings_pair.first;
-    const IconMappingsForExpiry& mappings = id_and_mappings_pair.second;
+    const favicon::IconMappingsForExpiry& mappings =
+        id_and_mappings_pair.second;
 
     if (backend_client_ &&
         IsAnyURLPinned(backend_client_, mappings.page_urls)) {
@@ -491,7 +492,7 @@ void ExpireHistoryBackend::DeleteOneURL(const URLRow& url_row,
 void ExpireHistoryBackend::DeleteIcons(const GURL& gurl,
                                        DeleteEffects* effects) {
   // Collect shared information.
-  std::vector<IconMapping> icon_mappings;
+  std::vector<favicon::IconMapping> icon_mappings;
   if (favicon_db_ &&
       favicon_db_->GetIconMappingsForPageURL(gurl, &icon_mappings)) {
     for (auto m = icon_mappings.begin(); m != icon_mappings.end(); ++m) {

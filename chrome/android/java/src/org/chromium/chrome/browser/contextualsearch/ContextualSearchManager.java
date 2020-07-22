@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationParams;
@@ -133,6 +134,8 @@ public class ContextualSearchManager
     private final ContextualSearchInteractionRecorder mInteractionRecorder;
 
     private final ContextualSearchSelectionClient mContextualSearchSelectionClient;
+
+    private final ScrimCoordinator mScrimCoordinator;
 
     private ContextualSearchSelectionController mSelectionController;
     private ContextualSearchNetworkCommunicator mNetworkCommunicator;
@@ -221,11 +224,14 @@ public class ContextualSearchManager
      * @param activity The {@code ChromeActivity} in use.
      * @param tabPromotionDelegate The {@link ContextualSearchTabPromotionDelegate} that is
      *        responsible for building tabs from contextual search {@link WebContents}.
+     * @param scrimCoordinator A mechanism for showing and hiding the shared scrim.
      */
-    public ContextualSearchManager(
-            ChromeActivity activity, ContextualSearchTabPromotionDelegate tabPromotionDelegate) {
+    public ContextualSearchManager(ChromeActivity activity,
+            ContextualSearchTabPromotionDelegate tabPromotionDelegate,
+            ScrimCoordinator scrimCoordinator) {
         mActivity = activity;
         mTabPromotionDelegate = tabPromotionDelegate;
+        mScrimCoordinator = scrimCoordinator;
 
         final View controlContainer = mActivity.findViewById(R.id.control_container);
         mOnFocusChangeListener = new OnGlobalFocusChangeListener() {
@@ -1269,6 +1275,11 @@ public class ContextualSearchManager
     @Override
     public void onPanelResized() {
         mInProductHelp.updateBubblePosition();
+    }
+
+    @Override
+    public ScrimCoordinator getScrimCoordinator() {
+        return mScrimCoordinator;
     }
 
     /** @return The {@link SelectionClient} used by Contextual Search. */

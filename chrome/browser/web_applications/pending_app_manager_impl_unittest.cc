@@ -16,6 +16,7 @@
 #include "base/one_shot_event.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/mock_timer.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/web_applications/test/web_app_registration_waiter.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -89,6 +91,29 @@ ExternalInstallOptions GetBarInstallOptions() {
 ExternalInstallOptions GetQuxInstallOptions() {
   ExternalInstallOptions options(QuxWebAppUrl(), DisplayMode::kStandalone,
                                  ExternalInstallSource::kExternalPolicy);
+  return options;
+}
+
+std::unique_ptr<WebApplicationInfo> GetFooWebApplicationInfo() {
+  std::unique_ptr<WebApplicationInfo> info =
+      std::make_unique<WebApplicationInfo>();
+  info->app_url = FooWebAppUrl();
+  info->scope = FooWebAppUrl().GetWithoutFilename();
+  info->title = base::UTF8ToUTF16("Foo Web App");
+  return info;
+}
+
+ExternalInstallOptions GetFooInstallOptionsWithWebAppInfo(
+    base::Optional<bool> override_previous_user_uninstall =
+        base::Optional<bool>()) {
+  ExternalInstallOptions options(FooWebAppUrl(), DisplayMode::kBrowser,
+                                 ExternalInstallSource::kExternalPolicy);
+  options.app_info_factory = base::BindRepeating(&GetFooWebApplicationInfo);
+
+  if (override_previous_user_uninstall.has_value())
+    options.override_previous_user_uninstall =
+        *override_previous_user_uninstall;
+
   return options;
 }
 
@@ -224,31 +249,44 @@ class TestPendingAppManagerImpl : public PendingAppManagerImpl {
           externally_installed_app_prefs_(profile->GetPrefs()) {}
     ~TestPendingAppInstallTask() override = default;
 
-    void Install(content::WebContents* web_contents,
-                 WebAppUrlLoader::Result url_loaded_result,
-                 ResultCallback callback) override {
-      pending_app_manager_impl_->OnInstallCalled(install_options());
-
-      base::Optional<AppId> app_id;
-      const GURL& install_url = install_options().url;
+    void DoInstall(const GURL& install_url,
+                   ExternalInstallSource install_source,
+                   bool is_placeholder,
+                   ResultCallback callback) {
       auto result_code =
           pending_app_manager_impl_->GetNextInstallationTaskResult(install_url);
+      base::Optional<AppId> app_id;
       if (result_code == InstallResultCode::kSuccessNewInstall) {
         app_id = GenerateFakeAppId(install_url);
         GURL launch_url =
             pending_app_manager_impl_->GetNextInstallationLaunchURL(
                 install_url);
         pending_app_manager_impl_->registrar()->AddExternalApp(
-            *app_id,
-            {install_url, install_options().install_source, launch_url});
-        externally_installed_app_prefs_.Insert(
-            install_url, *app_id, install_options().install_source);
-        const bool is_placeholder =
-            (url_loaded_result != WebAppUrlLoader::Result::kUrlLoaded);
+            *app_id, {install_url, install_source, launch_url});
+        externally_installed_app_prefs_.Insert(install_url, *app_id,
+                                               install_source);
         externally_installed_app_prefs_.SetIsPlaceholder(install_url,
                                                          is_placeholder);
       }
       std::move(callback).Run({result_code, app_id});
+    }
+    void Install(content::WebContents* web_contents,
+                 WebAppUrlLoader::Result url_loaded_result,
+                 ResultCallback callback) override {
+      pending_app_manager_impl_->OnInstallCalled(install_options());
+
+      const GURL& install_url = install_options().url;
+      DoInstall(install_url, install_options().install_source,
+                (url_loaded_result != WebAppUrlLoader::Result::kUrlLoaded),
+                std::move(callback));
+    }
+
+    void InstallFromInfo(ResultCallback callback) override {
+      pending_app_manager_impl_->OnInstallCalled(install_options());
+
+      GURL install_url = install_options().app_info_factory.Run()->app_url;
+      DoInstall(install_url, install_options().install_source, false,
+                std::move(callback));
     }
 
    private:
@@ -641,6 +679,91 @@ TEST_P(PendingAppManagerImplTest, Install_PendingSuccessfulTask) {
 
   url_loader()->AddPrepareForLoadResults({WebAppUrlLoader::Result::kUrlLoaded});
   url_loader()->ProcessLoadUrlRequests();
+  bar_run_loop.Run();
+}
+
+TEST_P(PendingAppManagerImplTest, InstallWithWebAppInfo_Succeeds) {
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      FooWebAppUrl(), InstallResultCode::kSuccessNewInstall);
+
+  base::RunLoop foo_run_loop;
+
+  pending_app_manager_impl()->Install(
+      GetFooInstallOptionsWithWebAppInfo(),
+      base::BindLambdaForTesting([&](const GURL& url, InstallResultCode code) {
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
+        EXPECT_EQ(FooWebAppUrl(), url);
+
+        EXPECT_EQ(1u, install_run_count());
+        EXPECT_EQ(GetFooInstallOptionsWithWebAppInfo(), last_install_options());
+
+        foo_run_loop.Quit();
+      }));
+  // Make sure the installation has started.
+  foo_run_loop.Run();
+}
+
+TEST_P(PendingAppManagerImplTest, InstallAppsWithWebAppInfoAndUrl_Multiple) {
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      FooWebAppUrl(), InstallResultCode::kSuccessNewInstall);
+
+  // Load about:blanks twice in total, once for each install.
+  url_loader()->AddPrepareForLoadResults({WebAppUrlLoader::Result::kUrlLoaded});
+
+  url_loader()->SetNextLoadUrlResult(BarWebAppUrl(),
+                                     WebAppUrlLoader::Result::kUrlLoaded);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      BarWebAppUrl(), InstallResultCode::kSuccessNewInstall);
+
+  std::vector<ExternalInstallOptions> apps_to_install;
+  apps_to_install.push_back(GetFooInstallOptionsWithWebAppInfo());
+  apps_to_install.push_back(GetBarInstallOptions());
+
+  InstallAppsResults results = InstallAppsAndWait(pending_app_manager_impl(),
+                                                  std::move(apps_to_install));
+
+  EXPECT_EQ(results,
+            InstallAppsResults(
+                {{FooWebAppUrl(), InstallResultCode::kSuccessNewInstall},
+                 {BarWebAppUrl(), InstallResultCode::kSuccessNewInstall}}));
+
+  EXPECT_EQ(2u, install_run_count());
+  EXPECT_EQ(GetBarInstallOptions(), last_install_options());
+}
+
+TEST_P(PendingAppManagerImplTest, InstallWithWebAppInfo_Succeeds_Twice) {
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      FooWebAppUrl(), InstallResultCode::kSuccessNewInstall);
+
+  base::RunLoop foo_run_loop;
+  base::RunLoop bar_run_loop;
+
+  pending_app_manager_impl()->Install(
+      GetFooInstallOptionsWithWebAppInfo(),
+      base::BindLambdaForTesting([&](const GURL& url, InstallResultCode code) {
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
+        EXPECT_EQ(FooWebAppUrl(), url);
+
+        EXPECT_EQ(1u, install_run_count());
+        EXPECT_EQ(GetFooInstallOptionsWithWebAppInfo(), last_install_options());
+        foo_run_loop.Quit();
+      }));
+
+  base::RunLoop().RunUntilIdle();
+
+  pending_app_manager_impl()->Install(
+      GetFooInstallOptionsWithWebAppInfo(),
+      base::BindLambdaForTesting([&](const GURL& url, InstallResultCode code) {
+        EXPECT_EQ(InstallResultCode::kSuccessAlreadyInstalled, code);
+        EXPECT_EQ(FooWebAppUrl(), url);
+
+        EXPECT_EQ(1u, install_run_count());
+        EXPECT_EQ(GetFooInstallOptionsWithWebAppInfo(), last_install_options());
+
+        bar_run_loop.Quit();
+      }));
+  foo_run_loop.Run();
+  base::RunLoop().RunUntilIdle();
   bar_run_loop.Run();
 }
 

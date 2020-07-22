@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> тилинен <ph name="TARGET_LANGUAGE" /> тилине</translation>
 <translation id="168715261339224929">Кыстармаларды бардык түзмөктөрүңүздө колдонуу үчүн шайкештирүүнү күйгүзүңүз.</translation>
 <translation id="1687475363370981210">Баары окулган деп белгилөө</translation>
+<translation id="1689333818294560261">Ылакап ат</translation>
 <translation id="1690731385917361335">Эч нерсе жок</translation>
 <translation id="1692118695553449118">Шайкештештирүү күйүк</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> тандалды</translation>
@@ -206,6 +207,7 @@
 <translation id="3335947283844343239">Жабылган терезени кайра ачуу</translation>
 <translation id="3371831930909698441">Котормочу жеткиликтүү. Параметрлер экрандын төмөн жагында берилген.</translation>
 <translation id="3393920035788932672">Калк чыкм урукс берл</translation>
+<translation id="3425644765244388016">Картанын ылакап аты</translation>
 <translation id="3443810440409579745">Өтмөк алынды.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мүн.</translation>
 <translation id="3448016392200048164">Бөлүп көрүү режими</translation>
@@ -240,6 +242,7 @@
 <translation id="3783017676699494206">Сүрөттү сактоо</translation>
 <translation id="3789841737615482174">Орнотуу</translation>
 <translation id="3803696231112616155">Бул сайтты которууну сунуштоо</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Бир да сырсөз уурдалган жок}=1{{COUNT} сырсөз уурдалды}other{{COUNT} сырсөз уурдалды}}</translation>
 <translation id="385051799172605136">Артка</translation>
 <translation id="3892144330757387737">Таржымалыңызды ушул жерден табасыз</translation>
 <translation id="3897092660631435901">Меню</translation>
@@ -529,6 +532,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="7189598951263744875">Бөлүшүү…</translation>
 <translation id="7192050974311852563">Таржымалын жыйнап баштоо</translation>
 <translation id="7203585745079012652">Жоопторду айтуу</translation>
+<translation id="721597782417389033">Картанын ылакап аты туура эмес</translation>
 <translation id="7265758999917665941">Бул сайт үчүн эч качан</translation>
 <translation id="7272437679830969316">Аныктыгыңыз тастыкталган жок. Сырсөз көчүрүлгөн жок.</translation>
 <translation id="7291368939935408496">Сырсөздөр даярдалууда…</translation>

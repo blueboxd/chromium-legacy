@@ -40,7 +40,7 @@ class NetErrorDiagnosticsDialog : public ui::BaseShellDialogImpl {
   // NetErrorDiagnosticsDialog implementation.
   void Show(content::WebContents* web_contents,
             const std::string& failed_url,
-            const base::Closure& callback) {
+            base::OnceClosure callback) {
     DCHECK(!callback.is_null());
 
     HWND parent =
@@ -57,7 +57,8 @@ class NetErrorDiagnosticsDialog : public ui::BaseShellDialogImpl {
         base::BindOnce(&NetErrorDiagnosticsDialog::ShowDialogOnPrivateThread,
                        base::Unretained(this), parent, failed_url),
         base::BindOnce(&NetErrorDiagnosticsDialog::DiagnosticsDone,
-                       base::Unretained(this), std::move(run_state), callback));
+                       base::Unretained(this), std::move(run_state),
+                       std::move(callback)));
   }
 
  private:
@@ -73,9 +74,9 @@ class NetErrorDiagnosticsDialog : public ui::BaseShellDialogImpl {
   }
 
   void DiagnosticsDone(std::unique_ptr<RunState> run_state,
-                       const base::Closure& callback) {
+                       base::OnceClosure callback) {
     EndRun(std::move(run_state));
-    callback.Run();
+    std::move(callback).Run();
   }
 
   DISALLOW_COPY_AND_ASSIGN(NetErrorDiagnosticsDialog);
@@ -98,5 +99,5 @@ void ShowNetworkDiagnosticsDialog(content::WebContents* web_contents,
   NetErrorDiagnosticsDialog* dialog = new NetErrorDiagnosticsDialog();
   dialog->Show(
       web_contents, failed_url,
-      base::Bind(&base::DeletePointer<NetErrorDiagnosticsDialog>, dialog));
+      base::BindOnce(&base::DeletePointer<NetErrorDiagnosticsDialog>, dialog));
 }

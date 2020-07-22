@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> na isasalin sa <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Para mailagay ang iyong mga bookmark sa lahat ng device mo, i-on ang sync.</translation>
 <translation id="1687475363370981210">Markahan ang Lahat Bilang Nabasa Na</translation>
+<translation id="1689333818294560261">Nickname</translation>
 <translation id="1690731385917361335">Walang mga item</translation>
 <translation id="1692118695553449118">Naka-on ang pag-sync</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ang napili</translation>
@@ -206,6 +207,7 @@ Habang nasa incognito, hindi magagamit ng mga site ang cookies para makita ang i
 <translation id="3335947283844343239">Muling buksan ang Nakasarang Tab</translation>
 <translation id="3371831930909698441">Available ang pagsasalin. May mga opsyon malapit sa ibaba ng screen.</translation>
 <translation id="3393920035788932672">Pinapayagan ang Mga Pop-up</translation>
+<translation id="3425644765244388016">Nickname ng Card</translation>
 <translation id="3443810440409579745">Natanggap ang tab.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> (na) min</translation>
 <translation id="3448016392200048164">Split View</translation>
@@ -240,6 +242,7 @@ Habang nasa incognito, hindi magagamit ng mga site ang cookies para makita ang i
 <translation id="3783017676699494206">I-save ang Larawan</translation>
 <translation id="3789841737615482174">Mag-install</translation>
 <translation id="3803696231112616155">Mag-alok na isalin ang site na ito</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Walang nakompromisong password}=1{{COUNT} password ang nakompromiso}one{{COUNT} password ang nakompromiso}other{{COUNT} na password ang nakompromiso}}</translation>
 <translation id="385051799172605136">Bumalik</translation>
 <translation id="3892144330757387737">Makikita mo rito ang iyong history</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -529,6 +532,7 @@ Hindi magagamit ng mga site ang cookies para makita ang iyong aktibidad sa pag-b
 <translation id="7189598951263744875">Ibahagi...</translation>
 <translation id="7192050974311852563">Simulan ang Pag-log</translation>
 <translation id="7203585745079012652">Bigkasin ang Mga Sagot</translation>
+<translation id="721597782417389033">Invalid ang Nickname ng Card</translation>
 <translation id="7265758999917665941">Hindi Kailanman Para sa Site na Ito</translation>
 <translation id="7272437679830969316">Hindi ma-verify ang iyong pagkakakilanlan. Hindi nakopya ang password.</translation>
 <translation id="7291368939935408496">Inihahanda ang Mga Password...</translation>

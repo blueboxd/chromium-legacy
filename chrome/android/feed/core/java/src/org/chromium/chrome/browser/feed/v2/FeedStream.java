@@ -18,12 +18,12 @@ import org.json.JSONObject;
 
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feed.shared.stream.Header;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
-import org.chromium.chrome.feed.R;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 
 import java.util.ArrayList;

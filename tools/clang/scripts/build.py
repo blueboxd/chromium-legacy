@@ -382,6 +382,9 @@ def main():
                       'building; --gcc-toolchain=/opt/foo picks '
                       '/opt/foo/bin/gcc')
   parser.add_argument('--pgo', action='store_true', help='build with PGO')
+  parser.add_argument('--thinlto',
+                      action='store_true',
+                      help='build with ThinLTO')
   parser.add_argument('--llvm-force-head-revision', action='store_true',
                       help='build the latest revision')
   parser.add_argument('--run-tests', action='store_true',
@@ -416,8 +419,8 @@ def main():
       print('Removing old lib dir: ' + old_lib_dir)
       RmTree(old_lib_dir)
 
-  if args.pgo and not args.bootstrap:
-    print('--pgo requires --bootstrap')
+  if (args.pgo or args.thinlto) and not args.bootstrap:
+    print('--pgo/--thinlto requires --bootstrap')
     return 1
   if args.with_android and not os.path.exists(ANDROID_NDK_DIR):
     print('Android NDK not found at ' + ANDROID_NDK_DIR)
@@ -698,6 +701,8 @@ def main():
     if cc is not None:  instrument_args.append('-DCMAKE_C_COMPILER=' + cc)
     if cxx is not None: instrument_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
     if lld is not None: instrument_args.append('-DCMAKE_LINKER=' + lld)
+    if args.thinlto:
+      instrument_args.append('-DLLVM_ENABLE_LTO=Thin')
 
     RunCommand(['cmake'] + instrument_args + [os.path.join(LLVM_DIR, 'llvm')],
                msvc_arch='x64')
@@ -857,6 +862,8 @@ def main():
       '-DCHROMIUM_TOOLS=%s' % ';'.join(chrome_tools)]
   if args.pgo:
     cmake_args.append('-DLLVM_PROFDATA_FILE=' + LLVM_PROFDATA_FILE)
+  if args.thinlto:
+    cmake_args.append('-DLLVM_ENABLE_LTO=Thin')
   if sys.platform == 'win32':
     cmake_args.append('-DLLVM_ENABLE_ZLIB=FORCE_ON')
   if sys.platform == 'darwin':

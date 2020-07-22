@@ -35,6 +35,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/touch_to_fill/TouchToFillViewHolder.java",
   ]
 
+  resources_package = "org.chromium.chrome.browser.touch_to_fill"
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
@@ -54,7 +55,7 @@ android_resources("java_resources") {
     "java/res/layout/touch_to_fill_sheet.xml",
     "java/res/values/dimens.xml",
   ]
-  custom_package = "org.chromium.chrome.browser.touch_to_fill"
+  create_srcjar = false
 }
 
 java_strings_grd("java_strings_grd") {

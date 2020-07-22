@@ -32,6 +32,7 @@
 #include "pdf/document_metadata.h"
 #include "pdf/pdf_features.h"
 #include "pdf/ppapi_migration/bitmap.h"
+#include "pdf/ppapi_migration/geometry_conversions.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_pdf.h"
@@ -55,6 +56,9 @@
 #include "ppapi/cpp/var_dictionary.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "url/gurl.h"
 
 namespace chrome_pdf {
@@ -667,13 +671,14 @@ void OutOfProcessInstance::DidChangeView(const pp::View& view) {
     plugin_dip_size_ = view_rect.size();
     plugin_size_ = view_device_size;
 
-    paint_manager_.SetSize(view_device_size, device_scale_);
+    paint_manager_.SetSize(SizeFromPPSize(view_device_size), device_scale_);
 
-    pp::Size new_image_data_size =
-        PaintManager::GetNewContextSize(image_data_.size(), plugin_size_);
-    if (new_image_data_size != image_data_.size()) {
+    const gfx::Size old_image_data_size = SizeFromPPSize(image_data_.size());
+    gfx::Size new_image_data_size = PaintManager::GetNewContextSize(
+        old_image_data_size, SizeFromPPSize(plugin_size_));
+    if (new_image_data_size != old_image_data_size) {
       image_data_ = pp::ImageData(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-                                  new_image_data_size, false);
+                                  PPSizeFromSize(new_image_data_size), false);
       skia_image_data_ =
           SkBitmapFromPPImageData(std::make_unique<pp::ImageData>(image_data_));
       first_paint_ = true;
@@ -950,17 +955,18 @@ void OutOfProcessInstance::StopFind() {
   SetTickmarks(tickmarks_);
 }
 
-pp::Graphics2D OutOfProcessInstance::CreatePaintGraphics(const pp::Size& size) {
-  return pp::Graphics2D(this, size, /*is_always_opaque=*/true);
+pp::Graphics2D OutOfProcessInstance::CreatePaintGraphics(
+    const gfx::Size& size) {
+  return pp::Graphics2D(this, PPSizeFromSize(size), /*is_always_opaque=*/true);
 }
 
 bool OutOfProcessInstance::BindPaintGraphics(pp::Graphics2D& graphics) {
   return BindGraphics(graphics);
 }
 
-void OutOfProcessInstance::OnPaint(const std::vector<pp::Rect>& paint_rects,
+void OutOfProcessInstance::OnPaint(const std::vector<gfx::Rect>& paint_rects,
                                    std::vector<PaintReadyRect>* ready,
-                                   std::vector<pp::Rect>* pending) {
+                                   std::vector<gfx::Rect>* pending) {
   base::AutoReset<bool> auto_reset_in_paint(&in_paint_, true);
   if (image_data_.is_null()) {
     DCHECK(plugin_size_.IsEmpty());
@@ -981,7 +987,8 @@ void OutOfProcessInstance::OnPaint(const std::vector<pp::Rect>& paint_rects,
   for (const auto& paint_rect : paint_rects) {
     // Intersect with plugin area since there could be pending invalidates from
     // when the plugin area was larger.
-    pp::Rect rect = paint_rect.Intersect(pp::Rect(pp::Point(), plugin_size_));
+    pp::Rect rect = PPRectFromRect(paint_rect);
+    rect = rect.Intersect(pp::Rect(pp::Point(), plugin_size_));
     if (rect.IsEmpty())
       continue;
 
@@ -998,7 +1005,7 @@ void OutOfProcessInstance::OnPaint(const std::vector<pp::Rect>& paint_rects,
       }
       for (auto& pending_rect : pdf_pending) {
         pending_rect.Offset(available_area_.point());
-        pending->push_back(pending_rect);
+        pending->push_back(RectFromPPRect(pending_rect));
       }
     }
 
@@ -1124,12 +1131,12 @@ void OutOfProcessInstance::Invalidate(const pp::Rect& rect) {
 
   pp::Rect offset_rect(rect);
   offset_rect.Offset(available_area_.point());
-  paint_manager_.InvalidateRect(offset_rect);
+  paint_manager_.InvalidateRect(RectFromPPRect(offset_rect));
 }
 
-void OutOfProcessInstance::DidScroll(const pp::Point& point) {
+void OutOfProcessInstance::DidScroll(const gfx::Vector2d& offset) {
   if (!image_data_.is_null())
-    paint_manager_.ScrollRect(available_area_, point);
+    paint_manager_.ScrollRect(RectFromPPRect(available_area_), offset);
 }
 
 void OutOfProcessInstance::ScrollToX(int x_in_screen_coords) {
@@ -1652,7 +1659,7 @@ void OutOfProcessInstance::HandleResetPrintPreviewModeMessage(
   engine_->SetGrayscale(dict.Get(pp::Var(kJSPrintPreviewGrayscale)).AsBool());
   engine_->New(url_.c_str(), /*headers=*/nullptr);
 
-  paint_manager_.InvalidateRect(pp::Rect(pp::Point(), plugin_size_));
+  paint_manager_.InvalidateRect(gfx::Rect(SizeFromPPSize(plugin_size_)));
 }
 
 void OutOfProcessInstance::HandleSaveMessage(const pp::VarDictionary& dict) {
@@ -1683,7 +1690,7 @@ void OutOfProcessInstance::HandleSaveMessage(const pp::VarDictionary& dict) {
 
 void OutOfProcessInstance::HandleSetTwoUpViewMessage(
     const pp::VarDictionary& dict) {
-  if (!base::FeatureList::IsEnabled(features::kPDFTwoUpView) ||
+  if (!base::FeatureList::IsEnabled(features::kPDFViewerUpdate) ||
       !dict.Get(pp::Var(kJSEnableTwoUpView)).is_bool()) {
     NOTREACHED();
     return;
@@ -1746,41 +1753,41 @@ void OutOfProcessInstance::HandleViewportMessage(
                            dict.Get(pp::Var(kJSPinchY)).AsDouble());
     // Pinch vector is the panning caused due to change in pinch
     // center between start and end of the gesture.
-    pp::Point pinch_vector =
-        pp::Point(dict.Get(kJSPinchVectorX).AsDouble() * zoom_ratio,
-                  dict.Get(kJSPinchVectorY).AsDouble() * zoom_ratio);
-    pp::Point scroll_delta;
+    gfx::Vector2d pinch_vector =
+        gfx::Vector2d(dict.Get(kJSPinchVectorX).AsDouble() * zoom_ratio,
+                      dict.Get(kJSPinchVectorY).AsDouble() * zoom_ratio);
+    gfx::Vector2d scroll_delta;
     // If the rendered document doesn't fill the display area we will
     // use |paint_offset| to anchor the paint vertically into the same place.
     // We use the scroll bars instead of the pinch vector to get the actual
     // position on screen of the paint.
-    pp::Point paint_offset;
+    gfx::Vector2d paint_offset;
 
     if (plugin_size_.width() > GetDocumentPixelWidth() * zoom_ratio) {
       // We want to keep the paint in the middle but it must stay in the same
       // position relative to the scroll bars.
-      paint_offset = pp::Point(0, (1 - zoom_ratio) * pinch_center.y());
-      scroll_delta = pp::Point(
+      paint_offset = gfx::Vector2d(0, (1 - zoom_ratio) * pinch_center.y());
+      scroll_delta = gfx::Vector2d(
           0,
           (scroll_offset.y() - scroll_offset_at_last_raster_.y() * zoom_ratio));
 
-      pinch_vector = pp::Point();
+      pinch_vector = gfx::Vector2d();
       last_bitmap_smaller_ = true;
     } else if (last_bitmap_smaller_) {
       pinch_center = pp::Point((plugin_size_.width() / device_scale_) / 2,
                                (plugin_size_.height() / device_scale_) / 2);
       const double zoom_when_doc_covers_plugin_width =
           zoom_ * plugin_size_.width() / GetDocumentPixelWidth();
-      paint_offset = pp::Point(
+      paint_offset = gfx::Vector2d(
           (1 - zoom / zoom_when_doc_covers_plugin_width) * pinch_center.x(),
           (1 - zoom_ratio) * pinch_center.y());
-      pinch_vector = pp::Point();
-      scroll_delta = pp::Point(
+      pinch_vector = gfx::Vector2d();
+      scroll_delta = gfx::Vector2d(
           (scroll_offset.x() - scroll_offset_at_last_raster_.x() * zoom_ratio),
           (scroll_offset.y() - scroll_offset_at_last_raster_.y() * zoom_ratio));
     }
 
-    paint_manager_.SetTransform(zoom_ratio, pinch_center,
+    paint_manager_.SetTransform(zoom_ratio, PointFromPPPoint(pinch_center),
                                 pinch_vector + paint_offset + scroll_delta,
                                 true);
     needs_reraster_ = false;
@@ -1840,7 +1847,7 @@ void OutOfProcessInstance::DocumentLoadFailed() {
   }
 
   document_load_state_ = LOAD_STATE_FAILED;
-  paint_manager_.InvalidateRect(pp::Rect(pp::Point(), plugin_size_));
+  paint_manager_.InvalidateRect(gfx::Rect(SizeFromPPSize(plugin_size_)));
 
   // Send a progress value of -1 to indicate a failure.
   SendLoadingProgress(-1);
@@ -1949,7 +1956,7 @@ void OutOfProcessInstance::OnGeometryChanged(double old_zoom,
 
   if (document_size_.IsEmpty())
     return;
-  paint_manager_.InvalidateRect(pp::Rect(pp::Point(), plugin_size_));
+  paint_manager_.InvalidateRect(gfx::Rect(SizeFromPPSize(plugin_size_)));
 
   if (accessibility_state_ == ACCESSIBILITY_STATE_LOADED)
     SendAccessibilityViewportInfo();

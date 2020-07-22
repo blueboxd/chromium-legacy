@@ -256,10 +256,10 @@ void UpdateStorageAccessSettings(Profile* profile) {
 ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
     : profile_(profile), proxy_config_monitor_(profile) {
   PrefService* profile_prefs = profile->GetPrefs();
-  quic_allowed_.Init(
-      prefs::kQuicAllowed, profile_prefs,
-      base::Bind(&ProfileNetworkContextService::DisableQuicIfNotAllowed,
-                 base::Unretained(this)));
+  quic_allowed_.Init(prefs::kQuicAllowed, profile_prefs,
+                     base::BindRepeating(
+                         &ProfileNetworkContextService::DisableQuicIfNotAllowed,
+                         base::Unretained(this)));
   pref_accept_language_.Init(
       language::prefs::kAcceptLanguages, profile_prefs,
       base::BindRepeating(&ProfileNetworkContextService::UpdateAcceptLanguage,
@@ -631,12 +631,12 @@ ProfileNetworkContextService::CreateClientCertStore() {
 
   return std::make_unique<chromeos::ClientCertStoreChromeOS>(
       std::move(certificate_provider), use_system_key_slot, username_hash,
-      base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
-                 kCryptoModulePasswordClientAuth));
+      base::BindRepeating(&CreateCryptoModuleBlockingPasswordDelegate,
+                          kCryptoModulePasswordClientAuth));
 #elif defined(USE_NSS_CERTS)
   return std::make_unique<net::ClientCertStoreNSS>(
-      base::Bind(&CreateCryptoModuleBlockingPasswordDelegate,
-                 kCryptoModulePasswordClientAuth));
+      base::BindRepeating(&CreateCryptoModuleBlockingPasswordDelegate,
+                          kCryptoModulePasswordClientAuth));
 #elif defined(OS_WIN)
   return std::make_unique<net::ClientCertStoreWin>();
 #elif defined(OS_MACOSX)

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/sharesheet_bubble_view.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/strings/string16.h"
@@ -14,6 +15,8 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/views/bubble/bubble_border.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/image_view.h"
@@ -25,6 +28,7 @@
 namespace {
 
 constexpr int kButtonSize = 64;
+constexpr int kCornerRadius = 12;
 constexpr int kMaxTargetRowSize = 4;
 constexpr int kSpacing = 24;
 constexpr char kTitle[] = "Share";
@@ -185,6 +189,18 @@ void SharesheetBubbleView::ButtonPressed(views::Button* sender,
   delegate_->OnTargetSelected(active_target_, targets_[sender->tag()].type,
                               share_action_view_);
   RequestFocus();
+}
+
+std::unique_ptr<views::NonClientFrameView>
+SharesheetBubbleView::CreateNonClientFrameView(views::Widget* widget) {
+  auto bubble_border =
+      std::make_unique<views::BubbleBorder>(arrow(), GetShadow(), color());
+  bubble_border->SetCornerRadius(kCornerRadius);
+  auto frame =
+      views::BubbleDialogDelegateView::CreateNonClientFrameView(widget);
+  static_cast<views::BubbleFrameView*>(frame.get())
+      ->SetBubbleBorder(std::move(bubble_border));
+  return frame;
 }
 
 void SharesheetBubbleView::OnWidgetDestroyed(views::Widget* widget) {

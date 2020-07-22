@@ -18,10 +18,13 @@
 #include "components/history/core/browser/android/android_history_types.h"
 #include "components/history/core/browser/android/sql_handler.h"
 
+namespace favicon {
+class FaviconDatabase;
+}
+
 namespace history {
 
 class AndroidProviderBackend;
-class FaviconDatabase;
 class HistoryBackend;
 class HistoryBackendClient;
 class HistoryBackendNotifier;
@@ -45,7 +48,7 @@ class AndroidProviderBackend : public base::SupportsUserData::Data {
  public:
   AndroidProviderBackend(const base::FilePath& cache_db_name,
                          HistoryDatabase* history_db,
-                         FaviconDatabase* favicon_db,
+                         favicon::FaviconDatabase* favicon_db,
                          HistoryBackendClient* backend_client,
                          HistoryBackendNotifier* notifier);
 
@@ -166,7 +169,8 @@ class AndroidProviderBackend : public base::SupportsUserData::Data {
   //
   class ScopedTransaction {
    public:
-    ScopedTransaction(HistoryDatabase* history_db, FaviconDatabase* favicon_db);
+    ScopedTransaction(HistoryDatabase* history_db,
+                      favicon::FaviconDatabase* favicon_db);
     ~ScopedTransaction();
 
     // Commit the transaction.
@@ -174,7 +178,7 @@ class AndroidProviderBackend : public base::SupportsUserData::Data {
 
    private:
     HistoryDatabase* history_db_;
-    FaviconDatabase* favicon_db_;
+    favicon::FaviconDatabase* favicon_db_;
     // Whether the transaction was committed.
     bool committed_;
     // The count of the nested transaction in history database.
@@ -334,7 +338,7 @@ class AndroidProviderBackend : public base::SupportsUserData::Data {
 
   HistoryDatabase* history_db_;
 
-  FaviconDatabase* favicon_db_;
+  favicon::FaviconDatabase* favicon_db_;
 
   HistoryBackendClient* backend_client_;
 

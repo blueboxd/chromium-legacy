@@ -57,7 +57,7 @@ void OnGetStatus(const Status& status,
 
 TEST(CommandsTest, GetStatus) {
   base::DictionaryValue params;
-  ExecuteGetStatus(params, std::string(), base::Bind(&OnGetStatus));
+  ExecuteGetStatus(params, std::string(), base::BindRepeating(&OnGetStatus));
 }
 
 namespace {
@@ -146,13 +146,13 @@ TEST(CommandsTest, GetSessions) {
 
   int count = 0;
 
-  Command cmd = base::Bind(&ExecuteStubGetSession, &count);
+  Command cmd = base::BindRepeating(&ExecuteStubGetSession, &count);
 
   base::DictionaryValue params;
   base::test::SingleThreadTaskEnvironment task_environment;
 
   ExecuteGetSessions(cmd, &map, params, std::string(),
-                     base::Bind(&OnGetSessions));
+                     base::BindRepeating(&OnGetSessions));
   ASSERT_EQ(2, count);
 }
 
@@ -190,10 +190,11 @@ TEST(CommandsTest, QuitAll) {
   map[session2.id] = std::make_unique<SessionThreadInfo>("2", true);
 
   int count = 0;
-  Command cmd = base::Bind(&ExecuteStubQuit, &count);
+  Command cmd = base::BindRepeating(&ExecuteStubQuit, &count);
   base::DictionaryValue params;
   base::test::SingleThreadTaskEnvironment task_environment;
-  ExecuteQuitAll(cmd, &map, params, std::string(), base::Bind(&OnQuitAll));
+  ExecuteQuitAll(cmd, &map, params, std::string(),
+                 base::BindRepeating(&OnQuitAll));
   ASSERT_EQ(2, count);
 }
 
@@ -241,14 +242,14 @@ TEST(CommandsTest, ExecuteSessionCommand) {
   base::DictionaryValue params;
   params.SetInteger("param", 5);
   base::Value expected_value(6);
-  SessionCommand cmd = base::Bind(
-      &ExecuteSimpleCommand, id, &params, &expected_value);
+  SessionCommand cmd =
+      base::BindRepeating(&ExecuteSimpleCommand, id, &params, &expected_value);
 
   base::test::SingleThreadTaskEnvironment task_environment;
   base::RunLoop run_loop;
   ExecuteSessionCommand(
       &map, "cmd", cmd, true /*w3c_standard_command*/, false, params, id,
-      base::Bind(&OnSimpleCommand, &run_loop, id, &expected_value));
+      base::BindRepeating(&OnSimpleCommand, &run_loop, id, &expected_value));
   run_loop.Run();
 }
 
@@ -282,17 +283,17 @@ void OnNoSuchSessionIsOk(const Status& status,
 TEST(CommandsTest, ExecuteSessionCommandOnNoSuchSession) {
   SessionThreadMap map;
   base::DictionaryValue params;
-  ExecuteSessionCommand(&map, "cmd", base::Bind(&ShouldNotBeCalled),
+  ExecuteSessionCommand(&map, "cmd", base::BindRepeating(&ShouldNotBeCalled),
                         true /*w3c_standard_command*/, false, params, "session",
-                        base::Bind(&OnNoSuchSession));
+                        base::BindRepeating(&OnNoSuchSession));
 }
 
 TEST(CommandsTest, ExecuteSessionCommandOnNoSuchSessionWhenItExpectsOk) {
   SessionThreadMap map;
   base::DictionaryValue params;
-  ExecuteSessionCommand(&map, "cmd", base::Bind(&ShouldNotBeCalled),
+  ExecuteSessionCommand(&map, "cmd", base::BindRepeating(&ShouldNotBeCalled),
                         true /*w3c_standard_command*/, true, params, "session",
-                        base::Bind(&OnNoSuchSessionIsOk));
+                        base::BindRepeating(&OnNoSuchSessionIsOk));
 }
 
 namespace {
@@ -318,10 +319,10 @@ TEST(CommandsTest, ExecuteSessionCommandOnJustDeletedSession) {
 
   base::test::SingleThreadTaskEnvironment task_environment;
   base::RunLoop run_loop;
-  ExecuteSessionCommand(&map, "cmd", base::Bind(&ShouldNotBeCalled),
-                        true /*w3c_standard_command*/, false,
-                        base::DictionaryValue(), "session",
-                        base::Bind(&OnNoSuchSessionAndQuit, &run_loop));
+  ExecuteSessionCommand(
+      &map, "cmd", base::BindRepeating(&ShouldNotBeCalled),
+      true /*w3c_standard_command*/, false, base::DictionaryValue(), "session",
+      base::BindRepeating(&OnNoSuchSessionAndQuit, &run_loop));
   run_loop.Run();
 }
 
@@ -718,29 +719,29 @@ TEST(CommandsTest, SuccessNotifyingCommandListeners) {
   // We add |proxy| to the session instead of adding |listener| directly so that
   // after the session is destroyed by ExecuteQuitSessionCommand, we can still
   // verify the listener was called. The session owns and will destroy |proxy|.
-  SessionCommand cmd =
-      base::Bind(&ExecuteAddListenerToSessionCommand, base::Passed(&proxy));
+  SessionCommand cmd = base::BindRepeating(&ExecuteAddListenerToSessionCommand,
+                                           base::Passed(&proxy));
   base::test::SingleThreadTaskEnvironment task_environment;
   base::RunLoop run_loop_addlistener;
 
   // |CommandListener|s are notified immediately before commands are run.
   // Here, the command adds |listener| to the session, so |listener|
   // should not be notified since it will not have been added yet.
-  ExecuteSessionCommand(&map, "cmd", cmd, true /*w3c_standard_command*/, false,
-                        params, id,
-                        base::Bind(&OnSessionCommand, &run_loop_addlistener));
+  ExecuteSessionCommand(
+      &map, "cmd", cmd, true /*w3c_standard_command*/, false, params, id,
+      base::BindRepeating(&OnSessionCommand, &run_loop_addlistener));
   run_loop_addlistener.Run();
 
   listener->VerifyNotCalled();
 
   base::RunLoop run_loop_testlistener;
-  cmd = base::Bind(&ExecuteQuitSessionCommand);
+  cmd = base::BindRepeating(&ExecuteQuitSessionCommand);
 
   // |listener| was added to |session| by ExecuteAddListenerToSessionCommand
   // and should be notified before the next command, ExecuteQuitSessionCommand.
-  ExecuteSessionCommand(&map, "cmd", cmd, true /*w3c_standard_command*/, false,
-                        params, id,
-                        base::Bind(&OnSessionCommand, &run_loop_testlistener));
+  ExecuteSessionCommand(
+      &map, "cmd", cmd, true /*w3c_standard_command*/, false, params, id,
+      base::BindRepeating(&OnSessionCommand, &run_loop_testlistener));
   run_loop_testlistener.Run();
 
   listener->VerifyCalled();
@@ -803,13 +804,13 @@ TEST(CommandsTest, ErrorNotifyingCommandListeners) {
 
   base::DictionaryValue params;
   // The command should never be executed if BeforeCommand fails for a listener.
-  SessionCommand cmd = base::Bind(&ShouldNotBeCalled);
+  SessionCommand cmd = base::BindRepeating(&ShouldNotBeCalled);
   base::test::SingleThreadTaskEnvironment task_environment;
   base::RunLoop run_loop;
 
   ExecuteSessionCommand(
       &map, "cmd", cmd, true /*w3c_standard_command*/, false, params, id,
-      base::Bind(&OnFailBecauseErrorNotifyingListeners, &run_loop));
+      base::BindRepeating(&OnFailBecauseErrorNotifyingListeners, &run_loop));
   run_loop.Run();
 
   thread->task_runner()->PostTask(FROM_HERE,

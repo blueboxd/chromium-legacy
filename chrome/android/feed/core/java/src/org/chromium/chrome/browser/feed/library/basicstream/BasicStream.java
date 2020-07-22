@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration.ConfigKey;
@@ -84,7 +85,6 @@ import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.Sc
 import org.chromium.chrome.browser.feed.library.sharedstream.scroll.ScrollListenerNotifier;
 import org.chromium.chrome.browser.feed.shared.stream.Header;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
-import org.chromium.chrome.feed.R;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.UiContext;
 import org.chromium.components.feed.core.proto.libraries.basicstream.internal.StreamSavedInstanceStateProto.StreamSavedInstanceState;
 import org.chromium.components.feed.core.proto.libraries.sharedstream.ScrollStateProto.ScrollState;

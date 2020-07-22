@@ -27,9 +27,8 @@ public class FeedLoadingCoordinator {
     public FeedLoadingCoordinator(
             Activity activity, ViewGroup parentView, boolean isBackgroundDark) {
         mParentView = parentView;
-        mContext = new ContextThemeWrapper(activity,
-                (isBackgroundDark ? org.chromium.chrome.feed.R.style.Dark
-                                  : org.chromium.chrome.feed.R.style.Light));
+        mContext = new ContextThemeWrapper(
+                activity, (isBackgroundDark ? R.style.Dark : R.style.Light));
     }
 
     public void setUpLoadingView() {

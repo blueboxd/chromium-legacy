@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -791,14 +792,14 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     const char* const connection_description,
     base::TimeTicks dns_resolution_start_time,
     base::TimeTicks dns_resolution_end_time,
-    quic::QuicClientPushPromiseIndex* push_promise_index,
+    std::unique_ptr<quic::QuicClientPushPromiseIndex> push_promise_index,
     ServerPushDelegate* push_delegate,
     const base::TickClock* tick_clock,
     base::SequencedTaskRunner* task_runner,
     std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
     NetLog* net_log)
     : quic::QuicSpdyClientSessionBase(connection,
-                                      push_promise_index,
+                                      push_promise_index.get(),
                                       config,
                                       connection->supported_versions()),
       session_key_(session_key),
@@ -859,7 +860,8 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       headers_include_h2_stream_dependency_(
           headers_include_h2_stream_dependency),
       max_allowed_push_id_(max_allowed_push_id),
-      attempted_zero_rtt_(false) {
+      attempted_zero_rtt_(false),
+      push_promise_index_(std::move(push_promise_index)) {
   // Make sure connection migration and goaway on path degrading are not turned
   // on at the same time.
   DCHECK(!(migrate_session_early_v2_ && go_away_on_path_degrading_));
@@ -910,6 +912,15 @@ QuicChromiumClientSession::QuicChromiumClientSession(
 }
 
 QuicChromiumClientSession::~QuicChromiumClientSession() {
+  // This is referenced by the parent class's destructor, so have to delete it
+  // asynchronously, unfortunately. Don't use DeleteSoon, since that leaks if
+  // the task is not run, which is often the case in tests.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce([](std::unique_ptr<quic::QuicClientPushPromiseIndex>
+                            push_promise_index) {},
+                     std::move(push_promise_index_)));
+
   DCHECK(callback_.is_null());
 
   for (auto& observer : connectivity_observer_list_)
@@ -3318,6 +3329,15 @@ size_t QuicChromiumClientSession::EstimateMemoryUsage() const {
   // quic::QuicHeaderList, quic::QuicSession's QuiCWriteBlockedList, open
   // streams and unacked packet map.
   return base::trace_event::EstimateMemoryUsage(packet_readers_);
+}
+
+quic::QuicClientPromisedInfo* QuicChromiumClientSession::GetPromised(
+    const GURL& url,
+    const QuicSessionKey& session_key) {
+  if (!session_key_.CanUseForAliasing(session_key)) {
+    return nullptr;
+  }
+  return push_promise_index_->GetPromised(url.spec());
 }
 
 bool QuicChromiumClientSession::ValidateStatelessReset(

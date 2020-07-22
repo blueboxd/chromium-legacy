@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">రికార్డ్ చేసిన సంవత్సరం</translation>
 <translation id="3338239663705455570">స్లొవెనియన్ కీబోర్డ్</translation>
 <translation id="3353984535370177728">అప్‌లోడ్ చేయడానికి ఫోల్టర్‌ను ఎంచుకోండి</translation>
+<translation id="3356580349448036450">పూర్తయింది</translation>
 <translation id="3399597614303179694">మేసిడోనియన్ కీబోర్డ్</translation>
 <translation id="3414856743105198592">తొలగించగల మీడియాను ఫార్మాట్ చేయడం వలన మొత్తం డేటా తుడిచి వేయబడుతుంది. మీరు కొనసాగించాలనుకుంటున్నారా?</translation>
 <translation id="3437801641691368414">సృష్టించిన సమయం</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">వ్యవస్థాపన విఫలమైంది.</translation>
 <translation id="7040138676081995583">దీనితో తెరువు...</translation>
-<translation id="7059566040011178088"><ph name="REMAINING_TIME" /> కంటే తక్కువ</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> అంశాలు ఎంచుకోబడ్డాయి</translation>
 <translation id="7106346894903675391">మరింత నిల్వని కొనుగోలు చేయండి...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;డిస్క్‌లో వెతకండి&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">పరికరం మోడల్</translation>
 <translation id="8208580316430297579">కళాకృతి</translation>
 <translation id="8223479393428528563">ఈ ఫైల్‌లను ఆఫ్‌లైన్‌లో ఉపయోగించేందుకు వాటిని సేవ్ చేయడానికి, తిరిగి ఆన్‌లైన్‌లోకి వచ్చి, ఫైల్‌లపై కుడి-క్లిక్ చేసి, ఆపై <ph name="OFFLINE_CHECKBOX_NAME" /> ఎంపికను ఎంచుకోండి.</translation>
-<translation id="8231972167769262174">సుమారు <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">రద్దుచేయి</translation>
 <translation id="8261506727792406068">తొలగించు</translation>
 <translation id="8269755669432358899">అభిప్రాయ ప్యానెల్‌ల ఫైల్‌లు కుదించు</translation>

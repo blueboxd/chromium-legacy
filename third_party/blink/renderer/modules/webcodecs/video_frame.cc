@@ -112,7 +112,7 @@ uint32_t VideoFrame::visibleHeight() const {
   return frame_->visible_rect().height();
 }
 
-void VideoFrame::release() {
+void VideoFrame::close() {
   frame_.reset();
 }
 

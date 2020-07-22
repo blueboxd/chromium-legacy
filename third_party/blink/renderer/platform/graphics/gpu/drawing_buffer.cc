@@ -1099,7 +1099,7 @@ bool DrawingBuffer::ResizeDefaultFramebuffer(const IntSize& size) {
       format = viz::RGBA_8888;
     premultiplied_alpha_false_mailbox_ = sii->CreateSharedImage(
         format, static_cast<gfx::Size>(size), storage_color_space_,
-        kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+        kTopLeft_GrSurfaceOrigin, kUnpremul_SkAlphaType,
         gpu::SHARED_IMAGE_USAGE_GLES2 |
             gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
             gpu::SHARED_IMAGE_USAGE_RASTER,

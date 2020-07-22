@@ -36,6 +36,8 @@
 #include "ui/gfx/skbitmap_operations.h"
 #include "url/gurl.h"
 
+namespace extensions {
+
 namespace {
 
 class GetAttentionImageSource : public gfx::ImageSkiaSource {
@@ -83,14 +85,13 @@ gfx::Image ExtensionAction::FallbackIcon() {
 
 const int ExtensionAction::kDefaultTabId = -1;
 
-ExtensionAction::ExtensionAction(const extensions::Extension& extension,
-                                 const extensions::ActionInfo& manifest_data)
+ExtensionAction::ExtensionAction(const Extension& extension,
+                                 const ActionInfo& manifest_data)
     : extension_id_(extension.id()),
       extension_name_(extension.name()),
       action_type_(manifest_data.type),
       default_state_(manifest_data.default_state) {
-  SetIsVisible(kDefaultTabId,
-               default_state_ == extensions::ActionInfo::STATE_ENABLED);
+  SetIsVisible(kDefaultTabId, default_state_ == ActionInfo::STATE_ENABLED);
   Populate(extension, manifest_data);
 }
 
@@ -223,7 +224,7 @@ void ExtensionAction::ClearAllValuesForTab(int tab_id) {
 }
 
 void ExtensionAction::SetDefaultIconImage(
-    std::unique_ptr<extensions::IconImage> icon_image) {
+    std::unique_ptr<IconImage> icon_image) {
   default_icon_image_ = std::move(icon_image);
 }
 
@@ -242,7 +243,7 @@ gfx::Image ExtensionAction::GetPlaceholderIconImage() const {
     // letter of the extension name) rather than the default (puzzle piece).
     // Note that this is only if we can't find any better image (e.g. a product
     // icon).
-    placeholder_icon_image_ = extensions::ExtensionIconPlaceholder::CreateImage(
+    placeholder_icon_image_ = ExtensionIconPlaceholder::CreateImage(
         ActionIconSize(), extension_name_);
   }
 
@@ -299,8 +300,8 @@ void ExtensionAction::SetDefaultIconForTest(
   default_icon_ = std::move(default_icon);
 }
 
-void ExtensionAction::Populate(const extensions::Extension& extension,
-                               const extensions::ActionInfo& manifest_data) {
+void ExtensionAction::Populate(const Extension& extension,
+                               const ActionInfo& manifest_data) {
   // If the manifest doesn't specify a title, set it to |extension|'s name.
   const std::string& title = !manifest_data.default_title.empty()
                                  ? manifest_data.default_title
@@ -313,8 +314,7 @@ void ExtensionAction::Populate(const extensions::Extension& extension,
     default_icon_.reset(new ExtensionIconSet(manifest_data.default_icon));
   } else {
     // Fall back to the product icons if no action icon exists.
-    const ExtensionIconSet& product_icons =
-        extensions::IconsInfo::GetIcons(&extension);
+    const ExtensionIconSet& product_icons = IconsInfo::GetIcons(&extension);
     if (!product_icons.empty())
       default_icon_.reset(new ExtensionIconSet(product_icons));
   }
@@ -335,3 +335,5 @@ int ExtensionAction::GetIconWidth(int tab_id) const {
   // width.
   return FallbackIcon().Width();
 }
+
+}  // namespace extensions

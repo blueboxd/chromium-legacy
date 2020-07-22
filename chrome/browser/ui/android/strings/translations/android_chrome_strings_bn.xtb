@@ -458,7 +458,7 @@
 <translation id="473775607612524610">আপডেট করুন</translation>
 <translation id="4738836084190194332">সর্বশেষ সিঙ্ক হয়েছে: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">একটি নতুন ট্যাব খুলুন</translation>
-<translation id="4759238208242260848">ডাউনলোডগুলি</translation>
+<translation id="4759238208242260848">ডাউনলোড</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{১টি ডাউনলোড হয়ে গেছে।}one{#টি ডাউনলোড হয়ে গেছে।}other{#টি ডাউনলোড হয়ে গেছে।}}</translation>
 <translation id="4766678251456904326">ডিভাইসে অ্যাকাউন্ট যোগ করুন</translation>
 <translation id="4767937498890654900">{FILE_COUNT,plural, =1{১টি ডাউনলোড শিডিউল করা হয়েছে।}one{#টি ডাউনলোড শিডিউল করা হয়েছে।}other{#টি ডাউনলোড শিডিউল করা হয়েছে।}}</translation>
@@ -979,7 +979,7 @@
 <translation id="8788265440806329501">নেভিগেশনের ইতিহাস বন্ধ করা হয়েছে</translation>
 <translation id="8788968922598763114">সব শেষে বন্ধ করা ট্যাবটি পুনরায় খুলুন</translation>
 <translation id="8812260976093120287">কিছু ওয়েবসাইটে আপনি উপরের সমর্থিত পেমেন্ট অ্যাপ্লিকেশান দিয়ে অর্থপ্রদান করতে পারেন।</translation>
-<translation id="8820817407110198400">বুকমার্কস</translation>
+<translation id="8820817407110198400">বুকমার্ক</translation>
 <translation id="883806473910249246">কন্টেন্ট ডাউনলোড করার সময় একটি ত্রুটি ঘটেছে৷</translation>
 <translation id="8840953339110955557">এই পৃষ্ঠাটি হয়ত অনলাইন ভার্সনের থেকে আলাদা হতে পারে।</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ট্যাব</translation>

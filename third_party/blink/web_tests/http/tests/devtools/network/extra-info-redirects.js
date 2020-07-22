@@ -20,7 +20,6 @@ new Promise(resolve => {
 `);
 
   const reqs = NetworkTestRunner.networkRequests()
-                   .filter((e, i, a) => i % 2 == 0)
                    .map(request => {
                      return {
                        url: request.url(),

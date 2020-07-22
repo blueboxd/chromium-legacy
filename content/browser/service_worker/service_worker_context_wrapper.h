@@ -127,7 +127,12 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void OnRegistrationStored(int64_t registration_id,
                             const GURL& scope) override;
   void OnAllRegistrationsDeletedForOrigin(const url::Origin& origin) override;
+  void OnErrorReported(
+      int64_t version_id,
+      const GURL& scope,
+      const ServiceWorkerContextObserver::ErrorInfo& info) override;
   void OnReportConsoleMessage(int64_t version_id,
+                              const GURL& scope,
                               const ConsoleMessage& message) override;
   void OnControlleeAdded(int64_t version_id,
                          const std::string& uuid,

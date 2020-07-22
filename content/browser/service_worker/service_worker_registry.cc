@@ -290,7 +290,7 @@ void ServiceWorkerRegistry::GetStorageUsageForOrigin(
     const url::Origin& origin,
     GetStorageUsageForOriginCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  storage()->GetUsageForOrigin(
+  GetRemoteStorageControl()->GetUsageForOrigin(
       origin,
       base::BindOnce(
           [](GetStorageUsageForOriginCallback callback,

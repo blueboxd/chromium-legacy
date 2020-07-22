@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Жазылған жылы</translation>
 <translation id="3338239663705455570">Словен пернетақтасы</translation>
 <translation id="3353984535370177728">Жүктеп салу үшін қалтаны таңдау</translation>
+<translation id="3356580349448036450">Аяқталған</translation>
 <translation id="3399597614303179694">Македон пернетақтасы</translation>
 <translation id="3414856743105198592">Алынбалы тасымалдаушыны пішімдеу әрекеті барлық деректерді өшіреді. Жалғастырасыз ба?</translation>
 <translation id="3437801641691368414">Жасалған уақыты</translation>
@@ -550,7 +551,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Орнату сәтсіз аяқталды.</translation>
 <translation id="7040138676081995583">Ашу әдісі…</translation>
-<translation id="7059566040011178088">Ең азы <ph name="REMAINING_TIME" /> қалды.</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> элемент таңдалды</translation>
 <translation id="7106346894903675391">Қосымша жад сатып алу…</translation>
 <translation id="7126604456862387217">"&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;" – &lt;em&gt;Drive ішінен іздеу&lt;/em&gt;</translation>
@@ -661,7 +661,6 @@
 <translation id="8193175696669055101">Құрылғы үлгісі</translation>
 <translation id="8208580316430297579">Өнер туындысы</translation>
 <translation id="8223479393428528563">Бұл файлдарды желіден тыс сақтау үшін желіге қайта қосылып, файлдарды тінтуірдің оң жағымен басыңыз және <ph name="OFFLINE_CHECKBOX_NAME" /> опциясын таңдаңыз.</translation>
-<translation id="8231972167769262174"><ph name="REMAINING_TIME" /> туралы</translation>
 <translation id="8249296373107784235">Доғару</translation>
 <translation id="8261506727792406068">Жою</translation>
 <translation id="8269755669432358899">Файлдар туралы пікір панельдерін жию</translation>

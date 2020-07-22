@@ -6,7 +6,7 @@
 <translation id="1124090076051167250">此操作会清除网站或其在主屏幕中安装的应用所存储的 <ph name="DATASIZE" /> 数据和 Cookie。</translation>
 <translation id="1124772482545689468">用户</translation>
 <translation id="1178581264944972037">暂停</translation>
-<translation id="1181037720776840403">删除</translation>
+<translation id="1181037720776840403">移除</translation>
 <translation id="1201402288615127009">下一步</translation>
 <translation id="1242008676835033345">嵌入来源：<ph name="WEBSITE_URL" /></translation>
 <translation id="1272079795634619415">停止</translation>
@@ -21,7 +21,7 @@
 <translation id="1620510694547887537">摄像头</translation>
 <translation id="1647391597548383849">使用您的摄像头</translation>
 <translation id="1660204651932907780">允许网站播放声音（推荐）</translation>
-<translation id="1677097821151855053">系统会使用 Cookie 和其他网站数据来记住您，以便实现某些功能或目的（例如帮您登录或向您展示个性化广告）。若要管理所有网站的 Cookie，请参阅<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />。</translation>
+<translation id="1677097821151855053">系统会使用 Cookie 和其他网站数据来记住您，以便实现某些功能或目的（例如帮您登录或向您展示个性化广告）。如需管理所有网站的 Cookie，请参阅<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />。</translation>
 <translation id="1688867105868176567">要清除网站数据吗？</translation>
 <translation id="169515064810179024">禁止网站使用动态传感器</translation>
 <translation id="1717218214683051432">动态传感器</translation>

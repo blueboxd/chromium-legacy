@@ -36,7 +36,7 @@ public class NewTabPageController extends PageController {
     private static final IUi2Locator LOCATOR_MENU_BUTTON =
             Ui2Locators.withAnyResEntry(R.id.menu_button);
     private static final IUi2Locator LOCATOR_FEED_STREAM_RECYCLER_VIEW =
-            Ui2Locators.withAnyResEntry(org.chromium.chrome.feed.R.id.feed_stream_recycler_view);
+            Ui2Locators.withAnyResEntry(R.id.feed_stream_recycler_view);
     private static final IUi2Locator LOCATOR_HEADER_STATUS =
             Ui2Locators.withPath(Ui2Locators.withAnyResEntry(R.id.header_status),
                     Ui2Locators.withTextRegex(REGEX_TEXT_HEADER_STATUS));
@@ -45,8 +45,7 @@ public class NewTabPageController extends PageController {
             Ui2Locators.withAnyResEntry(R.id.tab_switcher_button);
 
     private static final IUi2Locator LOCATOR_NEW_TAB_PAGE = Ui2Locators.withAnyResEntry(
-            R.id.ntp_content, org.chromium.chrome.feed.R.id.feed_stream_recycler_view,
-            org.chromium.chrome.feed.R.id.feed_content_card);
+            R.id.ntp_content, R.id.feed_stream_recycler_view, R.id.feed_content_card);
 
     private static final NewTabPageController sInstance = new NewTabPageController();
     private NewTabPageController() {}

@@ -160,6 +160,9 @@ class ChromeDownloadManagerDelegate
 
   base::WeakPtr<ChromeDownloadManagerDelegate> GetWeakPtr();
 
+  static void ConnectToQuarantineService(
+      mojo::PendingReceiver<quarantine::mojom::Quarantine> receiver);
+
  protected:
   virtual safe_browsing::DownloadProtectionService*
       GetDownloadProtectionService();

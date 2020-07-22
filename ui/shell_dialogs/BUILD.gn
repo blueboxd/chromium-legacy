@@ -116,7 +116,7 @@ jumbo_component("shell_dialogs") {
     ]
     deps += [
       "//chromeos/crosapi/mojom",
-      "//chromeos/lacros/browser",
+      "//chromeos/lacros",
       "//mojo/public/cpp/bindings",
     ]
   }

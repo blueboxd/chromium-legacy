@@ -1,0 +1,61 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_NEARBY_SHARING_MOCK_NEARBY_SHARING_SERVICE_H_
+#define CHROME_BROWSER_NEARBY_SHARING_MOCK_NEARBY_SHARING_SERVICE_H_
+
+#include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+class MockNearbySharingService : public NearbySharingService {
+ public:
+  MockNearbySharingService();
+  ~MockNearbySharingService() override;
+
+  // NearbySharingService:
+  MOCK_METHOD(StatusCodes,
+              RegisterSendSurface,
+              (TransferUpdateCallback*, ShareTargetDiscoveredCallback*),
+              (override));
+  MOCK_METHOD(StatusCodes,
+              UnregisterSendSurface,
+              (TransferUpdateCallback*, ShareTargetDiscoveredCallback*),
+              (override));
+  MOCK_METHOD(StatusCodes,
+              RegisterReceiveSurface,
+              (TransferUpdateCallback*, ReceiveSurfaceState),
+              (override));
+  MOCK_METHOD(StatusCodes,
+              UnregisterReceiveSurface,
+              (TransferUpdateCallback*),
+              (override));
+  MOCK_METHOD(void,
+              SendText,
+              (const ShareTarget&, std::string, StatusCodesCallback),
+              (override));
+  MOCK_METHOD(void,
+              SendFiles,
+              (const ShareTarget&,
+               const std::vector<base::FilePath>&,
+               StatusCodesCallback),
+              (override));
+  MOCK_METHOD(void,
+              Accept,
+              (const ShareTarget&, StatusCodesCallback),
+              (override));
+  MOCK_METHOD(void,
+              Reject,
+              (const ShareTarget&, StatusCodesCallback),
+              (override));
+  MOCK_METHOD(void,
+              Cancel,
+              (const ShareTarget&, StatusCodesCallback),
+              (override));
+  MOCK_METHOD(void,
+              Open,
+              (const ShareTarget&, StatusCodesCallback),
+              (override));
+};
+
+#endif  // CHROME_BROWSER_NEARBY_SHARING_MOCK_NEARBY_SHARING_SERVICE_H_

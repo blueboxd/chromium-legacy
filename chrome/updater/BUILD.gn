@@ -41,6 +41,7 @@ if (is_win || is_mac) {
       "action_handler.h",
       "constants.cc",
       "constants.h",
+      "control_service.h",
       "crash_client.cc",
       "crash_client.h",
       "crash_reporter.cc",
@@ -89,6 +90,8 @@ if (is_win || is_mac) {
       "app/app_wake.h",
       "configurator.cc",
       "configurator.h",
+      "control_service_in_process.cc",
+      "control_service_in_process.h",
       "dm_cached_policy_info.cc",
       "dm_cached_policy_info.h",
       "dm_message.cc",
@@ -108,7 +111,6 @@ if (is_win || is_mac) {
       "prefs_impl.h",
       "tag.cc",
       "tag.h",
-      "update_apps.h",
       "update_service_in_process.cc",
       "update_service_in_process.h",
       "updater.cc",
@@ -129,6 +131,8 @@ if (is_win || is_mac) {
         "external_constants_mac.mm",
         "installer_mac.cc",
         "lib_util_mac.mm",
+        "mac/control_service_out_of_process.h",
+        "mac/control_service_out_of_process.mm",
         "mac/update_service_out_of_process.h",
         "mac/update_service_out_of_process.mm",
         "prefs_mac.mm",
@@ -138,6 +142,7 @@ if (is_win || is_mac) {
 
     if (is_win) {
       sources += [
+        "app/app_wake_win.cc",
         "app/server/win/com_classes.cc",
         "app/server/win/com_classes.h",
         "app/server/win/com_classes_legacy.cc",

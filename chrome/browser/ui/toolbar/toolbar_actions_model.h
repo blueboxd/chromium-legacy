@@ -211,7 +211,7 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
 
   // ExtensionActionAPI::Observer:
   void OnExtensionActionUpdated(
-      ExtensionAction* extension_action,
+      extensions::ExtensionAction* extension_action,
       content::WebContents* web_contents,
       content::BrowserContext* browser_context) override;
 

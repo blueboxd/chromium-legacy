@@ -34,6 +34,8 @@ source_set("lib") {
     "configuration.h",
     "decompress.cc",
     "decompress.h",
+    "mini_file.cc",
+    "mini_file.h",
     "mini_installer.cc",
     "mini_installer.h",
     "mini_installer.rc",
@@ -42,6 +44,7 @@ source_set("lib") {
     "mini_installer_resource.h",
     "mini_string.cc",
     "mini_string.h",
+    "path_string.h",
     "pe_resource.cc",
     "pe_resource.h",
     "regkey.cc",
@@ -70,6 +73,7 @@ source_set("unit_tests") {
   sources = [
     "configuration_test.cc",
     "decompress_test.cc",
+    "mini_file_test.cc",
     "mini_installer_unittest.cc",
     "mini_string_test.cc",
   ]

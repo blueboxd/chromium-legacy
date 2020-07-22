@@ -450,6 +450,7 @@
 <translation id="2824775600643448204">شريط العناوين والبحث</translation>
 <translation id="2826760142808435982">تم ترميز الاتصال ومصادقته باستخدام <ph name="CIPHER" />، ويستخدم <ph name="KX" /> كآلية التبادل الرئيسية.</translation>
 <translation id="2835170189407361413">محو النموذج</translation>
+<translation id="2839501879576190149">الموقع الذي تطلب الدخول إليه مزيّف</translation>
 <translation id="2847118875340931228">فتح نافذة التصفُّح المتخفي</translation>
 <translation id="2850739647070081192">دعوة (مغلف)</translation>
 <translation id="2856444702002559011">قد يحاول المهاجمون سرقة معلوماتك من <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (مثل كلمات المرور أو الرسائل أو بطاقات الائتمان). <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -810,6 +811,7 @@
 <translation id="42981349822642051">توسيع</translation>
 <translation id="4300675098767811073">عمل عدة ثقوب يمينًا</translation>
 <translation id="4302965934281694568">‏Chou3 (مغلف)</translation>
+<translation id="4305666528087210886">تعذّر الوصول لملفك</translation>
 <translation id="4305817255990598646">تبديل</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">حظر (تلقائي)</translation>
@@ -828,6 +830,7 @@
 <translation id="4358461427845829800">إدارة طرق الدفع...</translation>
 <translation id="4359160567981085931">‏لقد أدخلت للتو كلمة مرورك في موقع إلكتروني مريب. يمكن لـ Chrome مساعدتك. لتغيير كلمة مرورك وإشعار Google أن حسابك قد يكون معرّضًا للخطر، انقر على "حماية الحساب".</translation>
 <translation id="4367563149485757821">‏Number-12 (مغلف)</translation>
+<translation id="4367839622597707614">{1,plural, =0{‏كشفت عملية اختراق للبيانات على موقع إلكتروني أو تطبيق تستخدمه عن كلمة مرورك المحفوظة لموقع <ph name="ORIGIN" />. يقترح متصفّح Chrome تغيير كلمة مرورك لموقع <ph name="ORIGIN" /> الآن.}=1{‏كشفت عملية اختراق للبيانات على موقع إلكتروني أو تطبيق تستخدمه عن كلمة مرورك المحفوظة لموقع <ph name="ORIGIN" /> ولموقع واحد آخر. يقترح متصفّح Chrome التحقّق من كلمات المرور المحفوظة الآن.}two{‏كشفت عملية اختراق للبيانات على موقع إلكتروني أو تطبيق تستخدمه عن كلمة مرورك المحفوظة لموقع <ph name="ORIGIN" /> ولموقعَين (<ph name="SITES_COUNT" />) آخرَين. يقترح متصفّح Chrome التحقّق من كلمات المرور المحفوظة الآن.}few{‏كشفت عملية اختراق للبيانات على موقع إلكتروني أو تطبيق تستخدمه عن كلمة مرورك المحفوظة لموقع <ph name="ORIGIN" /> و<ph name="SITES_COUNT" /> مواقع آخرى. يقترح متصفّح Chrome التحقّق من كلمات المرور المحفوظة الآن.}many{‏كشفت عملية اختراق للبيانات على موقع إلكتروني أو تطبيق تستخدمه عن كلمة مرورك المحفوظة لموقع <ph name="ORIGIN" /> و<ph name="SITES_COUNT" /> موقعًا آخر. يقترح متصفّح Chrome التحقّق من كلمات المرور المحفوظة الآن.}other{‏كشفت عملية اختراق للبيانات على موقع إلكتروني أو تطبيق تستخدمه عن كلمة مرورك المحفوظة لموقع <ph name="ORIGIN" /> و<ph name="SITES_COUNT" /> موقع آخر. يقترح متصفّح Chrome التحقّق من كلمات المرور المحفوظة الآن.}}</translation>
 <translation id="437058704415269440">رصيد الحساب</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">القيمة <ph name="VALUE_TYPE" /> المتوقعة.</translation>
@@ -1298,6 +1301,7 @@
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">رسوم محتملة في انتظارك.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{اقتراح واحد آخر}zero{# اقتراح آخر}two{اقتراحان آخران (#)}few{# اقتراحات أخرى}many{# اقتراحًا آخر}other{# اقتراح آخر}}</translation>
+<translation id="6387645831795005740">‏يحاكي المخترِقون أحيانًا المواقع الإلكترونية من خلال إجراء تغييرات بسيطة يصعب رؤيتها على عنوان URL.</translation>
 <translation id="6389470377220713856">الاسم كما في البطاقة</translation>
 <translation id="6390200185239044127">‏الطي إلى نصفَين على شكل حرف Z</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1511,6 +1515,7 @@
 <translation id="7372973238305370288">نتيجة البحث</translation>
 <translation id="7374733840632556089">‏تحدث هذه المشكلة بسبب شهادة ثبّتها أنت أو ثبّتها مستخدم آخر على جهازك. من المعروف أن الشهادة تُستخدم لمراقبة الشبكات واعتراضها، ولا يثق Chrome بها. وعلى الرغم من وجود بعض الحالات المشروعة للمراقبة، كما هو الحال في شبكة المدرسة أو الشركة، يريد Chrome التأكد من أنك تدرك حدوث ذلك، حتى لو لم يكن بإمكانك إيقافه. يمكن أن تحدث عملية المراقبة في أي متصفّح أو تطبيق يصل إلى الويب.</translation>
 <translation id="7375818412732305729">تم إرفاق ملف</translation>
+<translation id="7376551888419889433">‏عند الإبلاغ عن أي أحداث أمنية من "وصلات Chrome Enterprise"، يتم إرسال البيانات المتعلّقة بالأحداث إلى مشرفك. ويمكن أن تتضمن هذه البيانات عناوين URL لصفحات تزورها في Chrome، وأسماء ملفات أو بيانات وصفية، واسم المستخدِم الذي تستخدمه لتسجيل الدخول إلى جهازك وإلى متصفّح Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" />‏ - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">عناصر التحكم في الوسائط</translation>
 <translation id="7378627244592794276">لا</translation>
@@ -1908,6 +1913,7 @@
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">لقد حاولت الوصول إلى <ph name="DOMAIN" />, ولكن الخادم قدّم شهادة غير صالحة.</translation>
 <translation id="9050666287014529139">عبارة المرور</translation>
+<translation id="9062620674789239642">من المحتمل أن يكون قد تم نقل الملف أو تعديله أو حذفه.</translation>
 <translation id="9065203028668620118">تعديل</translation>
 <translation id="9065745800631924235">البحث عن <ph name="TEXT" /> من السجلّ.</translation>
 <translation id="9069693763241529744">تم الحظر بواسطة إحدى الإضافات</translation>

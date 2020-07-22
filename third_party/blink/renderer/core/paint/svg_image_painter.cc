@@ -100,12 +100,14 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
     DCHECK(paint_info.PaintContainer());
     ImageElementTiming::From(*window).NotifyImagePainted(
         &layout_svg_image_, image_resource->CachedImage(),
-        paint_info.context.GetPaintController().CurrentPaintChunkProperties());
+        paint_info.context.GetPaintController().CurrentPaintChunkProperties(),
+        EnclosingIntRect(dest_rect));
   }
 
   PaintTimingDetector::NotifyImagePaint(
       layout_svg_image_, image->Size(), image_resource->CachedImage(),
-      paint_info.context.GetPaintController().CurrentPaintChunkProperties());
+      paint_info.context.GetPaintController().CurrentPaintChunkProperties(),
+      EnclosingIntRect(dest_rect));
   PaintTiming& timing = PaintTiming::From(
       layout_svg_image_.GetElement()->GetDocument().TopDocument());
   timing.MarkFirstContentfulPaint();

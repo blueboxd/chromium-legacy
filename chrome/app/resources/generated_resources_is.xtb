@@ -544,7 +544,7 @@
 <translation id="164936512206786300">Aftengja Bluetooth-tæki</translation>
 <translation id="1650371550981945235">Sýna innsláttarvalkosti</translation>
 <translation id="1651008383952180276">Þú verður að slá sama aðgangsorðið inn tvisvar</translation>
-<translation id="1652326691684645429">Kveikja á nærdeilingu</translation>
+<translation id="1652326691684645429">Kveikja á Nærdeilingu</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Bættu prentaranum við Google skýjaprentun til að prenta hvaðan sem er.}one{Bættu # prentara við Google skýjaprentun til að prenta hvaðan sem er.}other{Bættu # prenturum við Google skýjaprentun til að prenta hvaðan sem er.}}</translation>
 <translation id="1656528038316521561">Gagnsæi bakgrunns</translation>
 <translation id="1657406563541664238">Hjálpa til við að bæta <ph name="PRODUCT_NAME" /> með því að senda sjálfkrafa talnagögn um notkun og tilkynningar um hrun til Google</translation>
@@ -1677,7 +1677,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3022978424994383087">Náði þessu ekki.</translation>
 <translation id="3023464535986383522">Textaupplestur</translation>
 <translation id="3024374909719388945">Nota 24 tíma klukku</translation>
-<translation id="3027296729579831126">Kveikja á nærdeilingu</translation>
+<translation id="3027296729579831126">Kveikja á Nærdeilingu</translation>
 <translation id="3029466929721441205">Sýna pennaverkfæri á hillu</translation>
 <translation id="3031417829280473749">Birgitta</translation>
 <translation id="3031557471081358569">Veldu atriði til að flytja inn:</translation>
@@ -2981,7 +2981,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4673442866648850031">Opna pennaverkfæri þegar penni er fjarlægður</translation>
 <translation id="4677772697204437347">Minni skjástýringar</translation>
 <translation id="4680105648806843642">Slökkt var á hljóði á þessari síðu</translation>
-<translation id="4681453295291708042">Slökkva á nærdeilingu</translation>
+<translation id="4681453295291708042">Slökkva á Nærdeilingu</translation>
 <translation id="4681930562518940301">Opna upprunalega &amp;mynd á nýjum flipa</translation>
 <translation id="4682551433947286597">Veggfóður birtast á innskráningarskjánum.</translation>
 <translation id="4683947955326903992"><ph name="PERCENTAGE" />% (sjálfgefið)</translation>
@@ -4305,7 +4305,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6362853299801475928">Tilkynna um vandamál...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Bættu fjölskyldu og vinum við</translation>
-<translation id="6367985768157257101">Viltu taka á móti með nærdeilingu?</translation>
+<translation id="6367985768157257101">Viltu taka á móti með Nærdeilingu?</translation>
 <translation id="636850387210749493">Fyrirtækjaskráning</translation>
 <translation id="6370021412472292592">Ekki var hægt að hlaða upplýsingaskrá.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4765,7 +4765,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6965978654500191972">Tæki</translation>
 <translation id="696780070563539690">Vefsvæði geta ekki notað fótsporin þín til að sjá vafranotkun þína á vefsvæðum, til dæmis til að sérsníða auglýsingar</translation>
 <translation id="6968288415730398122">Sláðu inn aðgangsorðið til að stilla skjálásinn</translation>
-<translation id="6969047215179982698">Slökkva á nærdeilingu</translation>
+<translation id="6969047215179982698">Slökkva á Nærdeilingu</translation>
 <translation id="6970480684834282392">Gerð ræsingar</translation>
 <translation id="6970856801391541997">Prenta tilteknar síður</translation>
 <translation id="6972180789171089114">Hljóð/myndskeið</translation>

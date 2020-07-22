@@ -37,7 +37,7 @@
 <translation id="6268381023930128611">¿Salir de Chromium?</translation>
 <translation id="6424492062988593837">¡Chromium mejoró! Hay una nueva versión disponible.</translation>
 <translation id="6604711459180487467">Disfruta de una mejor experiencia en Chromium según tu ubicación.</translation>
-<translation id="6820823224820483452">Chromium no pudo revisar ninguna contraseña. Vuelve a intentarlo mañana.</translation>
+<translation id="6820823224820483452">Chromium no pudo revisar todas las contraseñas. Vuelve a intentarlo mañana.</translation>
 <translation id="7099326575020694068">Chromium no puede usar tu cámara en el modo de vista dividida</translation>
 <translation id="7208566199746267865">Chromium lleva tus cuentas a la Web para ahorrarte tiempo. Puedes agregar o quitar cuentas en la configuración.</translation>
 <translation id="7269362888766543920">Algunos complementos causan fallos en Chromium. Intenta desinstalarlos.</translation>
@@ -46,7 +46,7 @@
 <translation id="7400689562045506105">Usa Chromium en todas partes</translation>
 <translation id="7674213385180944843">Abre Configuración &gt; Privacidad &gt; Cámara &gt; Chromium y activa la cámara.</translation>
 <translation id="7746854981345936341">Sugerencia de Chromium: Algunos botones ahora están en la parte inferior de la pantalla, como Retroceder, Avanzar y Buscar.</translation>
-<translation id="7798909783578470546">Chromium no pudo revisar ninguna contraseña. Vuelve a intentarlo.</translation>
+<translation id="7798909783578470546">Chromium no pudo revisar todas las contraseñas. Vuelve a intentarlo.</translation>
 <translation id="786327964234957808">La cuenta de sincronización cambiará de <ph name="USER_EMAIL1" /> a <ph name="USER_EMAIL2" />. El dominio <ph name="DOMAIN" /> administra tus datos existentes de Chromium. Esta acción borrará los datos de este dispositivo, pero permanecerán en <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Usar el escáner de Chromium</translation>
 <translation id="8013573822802650211">Para ver tus pestañas donde sea que uses Chromium, accede a tu cuenta en todos los dispositivos</translation>
@@ -56,6 +56,6 @@
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Los autores de Chromium. Todos los derechos reservados.</translation>
 <translation id="8776843108004031667">Esta cuenta y todos los datos sin guardar se quitarán de Chromium.</translation>
 <translation id="9022552996538154597">Iniciar sesión en Chromium</translation>
-<translation id="921174536258924340">Chromium no pudo revisar ninguna contraseña. Vuelve a intentarlo mañana o <ph name="BEGIN_LINK" />revisa las contraseñas guardadas en tu Cuenta de Google.<ph name="END_LINK" /></translation>
+<translation id="921174536258924340">Chromium no pudo revisar todas las contraseñas. Vuelve a intentarlo mañana o <ph name="BEGIN_LINK" />revisa las contraseñas guardadas en tu Cuenta de Google.<ph name="END_LINK" /></translation>
 <translation id="985602178874221306">Los creadores de Chromium</translation>
 </translationbundle>

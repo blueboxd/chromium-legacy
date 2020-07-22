@@ -35,6 +35,7 @@
 #include "third_party/blink/public/common/context_menu_data/input_field_type.h"
 #include "third_party/blink/public/common/context_menu_data/media_type.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
+#include "third_party/blink/public/platform/web_impression.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -87,6 +88,10 @@ struct WebContextMenuData {
 
   // The text of the link that is in the context.
   WebString link_text;
+
+  // If the node is a link, the impression declared by the link's conversion
+  // measurement attributes.
+  base::Optional<WebImpression> impression;
 
   // The raw text of the selection in context.
   WebString selected_text;

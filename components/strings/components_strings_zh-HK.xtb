@@ -443,6 +443,7 @@
 <translation id="2824775600643448204">網址與搜尋列</translation>
 <translation id="2826760142808435982">連線採用 <ph name="CIPHER" /> 加密，並設有 <ph name="KX" /> 金鑰交換機制。</translation>
 <translation id="2835170189407361413">清除表格</translation>
+<translation id="2839501879576190149">您將要瀏覽假網站</translation>
 <translation id="2847118875340931228">開啟無痕式視窗</translation>
 <translation id="2850739647070081192">Invite (信封)</translation>
 <translation id="2856444702002559011">攻擊者可能會試圖透過 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 竊取您的資料 (例如密碼、訊息或信用卡資料)。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -797,6 +798,7 @@
 <translation id="42981349822642051">展開</translation>
 <translation id="4300675098767811073">多孔 (右側)</translation>
 <translation id="4302965934281694568">Chou3 (信封)</translation>
+<translation id="4305666528087210886">無法存取您的檔案</translation>
 <translation id="4305817255990598646">切換</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">封鎖 (預設)</translation>
@@ -815,6 +817,7 @@
 <translation id="4358461427845829800">管理付款方法…</translation>
 <translation id="4359160567981085931">您剛才在欺詐網站上輸入了密碼。Chrome 可以就此提供協助。如需變更密碼或通知 Google 您的帳戶可能面臨風險，請按 [保護帳戶]。</translation>
 <translation id="4367563149485757821">Number-12 (信封)</translation>
+<translation id="4367839622597707614">{1,plural, =0{由於您使用的網站或應用程式發生資料外洩，您儲存的 <ph name="ORIGIN" /> 密碼已被洩露。Chrome 建議您立即變更 <ph name="ORIGIN" /> 上的密碼。}=1{由於您使用的網站或應用程式發生資料外洩，您儲存的 <ph name="ORIGIN" /> 及另一個網站密碼已被洩露。Chrome 建議您立即檢查已儲存的密碼。}other{由於您使用的網站或應用程式發生資料外洩，您儲存的 <ph name="ORIGIN" /> 及 <ph name="SITES_COUNT" /> 個其他網站密碼已被洩露。Chrome 建議您立即檢查已儲存的密碼。}}</translation>
 <translation id="437058704415269440">帳戶餘額</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">預期的「<ph name="VALUE_TYPE" />」值。</translation>
@@ -1285,6 +1288,7 @@
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">稍後可能會收費。</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{以及另外 1 個建議項目}other{以及另外 # 個建議項目}}</translation>
+<translation id="6387645831795005740">攻擊者有時會在網址中加入難以辨識的細微變更來仿冒網站。</translation>
 <translation id="6389470377220713856">持卡人姓名</translation>
 <translation id="6390200185239044127">風琴摺對摺</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1498,6 +1502,7 @@
 <translation id="7372973238305370288">搜尋結果</translation>
 <translation id="7374733840632556089">此問題由您或其他人在裝置上安裝的憑證而導致。由於憑證曾用作監控及網絡攔截，因此不獲 Chrome 信任。雖然有些監控理由合理 (例如學校或公司網絡)，且無法停止有關監控，但 Chrome 仍希望就此通知您。任何使用網絡的瀏覽器和應用程式都可能受到監控。</translation>
 <translation id="7375818412732305729">已附加檔案</translation>
+<translation id="7376551888419889433">當 Chrome Enterprise Connectors 標示安全性事件時，系統會向您的管理員發送該事件的相關資料。這些資料可包括您在 Chrome 瀏覽的網址、檔案名稱或元數據，以及用於登入裝置和 Chrome 的使用者名稱。</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">媒體控制項</translation>
 <translation id="7378627244592794276">不需要</translation>
@@ -1894,6 +1899,7 @@
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">您嘗試連線至 <ph name="DOMAIN" />，但伺服器提供的憑證無效。</translation>
 <translation id="9050666287014529139">複雜密碼</translation>
+<translation id="9062620674789239642">此檔案可能已被移動、編輯或刪除。</translation>
 <translation id="9065203028668620118">編輯</translation>
 <translation id="9065745800631924235">「<ph name="TEXT" />」嘅搜尋記錄</translation>
 <translation id="9069693763241529744">根據擴充程式設定封鎖</translation>

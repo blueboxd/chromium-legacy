@@ -147,6 +147,10 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void DidBeginMainFrame() override;
   void FocusChanged(bool enable) override;
 
+  // blink::mojom::FrameWidget
+  void EnableDeviceEmulation(const DeviceEmulationParams& parameters) override;
+  void DisableDeviceEmulation() override;
+
   void UpdateMainFrameLayoutSize();
 
   // Event related methods:

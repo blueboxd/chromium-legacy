@@ -303,8 +303,9 @@ void ClearKeyPersistentSessionCdm::RemoveSession(
     // Not a persistent session, so simply pass the request on.
 
     // TODO(crbug.com/1102976) Add test for loading PUR session
-    // Query the record of key usage before calling remove as RemoveSession will
-    // delete the keys. Steps from
+    // TODO(crbug.com/1107614) Move session message for persistent-license
+    // session to ClearKeyPersistentSessionCdm Query the record of key usage
+    // before calling remove as RemoveSession will delete the keys. Steps from
     // https://w3c.github.io/encrypted-media/#remove. 4.4.1.2 Follow the steps
     // for the value of this object's session type
     //           "persistent-usage-record"
@@ -313,12 +314,12 @@ void ClearKeyPersistentSessionCdm::RemoveSession(
     KeyIdList key_ids;
     base::Time first_decryption_time;
     base::Time latest_decryption_time;
-    cdm_->GetRecordOfKeyUsage(session_id, key_ids, first_decryption_time,
-                              latest_decryption_time);
+    bool is_persistent_usage_record_session = cdm_->GetRecordOfKeyUsage(
+        session_id, key_ids, first_decryption_time, latest_decryption_time);
     cdm_->RemoveSession(session_id, std::move(promise));
 
     // Both times will be null if the session type is not PUR.
-    if (!first_decryption_time.is_null() && !latest_decryption_time.is_null()) {
+    if (is_persistent_usage_record_session) {
       std::vector<uint8_t> message = CreateLicenseReleaseMessage(
           key_ids, first_decryption_time, latest_decryption_time);
       // EME spec specifies that the message event should be fired before the

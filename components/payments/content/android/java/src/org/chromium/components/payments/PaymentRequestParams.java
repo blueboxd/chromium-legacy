@@ -5,6 +5,7 @@
 package org.chromium.components.payments;
 
 import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.payments.mojom.PaymentOptions;
 
 import java.util.Map;
 
@@ -12,21 +13,12 @@ import java.util.Map;
  * The parameters of PaymentRequest specified by the merchant.
  */
 public interface PaymentRequestParams {
-    /** @return The requestShipping set by the merchant. */
-    boolean requestShipping();
-
-    /** @return The requestPayerName set by the merchant.  */
-    boolean requestPayerName();
-
-    /** @return The requestPayerEmail set by the merchant.  */
-    boolean requestPayerEmail();
-
-    /** @return The requestPayerPhone set by the merchant.  */
-    boolean requestPayerPhone();
+    /** @return The PaymentOptions set by the merchant.  */
+    PaymentOptions getPaymentOptions();
 
     /**
      * @return The unmodifiable mapping of payment method identifier to the method-specific data in
      * the payment request.
      */
-    Map<String, PaymentMethodData> getMethodDataMap();
+    Map<String, PaymentMethodData> getMethodData();
 }

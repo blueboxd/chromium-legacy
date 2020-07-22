@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">റെക്കോർഡ് ചെയ്‌ത വർഷം</translation>
 <translation id="3338239663705455570">സ്ലൊവേനിയന്‍ കീബോര്‍ഡ്</translation>
 <translation id="3353984535370177728">അപ്‌ലോഡുചെയ്യുന്നതിന് ഒരു ഫോൾഡർ തിരഞ്ഞെടുക്കുക</translation>
+<translation id="3356580349448036450">പൂര്‍ത്തിയാക്കൂ</translation>
 <translation id="3399597614303179694">മാസിഡോണിയൻ കീബോർഡ്</translation>
 <translation id="3414856743105198592">നീക്കം ചെയ്യാവുന്ന മീഡിയയിലെ ഫോർമാറ്റിംഗ് എല്ലാ ഡാറ്റയും മായ്‍ക്കും. തുടരാൻ നിങ്ങൾ ആഗ്രഹിക്കുന്നുണ്ടോ?</translation>
 <translation id="3437801641691368414">സൃഷ്‌ടിച്ച സമയം</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">ഇന്‍സ്റ്റാളേഷന്‍ പരാജയപ്പെട്ടു.</translation>
 <translation id="7040138676081995583">ഇത് ഉപയോഗിച്ച് തുറക്കുക...</translation>
-<translation id="7059566040011178088"><ph name="REMAINING_TIME" />-ൽ കുറവ്</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> ഇനങ്ങൾ തിരഞ്ഞെടുത്തു</translation>
 <translation id="7106346894903675391">കൂടുതൽ സംഭരണം വാങ്ങുക...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;തിരയൽ ഡ്രൈവ്&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">ഉപകരണ മോഡൽ</translation>
 <translation id="8208580316430297579">കലാസൃഷ്‌ടി</translation>
 <translation id="8223479393428528563">ഓഫ്‌ലൈൻ ഉപയോഗത്തിനായി ഈ ഫയലുകൾ സംരക്ഷിക്കാൻ, ഓൺലൈനിൽ തിരികെ വന്ന് ഫയലുകൾ റൈറ്റ് ക്ലിക്ക് ചെയ്‌ത്, <ph name="OFFLINE_CHECKBOX_NAME" /> ഓപ്‌ഷൻ തിരഞ്ഞെടുക്കുക.</translation>
-<translation id="8231972167769262174">ഏകദേശം <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">ഉപേക്ഷിക്കുക</translation>
 <translation id="8261506727792406068">ഇല്ലാതാക്കുക</translation>
 <translation id="8269755669432358899">ഫയലുകളുടെ ഫീഡ്ബാക്ക് പാനലുകൾ ചുരുക്കുക</translation>

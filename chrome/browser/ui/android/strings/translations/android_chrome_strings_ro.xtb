@@ -736,7 +736,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6845325883481699275">Contribuie la îmbunătățirea securității pentru Chrome</translation>
 <translation id="6846298663435243399">Se încarcă…</translation>
 <translation id="6850409657436465440">Descărcarea este încă în desfășurare</translation>
-<translation id="6850830437481525139">S-au închis <ph name="TAB_COUNT" /> (de) file</translation>
+<translation id="6850830437481525139"><ph name="TAB_COUNT" /> file închise</translation>
 <translation id="685850645784703949">Discover de la Google – dezactivat</translation>
 <translation id="6864459304226931083">Descarcă imaginea</translation>
 <translation id="6865313869410766144">Datele salvate pentru completarea automată a formularelor</translation>
@@ -998,6 +998,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8970887620466824814">A apărut o eroare.</translation>
 <translation id="8972098258593396643">Descarci în dosarul prestabilit?</translation>
 <translation id="8988028529677883095">Folosește telefonul ca pe o cheie de securitate</translation>
+<translation id="8990209962746788689">Nu s-a putut crea codul QR</translation>
 <translation id="8993760627012879038">Deschide o filă nouă în modul incognito</translation>
 <translation id="8998729206196772491">Te conectezi cu un cont gestionat de <ph name="MANAGED_DOMAIN" /> și acorzi administratorului acestuia controlul asupra datelor Chrome. Datele vor fi asociate definitiv acestui cont. Dacă te deconectezi de la Chrome, datele se vor șterge de pe acest dispozitiv, dar vor rămâne stocate în Contul Google.</translation>
 <translation id="9028914725102941583">Activează sincronizarea ca să trimiți de pe un dispozitiv pe altul</translation>

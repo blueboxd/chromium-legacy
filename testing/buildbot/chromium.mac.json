@@ -18165,5 +18165,10 @@
     "additional_compile_targets": [
       "all"
     ]
+  },
+  "mac-arm64": {
+    "additional_compile_targets": [
+      "all"
+    ]
   }
 }

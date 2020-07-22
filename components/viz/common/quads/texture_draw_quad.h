@@ -66,6 +66,10 @@ class VIZ_COMMON_EXPORT TextureDrawQuad : public DrawQuad {
   // True if the quad must only be GPU composited if shown on secure outputs.
   bool secure_output_only : 1;
 
+  // True if this quad contains a video frame from VideoResourceUpdater instead
+  // of canvas or webgl content.
+  bool is_video_frame : 1;
+
   // kClear if the contents do not require any special protection. See enum of a
   // list of protected content types. Protected contents cannot be displayed via
   // regular display path. They need either a protected output or a protected

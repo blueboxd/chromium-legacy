@@ -41,6 +41,7 @@ android_library("public_java") {
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheckFragmentView.java",
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheckPreference.java",
   ]
+  resources_package = "org.chromium.chrome.browser.password_check"
 }
 
 android_library("public_ui_java") {
@@ -103,5 +104,5 @@ android_resources("java_resources") {
     "java/res/values/colors.xml",
   ]
   deps = [ "//chrome/browser/ui/android/strings:ui_strings_grd" ]
-  custom_package = "org.chromium.chrome.browser.password_check"
+  create_srcjar = false
 }

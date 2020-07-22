@@ -167,7 +167,8 @@ class RealTimeUrlLookupServiceTest : public PlatformTest {
       feature_list_.InitWithFeatures(
           {kRealTimeUrlLookupEnabled, kRealTimeUrlLookupEnabledWithToken}, {});
     } else {
-      feature_list_.InitWithFeatures({kRealTimeUrlLookupEnabled}, {});
+      feature_list_.InitWithFeatures({kRealTimeUrlLookupEnabled},
+                                     {kRealTimeUrlLookupEnabledWithToken});
     }
 #endif
   }

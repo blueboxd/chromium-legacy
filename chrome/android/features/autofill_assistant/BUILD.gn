@@ -21,14 +21,16 @@ android_library("animated_poodle_java") {
 
   sources = [ "java/src/org/chromium/chrome/browser/" +
               "autofill_assistant/header/AnimatedPoodle.java" ]
+  resources_package = "org.chromium.chrome.autofill_assistant.poodle"
 }
 
 android_resources("animated_poodle_resources") {
   sources = [ "java/res_poodle/drawable/ic_autofill_assistant_24dp.xml" ]
-  custom_package = "org.chromium.chrome.autofill_assistant.poodle"
+  create_srcjar = false
 }
 
 android_library("java") {
+  resources_package = "org.chromium.chrome.autofill_assistant"
   deps = [
     ":java_resources",
     "//base:base_java",
@@ -382,7 +384,7 @@ android_resources("java_resources") {
     ":java_strings_grd",
     "//chrome/android:chrome_app_java_resources",
   ]
-  custom_package = "org.chromium.chrome.autofill_assistant"
+  create_srcjar = false
 }
 
 java_strings_grd("java_strings_grd") {

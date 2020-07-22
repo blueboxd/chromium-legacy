@@ -46,7 +46,7 @@ class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
   uint32_t visibleWidth() const;
   uint32_t visibleHeight() const;
 
-  void release();
+  void close();
 
   // Convenience functions
   scoped_refptr<media::VideoFrame> frame();

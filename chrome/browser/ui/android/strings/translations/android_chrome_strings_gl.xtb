@@ -577,6 +577,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5665379678064389456">Crea un evento en <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Anular a solicitude dun sitio web para evitar ampliar a imaxe</translation>
+<translation id="5683547024293500885">Chrome non puido buscar actualizacións</translation>
 <translation id="5686790454216892815">O nome do ficheiro é demasiado longo</translation>
 <translation id="5694049548840660018">Volver ao inicio facilmente</translation>
 <translation id="569536719314091526">Traduce esta páxina a calquera idioma desde o botón Máis opcións</translation>
@@ -589,6 +590,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5732819098735351888">A descarga iniciarase a través da wifi.</translation>
 <translation id="5748802427693696783">Cambiouse ás pestanas estándar</translation>
 <translation id="5749068826913805084">Chrome precisa acceder ao almacenamento para descargar ficheiros.</translation>
+<translation id="5749237766298580851">Desactivada <ph name="SEPARATOR" /> Non recomendado</translation>
 <translation id="5754350196967618083">Non se puido actualizar Discover</translation>
 <translation id="5763382633136178763">Pestanas do modo de incógnito</translation>
 <translation id="5763514718066511291">Tocar para copiar o URL para esta aplicación</translation>
@@ -996,6 +998,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="8970887620466824814">Produciuse un erro.</translation>
 <translation id="8972098258593396643">Queres gardar a descarga no cartafol predeterminado?</translation>
 <translation id="8988028529677883095">Usar o teléfono como chave de seguranza</translation>
+<translation id="8990209962746788689">Non se puido crear o código QR</translation>
 <translation id="8993760627012879038">Abrir unha nova pestana no modo de incógnito</translation>
 <translation id="8998729206196772491">Estás iniciando sesión cunha conta xestionada por <ph name="MANAGED_DOMAIN" /> e proporcionándolle ao seu administrador o control dos teus datos de Chrome, que quedarán ligados permanentemente a esta conta. Se pechas sesión en Chrome, eliminaranse os teus datos deste dispositivo, pero seguirán almacenados na túa conta de Google.</translation>
 <translation id="9028914725102941583">Activa a sincronización para compartir contido entre varios dispositivos</translation>

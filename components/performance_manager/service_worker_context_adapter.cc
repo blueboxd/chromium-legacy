@@ -275,9 +275,10 @@ void ServiceWorkerContextAdapter::OnNoControllees(int64_t version_id,
 
 void ServiceWorkerContextAdapter::OnReportConsoleMessage(
     int64_t version_id,
+    const GURL& scope,
     const content::ConsoleMessage& message) {
   for (auto& observer : observer_list_)
-    observer.OnReportConsoleMessage(version_id, message);
+    observer.OnReportConsoleMessage(version_id, scope, message);
 }
 
 void ServiceWorkerContextAdapter::OnDestruct(ServiceWorkerContext* context) {

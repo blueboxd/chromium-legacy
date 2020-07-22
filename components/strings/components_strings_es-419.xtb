@@ -394,7 +394,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="2552295903035773204">Usar el bloqueo de pantalla para confirmar las tarjetas a partir de este momento</translation>
 <translation id="2553853292994445426">Revisa la configuración de DNS seguro. Es posible que hayas configurado un servidor DNS seguro y que sus conexiones estén fallando.</translation>
 <translation id="2556876185419854533">&amp;Deshacer Editar</translation>
-<translation id="257674075312929031">Grupo</translation>
+<translation id="257674075312929031">Agrupar</translation>
 <translation id="2586657967955657006">Portapapeles</translation>
 <translation id="2587730715158995865">De <ph name="ARTICLE_PUBLISHER" />. Lee este artículo y <ph name="OTHER_ARTICLE_COUNT" /> más.</translation>
 <translation id="2587841377698384444">ID de API de directorio:</translation>
@@ -1178,7 +1178,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="5869405914158311789">No se puede acceder a este sitio</translation>
 <translation id="5869522115854928033">Contraseñas almacenadas</translation>
 <translation id="5887400589839399685">Tarjeta guardada</translation>
-<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> requiere que hagas una copia de seguridad de tus datos y regreses este dispositivo.</translation>
+<translation id="589006512797629854"><ph name="ENROLLMENT_DOMAIN" /> requiere que hagas una copia de seguridad de tus datos y devuelvas este dispositivo.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5895187275912066135">Emitido el</translation>
 <translation id="5901630391730855834">Amarillo</translation>

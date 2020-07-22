@@ -197,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, WebUIBindingsNoHttp) {
   RenderProcessHostBadIpcMessageWaiter kill_waiter(
       shell()->web_contents()->GetMainFrame()->GetProcess());
   ASSERT_FALSE(CheckCanLoadHttp());
-  EXPECT_EQ(bad_message::WEBUI_BAD_SCHEME_ACCESS, kill_waiter.Wait());
+  EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
 // Verifies that WebUI pages without WebUI bindings can make network requests.

@@ -349,7 +349,7 @@ PlayerUtils.removeSession = async function(player) {
         Utils.timeLog(e.messageType);
         if (e.messageType == 'license-release' &&
             player.testConfig.sessionToLoad == 'PersistentUsageRecord') {
-          Utils.verifyUsageRecord(e.message);
+          Utils.verifyUsageRecord(e.message, /* expectNullTime= */ false);
         }
         // TODO: verify license-release message for persistent-license session
         resolve();

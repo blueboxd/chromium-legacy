@@ -233,8 +233,8 @@ public class SnackbarView {
     private static int getBackgroundColor(View view, Snackbar snackbar) {
         // Themes are used first.
         if (snackbar.getTheme() == Snackbar.Theme.GOOGLE) {
-            return ApiCompatibilityUtils.getColor(view.getResources(),
-                    org.chromium.components.browser_ui.styles.R.color.default_control_color_active);
+            return ApiCompatibilityUtils.getColor(
+                    view.getResources(), R.color.default_control_color_active);
         }
 
         assert snackbar.getTheme() == Snackbar.Theme.BASIC;
@@ -243,12 +243,12 @@ public class SnackbarView {
         }
 
         return ApiCompatibilityUtils.getColor(
-                view.getResources(), org.chromium.ui.R.color.snackbar_background_color);
+                view.getResources(), R.color.snackbar_background_color);
     }
 
     private static int getTextAppearance(Snackbar snackbar) {
         if (snackbar.getTheme() == Snackbar.Theme.GOOGLE) {
-            return org.chromium.ui.R.style.TextAppearance_TextMedium_Primary_Inverse;
+            return R.style.TextAppearance_TextMedium_Primary_Inverse;
         }
 
         assert snackbar.getTheme() == Snackbar.Theme.BASIC;
@@ -256,16 +256,16 @@ public class SnackbarView {
             return snackbar.getTextAppearance();
         }
 
-        return org.chromium.ui.R.style.TextAppearance_TextMedium_Primary;
+        return R.style.TextAppearance_TextMedium_Primary;
     }
 
     private static int getButtonTextAppearance(Snackbar snackbar) {
         if (snackbar.getTheme() == Snackbar.Theme.GOOGLE) {
-            return org.chromium.ui.R.style.TextAppearance_Button_Text_Filled;
+            return R.style.TextAppearance_Button_Text_Filled;
         }
 
         assert snackbar.getTheme() == Snackbar.Theme.BASIC;
-        return org.chromium.ui.R.style.TextButton;
+        return R.style.TextButton;
     }
 
     private boolean updateInternal(Snackbar snackbar, boolean animate) {

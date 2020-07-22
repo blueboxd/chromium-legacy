@@ -50,7 +50,8 @@ enum MountCompletedStatus {
   error_invalid_device_path,
   error_unknown_filesystem,
   error_unsupported_filesystem,
-  error_invalid_archive
+  error_invalid_archive,
+  error_need_password
 };
 
 // Filesystem to format to.

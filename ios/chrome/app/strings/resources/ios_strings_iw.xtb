@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> ל<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">כדי שהסימניות שלך יופיעו בכל המכשירים, יש להפעיל סינכרון.</translation>
 <translation id="1687475363370981210">סמן את הכול כ'נקרא'</translation>
+<translation id="1689333818294560261">כינוי</translation>
 <translation id="1690731385917361335">אין פריטים</translation>
 <translation id="1692118695553449118">סנכרון מופעל</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> נבחרו</translation>
@@ -206,6 +207,7 @@
 <translation id="3335947283844343239">פתח מחדש כרטיסייה שנסגרה</translation>
 <translation id="3371831930909698441">‏Translate זמין. האפשרויות מוצגות בחלק התחתון של המסך.</translation>
 <translation id="3393920035788932672">חלונות קופצים מותרים</translation>
+<translation id="3425644765244388016">כינוי הכרטיס</translation>
 <translation id="3443810440409579745">כרטיסייה התקבלה.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> דק'</translation>
 <translation id="3448016392200048164">תצוגה מפוצלת</translation>
@@ -240,6 +242,7 @@
 <translation id="3783017676699494206">שמור תמונה</translation>
 <translation id="3789841737615482174">התקן</translation>
 <translation id="3803696231112616155">הצגה של הצעה לתרגם את הדף הזה</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{אף סיסמה לא נחשפה}=1{סיסמה אחת ({COUNT}) נחשפה}two{{COUNT} סיסמאות נחשפו}many{{COUNT} סיסמאות נחשפו}other{{COUNT} סיסמאות נחשפו}}</translation>
 <translation id="385051799172605136">חזרה</translation>
 <translation id="3892144330757387737">ההיסטוריה זמינה כאן</translation>
 <translation id="3897092660631435901">תפריט</translation>
@@ -529,6 +532,7 @@
 <translation id="7189598951263744875">שיתוף...</translation>
 <translation id="7192050974311852563">התחלת רישום ביומן</translation>
 <translation id="7203585745079012652">משוב לתשובות על-ידי דיבור</translation>
+<translation id="721597782417389033">כינוי הכרטיס לא חוקי</translation>
 <translation id="7265758999917665941">אף פעם עבור אתר זה</translation>
 <translation id="7272437679830969316">לא ניתן לאמת את הזהות שלך. הסיסמה לא הועתקה.</translation>
 <translation id="7291368939935408496">מכין סיסמאות...</translation>

@@ -53,6 +53,7 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host,
       defer_main_frame_update_(false),
       defer_commits_(false),
       animate_requested_(false),
+      update_layers_requested_(false),
       commit_requested_(false),
       inside_synchronous_composite_(false),
       needs_impl_frame_(false),
@@ -171,7 +172,12 @@ void SingleThreadProxy::SetNeedsAnimate() {
 void SingleThreadProxy::SetNeedsUpdateLayers() {
   TRACE_EVENT0("cc", "SingleThreadProxy::SetNeedsUpdateLayers");
   DCHECK(task_runner_provider_->IsMainThread());
-  SetNeedsCommit();
+  if (!RequestedAnimatePending()) {
+    DebugScopedSetImplThread impl(task_runner_provider_);
+    if (scheduler_on_impl_thread_)
+      scheduler_on_impl_thread_->SetNeedsBeginMainFrame();
+  }
+  update_layers_requested_ = true;
 }
 
 void SingleThreadProxy::DoCommit(const viz::BeginFrameArgs& commit_args) {
@@ -256,7 +262,8 @@ void SingleThreadProxy::SetNextCommitWaitsForActivation() {
 }
 
 bool SingleThreadProxy::RequestedAnimatePending() {
-  return animate_requested_ || commit_requested_ || needs_impl_frame_;
+  return animate_requested_ || update_layers_requested_ || commit_requested_ ||
+         needs_impl_frame_;
 }
 
 void SingleThreadProxy::SetDeferMainFrameUpdate(bool defer_main_frame_update) {
@@ -785,6 +792,7 @@ void SingleThreadProxy::BeginMainFrame(
   commit_requested_ = false;
   needs_impl_frame_ = false;
   animate_requested_ = false;
+  update_layers_requested_ = false;
 
   if (defer_main_frame_update_) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferBeginMainFrame",
@@ -853,6 +861,7 @@ void SingleThreadProxy::DoBeginMainFrame(
 
 void SingleThreadProxy::DoPainting() {
   layer_tree_host_->UpdateLayers();
+  update_layers_requested_ = false;
 
   // TODO(enne): SingleThreadProxy does not support cancelling commits yet,
   // search for CommitEarlyOutReason::FINISHED_NO_UPDATES inside

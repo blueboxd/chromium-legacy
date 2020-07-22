@@ -164,6 +164,7 @@
 #include "services/media_session/public/cpp/features.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "storage/browser/quota/quota_features.h"
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/forcedark/forcedark_switches.h"
@@ -3995,7 +3996,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-storage-pressure-event",
      flag_descriptions::kStoragePressureEventName,
      flag_descriptions::kStoragePressureEventDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kStoragePressureEvent)},
+     FEATURE_VALUE_TYPE(storage::features::kStoragePressureEvent)},
 
     {"enable-storage-pressure-ui", flag_descriptions::kStoragePressureUIName,
      flag_descriptions::kStoragePressureUIDescription, kOsAll,
@@ -4046,10 +4047,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPdfHonorJsContentSettingsName,
      flag_descriptions::kPdfHonorJsContentSettingsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(chrome_pdf::features::kPdfHonorJsContentSettings)},
-
-    {"pdf-two-up-view", flag_descriptions::kPdfTwoUpViewName,
-     flag_descriptions::kPdfTwoUpViewDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(chrome_pdf::features::kPDFTwoUpView)},
 
     {"pdf-viewer-update", flag_descriptions::kPdfViewerUpdateName,
      flag_descriptions::kPdfViewerUpdateDescription, kOsDesktop,
@@ -4934,6 +4931,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"print-job-management-app", flag_descriptions::kPrintJobManagementAppName,
      flag_descriptions::kPrintJobManagementAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kPrintJobManagementApp)},
+
+    {"enable-phone-hub", flag_descriptions::kPhoneHubName,
+     flag_descriptions::kPhoneHubDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kPhoneHub)},
 
     {"display-identification", flag_descriptions::kDisplayIdentificationName,
      flag_descriptions::kDisplayIdentificationDescription, kOsCrOS,

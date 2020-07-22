@@ -2099,6 +2099,7 @@ test("content_unittests") {
     "//components/offline_pages/buildflags",
     "//components/payments/mojom",
     "//components/rappor:test_support",
+    "//components/services/quarantine/public/mojom",
     "//components/services/storage",
     "//components/services/storage:test_support",
     "//components/services/storage/dom_storage:local_storage_proto",

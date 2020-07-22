@@ -6,17 +6,11 @@
 
 #include <dawn_native/VulkanBackend.h>
 
-#include <iostream>
 #include <utility>
 #include <vector>
 
 #include "base/posix/eintr_wrapper.h"
-#include "build/build_config.h"
-#include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_image.h"
-#include "gpu/vulkan/vulkan_implementation.h"
-#include "gpu/vulkan/vulkan_instance.h"
-#include "ui/gl/buildflags.h"
 
 namespace gpu {
 
@@ -46,9 +40,8 @@ ExternalVkImageDawnRepresentation::~ExternalVkImageDawnRepresentation() {
 
 WGPUTexture ExternalVkImageDawnRepresentation::BeginAccess(
     WGPUTextureUsage usage) {
-  std::vector<ExternalSemaphore> external_semaphores;
-
-  if (!backing_impl()->BeginAccess(false, &external_semaphores,
+  DCHECK(begin_access_semaphores_.empty());
+  if (!backing_impl()->BeginAccess(false, &begin_access_semaphores_,
                                    false /* is_gl */)) {
     return nullptr;
   }
@@ -73,7 +66,7 @@ WGPUTexture ExternalVkImageDawnRepresentation::BeginAccess(
   // TODO(http://crbug.com/dawn/200): We may not be obeying all of the rules
   // specified by Vulkan for external queue transfer barriers. Investigate this.
 
-  for (auto& external_semaphore : external_semaphores) {
+  for (auto& external_semaphore : begin_access_semaphores_) {
     descriptor.waitFDs.push_back(
         external_semaphore.handle().TakeHandle().release());
   }
@@ -106,15 +99,21 @@ void ExternalVkImageDawnRepresentation::EndAccess() {
   SemaphoreHandle handle(VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT_KHR,
                          base::ScopedFD(signal_semaphore_fd));
 
-  backing_impl()->EndAccess(false,
-                            ExternalSemaphore::CreateFromHandle(
-                                context_provider(), std::move(handle)),
-                            false /* is_gl */);
+  auto semaphore = ExternalSemaphore::CreateFromHandle(
+      backing_impl()->context_provider(), std::move(handle));
+
+  backing_impl()->EndAccess(false, std::move(semaphore), false /* is_gl */);
 
   // Destroy the texture, signaling the semaphore in dawn
   dawn_procs_.textureDestroy(texture_);
   dawn_procs_.textureRelease(texture_);
   texture_ = nullptr;
+
+  // We have done with |begin_access_semaphores_|. They should have been waited.
+  // So add them to pending semaphores for reusing or relaeasing.
+  backing_impl()->AddSemaphoresToPendingListOrRelease(
+      std::move(begin_access_semaphores_));
+  begin_access_semaphores_.clear();
 }
 
 }  // namespace gpu

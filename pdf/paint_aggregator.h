@@ -8,7 +8,8 @@
 #include <vector>
 
 #include "pdf/paint_ready_rect.h"
-#include "ppapi/cpp/rect.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 namespace chrome_pdf {
 
@@ -36,18 +37,18 @@ class PaintAggregator {
     // region instead).
     //
     // If there is no scroll, this will be (0, 0).
-    pp::Point scroll_delta;
+    gfx::Vector2d scroll_delta;
 
     // The rectangle that should be scrolled by the scroll_delta. If there is no
     // scroll, this will be (0, 0, 0, 0). We only track one scroll command at
     // once. If there are multiple ones, they will be converted to invalidates.
-    pp::Rect scroll_rect;
+    gfx::Rect scroll_rect;
 
     // A list of all the individual dirty rectangles. This is an aggregated list
     // of all invalidate calls. Different rectangles may be unified to produce a
     // minimal list with no overlap that is more efficient to paint. This list
     // also contains the region exposed by any scroll command.
-    std::vector<pp::Rect> paint_rects;
+    std::vector<gfx::Rect> paint_rects;
   };
 
   PaintAggregator();
@@ -63,16 +64,16 @@ class PaintAggregator {
   // are finished painting (ready), and ones that are still in-progress
   // (pending).
   void SetIntermediateResults(const std::vector<PaintReadyRect>& ready,
-                              const std::vector<pp::Rect>& pending);
+                              const std::vector<gfx::Rect>& pending);
 
   // Returns the rectangles that are ready to be painted.
   std::vector<PaintReadyRect> GetReadyRects() const;
 
   // The given rect should be repainted.
-  void InvalidateRect(const pp::Rect& rect);
+  void InvalidateRect(const gfx::Rect& rect);
 
   // The given rect should be scrolled by the given amounts.
-  void ScrollRect(const pp::Rect& clip_rect, const pp::Point& amount);
+  void ScrollRect(const gfx::Rect& clip_rect, const gfx::Vector2d& amount);
 
  private:
   // This structure is an internal version of PaintUpdate. It's different in
@@ -92,14 +93,14 @@ class PaintAggregator {
     // Computes the rect damaged by scrolling within |scroll_rect| by
     // |scroll_delta|. This rect must be repainted. It is not included in
     // paint_rects.
-    pp::Rect GetScrollDamage() const;
+    gfx::Rect GetScrollDamage() const;
 
-    pp::Point scroll_delta;
-    pp::Rect scroll_rect;
+    gfx::Vector2d scroll_delta;
+    gfx::Rect scroll_rect;
 
     // Does not include the scroll damage rect unless
     // synthesized_scroll_damage_rect_ is set.
-    std::vector<pp::Rect> paint_rects;
+    std::vector<gfx::Rect> paint_rects;
 
     // Rectangles that are finished painting.
     std::vector<PaintReadyRect> ready_rects;
@@ -108,14 +109,14 @@ class PaintAggregator {
     bool synthesized_scroll_damage_rect_;
   };
 
-  pp::Rect ScrollPaintRect(const pp::Rect& paint_rect,
-                           const pp::Point& amount) const;
+  gfx::Rect ScrollPaintRect(const gfx::Rect& paint_rect,
+                            const gfx::Vector2d& amount) const;
   void InvalidateScrollRect();
 
   // Internal method used by InvalidateRect. If |check_scroll| is true, then the
   // method checks if there's a pending scroll and if so also invalidates |rect|
   // in the new scroll position.
-  void InvalidateRectInternal(const pp::Rect& rect, bool check_scroll);
+  void InvalidateRectInternal(const gfx::Rect& rect, bool check_scroll);
 
   InternalPaintUpdate update_;
 };

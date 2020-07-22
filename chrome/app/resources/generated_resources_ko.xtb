@@ -1823,7 +1823,7 @@
 <translation id="3253225298092156258">사용할 수 없음</translation>
 <translation id="3253448572569133955">알 수 없는 계정</translation>
 <translation id="3254516606912442756">시간대 자동설정이 사용 중지됩니다</translation>
-<translation id="3254715652085014625">Android 휴대전화에서 Chrome을 열고 '설정' &gt; '비밀번호' &gt; '휴대전화를 보안 키로 사용'으로 이동한 다음 지침을 따르세요.</translation>
+<translation id="3254715652085014625">Android 휴대전화에서 Chrome을 열고 '설정' &gt; '비밀번호' &gt; '휴대전화를 보안 키로 사용'으로 이동한 다음 안내를 따르세요.</translation>
 <translation id="3255355328033513170"><ph name="SITE_GROUP_NAME" />에서 저장한 모든 데이터 및 모든 하위 사이트가 삭제됩니다. 여기에는 쿠키도 포함됩니다. 열려 있는 탭을 포함하여 이러한 사이트에서 로그아웃됩니다.</translation>
 <translation id="3259723213051400722">다시 시도해 주세요.</translation>
 <translation id="3264544094376351444">Sans-serif</translation>
@@ -4461,7 +4461,7 @@
 <translation id="6607831829715835317">도구 더보기</translation>
 <translation id="6611972847767394631">여기에서 탭 찾아보기</translation>
 <translation id="6612358246767739896">보호된 콘텐츠</translation>
-<translation id="6615455863669487791">표시</translation>
+<translation id="6615455863669487791">보기</translation>
 <translation id="6618097958368085618">보관</translation>
 <translation id="6618744767048954150">실행 중</translation>
 <translation id="6619058681307408113">라인 프린터 데몬(LPD)</translation>
@@ -5405,7 +5405,7 @@
 <translation id="7798844538707273832"><ph name="PERMISSION" /> 권한이 자동으로 차단됨</translation>
 <translation id="7799299114731150374">배경화면 설정이 완료되었습니다.</translation>
 <translation id="7800518121066352902">반시계 방향으로 회전(&amp;O)</translation>
-<translation id="780301667611848630">아니요, 괜찮습니다.</translation>
+<translation id="780301667611848630">취소</translation>
 <translation id="7805768142964895445">상태</translation>
 <translation id="7807067443225230855">검색 및 어시스턴트</translation>
 <translation id="7807711621188256451"><ph name="HOST" />에서 카메라에 액세스하도록 항상 허용</translation>

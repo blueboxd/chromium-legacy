@@ -367,6 +367,8 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
 
     bool safe_synchronously;
     bool can_perform_full_url_lookup = CanPerformFullURLLookup(url);
+    base::UmaHistogramBoolean("SafeBrowsing.RT.CanCheckDatabase",
+                              can_check_db_);
     if (can_perform_full_url_lookup) {
       UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.ResourceTypes.Checked",
                                 resource_type_);
@@ -405,8 +407,6 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
           break;
       }
     } else {
-      // TODO(crbug.com/1085261): Add a metric to track how often
-      // |can_check_db_| is false.
       safe_synchronously =
           can_check_db_
               ? database_manager_->CheckBrowseUrl(

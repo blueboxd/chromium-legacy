@@ -339,13 +339,8 @@ void ThemePainter::PaintSliderTicks(const LayoutObject& o,
       input->UserAgentShadowRoot()
           ->getElementById(shadow_element_names::SliderThumb())
           ->GetLayoutObject();
-  if (thumb_layout_object) {
-    const ComputedStyle& thumb_style = thumb_layout_object->StyleRef();
-    int thumb_width = thumb_style.Width().IntValue();
-    int thumb_height = thumb_style.Height().IntValue();
-    thumb_size.SetWidth(is_horizontal ? thumb_width : thumb_height);
-    thumb_size.SetHeight(is_horizontal ? thumb_height : thumb_width);
-  }
+  if (thumb_layout_object && thumb_layout_object->IsBox())
+    thumb_size = FlooredIntSize(ToLayoutBox(thumb_layout_object)->Size());
 
   IntSize tick_size = LayoutTheme::GetTheme().SliderTickSize();
   float zoom_factor = o.StyleRef().EffectiveZoom();
@@ -357,8 +352,11 @@ void ThemePainter::PaintSliderTicks(const LayoutObject& o,
       input->UserAgentShadowRoot()
           ->getElementById(shadow_element_names::SliderTrack())
           ->GetLayoutObject();
-  if (track_layout_object)
-    track_bounds = track_layout_object->FirstFragment().VisualRect();
+  if (track_layout_object && track_layout_object->IsBox()) {
+    track_bounds = IntRect(
+        CeiledIntPoint(track_layout_object->FirstFragment().PaintOffset()),
+        FlooredIntSize(ToLayoutBox(track_layout_object)->Size()));
+  }
 
   if (is_horizontal) {
     tick_rect.SetWidth(floor(tick_size.Width() * zoom_factor));
@@ -380,8 +378,8 @@ void ThemePainter::PaintSliderTicks(const LayoutObject& o,
                   zoom_factor));
     tick_region_side_margin =
         track_bounds.Y() +
-        (thumb_size.Width() - tick_size.Width() * zoom_factor) / 2.0;
-    tick_region_width = track_bounds.Height() - thumb_size.Width();
+        (thumb_size.Height() - tick_size.Width() * zoom_factor) / 2.0;
+    tick_region_width = track_bounds.Height() - thumb_size.Height();
   }
   HTMLDataListOptionsCollection* options = data_list->options();
   for (unsigned i = 0; HTMLOptionElement* option_element = options->Item(i);

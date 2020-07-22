@@ -577,6 +577,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5659593005791499971">Mail-i</translation>
 <translation id="5665379678064389456">Krijo ngjarje në <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Zëvendësoje kërkesën e një sajti uebi për të parandaluar zmadhimin</translation>
+<translation id="5683547024293500885">Chrome nuk mund të kontrollojë për përditësime</translation>
 <translation id="5686790454216892815">Emri i skedarit është tepër i gjatë</translation>
 <translation id="5694049548840660018">Kthehu te faqja kryesore me lehtësi</translation>
 <translation id="569536719314091526">Përktheje këtë faqe në çdo gjuhë nga butoni "Më shumë opsione"</translation>
@@ -589,6 +590,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5732819098735351888">Shkarkimi do të fillojë në Wi-Fi.</translation>
 <translation id="5748802427693696783">Kaloi në skedat standarde</translation>
 <translation id="5749068826913805084">Chrome ka nevojë për qasje te hapësira ruajtëse për të shkarkuar skedarë.</translation>
+<translation id="5749237766298580851">Joaktiv <ph name="SEPARATOR" /> Nuk rekomandohet</translation>
 <translation id="5754350196967618083">"Zbulo" nuk mund të rifreskohet</translation>
 <translation id="5763382633136178763">Skedat "e fshehura"</translation>
 <translation id="5763514718066511291">Trokit për të kopjuar URL-në për këtë aplikacion</translation>
@@ -996,6 +998,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="8970887620466824814">Ndodhi një gabim.</translation>
 <translation id="8972098258593396643">Të shkarkohet në dosjen e parazgjedhur?</translation>
 <translation id="8988028529677883095">Përdore telefonin si çelës sigurie</translation>
+<translation id="8990209962746788689">Kodi QR nuk mund të krijohet</translation>
 <translation id="8993760627012879038">Hap një skedë të re në "Modalitetin e fshehtë"</translation>
 <translation id="8998729206196772491">Po identifikohesh me një llogari të menaxhuar nga <ph name="MANAGED_DOMAIN" /> dhe po i jep administratorit të saj kontroll mbi të dhënat e tua të Chrome. Duke dalë nga Chrome do të fshihen të dhënat e tua nga kjo pajisje, por do të mbeten të ruajtura në llogarinë tënde të Google.</translation>
 <translation id="9028914725102941583">Aktivizo sinkronizimin për të ndarë mes pajisjeve</translation>

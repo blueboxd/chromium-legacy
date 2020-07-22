@@ -16,6 +16,13 @@
                file="nearby_share_dialog.html"
                type="BINDATA"/>
 
+      <include name="IDR_NEARBY_SHARE_MOJO_JS"
+               file="${root_gen_dir}/chrome/browser/ui/webui/nearby_share/nearby_share.mojom-lite.js"
+               use_base_dir="false" type="BINDATA"/>
+      <include name="IDR_NEARBY_SHARE_DISCOVERY_MANAGER_JS"
+               file="discovery_manager.js"
+               type="BINDATA"/>
+
       <!-- Generated Polymer 3 elements -->
       <include name="IDR_NEARBY_SHARE_APP_JS"
                file="${root_gen_dir}/chrome/browser/resources/nearby_share/app.js"

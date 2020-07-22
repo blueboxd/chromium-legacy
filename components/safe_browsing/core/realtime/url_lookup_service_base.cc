@@ -34,6 +34,55 @@ const size_t kURLLookupTimeoutDurationInSeconds = 10;  // 10 seconds.
 
 constexpr char kAuthHeaderBearer[] = "Bearer ";
 
+// UMA helper functions.
+void RecordBooleanWithAndWithoutSuffix(const std::string& metric,
+                                       const std::string& suffix,
+                                       bool value) {
+  base::UmaHistogramBoolean(metric, value);
+  base::UmaHistogramBoolean(metric + suffix, value);
+}
+
+void RecordSparseWithAndWithoutSuffix(const std::string& metric,
+                                      const std::string& suffix,
+                                      int32_t value) {
+  base::UmaHistogramSparse(metric, value);
+  base::UmaHistogramSparse(metric + suffix, value);
+}
+
+void RecordTimesWithAndWithoutSuffix(const std::string& metric,
+                                     const std::string& suffix,
+                                     base::TimeDelta value) {
+  base::UmaHistogramTimes(metric, value);
+  base::UmaHistogramTimes(metric + suffix, value);
+}
+
+void RecordCount100WithAndWithoutSuffix(const std::string& metric,
+                                        const std::string& suffix,
+                                        int value) {
+  base::UmaHistogramCounts100(metric, value);
+  base::UmaHistogramCounts100(metric + suffix, value);
+}
+
+void RecordRequestPopulationWithAndWithoutSuffix(
+    const std::string& metric,
+    const std::string& suffix,
+    ChromeUserPopulation::UserPopulation population) {
+  base::UmaHistogramExactLinear(metric, population,
+                                ChromeUserPopulation::UserPopulation_MAX + 1);
+  base::UmaHistogramExactLinear(metric + suffix, population,
+                                ChromeUserPopulation::UserPopulation_MAX + 1);
+}
+
+void RecordNetworkResultWithAndWithoutSuffix(const std::string& metric,
+                                             const std::string& suffix,
+                                             int net_error,
+                                             int response_code) {
+  V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
+      metric.c_str(), net_error, response_code);
+  V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
+      (metric + suffix).c_str(), net_error, response_code);
+}
+
 }  // namespace
 
 RealTimeUrlLookupServiceBase::RealTimeUrlLookupServiceBase(
@@ -155,7 +204,8 @@ void RealTimeUrlLookupServiceBase::HandleLookupSuccess() {
 bool RealTimeUrlLookupServiceBase::IsInBackoffMode() const {
   DCHECK(CurrentlyOnThread(ThreadID::UI));
   bool in_backoff = backoff_timer_.IsRunning();
-  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.RT.Backoff.State", in_backoff);
+  RecordBooleanWithAndWithoutSuffix("SafeBrowsing.RT.Backoff.State",
+                                    GetMetricSuffix(), in_backoff);
   return in_backoff;
 }
 
@@ -171,8 +221,8 @@ RealTimeUrlLookupServiceBase::GetCachedRealTimeUrlVerdict(const GURL& url) {
   std::unique_ptr<RTLookupResponse::ThreatInfo> cached_threat_info =
       std::make_unique<RTLookupResponse::ThreatInfo>();
 
-  base::UmaHistogramBoolean("SafeBrowsing.RT.HasValidCacheManager",
-                            !!cache_manager_);
+  RecordBooleanWithAndWithoutSuffix("SafeBrowsing.RT.HasValidCacheManager",
+                                    GetMetricSuffix(), !!cache_manager_);
 
   base::TimeTicks get_cache_start_time = base::TimeTicks::Now();
 
@@ -181,9 +231,11 @@ RealTimeUrlLookupServiceBase::GetCachedRealTimeUrlVerdict(const GURL& url) {
                            url, cached_threat_info.get())
                      : RTLookupResponse::ThreatInfo::VERDICT_TYPE_UNSPECIFIED;
 
-  base::UmaHistogramSparse("SafeBrowsing.RT.GetCacheResult", verdict_type);
-  UMA_HISTOGRAM_TIMES("SafeBrowsing.RT.GetCache.Time",
-                      base::TimeTicks::Now() - get_cache_start_time);
+  RecordSparseWithAndWithoutSuffix("SafeBrowsing.RT.GetCacheResult",
+                                   GetMetricSuffix(), verdict_type);
+  RecordTimesWithAndWithoutSuffix(
+      "SafeBrowsing.RT.GetCache.Time", GetMetricSuffix(),
+      base::TimeTicks::Now() - get_cache_start_time);
 
   if (verdict_type == RTLookupResponse::ThreatInfo::SAFE ||
       verdict_type == RTLookupResponse::ThreatInfo::DANGEROUS) {
@@ -242,9 +294,9 @@ void RealTimeUrlLookupServiceBase::SendRequest(
     RTLookupResponseCallback response_callback) {
   DCHECK(CurrentlyOnThread(ThreadID::UI));
   std::unique_ptr<RTLookupRequest> request = FillRequestProto(url);
-  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.Request.UserPopulation",
-                            request->population().user_population(),
-                            ChromeUserPopulation::UserPopulation_MAX + 1);
+  RecordRequestPopulationWithAndWithoutSuffix(
+      "SafeBrowsing.RT.Request.UserPopulation", GetMetricSuffix(),
+      request->population().user_population());
   std::string req_data;
   request->SerializeToString(&req_data);
 
@@ -254,8 +306,9 @@ void RealTimeUrlLookupServiceBase::SendRequest(
         net::HttpRequestHeaders::kAuthorization,
         base::StrCat({kAuthHeaderBearer, access_token_string.value()}));
   }
-  base::UmaHistogramBoolean("SafeBrowsing.RT.HasTokenInRequest",
-                            access_token_string.has_value());
+  RecordBooleanWithAndWithoutSuffix("SafeBrowsing.RT.HasTokenInRequest",
+                                    GetMetricSuffix(),
+                                    access_token_string.has_value());
 
   SendRequestInternal(std::move(resource_request), req_data, url,
                       std::move(response_callback));
@@ -297,28 +350,31 @@ void RealTimeUrlLookupServiceBase::OnURLLoaderComplete(
   auto it = pending_requests_.find(url_loader);
   DCHECK(it != pending_requests_.end()) << "Request not found";
 
-  UMA_HISTOGRAM_TIMES("SafeBrowsing.RT.Network.Time",
-                      base::TimeTicks::Now() - request_start_time);
+  RecordTimesWithAndWithoutSuffix("SafeBrowsing.RT.Network.Time",
+                                  GetMetricSuffix(),
+                                  base::TimeTicks::Now() - request_start_time);
 
   int net_error = url_loader->NetError();
   int response_code = 0;
   if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers)
     response_code = url_loader->ResponseInfo()->headers->response_code();
-  V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
-      "SafeBrowsing.RT.Network.Result", net_error, response_code);
+  RecordNetworkResultWithAndWithoutSuffix("SafeBrowsing.RT.Network.Result",
+                                          GetMetricSuffix(), net_error,
+                                          response_code);
 
   auto response = std::make_unique<RTLookupResponse>();
   bool is_rt_lookup_successful = (net_error == net::OK) &&
                                  (response_code == net::HTTP_OK) &&
                                  response->ParseFromString(*response_body);
-  base::UmaHistogramBoolean("SafeBrowsing.RT.IsLookupSuccessful",
-                            is_rt_lookup_successful);
+  RecordBooleanWithAndWithoutSuffix("SafeBrowsing.RT.IsLookupSuccessful",
+                                    GetMetricSuffix(), is_rt_lookup_successful);
   is_rt_lookup_successful ? HandleLookupSuccess() : HandleLookupError();
 
   MayBeCacheRealTimeUrlVerdict(url, *response);
 
-  UMA_HISTOGRAM_COUNTS_100("SafeBrowsing.RT.ThreatInfoSize",
-                           response->threat_info_size());
+  RecordCount100WithAndWithoutSuffix("SafeBrowsing.RT.ThreatInfoSize",
+                                     GetMetricSuffix(),
+                                     response->threat_info_size());
 
   base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::IO),
                  base::BindOnce(std::move(it->second), is_rt_lookup_successful,

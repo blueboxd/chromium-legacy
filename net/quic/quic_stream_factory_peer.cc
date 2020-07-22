@@ -175,11 +175,6 @@ void QuicStreamFactoryPeer::CacheDummyServerConfig(
   DCHECK(!cached->certs().empty());
 }
 
-quic::QuicClientPushPromiseIndex* QuicStreamFactoryPeer::GetPushPromiseIndex(
-    QuicStreamFactory* factory) {
-  return &factory->push_promise_index_;
-}
-
 int QuicStreamFactoryPeer::GetNumPushStreamsCreated(
     QuicStreamFactory* factory) {
   return factory->num_push_streams_created_;

@@ -686,7 +686,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 - (SettingsSwitchItem*)articlesForYouSwitchItem {
   NSString* settingTitle =
       IsDiscoverFeedEnabled()
-          ? l10n_util::GetNSString(IDS_IOS_DISCOVER_SETTING_TITLE)
+          ? l10n_util::GetNSString(IDS_IOS_DISCOVER_FEED_TITLE)
           : l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_SETTING_TITLE);
 
   SettingsSwitchItem* articlesForYouSwitchItem =

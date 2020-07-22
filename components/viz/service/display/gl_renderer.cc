@@ -510,6 +510,9 @@ void GLRenderer::BeginDrawingFrame() {
                         ->ClientBecameBusy();
   }
 
+  // Begin batching read of shared images.
+  gl_->BeginBatchReadAccessSharedImageCHROMIUM();
+
   scoped_refptr<ResourceFence> read_lock_fence;
   if (use_sync_query_) {
     read_lock_fence = sync_queries_.StartNewFrame();
@@ -2376,9 +2379,8 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   DCHECK_EQ(y_plane_lock.target(), u_plane_lock.target());
   DCHECK_EQ(y_plane_lock.color_space(), u_plane_lock.color_space());
 
-  // TODO(ccameron): There are currently three sources of the color space: the
-  // resource, quad->color_space, and quad->video_color_space. Remove two of
-  // them.
+  // TODO(ccameron): There are currently two sources of the color space: the
+  // resource color space and quad->video_color_space. Remove one of them.
   gfx::ColorSpace src_color_space = quad->video_color_space;
   // Invalid or unspecified color spaces should be treated as REC709.
   if (!src_color_space.IsValid())
@@ -2429,7 +2431,7 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
       ProgramKey::YUVVideo(tex_coord_precision, sampler, alpha_texture_mode,
                            uv_texture_mode, tint_gl_composited_content_,
                            ShouldApplyRoundedCorner(quad)),
-      src_color_space, dst_color_space);
+      src_color_space, dst_color_space, /*adjust_src_white_level=*/true);
 
   if (current_program_->tint_color_matrix_location() != -1) {
     auto matrix = cc::DebugColors::TintCompositedContentColorTransformMatrix();
@@ -2618,7 +2620,8 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
 
   // Bind the program to the GL state.
   SetUseProgram(draw_cache_.program_key, locked_quad.color_space(),
-                CurrentRenderPassColorSpace());
+                CurrentRenderPassColorSpace(),
+                /*adjust_src_white_level=*/draw_cache_.is_video_frame);
 
   if (current_program_->rounded_corner_rect_location() != -1) {
     SetShaderRoundedCorner(
@@ -2686,6 +2689,7 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   draw_cache_.vertex_opacity_data.resize(0);
   draw_cache_.matrix_data.resize(0);
   draw_cache_.tex_clamp_rect_data = Float4();
+  draw_cache_.is_video_frame = false;
 
   // If we had a clipped binding, prepare the shared binding for the
   // next inserts.
@@ -2735,7 +2739,8 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
       draw_cache_.background_color != quad->background_color ||
       draw_cache_.rounded_corner_bounds !=
           quad->shared_quad_state->rounded_corner_bounds ||
-      draw_cache_.matrix_data.size() >= max_quads) {
+      draw_cache_.matrix_data.size() >= max_quads ||
+      draw_cache_.is_video_frame != quad->is_video_frame) {
     FlushTextureQuadCache(SHARED_BINDING);
     draw_cache_.is_empty = false;
     draw_cache_.program_key = program_key;
@@ -2745,6 +2750,7 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
     draw_cache_.background_color = quad->background_color;
     draw_cache_.rounded_corner_bounds =
         quad->shared_quad_state->rounded_corner_bounds;
+    draw_cache_.is_video_frame = quad->is_video_frame;
   }
 
   // Generate the uv-transform
@@ -2850,6 +2856,9 @@ void GLRenderer::FinishDrawingFrame() {
 
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("viz.triangles"), "Triangles Drawn",
                  num_triangles_drawn_);
+
+  // Mark the end of batched read of shared images.
+  gl_->EndBatchReadAccessSharedImageCHROMIUM();
 }
 
 bool GLRenderer::OverdrawTracingEnabled() {
@@ -3362,14 +3371,16 @@ void GLRenderer::PrepareGeometry(BoundGeometry binding) {
 
 void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
                                const gfx::ColorSpace& src_color_space,
-                               const gfx::ColorSpace& dst_color_space) {
+                               const gfx::ColorSpace& dst_color_space,
+                               bool adjust_src_white_level) {
   DCHECK(dst_color_space.IsValid());
-
-  // If the input color space is PQ, and it did not specify a white level,
-  // override it with the frame's white level.
-  gfx::ColorSpace adjusted_src_color_space =
-      src_color_space.GetWithPQSDRWhiteLevel(
-          current_frame()->display_color_spaces.GetSDRWhiteLevel());
+  gfx::ColorSpace adjusted_src_color_space = src_color_space;
+  if (adjust_src_white_level) {
+    // If the input color space is HDR, and it did not specify a white level,
+    // override it with the frame's white level.
+    adjusted_src_color_space = src_color_space.GetWithSDRWhiteLevel(
+        current_frame()->display_color_spaces.GetSDRWhiteLevel());
+  }
 
   ProgramKey program_key = program_key_no_color;
   const gfx::ColorTransform* color_transform =

@@ -311,5 +311,50 @@ TEST(ColorSpace, GetsPrimariesTransferMatrixAndRange) {
   EXPECT_EQ(color_space.GetRangeID(), ColorSpace::RangeID::LIMITED);
 }
 
+TEST(ColorSpace, PQWhiteLevel) {
+  constexpr float kCustomWhiteLevel = 200.f;
+
+  ColorSpace color_space = ColorSpace::CreateHDR10(kCustomWhiteLevel);
+  EXPECT_EQ(color_space.GetTransferID(), ColorSpace::TransferID::SMPTEST2084);
+  float sdr_white_level;
+  EXPECT_TRUE(color_space.GetPQSDRWhiteLevel(&sdr_white_level));
+  EXPECT_EQ(sdr_white_level, kCustomWhiteLevel);
+
+  color_space = ColorSpace::CreateHDR10();
+  EXPECT_EQ(color_space.GetTransferID(), ColorSpace::TransferID::SMPTEST2084);
+  EXPECT_TRUE(color_space.GetPQSDRWhiteLevel(&sdr_white_level));
+  EXPECT_EQ(sdr_white_level, ColorSpace::kDefaultSDRWhiteLevel);
+
+  color_space = color_space.GetWithSDRWhiteLevel(kCustomWhiteLevel);
+  EXPECT_EQ(color_space.GetTransferID(), ColorSpace::TransferID::SMPTEST2084);
+  EXPECT_TRUE(color_space.GetPQSDRWhiteLevel(&sdr_white_level));
+  EXPECT_EQ(sdr_white_level, kCustomWhiteLevel);
+}
+
+TEST(ColorSpace, LinearHDRWhiteLevel) {
+  constexpr float kCustomWhiteLevel = 200.f;
+  constexpr float kCustomSlope =
+      ColorSpace::kDefaultScrgbLinearSdrWhiteLevel / kCustomWhiteLevel;
+
+  ColorSpace color_space = ColorSpace::CreateSCRGBLinear(kCustomWhiteLevel);
+  skcms_TransferFunction fn;
+  EXPECT_EQ(color_space.GetTransferID(), ColorSpace::TransferID::CUSTOM_HDR);
+  EXPECT_TRUE(color_space.GetTransferFunction(&fn));
+  EXPECT_EQ(std::make_tuple(fn.g, fn.a, fn.b, fn.c, fn.d, fn.e, fn.f),
+            std::make_tuple(1.f, kCustomSlope, 0.f, 0.f, 0.f, 0.f, 0.f));
+
+  color_space = ColorSpace::CreateSCRGBLinear();
+  EXPECT_EQ(color_space.GetTransferID(), ColorSpace::TransferID::LINEAR_HDR);
+  EXPECT_TRUE(color_space.GetTransferFunction(&fn));
+  EXPECT_EQ(std::make_tuple(fn.g, fn.a, fn.b, fn.c, fn.d, fn.e, fn.f),
+            std::make_tuple(1.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f));
+
+  color_space = color_space.GetWithSDRWhiteLevel(kCustomWhiteLevel);
+  EXPECT_EQ(color_space.GetTransferID(), ColorSpace::TransferID::CUSTOM_HDR);
+  EXPECT_TRUE(color_space.GetTransferFunction(&fn));
+  EXPECT_EQ(std::make_tuple(fn.g, fn.a, fn.b, fn.c, fn.d, fn.e, fn.f),
+            std::make_tuple(1.f, kCustomSlope, 0.f, 0.f, 0.f, 0.f, 0.f));
+}
+
 }  // namespace
 }  // namespace gfx

@@ -12,10 +12,27 @@
 #include "base/auto_reset.h"
 #include "base/check_op.h"
 #include "pdf/paint_ready_rect.h"
+#include "pdf/ppapi_migration/geometry_conversions.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/point.h"
+#include "ppapi/cpp/rect.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 namespace chrome_pdf {
+
+namespace {
+
+// Not part of ppapi_migration because `gfx::Vector2d` only needs to be
+// converted to `pp::Point` at the boundary with `pp::Graphics2D`.
+pp::Point ToPepperPoint(const gfx::Vector2d& vector) {
+  return pp::Point(vector.x(), vector.y());
+}
+
+}  // namespace
 
 PaintManager::PaintManager(Client* client) : client_(client) {
   DCHECK(client_);
@@ -28,20 +45,20 @@ PaintManager::PaintManager(Client* client) : client_(client) {
 PaintManager::~PaintManager() = default;
 
 // static
-pp::Size PaintManager::GetNewContextSize(const pp::Size& current_context_size,
-                                         const pp::Size& plugin_size) {
+gfx::Size PaintManager::GetNewContextSize(const gfx::Size& current_context_size,
+                                          const gfx::Size& plugin_size) {
   // The amount of additional space in pixels to allocate to the right/bottom of
   // the context.
   constexpr int kBufferSize = 50;
 
   // Default to returning the same size.
-  pp::Size result = current_context_size;
+  gfx::Size result = current_context_size;
 
   // The minimum size of the plugin before resizing the context to ensure we
   // aren't wasting too much memory. We deduct twice the kBufferSize from the
   // current context size which gives a threshhold that is kBufferSize below
   // the plugin size when the context size was last computed.
-  pp::Size min_size(
+  gfx::Size min_size(
       std::max(current_context_size.width() - 2 * kBufferSize, 0),
       std::max(current_context_size.height() - 2 * kBufferSize, 0));
 
@@ -55,14 +72,14 @@ pp::Size PaintManager::GetNewContextSize(const pp::Size& current_context_size,
       plugin_size.height() < min_size.height()) {
     // Create a larger context than needed so that if we only resize by a
     // small margin, we don't need a new context.
-    result = pp::Size(plugin_size.width() + kBufferSize,
-                      plugin_size.height() + kBufferSize);
+    result = gfx::Size(plugin_size.width() + kBufferSize,
+                       plugin_size.height() + kBufferSize);
   }
 
   return result;
 }
 
-void PaintManager::SetSize(const pp::Size& new_size, float device_scale) {
+void PaintManager::SetSize(const gfx::Size& new_size, float device_scale) {
   if (GetEffectiveSize() == new_size &&
       GetEffectiveDeviceScale() == device_scale) {
     return;
@@ -78,13 +95,14 @@ void PaintManager::SetSize(const pp::Size& new_size, float device_scale) {
 }
 
 void PaintManager::SetTransform(float scale,
-                                const pp::Point& origin,
-                                const pp::Point& translate,
+                                const gfx::Point& origin,
+                                const gfx::Vector2d& translate,
                                 bool schedule_flush) {
   if (graphics_.is_null())
     return;
 
-  graphics_.SetLayerTransform(scale, origin, translate);
+  graphics_.SetLayerTransform(scale, PPPointFromPoint(origin),
+                              ToPepperPoint(translate));
 
   if (!schedule_flush)
     return;
@@ -97,7 +115,7 @@ void PaintManager::SetTransform(float scale,
 }
 
 void PaintManager::ClearTransform() {
-  SetTransform(1.f, pp::Point(), pp::Point(), false);
+  SetTransform(1.f, gfx::Point(), gfx::Vector2d(), false);
 }
 
 void PaintManager::Invalidate() {
@@ -105,17 +123,18 @@ void PaintManager::Invalidate() {
     return;
 
   EnsureCallbackPending();
-  aggregator_.InvalidateRect(pp::Rect(GetEffectiveSize()));
+  aggregator_.InvalidateRect(gfx::Rect(GetEffectiveSize()));
 }
 
-void PaintManager::InvalidateRect(const pp::Rect& rect) {
+void PaintManager::InvalidateRect(const gfx::Rect& rect) {
   DCHECK(!in_paint_);
 
   if (graphics_.is_null() && !has_pending_resize_)
     return;
 
   // Clip the rect to the device area.
-  pp::Rect clipped_rect = rect.Intersect(pp::Rect(GetEffectiveSize()));
+  gfx::Rect clipped_rect =
+      gfx::IntersectRects(rect, gfx::Rect(GetEffectiveSize()));
   if (clipped_rect.IsEmpty())
     return;  // Nothing to do.
 
@@ -123,8 +142,8 @@ void PaintManager::InvalidateRect(const pp::Rect& rect) {
   aggregator_.InvalidateRect(clipped_rect);
 }
 
-void PaintManager::ScrollRect(const pp::Rect& clip_rect,
-                              const pp::Point& amount) {
+void PaintManager::ScrollRect(const gfx::Rect& clip_rect,
+                              const gfx::Vector2d& amount) {
   DCHECK(!in_paint_);
 
   if (graphics_.is_null() && !has_pending_resize_)
@@ -135,7 +154,7 @@ void PaintManager::ScrollRect(const pp::Rect& clip_rect,
   aggregator_.ScrollRect(clip_rect, amount);
 }
 
-pp::Size PaintManager::GetEffectiveSize() const {
+gfx::Size PaintManager::GetEffectiveSize() const {
   return has_pending_resize_ ? pending_size_ : plugin_size_;
 }
 
@@ -165,7 +184,7 @@ void PaintManager::DoPaint() {
   base::AutoReset<bool> auto_reset_in_paint(&in_paint_, true);
 
   std::vector<PaintReadyRect> ready_rects;
-  std::vector<pp::Rect> pending_rects;
+  std::vector<gfx::Rect> pending_rects;
 
   DCHECK(aggregator_.HasPendingUpdate());
 
@@ -176,11 +195,14 @@ void PaintManager::DoPaint() {
   // do this later.
   if (has_pending_resize_) {
     plugin_size_ = pending_size_;
+    // Extra call to pp_size() required here because the operator for converting
+    // to PP_Size is non-const.
+    const gfx::Size old_size = SizeFromPPSize(graphics_.size().pp_size());
     // Only create a new graphics context if the current context isn't big
     // enough or if it is far too big. This avoids creating a new context if
     // we only resize by a small amount.
-    pp::Size new_size = GetNewContextSize(graphics_.size(), pending_size_);
-    if (graphics_.size() != new_size) {
+    gfx::Size new_size = GetNewContextSize(old_size, pending_size_);
+    if (old_size != new_size) {
       graphics_ = client_->CreatePaintGraphics(new_size);
       graphics_need_to_be_bound_ = true;
 
@@ -197,7 +219,7 @@ void PaintManager::DoPaint() {
     // This must be cleared before calling into the plugin since it may do
     // additional invalidation or sizing operations.
     has_pending_resize_ = false;
-    pending_size_ = pp::Size();
+    pending_size_ = gfx::Size();
   }
 
   PaintAggregator::PaintUpdate update = aggregator_.GetPendingUpdate();
@@ -208,15 +230,15 @@ void PaintManager::DoPaint() {
 
   std::vector<PaintReadyRect> ready_now;
   if (pending_rects.empty()) {
-    std::vector<PaintReadyRect> temp_ready;
-    temp_ready.insert(temp_ready.end(), ready_rects.begin(), ready_rects.end());
-    aggregator_.SetIntermediateResults(temp_ready, pending_rects);
+    aggregator_.SetIntermediateResults(ready_rects, pending_rects);
     ready_now = aggregator_.GetReadyRects();
     aggregator_.ClearPendingUpdate();
 
     // Apply any scroll first.
-    if (update.has_scroll)
-      graphics_.Scroll(update.scroll_rect, update.scroll_delta);
+    if (update.has_scroll) {
+      graphics_.Scroll(PPRectFromRect(update.scroll_rect),
+                       ToPepperPoint(update.scroll_delta));
+    }
 
     view_size_changed_waiting_for_paint_ = false;
   } else {
@@ -227,7 +249,7 @@ void PaintManager::DoPaint() {
       // previous image, but if we flush, it'll revert to using the blank image.
       // We make an exception for the first paint since we want to show the
       // default background color instead of the pepper default of black.
-      if (ready_rect.flush_now &&
+      if (ready_rect.flush_now() &&
           (!view_size_changed_waiting_for_paint_ || first_paint_)) {
         ready_now.push_back(ready_rect);
       } else {
@@ -245,8 +267,8 @@ void PaintManager::DoPaint() {
   }
 
   for (const auto& ready_rect : ready_now) {
-    graphics_.PaintImageData(ready_rect.image_data, pp::Point(),
-                             ready_rect.rect);
+    graphics_.PaintImageData(ready_rect.image_data(), pp::Point(),
+                             PPRectFromRect(ready_rect.rect()));
   }
 
   Flush();

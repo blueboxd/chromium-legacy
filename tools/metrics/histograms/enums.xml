@@ -13520,6 +13520,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="27" label="Crash.Collector.CollectionCount"/>
   <int value="28" label="Cryptohome.DoubleMountRequest"/>
   <int value="29" label="SessionManager.SafeModeEnabled"/>
+  <int value="30" label="Crash.Sender.FailedCrashRemoval"/>
 </enum>
 
 <enum name="CrosFirstRunTutorialCompletionType">
@@ -21263,6 +21264,7 @@ Called by update_document_policy_enum.py.-->
   <int value="741" label="ReportDeviceSystemInfo"/>
   <int value="742" label="AutoplayAllowlist"/>
   <int value="743" label="DevicePrinters"/>
+  <int value="744" label="NativeMessagingBlocklist"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -28514,6 +28516,8 @@ Called by update_use_counter_feature_enum.py.-->
       label="HTMLMetaElementReferrerPolicyMultipleTokensAffectingRequest"/>
   <int value="3349" label="NavigationTimingL2"/>
   <int value="3350" label="ResourceTiming"/>
+  <int value="3351" label="V8PointerEvent_AzimuthAngle_AttributeGetter"/>
+  <int value="3352" label="V8PointerEvent_AltitudeAngle_AttributeGetter"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -38682,6 +38686,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="57" label="SBOX_ERROR_CANNOT_WRITE_VARIABLE_VALUE"/>
   <int value="58" label="SBOX_ERROR_INVALID_WRITE_VARIABLE_SIZE"/>
   <int value="59" label="SBOX_ERROR_CANNOT_INIT_BROKERSERVICES"/>
+  <int value="60" label="SBOX_ERROR_CANNOT_UPDATE_JOB_PROCESS_LIMIT"/>
   <int value="1002" label="LAUNCH_RESULT_SUCCESS"/>
   <int value="1003" label="LAUNCH_RESULT_FAILURE"/>
 </enum>
@@ -41437,6 +41442,7 @@ from previous Chrome versions.
   <int value="-268549184"
       label="AutofillSaveCreditCardUsesStrikeSystemV2:enabled"/>
   <int value="-268357961" label="enable-feature-policy"/>
+  <int value="-265697837" label="PhoneHub:disabled"/>
   <int value="-263150202" label="BundledConnectionHelp:disabled"/>
   <int value="-262122630" label="ArcEnableDocumentsProviderInFilesApp:enabled"/>
   <int value="-258081634" label="AutofillAssistantDirectActions:disabled"/>
@@ -42137,6 +42143,7 @@ from previous Chrome versions.
   <int value="517568645" label="AnimatedAppMenuIcon:disabled"/>
   <int value="518419320" label="RemoteCopyProgressNotification:disabled"/>
   <int value="520982116" label="BuiltInModuleAll:enabled"/>
+  <int value="529235584" label="PhoneHub:enabled"/>
   <int value="530828403" label="AllowStartingServiceManagerOnly:disabled"/>
   <int value="533064367" label="WebRtcHideLocalIpsWithMdns:disabled"/>
   <int value="535131384" label="OmniboxTailSuggestions:enabled"/>

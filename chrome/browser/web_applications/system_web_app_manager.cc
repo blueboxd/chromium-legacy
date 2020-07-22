@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
+#include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/web_application_info.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -44,6 +46,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
+#include "chrome/browser/chromeos/web_applications/sample_system_web_app_info.h"
 #include "chrome/browser/chromeos/web_applications/terminal_source.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/components/media_app_ui/url_constants.h"
@@ -153,9 +156,10 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
   }
 
 #if !defined(OFFICIAL_BUILD)
-  infos.emplace(
-      SystemAppType::SAMPLE,
-      SystemAppInfo("Sample", GURL("chrome://sample-system-web-app/pwa.html")));
+  infos.emplace(SystemAppType::SAMPLE,
+                SystemAppInfo("Sample", GURL("chrome://sample-system-web-app"),
+                              base::BindRepeating(
+                                  &CreateWebAppInfoForSampleSystemWebApp)));
   // Frobulate is the name for Sample Origin Trial API, and has no impact on the
   // Web App's functionality. Here we use it to demonstrate how to enable origin
   // trials for a System Web App.
@@ -179,6 +183,7 @@ ExternalInstallOptions CreateInstallOptionsForSystemApp(
   ExternalInstallOptions install_options(
       info.install_url, DisplayMode::kStandalone,
       ExternalInstallSource::kSystemInstalled);
+  install_options.app_info_factory = info.app_info_factory;
   install_options.add_to_applications_menu = info.show_in_launcher;
   install_options.add_to_desktop = false;
   install_options.add_to_quick_launch_bar = false;
@@ -229,6 +234,13 @@ std::set<SystemAppType> GetDisabledSystemWebApps() {
 SystemAppInfo::SystemAppInfo(const std::string& name_for_logging,
                              const GURL& install_url)
     : name_for_logging(name_for_logging), install_url(install_url) {}
+
+SystemAppInfo::SystemAppInfo(const std::string& name_for_logging,
+                             const GURL& install_url,
+                             const WebApplicationInfoFactory& app_info_factory)
+    : name_for_logging(name_for_logging),
+      install_url(install_url),
+      app_info_factory(app_info_factory) {}
 
 SystemAppInfo::SystemAppInfo(const SystemAppInfo& other) = default;
 

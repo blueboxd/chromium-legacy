@@ -32,8 +32,7 @@
       return;
     }
 
-    var requests =
-        NetworkTestRunner.networkRequests().filter((e, i, a) => i % 2 == 0);
+    var requests = NetworkTestRunner.networkRequests();
     var request1 = requests[requests.length - 2];
     var request2 = requests[requests.length - 1];
     var request1Content = await request1.requestContent();

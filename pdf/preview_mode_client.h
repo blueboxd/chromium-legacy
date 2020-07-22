@@ -13,6 +13,10 @@
 #include "base/callback_forward.h"
 #include "pdf/pdf_engine.h"
 
+namespace gfx {
+class Vector2d;
+}  // namespace gfx
+
 namespace chrome_pdf {
 
 // The interface that's provided to the print preview rendering engine.
@@ -30,7 +34,7 @@ class PreviewModeClient : public PDFEngine::Client {
   // PDFEngine::Client implementation.
   void ProposeDocumentLayout(const DocumentLayout& layout) override;
   void Invalidate(const pp::Rect& rect) override;
-  void DidScroll(const pp::Point& point) override;
+  void DidScroll(const gfx::Vector2d& offset) override;
   void ScrollToX(int x_in_screen_coords) override;
   void ScrollToY(int y_in_screen_coords, bool compensate_for_toolbar) override;
   void ScrollBy(const pp::Point& point) override;

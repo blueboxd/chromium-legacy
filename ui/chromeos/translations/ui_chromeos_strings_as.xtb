@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">বছৰ ৰেকর্ড কৰা হৈছে</translation>
 <translation id="3338239663705455570">শ্ল’ভেনিয়ান কীব’র্ড</translation>
 <translation id="3353984535370177728">আপল’ড কৰিবলৈ এটা ফ’ল্ডাৰ বাছনি কৰক</translation>
+<translation id="3356580349448036450">সম্পূৰ্ণ হ’ল</translation>
 <translation id="3399597614303179694">মেচেড’নিয়ান কীব’র্ড</translation>
 <translation id="3437801641691368414">সৃষ্টি কৰাৰ সময়</translation>
 <translation id="3466147780910026086">আপোনাৰ মিডিয়া ডিভাইচ স্কেন কৰি থকা হৈছে...</translation>
@@ -546,7 +547,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">ইনষ্টল কৰিব পৰা নগ’ল।</translation>
 <translation id="7040138676081995583">ইয়াৰ জৰিয়তে খোলক...</translation>
-<translation id="7059566040011178088"><ph name="REMAINING_TIME" />তকৈ কম</translation>
 <translation id="7100897339030255923"><ph name="COUNT" />টা বস্তু বাছনি কৰা হৈছে</translation>
 <translation id="7106346894903675391">ষ্ট’ৰ কৰাৰ অধিক ঠাই কিনক...</translation>
 <translation id="7126604456862387217">’&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;’ - &lt;em&gt;সন্ধানৰ ড্ৰাইভ&lt;/em&gt;</translation>
@@ -655,7 +655,6 @@
 <translation id="8193175696669055101">ডিভাইচৰ মডেল</translation>
 <translation id="8208580316430297579">শিল্পকৰ্ম</translation>
 <translation id="8223479393428528563">এই ফাইলবোৰ অফলাইন অৱস্থাত ব্যৱহাৰ কৰাৰ বাবে ছেভ কৰিবলৈ অনলাইন হওক আৰু তাৰপিছত ফাইলত সোঁফালে ক্লিক কৰি <ph name="OFFLINE_CHECKBOX_NAME" /> বিকল্পটো বাছনি কৰক।</translation>
-<translation id="8231972167769262174"><ph name="REMAINING_TIME" />ৰ বিষয়ে</translation>
 <translation id="8249296373107784235">নিষ্ফল কৰক</translation>
 <translation id="8261506727792406068">মচক</translation>
 <translation id="8269755669432358899">ফাইলসমূহৰ প্ৰতিক্ৰিয়াৰ পেনেলটো সংকোচন কৰক</translation>

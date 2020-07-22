@@ -1771,7 +1771,7 @@ class NetworkContextConfigurationHttpPacBrowserTest
   ~NetworkContextConfigurationHttpPacBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    pac_test_server_.RegisterRequestHandler(base::Bind(
+    pac_test_server_.RegisterRequestHandler(base::BindRepeating(
         &NetworkContextConfigurationHttpPacBrowserTest::HandlePacRequest,
         GetPacScript()));
     EXPECT_TRUE(pac_test_server_.Start());

@@ -16,11 +16,14 @@ namespace base {
 class FilePath;
 }
 
+namespace favicon {
+class FaviconDatabase;
+}
+
 namespace history {
 
 class HistoryBackend;
 class HistoryDatabase;
-class FaviconDatabase;
 
 struct URLAndTitle {
   GURL url;
@@ -48,7 +51,7 @@ class HistoryBackendClient {
   virtual void OnHistoryBackendInitialized(
       HistoryBackend* history_backend,
       HistoryDatabase* history_database,
-      FaviconDatabase* favicon_database,
+      favicon::FaviconDatabase* favicon_database,
       const base::FilePath& history_dir) = 0;
 
   // Called upon destruction of the HistoryBackend.

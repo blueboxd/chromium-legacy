@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Qeydə alındığı il</translation>
 <translation id="3338239663705455570">Sloveniya klaviaturası</translation>
 <translation id="3353984535370177728">Yükləmək üçün qovluq seçin</translation>
+<translation id="3356580349448036450">Tamamlandı</translation>
 <translation id="3399597614303179694">Makedoniya klaviaturası</translation>
 <translation id="3414856743105198592">Kənarlaşdırıla bilən medianın format edilməsi bütün datanın silinməsi ilə nəticələnir. Davam edirsiniz?</translation>
 <translation id="3437801641691368414">Yaranma tarixi</translation>
@@ -550,7 +551,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Quraşdırma uğursuz oldu.</translation>
 <translation id="7040138676081995583">Bununla açın...</translation>
-<translation id="7059566040011178088">Bundan az: <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> element seçilib</translation>
 <translation id="7106346894903675391">Əlavə yaddaş alın...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;Diskdə axtarın&lt;/em&gt;</translation>
@@ -659,7 +659,6 @@
 <translation id="8193175696669055101">Cihaz modeli</translation>
 <translation id="8208580316430297579">Sənət əsəri</translation>
 <translation id="8223479393428528563">Bu faylları oflayn istifadəyə saxlamaq üçün onlayn olun, faylları sağ klikləyin və <ph name="OFFLINE_CHECKBOX_NAME" /> seçimini edin.</translation>
-<translation id="8231972167769262174"><ph name="REMAINING_TIME" /> haqqında</translation>
 <translation id="8249296373107784235">Dayandırın</translation>
 <translation id="8261506727792406068">Silin</translation>
 <translation id="8269755669432358899">Faylların rəy panelini yığcamlaşdırın</translation>

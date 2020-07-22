@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 40
+// Next MinVersion: 41
 
 module arc.mojom;
 
+import "components/arc/mojom/app.mojom";
 import "components/arc/mojom/bitmap.mojom";
 import "components/arc/mojom/camera_intent.mojom";
 import "components/arc/mojom/intent_common.mojom";
@@ -107,6 +108,7 @@ struct ActivityIcon {
   uint32 width;  // in px
   uint32 height;  // in px
   array<uint8> icon;  // in BGRA8888 format
+  [MinVersion=40] RawIconPngData? icon_png_data;
 };
 
 // URL associated with its mime type.

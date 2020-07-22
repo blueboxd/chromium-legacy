@@ -577,6 +577,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5665379678064389456">Vytvorte udalosť v aplikácii <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignorovať požiadavku webových stránok na zákaz priblíženia</translation>
+<translation id="5683547024293500885">Chrome nemôže skontrolovať dostupnosť aktualizácií</translation>
 <translation id="5686790454216892815">Názov súboru je príliš dlhý</translation>
 <translation id="5694049548840660018">Prechádzajte ľahko na domovskú stránku</translation>
 <translation id="569536719314091526">Preložte si túto stránku do ľubovoľného jazyka pomocou tlačidla Ďalšie možnosti</translation>
@@ -589,6 +590,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5732819098735351888">Sťahovanie sa začne v sieti Wi-Fi.</translation>
 <translation id="5748802427693696783">Prepnuté na štandardné karty</translation>
 <translation id="5749068826913805084">Chrome potrebuje na sťahovanie súborov prístup k úložisku.</translation>
+<translation id="5749237766298580851">Vypnuté <ph name="SEPARATOR" /> Neodporúča sa</translation>
 <translation id="5754350196967618083">Kanál Objaviť sa nedá obnoviť</translation>
 <translation id="5763382633136178763">Karty inkognito</translation>
 <translation id="5763514718066511291">Klepnutím skopírujete webovú adresu tejto aplikácie</translation>
@@ -996,6 +998,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="8970887620466824814">Vyskytol sa problém.</translation>
 <translation id="8972098258593396643">Stiahnuť do predvoleného priečinka?</translation>
 <translation id="8988028529677883095">Používať telefón ako bezpečnostný kľúč</translation>
+<translation id="8990209962746788689">Nie je možné vytvoriť QR kód</translation>
 <translation id="8993760627012879038">Otvorenie novej karty v režime inkognito</translation>
 <translation id="8998729206196772491">Prihlasujete sa pomocou účtu spravovaného doménou <ph name="MANAGED_DOMAIN" /> a jej správcovi tým dávate kontrolu nad svojimi údajmi Chromu. Vaše údaje budú natrvalo prepojené s týmto účtom. Odhlásením z Chromu odstránite údaje z príslušného zariadenia, avšak naďalej zostanú uložené vo vašom účte Google.</translation>
 <translation id="9028914725102941583">Zapnite synchronizáciu a zdieľajte medzi zariadeniami</translation>

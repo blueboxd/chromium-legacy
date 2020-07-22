@@ -18,7 +18,7 @@
     line-height: 138%;
   }
 
-  #horizontal-line {
+  #confirmation-token {
     border-top: 1px dashed rgba(151, 151, 151, 0.74);
     color: rgba(0, 0, 0, 0.4);
     flex-grow: 1;
@@ -77,7 +77,9 @@
 
   <div id="process-row">
     <nearby-preview title="Doggo.jpg"></nearby-preview>
-    <div id="horizontal-line">Secure connection ID: A392</div>
+    <div id="confirmation-token">
+      Secure connection ID: [[confirmationToken]]
+    </div>
     <nearby-progress device-name="Pixel 2"></nearby-progress>
   </div>
 
@@ -91,10 +93,10 @@
   </cr-checkbox>
 
   <div id="actions">
-    <cr-button class="cancel-button">
+    <cr-button id="cancel-button" class="cancel-button" on-click="onCancelTap_">
       Cancel
     </cr-button>
-    <cr-button class="action-button">
+    <cr-button id="accept-button" class="action-button" on-click="onAcceptTap_">
       Confirm
     </cr-button>
   </div>

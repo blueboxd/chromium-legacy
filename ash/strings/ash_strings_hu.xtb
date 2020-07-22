@@ -111,7 +111,7 @@
 <translation id="2222338659135520253">Bejelentkezést igényel</translation>
 <translation id="225680501294068881">Eszközök keresése...</translation>
 <translation id="2268130516524549846">Bluetooth letiltva</translation>
-<translation id="2268813581635650749">Összes kijelentkeztetése</translation>
+<translation id="2268813581635650749">Összes kiléptetése</translation>
 <translation id="2277103315734023688">Ugrás előre</translation>
 <translation id="2292698582925480719">Megjelenítés méret</translation>
 <translation id="229397294990920565">Mobiladat-kapcsolat kikapcsolása…</translation>
@@ -206,7 +206,7 @@
 <translation id="3236488194889173876">Nem áll rendelkezésre mobilhálózat</translation>
 <translation id="3249513730522716925">A(z) „<ph name="WINDOW_TITLE" />” ablak át lett helyezve a(z) „<ph name="ACTIVE_DESK" />” asztalról a(z) „<ph name="TARGET_DESK" />” asztalra</translation>
 <translation id="3255483164551725916">Mit lehet csinálni?</translation>
-<translation id="3290356915286466215">Nem biztonságos</translation>
+<translation id="3290356915286466215">Nem bizt.</translation>
 <translation id="3294437725009624529">Vendég</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> később be tud jelentkezni.</translation>
 <translation id="3321628682574733415">Érvénytelen szülői kód</translation>
@@ -277,7 +277,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4028481283645788203">A nagyobb biztonság érdekében jelszó szükséges</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Jelenleg megosztja a képernyőt</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Kikapcsolva 1 alkalmazás számára}other{Kikapcsolva # alkalmazás számára}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Ki, 1 appnál}other{Ki, # appnál}}</translation>
 <translation id="4072264167173457037">Közepes jel</translation>
 <translation id="4112140312785995938">Ugrás visszafelé</translation>
 <translation id="4129129681837227511">Ha szeretné látni az értesítéseket a lezárási képernyőn, oldja fel a képernyő zárolását a beállítás módosításához</translation>
@@ -302,7 +302,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4356930093361201197">nagy kontrasztú mód</translation>
 <translation id="4368583494516669646">Jó éjszakát, <ph name="GIVEN_NAME" />!</translation>
 <translation id="4371348193907997655">Átküldés beállításai</translation>
-<translation id="4378551569595875038">Kapcsolódás folyamatban…</translation>
+<translation id="4378551569595875038">Kapcsolódás…</translation>
 <translation id="4379531060876907730">Ezek az érintőceruza-eszközök</translation>
 <translation id="4389184120735010762">Lenyomta a dokkolt nagyító billentyűparancsát. Bekapcsolja a funkciót?</translation>
 <translation id="4421231901400348175">A képernyő irányításának megosztása <ph name="HELPER_NAME" /> segítővel a Távsegítség szolgáltatás keretein belül.</translation>
@@ -422,7 +422,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5958529069007801266">Felügyelt felhasználó</translation>
 <translation id="5977415296283489383">Fülhallgató</translation>
 <translation id="5978382165065462689">A képernyő irányításának megosztása a Távsegítség szolgáltatás keretein belül.</translation>
-<translation id="5980301590375426705">Kilépés a vendég munkamenetből</translation>
+<translation id="5980301590375426705">Kilépés vendégként</translation>
 <translation id="598882571027504733">A frissítés lekéréséhez indítsa újra a Chromebookot a csatlakoztatott billentyűzet segítségével.</translation>
 <translation id="5992218262414051481">Nagy kontrasztú mód bekapcsolva. Kikapcsoláshoz nyomja le ismét a Ctrl+Keresés+H billentyűparancsot.</translation>
 <translation id="6018164090099858612">Kilépés a tükrözési módból</translation>
@@ -507,12 +507,12 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="6919251195245069855">A rendszer nem ismerte fel az intelligens kártyáját. Próbálja újra.</translation>
 <translation id="6945221475159498467">Kiválasztás</translation>
 <translation id="6972754398087986839">Első lépések</translation>
-<translation id="6981982820502123353">Kisegítő lehetőségek</translation>
+<translation id="6981982820502123353">Kisegítő opciók</translation>
 <translation id="698231206551913481">A felhasználó eltávolításakor az összes hozzá tartozó fájl és helyi adat is véglegesen törlődik.</translation>
 <translation id="7015766095477679451">Térjen vissza ekkor: <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">A(z) <ph name="DEVICE_NAME" /> eszköz csatlakoztatása a telefonjával</translation>
 <translation id="7026338066939101231">Csökkentés</translation>
-<translation id="7029814467594812963">Kilépés a munkamenetből</translation>
+<translation id="7029814467594812963">Kilépés</translation>
 <translation id="703425375924687388"><ph name="QUERY_NAME" />, Google Segéd</translation>
 <translation id="7042322267639375032">Állapotsor összecsukása</translation>
 <translation id="7066646422045619941">Ezt a hálózatot letiltotta a rendszergazda.</translation>
@@ -599,7 +599,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8054466585765276473">Akkumulátor-időtartam kiszámítása.</translation>
 <translation id="8061464966246066292">Kontrasztos megjelenítés</translation>
 <translation id="8098591350844501178">A képernyő „<ph name="RECEIVER_NAME" />” eszközre történő átküldésének leállítása</translation>
-<translation id="8113423164597455979">Bekapcsolva az összes alkalmazásnál</translation>
+<translation id="8113423164597455979">Be, összes app</translation>
 <translation id="8131740175452115882">Megerősítés</translation>
 <translation id="8132793192354020517">Csatlakozás a következőhöz megtörtént: <ph name="NAME" /></translation>
 <translation id="813913629614996137">Indítás…</translation>
@@ -640,7 +640,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8473301994082929012">A(z) <ph name="ORGANIZATION_NAME" /> szervezetnél <ph name="FEATURE_STATE" /> van a(z) <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">A kikapcsoláshoz nyomja meg az Alt+Keresés billentyűkombinációt vagy a Shift billentyűt.</translation>
 <translation id="8492573885090281069">A(z) <ph name="DISPLAY_NAME" /> nem támogatja a következő felbontást: <ph name="SPECIFIED_RESOLUTION" />. A felbontás erre módosult: <ph name="FALLBACK_RESOLUTION" />. A módosítás megtartásához kattintson a Megerősítés gombra. A beállítás <ph name="TIMEOUT_SECONDS" /> múlva visszaáll a korábbi értékre.</translation>
-<translation id="8513108775083588393">Automatikus forgatás</translation>
+<translation id="8513108775083588393">Autom.forgatás</translation>
 <translation id="8517041960877371778">Előfordulhat, hogy a(z) <ph name="DEVICE_TYPE" /> nem töltődik, amíg be van kapcsolva.</translation>
 <translation id="8563862697512465947">Értesítési beállítások</translation>
 <translation id="857201607579416096">A menü a képernyő jobb alsó sarkába került.</translation>
@@ -673,7 +673,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8843682306134542540">Váltás a forgatás zárolásának állapotai közt. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Keresés+Esc</translation>
 <translation id="8870509716567206129">Az alkalmazás nem támogatja az osztott képernyős nézetet.</translation>
-<translation id="8874184842967597500">Nincs csatlakozva</translation>
+<translation id="8874184842967597500">Nincs csatl.</translation>
 <translation id="8877788021141246043">Emlékeztető beállítása</translation>
 <translation id="8878886163241303700">Kibővített képernyő</translation>
 <translation id="890616557918890486">Forrás módosítása</translation>

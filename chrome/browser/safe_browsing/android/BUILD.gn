@@ -41,6 +41,7 @@ android_library("java") {
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   srcjar_deps = [ ":safe_browsing_enums" ]
+  resources_package = "org.chromium.chrome.browser.safe_browsing.settings"
 }
 
 android_library("javatests") {
@@ -72,7 +73,7 @@ android_resources("java_resources") {
     "//chrome/browser/ui/android/strings:ui_strings_grd",
     "//components/browser_ui/settings/android:java_resources",
   ]
-  custom_package = "org.chromium.chrome.browser.safe_browsing.settings"
+  create_srcjar = false
 }
 
 java_cpp_enum("safe_browsing_enums") {

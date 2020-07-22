@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/updater/update_apps.h"
-
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/updater/configurator.h"

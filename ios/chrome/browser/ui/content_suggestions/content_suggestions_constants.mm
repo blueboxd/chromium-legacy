@@ -12,3 +12,6 @@ NSString* const kContentSuggestionsCollectionIdentifier =
     @"ContentSuggestionsCollectionIdentifier";
 
 NSString* const kContentSuggestionsLearnMoreIdentifier = @"Learn more";
+
+NSString* const kContentSuggestionsDiscoverHeaderButtonIdentifier =
+    @"kContentSuggestionsDiscoverHeaderButtonIdentifier";

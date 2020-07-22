@@ -70,10 +70,10 @@ void ExternalVkImageGLRepresentationShared::AcquireTexture(
 
 // static
 ExternalSemaphore ExternalVkImageGLRepresentationShared::ReleaseTexture(
-    viz::VulkanContextProvider* context_provider,
+    ExternalSemaphorePool* pool,
     GLuint texture_id,
     VkImageLayout dst_layout) {
-  auto semaphore = ExternalSemaphore::Create(context_provider);
+  ExternalSemaphore semaphore = pool->GetOrCreateSemaphore();
   if (!semaphore) {
     // TODO(crbug.com/933452): We should be able to handle this failure more
     // gracefully rather than shutting down the whole process.
@@ -114,6 +114,9 @@ ExternalVkImageGLRepresentationShared::ExternalVkImageGLRepresentationShared(
     : backing_(static_cast<ExternalVkImageBacking*>(backing)),
       texture_service_id_(texture_service_id) {}
 
+ExternalVkImageGLRepresentationShared::
+    ~ExternalVkImageGLRepresentationShared() = default;
+
 bool ExternalVkImageGLRepresentationShared::BeginAccess(GLenum mode) {
   // There should not be multiple accesses in progress on the same
   // representation.
@@ -129,12 +132,12 @@ bool ExternalVkImageGLRepresentationShared::BeginAccess(GLenum mode) {
   const bool readonly =
       (mode != GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
 
-  std::vector<ExternalSemaphore> external_semaphores;
-  if (!backing_impl()->BeginAccess(readonly, &external_semaphores,
+  DCHECK(begin_access_semaphores_.empty());
+  if (!backing_impl()->BeginAccess(readonly, &begin_access_semaphores_,
                                    true /* is_gl */))
     return false;
 
-  for (auto& external_semaphore : external_semaphores) {
+  for (auto& external_semaphore : begin_access_semaphores_) {
     GrVkImageInfo info;
     auto result = backing_impl()->backend_texture().getVkImageInfo(&info);
     DCHECK(result);
@@ -174,11 +177,18 @@ void ExternalVkImageGLRepresentationShared::EndAccess() {
     DCHECK_EQ(info.fCurrentQueueFamily, VK_QUEUE_FAMILY_EXTERNAL);
     DCHECK_NE(info.fImageLayout, VK_IMAGE_LAYOUT_UNDEFINED);
     DCHECK_NE(info.fImageLayout, VK_IMAGE_LAYOUT_PREINITIALIZED);
-    external_semaphore = ReleaseTexture(context_provider(), texture_service_id_,
-                                        info.fImageLayout);
+    external_semaphore =
+        ReleaseTexture(backing_impl()->external_semaphore_pool(),
+                       texture_service_id_, info.fImageLayout);
   }
   backing_impl()->EndAccess(readonly, std::move(external_semaphore),
                             true /* is_gl */);
+
+  // We have done with |begin_access_semaphores_|. They should have been waited.
+  // So add them to pending semaphores for reusing or relaeasing.
+  backing_impl()->AddSemaphoresToPendingListOrRelease(
+      std::move(begin_access_semaphores_));
+  begin_access_semaphores_.clear();
 }
 
 ExternalVkImageGLRepresentation::ExternalVkImageGLRepresentation(

@@ -24,8 +24,11 @@ constexpr int kFailedToRemoveActiveUpdateServiceJobFromLaunchd = 20;
 // Failed to remove versioned update service job from Launchd.
 constexpr int kFailedToRemoveCandidateUpdateServiceJobFromLaunchd = 21;
 
-// Failed to remove versioned administration job from Launchd.
-constexpr int kFailedToRemoveAdministrationJobFromLaunchd = 22;
+// Failed to remove versioned control job from Launchd.
+constexpr int kFailedToRemoveControlJobFromLaunchd = 22;
+
+// Failed to remove versioned wake job from Launchd.
+constexpr int kFailedToRemoveWakeJobFromLaunchd = 23;
 
 // Failed to create the active(unversioned) update service Launchd plist.
 constexpr int kFailedToCreateUpdateServiceLaunchdJobPlist = 30;
@@ -33,8 +36,11 @@ constexpr int kFailedToCreateUpdateServiceLaunchdJobPlist = 30;
 // Failed to create the versioned update service Launchd plist.
 constexpr int kFailedToCreateVersionedUpdateServiceLaunchdJobPlist = 31;
 
-// Failed to create the versioned administration Launchd plist.
-constexpr int kFailedToCreateAdministrationLaunchdJobPlist = 32;
+// Failed to create the versioned control Launchd plist.
+constexpr int kFailedToCreateControlLaunchdJobPlist = 32;
+
+// Failed to create the versioned wake Launchd plist.
+constexpr int kFailedToCreateWakeLaunchdJobPlist = 33;
 
 // Failed to start the active(unversioned) update service job.
 constexpr int kFailedToStartLaunchdActiveServiceJob = 40;
@@ -42,8 +48,11 @@ constexpr int kFailedToStartLaunchdActiveServiceJob = 40;
 // Failed to start the versioned update service job.
 constexpr int kFailedToStartLaunchdVersionedServiceJob = 41;
 
-// Failed to start the administration job.
-constexpr int kFailedToStartLaunchdAdministrationJob = 42;
+// Failed to start the control job.
+constexpr int kFailedToStartLaunchdControlJob = 42;
+
+// Failed to start the wake job.
+constexpr int kFailedToStartLaunchdWakeJob = 43;
 
 }  // namespace setup_exit_codes
 

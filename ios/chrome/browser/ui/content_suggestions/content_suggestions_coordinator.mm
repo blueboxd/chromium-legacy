@@ -33,6 +33,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizer.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
@@ -42,6 +43,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
+#import "ios/chrome/browser/ui/content_suggestions/theme_change_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
@@ -60,6 +62,7 @@
 @interface ContentSuggestionsCoordinator () <
     ContentSuggestionsViewControllerAudience,
     OverscrollActionsControllerDelegate,
+    ThemeChangeDelegate,
     URLDropDelegate> {
   // Helper object managing the availability of the voice search feature.
   VoiceSearchAvailability _voiceSearchAvailability;
@@ -206,6 +209,7 @@
   self.suggestionsViewController.suggestionCommandHandler = self.NTPMediator;
   self.suggestionsViewController.audience = self;
   self.suggestionsViewController.overscrollDelegate = self;
+  self.suggestionsViewController.themeChangeDelegate = self;
   self.suggestionsViewController.metricsRecorder = self.metricsRecorder;
   id<SnackbarCommands> dispatcher = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), SnackbarCommands);
@@ -327,6 +331,14 @@
     (OverscrollActionsController*)controller {
   // Fullscreen isn't supported here.
   return nullptr;
+}
+
+#pragma mark - ThemeChangeDelegate
+
+- (void)handleThemeChange {
+  if (IsDiscoverFeedEnabled()) {
+    ios::GetChromeBrowserProvider()->GetDiscoverFeedProvider()->UpdateTheme();
+  }
 }
 
 #pragma mark - URLDropDelegate

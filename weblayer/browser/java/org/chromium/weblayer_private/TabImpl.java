@@ -255,7 +255,8 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
             mBrowserControlsDelegates.add(delegate);
             mBrowserControlsVisibility.addDelegate(delegate);
         }
-        mConstraintsUpdatedCallback = (constraints) -> onBrowserControlsStateUpdated(constraints);
+        mConstraintsUpdatedCallback =
+                (constraint) -> onBrowserControlsConstraintUpdated(constraint);
         mBrowserControlsVisibility.addObserver(mConstraintsUpdatedCallback);
 
         mInterceptNavigationDelegateClient = new InterceptNavigationDelegateClientImpl(this);
@@ -914,7 +915,7 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
 
         if (mBrowser.getActiveTab() != this) return;
 
-        onBrowserControlsStateUpdated(mBrowserControlsVisibility.get());
+        onBrowserControlsConstraintUpdated(mBrowserControlsVisibility.get());
     }
 
     @VisibleForTesting
@@ -922,22 +923,22 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
         return mBrowserControlsVisibility.get() == BrowserControlsState.BOTH;
     }
 
-    private void onBrowserControlsStateUpdated(int state) {
+    private void onBrowserControlsConstraintUpdated(int constraint) {
         // If something has overridden the FIP's SHOWN constraint, cancel FIP. This causes FIP to
         // dismiss when entering fullscreen.
-        if (state != BrowserControlsState.SHOWN) {
+        if (constraint != BrowserControlsState.SHOWN) {
             hideFindInPageUiAndNotifyClient();
         }
 
         // Don't animate when hiding the controls.
-        boolean animate = state != BrowserControlsState.HIDDEN;
+        boolean animate = constraint != BrowserControlsState.HIDDEN;
 
-        // If the renderer is not controlling the offsets (possiblye hung or crashed). Then this
+        // If the renderer is not controlling the offsets (possibly hung or crashed). Then this
         // needs to force the controls to show (because notification from the renderer will not
         // happen). For js dialogs, the renderer's update will come when the dialog is hidden, and
         // since that animates from 0 height, it causes a flicker since the override is already set
         // to fully show. Thus, disable animation.
-        if (state == BrowserControlsState.SHOWN && mBrowser != null
+        if (constraint == BrowserControlsState.SHOWN && mBrowser != null
                 && mBrowser.getActiveTab() == this
                 && !TabImplJni.get().isRendererControllingBrowserControlsOffsets(mNativeTab)) {
             mViewAndroidDelegate.setIgnoreRendererUpdates(true);
@@ -947,7 +948,7 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
             mViewAndroidDelegate.setIgnoreRendererUpdates(false);
         }
 
-        TabImplJni.get().updateBrowserControlsState(mNativeTab, state, animate);
+        TabImplJni.get().updateBrowserControlsConstraint(mNativeTab, constraint, animate);
     }
 
     /**
@@ -976,7 +977,8 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
         WebContents getWebContents(long nativeTabImpl);
         void executeScript(long nativeTabImpl, String script, boolean useSeparateIsolate,
                 Callback<String> callback);
-        void updateBrowserControlsState(long nativeTabImpl, int newConstraint, boolean animate);
+        void updateBrowserControlsConstraint(
+                long nativeTabImpl, int newConstraint, boolean animate);
         String getGuid(long nativeTabImpl);
         void captureScreenShot(long nativeTabImpl, float scale,
                 ValueCallback<Pair<Bitmap, Integer>> valueCallback);

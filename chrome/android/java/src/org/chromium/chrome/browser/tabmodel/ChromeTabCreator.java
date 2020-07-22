@@ -41,7 +41,7 @@ import org.chromium.url.GURL;
 /**
  * This class creates various kinds of new tabs and adds them to the right {@link TabModel}.
  */
-public class ChromeTabCreator extends TabCreatorManager.TabCreator {
+public class ChromeTabCreator extends TabCreator {
     /**Interface to handle showing overview instead of NTP if needed. */
     public interface OverviewNTPCreator {
         /**

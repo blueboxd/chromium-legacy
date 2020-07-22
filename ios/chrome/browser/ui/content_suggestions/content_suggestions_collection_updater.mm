@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_articles_header_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_discover_header_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_footer_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_header_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_text_item.h"
@@ -83,6 +84,8 @@ ContentSuggestionType ContentSuggestionTypeForItemType(NSInteger type) {
     return ContentSuggestionTypePromo;
   if (type == ItemTypeLearnMore)
     return ContentSuggestionTypeLearnMore;
+  if (type == ItemTypeDiscover)
+    return ContentSuggestionTypeDiscover;
   // Add new type here
 
   // Default type.
@@ -636,6 +639,13 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
   CSCollectionViewModel* model =
       self.collectionViewController.collectionViewModel;
 
+  NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
+  if ([self isDiscoverSection:section]) {
+    [model setHeader:[self headerForSectionInfo:sectionInfo]
+        forSectionWithIdentifier:sectionIdentifier];
+    return;
+  }
+
   if (![model headerForSectionWithIdentifier:sectionIdentifier] &&
       sectionInfo.title) {
     DCHECK(IsFromContentSuggestionsService(sectionIdentifier));
@@ -653,6 +663,13 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
 // Returns the header for this |sectionInfo|.
 - (CollectionViewItem*)headerForSectionInfo:
     (ContentSuggestionsSectionInformation*)sectionInfo {
+  if (SectionIdentifierForInfo(sectionInfo) == SectionIdentifierDiscover) {
+    ContentSuggestionsDiscoverHeaderItem* header =
+        [[ContentSuggestionsDiscoverHeaderItem alloc]
+            initWithType:ItemTypeHeader
+                   title:sectionInfo.title];
+    return header;
+  }
   DCHECK(SectionIdentifierForInfo(sectionInfo) == SectionIdentifierArticles);
   __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
   ContentSuggestionsArticlesHeaderItem* header =

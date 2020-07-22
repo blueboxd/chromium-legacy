@@ -195,7 +195,7 @@ void QuicHttp3Logger::OnGoAwayFrameReceived(const quic::GoAwayFrame& frame) {
     return;
   }
   net_log_.AddEventWithIntParams(NetLogEventType::HTTP3_GOAWAY_RECEIVED,
-                                 "stream_id", frame.stream_id);
+                                 "stream_id", frame.id);
 }
 
 void QuicHttp3Logger::OnMaxPushIdFrameReceived(

@@ -1,3 +1,6 @@
 file://chrome/browser/nearby_sharing/OWNERS
 
+per-file *.mojom=set noparent
+per-file *.mojom=file://ipc/SECURITY_OWNERS
+
 # COMPONENT: UI>Browser>Sharing>Nearby

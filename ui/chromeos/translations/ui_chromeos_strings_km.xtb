@@ -100,7 +100,7 @@
 <translation id="2028997212275086731">ឯកសារបណ្ណាសារ RAR</translation>
 <translation id="2046702855113914483">មីរ៉ាមេន</translation>
 <translation id="2070909990982335904">ឈ្មោះដែលចាប់ផ្តើមជាមួយសញ្ញាចុចត្រូវបានរក្សាទុកសម្រាប់ប្រព័ន្ធ។ សូមជ្រើសរើសឈ្មោះដ៏ទៃទៀត។</translation>
-<translation id="2079545284768500474">បកក្រោយ</translation>
+<translation id="2079545284768500474">ត្រឡប់វិញ</translation>
 <translation id="2080010875307505892">ក្តារចុចស៊ែប</translation>
 <translation id="2084108471225856927">ការកំណត់ឧបករណ៍</translation>
 <translation id="2085470240340828803">ឯកសារដែលមានឈ្មោះ "<ph name="FILENAME" />" មានរួចទៅហើយ។ តើអ្នកចង់ធ្វើដូចម្តេច?</translation>
@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">ឆ្នាំដែល​បានថត</translation>
 <translation id="3338239663705455570">ក្តារចុចស្លូវ៉ានី</translation>
 <translation id="3353984535370177728">ជ្រើសរើសថតឯកសារដើម្បីទាញឡើង</translation>
+<translation id="3356580349448036450">រួចរាល់</translation>
 <translation id="3399597614303179694">ក្តារចុចម៉ាសេដូនី</translation>
 <translation id="3414856743105198592">ការសម្អាតឯកសារកំសាន្តដែលអាចយកចេញបាននឹងលុបទិន្នន័យទាំងអស់។ តើអ្នកចង់បន្តទេ?</translation>
 <translation id="3437801641691368414">ម៉ោងបង្កើត</translation>
@@ -550,7 +551,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">ការដំឡើងបានបរាជ័យ។</translation>
 <translation id="7040138676081995583">បើកជាមួយ...</translation>
-<translation id="7059566040011178088">តិច​ជាង <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> ធាតុត្រូវបានជ្រើសរើស</translation>
 <translation id="7106346894903675391">ទិញឧបករណ៍ផ្ទុកទិន្នន័យបន្ថែម...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;ស្វែងរក Drive&lt;/em&gt;</translation>
@@ -661,7 +661,6 @@
 <translation id="8193175696669055101">គំរូឧបករណ៍</translation>
 <translation id="8208580316430297579">រូប​ផូស្ទ័រ</translation>
 <translation id="8223479393428528563">ដើម្បីរក្សាទុកឯកសារទាំងនេះសម្រាប់ការប្រើនៅក្រៅបណ្តាញ ភ្ជាប់ទៅអ៊ីនធឺណិត ហើយចុចកណ្តុរខាងស្តាំលើឯកសារ ហើយជ្រើសរើសជម្រើស <ph name="OFFLINE_CHECKBOX_NAME" />។</translation>
-<translation id="8231972167769262174">អំពី <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">បោះបង់</translation>
 <translation id="8261506727792406068">លុប</translation>
 <translation id="8269755669432358899">បង្រួមផ្ទាំង​មតិកែលម្អ​ឯកសារ</translation>

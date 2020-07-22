@@ -25,6 +25,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/gpu_gles2_export.h"
 #include "gpu/ipc/common/gpu_peak_memory.h"
+#include "gpu/vulkan/buildflags.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gl/progress_reporter.h"
@@ -42,6 +43,7 @@ class VulkanContextProvider;
 }  // namespace viz
 
 namespace gpu {
+class ExternalSemaphorePool;
 class GpuDriverBugWorkarounds;
 class GpuProcessActivityFlags;
 class ServiceTransferCache;
@@ -152,6 +154,13 @@ class GPU_GLES2_EXPORT SharedContextState
     return support_vulkan_external_object_;
   }
   gpu::MemoryTracker::Observer* memory_tracker() { return &memory_tracker_; }
+  ExternalSemaphorePool* external_semaphore_pool() {
+#if BUILDFLAG(ENABLE_VULKAN)
+    return external_semaphore_pool_.get();
+#else
+    return nullptr;
+#endif
+  }
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -294,6 +303,10 @@ class GPU_GLES2_EXPORT SharedContextState
   bool context_lost_by_robustness_extension = false;
   base::Time last_gl_check_graphics_reset_status_;
   bool disable_check_reset_status_throttling_for_test_ = false;
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  std::unique_ptr<ExternalSemaphorePool> external_semaphore_pool_;
+#endif
 
   base::WeakPtrFactory<SharedContextState> weak_ptr_factory_{this};
 

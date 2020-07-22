@@ -357,6 +357,7 @@
 <translation id="3892148308691398805">पाठ कपी गर्नुहोस्</translation>
 <translation id="3894427358181296146">फोल्डर थप्नुहोस्</translation>
 <translation id="3895926599014793903">जूम सक्षम गर्न दबाब दिनु</translation>
+<translation id="3909763690984331376">सुरक्षा जाँच <ph name="BEGIN_NEW" />नयाँ<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">वेबका उत्कृष्ट सामग्रीहरू फेला पार्दै…</translation>
 <translation id="3927692899758076493">स्यान्स सेरिफ</translation>
 <translation id="3928666092801078803">मेरो डेटालाई संयोजन गर्नुहोस्</translation>
@@ -578,6 +579,7 @@
 <translation id="5686790454216892815">फाइलको नाम ज्यादै लामो छ</translation>
 <translation id="5694049548840660018">सजिलैसँग गृहपृष्ठमा फर्कनुहोस्</translation>
 <translation id="569536719314091526">थप विकल्पहरू नामक बटनबाट यस पृष्ठलाई जुनसुकै भाषामा अनुवाद गर्नुहोस्</translation>
+<translation id="5696597120588531049">Chrome ले तपाईंलाई डेटा चोरीका घटना, असुरक्षित वेबसाइटहरू र थप समस्याहरूबाट जोगिन मद्दत गर्न सक्छ</translation>
 <translation id="5697688514913266141">तपाईंका फाइलहरू <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" /> मा सुरक्षित गरिने छन्। <ph name="BEGIN_LINK2" />सुरक्षित गरिने स्थान सम्पादन गर्नुहोस्<ph name="END_LINK2" />।</translation>
 <translation id="570347048394355941">ट्याब प्रयोग गर्न थाल्नुहोस्</translation>
 <translation id="572328651809341494">हालका ट्याबहरू</translation>
@@ -711,6 +713,7 @@
 <translation id="6656545060687952787">Chrome यन्त्रहरूको लागि स्क्यान गर्न स्थान पहुँच आवश्यक छ। <ph name="BEGIN_LINK" /> अनुमतिहरू अपडेट गर्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="6659594942844771486">ट्याब</translation>
+<translation id="6663079968236414793">पाठसँग लिंक गर्नुहोस्</translation>
 <translation id="666573598175432848">Chrome को अझ नयाँ संस्करण उपलब्ध छ। Play स्टोरमा जान यो बटनमा ट्याप गर्नुहोस्।</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> मा खोल्नुहोस्</translation>
 <translation id="666981079809192359">Chrome गोपनीयता सूचना</translation>

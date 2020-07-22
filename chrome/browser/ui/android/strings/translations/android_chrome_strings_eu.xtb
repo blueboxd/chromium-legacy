@@ -577,6 +577,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5659593005791499971">Helbide elektronikoa</translation>
 <translation id="5665379678064389456">Sortu gertaera <ph name="APP_NAME" /> aplikazioan</translation>
 <translation id="5668404140385795438">Gainidatzi zoom-maila ez handiagotzeko webgune baten eskaera</translation>
+<translation id="5683547024293500885">Chrome-k ezin ditu bilatu eguneratzeak</translation>
 <translation id="5686790454216892815">Luzeegia da fitxategiaren izena</translation>
 <translation id="5694049548840660018">Joan zuzenean orri nagusira</translation>
 <translation id="569536719314091526">Itzuli orria edozein hizkuntzatara Aukera gehiago botoia sakatuta</translation>
@@ -589,6 +590,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5732819098735351888">Wifia erabiltzean hasiko da deskarga.</translation>
 <translation id="5748802427693696783">Fitxa arruntetara aldatu da</translation>
 <translation id="5749068826913805084">Chrome-k memorian sartzeko baimena behar du fitxategiak deskargatu ahal izateko.</translation>
+<translation id="5749237766298580851">Desaktibatuta <ph name="SEPARATOR" /> Ez da gomendagarria</translation>
 <translation id="5754350196967618083">Ezin da freskatu Discover</translation>
 <translation id="5763382633136178763">Ezkutuko moduko fitxak</translation>
 <translation id="5763514718066511291">Sakatu aplikazio honen URLa kopiatzeko</translation>
@@ -953,7 +955,7 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="8555836665334561807">Wifia erabiltzean</translation>
 <translation id="8558485628462305855">Errealitate areagotuko edukia ikusteko, eguneratu ARCore</translation>
 <translation id="8559990750235505898">Eskaini beste hizkuntzetako orriak itzultzea</translation>
-<translation id="8561196567344536112">1. Joan "Ezarpenak" atalera\n2. Sakatu "Arakatzaile aplikazioa” aukera\n3. Aukeratu <ph name="APP_NAME" />.</translation>
+<translation id="8561196567344536112">1. Joan "Ezarpenak" atalera.\n2. Sakatu "Arakatzaile-aplikazioa”.\n3. Aukeratu <ph name="APP_NAME" />.</translation>
 <translation id="8562452229998620586">Gordetako pasahitzak hemen agertuko dira.</translation>
 <translation id="8569404424186215731"><ph name="DATE" /> ezkero</translation>
 <translation id="8571213806525832805">Azken lau asteetakoak</translation>
@@ -996,6 +998,7 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="8970887620466824814">Arazoren bat izan da.</translation>
 <translation id="8972098258593396643">Karpeta lehenetsira deskargatu nahi duzu?</translation>
 <translation id="8988028529677883095">Erabili telefonoa segurtasun-giltza gisa</translation>
+<translation id="8990209962746788689">Ezin da sortu QR kodea</translation>
 <translation id="8993760627012879038">Ireki beste fitxa bat ezkutuko moduan</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> domeinuak kudeatutako kontu batekin hastera zoaz saioa, eta, ondorioz, domeinu horretako administratzaileari emango diozu Chrome datuen kontrola. Datuak betiko lotuko zaizkio kontu honi. Chrome-ko saioa amaitzen baduzu, gailuko datuak ezabatu egingo dira, baina Google-ko kontuan izango dituzu gordeta.</translation>
 <translation id="9028914725102941583">Beste gailuekin partekatzeko, aktibatu sinkronizazioa</translation>

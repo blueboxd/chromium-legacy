@@ -885,6 +885,13 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, VerifyPersistentUsageRecord) {
                    media::kEnded);
 }
 
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, RemovePersistentUsageRecord) {
+  RunEncryptedMediaTest("eme_remove_session_test.html",
+                        "bear-320x240-v_enc-v.webm", kExternalClearKeyKeySystem,
+                        SrcType::MSE, kPersistentUsageRecord, false,
+                        PlayCount::ONCE, media::kEnded);
+}
+
 const char kExternalClearKeyDecryptOnlyKeySystem[] =
     "org.chromium.externalclearkey.decryptonly";
 

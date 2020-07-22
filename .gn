@@ -352,7 +352,6 @@ no_check_targets = [
   "//third_party/pdfium/samples:*",  # 1 error
   "//third_party/pdfium/third_party:*",  # 2 errors
   "//third_party/pdfium:*",  # 1 error
-  "//third_party/private-join-and-compute/src:*",  # 1 error
   "//third_party/wayland:*",  # 3 errors
 
   # //v8/*, https://crbug.com/v8/7330

@@ -6,6 +6,9 @@
 
 // WebApplicationIconInfo
 WebApplicationIconInfo::WebApplicationIconInfo() = default;
+WebApplicationIconInfo::WebApplicationIconInfo(const GURL& url,
+                                               SquareSizePx size)
+    : url(url), square_size_px(size) {}
 
 WebApplicationIconInfo::WebApplicationIconInfo(const WebApplicationIconInfo&) =
     default;

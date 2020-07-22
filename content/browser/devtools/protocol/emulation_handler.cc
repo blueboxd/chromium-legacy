@@ -531,12 +531,13 @@ void EmulationHandler::UpdateDeviceEmulationState() {
 
 void EmulationHandler::UpdateDeviceEmulationStateForHost(
     RenderWidgetHostImpl* render_widget_host) {
+  auto& frame_widget = render_widget_host->GetAssociatedFrameWidget();
+  if (!frame_widget)
+    return;
   if (device_emulation_enabled_) {
-    render_widget_host->Send(new WidgetMsg_EnableDeviceEmulation(
-        render_widget_host->GetRoutingID(), device_emulation_params_));
+    frame_widget->EnableDeviceEmulation(device_emulation_params_);
   } else {
-    render_widget_host->Send(new WidgetMsg_DisableDeviceEmulation(
-        render_widget_host->GetRoutingID()));
+    frame_widget->DisableDeviceEmulation();
   }
 }
 

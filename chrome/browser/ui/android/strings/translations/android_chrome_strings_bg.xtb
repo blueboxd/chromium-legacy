@@ -173,7 +173,7 @@
 <translation id="2387895666653383613">Мащабиране на текста</translation>
 <translation id="2394602618534698961">Изтеглените от вас файлове се показват тук</translation>
 <translation id="2407481962792080328">Когато влезете в профила си в Google, тази функция се включва</translation>
-<translation id="2407674018644220013">Да се зададе ли <ph name="APP_NAME" /> като стандартно?</translation>
+<translation id="2407674018644220013">Задаване на <ph name="APP_NAME" /> като браузър по подразбиране?</translation>
 <translation id="2410754283952462441">Изберете профил</translation>
 <translation id="2414886740292270097">Тъмно</translation>
 <translation id="2426805022920575512">Избиране на друг профил</translation>
@@ -669,7 +669,7 @@
 <translation id="6342069812937806050">Току-що</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 и още <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="6364438453358674297">Предложението да се премахне ли от историята?</translation>
-<translation id="6366047038980456022"><ph name="APP_NAME" /> разполага с интелигентните функции и скоростта, нужни да изпълнявате задачите си, да създавате съдържание и да сърфирате онлайн по безопасен начин</translation>
+<translation id="6366047038980456022">Браузърът <ph name="APP_NAME" /> е снабден с интелигентните функции и скоростта, нужни да изпълнявате задачите си, да създавате съдържание и да сърфирате онлайн по безопасен начин</translation>
 <translation id="6369229450655021117">Оттук можете да търсите в мрежата, да споделяте с приятели и да преглеждате отворените страници</translation>
 <translation id="6378173571450987352">Подробности: сортирани по количество използвани данни</translation>
 <translation id="6379829913050047669"><ph name="APP_NAME" /> ще се отвори в Chrome. С продължаването си приемате <ph name="BEGIN_LINK1" />Общите условия на Google<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Допълнителните общи условия на Chrome и Chrome OS<ph name="END_LINK2" />.</translation>
@@ -998,6 +998,7 @@
 <translation id="8970887620466824814">Нещо се обърка.</translation>
 <translation id="8972098258593396643">Да се изтегли ли файлът в стандартната папка?</translation>
 <translation id="8988028529677883095">Използване на телефон като ключ за сигурност</translation>
+<translation id="8990209962746788689">Не може да се създаде QR код</translation>
 <translation id="8993760627012879038">Отваряне на нов раздел в режим „инкогнито“</translation>
 <translation id="8998729206196772491">Влизате с профил, управляван от <ph name="MANAGED_DOMAIN" />, и предоставяте на администратора му контрол върху данните си в Chrome. Те ще се свържат за постоянно с този профил. При излизане от профила в браузъра информацията ви ще се изтрие от устройството, но ще продължи да се съхранява в профила ви в Google.</translation>
 <translation id="9028914725102941583">Включете синхронизирането, за да споделяте на всички устройства</translation>

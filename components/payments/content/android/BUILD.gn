@@ -4,6 +4,7 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//components/payments/content/android/payments_java_resources.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 static_library("android") {
@@ -66,6 +67,11 @@ generate_jni("jni_headers") {
   ]
 }
 
+android_resources("java_resources") {
+  custom_package = "org.chromium.components.payments"
+  sources = payments_java_resources
+}
+
 android_library("java") {
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   sources = [
@@ -90,6 +96,7 @@ android_library("java") {
     "java/src/org/chromium/components/payments/PaymentManifestDownloader.java",
     "java/src/org/chromium/components/payments/PaymentManifestParser.java",
     "java/src/org/chromium/components/payments/PaymentManifestWebDataService.java",
+    "java/src/org/chromium/components/payments/PaymentOptionsUtils.java",
     "java/src/org/chromium/components/payments/PaymentRequestLifecycleObserver.java",
     "java/src/org/chromium/components/payments/PaymentRequestParams.java",
     "java/src/org/chromium/components/payments/PaymentRequestSpec.java",
@@ -104,6 +111,7 @@ android_library("java") {
     "java/src/org/chromium/components/payments/intent/WebPaymentIntentHelperType.java",
   ]
   deps = [
+    ":java_resources",
     "//base:base_java",
     "//base:jni_java",
     "//components/autofill/android:autofill_java",

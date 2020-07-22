@@ -1823,7 +1823,7 @@
 <translation id="3253225298092156258">ไม่มีข้อมูล</translation>
 <translation id="3253448572569133955">บัญชีที่ไม่รู้จัก</translation>
 <translation id="3254516606912442756">การตรวจหาเขตเวลาอัตโนมัติปิดอยู่</translation>
-<translation id="3254715652085014625">เปิด Chrome ในโทรศัพท์ Android และไปที่ "การตั้งค่า &gt; รหัสผ่าน &gt; ใช้โทรศัพท์เป็นคีย์ความปลอดภัย" แล้วทำตามวิธีการที่ระบุไว้ที่นั่น</translation>
+<translation id="3254715652085014625">เปิด Chrome ในโทรศัพท์ Android และไปที่ "การตั้งค่า &gt; รหัสผ่าน &gt; ใช้โทรศัพท์เป็นคีย์ความปลอดภัย" แล้วทำตามวิธีการของขั้นตอนดังกล่าว</translation>
 <translation id="3255355328033513170">ระบบจะลบข้อมูลทั้งหมดที่ <ph name="SITE_GROUP_NAME" /> จัดเก็บไว้และเว็บไซต์ในกลุ่มนี้ คุกกี้จะถูกลบออกไปด้วย คุณจะออกจากระบบเว็บไซต์เหล่านี้ รวมถึงแท็บที่เปิดอยู่</translation>
 <translation id="3259723213051400722">โปรดลองอีกครั้ง</translation>
 <translation id="3264544094376351444">แบบอักษร Sans-Serif</translation>
@@ -1854,7 +1854,7 @@
 <translation id="3288047731229977326">ส่วนขยายที่ทำงานอยู่ในโหมดนักพัฒนาซอฟต์แวร์อาจเป็นอันตรายต่อคอมพิวเตอร์ของคุณ หากคุณไม่ใช่นักพัฒนาซอฟต์แวร์ คุณควรปิดส่วนขยายที่ทำงานอยู่ในโหมดนักพัฒนาซอฟต์แวร์เพื่อรักษาความปลอดภัย</translation>
 <translation id="3289668031376215426">ปรับเป็นตัวพิมพ์ใหญ่อัตโนมัติ</translation>
 <translation id="3289856944988573801">ในการตรวจหาการอัปเดต โปรดใช้อีเทอร์เน็ตหรือ WiFi</translation>
-<translation id="3290356915286466215">ไม่มีการรักษาความปลอดภัย</translation>
+<translation id="3290356915286466215">ไม่ปลอดภัย</translation>
 <translation id="3292264722181603749"><ph name="DOMAIN" /> กำลังปิดใช้การแก้ไขข้อบกพร่อง ADB ซึ่งจะเป็นการรีเซ็ตอุปกรณ์ของคุณ สำรองข้อมูลไฟล์ก่อนที่จะรีสตาร์ท</translation>
 <translation id="3293644607209440645">ส่งหน้านี้</translation>
 <translation id="32939749466444286">คอนเทนเนอร์ Linux ไม่เริ่มทำงาน โปรดลองอีกครั้ง</translation>
@@ -2728,7 +2728,7 @@
 <translation id="4375035964737468845">เปิดไฟล์ที่ดาวน์โหลดมา</translation>
 <translation id="4377363674125277448">มีปัญหาเกี่ยวกับใบรับรองของเซิร์ฟเวอร์</translation>
 <translation id="4378154925671717803">โทรศัพท์</translation>
-<translation id="4378551569595875038">กำลังเชื่อมต่อ...</translation>
+<translation id="4378551569595875038">กำลังเชื่อมต่อ</translation>
 <translation id="4378556263712303865">ข้อกำหนดของอุปกรณ์</translation>
 <translation id="4379281552162875326">ถอนการติดตั้ง "<ph name="APP_NAME" />" ใช่ไหม</translation>
 <translation id="4380648069038809855">เข้าสู่โหมดเต็มหน้าจอ</translation>
@@ -3724,7 +3724,7 @@
 <translation id="5659833766619490117">แปลหน้านี้ไม่ได้</translation>
 <translation id="5662513737565158057">เปลี่ยนลักษณะที่แอป Linux จะทำงาน</translation>
 <translation id="5667546120811588575">กำลังตั้งค่า Google Play...</translation>
-<translation id="5669267381087807207">กำลังเปิดการใช้งาน</translation>
+<translation id="5669267381087807207">กำลังเปิดใช้</translation>
 <translation id="5669691691057771421">ป้อน PIN ใหม่</translation>
 <translation id="5671641761787789573">บล็อกรูปภาพ</translation>
 <translation id="5671658447180261823">นำคำแนะนำ <ph name="SUGGESTION_NAME" /> ออก</translation>
@@ -4754,7 +4754,7 @@
 <translation id="6979044105893951891">เปิดและออกจากเซสชันผู้เยี่ยมชมที่มีการจัดการ</translation>
 <translation id="6979440798594660689">ปิดเสียง (ค่าเริ่มต้น)</translation>
 <translation id="6979737339423435258">ตั้งแต่ต้น</translation>
-<translation id="6981982820502123353">การเข้าถึง</translation>
+<translation id="6981982820502123353">การช่วยเหลือพิเศษ</translation>
 <translation id="6983507711977005608">ยกเลิกการเชื่อมต่อเครือข่าย Wi-Fi ฮอตสปอตจากมือถือโดยอัตโนมัติ</translation>
 <translation id="6983783921975806247">OID ที่ลงทะเบียนแล้ว</translation>
 <translation id="6984299437918708277">เลือกรูปภาพสำหรับบัญชีของคุณเพื่อแสดงในหน้าลงชื่อเข้าใช้</translation>
@@ -6297,7 +6297,7 @@
 <translation id="8871974300055371298">การตั้งค่าเนื้อหา</translation>
 <translation id="8872155268274985541">พบไฟล์ Manifest การอัปเดตภายนอกของคีออสก์ที่ไม่ถูกต้อง ไม่สามารถอัปเดตแอปคีออสก์ได้ โปรดนำ USB สติ๊กออก</translation>
 <translation id="8872777911145321141">ถามเมื่อเว็บไซต์ต้องการใช้อุปกรณ์และข้อมูล Virtual Reality ของคุณ (แนะนำ)</translation>
-<translation id="8874184842967597500">ไม่ได้เชื่อมต่อ</translation>
+<translation id="8874184842967597500">ไม่เชื่อมต่อ</translation>
 <translation id="8875520811099717934">อัปเกรด Linux</translation>
 <translation id="8876307312329369159">คุณเปลี่ยนการตั้งค่านี้ในเซสชันสาธิตไม่ได้</translation>
 <translation id="8877448029301136595">[ไดเรกทอรีหลัก]</translation>

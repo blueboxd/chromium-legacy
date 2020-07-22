@@ -21,6 +21,7 @@ android_library("java") {
     "//chrome/browser/android/lifecycle:java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
+  resources_package = "org.chromium.chrome.browser.ui.appmenu"
 }
 
 android_library_factory("factory_java") {
@@ -36,10 +37,10 @@ android_library_factory("factory_java") {
 }
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.chrome.browser.ui.appmenu"
   sources = [ "java/res/values/styles.xml" ]
   deps = [
     "//components/browser_ui/styles/android:java_resources",
     "//ui/android:ui_java_resources",
   ]
+  create_srcjar = false
 }

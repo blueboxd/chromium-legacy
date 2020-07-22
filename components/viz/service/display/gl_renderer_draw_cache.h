@@ -49,6 +49,9 @@ struct TexturedQuadDrawCache {
   // Don't batch if tex clamp rect is given.
   Float4 tex_clamp_rect_data;
 
+  // Video frames need special white level adjustment.
+  bool is_video_frame = false;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TexturedQuadDrawCache);
 };

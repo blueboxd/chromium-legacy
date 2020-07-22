@@ -12,12 +12,13 @@
 #include "pdf/paint_aggregator.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/utility/completion_callback_factory.h"
+#include "ui/gfx/geometry/size.h"
 
-namespace pp {
+namespace gfx {
 class Point;
 class Rect;
-class Size;
-}  // namespace pp
+class Vector2d;
+}  // namespace gfx
 
 namespace chrome_pdf {
 
@@ -34,7 +35,7 @@ class PaintManager {
    public:
     // Creates a new, unbound `pp::Graphics2D` for the paint manager, with the
     // given |size| and always-opaque rendering.
-    virtual pp::Graphics2D CreatePaintGraphics(const pp::Size& size) = 0;
+    virtual pp::Graphics2D CreatePaintGraphics(const gfx::Size& size) = 0;
 
     // Binds a `pp::Graphics2D` created by `CreatePaintGraphics()`, returning
     // `true` if binding was successful.
@@ -58,9 +59,9 @@ class PaintManager {
     // PaintManager needs to handle the callback.
     //
     // Calling Invalidate/Scroll is not allowed while inside an OnPaint
-    virtual void OnPaint(const std::vector<pp::Rect>& paint_rects,
+    virtual void OnPaint(const std::vector<gfx::Rect>& paint_rects,
                          std::vector<PaintReadyRect>* ready,
-                         std::vector<pp::Rect>* pending) = 0;
+                         std::vector<gfx::Rect>* pending) = 0;
 
    protected:
     // You shouldn't be doing deleting through this interface.
@@ -81,8 +82,8 @@ class PaintManager {
   // size. We may allocated a slightly larger buffer than required so that we
   // don't have to resize the context when scrollbars appear/dissapear due to
   // zooming (which can result in flickering).
-  static pp::Size GetNewContextSize(const pp::Size& current_context_size,
-                                    const pp::Size& plugin_size);
+  static gfx::Size GetNewContextSize(const gfx::Size& current_context_size,
+                                     const gfx::Size& plugin_size);
 
   // Sets the size of the plugin. If the size is the same as the previous call,
   // this will be a NOP. If the size has changed, a new device will be
@@ -93,22 +94,22 @@ class PaintManager {
   // changes, you can always call this function without worrying about whether
   // the size changed or ViewChanged is called for another reason (like the
   // position changed).
-  void SetSize(const pp::Size& new_size, float new_device_scale);
+  void SetSize(const gfx::Size& new_size, float new_device_scale);
 
   // Invalidate the entire plugin.
   void Invalidate();
 
   // Invalidate the given rect.
-  void InvalidateRect(const pp::Rect& rect);
+  void InvalidateRect(const gfx::Rect& rect);
 
   // The given rect should be scrolled by the given amounts.
-  void ScrollRect(const pp::Rect& clip_rect, const pp::Point& amount);
+  void ScrollRect(const gfx::Rect& clip_rect, const gfx::Vector2d& amount);
 
   // Returns the size of the graphics context for the next paint operation.
   // This is the pending size if a resize is pending (the plugin has called
   // SetSize but we haven't actually painted it yet), or the current size of
   // no resize is pending.
-  pp::Size GetEffectiveSize() const;
+  gfx::Size GetEffectiveSize() const;
   float GetEffectiveDeviceScale() const;
 
   // Set the transform for the graphics layer.
@@ -116,8 +117,8 @@ class PaintManager {
   // this change. If |schedule_flush| is false, then the change will not take
   // effect until another change causes a flush.
   void SetTransform(float scale,
-                    const pp::Point& origin,
-                    const pp::Point& translate,
+                    const gfx::Point& origin,
+                    const gfx::Vector2d& translate,
                     bool schedule_flush);
   // Resets any transform for the graphics layer.
   // This does not schedule a flush.
@@ -164,8 +165,8 @@ class PaintManager {
   // paint operation. When true, the new size is in pending_size_.
   bool has_pending_resize_ = false;
   bool graphics_need_to_be_bound_ = false;
-  pp::Size pending_size_;
-  pp::Size plugin_size_;
+  gfx::Size pending_size_;
+  gfx::Size plugin_size_;
   float pending_device_scale_ = 1.0f;
   float device_scale_ = 1.0f;
 

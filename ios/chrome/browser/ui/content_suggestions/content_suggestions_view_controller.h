@@ -19,6 +19,7 @@
 @protocol OverscrollActionsControllerDelegate;
 @protocol SnackbarCommands;
 @protocol SuggestedContent;
+@protocol ThemeChangeDelegate;
 
 extern NSString* const
     kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix;
@@ -46,6 +47,8 @@ extern NSString* const
 // Delegate for the overscroll actions.
 @property(nonatomic, weak) id<OverscrollActionsControllerDelegate>
     overscrollDelegate;
+// Delegate for handling theme changes (dark/light theme).
+@property(nonatomic, weak) id<ThemeChangeDelegate> themeChangeDelegate;
 @property(nonatomic, weak) id<ContentSuggestionsMetricsRecording>
     metricsRecorder;
 

@@ -80,7 +80,7 @@
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Таңдалған 1 элементті өшіру}other{Таңдалған # элементті өшіру}}</translation>
 <translation id="1641113438599504367">Қауіпсіз шолу</translation>
 <translation id="164269334534774161">Осы беттің <ph name="CREATION_TIME" /> күнгі офлайн көшірмесі шығарылды</translation>
-<translation id="1644574205037202324">Журнал</translation>
+<translation id="1644574205037202324">Тарих</translation>
 <translation id="1670399744444387456">Негізгі</translation>
 <translation id="1671236975893690980">Жүктеу күтілуде…</translation>
 <translation id="1672586136351118594">Қайта көрсетілмесін</translation>
@@ -105,7 +105,7 @@
 <translation id="1868024384445905608">Chrome енді файлдарды жылдам жүктеп алады</translation>
 <translation id="1883903952484604915">Файлдарым</translation>
 <translation id="1919950603503897840">Контактілерді таңдау</translation>
-<translation id="1925021887439448749">Арнаулы вебмекенжайды енгізу</translation>
+<translation id="1925021887439448749">Арнаулы веб-мекенжайды енгізу</translation>
 <translation id="1928696683969751773">Жаңартулар</translation>
 <translation id="19288952978244135">Chrome браузерін қайта ашыңыз.</translation>
 <translation id="1933845786846280168">Таңдалған қойынды</translation>
@@ -577,6 +577,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="5659593005791499971">Электрондық пошта</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> қолданбасында оқиға жасау</translation>
 <translation id="5668404140385795438">Веб-сайттардың үлкейтуге тыйым салу туралы сұрауларын елемеу</translation>
+<translation id="5683547024293500885">Chrome жаңа нұсқалардың бар-жоғын тексере алмайды.</translation>
 <translation id="5686790454216892815">Файлдың аты тым ұзын</translation>
 <translation id="5694049548840660018">Негізгі экранға оңай өту</translation>
 <translation id="569536719314091526">"Қосымша опциялар" түймесі арқылы осы бетті кез келген тілге аударыңыз</translation>
@@ -589,6 +590,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="5732819098735351888">Wi-Fi арқылы жүктеп алынады.</translation>
 <translation id="5748802427693696783">Стандартты қойындыларға ауысты</translation>
 <translation id="5749068826913805084">Файлдарды жүктеп алу үшін, Chrome-ға сақтау орнын пайдалану құқығы қажет.</translation>
+<translation id="5749237766298580851">Өшірулі <ph name="SEPARATOR" /> Ұсынылмайды</translation>
 <translation id="5754350196967618083">Discover жаңартылмады</translation>
 <translation id="5763382633136178763">Инкогнито қойындылары</translation>
 <translation id="5763514718066511291">Бұл қолданбаның URL мекенжайын көшіру үшін түртіңіз</translation>
@@ -996,6 +998,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="8970887620466824814">Бірдеңе дұрыс болмады.</translation>
 <translation id="8972098258593396643">Әдепкі қалтаға жүктеп алынсын ба?</translation>
 <translation id="8988028529677883095">Телефонды қауіпсіздік кілті ретінде пайдалану</translation>
+<translation id="8990209962746788689">QR кодын жасау мүмкін емес</translation>
 <translation id="8993760627012879038">Жаңа қойындыны инкогнито режимінде ашу</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> басқаратын есептік жазбамен кірудесіз және оның әкімшісіне Chrome деректерін басқару құқығы берілуде. Деректер бұл есептік жазбаға біржола байланыстырылады. Chrome жүйесінен шыққанда, деректер бұл құрылғыдан жойылады, бірақ Google есептік жазбасында сақталады.</translation>
 <translation id="9028914725102941583">Барлық құрылғылармен бөлісу үшін синхрондауды іске қосыңыз.</translation>

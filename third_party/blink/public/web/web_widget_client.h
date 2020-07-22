@@ -44,6 +44,7 @@
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/page/web_drag_operation.h"
+#include "third_party/blink/public/common/widget/device_emulation_params.h"
 #include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom-forward.h"
@@ -314,6 +315,10 @@ class WebWidgetClient {
   // Apply the updated screen rects.
   virtual void UpdateScreenRects(const gfx::Rect& widget_screen_rect,
                                  const gfx::Rect& window_screen_rect) {}
+
+  // Device emulation control.
+  virtual void EnableDeviceEmulation(const DeviceEmulationParams& parameters) {}
+  virtual void DisableDeviceEmulation() {}
 };
 
 }  // namespace blink

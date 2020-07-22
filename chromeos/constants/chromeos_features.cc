@@ -329,6 +329,10 @@ const base::Feature kOsSettingsPolymer3{"OsSettingsPolymer3",
 const base::Feature kParentalControlsSettings{
     "ChromeOSParentalControlsSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Provides a UI for users to view information about their Android phone
+// and perform phone-side actions within Chrome OS.
+const base::Feature kPhoneHub{"PhoneHub", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the camera permissions should be shown in the Plugin
 // VM app settings.
 const base::Feature kPluginVmShowCameraPermissions{

@@ -90,6 +90,10 @@ class PolicyBase final : public TargetPolicy {
   // SetJobLevel().
   ResultCode MakeJobObject(base::win::ScopedHandle* job);
 
+  // Updates the active process limit on the job to zero. Has no effect
+  // if the job is allowed to spawn processes.
+  ResultCode DropActiveProcessLimit(base::win::ScopedHandle* job);
+
   // Creates the two tokens with the levels specified in a previous call to
   // SetTokenLevel(). Also creates a lowbox token if specified based on the
   // lowbox SID.

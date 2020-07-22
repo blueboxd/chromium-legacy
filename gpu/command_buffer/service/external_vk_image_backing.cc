@@ -19,8 +19,8 @@
 #include "gpu/vulkan/vulkan_command_pool.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
-#include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_image.h"
+#include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_util.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -144,6 +144,18 @@ bool UseSeparateGLTexture(SharedContextState* context_state,
   // doesn't work correctly.
   // TODO(crbug.com/angleproject/4831): fix ANGLE and return false.
   return true;
+}
+
+void WaitSemaphoresOnGrContext(GrContext* gr_context,
+                               std::vector<ExternalSemaphore>* semaphores) {
+  std::vector<GrBackendSemaphore> backend_senampres;
+  backend_senampres.reserve(semaphores->size());
+  for (auto& semaphore : *semaphores) {
+    backend_senampres.emplace_back();
+    backend_senampres.back().initVulkan(semaphore.GetVkSemaphore());
+  }
+  gr_context->wait(backend_senampres.size(), backend_senampres.data(),
+                   /*deleteSemaphoreAfterWait=*/false);
 }
 
 }  // namespace
@@ -329,9 +341,12 @@ ExternalVkImageBacking::ExternalVkImageBacking(
       use_separate_gl_texture_(use_separate_gl_texture) {}
 
 ExternalVkImageBacking::~ExternalVkImageBacking() {
-  GrVkImageInfo image_info;
-  bool result = backend_texture_.getVkImageInfo(&image_info);
-  DCHECK(result);
+  auto semaphores = std::move(read_semaphores_);
+  if (write_semaphore_)
+    semaphores.emplace_back(std::move(write_semaphore_));
+
+  WaitSemaphoresOnGrContext(context_state()->gr_context(), &semaphores);
+  ReturnPendingSemaphoresWithFenceHelper(std::move(semaphores));
 
   fence_helper()->EnqueueVulkanObjectCleanupForSubmittedWork(std::move(image_));
   backend_texture_ = GrBackendTexture();
@@ -389,10 +404,10 @@ bool ExternalVkImageBacking::BeginAccess(
         backend_texture_,
         GrBackendSurfaceMutableState(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                      VK_QUEUE_FAMILY_EXTERNAL));
-    VkSemaphore semaphore =
-        vulkan_implementation()->CreateExternalSemaphore(device());
+    auto semaphore = external_semaphore_pool()->GetOrCreateSemaphore();
+    VkSemaphore vk_semaphore = semaphore.TakeVkSemaphore();
     GrBackendSemaphore backend_semaphore;
-    backend_semaphore.initVulkan(semaphore);
+    backend_semaphore.initVulkan(vk_semaphore);
     GrFlushInfo flush_info = {
         .fNumSemaphores = 1,
         .fSignalSemaphores = &backend_semaphore,
@@ -402,14 +417,13 @@ bool ExternalVkImageBacking::BeginAccess(
     auto flush_result = gr_context->flush(flush_info);
     DCHECK_EQ(flush_result, GrSemaphoresSubmitted::kYes);
     gr_context->submit();
-
-    auto handle =
-        vulkan_implementation()->GetSemaphoreHandle(device(), semaphore);
-    DCHECK(handle.is_valid());
-    external_semaphores->push_back(ExternalSemaphore::CreateFromHandle(
-        context_provider(), std::move(handle)));
-    // We're done with the semaphore, enqueue deferred cleanup.
-    fence_helper()->EnqueueSemaphoreCleanupForSubmittedWork(semaphore);
+    external_semaphores->push_back(std::move(semaphore));
+    // We're done with the vk_semaphore, enqueue deferred cleanup.
+    // Reusing the |vk_semaphore| will cause vulkan device lost and hangs with
+    // NVIDIA GPU. so have to release |vk_end_access_semaphore| and not reuse
+    // it.
+    // TODO(penghuang): reuse |vk_semaphore|. https://crbug.com/1107558
+    fence_helper()->EnqueueSemaphoreCleanupForSubmittedWork(vk_semaphore);
   }
 
   if (readonly) {
@@ -452,6 +466,32 @@ bool ExternalVkImageBacking::ProduceLegacyMailbox(
   // synchronization between Vulkan and GL that is implemented in the
   // representation classes.
   return false;
+}
+
+void ExternalVkImageBacking::AddSemaphoresToPendingListOrRelease(
+    std::vector<ExternalSemaphore> semaphores) {
+  constexpr size_t kMaxPendingSemaphores = 8;
+  DCHECK_LE(pending_semaphores_.size(), kMaxPendingSemaphores);
+
+#if DCHECK_IS_ON()
+  for (auto& semaphore : semaphores)
+    DCHECK(semaphore);
+#endif
+
+  std::move(semaphores.begin(),
+            semaphores.begin() +
+                std::min(semaphores.size(),
+                         kMaxPendingSemaphores - pending_semaphores_.size()),
+            std::back_inserter(pending_semaphores_));
+}
+
+void ExternalVkImageBacking::ReturnPendingSemaphoresWithFenceHelper(
+    std::vector<ExternalSemaphore> semaphores) {
+  std::move(semaphores.begin(), semaphores.end(),
+            std::back_inserter(pending_semaphores_));
+  external_semaphore_pool()->ReturnSemaphoresWithFenceHelper(
+      std::move(pending_semaphores_));
+  pending_semaphores_.clear();
 }
 
 std::unique_ptr<SharedImageRepresentationDawn>
@@ -749,24 +789,30 @@ bool ExternalVkImageBacking::WritePixelsWithCallback(
   }
 
   std::vector<VkSemaphore> begin_access_semaphores;
-  begin_access_semaphores.reserve(external_semaphores.size() + 1);
+  begin_access_semaphores.reserve(external_semaphores.size());
   for (auto& external_semaphore : external_semaphores) {
-    begin_access_semaphores.emplace_back(external_semaphore.TakeVkSemaphore());
+    begin_access_semaphores.emplace_back(external_semaphore.GetVkSemaphore());
   }
 
-  auto end_access_semaphore = ExternalSemaphore::Create(context_provider());
+  auto end_access_semaphore = external_semaphore_pool()->GetOrCreateSemaphore();
   VkSemaphore vk_end_access_semaphore = end_access_semaphore.TakeVkSemaphore();
   command_buffer->Submit(begin_access_semaphores.size(),
                          begin_access_semaphores.data(), 1,
                          &vk_end_access_semaphore);
+
+  // Reusing the |vk_end_access_semaphore| will cause vulkan device lost and
+  // hangs with NVIDIA GPU. so have to release |vk_end_access_semaphore| and not
+  // reuse it.
+  // TODO(penghuang): reuse |vk_end_access_semaphore|. https://crbug.com/1107558
+  fence_helper()->EnqueueSemaphoreCleanupForSubmittedWork(
+      vk_end_access_semaphore);
+  // |external_semaphores| have been waited on and can be reused when submitted
+  // GPU work is done.
+  AddSemaphoresToPendingListOrRelease(std::move(external_semaphores));
   EndAccessInternal(false /* readonly */, std::move(end_access_semaphore));
 
   fence_helper()->EnqueueVulkanObjectCleanupForSubmittedWork(
       std::move(command_buffer));
-  // TODO(penghuang): reuse vk_end_access_semaphore.
-  begin_access_semaphores.emplace_back(vk_end_access_semaphore);
-  fence_helper()->EnqueueSemaphoresCleanupForSubmittedWork(
-      begin_access_semaphores);
   fence_helper()->EnqueueBufferCleanupForSubmittedWork(stage_buffer,
                                                        stage_allocation);
   return true;
@@ -780,19 +826,8 @@ bool ExternalVkImageBacking::WritePixelsWithData(
     DLOG(ERROR) << "BeginAccess() failed.";
     return false;
   }
-
-  std::vector<GrBackendSemaphore> begin_access_semaphores;
-  begin_access_semaphores.reserve(external_semaphores.size() + 1);
-  for (auto& external_semaphore : external_semaphores) {
-    // TODO(penghuang): reuse vk_semaphore
-    VkSemaphore vk_semaphore = external_semaphore.TakeVkSemaphore();
-    begin_access_semaphores.emplace_back();
-    begin_access_semaphores.back().initVulkan(vk_semaphore);
-  }
-
   auto* gr_context = context_state_->gr_context();
-  gr_context->wait(begin_access_semaphores.size(),
-                   begin_access_semaphores.data());
+  WaitSemaphoresOnGrContext(gr_context, &external_semaphores);
 
   auto info = SkImageInfo::Make(size().width(), size().height(),
                                 ResourceFormatToClosestSkColorType(
@@ -816,7 +851,7 @@ bool ExternalVkImageBacking::WritePixelsWithData(
       GrBackendSurfaceMutableState(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                    VK_QUEUE_FAMILY_EXTERNAL));
 
-  auto end_access_semaphore = ExternalSemaphore::Create(context_provider());
+  auto end_access_semaphore = external_semaphore_pool()->GetOrCreateSemaphore();
   VkSemaphore vk_end_access_semaphore = end_access_semaphore.TakeVkSemaphore();
   GrBackendSemaphore end_access_backend_semaphore;
   end_access_backend_semaphore.initVulkan(vk_end_access_semaphore);
@@ -829,9 +864,15 @@ bool ExternalVkImageBacking::WritePixelsWithData(
   // Submit so the |end_access_semaphore| is ready for waiting.
   gr_context->submit();
 
-  // TODO(penghuang): reuse vk_end_access_semaphore.
+  // Reusing the |vk_end_access_semaphore| will cause vulkan device lost and
+  // hangs with NVIDIA GPU. so have to release |vk_end_access_semaphore| and not
+  // reuse it.
+  // TODO(penghuang): reuse |vk_end_access_semaphore|. https://crbug.com/1107558
   fence_helper()->EnqueueSemaphoreCleanupForSubmittedWork(
       vk_end_access_semaphore);
+  // |external_semaphores| have been waited on and can be reused when submitted
+  // GPU work is done.
+  AddSemaphoresToPendingListOrRelease(std::move(external_semaphores));
   EndAccessInternal(false /* readonly */, std::move(end_access_semaphore));
   return true;
 }
@@ -887,7 +928,7 @@ void ExternalVkImageBacking::CopyPixelsFromGLTextureToVkImage() {
   ScopedPixelStore pack_row_length(api, GL_PACK_ROW_LENGTH, 0);
   ScopedPixelStore pack_skip_pixels(api, GL_PACK_SKIP_PIXELS, 0);
   ScopedPixelStore pack_skip_rows(api, GL_PACK_SKIP_ROWS, 0);
-  ScopedPixelStore pack_aligment(api, GL_PACK_ALIGNMENT, 1);
+  ScopedPixelStore pack_alignment(api, GL_PACK_ALIGNMENT, 1);
 
   WritePixelsWithCallback(
       checked_size.ValueOrDie(), 0,

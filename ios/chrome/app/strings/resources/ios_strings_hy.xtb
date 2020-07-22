@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" />ից <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Ձեր ներդիրները ձեր բոլոր սարքերում օգտագործելու համար միացրեք համաժամացումը</translation>
 <translation id="1687475363370981210">Բոլորը նշել որպես կարդացված</translation>
+<translation id="1689333818294560261">Կեղծանուն</translation>
 <translation id="1690731385917361335">Տարրեր չկան</translation>
 <translation id="1692118695553449118">Համաժամացումը միացված է</translation>
 <translation id="1700629756560807968">Ընտրվել է <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> էջանիշ</translation>
@@ -206,6 +207,7 @@
 <translation id="3335947283844343239">Նորից բացել փակված ներդիրը</translation>
 <translation id="3371831930909698441">Translate-ը հասանելի է: Կարգավորումները հասանելի են էկրանի ստորին հատվածում:</translation>
 <translation id="3393920035788932672">Ելնող պատուհանները թույլատրված են</translation>
+<translation id="3425644765244388016">Քարտի կեղծանունը</translation>
 <translation id="3443810440409579745">Դուք ներդիր եք ստացել։</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> րոպե</translation>
 <translation id="3448016392200048164">Տրոհված տեսք</translation>
@@ -240,6 +242,7 @@
 <translation id="3783017676699494206">Պահել պատկերը</translation>
 <translation id="3789841737615482174">Տեղադրել</translation>
 <translation id="3803696231112616155">Առաջարկել այս կայքի թագմանությունը</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Կոտրված գաղտնաբառեր չկան}=1{{COUNT} կոտրված գաղտնաբառ}one{{COUNT} կոտրված գաղտնաբառ}other{{COUNT} կոտրված գաղտնաբառ}}</translation>
 <translation id="385051799172605136">Հետ</translation>
 <translation id="3892144330757387737">Պատմությունը կգտնեք այստեղ</translation>
 <translation id="3897092660631435901">Ընտրացանկ</translation>
@@ -529,6 +532,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="7189598951263744875">Կիսվել…</translation>
 <translation id="7192050974311852563">Սկսել գրանցումը</translation>
 <translation id="7203585745079012652">Կարդալ պատասխանները</translation>
+<translation id="721597782417389033">Քարտի կեղծանունն անվավեր է</translation>
 <translation id="7265758999917665941">Երբեք չպահել այս կայքի համար</translation>
 <translation id="7272437679830969316">Չհաջողվեց հաստատել ձեր ինքնությունը: Գաղտնաբառը չի պատճենվել:</translation>
 <translation id="7291368939935408496">Արտահանման նախապատրաստում…</translation>

@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/engagement/site_engagement_details.mojom.h"
@@ -112,6 +113,8 @@
 #include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
 #include "chrome/browser/ui/webui/downloads/downloads_ui.h"
 #include "chrome/browser/ui/webui/media/media_feeds_ui.h"
+#include "chrome/browser/ui/webui/nearby_share/nearby_share.mojom.h"
+#include "chrome/browser/ui/webui/nearby_share/nearby_share_dialog_ui.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
@@ -496,6 +499,12 @@ void PopulateChromeWebUIFrameBinders(
 #else
   RegisterWebUIControllerInterfaceBinder<downloads::mojom::PageHandlerFactory,
                                          DownloadsUI>(map);
+
+  if (base::FeatureList::IsEnabled(features::kNearbySharing)) {
+    RegisterWebUIControllerInterfaceBinder<
+        nearby_share::mojom::DiscoveryManager,
+        nearby_share::NearbyShareDialogUI>(map);
+  }
 
   RegisterWebUIControllerInterfaceBinder<
       new_tab_page::mojom::PageHandlerFactory, NewTabPageUI>(map);

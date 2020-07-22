@@ -22,7 +22,9 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_utils.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -541,10 +543,12 @@ NativeFileSystemManagerImpl::CreateFileWriter(
 
   RenderFrameHost* rfh = RenderFrameHost::FromID(binding_context.frame_id);
   bool has_transient_user_activation = rfh && rfh->HasTransientUserActivation();
-  writer_receivers_.Add(std::make_unique<NativeFileSystemFileWriterImpl>(
-                            this, binding_context, url, swap_url, handle_state,
-                            has_transient_user_activation),
-                        result.InitWithNewPipeAndPassReceiver());
+  writer_receivers_.Add(
+      std::make_unique<NativeFileSystemFileWriterImpl>(
+          this, binding_context, url, swap_url, handle_state,
+          has_transient_user_activation,
+          GetContentClient()->browser()->GetQuarantineConnectionCallback()),
+      result.InitWithNewPipeAndPassReceiver());
   return result;
 }
 

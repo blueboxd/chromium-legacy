@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feed.library.api.client.scope.ProcessScope;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.stream.CardConfiguration;
@@ -19,7 +20,6 @@ import org.chromium.chrome.browser.feed.shared.stream.Stream;
 import org.chromium.chrome.browser.feed.tooltip.BasicTooltipApi;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
-import org.chromium.chrome.feed.R;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 
 /**

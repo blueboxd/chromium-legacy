@@ -444,6 +444,7 @@
 <translation id="2824775600643448204">የአድራሻ እና ፍለጋ አሞሌ</translation>
 <translation id="2826760142808435982">ግንኙነቱ የተመሰጠረ እና <ph name="CIPHER" />ን በመጠቀም የተረጋገጠ ነው፣ እና <ph name="KX" />ን እንደ የቁልፍ መቀያየሪያ ስልት ይጠቀምበታል።</translation>
 <translation id="2835170189407361413">ቅጽ አጽዳ</translation>
+<translation id="2839501879576190149">የውሸት ጣቢያ ከፊት አለ</translation>
 <translation id="2847118875340931228">ማንነት የማያሳውቅ መስኮት ክፈት</translation>
 <translation id="2850739647070081192">ግብዣ (የደብዳቤ ፖስታ)</translation>
 <translation id="2856444702002559011">አጥቂዎች የእርስዎን መረጃ (ለምሳሌ፦ የይለፍ ቃላትን፣ መልዕክቶችን፣ ወይም የክሬዲት ካርዶችን የመሳሰሉ) ከ<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ለመስረቅ እየሞከሩ ሊሆኑ ይችላሉ። <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -800,6 +801,7 @@
 <translation id="42981349822642051">ዘርጋ</translation>
 <translation id="4300675098767811073">በርካታ ብስ ቀኝ</translation>
 <translation id="4302965934281694568">Chou3 (የደብዳቤ ፖስታ)</translation>
+<translation id="4305666528087210886">የእርስዎ ፋይል ሊደርስበት አልተቻለም</translation>
 <translation id="4305817255990598646">ቀይር</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">አግድ (ነባሪ)</translation>
@@ -818,6 +820,7 @@
 <translation id="4358461427845829800">የመክፈያ ዘዴዎችን ያቀናብሩ...</translation>
 <translation id="4359160567981085931">አሁን የይለፍ ቃልዎን በአንድ አታላይ ጣቢያ ላይ አስገብተዋል። Chrome ሊያግዝ ይችላል። የእርስዎን የይለፍ ቃል ለመለወጥ እና የእርስዎ መለያ ስጋት ውስጥ እንዳለ ለGoogle ለማሳወቅ፣ መለያን ከጥቃት ተከላከል የሚለው ላይ ጠቅ ያድርጉ።</translation>
 <translation id="4367563149485757821">ቁጥር-12 (የደብዳቤ ፖስታ)</translation>
+<translation id="4367839622597707614">{1,plural, =0{በአንድ ጣቢያ ወይም መተግበሪያ ላይ ያለየውሂብ ጥሰት የእርስዎን የተቀመጠ የይለፍ ቃል ለ<ph name="ORIGIN" /> አጋልጦታል። Chrome <ph name="ORIGIN" /> ላይ የይለፍ ቃልዎን አሁኑኑ እንዲቀይሩት ይመክራል።}=1{በአንድ ጣቢያ ወይም መተግበሪያ ላይ ያለየውሂብ ጥሰት የእርስዎን የተቀመጠ የይለፍ ቃል ለ<ph name="ORIGIN" /> እና ሌላ ጣቢያ አጋልጦታል። Chrome የተቀመጡ ይለፍ ቃላትዎን አሁኑኑ መፈተሽ ይመክራል።}one{በአንድ ጣቢያ ወይም መተግበሪያ ላይ ያለየውሂብ ጥሰት የእርስዎን የተቀመጠ የይለፍ ቃል ለ<ph name="ORIGIN" /> እና <ph name="SITES_COUNT" /> አጋልጦታል። Chrome የተቀመጡ ይለፍ ቃላትዎን አሁኑኑ መፈተሽ ይመክራል።}other{በአንድ ጣቢያ ወይም መተግበሪያ ላይ ያለየውሂብ ጥሰት የእርስዎን የተቀመጠ የይለፍ ቃል ለ<ph name="ORIGIN" /> እና <ph name="SITES_COUNT" /> አጋልጦታል። Chrome የተቀመጡ ይለፍ ቃላትዎን አሁኑኑ መፈተሽ ይመክራል።}}</translation>
 <translation id="437058704415269440">የመለያ ቀሪ ሒሳብ</translation>
 <translation id="4372516964750095882">ፋንፎልድ-አሜሪካ</translation>
 <translation id="4372948949327679948">የተጠበቀው የ<ph name="VALUE_TYPE" /> ዋጋ ነው።</translation>
@@ -1288,6 +1291,7 @@
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">ሊሆኑ የሚችሉ ክፍያ መጠየቂያዎች እየመጡ ነው።</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 ሌላ የአስተያየት ጥቆማ}one{# ሌሎች የአስተያየት ጥቆማዎች}other{# ሌሎች የአስተያየት ጥቆማዎች}}</translation>
+<translation id="6387645831795005740">አጥቂዎች አንዳንድ ጊዜ በዩአርኤሉ ላይ ለመታየት የሚያስቸግሩ አነስተኛ ለውጦችን በማድረግ ጣቢያዎችን ያስመስላሉ።</translation>
 <translation id="6389470377220713856">በካርድ ላይ ያለ ስም</translation>
 <translation id="6390200185239044127">Z-እጥፋት ግማሽ</translation>
 <translation id="6390662030813198813">ምሕንድስና-E</translation>
@@ -1501,6 +1505,7 @@
 <translation id="7372973238305370288">የፍለጋ ውጤት</translation>
 <translation id="7374733840632556089">ይህ ችግር የተፈጠረው በእርስዎ ወይም በሌላ ሰው በእርስዎ መሣሪያ ላይ በተጫነ የዕውቅና ማረጋገጫ ምክንያት ነው። ይህ የዕውቅና ማረጋገጫ አውታረ መረቦችን እንደሚከታተል እና አቋርጦ እንደሚገባ የታወቀ ነው እና በChrome የታመነ አይደለም። ክትትል ለማድረግ እንደ ትምህርት ቤት ወይም የኩባንያ አውታረ መረብ በመሳሰሉ አንዳንድ ሕጋዊ አስፈላጊ ምክንያቶች ቢኖሩም Chrome ይህ እየተፈጠረ እንዳለ ምንም እንኳ እርስዎ ሊያስቆሙት ባይችሉም እንዲያውቁት ማድረግ ይፈልጋል። ክትትል ማድረግ በማናቸውም ድሩን በሚደርስ አሳሽ ወይም መተግበሪያ ላይ ሊያጋጥም ይችል ይሆናል።</translation>
 <translation id="7375818412732305729">ፋይል ተያይዟል</translation>
+<translation id="7376551888419889433">በChrome Enterprise አገናኞች አማካይነት የደህንነት ስጋት ክስተቶች ሲጠቆሙ ክስተቱን የሚመለከት ውሂብ ወደ የእርስዎ አስተዳዳሪ ይላካል። ይህ እርስዎ በChrome ውስጥ የጎበኟቸውን የገጾች ዩአርኤሎች፣ የፋይል ስሞችን ወይም ዲበ ውሂብን እና ወደ የእርስዎ መሣሪያ እና Chrome ለመግባት የተጠቀሙበትን የተጠቃሚ ስም ሊያካትት ይችላል።</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">የሚዲያ መቆጣጠሪያዎች</translation>
 <translation id="7378627244592794276">አይ</translation>
@@ -1898,6 +1903,7 @@
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619"><ph name="DOMAIN" />ን ለመድረስ ሞክረው ነበር፣ ግን አገልጋዩ ልክ ያልሆነ የእውቅና ማረጋገጫ ነው ያሳየው።</translation>
 <translation id="9050666287014529139">የይለፍ ሐረግ</translation>
+<translation id="9062620674789239642">ተወስዶ፣ አርትዕ ተደርጎ ወይም ተሰርዞ ሊሆን ይችላል።</translation>
 <translation id="9065203028668620118">አርትዕ</translation>
 <translation id="9065745800631924235">የ<ph name="TEXT" /> ፍለጋ ከታሪክ</translation>
 <translation id="9069693763241529744">በቅጥያ ታግዷል</translation>

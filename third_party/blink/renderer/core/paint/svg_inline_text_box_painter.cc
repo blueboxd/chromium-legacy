@@ -479,8 +479,8 @@ void SVGInlineTextBoxPainter::PaintText(const PaintInfo& paint_info,
     PaintTiming& timing = PaintTiming::From(
         text_layout_object.GetNode()->GetDocument().TopDocument());
     timing.MarkFirstContentfulPaint();
-    PaintTimingDetector::NotifyTextPaint(
-        InlineLayoutObject().FragmentsVisualRectBoundingBox());
+    PaintTimingDetector::NotifyTextPaint(EnclosingIntRect(
+        InlineLayoutObject().VisualRectInLocalSVGCoordinates()));
   }
 }
 

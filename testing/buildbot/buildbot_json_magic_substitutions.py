@@ -36,8 +36,8 @@ def ChromeOSTelemetryRemote(test_config):
     'chrome.tests.cros-vm',
   ]
   HW_POOLS = [
-    'chrome-cros-dut',
-    'chrome.cros-dut',
+      'chrome.tests',
+      'chromium.tests',
   ]
   dimensions = test_config.get('swarming', {}).get('dimension_sets', [])
   assert len(dimensions)

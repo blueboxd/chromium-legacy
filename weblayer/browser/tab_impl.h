@@ -165,9 +165,9 @@ class TabImpl : public Tab,
   void OnAutofillProviderChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& autofill_provider);
-  void UpdateBrowserControlsState(JNIEnv* env,
-                                  jint raw_new_state,
-                                  jboolean animate);
+  void UpdateBrowserControlsConstraint(JNIEnv* env,
+                                       jint constraint,
+                                       jboolean animate);
 
   base::android::ScopedJavaLocalRef<jstring> GetGuid(JNIEnv* env);
   void CaptureScreenShot(
@@ -307,9 +307,8 @@ class TabImpl : public Tab,
       gfx::Rect* src_rect,
       gfx::Size* output_size);
 
-  void UpdateBrowserControlsStateImpl(content::BrowserControlsState new_state,
-                                      content::BrowserControlsState old_state,
-                                      bool animate);
+  void UpdateBrowserControlsState(content::BrowserControlsState new_state,
+                                  bool animate);
 #endif
 
   // content::WebContentsObserver:
@@ -369,9 +368,14 @@ class TabImpl : public Tab,
       browser_controls_navigation_state_handler_;
   int top_controls_min_height_ = 0;
 
-  // Last value supplied to UpdateBrowserControlsState().
-  content::BrowserControlsState current_browser_controls_state_ =
-      content::BROWSER_CONTROLS_STATE_SHOWN;
+  // Last value supplied to UpdateBrowserControlsConstraint(). This *constraint*
+  // can be SHOWN, if for example a modal dialog is forcing the controls to be
+  // visible, HIDDEN, if for example fullscreen is forcing the controls to be
+  // hidden, or BOTH, if either state is viable (e.g. during normal browsing).
+  // When BOTH, the actual current state could be showing or hidden.
+  content::BrowserControlsState
+      current_browser_controls_visibility_constraint_ =
+          content::BROWSER_CONTROLS_STATE_SHOWN;
 
   std::map<std::string, std::unique_ptr<WebMessageHostFactoryProxy>>
       js_name_to_proxy_;

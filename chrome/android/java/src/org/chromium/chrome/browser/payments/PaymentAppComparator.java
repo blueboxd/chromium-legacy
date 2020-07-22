@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import org.chromium.components.autofill.Completable;
 import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentRequestParams;
+import org.chromium.payments.mojom.PaymentOptions;
 
 import java.util.Comparator;
 
@@ -77,30 +78,34 @@ import java.util.Comparator;
         int completeness = compareCompletablesByCompleteness(b, a);
         if (completeness != 0) return completeness;
 
-        // Payment apps which handle shipping address before others.
-        if (mParams.requestShipping()) {
-            int canHandleShipping =
-                    (b.handlesShippingAddress() ? 1 : 0) - (a.handlesShippingAddress() ? 1 : 0);
-            if (canHandleShipping != 0) return canHandleShipping;
-        }
+        PaymentOptions options = mParams.getPaymentOptions();
+        if (options != null) {
+            // Payment apps which handle shipping address before others.
+            if (options.requestShipping) {
+                int canHandleShipping =
+                        (b.handlesShippingAddress() ? 1 : 0) - (a.handlesShippingAddress() ? 1 : 0);
+                if (canHandleShipping != 0) return canHandleShipping;
+            }
 
-        // Payment apps which handle more contact information fields come first.
-        int aSupportedContactDelegationsNum = 0;
-        int bSupportedContactDelegationsNum = 0;
-        if (mParams.requestPayerName()) {
-            if (a.handlesPayerName()) aSupportedContactDelegationsNum++;
-            if (b.handlesPayerName()) bSupportedContactDelegationsNum++;
-        }
-        if (mParams.requestPayerEmail()) {
-            if (a.handlesPayerEmail()) aSupportedContactDelegationsNum++;
-            if (b.handlesPayerEmail()) bSupportedContactDelegationsNum++;
-        }
-        if (mParams.requestPayerPhone()) {
-            if (a.handlesPayerPhone()) aSupportedContactDelegationsNum++;
-            if (b.handlesPayerPhone()) bSupportedContactDelegationsNum++;
-        }
-        if (bSupportedContactDelegationsNum != aSupportedContactDelegationsNum) {
-            return bSupportedContactDelegationsNum - aSupportedContactDelegationsNum > 0 ? 1 : -1;
+            // Payment apps which handle more contact information fields come first.
+            int aSupportedContactDelegationsNum = 0;
+            int bSupportedContactDelegationsNum = 0;
+            if (options.requestPayerName) {
+                if (a.handlesPayerName()) aSupportedContactDelegationsNum++;
+                if (b.handlesPayerName()) bSupportedContactDelegationsNum++;
+            }
+            if (options.requestPayerEmail) {
+                if (a.handlesPayerEmail()) aSupportedContactDelegationsNum++;
+                if (b.handlesPayerEmail()) bSupportedContactDelegationsNum++;
+            }
+            if (options.requestPayerPhone) {
+                if (a.handlesPayerPhone()) aSupportedContactDelegationsNum++;
+                if (b.handlesPayerPhone()) bSupportedContactDelegationsNum++;
+            }
+            if (bSupportedContactDelegationsNum != aSupportedContactDelegationsNum) {
+                return bSupportedContactDelegationsNum - aSupportedContactDelegationsNum > 0 ? 1
+                                                                                             : -1;
+            }
         }
 
         // Preselectable apps before non-preselectable apps.

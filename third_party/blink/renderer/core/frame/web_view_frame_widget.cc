@@ -191,6 +191,15 @@ WebString WebViewFrameWidget::GetLastToolTipTextForTesting() const {
   return GetPage()->GetChromeClient().GetLastToolTipTextForTesting();
 }
 
+void WebViewFrameWidget::EnableDeviceEmulation(
+    const DeviceEmulationParams& parameters) {
+  Client()->EnableDeviceEmulation(parameters);
+}
+
+void WebViewFrameWidget::DisableDeviceEmulation() {
+  Client()->DisableDeviceEmulation();
+}
+
 void WebViewFrameWidget::DidDetachLocalFrameTree() {
   web_view_->DidDetachLocalMainFrame();
 }

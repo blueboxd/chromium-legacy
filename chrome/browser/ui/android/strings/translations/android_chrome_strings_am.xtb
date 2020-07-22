@@ -577,6 +577,7 @@
 <translation id="5659593005791499971">ኢሜይል</translation>
 <translation id="5665379678064389456">በ<ph name="APP_NAME" /> ውስጥ ክስተት ይፍጠሩ</translation>
 <translation id="5668404140385795438">የአንድ ድር ጣቢያ ማጉላትን መከልከል ጥያቄ ሻር</translation>
+<translation id="5683547024293500885">Chrome ዝማኔዎች ካሉ መፈተሽ አይችልም</translation>
 <translation id="5686790454216892815">የፋይሉ ስም በጣም ረጅም ነው</translation>
 <translation id="5694049548840660018">በቀላሉ ወደ ቤት ይመለሱ</translation>
 <translation id="569536719314091526">ከተጨማሪ አማራጮች አዝራርሩ ይህን ገጽ ወደ ማንኛውም ቋንቋ ያስተርጉሙ</translation>
@@ -589,6 +590,7 @@
 <translation id="5732819098735351888">ውርድ በWi-Fi ላይ ይጀመራል።</translation>
 <translation id="5748802427693696783">ወደ መደበኛ ትሮች ቀይር</translation>
 <translation id="5749068826913805084">Chrome ፋይሎችን ለማውረድ የማከማቻ መዳረሻ ያስፈልገዋል።</translation>
+<translation id="5749237766298580851">አጥፋ <ph name="SEPARATOR" /> አይመከርም</translation>
 <translation id="5754350196967618083">Discoverን ዳግም ማደስ አይቻልም</translation>
 <translation id="5763382633136178763">ማንነት የማያሳውቁ ትሮች</translation>
 <translation id="5763514718066511291">የዚህ መተግበሪያ ዩአርኤል ለመቅዳት መታ ያድርጉ</translation>
@@ -996,6 +998,7 @@
 <translation id="8970887620466824814">የሆነ ችግር ተፈጥሯል።</translation>
 <translation id="8972098258593396643">ወደ ነባሪው አቃፊ ይውረድ?</translation>
 <translation id="8988028529677883095">እንደ ደህንነት ቁልፍ ስልክን ይጠቀሙ</translation>
+<translation id="8990209962746788689">የQR ኮድ መፍጠር አልተቻለም</translation>
 <translation id="8993760627012879038">አዲስ ትር በማንነት የማያሳውቅ ሁነታ ውስጥ ክፈት</translation>
 <translation id="8998729206196772491">በ<ph name="MANAGED_DOMAIN" /> ወደሚተዳደር መለያ እየገቡና ሙሉውን የChrome ውሂብዎ ቁጥጥር ለአስተዳዳሪው እየሰጡ ነው። የእርስዎ ውሂብ እስከመጨረሻው ከዚህ መለያ ጋር ይተሳሰራል። ከChrome ዘግቶ መውጣት ውሂብዎን ከዚህ መሣሪያ ይሰርዘዋል፣ ነገር ግን በእርስዎ የGoogle መለያ ላይ እንደተከማቸ ይቆያል።</translation>
 <translation id="9028914725102941583">በተለያዩ መሣሪያዎች ላይ ለማጋራት ስምረትን ያብሩ</translation>

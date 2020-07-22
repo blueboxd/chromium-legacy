@@ -29,15 +29,21 @@
 #include "ppapi/utility/completion_callback_factory.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+namespace gfx {
+class Rect;
+class Size;
+class Vector2d;
+}  // namespace gfx
+
 namespace pp {
 class Graphics2D;
 class Size;
 class TextInput_Dev;
-}
+}  // namespace pp
 
 namespace chrome_pdf {
 
-struct PaintReadyRect;
+class PaintReadyRect;
 
 class OutOfProcessInstance : public pp::Instance,
                              public pp::Find_Private,
@@ -62,11 +68,11 @@ class OutOfProcessInstance : public pp::Instance,
   void StopFind() override;
 
   // pp::PaintManager::Client implementation.
-  pp::Graphics2D CreatePaintGraphics(const pp::Size& size) override;
+  pp::Graphics2D CreatePaintGraphics(const gfx::Size& size) override;
   bool BindPaintGraphics(pp::Graphics2D& graphics) override;
-  void OnPaint(const std::vector<pp::Rect>& paint_rects,
+  void OnPaint(const std::vector<gfx::Rect>& paint_rects,
                std::vector<PaintReadyRect>* ready,
-               std::vector<pp::Rect>* pending) override;
+               std::vector<gfx::Rect>* pending) override;
 
   // pp::Printing_Dev implementation.
   uint32_t QuerySupportedPrintOutputFormats() override;
@@ -103,7 +109,7 @@ class OutOfProcessInstance : public pp::Instance,
   // PDFEngine::Client implementation.
   void ProposeDocumentLayout(const DocumentLayout& layout) override;
   void Invalidate(const pp::Rect& rect) override;
-  void DidScroll(const pp::Point& point) override;
+  void DidScroll(const gfx::Vector2d& offset) override;
   void ScrollToX(int x_in_screen_coords) override;
   void ScrollToY(int y_in_screen_coords, bool compensate_for_toolbar) override;
   void ScrollBy(const pp::Point& point) override;

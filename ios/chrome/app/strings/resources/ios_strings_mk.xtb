@@ -72,6 +72,7 @@
 <translation id="1674504678466460478">Од <ph name="SOURCE_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">За да ги добиете обележувачите на сите уреди, вклучете ја синхронизацијата.</translation>
 <translation id="1687475363370981210">Означи ги сите како прочитани</translation>
+<translation id="1689333818294560261">Прекар</translation>
 <translation id="1690731385917361335">Нема ставки</translation>
 <translation id="1692118695553449118">Синхронизацијата е вклучена</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> избрани</translation>
@@ -206,6 +207,7 @@
 <translation id="3335947283844343239">Повторно отвори затворена картичка</translation>
 <translation id="3371831930909698441">„Преведи“ е достапна. Достапни се опции на дното на екранот.</translation>
 <translation id="3393920035788932672">Појавни прозорци се дозволени</translation>
+<translation id="3425644765244388016">Прекар на картичката</translation>
 <translation id="3443810440409579745">Примена е картичка.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин.</translation>
 <translation id="3448016392200048164">Поделен приказ</translation>
@@ -240,6 +242,7 @@
 <translation id="3783017676699494206">Зачувај слика</translation>
 <translation id="3789841737615482174">Инсталирај</translation>
 <translation id="3803696231112616155">Понудувај да го преведеш сајтов</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Немате компромитирани лозинки}=1{{COUNT} компромитирана лозинка}one{{COUNT} компромитирана лозинка}other{{COUNT} компромитирани лозинки}}</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3892144330757387737">Вашата историја ќе ја најдете тука</translation>
 <translation id="3897092660631435901">Мени</translation>
@@ -529,6 +532,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="7189598951263744875">Сподели…</translation>
 <translation id="7192050974311852563">Започни со собирање евиденција</translation>
 <translation id="7203585745079012652">Изговарај ги одговорите</translation>
+<translation id="721597782417389033">Неважечки прекар на картичка</translation>
 <translation id="7265758999917665941">Никогаш за овој сајт</translation>
 <translation id="7272437679830969316">Не може да се потврди вашиот идентитет. Лозинката не е копирана.</translation>
 <translation id="7291368939935408496">Се подготвуваат лозинките…</translation>

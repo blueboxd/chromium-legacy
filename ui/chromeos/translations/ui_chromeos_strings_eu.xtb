@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Grabaketaren urtea</translation>
 <translation id="3338239663705455570">Teklatu esloveniarra</translation>
 <translation id="3353984535370177728">Hautatu kargatu nahi duzun karpeta</translation>
+<translation id="3356580349448036450">Osatuta</translation>
 <translation id="3399597614303179694">Teklatu mazedoniarra</translation>
 <translation id="3414856743105198592">Gailu aldagarria formateatzen baduzu, datu guztiak ezabatuko dira. Jarraitu nahi duzu?</translation>
 <translation id="3437801641691368414">Sortze-ordua</translation>
@@ -550,7 +551,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Ezin izan da instalatu.</translation>
 <translation id="7040138676081995583">Ireki honekin…</translation>
-<translation id="7059566040011178088"><ph name="REMAINING_TIME" /> baino gutxiago</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> elementu hautatu dira</translation>
 <translation id="7106346894903675391">Erosi memoria gehiago…</translation>
 <translation id="7126604456862387217">"&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;" - &lt;em&gt;bilatu Drive-n&lt;/em&gt;</translation>
@@ -661,7 +661,6 @@
 <translation id="8193175696669055101">Gailuaren modeloa</translation>
 <translation id="8208580316430297579">Azala</translation>
 <translation id="8223479393428528563">Fitxategi horiek gordetzeko eta konexiorik gabe erabili ahal izateko, konekta zaitez berriro, egin klik eskuineko botoiarekin fitxategien gainean eta hautatu <ph name="OFFLINE_CHECKBOX_NAME" /> aukera.</translation>
-<translation id="8231972167769262174"><ph name="REMAINING_TIME" /> inguru</translation>
 <translation id="8249296373107784235">Utzi bertan behera</translation>
 <translation id="8261506727792406068">Ezabatu</translation>
 <translation id="8269755669432358899">Tolestu fitxategien oharren panelak</translation>

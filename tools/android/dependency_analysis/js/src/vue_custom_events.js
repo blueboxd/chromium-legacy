@@ -8,9 +8,7 @@ const CUSTOM_EVENTS = {
   ADD_TO_FILTER_CLICKED: 'add-to-filter-clicked',
   FILTER_ELEMENT_CLICKED: 'filter-element-clicked',
   FILTER_SUBMITTED: 'filter-submitted',
-  INBOUND_DEPTH_UPDATED: 'inbound-depth-updated',
   NODE_CLICKED: 'node-clicked',
-  OUTBOUND_DEPTH_UPDATED: 'outbound-depth-updated',
   REMOVE_FROM_FILTER_CLICKED: 'remove-from-filter-clicked',
 };
 

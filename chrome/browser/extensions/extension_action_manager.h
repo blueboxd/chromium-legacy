@@ -15,12 +15,12 @@
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/api/extension_action/action_info.h"
 
-class ExtensionAction;
 class Profile;
 
 namespace extensions {
 
 class Extension;
+class ExtensionAction;
 
 // Owns the ExtensionActions associated with each extension.  These actions live
 // while an extension is loaded and are destroyed on unload.

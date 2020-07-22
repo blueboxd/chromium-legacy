@@ -61,7 +61,7 @@ public class ScreenshotShareSheetDialog extends DialogFragment {
                 new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_Fullscreen);
         ScreenshotShareSheetView screenshotShareSheetView =
                 (ScreenshotShareSheetView) getActivity().getLayoutInflater().inflate(
-                        org.chromium.chrome.browser.share.R.layout.screenshot_share_sheet, null);
+                        R.layout.screenshot_share_sheet, null);
         builder.setView(screenshotShareSheetView);
 
         ScreenshotShareSheetCoordinator shareCoordinator =

@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Anno di registrazione</translation>
 <translation id="3338239663705455570">Tastiera slovena</translation>
 <translation id="3353984535370177728">Seleziona una cartella da caricare</translation>
+<translation id="3356580349448036450">Fine</translation>
 <translation id="3399597614303179694">Tastiera macedone</translation>
 <translation id="3414856743105198592">La formattazione del supporto rimovibile comporterà la cancellazione di tutti i dati. Vuoi continuare?</translation>
 <translation id="3437801641691368414">Data/ora creazione</translation>
@@ -550,7 +551,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Installazione non riuscita.</translation>
 <translation id="7040138676081995583">Apri con...</translation>
-<translation id="7059566040011178088">Meno di <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> elementi selezionati</translation>
 <translation id="7106346894903675391">Acquista più spazio di archiviazione...</translation>
 <translation id="7126604456862387217">"&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;" - &lt;em&gt;cerca in Drive&lt;/em&gt;</translation>
@@ -661,7 +661,6 @@
 <translation id="8193175696669055101">Modello dispositivo</translation>
 <translation id="8208580316430297579">Copertina</translation>
 <translation id="8223479393428528563">Per salvare i file da utilizzare offline, torna online, fai clic con il pulsante destro del mouse sui file e seleziona l'opzione <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
-<translation id="8231972167769262174">Circa <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Interrompi</translation>
 <translation id="8261506727792406068">Elimina</translation>
 <translation id="8269755669432358899">Comprimi i riquadri di feedback dei file</translation>

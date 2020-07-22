@@ -154,6 +154,9 @@ vars = {
   # qemu on linux-arm64 machines.
   'checkout_fuchsia_for_arm64_host': False,
 
+  # Download prebuilt ash-chrome to test lacros build.
+  'checkout_prebuilt_ash_chrome': False,
+
   # Default to the empty board. Desktop Chrome OS builds don't need cros SDK
   # dependencies. Other Chrome OS builds should always define this explicitly.
   'cros_boards': Str(''),
@@ -161,9 +164,6 @@ vars = {
   # Building for CrOS is only supported on linux currently.
   'checkout_simplechrome': '"{cros_boards}" != ""',
   'checkout_simplechrome_with_vms': '"{cros_boards_with_qemu_images}" != ""',
-  # Should we build and test for public (ie: full) CrOS images, or private
-  # (ie: release) images.
-  'use_public_cros_config': 'not checkout_src_internal',
 
   # ANGLE's deps are relative to the angle_root variable.
   'angle_root': 'src/third_party/angle',
@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '5933d7d54fb888c23896eb87e7f6ce8f5bcdcda4',
+  'skia_revision': '4526665f2b812d3a250cb4e1c81ed54570f97e39',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'df76b72ef7394d85badaacaecf6e1a0beb986db7',
+  'v8_revision': '1501159524ac28ffd0dfe35d1259e8a4917255e3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '232115851126ae0539ea70b3741c11a6270f4ccd',
+  'angle_revision': '6ca2c1162445d4f190dad98fb142b5e758947ab7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '84d986f9a16ac7224e31dc2e7971ed94d60822ef',
+  'devtools_frontend_revision': '55b591c650f4d1cf830c389ddf44e4335e3d7197',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -322,7 +322,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': 'b3359b0b014d81e6986700478969af146e025155',
+  'quiche_revision': '8b6881bd2a9b4a70dfd7076b00df0062784dd951',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -545,7 +545,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '3132beea793356e3b0f6cb77c32c9c5a1a23e68b',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '6aea60a148025c15ddf8b8558192f4366abfb672',
       'condition': 'checkout_ios',
   },
 
@@ -895,13 +895,13 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '720e010ba1b2fb75f5007b8b2bb139da91bce3a9',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'c07c59ddb0be93cecac66bb37a60b87670d246ab',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
 
   'src/third_party/dom_distiller_js/dist':
-    Var('chromium_git') + '/chromium/dom-distiller/dist.git' + '@' + '3093c3e238768ab27ff756bd7563ccbb12129d9f',
+    Var('chromium_git') + '/chromium/dom-distiller/dist.git' + '@' + 'f339eb9463714c3d31657c8ee1bd53d1c7e5c555',
 
   'src/third_party/espresso': {
       'packages': [
@@ -1476,7 +1476,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '0bc68bd1648454f5ac2987cdf2014b71d1a80e07',
+    Var('webrtc_git') + '/src.git' + '@' + 'a5d9c1a45c2bd748b7ec7b6456b7ddddfc46d2d6',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1548,7 +1548,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b4a89393df3ca518edeb1ad70ff954347ff802d0',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5e102dafa79a96cdc99fd758b08ffabed15c4cc0',
     'condition': 'checkout_src_internal',
   },
 
@@ -4865,41 +4865,73 @@ hooks = [
   },
 
   # Download public CrOS simplechrome artifacts. The first hooks is for boards
-  # that support VM images, the second hook for all other boards. For internal
-  # boards, see src-internal's DEPS.
+  # that support VM images, the second hook for all other boards.
   {
     'name': 'cros_simplechrome_artifacts_with_vm',
     'pattern': '.',
-    'condition': 'checkout_simplechrome_with_vms and use_public_cros_config',
+    'condition': 'checkout_simplechrome_with_vms and not checkout_src_internal',
     'action': [
       'src/third_party/chromite/bin/cros',
       'chrome-sdk',
-      '--nogoma',
-      '--use-external-config',
       '--fallback-versions=10',
+      '--nogoma',
       '--nogn-gen',
-      '--download-vm',
-      '--boards={cros_boards_with_qemu_images}',
-      '--cache-dir=src/build/cros_cache/',
-      '--log-level=error',
       '--no-shell',
+      '--log-level=error',
+      '--cache-dir=src/build/cros_cache/',
+      '--use-external-config',
+      '--boards={cros_boards_with_qemu_images}',
+      '--download-vm',
     ],
   },
   {
     'name': 'cros_simplechrome_artifacts_with_no_vm',
     'pattern': '.',
-    'condition': 'checkout_simplechrome and use_public_cros_config',
+    'condition': 'checkout_simplechrome and not checkout_src_internal',
     'action': [
       'src/third_party/chromite/bin/cros',
       'chrome-sdk',
-      '--nogoma',
-      '--use-external-config',
       '--fallback-versions=10',
+      '--nogoma',
       '--nogn-gen',
-      '--boards={cros_boards}',
-      '--cache-dir=src/build/cros_cache/',
-      '--log-level=error',
       '--no-shell',
+      '--log-level=error',
+      '--cache-dir=src/build/cros_cache/',
+      '--use-external-config',
+      '--boards={cros_boards}',
+    ],
+  },
+  {
+    'name': 'cros_simplechrome_artifacts_with_vm_internal',
+    'pattern': '.',
+    'condition': 'checkout_simplechrome_with_vms and checkout_src_internal',
+    'action': [
+      'src/third_party/chromite/bin/cros',
+      'chrome-sdk',
+      '--fallback-versions=10',
+      '--nogoma',
+      '--nogn-gen',
+      '--no-shell',
+      '--log-level=error',
+      '--cache-dir=src/build/cros_cache/',
+      '--boards={cros_boards_with_qemu_images}',
+      '--download-vm',
+    ],
+  },
+  {
+    'name': 'cros_simplechrome_artifacts_with_no_vm_internal',
+    'pattern': '.',
+    'condition': 'checkout_simplechrome and checkout_src_internal',
+    'action': [
+      'src/third_party/chromite/bin/cros',
+      'chrome-sdk',
+      '--fallback-versions=10',
+      '--nogoma',
+      '--nogn-gen',
+      '--no-shell',
+      '--log-level=error',
+      '--cache-dir=src/build/cros_cache/',
+      '--boards={cros_boards}',
     ],
   },
 
@@ -4935,6 +4967,16 @@ hooks = [
                 '--target=mac',
                 'update',
                 '--gs-url-base=chromium-optimization-profiles/pgo_profiles',
+    ],
+  },
+
+  {
+    'name': 'Download prebuilt ash-chrome',
+    'pattern': '.',
+    'condition': 'checkout_prebuilt_ash_chrome',
+    'action': [ 'vpython',
+                'src/build/lacros/test_runner.py',
+                'download_for_bots',
     ],
   },
 

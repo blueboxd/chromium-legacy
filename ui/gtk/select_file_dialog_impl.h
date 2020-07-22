@@ -37,11 +37,12 @@ class SelectFileDialogImpl : public ui::SelectFileDialog {
   static SelectFileDialogImpl* NewSelectFileDialogImplKDE(
       Listener* listener,
       std::unique_ptr<ui::SelectFilePolicy> policy,
-      base::nix::DesktopEnvironment desktop);
+      base::nix::DesktopEnvironment desktop,
+      const std::string& kdialog_version);
 
   // Returns true if the SelectFileDialog class returned by
   // NewSelectFileDialogImplKDE will actually work.
-  static bool CheckKDEDialogWorksOnUIThread();
+  static bool CheckKDEDialogWorksOnUIThread(std::string& kdialog_version);
 
   // BaseShellDialog implementation.
   void ListenerDestroyed() override;

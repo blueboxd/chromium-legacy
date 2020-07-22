@@ -74,7 +74,7 @@ bool ChromeHistoryBackendClient::IsWebSafe(const GURL& url) {
 void ChromeHistoryBackendClient::OnHistoryBackendInitialized(
     history::HistoryBackend* history_backend,
     history::HistoryDatabase* history_database,
-    history::FaviconDatabase* favicon_database,
+    favicon::FaviconDatabase* favicon_database,
     const base::FilePath& history_dir) {
   DCHECK(history_backend);
   if (favicon_database) {

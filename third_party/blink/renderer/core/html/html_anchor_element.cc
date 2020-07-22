@@ -352,6 +352,10 @@ base::Optional<WebImpression> HTMLAnchorElement::GetImpressionForNavigation()
     const {
   DCHECK(HasImpression());
 
+  if (!RuntimeEnabledFeatures::ConversionMeasurementEnabled(
+          GetExecutionContext()))
+    return base::nullopt;
+
   if (!GetExecutionContext()->IsFeatureEnabled(
           mojom::blink::FeaturePolicyFeature::kConversionMeasurement)) {
     String message =
@@ -551,9 +555,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   }
 
   // Only attach impressions for main frame navigations.
-  if (RuntimeEnabledFeatures::ConversionMeasurementEnabled(
-          GetExecutionContext()) &&
-      target_frame && target_frame->IsMainFrame() && request.HasUserGesture() &&
+  if (target_frame && target_frame->IsMainFrame() && request.HasUserGesture() &&
       HasImpression()) {
     base::Optional<WebImpression> impression = GetImpressionForNavigation();
     if (impression)

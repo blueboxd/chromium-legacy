@@ -94,7 +94,14 @@ enum class ShowTranslateBubbleResult {
   EDITABLE_FIELD_IS_ACTIVE,
 };
 
-enum class BrowserThemeChangeType { kBrowserTheme, kNativeTheme };
+enum class BrowserThemeChangeType {
+  // User changes the browser theme.
+  kBrowserTheme,
+  // User changes the OS native theme.
+  kNativeTheme,
+  // A web app sets a theme color at launch, or changes theme color.
+  kWebAppTheme
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserWindow interface

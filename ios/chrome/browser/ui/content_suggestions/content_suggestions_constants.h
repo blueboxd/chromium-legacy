@@ -11,4 +11,7 @@ extern NSString* const kContentSuggestionsCollectionIdentifier;
 
 extern NSString* const kContentSuggestionsLearnMoreIdentifier;
 
+// Represents the menu button in the Discover feed header.
+extern NSString* const kContentSuggestionsDiscoverHeaderButtonIdentifier;
+
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_CONSTANTS_H_

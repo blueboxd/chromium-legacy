@@ -18,6 +18,21 @@ struct ServiceWorkerRunningInfo;
 
 class ServiceWorkerContextObserver {
  public:
+  struct ErrorInfo {
+    ErrorInfo(const base::string16& message,
+              int line,
+              int column,
+              const GURL& url)
+        : error_message(message),
+          line_number(line),
+          column_number(column),
+          source_url(url) {}
+    ErrorInfo(const ErrorInfo& info) = default;
+    const base::string16 error_message;
+    const int line_number;
+    const int column_number;
+    const GURL source_url;
+  };
   // Called when a service worker has been registered with scope |scope|.
   //
   // This is called when the ServiceWorkerContainer.register() promise is
@@ -77,9 +92,16 @@ class ServiceWorkerContextObserver {
       const std::string& client_uuid,
       GlobalFrameRoutingId render_frame_host_id) {}
 
+  // Called when an error is reported for the service worker with id
+  // |version_id|.
+  virtual void OnErrorReported(int64_t version_id,
+                               const GURL& scope,
+                               const ErrorInfo& info) {}
+
   // Called when a console message is reported for the service worker with id
   // |version_id|.
   virtual void OnReportConsoleMessage(int64_t version_id,
+                                      const GURL& scope,
                                       const ConsoleMessage& message) {}
 
   // Called when |context| is destroyed. Observers must no longer use |context|.

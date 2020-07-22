@@ -5,7 +5,6 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_EXTERNAL_VK_IMAGE_DAWN_REPRESENTATION_H_
 #define GPU_COMMAND_BUFFER_SERVICE_EXTERNAL_VK_IMAGE_DAWN_REPRESENTATION_H_
 
-#include "base/files/scoped_file.h"
 #include "gpu/command_buffer/service/external_vk_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 
@@ -25,6 +24,10 @@ class ExternalVkImageDawnRepresentation : public SharedImageRepresentationDawn {
   void EndAccess() override;
 
  private:
+  ExternalVkImageBacking* backing_impl() const {
+    return static_cast<ExternalVkImageBacking*>(backing());
+  }
+
   const WGPUDevice device_;
   const WGPUTextureFormat wgpu_format_;
   base::ScopedFD memory_fd_;
@@ -35,12 +38,7 @@ class ExternalVkImageDawnRepresentation : public SharedImageRepresentationDawn {
   // created and pass a pointer to them around?
   const DawnProcTable dawn_procs_;
 
-  ExternalVkImageBacking* backing_impl() const {
-    return static_cast<ExternalVkImageBacking*>(backing());
-  }
-  viz::VulkanContextProvider* context_provider() const {
-    return backing_impl()->context_provider();
-  }
+  std::vector<ExternalSemaphore> begin_access_semaphores_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalVkImageDawnRepresentation);
 };

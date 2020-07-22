@@ -293,10 +293,12 @@ gfx::ContentColorUsage PaintImage::GetContentColorUsage() const {
   if (!color_space || color_space->isSRGB())
     return gfx::ContentColorUsage::kSRGB;
 
-  // TODO(crbug.com/1106417): Use SkColorSpace::isHDR() when available.
   skcms_TransferFunction fn;
-  if (!color_space->isNumericalTransferFn(&fn) && fn.g < 0)
+  if (!color_space->isNumericalTransferFn(&fn) &&
+      (skcms_TransferFunction_isPQish(&fn) ||
+       skcms_TransferFunction_isHLGish(&fn))) {
     return gfx::ContentColorUsage::kHDR;
+  }
 
   // If it's not HDR and not SRGB, report it as WCG.
   return gfx::ContentColorUsage::kWideColorGamut;

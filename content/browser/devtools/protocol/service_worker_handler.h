@@ -67,7 +67,7 @@ class ServiceWorkerHandler : public DevToolsDomainHandler,
       const std::vector<ServiceWorkerVersionInfo>& registrations);
   void OnErrorReported(int64_t registration_id,
                        int64_t version_id,
-                       const ServiceWorkerContextCoreObserver::ErrorInfo& info);
+                       const ServiceWorkerContextObserver::ErrorInfo& info);
 
   void OpenNewDevToolsWindow(int process_id, int devtools_agent_route_id);
   void ClearForceUpdate();

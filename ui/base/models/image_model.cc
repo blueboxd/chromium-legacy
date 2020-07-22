@@ -28,6 +28,15 @@ VectorIconModel::VectorIconModel(VectorIconModel&&) = default;
 
 VectorIconModel& VectorIconModel::operator=(VectorIconModel&&) = default;
 
+bool VectorIconModel::operator==(const VectorIconModel& other) const {
+  return vector_icon_ == other.vector_icon_ && icon_size_ == other.icon_size_ &&
+         color_ == other.color_ && color_id_ == other.color_id_;
+}
+
+bool VectorIconModel::operator!=(const VectorIconModel& other) const {
+  return !(*this == other);
+}
+
 ImageModel::ImageModel() = default;
 
 ImageModel::ImageModel(const VectorIconModel& vector_icon_model)
@@ -100,6 +109,29 @@ const VectorIconModel ImageModel::GetVectorIcon() const {
 const gfx::Image ImageModel::GetImage() const {
   DCHECK(IsImage());
   return image_.value();
+}
+
+bool ImageModel::operator==(const ImageModel& other) const {
+  if (IsEmpty() != other.IsEmpty())
+    return false;
+
+  if (IsEmpty())
+    return true;
+
+  if (IsVectorIcon() != other.IsVectorIcon())
+    return false;
+
+  if (IsImage()) {
+    return GetImage().AsImageSkia().BackedBySameObjectAs(
+        other.GetImage().AsImageSkia());
+  }
+
+  DCHECK(IsVectorIcon());
+  return GetVectorIcon() == other.GetVectorIcon();
+}
+
+bool ImageModel::operator!=(const ImageModel& other) const {
+  return !(*this == other);
 }
 
 }  // namespace ui

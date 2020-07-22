@@ -183,10 +183,6 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 
       Se questa norma viene impostata su false, in <ph name="PRODUCT_NAME" /> non sarà possibile avviare profili ospite.</translation>
 <translation id="1363275621236827384">Attiva le query in Quirks Server per i profili hardware</translation>
-<translation id="1363612796557848469">Questa norma consente all'Assistente Google di accedere al contesto dello schermo e di inviare le informazioni al server.
-      Se la norma viene attivata, l'Assistente Google potrà accedere al contesto dello schermo.
-      Se la norma viene disattivata, l'Assistente Google non potrà accedere al contesto dello schermo.
-      Se non viene impostata, gli utenti possono decidere se consentire o meno all'Assistente Google di accedere al contesto dello schermo.</translation>
 <translation id="1376119291123231789">Attiva modalità di ricarica avanzata della batteria</translation>
 <translation id="1384459581748403878">Riferimento: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Indica lo stato di aggiornamento del sistema operativo</translation>
@@ -275,13 +271,6 @@ Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di te
           Se "DockNicMacAddress" è selezionato, verrà utilizzato l'indirizzo MAC NIC del dock.
 
           Questa impostazione non può essere modificata dall'utente.</translation>
-<translation id="1507957856411744193">Se questa norma è impostata su True, <ph name="PRODUCT_NAME" /> si connetterà ai dispositivi di trasmissione su tutti gli indirizzi IP, non soltanto su indirizzi privati RFC1918/RFC4913.
-
-          Se questa norma è impostata su False, <ph name="PRODUCT_NAME" /> si connetterà ai dispositivi di trasmissione soltanto su indirizzi privati RFC1918/RFC4913.
-
-          Se questa norma non è impostata, <ph name="PRODUCT_NAME" /> si connetterà ai dispositivi di trasmissione soltanto su indirizzi privati RFC1918/RFC4913, a meno che non sia attiva la funzione CastAllowAllIPs.
-
-          Se la norma "EnableMediaRouter" è impostata su False, allora il valore di questa norma non produrrà alcun effetto.</translation>
 <translation id="1509692106376861764">Questa norma non è più supportata a partire dalla versione 29 di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1514888685242892912">Attiva <ph name="PRODUCT_NAME" /></translation>
 <translation id="1515230621229117540">Attiva il menu Accessibilità mobile</translation>
@@ -1122,23 +1111,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Il layout della tastiera preselezionato è sempre il layout più usato corrispondente alla lingua preselezionata. Gli utenti possono scegliere in qualsiasi momento qualsiasi lingua supportata da <ph name="PRODUCT_OS_NAME" /> per la loro sessione.</translation>
 <translation id="2693108589792503178">Configura l'URL di modifica della password.</translation>
 <translation id="2694143893026486692">Lente d'ingrandimento ancorata attivata</translation>
-<translation id="2694188263972877487">Consente di configurare il tipo di download che <ph name="PRODUCT_NAME" /> bloccherà completamente senza che gli utenti possano ignorare la decisione di sicurezza.
-
-      Se imposti questo criterio, <ph name="PRODUCT_NAME" /> impedirà tipi di download specifici e non consentirà all'utente di aggirare gli avvisi di sicurezza.
-
-      Se viene selezionata l'opzione "Blocca download pericolosi", tutti i download sono consentiti, tranne quelli per cui vengono visualizzati avvisi di Navigazione sicura.
-
-      Se viene selezionata l'opzione "Blocca download potenzialmente dannosi", tutti i download sono consentiti, tranne quelli per cui vengono visualizzati avvisi di Navigazione sicura che segnalano la potenziale pericolosità di tali download.
-
-      Se viene selezionata l'opzione "Blocca tutti i download", tutti i download vengono bloccati.
-
-      Se viene selezionata l'opzione "Blocca i download dannosi", tutti i download sono consentiti tranne quelli che secondo la valutazione di Navigazione sicura sono con molta probabilità malware. A differenza dei download pericolosi, questa opzione non prende in considerazione il tipo di file bensì l'host.
-
-      Se questo criterio non viene impostato o viene scelta l'opzione "Nessuna limitazione speciale", i download saranno sottoposti alle normali limitazioni di sicurezza in base ai risultati dell'analisi di Navigazione sicura.
-
-      Tieni presente che tali limitazioni vengono applicate ai download attivati dai contenuti delle pagine web, nonché all'opzione del menu contestuale "Link di download...". Tali limitazioni non vengono applicate al salvataggio o al download della pagina correntemente visualizzata né al salvataggio in formato PDF nelle opzioni di stampa.
-
-      Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
 <translation id="2696077732471707315">
       Questo criterio è stato rimosso da M77.
       Questo criterio si applica alla schermata di accesso. Vedi anche il criterio <ph name="SITE_PER_PROCESS_POLICY_NAME" /> che viene applicato alla sessione utente. È consigliabile impostare lo stesso valore per entrambi i criteri. Se i valori non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dai criteri relativi agli utenti.
@@ -1475,7 +1447,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
           Il valore del criterio deve essere specificato in millisecondi.</translation>
 <translation id="3205825995289802549">Ingrandisci la prima finestra del browser alla prima esecuzione</translation>
 <translation id="3211426942294667684">Impostazioni di accesso al browser</translation>
-<translation id="3214164532079860003">Se è attiva, questa norma impone l'importazione della pagina iniziale dal browser predefinito corrente. Se non è attiva, la pagina iniziale non viene importata. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="3219421230122020860">Modalità di navigazione in incognito disponibile</translation>
 <translation id="3220624000494482595">Se l'app kiosk è un'app Android, non avrà controllo sulla versione di <ph name="PRODUCT_OS_NAME" />, anche se la norma viene impostata su <ph name="TRUE" />.</translation>
 <translation id="322359555555487980">Determina la disponibilità delle varianti su <ph name="PRODUCT_OS_NAME" /></translation>
@@ -1801,11 +1772,6 @@ Se questa norma viene impostata su False o non viene impostata, i ritardi di ges
 <translation id="3765260570442823273">Durata del messaggio di avviso di uscita per inattività</translation>
 <translation id="377044054160169374">Applicazione dell'intervento in caso di esperienza intrusiva</translation>
 <translation id="3780152581321609624">Includi porta non standard in Kerberos SPN</translation>
-<translation id="3780319008680229708">Se il criterio è impostato su true, l'icona Cast della barra degli strumenti sarà sempre visibile nella barra degli strumenti o nel menu extra e gli utenti non potranno rimuoverla.
-
-          Se il criterio è impostato su false o non viene impostato, gli utenti potranno bloccare o rimuovere l'icona tramite il relativo menu contestuale.
-
-          Se il criterio "EnableMediaRouter" è impostato su false, il valore del criterio non avrà effetto e l'icona della barra degli strumenti non sarà mostrata.</translation>
 <translation id="3788662722837364290">Impostazioni di gestione dell'alimentazione quando l'utente diventa inattivo</translation>
 <translation id="3790085888761753785">Se questa impostazione viene attivata, gli utenti potranno accedere ai propri account con Smart Lock. Questa impostazione è più permissiva rispetto al normale comportamento di Smart Lock che consente agli utenti soltanto di sbloccare lo schermo.
 
@@ -1820,13 +1786,6 @@ Se questa norma viene impostata su False o non viene impostata, i ritardi di ges
 
       Questo criterio è deprecato, al suo posto utilizza <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
       </translation>
-<translation id="3800626789999016379">Consente di configurare la directory che <ph name="PRODUCT_NAME" /> utilizza per il download dei file.
-
-      Se la norma viene impostata, <ph name="PRODUCT_NAME" /> utilizza la directory fornita, indipendentemente dal fatto che l'utente ne abbia specificata una o abbia attivato il flag da attivare ogni volta per il percorso di download.
-
-      Visita il sito https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco di variabili utilizzabili.
-
-      Se la norma non viene impostata, viene utilizzata la directory di download predefinita e l'utente può modificarla.</translation>
 <translation id="3803171355925844705">Non consentire il caricamento di contenuti misti in nessun sito</translation>
 <translation id="3805659594028420438">Attiva estensione di certificati associati al dominio TLS (obsoleta)</translation>
 <translation id="3808945828600697669">Specifica un elenco dei plug-in disattivati</translation>
@@ -1929,13 +1888,6 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 
       Questo criterio viene applicato soltanto se la macchina viene registrata con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> per <ph name="PRODUCT_NAME" />.
       Questo criterio viene sempre applicato per <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="3895557476567727016">Consente di configurare la directory predefinita da usare in <ph name="PRODUCT_NAME" /> per il download dei file.
-
-      Se questa norma viene impostata, verrà cambiata la directory predefinita in cui vengono scaricati i file in <ph name="PRODUCT_NAME" />. Questa norma non è obbligatoria, pertanto l'utente potrà cambiare la directory.
-
-      Se questa norma non viene impostata, verrà usata la normale directory predefinita (specifica della piattaforma) di <ph name="PRODUCT_NAME" />.
-
-      Visita il sito https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco di variabili utilizzabili.</translation>
 <translation id="3898795800259311780">Consenti o nega acquisizione schermo</translation>
 <translation id="3907683835264956726">Consente l'accesso online degli utenti in una schermata di blocco. Se il criterio viene impostato su true, la riautenticazione online nella schermata di blocco viene attivata, ad esempio, tramite il criterio <ph name="POLICY" />.
       La riautenticazione viene applicata subito quando è visualizzata la schermata di blocco o la volta successiva che l'utente blocca lo schermo dopo che viene soddisfatta la condizione.
@@ -1957,9 +1909,6 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
       Se questa impostazione viene disattivata, gli utenti non possono stampare con <ph name="CLOUD_PRINT_NAME" /> dalla finestra di dialogo di stampa di <ph name="PRODUCT_NAME" />.
 
       Per mantenere rilevabili le destinazioni <ph name="CLOUD_PRINT_NAME" />, questo criterio deve essere impostato su true e il valore <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD" /> non deve essere incluso nel criterio <ph name="POLICY_PRINTERTYPEDENYLIST" />.</translation>
-<translation id="391531815696899618">Consente di disattivare la sincronizzazione di Google Drive nell'app File di <ph name="PRODUCT_OS_NAME" /> quando è impostata su True. In tal caso, non vengono caricati dati in Google Drive.
-
-          Se questa norma non viene impostata o è impostata su False, gli utenti potranno trasferire file in Google Drive.</translation>
 <translation id="3915395663995367577">URL di un file proxy .pac</translation>
 <translation id="3917288538553140422">L'impostazione del criterio consente di specificare l'azione da eseguire quando la home directory dell'utente è stata creata con la crittografia ecryptfs. A meno che le home directory con crittografia ecryptfs non eseguano la migrazione alla crittografia ext4, l'esecuzione delle app Android potrebbe interrompersi.
 
@@ -2333,9 +2282,6 @@ Se questa norma viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà le dimen
 Se il valore di questa norma è 0, verranno utilizzate le dimensioni della cache predefinite, che l'utente non potrà modificare.
 
 Se questa norma non viene impostata, verranno utilizzate le dimensioni predefinite, che l'utente potrà sostituire con il flag --media-cache-size.</translation>
-<translation id="4508686775017063528">Se questa norma viene impostata su true o non viene impostata, <ph name="PRODUCT_NAME" /> sarà attivato e gli utenti potranno avviarlo dal menu dell'app, dai menu contestuali nelle pagine, dai controlli multimediali nei siti web compatibili con Google Cast e (se presente) dall'icona Cast della barra degli strumenti.
-
-          Se questa norma viene impostata su false, <ph name="PRODUCT_NAME" /> sarà disattivato.</translation>
 <translation id="4510923771103268849">L'utente può avere accesso root ai contenitori Crostini</translation>
 <translation id="4515404363392014383">Attiva Navigazione sicura per le origini attendibili</translation>
 <translation id="4517928394515633751">Analizza i download degli utenti tramite Navigazione sicura</translation>
@@ -2610,7 +2556,6 @@ Se il criterio viene disattivato, <ph name="PRODUCT_OS_NAME" /> disattiva il Blu
       Se questo criterio viene disattivato, le chiamate alle API di condivisione schermo restituiranno un errore.</translation>
 <translation id="5032164758660626397">Impedisci all'utente di trasferire file di grandi dimensioni</translation>
 <translation id="5047604665028708335">Consenti l'accesso ai siti non presenti nei pacchetti di contenuti</translation>
-<translation id="5052081091120171147">Se è attiva, questa norma impone l'importazione della cronologia di navigazione dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, la cronologia di navigazione non viene importata. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="5055312535952606505">Consente di configurare le impostazioni proxy per <ph name="PRODUCT_NAME" />, che saranno disponibili anche per le app ARC.
 
           Se attivi questa impostazione, <ph name="PRODUCT_NAME" /> e le app ARC ignorano tutte le opzioni relative ai proxy specificate dalla riga di comando.
@@ -2948,7 +2893,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se il criterio viene impostato su false o non viene impostato, le informazioni non vengono segnalate.
       Se viene impostato su true, le informazioni sulle applicazioni del dispositivo e sul relativo utilizzo vengono segnalate.</translation>
 <translation id="5422643441807528365">Codice licenza <ph name="PLUGIN_VM_NAME" /></translation>
-<translation id="5423001109873148185">Se è attiva, questa norma impone l'importazione dei motori di ricerca dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, il motore di ricerca predefinito non viene importato. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="5423197884968724595">Nome della limitazione di Android WebView:</translation>
 <translation id="5424147596523390018">Consenti tutte le modalità a colori</translation>
 <translation id="5427879482805712214">Questo criterio consente di configurare l'immagine avatar che rappresenta l'utente sulla schermata di accesso. Il criterio viene impostato specificando l'URL da cui <ph name="PRODUCT_OS_NAME" /> può scaricare l'immagine e un hash crittografico utilizzato per verificare l'integrità del download. L'immagine deve essere in formato JPEG e avere dimensioni non superiori a 512 kB. L'URL deve essere accessibile senza nessuna autenticazione.
@@ -3240,11 +3184,6 @@ Se il criterio viene configurato, gli utenti non possono apportare modifiche. Gl
 <translation id="5814301096961727113">Impostazione stato predefinito della lettura vocale nella schermata di accesso</translation>
 <translation id="5815129011704381141">Riavvia automaticamente dopo l'aggiornamento</translation>
 <translation id="582857022372205358">Attiva la stampa fronte/retro su lato corto</translation>
-<translation id="583091600226586337">
-      Se la norma viene attivata, all'utente verrà chiesto dove salvare ogni file prima del download.
-      Se la norma viene disattivata, i download inizieranno subito e all'utente non verrà chiesto dove salvare i file.
-      Se la norma non viene configurata, l'utente potrà modificare questa impostazione.
-      </translation>
 <translation id="5832274826894536455">Norme obsolete</translation>
 <translation id="5835124959204887277">Consente di specificare URL e domini per i quali non verranno mostrati messaggi quando verranno richiesti certificati di attestazione dei token di sicurezza. Verrà inoltre inviato un segnale al token di sicurezza per indicare che potrebbe essere usata la singola attestazione. Senza questo segnale, gli utenti di Chrome 65 e versioni successive riceveranno un messaggio quando i siti richiederanno l'attestazione dei token di sicurezza.
 
@@ -3331,11 +3270,6 @@ Se il criterio viene configurato, gli utenti non possono apportare modifiche. Gl
 <translation id="5961137303188584693">Indirizzo MAC NIC integrato del dispositivo</translation>
 <translation id="5966615072639944554">Estensioni autorizzate a utilizzare l'API di attestazione da remoto</translation>
 <translation id="5983708779415553259">Comportamento predefinito per i siti non presenti in pacchetti di contenuti</translation>
-<translation id="599133751116473806">Se attivata, la funzionalità <ph name="PRODUCT_NAME" /> invia intestazioni della richiesta granulari che forniscono informazioni sul browser e sull'ambiente dell'utente.
-
-      Si tratta di una funzionalità aggiuntiva, ma le nuove intestazioni potrebbero interrompere alcuni siti web che limitano il numero di caratteri della richiesta.
-
-      Se il criterio è attivato o non viene configurato, la funzionalità <ph name="PRODUCT_NAME" /> è attivata. Se il criterio è disattivato, la funzionalità non è disponibile.</translation>
 <translation id="5997543603646547632">Utilizza orologio di 24 ore per impostazione predefinita</translation>
 <translation id="5997846976342452720">Specifica se disattivare o meno la ricerca dei plug-in (ritirata)</translation>
 <translation id="5998198091336830580">Questo criterio fa parte del seguente gruppo atomico (vengono applicati soltanto i criteri dell'origine con la priorità massima presenti nel gruppo):</translation>
@@ -3481,11 +3415,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6210610748361191729">Se la norma viene impostata su False, l'interfaccia utente di esportazione/importazione non sarà disponibile agli utenti; è comunque possibile usare i comandi "lxc" direttamente nella macchina virtuale per esportare e importare le immagini del contenitore.</translation>
 <translation id="6211428344788340116">Consente di indicare i tempi di attività del dispositivo. Se questa impostazione viene impostata su True, i dispositivi registrati indicheranno i periodi di tempo di attività di un utente sul dispositivo. Se l'impostazione viene impostata su False, i tempi di attività del dispositivo non verranno registrati o indicati.</translation>
 <translation id="6212868225782276239">Vengono mostrate tutte le stampanti, tranne quelle indicate nella lista nera.</translation>
-<translation id="6219965209794245435">Se viene attivata, questa norma consente di imporre l'importazione dei dati della compilazione automatica dei moduli dal browser predefinito precedente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione.
-
-      Se viene disattivata, i dati della compilazione automatica dei moduli non vengono importati.
-
-      Se non viene impostata, all'utente potrebbe essere chiesto se desidera importare i dati oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="6221175752766085998">Consenti i certificati privi dell'estensione subjectAlternativeName emessi dai trust anchor locali</translation>
 <translation id="6224304369267200483">URL/domini per cui è consentita automaticamente l'attestazione diretta dei token di sicurezza</translation>
 <translation id="6233173491898450179">Imposta directory di download</translation>
@@ -3945,7 +3874,6 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
 
       Se selezioni l'opzione "U2F_EXTENDED", l'autenticazione a due fattori integrata fornirà le funzioni U2F più alcune estensioni per la singola attestazione.</translation>
 <translation id="7002040773317582266">Il controllo in tempo reale degli URL del frame principale è attivo.</translation>
-<translation id="7003334574344702284">Se è attiva, questa norma impone l'importazione delle password salvate dal browser predefinito precedente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, le password salvate non vengono importate. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="7003746348783715221">Preferenze di <ph name="PRODUCT_NAME" /></translation>
 <translation id="7008308728445338159">Controlli intercettazione DNS attivi</translation>
 <translation id="7016736684656067099">Se il criterio è impostato su 1, tutti i siti web possono mostrare immagini. Se il criterio è impostato su 2, la visualizzazione delle immagini viene negata.
@@ -3969,7 +3897,6 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
       Se il criterio non viene impostato, la shelf verrà posizionata per impostazione predefinita nella parte inferiore dello schermo, ma l'utente potrà cambiare la posizione.</translation>
 <translation id="7040229947030068419">Valore di esempio:</translation>
 <translation id="7044883996351280650">Controlla il servizio backup e ripristino di Android</translation>
-<translation id="7053678646221257043">Se è attiva, questa norma impone l'importazione dei Preferiti dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, i Preferiti non vengono importati. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="7063895219334505671">Consenti popup su questi siti</translation>
 <translation id="706669471845501145">Consenti la visualizzazione di notifiche desktop da parte dei siti</translation>
 <translation id="7068108874199666656">Consente di forzare l'applicazione della configurazione di rete per tutti gli utenti di un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON come definita nel formato Open Network Configuration.</translation>
@@ -4822,9 +4749,6 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="829703642501504476">Se il criterio viene impostato su true, <ph name="PRODUCT_NAME" /> consente l'utilizzo di pagine di errore alternative integrate nel browser (come "pagina non trovata"). Se il criterio viene impostato su false, <ph name="PRODUCT_NAME" /> non consente mai l'utilizzo di pagine di errore alternative.
 
       Se il criterio viene configurato, gli utenti non possono modificarlo. Se non viene configurato, il criterio è attivo, ma gli utenti possono modificare questa impostazione.</translation>
-<translation id="8300455783946254851">Consente di disattivare la sincronizzazione di Google Drive nell'app File di <ph name="PRODUCT_OS_NAME" /> utilizzando una connessione alla rete dati quando questa norma viene impostata su True. In tal caso, i dati vengono sincronizzati con Google Drive solo in presenza di una connessione alla rete Wi-Fi o Ethernet.
-
-          Se questa norma non viene impostata o viene impostata su False, gli utenti possono trasferire file in Google Drive mediante connessioni alla rete dati.</translation>
 <translation id="8300992833374611099">Stabilisci dove è possibile utilizzare gli Strumenti per sviluppatori</translation>
 <translation id="8306117673860983372">Impostazioni di accesso</translation>
 <translation id="8312129124898414409">Consente di stabilire se consentire o meno l'utilizzo della generazione di chiavi sui siti web. L'utilizzo della generazione di chiavi può essere consentito o negato per tutti i siti web.
@@ -5096,11 +5020,6 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 <translation id="8705895771006864851">Se il criterio viene impostato su True, agli utenti viene fornita una funzionalità di traduzione, quando opportuno, tramite una barra degli strumenti di traduzione integrata in <ph name="PRODUCT_NAME" /> e un'opzione di traduzione nel menu contestuale visualizzabile facendo clic con il pulsante destro del mouse. Se il criterio viene impostato su False, tutte le funzionalità di traduzione integrate vengono disattivate.
 
       Se imposti il criterio, gli utenti non possono modificare questa funzione. Se non viene impostato, gli utenti possono cambiare l'impostazione.</translation>
-<translation id="8708284670795912158">Se il criterio viene configurato su true, <ph name="PRODUCT_NAME" /> può utilizzare la riproduzione automatica per i contenuti multimediali. Se il criterio viene configurato su false, <ph name="PRODUCT_NAME" /> non può più utilizzare la riproduzione automatica per i contenuti multimediali.
-
-       Per impostazione predefinita, <ph name="PRODUCT_NAME" /> non utilizza la riproduzione automatica per i contenuti multimediali. Tuttavia, per alcuni pattern URL, è possibile utilizzare il criterio<ph name="AUTOPLAY_WHITELIST_POLICY_NAME" /> per modificare questa impostazione.
-
-      Se il criterio viene modificato mentre <ph name="PRODUCT_NAME" /> è in esecuzione, viene applicato solo alle nuove schede aperte.</translation>
 <translation id="8733448613597049197">Attiva i rapporti estesi su Navigazione sicura di <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare questa impostazione.
 
       I rapporti estesi inviano ai server di Google alcune informazioni di sistema e i contenuti della pagina per contribuire a rilevare app e siti pericolosi.
@@ -5380,12 +5299,6 @@ https://www.w3.org/TR/secure-contexts/
 <translation id="9117826695152538214">Se il criterio è impostato su True, i tasti permanenti rimangono attivati. Se il criterio è impostato su False, i tasti permanenti rimangono disattivati.
 
       Se imposti il criterio, gli utenti non possono modificarlo. Se il criterio non è impostato, i tasti permanenti risultano disattivati all'inizio, ma gli utenti possono attivarli in qualsiasi momento.</translation>
-<translation id="91196902572559194">Questo criterio autorizza l'Assistente Google ad ascoltare la frase di attivazione vocale.
-
-      Se il criterio viene attivato, l'Assistente Google ascolta la frase di attivazione vocale.
-      Se il criterio viene disattivato, l'Assistente Google non ascolta la frase di attivazione vocale.
-      Se il criterio non viene impostato, gli utenti possono decidere se consentire all'Assistente Google di ascoltare la frase di attivazione vocale.
-      </translation>
 <translation id="9123211093995421438">Consente di specificare il numero minimo di obiettivi di <ph name="PRODUCT_OS_NAME" /> consentiti per il rollback a partire dalla versione stabile in qualsiasi momento.
 
       L'impostazione predefinita è 0 per il consumatore, 4 (circa sei mesi) per i dispositivi aziendali registrati.

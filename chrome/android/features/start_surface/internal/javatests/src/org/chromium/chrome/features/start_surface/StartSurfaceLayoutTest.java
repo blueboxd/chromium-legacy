@@ -103,7 +103,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabStateExtractor;
-import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
+import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
@@ -1906,7 +1906,7 @@ public class StartSurfaceLayoutTest {
         Tab parentTab = cta.getTabModelSelector().getCurrentTab();
 
         // Create a tab whose parent tab is parentTab.
-        TabCreatorManager.TabCreator tabCreator = cta.getTabCreator(false);
+        TabCreator tabCreator = cta.getTabCreator(false);
         LoadUrlParams loadUrlParams = new LoadUrlParams(mUrl);
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
@@ -1937,7 +1937,7 @@ public class StartSurfaceLayoutTest {
         Tab parentTab = cta.getTabModelSelector().getCurrentTab();
 
         // Create a tab whose parent tab is parentTab.
-        TabCreatorManager.TabCreator tabCreator = cta.getTabCreator(false);
+        TabCreator tabCreator = cta.getTabCreator(false);
         LoadUrlParams loadUrlParams = new LoadUrlParams(mUrl);
         TestThreadUtils.runOnUiThreadBlocking(
                 ()

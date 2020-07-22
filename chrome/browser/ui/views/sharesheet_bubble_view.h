@@ -33,6 +33,10 @@ class SharesheetBubbleView : public views::BubbleDialogDelegateView,
   // views::ButtonListener overrides
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // views::WidgetDelegate override
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
+      views::Widget* widget) override;
+
   // views::BubbleDialogDelegateView overrides
   gfx::Size CalculatePreferredSize() const override;
   void OnWidgetDestroyed(views::Widget* widget) override;

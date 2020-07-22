@@ -7,12 +7,14 @@
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "build/build_config.h"
 #include "components/services/quarantine/quarantine.h"
 #include "content/browser/native_file_system/native_file_system_error.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "crypto/secure_hash.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
@@ -25,17 +27,6 @@ using storage::FileSystemOperation;
 using storage::FileSystemOperationRunner;
 
 namespace {
-
-quarantine::mojom::QuarantineFileResult AnnotateFileSync(
-    const std::string& client_id,
-    const base::FilePath& path,
-    const GURL& referrer_url) {
-  // TODO(https://crbug/990997): Integrate with async Quarantine Service mojo
-  // API when it's ready.
-  quarantine::mojom::QuarantineFileResult result = quarantine::QuarantineFile(
-      path, /*source_url=*/GURL(), referrer_url, client_id);
-  return result;
-}
 
 // For after write checks we need the hash and size of the file. That data is
 // calculated on a worker thread, and this struct is used to pass it back.
@@ -88,9 +79,12 @@ NativeFileSystemFileWriterImpl::NativeFileSystemFileWriterImpl(
     const storage::FileSystemURL& url,
     const storage::FileSystemURL& swap_url,
     const SharedHandleState& handle_state,
-    bool has_transient_user_activation)
+    bool has_transient_user_activation,
+    download::QuarantineConnectionCallback quarantine_connection_callback)
     : NativeFileSystemHandleBase(manager, context, url, handle_state),
       swap_url_(swap_url),
+      quarantine_connection_callback_(
+          std::move(quarantine_connection_callback)),
       has_transient_user_activation_(has_transient_user_activation) {
   DCHECK_EQ(swap_url.type(), url.type());
 }
@@ -299,7 +293,7 @@ void NativeFileSystemFileWriterImpl::CloseImpl(CloseCallback callback) {
   // swap file even if the writer was destroyed at that point.
   state_ = State::kClosePending;
 
-  if (!RequireAfterWriteCheck() || !manager()->permission_context()) {
+  if (!RequireSecurityChecks() || !manager()->permission_context()) {
     DidPassAfterWriteCheck(std::move(callback));
     return;
   }
@@ -397,27 +391,52 @@ void NativeFileSystemFileWriterImpl::DidSwapFileBeforeClose(
     return;
   }
 
-  if (CanSkipQuarantineCheck()) {
+  if (!RequireSecurityChecks()) {
     state_ = State::kClosed;
     std::move(callback).Run(native_file_system_error::Ok());
     return;
   }
 
   GURL referrer_url = manager()->is_off_the_record() ? GURL() : context().url;
+  GURL authority_url =
+      referrer_url.is_valid() && referrer_url.SchemeIsHTTPOrHTTPS()
+          ? referrer_url
+          : GURL();
 
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&AnnotateFileSync,
-                     GetContentClient()
-                         ->browser()
-                         ->GetApplicationClientGUIDForQuarantineCheck(),
-                     url().path(), referrer_url),
-      base::BindOnce(&NativeFileSystemFileWriterImpl::DidAnnotateFile,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  mojo::Remote<quarantine::mojom::Quarantine> quarantine_remote;
+  if (quarantine_connection_callback_) {
+    quarantine_connection_callback_.Run(
+        quarantine_remote.BindNewPipeAndPassReceiver());
+    quarantine::mojom::Quarantine* raw_quarantine = quarantine_remote.get();
+    raw_quarantine->QuarantineFile(
+        url().path(), authority_url, referrer_url,
+        GetContentClient()
+            ->browser()
+            ->GetApplicationClientGUIDForQuarantineCheck(),
+        mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+            base::BindOnce(&NativeFileSystemFileWriterImpl::DidAnnotateFile,
+                           weak_factory_.GetWeakPtr(), std::move(callback),
+                           std::move(quarantine_remote)),
+            quarantine::mojom::QuarantineFileResult::ANNOTATION_FAILED));
+  } else {
+#if defined(OS_WIN)
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(&quarantine::SetInternetZoneIdentifierDirectly,
+                       url().path(), authority_url, referrer_url),
+        base::BindOnce(&NativeFileSystemFileWriterImpl::DidAnnotateFile,
+                       weak_factory_.GetWeakPtr(), std::move(callback),
+                       std::move(quarantine_remote)));
+#else
+    DidAnnotateFile(std::move(callback), std::move(quarantine_remote),
+                    quarantine::mojom::QuarantineFileResult::ANNOTATION_FAILED);
+#endif
+  }
 }
 
 void NativeFileSystemFileWriterImpl::DidAnnotateFile(
     CloseCallback callback,
+    mojo::Remote<quarantine::mojom::Quarantine> quarantine_remote,
     quarantine::mojom::QuarantineFileResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   state_ = State::kClosed;

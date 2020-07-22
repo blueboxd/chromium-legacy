@@ -132,6 +132,7 @@ import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
+import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -225,8 +226,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             new ObservableSupplierImpl<>();
     private TabModelSelector mTabModelSelector;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
-    private TabCreatorManager.TabCreator mRegularTabCreator;
-    private TabCreatorManager.TabCreator mIncognitoTabCreator;
+    private TabCreator mRegularTabCreator;
+    private TabCreator mIncognitoTabCreator;
     private TabContentManager mTabContentManager;
     private UmaSessionStats mUmaSessionStats;
     private ContextReporter mContextReporter;
@@ -597,7 +598,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     /**
      * Initialize the {@link TabModelSelector}, {@link TabModel}s, and
-     * {@link org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator} needed by
+     * {@link TabCreator} needed by
      * this activity.
      */
     public final void initializeTabModels() {
@@ -666,7 +667,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     protected abstract TabModelSelector createTabModelSelector();
 
     /**
-     * @return The {@link org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator}s owned
+     * @return The {@link TabCreator}s owned
      *         by this {@link ChromeActivity}.  The first item in the Pair is the normal model tab
      *         creator, and the second is the tab creator for incognito tabs.
      */
@@ -755,8 +756,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         getTabContentManager().initWithNative();
         mCompositorViewHolder.onNativeLibraryReady(getWindowAndroid(), getTabContentManager());
 
+        // TODO(1107916): Move contextual search initialization to the RootUiCoordinator.
         if (ContextualSearchFieldTrial.isEnabled()) {
-            mContextualSearchManager = new ContextualSearchManager(this, this);
+            mContextualSearchManager = new ContextualSearchManager(
+                    this, this, mRootUiCoordinator.getScrimCoordinator());
         }
 
         TraceEvent.end("ChromeActivity:CompositorInitialization");
@@ -1547,7 +1550,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     @Override
-    public TabCreatorManager.TabCreator getTabCreator(boolean incognito) {
+    public TabCreator getTabCreator(boolean incognito) {
         if (!mTabModelsInitialized) {
             throw new IllegalStateException(
                     "Attempting to access TabCreator before initialization");
@@ -1559,7 +1562,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * Convenience method that returns a tab creator for the currently selected {@link TabModel}.
      * @return A tab creator for the currently selected {@link TabModel}.
      */
-    public TabCreatorManager.TabCreator getCurrentTabCreator() {
+    public TabCreator getCurrentTabCreator() {
         return getTabCreator(getTabModelSelector().isIncognitoSelected());
     }
 

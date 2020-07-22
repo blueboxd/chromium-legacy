@@ -153,7 +153,7 @@ void ToolbarActionsModel::SetVisibleIconCount(size_t count) {
 }
 
 void ToolbarActionsModel::OnExtensionActionUpdated(
-    ExtensionAction* extension_action,
+    extensions::ExtensionAction* extension_action,
     content::WebContents* web_contents,
     content::BrowserContext* browser_context) {
   // Notify observers if the extension exists and is in the model.

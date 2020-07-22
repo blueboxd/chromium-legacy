@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/notreached.h"
 #include "chromeos/crosapi/mojom/select_file.mojom.h"
-#include "chromeos/lacros/browser/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 

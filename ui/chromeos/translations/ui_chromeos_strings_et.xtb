@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Salvestamisaasta</translation>
 <translation id="3338239663705455570">Sloveenia klaviatuur</translation>
 <translation id="3353984535370177728">Valige kaust üleslaadimiseks</translation>
+<translation id="3356580349448036450">Lõpetatud</translation>
 <translation id="3399597614303179694">Makedooniakeelne klaviatuur</translation>
 <translation id="3414856743105198592">Irdkandja vormindamine kustutab kõik andmed. Kas soovite jätkata?</translation>
 <translation id="3437801641691368414">Loomisaeg</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Installimine ebaõnnestus.</translation>
 <translation id="7040138676081995583">Ava rakendusega ...</translation>
-<translation id="7059566040011178088">Vähem kui <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923">Valitud on <ph name="COUNT" /> üksust</translation>
 <translation id="7106346894903675391">Ostke rohkem salvestusruumi ...</translation>
 <translation id="7126604456862387217">„&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;” – &lt;em&gt;otsi Drive'ist&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">Seadme mudel</translation>
 <translation id="8208580316430297579">Kujundus</translation>
 <translation id="8223479393428528563">Kui soovite salvestada need failid võrguühenduseta kasutamiseks, minge uuesti veebi, paremklõpsake failidel ja tehke valik <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
-<translation id="8231972167769262174">Umbes <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Katkesta</translation>
 <translation id="8261506727792406068">Kustuta</translation>
 <translation id="8269755669432358899">Ahenda failide tagasisidepaneelid</translation>

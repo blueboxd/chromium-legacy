@@ -998,9 +998,9 @@ void ServiceWorkerContextCore::OnErrorReported(
   DCHECK_EQ(this, version->context().get());
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnErrorReported,
-      version->version_id(),
-      ServiceWorkerContextCoreObserver::ErrorInfo(error_message, line_number,
-                                                  column_number, source_url));
+      version->version_id(), version->scope(),
+      ServiceWorkerContextObserver::ErrorInfo(error_message, line_number,
+                                              column_number, source_url));
 }
 
 void ServiceWorkerContextCore::OnReportConsoleMessage(
@@ -1025,7 +1025,7 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
 
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnReportConsoleMessage,
-      version->version_id(),
+      version->version_id(), version->scope(),
       ConsoleMessage(source, message_level, message, line_number, source_url));
 }
 

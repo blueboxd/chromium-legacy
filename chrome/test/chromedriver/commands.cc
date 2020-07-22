@@ -132,13 +132,10 @@ void ExecuteGetSessions(const Command& session_capabilities_command,
 
   for (auto iter = session_thread_map->begin();
        iter != session_thread_map->end(); ++iter) {
-    session_capabilities_command.Run(params,
-                                     iter->first,
-                                     base::Bind(
-                                               &OnGetSession,
-                                               weak_ptr_factory.GetWeakPtr(),
-                                               run_loop.QuitClosure(),
-                                               session_list.get()));
+    session_capabilities_command.Run(
+        params, iter->first,
+        base::BindRepeating(&OnGetSession, weak_ptr_factory.GetWeakPtr(),
+                            run_loop.QuitClosure(), session_list.get()));
   }
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromSeconds(10));
@@ -182,11 +179,10 @@ void ExecuteQuitAll(
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   for (auto iter = session_thread_map->begin();
        iter != session_thread_map->end(); ++iter) {
-    quit_command.Run(params,
-                     iter->first,
-                     base::Bind(&OnSessionQuit,
-                                weak_ptr_factory.GetWeakPtr(),
-                                run_loop.QuitClosure()));
+    quit_command.Run(
+        params, iter->first,
+        base::BindRepeating(&OnSessionQuit, weak_ptr_factory.GetWeakPtr(),
+                            run_loop.QuitClosure()));
   }
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromSeconds(10));
@@ -345,12 +341,13 @@ void ExecuteSessionCommand(SessionThreadMap* session_thread_map,
   } else {
     iter->second->thread()->task_runner()->PostTask(
         FROM_HERE,
-        base::BindOnce(&ExecuteSessionCommandOnSessionThread, command_name,
-                       command, w3c_standard_command, return_ok_without_session,
-                       base::WrapUnique(params.DeepCopy()),
-                       base::ThreadTaskRunnerHandle::Get(), callback,
-                       base::Bind(&TerminateSessionThreadOnCommandThread,
-                                  session_thread_map, session_id)));
+        base::BindOnce(
+            &ExecuteSessionCommandOnSessionThread, command_name, command,
+            w3c_standard_command, return_ok_without_session,
+            base::WrapUnique(params.DeepCopy()),
+            base::ThreadTaskRunnerHandle::Get(), callback,
+            base::BindRepeating(&TerminateSessionThreadOnCommandThread,
+                                session_thread_map, session_id)));
   }
 }
 

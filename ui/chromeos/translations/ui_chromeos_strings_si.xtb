@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">පටිගත කළ වසර</translation>
 <translation id="3338239663705455570">ස්ලෝවේනියානු යතුරු පුවරුව</translation>
 <translation id="3353984535370177728">අපගත කිරීමට ෆෝල්ඩරය තෝරන්න</translation>
+<translation id="3356580349448036450">සම්පූර්ණ</translation>
 <translation id="3399597614303179694">මැසිඩෝනියානු යතුරු පුවරුව</translation>
 <translation id="3414856743105198592">ඉවත් කළ හැකි මාධ්‍යය හැඩතල ගැන්වීම සියලු දත්ත මැකීමට සුදානම් වේ. ඔබ දිගටම කරගෙන යාමට කැමතිද?</translation>
 <translation id="3437801641691368414">සාදන ලද වේලාව</translation>
@@ -550,7 +551,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> <ph name="ROOT_SUMMARY" /></translation>
 <translation id="7014174261166285193">ස්ථාපනය අසමත් විය.</translation>
 <translation id="7040138676081995583">සමඟ විවෘත...</translation>
-<translation id="7059566040011178088"><ph name="REMAINING_TIME" />ට වඩා අඩු</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> අයිතම තෝරා ඇත</translation>
 <translation id="7106346894903675391">තවත් ගබඩා මිල දී ගන්න...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;ධාවකයේ සොයන්න&lt;/em&gt;</translation>
@@ -661,7 +661,6 @@
 <translation id="8193175696669055101">උපාංග මාදිලිය</translation>
 <translation id="8208580316430297579">සිත්තම්</translation>
 <translation id="8223479393428528563">මෙම ගොනු මාර්ගගත නොවන භාවිතයට සුරැකීමට, නැවත මාර්ගගත වී, ගොනු මත දකුණු ක්ලික් කර, <ph name="OFFLINE_CHECKBOX_NAME" /> අභිප්‍රේතය තෝරන්න.</translation>
-<translation id="8231972167769262174"><ph name="REMAINING_TIME" /> ගැන</translation>
 <translation id="8249296373107784235">අහෝසි කරන්න</translation>
 <translation id="8261506727792406068">මකන්න</translation>
 <translation id="8269755669432358899">ගොනු ප්‍රතිපෝෂණ පැනල හකුළන්න</translation>

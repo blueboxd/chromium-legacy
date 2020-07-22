@@ -92,6 +92,10 @@ class GPU_EXPORT GpuControlList {
     // DDDD(old schema) or CCC.DDDD(new schema) is the build number.
     // That is, indicates the actual driver number.
     kVersionSchemaIntelDriver,
+    // The version format of Nvidia drivers is XX.XX.XXXA.AAAA where the X's
+    // can be any digits, and the A's are the actual version.  The workaround
+    // list specifies them as AAA.AA to match how Nvidia publishes them.
+    kVersionSchemaNvidiaDriver,
   };
 
   enum SupportedOrNot {

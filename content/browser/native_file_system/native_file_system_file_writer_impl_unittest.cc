@@ -46,6 +46,26 @@ using testing::Field;
 
 namespace content {
 
+namespace {
+
+class MockQuarantine : public quarantine::mojom::Quarantine {
+ public:
+  MockQuarantine() = default;
+
+  void QuarantineFile(const base::FilePath& full_path,
+                      const GURL& source_url,
+                      const GURL& referrer_url,
+                      const std::string& client_guid,
+                      QuarantineFileCallback callback) override {
+    paths.push_back(full_path);
+    std::move(callback).Run(quarantine::mojom::QuarantineFileResult::OK);
+  }
+
+  std::vector<base::FilePath> paths;
+};
+
+}  // namespace
+
 std::string GetHexEncodedString(const std::string& input) {
   return base::HexEncode(base::as_bytes(base::make_span(input)));
 }
@@ -102,6 +122,11 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
         /*permission_context=*/permission_context(),
         /*off_the_record=*/false);
 
+    quarantine_callback_ = base::BindLambdaForTesting(
+        [&](mojo::PendingReceiver<quarantine::mojom::Quarantine> receiver) {
+          quarantine_receivers_.Add(&quarantine_, std::move(receiver));
+        });
+
     handle_ = std::make_unique<NativeFileSystemFileWriterImpl>(
         manager_.get(),
         NativeFileSystemManagerImpl::BindingContext(kTestOrigin, kTestURL,
@@ -109,8 +134,7 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
         test_file_url_, test_swap_url_,
         NativeFileSystemManagerImpl::SharedHandleState(
             permission_grant_, permission_grant_, std::move(fs)),
-        /*has_transient_user_activation=*/false);
-    handle_->SetSkipQuarantineCheckForTesting();
+        /*has_transient_user_activation=*/false, quarantine_callback_);
   }
 
   void TearDown() override {
@@ -268,6 +292,10 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
   FileSystemURL test_file_url_;
   FileSystemURL test_swap_url_;
 
+  MockQuarantine quarantine_;
+  mojo::ReceiverSet<quarantine::mojom::Quarantine> quarantine_receivers_;
+  download::QuarantineConnectionCallback quarantine_callback_;
+
   scoped_refptr<FixedNativeFileSystemPermissionGrant> permission_grant_ =
       base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
           FixedNativeFileSystemPermissionGrant::PermissionStatus::GRANTED);
@@ -384,6 +412,7 @@ TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteValidEmptyString) {
 
   result = CloseSync();
   EXPECT_EQ(result, NativeFileSystemStatus::kOk);
+  EXPECT_TRUE(base::Contains(quarantine_.paths, test_file_url_.path()));
 
   EXPECT_EQ("", ReadFile(test_file_url_));
 }
@@ -397,6 +426,7 @@ TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteValidNonEmpty) {
 
   result = CloseSync();
   EXPECT_EQ(result, NativeFileSystemStatus::kOk);
+  EXPECT_TRUE(base::Contains(quarantine_.paths, test_file_url_.path()));
 
   EXPECT_EQ(test_data, ReadFile(test_file_url_));
 }
@@ -415,6 +445,7 @@ TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteWithOffsetInFile) {
 
   result = CloseSync();
   EXPECT_EQ(result, NativeFileSystemStatus::kOk);
+  EXPECT_TRUE(base::Contains(quarantine_.paths, test_file_url_.path()));
 
   EXPECT_EQ("1234abc890", ReadFile(test_file_url_));
 }
@@ -430,6 +461,7 @@ TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteWithOffsetPastFile) {
 
   result = CloseSync();
   EXPECT_EQ(result, NativeFileSystemStatus::kOk);
+  EXPECT_TRUE(base::Contains(quarantine_.paths, test_file_url_.path()));
 
   using std::string_literals::operator""s;
   EXPECT_EQ("\0\0\0\0abc"s, ReadFile(test_file_url_));

@@ -131,7 +131,7 @@ def logs_cell(result, test_name, suite_name):
 def code_search(test, cs_base_url):
   """Returns URL for test on codesearch."""
   search = test.replace('#', '.')
-  return '%s/?q=%s&type=cs' % (cs_base_url, search)
+  return '%s/search/?q=%s&type=cs' % (cs_base_url, search)
 
 
 def status_class(status):

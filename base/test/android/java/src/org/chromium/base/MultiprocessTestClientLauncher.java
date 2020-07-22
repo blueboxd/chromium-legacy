@@ -389,7 +389,7 @@ public final class MultiprocessTestClientLauncher {
         done.acquireUninterruptibly();
     }
 
-    private static <R> R runOnLauncherAndGetResult(Callable<R> callable) {
+    private static <RT> RT runOnLauncherAndGetResult(Callable<RT> callable) {
         if (isRunningOnLauncherThread()) {
             try {
                 return callable.call();
@@ -398,7 +398,7 @@ public final class MultiprocessTestClientLauncher {
             }
         }
         try {
-            FutureTask<R> task = new FutureTask<R>(callable);
+            FutureTask<RT> task = new FutureTask<RT>(callable);
             sLauncherHandler.post(task);
             return task.get();
         } catch (Exception e) {

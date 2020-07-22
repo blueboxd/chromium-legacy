@@ -3,7 +3,7 @@
 <translationbundle lang="ko">
 <translation id="1282031177488366470">Chrome의 기능 및 성능 개선에 참여</translation>
 <translation id="1479202195792305274">Google 계정으로 로그인하면 Chrome에서 비밀번호를 확인할 수 있습니다.</translation>
-<translation id="1647024380514430932">Chrome에서 모든 비밀번호를 확인할 수 없습니다. 다시 시도해 보세요.</translation>
+<translation id="1647024380514430932">Chrome에서 일부 비밀번호를 확인할 수 없습니다. 다시 시도해 보세요.</translation>
 <translation id="1682483655351012182">Chrome 데이터 동기화</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1917964099031477364">이 계정 및 저장되지 않은 모든 데이터가 Chrome 및 이 기기의 기타 Google 앱에서 삭제됩니다.</translation>
@@ -14,7 +14,7 @@
 <translation id="2574249610672786438">Chrome을 사용하는 어느 곳에서나 탭을 확인하려면 모든 기기에서 로그인하세요.</translation>
 <translation id="2576431527583832481">한층 개선된 Chrome의 최신 버전이 출시되었습니다.</translation>
 <translation id="257708665678654955">다음에 Chrome에서 이 사이트의 <ph name="LANGUAGE_NAME" /> 페이지를 번역하시겠습니까?</translation>
-<translation id="2732745070297234559">Chrome에서 모든 비밀번호를 확인할 수 없습니다. 내일 다시 시도해 보세요.</translation>
+<translation id="2732745070297234559">Chrome에서 일부 비밀번호를 확인할 수 없습니다. 내일 다시 시도해 보세요.</translation>
 <translation id="2919738076569633423">Chrome을 사용하면 <ph name="BEGIN_LINK_TOS" />서비스 약관<ph name="END_LINK_TOS" />에 동의하게 됩니다.</translation>
 <translation id="3030414234702425231"><ph name="SIGNOUT_MANAGED_DOMAIN" />에서 관리하는 계정에서 로그아웃하면 Chrome 데이터가 기기에서 삭제됩니다. Google 계정에 저장된 데이터는 그대로 유지됩니다.</translation>
 <translation id="3148688391461398285">위치 정보를 기반으로 Chrome에서 더 나은 환경을 이용할 수 있습니다.</translation>
@@ -32,7 +32,7 @@
 <translation id="424864128008805179">Chrome에서 로그아웃하시겠습니까?</translation>
 <translation id="4249068189593983585">Chrome 도움말. 더 많은 탭 옵션을 보려면 화면 하단이나 상단에 있는 툴바에서 탭 표시 버튼을 길게 터치하세요.</translation>
 <translation id="4523886039239821078">일부 부가기능이 Chrome을 비정상 종료시킵니다. 다음 항목을 제거하세요.</translation>
-<translation id="4698415050768537821">Chrome에서 모든 비밀번호를 확인할 수 없습니다. 내일 다시 시도하거나 <ph name="BEGIN_LINK" />Google 계정에서 비밀번호를 확인<ph name="END_LINK" />하세요.</translation>
+<translation id="4698415050768537821">Chrome에서 일부 비밀번호를 확인할 수 없습니다. 내일 다시 시도하거나 <ph name="BEGIN_LINK" />Google 계정에서 비밀번호를 확인<ph name="END_LINK" />하세요.</translation>
 <translation id="5389212809648216794">다른 애플리케이션에서 카메라를 사용하고 있으므로 Chrome에서 카메라를 사용할 수 없습니다.</translation>
 <translation id="5639704535586432836">설정 &gt; 개인정보 보호 &gt; 카메라 &gt; Chrome을 열고 카메라를 사용 설정하세요.</translation>
 <translation id="5642200033778930880">Chrome에서는 분할 모드에서 카메라를 사용할 수 없습니다.</translation>

@@ -9,8 +9,11 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/threading/thread.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/perfetto/test_utils.h"
@@ -109,6 +112,22 @@ class TracingServiceTest : public testing::Test {
         factory, base::SequencedTaskRunnerHandle::Get());
   }
 
+  void EnableClientApiProducer() {
+    // Connect the producer part of the client API. AddClient() will end up
+    // calling TracedProcessImpl::ConnectToTracingService(), which will in turn
+    // route the PerfettoService interface to the client API backend.
+    mojo::PendingRemote<tracing::mojom::TracedProcess> traced_process_remote;
+    traced_process_receiver_ =
+        std::make_unique<mojo::Receiver<tracing::mojom::TracedProcess>>(
+            tracing::TracedProcessImpl::GetInstance());
+    traced_process_receiver_->Bind(
+        traced_process_remote.InitWithNewPipeAndPassReceiver());
+    auto client_info = mojom::ClientInfo::New(base::GetCurrentProcId(),
+                                              std::move(traced_process_remote));
+    service()->AddClient(std::move(client_info));
+    perfetto_service()->SetActiveServicePidsInitialized();
+  }
+
   size_t ReadAndCountTestPackets(perfetto::TracingSession& session) {
     size_t test_packet_count = 0;
     base::RunLoop wait_for_data_loop;
@@ -136,6 +155,9 @@ class TracingServiceTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   PerfettoService perfetto_service_;
   TracingService service_;
+
+  std::unique_ptr<mojo::Receiver<tracing::mojom::TracedProcess>>
+      traced_process_receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingServiceTest);
 };
@@ -242,6 +264,99 @@ TEST_F(TracingServiceTest, PerfettoClientConsumer) {
   EXPECT_EQ(1024u * 1024u, stats.buffer_stats(0).buffer_size());
   EXPECT_GT(stats.buffer_stats(0).bytes_written(), 0u);
   EXPECT_EQ(0u, stats.buffer_stats(0).trace_writer_packet_loss());
+
+  // Read and verify the data.
+  EXPECT_EQ(kNumPackets, ReadAndCountTestPackets(*session));
+}
+
+class CustomDataSource : public perfetto::DataSource<CustomDataSource> {
+ public:
+  struct Events {
+    base::RunLoop wait_for_setup_loop;
+    base::RunLoop wait_for_start_loop;
+    base::RunLoop wait_for_stop_loop;
+  };
+
+  static void set_events(Events* events) { events_ = events; }
+
+  void OnSetup(const SetupArgs&) override {
+    events_->wait_for_setup_loop.Quit();
+  }
+  void OnStart(const StartArgs&) override {
+    events_->wait_for_start_loop.Quit();
+  }
+  void OnStop(const StopArgs&) override { events_->wait_for_stop_loop.Quit(); }
+
+ private:
+  static Events* events_;
+};
+
+CustomDataSource::Events* CustomDataSource::events_;
+
+TEST_F(TracingServiceTest, PerfettoClientProducer) {
+  // Use the client API as the producer for this process instead of
+  // ProducerClient.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kEnablePerfettoClientApiProducer);
+
+  // Set up API bindings.
+  EnableClientApiConsumer();
+  EnableClientApiProducer();
+
+  perfetto::DataSourceDescriptor dsd;
+  dsd.set_name("com.example.custom_data_source");
+  CustomDataSource::Events ds_events;
+  CustomDataSource::set_events(&ds_events);
+  CustomDataSource::Register(dsd);
+
+  // Start a tracing session using the client API.
+  auto session = perfetto::Tracing::NewTrace();
+  perfetto::TraceConfig perfetto_config;
+  perfetto_config.add_buffers()->set_size_kb(1024);
+  auto* ds_cfg = perfetto_config.add_data_sources()->mutable_config();
+  ds_cfg->set_name("com.example.custom_data_source");
+  session->Setup(perfetto_config);
+  session->Start();
+
+  ds_events.wait_for_setup_loop.Run();
+  ds_events.wait_for_start_loop.Run();
+
+  // Write more data to check the commit flow works too.
+  size_t kNumPackets = 1000;
+  CustomDataSource::Trace([kNumPackets](CustomDataSource::TraceContext ctx) {
+    for (size_t i = 0; i < kNumPackets / 2; i++) {
+      ctx.NewTracePacket()->set_for_testing()->set_str(
+          tracing::kPerfettoTestString);
+    }
+    ctx.Flush();
+  });
+
+  // Write half of the data from another thread to check TLS is hooked up
+  // properly.
+  base::Thread thread("TestThread");
+  thread.Start();
+  thread.task_runner()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([kNumPackets] {
+        CustomDataSource::Trace(
+            [kNumPackets](CustomDataSource::TraceContext ctx) {
+              for (size_t i = 0; i < kNumPackets / 2; i++) {
+                ctx.NewTracePacket()->set_for_testing()->set_str(
+                    tracing::kPerfettoTestString);
+              }
+              ctx.Flush();
+            });
+      }));
+  thread.Stop();
+
+  // Stop the session and wait for it to stop. Note that we can't use the
+  // blocking variants here because the service runs on the current sequence.
+  base::RunLoop wait_for_stop_loop;
+  session->SetOnStopCallback(
+      [&wait_for_stop_loop] { wait_for_stop_loop.Quit(); });
+  session->Stop();
+  ds_events.wait_for_stop_loop.Run();
+  wait_for_stop_loop.Run();
 
   // Read and verify the data.
   EXPECT_EQ(kNumPackets, ReadAndCountTestPackets(*session));

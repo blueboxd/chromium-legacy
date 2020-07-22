@@ -51,8 +51,7 @@
 
 using base::Bind;
 using base::BindOnce;
-using base::Callback;
-using base::Closure;
+using base::BindRepeating;
 using base::FilePath;
 using base::Unretained;
 using content::BrowserThread;
@@ -253,7 +252,8 @@ void DnsProbeBrowserTest::SetActiveBrowser(Browser* browser) {
   monitored_tab_helper_ = NetErrorTabHelper::FromWebContents(
       active_browser_->tab_strip_model()->GetActiveWebContents());
   monitored_tab_helper_->set_dns_probe_status_snoop_callback_for_testing(
-      Bind(&DnsProbeBrowserTest::OnDnsProbeStatusSent, Unretained(this)));
+      BindRepeating(&DnsProbeBrowserTest::OnDnsProbeStatusSent,
+                    Unretained(this)));
 }
 
 void DnsProbeBrowserTest::SetFakeHostResolverResults(

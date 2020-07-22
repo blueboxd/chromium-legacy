@@ -24,8 +24,7 @@
   TestRunner.callFunctionInPageAsync('makeFetchesInWorker', [['./resource.php?1', './resource.php?2']])
       .then((result) => {
         TestRunner.addResult('Parallel fetch in worker result: ' + result);
-        var requests =
-            NetworkTestRunner.networkRequests().filter((e, i, a) => i % 2 == 0);
+        var requests = NetworkTestRunner.networkRequests();
         requests.forEach((request) => {
           TestRunner.addResult(request.url());
           TestRunner.addResult('resource.type: ' + request.resourceType());

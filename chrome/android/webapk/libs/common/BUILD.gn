@@ -20,6 +20,7 @@ android_library("splash_java") {
     ":splash_resources",
     "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
+  resources_package = "org.chromium.webapk.lib.common.splash"
 }
 
 android_resources("splash_resources") {
@@ -31,7 +32,7 @@ android_resources("splash_resources") {
     "res_splash/values/common_colors.xml",
     "res_splash/values/common_dimens.xml",
   ]
-  custom_package = "org.chromium.webapk.lib.common.splash"
+  create_srcjar = false
 }
 
 android_aidl("identity_service_aidl") {

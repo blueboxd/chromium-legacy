@@ -41,7 +41,6 @@
 #include "net/socket/client_socket_pool.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_client_push_promise_index.h"
 #include "net/third_party/quiche/src/quic/core/quic_config.h"
 #include "net/third_party/quiche/src/quic/core/quic_crypto_stream.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
@@ -576,8 +575,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   int num_push_streams_created_;
 
   QuicConnectivityMonitor connectivity_monitor_;
-
-  quic::QuicClientPushPromiseIndex push_promise_index_;
 
   const base::TickClock* tick_clock_;
 

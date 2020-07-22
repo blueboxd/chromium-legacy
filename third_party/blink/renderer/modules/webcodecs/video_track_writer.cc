@@ -105,7 +105,7 @@ class VideoTrackWritableStreamSink final : public UnderlyingSinkBase {
     source_->PushFrame(video_frame->frame(), estimated_capture_time);
 
     if (release_frames_)
-      video_frame->release();
+      video_frame->close();
 
     return ScriptPromise::CastUndefined(script_state);
   }

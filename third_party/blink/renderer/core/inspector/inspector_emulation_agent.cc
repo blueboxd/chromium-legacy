@@ -520,14 +520,14 @@ Response InspectorEmulationAgent::setDeviceMetricsOverride(
     Maybe<protocol::Emulation::DisplayFeature>) {
   // We don't have to do anything other than reply to the client, as the
   // emulation parameters should have already been updated by the handling of
-  // WidgetMsg_EnableDeviceEmulation.
+  // blink::mojom::FrameWidget::EnableDeviceEmulation.
   return AssertPage();
 }
 
 Response InspectorEmulationAgent::clearDeviceMetricsOverride() {
   // We don't have to do anything other than reply to the client, as the
   // emulation parameters should have already been cleared by the handling of
-  // WidgetMsg_DisableDeviceEmulation.
+  // blink::mojom::FrameWidget::DisableDeviceEmulation.
   return AssertPage();
 }
 

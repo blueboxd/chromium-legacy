@@ -44,7 +44,7 @@
 <translation id="129553762522093515">เพิ่งปิด</translation>
 <translation id="1303339473099049190">ไม่พบรหัสผ่านดังกล่าว โปรดตรวจสอบการสะกดแล้วลองอีกครั้ง</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - ส่งจาก <ph name="DEVICE_NAME" /></translation>
-<translation id="1310482092992808703">จับกลุ่มแท็บ</translation>
+<translation id="1310482092992808703">จัดกลุ่มแท็บ</translation>
 <translation id="1311657260431405215">คิวอาร์โค้ดนี้ไม่ใช่ URL: <ph name="QRCODEVALUE" /></translation>
 <translation id="1327257854815634930">ประวัติการนำทางเปิดอยู่</translation>
 <translation id="1331212799747679585">อัปเดต Chrome ไม่ได้ ตัวเลือกอื่นๆ</translation>
@@ -750,7 +750,7 @@
 <translation id="6955535239952325894">การตั้งค่านี้ปิดใช้อยู่ในเบราว์เซอร์ที่มีการจัดการ</translation>
 <translation id="6963766334940102469">ลบบุ๊กมาร์ก</translation>
 <translation id="6979737339423435258">ตั้งแต่ต้น</translation>
-<translation id="6981982820502123353">การเข้าถึง</translation>
+<translation id="6981982820502123353">การช่วยเหลือพิเศษ</translation>
 <translation id="6989267951144302301">ดาวน์โหลดไม่ได้</translation>
 <translation id="6990079615885386641">รับแอปจาก Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">เตือนคุณในกรณีที่รหัสผ่านรั่วไหลจากการละเมิดข้อมูล</translation>

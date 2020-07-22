@@ -8,14 +8,16 @@
 #include "base/macros.h"
 #include "components/history/core/browser/android/sql_handler.h"
 
-namespace history {
-
+namespace favicon {
 class FaviconDatabase;
+}
+
+namespace history {
 
 // The SQL handler implementation for icon_mapping and favicon table.
 class FaviconSQLHandler : public SQLHandler {
  public:
-  explicit FaviconSQLHandler(FaviconDatabase* favicon_db);
+  explicit FaviconSQLHandler(favicon::FaviconDatabase* favicon_db);
   ~FaviconSQLHandler() override;
 
   // SQLHandler overrides:
@@ -29,7 +31,7 @@ class FaviconSQLHandler : public SQLHandler {
   // true if all unused favicons are deleted.
   bool DeleteUnusedFavicon(const std::vector<favicon_base::FaviconID>& ids);
 
-  FaviconDatabase* favicon_db_;
+  favicon::FaviconDatabase* favicon_db_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconSQLHandler);
 };

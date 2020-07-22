@@ -100,7 +100,7 @@
 <translation id="2028997212275086731">RAR संग्रह</translation>
 <translation id="2046702855113914483">रेमन</translation>
 <translation id="2070909990982335904">डॉट से प्रारंभ हो रहे नाम सिस्‍टम के लिए आरक्षित हैं. कृपया कोई अन्‍य नाम चुनें.</translation>
-<translation id="2079545284768500474">वापस लाएं</translation>
+<translation id="2079545284768500474">पहले जैसा करें</translation>
 <translation id="2080010875307505892">सर्बियाई कीबोर्ड</translation>
 <translation id="2084108471225856927">डिवाइस की सेटिंग</translation>
 <translation id="2085470240340828803">"<ph name="FILENAME" />" नाम की फ़ाइल पहले से मौजूद है. आप क्‍या करना चाहते हैं?</translation>
@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">रिकॉर्ड करने का साल</translation>
 <translation id="3338239663705455570">स्लोवेनियाई कीबोर्ड</translation>
 <translation id="3353984535370177728">अपलोड करने के लिए फ़ोल्डर चुनें</translation>
+<translation id="3356580349448036450">पूरा हुआ</translation>
 <translation id="3399597614303179694">मकदूनियाई कीबोर्ड</translation>
 <translation id="3414856743105198592">निकालने योग्य मीडिया को स्‍वरूपित करने से संपूर्ण डेटा मिट जाएगा. क्‍या आप जारी रखना चाहते हैं?</translation>
 <translation id="3437801641691368414">बनाने का समय</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">स्थापना विफल.</translation>
 <translation id="7040138676081995583">इसके साथ खोलें...</translation>
-<translation id="7059566040011178088"><ph name="REMAINING_TIME" /> से कम</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> आइटम चयनित</translation>
 <translation id="7106346894903675391">ज़्यादा मेमोरी खरीदें...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;खोज डिस्क&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">डिवाइस मॉडल</translation>
 <translation id="8208580316430297579">आर्टवर्क</translation>
 <translation id="8223479393428528563">इन फ़ाइलों को ऑफ़लाइन देखने को सेव करने के लिए, फिर से ऑनलाइन होकर, फ़ाइलों पर राइट-क्‍लिक करें और <ph name="OFFLINE_CHECKBOX_NAME" /> विकल्‍प चुनें.</translation>
-<translation id="8231972167769262174">करीब <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">रद्द करें</translation>
 <translation id="8261506727792406068">मिटाएं</translation>
 <translation id="8269755669432358899">फ़ाइल के लिए सुझाव पैनल को छोटा करें</translation>

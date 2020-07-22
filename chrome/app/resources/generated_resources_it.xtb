@@ -541,7 +541,7 @@
 <translation id="164936512206786300">Disaccoppiare dispositivo Bluetooth</translation>
 <translation id="1650371550981945235">Mostra opzioni di immissione</translation>
 <translation id="1651008383952180276">Devi inserire la stessa passphrase due volte</translation>
-<translation id="1652326691684645429">Attiva Condivisione Qui vicino</translation>
+<translation id="1652326691684645429">Attiva Condivisione nelle vicinanze</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Aggiungi la stampante a Google Cloud Print per poter stampare ovunque.}other{Aggiungi # stampanti a Google Cloud Print per poter stampare ovunque.}}</translation>
 <translation id="1656528038316521561">Opacità sfondo</translation>
 <translation id="1657406563541664238">Aiutaci a migliorare <ph name="PRODUCT_NAME" /> inviando automaticamente a Google le statistiche sull'utilizzo e segnalazioni sugli arresti anomali</translation>
@@ -1407,7 +1407,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2714997332747470971">I suggerimenti di informazioni personali ti aiutano a scrivere più rapidamente suggerendoti dati quali il tuo nome, il tuo indirizzo o il tuo numero di telefono. Solo tu vedi i suggerimenti privati e personalizzati per il tuo account.</translation>
 <translation id="2715751256863167692">Questo upgrade ripristina il Chromebook e rimuove i dati utente correnti.</translation>
 <translation id="2716986496990888774">Questa impostazione è gestita da un genitore.</translation>
-<translation id="2718395828230677721">Luminosità notturna</translation>
+<translation id="2718395828230677721">Luce notturna</translation>
 <translation id="2718998670920917754">Il software antivirus ha rilevato un virus.</translation>
 <translation id="2719020180254996569">Rete <ph name="NETWORK_INDEX" /> di <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, dettagli</translation>
 <translation id="2719936478972253983">Sono stati bloccati i seguenti cookie</translation>
@@ -1669,7 +1669,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3022978424994383087">Non ho capito.</translation>
 <translation id="3023464535986383522">Seleziona per ascoltare</translation>
 <translation id="3024374909719388945">Usa orologio 24 ore</translation>
-<translation id="3027296729579831126">Attiva Condivisione Qui vicino</translation>
+<translation id="3027296729579831126">Attiva Condivisione nelle vicinanze</translation>
 <translation id="3029466929721441205">Mostrare strumenti stilo nello shelf</translation>
 <translation id="3031417829280473749">Agente X</translation>
 <translation id="3031557471081358569">Seleziona elementi da importare:</translation>
@@ -2965,7 +2965,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4673442866648850031">Apri strumenti stilo quando lo stilo viene rimosso</translation>
 <translation id="4677772697204437347">Memoria GPU</translation>
 <translation id="4680105648806843642">L'audio è stato disattivato in questa pagina</translation>
-<translation id="4681453295291708042">Disattiva Condivisione Qui vicino</translation>
+<translation id="4681453295291708042">Disattiva Condivisione nelle vicinanze</translation>
 <translation id="4681930562518940301">Apri &amp;originale in nuova scheda</translation>
 <translation id="4682551433947286597">Gli sfondi vengono visualizzati sulla schermata di accesso.</translation>
 <translation id="4683947955326903992"><ph name="PERCENTAGE" />% (valore predefinito)</translation>
@@ -3723,7 +3723,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5659833766619490117">Impossibile tradurre questa pagina</translation>
 <translation id="5662513737565158057">Cambia il funzionamento delle app Linux.</translation>
 <translation id="5667546120811588575">Configurazione di Google Play...</translation>
-<translation id="5669267381087807207">In fase di attivazione</translation>
+<translation id="5669267381087807207">Attivazione</translation>
 <translation id="5669691691057771421">Inserisci il nuovo PIN</translation>
 <translation id="5671641761787789573">Immagini bloccate</translation>
 <translation id="5671658447180261823">Rimuovi il suggerimento <ph name="SUGGESTION_NAME" /></translation>
@@ -3782,7 +3782,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5739017626473506901">Accedi per aiutare <ph name="USER_NAME" /> ad aggiungere un account della scuola</translation>
 <translation id="5739235828260127894">In attesa di verifica. <ph name="LINK_BEGIN" />Ulteriori informazioni<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Molto grandi</translation>
-<translation id="5740328398383587084">Condivisione Qui vicino</translation>
+<translation id="5740328398383587084">Condivisione nelle vicinanze</translation>
 <translation id="574104302965107104">Mirroring del display</translation>
 <translation id="574209121243317957">Tono</translation>
 <translation id="5746169159649715125">Salva come PDF</translation>
@@ -4738,7 +4738,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="696780070563539690">I siti non possono utilizzare i cookie per conoscere la tua attività di navigazione su siti diversi, ad esempio per personalizzare gli annunci</translation>
 <translation id="6968288415730398122">Inserisci la password per configurare il blocco schermo</translation>
-<translation id="6969047215179982698">Disattiva Condivisione Qui vicino</translation>
+<translation id="6969047215179982698">Disattiva Condivisione nelle vicinanze</translation>
 <translation id="6970480684834282392">Tipo di avvio</translation>
 <translation id="6970856801391541997">Stampa pagine specifiche</translation>
 <translation id="6972180789171089114">Audio/video</translation>
@@ -5985,7 +5985,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8509646642152301857">Download del dizionario per il controllo ortografico non riuscito.</translation>
 <translation id="8512476990829870887">Termina processo</translation>
 <translation id="851263357009351303">Consenti sempre la visualizzazione di immagini in <ph name="HOST" /></translation>
-<translation id="8513108775083588393">Rotazione automatica</translation>
+<translation id="8513108775083588393">Rotazione aut.</translation>
 <translation id="8514746246728959655">Prova a usare un altro token di sicurezza</translation>
 <translation id="8521475323816527629">Accedi velocemente alle tue app</translation>
 <translation id="8523493869875972733">Mantieni le modifiche</translation>

@@ -215,8 +215,13 @@ void PendingAppManagerImpl::StartInstallationTask(
     pending_registrations_.push_front(current_registration_->launch_url());
     current_registration_.reset();
   }
-
   current_install_ = std::move(task);
+
+  if (!current_install_->task->install_options().app_info_factory.is_null()) {
+    current_install_->task->InstallFromInfo(base::BindOnce(
+        &PendingAppManagerImpl::OnInstalled, weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
 
   CreateWebContentsIfNecessary();
 

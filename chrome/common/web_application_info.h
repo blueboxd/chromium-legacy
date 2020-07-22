@@ -27,6 +27,7 @@ using ShortcutsMenuIconsBitmaps = std::vector<std::map<SquareSizePx, SkBitmap>>;
 // file to WebApp*.
 struct WebApplicationIconInfo {
   WebApplicationIconInfo();
+  WebApplicationIconInfo(const GURL& url, SquareSizePx size);
   WebApplicationIconInfo(const WebApplicationIconInfo&);
   WebApplicationIconInfo(WebApplicationIconInfo&&);
   ~WebApplicationIconInfo();

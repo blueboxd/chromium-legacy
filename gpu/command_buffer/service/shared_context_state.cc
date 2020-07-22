@@ -29,6 +29,7 @@
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "components/viz/common/gpu/vulkan_context_provider.h"
+#include "gpu/command_buffer/service/external_semaphore_pool.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #endif
 
@@ -125,7 +126,6 @@ SharedContextState::SharedContextState(
   static crash_reporter::CrashKeyString<16> crash_key("gr-context-type");
   crash_key.Set(
       base::StringPrintf("%u", static_cast<uint32_t>(gr_context_type_)));
-
   // If |gr_context_type_| is not GL, then initialize |gr_context_| here. In
   // the case of GL, |gr_context_| will be initialized in InitializeGrContext.
   // Note that if |gr_context_| is not GL and also not initialized here (e.g,
@@ -138,6 +138,8 @@ SharedContextState::SharedContextState(
       if (vk_context_provider_) {
 #if BUILDFLAG(ENABLE_VULKAN)
         gr_context_ = vk_context_provider_->GetGrContext();
+        external_semaphore_pool_ =
+            std::make_unique<ExternalSemaphorePool>(vk_context_provider_);
 #endif
         use_virtualized_gl_contexts_ = false;
         DCHECK(gr_context_);
@@ -181,6 +183,10 @@ SharedContextState::~SharedContextState() {
   // lost in which case we don't delete the textures).
   DCHECK(IsCurrent(nullptr) || context_lost());
   transfer_cache_.reset();
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  external_semaphore_pool_.reset();
+#endif
 
   // We should have the last ref on this GrContext to ensure we're not holding
   // onto any skia objects using this context. Note that some tests don't run

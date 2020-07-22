@@ -16,6 +16,7 @@
 <script>
 import {CUSTOM_EVENTS} from '../vue_custom_events.js';
 
+// @vue/component
 const GraphFilterItems = {
   props: {
     nodeFilterData: Object,

@@ -22,10 +22,10 @@ android_library("java") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//ui/android:ui_full_java",
   ]
+  resources_package = "org.chromium.chrome.browser.ui.default_browser_promo"
 }
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.chrome.browser.ui.default_browser_promo"
   sources = [
     "java/res/drawable/default_browser_promo_illustration.xml",
     "java/res/drawable/ic_illustration_aroundlogo.xml",
@@ -35,6 +35,7 @@ android_resources("java_resources") {
     "//components/browser_ui/widget/android:java_resources",
     "//ui/android:ui_java_resources",
   ]
+  create_srcjar = false
 }
 
 java_library("junit") {

@@ -98,15 +98,15 @@
 // be any of the following values: "=", "<", "<=", ">", ">=", "any", "between".
 // "style" is optional and can be "lexical" or "numerical"; if it's not
 // specified, it defaults to "numerical". "schema" is optional and can be
-// "common" or "intel_driver"; if it's not specified, it defaults to "common";
-// it's an error to specify "intel_driver" schema for entries that are not
-// specifically for Intel GPUs on Windows. "value2" is only used if "op" is
-// "between". "between" is "value <= * <= value2". "value" is used for all "op"
-// values except "any". "value" and "value2" are in the format of x, x.x,
-// x.x.x, etc.
+// "common", "intel_driver" or "nvidia_driver"; if it's not specified, it
+// defaults to "common"; it's an error to specify "(intel|nvidia)_driver" schema
+// for entries that are not specifically for Intel|Nvidia GPUs on Windows.
+// "value2" is only used if "op" is "between". "between" is
+// "value <= * <= value2". "value" is used for all "op" values except "any".
+// "value" and "value2" are in the format of x, x.x, x.x.x, etc.
 // Only "driver_version" supports lexical style if the format is major.minor;
 // in that case, major is still numerical, but minor is lexical.
-// Only "driver_version" supports "intel_driver" schema.
+// Only "driver_version" supports "(intel|nvidia)_driver" schema.
 //
 // FLOAT includes "op" "value", and "value2".  "op" can be any of the
 // following values: "=", "<", "<=", ">", ">=", "any", "between".  "value2" is

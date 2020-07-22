@@ -6,7 +6,9 @@
 
 #include "base/check.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -23,9 +25,10 @@ const char kToggleSuggestionGroupIdOnHistogram[] =
 // Also gated by a feature and server-side Admin Panel controls.
 const char kDocumentSuggestEnabled[] = "documentsuggest.enabled";
 
-// A list of suggestion group IDs for zero suggest that are not allowed to
-// appear in the results.
-const char kOmniboxHiddenGroupIds[] = "omnibox.hiddenGroupIds";
+// A dictionary of visibility preferences for suggestion groups. The key is the
+// suggestion group ID serialized as a string, and the value is
+// SuggestionGroupVisibility serialized as an integer.
+const char kSuggestionGroupVisibility[] = "omnibox.suggestionGroupVisibility";
 
 // Boolean that specifies whether to always show full URLs in the omnibox.
 const char kPreventUrlElisionsInOmnibox[] = "omnibox.prevent_url_elisions";
@@ -34,33 +37,62 @@ const char kPreventUrlElisionsInOmnibox[] = "omnibox.prevent_url_elisions";
 const char kZeroSuggestCachedResults[] = "zerosuggest.cachedresults";
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterListPref(omnibox::kOmniboxHiddenGroupIds,
-                             base::Value(base::Value::Type::LIST));
+  registry->RegisterDictionaryPref(kSuggestionGroupVisibility);
+}
+
+SuggestionGroupVisibility GetSuggestionGroupVisibility(
+    PrefService* prefs,
+    int suggestion_group_id) {
+  DCHECK(prefs);
+
+  const base::DictionaryValue* dictionary =
+      prefs->GetDictionary(kSuggestionGroupVisibility);
+  DCHECK(dictionary);
+
+  base::Optional<int> value =
+      dictionary->FindIntKey(base::NumberToString(suggestion_group_id));
+
+  if (value == SuggestionGroupVisibility::HIDDEN ||
+      value == SuggestionGroupVisibility::SHOWN) {
+    return static_cast<SuggestionGroupVisibility>(*value);
+  }
+
+  return SuggestionGroupVisibility::DEFAULT;
 }
 
 bool IsSuggestionGroupIdHidden(PrefService* prefs, int suggestion_group_id) {
+  // TODO(tommycli): For now, this preserves the legacy behavior of DEFAULT
+  // meaning SHOWN. Next, callsites need to have some idea of whether a group
+  // should be shown or hidden by default, likely provided by a server hint.
+  return GetSuggestionGroupVisibility(prefs, suggestion_group_id) ==
+         SuggestionGroupVisibility::HIDDEN;
+}
+
+void SetSuggestionGroupVisibility(PrefService* prefs,
+                                  int suggestion_group_id,
+                                  SuggestionGroupVisibility new_value) {
   DCHECK(prefs);
-  const base::ListValue* group_id_values =
-      prefs->GetList(kOmniboxHiddenGroupIds);
-  return std::find(group_id_values->begin(), group_id_values->end(),
-                   base::Value(suggestion_group_id)) != group_id_values->end();
+
+  DictionaryPrefUpdate update(prefs, kSuggestionGroupVisibility);
+  update->SetIntKey(base::NumberToString(suggestion_group_id), new_value);
+
+  base::SparseHistogram::FactoryGet(
+      new_value == SuggestionGroupVisibility::SHOWN
+          ? kToggleSuggestionGroupIdOnHistogram
+          : kToggleSuggestionGroupIdOffHistogram,
+      base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(suggestion_group_id);
 }
 
 void ToggleSuggestionGroupIdVisibility(PrefService* prefs,
                                        int suggestion_group_id) {
-  DCHECK(prefs);
-  ListPrefUpdate update(prefs, kOmniboxHiddenGroupIds);
-  const bool is_hidden = IsSuggestionGroupIdHidden(prefs, suggestion_group_id);
-  if (is_hidden) {
-    update->EraseListValue(base::Value(suggestion_group_id));
-  } else {
-    update->Append(suggestion_group_id);
-  }
-  base::SparseHistogram::FactoryGet(
-      is_hidden ? kToggleSuggestionGroupIdOnHistogram
-                : kToggleSuggestionGroupIdOffHistogram,
-      base::HistogramBase::kUmaTargetedHistogramFlag)
-      ->Add(suggestion_group_id);
+  // TODO(tommycli): Migrate all callsites to use SetSuggestionGroupVisibility()
+  // instead of this method.
+  SuggestionGroupVisibility new_value =
+      IsSuggestionGroupIdHidden(prefs, suggestion_group_id)
+          ? SuggestionGroupVisibility::SHOWN
+          : SuggestionGroupVisibility::HIDDEN;
+  SetSuggestionGroupVisibility(prefs, suggestion_group_id, new_value);
 }
 
 }  // namespace omnibox

@@ -405,3 +405,8 @@ QUIC_FLAG(bool,
 // When true, ParsedQuicVersionToString will print IETF drafts with format
 // draft29 instead of ff00001d.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_print_draft_version, false)
+
+// If true, disable blackhole detection on server side.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_disable_server_blackhole_detection,
+          false)

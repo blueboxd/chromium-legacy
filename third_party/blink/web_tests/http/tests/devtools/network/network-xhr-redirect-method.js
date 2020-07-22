@@ -18,8 +18,7 @@
   }
 
   function step3() {
-    var requests =
-        NetworkTestRunner.networkRequests().filter((e, i, a) => i % 2 == 0);
+    var requests = NetworkTestRunner.networkRequests();
     for (var i = 0; i < requests.length; ++i) {
       var request = requests[i];
       var requestMethod = request.requestMethod;

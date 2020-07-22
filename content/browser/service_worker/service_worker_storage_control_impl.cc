@@ -168,6 +168,12 @@ void ServiceWorkerStorageControlImpl::GetRegistrationsForOrigin(
       base::BindOnce(&DidGetRegistrationsForOrigin, std::move(callback)));
 }
 
+void ServiceWorkerStorageControlImpl::GetUsageForOrigin(
+    const url::Origin& origin,
+    GetUsageForOriginCallback callback) {
+  storage_->GetUsageForOrigin(origin, std::move(callback));
+}
+
 void ServiceWorkerStorageControlImpl::StoreRegistration(
     storage::mojom::ServiceWorkerRegistrationDataPtr registration,
     std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources,

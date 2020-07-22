@@ -1095,8 +1095,7 @@ void RasterImplementation::CopySubTexture(const gpu::Mailbox& source_mailbox,
   memcpy(mailboxes + sizeof(source_mailbox.name), dest_mailbox.name,
          sizeof(dest_mailbox.name));
   helper_->CopySubTextureINTERNALImmediate(xoffset, yoffset, x, y, width,
-                                           height, unpack_flip_y,
-                                           unpack_premultiply_alpha, mailboxes);
+                                           height, unpack_flip_y, mailboxes);
   CheckGLError();
 }
 

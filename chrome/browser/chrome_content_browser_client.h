@@ -217,6 +217,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
   std::string GetApplicationClientGUIDForQuarantineCheck() override;
+  download::QuarantineConnectionCallback GetQuarantineConnectionCallback()
+      override;
   std::string GetApplicationLocale() override;
   std::string GetAcceptLangs(content::BrowserContext* context) override;
   gfx::ImageSkia GetDefaultFavicon() override;

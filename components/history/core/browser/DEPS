@@ -1,4 +1,7 @@
 include_rules = [
+  "+components/database_utils",
+  "+components/favicon/core/favicon_database.h",
+  "+components/favicon/core/favicon_types.h",
   "+components/google/core/common/google_util.h",
   "+components/signin/public/identity_manager",
   "+components/variations",

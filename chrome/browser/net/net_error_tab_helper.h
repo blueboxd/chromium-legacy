@@ -45,7 +45,7 @@ class NetErrorTabHelper
     TESTING_FORCE_ENABLED
   };
 
-  typedef base::Callback<void(error_page::DnsProbeStatus)>
+  typedef base::RepeatingCallback<void(error_page::DnsProbeStatus)>
       DnsProbeStatusSnoopCallback;
 
   ~NetErrorTabHelper() override;

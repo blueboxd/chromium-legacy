@@ -14,7 +14,7 @@ net::NSSCertDatabase* g_nss_cert_database = NULL;
 
 net::NSSCertDatabase* GetNSSCertDatabaseForResourceContext(
     content::ResourceContext* context,
-    const base::Callback<void(net::NSSCertDatabase*)>& callback) {
+    base::OnceCallback<void(net::NSSCertDatabase*)> callback) {
   // This initialization is not thread safe. This CHECK ensures that this code
   // is only run on a single thread.
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));

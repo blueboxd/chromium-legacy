@@ -48,6 +48,19 @@ constexpr char kFileJpeg640x480[] = "image3.jpg";
 // A 1-second long 648x486 VP9-encoded video with stereo Opus-encoded audio.
 constexpr char kFileVideoVP9[] = "world.webm";
 
+constexpr char kUnhandledRejectionScript[] =
+    "window.dispatchEvent("
+    "new CustomEvent('simulate-unhandled-rejection-for-test'));";
+
+constexpr char kTypeErrorScript[] =
+    "window.dispatchEvent("
+    "new CustomEvent('simulate-type-error-for-test'));";
+
+constexpr char kDomExceptionScript[] =
+    "window.dispatchEvent("
+    "new "
+    "CustomEvent('simulate-unhandled-rejection-with-dom-exception-for-test'));";
+
 class MediaAppIntegrationTest : public SystemWebAppIntegrationTest {
  public:
   MediaAppIntegrationTest() {
@@ -228,30 +241,116 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, HiddenInLauncherAndSearch) {
   EXPECT_FALSE(GetManager().ShouldShowInSearch(web_app::SystemAppType::MEDIA));
 }
 
-IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, ReportsUnhandledExceptions) {
+// Note: Error reporting tests are limited to one per test instance otherwise we
+// run into "Too many calls to this API" error.
+IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
+                       TrustedContextReportsConsoleErrors) {
   MockCrashEndpoint endpoint(embedded_test_server());
+
+  content::WebContents* web_ui =
+      WaitForSystemAppInstallAndLoad(web_app::SystemAppType::MEDIA);
+
+  // Pass multiple arguments to console.error() to also check they are parsed
+  // and captured in the error message correctly.
+  constexpr char kConsoleError[] =
+      "console.error('YIKES', {data: 'something'}, new Error('deep error'));";
+  EXPECT_EQ(true, ExecuteScript(web_ui, kConsoleError));
+  auto report = endpoint.WaitForReport();
+  EXPECT_NE(std::string::npos,
+            report.query.find(
+                "error_message=Unexpected%3A%20%22YIKES%22%0A%7B%22data%22%"
+                "3A%22something%22%7D%0AError%3A%20deep%20error"))
+      << report.query;
+  EXPECT_NE(std::string::npos, report.query.find("prod=ChromeOS_MediaApp"));
+}
+
+IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
+                       TrustedContextReportsDomExceptions) {
+  MockCrashEndpoint endpoint(embedded_test_server());
+
+  content::WebContents* web_ui =
+      WaitForSystemAppInstallAndLoad(web_app::SystemAppType::MEDIA);
+
+  EXPECT_EQ(true, ExecuteScript(web_ui, kDomExceptionScript));
+  auto report = endpoint.WaitForReport();
+  EXPECT_NE(std::string::npos,
+            report.query.find("error_message=Unhandled%20rejection%3A%20Error%"
+                              "3A%20NotAFile%3A%20Not%20a%20file."))
+      << report.query;
+  EXPECT_NE(std::string::npos, report.query.find("prod=ChromeOS_MediaApp"));
+}
+
+IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
+                       UntrustedContextReportsDomExceptions) {
+  MockCrashEndpoint endpoint(embedded_test_server());
+
   content::WebContents* app =
       WaitForSystemAppInstallAndLoad(web_app::SystemAppType::MEDIA);
 
-  const char kScript[] =
-      "window.dispatchEvent("
-      "new CustomEvent('simulate-unhandled-rejection-for-test'));";
-  EXPECT_EQ(true, MediaAppUiBrowserTest::EvalJsInAppFrame(app, kScript));
+  EXPECT_EQ(true,
+            MediaAppUiBrowserTest::EvalJsInAppFrame(app, kDomExceptionScript));
+  auto report = endpoint.WaitForReport();
+  EXPECT_NE(std::string::npos,
+            report.query.find("error_message=Not%20a%20file."))
+      << report.query;
+  EXPECT_NE(std::string::npos, report.query.find("prod=ChromeOS_MediaApp"));
+}
+
+IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
+                       TrustedContextReportsUnhandledExceptions) {
+  MockCrashEndpoint endpoint(embedded_test_server());
+
+  content::WebContents* web_ui =
+      WaitForSystemAppInstallAndLoad(web_app::SystemAppType::MEDIA);
+
+  EXPECT_EQ(true, ExecuteScript(web_ui, kUnhandledRejectionScript));
+  auto report = endpoint.WaitForReport();
+  EXPECT_NE(std::string::npos,
+            report.query.find("error_message=Unhandled%20rejection%3A%20Error%"
+                              "3A%20FakeErrorName%3A%20fake_throw"))
+      << report.query;
+  EXPECT_NE(std::string::npos, report.query.find("prod=ChromeOS_MediaApp"));
+}
+
+IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
+                       UntrustedContextReportsUnhandledExceptions) {
+  MockCrashEndpoint endpoint(embedded_test_server());
+
+  content::WebContents* app =
+      WaitForSystemAppInstallAndLoad(web_app::SystemAppType::MEDIA);
+
+  EXPECT_EQ(true, MediaAppUiBrowserTest::EvalJsInAppFrame(
+                      app, kUnhandledRejectionScript));
   auto report = endpoint.WaitForReport();
   EXPECT_NE(std::string::npos, report.query.find("error_message=fake_throw"))
       << report.query;
   EXPECT_NE(std::string::npos, report.query.find("prod=ChromeOS_MediaApp"));
 }
 
-IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, ReportsTypeErrors) {
+IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
+                       TrustedContextReportsTypeErrors) {
+  MockCrashEndpoint endpoint(embedded_test_server());
+  content::WebContents* web_ui =
+      WaitForSystemAppInstallAndLoad(web_app::SystemAppType::MEDIA);
+
+  EXPECT_EQ(true, ExecuteScript(web_ui, kTypeErrorScript));
+  auto report = endpoint.WaitForReport();
+  EXPECT_NE(std::string::npos,
+            report.query.find(
+                "error_message=Error%3A%20ErrorEvent%3A%20Uncaught%20TypeError%"
+                "3A%20event.notAFunction%20is%20not%20a%20function"))
+      << report.query;
+  EXPECT_NE(std::string::npos, report.query.find("prod=ChromeOS_MediaApp"));
+}
+
+IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
+                       UntrustedContextReportsTypeErrors) {
   MockCrashEndpoint endpoint(embedded_test_server());
   content::WebContents* app =
       WaitForSystemAppInstallAndLoad(web_app::SystemAppType::MEDIA);
 
-  const char kScript[] =
-      "window.dispatchEvent("
-      "new CustomEvent('simulate-type-error-for-test'));";
-  EXPECT_EQ(true, MediaAppUiBrowserTest::EvalJsInAppFrame(app, kScript));
+  EXPECT_EQ(true,
+            MediaAppUiBrowserTest::EvalJsInAppFrame(app, kTypeErrorScript));
   auto report = endpoint.WaitForReport();
   EXPECT_NE(std::string::npos,
             report.query.find(

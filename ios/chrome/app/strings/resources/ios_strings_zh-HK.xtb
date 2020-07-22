@@ -72,6 +72,7 @@
 <translation id="1674504678466460478">從<ph name="SOURCE_LANGUAGE" />翻譯成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">如要將書籤同步到所有裝置，請開啟同步處理功能。</translation>
 <translation id="1687475363370981210">全部標示為已閱讀</translation>
+<translation id="1689333818294560261">暱稱</translation>
 <translation id="1690731385917361335">沒有任何項目</translation>
 <translation id="1692118695553449118">同步處理已開啟</translation>
 <translation id="1700629756560807968">已選取 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
@@ -206,6 +207,7 @@
 <translation id="3335947283844343239">重新開啟先前關閉的分頁</translation>
 <translation id="3371831930909698441">有可以用嘅翻譯。你可以喺接近畫面底部附近搵到選項。</translation>
 <translation id="3393920035788932672">已允許的彈出式視窗</translation>
+<translation id="3425644765244388016">信用卡暱稱</translation>
 <translation id="3443810440409579745">已收到分頁。</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> 分鐘</translation>
 <translation id="3448016392200048164">分割檢視</translation>
@@ -240,6 +242,7 @@
 <translation id="3783017676699494206">儲存圖片</translation>
 <translation id="3789841737615482174">安裝</translation>
 <translation id="3803696231112616155">為此網站提供翻譯選項</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{沒有密碼被盜用}=1{{COUNT} 個密碼已被盜用}other{{COUNT} 個密碼已被盜用}}</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3892144330757387737">您可在此查看記錄</translation>
 <translation id="3897092660631435901">選單</translation>
@@ -529,6 +532,7 @@
 <translation id="7189598951263744875">分享...</translation>
 <translation id="7192050974311852563">開始記錄</translation>
 <translation id="7203585745079012652">語音答覆</translation>
+<translation id="721597782417389033">無效的信用卡暱稱</translation>
 <translation id="7265758999917665941">一律不儲存此網站的密碼</translation>
 <translation id="7272437679830969316">無法驗證您的身分。未複製密碼。</translation>
 <translation id="7291368939935408496">正在準備密碼…</translation>

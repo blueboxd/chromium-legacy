@@ -67,12 +67,10 @@ class DBTester {
 
  private:
   void GetDBAndDoTestsOnIOThread(content::ResourceContext* context,
-                                 const base::Closure& done_callback) {
+                                 const base::RepeatingClosure& done_callback) {
     net::NSSCertDatabase* db = GetNSSCertDatabaseForResourceContext(
-        context,
-        base::Bind(&DBTester::DoTestsOnIOThread,
-                   base::Unretained(this),
-                   done_callback));
+        context, base::BindOnce(&DBTester::DoTestsOnIOThread,
+                                base::Unretained(this), done_callback));
     if (db) {
       DVLOG(1) << "got db synchronously";
       DoTestsOnIOThread(done_callback, db);
@@ -81,7 +79,7 @@ class DBTester {
     }
   }
 
-  void DoTestsOnIOThread(const base::Closure& done_callback,
+  void DoTestsOnIOThread(base::OnceClosure done_callback,
                          net::NSSCertDatabase* db) {
     db_ = db;
     EXPECT_TRUE(db);
@@ -91,19 +89,21 @@ class DBTester {
       EXPECT_EQ(db->GetPublicSlot().get(), db->GetPrivateSlot().get());
     }
 
-    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, done_callback);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                 std::move(done_callback));
   }
 
   void DoGetDBAgainTestsOnIOThread(content::ResourceContext* context,
-                                   const base::Closure& done_callback) {
+                                   base::OnceClosure done_callback) {
     net::NSSCertDatabase* db = GetNSSCertDatabaseForResourceContext(
-        context, base::Bind(&NotCalledDbCallback));
+        context, base::BindOnce(&NotCalledDbCallback));
     // Should always be synchronous now.
     EXPECT_TRUE(db);
     // Should return the same db as before.
     EXPECT_EQ(db_, db);
 
-    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, done_callback);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                 std::move(done_callback));
   }
 
   Profile* profile_;

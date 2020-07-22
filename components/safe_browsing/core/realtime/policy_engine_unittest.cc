@@ -224,7 +224,8 @@ TEST_F(RealTimePolicyEngineTest,
     feature_list.InitWithFeatures(
         /* enabled_features */ {kEnhancedProtection,
                                 kRealTimeUrlLookupEnabledForEP},
-        /* disabled_features */ {kRealTimeUrlLookupEnabledForEPWithToken});
+        /* disabled_features */ {kRealTimeUrlLookupEnabledForEPWithToken,
+                                 kRealTimeUrlLookupEnabledWithToken});
     EXPECT_TRUE(CanPerformFullURLLookup(/* is_off_the_record */ false));
     EXPECT_FALSE(CanPerformFullURLLookupWithToken(
         /* is_off_the_record */ false, &sync_service, identity_manager));
@@ -314,7 +315,9 @@ TEST_F(RealTimePolicyEngineTest,
 TEST_F(RealTimePolicyEngineTest,
        TestCanPerformFullURLLookupWithToken_EnhancedProtection) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(kEnhancedProtection);
+  feature_list.InitWithFeatures(
+      /* enabled_features */ {kEnhancedProtection},
+      /* disabled_features */ {kRealTimeUrlLookupEnabledWithToken});
   std::unique_ptr<signin::IdentityTestEnvironment> identity_test_env =
       std::make_unique<signin::IdentityTestEnvironment>();
   signin::IdentityManager* identity_manager =

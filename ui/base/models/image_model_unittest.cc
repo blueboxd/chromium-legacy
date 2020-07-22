@@ -16,13 +16,23 @@ namespace ui {
 
 namespace {
 
-const gfx::VectorIcon& GetVectorIcon() {
+const gfx::VectorIcon& GetCircleVectorIcon() {
   static constexpr gfx::PathElement path[] = {gfx::CommandType::CIRCLE, 24, 18,
                                               5};
   static const gfx::VectorIconRep rep[] = {{path, 4}};
   static constexpr gfx::VectorIcon circle_icon = {rep, 1, "circle"};
 
   return circle_icon;
+}
+
+const gfx::VectorIcon& GetRectVectorIcon() {
+  static constexpr gfx::PathElement path[] = {
+      gfx::CommandType::LINE_TO, 0,  10, gfx::CommandType::LINE_TO, 10, 10,
+      gfx::CommandType::LINE_TO, 10, 0,  gfx::CommandType::CLOSE};
+  static const gfx::VectorIconRep rep[] = {{path, 10}};
+  static constexpr gfx::VectorIcon rect_icon = {rep, 1, "rect"};
+
+  return rect_icon;
 }
 
 }  // namespace
@@ -40,7 +50,7 @@ TEST(ImageModelTest, DefaultVectorIconEmpty) {
 }
 
 TEST(ImageModelTest, CheckForVectorIcon) {
-  ImageModel image_model = ImageModel::FromVectorIcon(GetVectorIcon());
+  ImageModel image_model = ImageModel::FromVectorIcon(GetCircleVectorIcon());
 
   EXPECT_FALSE(image_model.IsEmpty());
   EXPECT_TRUE(image_model.IsVectorIcon());
@@ -57,7 +67,7 @@ TEST(ImageModelTest, CheckForImage) {
 TEST(ImageModelTest, Size) {
   EXPECT_EQ(gfx::Size(), ImageModel().Size());
   EXPECT_EQ(gfx::Size(16, 16),
-            ImageModel::FromVectorIcon(GetVectorIcon(), -1, 16).Size());
+            ImageModel::FromVectorIcon(GetCircleVectorIcon(), -1, 16).Size());
   EXPECT_EQ(gfx::Size(16, 16),
             ImageModel::FromImage(gfx::test::CreateImage(16, 16)).Size());
 }
@@ -65,7 +75,7 @@ TEST(ImageModelTest, Size) {
 TEST(ImageModelTest, CheckAssignVectorIcon) {
   VectorIconModel vector_icon_model_dest;
   VectorIconModel vector_icon_model_src =
-      ImageModel::FromVectorIcon(GetVectorIcon()).GetVectorIcon();
+      ImageModel::FromVectorIcon(GetCircleVectorIcon()).GetVectorIcon();
 
   EXPECT_TRUE(vector_icon_model_dest.is_empty());
   EXPECT_FALSE(vector_icon_model_src.is_empty());
@@ -90,7 +100,7 @@ TEST(ImageModelTest, CheckAssignImage) {
   EXPECT_TRUE(image_model_dest.IsImage());
   EXPECT_FALSE(image_model_dest.IsVectorIcon());
 
-  image_model_src = ImageModel::FromVectorIcon(GetVectorIcon());
+  image_model_src = ImageModel::FromVectorIcon(GetCircleVectorIcon());
 
   EXPECT_TRUE(image_model_src.IsVectorIcon());
 
@@ -98,6 +108,52 @@ TEST(ImageModelTest, CheckAssignImage) {
 
   EXPECT_TRUE(image_model_dest.IsVectorIcon());
   EXPECT_FALSE(image_model_dest.IsImage());
+}
+
+TEST(ImageModelTest, CheckEqual) {
+  ImageModel image_model_src;
+  ImageModel image_model_dest;
+  EXPECT_EQ(image_model_src, image_model_dest);
+
+  auto first_image = gfx::test::CreateImage(16, 16);
+  image_model_src = ImageModel::FromImage(first_image);
+  EXPECT_NE(image_model_src, image_model_dest);
+  image_model_dest = ImageModel::FromImage(first_image);
+  EXPECT_EQ(image_model_src, image_model_dest);
+  image_model_dest = ImageModel::FromImage(gfx::test::CreateImage(16, 16));
+  EXPECT_NE(image_model_src, image_model_dest);
+  image_model_src = image_model_dest;
+  EXPECT_EQ(image_model_src, image_model_dest);
+
+  image_model_dest = ImageModel::FromVectorIcon(GetRectVectorIcon());
+  EXPECT_NE(image_model_src, image_model_dest);
+  image_model_src = ImageModel::FromVectorIcon(GetRectVectorIcon());
+  EXPECT_EQ(image_model_src, image_model_dest);
+  image_model_dest = ImageModel::FromVectorIcon(GetCircleVectorIcon());
+  EXPECT_NE(image_model_src, image_model_dest);
+  image_model_src = image_model_dest;
+  EXPECT_EQ(image_model_src, image_model_dest);
+
+  image_model_src = ImageModel::FromVectorIcon(GetCircleVectorIcon(), 1);
+  image_model_dest =
+      ImageModel::FromVectorIcon(GetCircleVectorIcon(), SK_ColorMAGENTA);
+  EXPECT_NE(image_model_src, image_model_dest);
+
+  image_model_src = ImageModel::FromVectorIcon(GetCircleVectorIcon(), 1);
+  image_model_dest = ImageModel::FromVectorIcon(GetCircleVectorIcon(), 2);
+  EXPECT_NE(image_model_src, image_model_dest);
+
+  image_model_src =
+      ImageModel::FromVectorIcon(GetCircleVectorIcon(), SK_ColorCYAN);
+  image_model_dest =
+      ImageModel::FromVectorIcon(GetCircleVectorIcon(), SK_ColorMAGENTA);
+  EXPECT_NE(image_model_src, image_model_dest);
+
+  image_model_src =
+      ImageModel::FromVectorIcon(GetCircleVectorIcon(), SK_ColorMAGENTA, 1);
+  image_model_dest =
+      ImageModel::FromVectorIcon(GetCircleVectorIcon(), SK_ColorMAGENTA, 2);
+  EXPECT_NE(image_model_src, image_model_dest);
 }
 
 }  // namespace ui

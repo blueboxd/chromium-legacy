@@ -2984,5 +2984,8 @@
   <message desc="Describes the current web page position of the ChromeVox focus." is_accessibility_with_no_ui="true" name="IDS_CHROMEVOX_DESCRIBE_POS_BY_PAGE">
     Page <ph name="currentPage">$1<ex>1</ex></ph> of <ph name="totalPages">$2<ex>10</ex></ph>
   </message>
+  <message desc="Describes a gesture to be performed on a touch screen. The gesture is to touch and drag with one finger and have items under the finger read using text-to-speech. No associated UI with this string which is spoken using text-to-speech." name="IDS_CHROMEVOX_TOUCH_EXPLORE_GESTURE" is_accessibility_with_no_ui="true">
+    Touch explore
+  </message>
 
 </grit-part>

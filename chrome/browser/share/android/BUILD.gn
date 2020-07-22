@@ -24,7 +24,7 @@ android_resources("java_resources") {
     "java/res/values/colors.xml",
     "java/res/values/dimens.xml",
   ]
-  custom_package = "org.chromium.chrome.browser.share"
+  create_srcjar = false
 }
 
 generate_jni("jni_headers") {

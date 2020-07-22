@@ -204,7 +204,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   // GetRemainingDriveList.
   //
   // |callback| must not be null.
-  virtual google_apis::CancelCallback GetAllTeamDriveList(
+  virtual google_apis::CancelCallbackOnce GetAllTeamDriveList(
       google_apis::TeamDriveListCallback callback) = 0;
 
   // Fetches a file list of the account. |callback| will be called upon
@@ -217,7 +217,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   // default corpus, otherwise will fetch the file list for the specified
   // team drive.
   // |callback| must not be null.
-  virtual google_apis::CancelCallback GetAllFileList(
+  virtual google_apis::CancelCallbackOnce GetAllFileList(
       const std::string& team_drive_id,
       const google_apis::FileListCallback& callback) = 0;
 

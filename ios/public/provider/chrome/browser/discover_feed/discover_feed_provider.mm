@@ -17,5 +17,7 @@ UIViewController* DiscoverFeedProvider::NewFeedViewController(
   return nil;
 }
 
+void DiscoverFeedProvider::UpdateTheme() {}
+
 void DiscoverFeedProvider::RefreshFeedWithCompletion(
     ProceduralBlock completion) {}

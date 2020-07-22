@@ -18,7 +18,7 @@
         <include name="IDR_SAMPLE_SYSTEM_WEB_APP_PWA_HTML" file="pwa.html" type="BINDATA" />
         <include name="IDR_SAMPLE_SYSTEM_WEB_APP_SANDBOX_HTML" file="sandbox.html" type="BINDATA" />
         <include name="IDR_SAMPLE_SYSTEM_WEB_APP_MANIFEST" file="manifest.json" type="BINDATA" compress="gzip" />
-        <include name="IDR_SAMPLE_SYSTEM_WEB_APP_ICON_192" file="app_icon_192.png" type="BINDATA" compress="gzip" />
+        <include name="IDR_SAMPLE_SYSTEM_WEB_APP_ICON_192" file="app_icon_192.png" type="BINDATA" />
 
         <!-- Untrusted app contents. -->
         <include name="IDR_SAMPLE_SYSTEM_WEB_APP_UNTRUSTED_HTML" file="untrusted.html" type="BINDATA" />

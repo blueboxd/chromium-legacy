@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recording.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
+#import "ios/chrome/browser/ui/content_suggestions/theme_change_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_layout_util.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
@@ -319,6 +320,10 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
   }
   [self.headerSynchronizer updateConstraints];
   [self updateOverscrollActionsState];
+  if (previousTraitCollection.userInterfaceStyle !=
+      self.traitCollection.userInterfaceStyle) {
+    [self.themeChangeDelegate handleThemeChange];
+  }
 }
 
 - (void)viewSafeAreaInsetsDidChange {
@@ -364,6 +369,7 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
     case ContentSuggestionTypeLearnMore:
       [self.suggestionCommandHandler handleLearnMoreTapped];
       break;
+    case ContentSuggestionTypeDiscover:
     case ContentSuggestionTypeEmpty:
       break;
   }

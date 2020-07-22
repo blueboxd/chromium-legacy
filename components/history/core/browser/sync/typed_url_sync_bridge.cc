@@ -1034,8 +1034,8 @@ bool TypedURLSyncBridge::ShouldIgnoreUrl(const GURL& url) {
     return true;
 
   // Ignore username and password, since history backend will remove user name
-  // and password in URLDatabase::GURLToDatabaseURL and send username/password
-  // removed url to sync later.
+  // and password in database_utils::GurlToDatabaseUrl and send
+  // username/password removed url to sync later.
   if (url.has_username() || url.has_password())
     return true;
 

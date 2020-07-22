@@ -327,6 +327,9 @@ class CONTENT_EXPORT RenderWidget
   void UpdateScreenRects(const gfx::Rect& widget_screen_rect,
                          const gfx::Rect& window_screen_rect) override;
   void SetIsNestedMainFrameWidget(bool is_nested) override;
+  void EnableDeviceEmulation(
+      const blink::DeviceEmulationParams& params) override;
+  void DisableDeviceEmulation() override;
 
   // Returns the scale being applied to the document in blink by the device
   // emulator. Returns 1 if there is no emulation active. Use this to position
@@ -463,8 +466,6 @@ class CONTENT_EXPORT RenderWidget
   // RenderWidget IPC message handlers.
   void OnClose();
   void OnCreatingNewAck();
-  void OnEnableDeviceEmulation(const blink::DeviceEmulationParams& params);
-  void OnDisableDeviceEmulation();
   void OnWasHidden();
   void OnWasShown(
       base::TimeTicks show_request_timestamp,

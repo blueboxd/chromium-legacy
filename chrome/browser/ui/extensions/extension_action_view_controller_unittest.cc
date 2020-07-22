@@ -128,7 +128,7 @@ class ExtensionActionViewControllerUnitTest
   }
 
   // Sets whether the given |action| wants to run on the |web_contents|.
-  void SetActionWantsToRunOnTab(ExtensionAction* action,
+  void SetActionWantsToRunOnTab(extensions::ExtensionAction* action,
                                 content::WebContents* web_contents,
                                 bool wants_to_run) {
     action->SetIsVisible(
@@ -639,7 +639,7 @@ void ExtensionActionViewControllerGrayscaleTest::RunGrayscaleTest(
       GetViewControllerForId(extension->id());
   ASSERT_TRUE(controller);
   content::WebContents* web_contents = GetActiveWebContents();
-  ExtensionAction* extension_action =
+  extensions::ExtensionAction* extension_action =
       extensions::ExtensionActionManager::Get(profile())->GetExtensionAction(
           *extension);
   extensions::ExtensionActionRunner* action_runner =

@@ -217,34 +217,6 @@ void TranslateBubbleView::CloseBubble() {
   LocationBarBubbleDelegateView::CloseBubble();
 }
 
-base::string16 TranslateBubbleView::GetWindowTitle() const {
-  int id = 0;
-  switch (GetViewState()) {
-    case TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE:
-      id = IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_TITLE;
-      break;
-    case TranslateBubbleModel::VIEW_STATE_TRANSLATING:
-      id = IDS_TRANSLATE_BUBBLE_TRANSLATING;
-      break;
-    case TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE:
-      id = IDS_TRANSLATE_BUBBLE_TRANSLATED_TITLE;
-      break;
-    case TranslateBubbleModel::VIEW_STATE_ERROR:
-      id = IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE_TITLE;
-      break;
-    // Widget title and close button does not show for tab ui.
-    // These two cases don't apply but need to be handled to avoid error.
-    case TranslateBubbleModel::VIEW_STATE_SOURCE_LANGUAGE:
-      id = IDS_TRANSLATE_BUBBLE_ADVANCED_TITLE;
-      break;
-    case TranslateBubbleModel::VIEW_STATE_TARGET_LANGUAGE:
-      id = IDS_TRANSLATE_BUBBLE_ADVANCED_TITLE;
-      break;
-  }
-
-  return l10n_util::GetStringUTF16(id);
-}
-
 void TranslateBubbleView::TabSelectedAt(int index) {
   // Tabbed pane is indexed from left to right starting at 0.
   if (!model_->IsPageTranslatedInCurrentLanguages() && index == 1) {
@@ -589,14 +561,12 @@ views::View* TranslateBubbleView::GetCurrentView() const {
 
 void TranslateBubbleView::Translate() {
   model_->Translate();
-  model_->SetViewState(TranslateBubbleModel::VIEW_STATE_TRANSLATING);
   SwitchView(TranslateBubbleModel::VIEW_STATE_TRANSLATING);
   translate::ReportUiAction(translate::TRANSLATE_BUTTON_CLICKED);
 }
 
 void TranslateBubbleView::ShowOriginal() {
   model_->RevertTranslation();
-  model_->SetViewState(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE);
   SwitchView(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE);
   translate::ReportUiAction(translate::SHOW_ORIGINAL_BUTTON_CLICKED);
 }
@@ -694,7 +664,8 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateView() {
   auto tabbed_pane = std::make_unique<views::TabbedPane>();
   tabbed_pane_ = horizontal_view->AddChildView(std::move(tabbed_pane));
 
-  // NOTE: Panes must be added after |tabbed_pane| has been added to its parent.
+  // NOTE: Panes must be added after |tabbed_pane| has been added to its
+  // parent.
   tabbed_pane_->AddTab(original_language_name, CreateEmptyPane());
   tabbed_pane_->AddTab(target_language_name, CreateEmptyPane());
   tabbed_pane_->GetTabAt(0)->SetBorder(
@@ -1092,6 +1063,36 @@ views::Checkbox* TranslateBubbleView::GetAlwaysTranslateCheckbox() {
   }
 }
 
+void TranslateBubbleView::SetWindowTitle(
+    TranslateBubbleModel::ViewState view_state) {
+  switch (view_state) {
+    case TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE:
+      SetTitle(IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_TITLE);
+      break;
+    case TranslateBubbleModel::VIEW_STATE_TRANSLATING:
+      SetTitle(IDS_TRANSLATE_BUBBLE_TRANSLATING);
+      break;
+    case TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE:
+      SetTitle(IDS_TRANSLATE_BUBBLE_TRANSLATED_TITLE);
+      break;
+    case TranslateBubbleModel::VIEW_STATE_ERROR:
+      SetTitle(IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE_TITLE);
+      break;
+    case TranslateBubbleModel::VIEW_STATE_SOURCE_LANGUAGE:
+      SetTitle(IDS_TRANSLATE_BUBBLE_ADVANCED_SOURCE);
+      break;
+    case TranslateBubbleModel::VIEW_STATE_TARGET_LANGUAGE:
+      SetTitle(IDS_TRANSLATE_BUBBLE_ADVANCED_TARGET);
+      break;
+  }
+}
+
+void TranslateBubbleView::UpdateViewState(
+    TranslateBubbleModel::ViewState view_state) {
+  model_->SetViewState(view_state);
+  SetWindowTitle(view_state);
+}
+
 void TranslateBubbleView::SwitchView(
     TranslateBubbleModel::ViewState view_state) {
   UpdateInsets(view_state);
@@ -1105,7 +1106,7 @@ void TranslateBubbleView::SwitchView(
 
   SwitchTabForViewState(view_state);
 
-  model_->SetViewState(view_state);
+  UpdateViewState(view_state);
   if (view_state == TranslateBubbleModel::VIEW_STATE_SOURCE_LANGUAGE ||
       view_state == TranslateBubbleModel::VIEW_STATE_TARGET_LANGUAGE)
     UpdateAdvancedView();

@@ -233,6 +233,7 @@
 <translation id="1274997165432133392">Cookie と他のサイトデータ</translation>
 <translation id="1275718070701477396">選択されています</translation>
 <translation id="1276994519141842946"><ph name="APP_NAME" /> をアンインストールできませんでした</translation>
+<translation id="127946606521051357">付近のデバイスが共有中です</translation>
 <translation id="1280820357415527819">モバイル ネットワークを検索しています</translation>
 <translation id="1280965841156951489">ファイルを編集</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
@@ -1221,6 +1222,7 @@
 <translation id="2489918096470125693">フォルダを追加(&amp;F)...</translation>
 <translation id="2490481887078769936">「<ph name="FILE_NAME" />」をリストから削除しました</translation>
 <translation id="249113932447298600">デバイス <ph name="DEVICE_LABEL" /> は現在サポートされていません。</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> から <ph name="ATTACHMENTS" /> が共有されています。</translation>
 <translation id="2492461744635776704">証明書の署名のリクエストを準備しています</translation>
 <translation id="249303669840926644">登録を完了できませんでした</translation>
 <translation id="2495777824269688114">新しい機能を見つけたり、疑問の答えを探したりするには、[？] を選択してヘルプを表示します。</translation>
@@ -4152,6 +4154,7 @@
 <translation id="6212039847102026977">ネットワークの詳細プロパティを表示</translation>
 <translation id="6212168817037875041">画面をオフにする</translation>
 <translation id="6212752530110374741">リンクをメールで送信</translation>
+<translation id="6213230117190778270">受信</translation>
 <translation id="6216696360484424239">自動ログイン</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> はオフラインです。インターネットに接続してもう一度お試しください。</translation>
 <translation id="6220413761270491930">拡張機能の読み込みエラー</translation>
@@ -4279,6 +4282,7 @@
 <translation id="6362853299801475928">問題の報告(&amp;R)...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">家族や友だちを追加</translation>
+<translation id="6367985768157257101">ニアバイシェアで受信しますか？</translation>
 <translation id="636850387210749493">企業の登録</translation>
 <translation id="6370021412472292592">マニフェストを読み込めませんでした。</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -6581,6 +6585,7 @@
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">パスフレーズを入力</translation>
 <translation id="939736085109172342">新しいフォルダ</translation>
+<translation id="941070664607309480">クリックすると表示され、共有できるようになります</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> が Chrome タブと音声を共有しています。</translation>
 <translation id="945522503751344254">フィードバックを送信</translation>
 <translation id="947329552760389097">要素の検証(&amp;I)</translation>

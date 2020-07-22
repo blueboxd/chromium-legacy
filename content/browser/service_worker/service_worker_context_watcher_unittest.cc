@@ -65,8 +65,7 @@ class WatcherCallback {
   }
   const std::map<
       int64_t,
-      std::map<int64_t,
-               std::vector<ServiceWorkerContextCoreObserver::ErrorInfo>>>&
+      std::map<int64_t, std::vector<ServiceWorkerContextObserver::ErrorInfo>>>&
   errors() const {
     return errors_;
   }
@@ -97,7 +96,7 @@ class WatcherCallback {
   void OnErrorReported(
       int64_t registration_id,
       int64_t version_id,
-      const ServiceWorkerContextCoreObserver::ErrorInfo& error_info) {
+      const ServiceWorkerContextObserver::ErrorInfo& error_info) {
     ++callback_count_;
     errors_[registration_id][version_id].push_back(error_info);
   }
@@ -109,7 +108,7 @@ class WatcherCallback {
       versions_;
   std::map<int64_t /* registration_id */,
            std::map<int64_t /* version_id */,
-                    std::vector<ServiceWorkerContextCoreObserver::ErrorInfo>>>
+                    std::vector<ServiceWorkerContextObserver::ErrorInfo>>>
       errors_;
 
   int callback_count_ = 0;
@@ -162,11 +161,11 @@ class ServiceWorkerContextWatcherTest : public testing::Test {
     return status;
   }
 
-  void ReportError(
-      scoped_refptr<ServiceWorkerContextWatcher> watcher,
-      int64_t version_id,
-      const ServiceWorkerContextCoreObserver::ErrorInfo& error_info) {
-    watcher->OnErrorReported(version_id, error_info);
+  void ReportError(scoped_refptr<ServiceWorkerContextWatcher> watcher,
+                   int64_t version_id,
+                   const GURL& scope,
+                   const ServiceWorkerContextObserver::ErrorInfo& error_info) {
+    watcher->OnErrorReported(version_id, scope, error_info);
   }
 
  private:
@@ -332,9 +331,8 @@ TEST_F(ServiceWorkerContextWatcherTest, ErrorReport) {
   EXPECT_EQ(0u, watcher_callback.errors().size());
 
   base::string16 message(base::ASCIIToUTF16("HELLO"));
-  ReportError(
-      watcher, version_id,
-      ServiceWorkerContextCoreObserver::ErrorInfo(message, 0, 0, script));
+  ReportError(watcher, version_id, scope,
+              ServiceWorkerContextObserver::ErrorInfo(message, 0, 0, script));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1u, watcher_callback.errors().size());
   ASSERT_EQ(1u, watcher_callback.errors().at(registration_id).size());
@@ -384,9 +382,8 @@ TEST_F(ServiceWorkerContextWatcherTest, Race) {
 
   int callback_count = watcher_callback.callback_count();
   base::string16 message(base::ASCIIToUTF16("HELLO"));
-  ReportError(
-      watcher, 0 /*version_id*/,
-      ServiceWorkerContextCoreObserver::ErrorInfo(message, 0, 0, script));
+  ReportError(watcher, 0 /*version_id*/, scope,
+              ServiceWorkerContextObserver::ErrorInfo(message, 0, 0, script));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(callback_count, watcher_callback.callback_count());
 }

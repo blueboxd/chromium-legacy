@@ -231,7 +231,7 @@ class DefaultBrowserActionRecorder : public SettingsAppMonitor::Delegate {
   // Creates the recorder and the monitor that drives it. |continuation| will be
   // run once the monitor's initialization completes (regardless of success or
   // failure).
-  explicit DefaultBrowserActionRecorder(base::Closure continuation)
+  explicit DefaultBrowserActionRecorder(base::OnceClosure continuation)
       : continuation_(std::move(continuation)), settings_app_monitor_(this) {}
 
  private:
@@ -242,8 +242,7 @@ class DefaultBrowserActionRecorder : public SettingsAppMonitor::Delegate {
       base::RecordAction(
           base::UserMetricsAction("SettingsAppMonitor.Initialized"));
     }
-    continuation_.Run();
-    continuation_ = base::Closure();
+    std::move(continuation_).Run();
   }
 
   void OnAppFocused() override {
@@ -282,7 +281,7 @@ class DefaultBrowserActionRecorder : public SettingsAppMonitor::Delegate {
   }
 
   // A closure to be run once initialization completes.
-  base::Closure continuation_;
+  base::OnceClosure continuation_;
 
   // Monitors user interaction with the Windows Settings app for the sake of
   // reporting user actions.
@@ -443,12 +442,12 @@ class IsPinnedToTaskbarHelper {
  public:
   using ResultCallback = win::IsPinnedToTaskbarCallback;
   using ErrorCallback = win::ConnectionErrorCallback;
-  static void GetState(const ErrorCallback& error_callback,
-                       const ResultCallback& result_callback);
+  static void GetState(ErrorCallback error_callback,
+                       ResultCallback result_callback);
 
  private:
-  IsPinnedToTaskbarHelper(const ErrorCallback& error_callback,
-                          const ResultCallback& result_callback);
+  IsPinnedToTaskbarHelper(ErrorCallback error_callback,
+                          ResultCallback result_callback);
 
   void OnConnectionError();
   void OnIsPinnedToTaskbarResult(bool succeeded,
@@ -466,19 +465,18 @@ class IsPinnedToTaskbarHelper {
 };
 
 // static
-void IsPinnedToTaskbarHelper::GetState(
-    const ErrorCallback& error_callback,
-    const ResultCallback& result_callback) {
+void IsPinnedToTaskbarHelper::GetState(ErrorCallback error_callback,
+                                       ResultCallback result_callback) {
   // Self-deleting when the ShellHandler completes.
-  new IsPinnedToTaskbarHelper(error_callback, result_callback);
+  new IsPinnedToTaskbarHelper(std::move(error_callback),
+                              std::move(result_callback));
 }
 
-IsPinnedToTaskbarHelper::IsPinnedToTaskbarHelper(
-    const ErrorCallback& error_callback,
-    const ResultCallback& result_callback)
+IsPinnedToTaskbarHelper::IsPinnedToTaskbarHelper(ErrorCallback error_callback,
+                                                 ResultCallback result_callback)
     : remote_util_win_(LaunchUtilWinServiceInstance()),
-      error_callback_(error_callback),
-      result_callback_(result_callback) {
+      error_callback_(std::move(error_callback)),
+      result_callback_(std::move(result_callback)) {
   DCHECK(error_callback_);
   DCHECK(result_callback_);
 
@@ -493,7 +491,7 @@ IsPinnedToTaskbarHelper::IsPinnedToTaskbarHelper(
 
 void IsPinnedToTaskbarHelper::OnConnectionError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  error_callback_.Run();
+  std::move(error_callback_).Run();
   delete this;
 }
 
@@ -503,8 +501,8 @@ void IsPinnedToTaskbarHelper::OnIsPinnedToTaskbarResult(
     bool is_pinned_to_taskbar_verb_check) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  result_callback_.Run(succeeded, is_pinned_to_taskbar,
-                       is_pinned_to_taskbar_verb_check);
+  std::move(result_callback_)
+      .Run(succeeded, is_pinned_to_taskbar, is_pinned_to_taskbar_verb_check);
   delete this;
 }
 
@@ -666,10 +664,10 @@ void SetAsDefaultBrowserUsingSystemSettings(
 
   // Create an action recorder that will open the settings app once it has
   // initialized.
-  std::unique_ptr<DefaultBrowserActionRecorder> recorder(
-      new DefaultBrowserActionRecorder(base::Bind(
+  std::unique_ptr<DefaultBrowserActionRecorder> recorder =
+          std::make_unique<DefaultBrowserActionRecorder>(base::BindOnce(
           base::IgnoreResult(&ShellUtil::ShowMakeChromeDefaultSystemUI),
-          chrome_exe)));
+          chrome_exe));
 
   // The helper manages its own lifetime. Bind the action recorder
   // into the finished callback to keep it alive throughout the
@@ -789,10 +787,10 @@ void MigrateTaskbarPinsCallback(const base::FilePath& taskbar_path,
   }
 }
 
-void GetIsPinnedToTaskbarState(
-    const ConnectionErrorCallback& on_error_callback,
-    const IsPinnedToTaskbarCallback& result_callback) {
-  IsPinnedToTaskbarHelper::GetState(on_error_callback, result_callback);
+void GetIsPinnedToTaskbarState(ConnectionErrorCallback on_error_callback,
+                               IsPinnedToTaskbarCallback result_callback) {
+  IsPinnedToTaskbarHelper::GetState(std::move(on_error_callback),
+                                    std::move(result_callback));
 }
 
 int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,

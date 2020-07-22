@@ -234,10 +234,15 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   GrContext* GetGrContext();
   bool is_using_ddl() const { return draw_mode_ == DrawMode::DDL; }
 
+  // Get a color filter that converts from |src| color space to |dst| color
+  // space using a shader constructed from gfx::ColorTransform.  The color
+  // filters are cached in |color_filter_cache_|.  Resource offset and
+  // multiplier are used to adjust the RGB output of the shader for YUV video
+  // quads. The default values perform no adjustment.
   sk_sp<SkColorFilter> GetColorFilter(const gfx::ColorSpace& src,
                                       const gfx::ColorSpace& dst,
-                                      float resource_offset,
-                                      float resource_multiplier);
+                                      float resource_offset = 0.0f,
+                                      float resource_multiplier = 1.0f);
   // A map from RenderPass id to the texture used to draw the RenderPass from.
   struct RenderPassBacking {
     sk_sp<SkSurface> render_pass_surface;

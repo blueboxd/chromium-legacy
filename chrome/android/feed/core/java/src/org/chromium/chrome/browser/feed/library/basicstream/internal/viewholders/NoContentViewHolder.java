@@ -13,9 +13,9 @@ import android.widget.FrameLayout;
 
 import androidx.recyclerview.widget.RecyclerView.LayoutParams;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feed.library.api.host.stream.CardConfiguration;
 import org.chromium.chrome.browser.feed.library.common.ui.LayoutUtils;
-import org.chromium.chrome.feed.R;
 
 /** {@link androidx.recyclerview.widget.RecyclerView.ViewHolder} for no content card. */
 public class NoContentViewHolder extends FeedViewHolder {

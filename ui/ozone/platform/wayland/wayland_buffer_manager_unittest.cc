@@ -50,7 +50,6 @@ class MockSurfaceGpu : public WaylandSurfaceGpu {
   MockSurfaceGpu(WaylandBufferManagerGpu* buffer_manager,
                  gfx::AcceleratedWidget widget)
       : buffer_manager_(buffer_manager), widget_(widget) {
-    LOG(ERROR) << "MOCKSURFACEGPU: " << widget_;
     buffer_manager_->RegisterSurface(widget_, this);
   }
   ~MockSurfaceGpu() { buffer_manager_->UnregisterSurface(widget_); }

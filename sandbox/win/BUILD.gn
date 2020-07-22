@@ -217,6 +217,7 @@ test("sbox_integration_tests") {
     "tests/common/controller.h",
     "tests/common/test_utils.cc",
     "tests/common/test_utils.h",
+    "tests/integration_tests/cfi_unittest.cc",
     "tests/integration_tests/integration_tests.cc",
     "tests/integration_tests/integration_tests_common.h",
     "tests/integration_tests/integration_tests_test.cc",

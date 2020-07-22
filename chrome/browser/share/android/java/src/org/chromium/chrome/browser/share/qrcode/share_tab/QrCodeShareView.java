@@ -18,7 +18,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 
-import org.chromium.chrome.browser.share.R;
+import org.chromium.chrome.R;
 import org.chromium.ui.widget.ChromeImageView;
 
 /**

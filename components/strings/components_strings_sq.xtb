@@ -447,6 +447,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2824775600643448204">Shiriti i adresës dhe i kërkimit</translation>
 <translation id="2826760142808435982">Lidhja është e enkriptuar dhe e vërtetuar me <ph name="CIPHER" /> dhe përdor <ph name="KX" /> si mekanizëm kryesor shkëmbimi.</translation>
 <translation id="2835170189407361413">Pastro formularin</translation>
+<translation id="2839501879576190149">Sajt i rremë përpara</translation>
 <translation id="2847118875340931228">Hap dritaren "e fshehtë"</translation>
 <translation id="2850739647070081192">Invite (Zarf)</translation>
 <translation id="2856444702002559011">Sulmuesit mund të përpiqen të vjedhin informacionet e tua nga <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (për shembull, fjalëkalimet, mesazhet ose kartat e kreditit). <ph name="BEGIN_LEARN_MORE_LINK" />Mëso më shumë<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -805,6 +806,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="42981349822642051">Zgjero</translation>
 <translation id="4300675098767811073">Shumë shpime djathtas</translation>
 <translation id="4302965934281694568">Chou3 (Zarf)</translation>
+<translation id="4305666528087210886">Qasja te skedari ishte e pamundur</translation>
 <translation id="4305817255990598646">Ndërro</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Blloko (parazgjedhja)</translation>
@@ -823,6 +825,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="4358461427845829800">Menaxho mënyrat e pagesës...</translation>
 <translation id="4359160567981085931">Sapo fute fjalëkalimin tënd në një sajt mashtrues. Chrome mund të të ndihmojë. Për të ndryshuar fjalëkalimin dhe për të njoftuar Google se llogaria jote mund të jetë në rrezik, kliko te "Mbroje llogarinë".</translation>
 <translation id="4367563149485757821">Number-12 (Zarf)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Një nxjerrje e paautorizuar të dhënash në një sajt apo në një prej aplikacioneve të tua e ka ekspozuar fjalëkalimin tënd të ruajtur për <ph name="ORIGIN" />. Chrome rekomandon që ta kontrollosh menjëherë fjalëkalimin tënd në <ph name="ORIGIN" />.}=1{Një nxjerrje e paautorizuar të dhënash në një sajt apo në një prej aplikacioneve të tua e ka ekspozuar fjalëkalimin tënd të ruajtur për <ph name="ORIGIN" /> dhe një sajt tjetër. Chrome rekomandon që të kontrollosh fjalëkalimet e tua të ruajtura tani.}other{Një nxjerrje e paautorizuar të dhënash në një sajt apo në një prej aplikacioneve të tua e ka ekspozuar fjalëkalimin tënd të ruajtur për <ph name="ORIGIN" /> dhe <ph name="SITES_COUNT" /> sajte të tjera. Chrome rekomandon që të kontrollosh fjalëkalimet e tua të ruajtura tani.}}</translation>
 <translation id="437058704415269440">Balanca e llogarisë</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Pritet një vlerë <ph name="VALUE_TYPE" />.</translation>
@@ -1292,6 +1295,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Tarifime të mundshme përpara.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 sugjerim tjetër}other{# sugjerime të tjera}}</translation>
+<translation id="6387645831795005740">Sulmuesit ndonjëherë i imitojnë sajtet duke bërë tek URL-ja ndryshime të vogla që janë të vështira për t'u shikuar.</translation>
 <translation id="6389470377220713856">Emri në kartë</translation>
 <translation id="6390200185239044127">Palosje Z në gjysmë</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1505,6 +1509,7 @@ Detaje shtesë:
 <translation id="7372973238305370288">rezultati i kërkimit</translation>
 <translation id="7374733840632556089">Ky problem ndodh për shkak të një certifikate që instalove ti ose dikush tjetër në pajisjen tënde. Certifikata njihet se është përdorur për të monitoruar dhe ndërhyrë në rrjete dhe nuk është e besuar nga Chrome. Megjithëse ekzistojnë disa raste legjitime për monitorimin, si p.sh. një rrjet shkolle ose kompanie, Chrome dëshiron të sigurohet që je në dijeni se kjo ndodh, edhe nëse nuk arrin ta ndalosh. Monitorimi mund të ndodhë në çdo shfletues ose aplikacion që ka qasje në ueb.</translation>
 <translation id="7375818412732305729">Skedari është bashkëngjitur</translation>
+<translation id="7376551888419889433">Kur sinjalizohen ngjarje sigurie nga Chrome Enterprise Connectors, të dhënat përkatëse rreth ngjarjeve i dërgohen administratorit tënd. Kjo mund të përfshijë URL-të e faqeve që viziton në Chrome, emrat e skedarëve ose të dhënat meta dhe emrin e përdoruesit që përdor për t'u identifikuar në pajisjen tënde dhe në Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Kontrollet e klipeve media</translation>
 <translation id="7378627244592794276">Jo</translation>
@@ -1901,6 +1906,7 @@ Detaje shtesë:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Tentove të gjeje <ph name="DOMAIN" />, por serveri paraqiti një certifikatë të pavlefshme.</translation>
 <translation id="9050666287014529139">Shprehje kalimi</translation>
+<translation id="9062620674789239642">Ai mund të jetë zhvendosur, modifikuar ose fshirë.</translation>
 <translation id="9065203028668620118">Redakto</translation>
 <translation id="9065745800631924235">Kërkimi <ph name="TEXT" /> nga historiku</translation>
 <translation id="9069693763241529744">Bllokuar nga një shtesë</translation>

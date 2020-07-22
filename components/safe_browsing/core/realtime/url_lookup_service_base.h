@@ -41,8 +41,6 @@ class VerdictCacheManager;
 
 // This base class implements the backoff and cache logic for real time URL
 // lookup feature.
-// TODO(crbug.com/1085261): Log prefix of subclasses for all metrics in this
-// class.
 class RealTimeUrlLookupServiceBase : public KeyedService {
  public:
   explicit RealTimeUrlLookupServiceBase(
@@ -128,6 +126,9 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
   // Fills in fields in |RTLookupRequest|.
   virtual std::unique_ptr<RTLookupRequest> FillRequestProto(
       const GURL& url) = 0;
+
+  // Suffix for logging metrics.
+  virtual std::string GetMetricSuffix() const = 0;
 
   // Returns the duration of the next backoff. Starts at
   // |kMinBackOffResetDurationInSeconds| and increases exponentially until

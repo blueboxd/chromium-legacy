@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Année d'enregistrement</translation>
 <translation id="3338239663705455570">Clavier slovène</translation>
 <translation id="3353984535370177728">Sélectionner le dossier à téléverser</translation>
+<translation id="3356580349448036450">Terminé</translation>
 <translation id="3399597614303179694">Clavier macédonien</translation>
 <translation id="3414856743105198592">Le formatage du support amovible va effacer toutes les données. Voulez-vous continuer?</translation>
 <translation id="3437801641691368414">Date de création</translation>
@@ -552,7 +553,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Échec de l'installation.</translation>
 <translation id="7040138676081995583">Ouvrir avec...</translation>
-<translation id="7059566040011178088">Moins de <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> éléments sélectionnés</translation>
 <translation id="7106346894903675391">Acheter de l'espace de stockage supplémentaire…</translation>
 <translation id="7126604456862387217">&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt; - &lt;em&gt;rechercher dans Google Disque&lt;/em&gt;</translation>
@@ -663,7 +663,6 @@
 <translation id="8193175696669055101">Modèle de l'appareil</translation>
 <translation id="8208580316430297579">Œuvre d'art</translation>
 <translation id="8223479393428528563">Pour enregistrer ces fichiers et les utiliser hors connexion, reconnectez-vous, cliquez avec le bouton droit sur les fichiers, et sélectionnez l’option <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
-<translation id="8231972167769262174">Environ <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Interrompre</translation>
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8269755669432358899">Réduire les panneaux de commentaires sur les fichiers</translation>

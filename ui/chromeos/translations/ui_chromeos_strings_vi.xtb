@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Năm ghi âm</translation>
 <translation id="3338239663705455570">Bàn phím tiếng Slovenia</translation>
 <translation id="3353984535370177728">Chọn thư mục để tải lên</translation>
+<translation id="3356580349448036450">Hoàn tất</translation>
 <translation id="3399597614303179694">Bàn phím Macedonia</translation>
 <translation id="3414856743105198592">Định dạng phương tiện di động sẽ xóa tất cả dữ liệu. Bạn có muốn tiếp tục không?</translation>
 <translation id="3437801641691368414">Thời gian tạo</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Cài đặt không thành công.</translation>
 <translation id="7040138676081995583">Mở bằng...</translation>
-<translation id="7059566040011178088">Dưới <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923">Đã chọn <ph name="COUNT" /> mục</translation>
 <translation id="7106346894903675391">Mua thêm dung lượng lưu trữ...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;tìm kiếm trong Drive&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">Mẫu thiết bị</translation>
 <translation id="8208580316430297579">Tác phẩm nghệ thuật</translation>
 <translation id="8223479393428528563">Để lưu các tệp này để sử dụng ngoại tuyến, hãy trực tuyến trở lại, nhấp chuột phải vào tệp và chọn tùy chọn <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
-<translation id="8231972167769262174">Khoảng <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Hủy bỏ</translation>
 <translation id="8261506727792406068">Xóa</translation>
 <translation id="8269755669432358899">Thu gọn bảng dữ liệu phản hồi về tệp</translation>

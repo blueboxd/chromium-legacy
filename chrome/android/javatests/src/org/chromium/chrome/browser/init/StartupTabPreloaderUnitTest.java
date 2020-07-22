@@ -19,6 +19,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
+import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -184,7 +185,7 @@ public class StartupTabPreloaderUnitTest {
 
     private static class ChromeTabCreatorManager implements TabCreatorManager {
         @Override
-        public TabCreatorManager.TabCreator getTabCreator(boolean incognito) {
+        public TabCreator getTabCreator(boolean incognito) {
             Assert.assertFalse(incognito);
             return new ChromeTabCreator(null, null, null, null, false, null);
         }
@@ -192,14 +193,14 @@ public class StartupTabPreloaderUnitTest {
 
     private static class UninitializedChromeTabCreatorManager implements TabCreatorManager {
         @Override
-        public TabCreatorManager.TabCreator getTabCreator(boolean incognito) {
+        public TabCreator getTabCreator(boolean incognito) {
             throw new IllegalStateException("uninitialized for test");
         }
     }
 
     private static class NonChromeTabCreatorManager implements TabCreatorManager {
         @Override
-        public TabCreatorManager.TabCreator getTabCreator(boolean incognito) {
+        public TabCreator getTabCreator(boolean incognito) {
             Assert.assertFalse(incognito);
 
             // The important thing is this isn't ChromeTabCreator.

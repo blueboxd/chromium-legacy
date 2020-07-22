@@ -48,6 +48,7 @@ class SkBitmap;
 namespace gfx {
 class Rect;
 class Size;
+class Vector2d;
 }  // namespace gfx
 
 namespace pp {
@@ -134,7 +135,7 @@ class PDFEngine {
     virtual void Invalidate(const pp::Rect& rect) {}
 
     // Informs the client to scroll the plugin area by the given offset.
-    virtual void DidScroll(const pp::Point& point) {}
+    virtual void DidScroll(const gfx::Vector2d& offset) {}
 
     // Scroll the horizontal/vertical scrollbars to a given position.
     // Values are in screen coordinates, where 0 is the top/left of the document

@@ -553,6 +553,9 @@ struct AutocompleteMatch {
   // The optional suggestion group Id based on the SuggestionGroupIds enum in
   // suggestion_config.proto. Used to look up the header text this match must
   // appear under from ACResult.
+  //
+  // If this value exists, it should always be positive and nonzero. In Java and
+  // JavaScript, -1 is used as a sentinel value, but should never occur in C++.
   base::Optional<int> suggestion_group_id;
 
   // If true, UI-level code should swap the contents and description fields

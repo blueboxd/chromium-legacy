@@ -11,27 +11,10 @@ inspected-page.html:1 Failed to fetch the certificate.
     Certificate URL: https://127.0.0.1:8443/loading/sxg/resources/not_found_cert.pem.cbor
     Error: {"message":"Invalid reponse code: 404"}
     Error: {"message":"Failed to fetch the certificate.","signatureIndex":0,"errorField":"signatureCertUrl"}
-* http://127.0.0.1:8000/loading/sxg/resources/sxg-cert-not-found.sxg
-  failed: false
-  statusCode: 200
-  resourceType: signed-exchange
-  SignedExchangeInfo
-    Request URL: https://127.0.0.1:8443/loading/sxg/resources/inner-url.html
-    Certificate URL: https://127.0.0.1:8443/loading/sxg/resources/not_found_cert.pem.cbor
-    Error: {"message":"Invalid reponse code: 404"}
-    Error: {"message":"Failed to fetch the certificate.","signatureIndex":0,"errorField":"signatureCertUrl"}
 * https://127.0.0.1:8443/loading/sxg/resources/not_found_cert.pem.cbor
   failed: true
   statusCode: 404
   resourceType: other
-* https://127.0.0.1:8443/loading/sxg/resources/not_found_cert.pem.cbor
-  failed: true
-  statusCode: 404
-  resourceType: other
-* https://127.0.0.1:8443/loading/sxg/resources/inner-url.html
-  failed: false
-  statusCode: 200
-  resourceType: document
 * https://127.0.0.1:8443/loading/sxg/resources/inner-url.html
   failed: false
   statusCode: 200

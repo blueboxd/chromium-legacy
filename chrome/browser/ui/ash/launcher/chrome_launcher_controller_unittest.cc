@@ -2544,10 +2544,13 @@ TEST_P(ChromeLauncherControllerWithArcTest, DISABLED_ArcCustomAppIcon) {
 
   // Generate icon for the testing app and use compressed png content as test
   // input. Take shortcut to separate from default app icon.
-  std::string png_data;
-  EXPECT_TRUE(arc_test_.app_instance()->GenerateIconResponse(
-      extension_misc::EXTENSION_ICON_SMALL, false /* app_icon */, &png_data));
-  EXPECT_FALSE(png_data.empty());
+  auto icon = arc_test_.app_instance()->GenerateIconResponse(
+      extension_misc::EXTENSION_ICON_SMALL, false /* app_icon */);
+  ASSERT_TRUE(icon);
+  ASSERT_TRUE(icon->icon_png_data.has_value());
+  EXPECT_FALSE(icon->icon_png_data->empty());
+  std::string png_data(icon->icon_png_data->begin(),
+                       icon->icon_png_data->end());
   // Some input that represents invalid png content.
   std::string invalid_png_data("aaaaaa");
 

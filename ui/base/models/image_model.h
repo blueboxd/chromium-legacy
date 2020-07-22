@@ -39,6 +39,9 @@ class COMPONENT_EXPORT(UI_BASE) VectorIconModel {
 
   bool is_empty() const { return !vector_icon_; }
 
+  bool operator==(const VectorIconModel& other) const;
+  bool operator!=(const VectorIconModel& other) const;
+
  private:
   friend class ThemedVectorIcon;
   friend class ImageModel;
@@ -96,6 +99,10 @@ class COMPONENT_EXPORT(UI_BASE) ImageModel {
   // Only valid if IsVectorIcon() or IsImage() return true, respectively.
   const VectorIconModel GetVectorIcon() const;
   const gfx::Image GetImage() const;
+
+  // Checks if both model yield equal images.
+  bool operator==(const ImageModel& other) const;
+  bool operator!=(const ImageModel& other) const;
 
  private:
   ImageModel(const gfx::Image& image);

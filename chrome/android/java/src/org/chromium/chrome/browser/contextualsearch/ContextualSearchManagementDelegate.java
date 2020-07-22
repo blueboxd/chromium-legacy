@@ -8,6 +8,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 
 /**
  * The delegate that provides global management functionality for Contextual Search.
@@ -80,4 +81,9 @@ public interface ContextualSearchManagementDelegate {
      * Called when the Contextual Search panel is resized.
      */
     void onPanelResized();
+
+    /**
+     * @return A {@link ScrimCoordinator} to fade the status bar in and out.
+     */
+    ScrimCoordinator getScrimCoordinator();
 }

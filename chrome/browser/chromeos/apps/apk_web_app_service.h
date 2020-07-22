@@ -94,9 +94,14 @@ class ApkWebAppService : public KeyedService,
   // web_app::AppRegistrarObserver overrides.
   void OnWebAppUninstalled(const web_app::AppId& web_app_id) override;
 
+  // TODO(crbug.com/1083331): Remove this function, when the ARC change is
+  // rolled in Chrome OS.
+  void OnGetWebAppIcon(const std::string& package_name,
+                       arc::mojom::WebAppInfoPtr web_app_info,
+                       const std::vector<uint8_t>& icon_png_data);
   void OnDidGetWebAppIcon(const std::string& package_name,
                           arc::mojom::WebAppInfoPtr web_app_info,
-                          const std::vector<uint8_t>& icon_png_data);
+                          arc::mojom::RawIconPngDataPtr icon);
   void OnDidFinishInstall(const std::string& package_name,
                           const web_app::AppId& web_app_id,
                           bool is_web_only_twa,

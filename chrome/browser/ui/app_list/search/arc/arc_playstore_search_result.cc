@@ -11,10 +11,12 @@
 #include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_playstore_app_context_menu.h"
+#include "chrome/common/chrome_features.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/mojom/app.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -120,6 +122,28 @@ ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
   SetRating(review_score());
   SetResultType(is_instant_app() ? ash::AppListSearchResultType::kInstantApp
                                  : ash::AppListSearchResultType::kPlayStoreApp);
+
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    apps::ArcRawIconPngDataToImageSkia(
+        std::move(data_->icon),
+        ash::AppListConfig::instance().search_tile_icon_dimension(),
+        base::BindOnce(&ArcPlayStoreSearchResult::SetIcon,
+                       weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  if (!data_->icon || !data_->icon->icon_png_data ||
+      data_->icon->icon_png_data->empty()) {
+    // TODO(crbug.com/1083331): Remove the icon_png related change, when the ARC
+    // change is rolled in Chrome OS.
+    icon_decode_request_ = std::make_unique<arc::IconDecodeRequest>(
+        base::BindOnce(&ArcPlayStoreSearchResult::SetIcon,
+                       weak_ptr_factory_.GetWeakPtr()),
+        ash::AppListConfig::instance().search_tile_icon_dimension());
+    icon_decode_request_->set_normalized(true);
+    icon_decode_request_->StartWithOptions(data_->icon_png_data);
+    return;
+  }
 
   icon_decode_request_ = std::make_unique<arc::IconDecodeRequest>(
       base::BindOnce(&ArcPlayStoreSearchResult::SetIcon,

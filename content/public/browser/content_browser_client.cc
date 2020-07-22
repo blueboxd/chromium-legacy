@@ -295,6 +295,11 @@ std::string ContentBrowserClient::GetApplicationClientGUIDForQuarantineCheck() {
   return std::string();
 }
 
+download::QuarantineConnectionCallback
+ContentBrowserClient::GetQuarantineConnectionCallback() {
+  return base::NullCallback();
+}
+
 std::string ContentBrowserClient::GetApplicationLocale() {
   return "en-US";
 }

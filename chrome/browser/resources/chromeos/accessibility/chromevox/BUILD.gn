@@ -462,6 +462,7 @@ if (is_chromeos) {
       "braille/braille_translator_manager_test.js",
       "braille/liblouis_test.js",
       "common/tts_background_test.js",
+      "learn_mode/learn_mode_test.js",
       "options/options_test.js",
       "panel/i_search_test.js",
       "panel/panel_test.js",

@@ -1,0 +1,53 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef GPU_COMMAND_BUFFER_SERVICE_EXTERNAL_SEMAPHORE_POOL_H_
+#define GPU_COMMAND_BUFFER_SERVICE_EXTERNAL_SEMAPHORE_POOL_H_
+
+#include <vulkan/vulkan.h>
+
+#include <vector>
+
+#include "base/containers/circular_deque.h"
+#include "base/memory/weak_ptr.h"
+#include "gpu/command_buffer/service/external_semaphore.h"
+
+namespace viz {
+class VulkanContextProvider;
+}
+
+namespace gpu {
+
+class ExternalSemaphorePool {
+ public:
+  explicit ExternalSemaphorePool(viz::VulkanContextProvider* context_provider);
+  ~ExternalSemaphorePool();
+
+  ExternalSemaphorePool(const ExternalSemaphorePool&) = delete;
+  ExternalSemaphorePool& operator=(const ExternalSemaphorePool&) = delete;
+
+  // Get a semaphore from the pool. If there is no semaphore available in the
+  // pool, a new semaphore will be created.
+  ExternalSemaphore GetOrCreateSemaphore();
+
+  // Return a semaphore to the pool. It can be reused or released immediately.
+  void ReturnSemaphore(ExternalSemaphore semaphore);
+
+  // Return semaphores to the pool. They can be reused or released immediately.
+  void ReturnSemaphores(std::vector<ExternalSemaphore> semaphores);
+
+  // Return semaphores to the pool. They cannot be reused or released until all
+  // submitted GPU work is finished.
+  void ReturnSemaphoresWithFenceHelper(
+      std::vector<ExternalSemaphore> semaphores);
+
+ private:
+  viz::VulkanContextProvider* const context_provider_;
+  base::circular_deque<ExternalSemaphore> semaphores_;
+  base::WeakPtrFactory<ExternalSemaphorePool> weak_ptr_factory_{this};
+};
+
+}  // namespace gpu
+
+#endif  // GPU_COMMAND_BUFFER_SERVICE_EXTERNAL_SEMAPHORE_POOL_H_

@@ -97,6 +97,7 @@ constexpr char kTestWindowTitle[] = "window1";
 constexpr char kTestWindowTitle2[] = "window2";
 constexpr char kTestWindowTitle3[] = "window3";
 constexpr int kAppAnimatedThresholdMs = 100;
+constexpr int kGeneratedIconSize = 32;
 
 std::string GetTestApp1Id(const std::string& package_name) {
   return ArcAppListPrefs::GetAppId(package_name, kTestAppActivity);
@@ -344,6 +345,8 @@ class ArcAppLauncherBrowserTest : public extensions::ExtensionBrowserTest {
   arc::ArcBridgeService* arc_brige_service() {
     return arc::ArcServiceManager::Get()->arc_bridge_service();
   }
+
+  arc::FakeAppInstance* arc_instance() { return app_instance_.get(); }
 
  private:
   std::unique_ptr<arc::FakeAppInstance> app_instance_;
@@ -713,8 +716,12 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, LogicalWindow) {
   app_host()->OnTaskCreated(1, info->package_name, info->activity, info->name,
                             CreateIntentUriWithShelfGroupAndLogicalWindow(
                                 kTestShelfGroups[1], kTestLogicalWindows[1]));
-  app_host()->OnTaskDescriptionUpdated(1, kTestWindowTitles[1],
-                                       std::vector<uint8_t>());
+  arc_instance()->set_icon_response_type(
+      arc::FakeAppInstance::IconResponseType::ICON_RESPONSE_SEND_EMPTY);
+  app_host()->OnTaskDescriptionChanged(
+      1, kTestWindowTitles[1],
+      arc_instance()->GenerateIconResponse(kGeneratedIconSize,
+                                           false /* app_icon */));
   WaitForDecompressTask();
   ash::ShelfItemDelegate* delegate1 = GetShelfItemDelegate(shelf_id1);
 
@@ -725,8 +732,10 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, LogicalWindow) {
   app_host()->OnTaskCreated(2, info->package_name, info->activity, info->name,
                             CreateIntentUriWithShelfGroupAndLogicalWindow(
                                 kTestShelfGroups[2], kTestLogicalWindows[2]));
-  app_host()->OnTaskDescriptionUpdated(2, kTestWindowTitles[2],
-                                       std::vector<uint8_t>());
+  app_host()->OnTaskDescriptionChanged(
+      2, kTestWindowTitles[2],
+      arc_instance()->GenerateIconResponse(kGeneratedIconSize,
+                                           false /* app_icon */));
 
   WaitForDecompressTask();
   ASSERT_EQ(delegate1, GetShelfItemDelegate(shelf_id1));
@@ -739,8 +748,10 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, LogicalWindow) {
         task_id, info->package_name, info->activity, info->name,
         CreateIntentUriWithShelfGroupAndLogicalWindow(
             kTestShelfGroups[task_id], kTestLogicalWindows[task_id]));
-    app_host()->OnTaskDescriptionUpdated(task_id, kTestWindowTitles[task_id],
-                                         std::vector<uint8_t>());
+    app_host()->OnTaskDescriptionChanged(
+        task_id, kTestWindowTitles[task_id],
+        arc_instance()->GenerateIconResponse(kGeneratedIconSize,
+                                             false /* app_icon */));
   }
 
   WaitForDecompressTask();
@@ -753,8 +764,10 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, LogicalWindow) {
   app_host()->OnTaskCreated(6, info->package_name, info->activity, info->name,
                             CreateIntentUriWithShelfGroupAndLogicalWindow(
                                 kTestShelfGroups[6], kTestLogicalWindows[6]));
-  app_host()->OnTaskDescriptionUpdated(6, kTestWindowTitles[6],
-                                       std::vector<uint8_t>());
+  app_host()->OnTaskDescriptionChanged(
+      6, kTestWindowTitles[6],
+      arc_instance()->GenerateIconResponse(kGeneratedIconSize,
+                                           false /* app_icon */));
   ash::ShelfItemDelegate* delegate2 = GetShelfItemDelegate(shelf_id2);
 
   WaitForDecompressTask();
@@ -766,8 +779,10 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, LogicalWindow) {
   app_host()->OnTaskCreated(7, info->package_name, info->activity, info->name,
                             CreateIntentUriWithShelfGroupAndLogicalWindow(
                                 kTestShelfGroups[7], kTestLogicalWindows[7]));
-  app_host()->OnTaskDescriptionUpdated(7, kTestWindowTitles[7],
-                                       std::vector<uint8_t>());
+  app_host()->OnTaskDescriptionChanged(
+      7, kTestWindowTitles[7],
+      arc_instance()->GenerateIconResponse(kGeneratedIconSize,
+                                           false /* app_icon */));
 
   WaitForDecompressTask();
   ASSERT_EQ(delegate2, GetShelfItemDelegate(shelf_id2));

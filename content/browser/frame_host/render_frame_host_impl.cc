@@ -4909,7 +4909,7 @@ void RenderFrameHostImpl::CreatePortal(
   DCHECK(initial_replicated_state.origin.opaque());
 
   std::move(callback).Run(proxy_host->GetRoutingID(), initial_replicated_state,
-                          proxy_host->GetFrameToken(), (*it)->portal_token(),
+                          (*it)->portal_token(), proxy_host->GetFrameToken(),
                           (*it)->GetDevToolsFrameToken());
 }
 
@@ -5835,7 +5835,8 @@ void RenderFrameHostImpl::CommitNavigation(
           base::nullopt /* navigation_id */, &factory_receiver,
           nullptr /* header_client */, nullptr /* bypass_redirect_checks */,
           nullptr /* disable_secure_dns */, nullptr /* factory_override */);
-      CreateWebUIURLLoaderBinding(this, scheme, std::move(factory_receiver));
+      CreateWebUIURLLoaderBinding(frame_tree_node(), scheme,
+                                  std::move(factory_receiver));
       // If the renderer has webui bindings, then don't give it access to
       // network loader for security reasons.
       // http://crbug.com/829412: make an exception for a small whitelist

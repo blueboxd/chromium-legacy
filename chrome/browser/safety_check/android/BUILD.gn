@@ -53,6 +53,7 @@ android_library("java") {
     ":bulk_leak_check_service_enums",
     ":safety_check_enums",
   ]
+  resources_package = "org.chromium.chrome.browser.safety_check"
 }
 
 android_library("javatests") {
@@ -109,7 +110,7 @@ android_resources("java_resources") {
     "//components/browser_ui/settings/android:java_resources",
     "//components/browser_ui/styles/android:java_resources",
   ]
-  custom_package = "org.chromium.chrome.browser.safety_check"
+  create_srcjar = false
 }
 
 java_cpp_enum("safety_check_enums") {

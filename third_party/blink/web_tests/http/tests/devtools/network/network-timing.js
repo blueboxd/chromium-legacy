@@ -36,8 +36,7 @@
     // inspector-test.js appears in network panel occasionally in Safari on
     // Mac, so checking two last requests.
     var timerThreshold = 15;  // Windows timer accuracy.
-    var requests =
-        NetworkTestRunner.networkRequests().filter((e, i, a) => i % 2 == 0);
+    var requests = NetworkTestRunner.networkRequests();
     var requestsCount = requests.length;
     var request1 = requests[requestsCount - 2];
     TestRunner.addResult(request1.url());

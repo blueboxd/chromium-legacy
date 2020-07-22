@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">Рік запису</translation>
 <translation id="3338239663705455570">Словенська розкладка</translation>
 <translation id="3353984535370177728">Виберіть папку для завантаження</translation>
+<translation id="3356580349448036450">Готово</translation>
 <translation id="3399597614303179694">Македонська клавіатура</translation>
 <translation id="3414856743105198592">Форматування знімного носія призведе до стирання всіх даних. Продовжити?</translation>
 <translation id="3437801641691368414">Час створення</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" />: <ph name="ROOT_SUMMARY" /></translation>
 <translation id="7014174261166285193">Помилка встановлення.</translation>
 <translation id="7040138676081995583">Відкрити за допомогою...</translation>
-<translation id="7059566040011178088">Менше <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923">Вибрано елементів: <ph name="COUNT" /></translation>
 <translation id="7106346894903675391">Придбати більше місця...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' – &lt;em&gt;шукати на Диску&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">Модель пристрою</translation>
 <translation id="8208580316430297579">Твір мистецтва</translation>
 <translation id="8223479393428528563">Щоб зберегти ці файли для використання в режимі офлайн, під’єднайте пристрій до Інтернету, натисніть файли правою кнопкою миші та виберіть опцію <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
-<translation id="8231972167769262174">Приблизно <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Скасувати</translation>
 <translation id="8261506727792406068">Видалити</translation>
 <translation id="8269755669432358899">Згортаються панелі відгуків про файли</translation>

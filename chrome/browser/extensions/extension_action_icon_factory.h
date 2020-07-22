@@ -11,11 +11,11 @@
 #include "base/scoped_observer.h"
 #include "extensions/browser/extension_icon_image.h"
 
-class ExtensionAction;
 class Profile;
 
 namespace extensions {
 class Extension;
+class ExtensionAction;
 }
 
 // Used to get an icon to be used in the UI for an extension action.
@@ -35,7 +35,7 @@ class ExtensionActionIconFactory : public extensions::IconImage::Observer {
   // Observer should outlive this.
   ExtensionActionIconFactory(Profile* profile,
                              const extensions::Extension* extension,
-                             ExtensionAction* action,
+                             extensions::ExtensionAction* action,
                              Observer* observer);
   ~ExtensionActionIconFactory() override;
 
@@ -58,7 +58,7 @@ class ExtensionActionIconFactory : public extensions::IconImage::Observer {
 
  private:
   Profile* profile_;
-  const ExtensionAction* action_;
+  const extensions::ExtensionAction* action_;
   Observer* observer_;
   const bool should_check_icons_;
   gfx::Image cached_default_icon_image_;

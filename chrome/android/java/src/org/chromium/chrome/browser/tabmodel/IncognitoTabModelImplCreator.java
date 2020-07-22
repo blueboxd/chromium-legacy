@@ -8,7 +8,6 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.tabmodel.IncognitoTabModel.IncognitoTabModelDelegate;
 import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
-import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 
 /**
  * Stores all the variables needed to create an Incognito TabModelImpl when it is needed.

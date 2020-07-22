@@ -22,7 +22,7 @@ void* kDatabaseManagerKey = &kDatabaseManagerKey;
 
 class NSSCertDatabaseChromeOSManager : public base::SupportsUserData::Data {
  public:
-  typedef base::Callback<void(net::NSSCertDatabaseChromeOS*)>
+  typedef base::OnceCallback<void(net::NSSCertDatabaseChromeOS*)>
       GetNSSCertDatabaseCallback;
   explicit NSSCertDatabaseChromeOSManager(const std::string& username_hash)
       : username_hash_(username_hash) {
@@ -40,13 +40,13 @@ class NSSCertDatabaseChromeOSManager : public base::SupportsUserData::Data {
   }
 
   net::NSSCertDatabaseChromeOS* GetNSSCertDatabase(
-      const GetNSSCertDatabaseCallback& callback) {
+      GetNSSCertDatabaseCallback callback) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     if (nss_cert_database_)
       return nss_cert_database_.get();
 
-    ready_callback_list_.push_back(callback);
+    ready_callback_list_.push_back(std::move(callback));
     return NULL;
   }
 
@@ -61,11 +61,8 @@ class NSSCertDatabaseChromeOSManager : public base::SupportsUserData::Data {
 
     ReadyCallbackList callback_list;
     callback_list.swap(ready_callback_list_);
-    for (ReadyCallbackList::iterator i = callback_list.begin();
-         i != callback_list.end();
-         ++i) {
-      (*i).Run(nss_cert_database_.get());
-    }
+    for (auto& callback : callback_list)
+      std::move(callback).Run(nss_cert_database_.get());
   }
 
   std::string username_hash_;
@@ -82,8 +79,7 @@ std::string GetUsername(content::ResourceContext* context) {
 
 net::NSSCertDatabaseChromeOS* GetNSSCertDatabaseChromeOS(
     content::ResourceContext* context,
-    const NSSCertDatabaseChromeOSManager::GetNSSCertDatabaseCallback&
-        callback) {
+    NSSCertDatabaseChromeOSManager::GetNSSCertDatabaseCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   NSSCertDatabaseChromeOSManager* manager =
       static_cast<NSSCertDatabaseChromeOSManager*>(
@@ -92,13 +88,13 @@ net::NSSCertDatabaseChromeOS* GetNSSCertDatabaseChromeOS(
     manager = new NSSCertDatabaseChromeOSManager(GetUsername(context));
     context->SetUserData(kDatabaseManagerKey, base::WrapUnique(manager));
   }
-  return manager->GetNSSCertDatabase(callback);
+  return manager->GetNSSCertDatabase(std::move(callback));
 }
 
 void CallWithNSSCertDatabase(
-    const base::Callback<void(net::NSSCertDatabase*)>& callback,
+    base::OnceCallback<void(net::NSSCertDatabase*)> callback,
     net::NSSCertDatabaseChromeOS* db) {
-  callback.Run(db);
+  std::move(callback).Run(db);
 }
 
 void SetSystemSlot(crypto::ScopedPK11Slot system_slot,
@@ -108,8 +104,8 @@ void SetSystemSlot(crypto::ScopedPK11Slot system_slot,
 
 void SetSystemSlotOfDBForResourceContext(content::ResourceContext* context,
                                          crypto::ScopedPK11Slot system_slot) {
-  base::Callback<void(net::NSSCertDatabaseChromeOS*)> callback =
-      base::Bind(&SetSystemSlot, base::Passed(&system_slot));
+  base::RepeatingCallback<void(net::NSSCertDatabaseChromeOS*)> callback =
+      base::BindRepeating(&SetSystemSlot, base::Passed(&system_slot));
 
   net::NSSCertDatabaseChromeOS* db =
       GetNSSCertDatabaseChromeOS(context, callback);
@@ -121,16 +117,16 @@ void SetSystemSlotOfDBForResourceContext(content::ResourceContext* context,
 
 net::NSSCertDatabase* GetNSSCertDatabaseForResourceContext(
     content::ResourceContext* context,
-    const base::Callback<void(net::NSSCertDatabase*)>& callback) {
+    base::OnceCallback<void(net::NSSCertDatabase*)> callback) {
   return GetNSSCertDatabaseChromeOS(
-      context, base::Bind(&CallWithNSSCertDatabase, callback));
+      context, base::BindOnce(&CallWithNSSCertDatabase, std::move(callback)));
 }
 
 void EnableNSSSystemKeySlotForResourceContext(
     content::ResourceContext* context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  base::Callback<void(crypto::ScopedPK11Slot)> callback =
-      base::Bind(&SetSystemSlotOfDBForResourceContext, context);
+  base::RepeatingCallback<void(crypto::ScopedPK11Slot)> callback =
+      base::BindRepeating(&SetSystemSlotOfDBForResourceContext, context);
   crypto::ScopedPK11Slot system_slot = crypto::GetSystemNSSKeySlot(callback);
   if (system_slot)
     callback.Run(std::move(system_slot));

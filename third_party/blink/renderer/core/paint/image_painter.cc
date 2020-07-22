@@ -264,11 +264,13 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
     DCHECK(window);
     ImageElementTiming::From(*window).NotifyImagePainted(
         &layout_image_, image_content,
-        context.GetPaintController().CurrentPaintChunkProperties());
+        context.GetPaintController().CurrentPaintChunkProperties(),
+        pixel_snapped_dest_rect);
   }
   PaintTimingDetector::NotifyImagePaint(
       layout_image_, image->Size(), image_content,
-      context.GetPaintController().CurrentPaintChunkProperties());
+      context.GetPaintController().CurrentPaintChunkProperties(),
+      pixel_snapped_dest_rect);
 }
 
 }  // namespace blink

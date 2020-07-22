@@ -17,6 +17,7 @@
 <script>
 import {generateUrlFromFilter} from '../url_processor.js';
 
+// @vue/component
 const PageUrlGenerator = {
   props: {
     pagePathName: String,

@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> – <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Уключыце сінхранізацыю, каб бачыць закладкі на ўсіх сваіх прыладах.</translation>
 <translation id="1687475363370981210">Адзначыць усе як прачытаныя</translation>
+<translation id="1689333818294560261">Псеўданім</translation>
 <translation id="1690731385917361335">Няма элементаў</translation>
 <translation id="1692118695553449118">Сінхранізацыя ўключана</translation>
 <translation id="1700629756560807968">Выбрана: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -206,6 +207,7 @@
 <translation id="3335947283844343239">Паўторна адкрыць закрытыя ўкладкі</translation>
 <translation id="3371831930909698441">Пераклад гатовы. Параметры знаходзяцца ў ніжняй частцы экрана.</translation>
 <translation id="3393920035788932672">Усплывальныя вокны дазволены</translation>
+<translation id="3425644765244388016">Псеўданім карткі</translation>
 <translation id="3443810440409579745">Атрымана ўкладка.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> хв</translation>
 <translation id="3448016392200048164">Раздзелены кадр</translation>
@@ -240,6 +242,7 @@
 <translation id="3783017676699494206">Захаваць відарыс</translation>
 <translation id="3789841737615482174">Усталяваць</translation>
 <translation id="3803696231112616155">Прапаноўваць перакласці гэты сайт</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Няма раскрытых пароляў}=1{{COUNT} раскрыты пароль}one{{COUNT} раскрыты пароль}few{{COUNT} раскрытыя паролі}many{{COUNT} раскрытых пароляў}other{{COUNT} раскрытага пароля}}</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3892144330757387737">Ваша гісторыя знаходзіцца тут</translation>
 <translation id="3897092660631435901">Меню</translation>
@@ -529,6 +532,7 @@
 <translation id="7189598951263744875">Абагуліць...</translation>
 <translation id="7192050974311852563">Пачаць вядзенне журнала</translation>
 <translation id="7203585745079012652">Агучваць атрыманыя адказы</translation>
+<translation id="721597782417389033">Несапраўдны псеўданім карткі</translation>
 <translation id="7265758999917665941">Ніколі для гэтага сайта</translation>
 <translation id="7272437679830969316">Не ўдалося спраўдзіць вашу асобу. Пароль не скапіраваны.</translation>
 <translation id="7291368939935408496">Ідзе падрыхтоўка пароляў...</translation>

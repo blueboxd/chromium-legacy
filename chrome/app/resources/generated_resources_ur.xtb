@@ -233,6 +233,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="1274997165432133392">کوکیز اور دیگر سائٹ کا ڈیٹا</translation>
 <translation id="1275718070701477396">منتخب</translation>
 <translation id="1276994519141842946"><ph name="APP_NAME" /> اَن انسٹال نہیں ہو سکی</translation>
+<translation id="127946606521051357">قریبی آلہ اشتراک کر رہا ہے</translation>
 <translation id="1280820357415527819">موبائل نیٹ ورکس کو تلاش کیا جا رہا ہے</translation>
 <translation id="1280965841156951489">فائلز میں ترمیم کریں</translation>
 <translation id="1285320974508926690">اس سائٹ کا ترجمہ کبھی نہ کریں</translation>
@@ -1221,6 +1222,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2489918096470125693">&amp;فولڈر شامل کریں…</translation>
 <translation id="2490481887078769936">'<ph name="FILE_NAME" />' کو فہرست سے ہٹا دیا گیا</translation>
 <translation id="249113932447298600">معذرت، آلہ <ph name="DEVICE_LABEL" /> اس وقت تعاون یافتہ نہیں ہے۔</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> <ph name="ATTACHMENTS" /> آپ کے ساتھ اشتراک کر رہا ہے۔</translation>
 <translation id="2492461744635776704">سرٹیفیکیٹ پر دستخط کرنے کی درخواست تیار ہو رہی ہے</translation>
 <translation id="249303669840926644">رجسٹریشن مکمل نہیں کیا جا سکا</translation>
 <translation id="2495777824269688114">مزید خصوصیات دریافت کریں یا جوابات حاصل کریں۔ مدد کے لیے "؟" منتخب کریں۔</translation>
@@ -4152,6 +4154,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6212039847102026977">جدید ترین نیٹ ورک کی خصوصیات دکھائیں</translation>
 <translation id="6212168817037875041">ڈسپلے آف کریں</translation>
 <translation id="6212752530110374741">ای میل کا لنک</translation>
+<translation id="6213230117190778270">وصول کریں</translation>
 <translation id="6216696360484424239">خود کار طور پر سائن ان کریں</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> آف لائن ہے۔ انٹرنیٹ سے منسلک کر کے دوبارہ کوشش کریں۔</translation>
 <translation id="6220413761270491930">ایکسٹینشن کو لوڈ کرتے ہوئے خرابی</translation>
@@ -4278,7 +4281,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6362853299801475928">&amp;ایک مسئلہ کی اطلاع دیں…</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">خاندان اور دوستوں کو شامل کریں</translation>
-<translation id="6367985768157257101">قریبی آلات کے ساتھ اشتراک کے ذریعے وصول کریں؟</translation>
+<translation id="6367985768157257101">قریبی اشتراک کے ساتھ موصول کریں؟</translation>
 <translation id="636850387210749493">انٹرپرائز اندراج</translation>
 <translation id="6370021412472292592">‏manifest لوڈ نہیں کیا جا سکا۔</translation>
 <translation id="6374077068638737855">آئیس ویزل</translation>
@@ -6581,6 +6584,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">پاس فریز درج کریں</translation>
 <translation id="939736085109172342">نیا فولڈر</translation>
+<translation id="941070664607309480">مرئی بننے کے لئے کلک کریں تاکہ آپ کے ساتھ اس کا اشتراک ہو سکے</translation>
 <translation id="942532530371314860">‏<ph name="APP_NAME" /> ایک Chrome ٹیب اور آڈیو کا اشتراک کر رہی ہے۔</translation>
 <translation id="945522503751344254">تاثرات بھیجیں</translation>
 <translation id="947329552760389097">&amp;عناصر کا معائنہ کریں</translation>

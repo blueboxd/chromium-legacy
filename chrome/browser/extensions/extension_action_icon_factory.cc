@@ -31,7 +31,7 @@ void ExtensionActionIconFactory::SetAllowInvisibleIconsForTest(bool value) {
 ExtensionActionIconFactory::ExtensionActionIconFactory(
     Profile* profile,
     const Extension* extension,
-    ExtensionAction* action,
+    extensions::ExtensionAction* action,
     Observer* observer)
     : profile_(profile),
       action_(action),

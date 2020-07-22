@@ -145,16 +145,17 @@ void IconWithBadgeImageSource::Draw(gfx::Canvas* canvas) {
   gfx::ImageSkia skia = icon_.AsImageSkia();
   gfx::ImageSkiaRep rep = skia.GetRepresentation(canvas->image_scale());
   if (rep.scale() != canvas->image_scale()) {
-    skia.AddRepresentation(ScaleImageSkiaRep(
-        rep, ExtensionAction::ActionIconSize(), canvas->image_scale()));
+    skia.AddRepresentation(
+        ScaleImageSkiaRep(rep, extensions::ExtensionAction::ActionIconSize(),
+                          canvas->image_scale()));
   }
   if (grayscale_)
     skia = gfx::ImageSkiaOperations::CreateHSLShiftedImage(skia, {-1, 0, 0.6});
 
-  int x_offset =
-      std::floor((size().width() - ExtensionAction::ActionIconSize()) / 2.0);
-  int y_offset =
-      std::floor((size().height() - ExtensionAction::ActionIconSize()) / 2.0);
+  int x_offset = std::floor(
+      (size().width() - extensions::ExtensionAction::ActionIconSize()) / 2.0);
+  int y_offset = std::floor(
+      (size().height() - extensions::ExtensionAction::ActionIconSize()) / 2.0);
   canvas->DrawImageInt(skia, x_offset, y_offset);
 
   // Draw a badge on the provided browser action icon's canvas.

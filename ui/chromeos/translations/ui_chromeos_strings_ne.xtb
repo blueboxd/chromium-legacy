@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">रेकर्ड गरिएको वर्ष</translation>
 <translation id="3338239663705455570">स्लोभेनियाली किबोर्ड</translation>
 <translation id="3353984535370177728">अपलोड लागि फोल्डर चयन गर्नुहोस्</translation>
+<translation id="3356580349448036450">पूर्ण</translation>
 <translation id="3399597614303179694">म्यासेडोनियन किबोर्ड</translation>
 <translation id="3414856743105198592">हटाउन सकिने मिडिया फर्म्याट गर्नाले सबै लगत हटानउेछ। के तपाइँ जारी राख्न चाहनुहुन्छ?</translation>
 <translation id="3437801641691368414">सिर्जना गरिएको समय</translation>
@@ -550,7 +551,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">स्थापना असफल भयो।</translation>
 <translation id="7040138676081995583">यससँग खोल्नुहोस्...</translation>
-<translation id="7059566040011178088"><ph name="REMAINING_TIME" /> भन्दा कम समय बाँकी</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> वस्तुहरू चयन गरियो</translation>
 <translation id="7106346894903675391">थप भण्डारण खरिद गर्नुहोस्...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;ड्राइभमा खोज्नुहोस्&lt;/em&gt;</translation>
@@ -661,7 +661,6 @@
 <translation id="8193175696669055101">यन्त्र मोडल</translation>
 <translation id="8208580316430297579">कलाकृति</translation>
 <translation id="8223479393428528563">अफलाइन प्रयोगको लागि यी फाइलहरू सुरक्षित गर्न, अनलाइनमा फिर्ता जानुहोस्, फाइलमा दायाँ क्लिक गर्नुहोस्, र <ph name="OFFLINE_CHECKBOX_NAME" /> विकल्प चयन गर्नुहोस्।</translation>
-<translation id="8231972167769262174">लगभग <ph name="REMAINING_TIME" /> बाँकी</translation>
 <translation id="8249296373107784235">रद्द गर्नुहोस्</translation>
 <translation id="8261506727792406068">मेट्नुहोस्</translation>
 <translation id="8269755669432358899">फाइलका प्रतिक्रियाका प्यानलहरू संक्षिप्त गर्नुहोस्</translation>

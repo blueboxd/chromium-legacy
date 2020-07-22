@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> ເປັນ <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">ເພື່ອມີບຸກມາກຢູ່ໃນທຸກອຸປະກອນຂອງທ່ານ, ກະລຸນາເປີດການຊິ້ງຂໍ້ມູນກ່ອນ.</translation>
 <translation id="1687475363370981210">ໝາຍທັງໝົດວ່າອ່ານແລ້ວ</translation>
+<translation id="1689333818294560261">ຊື່ຫຼິ້ນ</translation>
 <translation id="1690731385917361335">ບໍ່​ມີ​ລາຍ​ການ</translation>
 <translation id="1692118695553449118">ຊິງຄ໌ເປີດຢູ່</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ຖືກ​ເລືອກ​ແລ້ວ</translation>
@@ -206,6 +207,7 @@
 <translation id="3335947283844343239">ເປີດ​ແຖບ​ທີ່ປິດແລ້ວຄືນໃໝ່</translation>
 <translation id="3371831930909698441">ມີບໍລິການແປພາສາ. ມີຕົວເລືອກໃຫ້ນຳໃຊ້ຢູ່ໃກ້ລຸ່ມສຸດຂອງໜ້າຈໍ.</translation>
 <translation id="3393920035788932672">ອະ​ນຸ​ຍາດ​ໃຫ້ປັອບອັບແລ້ວ</translation>
+<translation id="3425644765244388016">ຊື່ຫຼິ້ນບັດ</translation>
 <translation id="3443810440409579745">ແຖບທີ່ໄດ້ຮັບ.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> ນາທີ</translation>
 <translation id="3448016392200048164">ມຸມມອງແຍກກັນ</translation>
@@ -240,6 +242,7 @@
 <translation id="3783017676699494206">ບັນທຶກຮູບ</translation>
 <translation id="3789841737615482174">​ຕິດ​ຕັ້ງ</translation>
 <translation id="3803696231112616155">ສະເໜີແປເວັບໄຊນີ້</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{ບໍ່ມີລະຫັດຜ່ານໃດຮົ່ວໄຫຼ}=1{ມີ {COUNT} ລະຫັດຜ່ານຮົ່ວໄຫຼ}other{ມີ {COUNT} ລະຫັດຜ່ານຮົ່ວໄຫຼ}}</translation>
 <translation id="385051799172605136">ກັບ​ຄືນ​</translation>
 <translation id="3892144330757387737">ທ່ານຈະເຫັນປະຫວັດຂອງທ່ານຢູ່ບ່ອນນີ້</translation>
 <translation id="3897092660631435901">ເມ​ນູ</translation>
@@ -529,6 +532,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="7189598951263744875">ແບ່ງປັນ...</translation>
 <translation id="7192050974311852563">ເລີ່ມການບັນທຶກ</translation>
 <translation id="7203585745079012652">ເວົ້າ​ຄຳ​ຕອບ​ກັບ​ຄືນ</translation>
+<translation id="721597782417389033">ຊື່ຫຼິ້ນບັດບໍ່ຖືກຕ້ອງ</translation>
 <translation id="7265758999917665941">ບໍ່ເລີຍສໍາລັບເວັບໄຊນີ້</translation>
 <translation id="7272437679830969316">ບໍ່ສາມາດພິສູດຢືນຢັນຕົວຕົນຂອງທ່ານໄດ້. ບໍ່ໄດ້ສຳເນົາລະຫັດຜ່ານ.</translation>
 <translation id="7291368939935408496">ກຳລັງກະກຽມລະຫັດຜ່ານ...</translation>

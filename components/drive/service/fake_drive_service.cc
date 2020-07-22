@@ -391,7 +391,7 @@ void FakeDriveService::GetTeamDriveListInternal(
       base::BindOnce(std::move(callback), HTTP_SUCCESS, std::move(result)));
 }
 
-CancelCallback FakeDriveService::GetAllTeamDriveList(
+CancelCallbackOnce FakeDriveService::GetAllTeamDriveList(
     TeamDriveListCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(callback);
@@ -399,10 +399,10 @@ CancelCallback FakeDriveService::GetAllTeamDriveList(
   GetTeamDriveListInternal(0, default_max_results_,
                            &team_drive_list_load_count_, std::move(callback));
 
-  return CancelCallback();
+  return CancelCallbackOnce();
 }
 
-CancelCallback FakeDriveService::GetAllFileList(
+CancelCallbackOnce FakeDriveService::GetAllFileList(
     const std::string& team_drive_id,
     const FileListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -420,7 +420,7 @@ CancelCallback FakeDriveService::GetAllFileList(
                         0,  // start offset
                         default_max_results_, &file_list_load_count_,
                         base::BindOnce(&FileListCallbackAdapter, callback));
-  return CancelCallback();
+  return CancelCallbackOnce();
 }
 
 CancelCallback FakeDriveService::GetFileListInDirectory(

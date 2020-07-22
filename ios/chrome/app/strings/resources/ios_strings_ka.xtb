@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> — <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">ჩართეთ სინქრონიზაცია სანიშნეებზე თქვენი ყველა მოწყობილობიდან წვდომისთვის.</translation>
 <translation id="1687475363370981210">ყველას წაკითხულად მონიშვნა</translation>
+<translation id="1689333818294560261">მეტსახელი</translation>
 <translation id="1690731385917361335">ელემენტები არ არის</translation>
 <translation id="1692118695553449118">სინქრონიზაცია ჩართულია</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> არჩეულია</translation>
@@ -206,6 +207,7 @@
 <translation id="3335947283844343239">&amp;დახურული ჩანართის ხელახლა გახსნა</translation>
 <translation id="3371831930909698441">ხელმისაწვდომია თარგმნის ფუნქცია. ვარიანტებს იპოვით ეკრანის ქვედა ნაწილთან.</translation>
 <translation id="3393920035788932672">კონტექსტური ფანჯრები ნებადართულია</translation>
+<translation id="3425644765244388016">ბარათის მეტსახელი</translation>
 <translation id="3443810440409579745">ჩანართი მიღებულია.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> წთ</translation>
 <translation id="3448016392200048164">გაყოფილი ხედი</translation>
@@ -240,6 +242,7 @@
 <translation id="3783017676699494206">გამოსახულების შენახვა</translation>
 <translation id="3789841737615482174">ინსტალაცია</translation>
 <translation id="3803696231112616155">ამ საიტის თარგმნის შემოთავაზება</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{პაროლები არ გატეხილა}=1{გატეხილია {COUNT} პაროლი}other{გატეხილია {COUNT} პაროლი}}</translation>
 <translation id="385051799172605136">უკან</translation>
 <translation id="3892144330757387737">აქ იპოვით თქვენს ისტორიას</translation>
 <translation id="3897092660631435901">მენიუ</translation>
@@ -529,6 +532,7 @@ Handoff ასევე უნდა იყოს ჩართული პა�
 <translation id="7189598951263744875">გაზიარება…</translation>
 <translation id="7192050974311852563">ჟურნალირების დაწყება</translation>
 <translation id="7203585745079012652">აბრუნებს ხმოვან პასუხებს</translation>
+<translation id="721597782417389033">ბარათის მეტსახელი არასწორია</translation>
 <translation id="7265758999917665941">არასდროს ამ საიტისთვის</translation>
 <translation id="7272437679830969316">თქვენი ვინაობა ვერ დადასტურდა. პაროლი არ დაკოპირდა.</translation>
 <translation id="7291368939935408496">მიმდინარეობს პაროლების მომზადება...</translation>

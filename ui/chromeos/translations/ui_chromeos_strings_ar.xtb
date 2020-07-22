@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">عام التسجيل</translation>
 <translation id="3338239663705455570">لوحة المفاتيح السلوفينية</translation>
 <translation id="3353984535370177728">حدد مجلدًا لتحميله</translation>
+<translation id="3356580349448036450">مكتمل</translation>
 <translation id="3399597614303179694">لوحة مفاتيح باللغة المقدونية</translation>
 <translation id="3414856743105198592">يؤدي تنسيق الوسائط القابلة للإزالة إلى مسح جميع البيانات. هل تريد المتابعة؟</translation>
 <translation id="3437801641691368414">وقت الإنشاء</translation>
@@ -551,7 +552,6 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">تعذّر التثبيت.</translation>
 <translation id="7040138676081995583">فتح باستخدام...</translation>
-<translation id="7059566040011178088">يتبقّى أقل من <ph name="REMAINING_TIME" />.</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> من العناصر المحددة</translation>
 <translation id="7106346894903675391">شراء المزيد من مساحة التخزين...</translation>
 <translation id="7126604456862387217">‏'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;البحث في Drive&lt;/em&gt;</translation>
@@ -662,7 +662,6 @@
 <translation id="8193175696669055101">طراز الجهاز</translation>
 <translation id="8208580316430297579">عمل فني</translation>
 <translation id="8223479393428528563">لحفظ هذه الملفات بلا اتصال، عليك العودة للاتصال انقر بزر الماوس الأيمن على الملفات، وحدد خيار <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
-<translation id="8231972167769262174">يتبقّى حوالي <ph name="REMAINING_TIME" />.</translation>
 <translation id="8249296373107784235">إلغاء</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8269755669432358899">تصغير لوحات التعليقات على الملفات</translation>

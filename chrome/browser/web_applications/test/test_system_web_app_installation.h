@@ -33,6 +33,9 @@ class TestSystemWebAppInstallation {
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpStandaloneSingleWindowApp();
 
+  static std::unique_ptr<TestSystemWebAppInstallation>
+  SetUpStandaloneSingleWindowAppFromWebApplicationInfo();
+
   // This method automatically grants Native File System read and write
   // permissions to the App.
   static std::unique_ptr<TestSystemWebAppInstallation>

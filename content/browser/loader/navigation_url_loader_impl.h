@@ -69,8 +69,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
   // This is called only once (while Restart can be called multiple times).
   // Sets |started_| true.
   void Start(
-      std::unique_ptr<network::PendingSharedURLLoaderFactory>
-          pending_network_loader_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
       AppCacheNavigationHandle* appcache_handle,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,

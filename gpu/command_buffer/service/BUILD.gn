@@ -340,6 +340,8 @@ target(link_target_type, "gles2_sources") {
       sources += [
         "external_semaphore.cc",
         "external_semaphore.h",
+        "external_semaphore_pool.cc",
+        "external_semaphore_pool.h",
         "external_vk_image_backing.cc",
         "external_vk_image_backing.h",
         "external_vk_image_factory.cc",

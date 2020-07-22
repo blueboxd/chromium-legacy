@@ -173,7 +173,7 @@ Tippen Sie auf ein Wort, um eine Suche damit zu starten. Sie können Ihre Suche 
 <translation id="2387895666653383613">Text-Skalierung</translation>
 <translation id="2394602618534698961">Dateien, die Sie herunterladen, werden hier angezeigt</translation>
 <translation id="2407481962792080328">Wenn Sie sich in Ihrem Google-Konto anmelden, ist diese Funktion eingeschaltet</translation>
-<translation id="2407674018644220013"><ph name="APP_NAME" /> als Standard festlegen?</translation>
+<translation id="2407674018644220013"><ph name="APP_NAME" /> als Standard-Browser-App festlegen?</translation>
 <translation id="2410754283952462441">Konto auswählen</translation>
 <translation id="2414886740292270097">Dunkel</translation>
 <translation id="2426805022920575512">Anderes Konto auswählen</translation>
@@ -184,7 +184,7 @@ Tippen Sie auf ein Wort, um eine Suche damit zu starten. Sie können Ihre Suche 
 Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können Ihre Suche verfeinern, indem Sie weitere Wörter auswählen oder Wörter ausschließen. Sie können Ihre Suche auch bearbeiten, indem Sie das Feld öffnen, auf das Symbol "In neuem Tab öffnen" tippen und dann im Suchfeld Ihre Änderungen vornehmen.</translation>
 <translation id="246532703174860178">Teilen</translation>
 <translation id="2479148705183875116">Zu den Einstellungen</translation>
-<translation id="2482878487686419369">Benachrichtigungen</translation>
+<translation id="2482878487686419369">Benachricht.</translation>
 <translation id="2494974097748878569">Google Assistant für Chrome</translation>
 <translation id="2496180316473517155">Browserverlauf</translation>
 <translation id="2497852260688568942">Die Synchronisierung wurde von Ihrem Administrator deaktiviert</translation>
@@ -641,7 +641,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="6140912465461743537">Land/Region</translation>
 <translation id="614940544461990577">Versuchen Sie Folgendes:</translation>
 <translation id="6154478581116148741">Aktivieren Sie die Displaysperre unter "Einstellungen", um Ihre Passwörter aus dem Gerät zu exportieren</translation>
-<translation id="6157392216611456285">Wählen Sie <ph name="APP_NAME" /> aus</translation>
+<translation id="6157392216611456285"><ph name="APP_NAME" /> auswählen</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> Einsparungen bei der Datennutzung</translation>
 <translation id="6201345951596836663">Link wurde kopiert.</translation>
 <translation id="6206830853671714236">Uhrzeit für den Download auswählen</translation>
@@ -750,7 +750,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6955535239952325894">Diese Einstellung ist bei verwalteten Browsern deaktiviert</translation>
 <translation id="6963766334940102469">Lesezeichen löschen</translation>
 <translation id="6979737339423435258">Gesamte Zeit</translation>
-<translation id="6981982820502123353">Bedienungshilfen</translation>
+<translation id="6981982820502123353">Bedienungsh.</translation>
 <translation id="6989267951144302301">Fehler beim Download</translation>
 <translation id="6990079615885386641">App aus dem Play Store abrufen: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Warnen, wenn Passwörter durch eine Datenpanne preisgegeben werden</translation>

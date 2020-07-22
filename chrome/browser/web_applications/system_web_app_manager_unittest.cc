@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -80,6 +81,15 @@ struct SystemAppData {
   GURL icon_url;
   ExternalInstallSource source;
 };
+
+std::unique_ptr<WebApplicationInfo> GetApp1WebApplicationInfo() {
+  std::unique_ptr<WebApplicationInfo> info =
+      std::make_unique<WebApplicationInfo>();
+  info->app_url = AppUrl1();
+  info->scope = AppUrl1().GetWithoutFilename();
+  info->title = base::UTF8ToUTF16("Foo Web App");
+  return info;
+}
 
 class TestDataRetrieverFactory {
  public:
@@ -408,6 +418,30 @@ TEST_F(SystemWebAppManagerTest, Enabled) {
   StartAndWaitForAppsToSynchronize();
 
   EXPECT_FALSE(pending_app_manager().install_requests().empty());
+}
+
+// Test that System Apps do install with the feature enabled.
+TEST_F(SystemWebAppManagerTest, InstallFromWebAppInfo) {
+  InitEmptyRegistrar();
+
+  PrepareSystemAppDataToRetrieve(
+      {{AppUrl1(), AppIconUrl1()}, {AppUrl2(), AppIconUrl2()}});
+  PrepareLoadUrlResults({AppUrl2()});
+
+  base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+  system_apps.emplace(
+      SystemAppType::SETTINGS,
+      SystemAppInfo(kSettingsAppNameForLogging, AppUrl1(),
+                    base::BindRepeating(&GetApp1WebApplicationInfo)));
+  system_apps.emplace(SystemAppType::DISCOVER,
+                      SystemAppInfo(kDiscoverAppNameForLogging, AppUrl2()));
+
+  system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
+  StartAndWaitForAppsToSynchronize();
+
+  EXPECT_FALSE(pending_app_manager().install_requests().empty());
+  EXPECT_TRUE(IsInstalled(AppUrl1()));
+  EXPECT_TRUE(IsInstalled(AppUrl2()));
 }
 
 // Test that changing the set of System Apps uninstalls apps.

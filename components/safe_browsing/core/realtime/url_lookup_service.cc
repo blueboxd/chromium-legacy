@@ -174,4 +174,8 @@ RealTimeUrlLookupService::GetTrafficAnnotationTag() const {
         })");
 }
 
+std::string RealTimeUrlLookupService::GetMetricSuffix() const {
+  return ".Consumer";
+}
+
 }  // namespace safe_browsing

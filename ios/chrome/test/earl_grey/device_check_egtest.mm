@@ -19,8 +19,9 @@
 
 // Verifies Internet connectivity by navigating to browsingtest.appspot.com.
 - (void)testNetworkConnection {
-  [ChromeEarlGrey loadURL:GURL("http://browsingtest.appspot.com")];
-  [ChromeEarlGrey waitForWebStateContainingText:"Window1"];
+  [ChromeEarlGrey
+      loadURL:GURL("http://browsingtest.appspot.com/googleLogoPage.html")];
+  [ChromeEarlGrey waitForWebStateContainingText:"some text"];
 }
 
 @end

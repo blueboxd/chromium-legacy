@@ -240,7 +240,7 @@ public class SplitCompatEngineTest {
         doReturn(status).when(state).status();
         doReturn(Arrays.asList(moduleName)).when(state).moduleNames();
 
-        InOrder inOrder = inOrder(listener, mManager, mLogger);
+        InOrder inOrder = inOrder(listener, mManager, mLogger, mInstallerFacade);
         ArgumentCaptor<SplitInstallStateUpdatedListener> arg =
                 ArgumentCaptor.forClass(SplitInstallStateUpdatedListener.class);
 
@@ -250,6 +250,7 @@ public class SplitCompatEngineTest {
         arg.getValue().onStateUpdate(state);
 
         // Assert.
+        inOrder.verify(mInstallerFacade, times(1)).updateCrashKeys();
         inOrder.verify(listener, times(1)).onComplete(true);
         inOrder.verify(mManager, times(1)).unregisterListener(any());
         inOrder.verify(mLogger, times(1)).logStatus(moduleName, status);

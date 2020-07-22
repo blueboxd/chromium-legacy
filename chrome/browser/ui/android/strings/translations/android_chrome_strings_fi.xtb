@@ -577,6 +577,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5659593005791499971">Sähköposti</translation>
 <translation id="5665379678064389456">Luo tapahtuma sovelluksessa <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ohita sivuston zoomauksen estämispyyntö</translation>
+<translation id="5683547024293500885">Chrome ei voi tarkistaa päivityksiä</translation>
 <translation id="5686790454216892815">Tiedoston nimi on liian pitkä</translation>
 <translation id="5694049548840660018">Palaa etusivulle helposti</translation>
 <translation id="569536719314091526">Käännä sivu mille tahansa kielelle Lisävalinnat-painikkeella</translation>
@@ -589,6 +590,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5732819098735351888">Lataus alkaa Wi-Fi-verkossa.</translation>
 <translation id="5748802427693696783">Vaihdettiin näkyviin tavalliset välilehdet.</translation>
 <translation id="5749068826913805084">Chrome tarvitsee tallennustilan käyttöoikeuden tiedostojen lataamiseen.</translation>
+<translation id="5749237766298580851">Pois päältä <ph name="SEPARATOR" /> Ei suositeltu</translation>
 <translation id="5754350196967618083">Discoveria ei voi päivittää</translation>
 <translation id="5763382633136178763">Incognito-välilehdet</translation>
 <translation id="5763514718066511291">Kosketa kopioidaksesi tämän sovelluksen URL-osoite</translation>
@@ -996,6 +998,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8970887620466824814">Tapahtui virhe.</translation>
 <translation id="8972098258593396643">Ladataanko tiedosto oletuskansioon?</translation>
 <translation id="8988028529677883095">Käytä puhelinta suojausavaimena</translation>
+<translation id="8990209962746788689">QR-koodin luominen ei onnistu</translation>
 <translation id="8993760627012879038">Avaa uusi välilehti incognito-tilassa</translation>
 <translation id="8998729206196772491">Olet kirjautumassa sisään verkkotunnuksen <ph name="MANAGED_DOMAIN" /> hallinnoimalla tilillä ja antamassa sen järjestelmänvalvojalle oikeuden hallita Chrome-tietojasi. Tietosi liitetään pysyvästi tähän tiliin. Chromesta uloskirjautuminen poistaa tietosi tältä laitteelta, mutta ne säilyvät Google-tililläsi.</translation>
 <translation id="9028914725102941583">Ota synkronointi käyttöön, niin voit jakaa sisältöä laitteiden välillä</translation>

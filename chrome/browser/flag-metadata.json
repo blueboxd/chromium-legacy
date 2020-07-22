@@ -1863,6 +1863,10 @@
     "owners": [ "ewannpv", "gambard" ],
     "expiry_milestone": 87
   },
+  { "name": "enable-phone-hub",
+    "owners": [ "cros-customization@google.com", "tjohnsonkanu", "khorimoto" ],
+    "expiry_milestone": 90
+  },
   {
     "name": "enable-pixel-canvas-recording",
     "owners": [ "malaykeshav", "oshima" ],
@@ -3477,11 +3481,6 @@
     "name": "pdf-honor-js-content-settings",
     "owners": [ "dhoss", "tsepez" ],
     "expiry_milestone": 90
-  },
-  {
-    "name": "pdf-two-up-view",
-    "owners": [ "nigi", "thestig" ],
-    "expiry_milestone": 86
   },
   {
     "name": "pdf-viewer-update",

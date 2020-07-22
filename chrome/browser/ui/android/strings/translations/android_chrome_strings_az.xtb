@@ -577,6 +577,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5659593005791499971">E-poçt</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> tətbiqində tədbir yaradın</translation>
 <translation id="5668404140385795438">Böyüdülmənin qarşısını almaq üçün saytın sorğusunu kənarlaşdırın</translation>
+<translation id="5683547024293500885">Chrome güncəlləmələri yoxlaya bilmir</translation>
 <translation id="5686790454216892815">Fayl adı çox uzundur</translation>
 <translation id="5694049548840660018">Əsas səhifəyə asanlıqla qayıdın</translation>
 <translation id="569536719314091526">Əlavə seçimlər düyməsində bu səhifəni istədiyiniz dilə tərcümə edin</translation>
@@ -589,6 +590,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5732819098735351888">Endirmə Wi-Fi ilə başlayacaq.</translation>
 <translation id="5748802427693696783">Standart panellərə keçdi</translation>
 <translation id="5749068826913805084">Faylları endirmək üçün Chrome yaddaşa giriş tələb edir.</translation>
+<translation id="5749237766298580851">Deaktiv <ph name="SEPARATOR" /> Tövsiyə edilmir</translation>
 <translation id="5754350196967618083">Təklifləri yeniləmək olmur</translation>
 <translation id="5763382633136178763">İnkoqnito vərəqələri</translation>
 <translation id="5763514718066511291">Linki bu tətbiqə kopyalamaq üçün klikləyin</translation>
@@ -994,6 +996,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="8970887620466824814">Xəta baş verdi.</translation>
 <translation id="8972098258593396643">Defolt qovluğa endirilsin?</translation>
 <translation id="8988028529677883095">Təhlükəsizlik açarı kimi telefondan istifadə edin</translation>
+<translation id="8990209962746788689">QR kod yaratmaq olmur</translation>
 <translation id="8993760627012879038">Incognito rejimində yeni panel açın</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> tərəfindən idarə olunan hesab ilə daxil olursunuz və onun administratoruna Chrome datanız üzərində nəzarəti verirsiniz. Datanız həmişəlik bu hesab ilə əlaqələndiriləcək. Chrome'dan çıxmaq datanızı bu cihazdan siləcək, lakin data Google Hesabında qalacaq.</translation>
 <translation id="9028914725102941583">Cihazlar arasında paylaşım etmək üçün sinxronizasiyanı aktiv edin</translation>

@@ -577,6 +577,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5659593005791499971">Courriel</translation>
 <translation id="5665379678064389456">Créer un événement dans <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignorer la demande d'un site refusant de faire un zoom avant</translation>
+<translation id="5683547024293500885">Chrome ne peut pas vérifier la présence de mises à jour</translation>
 <translation id="5686790454216892815">Nom de fichier trop long</translation>
 <translation id="5694049548840660018">Revenez facilement à votre page d'accueil</translation>
 <translation id="569536719314091526">Utilisez le bouton Plus d'options pour traduire cette page vers n'importe quelle langue</translation>
@@ -589,6 +590,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5732819098735351888">Le téléchargement commencera lorsque vous serez connecté à un réseau Wi-Fi.</translation>
 <translation id="5748802427693696783">Passage aux onglets standards</translation>
 <translation id="5749068826913805084">Chrome a besoin d'accéder au stockage pour télécharger des fichiers.</translation>
+<translation id="5749237766298580851">Désactivée <ph name="SEPARATOR" /> Mode non recommandé</translation>
 <translation id="5754350196967618083">Impossible d'actualiser Découvertes</translation>
 <translation id="5763382633136178763">Onglets de navigation privée</translation>
 <translation id="5763514718066511291">Touchez pour copier l'URL pour cette application</translation>
@@ -953,7 +955,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8555836665334561807">Sur connexion Wi-Fi</translation>
 <translation id="8558485628462305855">Pour regarder du contenu de réalité augmentée, mettez à jour ARCore</translation>
 <translation id="8559990750235505898">Proposez des traductions de pages dans d'autres langues</translation>
-<translation id="8561196567344536112">1. Accédez au menu Paramètres\n2. Touchez « Application de navigateur »\n3. Sélectionnez <ph name="APP_NAME" /></translation>
+<translation id="8561196567344536112">1. Accédez aux paramètres\n2. Touchez « Application de navigateur »\n3. Sélectionnez <ph name="APP_NAME" /></translation>
 <translation id="8562452229998620586">Les mots de passe enregistrés s'affichent ici.</translation>
 <translation id="8569404424186215731">depuis le <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Quatre dernières semaines</translation>
@@ -996,6 +998,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8970887620466824814">Une erreur s'est produite.</translation>
 <translation id="8972098258593396643">Télécharger vers le dossier par défaut?</translation>
 <translation id="8988028529677883095">Utiliser le téléphone comme clé de sécurité</translation>
+<translation id="8990209962746788689">Impossible de créer un code QR</translation>
 <translation id="8993760627012879038">Ouvrir un nouvel onglet en mode de nav. privée</translation>
 <translation id="8998729206196772491">Vous vous connectez avec un compte géré par <ph name="MANAGED_DOMAIN" />, et son administrateur pourra contrôler vos données Google Chrome. Celles-ci seront définitivement liées à votre compte. En vous déconnectant de Chrome, vous supprimerez vos données sur cet appareil, mais celles-ci resteront stockées dans votre compte Google.</translation>
 <translation id="9028914725102941583">Activez la synchronisation pour partager des éléments entre des appareils</translation>

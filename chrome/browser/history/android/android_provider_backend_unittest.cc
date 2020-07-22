@@ -250,7 +250,7 @@ class AndroidProviderBackendTest : public testing::Test {
   AndroidProviderBackendNotifier notifier_;
   scoped_refptr<HistoryBackend> history_backend_;
   TestHistoryDatabase history_db_;
-  FaviconDatabase favicon_db_;
+  favicon::FaviconDatabase favicon_db_;
   base::ScopedTempDir temp_dir_;
   base::FilePath android_cache_db_name_;
   base::FilePath history_db_name_;
@@ -1205,11 +1205,11 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
   ASSERT_TRUE(notifier_.favicon_changed()->end() !=
               notifier_.favicon_changed()->find(row1.url()));
 
-  std::vector<IconMapping> icon_mappings;
+  std::vector<favicon::IconMapping> icon_mappings;
   EXPECT_TRUE(favicon_db_.GetIconMappingsForPageURL(
       row1.url(), {favicon_base::IconType::kFavicon}, &icon_mappings));
   EXPECT_EQ(1u, icon_mappings.size());
-  std::vector<FaviconBitmap> favicon_bitmaps;
+  std::vector<favicon::FaviconBitmap> favicon_bitmaps;
   EXPECT_TRUE(favicon_db_.GetFaviconBitmaps(icon_mappings[0].icon_id,
                                             &favicon_bitmaps));
   EXPECT_EQ(1u, favicon_bitmaps.size());
@@ -2000,7 +2000,7 @@ TEST_F(AndroidProviderBackendTest, DeleteWithoutFaviconDB) {
 
   {
     TestHistoryDatabase history_db;
-    FaviconDatabase favicon_db;
+    favicon::FaviconDatabase favicon_db;
     ASSERT_EQ(sql::INIT_OK, history_db.Init(history_db_name_));
     ASSERT_EQ(sql::INIT_OK, favicon_db.Init(favicon_db_name_));
 
@@ -2073,7 +2073,7 @@ TEST_F(AndroidProviderBackendTest, UpdateFaviconWithoutFavicon) {
 
   {
     TestHistoryDatabase history_db;
-    FaviconDatabase favicon_db;
+    favicon::FaviconDatabase favicon_db;
     ASSERT_EQ(sql::INIT_OK, history_db.Init(history_db_name_));
     ASSERT_EQ(sql::INIT_OK, favicon_db.Init(favicon_db_name_));
     std::unique_ptr<AndroidProviderBackend> backend(new AndroidProviderBackend(

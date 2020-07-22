@@ -15,8 +15,18 @@
 window.addEventListener('simulate-type-error-for-test', event => {
   /** @type {{notAFunction: function()}} */ (event).notAFunction();
 });
+
 window.addEventListener('simulate-unhandled-rejection-for-test', event => {
   new Promise(resolve => {
-    throw new Error('fake_throw');
+    const error = new Error('fake_throw');
+    error.name = 'FakeErrorName';
+    throw error;
   });
 });
+
+window.addEventListener(
+    'simulate-unhandled-rejection-with-dom-exception-for-test', event => {
+      new Promise(resolve => {
+        throw new DOMException('Not a file.', 'NotAFile');
+      });
+    });

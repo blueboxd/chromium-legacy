@@ -148,6 +148,11 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   void BindHostInterface(
       mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost> remote_host);
 
+  void SaveTaskRunnerForWidgetOnIOThread(
+      gfx::AcceleratedWidget widget,
+      scoped_refptr<base::SingleThreadTaskRunner> origin_runner);
+  void ForgetTaskRunnerForWidgetOnIOThread(gfx::AcceleratedWidget widget);
+
   // Provides the WaylandSurfaceGpu, which backs the |widget|, with swap and
   // presentation results.
   void SubmitSwapResultOnOriginThread(gfx::AcceleratedWidget widget,
@@ -181,16 +186,17 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   base::flat_map<gfx::BufferFormat, std::vector<uint64_t>>
       supported_buffer_formats_with_modifiers_;
 
-  // This task runner can be used to pass messages back to the same thread,
+  // These task runners can be used to pass messages back to the same thread,
   // where the commit buffer request came from. For example, swap requests can
-  // come from the GpuMainThread, but rerouted are to the IOChildThread and then
+  // come from the GpuMainThread, but are rerouted to the IOChildThread and then
   // mojo calls happen. However, when the manager receives mojo calls, it has to
   // reroute calls back to the same thread where the calls came from to ensure
   // correct sequence. Note that not all calls come from the GpuMainThread, e.g.
   // WaylandCanvasSurface calls from the VizCompositorThread.
+  // This map must only be accessed from the IO thread.
   base::small_map<std::map<gfx::AcceleratedWidget,
                            scoped_refptr<base::SingleThreadTaskRunner>>>
-      commit_thread_runners_;  // Guarded by |lock_|.
+      commit_thread_runners_;
 
   // A task runner, which is initialized in a multi-process mode. It is used to
   // ensure all the methods of this class are run on IOChildThread. This is

@@ -13,7 +13,6 @@
 #include "ui/base/models/simple_menu_model.h"
 
 class Browser;
-class ExtensionAction;
 class GURL;
 class Profile;
 
@@ -22,8 +21,9 @@ class WebContents;
 }
 
 namespace extensions {
-class Extension;
 class ContextMenuMatcher;
+class Extension;
+class ExtensionAction;
 
 // The context menu model for extension icons.
 class ExtensionContextMenuModel : public ui::SimpleMenuModel,

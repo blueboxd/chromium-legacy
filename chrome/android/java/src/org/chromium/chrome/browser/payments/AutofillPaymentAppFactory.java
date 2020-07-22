@@ -19,6 +19,7 @@ import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.payments.mojom.PaymentOptions;
 
 import java.util.List;
 import java.util.Map;
@@ -137,6 +138,11 @@ public class AutofillPaymentAppFactory implements PaymentAppFactoryInterface {
             @Override
             public RenderFrameHost getRenderFrameHost() {
                 // AutofillPaymentAppFactory.Creator doesn't need RenderFrameHost.
+                return null;
+            }
+
+            @Override
+            public PaymentOptions getPaymentOptions() {
                 return null;
             }
 

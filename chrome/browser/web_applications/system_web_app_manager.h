@@ -11,11 +11,13 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "chrome/common/web_application_info.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -59,10 +61,18 @@ enum class SystemAppType {
 };
 
 using OriginTrialsMap = std::map<url::Origin, std::vector<std::string>>;
+using WebApplicationInfoFactory =
+    base::RepeatingCallback<std::unique_ptr<WebApplicationInfo>()>;
 
 // The configuration options for a System App.
 struct SystemAppInfo {
   SystemAppInfo(const std::string& name_for_logging, const GURL& install_url);
+  // When installing via a WebApplicationInfo, the url is never loaded. It's
+  // needed only for various legacy reasons, maps for tracking state, and
+  // generating the AppId and things of that nature.
+  SystemAppInfo(const std::string& name_for_logging,
+                const GURL& install_url,
+                const WebApplicationInfoFactory& info_factory);
   SystemAppInfo(const SystemAppInfo& other);
   ~SystemAppInfo();
 
@@ -102,6 +112,8 @@ struct SystemAppInfo {
 
   // If set to false, this app will be hidden from the Chrome OS search.
   bool show_in_search = true;
+
+  WebApplicationInfoFactory app_info_factory;
 };
 
 // Installs, uninstalls, and updates System Web Apps.

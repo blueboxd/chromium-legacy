@@ -11291,8 +11291,7 @@ TEST_P(QuicStreamFactoryTest, ServerPushSessionAffinity) {
 
   quic::QuicClientPromisedInfo promised(
       session, GetNthServerInitiatedUnidirectionalStreamId(0), kDefaultUrl);
-  (*QuicStreamFactoryPeer::GetPushPromiseIndex(factory_.get())
-        ->promised_by_url())[kDefaultUrl] = &promised;
+  (*session->push_promise_index()->promised_by_url())[kDefaultUrl] = &promised;
 
   QuicStreamRequest request2(factory_.get());
   EXPECT_EQ(
@@ -11314,16 +11313,9 @@ TEST_P(QuicStreamFactoryTest, ServerPushPrivacyModeMismatch) {
 
   MockQuicData socket_data1(version_);
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  int packet_num = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
-    socket_data1.AddWrite(SYNCHRONOUS,
-                          ConstructInitialSettingsPacket(packet_num++));
+    socket_data1.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   }
-  socket_data1.AddWrite(
-      SYNCHRONOUS,
-      client_maker_.MakeRstPacket(
-          packet_num++, true, GetNthServerInitiatedUnidirectionalStreamId(0),
-          quic::QUIC_STREAM_CANCELLED));
   socket_data1.AddSocketDataToFactory(socket_factory_.get());
 
   client_maker_.Reset();
@@ -11354,14 +11346,13 @@ TEST_P(QuicStreamFactoryTest, ServerPushPrivacyModeMismatch) {
   quic::QuicClientPromisedInfo promised(
       session, GetNthServerInitiatedUnidirectionalStreamId(0), kDefaultUrl);
 
-  quic::QuicClientPushPromiseIndex* index =
-      QuicStreamFactoryPeer::GetPushPromiseIndex(factory_.get());
+  quic::QuicClientPushPromiseIndex* index = session->push_promise_index();
 
   (*index->promised_by_url())[kDefaultUrl] = &promised;
   EXPECT_EQ(index->GetPromised(kDefaultUrl), &promised);
 
-  // Doing the request should not use the push stream, but rather
-  // cancel it because the privacy modes do not match.
+  // Sending the request should not use the push stream, since the privacy mode
+  // is different.
   QuicStreamRequest request2(factory_.get());
   EXPECT_EQ(
       ERR_IO_PENDING,
@@ -11372,7 +11363,8 @@ TEST_P(QuicStreamFactoryTest, ServerPushPrivacyModeMismatch) {
           failed_on_default_network_callback_, callback_.callback()));
 
   EXPECT_EQ(0, QuicStreamFactoryPeer::GetNumPushStreamsCreated(factory_.get()));
-  EXPECT_EQ(index->GetPromised(kDefaultUrl), nullptr);
+  // The pushed stream should still be pending.
+  EXPECT_EQ(&promised, index->GetPromised(kDefaultUrl));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
@@ -11402,16 +11394,9 @@ TEST_P(QuicStreamFactoryTest, ServerPushNetworkIsolationKeyMismatch) {
 
   MockQuicData socket_data1(version_);
   socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  int packet_num = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
-    socket_data1.AddWrite(SYNCHRONOUS,
-                          ConstructInitialSettingsPacket(packet_num++));
+    socket_data1.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   }
-  socket_data1.AddWrite(
-      SYNCHRONOUS,
-      client_maker_.MakeRstPacket(
-          packet_num++, true, GetNthServerInitiatedUnidirectionalStreamId(0),
-          quic::QUIC_STREAM_CANCELLED));
   socket_data1.AddSocketDataToFactory(socket_factory_.get());
 
   client_maker_.Reset();
@@ -11442,14 +11427,13 @@ TEST_P(QuicStreamFactoryTest, ServerPushNetworkIsolationKeyMismatch) {
   quic::QuicClientPromisedInfo promised(
       session, GetNthServerInitiatedUnidirectionalStreamId(0), kDefaultUrl);
 
-  quic::QuicClientPushPromiseIndex* index =
-      QuicStreamFactoryPeer::GetPushPromiseIndex(factory_.get());
+  quic::QuicClientPushPromiseIndex* index = session->push_promise_index();
 
   (*index->promised_by_url())[kDefaultUrl] = &promised;
   EXPECT_EQ(index->GetPromised(kDefaultUrl), &promised);
 
-  // Doing the request should not use the push stream, but rather
-  // cancel it because the NetworkIsolationKeys do not match.
+  // Sending the request should not use the push stream, since the
+  // NetworkIsolationKey is different.
   QuicStreamRequest request2(factory_.get());
   EXPECT_EQ(
       ERR_IO_PENDING,
@@ -11461,7 +11445,7 @@ TEST_P(QuicStreamFactoryTest, ServerPushNetworkIsolationKeyMismatch) {
           failed_on_default_network_callback_, callback_.callback()));
 
   EXPECT_EQ(0, QuicStreamFactoryPeer::GetNumPushStreamsCreated(factory_.get()));
-  EXPECT_EQ(index->GetPromised(kDefaultUrl), nullptr);
+  EXPECT_EQ(&promised, index->GetPromised(kDefaultUrl));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);

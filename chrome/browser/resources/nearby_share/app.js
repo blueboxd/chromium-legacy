@@ -34,5 +34,39 @@ Polymer({
       type: Object,
       value: Page,
     },
+
+    /**
+     * Set by the nearby-discovery-page component when switching to the
+     * nearby-confirmation-page.
+     * @type {?nearbyShare.mojom.ConfirmationManagerInterface}
+     * @private
+     */
+    confirmationManager_: {
+      type: Object,
+      value: null,
+    },
+
+    /**
+     * Set by the nearby-discovery-page component when switching to the
+     * nearby-confirmation-page.
+     * @type {?String}
+     * @private
+     */
+    confirmationToken_: {
+      type: String,
+      value: null,
+    },
+  },
+
+  listeners: {'change-page': 'onChangePage_'},
+
+  /**
+   * Handler for the change-page event.
+   * @param {!CustomEvent<!{page: Page}>} event
+   * @private
+   */
+  onChangePage_(event) {
+    /** @type {CrViewManagerElement} */ (this.$.viewManager)
+        .switchView(event.detail.page);
   },
 });

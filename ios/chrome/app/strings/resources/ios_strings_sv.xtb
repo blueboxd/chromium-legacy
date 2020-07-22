@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> till <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Aktivera synkronisering om du vill få tillgång till dina bokmärken på alla enheter</translation>
 <translation id="1687475363370981210">Markera alla som lästa</translation>
+<translation id="1689333818294560261">Kortnamn</translation>
 <translation id="1690731385917361335">Det finns inga objekt</translation>
 <translation id="1692118695553449118">Synkronisering är på</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> valda</translation>
@@ -206,6 +207,7 @@ I inkognitoläget får inte webbplatser se din webbaktivitet på olika webbplats
 <translation id="3335947283844343239">Öppna stängd flik igen</translation>
 <translation id="3371831930909698441">Översättning finns. Alternativ visas nära skärmens nedre kant.</translation>
 <translation id="3393920035788932672">Popup tillåts</translation>
+<translation id="3425644765244388016">Kortets namn</translation>
 <translation id="3443810440409579745">En flik har tagits emot.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Delad vy</translation>
@@ -240,6 +242,7 @@ I inkognitoläget får inte webbplatser se din webbaktivitet på olika webbplats
 <translation id="3783017676699494206">Spara bild</translation>
 <translation id="3789841737615482174">Installera</translation>
 <translation id="3803696231112616155">Erbjud översättning av webbplatsen</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Inga utsatta lösenord}=1{{COUNT} utsatt lösenord}other{{COUNT} utsatta lösenord}}</translation>
 <translation id="385051799172605136">Bakåt</translation>
 <translation id="3892144330757387737">Du hittar historiken här</translation>
 <translation id="3897092660631435901">Meny</translation>
@@ -529,6 +532,7 @@ Webbplatser får inte se din webbaktivitet på olika webbplatser med hjälp av c
 <translation id="7189598951263744875">Dela ...</translation>
 <translation id="7192050974311852563">Starta loggning</translation>
 <translation id="7203585745079012652">Läs upp svaren</translation>
+<translation id="721597782417389033">Ogiltigt kortnamn</translation>
 <translation id="7265758999917665941">Aldrig på den här webbplatsen</translation>
 <translation id="7272437679830969316">Det gick inte att verifiera din identitet. Lösenordet har inte kopierats.</translation>
 <translation id="7291368939935408496">Lösenorden förbereds …</translation>

@@ -100,6 +100,7 @@ cc_component("paint") {
     "//cc/base",
     "//cc/debug",
     "//skia",
+    "//skia:skcms",
     "//ui/gfx:color_space",
     "//ui/gfx:geometry_skia",
     "//ui/gfx/geometry",

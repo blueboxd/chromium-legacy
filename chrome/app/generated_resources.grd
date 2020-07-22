@@ -8232,9 +8232,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_TITLE" desc="Title text for the translate bubble when asking to translate a page.">
           Translate this page?
         </message>
-        <message name="IDS_TRANSLATE_BUBBLE_ADVANCED_TITLE" desc="Title text for the options panel.">
-          Options
-        </message>
         <message name="IDS_TRANSLATE_BUBBLE_TRANSLATED_TITLE" desc="Title text for the translate bubble label when the page has been translated from one language to another">
           Translated
         </message>

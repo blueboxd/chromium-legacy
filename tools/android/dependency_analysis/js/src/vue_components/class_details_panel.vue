@@ -28,6 +28,7 @@ import {PagePathName} from '../url_processor.js';
 
 import LinkToGraph from './link_to_graph.vue';
 
+// @vue/component
 const ClassDetailsPanel = {
   components: {
     LinkToGraph,

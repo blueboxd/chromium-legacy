@@ -6692,6 +6692,231 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
   EXPECT_LT(0, pos);
 }
 
+// Checks that if the same resource is pushed using two different
+// NetworkIsolationKeys, both pushed resources are tracked independently, and
+// NetworkIsolationKeys are respected.
+TEST_P(QuicNetworkTransactionTest, QuicServerPushRespectsNetworkIsolationKey) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionConnectionsByNetworkIsolationKey);
+  client_maker_->set_max_allowed_push_id(quic::kMaxQuicStreamId);
+  context_.params()->max_allowed_push_id = quic::kMaxQuicStreamId;
+  context_.params()->origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+
+  MockQuicData mock_quic_data1(version_);
+  uint64_t client_packet_number1 = 1;
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data1.AddWrite(
+        SYNCHRONOUS, ConstructInitialSettingsPacket(client_packet_number1++));
+  }
+  mock_quic_data1.AddWrite(
+      SYNCHRONOUS, ConstructClientRequestHeadersPacket(
+                       client_packet_number1++,
+                       GetNthClientInitiatedBidirectionalStreamId(0), true,
+                       true, GetRequestHeaders("GET", "https", "/")));
+  mock_quic_data1.AddRead(
+      ASYNC, ConstructServerPushPromisePacket(
+                 1, GetNthClientInitiatedBidirectionalStreamId(0),
+                 GetNthServerInitiatedUnidirectionalStreamId(0), false,
+                 GetRequestHeaders("GET", "https", "/pushed.jpg")));
+  const bool should_send_priority_packet =
+      client_headers_include_h2_stream_dependency_ &&
+      !VersionUsesHttp3(version_.transport_version);
+  if (should_send_priority_packet) {
+    mock_quic_data1.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientAckAndPriorityPacket(
+            client_packet_number1++, false,
+            /*largest_received=*/1, /*smallest_received=*/1,
+            GetNthServerInitiatedUnidirectionalStreamId(0),
+            GetNthClientInitiatedBidirectionalStreamId(0), DEFAULT_PRIORITY));
+  }
+  mock_quic_data1.AddRead(
+      ASYNC, ConstructServerResponseHeadersPacket(
+                 2, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
+                 GetResponseHeaders("200 OK")));
+  if (!should_send_priority_packet) {
+    mock_quic_data1.AddWrite(
+        SYNCHRONOUS, ConstructClientAckPacket(client_packet_number1++, 2, 1));
+  }
+  mock_quic_data1.AddRead(
+      ASYNC, ConstructServerResponseHeadersPacket(
+                 3, GetNthServerInitiatedUnidirectionalStreamId(0), false,
+                 false, GetResponseHeaders("200 OK")));
+  if (should_send_priority_packet) {
+    mock_quic_data1.AddWrite(
+        SYNCHRONOUS, ConstructClientAckPacket(client_packet_number1++, 3, 1));
+  }
+  std::string header = ConstructDataHeader(6);
+  mock_quic_data1.AddRead(
+      ASYNC, ConstructServerDataPacket(
+                 4, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
+                 header + "hello1"));
+  if (!should_send_priority_packet) {
+    mock_quic_data1.AddWrite(
+        SYNCHRONOUS, ConstructClientAckPacket(client_packet_number1++, 4, 3));
+  }
+  std::string header2 = ConstructDataHeader(10);
+  mock_quic_data1.AddRead(
+      ASYNC, ConstructServerDataPacket(
+                 5, GetNthServerInitiatedUnidirectionalStreamId(0), false, true,
+                 header2 + "and hello1"));
+  if (should_send_priority_packet) {
+    mock_quic_data1.AddWrite(
+        SYNCHRONOUS, ConstructClientAckPacket(client_packet_number1++, 5, 3));
+  }
+  if (!VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data1.AddWrite(SYNCHRONOUS,
+                             ConstructClientAckAndRstPacket(
+                                 client_packet_number1++,
+                                 GetNthServerInitiatedUnidirectionalStreamId(0),
+                                 quic::QUIC_RST_ACKNOWLEDGEMENT, 5, 5));
+  } else {
+    mock_quic_data1.AddWrite(
+        SYNCHRONOUS, client_maker_->MakeAckAndPriorityUpdatePacket(
+                         client_packet_number1++, true, 5, 5, 3,
+                         GetNthServerInitiatedUnidirectionalStreamId(0)));
+  }
+  mock_quic_data1.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data1.AddRead(ASYNC, 0);               // EOF
+  mock_quic_data1.AddSocketDataToFactory(&socket_factory_);
+
+  QuicTestPacketMaker client_maker2(
+      version_,
+      quic::QuicUtils::CreateRandomConnectionId(context_.random_generator()),
+      context_.clock(), kDefaultServerHostName, quic::Perspective::IS_CLIENT,
+      client_headers_include_h2_stream_dependency_);
+  client_maker2.set_max_allowed_push_id(quic::kMaxQuicStreamId);
+  QuicTestPacketMaker server_maker2(
+      version_,
+      quic::QuicUtils::CreateRandomConnectionId(context_.random_generator()),
+      context_.clock(), kDefaultServerHostName, quic::Perspective::IS_SERVER,
+      false);
+  MockQuicData mock_quic_data2(version_);
+  uint64_t client_packet_number2 = 1;
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data2.AddWrite(
+        SYNCHRONOUS,
+        client_maker2.MakeInitialSettingsPacket(client_packet_number2++));
+  }
+  mock_quic_data2.AddWrite(
+      SYNCHRONOUS,
+      client_maker2.MakeRequestHeadersPacket(
+          client_packet_number2++,
+          GetNthClientInitiatedBidirectionalStreamId(0), true, true,
+          ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY),
+          GetRequestHeaders("GET", "https", "/"), 0, nullptr));
+  mock_quic_data2.AddRead(
+      ASYNC, server_maker2.MakePushPromisePacket(
+                 1, GetNthClientInitiatedBidirectionalStreamId(0),
+                 GetNthServerInitiatedUnidirectionalStreamId(0), false, false,
+                 GetRequestHeaders("GET", "https", "/pushed.jpg"), nullptr));
+  if (should_send_priority_packet) {
+    mock_quic_data2.AddWrite(
+        SYNCHRONOUS,
+        client_maker2.MakeAckAndPriorityPacket(
+            client_packet_number2++, false,
+            /*largest_received=*/1, /*smallest_received=*/1,
+            GetNthServerInitiatedUnidirectionalStreamId(0),
+            GetNthClientInitiatedBidirectionalStreamId(0),
+            ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY)));
+  }
+  mock_quic_data2.AddRead(
+      ASYNC, server_maker2.MakeResponseHeadersPacket(
+                 2, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
+                 GetResponseHeaders("200 OK"), nullptr));
+  if (!should_send_priority_packet) {
+    mock_quic_data2.AddWrite(SYNCHRONOUS, client_maker2.MakeAckPacket(
+                                              client_packet_number2++, 2, 1));
+  }
+  mock_quic_data2.AddRead(
+      ASYNC, server_maker2.MakeResponseHeadersPacket(
+                 3, GetNthServerInitiatedUnidirectionalStreamId(0), false,
+                 false, GetResponseHeaders("200 OK"), nullptr));
+  if (should_send_priority_packet) {
+    mock_quic_data2.AddWrite(SYNCHRONOUS, client_maker2.MakeAckPacket(
+                                              client_packet_number2++, 3, 1));
+  }
+  std::string header3 = ConstructDataHeader(6);
+  mock_quic_data2.AddRead(
+      ASYNC, server_maker2.MakeDataPacket(
+                 4, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
+                 header3 + "hello2"));
+  if (!should_send_priority_packet) {
+    mock_quic_data2.AddWrite(SYNCHRONOUS, client_maker2.MakeAckPacket(
+                                              client_packet_number2++, 4, 3));
+  }
+  std::string header4 = ConstructDataHeader(10);
+  mock_quic_data2.AddRead(
+      ASYNC, server_maker2.MakeDataPacket(
+                 5, GetNthServerInitiatedUnidirectionalStreamId(0), false, true,
+                 header4 + "and hello2"));
+  if (should_send_priority_packet) {
+    mock_quic_data2.AddWrite(SYNCHRONOUS, client_maker2.MakeAckPacket(
+                                              client_packet_number2++, 5, 3));
+  }
+  if (!VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data2.AddWrite(SYNCHRONOUS,
+                             client_maker2.MakeAckAndRstPacket(
+                                 client_packet_number2++, false,
+                                 GetNthServerInitiatedUnidirectionalStreamId(0),
+                                 quic::QUIC_RST_ACKNOWLEDGEMENT, 5, 5));
+  } else {
+    mock_quic_data2.AddWrite(
+        SYNCHRONOUS, client_maker2.MakeAckAndPriorityUpdatePacket(
+                         client_packet_number2++, true, 5, 5, 3,
+                         GetNthServerInitiatedUnidirectionalStreamId(0)));
+  }
+  mock_quic_data2.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data2.AddRead(ASYNC, 0);               // EOF
+  mock_quic_data2.AddSocketDataToFactory(&socket_factory_);
+
+  scoped_refptr<X509Certificate> cert(
+      ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem"));
+  verify_details_.cert_verify_result.verified_cert = cert;
+  verify_details_.cert_verify_result.is_issued_by_known_root = true;
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details_);
+
+  // The non-alternate protocol jobs need to hang in order to guarantee that
+  // the alternate-protocol job will "win". Use "AddTcpSocketDataProvider()", as
+  // the connection requests may or may not actually make it to the socket
+  // factory, there may or may not be a TCP connection made in between the two
+  // QUIC connection attempts.
+  StaticSocketDataProvider hanging_data1;
+  hanging_data1.set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
+  socket_factory_.AddTcpSocketDataProvider(&hanging_data1);
+  StaticSocketDataProvider hanging_data2;
+  hanging_data2.set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
+  socket_factory_.AddTcpSocketDataProvider(&hanging_data2);
+
+  CreateSession();
+
+  NetworkIsolationKey network_isolation_key1 =
+      NetworkIsolationKey::CreateTransient();
+  NetworkIsolationKey network_isolation_key2 =
+      NetworkIsolationKey::CreateTransient();
+
+  // Creates the first QUIC session, and triggers the first push.
+  request_.network_isolation_key = network_isolation_key1;
+  SendRequestAndExpectQuicResponse("hello1");
+
+  // Use a different NIK, which creates another QUIC session, triggering a
+  // second push,
+  request_.network_isolation_key = network_isolation_key2;
+  SendRequestAndExpectQuicResponse("hello2");
+
+  // Use the second NIK again, should receive the push body from the second
+  // session.
+  request_.url = GURL("https://mail.example.org/pushed.jpg");
+  SendRequestAndExpectQuicResponse("and hello2");
+
+  // Use the first NIK again, should receive the push body from the first
+  // session.
+  request_.network_isolation_key = network_isolation_key1;
+  SendRequestAndExpectQuicResponse("and hello1");
+}
+
 // Regression test for http://crbug.com/719461 in which a promised stream
 // is closed before the pushed headers arrive, but after the connection
 // is closed and before the callbacks are executed.

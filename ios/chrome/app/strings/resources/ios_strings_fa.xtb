@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> به<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">برای دریافت نشانک‌ها در همه دستگاه‌هایتان، همگام‌سازی را روشن کنید.</translation>
 <translation id="1687475363370981210">علامت‌گذاری همه به‌‌عنوان خوانده‌شده</translation>
+<translation id="1689333818294560261">نام مستعار</translation>
 <translation id="1690731385917361335">هیچ موردی وجود ندارد</translation>
 <translation id="1692118695553449118">همگام‌سازی روشن است</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> نشانک انتخاب شده است</translation>
@@ -206,6 +207,7 @@
 <translation id="3335947283844343239">باز کردن مجدد برگه بسته شده</translation>
 <translation id="3371831930909698441">«مترجم» دردسترس است. گزینه‌ها در نزدیک پایین صفحه نمایش در دسترس هستند.</translation>
 <translation id="3393920035788932672">پنجره‌های بازشو مجاز است</translation>
+<translation id="3425644765244388016">نام مستعار کارت</translation>
 <translation id="3443810440409579745">برگه دریافت شد.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> دقیقه</translation>
 <translation id="3448016392200048164">نمای تقسیم</translation>
@@ -240,6 +242,7 @@
 <translation id="3783017676699494206">ذخیره تصویر</translation>
 <translation id="3789841737615482174">نصب</translation>
 <translation id="3803696231112616155">پیشنهاد ترجمه این سایت</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{هیچ گذرواژه‌ای لو نرفته است}=1{{COUNT} گذرواژه لو رفته است}one{{COUNT} گذرواژه لو رفته است}other{{COUNT} گذرواژه لو رفته است}}</translation>
 <translation id="385051799172605136">بازگشت</translation>
 <translation id="3892144330757387737">سابقه را اینجا خواهید دید</translation>
 <translation id="3897092660631435901">منو</translation>
@@ -504,7 +507,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6914583639806229067">جستجوی تصویری که کپی کرده‌اید</translation>
 <translation id="6914783257214138813">گذرواژه‌های شما برای همه افرادی که می‌توانند فایل صادرشده را ببینید، نمایان خواهند بود.</translation>
 <translation id="6930799952781667037">برای تغییر به این زبان، ضربه بزنید.</translation>
-<translation id="6944369514868857500">انتخاب حسابی دیگر</translation>
+<translation id="6944369514868857500">انتخاب یک حساب دیگر</translation>
 <translation id="6945221475159498467">انتخاب</translation>
 <translation id="6973630695168034713">پوشه‌ها</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -529,6 +532,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7189598951263744875">در حال اشتراک‌گذاری...</translation>
 <translation id="7192050974311852563">شروع گزارش‌گیری</translation>
 <translation id="7203585745079012652">پاسخ گفتاری</translation>
+<translation id="721597782417389033">نام مستعار کارت نامعتبر است</translation>
 <translation id="7265758999917665941">هرگز برای این سایت</translation>
 <translation id="7272437679830969316">نمی‌توانیم هویتتان را به تأیید برسانیم. گذرواژه کپی نشد.</translation>
 <translation id="7291368939935408496">درحال آماده‌سازی گذرواژه‌ها…</translation>

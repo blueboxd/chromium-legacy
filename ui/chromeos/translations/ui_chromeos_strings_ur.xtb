@@ -208,6 +208,7 @@
 <translation id="3335337277364016868">ریکارڈ کردہ سال</translation>
 <translation id="3338239663705455570">سلووینیائی کی بورڈ</translation>
 <translation id="3353984535370177728">اپ لوڈ کرنے کیلئے ایک فولڈر منتخب کریں</translation>
+<translation id="3356580349448036450">مکمل</translation>
 <translation id="3399597614303179694">مقدونیائی کی بورڈ</translation>
 <translation id="3414856743105198592">ہٹانے لائق میڈیا کو فارمیٹ کرنے سے سبھی ڈیٹا مٹ جائے گا۔ کیا آپ جاری رکھنا چاہتے ہیں؟</translation>
 <translation id="3437801641691368414">بنانے کا وقت</translation>
@@ -550,7 +551,6 @@
 <translation id="7012943028104619157">‎<ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">انسٹالیشن ناکام ہو گیا۔</translation>
 <translation id="7040138676081995583">ان کے ساتھ کھولیں…</translation>
-<translation id="7059566040011178088">‫<ph name="REMAINING_TIME" /> سے کم</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> آئٹمز منتخب کیے گئے</translation>
 <translation id="7106346894903675391">مزید اسٹوریج خریدیں…</translation>
 <translation id="7126604456862387217">‏'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt; Drive تلاش کریں&lt;/em&gt;</translation>
@@ -661,7 +661,6 @@
 <translation id="8193175696669055101">آلے کا ماڈل</translation>
 <translation id="8208580316430297579">فنی شاہکار</translation>
 <translation id="8223479393428528563">آف لائن استعمال کیلئے یہ فائلیں محفوظ کرنے کیلئے، پھر سے آن لائن ہو جائیں، فائلوں پر دایاں کلک کریں اور <ph name="OFFLINE_CHECKBOX_NAME" /> اختیار منتخب کریں۔</translation>
-<translation id="8231972167769262174">تقریباً <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">منسوخ کریں</translation>
 <translation id="8261506727792406068">حذف کریں</translation>
 <translation id="8269755669432358899">فائلز کے تاثرات کے پینلز کو سکیڑیں</translation>

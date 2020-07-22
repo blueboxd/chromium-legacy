@@ -94,9 +94,12 @@ class GLRendererTest : public testing::Test {
   RenderPass* root_render_pass() {
     return render_passes_in_draw_order_.back().get();
   }
-  void DrawFrame(GLRenderer* renderer, const gfx::Size& viewport_size) {
+  void DrawFrame(GLRenderer* renderer,
+                 const gfx::Size& viewport_size,
+                 const gfx::DisplayColorSpaces& display_color_spaces =
+                     gfx::DisplayColorSpaces()) {
     renderer->DrawFrame(&render_passes_in_draw_order_, 1.f, viewport_size,
-                        gfx::DisplayColorSpaces());
+                        display_color_spaces);
   }
 
   static const Program* current_program(GLRenderer* renderer) {
@@ -178,19 +181,23 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
       const DirectRenderer::DrawingFrame& drawing_frame,
       bool validate_output_color_matrix) {
     renderer()->SetCurrentFrameForTesting(drawing_frame);
-    const size_t kNumSrcColorSpaces = 7;
+    const size_t kNumSrcColorSpaces = 8;
     gfx::ColorSpace src_color_spaces[kNumSrcColorSpaces] = {
         gfx::ColorSpace::CreateSRGB(),
         gfx::ColorSpace(gfx::ColorSpace::PrimaryID::ADOBE_RGB,
                         gfx::ColorSpace::TransferID::GAMMA28),
         gfx::ColorSpace::CreateREC709(),
         gfx::ColorSpace::CreateExtendedSRGB(),
+        // This will be adjusted to the display's SDR white level, because no
+        // level was specified.
         gfx::ColorSpace::CreateSCRGBLinear(),
+        // This won't be, because it has a set SDR white level.
+        gfx::ColorSpace::CreateSCRGBLinear(123.0f),
         // This will be adjusted to the display's SDR white level, because no
         // level was specified.
         gfx::ColorSpace::CreateHDR10(),
         // This won't be, because it has a set SDR white level.
-        gfx::ColorSpace::CreateHDR10(123.f),
+        gfx::ColorSpace::CreateHDR10(123.0f),
     };
     const size_t kNumDstColorSpaces = 4;
     gfx::ColorSpace dst_color_spaces[kNumDstColorSpaces] = {
@@ -205,16 +212,18 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
         const auto& src_color_space = src_color_spaces[j];
         const auto& dst_color_space = dst_color_spaces[i];
 
-        renderer()->SetUseProgram(program_key, src_color_space,
-                                  dst_color_space);
+        renderer()->SetUseProgram(program_key, src_color_space, dst_color_space,
+                                  /*adjust_src_white_level=*/true);
         EXPECT_TRUE(renderer()->current_program_->initialized());
 
         if (src_color_space != dst_color_space) {
           auto adjusted_color_space = src_color_space;
-          // Only in the iteration where we use CreateHDR10 without specifying
-          // an SDR white level should the white level be set by the renderer.
-          if (j == 5) {
-            adjusted_color_space = src_color_space.GetWithPQSDRWhiteLevel(
+          // Only in the iteration where we use an HDR color space without
+          // specifying an SDR white level should the white level be set by the
+          // renderer.
+          if (src_color_space == gfx::ColorSpace::CreateSCRGBLinear() ||
+              src_color_space == gfx::ColorSpace::CreateHDR10()) {
+            adjusted_color_space = src_color_space.GetWithSDRWhiteLevel(
                 drawing_frame.display_color_spaces.GetSDRWhiteLevel());
             EXPECT_NE(adjusted_color_space, src_color_space);
           }
@@ -845,6 +854,88 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionMedium) {
   EXPECT_EQ(precision, TEX_COORD_PRECISION_MEDIUM);
 
   child_resource_provider->ShutdownAndReleaseAllResources();
+}
+
+class GLRendererTextureDrawQuadHDRTest
+    : public GLRendererWithDefaultHarnessTest {
+ protected:
+  void RunTest(bool is_video_frame) {
+    const gfx::Size viewport_size(10, 10);
+    RenderPass* root_pass = cc::AddRenderPass(
+        &render_passes_in_draw_order_, RenderPassId{1},
+        gfx::Rect(viewport_size), gfx::Transform(), cc::FilterOperations());
+
+    const bool needs_blending = false;
+    const bool premultiplied_alpha = false;
+    const bool flipped = false;
+    const bool nearest_neighbor = false;
+    const float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+    const gfx::PointF uv_top_left(0, 0);
+    const gfx::PointF uv_bottom_right(1, 1);
+
+    auto child_context_provider = TestContextProvider::Create();
+    child_context_provider->BindToCurrentThread();
+
+    auto child_resource_provider = std::make_unique<ClientResourceProvider>();
+
+    constexpr gfx::Size kTextureSize = gfx::Size(10, 10);
+    auto transfer_resource = TransferableResource::MakeGL(
+        gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
+        kTextureSize, true);
+    transfer_resource.color_space = gfx::ColorSpace::CreateSCRGBLinear();
+    ResourceId client_resource_id = child_resource_provider->ImportResource(
+        transfer_resource, SingleReleaseCallback::Create(base::DoNothing()));
+
+    std::unordered_map<ResourceId, ResourceId> resource_map =
+        cc::SendResourceAndGetChildToParentMap(
+            {client_resource_id}, resource_provider_.get(),
+            child_resource_provider.get(), child_context_provider.get());
+    unsigned resource_id = resource_map[client_resource_id];
+
+    TextureDrawQuad* overlay_quad =
+        root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+    SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
+    shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
+                         gfx::Rect(kTextureSize), gfx::RRectF(),
+                         gfx::Rect(kTextureSize), false, false, 1,
+                         SkBlendMode::kSrcOver, 0);
+    overlay_quad->SetNew(shared_state, gfx::Rect(kTextureSize),
+                         gfx::Rect(kTextureSize), needs_blending, resource_id,
+                         premultiplied_alpha, uv_top_left, uv_bottom_right,
+                         SK_ColorTRANSPARENT, vertex_opacity, flipped,
+                         nearest_neighbor, /*secure_output_only=*/false,
+                         gfx::ProtectedVideoType::kClear);
+    overlay_quad->is_video_frame = is_video_frame;
+
+    constexpr float kSDRWhiteLevel = 123.0f;
+    gfx::DisplayColorSpaces display_color_spaces;
+    display_color_spaces.SetSDRWhiteLevel(kSDRWhiteLevel);
+
+    DrawFrame(renderer_.get(), viewport_size, display_color_spaces);
+
+    const Program* program = current_program(renderer_.get());
+    DCHECK(program);
+    DCHECK(program->color_transform_for_testing())
+        << program->fragment_shader().GetShaderString();
+
+    const gfx::ColorSpace expected_src_color_space =
+        is_video_frame
+            ? gfx::ColorSpace::CreateSCRGBLinear().GetWithSDRWhiteLevel(
+                  kSDRWhiteLevel)
+            : gfx::ColorSpace::CreateSCRGBLinear();
+    EXPECT_EQ(program->color_transform_for_testing()->GetSrcColorSpace(),
+              expected_src_color_space);
+
+    child_resource_provider->ShutdownAndReleaseAllResources();
+  }
+};
+
+TEST_F(GLRendererTextureDrawQuadHDRTest, VideoFrame) {
+  RunTest(/*is_video_frame=*/true);
+}
+
+TEST_F(GLRendererTextureDrawQuadHDRTest, NotVideoFrame) {
+  RunTest(/*is_video_frame=*/false);
 }
 
 class ForbidSynchronousCallGLES2Interface : public TestGLES2Interface {

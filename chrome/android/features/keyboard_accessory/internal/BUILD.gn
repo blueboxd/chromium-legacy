@@ -90,6 +90,7 @@ android_library("internal_java") {
     "java/src/org/chromium/chrome/browser/keyboard_accessory/tab_layout_component/KeyboardAccessoryTabLayoutViewBinder.java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  resources_package = "org.chromium.chrome.browser.keyboard_accessory"
 }
 
 android_resources("java_resources") {
@@ -124,7 +125,7 @@ android_resources("java_resources") {
     ":java_strings_grd",
     "//chrome/android:chrome_app_java_resources",
   ]
-  custom_package = "org.chromium.chrome.browser.keyboard_accessory"
+  create_srcjar = false
 }
 
 java_strings_grd("java_strings_grd") {

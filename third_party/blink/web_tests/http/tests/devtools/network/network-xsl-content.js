@@ -15,8 +15,7 @@
   `);
 
   var resultsOutput = [];
-  const requests =
-      NetworkTestRunner.networkRequests().filter((e, i, a) => i % 2 == 0);
+  const requests = NetworkTestRunner.networkRequests();
   for (const request of requests) {
     const content = await TestRunner.NetworkAgent.getResponseBody(request.requestId());
     var output = [];

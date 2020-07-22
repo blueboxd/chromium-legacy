@@ -2332,6 +2332,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLazyBackgroundTest, ConsoleLogging) {
     // ServiceWorkerContextObserver:
     void OnReportConsoleMessage(
         int64_t version_id,
+        const GURL& scope,
         const content::ConsoleMessage& message) override {
       // NOTE: We could check the version_id, but it shouldn't be necessary with
       // the expected messages we're verifying (they're uncommon enough).

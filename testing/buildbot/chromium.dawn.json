@@ -270,6 +270,7 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--no-xvfb",
           "--additional-driver-flag=--use-vulkan=native"
         ],
@@ -299,6 +300,7 @@
           "--driver-logging",
           "--jobs=1",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--no-xvfb",
           "--additional-driver-flag=--use-vulkan=native"
         ],
@@ -592,6 +594,7 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--no-xvfb",
           "--additional-driver-flag=--use-vulkan=native"
         ],
@@ -621,6 +624,7 @@
           "--driver-logging",
           "--jobs=1",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--no-xvfb",
           "--additional-driver-flag=--use-vulkan=native"
         ],
@@ -914,6 +918,7 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--no-xvfb",
           "--additional-driver-flag=--use-vulkan=native"
         ],
@@ -943,6 +948,7 @@
           "--driver-logging",
           "--jobs=1",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--no-xvfb",
           "--additional-driver-flag=--use-vulkan=native"
         ],
@@ -1236,6 +1242,7 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--no-xvfb",
           "--additional-driver-flag=--use-vulkan=native"
         ],
@@ -1265,6 +1272,7 @@
           "--driver-logging",
           "--jobs=1",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--no-xvfb",
           "--additional-driver-flag=--use-vulkan=native"
         ],
@@ -1567,6 +1575,7 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--platform=mac-mac10.13"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -1596,6 +1605,7 @@
           "--driver-logging",
           "--jobs=1",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--platform=mac-mac10.13"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -1876,6 +1886,7 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--platform=mac-mac10.13"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -1903,6 +1914,7 @@
           "--driver-logging",
           "--jobs=1",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--platform=mac-mac10.13"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -2201,6 +2213,7 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--platform=mac-mac10.13"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -2230,6 +2243,7 @@
           "--driver-logging",
           "--jobs=1",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--platform=mac-mac10.13"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -2510,6 +2524,7 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--platform=mac-mac10.13"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -2537,6 +2552,7 @@
           "--driver-logging",
           "--jobs=1",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--platform=mac-mac10.13"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -2845,6 +2861,7 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3142,6 +3159,7 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3170,6 +3188,7 @@
           "--driver-logging",
           "--jobs=1",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3460,6 +3479,7 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3488,6 +3508,7 @@
           "--driver-logging",
           "--jobs=1",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3778,6 +3799,7 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3806,6 +3828,7 @@
           "--driver-logging",
           "--jobs=1",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -4096,6 +4119,7 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -4124,6 +4148,7 @@
           "--driver-logging",
           "--jobs=1",
           "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--use-gpu-in-tests",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -4415,7 +4440,8 @@
       {
         "args": [
           "--driver-logging",
-          "--jobs=1"
+          "--jobs=1",
+          "--additional-driver-flag=--use-gpu-in-tests"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -4442,7 +4468,8 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
-          "--additional-driver-flag=--enable-dawn-backend-validation"
+          "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--use-gpu-in-tests"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -4731,7 +4758,8 @@
       {
         "args": [
           "--driver-logging",
-          "--jobs=1"
+          "--jobs=1",
+          "--additional-driver-flag=--use-gpu-in-tests"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -4758,7 +4786,8 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
-          "--additional-driver-flag=--enable-dawn-backend-validation"
+          "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--use-gpu-in-tests"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -5047,7 +5076,8 @@
       {
         "args": [
           "--driver-logging",
-          "--jobs=1"
+          "--jobs=1",
+          "--additional-driver-flag=--use-gpu-in-tests"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -5074,7 +5104,8 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
-          "--additional-driver-flag=--enable-dawn-backend-validation"
+          "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--use-gpu-in-tests"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -5363,7 +5394,8 @@
       {
         "args": [
           "--driver-logging",
-          "--jobs=1"
+          "--jobs=1",
+          "--additional-driver-flag=--use-gpu-in-tests"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -5390,7 +5422,8 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
-          "--additional-driver-flag=--enable-dawn-backend-validation"
+          "--additional-driver-flag=--enable-dawn-backend-validation",
+          "--additional-driver-flag=--use-gpu-in-tests"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {

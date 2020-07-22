@@ -300,17 +300,17 @@ void DriveServiceOnWorker::ClearRefreshToken() {
   NOTREACHED();
 }
 
-google_apis::CancelCallback DriveServiceOnWorker::GetAllTeamDriveList(
+google_apis::CancelCallbackOnce DriveServiceOnWorker::GetAllTeamDriveList(
     google_apis::TeamDriveListCallback callback) {
   NOTREACHED();
-  return google_apis::CancelCallback();
+  return google_apis::CancelCallbackOnce();
 }
 
-google_apis::CancelCallback DriveServiceOnWorker::GetAllFileList(
+google_apis::CancelCallbackOnce DriveServiceOnWorker::GetAllFileList(
     const std::string& team_drive_id,
     const google_apis::FileListCallback& callback) {
   NOTREACHED();
-  return google_apis::CancelCallback();
+  return google_apis::CancelCallbackOnce();
 }
 
 google_apis::CancelCallback DriveServiceOnWorker::Search(

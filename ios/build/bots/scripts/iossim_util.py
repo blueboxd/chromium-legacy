@@ -116,7 +116,14 @@ def delete_simulator_by_udid(udid):
     udid: (str) UDID of simulator.
   """
   LOGGER.info('Deleting simulator %s', udid)
-  subprocess.call(['xcrun', 'simctl', 'delete', udid])
+  try:
+    subprocess.check_output(['xcrun', 'simctl', 'delete', udid],
+                            stderr=subprocess.STDOUT)
+  except subprocess.CalledProcessError as e:
+    # Logging error instead of throwing so we don't cause failures in case
+    # this was indeed failing to clean up.
+    message = 'Failed to delete simulator %s with error %s' % (udid, e.output)
+    LOGGER.error(message)
 
 
 def wipe_simulator_by_udid(udid):
@@ -134,7 +141,7 @@ def wipe_simulator_by_udid(udid):
         if device['state'] != 'Shutdown':
           subprocess.check_call(['xcrun', 'simctl', 'shutdown', device['udid']])
       except subprocess.CalledProcessError as ex:
-        LOGGER.info('Shutdown failed %s ', ex)
+        LOGGER.error('Shutdown failed %s ', ex)
       subprocess.check_call(['xcrun', 'simctl', 'erase', device['udid']])
 
 

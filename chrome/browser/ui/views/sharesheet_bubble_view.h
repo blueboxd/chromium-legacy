@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/sharesheet/sharesheet_types.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
 
@@ -26,7 +27,8 @@ class SharesheetBubbleView : public views::BubbleDialogDelegateView,
   SharesheetBubbleView& operator=(const SharesheetBubbleView&) = delete;
   ~SharesheetBubbleView() override;
 
-  void ShowBubble(std::vector<TargetInfo> targets);
+  void ShowBubble(std::vector<TargetInfo> targets,
+                  apps::mojom::IntentPtr intent);
   void ShowActionView();
   void CloseBubble();
 
@@ -46,6 +48,7 @@ class SharesheetBubbleView : public views::BubbleDialogDelegateView,
   sharesheet::SharesheetServiceDelegate* delegate_;
   std::vector<TargetInfo> targets_;
   base::string16 active_target_;
+  apps::mojom::IntentPtr intent_;
 
   views::View* root_view_ = nullptr;
   views::View* main_view_ = nullptr;

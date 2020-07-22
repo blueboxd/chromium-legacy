@@ -176,9 +176,9 @@ struct ArcDoNotDisturbStatus {
 struct ArcNotificationUserActionData {
   // Unique action id for this user action.
   uint32 action_id;
-  // Notification key of top-level notification which contains the notification
-  // which is initiating this action.
-  string top_level_notification_key;
+  // DEPRECATED: Notification key of top-level notification which contains
+  // the notification which is initiating this action.
+  string top_level_notification_key_deprecated;
   // True if the task should be executed on the unlocked state.
   bool defer_until_unlock;
   // True if the notification view should be focused after unlock. This is

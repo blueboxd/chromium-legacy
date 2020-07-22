@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharesheet/sharesheet_service.h"
@@ -39,7 +40,9 @@ SharesheetServiceFactory* SharesheetServiceFactory::GetInstance() {
 SharesheetServiceFactory::SharesheetServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "SharesheetService",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(apps::AppServiceProxyFactory::GetInstance());
+}
 
 SharesheetServiceFactory::~SharesheetServiceFactory() = default;
 

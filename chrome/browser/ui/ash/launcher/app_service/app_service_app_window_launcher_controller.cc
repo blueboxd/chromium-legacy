@@ -424,6 +424,13 @@ AppWindowBase* AppServiceAppWindowLauncherController::GetAppWindow(
   return aura_window_to_app_window_[window].get();
 }
 
+void AppServiceAppWindowLauncherController::ObserveWindow(
+    aura::Window* window) {
+  if (!window || observed_windows_.IsObserving(window))
+    return;
+  observed_windows_.Add(window);
+}
+
 std::vector<aura::Window*>
 AppServiceAppWindowLauncherController::GetArcWindows() {
   std::vector<aura::Window*> arc_windows;

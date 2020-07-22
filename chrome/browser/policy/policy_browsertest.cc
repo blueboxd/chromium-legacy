@@ -137,6 +137,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "components/variations/service/variations_service.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -2602,15 +2603,6 @@ class AudioSandboxEnabledTest
  private:
   policy::MockConfigurationPolicyProvider policy_provider_;
 };
-
-IN_PROC_BROWSER_TEST_P(AudioSandboxEnabledTest, IsRespected) {
-  base::Optional<bool> enable_sandbox_via_policy = GetParam();
-  bool is_sandbox_enabled_by_default = base::FeatureList::IsEnabled(
-      sandbox::policy::features::kAudioServiceSandbox);
-
-  ASSERT_EQ(enable_sandbox_via_policy.value_or(is_sandbox_enabled_by_default),
-            sandbox::policy::IsAudioSandboxEnabled());
-}
 
 INSTANTIATE_TEST_SUITE_P(
     Enabled,

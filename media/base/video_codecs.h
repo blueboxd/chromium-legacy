@@ -147,6 +147,11 @@ MEDIA_EXPORT bool ParseDolbyVisionCodecId(const std::string& codec_id,
                                           uint8_t* level_id);
 #endif
 
+MEDIA_EXPORT void ParseCodec(const std::string& codec_id,
+                             VideoCodec& codec,
+                             VideoCodecProfile& profile,
+                             uint8_t& level,
+                             VideoColorSpace& color_space);
 MEDIA_EXPORT VideoCodec StringToVideoCodec(const std::string& codec_id);
 
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)

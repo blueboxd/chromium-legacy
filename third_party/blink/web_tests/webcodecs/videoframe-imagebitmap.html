@@ -10,9 +10,14 @@
   const kP3Pixel = [62, 99, 146, 255];
   const kRec2020Pixel = [87, 106, 151, 255];
 
-  const kCanvasOptionsP3Uint8 = { colorSpace: 'p3', pixelFormat: 'uint8' };
-  const kCanvasOptionsRec2020Uint8 =
-    { colorSpace: 'rec2020', pixelFormat: 'uint8' };
+  const kCanvasOptionsP3Uint8 = {
+    colorSpace: 'p3',
+    pixelFormat: 'uint8'
+  };
+  const kCanvasOptionsRec2020Uint8 = {
+    colorSpace: 'rec2020',
+    pixelFormat: 'uint8'
+  };
 
   function testCanvas(ctx, width, height, expected_pixel, assert_compares) {
     // The dup getImageData is to workaournd crbug.com/1100233
@@ -42,7 +47,9 @@
 
     return createImageBitmap(canvas, imageBitmapOptions)
       .then((fromImageBitmap) => {
-        let videoFrame = new VideoFrame({ timestamp: 0 }, fromImageBitmap);
+        let videoFrame = new VideoFrame({
+          timestamp: 0
+        }, fromImageBitmap);
         return videoFrame.createImageBitmap(imageBitmapOptions);
       })
       .then((toImageBitmap) => {
@@ -67,20 +74,115 @@
 
   promise_test(() => {
     return testImageBitmapToAndFromVideoFrame(48, 36, kP3Pixel,
-      kCanvasOptionsP3Uint8, { colorSpaceConversion: "none" });
+      kCanvasOptionsP3Uint8, {
+        colorSpaceConversion: "none"
+      });
   }, 'ImageBitmap<->VideoFrame with canvas(48x36 p3 uint8).');
   promise_test(() => {
     return testImageBitmapToAndFromVideoFrame(480, 360, kP3Pixel,
-      kCanvasOptionsP3Uint8, { colorSpaceConversion: "none" });
+      kCanvasOptionsP3Uint8, {
+        colorSpaceConversion: "none"
+      });
   }, 'ImageBitmap<->VideoFrame with canvas(480x360 p3 uint8).');
 
   promise_test(() => {
     return testImageBitmapToAndFromVideoFrame(48, 36, kRec2020Pixel,
-      kCanvasOptionsRec2020Uint8, { colorSpaceConversion: "none" });
+      kCanvasOptionsRec2020Uint8, {
+        colorSpaceConversion: "none"
+      });
   }, 'ImageBitmap<->VideoFrame with canvas(48x36 rec2020 uint8).');
   promise_test(() => {
     return testImageBitmapToAndFromVideoFrame(480, 360, kRec2020Pixel,
-      kCanvasOptionsRec2020Uint8, { colorSpaceConversion: "none" });
+      kCanvasOptionsRec2020Uint8, {
+        colorSpaceConversion: "none"
+      });
   }, 'ImageBitmap<->VideoFrame with canvas(480x360 rec2020 uint8).');
 
+
+  function testCreateImageBitmapFromVideoFrameVP9Decoder() {
+    // Prefers hardware decoders by setting video size as large as 720p.
+    const width = 1280;
+    const height = 720;
+
+    let canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    let ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'rgb(50, 100, 150)';
+    ctx.fillRect(0, 0, width, height);
+
+    return createImageBitmap(canvas).then((fromImageBitmap) => {
+      let videoFrame = new VideoFrame({
+        timestamp: 0
+      }, fromImageBitmap);
+      return new Promise((resolve, reject) => {
+        let processVideoFrame = (frame) => {
+          frame.createImageBitmap().then((toImageBitmap) => {
+            let myCanvas = document.createElement('canvas');
+            myCanvas.width = width;
+            myCanvas.height = height;
+            let myCtx = myCanvas.getContext('2d');
+            myCtx.drawImage(toImageBitmap, 0, 0);
+            let tolerance = 6;
+            try {
+              testCanvas(myCtx, width, height, kSRGBPixel,
+                (actual, expected) => {
+                  assert_approx_equals(actual, expected, tolerance);
+                }
+              );
+            } catch (error) {
+              reject(error);
+            }
+            resolve('Done.');
+          });
+        };
+
+        const decoderInit = {
+          output: processVideoFrame,
+          error: (e) => {
+            console.log(e.message);
+          }
+        };
+
+        const encodedVideoConfig = {
+          codec: "vp09.00.10.08",
+        };
+
+        let decoder = new VideoDecoder(decoderInit);
+        decoder.configure(encodedVideoConfig);
+
+        let processVideoChunk = (chunk) => {
+          decoder.decode(chunk);
+          decoder.flush();
+        };
+
+        const encoderInit = {
+          output: processVideoChunk,
+          error: (e) => {
+            console.log(e.message);
+          }
+        };
+
+        const videoEncoderConfig = {
+          codec: "vp9",
+          profile: "vp09.00.10.08",
+          width: width,
+          height: height,
+          bitrate: 10e6,
+          framerate: 30,
+        };
+
+        let encoder = new VideoEncoder(encoderInit);
+        encoder.configure(videoEncoderConfig);
+        encoder.encode(videoFrame, {
+          keyFrame: true
+        });
+        encoder.flush();
+      });
+    });
+  }
+
+  promise_test(() => {
+    return testCreateImageBitmapFromVideoFrameVP9Decoder();
+  }, 'Create ImageBitmap for a VideoFrame from VP9 decoder.');
 </script>

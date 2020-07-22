@@ -113,7 +113,6 @@ source_set("chromeos") {
     "//chromeos/components/print_management/mojom",
     "//chromeos/components/proximity_auth",
     "//chromeos/components/quick_answers/public/cpp:prefs",
-    "//chromeos/components/sample_system_web_app_ui:sample_system_web_app_ui",
     "//chromeos/components/smbfs",
     "//chromeos/components/smbfs/mojom",
     "//chromeos/components/string_matching",
@@ -169,7 +168,6 @@ source_set("chromeos") {
     "//chromeos/login/login_state",
     "//chromeos/login/session",
     "//chromeos/network",
-    "//chromeos/resources:sample_system_web_app_resources_grit",
     "//chromeos/services/assistant/public/cpp",
     "//chromeos/services/cros_healthd/public/cpp",
     "//chromeos/services/cros_healthd/public/mojom",
@@ -2565,8 +2563,6 @@ source_set("chromeos") {
     "web_applications/crosh_loader_factory.cc",
     "web_applications/crosh_loader_factory.h",
     "web_applications/default_web_app_ids.h",
-    "web_applications/sample_system_web_app_info.cc",
-    "web_applications/sample_system_web_app_info.h",
     "web_applications/system_web_app_install_utils.cc",
     "web_applications/system_web_app_install_utils.h",
     "web_applications/terminal_source.cc",
@@ -2713,6 +2709,17 @@ source_set("chromeos") {
       "printing/fake_cups_print_job_manager.cc",
       "printing/fake_cups_print_job_manager.h",
       "printing/printer_info_stub.cc",
+    ]
+  }
+
+  if (!is_official_build) {
+    deps += [
+      "//chromeos/components/sample_system_web_app_ui:sample_system_web_app_ui",
+      "//chromeos/resources:sample_system_web_app_resources_grit",
+    ]
+    sources += [
+      "web_applications/sample_system_web_app_info.cc",
+      "web_applications/sample_system_web_app_info.h",
     ]
   }
 

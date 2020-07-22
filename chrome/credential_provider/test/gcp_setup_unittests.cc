@@ -169,7 +169,7 @@ void GcpSetupTest::ExpectAllFilesToExist(
 void GcpSetupTest::ExpectCredentialProviderToBeRegistered(
     bool registered,
     const base::string16& product_version) {
-  auto guid_string = base::win::String16FromGUID(CLSID_GaiaCredentialProvider);
+  auto guid_string = base::win::WStringFromGUID(CLSID_GaiaCredentialProvider);
 
   // Make sure COM object is registered.
   base::string16 register_key_path =

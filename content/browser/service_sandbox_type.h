@@ -26,7 +26,9 @@ class AudioService;
 template <>
 inline sandbox::policy::SandboxType
 content::GetServiceSandboxType<audio::mojom::AudioService>() {
-  return sandbox::policy::SandboxType::kAudio;
+  return GetContentClient()->browser()->ShouldSandboxAudioService()
+             ? sandbox::policy::SandboxType::kAudio
+             : sandbox::policy::SandboxType::kNoSandbox;
 }
 
 // media::mojom::CdmService

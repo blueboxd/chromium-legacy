@@ -99,6 +99,8 @@ class AppServiceAppWindowLauncherController
 
   AppWindowBase* GetAppWindow(aura::Window* window);
 
+  void ObserveWindow(aura::Window* window);
+
   std::vector<aura::Window*> GetArcWindows();
 
   ProfileList& GetProfileList() { return profile_list_; }

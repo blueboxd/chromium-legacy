@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "chromeos/components/local_search_service/content_extraction_utils.h"
 #include "chromeos/components/local_search_service/inverted_index.h"
 #include "chromeos/components/string_matching/tokenized_string.h"
@@ -76,16 +77,17 @@ uint32_t InvertedIndexSearch::Delete(const std::vector<std::string>& ids) {
 ResponseStatus InvertedIndexSearch::Find(const base::string16& query,
                                          uint32_t max_results,
                                          std::vector<Result>* results) {
+  const base::TimeTicks start = base::TimeTicks::Now();
   DCHECK(results);
   results->clear();
   if (query.empty()) {
     const ResponseStatus status = ResponseStatus::kEmptyQuery;
-    MaybeLogSearchResultsStats(status, 0u);
+    MaybeLogSearchResultsStats(status, 0u, base::TimeDelta());
     return status;
   }
   if (GetSize() == 0u) {
     const ResponseStatus status = ResponseStatus::kEmptyIndex;
-    MaybeLogSearchResultsStats(status, 0u);
+    MaybeLogSearchResultsStats(status, 0u, base::TimeDelta());
     return status;
   }
 
@@ -111,8 +113,9 @@ ResponseStatus InvertedIndexSearch::Find(const base::string16& query,
   if (results->size() > max_results && max_results > 0u)
     results->resize(max_results);
 
+  const base::TimeTicks end = base::TimeTicks::Now();
   const ResponseStatus status = ResponseStatus::kSuccess;
-  MaybeLogSearchResultsStats(status, results->size());
+  MaybeLogSearchResultsStats(status, results->size(), end - start);
   return status;
 }
 

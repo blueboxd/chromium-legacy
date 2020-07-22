@@ -9,6 +9,10 @@
 
 #include <stddef.h>
 
+namespace mini_installer {
+
+class MiniFile;
+
 // This class models a windows PE resource. It does not pretend to be a full
 // API wrapper and it is just concerned with loading it to memory and writing
 // it to disk. Each resource is unique only in the context of a loaded module,
@@ -30,14 +34,17 @@ class PEResource {
   // not valid.
   size_t Size();
 
-  // Creates a file in 'path' with a copy of the resource. If the resource can
-  // not be loaded into memory or if it cannot be written to disk it returns
-  // false.
-  bool WriteToDisk(const wchar_t* path);
+  // Writes the resource to the file |path|. Returns true on success, in which
+  // case |file| holds an open handle to the destination file. |file| will be
+  // opened with exclusive write access and shared read and delete access, and
+  // will be marked as delete-on-close.
+  bool WriteToDisk(const wchar_t* path, MiniFile& file);
 
  private:
   HRSRC resource_;
   HMODULE module_;
 };
+
+}  // namespace mini_installer
 
 #endif  // CHROME_INSTALLER_MINI_INSTALLER_PE_RESOURCE_H_

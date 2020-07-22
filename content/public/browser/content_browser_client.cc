@@ -968,6 +968,10 @@ base::FilePath ContentBrowserClient::GetSandboxedStorageServiceDataDirectory() {
   return base::FilePath();
 }
 
+bool ContentBrowserClient::ShouldSandboxAudioService() {
+  return false;
+}
+
 content::PreviewsState ContentBrowserClient::DetermineAllowedPreviews(
     content::PreviewsState initial_state,
     content::NavigationHandle* navigation_handle,

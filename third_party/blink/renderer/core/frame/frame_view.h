@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_VIEW_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_VIEW_H_
 
-#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/renderer/core/frame/embedded_content_view.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
@@ -18,7 +18,7 @@ struct IntrinsicSizingInfo;
 
 class CORE_EXPORT FrameView : public EmbeddedContentView {
  public:
-  FrameView(const IntRect& frame_rect) : EmbeddedContentView(frame_rect) {}
+  explicit FrameView(const IntRect& frame_rect);
   ~FrameView() override = default;
 
   // parent_flags is the result of calling GetIntersectionObservationFlags on
@@ -74,8 +74,7 @@ class CORE_EXPORT FrameView : public EmbeddedContentView {
  private:
   PhysicalRect rect_in_parent_;
   base::TimeTicks rect_in_parent_stable_since_;
-  blink::mojom::FrameVisibility frame_visibility_ =
-      blink::mojom::FrameVisibility::kRenderedInViewport;
+  blink::mojom::FrameVisibility frame_visibility_;
   bool hidden_for_throttling_;
   bool subtree_throttled_;
 };

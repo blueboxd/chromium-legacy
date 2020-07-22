@@ -112,10 +112,6 @@ SANDBOX_POLICY_EXPORT std::string StringFromUtilitySandboxType(
 SANDBOX_POLICY_EXPORT SandboxType
 UtilitySandboxTypeFromString(const std::string& sandbox_string);
 
-SANDBOX_POLICY_EXPORT void EnableAudioSandbox(bool enable);
-
-SANDBOX_POLICY_EXPORT bool IsAudioSandboxEnabled();
-
 }  // namespace policy
 }  // namespace sandbox
 

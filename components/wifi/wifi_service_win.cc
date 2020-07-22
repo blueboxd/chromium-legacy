@@ -1138,7 +1138,7 @@ DWORD WiFiServiceImpl::ResetDHCP() {
 DWORD WiFiServiceImpl::FindAdapterIndexMapByGUID(
     const GUID& interface_guid,
     IP_ADAPTER_INDEX_MAP* adapter_index_map) {
-  const auto guid_string = base::win::String16FromGUID(interface_guid);
+  const auto guid_string = base::win::WStringFromGUID(interface_guid);
 
   ULONG buffer_length = 0;
   DWORD error = ::GetInterfaceInfo(nullptr, &buffer_length);

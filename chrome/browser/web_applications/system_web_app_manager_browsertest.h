@@ -14,7 +14,6 @@
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
-class Browser;
 class KeyedService;
 
 namespace apps {
@@ -48,32 +47,53 @@ class SystemWebAppManagerBrowserTestBase : public InProcessBrowserTest {
   // Returns SystemAppType of mocked app, only valid if |install_mock| is true.
   SystemAppType GetMockAppType();
 
-  // Returns the the launch URL for an installed |system_app_type|.
-  const GURL& GetLaunchURL(SystemAppType system_app_type);
+  // Returns the launch URL for based on the given |params|.
+  const GURL& GetLaunchURL(const apps::AppLaunchParams& params);
 
   void WaitForTestSystemAppInstall();
-
-  // Waits for system apps to install, then launches one. Waits for launched app
-  // to load.
-  content::WebContents* WaitForSystemAppInstallAndLoad(
-      SystemAppType system_app_type);
-
-  // Waits for system apps to install, then launches one. Returns the browser
-  // that contains it.
-  Browser* WaitForSystemAppInstallAndLaunch(SystemAppType system_app_type);
 
   // Creates a default AppLaunchParams for |system_app_type|. Launches a window.
   // Uses kSourceTest as the AppLaunchSource.
   apps::AppLaunchParams LaunchParamsForApp(SystemAppType system_app_type);
 
-  // Invokes OpenApplication() using the test's Profile.
-  content::WebContents* LaunchApp(const apps::AppLaunchParams& params);
+  // Launch the given System App from |params|, and wait for the application to
+  // finish loading. If |browser| is not nullptr, it will store the Browser*
+  // that hosts the launched application.
+  content::WebContents* LaunchApp(const apps::AppLaunchParams& params,
+                                  Browser** browser = nullptr);
+
+  // Launch the given System App |type| with default AppLaunchParams, and wait
+  // for the application to finish loading. If |browser| is not nullptr, it will
+  // store the Browser* that hosts the launched application.
+  content::WebContents* LaunchApp(web_app::SystemAppType type,
+                                  Browser** browser = nullptr);
+
+  // Launch the given System App from |params|, without waiting for the
+  // application to finish loading. If |browser| is not nullptr, it will store
+  // the Browser* that hosts the launched application.
+  content::WebContents* LaunchAppWithoutWaiting(
+      const apps::AppLaunchParams& params,
+      Browser** browser = nullptr);
+
+  // Launch the given System App |type| with default AppLaunchParams, without
+  // waiting for the application to finish loading. If |browser| is not nullptr,
+  // it will store the Browser* that hosts the launched application.
+  content::WebContents* LaunchAppWithoutWaiting(web_app::SystemAppType type,
+                                                Browser** browser = nullptr);
 
  protected:
   std::unique_ptr<TestSystemWebAppInstallation> maybe_installation_;
 
  private:
   std::unique_ptr<KeyedService> CreateWebAppProvider(Profile* profile);
+
+  // Invokes OpenApplication() using the test's Profile. If |wait_for_load| is
+  // true, returns after the application finishes loading. Otherwise, returns
+  // immediately. If |browser| is not nullptr, it will store the Browser* that
+  // hosts the launched application.
+  content::WebContents* LaunchApp(const apps::AppLaunchParams& params,
+                                  bool wait_for_load,
+                                  Browser** out_browser);
 
   base::test::ScopedFeatureList scoped_feature_list_;
 

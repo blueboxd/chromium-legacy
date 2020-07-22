@@ -66,6 +66,7 @@
 #include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
+#include "chrome/browser/media/audio_service_util.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
 #include "chrome/browser/media/router/presentation/receiver_presentation_service_delegate_impl.h"
@@ -331,6 +332,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "ppapi/host/ppapi_host.h"
 #include "printing/buildflags/buildflags.h"
+#include "sandbox/policy/features.h"
 #include "sandbox/policy/sandbox_type.h"
 #include "sandbox/policy/switches.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -471,7 +473,6 @@
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #include "chrome/browser/browser_switcher/browser_switcher_navigation_throttle.h"
-#include "sandbox/policy/features.h"
 #endif
 
 #if defined(OS_LINUX)
@@ -3816,22 +3817,6 @@ bool ChromeContentBrowserClient::IsRendererCodeIntegrityEnabled() {
 
 #endif  // defined(OS_WIN)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-bool ShouldEnableAudioSandbox(const policy::PolicyMap& policies) {
-  const base::Value* audio_sandbox_enabled_policy_value =
-      policies.GetValue(policy::key::kAudioSandboxEnabled);
-  if (audio_sandbox_enabled_policy_value) {
-    bool force_enable_audio_sandbox;
-    audio_sandbox_enabled_policy_value->GetAsBoolean(
-        &force_enable_audio_sandbox);
-    return force_enable_audio_sandbox;
-  }
-
-  return base::FeatureList::IsEnabled(
-      sandbox::policy::features::kAudioServiceSandbox);
-}
-#endif
 
 void ChromeContentBrowserClient::WillStartServiceManager() {
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
@@ -3845,8 +3830,14 @@ void ChromeContentBrowserClient::WillStartServiceManager() {
             ->GetPolicyService()
             ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
                                                   std::string()));
-
-    sandbox::policy::EnableAudioSandbox(ShouldEnableAudioSandbox(policies));
+    const base::Value* audio_sandbox_enabled_policy_value =
+        policies.GetValue(policy::key::kAudioSandboxEnabled);
+    if (audio_sandbox_enabled_policy_value) {
+      bool force_enable_audio_sandbox;
+      audio_sandbox_enabled_policy_value->GetAsBoolean(
+          &force_enable_audio_sandbox);
+      SetForceAudioServiceSandboxed(force_enable_audio_sandbox);
+    }
   }
 #endif
 }
@@ -5211,6 +5202,10 @@ void ChromeContentBrowserClient::OnNetworkServiceDataUseUpdate(
 base::FilePath
 ChromeContentBrowserClient::GetSandboxedStorageServiceDataDirectory() {
   return g_browser_process->profile_manager()->user_data_dir();
+}
+
+bool ChromeContentBrowserClient::ShouldSandboxAudioService() {
+  return IsAudioServiceSandboxEnabled();
 }
 
 content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(

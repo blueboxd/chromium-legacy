@@ -309,7 +309,9 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppSessionRestoreTestChromeOS,
                        PRE_OmitSystemWebApps) {
   // Wait for the app to install, launch, and load, otherwise the app might not
   // be restored.
-  WaitForSystemAppInstallAndLoad(GetMockAppType());
+  WaitForTestSystemAppInstall();
+  LaunchApp(GetMockAppType());
+
   auto app_params = Browser::CreateParams::CreateForApp(
       test_app_name1, true, gfx::Rect(), browser()->profile(), true);
   Browser* app_browser = new Browser(app_params);

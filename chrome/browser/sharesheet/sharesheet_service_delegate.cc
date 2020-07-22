@@ -26,8 +26,9 @@ SharesheetServiceDelegate::SharesheetServiceDelegate(
 
 SharesheetServiceDelegate::~SharesheetServiceDelegate() = default;
 
-void SharesheetServiceDelegate::ShowBubble(std::vector<TargetInfo> targets) {
-  sharesheet_bubble_view_->ShowBubble(std::move(targets));
+void SharesheetServiceDelegate::ShowBubble(std::vector<TargetInfo> targets,
+                                           apps::mojom::IntentPtr intent) {
+  sharesheet_bubble_view_->ShowBubble(std::move(targets), std::move(intent));
 }
 
 void SharesheetServiceDelegate::OnBubbleClosed(
@@ -36,16 +37,17 @@ void SharesheetServiceDelegate::OnBubbleClosed(
   sharesheet_service_->OnBubbleClosed(id_, active_action);
 }
 
+void SharesheetServiceDelegate::OnActionLaunched() {
+  sharesheet_bubble_view_->ShowActionView();
+}
+
 void SharesheetServiceDelegate::OnTargetSelected(
     const base::string16& target_name,
     const TargetType type,
+    apps::mojom::IntentPtr intent,
     views::View* share_action_view) {
   sharesheet_service_->OnTargetSelected(id_, target_name, type,
-                                        share_action_view);
-}
-
-void SharesheetServiceDelegate::OnActionLaunched() {
-  sharesheet_bubble_view_->ShowActionView();
+                                        std::move(intent), share_action_view);
 }
 
 uint32_t SharesheetServiceDelegate::GetId() {

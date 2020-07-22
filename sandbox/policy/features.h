@@ -16,8 +16,6 @@ namespace sandbox {
 namespace policy {
 namespace features {
 
-SANDBOX_POLICY_EXPORT extern const base::Feature kAudioServiceSandbox;
-
 #if !defined(OS_MACOSX)
 SANDBOX_POLICY_EXPORT extern const base::Feature kNetworkServiceSandbox;
 #endif

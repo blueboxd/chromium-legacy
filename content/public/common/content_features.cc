@@ -55,6 +55,17 @@ const base::Feature kAudioServiceOutOfProcess {
 #endif
 };
 
+// Enables the audio-service sandbox. This feature has an effect only when the
+// kAudioServiceOutOfProcess feature is enabled.
+const base::Feature kAudioServiceSandbox {
+  "AudioServiceSandbox",
+#if defined(OS_WIN) || defined(OS_MACOSX)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
 // Kill switch for Background Fetch.
 const base::Feature kBackgroundFetch{"BackgroundFetch",
                                      base::FEATURE_ENABLED_BY_DEFAULT};

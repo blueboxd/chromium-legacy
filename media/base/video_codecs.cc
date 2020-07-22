@@ -822,44 +822,71 @@ bool ParseDolbyVisionCodecId(const std::string& codec_id,
 #endif
 
 VideoCodec StringToVideoCodec(const std::string& codec_id) {
-  std::vector<std::string> elem = base::SplitString(
-      codec_id, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  if (elem.empty())
-    return kUnknownVideoCodec;
-
+  VideoCodec codec = kUnknownVideoCodec;
   VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
   uint8_t level = 0;
   VideoColorSpace color_space;
+  ParseCodec(codec_id, codec, profile, level, color_space);
+  return codec;
+}
 
-  if (codec_id == "vp8" || codec_id == "vp8.0")
-    return kCodecVP8;
+void ParseCodec(const std::string& codec_id,
+                VideoCodec& codec,
+                VideoCodecProfile& profile,
+                uint8_t& level,
+                VideoColorSpace& color_space) {
+  std::vector<std::string> elem = base::SplitString(
+      codec_id, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (elem.empty()) {
+    codec = kUnknownVideoCodec;
+    return;
+  }
+
+  if (codec_id == "vp8" || codec_id == "vp8.0") {
+    codec = kCodecVP8;
+    return;
+  }
   if (ParseNewStyleVp9CodecID(codec_id, &profile, &level, &color_space) ||
       ParseLegacyVp9CodecID(codec_id, &profile, &level)) {
-    return kCodecVP9;
+    codec = kCodecVP9;
+    return;
   }
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-  if (ParseAv1CodecId(codec_id, &profile, &level, &color_space))
-    return kCodecAV1;
+  if (ParseAv1CodecId(codec_id, &profile, &level, &color_space)) {
+    codec = kCodecAV1;
+    return;
+  }
 #endif
 
-  if (codec_id == "theora")
-    return kCodecTheora;
-  if (ParseAVCCodecId(codec_id, &profile, &level))
-    return kCodecH264;
+  if (codec_id == "theora") {
+    codec = kCodecTheora;
+    return;
+  }
+  if (ParseAVCCodecId(codec_id, &profile, &level)) {
+    codec = kCodecH264;
+    return;
+  }
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
-  if (ParseAVCCodecId(TranslateLegacyAvc1CodecIds(codec_id), &profile, &level))
-    return kCodecH264;
+  if (ParseAVCCodecId(TranslateLegacyAvc1CodecIds(codec_id), &profile,
+                      &level)) {
+    codec = kCodecH264;
+    return;
+  }
 #endif
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
-  if (ParseHEVCCodecId(codec_id, &profile, &level))
-    return kCodecHEVC;
+  if (ParseHEVCCodecId(codec_id, &profile, &level)) {
+    codec = kCodecHEVC;
+    return;
+  }
 #endif
 #if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
-  if (ParseDolbyVisionCodecId(codec_id, &profile, &level))
-    return kCodecDolbyVision;
+  if (ParseDolbyVisionCodecId(codec_id, &profile, &level)) {
+    codec = kCodecDolbyVision;
+    return;
+  }
 #endif
-  return kUnknownVideoCodec;
+  codec = kUnknownVideoCodec;
 }
 
 }  // namespace media

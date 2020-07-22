@@ -85,8 +85,6 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
 
   // blink::WebSharedWorkerClient implementation.
   void WorkerContextDestroyed() override;
-  scoped_refptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext()
-      override;
 
  private:
   // mojom::SharedWorker methods:
@@ -95,25 +93,21 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
                blink::MessagePortDescriptor port) override;
   void Terminate() override;
 
-  mojo::Receiver<blink::mojom::SharedWorker> receiver_;
-  GURL url_;
-  blink::mojom::RendererPreferences renderer_preferences_;
-  // Set on ctor and passed to the fetch context created when
-  // CreateWorkerFetchContext() is called.
-  mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
-      preference_watcher_receiver_;
-  std::unique_ptr<blink::WebSharedWorker> impl_;
+  scoped_refptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext(
+      const GURL& url,
+      const blink::mojom::RendererPreferences& renderer_preferences,
+      mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+          preference_watcher_receiver,
+      const std::vector<std::string>& cors_exempt_header_list,
+      std::unique_ptr<NavigationResponseOverrideParameters> response_override);
 
-  std::vector<std::string> cors_exempt_header_list_;
+  mojo::Receiver<blink::mojom::SharedWorker> receiver_;
+  std::unique_ptr<blink::WebSharedWorker> impl_;
 
   scoped_refptr<ServiceWorkerProviderContext> service_worker_provider_context_;
 
   // The factory bundle used for loading subresources for this shared worker.
   scoped_refptr<ChildURLLoaderFactoryBundle> subresource_loader_factory_bundle_;
-
-  // The response override parameters used for taking a resource pre-requested
-  // by the browser process.
-  std::unique_ptr<NavigationResponseOverrideParameters> response_override_;
 
   // Out-of-process NetworkService:
   // Detects disconnection from the default factory of the loader factory bundle

@@ -55,7 +55,7 @@ void GetDebugInfoForModule(HMODULE module_handle,
     return;
   *pdb_name = FilePath(std::move(pdb_filename)).BaseName();
 
-  auto buffer = win::String16FromGUID(guid);
+  auto buffer = win::WStringFromGUID(guid);
   RemoveChars(buffer, L"{}-", &buffer);
   buffer.append(NumberToWString(age));
   *build_id = WideToUTF8(buffer);

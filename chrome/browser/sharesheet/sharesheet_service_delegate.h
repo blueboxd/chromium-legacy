@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/sharesheet/sharesheet_controller.h"
 #include "chrome/browser/sharesheet/sharesheet_types.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 
 class SharesheetBubbleView;
 
@@ -33,10 +34,12 @@ class SharesheetServiceDelegate : public SharesheetController {
   SharesheetServiceDelegate& operator=(const SharesheetServiceDelegate&) =
       delete;
 
-  void ShowBubble(std::vector<TargetInfo> targets);
+  void ShowBubble(std::vector<TargetInfo> targets,
+                  apps::mojom::IntentPtr intent);
   void OnBubbleClosed(const base::string16& active_action);
   void OnTargetSelected(const base::string16& target_name,
                         const TargetType type,
+                        apps::mojom::IntentPtr intent,
                         views::View* share_action_view);
   void OnActionLaunched();
 

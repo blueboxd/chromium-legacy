@@ -811,8 +811,7 @@ TEST_P(GcpCredentialProviderAvailableCredentialsTest, AvailableCredentials) {
 
     // In the case that a real CReauthCredential is created, we expect that this
     // credential will set the default credential provider for the user tile.
-    auto guid_string =
-        base::win::String16FromGUID(CLSID_GaiaCredentialProvider);
+    auto guid_string = base::win::WStringFromGUID(CLSID_GaiaCredentialProvider);
 
     wchar_t guid_in_registry[64];
     ULONG length = base::size(guid_in_registry);

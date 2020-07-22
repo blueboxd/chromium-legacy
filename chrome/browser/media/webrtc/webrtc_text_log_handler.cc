@@ -21,6 +21,7 @@
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/media/audio_service_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/media/webrtc_logging.mojom.h"
 #include "components/version_info/version_info.h"
@@ -37,8 +38,6 @@
 #include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
-#include "sandbox/policy/features.h"
-#include "sandbox/policy/sandbox_type.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 #if defined(OS_LINUX)
@@ -503,8 +502,7 @@ void WebRtcTextLogHandler::OnGetNetworkInterfaceListFinish(
        enabled_or_disabled_feature_string(
            features::kAudioServiceLaunchOnStartup),
        ", Sandbox=",
-       enabled_or_disabled_bool_string(
-           sandbox::policy::IsAudioSandboxEnabled())}));
+       enabled_or_disabled_bool_string(IsAudioServiceSandboxEnabled())}));
 
   // Audio manager
   // On some platforms, this can vary depending on build flags and failure

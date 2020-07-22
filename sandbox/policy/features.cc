@@ -10,17 +10,6 @@ namespace sandbox {
 namespace policy {
 namespace features {
 
-// Enables audio service sandbox.
-// (Only causes an effect when feature kAudioServiceOutOfProcess is enabled.)
-const base::Feature kAudioServiceSandbox {
-  "AudioServiceSandbox",
-#if defined(OS_WIN) || defined(OS_MACOSX)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
-};
-
 #if !defined(OS_MACOSX)
 // Enables network service sandbox.
 // (Only causes an effect when feature kNetworkService is enabled.)

@@ -1113,7 +1113,6 @@ if (!is_android) {
       "../browser/prerender/isolated/isolated_prerender_browsertest.cc",
       "../browser/prerender/isolated/isolated_prerender_test_utils.cc",
       "../browser/prerender/isolated/isolated_prerender_test_utils.h",
-      "../browser/prerender/prerender_browsertest.cc",
       "../browser/prerender/prerender_nostate_prefetch_browsertest.cc",
       "../browser/prerender/prerender_test_utils.cc",
       "../browser/prerender/prerender_test_utils.h",

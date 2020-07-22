@@ -29,15 +29,16 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_H_
 
+#include "base/i18n/rtl.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
-#include "mojo/public/mojom/base/text_direction.mojom-blink-forward.h"
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy_features.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
-#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
+#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/input/scroll_direction.mojom-blink-forward.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/frame_lifecycle.h"
@@ -45,11 +46,14 @@
 #include "third_party/blink/renderer/core/frame/navigation_rate_limiter.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
-#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+
+namespace ui {
+enum class ScrollGranularity : uint8_t;
+}  // namespace ui
 
 namespace blink {
 
@@ -209,13 +213,8 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   }
 
   // Ad Tagging
-  bool IsAdSubframe() const {
-    return ad_frame_type_ != mojom::blink::AdFrameType::kNonAd;
-  }
-
-  bool IsAdRoot() const {
-    return ad_frame_type_ == mojom::blink::AdFrameType::kRootAd;
-  }
+  bool IsAdSubframe() const;
+  bool IsAdRoot() const;
 
   // Called to make a frame inert or non-inert. A frame is inert when there
   // is a modal dialog displayed within an ancestor frame, and this frame
@@ -236,7 +235,7 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // Returns true if the scroll was consumed locally.
   virtual bool BubbleLogicalScrollFromChildFrame(
       mojom::blink::ScrollDirection direction,
-      ScrollGranularity granularity,
+      ui::ScrollGranularity granularity,
       Frame* child) = 0;
 
   const base::UnguessableToken& GetDevToolsFrameToken() const {

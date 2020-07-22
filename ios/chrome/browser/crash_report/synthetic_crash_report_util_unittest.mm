@@ -121,7 +121,8 @@ TEST_F(SyntheticCrashReportUtilTest, CreateSyntheticCrashReportForUte) {
   EXPECT_EQ(temp_dir.GetPath().value(), config_lines[23]);
 
   EXPECT_EQ("BreakpadServerParameterPrefix_platform", config_lines[24]);
-  EXPECT_EQ("12", config_lines[25]);
+  EXPECT_EQ(base::NumberToString(base::SysInfo::HardwareModelName().size()),
+            config_lines[25]);
   EXPECT_EQ(base::SysInfo::HardwareModelName(), config_lines[26]);
 
   // Read minidump file. It must be empty as there is no stack trace, but

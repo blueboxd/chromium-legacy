@@ -570,6 +570,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                      int64_t recv_bytes,
                                      int64_t sent_bytes) override;
   base::FilePath GetSandboxedStorageServiceDataDirectory() override;
+  bool ShouldSandboxAudioService() override;
   content::PreviewsState DetermineAllowedPreviews(
       content::PreviewsState initial_state,
       content::NavigationHandle* navigation_handle,

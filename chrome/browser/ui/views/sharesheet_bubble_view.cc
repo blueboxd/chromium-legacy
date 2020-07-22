@@ -110,8 +110,10 @@ SharesheetBubbleView::SharesheetBubbleView(
 
 SharesheetBubbleView::~SharesheetBubbleView() = default;
 
-void SharesheetBubbleView::ShowBubble(std::vector<TargetInfo> targets) {
+void SharesheetBubbleView::ShowBubble(std::vector<TargetInfo> targets,
+                                      apps::mojom::IntentPtr intent) {
   targets_ = std::move(targets);
+  intent_ = std::move(intent);
 
   auto* main_layout =
       main_view_->SetLayoutManager(std::make_unique<views::GridLayout>());
@@ -185,9 +187,13 @@ void SharesheetBubbleView::CloseBubble() {
 
 void SharesheetBubbleView::ButtonPressed(views::Button* sender,
                                          const ui::Event& event) {
-  active_target_ = targets_[sender->tag()].launch_name;
-  delegate_->OnTargetSelected(active_target_, targets_[sender->tag()].type,
-                              share_action_view_);
+  auto type = targets_[sender->tag()].type;
+  if (type == sharesheet::TargetType::kAction) {
+    active_target_ = targets_[sender->tag()].launch_name;
+  }
+  delegate_->OnTargetSelected(targets_[sender->tag()].launch_name, type,
+                              std::move(intent_), share_action_view_);
+  intent_.reset();
   RequestFocus();
 }
 

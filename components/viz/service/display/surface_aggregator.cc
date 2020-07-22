@@ -820,6 +820,8 @@ void SurfaceAggregator::AddColorConversionPass() {
 
   auto* shared_quad_state =
       color_conversion_pass->CreateAndAppendSharedQuadState();
+  // Do NOT set blend mode here to SkBlendMode::kSrcOver, which will cause
+  // blending with empty (black) root pass when child pass has alpha.
   shared_quad_state->SetAll(
       /*quad_to_target_transform=*/gfx::Transform(),
       /*quad_layer_rect=*/output_rect,
@@ -827,7 +829,7 @@ void SurfaceAggregator::AddColorConversionPass() {
       /*rounded_corner_bounds=*/gfx::RRectF(),
       /*clip_rect=*/gfx::Rect(),
       /*is_clipped=*/false, /*are_contents_opaque=*/false, /*opacity=*/1.f,
-      /*blend_mode=*/SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
+      /*blend_mode=*/SkBlendMode::kSrc, /*sorting_context_id=*/0);
 
   auto* quad =
       color_conversion_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();

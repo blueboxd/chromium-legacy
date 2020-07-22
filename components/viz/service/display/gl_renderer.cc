@@ -184,6 +184,8 @@ BlendMode BlendModeFromSkXfermode(SkBlendMode mode) {
       return BLEND_MODE_COLOR;
     case SkBlendMode::kLuminosity:
       return BLEND_MODE_LUMINOSITY;
+    case SkBlendMode::kSrc:
+      return BLEND_MODE_NONE;
     default:
       NOTREACHED();
       return BLEND_MODE_NONE;

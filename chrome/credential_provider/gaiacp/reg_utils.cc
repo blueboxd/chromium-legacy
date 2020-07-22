@@ -111,7 +111,7 @@ HRESULT MakeGcpwDefaultCP() {
   if (GetGlobalFlagOrDefault(kMakeGcpwDefaultCredProvider, 1))
     return SetMachineRegString(
         kDefaultCredProviderPath, kDefaultCredProviderKey,
-        base::win::String16FromGUID(CLSID_GaiaCredentialProvider));
+        base::win::WStringFromGUID(CLSID_GaiaCredentialProvider));
 
   return S_OK;
 }
@@ -395,7 +395,7 @@ HRESULT SetUserWinlogonUserListEntry(const base::string16& username,
 
 HRESULT SetLogonUiUserTileEntry(const base::string16& sid, CLSID cp_guid) {
   return SetMachineRegString(kLogonUiUserTileRegKey, sid,
-                             base::win::String16FromGUID(cp_guid));
+                             base::win::WStringFromGUID(cp_guid));
 }
 
 HRESULT GetMachineGuid(base::string16* machine_guid) {

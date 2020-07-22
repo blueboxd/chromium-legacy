@@ -641,6 +641,8 @@ static_library("browser") {
     "lookalikes/lookalike_url_service.h",
     "lookalikes/lookalike_url_tab_storage.cc",
     "lookalikes/lookalike_url_tab_storage.h",
+    "media/audio_service_util.cc",
+    "media/audio_service_util.h",
     "media/cast_mirroring_service_host.cc",
     "media/cast_mirroring_service_host.h",
     "media/cast_remoting_connector.cc",

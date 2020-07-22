@@ -36,7 +36,8 @@ void SharesheetButton::ButtonPressed(views::Button* sender,
       browser_->tab_strip_model()->GetActiveWebContents()->GetBrowserContext());
   auto* sharesheet_service =
       sharesheet::SharesheetServiceFactory::GetForProfile(profile);
-  sharesheet_service->ShowBubble(/* bubble_anchor_view */ this);
+  sharesheet_service->ShowBubble(/* bubble_anchor_view */ this,
+                                 /* intent */ nullptr);
 }
 
 int SharesheetButton::GetIconSize() const {

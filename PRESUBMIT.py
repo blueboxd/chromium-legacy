@@ -1083,7 +1083,7 @@ _BANNED_CPP_FUNCTIONS = (
       'StringFromGUID2',
       (
         'StringFromGUID2 introduces an unnecessary dependency on ole32.dll.',
-        'Use base::win::String16FromGUID instead.'
+        'Use base::win::WStringFromGUID instead.'
       ),
       True,
       (
@@ -1094,7 +1094,7 @@ _BANNED_CPP_FUNCTIONS = (
       'StringFromCLSID',
       (
         'StringFromCLSID introduces an unnecessary dependency on ole32.dll.',
-        'Use base::win::String16FromGUID instead.'
+        'Use base::win::WStringFromGUID instead.'
       ),
       True,
       (

@@ -46,7 +46,6 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
-#include "chrome/browser/chromeos/web_applications/sample_system_web_app_info.h"
 #include "chrome/browser/chromeos/web_applications/terminal_source.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/components/media_app_ui/url_constants.h"
@@ -54,6 +53,11 @@
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "extensions/common/constants.h"
+
+#if !defined(OFFICIAL_BUILD)
+#include "chrome/browser/chromeos/web_applications/sample_system_web_app_info.h"
+#endif  // !defined(OFFICIAL_BUILD)
+
 #endif  // defined(OS_CHROMEOS)
 
 namespace web_app {

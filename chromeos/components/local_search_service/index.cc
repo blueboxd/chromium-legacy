@@ -14,12 +14,8 @@ namespace local_search_service {
 
 namespace {
 
-// Only logs metrics if |histogram_prefix| is not empty.
-void MaybeLogIndexIdAndBackendType(const std::string& histogram_prefix,
-                                   Backend backend) {
-  if (histogram_prefix.empty())
-    return;
-
+void LogIndexIdAndBackendType(const std::string& histogram_prefix,
+                              Backend backend) {
   base::UmaHistogramEnumeration(histogram_prefix + ".Backend", backend);
 }
 
@@ -30,16 +26,14 @@ std::string IndexIdBasedHistogramPrefix(IndexId index_id) {
       return prefix + "CrosSettings";
     case IndexId::kHelpApp:
       return prefix + "HelpApp";
-    default:
-      return "";
   }
 }
 
 }  // namespace
-
 Index::Index(IndexId index_id, Backend backend, PrefService* local_state) {
   histogram_prefix_ = IndexIdBasedHistogramPrefix(index_id);
-  MaybeLogIndexIdAndBackendType(histogram_prefix_, backend);
+  DCHECK(!histogram_prefix_.empty());
+  LogIndexIdAndBackendType(histogram_prefix_, backend);
 
   // TODO(jiameng): consider enforcing this to be non-nullable.
   if (!local_state) {
@@ -54,18 +48,25 @@ Index::Index(IndexId index_id, Backend backend, PrefService* local_state) {
 Index::~Index() = default;
 
 void Index::MaybeLogSearchResultsStats(ResponseStatus status,
-                                       size_t num_results) {
+                                       size_t num_results,
+                                       base::TimeDelta latency) {
   if (reporter_)
     reporter_->OnSearchPerformed();
 
-  if (histogram_prefix_.empty())
-    return;
-
   base::UmaHistogramEnumeration(histogram_prefix_ + ".ResponseStatus", status);
   if (status == ResponseStatus::kSuccess) {
-    // Only logs number of results if search is a success.
+    // Only logs number of results and latency if search is a success.
     base::UmaHistogramCounts100(histogram_prefix_ + ".NumberResults",
                                 num_results);
+    base::UmaHistogramTimes(histogram_prefix_ + ".SearchLatency", latency);
+  }
+}
+
+void Index::MaybeLogIndexSize() {
+  const uint64_t index_size = GetSize();
+  if (index_size != 0u) {
+    base::UmaHistogramCounts10000(histogram_prefix_ + ".NumberDocuments",
+                                  index_size);
   }
 }
 

@@ -97,7 +97,7 @@ void RecordWin32ApiErrorCode(const char* function) {
 
 base::string16 GetComRegistryPath(base::StringPiece16 hive, const GUID& guid) {
   return base::StrCat(
-      {L"Software\\Classes\\", hive, L"\\", base::win::String16FromGUID(guid)});
+      {L"Software\\Classes\\", hive, L"\\", base::win::WStringFromGUID(guid)});
 }
 
 base::string16 GetComClsidRegistryPath(const GUID& clsid) {
@@ -240,7 +240,7 @@ bool InstallServiceWorkItemImpl::DoComRegistration() {
         HKEY_LOCAL_MACHINE, clsid_reg_path, WorkItem::kWow64Default);
     com_registration_work_items_->AddSetRegValueWorkItem(
         HKEY_LOCAL_MACHINE, clsid_reg_path, WorkItem::kWow64Default, L"AppID",
-        base::win::String16FromGUID(clsid_), true);
+        base::win::WStringFromGUID(clsid_), true);
     com_registration_work_items_->AddCreateRegKeyWorkItem(
         HKEY_LOCAL_MACHINE, appid_reg_path, WorkItem::kWow64Default);
     com_registration_work_items_->AddSetRegValueWorkItem(
@@ -269,7 +269,7 @@ bool InstallServiceWorkItemImpl::DoComRegistration() {
         WorkItem::kWow64Default);
     com_registration_work_items_->AddSetRegValueWorkItem(
         HKEY_LOCAL_MACHINE, iid_reg_path + L"\\TypeLib",
-        WorkItem::kWow64Default, L"", base::win::String16FromGUID(iid_), true);
+        WorkItem::kWow64Default, L"", base::win::WStringFromGUID(iid_), true);
     com_registration_work_items_->AddSetRegValueWorkItem(
         HKEY_LOCAL_MACHINE, iid_reg_path + L"\\TypeLib",
         WorkItem::kWow64Default, L"Version", L"1.0", true);

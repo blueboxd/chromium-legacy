@@ -115,6 +115,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get the child of a node given a 0-based index.
   virtual gfx::NativeViewAccessible ChildAtIndex(int index) = 0;
 
+  // Returns true if it has a modal dialog.
+  virtual bool HasModalDialog() const = 0;
+
   // Gets the first child of a node, or nullptr if no children exist.
   virtual gfx::NativeViewAccessible GetFirstChild() = 0;
 

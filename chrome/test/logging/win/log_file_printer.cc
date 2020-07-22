@@ -144,8 +144,7 @@ void EventPrinter::PrintEventContext(const EVENT_TRACE* event,
 // Prints a useful message for events that can't be otherwise printed.
 void EventPrinter::PrintBadEvent(const EVENT_TRACE* event,
                                  const base::StringPiece& error) {
-  *out_ << error
-        << " (class=" << base::win::String16FromGUID(event->Header.Guid)
+  *out_ << error << " (class=" << base::win::WStringFromGUID(event->Header.Guid)
         << ", type=" << static_cast<int>(event->Header.Class.Type) << ")";
 }
 

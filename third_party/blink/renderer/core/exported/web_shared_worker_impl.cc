@@ -214,8 +214,10 @@ void WebSharedWorkerImpl::StartWorkerContext(
         browser_interface_broker,
     bool pause_worker_context_on_start,
     std::unique_ptr<WorkerMainScriptLoadParameters>
-        worker_main_script_load_params) {
+        worker_main_script_load_params,
+    scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context) {
   DCHECK(IsMainThread());
+  DCHECK(web_worker_fetch_context);
   CHECK(constructor_origin.Get()->CanAccessSharedWorkers());
 
   // Creates 'outside settings' used in the "Processing model" algorithm in the
@@ -236,10 +238,6 @@ void WebSharedWorkerImpl::StartWorkerContext(
                     mojom::blink::InsecureRequestPolicy::kBlockAllMixedContent
               : mojom::blink::InsecureRequestPolicy::kBlockAllMixedContent,
           FetchClientSettingsObject::InsecureNavigationsSet());
-
-  scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =
-      client_->CreateWorkerFetchContext();
-  DCHECK(web_worker_fetch_context);
 
   bool constructor_secure_context =
       constructor_origin.IsPotentiallyTrustworthy() ||
@@ -353,6 +351,7 @@ std::unique_ptr<WebSharedWorker> WebSharedWorker::CreateAndStart(
     bool pause_worker_context_on_start,
     std::unique_ptr<WorkerMainScriptLoadParameters>
         worker_main_script_load_params,
+    scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
     CrossVariantMojoRemote<mojom::SharedWorkerHostInterfaceBase> host,
     WebSharedWorkerClient* client,
     ukm::SourceId ukm_source_id) {
@@ -364,7 +363,8 @@ std::unique_ptr<WebSharedWorker> WebSharedWorker::CreateAndStart(
       policy_type, creation_address_space, outside_fetch_client_settings_object,
       devtools_worker_token, std::move(content_settings),
       std::move(browser_interface_broker), pause_worker_context_on_start,
-      std::move(worker_main_script_load_params));
+      std::move(worker_main_script_load_params),
+      std::move(web_worker_fetch_context));
   return worker;
 }
 

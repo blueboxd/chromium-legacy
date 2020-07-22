@@ -29,7 +29,14 @@ void SystemWebAppIntegrationTest::ExpectSystemWebAppValid(
     web_app::SystemAppType app_type,
     const GURL& url,
     const std::string& title) {
-  Browser* app_browser = WaitForSystemAppInstallAndLaunch(app_type);
+  WaitForTestSystemAppInstall();
+
+  // Launch but don't wait for page load here because we want to check the
+  // browser window's title is set before the page loads.
+  // TODO(crbug.com/1107285): This isn't a strong guarantee that we check the
+  // title before the page loads. We should improve this.
+  Browser* app_browser;
+  LaunchAppWithoutWaiting(app_type, &app_browser);
 
   web_app::AppId app_id = app_browser->app_controller()->GetAppId();
   EXPECT_EQ(GetManager().GetAppIdForSystemApp(app_type), app_id);

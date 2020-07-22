@@ -55,10 +55,11 @@ td { white-space: pre-wrap; font-size: 14px; }
   color: #666;
   padding: 0 0.5em;
   text-align: right;
+  user-select: none;
   vertical-align: top;
   width: 94px;
 }
-.emptylineno { box-sizing: border-box; width: 94px; }
+.emptylineno { box-sizing: border-box;  user-select: none; width: 94px; }
 .code { border-left: 1px solid #ddd; word-break: break-all; }
 .del { background: #ffeeee; }
 .del.strong { background: #ffcaca; }

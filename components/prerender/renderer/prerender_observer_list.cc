@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/prerender/prerender_observer_list.h"
+#include "components/prerender/renderer/prerender_observer_list.h"
 
-#include "chrome/renderer/prerender/prerender_observer.h"
+#include "components/prerender/renderer/prerender_observer.h"
 #include "content/public/renderer/render_frame.h"
 
 namespace prerender {

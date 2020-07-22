@@ -31,7 +31,7 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
       return false;
 #endif
     case SandboxType::kAudio:
-      return !IsAudioSandboxEnabled();
+      return false;
     case SandboxType::kVideoCapture:
 #if defined(OS_FUCHSIA)
       return false;
@@ -317,18 +317,6 @@ SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
     return SandboxType::kTts;
 #endif  // defined(OS_CHROMEOS)
   return SandboxType::kUtility;
-}
-
-void EnableAudioSandbox(bool enable) {
-  if (enable) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableAudioServiceSandbox);
-  }
-}
-
-bool IsAudioSandboxEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableAudioServiceSandbox);
 }
 
 }  // namespace policy

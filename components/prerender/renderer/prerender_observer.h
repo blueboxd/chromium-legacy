@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_PRERENDER_PRERENDER_OBSERVER_H_
-#define CHROME_RENDERER_PRERENDER_PRERENDER_OBSERVER_H_
+#ifndef COMPONENTS_PRERENDER_RENDERER_PRERENDER_OBSERVER_H_
+#define COMPONENTS_PRERENDER_RENDERER_PRERENDER_OBSERVER_H_
 
 #include "base/observer_list_types.h"
 
@@ -20,4 +20,4 @@ class PrerenderObserver : public base::CheckedObserver {
 
 }  // namespace prerender
 
-#endif  // CHROME_RENDERER_PRERENDER_PRERENDER_OBSERVER_H_
+#endif  // COMPONENTS_PRERENDER_RENDERER_PRERENDER_OBSERVER_H_

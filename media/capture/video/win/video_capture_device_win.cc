@@ -257,7 +257,7 @@ VideoPixelFormat VideoCaptureDeviceWin::TranslateMediaSubtypeToPixelFormat(
       return pixel_format.format;
   }
   DVLOG(2) << "Device (also) supports an unknown media type "
-           << base::win::String16FromGUID(sub_type);
+           << base::win::WStringFromGUID(sub_type);
   return PIXEL_FORMAT_UNKNOWN;
 }
 

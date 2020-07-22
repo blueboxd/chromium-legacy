@@ -157,8 +157,6 @@ void LazyLoadFrameObserver::LoadIfHiddenOrNearViewport(
 }
 
 void LazyLoadFrameObserver::LoadImmediately() {
-  // TODO(domfarolino): Change the CHECKs to DCHECKs once we confirm there are
-  // no crashes.
   CHECK(IsLazyLoadPending());
   CHECK(lazy_load_request_info_);
 
@@ -181,8 +179,6 @@ void LazyLoadFrameObserver::LoadImmediately() {
   // DisconnectContentFrame() if the content frame changes.
   CHECK(element_->ContentFrame());
 
-  // Note that calling both FrameLoader::StartNavigation() and Frame::Navigate()
-  // causes the |lazy_load_intersection_observer_| to be disconnected.
   FrameLoadRequest request(element_->GetDocument().domWindow(),
                            scoped_request_info->resource_request);
 
@@ -195,6 +191,8 @@ void LazyLoadFrameObserver::LoadImmediately() {
                                        scoped_request_info->frame_load_type);
   }
 
+  // Note that whatever we delegate to for the navigation is responsible for
+  // clearing the frame's lazy load frame observer via |CancelPendingLayLoad()|.
   CHECK(!IsLazyLoadPending());
 }
 

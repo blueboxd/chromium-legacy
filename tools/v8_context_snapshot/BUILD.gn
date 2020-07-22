@@ -64,12 +64,21 @@ if (use_v8_context_snapshot) {
     deps = [ ":v8_context_snapshot_generator($v8_snapshot_toolchain)" ]
 
     if (is_component_build) {
-      # In component builds, this forces the generator to rerun whenever the v8
-      # shared library is rebuilt. Without it would only regenerate if the
-      # generator itself was rebuilt.
-      inputs = [ "$root_out_dir/${shlib_prefix}v8${shlib_extension}" ]
+      # In the component build mode, the snapshot should be updated when any of
+      # the generator executable or the shared libraries get updated.  Note that
+      # it's possible that some of the shared libraries are updated without
+      # having the executable updated.
+      inputs = [
+        "$root_out_dir/${shlib_prefix}blink_core${shlib_extension}",
+        "$root_out_dir/${shlib_prefix}blink_modules${shlib_extension}",
+        "$root_out_dir/${shlib_prefix}blink_platform${shlib_extension}",
+        "$root_out_dir/${shlib_prefix}v8${shlib_extension}",
+      ]
 
-      deps += [ "//v8" ]
+      deps += [
+        "//third_party/blink/renderer/bindings:v8_context_snapshot_influential_libs",
+        "//v8",
+      ]
     }
 
     outputs = [ output_file ]

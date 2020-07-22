@@ -60,10 +60,10 @@ CGaiaCredentialProviderModule::UpdateRegistryAppId(BOOL do_register) throw() {
       eventlog_path.Append(FILE_PATH_LITERAL("gcp_eventlog_provider.dll"));
 
   auto provider_guid_string =
-      base::win::String16FromGUID(CLSID_GaiaCredentialProvider);
+      base::win::WStringFromGUID(CLSID_GaiaCredentialProvider);
 
   auto filter_guid_string =
-      base::win::String16FromGUID(CLSID_CGaiaCredentialProviderFilter);
+      base::win::WStringFromGUID(CLSID_CGaiaCredentialProviderFilter);
 
   ATL::_ATL_REGMAP_ENTRY regmap[] = {
       {L"CP_CLASS_GUID", base::as_wcstr(provider_guid_string.c_str())},

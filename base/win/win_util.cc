@@ -78,7 +78,7 @@ bool SetPropVariantValueForPropertyStore(
   // See third_party/perl/c/i686-w64-mingw32/include/propkey.h for GUID and
   // PID definitions.
   DPLOG(ERROR) << "Failed to set property with GUID "
-               << String16FromGUID(property_key.fmtid) << " PID "
+               << WStringFromGUID(property_key.fmtid) << " PID "
                << property_key.pid;
 #endif
   return false;
@@ -721,7 +721,7 @@ void EnableHighDPISupport() {
   }
 }
 
-std::wstring String16FromGUID(REFGUID rguid) {
+std::wstring WStringFromGUID(REFGUID rguid) {
   // This constant counts the number of characters in the formatted string,
   // including the null termination character.
   constexpr int kGuidStringCharacters =

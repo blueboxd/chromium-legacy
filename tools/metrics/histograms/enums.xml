@@ -13384,6 +13384,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="14" label="Unknown filesystem"/>
   <int value="15" label="Unsupported filesystem"/>
   <int value="16" label="Invalid archive"/>
+  <int value="17" label="Need password"/>
 </enum>
 
 <enum name="CrosDisksDeviceMediaType">
@@ -13461,6 +13462,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="214" label="Archive - Unknown filesystem"/>
   <int value="215" label="Archive - Unsupported filesystem"/>
   <int value="216" label="Archive - Invalid archive"/>
+  <int value="217" label="Archive - Need password"/>
   <int value="300" label="Network - Success"/>
   <int value="301" label="Network - Unknown"/>
   <int value="302" label="Network - Internal"/>

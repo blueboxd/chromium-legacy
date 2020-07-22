@@ -48,11 +48,6 @@ namespace blink {
 class WebSharedWorkerClient {
  public:
   virtual void WorkerContextDestroyed() = 0;
-
-  // Called on the main thread during initialization. Creates a new
-  // WebWorkerFetchContext for the shared worker. This is passed to the worker
-  // thread and used loading requests from the shared worker.
-  virtual scoped_refptr<WebWorkerFetchContext> CreateWorkerFetchContext() = 0;
 };
 
 }  // namespace blink

@@ -94,6 +94,10 @@ gfx::NativeViewAccessible AXPlatformNodeDelegateBase::ChildAtIndex(int index) {
   return nullptr;
 }
 
+bool AXPlatformNodeDelegateBase::HasModalDialog() const {
+  return false;
+}
+
 gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetFirstChild() {
   if (GetChildCount() > 0)
     return ChildAtIndex(0);

@@ -50,11 +50,11 @@ void UnregisterWakeTask() {
 
 base::string16 GetComServerClsidRegistryPath(REFCLSID clsid) {
   return base::StrCat(
-      {L"Software\\Classes\\CLSID\\", base::win::String16FromGUID(clsid)});
+      {L"Software\\Classes\\CLSID\\", base::win::WStringFromGUID(clsid)});
 }
 
 base::string16 GetComServiceClsid() {
-  return base::win::String16FromGUID(CLSID_UpdaterServiceClass);
+  return base::win::WStringFromGUID(CLSID_UpdaterServiceClass);
 }
 
 base::string16 GetComServiceClsidRegistryPath() {
@@ -67,12 +67,12 @@ base::string16 GetComServiceAppidRegistryPath() {
 
 base::string16 GetComIidRegistryPath(REFIID iid) {
   return base::StrCat(
-      {L"Software\\Classes\\Interface\\", base::win::String16FromGUID(iid)});
+      {L"Software\\Classes\\Interface\\", base::win::WStringFromGUID(iid)});
 }
 
 base::string16 GetComTypeLibRegistryPath(REFIID iid) {
   return base::StrCat(
-      {L"Software\\Classes\\TypeLib\\", base::win::String16FromGUID(iid)});
+      {L"Software\\Classes\\TypeLib\\", base::win::WStringFromGUID(iid)});
 }
 
 std::vector<base::FilePath> ParseFilesFromDeps(const base::FilePath& deps) {

@@ -131,7 +131,7 @@ void AddComInterfacesWorkItems(HKEY root,
                                   WorkItem::kWow64Default);
     list->AddSetRegValueWorkItem(root, iid_reg_path + L"\\TypeLib",
                                  WorkItem::kWow64Default, L"",
-                                 base::win::String16FromGUID(iid), true);
+                                 base::win::WStringFromGUID(iid), true);
 
     // The TypeLib registration for the Ole Automation marshaler.
     list->AddCreateRegKeyWorkItem(root, typelib_reg_path + L"\\1.0\\0\\win32",

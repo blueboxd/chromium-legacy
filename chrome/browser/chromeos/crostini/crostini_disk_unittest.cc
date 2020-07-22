@@ -20,18 +20,6 @@
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-// end is inclusive
-std::vector<int64_t> range(int64_t start, int64_t end, int64_t step) {
-  std::vector<int64_t> ticks;
-  for (int64_t n = start; n <= end; n += step) {
-    ticks.emplace_back(n);
-  }
-  return ticks;
-}
-}  // namespace
-
 namespace crostini {
 namespace disk {
 
@@ -182,9 +170,6 @@ TEST_F(CrostiniDiskTest, AreTicksCalculated) {
 
   ASSERT_TRUE(disk_info);
   EXPECT_EQ(disk_info->ticks.front()->value, kMinimumDiskSizeBytes);
-
-  // Available space is current + free.
-  EXPECT_EQ(disk_info->ticks.back()->value, kMinimumDiskSizeBytes + 100);
 }
 
 TEST_F(CrostiniDiskTest, DefaultIsCurrentValue) {
@@ -292,14 +277,6 @@ TEST_F(CrostiniDiskTestDbus, DiskResizeNegativeHeadroom) {
   ASSERT_EQ(disk_info->ticks.at(disk_info->ticks.size() - 1)->value, 3 * kGiB);
 }
 
-TEST_F(CrostiniDiskTest, GetTicksForDiskSizeSizeZeroRange) {
-  // When min_size == available_space the only possible option is
-  // available_space.
-  std::vector<int64_t> expected(101);
-  std::fill(expected.begin(), expected.end(), 10);
-  EXPECT_THAT(GetTicksForDiskSize(10, 10), testing::ContainerEq(expected));
-}
-
 TEST_F(CrostiniDiskTest, GetTicksForDiskSizeInvalidInputsNoTicks) {
   const std::vector<int64_t> empty = {};
   // If min_size > available_space there's no solution, so we expect an empty
@@ -312,15 +289,73 @@ TEST_F(CrostiniDiskTest, GetTicksForDiskSizeInvalidInputsNoTicks) {
   EXPECT_THAT(GetTicksForDiskSize(-100, -10), testing::ContainerEq(empty));
 }
 
-TEST_F(CrostiniDiskTest, GetTicksForDiskSizeHappyPath) {
-  auto expected = range(100, 1100, 10);
-  EXPECT_THAT(GetTicksForDiskSize(100, 1100), testing::ContainerEq(expected));
+TEST_F(CrostiniDiskTest, GetTicksForDiskSizeRoundEnds) {
+  // With 1000 GiB - epsilon of free space we should round to 1 GiB increments.
+  // Our top should be rounded down, and bottom rounded up (since they aren't on
+  // 1GiB).
+  auto ticks = GetTicksForDiskSize(1, 1000 * kGiB - 1);
+  EXPECT_EQ(ticks.front(), 1 * kGiB);
+  EXPECT_EQ(ticks.back(), 999 * kGiB);
 }
 
-TEST_F(CrostiniDiskTest, GetTicksForDiskSizeNotDivisible) {
-  // Ticks are rounded down to integer values.
-  auto expected = std::vector<int64_t>{313, 316, 319, 323, 326, 329, 333};
-  EXPECT_THAT(GetTicksForDiskSize(0, 333), testing::IsSupersetOf(expected));
+TEST_F(CrostiniDiskTest, GetTicksForDiskSizeExactEnds) {
+  // With 1000 GiB of free space we should round to 1 GiB increments. Since our
+  // max and min are on 1GIB increments already, they should not be rounded.
+  auto ticks = GetTicksForDiskSize(0, 1000 * kGiB);
+  EXPECT_EQ(ticks.front(), 0 * kGiB);
+  EXPECT_EQ(ticks.back(), 1000 * kGiB);
+}
+
+TEST_F(CrostiniDiskTest, GetTicksForDiskSizeIncrements) {
+  // We target 400'ish ticks on the slider (implementation detail). With that
+  // granularity we should have increments of:
+  //  1.0 GiB for >= 400kGiB
+  //  0.5 GiB for >= 200kGiB && < 400kGiB
+  //  0.2 GiB for >= 80GiB && < 200GiB
+  //  0.1 GiB for < 80 GiB
+  auto ticks10 = GetTicksForDiskSize(0, 401 * kGiB);
+  auto ticks05 = GetTicksForDiskSize(0, 399 * kGiB);
+  auto ticks02 = GetTicksForDiskSize(0, 81 * kGiB);
+  auto ticks01 = GetTicksForDiskSize(0, 79 * kGiB);
+
+  EXPECT_FLOAT_EQ(ticks10[0] + 1.0 * kGiB, double(ticks10[1]));
+  EXPECT_FLOAT_EQ(ticks05[0] + 0.5 * kGiB, double(ticks05[1]));
+  EXPECT_FLOAT_EQ(ticks02[0] + 0.2 * kGiB, double(ticks02[1]));
+  EXPECT_FLOAT_EQ(ticks01[0] + 0.1 * kGiB, double(ticks01[1]));
+}
+
+TEST_F(CrostiniDiskTest, GetTicksForDiskSizeMinimalSpace) {
+  // Currently our minimum increment is 0.1 GiB. This means that if they have
+  // <(min + 0.1) GiB available their only option is min.
+  auto expected = std::vector<int64_t>{2 * kGiB};
+  EXPECT_THAT(GetTicksForDiskSize(2 * kGiB, 2 * kGiB + 0.09 * kGiB),
+              testing::ContainerEq(expected));
+}
+
+TEST_F(CrostiniDiskTest, GetTicksForDiskSizeSmallRangeNonZeroStart) {
+  // 20 ticks for 1 GiB, smallest interval is 0.1GiB so we should end up with
+  // only 11 0.1 GiB ticks. For bonus coverage, start at non-zero/.
+  auto ticks = GetTicksForDiskSize(2 * kGiB, 3 * kGiB, 20);
+  std::vector<int64_t> expected = {
+      int64_t(2.0 * kGiB), int64_t(2.1 * kGiB), int64_t(2.2 * kGiB),
+      int64_t(2.3 * kGiB), int64_t(2.4 * kGiB), int64_t(2.5 * kGiB),
+      int64_t(2.6 * kGiB), int64_t(2.7 * kGiB), int64_t(2.8 * kGiB),
+      int64_t(2.9 * kGiB), int64_t(3.0 * kGiB)};
+  ASSERT_EQ(ticks.size(), expected.size());
+  for (size_t n = 0; n < expected.size(); n++) {
+    EXPECT_FLOAT_EQ(ticks[n], expected[n]);
+  }
+}
+TEST_F(CrostiniDiskTest, GetTicksForDiskSizeLargeRange) {
+  // 5 ticks for 7 GiB, largest interval is 1GiB so we should end up with 8
+  // 0.1 GiB ticks. For bonus coverage, start at non-zero non-round.
+  auto ticks = GetTicksForDiskSize(13 * kGiB - 5678, 20 * kGiB + 1234, 5);
+  std::vector<int64_t> expected = {13 * kGiB, 14 * kGiB, 15 * kGiB, 16 * kGiB,
+                                   17 * kGiB, 18 * kGiB, 19 * kGiB, 20 * kGiB};
+  ASSERT_EQ(ticks.size(), expected.size());
+  for (size_t n = 0; n < expected.size(); n++) {
+    EXPECT_FLOAT_EQ(ticks[n], expected[n]);
+  }
 }
 
 }  // namespace disk

@@ -525,7 +525,7 @@ TEST_P(InstallStaticUtilTest, GetToastActivatorClsid) {
   EXPECT_EQ(GetToastActivatorClsid(),
             kToastActivatorClsids[std::get<0>(GetParam())]);
 
-  auto clsid_str = base::win::String16FromGUID(GetToastActivatorClsid());
+  auto clsid_str = base::win::WStringFromGUID(GetToastActivatorClsid());
   EXPECT_THAT(base::as_wcstr(clsid_str.c_str()),
               StrCaseEq(kToastActivatorClsidsString[std::get<0>(GetParam())]));
 }
@@ -579,7 +579,7 @@ TEST_P(InstallStaticUtilTest, GetElevatorClsid) {
 
   EXPECT_EQ(GetElevatorClsid(), kElevatorClsids[std::get<0>(GetParam())]);
 
-  auto clsid_str = base::win::String16FromGUID(GetElevatorClsid());
+  auto clsid_str = base::win::WStringFromGUID(GetElevatorClsid());
   EXPECT_THAT(base::as_wcstr(clsid_str.c_str()),
               StrCaseEq(kElevatorClsidsString[std::get<0>(GetParam())]));
 }
@@ -645,7 +645,7 @@ TEST_P(InstallStaticUtilTest, GetElevatorIid) {
 
   EXPECT_EQ(GetElevatorIid(), kElevatorIids[std::get<0>(GetParam())]);
 
-  auto iid_str = base::win::String16FromGUID(GetElevatorIid());
+  auto iid_str = base::win::WStringFromGUID(GetElevatorIid());
   EXPECT_THAT(base::as_wcstr(iid_str.c_str()),
               StrCaseEq(kElevatorIidsString[std::get<0>(GetParam())]));
 }

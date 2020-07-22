@@ -598,7 +598,7 @@ void ReportLayeredServiceProviders() {
       const std::set<GUID, GUIDLess>& guids = provider->second;
       for (std::set<GUID, GUIDLess>::const_iterator guid = guids.begin();
            guid != guids.end(); ++guid) {
-        logged_guids.push_back(base::win::String16FromGUID(*guid));
+        logged_guids.push_back(base::win::WStringFromGUID(*guid));
       }
       LoggingServiceAPI::GetInstance()->AddLayeredServiceProvider(
           logged_guids, file_information);

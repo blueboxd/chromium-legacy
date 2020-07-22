@@ -58,15 +58,18 @@ void VideoDecoderTraits::InitializeDecoder(
     extra_data.assign(start, start + size);
   }
 
-  // TODO(sandersd): Parse |codec| to produce a VideoCodecProfile.
-  media::VideoCodec codec = media::kCodecH264;
-  media::VideoCodecProfile profile = media::H264PROFILE_BASELINE;
+  media::VideoCodec codec = media::kUnknownVideoCodec;
+  media::VideoCodecProfile profile = media::VIDEO_CODEC_PROFILE_UNKNOWN;
+  media::VideoColorSpace color_space = media::VideoColorSpace::REC709();
+  uint8_t level = 0;
+  media::ParseCodec(config.codec().Utf8(), codec, profile, level, color_space);
   // TODO(sandersd): Either remove sizes from VideoDecoderConfig (replace with
   // sample aspect) or parse the AvcC here to get the actual size.
+  // For the moment, hard-code 720p to prefer hardware decoders.
   gfx::Size size = gfx::Size(1280, 720);
   media::VideoDecoderConfig video_decoder_config(
       codec, profile, media::VideoDecoderConfig::AlphaMode::kIsOpaque,
-      media::VideoColorSpace::REC709(), media::kNoTransformation, size,
+      color_space, media::kNoTransformation, size,
       gfx::Rect(gfx::Point(), size), size, extra_data,
       media::EncryptionScheme::kUnencrypted);
 

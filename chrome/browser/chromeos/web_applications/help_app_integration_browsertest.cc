@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2) {
 
 // Test that the Help App is searchable by additional strings.
 IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2SearchInLauncher) {
-  WaitForSystemAppInstallAndLaunch(web_app::SystemAppType::HELP);
+  WaitForTestSystemAppInstall();
   EXPECT_EQ(
       std::vector<std::string>({"Get Help", "Perks", "Offers"}),
       GetManager().GetAdditionalSearchTerms(web_app::SystemAppType::HELP));
@@ -54,7 +54,7 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2SearchInLauncher) {
 
 // Test that the Help App has a minimum window size of 600x320.
 IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2MinWindowSize) {
-  WaitForSystemAppInstallAndLaunch(web_app::SystemAppType::HELP);
+  WaitForTestSystemAppInstall();
   auto app_id = LaunchParamsForApp(web_app::SystemAppType::HELP).app_id;
   EXPECT_EQ(GetManager().GetMinimumWindowSize(app_id), gfx::Size(600, 320));
 }
@@ -62,8 +62,9 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2MinWindowSize) {
 // Test that the Help App has a default size of 960x600 and is in the center of
 // the screen.
 IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2DefaultWindowBounds) {
-  auto* browser =
-      WaitForSystemAppInstallAndLaunch(web_app::SystemAppType::HELP);
+  WaitForTestSystemAppInstall();
+  Browser* browser;
+  LaunchApp(web_app::SystemAppType::HELP, &browser);
   gfx::Rect work_area =
       display::Screen::GetScreen()->GetDisplayForNewWindows().work_area();
   int x = (work_area.width() - 960) / 2;
@@ -93,8 +94,9 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2AppServiceMetrics) {
 
 // Test that the Help App can log metrics in the untrusted frame.
 IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2InAppMetrics) {
-  content::WebContents* web_contents =
-      WaitForSystemAppInstallAndLoad(web_app::SystemAppType::HELP);
+  WaitForTestSystemAppInstall();
+  content::WebContents* web_contents = LaunchApp(web_app::SystemAppType::HELP);
+
   base::UserActionTester user_action_tester;
 
   constexpr char kScript[] = R"(

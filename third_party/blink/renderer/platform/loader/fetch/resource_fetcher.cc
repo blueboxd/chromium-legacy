@@ -2135,8 +2135,14 @@ void ResourceFetcher::EmulateLoadStartedForInspector(
     network::mojom::RequestDestination request_destination,
     const AtomicString& initiator_name) {
   base::AutoReset<bool> r(&is_in_request_resource_, true);
-  if (CachedResource(url))
+  if (CachedResource(url)) {
     return;
+  }
+  if (resource->ErrorOccurred()) {
+    // We should ideally replay the error steps, but we cannot.
+    return;
+  }
+
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(request_context);
   resource_request.SetRequestDestination(request_destination);
@@ -2159,6 +2165,15 @@ void ResourceFetcher::EmulateLoadStartedForInspector(
                        last_resource_request.Url(), params.Options(),
                        ReportingDisposition::kReport,
                        last_resource_request.GetRedirectInfo());
+  if (resource->GetStatus() == ResourceStatus::kNotStarted ||
+      resource->GetStatus() == ResourceStatus::kPending) {
+    // If the loading has not started, then we return here because loading
+    // related events will be reported to the ResourceLoadObserver. If the
+    // loading is ongoing, then we return here too because the loading
+    // activity is merged.
+    return;
+  }
+  DCHECK_EQ(resource->GetStatus(), ResourceStatus::kCached);
   DidLoadResourceFromMemoryCache(resource, params.GetResourceRequest(),
                                  false /* is_static_data */);
 }

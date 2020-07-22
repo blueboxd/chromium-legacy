@@ -50,7 +50,6 @@ SANDBOX_POLICY_EXPORT extern const char kDisableGpuSandbox[];
 SANDBOX_POLICY_EXPORT extern const char kDisableNamespaceSandbox[];
 SANDBOX_POLICY_EXPORT extern const char kDisableSeccompFilterSandbox[];
 SANDBOX_POLICY_EXPORT extern const char kDisableSetuidSandbox[];
-SANDBOX_POLICY_EXPORT extern const char kEnableAudioServiceSandbox[];
 SANDBOX_POLICY_EXPORT extern const char kGpuSandboxAllowSysVShm[];
 SANDBOX_POLICY_EXPORT extern const char kGpuSandboxFailuresFatal[];
 SANDBOX_POLICY_EXPORT extern const char kNoSandbox[];

@@ -182,6 +182,11 @@ base::Optional<int> AXPlatformNodeBase::GetIndexInParent() {
     if (parent->ChildAtIndex(i) == current)
       return i;
   }
+
+  // If the parent has a modal dialog, it doesn't count other children.
+  if (parent->delegate_ && parent->delegate_->HasModalDialog())
+    return base::nullopt;
+
   NOTREACHED()
       << "Unable to find the child in the list of its parent's children.";
   return base::nullopt;

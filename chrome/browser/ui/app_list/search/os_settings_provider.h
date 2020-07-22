@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
@@ -88,6 +89,7 @@ class OsSettingsProvider
  private:
   void OnSearchReturned(
       const base::string16& query,
+      const base::TimeTicks& start_time,
       std::vector<chromeos::settings::mojom::SearchResultPtr> results);
 
   // Given a vector of results from the SearchHandler, filters them down to a

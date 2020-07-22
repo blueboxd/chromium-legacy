@@ -1684,6 +1684,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // and the browser cannot create sandboxed Storage Service instances.
   virtual base::FilePath GetSandboxedStorageServiceDataDirectory();
 
+  // Returns true if the audio service should be sandboxed. false otherwise.
+  virtual bool ShouldSandboxAudioService();
+
   // Asks the embedder for the PreviewsState which says which previews should
   // be enabled for the given navigation. The PreviewsState is a bitmask of
   // potentially several Previews optimizations. |initial_state| is used to

@@ -45,6 +45,8 @@ class LocationLine extends cr.EventTarget {
       return;
     }
 
+    this.entry_ = entry;
+
     const components =
         PathComponent.computeComponentsFromEntry(entry, this.volumeManager_);
 

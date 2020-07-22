@@ -18,8 +18,9 @@ using SystemWebAppNonClientFrameViewBrowserTest =
 // System Web Apps don't get the web app menu button.
 IN_PROC_BROWSER_TEST_P(SystemWebAppNonClientFrameViewBrowserTest,
                        HideWebAppMenuButton) {
-  Browser* app_browser =
-      WaitForSystemAppInstallAndLaunch(web_app::SystemAppType::SETTINGS);
+  WaitForTestSystemAppInstall();
+  Browser* app_browser;
+  LaunchApp(web_app::SystemAppType::SETTINGS, &app_browser);
   EXPECT_EQ(nullptr, BrowserView::GetBrowserViewForBrowser(app_browser)
                          ->frame()
                          ->GetFrameView()
@@ -30,8 +31,9 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppNonClientFrameViewBrowserTest,
 // Regression test for https://crbug.com/1090169.
 IN_PROC_BROWSER_TEST_P(SystemWebAppNonClientFrameViewBrowserTest,
                        HideNativeFileSystemAccessPageAction) {
-  Browser* app_browser =
-      WaitForSystemAppInstallAndLaunch(web_app::SystemAppType::SETTINGS);
+  WaitForTestSystemAppInstall();
+  Browser* app_browser;
+  LaunchApp(web_app::SystemAppType::SETTINGS, &app_browser);
   WebAppFrameToolbarView* toolbar =
       BrowserView::GetBrowserViewForBrowser(app_browser)
           ->frame()

@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "chromeos/components/local_search_service/search_metrics_reporter.h"
 #include "chromeos/components/local_search_service/shared_structs.h"
 
@@ -53,11 +54,18 @@ class Index {
                               uint32_t max_results,
                               std::vector<Result>* results) = 0;
 
-  // Logs daily search metrics if |reporter_| is non-null and other
-  // UMA metrics if |histogram_prefix_| is non-empty.
+  // Logs daily search metrics if |reporter_| is non-null. Also logs other
+  // UMA metrics (number results and search latency).
   // Each implementation of this class should call this method at the end of
   // Find.
-  void MaybeLogSearchResultsStats(ResponseStatus status, size_t num_results);
+  void MaybeLogSearchResultsStats(ResponseStatus status,
+                                  size_t num_results,
+                                  base::TimeDelta latency);
+
+  // Logs number of documents in the index if the index is not empty.
+  // Each implementation of this class should call this method at the end of
+  // Find.
+  void MaybeLogIndexSize();
 
   void SetSearchParams(const SearchParams& search_params);
   SearchParams GetSearchParamsForTesting();

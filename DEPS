@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '4526665f2b812d3a250cb4e1c81ed54570f97e39',
+  'skia_revision': '492e4daa3747c521ff17a8d6ec7009955c5e9e97',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '6ca2c1162445d4f190dad98fb142b5e758947ab7',
+  'angle_revision': 'f6659b3df0281485a743afeda56c6d0601bebf1b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '55b591c650f4d1cf830c389ddf44e4335e3d7197',
+  'devtools_frontend_revision': '2675d65f6664c3b81f6809347ad0ba5d456e45ef',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -946,7 +946,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'e46493b9148e0d1e63f55b5890bff503822616e5',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'b99a6a7273181deeb08859c0fdb0c77c7e8a4500',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '11fa4d0d5694e68afef99cb17188db346de3cfb0',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1326,7 +1326,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'dOv-cP7Iqrr9QqppeGdHqAO3EEhTVVBb_hVADr88ZJQC'
+              'version': 'z8GNdg7f5KxXikavCn-MhfAAg7LXnterp9s7Cgr5_BoC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1460,7 +1460,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/SeleniumHQ/selenium/py.git' + '@' + 'd0045ec570c1a77612db35d1e92f05e1d27b4d53',
 
   'src/third_party/webgl/src':
-    Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'd0fcf3daa5f98402f63e0e99a48fc60a4be18cf1',
+    Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'a503e4226c7b1095f2e8a0051021f0b20bbe585b',
 
   'src/third_party/webgpu-cts/src':
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '6371fe6f1acf4b614155acfb468dec4c55c50d27',
@@ -1548,7 +1548,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5e102dafa79a96cdc99fd758b08ffabed15c4cc0',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@398319047f2cfbb41f6269da4523444e4e5bcf28',
     'condition': 'checkout_src_internal',
   },
 

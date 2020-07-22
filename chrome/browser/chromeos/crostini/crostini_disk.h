@@ -38,6 +38,12 @@ constexpr int64_t kDiskHeadroomBytes = 1 * kGiB;
 constexpr int64_t kMinimumDiskSizeBytes = 2 * kGiB;
 constexpr int64_t kRecommendedDiskSizeBytes = 5 * kGiB;
 
+// A number which influences the interval size and number of ticks selected for
+// a given range. At 400 >400 GiB gets 1 GiB ticks, smaller sizes get smaller
+// intervals. 400 is arbitrary, chosen because it keeps ticks at least 1px each
+// on sliders and feels nice.
+constexpr int kGranularityFactor = 400;
+
 // The size of the download for the VM image.
 // As of 2020-01-10 the Termina files.zip is ~90MiB and the squashfs container
 // is ~330MiB.
@@ -116,9 +122,10 @@ void OnResize(
 // Splits the range between |min_size| and |available_space| into enough
 // evenly-spaced intervals you can use them as ticks on a slider. Will return an
 // empty set if the range is invalid (e.g. any numbers are negative).
-// The number of ticks will fit in a signed integer.
-std::vector<int64_t> GetTicksForDiskSize(int64_t min_size,
-                                         int64_t available_space);
+std::vector<int64_t> GetTicksForDiskSize(
+    int64_t min_size,
+    int64_t available_space,
+    int granularity_factor_for_testing = kGranularityFactor);
 
 }  // namespace disk
 }  // namespace crostini

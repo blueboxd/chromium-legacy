@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_disk.h"
 
 #include <algorithm>
+#include <cmath>
 #include <utility>
 
 #include "base/bind.h"
@@ -36,6 +37,14 @@ void EmitResizeResultMetric(vm_tools::concierge::DiskImageStatus status) {
       "Crostini.DiskResize.Result", status,
       static_cast<vm_tools::concierge::DiskImageStatus>(
           vm_tools::concierge::DiskImageStatus_MAX + 1));
+}
+
+int64_t round_up(int64_t n, double increment) {
+  return std::ceil(n / increment) * increment;
+}
+
+int64_t round_down(int64_t n, double increment) {
+  return std::floor(n / increment) * increment;
 }
 }  // namespace
 
@@ -320,17 +329,40 @@ void OnResize(
 }
 
 std::vector<int64_t> GetTicksForDiskSize(int64_t min_size,
-                                         int64_t available_space) {
+                                         int64_t available_space,
+                                         int num_ticks) {
   if (min_size < 0 || available_space < 0 || min_size > available_space) {
     return {};
   }
   std::vector<int64_t> ticks;
-  int64_t range = available_space - min_size;
-  for (int n = 0; n <= 100; n++) {
-    // These are disk sizes so we're not worried about overflow, 2^60 == 1024
-    // PiB.
-    ticks.emplace_back(min_size + n * range / 100);
+
+  int64_t delta = (available_space - min_size) / num_ticks;
+  double increments[] = {1 * kGiB, 0.5 * kGiB, 0.2 * kGiB, 0.1 * kGiB};
+  double increment;
+  if (delta > increments[0]) {
+    increment = increments[0];
+  } else if (delta > increments[1]) {
+    increment = increments[1];
+  } else if (delta > increments[2]) {
+    increment = increments[2];
+  } else {
+    increment = increments[3];
   }
+
+  int64_t start = round_up(min_size, increment);
+  int64_t end = round_down(available_space, increment);
+
+  if (end <= start) {
+    // We have less than 1 tick between min_size and available space, so the
+    // only option is to give all the space.
+    return std::vector<int64_t>{min_size};
+  }
+
+  ticks.emplace_back(start);
+  for (int n = 1; std::ceil(n * increment) < (end - start); n++) {
+    ticks.emplace_back(start + std::round(n * increment));
+  }
+  ticks.emplace_back(end);
   return ticks;
 }
 }  // namespace disk

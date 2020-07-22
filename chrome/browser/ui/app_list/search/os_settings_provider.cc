@@ -228,6 +228,7 @@ ash::AppListSearchResultType OsSettingsProvider::ResultType() {
 }
 
 void OsSettingsProvider::Start(const base::string16& query) {
+  const base::TimeTicks start_time = base::TimeTicks::Now();
   last_query_ = query;
   if (!search_handler_)
     return;
@@ -242,11 +243,12 @@ void OsSettingsProvider::Start(const base::string16& query) {
 
   // Invalidate weak pointers to cancel existing searches.
   weak_factory_.InvalidateWeakPtrs();
-  search_handler_->Search(query, kNumRequestedResults,
-                          chromeos::settings::mojom::ParentResultBehavior::
-                              kDoNotIncludeParentResults,
-                          base::BindOnce(&OsSettingsProvider::OnSearchReturned,
-                                         weak_factory_.GetWeakPtr(), query));
+  search_handler_->Search(
+      query, kNumRequestedResults,
+      chromeos::settings::mojom::ParentResultBehavior::
+          kDoNotIncludeParentResults,
+      base::BindOnce(&OsSettingsProvider::OnSearchReturned,
+                     weak_factory_.GetWeakPtr(), query, start_time));
 }
 
 void OsSettingsProvider::ViewClosing() {
@@ -255,6 +257,7 @@ void OsSettingsProvider::ViewClosing() {
 
 void OsSettingsProvider::OnSearchReturned(
     const base::string16& query,
+    const base::TimeTicks& start_time,
     std::vector<chromeos::settings::mojom::SearchResultPtr> sorted_results) {
   // TODO(crbug.com/1068851): We are currently not ranking settings results.
   // Instead, we are gluing at most two to the top of the search box. Consider
@@ -272,6 +275,8 @@ void OsSettingsProvider::OnSearchReturned(
     ++i;
   }
 
+  UMA_HISTOGRAM_TIMES("Apps.AppList.OsSettingsProvider.QueryTime",
+                      base::TimeTicks::Now() - start_time);
   SwapResults(&search_results);
 }
 

@@ -107,7 +107,7 @@ class ConstructTraits<VectorBackedLinkedListNode<ValueType, Allocator>,
 
   template <typename... Args>
   static Node* ConstructAndNotifyElement(void* location, Args&&... args) {
-    Node* object = ConstructAndNotifyElementImpl<>::Construct(
+    Node* object = ConstructAndNotifyElementImpl::Construct(
         location, std::forward<Args>(args)...);
     NotifyNewElement(object);
     return object;
@@ -118,8 +118,7 @@ class ConstructTraits<VectorBackedLinkedListNode<ValueType, Allocator>,
   }
 
  private:
-  template <bool = Allocator::kIsGarbageCollected>
-  struct ConstructAndNotifyElementImpl {
+  struct ConstructAndNotifyElementImplNotGarbageCollected {
     template <typename... Args>
     static Node* Construct(void* location, Args&&... args) {
       return ConstructTraits<Node, Traits, Allocator>::Construct(
@@ -127,8 +126,7 @@ class ConstructTraits<VectorBackedLinkedListNode<ValueType, Allocator>,
     }
   };
 
-  template <>
-  struct ConstructAndNotifyElementImpl<true> {
+  struct ConstructAndNotifyElementImplGarbageCollected {
     static Node* Construct(void* location, Node&& element) {
       // ConstructAndNotifyElement updates an existing node which might
       // also be concurrently traced while we update it. The regular ctors
@@ -140,6 +138,11 @@ class ConstructTraits<VectorBackedLinkedListNode<ValueType, Allocator>,
       return reinterpret_cast<Node*>(location);
     }
   };
+
+  using ConstructAndNotifyElementImpl = typename std::conditional<
+      Allocator::kIsGarbageCollected,
+      ConstructAndNotifyElementImplGarbageCollected,
+      ConstructAndNotifyElementImplNotGarbageCollected>::type;
 };
 
 // VectorBackedLinkedList maintains a linked list through its contents such that

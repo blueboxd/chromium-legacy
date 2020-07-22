@@ -193,9 +193,10 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, MediaAppLaunchWithFile) {
 
   EXPECT_EQ("800x600", WaitForImageAlt(app, kFilePng800x600));
 
-  // Relaunch with a different file. This currently re-uses the existing window.
+  // Relaunch with a different file. This currently re-uses the existing window,
+  // so we don't wait for page load here.
   params.launch_files = {TestFile(kFileJpeg640x480)};
-  LaunchApp(params);
+  LaunchAppWithoutWaiting(params);
 
   EXPECT_EQ("640x480", WaitForImageAlt(app, kFileJpeg640x480));
 }
@@ -247,8 +248,8 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
                        TrustedContextReportsConsoleErrors) {
   MockCrashEndpoint endpoint(embedded_test_server());
 
-  content::WebContents* web_ui =
-      WaitForSystemAppInstallAndLoad(web_app::SystemAppType::MEDIA);
+  WaitForTestSystemAppInstall();
+  content::WebContents* web_ui = LaunchApp(web_app::SystemAppType::MEDIA);
 
   // Pass multiple arguments to console.error() to also check they are parsed
   // and captured in the error message correctly.
@@ -268,8 +269,8 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
                        TrustedContextReportsDomExceptions) {
   MockCrashEndpoint endpoint(embedded_test_server());
 
-  content::WebContents* web_ui =
-      WaitForSystemAppInstallAndLoad(web_app::SystemAppType::MEDIA);
+  WaitForTestSystemAppInstall();
+  content::WebContents* web_ui = LaunchApp(web_app::SystemAppType::MEDIA);
 
   EXPECT_EQ(true, ExecuteScript(web_ui, kDomExceptionScript));
   auto report = endpoint.WaitForReport();
@@ -284,8 +285,8 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
                        UntrustedContextReportsDomExceptions) {
   MockCrashEndpoint endpoint(embedded_test_server());
 
-  content::WebContents* app =
-      WaitForSystemAppInstallAndLoad(web_app::SystemAppType::MEDIA);
+  WaitForTestSystemAppInstall();
+  content::WebContents* app = LaunchApp(web_app::SystemAppType::MEDIA);
 
   EXPECT_EQ(true,
             MediaAppUiBrowserTest::EvalJsInAppFrame(app, kDomExceptionScript));
@@ -300,8 +301,8 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
                        TrustedContextReportsUnhandledExceptions) {
   MockCrashEndpoint endpoint(embedded_test_server());
 
-  content::WebContents* web_ui =
-      WaitForSystemAppInstallAndLoad(web_app::SystemAppType::MEDIA);
+  WaitForTestSystemAppInstall();
+  content::WebContents* web_ui = LaunchApp(web_app::SystemAppType::MEDIA);
 
   EXPECT_EQ(true, ExecuteScript(web_ui, kUnhandledRejectionScript));
   auto report = endpoint.WaitForReport();
@@ -316,8 +317,8 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
                        UntrustedContextReportsUnhandledExceptions) {
   MockCrashEndpoint endpoint(embedded_test_server());
 
-  content::WebContents* app =
-      WaitForSystemAppInstallAndLoad(web_app::SystemAppType::MEDIA);
+  WaitForTestSystemAppInstall();
+  content::WebContents* app = LaunchApp(web_app::SystemAppType::MEDIA);
 
   EXPECT_EQ(true, MediaAppUiBrowserTest::EvalJsInAppFrame(
                       app, kUnhandledRejectionScript));
@@ -330,8 +331,9 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
 IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
                        TrustedContextReportsTypeErrors) {
   MockCrashEndpoint endpoint(embedded_test_server());
-  content::WebContents* web_ui =
-      WaitForSystemAppInstallAndLoad(web_app::SystemAppType::MEDIA);
+
+  WaitForTestSystemAppInstall();
+  content::WebContents* web_ui = LaunchApp(web_app::SystemAppType::MEDIA);
 
   EXPECT_EQ(true, ExecuteScript(web_ui, kTypeErrorScript));
   auto report = endpoint.WaitForReport();
@@ -346,8 +348,9 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
 IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest,
                        UntrustedContextReportsTypeErrors) {
   MockCrashEndpoint endpoint(embedded_test_server());
-  content::WebContents* app =
-      WaitForSystemAppInstallAndLoad(web_app::SystemAppType::MEDIA);
+
+  WaitForTestSystemAppInstall();
+  content::WebContents* app = LaunchApp(web_app::SystemAppType::MEDIA);
 
   EXPECT_EQ(true,
             MediaAppUiBrowserTest::EvalJsInAppFrame(app, kTypeErrorScript));

@@ -36,8 +36,14 @@ IN_PROC_BROWSER_TEST_P(SettingsAppIntegrationTest, SettingsAppDisabled) {
   ASSERT_FALSE(GetManager()
                    .GetAppIdForSystemApp(web_app::SystemAppType::SETTINGS)
                    .has_value());
-  Browser* app_browser =
-      WaitForSystemAppInstallAndLaunch(web_app::SystemAppType::SETTINGS);
+
+  WaitForTestSystemAppInstall();
+
+  // Don't wait for load here, because we navigate to chrome error page instead.
+  // The App's launch URL won't be loaded.
+  Browser* app_browser;
+  LaunchAppWithoutWaiting(web_app::SystemAppType::SETTINGS, &app_browser);
+
   ASSERT_TRUE(GetManager()
                   .GetAppIdForSystemApp(web_app::SystemAppType::SETTINGS)
                   .has_value());

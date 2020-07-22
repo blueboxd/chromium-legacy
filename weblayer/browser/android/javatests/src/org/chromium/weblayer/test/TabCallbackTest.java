@@ -91,6 +91,7 @@ public class TabCallbackTest {
         CallbackHelper callbackHelper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Tab tab = activity.getTab();
+            activity.setIgnoreRendererCrashes();
             TabCallback callback = new TabCallback() {
                 @Override
                 public void onRenderProcessGone() {

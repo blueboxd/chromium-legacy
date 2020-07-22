@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "chromeos/components/local_search_service/search_utils.h"
 #include "chromeos/components/string_matching/fuzzy_tokenized_string_match.h"
 #include "chromeos/components/string_matching/tokenized_string.h"
@@ -87,6 +88,8 @@ void LinearMapSearch::AddOrUpdate(
     data_[id] = std::vector<TokenizedStringWithId>();
     TokenizeSearchTags(item.contents, &data_[id]);
   }
+
+  MaybeLogIndexSize();
 }
 
 uint32_t LinearMapSearch::Delete(const std::vector<std::string>& ids) {
@@ -101,31 +104,35 @@ uint32_t LinearMapSearch::Delete(const std::vector<std::string>& ids) {
       ++num_deleted;
     }
   }
+
+  MaybeLogIndexSize();
   return num_deleted;
 }
 
 ResponseStatus LinearMapSearch::Find(const base::string16& query,
                                      uint32_t max_results,
                                      std::vector<Result>* results) {
+  const base::TimeTicks start = base::TimeTicks::Now();
   DCHECK(results);
   results->clear();
 
   if (query.empty()) {
     const ResponseStatus status = ResponseStatus::kEmptyQuery;
-    MaybeLogSearchResultsStats(status, 0u);
+    MaybeLogSearchResultsStats(status, 0u, base::TimeDelta());
     return status;
   }
 
   if (data_.empty()) {
     const ResponseStatus status = ResponseStatus::kEmptyIndex;
-    MaybeLogSearchResultsStats(status, 0u);
+    MaybeLogSearchResultsStats(status, 0u, base::TimeDelta());
     return status;
   }
 
   *results = GetSearchResults(query, max_results);
 
+  const base::TimeTicks end = base::TimeTicks::Now();
   const ResponseStatus status = ResponseStatus::kSuccess;
-  MaybeLogSearchResultsStats(status, results->size());
+  MaybeLogSearchResultsStats(status, results->size(), end - start);
   return status;
 }
 

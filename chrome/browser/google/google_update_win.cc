@@ -147,7 +147,7 @@ HRESULT CoGetClassObjectAsAdmin(gfx::AcceleratedWidget hwnd,
 
   // For Vista+, need to instantiate the class factory via the elevation
   // moniker. This ensures that the UAC dialog shows up.
-  auto class_id_as_string = base::win::String16FromGUID(class_id);
+  auto class_id_as_string = base::win::WStringFromGUID(class_id);
 
   base::string16 elevation_moniker_name = base::StringPrintf(
       L"Elevation:Administrator!clsid:%ls", class_id_as_string.c_str());

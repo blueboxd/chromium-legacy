@@ -139,11 +139,11 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
   // local frames.
   DCHECK_EQ(kNavigationPolicyCurrentTab, frame_request.GetNavigationPolicy());
 
-  if (!navigation_rate_limiter().CanProceed())
-    return;
-
   if (HTMLFrameOwnerElement* element = DeprecatedLocalOwner())
     element->CancelPendingLazyLoad();
+
+  if (!navigation_rate_limiter().CanProceed())
+    return;
 
   frame_request.SetFrameType(IsMainFrame()
                                  ? mojom::RequestContextFrameType::kTopLevel

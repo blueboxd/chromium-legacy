@@ -64,7 +64,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void SetInheritedEffectiveTouchAction(TouchAction) override;
   bool BubbleLogicalScrollFromChildFrame(
       mojom::blink::ScrollDirection direction,
-      ScrollGranularity granularity,
+      ui::ScrollGranularity granularity,
       Frame* child) override;
   void DidFocus() override;
   void AddResourceTimingFromChild(

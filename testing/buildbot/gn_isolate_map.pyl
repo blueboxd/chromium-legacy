@@ -762,6 +762,10 @@
     "label": "//testing:empty_main",
     "type": "additional_compile_target",
   },
+  "errorprone_plugin_tests": {
+    "label": "//tools/android/errorprone_plugin:errorprone_plugin_tests",
+    "type": "additional_compile_target",
+  },
   "events_unittests": {
     "label": "//ui/events:events_unittests",
     "type": "windowed_test_launcher",

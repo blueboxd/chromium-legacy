@@ -70,9 +70,6 @@ const char kDisableSeccompFilterSandbox[] = "disable-seccomp-filter-sandbox";
 // Disable the setuid sandbox (Linux only).
 const char kDisableSetuidSandbox[] = "disable-setuid-sandbox";
 
-// Command line flag to enable the audio service sandbox.
-const char kEnableAudioServiceSandbox[] = "enable-audio-service-sandbox";
-
 // Allows shmat() system call in the GPU sandbox.
 const char kGpuSandboxAllowSysVShm[] = "gpu-sandbox-allow-sysv-shm";
 

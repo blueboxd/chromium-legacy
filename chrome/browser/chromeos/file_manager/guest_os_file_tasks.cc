@@ -91,6 +91,21 @@ bool HasSupportedMimeType(
   return false;
 }
 
+bool AppSupportsMimeTypeOfAllEntries(
+    const crostini::CrostiniMimeTypesService& mime_types_service,
+    const std::vector<extensions::EntryInfo>& entries,
+    const guest_os::GuestOsRegistryService::Registration& app) {
+  return std::all_of(
+      cbegin(entries), cend(entries),
+      // Get fields once, as their getters are not cheap.
+      [supported_mime_types = app.MimeTypes(), vm_name = app.VmName(),
+       container_name = app.ContainerName(),
+       &mime_types_service](const auto& entry) {
+        return HasSupportedMimeType(supported_mime_types, vm_name,
+                                    container_name, mime_types_service, entry);
+      });
+}
+
 bool HasSupportedExtension(const std::set<std::string>& supported_extensions,
                            const extensions::EntryInfo& entry) {
   const auto& extension = entry.path.Extension();
@@ -101,35 +116,14 @@ bool HasSupportedExtension(const std::set<std::string>& supported_extensions,
          supported_extensions.end();
 }
 
-bool AppSupportsAllEntries(
-    const crostini::CrostiniMimeTypesService& mime_types_service,
+bool AppSupportsExtensionOfAllEntries(
     const std::vector<extensions::EntryInfo>& entries,
     const guest_os::GuestOsRegistryService::Registration& app) {
-  guest_os::GuestOsRegistryService::VmType vm_type = app.VmType();
-  switch (vm_type) {
-    case guest_os::GuestOsRegistryService::VmType::
-        ApplicationList_VmType_TERMINA:
-      return std::all_of(
-          cbegin(entries), cend(entries),
-          // Get fields once, as their getters are not cheap.
-          [supported_mime_types = app.MimeTypes(), vm_name = app.VmName(),
-           container_name = app.ContainerName(),
-           &mime_types_service](const auto& entry) {
-            return HasSupportedMimeType(supported_mime_types, vm_name,
-                                        container_name, mime_types_service,
-                                        entry);
-          });
-    case guest_os::GuestOsRegistryService::VmType::
-        ApplicationList_VmType_PLUGIN_VM:
-      return std::all_of(
-          cbegin(entries), cend(entries),
-          [supported_extensions = app.Extensions()](const auto& entry) {
-            return HasSupportedExtension(supported_extensions, entry);
-          });
-    default:
-      LOG(ERROR) << "Unsupported VmType: " << static_cast<int>(vm_type);
-      return false;
-  }
+  return std::all_of(
+      cbegin(entries), cend(entries),
+      [supported_extensions = app.Extensions()](const auto& entry) {
+        return HasSupportedExtension(supported_extensions, entry);
+      });
 }
 
 auto ConvertLaunchPluginVmAppResultToTaskResult(
@@ -151,6 +145,8 @@ auto ConvertLaunchPluginVmAppResultToTaskResult(
 
 void FindGuestOsApps(
     Profile* profile,
+    bool crostini_enabled,
+    bool plugin_vm_enabled,
     const std::vector<extensions::EntryInfo>& entries,
     const std::vector<GURL>& file_urls,
     std::vector<std::string>* app_ids,
@@ -175,16 +171,33 @@ void FindGuestOsApps(
     const std::string& app_id = pair.first;
     const auto& registration = pair.second;
 
-    if (!AppSupportsAllEntries(*mime_types_service, entries, registration))
-      continue;
+    guest_os::GuestOsRegistryService::VmType vm_type = registration.VmType();
+    switch (vm_type) {
+      case guest_os::GuestOsRegistryService::VmType::
+          ApplicationList_VmType_TERMINA:
+        if (!crostini_enabled ||
+            !AppSupportsMimeTypeOfAllEntries(*mime_types_service, entries,
+                                             registration)) {
+          continue;
+        }
+        app_names->push_back(registration.Name());
+        break;
+
+      case guest_os::GuestOsRegistryService::VmType::
+          ApplicationList_VmType_PLUGIN_VM:
+        if (!plugin_vm_enabled ||
+            !AppSupportsExtensionOfAllEntries(entries, registration)) {
+          continue;
+        }
+        app_names->push_back(registration.Name() + kPluginVmAppNameSuffix);
+        break;
+
+      default:
+        LOG(ERROR) << "Unsupported VmType: " << static_cast<int>(vm_type);
+        continue;
+    }
 
     app_ids->push_back(app_id);
-    if (registration.VmType() == guest_os::GuestOsRegistryService::VmType::
-                                     ApplicationList_VmType_PLUGIN_VM) {
-      app_names->push_back(registration.Name() + kPluginVmAppNameSuffix);
-    } else {
-      app_names->push_back(registration.Name());
-    }
     vm_types->push_back(registration.VmType());
   }
 }
@@ -194,8 +207,10 @@ void FindGuestOsTasks(Profile* profile,
                       const std::vector<GURL>& file_urls,
                       std::vector<FullTaskDescriptor>* result_list,
                       base::OnceClosure completion_closure) {
-  if (!crostini::CrostiniFeatures::Get()->IsUIAllowed(profile) &&
-      !plugin_vm::IsPluginVmEnabled(profile)) {
+  bool crostini_enabled = crostini::CrostiniFeatures::Get()->IsEnabled(profile);
+  bool plugin_vm_enabled = plugin_vm::IsPluginVmEnabled(profile);
+
+  if (!crostini_enabled && !plugin_vm_enabled) {
     std::move(completion_closure).Run();
     return;
   }
@@ -203,8 +218,9 @@ void FindGuestOsTasks(Profile* profile,
   std::vector<std::string> result_app_ids;
   std::vector<std::string> result_app_names;
   std::vector<guest_os::GuestOsRegistryService::VmType> result_vm_types;
-  FindGuestOsApps(profile, entries, file_urls, &result_app_ids,
-                  &result_app_names, &result_vm_types);
+  FindGuestOsApps(profile, crostini_enabled, plugin_vm_enabled, entries,
+                  file_urls, &result_app_ids, &result_app_names,
+                  &result_vm_types);
 
   if (result_app_ids.empty()) {
     std::move(completion_closure).Run();

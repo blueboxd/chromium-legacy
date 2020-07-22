@@ -624,8 +624,7 @@ void GetLayeredServiceProviders(const LayeredServiceProviderAPI& lsp_api,
       inserted.first->second.insert(service_providers[i].ProviderId);
     } else {
       LOG(ERROR) << "Couldn't get path for provider: "
-                 << base::win::String16FromGUID(
-                        service_providers[i].ProviderId);
+                 << base::win::WStringFromGUID(service_providers[i].ProviderId);
     }
   }
 }

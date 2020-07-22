@@ -453,6 +453,9 @@ bool LocalFrame::IsLocalRoot() const {
 
 void LocalFrame::Navigate(FrameLoadRequest& request,
                           WebFrameLoadType frame_load_type) {
+  if (HTMLFrameOwnerElement* element = DeprecatedLocalOwner())
+    element->CancelPendingLazyLoad();
+
   if (!navigation_rate_limiter().CanProceed())
     return;
   if (request.ClientRedirectReason() != ClientNavigationReason::kNone) {

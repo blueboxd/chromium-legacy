@@ -341,7 +341,7 @@ bool InstallUtil::IsStartMenuShortcutWithActivatorGuidInstalled() {
 // static
 base::string16 InstallUtil::GetToastActivatorRegistryPath() {
   return STRING16_LITERAL("Software\\Classes\\CLSID\\") +
-         base::win::String16FromGUID(install_static::GetToastActivatorClsid());
+         base::win::WStringFromGUID(install_static::GetToastActivatorClsid());
 }
 
 // static

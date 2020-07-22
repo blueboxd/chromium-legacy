@@ -53,6 +53,7 @@ namespace blink {
 class WebString;
 class WebSharedWorkerClient;
 class WebURL;
+class WebWorkerFetchContext;
 struct WebFetchClientSettingsObject;
 struct WorkerMainScriptLoadParameters;
 
@@ -85,6 +86,7 @@ class BLINK_EXPORT WebSharedWorker {
       bool pause_worker_context_on_start,
       std::unique_ptr<blink::WorkerMainScriptLoadParameters>
           worker_main_script_load_params,
+      scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
       CrossVariantMojoRemote<mojom::SharedWorkerHostInterfaceBase>,
       WebSharedWorkerClient*,
       ukm::SourceId ukm_source_id);

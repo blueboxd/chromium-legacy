@@ -28,6 +28,7 @@ import org.chromium.weblayer.NewTabCallback;
 import org.chromium.weblayer.NewTabType;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.Tab;
+import org.chromium.weblayer.TabCallback;
 import org.chromium.weblayer.TabListCallback;
 import org.chromium.weblayer.UnsupportedVersionException;
 import org.chromium.weblayer.UrlBarOptions;
@@ -61,6 +62,8 @@ public class InstrumentationActivity extends FragmentActivity {
     private View mUrlBarView;
     private IntentInterceptor mIntentInterceptor;
     private Bundle mSavedInstanceState;
+    private TabCallback mRendererCrashListener;
+    private boolean mIgnoreRendererCrashes;
     private TabListCallback mTabListCallback;
     private List<Tab> mPreviousTabList = new ArrayList<>();
 
@@ -197,6 +200,11 @@ public class InstrumentationActivity extends FragmentActivity {
     }
 
     private void removeCallbacks() {
+        if (mBrowser != null && mRendererCrashListener != null) {
+            for (Tab tab : mBrowser.getTabs()) {
+                tab.unregisterTabCallback(mRendererCrashListener);
+            }
+        }
         if (mTabListCallback != null) {
             mBrowser.unregisterTabListCallback(mTabListCallback);
             mTabListCallback = null;
@@ -231,6 +239,17 @@ public class InstrumentationActivity extends FragmentActivity {
 
         mBrowser.setTopView(mTopContentsContainer);
 
+        mRendererCrashListener = new TabCallback() {
+            @Override
+            public void onRenderProcessGone() {
+                if (mIgnoreRendererCrashes) return;
+
+                // Throws an exception if a tab crashes. Otherwise tests might pass while ignoring
+                // renderer crashes.
+                throw new RuntimeException("Unexpected renderer crashed");
+            }
+        };
+
         mTabListCallback = new TabListCallback() {
             @Override
             public void onTabAdded(Tab tab) {
@@ -238,6 +257,7 @@ public class InstrumentationActivity extends FragmentActivity {
                 if (mTab == null) {
                     setTab(tab);
                 }
+                tab.registerTabCallback(mRendererCrashListener);
             }
 
             @Override
@@ -252,6 +272,7 @@ public class InstrumentationActivity extends FragmentActivity {
 
                     setTab(prevTab);
                 }
+                tab.unregisterTabCallback(mRendererCrashListener);
             }
         };
 
@@ -261,6 +282,7 @@ public class InstrumentationActivity extends FragmentActivity {
             // This happens with session restore enabled.
             assert mBrowser.getTabs().size() == 0;
         } else {
+            mBrowser.getActiveTab().registerTabCallback(mRendererCrashListener);
             setTab(mBrowser.getActiveTab());
         }
     }
@@ -356,6 +378,10 @@ public class InstrumentationActivity extends FragmentActivity {
 
     public View getUrlBarView() {
         return mUrlBarView;
+    }
+
+    public void setIgnoreRendererCrashes() {
+        mIgnoreRendererCrashes = true;
     }
 
     private static String getUrlFromIntent(Intent intent) {

@@ -41,7 +41,7 @@ class AudioDecoderSelectorTestParam {
   static constexpr media::DemuxerStream::Type kStreamType =
       media::DemuxerStream::AUDIO;
 
-  using DecoderSelector = DecoderSelector<media::DemuxerStream::AUDIO>;
+  using MockDecoderSelector = DecoderSelector<media::DemuxerStream::AUDIO>;
   using MockDecoder = media::MockAudioDecoder;
   using Output = media::AudioBuffer;
 
@@ -79,7 +79,7 @@ class VideoDecoderSelectorTestParam {
   static constexpr media::DemuxerStream::Type kStreamType =
       media::DemuxerStream::VIDEO;
 
-  using DecoderSelector = DecoderSelector<media::DemuxerStream::VIDEO>;
+  using MockDecoderSelector = DecoderSelector<media::DemuxerStream::VIDEO>;
   using MockDecoder = media::MockVideoDecoder;
   using Output = media::VideoFrame;
 
@@ -125,8 +125,8 @@ class WebCodecsDecoderSelectorTest : public ::testing::Test {
  public:
   // Convenience aliases.
   using Self = WebCodecsDecoderSelectorTest<TypeParam>;
-  using Decoder = typename TypeParam::DecoderSelector::Decoder;
-  using DecoderConfig = typename TypeParam::DecoderSelector::DecoderConfig;
+  using Decoder = typename TypeParam::MockDecoderSelector::Decoder;
+  using DecoderConfig = typename TypeParam::MockDecoderSelector::DecoderConfig;
   using MockDecoder = typename TypeParam::MockDecoder;
   using Output = typename TypeParam::Output;
 

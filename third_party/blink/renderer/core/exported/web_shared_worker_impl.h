@@ -116,7 +116,8 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker {
           browser_interface_broker,
       bool pause_worker_context_on_start,
       std::unique_ptr<WorkerMainScriptLoadParameters>
-          worker_main_script_load_params);
+          worker_main_script_load_params,
+      scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context);
 
   void DispatchPendingConnections();
   void ConnectToChannel(int connection_request_id,

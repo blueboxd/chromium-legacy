@@ -58,7 +58,7 @@ android_library("test_class_name_check_test_java") {
   ]
 }
 
-group("tests") {
+group("errorprone_plugin_tests") {
   testonly = true
   deps = [
     ":no_redundant_field_init_check_int_test_java",

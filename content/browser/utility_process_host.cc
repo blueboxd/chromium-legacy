@@ -447,7 +447,6 @@ bool UtilityProcessHost::StartProcess() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
       switches::kDisableDevShmUsage,
 #endif
-      sandbox::policy::switches::kEnableAudioServiceSandbox,
 #if defined(OS_MACOSX)
       sandbox::policy::switches::kEnableSandboxLogging,
       os_crypt::switches::kUseMockKeychain,

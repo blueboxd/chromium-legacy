@@ -129,7 +129,7 @@ TEST_F(InstallServiceWorkItemTest, Do_FreshInstall) {
   EXPECT_EQ(ERROR_SUCCESS,
             key.Open(HKEY_LOCAL_MACHINE, kClsidRegPath, KEY_READ));
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"AppID", &value));
-  EXPECT_EQ(base::win::String16FromGUID(kClsid), value);
+  EXPECT_EQ(base::win::WStringFromGUID(kClsid), value);
 
   // Check AppId registration.
   EXPECT_EQ(ERROR_SUCCESS,
@@ -146,7 +146,7 @@ TEST_F(InstallServiceWorkItemTest, Do_FreshInstall) {
   EXPECT_EQ(ERROR_SUCCESS,
             key.Open(HKEY_LOCAL_MACHINE, kIidTLBRegPath, KEY_READ));
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
-  EXPECT_EQ(base::win::String16FromGUID(kIid), value);
+  EXPECT_EQ(base::win::WStringFromGUID(kIid), value);
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"Version", &value));
   EXPECT_EQ(L"1.0", value);
 

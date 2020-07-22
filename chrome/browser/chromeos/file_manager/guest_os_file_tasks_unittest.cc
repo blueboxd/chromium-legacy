@@ -28,6 +28,8 @@ static constexpr auto VM_TERMINA =
     guest_os::GuestOsRegistryService::VmType::ApplicationList_VmType_TERMINA;
 static constexpr auto PLUGIN_VM =
     guest_os::GuestOsRegistryService::VmType::ApplicationList_VmType_PLUGIN_VM;
+static constexpr bool kCrostiniEnabled = true;
+static constexpr bool kPluginVmEnabled = true;
 
 }  // namespace
 
@@ -114,8 +116,8 @@ TEST_F(GuestOsFileTasksTest, CheckPathsCanBeShared) {
   AddEntry("entry.txt", "test/mime1");
 
   // Share ok.
-  FindGuestOsApps(&profile_, entries_, urls_, &app_ids_, &app_names_,
-                  &app_vm_types_);
+  FindGuestOsApps(&profile_, kCrostiniEnabled, kPluginVmEnabled, entries_,
+                  urls_, &app_ids_, &app_names_, &app_vm_types_);
   EXPECT_THAT(app_ids_, testing::ElementsAre("app1"));
   EXPECT_THAT(app_names_, testing::ElementsAre("name1"));
   EXPECT_THAT(app_vm_types_, testing::ElementsAre(VM_TERMINA));
@@ -126,8 +128,8 @@ TEST_F(GuestOsFileTasksTest, CheckPathsCanBeShared) {
   app_ids_.clear();
   app_names_.clear();
   app_vm_types_.clear();
-  FindGuestOsApps(&profile_, entries_, urls_, &app_ids_, &app_names_,
-                  &app_vm_types_);
+  FindGuestOsApps(&profile_, kCrostiniEnabled, kPluginVmEnabled, entries_,
+                  urls_, &app_ids_, &app_names_, &app_vm_types_);
   EXPECT_THAT(app_ids_, testing::IsEmpty());
   EXPECT_THAT(app_names_, testing::IsEmpty());
   EXPECT_THAT(app_vm_types_, testing::IsEmpty());
@@ -136,8 +138,8 @@ TEST_F(GuestOsFileTasksTest, CheckPathsCanBeShared) {
 TEST_F(GuestOsFileTasksTest, NoApps) {
   AddApp("app1", "name1", {"test/mime1"}, {}, VM_TERMINA);
   AddEntry("entry.txt", "test/mime2");
-  FindGuestOsApps(&profile_, entries_, urls_, &app_ids_, &app_names_,
-                  &app_vm_types_);
+  FindGuestOsApps(&profile_, kCrostiniEnabled, kPluginVmEnabled, entries_,
+                  urls_, &app_ids_, &app_names_, &app_vm_types_);
   EXPECT_THAT(app_ids_, testing::IsEmpty());
   EXPECT_THAT(app_names_, testing::IsEmpty());
   EXPECT_THAT(app_vm_types_, testing::IsEmpty());
@@ -146,21 +148,42 @@ TEST_F(GuestOsFileTasksTest, NoApps) {
 TEST_F(GuestOsFileTasksTest, Termina_AppRegistered) {
   AddApp("app1", "name1", {"test/mime1"}, {}, VM_TERMINA);
   AddEntry("entry.txt", "test/mime1");
-  FindGuestOsApps(&profile_, entries_, urls_, &app_ids_, &app_names_,
-                  &app_vm_types_);
+  FindGuestOsApps(&profile_, kCrostiniEnabled, kPluginVmEnabled, entries_,
+                  urls_, &app_ids_, &app_names_, &app_vm_types_);
   EXPECT_THAT(app_ids_, testing::ElementsAre("app1"));
   EXPECT_THAT(app_names_, testing::ElementsAre("name1"));
   EXPECT_THAT(app_vm_types_, testing::ElementsAre(VM_TERMINA));
 }
 
+TEST_F(GuestOsFileTasksTest, Termina_NotEnabled) {
+  AddApp("app1", "name1", {"test/mime1"}, {}, VM_TERMINA);
+  AddEntry("entry.txt", "test/mime1");
+  FindGuestOsApps(&profile_, /*crostini_enabled=*/false, kPluginVmEnabled,
+                  entries_, urls_, &app_ids_, &app_names_, &app_vm_types_);
+  EXPECT_THAT(app_ids_, testing::IsEmpty());
+  EXPECT_THAT(app_names_, testing::IsEmpty());
+  EXPECT_THAT(app_vm_types_, testing::IsEmpty());
+}
+
 TEST_F(GuestOsFileTasksTest, PluginVm_AppRegistered) {
   AddApp("app1", "name1", {}, {"txt"}, PLUGIN_VM);
   AddEntry("entry.txt", "test/mime1");
-  FindGuestOsApps(&profile_, entries_, urls_, &app_ids_, &app_names_,
-                  &app_vm_types_);
+  FindGuestOsApps(&profile_, kCrostiniEnabled, kPluginVmEnabled, entries_,
+                  urls_, &app_ids_, &app_names_, &app_vm_types_);
   EXPECT_THAT(app_ids_, testing::ElementsAre("app1"));
   EXPECT_THAT(app_names_, testing::ElementsAre("name1 (Windows)"));
   EXPECT_THAT(app_vm_types_, testing::ElementsAre(PLUGIN_VM));
+}
+
+TEST_F(GuestOsFileTasksTest, PluginVm_NotEnabled) {
+  AddApp("app1", "name1", {}, {"txt"}, PLUGIN_VM);
+  AddEntry("entry.txt", "test/mime1");
+  FindGuestOsApps(&profile_, kCrostiniEnabled,
+                  /*plugin_vm_enabled=*/false, entries_, urls_, &app_ids_,
+                  &app_names_, &app_vm_types_);
+  EXPECT_THAT(app_ids_, testing::IsEmpty());
+  EXPECT_THAT(app_names_, testing::IsEmpty());
+  EXPECT_THAT(app_vm_types_, testing::IsEmpty());
 }
 
 TEST_F(GuestOsFileTasksTest, Termina_NotAllEntries) {
@@ -168,8 +191,8 @@ TEST_F(GuestOsFileTasksTest, Termina_NotAllEntries) {
   AddApp("app2", "name2", {"test/mime2"}, {}, VM_TERMINA);
   AddEntry("entry1.txt", "test/mime1");
   AddEntry("entry2.txt", "test/mime2");
-  FindGuestOsApps(&profile_, entries_, urls_, &app_ids_, &app_names_,
-                  &app_vm_types_);
+  FindGuestOsApps(&profile_, kCrostiniEnabled, kPluginVmEnabled, entries_,
+                  urls_, &app_ids_, &app_names_, &app_vm_types_);
   EXPECT_THAT(app_ids_, testing::IsEmpty());
   EXPECT_THAT(app_names_, testing::IsEmpty());
   EXPECT_THAT(app_vm_types_, testing::IsEmpty());
@@ -180,8 +203,8 @@ TEST_F(GuestOsFileTasksTest, PluginVm_NotAllEntries) {
   AddApp("app2", "name2", {}, {"jpg"}, PLUGIN_VM);
   AddEntry("entry1.txt", "test/mime1");
   AddEntry("entry2.jpg", "test/mime2");
-  FindGuestOsApps(&profile_, entries_, urls_, &app_ids_, &app_names_,
-                  &app_vm_types_);
+  FindGuestOsApps(&profile_, kCrostiniEnabled, kPluginVmEnabled, entries_,
+                  urls_, &app_ids_, &app_names_, &app_vm_types_);
   EXPECT_THAT(app_ids_, testing::IsEmpty());
   EXPECT_THAT(app_names_, testing::IsEmpty());
   EXPECT_THAT(app_vm_types_, testing::IsEmpty());
@@ -191,8 +214,8 @@ TEST_F(GuestOsFileTasksTest, Termina_MultipleAppsRegistered) {
   AddApp("app1", "name1", {"test/mime1"}, {}, VM_TERMINA);
   AddApp("app2", "name2", {"test/mime1"}, {}, VM_TERMINA);
   AddEntry("entry.txt", "test/mime1");
-  FindGuestOsApps(&profile_, entries_, urls_, &app_ids_, &app_names_,
-                  &app_vm_types_);
+  FindGuestOsApps(&profile_, kCrostiniEnabled, kPluginVmEnabled, entries_,
+                  urls_, &app_ids_, &app_names_, &app_vm_types_);
   EXPECT_THAT(app_ids_, testing::ElementsAre("app1", "app2"));
   EXPECT_THAT(app_names_, testing::ElementsAre("name1", "name2"));
   EXPECT_THAT(app_vm_types_, testing::ElementsAre(VM_TERMINA, VM_TERMINA));
@@ -202,8 +225,8 @@ TEST_F(GuestOsFileTasksTest, PluginVm_MultipleAppsRegistered) {
   AddApp("app1", "name1", {}, {"txt"}, PLUGIN_VM);
   AddApp("app2", "name2", {}, {"txt"}, PLUGIN_VM);
   AddEntry("entry.txt", "test/mime1");
-  FindGuestOsApps(&profile_, entries_, urls_, &app_ids_, &app_names_,
-                  &app_vm_types_);
+  FindGuestOsApps(&profile_, kCrostiniEnabled, kPluginVmEnabled, entries_,
+                  urls_, &app_ids_, &app_names_, &app_vm_types_);
   EXPECT_THAT(app_ids_, testing::ElementsAre("app1", "app2"));
   EXPECT_THAT(app_names_,
               testing::ElementsAre("name1 (Windows)", "name2 (Windows)"));
@@ -214,8 +237,8 @@ TEST_F(GuestOsFileTasksTest, MultipleAppsFromMultipleVmsRegistered) {
   AddApp("app1", "name1", {"test/mime1"}, {}, VM_TERMINA);
   AddApp("app2", "name2", {}, {"txt"}, PLUGIN_VM);
   AddEntry("entry.txt", "test/mime1");
-  FindGuestOsApps(&profile_, entries_, urls_, &app_ids_, &app_names_,
-                  &app_vm_types_);
+  FindGuestOsApps(&profile_, kCrostiniEnabled, kPluginVmEnabled, entries_,
+                  urls_, &app_ids_, &app_names_, &app_vm_types_);
   EXPECT_THAT(app_ids_, testing::ElementsAre("app1", "app2"));
   EXPECT_THAT(app_names_, testing::ElementsAre("name1", "name2 (Windows)"));
   EXPECT_THAT(app_vm_types_, testing::ElementsAre(VM_TERMINA, PLUGIN_VM));
@@ -224,8 +247,8 @@ TEST_F(GuestOsFileTasksTest, MultipleAppsFromMultipleVmsRegistered) {
 TEST_F(GuestOsFileTasksTest, AppRegisteredForTextPlain) {
   AddApp("app1", "name1", {"text/plain"}, {}, VM_TERMINA);
   AddEntry("entry.js", "text/javascript");
-  FindGuestOsApps(&profile_, entries_, urls_, &app_ids_, &app_names_,
-                  &app_vm_types_);
+  FindGuestOsApps(&profile_, kCrostiniEnabled, kPluginVmEnabled, entries_,
+                  urls_, &app_ids_, &app_names_, &app_vm_types_);
   EXPECT_THAT(app_ids_, testing::ElementsAre("app1"));
   EXPECT_THAT(app_names_, testing::ElementsAre("name1"));
   EXPECT_THAT(app_vm_types_, testing::ElementsAre(VM_TERMINA));
@@ -235,8 +258,8 @@ TEST_F(GuestOsFileTasksTest, MimeServiceForTextPlain) {
   AddApp("app1", "name1", {"test/mime1"}, {}, VM_TERMINA);
   AddEntry("entry.unknown", "text/plain");
   AddMime("unknown", "test/mime1");
-  FindGuestOsApps(&profile_, entries_, urls_, &app_ids_, &app_names_,
-                  &app_vm_types_);
+  FindGuestOsApps(&profile_, kCrostiniEnabled, kPluginVmEnabled, entries_,
+                  urls_, &app_ids_, &app_names_, &app_vm_types_);
   EXPECT_THAT(app_ids_, testing::ElementsAre("app1"));
   EXPECT_THAT(app_names_, testing::ElementsAre("name1"));
   EXPECT_THAT(app_vm_types_, testing::ElementsAre(VM_TERMINA));
@@ -246,8 +269,8 @@ TEST_F(GuestOsFileTasksTest, MimeServiceForApplicationOctetStream) {
   AddApp("app1", "name1", {"test/mime1"}, {}, VM_TERMINA);
   AddEntry("entry.unknown", "application/octet-stream");
   AddMime("unknown", "test/mime1");
-  FindGuestOsApps(&profile_, entries_, urls_, &app_ids_, &app_names_,
-                  &app_vm_types_);
+  FindGuestOsApps(&profile_, kCrostiniEnabled, kPluginVmEnabled, entries_,
+                  urls_, &app_ids_, &app_names_, &app_vm_types_);
   EXPECT_THAT(app_ids_, testing::ElementsAre("app1"));
   EXPECT_THAT(app_names_, testing::ElementsAre("name1"));
   EXPECT_THAT(app_vm_types_, testing::ElementsAre(VM_TERMINA));

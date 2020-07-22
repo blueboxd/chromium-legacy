@@ -58,6 +58,7 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
   const ui::AXNodeData& GetData() const override;
   int GetChildCount() const override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
+  bool HasModalDialog() const override;
   gfx::NativeViewAccessible GetNSWindow() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   gfx::NativeViewAccessible GetParent() override;

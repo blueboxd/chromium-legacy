@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/accessibility/accessibility_focus_highlight.h"
 
 #include "base/numerics/ranges.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/focused_node_details.h"
@@ -242,6 +243,10 @@ void AccessibilityFocusHighlight::Observe(
       content::Details<content::FocusedNodeDetails>(details).ptr();
   gfx::Rect node_bounds = node_details->node_bounds_in_screen;
 
+  // This happens if e.g. we focus on <body>. Don't show a confusing highlight.
+  if (node_bounds.IsEmpty())
+    return;
+
   // Convert it to the local coordinates of this BrowserView's widget.
   node_bounds.Offset(-gfx::ToFlooredVector2d(browser_view_->GetWidget()
                                                  ->GetClientAreaBoundsInScreen()
@@ -255,37 +260,48 @@ void AccessibilityFocusHighlight::OnPaintLayer(
     const ui::PaintContext& context) {
   ui::PaintRecorder recorder(context, layer_->size());
   SkColor highlight_color = GetHighlightColor();
-  cc::PaintFlags flags;
-  flags.setAntiAlias(true);
-  flags.setStyle(cc::PaintFlags::kStroke_Style);
-  flags.setColor(highlight_color);
+#if defined(OS_MACOSX)
+  // Match blink::LayoutThemeMacRefresh::FocusRingColor()
+  highlight_color = SkColorSetA(highlight_color, 166);
+#endif
+
+  cc::PaintFlags original_flags;
+  original_flags.setAntiAlias(true);
+  original_flags.setStyle(cc::PaintFlags::kStroke_Style);
+  original_flags.setColor(highlight_color);
 
   gfx::RectF bounds(node_bounds_);
 
-  // Draw gradient first, so other lines will be drawn over the top.
   // Apply padding
   int padding = kPaddingDIPs * device_scale_factor_;
   bounds.Inset(-padding, -padding);
 
-  gfx::RectF gradient_bounds(bounds);
-  int border_radius = kBorderRadiusDIPs * device_scale_factor_;
-  int gradient_border_radius = border_radius;
+  int stroke_width = kStrokeWidthDIPs * device_scale_factor_;
+  original_flags.setStrokeWidth(stroke_width);
 
+  int border_radius = kBorderRadiusDIPs * device_scale_factor_;
+
+  // Draw gradient first, so other lines will be drawn over the top.
   // Create a gradient effect by drawing the path outline multiple
   // times with increasing insets from 0 to kGradientWidthDIPs, and
   // with increasing transparency.
+  int gradient_border_radius = border_radius;
   int gradient_width = kGradientWidthDIPs * device_scale_factor_;
-  int stroke_width = kStrokeWidthDIPs * device_scale_factor_;
-  flags.setStrokeWidth(stroke_width);
+  gfx::RectF gradient_bounds(bounds);
+  gradient_bounds.Inset(-stroke_width, -stroke_width);
+  gradient_border_radius += stroke_width;
+  cc::PaintFlags gradient_flags(original_flags);
+  gradient_flags.setStrokeWidth(1);
   int original_alpha = std::min(SkColorGetA(highlight_color), 192u);
+
   for (int remaining = gradient_width; remaining > 0; remaining -= 1) {
     // Decrease alpha as distance remaining decreases.
     int alpha = (original_alpha * remaining * remaining) /
                 (gradient_width * gradient_width);
-    flags.setAlpha(alpha);
+    gradient_flags.setAlpha(alpha);
 
     recorder.canvas()->DrawRoundRect(gradient_bounds, gradient_border_radius,
-                                     flags);
+                                     gradient_flags);
 
     gradient_bounds.Inset(-1, -1);
     gradient_border_radius += 1;
@@ -300,14 +316,14 @@ void AccessibilityFocusHighlight::OnPaintLayer(
   white_ring_bounds.Inset(-(stroke_width / 2), -(stroke_width / 2));
   int white_ring_border_radius = border_radius + (stroke_width / 2);
 
-  flags.setColor(SK_ColorWHITE);
-  flags.setStrokeWidth(stroke_width);
-  recorder.canvas()->DrawRoundRect(white_ring_bounds, white_ring_border_radius,
-                                   flags);
+  cc::PaintFlags white_ring_flags(original_flags);
+  white_ring_flags.setColor(SK_ColorWHITE);
 
-  // Draw the innermost solid ring
-  flags.setColor(highlight_color);
-  recorder.canvas()->DrawRoundRect(bounds, border_radius, flags);
+  recorder.canvas()->DrawRoundRect(white_ring_bounds, white_ring_border_radius,
+                                   white_ring_flags);
+
+  // Finally, draw the inner ring
+  recorder.canvas()->DrawRoundRect(bounds, border_radius, original_flags);
 }
 
 void AccessibilityFocusHighlight::OnDeviceScaleFactorChanged(

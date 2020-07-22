@@ -206,7 +206,7 @@ void HidServiceWin::EnumerateBlocking(
         continue;
       }
       std::string physical_device_id =
-          base::WideToUTF8(base::win::String16FromGUID(container_id));
+          base::WideToUTF8(base::win::WStringFromGUID(container_id));
 
       AddDeviceBlocking(service, task_runner, device_path, physical_device_id);
     }
@@ -373,7 +373,7 @@ void HidServiceWin::OnDeviceAdded(const GUID& class_guid,
     return;
   }
   std::string physical_device_id =
-      base::WideToUTF8(base::win::String16FromGUID(container_id));
+      base::WideToUTF8(base::win::WStringFromGUID(container_id));
 
   blocking_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&HidServiceWin::AddDeviceBlocking,

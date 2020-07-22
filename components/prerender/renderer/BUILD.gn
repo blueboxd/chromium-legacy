@@ -6,6 +6,9 @@ static_library("renderer") {
   sources = [
     "prerender_helper.cc",
     "prerender_helper.h",
+    "prerender_observer.h",
+    "prerender_observer_list.cc",
+    "prerender_observer_list.h",
   ]
 
   deps = [

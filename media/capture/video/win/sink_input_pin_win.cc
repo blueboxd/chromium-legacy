@@ -116,7 +116,7 @@ bool SinkInputPin::IsMediaTypeValid(const AM_MEDIA_TYPE* media_type) {
   }
 
   DVLOG(2) << __func__ << " unsupported media type: "
-           << base::win::String16FromGUID(sub_type);
+           << base::win::WStringFromGUID(sub_type);
   return false;
 }
 

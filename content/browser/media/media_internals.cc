@@ -23,15 +23,18 @@
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "media/audio/audio_features.h"
 #include "media/base/audio_parameters.h"
@@ -499,8 +502,9 @@ void MediaInternals::SendGeneralAudioInformation() {
                          base::Value(feature_value_string));
 
   set_feature_data(features::kAudioServiceLaunchOnStartup);
-  set_explicit_feature_data(sandbox::policy::features::kAudioServiceSandbox,
-                            sandbox::policy::IsAudioSandboxEnabled());
+  set_explicit_feature_data(
+      features::kAudioServiceSandbox,
+      GetContentClient()->browser()->ShouldSandboxAudioService());
   base::string16 audio_info_update =
       SerializeUpdate("media.updateGeneralAudioInformation", &audio_info_data);
   SendUpdate(audio_info_update);

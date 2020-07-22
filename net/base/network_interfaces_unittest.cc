@@ -50,7 +50,7 @@ TEST(NetworkInterfacesTest, GetNetworkList) {
     GUID guid;
     EXPECT_EQ(static_cast<DWORD>(NO_ERROR),
               ConvertInterfaceLuidToGuid(&luid, &guid));
-    auto name = base::win::String16FromGUID(guid);
+    auto name = base::win::WStringFromGUID(guid);
     EXPECT_EQ(base::UTF8ToWide(it->name), name);
 
     if (it->type == NetworkChangeNotifier::CONNECTION_WIFI) {

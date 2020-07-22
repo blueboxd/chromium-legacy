@@ -345,6 +345,10 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(int index) {
   return nullptr;
 }
 
+bool ViewAXPlatformNodeDelegate::HasModalDialog() const {
+  return GetChildWidgets().is_tab_modal_showing;
+}
+
 gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetNSWindow() {
   NOTREACHED();
   return nullptr;

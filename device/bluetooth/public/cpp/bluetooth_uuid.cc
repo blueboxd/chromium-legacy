@@ -80,7 +80,7 @@ BluetoothUUID::BluetoothUUID(const std::string& uuid) {
 
 #if defined(OS_WIN)
 BluetoothUUID::BluetoothUUID(GUID uuid) {
-  auto buffer = base::win::String16FromGUID(uuid);
+  auto buffer = base::win::WStringFromGUID(uuid);
   DCHECK_EQ('{', buffer[0]);
   DCHECK_EQ('}', buffer[37]);
 

@@ -276,6 +276,14 @@ void Frame::SetOwner(FrameOwner* owner) {
   UpdateInheritedEffectiveTouchActionIfPossible();
 }
 
+bool Frame::IsAdSubframe() const {
+  return ad_frame_type_ != mojom::blink::AdFrameType::kNonAd;
+}
+
+bool Frame::IsAdRoot() const {
+  return ad_frame_type_ == mojom::blink::AdFrameType::kRootAd;
+}
+
 void Frame::UpdateInertIfPossible() {
   if (auto* frame_owner_element =
           DynamicTo<HTMLFrameOwnerElement>(owner_.Get())) {

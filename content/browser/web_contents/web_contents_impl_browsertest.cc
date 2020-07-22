@@ -2817,17 +2817,15 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NotifyPreferencesChanged) {
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
   auto* main_frame_rvh = main_frame->GetRenderViewHost();
-  auto* b_subframe_rvh = ChildFrameAt(main_frame, 0)->GetRenderViewHost();
-  auto* c_subframe_rvh = ChildFrameAt(main_frame, 1)->GetRenderViewHost();
 
   NotifyPreferencesChangedTestContentBrowserClient new_client;
   ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
 
   web_contents->NotifyPreferencesChanged();
 
-  // We should have updated the preferences for all three RenderViewHosts.
-  EXPECT_EQ(std::unordered_set<RenderViewHost*>(
-                {main_frame_rvh, b_subframe_rvh, c_subframe_rvh}),
+  // We should have updated the preferences for the WebContents, and should call
+  // OverrideWebkitPrefs with the main RenderViewHost only (not subframe RVHs).
+  EXPECT_EQ(std::unordered_set<RenderViewHost*>({main_frame_rvh}),
             new_client.override_webkit_prefs_rvh_set());
 
   SetBrowserClientForTesting(old_client);

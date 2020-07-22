@@ -939,7 +939,7 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableWebSecurity);
     const auto& preferences =
-        frame->GetRenderViewHost()->GetWebkitPreferences();
+        WebContents::FromRenderFrameHost(frame)->GetOrCreateWebPreferences();
     // See also //android_webview/docs/cors-and-webview-api.md to understand how
     // each settings affect CORS behaviors on file:// and content://.
     if (request_initiator.scheme() == url::kFileScheme) {

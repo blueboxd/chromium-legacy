@@ -53,10 +53,10 @@
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-shared.h"
 #include "third_party/blink/public/platform/audio/web_audio_device_source_type.h"
 #include "third_party/blink/public/platform/blame_context.h"
-#include "third_party/blink/public/platform/code_cache_loader.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/user_metrics_action.h"
 #include "third_party/blink/public/platform/web_audio_device.h"
+#include "third_party/blink/public/platform/web_code_cache_loader.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
@@ -262,10 +262,10 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Network -------------------------------------------------------------
 
-  // Returns the CodeCacheLoader that is used to fetch data from code caches.
+  // Returns the WebCodeCacheLoader that is used to fetch data from code caches.
   // It is OK to return a nullptr. When a nullptr is returned, data would not
   // be fetched from code cache.
-  virtual std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() {
+  virtual std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader() {
     return nullptr;
   }
 
@@ -305,7 +305,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   using FetchCachedCodeCallback =
       base::OnceCallback<void(base::Time, mojo_base::BigBuffer)>;
   virtual void FetchCachedCode(blink::mojom::CodeCacheType cache_type,
-                               const GURL&,
+                               const WebURL&,
                                FetchCachedCodeCallback) {}
   virtual void ClearCodeCacheEntry(blink::mojom::CodeCacheType cache_type,
                                    const GURL&) {}

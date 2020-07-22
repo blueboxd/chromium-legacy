@@ -599,4 +599,27 @@ TEST_F(AccessibilityNodeInfoDataWrapperTest, LabeledByLoop) {
   EXPECT_EQ("node2", name);
 }
 
+TEST_F(AccessibilityNodeInfoDataWrapperTest, appendkDescription) {
+  AXNodeInfoData node;
+  AccessibilityNodeInfoDataWrapper wrapper(tree_source(), &node);
+  node.id = 10;
+
+  // No attributes.
+  ui::AXNodeData data = CallSerialize(wrapper);
+  std::string description;
+  ASSERT_FALSE(data.GetStringAttribute(ax::mojom::StringAttribute::kDescription,
+                                       &description));
+
+  SetProperty(&node, AXStringProperty::STATE_DESCRIPTION, "state description");
+  SetProperty(&node, AXBooleanProperty::SELECTED, true);
+  SetProperty(&node, AXStringProperty::TEXT, "text");
+
+  data = CallSerialize(wrapper);
+  ASSERT_TRUE(data.GetStringAttribute(ax::mojom::StringAttribute::kDescription,
+                                      &description));
+  EXPECT_EQ("state description " +
+                l10n_util::GetStringUTF8(IDS_ARC_ACCESSIBILITY_SELECTED_STATUS),
+            description);
+}
+
 }  // namespace arc

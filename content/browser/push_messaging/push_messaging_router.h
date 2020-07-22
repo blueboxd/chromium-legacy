@@ -24,8 +24,6 @@ namespace content {
 
 class BrowserContext;
 class DevToolsBackgroundServicesContextImpl;
-class ServiceWorkerContextWrapper;
-class ServiceWorkerRegistration;
 class ServiceWorkerVersion;
 
 class PushMessagingRouter {
@@ -33,7 +31,7 @@ class PushMessagingRouter {
   using DeliverMessageCallback =
       base::OnceCallback<void(blink::mojom::PushDeliveryStatus)>;
 
-  // Delivers a push message with |data| to the Service Worker identified by
+  // Delivers a push message with |payload| to the Service Worker identified by
   // |origin| and |service_worker_registration_id|. Must be called on the UI
   // thread.
   static void DeliverMessage(BrowserContext* browser_context,
@@ -44,44 +42,20 @@ class PushMessagingRouter {
                              DeliverMessageCallback deliver_message_callback);
 
  private:
-  // Attempts to find a Service Worker registration so that a push event can be
-  // dispatched. Must be called on the IO thread.
-  static void FindServiceWorkerRegistration(
-      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-      scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context,
-      const GURL& origin,
-      int64_t service_worker_registration_id,
-      const std::string& message_id,
-      base::Optional<std::string> payload,
-      DeliverMessageCallback deliver_message_callback);
-
-  // If a registration was successfully retrieved, dispatches a push event with
-  // |data| on the Service Worker identified by |service_worker_registration|.
-  // Must be called on the IO thread.
-  static void FindServiceWorkerRegistrationCallback(
-      scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context,
-      const std::string& message_id,
-      base::Optional<std::string> payload,
-      DeliverMessageCallback deliver_message_callback,
-      blink::ServiceWorkerStatusCode service_worker_status,
-      scoped_refptr<ServiceWorkerRegistration> service_worker_registration);
-
-  // Delivers a push message with |data| to a specific |service_worker|.
+  // Delivers a push message with |payload| to a specific |service_worker|.
   // Must be called on the IO thread.
   static void DeliverMessageToWorker(
-      scoped_refptr<ServiceWorkerVersion> service_worker,
-      scoped_refptr<ServiceWorkerRegistration> service_worker_registration,
-      scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context,
       const std::string& message_id,
       base::Optional<std::string> payload,
       DeliverMessageCallback deliver_message_callback,
-      blink::ServiceWorkerStatusCode start_worker_status);
+      scoped_refptr<ServiceWorkerVersion> service_worker,
+      scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context,
+      blink::ServiceWorkerStatusCode status);
 
   // Gets called asynchronously after the Service Worker has dispatched the push
   // event. Must be called on the IO thread.
   static void DeliverMessageEnd(
       scoped_refptr<ServiceWorkerVersion> service_worker,
-      scoped_refptr<ServiceWorkerRegistration> service_worker_registration,
       scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context,
       const std::string& message_id,
       DeliverMessageCallback deliver_message_callback,

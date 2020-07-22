@@ -38,4 +38,8 @@ const base::Feature kV8FlushEmbeddedBlobICache{
 const base::Feature kV8ReduceConcurrentMarkingTasks{
     "V8ReduceConcurrentMarkingTasks", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Disables reclaiming of unmodified wrappers objects.
+const base::Feature kV8NoReclaimUnmodifiedWrappers{
+    "V8NoReclaimUnmodifiedWrappers", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features

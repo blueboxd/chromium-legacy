@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/grit/profile_picker_resources.h"
 #include "chrome/grit/profile_picker_resources_map.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -20,6 +21,7 @@ void AddStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"mainViewTitle", IDS_PROFILE_PICKER_MAIN_VIEW_TITLE},
       {"mainViewSubtitle", IDS_PROFILE_PICKER_MAIN_VIEW_SUBTITLE},
+      {"backButtonLabel", IDS_PROFILE_PICKER_BACK_BUTTON_LABEL},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }

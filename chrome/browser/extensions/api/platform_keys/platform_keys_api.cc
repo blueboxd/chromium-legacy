@@ -32,7 +32,6 @@ namespace api_pki = api::platform_keys_internal;
 
 namespace {
 
-const char kErrorAlgorithmNotSupported[] = "Algorithm not supported.";
 const char kErrorAlgorithmNotPermittedByCertificate[] =
     "The requested Algorithm is not permitted by the certificate.";
 const char kErrorInteractiveCallFromBackground[] =
@@ -157,7 +156,8 @@ PlatformKeysInternalGetPublicKeyFunction::Run() {
                                              &key_info.key_size_bits) ||
       (key_info.key_type != net::X509Certificate::kPublicKeyTypeRSA &&
        key_info.key_type != net::X509Certificate::kPublicKeyTypeECDSA)) {
-    return RespondNow(Error(kErrorAlgorithmNotSupported));
+    return RespondNow(Error(StatusToString(
+        chromeos::platform_keys::Status::kErrorAlgorithmNotSupported)));
   }
 
   // Currently, the only supported combinations are:
@@ -219,13 +219,15 @@ PlatformKeysInternalGetPublicKeyBySpkiFunction::Run() {
                                                    &key_info.key_type,
                                                    &key_info.key_size_bits) ||
       key_info.key_type != net::X509Certificate::kPublicKeyTypeRSA) {
-    return RespondNow(Error(kErrorAlgorithmNotSupported));
+    return RespondNow(Error(StatusToString(
+        chromeos::platform_keys::Status::kErrorAlgorithmNotSupported)));
   }
 
   // Currently, the only supported combination is:
   //   A SPKI declaring rsaEncryption used with the RSASSA-PKCS1-v1.5 algorithm.
   if (params->algorithm_name != kWebCryptoRSASSA_PKCS1_v1_5) {
-    return RespondNow(Error(kErrorAlgorithmNotSupported));
+    return RespondNow(Error(StatusToString(
+        chromeos::platform_keys::Status::kErrorAlgorithmNotSupported)));
   }
 
   api_pki::GetPublicKeyBySpki::Results::Algorithm algorithm;
@@ -318,11 +320,11 @@ PlatformKeysInternalSelectClientCertificatesFunction::Run() {
 
 void PlatformKeysInternalSelectClientCertificatesFunction::
     OnSelectedCertificates(std::unique_ptr<net::CertificateList> matches,
-                           const std::string& error_message) {
+                           chromeos::platform_keys::Status status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!error_message.empty()) {
-    Respond(Error(error_message));
+  if (status != chromeos::platform_keys::Status::kSuccess) {
+    Respond(Error(chromeos::platform_keys::StatusToString(status)));
     return;
   }
   DCHECK(matches);
@@ -381,7 +383,8 @@ ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
   if (params->hash_algorithm_name == "none") {
     // Signing without digesting is only supported for RSASSA-PKCS1-v1_5.
     if (params->algorithm_name != kWebCryptoRSASSA_PKCS1_v1_5)
-      return RespondNow(Error(kErrorAlgorithmNotSupported));
+      return RespondNow(Error(StatusToString(
+          chromeos::platform_keys::Status::kErrorAlgorithmNotSupported)));
 
     service->SignRSAPKCS1Raw(
         platform_keys_token_id,
@@ -400,7 +403,8 @@ ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
     } else if (params->hash_algorithm_name == "SHA-512") {
       hash_algorithm = chromeos::platform_keys::HASH_ALGORITHM_SHA512;
     } else {
-      return RespondNow(Error(kErrorAlgorithmNotSupported));
+      return RespondNow(Error(StatusToString(
+          chromeos::platform_keys::Status::kErrorAlgorithmNotSupported)));
     }
 
     chromeos::platform_keys::KeyType key_type;
@@ -409,7 +413,8 @@ ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
     } else if (params->algorithm_name == kWebCryptoEcdsa) {
       key_type = chromeos::platform_keys::KeyType::kEcdsa;
     } else {
-      return RespondNow(Error(kErrorAlgorithmNotSupported));
+      return RespondNow(Error(StatusToString(
+          chromeos::platform_keys::Status::kErrorAlgorithmNotSupported)));
     }
 
     service->SignDigest(
@@ -425,14 +430,14 @@ ExtensionFunction::ResponseAction PlatformKeysInternalSignFunction::Run() {
 
 void PlatformKeysInternalSignFunction::OnSigned(
     const std::string& signature,
-    const std::string& error_message) {
+    chromeos::platform_keys::Status status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (error_message.empty())
+  if (status == chromeos::platform_keys::Status::kSuccess)
     Respond(ArgumentList(api_pki::Sign::Results::Create(
         std::vector<uint8_t>(signature.begin(), signature.end()))));
   else
-    Respond(Error(error_message));
+    Respond(Error(chromeos::platform_keys::StatusToString(status)));
 }
 
 PlatformKeysVerifyTLSServerCertificateFunction::

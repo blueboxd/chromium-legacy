@@ -35,10 +35,6 @@ namespace chromeos {
 
 namespace {
 
-const char kErrorKeyNotAllowedForSigning[] =
-    "This key is not allowed for signing. Either it was used for signing "
-    "before or it was not correctly generated.";
-
 #if defined(OS_CHROMEOS)
 
 // Verify the allowlisted kKeyPermissionsInLoginScreen feature behaviors.
@@ -153,12 +149,12 @@ class ExtensionPlatformKeysService::GenerateKeyTask : public Task {
   }
 
   // Stores the generated key or in case of an error calls |callback_| with the
-  // error message.
+  // error status.
   void GeneratedKey(const std::string& public_key_spki_der,
-                    const std::string& error_message) {
-    if (!error_message.empty()) {
+                    platform_keys::Status status) {
+    if (status != platform_keys::Status::kSuccess) {
       next_step_ = Step::DONE;
-      callback_.Run(std::string() /* no public key */, error_message);
+      callback_.Run(std::string() /* no public key */, status);
       DoStep();
       return;
     }
@@ -178,7 +174,7 @@ class ExtensionPlatformKeysService::GenerateKeyTask : public Task {
         TokenIdsToKeyLocations({token_id_});
     extension_permissions_->RegisterKeyForCorporateUsage(public_key_spki_der_,
                                                          key_locations);
-    callback_.Run(public_key_spki_der_, std::string() /* no error */);
+    callback_.Run(public_key_spki_der_, platform_keys::Status::kSuccess);
     DoStep();
     return;
   }
@@ -272,7 +268,7 @@ class ExtensionPlatformKeysService::SignTask : public Task {
   // signature to |callback|. If the extension is not allowed to use the key
   // multiple times, also updates the permission to prevent any future signing
   // operation of that extension using that same key. If an error occurs, an
-  // error message is passed to |callback| instead.
+  // error status is passed to |callback|.
   SignTask(base::Optional<platform_keys::TokenId> token_id,
            const std::string& data,
            const std::string& public_key_spki_der,
@@ -329,7 +325,7 @@ class ExtensionPlatformKeysService::SignTask : public Task {
           Sign();
         } else {
           callback_.Run(std::string() /* no signature */,
-                        kErrorKeyNotAllowedForSigning);
+                        platform_keys::Status::kErrorKeyNotAllowedForSigning);
           DoStep();
         }
         return;
@@ -360,10 +356,10 @@ class ExtensionPlatformKeysService::SignTask : public Task {
   }
 
   void GotKeyLocation(const std::vector<platform_keys::TokenId>& token_ids,
-                      const std::string& error_message) {
-    if (!error_message.empty()) {
+                      platform_keys::Status status) {
+    if (status != platform_keys::Status::kSuccess) {
       next_step_ = Step::DONE;
-      callback_.Run(std::string() /* no signature */, error_message);
+      callback_.Run(std::string() /* no signature */, status);
       DoStep();
       return;
     }
@@ -402,8 +398,8 @@ class ExtensionPlatformKeysService::SignTask : public Task {
     }
   }
 
-  void DidSign(const std::string& signature, const std::string& error_message) {
-    callback_.Run(signature, error_message);
+  void DidSign(const std::string& signature, platform_keys::Status status) {
+    callback_.Run(signature, status);
     DoStep();
   }
 
@@ -540,16 +536,15 @@ class ExtensionPlatformKeysService::SelectTask : public Task {
   }
 
   // If the certificate request could be processed successfully, |matches| will
-  // contain the list of matching certificates (maybe empty) and |error_message|
-  // will be empty. If an error occurred, |matches| will be null and
-  // |error_message| contain an error message.
-  // Note that the order of |matches|, based on the expiration/issuance date, is
-  // relevant and must be preserved in any processing of the list.
+  // contain the list of matching certificates (maybe empty). If an error
+  // occurred, |matches| will be null. Note that the order of |matches|, based
+  // on the expiration/issuance date, is relevant and must be preserved in any
+  // processing of the list.
   void GotMatchingCerts(std::unique_ptr<net::CertificateList> matches,
-                        const std::string& error_message) {
-    if (!error_message.empty()) {
+                        platform_keys::Status status) {
+    if (status != platform_keys::Status::kSuccess) {
       next_step_ = Step::DONE;
-      callback_.Run(nullptr /* no certificates */, error_message);
+      callback_.Run(nullptr /* no certificates */, status);
       DoStep();
       return;
     }
@@ -604,10 +599,10 @@ class ExtensionPlatformKeysService::SelectTask : public Task {
 
   void GotKeyLocations(const scoped_refptr<net::X509Certificate>& certificate,
                        const std::vector<platform_keys::TokenId>& token_ids,
-                       const std::string& error_message) {
-    if (!error_message.empty()) {
+                       platform_keys::Status status) {
+    if (status != platform_keys::Status::kSuccess) {
       next_step_ = Step::DONE;
-      callback_.Run(nullptr /* no certificates */, error_message);
+      callback_.Run(nullptr /* no certificates */, status);
       DoStep();
       return;
     }
@@ -720,7 +715,7 @@ class ExtensionPlatformKeysService::SelectTask : public Task {
     // necessary but this ensures that the permissions were updated correctly.
     CHECK(!selected_cert_ || (filtered_certs->size() == 1 &&
                               filtered_certs->front() == selected_cert_));
-    callback_.Run(std::move(filtered_certs), std::string() /* no error */);
+    callback_.Run(std::move(filtered_certs), platform_keys::Status::kSuccess);
     DoStep();
   }
 

@@ -502,7 +502,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
             GetAppSorting(GetProfile(0))->GetAppLaunchOrdinal(app_id2));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, UninstallSynced) {
+// Test is flaky (crbug.com/1108172).
+IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, DISABLED_UninstallSynced) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameWebAppIds());
   ASSERT_TRUE(embedded_test_server()->Start());

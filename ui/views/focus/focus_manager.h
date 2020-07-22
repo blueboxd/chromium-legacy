@@ -336,9 +336,6 @@ class VIEWS_EXPORT FocusManager : public ViewObserver {
   bool RedirectAcceleratorToBubbleAnchorWidget(
       const ui::Accelerator& accelerator);
 
-  // Returns bubble's anchor widget.
-  Widget* GetBubbleAnchorWidget();
-
   // Whether arrow key traversal is enabled globally.
   static bool arrow_key_traversal_enabled_;
 

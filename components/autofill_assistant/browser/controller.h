@@ -148,8 +148,12 @@ class Controller : public ScriptExecutorDelegate,
   // states where showing the UI is optional, such as RUNNING, in tracking mode.
   void RequireUI() override;
 
-  void AddListener(NavigationListener* listener) override;
-  void RemoveListener(NavigationListener* listener) override;
+  void AddNavigationListener(
+      ScriptExecutorDelegate::NavigationListener* listener) override;
+  void RemoveNavigationListener(
+      ScriptExecutorDelegate::NavigationListener* listener) override;
+  void AddListener(ScriptExecutorDelegate::Listener* listener) override;
+  void RemoveListener(ScriptExecutorDelegate::Listener* listener) override;
 
   void SetExpandSheetForPromptAction(bool expand) override;
   void SetBrowseDomainsWhitelist(std::vector<std::string> domains) override;
@@ -164,7 +168,7 @@ class Controller : public ScriptExecutorDelegate,
                      Metrics::DropOutReason reason);
 
   // Overrides autofill_assistant::UiDelegate:
-  AutofillAssistantState GetState() override;
+  AutofillAssistantState GetState() const override;
   void OnUserInteractionInsideTouchableArea() override;
   const Details* GetDetails() const override;
   const InfoBox* GetInfoBox() const override;
@@ -207,6 +211,8 @@ class Controller : public ScriptExecutorDelegate,
   void GetVisualViewport(RectF* visual_viewport) const override;
   void OnFatalError(const std::string& error_message,
                     Metrics::DropOutReason reason) override;
+  void OnStop(const std::string& message,
+              const std::string& button_label) override;
   void MaybeReportFirstCheckDone();
   ViewportMode GetViewportMode() override;
   ConfigureBottomSheetProto::PeekMode GetPeekMode() override;
@@ -341,6 +347,7 @@ class Controller : public ScriptExecutorDelegate,
   std::unique_ptr<TriggerContext> trigger_context_;
 
   AutofillAssistantState state_ = AutofillAssistantState::INACTIVE;
+  bool can_recover_from_stopped_ = false;
 
   // The URL passed to Start(). Used only as long as there's no committed URL.
   // Note that this is the deeplink passed by a caller.
@@ -427,7 +434,10 @@ class Controller : public ScriptExecutorDelegate,
 
   // Value for ScriptExecutorDelegate::HasNavigationError()
   bool navigation_error_ = false;
-  base::ObserverList<NavigationListener> navigation_listeners_;
+  base::ObserverList<ScriptExecutorDelegate::NavigationListener>
+      navigation_listeners_;
+
+  base::ObserverList<ScriptExecutorDelegate::Listener> listeners_;
 
   // The next DidStartNavigation will not cause an error.
   bool expect_navigation_ = false;

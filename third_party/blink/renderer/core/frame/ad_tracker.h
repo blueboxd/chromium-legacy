@@ -7,9 +7,8 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/probe/async_task_id.h"
-#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -18,7 +17,10 @@
 #include "v8/include/v8.h"
 
 namespace blink {
+
+class Document;
 class ExecutionContext;
+class LocalFrame;
 class ResourceRequest;
 enum class ResourceType : uint8_t;
 

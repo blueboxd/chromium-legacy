@@ -591,8 +591,8 @@ AutofillSyncSigninState PersonalDataManager::GetSyncSigninState() const {
     return AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled;
   }
 
-  if (sync_service_->GetDisableReasons() ==
-      syncer::SyncService::DISABLE_REASON_PAUSED) {
+  if (sync_service_->GetTransportState() ==
+      syncer::SyncService::TransportState::PAUSED) {
     return AutofillSyncSigninState::kSyncPaused;
   }
 

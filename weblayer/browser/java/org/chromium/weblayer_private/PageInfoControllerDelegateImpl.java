@@ -6,11 +6,14 @@ package org.chromium.weblayer_private;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
 import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
@@ -79,6 +82,19 @@ public class PageInfoControllerDelegateImpl extends PageInfoControllerDelegate {
     @NonNull
     public BrowserContextHandle getBrowserContext() {
         return mProfile;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NonNull
+    public Fragment getPermissionsSubpageFragmentForUrl(String url) {
+        Bundle fragmentArgs = SingleWebsiteSettings.createFragmentArgsForSite(url);
+        SingleWebsiteSettings fragment = (SingleWebsiteSettings) Fragment.instantiate(
+                mContext, SingleWebsiteSettings.class.getName(), fragmentArgs);
+        fragment.setSiteSettingsClient(new WebLayerSiteSettingsClient(getBrowserContext()));
+        return fragment;
     }
 
     private static boolean isHttpOrHttps(GURL url) {

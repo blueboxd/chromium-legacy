@@ -20,11 +20,24 @@ void CredentialManagerPendingPreventSilentAccessTask::AddOrigin(
     const PasswordStore::FormDigest& form_digest) {
   delegate_->GetProfilePasswordStore()->GetLogins(form_digest, this);
   pending_requests_++;
+  if (PasswordStore* account_store = delegate_->GetAccountPasswordStore()) {
+    account_store->GetLogins(form_digest, this);
+    pending_requests_++;
+  }
 }
 
 void CredentialManagerPendingPreventSilentAccessTask::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
-  PasswordStore* store = delegate_->GetProfilePasswordStore();
+  // This class overrides OnGetPasswordStoreResultsFrom() (the version of this
+  // method that also receives the originating store), so the store-less version
+  // never gets called.
+  NOTREACHED();
+}
+
+void CredentialManagerPendingPreventSilentAccessTask::
+    OnGetPasswordStoreResultsFrom(
+        scoped_refptr<PasswordStore> store,
+        std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   for (const auto& form : results) {
     if (!form->skip_zero_click) {
       form->skip_zero_click = true;

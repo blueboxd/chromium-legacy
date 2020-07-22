@@ -23,7 +23,10 @@ namespace blink {
 
 class BrowserInterfaceBrokerProxy;
 class Document;
+class FrameSelection;
 class LocalFrame;
+class PendingAnimations;
+class StyleEngine;
 
 class PageTestBase : public testing::Test, public ScopedMockOverlayScrollbars {
   USING_FAST_MALLOC(PageTestBase);

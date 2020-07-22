@@ -95,20 +95,25 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerDelegate {
   // Unsubscribe from observer callbacks.
   virtual void RemoveObserver(int player_id) = 0;
 
+  // Notify about the kind of tracks the media player has, and the type of
+  // content.
+  virtual void DidMediaMetadataChange(
+      int player_id,
+      bool has_audio,
+      bool has_video,
+      media::MediaContentType media_content_type) = 0;
+
   // Notify playback started. This will request appropriate wake locks and, if
   // applicable, show a pause button in external controls.
   //
   // DidPlay() should not be called for remote playback.
-  virtual void DidPlay(int player_id,
-                       bool has_video,
-                       bool has_audio,
-                       media::MediaContentType media_content_type) = 0;
+  virtual void DidPlay(int player_id) = 0;
 
   // Notify that playback is paused. This will drop wake locks and, if
   // applicable, show a play button in external controls.
   // TODO(sandersd): It may be helpful to get |has_audio| and |has_video| here,
   // so that we can do the right thing with media that starts paused.
-  virtual void DidPause(int player_id) = 0;
+  virtual void DidPause(int player_id, bool reached_end_of_stream) = 0;
 
   // Notify that the size of the media player is changed.
   virtual void DidPlayerSizeChange(int delegate_id, const gfx::Size& size) = 0;

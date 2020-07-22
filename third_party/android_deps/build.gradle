@@ -47,6 +47,8 @@ dependencies {
     compile "androidx.media:media:${androidXSupportLibVersion}"
     compile "androidx.mediarouter:mediarouter:${androidXSupportLibVersion}"
     compile "androidx.preference:preference:1.1.1"
+    compile "androidx.slice:slice-core:${androidXSupportLibVersion}"
+    compile "androidx.slice:slice-builders:${androidXSupportLibVersion}"
     compile "androidx.recyclerview:recyclerview:${androidXSupportLibVersion}"
     compile "androidx.savedstate:savedstate:${androidXSupportLibVersion}"
     compile "androidx.swiperefreshlayout:swiperefreshlayout:${androidXSupportLibVersion}"

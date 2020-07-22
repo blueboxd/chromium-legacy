@@ -256,6 +256,13 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
         sizeof(gc_experiment_reduce_concurrent_marking_tasks) - 1);
   }
 
+  if (base::FeatureList::IsEnabled(features::kV8NoReclaimUnmodifiedWrappers)) {
+    static constexpr char no_reclaim_unmodified_wrappers[] =
+        "--no-reclaim-unmodified-wrappers";
+    v8::V8::SetFlagsFromString(no_reclaim_unmodified_wrappers,
+                               sizeof(no_reclaim_unmodified_wrappers) - 1);
+  }
+
   if (IsolateHolder::kStrictMode == mode) {
     static const char use_strict[] = "--use_strict";
     v8::V8::SetFlagsFromString(use_strict, sizeof(use_strict) - 1);

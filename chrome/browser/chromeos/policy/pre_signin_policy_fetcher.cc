@@ -110,9 +110,8 @@ void PreSigninPolicyFetcher::OnCachedPolicyRetrieved(
   // not joined to Active Directory (policy blobs from Active Directory servers
   // are not signed).
   if (!policy_blob.empty() && !is_active_directory_managed_) {
-    base::FilePath policy_key_dir;
-    CHECK(base::PathService::Get(chromeos::dbus_paths::DIR_USER_POLICY_KEYS,
-                                 &policy_key_dir));
+    const base::FilePath policy_key_dir = base::PathService::CheckedGet(
+        chromeos::dbus_paths::DIR_USER_POLICY_KEYS);
     cached_policy_key_loader_ = std::make_unique<CachedPolicyKeyLoaderChromeOS>(
         cryptohome_client_, task_runner_, account_id_, policy_key_dir);
     cached_policy_key_loader_->EnsurePolicyKeyLoaded(base::BindOnce(

@@ -157,7 +157,7 @@ bool MixedContentNavigationThrottle::ShouldBlockNavigation(bool for_redirect) {
        blink::mojom::InsecureRequestPolicy::kBlockAllMixedContent) !=
       blink::mojom::InsecureRequestPolicy::kLeaveInsecureRequestsAlone;
   const WebPreferences& prefs =
-      mixed_content_frame->render_view_host()->GetWebkitPreferences();
+      mixed_content_frame->GetOrCreateWebPreferences();
   bool strict_mode =
       prefs.strict_mixed_content_checking || block_all_mixed_content;
 

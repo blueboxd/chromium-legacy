@@ -35,17 +35,15 @@ class QRGeneratorCoordinatorTest : public PlatformTest {
     mock_qr_generation_commands_handler_ =
         OCMStrictProtocolMock(@protocol(QRGenerationCommands));
 
-    [browser_->GetCommandDispatcher()
-        startDispatchingToTarget:mock_qr_generation_commands_handler_
-                     forProtocol:@protocol(QRGenerationCommands)];
-
     test_title_ = @"Does not matter";
 
     coordinator_ = [[QRGeneratorCoordinator alloc]
         initWithBaseViewController:base_view_controller_
                            browser:browser_.get()
                              title:test_title_
-                               URL:test_url_];
+                               URL:test_url_
+                           handler:(id<QRGenerationCommands>)
+                                       mock_qr_generation_commands_handler_];
   }
 
   NSString* test_title_;

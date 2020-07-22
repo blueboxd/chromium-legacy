@@ -87,7 +87,7 @@ enum class AutofillAssistantState {
   // In that scenario, the status message at the time of transition to STOPPED
   // is supposed to contain the final message.
   //
-  // Next states: TRACKING
+  // Next states: TRACKING, RUNNING
   STOPPED,
 
   // Autofill assistant is waiting for the user to browse the website until one

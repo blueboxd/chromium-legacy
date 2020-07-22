@@ -87,6 +87,16 @@ class CertificateProviderSetCertificatesFunction : public ExtensionFunction {
                              CERTIFICATEPROVIDER_SETCERTIFICATES)
 };
 
+class CertificateProviderReportSignatureFunction : public ExtensionFunction {
+ private:
+  // ExtensionFunction:
+  ~CertificateProviderReportSignatureFunction() override;
+  ResponseAction Run() override;
+
+  DECLARE_EXTENSION_FUNCTION("certificateProvider.reportSignature",
+                             CERTIFICATEPROVIDER_REPORTSIGNATURE)
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_CERTIFICATE_PROVIDER_CERTIFICATE_PROVIDER_API_H_

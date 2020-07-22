@@ -1274,7 +1274,7 @@ std::unique_ptr<WebURLLoader> ResourceFetcher::CreateURLLoader(
   return loader_factory_->CreateURLLoader(request, options, task_runner_);
 }
 
-std::unique_ptr<CodeCacheLoader> ResourceFetcher::CreateCodeCacheLoader() {
+std::unique_ptr<WebCodeCacheLoader> ResourceFetcher::CreateCodeCacheLoader() {
   DCHECK(!GetProperties().IsDetached());
   DCHECK(loader_factory_);
   return loader_factory_->CreateCodeCacheLoader();

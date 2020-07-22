@@ -440,10 +440,12 @@ void RenderViewImpl::Initialize(
   auto* opener_frame = WebFrame::FromFrameToken(opener_frame_token);
 
   // The newly created webview_ is owned by this instance.
-  webview_ = WebView::Create(this, params->hidden,
-                             /*compositing_enabled=*/true,
-                             opener_frame ? opener_frame->View() : nullptr,
-                             std::move(params->blink_page_broadcast));
+  webview_ = WebView::Create(
+      this, params->hidden,
+      params->type == mojom::ViewWidgetType::kPortal ? true : false,
+      /*compositing_enabled=*/true,
+      opener_frame ? opener_frame->View() : nullptr,
+      std::move(params->blink_page_broadcast));
 
   g_view_map.Get().insert(std::make_pair(GetWebView(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(GetRoutingID(), this));
@@ -472,11 +474,6 @@ void RenderViewImpl::Initialize(
   GetContentClient()->renderer()->RenderViewCreated(this);
 
   nav_state_sync_timer_.SetTaskRunner(task_runner);
-
-  // We pass this state to Page, but it's only used by the main frame in the
-  // page.
-  if (params->type == mojom::ViewWidgetType::kPortal)
-    GetWebView()->SetInsidePortal(true);
 
 #if defined(OS_ANDROID)
   // TODO(sgurun): crbug.com/325351 Needed only for android webview's deprecated
@@ -1174,7 +1171,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames,
                         OnTextAutosizerPageInfoChanged)
     IPC_MESSAGE_HANDLER(PageMsg_SetRendererPrefs, OnSetRendererPrefs)
-    IPC_MESSAGE_HANDLER(PageMsg_SetInsidePortal, OnSetInsidePortal)
 
     // Adding a new message? Add platform independent ones first, then put the
     // platform specific ones at the end.
@@ -1723,10 +1719,6 @@ void RenderViewImpl::OnTextAutosizerPageInfoChanged(
   // another renderer.
   if (!GetWebView()->MainFrame()->IsWebLocalFrame())
     GetWebView()->SetTextAutosizerPageInfo(page_info);
-}
-
-void RenderViewImpl::OnSetInsidePortal(bool inside_portal) {
-  GetWebView()->SetInsidePortal(inside_portal);
 }
 
 void RenderViewImpl::DidAutoResize(const blink::WebSize& newSize) {

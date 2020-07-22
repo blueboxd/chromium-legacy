@@ -142,7 +142,8 @@ void CrossOriginOpenerPolicyReporter::QueueOpenerBreakageReport(
   const base::Optional<std::string>& endpoint =
       is_report_only ? coop_.report_only_reporting_endpoint
                      : coop_.reporting_endpoint;
-  DCHECK(endpoint);
+  if (!endpoint)
+    return;
 
   url::Replacements<char> replacements;
   replacements.ClearUsername();
@@ -323,6 +324,12 @@ void CrossOriginOpenerPolicyReporter::MonitorAccesses(
 
   accessing_rfh->GetAssociatedLocalMainFrame()->InstallCoopAccessMonitor(
       accessed_window_token, std::move(remote_reporter));
+}
+
+// static
+int CrossOriginOpenerPolicyReporter::NextVirtualBrowsingContextGroup() {
+  static int id = -1;
+  return ++id;
 }
 
 }  // namespace content

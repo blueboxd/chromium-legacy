@@ -105,7 +105,15 @@ void PageLoadMetricsTestWaiter::OnTimingUpdated(
   const page_load_metrics::mojom::FrameMetadata& metadata =
       subframe_rfh ? GetDelegateForCommittedLoad().GetSubframeMetadata()
                    : GetDelegateForCommittedLoad().GetMainFrameMetadata();
-  TimingFieldBitSet matched_bits = GetMatchedBits(timing, metadata);
+  // There is no way to get the layout shift score only for a subframe so far.
+  // See the score only when the frame is the main frame.
+  const PageRenderData* render_data =
+      subframe_rfh ? nullptr
+                   : &GetDelegateForCommittedLoad().GetMainFrameRenderData();
+
+  TimingFieldBitSet matched_bits =
+      GetMatchedBits(timing, metadata, render_data);
+
   if (subframe_rfh) {
     subframe_expected_fields_.ClearMatching(matched_bits);
   } else {
@@ -224,7 +232,8 @@ void PageLoadMetricsTestWaiter::FrameSizeChanged(
 PageLoadMetricsTestWaiter::TimingFieldBitSet
 PageLoadMetricsTestWaiter::GetMatchedBits(
     const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::mojom::FrameMetadata& metadata) {
+    const page_load_metrics::mojom::FrameMetadata& metadata,
+    const PageRenderData* render_data) {
   PageLoadMetricsTestWaiter::TimingFieldBitSet matched_bits;
   if (timing.document_timing->load_event_start)
     matched_bits.Set(TimingField::kLoadEvent);
@@ -256,6 +265,13 @@ PageLoadMetricsTestWaiter::GetMatchedBits(
       matched_bits.Set(
           TimingField::kFirstInputDelayAfterBackForwardCacheRestore);
     }
+  }
+
+  if (render_data) {
+    double layout_shift_score = render_data->layout_shift_score;
+    if (last_main_frame_layout_shift_score_ < layout_shift_score)
+      matched_bits.Set(TimingField::kLayoutShift);
+    last_main_frame_layout_shift_score_ = layout_shift_score;
   }
 
   return matched_bits;

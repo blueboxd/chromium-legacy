@@ -7,6 +7,7 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/double_or_double_sequence.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_food_enum.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -25,7 +26,11 @@ class SequenceTest final : public ScriptWrappable {
   Vector<Vector<String>> identityByteStringSequenceSequence(
       const Vector<Vector<String>>& arg) const;
   Vector<double> identityDoubleSequence(const Vector<double>& arg) const;
-  Vector<String> identityFoodEnumSequence(const Vector<String>& arg) const;
+  Vector<V8FoodEnum> identityFoodEnumSequence(
+      const Vector<V8FoodEnum>& arg) const;
+  // TODO(crbug.com/1050474): Remove Vector<String> version.
+  Vector<String> identityFoodEnumSequence(
+      const Vector<String>& arg) const;  // DEPRECATED
   Vector<int32_t> identityLongSequence(const Vector<int32_t>& arg) const;
   base::Optional<Vector<uint8_t>> identityOctetSequenceOrNull(
       const base::Optional<Vector<uint8_t>>& arg) const;

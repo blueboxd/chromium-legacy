@@ -285,7 +285,7 @@ const base::Feature kLanguageSettingsUpdate{"LanguageSettingsUpdate",
 
 // Enables or disables device management disclosure on login / lock screen.
 const base::Feature kLoginDeviceManagementDisclosure{
-    "LoginDeviceManagementDisclosure", base::FEATURE_DISABLED_BY_DEFAULT};
+    "LoginDeviceManagementDisclosure", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the display password button on login / lock screen.
 const base::Feature kLoginDisplayPasswordButton{

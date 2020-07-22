@@ -61,12 +61,6 @@ using content::BrowserContext;
 using content::BrowserThread;
 
 namespace {
-const char kErrorInternal[] = "Internal Error.";
-const char kErrorKeyNotFound[] = "Key not found.";
-const char kErrorCertificateNotFound[] = "Certificate could not be found.";
-const char kErrorAlgorithmNotSupported[] = "Algorithm not supported.";
-const char kErrorShutDown[] = "Delegate shut down.";
-
 // The current maximal RSA modulus length that ChromeOS's TPM supports for key
 // generation.
 const unsigned int kMaxRSAModulusLengthBits = 2048;
@@ -89,8 +83,7 @@ class NSSOperationState {
 
   // Called if an error occurred during the execution of the NSS operation
   // described by this object.
-  virtual void OnError(const base::Location& from,
-                       const std::string& error_message) = 0;
+  virtual void OnError(const base::Location& from, Status status) = 0;
 
   static void RunCallback(base::OnceClosure callback, ServiceWeakPtr weak_ptr) {
     if (weak_ptr) {
@@ -123,7 +116,7 @@ void DidGetCertDbOnUiThread(base::Optional<TokenId> token_id,
 
   if (!cert_db) {
     LOG(ERROR) << "Couldn't get NSSCertDatabase.";
-    state->OnError(FROM_HERE, kErrorInternal);
+    state->OnError(FROM_HERE, Status::kErrorInternal);
     return;
   }
 
@@ -140,7 +133,7 @@ void DidGetCertDbOnUiThread(base::Optional<TokenId> token_id,
     if (!state->slot_) {
       LOG(ERROR) << "Slot for token id '" << static_cast<int>(token_id.value())
                  << "' not available.";
-      state->OnError(FROM_HERE, kErrorInternal);
+      state->OnError(FROM_HERE, Status::kErrorInternal);
       return;
     }
   }
@@ -173,24 +166,28 @@ class GenerateRSAKeyState : public NSSOperationState {
                       const GenerateKeyCallback& callback);
   ~GenerateRSAKeyState() override = default;
 
-  void OnError(const base::Location& from,
-               const std::string& error_message) override {
-    CallBack(from, std::string() /* no public key */, error_message);
+  void OnError(const base::Location& from, Status status) override {
+    CallBack(from, /*public_key_spki_der=*/std::string(), status);
   }
 
-  void CallBack(const base::Location& from,
-                const std::string& public_key_spki_der,
-                const std::string& error_message) {
-    auto bound_callback =
-        base::BindOnce(callback_, public_key_spki_der, error_message);
-    origin_task_runner_->PostTask(
-        from, base::BindOnce(&NSSOperationState::RunCallback,
-                             std::move(bound_callback), service_weak_ptr_));
+  void OnSuccess(const base::Location& from,
+                 const std::string& public_key_spki_der) {
+    CallBack(from, public_key_spki_der, Status::kSuccess);
   }
 
   const unsigned int modulus_length_bits_;
 
  private:
+  void CallBack(const base::Location& from,
+                const std::string& public_key_spki_der,
+                Status status) {
+    auto bound_callback =
+        base::BindOnce(callback_, public_key_spki_der, status);
+    origin_task_runner_->PostTask(
+        from, base::BindOnce(&NSSOperationState::RunCallback,
+                             std::move(bound_callback), service_weak_ptr_));
+  }
+
   // Must be called on origin thread, therefore use CallBack().
   GenerateKeyCallback callback_;
 };
@@ -202,24 +199,28 @@ class GenerateECKeyState : public NSSOperationState {
                      const GenerateKeyCallback& callback);
   ~GenerateECKeyState() override = default;
 
-  void OnError(const base::Location& from,
-               const std::string& error_message) override {
-    CallBack(from, std::string() /* no public key */, error_message);
+  void OnError(const base::Location& from, Status status) override {
+    CallBack(from, /*public_key_spki_der=*/std::string(), status);
   }
 
-  void CallBack(const base::Location& from,
-                const std::string& public_key_spki_der,
-                const std::string& error_message) {
-    auto bound_callback =
-        base::BindOnce(callback_, public_key_spki_der, error_message);
-    origin_task_runner_->PostTask(
-        from, base::BindOnce(&NSSOperationState::RunCallback,
-                             std::move(bound_callback), service_weak_ptr_));
+  void OnSuccess(const base::Location& from,
+                 const std::string& public_key_spki_der) {
+    CallBack(from, public_key_spki_der, Status::kSuccess);
   }
 
   const std::string named_curve_;
 
  private:
+  void CallBack(const base::Location& from,
+                const std::string& public_key_spki_der,
+                Status status) {
+    auto bound_callback =
+        base::BindOnce(callback_, public_key_spki_der, status);
+    origin_task_runner_->PostTask(
+        from, base::BindOnce(&NSSOperationState::RunCallback,
+                             std::move(bound_callback), service_weak_ptr_));
+  }
+
   // Must be called on origin thread, therefore use CallBack().
   GenerateKeyCallback callback_;
 };
@@ -235,18 +236,12 @@ class SignState : public NSSOperationState {
             const SignCallback& callback);
   ~SignState() override = default;
 
-  void OnError(const base::Location& from,
-               const std::string& error_message) override {
-    CallBack(from, std::string() /* no signature */, error_message);
+  void OnError(const base::Location& from, Status status) override {
+    CallBack(from, /*signature=*/std::string(), status);
   }
 
-  void CallBack(const base::Location& from,
-                const std::string& signature,
-                const std::string& error_message) {
-    auto bound_callback = base::BindOnce(callback_, signature, error_message);
-    origin_task_runner_->PostTask(
-        from, base::BindOnce(&NSSOperationState::RunCallback,
-                             std::move(bound_callback), service_weak_ptr_));
+  void OnSuccess(const base::Location& from, const std::string& signature) {
+    CallBack(from, signature, Status::kSuccess);
   }
 
   // The data that will be signed.
@@ -271,6 +266,15 @@ class SignState : public NSSOperationState {
   const KeyType key_type_;
 
  private:
+  void CallBack(const base::Location& from,
+                const std::string& signature,
+                Status status) {
+    auto bound_callback = base::BindOnce(callback_, signature, status);
+    origin_task_runner_->PostTask(
+        from, base::BindOnce(&NSSOperationState::RunCallback,
+                             std::move(bound_callback), service_weak_ptr_));
+  }
+
   // Must be called on origin thread, therefore use CallBack().
   SignCallback callback_;
 };
@@ -283,26 +287,29 @@ class SelectCertificatesState : public NSSOperationState {
       const SelectCertificatesCallback& callback);
   ~SelectCertificatesState() override = default;
 
-  void OnError(const base::Location& from,
-               const std::string& error_message) override {
+  void OnError(const base::Location& from, Status status) override {
     CallBack(from, std::unique_ptr<net::CertificateList>() /* no matches */,
-             error_message);
+             status);
   }
 
-  void CallBack(const base::Location& from,
-                std::unique_ptr<net::CertificateList> matches,
-                const std::string& error_message) {
-    auto bound_callback =
-        base::BindOnce(callback_, std::move(matches), error_message);
-    origin_task_runner_->PostTask(
-        from, base::BindOnce(&NSSOperationState::RunCallback,
-                             std::move(bound_callback), service_weak_ptr_));
+  void OnSuccess(const base::Location& from,
+                 std::unique_ptr<net::CertificateList> matches) {
+    CallBack(from, std::move(matches), Status::kSuccess);
   }
 
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
   std::unique_ptr<net::ClientCertStore> cert_store_;
 
  private:
+  void CallBack(const base::Location& from,
+                std::unique_ptr<net::CertificateList> matches,
+                Status status) {
+    auto bound_callback = base::BindOnce(callback_, std::move(matches), status);
+    origin_task_runner_->PostTask(
+        from, base::BindOnce(&NSSOperationState::RunCallback,
+                             std::move(bound_callback), service_weak_ptr_));
+  }
+
   // Must be called on origin thread, therefore use CallBack().
   SelectCertificatesCallback callback_;
 };
@@ -313,26 +320,29 @@ class GetCertificatesState : public NSSOperationState {
                                 const GetCertificatesCallback& callback);
   ~GetCertificatesState() override = default;
 
-  void OnError(const base::Location& from,
-               const std::string& error_message) override {
+  void OnError(const base::Location& from, Status status) override {
     CallBack(from,
              std::unique_ptr<net::CertificateList>() /* no certificates */,
-             error_message);
+             status);
   }
 
-  void CallBack(const base::Location& from,
-                std::unique_ptr<net::CertificateList> certs,
-                const std::string& error_message) {
-    auto bound_callback =
-        base::BindOnce(callback_, std::move(certs), error_message);
-    origin_task_runner_->PostTask(
-        from, base::BindOnce(&NSSOperationState::RunCallback,
-                             std::move(bound_callback), service_weak_ptr_));
+  void OnSuccess(const base::Location& from,
+                 std::unique_ptr<net::CertificateList> certs) {
+    CallBack(from, std::move(certs), Status::kSuccess);
   }
 
   net::ScopedCERTCertificateList certs_;
 
  private:
+  void CallBack(const base::Location& from,
+                std::unique_ptr<net::CertificateList> certs,
+                Status status) {
+    auto bound_callback = base::BindOnce(callback_, std::move(certs), status);
+    origin_task_runner_->PostTask(
+        from, base::BindOnce(&NSSOperationState::RunCallback,
+                             std::move(bound_callback), service_weak_ptr_));
+  }
+
   // Must be called on origin thread, therefore use CallBack().
   GetCertificatesCallback callback_;
 };
@@ -343,24 +353,27 @@ class GetAllKeysState : public NSSOperationState {
                            GetAllKeysCallback callback);
   ~GetAllKeysState() override = default;
 
-  void OnError(const base::Location& from,
-               const std::string& error_message) override {
-    CallBack(from, std::vector<std::string>() /* no public keys */,
-             error_message);
+  void OnError(const base::Location& from, Status status) override {
+    CallBack(from, /*public_key_spki_der_list=*/std::vector<std::string>(),
+             status);
   }
 
+  void OnSuccess(const base::Location& from,
+                 std::vector<std::string> public_key_spki_der_list) {
+    CallBack(from, std::move(public_key_spki_der_list), Status::kSuccess);
+  }
+
+ private:
   void CallBack(const base::Location& from,
                 std::vector<std::string> public_key_spki_der_list,
-                const std::string& error_message) {
-    auto bound_callback =
-        base::BindOnce(std::move(callback_),
-                       std::move(public_key_spki_der_list), error_message);
+                Status status) {
+    auto bound_callback = base::BindOnce(
+        std::move(callback_), std::move(public_key_spki_der_list), status);
     origin_task_runner_->PostTask(
         from, base::BindOnce(&NSSOperationState::RunCallback,
                              std::move(bound_callback), service_weak_ptr_));
   }
 
- private:
   // Must be called on origin thread, therefore use CallBack().
   GetAllKeysCallback callback_;
 };
@@ -372,21 +385,24 @@ class ImportCertificateState : public NSSOperationState {
                          const ImportCertificateCallback& callback);
   ~ImportCertificateState() override = default;
 
-  void OnError(const base::Location& from,
-               const std::string& error_message) override {
-    CallBack(from, error_message);
+  void OnError(const base::Location& from, Status status) override {
+    CallBack(from, status);
   }
 
-  void CallBack(const base::Location& from, const std::string& error_message) {
-    auto bound_callback = base::BindOnce(callback_, error_message);
-    origin_task_runner_->PostTask(
-        from, base::BindOnce(&NSSOperationState::RunCallback,
-                             std::move(bound_callback), service_weak_ptr_));
+  void OnSuccess(const base::Location& from) {
+    CallBack(from, Status::kSuccess);
   }
 
   scoped_refptr<net::X509Certificate> certificate_;
 
  private:
+  void CallBack(const base::Location& from, Status status) {
+    auto bound_callback = base::BindOnce(callback_, status);
+    origin_task_runner_->PostTask(
+        from, base::BindOnce(&NSSOperationState::RunCallback,
+                             std::move(bound_callback), service_weak_ptr_));
+  }
+
   // Must be called on origin thread, therefore use CallBack().
   ImportCertificateCallback callback_;
 };
@@ -398,21 +414,24 @@ class RemoveCertificateState : public NSSOperationState {
                          const RemoveCertificateCallback& callback);
   ~RemoveCertificateState() override = default;
 
-  void OnError(const base::Location& from,
-               const std::string& error_message) override {
-    CallBack(from, error_message);
+  void OnError(const base::Location& from, Status status) override {
+    CallBack(from, status);
   }
 
-  void CallBack(const base::Location& from, const std::string& error_message) {
-    auto bound_callback = base::BindOnce(callback_, error_message);
-    origin_task_runner_->PostTask(
-        from, base::BindOnce(&NSSOperationState::RunCallback,
-                             std::move(bound_callback), service_weak_ptr_));
+  void OnSuccess(const base::Location& from) {
+    CallBack(from, Status::kSuccess);
   }
 
   scoped_refptr<net::X509Certificate> certificate_;
 
  private:
+  void CallBack(const base::Location& from, Status status) {
+    auto bound_callback = base::BindOnce(callback_, status);
+    origin_task_runner_->PostTask(
+        from, base::BindOnce(&NSSOperationState::RunCallback,
+                             std::move(bound_callback), service_weak_ptr_));
+  }
+
   // Must be called on origin thread, therefore use CallBack().
   RemoveCertificateCallback callback_;
 };
@@ -424,22 +443,25 @@ class RemoveKeyState : public NSSOperationState {
                  RemoveKeyCallback callback);
   ~RemoveKeyState() override = default;
 
-  void OnError(const base::Location& from,
-               const std::string& error_message) override {
-    CallBack(from, error_message);
+  void OnError(const base::Location& from, Status status) override {
+    CallBack(from, status);
   }
 
-  void CallBack(const base::Location& from, const std::string& error_message) {
-    auto bound_callback = base::BindOnce(std::move(callback_), error_message);
-    origin_task_runner_->PostTask(
-        from, base::BindOnce(&NSSOperationState::RunCallback,
-                             std::move(bound_callback), service_weak_ptr_));
+  void OnSuccess(const base::Location& from) {
+    CallBack(from, Status::kSuccess);
   }
 
   // Must be a DER encoding of a SubjectPublicKeyInfo.
   const std::string public_key_spki_der_;
 
  private:
+  void CallBack(const base::Location& from, Status status) {
+    auto bound_callback = base::BindOnce(std::move(callback_), status);
+    origin_task_runner_->PostTask(
+        from, base::BindOnce(&NSSOperationState::RunCallback,
+                             std::move(bound_callback), service_weak_ptr_));
+  }
+
   // Must be called on origin thread, therefore use CallBack().
   RemoveKeyCallback callback_;
 };
@@ -450,23 +472,27 @@ class GetTokensState : public NSSOperationState {
                           const GetTokensCallback& callback);
   ~GetTokensState() override = default;
 
-  void OnError(const base::Location& from,
-               const std::string& error_message) override {
+  void OnError(const base::Location& from, Status status) override {
     CallBack(from, std::unique_ptr<std::vector<TokenId>>() /* no token ids */,
-             error_message);
+             status);
   }
 
+  void OnSuccess(const base::Location& from,
+                 std::unique_ptr<std::vector<TokenId>> token_ids) {
+    CallBack(from, std::move(token_ids), Status::kSuccess);
+  }
+
+ private:
   void CallBack(const base::Location& from,
                 std::unique_ptr<std::vector<TokenId>> token_ids,
-                const std::string& error_message) {
+                Status status) {
     auto bound_callback =
-        base::BindOnce(callback_, std::move(token_ids), error_message);
+        base::BindOnce(callback_, std::move(token_ids), status);
     origin_task_runner_->PostTask(
         from, base::BindOnce(&NSSOperationState::RunCallback,
                              std::move(bound_callback), service_weak_ptr_));
   }
 
- private:
   // Must be called on origin thread, therefore use CallBack().
   GetTokensCallback callback_;
 };
@@ -478,24 +504,28 @@ class GetKeyLocationsState : public NSSOperationState {
                        const GetKeyLocationsCallback& callback);
   ~GetKeyLocationsState() override = default;
 
-  void OnError(const base::Location& from,
-               const std::string& error_message) override {
-    CallBack(from, std::vector<TokenId>() /* no token ids */, error_message);
+  void OnError(const base::Location& from, Status status) override {
+    CallBack(from, /*token_ids=*/std::vector<TokenId>(), status);
   }
 
-  void CallBack(const base::Location& from,
-                const std::vector<TokenId>& token_ids,
-                const std::string& error_message) {
-    auto bound_callback = base::BindOnce(callback_, token_ids, error_message);
-    origin_task_runner_->PostTask(
-        from, base::BindOnce(&NSSOperationState::RunCallback,
-                             std::move(bound_callback), service_weak_ptr_));
+  void OnSuccess(const base::Location& from,
+                 const std::vector<TokenId>& token_ids) {
+    CallBack(from, token_ids, Status::kSuccess);
   }
 
   // Must be a DER encoding of a SubjectPublicKeyInfo.
   const std::string public_key_spki_der_;
 
  private:
+  void CallBack(const base::Location& from,
+                const std::vector<TokenId>& token_ids,
+                Status status) {
+    auto bound_callback = base::BindOnce(callback_, token_ids, status);
+    origin_task_runner_->PostTask(
+        from, base::BindOnce(&NSSOperationState::RunCallback,
+                             std::move(bound_callback), service_weak_ptr_));
+  }
+
   // Must be called on origin thread, therefore use CallBack().
   GetKeyLocationsCallback callback_;
 };
@@ -509,16 +539,12 @@ class SetAttributeForKeyState : public NSSOperationState {
                           SetAttributeForKeyCallback callback);
   ~SetAttributeForKeyState() override = default;
 
-  void OnError(const base::Location& from,
-               const std::string& error_message) override {
-    CallBack(from, error_message);
+  void OnError(const base::Location& from, Status status) override {
+    CallBack(from, status);
   }
 
-  void CallBack(const base::Location& from, const std::string& error_message) {
-    auto bound_callback = base::BindOnce(std::move(callback_), error_message);
-    origin_task_runner_->PostTask(
-        from, base::BindOnce(&NSSOperationState::RunCallback,
-                             std::move(bound_callback), service_weak_ptr_));
+  void OnSuccess(const base::Location& from) {
+    CallBack(from, Status::kSuccess);
   }
 
   // Must be a DER encoding of a SubjectPublicKeyInfo.
@@ -527,6 +553,13 @@ class SetAttributeForKeyState : public NSSOperationState {
   const std::string attribute_value_;
 
  private:
+  void CallBack(const base::Location& from, Status status) {
+    auto bound_callback = base::BindOnce(std::move(callback_), status);
+    origin_task_runner_->PostTask(
+        from, base::BindOnce(&NSSOperationState::RunCallback,
+                             std::move(bound_callback), service_weak_ptr_));
+  }
+
   // Must be called on origin thread, therefore use CallBack().
   SetAttributeForKeyCallback callback_;
 };
@@ -539,19 +572,13 @@ class GetAttributeForKeyState : public NSSOperationState {
                           GetAttributeForKeyCallback callback);
   ~GetAttributeForKeyState() override = default;
 
-  void OnError(const base::Location& from,
-               const std::string& error_message) override {
-    CallBack(from, /*attribute_value=*/base::nullopt, error_message);
+  void OnError(const base::Location& from, Status status) override {
+    CallBack(from, /*attribute_value=*/base::nullopt, status);
   }
 
-  void CallBack(const base::Location& from,
-                const base::Optional<std::string>& attribute_value,
-                const std::string& error_message) {
-    auto bound_callback =
-        base::BindOnce(std::move(callback_), attribute_value, error_message);
-    origin_task_runner_->PostTask(
-        from, base::BindOnce(&NSSOperationState::RunCallback,
-                             std::move(bound_callback), service_weak_ptr_));
+  void OnSuccess(const base::Location& from,
+                 const base::Optional<std::string>& attribute_value) {
+    CallBack(from, attribute_value, Status::kSuccess);
   }
 
   // Must be a DER encoding of a SubjectPublicKeyInfo.
@@ -559,6 +586,16 @@ class GetAttributeForKeyState : public NSSOperationState {
   const CK_ATTRIBUTE_TYPE attribute_type_;
 
  private:
+  void CallBack(const base::Location& from,
+                const base::Optional<std::string>& attribute_value,
+                Status status) {
+    auto bound_callback =
+        base::BindOnce(std::move(callback_), attribute_value, status);
+    origin_task_runner_->PostTask(
+        from, base::BindOnce(&NSSOperationState::RunCallback,
+                             std::move(bound_callback), service_weak_ptr_));
+  }
+
   // Must be called on origin thread, therefore use CallBack().
   GetAttributeForKeyCallback callback_;
 };
@@ -689,7 +726,7 @@ crypto::ScopedSECKEYPrivateKey GetPrivateKey(
 void GenerateRSAKeyOnWorkerThread(std::unique_ptr<GenerateRSAKeyState> state) {
   if (!state->slot_) {
     LOG(ERROR) << "No slot.";
-    state->OnError(FROM_HERE, kErrorInternal);
+    state->OnError(FROM_HERE, Status::kErrorInternal);
     return;
   }
 
@@ -699,7 +736,7 @@ void GenerateRSAKeyOnWorkerThread(std::unique_ptr<GenerateRSAKeyState> state) {
           state->slot_.get(), state->modulus_length_bits_, true /* permanent */,
           &public_key, &private_key)) {
     LOG(ERROR) << "Couldn't create key.";
-    state->OnError(FROM_HERE, kErrorInternal);
+    state->OnError(FROM_HERE, Status::kErrorInternal);
     return;
   }
 
@@ -709,14 +746,13 @@ void GenerateRSAKeyOnWorkerThread(std::unique_ptr<GenerateRSAKeyState> state) {
     // TODO(https://crbug.com/1044368): Remove private_key and public_key from
     // storage.
     LOG(ERROR) << "Couldn't export public key.";
-    state->OnError(FROM_HERE, kErrorInternal);
+    state->OnError(FROM_HERE, Status::kErrorInternal);
     return;
   }
-  state->CallBack(
+  state->OnSuccess(
       FROM_HERE,
       std::string(reinterpret_cast<const char*>(public_key_der->data),
-                  public_key_der->len),
-      std::string() /* no error */);
+                  public_key_der->len));
 }
 
 // Does the actual EC key generation on a worker thread. Used by
@@ -724,13 +760,13 @@ void GenerateRSAKeyOnWorkerThread(std::unique_ptr<GenerateRSAKeyState> state) {
 void GenerateECKeyOnWorkerThread(std::unique_ptr<GenerateECKeyState> state) {
   if (!state->slot_) {
     LOG(ERROR) << "No slot.";
-    state->OnError(FROM_HERE, kErrorInternal);
+    state->OnError(FROM_HERE, Status::kErrorInternal);
     return;
   }
 
   if (state->named_curve_ != "P-256") {
     LOG(ERROR) << "Only P-256 named curve is supported.";
-    state->OnError(FROM_HERE, kErrorAlgorithmNotSupported);
+    state->OnError(FROM_HERE, Status::kErrorAlgorithmNotSupported);
   }
 
   crypto::ScopedSECKEYPublicKey public_key;
@@ -739,7 +775,7 @@ void GenerateECKeyOnWorkerThread(std::unique_ptr<GenerateECKeyState> state) {
           state->slot_.get(), SEC_OID_ANSIX962_EC_PRIME256V1,
           true /* permanent */, &public_key, &private_key)) {
     LOG(ERROR) << "Couldn't create key.";
-    state->OnError(FROM_HERE, kErrorInternal);
+    state->OnError(FROM_HERE, Status::kErrorInternal);
     return;
   }
 
@@ -749,14 +785,13 @@ void GenerateECKeyOnWorkerThread(std::unique_ptr<GenerateECKeyState> state) {
     // TODO(https://crbug.com/1044368): Remove private_key and public_key from
     // storage.
     LOG(ERROR) << "Couldn't export public key.";
-    state->OnError(FROM_HERE, kErrorInternal);
+    state->OnError(FROM_HERE, Status::kErrorInternal);
     return;
   }
-  state->CallBack(
+  state->OnSuccess(
       FROM_HERE,
       std::string(reinterpret_cast<const char*>(public_key_der->data),
-                  public_key_der->len),
-      std::string() /* no error */);
+                  public_key_der->len));
 }
 
 // Continues generating a RSA key with the obtained NSSCertDatabase. Used by
@@ -794,7 +829,7 @@ void SignRSAOnWorkerThread(std::unique_ptr<SignState> state) {
 
   // Fail if the key was not found or is of the wrong type.
   if (!rsa_key || SECKEY_GetPrivateKeyType(rsa_key.get()) != rsaKey) {
-    state->OnError(FROM_HERE, kErrorKeyNotFound);
+    state->OnError(FROM_HERE, Status::kErrorKeyNotFound);
     return;
   }
 
@@ -811,7 +846,7 @@ void SignRSAOnWorkerThread(std::unique_ptr<SignState> state) {
     // Compute signature of hash.
     int signature_len = PK11_SignatureLen(rsa_key.get());
     if (signature_len <= 0) {
-      state->OnError(FROM_HERE, kErrorInternal);
+      state->OnError(FROM_HERE, Status::kErrorInternal);
       return;
     }
 
@@ -851,11 +886,11 @@ void SignRSAOnWorkerThread(std::unique_ptr<SignState> state) {
 
   if (signature_str.empty()) {
     LOG(ERROR) << "Couldn't sign.";
-    state->OnError(FROM_HERE, kErrorInternal);
+    state->OnError(FROM_HERE, Status::kErrorInternal);
     return;
   }
 
-  state->CallBack(FROM_HERE, signature_str, std::string() /* no error */);
+  state->OnSuccess(FROM_HERE, signature_str);
 }
 
 // Does the actual EC Signing on a worker thread.
@@ -865,7 +900,7 @@ void SignECOnWorkerThread(std::unique_ptr<SignState> state) {
 
   // Fail if the key was not found or is of the wrong type.
   if (!ec_key || SECKEY_GetPrivateKeyType(ec_key.get()) != ecKey) {
-    state->OnError(FROM_HERE, kErrorKeyNotFound);
+    state->OnError(FROM_HERE, Status::kErrorKeyNotFound);
     return;
   }
 
@@ -873,7 +908,7 @@ void SignECOnWorkerThread(std::unique_ptr<SignState> state) {
 
   // Only SHA-256 algorithm is supported for ECDSA.
   if (state->hash_algorithm_ != HASH_ALGORITHM_SHA256) {
-    state->OnError(FROM_HERE, kErrorAlgorithmNotSupported);
+    state->OnError(FROM_HERE, Status::kErrorAlgorithmNotSupported);
     return;
   }
 
@@ -885,7 +920,7 @@ void SignECOnWorkerThread(std::unique_ptr<SignState> state) {
                    state->data_.size(), ec_key.get(),
                    sign_alg_tag) != SECSuccess) {
     LOG(ERROR) << "Couldn't sign using elliptic curve key.";
-    state->OnError(FROM_HERE, kErrorInternal);
+    state->OnError(FROM_HERE, Status::kErrorInternal);
     return;
   }
 
@@ -895,14 +930,14 @@ void SignECOnWorkerThread(std::unique_ptr<SignState> state) {
 
   if (!web_crypto_signature || web_crypto_signature->len == 0) {
     LOG(ERROR) << "Couldn't convert signature to WebCrypto format.";
-    state->OnError(FROM_HERE, kErrorInternal);
+    state->OnError(FROM_HERE, Status::kErrorInternal);
     return;
   }
 
   signature_str.assign(web_crypto_signature->data,
                        web_crypto_signature->data + web_crypto_signature->len);
 
-  state->CallBack(FROM_HERE, signature_str, std::string() /* no error */);
+  state->OnSuccess(FROM_HERE, signature_str);
 }
 
 // Decides which signing algorithm will be used. Used by SignWithDB().
@@ -911,7 +946,7 @@ void SignOnWorkerThread(std::unique_ptr<SignState> state) {
       GetPrivateKey(state->public_key_spki_der_, state->slot_);
 
   if (!key) {
-    state->OnError(FROM_HERE, kErrorKeyNotFound);
+    state->OnError(FROM_HERE, Status::kErrorKeyNotFound);
     return;
   }
 
@@ -953,9 +988,8 @@ void DidSelectCertificates(std::unique_ptr<SelectCertificatesState> state,
   // DidSelectCertificates() may be called synchronously, so run the callback on
   // a separate event loop iteration to avoid potential reentrancy bugs.
   content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&SelectCertificatesState::CallBack,
-                                std::move(state), FROM_HERE, std::move(certs),
-                                std::string() /* no error */));
+      FROM_HERE, base::BindOnce(&SelectCertificatesState::OnSuccess,
+                                std::move(state), FROM_HERE, std::move(certs)));
 }
 
 // Filters the obtained certificates on a worker thread. Used by
@@ -989,8 +1023,7 @@ void FilterCertificatesOnWorkerThread(
     client_certs->push_back(std::move(cert));
   }
 
-  state->CallBack(FROM_HERE, std::move(client_certs),
-                  std::string() /* no error */);
+  state->OnSuccess(FROM_HERE, std::move(client_certs));
 }
 
 // Passes the obtained certificates to the worker thread for filtering. Used by
@@ -1033,8 +1066,7 @@ void GetAllKeysOnWorkerThread(std::unique_ptr<GetAllKeysState> state) {
       PK11_ListPublicKeysInSlot(state->slot_.get(), /*nickname=*/nullptr);
 
   if (!public_keys) {
-    state->CallBack(FROM_HERE, std::move(public_key_spki_der_list),
-                    std::string() /* no error */);
+    state->OnSuccess(FROM_HERE, std::move(public_key_spki_der_list));
     return;
   }
 
@@ -1055,8 +1087,7 @@ void GetAllKeysOnWorkerThread(std::unique_ptr<GetAllKeysState> state) {
   }
 
   SECKEY_DestroyPublicKeyList(public_keys);
-  state->CallBack(FROM_HERE, std::move(public_key_spki_der_list),
-                  std::string() /* no error */);
+  state->OnSuccess(FROM_HERE, std::move(public_key_spki_der_list));
 }
 
 // Continues the retrieval of the SubjectPublicKeyInfo list with |cert_db|.
@@ -1079,11 +1110,11 @@ void ImportCertificateWithDB(std::unique_ptr<ImportCertificateState> state,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!state->certificate_) {
-    state->OnError(FROM_HERE, net::ErrorToString(net::ERR_CERT_INVALID));
+    state->OnError(FROM_HERE, Status::kNetErrorCertificateInvalid);
     return;
   }
   if (state->certificate_->HasExpired()) {
-    state->OnError(FROM_HERE, net::ErrorToString(net::ERR_CERT_DATE_INVALID));
+    state->OnError(FROM_HERE, Status::kNetErrorCertificateDateInvalid);
     return;
   }
 
@@ -1091,7 +1122,7 @@ void ImportCertificateWithDB(std::unique_ptr<ImportCertificateState> state,
       net::x509_util::CreateCERTCertificateFromX509Certificate(
           state->certificate_.get());
   if (!nss_cert) {
-    state->OnError(FROM_HERE, net::ErrorToString(net::ERR_CERT_INVALID));
+    state->OnError(FROM_HERE, Status::kNetErrorCertificateInvalid);
     return;
   }
 
@@ -1099,19 +1130,20 @@ void ImportCertificateWithDB(std::unique_ptr<ImportCertificateState> state,
   crypto::ScopedPK11Slot slot(
       PK11_KeyForCertExists(nss_cert.get(), nullptr, nullptr));
   if (slot.get() != state->slot_.get()) {
-    state->OnError(FROM_HERE, kErrorKeyNotFound);
+    state->OnError(FROM_HERE, Status::kErrorKeyNotFound);
     return;
   }
 
   const net::Error import_status =
       static_cast<net::Error>(cert_db->ImportUserCert(nss_cert.get()));
   if (import_status != net::OK) {
-    LOG(ERROR) << "Could not import certificate.";
-    state->OnError(FROM_HERE, net::ErrorToString(import_status));
+    LOG(ERROR) << "Could not import certificate: "
+               << net::ErrorToString(import_status);
+    state->OnError(FROM_HERE, Status::kNetErrorAddUserCertFailed);
     return;
   }
 
-  state->CallBack(FROM_HERE, std::string() /* no error */);
+  state->OnSuccess(FROM_HERE);
 }
 
 // Called on IO thread after the certificate removal is finished.
@@ -1121,15 +1153,15 @@ void DidRemoveCertificate(std::unique_ptr<RemoveCertificateState> state,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // CertificateNotFound error has precedence over an internal error.
   if (!certificate_found) {
-    state->OnError(FROM_HERE, kErrorCertificateNotFound);
+    state->OnError(FROM_HERE, Status::kErrorCertificateNotFound);
     return;
   }
   if (!success) {
-    state->OnError(FROM_HERE, kErrorInternal);
+    state->OnError(FROM_HERE, Status::kErrorInternal);
     return;
   }
 
-  state->CallBack(FROM_HERE, std::string() /* no error */);
+  state->OnSuccess(FROM_HERE);
 }
 
 // Does the actual certificate removal on the IO thread. Used by
@@ -1142,7 +1174,7 @@ void RemoveCertificateWithDB(std::unique_ptr<RemoveCertificateState> state,
       net::x509_util::CreateCERTCertificateFromX509Certificate(
           state->certificate_.get());
   if (!nss_cert) {
-    state->OnError(FROM_HERE, net::ErrorToString(net::ERR_CERT_INVALID));
+    state->OnError(FROM_HERE, Status::kNetErrorCertificateInvalid);
     return;
   }
 
@@ -1162,7 +1194,7 @@ void RemoveKeyOnWorkerThread(std::unique_ptr<RemoveKeyState> state) {
       GetPrivateKey(state->public_key_spki_der_, state->slot_);
 
   if (!private_key) {
-    state->OnError(FROM_HERE, kErrorKeyNotFound);
+    state->OnError(FROM_HERE, Status::kErrorKeyNotFound);
     return;
   }
 
@@ -1177,7 +1209,7 @@ void RemoveKeyOnWorkerThread(std::unique_ptr<RemoveKeyState> state) {
   if (PK11_DeleteTokenPrivateKey(/*privKey=*/private_key.release(),
                                  /*force=*/false) != SECSuccess) {
     LOG(ERROR) << "Cannot delete private key";
-    state->OnError(FROM_HERE, kErrorInternal);
+    state->OnError(FROM_HERE, Status::kErrorInternal);
     return;
   }
 
@@ -1189,7 +1221,7 @@ void RemoveKeyOnWorkerThread(std::unique_ptr<RemoveKeyState> state) {
     LOG(WARNING) << "Cannot delete public key";
   }
 
-  state->CallBack(FROM_HERE, std::string() /* no error */);
+  state->OnSuccess(FROM_HERE);
 }
 
 // Continues removing the key pair with the obtained |cert_db|. Called by
@@ -1221,8 +1253,7 @@ void GetTokensWithDB(std::unique_ptr<GetTokensState> state,
 
   DCHECK(!token_ids->empty());
 
-  state->CallBack(FROM_HERE, std::move(token_ids),
-                  std::string() /* no error */);
+  state->OnSuccess(FROM_HERE, std::move(token_ids));
 }
 
 // Does the actual work to determine which key is on which token.
@@ -1260,8 +1291,7 @@ void GetKeyLocationsWithDB(std::unique_ptr<GetKeyLocationsState> state,
       token_ids.push_back(TokenId::kSystem);
   }
 
-  state->CallBack(FROM_HERE, std::move(token_ids),
-                  std::string() /* no error */);
+  state->OnSuccess(FROM_HERE, std::move(token_ids));
 }
 
 // Translates |type| to one of the NSS softoken module's predefined key
@@ -1298,7 +1328,7 @@ void SetAttributeForKeyWithDb(std::unique_ptr<SetAttributeForKeyState> state,
       GetPrivateKey(state->public_key_spki_der_, state->slot_);
 
   if (!private_key) {
-    state->OnError(FROM_HERE, kErrorKeyNotFound);
+    state->OnError(FROM_HERE, Status::kErrorKeyNotFound);
     return;
   }
 
@@ -1313,11 +1343,11 @@ void SetAttributeForKeyWithDb(std::unique_ptr<SetAttributeForKeyState> state,
   if (PK11_WriteRawAttribute(
           /*objType=*/PK11_TypePrivKey, private_key.get(),
           state->attribute_type_, &attribute_value) != SECSuccess) {
-    state->OnError(FROM_HERE, kErrorInternal);
+    state->OnError(FROM_HERE, Status::kErrorKeyAttributeSettingFailed);
     return;
   }
 
-  state->CallBack(FROM_HERE, std::string() /* no error */);
+  state->OnSuccess(FROM_HERE);
 }
 
 // Does the actual attribute value retrieval with the obtained |cert_db|.
@@ -1331,7 +1361,7 @@ void GetAttributeForKeyWithDb(std::unique_ptr<GetAttributeForKeyState> state,
       GetPrivateKey(state->public_key_spki_der_, state->slot_);
 
   if (!private_key) {
-    state->OnError(FROM_HERE, kErrorKeyNotFound);
+    state->OnError(FROM_HERE, Status::kErrorKeyNotFound);
     return;
   }
 
@@ -1346,16 +1376,15 @@ void GetAttributeForKeyWithDb(std::unique_ptr<GetAttributeForKeyState> state,
     // CKR_ATTRIBUTE_TYPE_INVALID is a cryptoki function return value which is
     // returned by Chaps if the attribute was not set before for the key. NSS
     // maps this error to SEC_ERROR_BAD_DATA. This error is captured here so as
-    // not to return an |error_message| in cases of retrieving unset key
-    // attributes and to return nullopt |attribute_value| instead.
+    // not to return an |error| in cases of retrieving unset key attributes and
+    // to return nullopt |attribute_value| instead.
     int error = PORT_GetError();
     if (error == SEC_ERROR_BAD_DATA) {
-      state->CallBack(FROM_HERE, /*attribute_value=*/base::nullopt,
-                      /*error_message=*/std::string());
+      state->OnSuccess(FROM_HERE, /*attribute_value=*/base::nullopt);
       return;
     }
 
-    state->OnError(FROM_HERE, kErrorInternal);
+    state->OnError(FROM_HERE, Status::kErrorKeyAttributeRetrievalFailed);
     return;
   }
 
@@ -1365,8 +1394,7 @@ void GetAttributeForKeyWithDb(std::unique_ptr<GetAttributeForKeyState> state,
                                attribute_value->data + attribute_value->len);
   }
 
-  state->CallBack(FROM_HERE, attribute_value_str,
-                  /*error_message=*/std::string());
+  state->OnSuccess(FROM_HERE, attribute_value_str);
 }
 
 }  // namespace
@@ -1379,11 +1407,11 @@ void PlatformKeysServiceImpl::GenerateRSAKey(
   auto state = std::make_unique<GenerateRSAKeyState>(
       weak_factory_.GetWeakPtr(), modulus_length_bits, callback);
   if (delegate_->IsShutDown()) {
-    state->OnError(FROM_HERE, kErrorShutDown);
+    state->OnError(FROM_HERE, Status::kErrorShutDown);
     return;
   }
   if (modulus_length_bits > kMaxRSAModulusLengthBits) {
-    state->OnError(FROM_HERE, kErrorAlgorithmNotSupported);
+    state->OnError(FROM_HERE, Status::kErrorAlgorithmNotSupported);
     return;
   }
 
@@ -1402,7 +1430,7 @@ void PlatformKeysServiceImpl::GenerateECKey(
   auto state = std::make_unique<GenerateECKeyState>(weak_factory_.GetWeakPtr(),
                                                     named_curve, callback);
   if (delegate_->IsShutDown()) {
-    state->OnError(FROM_HERE, kErrorShutDown);
+    state->OnError(FROM_HERE, Status::kErrorShutDown);
     return;
   }
   // Get the pointer to |state| before base::Passed releases |state|.
@@ -1424,7 +1452,7 @@ void PlatformKeysServiceImpl::SignRSAPKCS1Digest(
       /*raw_pkcs1=*/false, hash_algorithm,
       /*key_type=*/KeyType::kRsassaPkcs1V15, callback);
   if (delegate_->IsShutDown()) {
-    state->OnError(FROM_HERE, kErrorShutDown);
+    state->OnError(FROM_HERE, Status::kErrorShutDown);
     return;
   }
 
@@ -1432,8 +1460,8 @@ void PlatformKeysServiceImpl::SignRSAPKCS1Digest(
   NSSOperationState* state_ptr = state.get();
 
   // The NSSCertDatabase object is not required. But in case it's not available
-  // we would get more informative error messages and we can double check that
-  // we use a key of the correct token.
+  // we would get more informative status codes and we can double check that we
+  // use a key of the correct token.
   GetCertDatabase(token_id, base::BindOnce(&SignWithDB, base::Passed(&state)),
                   delegate_.get(), state_ptr);
 }
@@ -1449,7 +1477,7 @@ void PlatformKeysServiceImpl::SignRSAPKCS1Raw(
       /*raw_pkcs1=*/true, HASH_ALGORITHM_NONE,
       /*key_type=*/KeyType::kRsassaPkcs1V15, callback);
   if (delegate_->IsShutDown()) {
-    state->OnError(FROM_HERE, kErrorShutDown);
+    state->OnError(FROM_HERE, Status::kErrorShutDown);
     return;
   }
 
@@ -1457,8 +1485,8 @@ void PlatformKeysServiceImpl::SignRSAPKCS1Raw(
   NSSOperationState* state_ptr = state.get();
 
   // The NSSCertDatabase object is not required. But in case it's not available
-  // we would get more informative error messages and we can double check that
-  // we use a key of the correct token.
+  // we would get more informative status codes and we can double check that we
+  // use a key of the correct token.
   GetCertDatabase(token_id, base::BindOnce(&SignWithDB, base::Passed(&state)),
                   delegate_.get(), state_ptr);
 }
@@ -1475,7 +1503,7 @@ void PlatformKeysServiceImpl::SignECDSADigest(
       /*raw_pkcs1=*/false, hash_algorithm,
       /*key_type=*/KeyType::kEcdsa, callback);
   if (delegate_->IsShutDown()) {
-    state->OnError(FROM_HERE, kErrorShutDown);
+    state->OnError(FROM_HERE, Status::kErrorShutDown);
     return;
   }
 
@@ -1483,8 +1511,8 @@ void PlatformKeysServiceImpl::SignECDSADigest(
   NSSOperationState* state_ptr = state.get();
 
   // The NSSCertDatabase object is not required. But in case it's not available
-  // we would get more informative error messages and we can double check that
-  // we use a key of the correct token.
+  // we would get more informative status codes and we can double check that we
+  // use a key of the correct token.
   GetCertDatabase(token_id, base::BindOnce(&SignWithDB, base::Passed(&state)),
                   delegate_.get(), state_ptr);
 }
@@ -1505,7 +1533,7 @@ void PlatformKeysServiceImpl::SelectClientCertificates(
   auto state = std::make_unique<SelectCertificatesState>(
       weak_factory_.GetWeakPtr(), cert_request_info, callback);
   if (delegate_->IsShutDown()) {
-    state->OnError(FROM_HERE, kErrorShutDown);
+    state->OnError(FROM_HERE, Status::kErrorShutDown);
     return;
   }
 
@@ -1651,7 +1679,7 @@ void PlatformKeysServiceImpl::GetCertificates(
   auto state = std::make_unique<GetCertificatesState>(
       weak_factory_.GetWeakPtr(), callback);
   if (delegate_->IsShutDown()) {
-    state->OnError(FROM_HERE, kErrorShutDown);
+    state->OnError(FROM_HERE, Status::kErrorShutDown);
     return;
   }
   // Get the pointer to |state| before base::Passed releases |state|.
@@ -1668,7 +1696,7 @@ void PlatformKeysServiceImpl::GetAllKeys(TokenId token_id,
   auto state = std::make_unique<GetAllKeysState>(weak_factory_.GetWeakPtr(),
                                                  std::move(callback));
   if (delegate_->IsShutDown()) {
-    state->OnError(FROM_HERE, kErrorShutDown);
+    state->OnError(FROM_HERE, Status::kErrorShutDown);
     return;
   }
 
@@ -1686,15 +1714,15 @@ void PlatformKeysServiceImpl::ImportCertificate(
   auto state = std::make_unique<ImportCertificateState>(
       weak_factory_.GetWeakPtr(), certificate, callback);
   if (delegate_->IsShutDown()) {
-    state->OnError(FROM_HERE, kErrorShutDown);
+    state->OnError(FROM_HERE, Status::kErrorShutDown);
     return;
   }
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
 
   // The NSSCertDatabase object is not required. But in case it's not available
-  // we would get more informative error messages and we can double check that
-  // we use a key of the correct token.
+  // we would get more informative status codes and we can double check that we
+  // use a key of the correct token.
   GetCertDatabase(
       token_id, base::BindOnce(&ImportCertificateWithDB, base::Passed(&state)),
       delegate_.get(), state_ptr);
@@ -1708,14 +1736,14 @@ void PlatformKeysServiceImpl::RemoveCertificate(
   auto state = std::make_unique<RemoveCertificateState>(
       weak_factory_.GetWeakPtr(), certificate, callback);
   if (delegate_->IsShutDown()) {
-    state->OnError(FROM_HERE, kErrorShutDown);
+    state->OnError(FROM_HERE, Status::kErrorShutDown);
     return;
   }
   // Get the pointer to |state| before base::Passed releases |state|.
   NSSOperationState* state_ptr = state.get();
 
   // The NSSCertDatabase object is not required. But in case it's not available
-  // we would get more informative error messages.
+  // we would get more informative status codes.
   GetCertDatabase(
       token_id, base::BindOnce(&RemoveCertificateWithDB, base::Passed(&state)),
       delegate_.get(), state_ptr);
@@ -1729,7 +1757,7 @@ void PlatformKeysServiceImpl::RemoveKey(TokenId token_id,
   auto state = std::make_unique<RemoveKeyState>(
       weak_factory_.GetWeakPtr(), public_key_spki_der, std::move(callback));
   if (delegate_->IsShutDown()) {
-    state->OnError(FROM_HERE, kErrorShutDown);
+    state->OnError(FROM_HERE, Status::kErrorShutDown);
     return;
   }
 
@@ -1737,7 +1765,7 @@ void PlatformKeysServiceImpl::RemoveKey(TokenId token_id,
   NSSOperationState* state_ptr = state.get();
 
   // The NSSCertDatabase object is not required. But in case it's not available
-  // we would get more informative error messages.
+  // we would get more informative status codes.
   GetCertDatabase(token_id,
                   base::BindOnce(&RemoveKeyWithDb, base::Passed(&state)),
                   delegate_.get(), state_ptr);
@@ -1748,7 +1776,7 @@ void PlatformKeysServiceImpl::GetTokens(const GetTokensCallback& callback) {
   auto state =
       std::make_unique<GetTokensState>(weak_factory_.GetWeakPtr(), callback);
   if (delegate_->IsShutDown()) {
-    state->OnError(FROM_HERE, kErrorShutDown);
+    state->OnError(FROM_HERE, Status::kErrorShutDown);
     return;
   }
   // Get the pointer to |state| before base::Passed releases |state|.
@@ -1765,7 +1793,7 @@ void PlatformKeysServiceImpl::GetKeyLocations(
   auto state = std::make_unique<GetKeyLocationsState>(
       weak_factory_.GetWeakPtr(), public_key_spki_der, callback);
   if (delegate_->IsShutDown()) {
-    state->OnError(FROM_HERE, kErrorShutDown);
+    state->OnError(FROM_HERE, Status::kErrorShutDown);
     return;
   }
   NSSOperationState* state_ptr = state.get();
@@ -1792,7 +1820,7 @@ void PlatformKeysServiceImpl::SetAttributeForKey(
       weak_factory_.GetWeakPtr(), public_key_spki_der, ck_attribute_type,
       attribute_value, std::move(callback));
   if (delegate_->IsShutDown()) {
-    state->OnError(FROM_HERE, kErrorShutDown);
+    state->OnError(FROM_HERE, Status::kErrorShutDown);
     return;
   }
 
@@ -1821,7 +1849,7 @@ void PlatformKeysServiceImpl::GetAttributeForKey(
       weak_factory_.GetWeakPtr(), public_key_spki_der, ck_attribute_type,
       std::move(callback));
   if (delegate_->IsShutDown()) {
-    state->OnError(FROM_HERE, kErrorShutDown);
+    state->OnError(FROM_HERE, Status::kErrorShutDown);
     return;
   }
 

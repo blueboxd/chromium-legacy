@@ -527,7 +527,15 @@ bool FocusManager::ProcessAccelerator(const ui::Accelerator& accelerator) {
     return true;
   if (delegate_ && delegate_->ProcessAccelerator(accelerator))
     return true;
+
+#if defined(OS_MACOSX)
+  // On MacOS accelerators are processed when a bubble is opened without
+  // manual redirection to bubble anchor widget. Including redirect on MacOS
+  // breaks processing accelerators by the bubble itself.
+  return false;
+#else
   return RedirectAcceleratorToBubbleAnchorWidget(accelerator);
+#endif
 }
 
 bool FocusManager::IsAcceleratorRegistered(
@@ -603,7 +611,10 @@ void FocusManager::OnViewIsDeleting(View* view) {
 
 bool FocusManager::RedirectAcceleratorToBubbleAnchorWidget(
     const ui::Accelerator& accelerator) {
-  Widget* anchor_widget = GetBubbleAnchorWidget();
+  views::BubbleDialogDelegate* widget_delegate =
+      widget_->widget_delegate()->AsBubbleDialogDelegate();
+  Widget* anchor_widget =
+      widget_delegate ? widget_delegate->anchor_widget() : nullptr;
   if (!anchor_widget)
     return false;
 
@@ -611,15 +622,32 @@ bool FocusManager::RedirectAcceleratorToBubbleAnchorWidget(
   if (!focus_manager->IsAcceleratorRegistered(accelerator))
     return false;
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // Processing an accelerator can delete things. Because we
+  // need these objects afterwards on Linux, save widget_ as weak pointer and
+  // save the close_on_deactivate property value of widget_delegate in a
+  // variable.
+  base::WeakPtr<Widget> widget_weak_ptr = widget_->GetWeakPtr();
+  const bool close_widget_on_deactivate =
+      widget_delegate->close_on_deactivate();
+#endif
+
   // The parent view must be focused for it to process events.
   focus_manager->SetFocusedView(anchor_widget->GetRootView());
-  return focus_manager->ProcessAccelerator(accelerator);
-}
+  const bool accelerator_processed =
+      focus_manager->ProcessAccelerator(accelerator);
 
-Widget* FocusManager::GetBubbleAnchorWidget() {
-  BubbleDialogDelegate* widget_delegate =
-      widget_->widget_delegate()->AsBubbleDialogDelegate();
-  return widget_delegate ? widget_delegate->anchor_widget() : nullptr;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // Need to manually close the bubble widget on Linux. On Linux when the
+  // bubble is shown, the main widget remains active. Because of that when
+  // focus is set to the main widget to process accelerator, the main widget
+  // isn't activated and the bubble widget isn't deactivated and closed.
+  if (accelerator_processed && close_widget_on_deactivate) {
+    widget_weak_ptr->CloseWithReason(views::Widget::ClosedReason::kLostFocus);
+  }
+#endif
+
+  return accelerator_processed;
 }
 
 }  // namespace views

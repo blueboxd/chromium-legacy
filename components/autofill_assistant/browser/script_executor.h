@@ -32,7 +32,8 @@ class UserModel;
 
 // Class to execute an assistant script.
 class ScriptExecutor : public ActionDelegate,
-                       public ScriptExecutorDelegate::NavigationListener {
+                       public ScriptExecutorDelegate::NavigationListener,
+                       public ScriptExecutorDelegate::Listener {
  public:
   // Listens to events on ScriptExecutor.
   // TODO(b/806868): Make global_payload a part of callback instead of the
@@ -98,8 +99,12 @@ class ScriptExecutor : public ActionDelegate,
   const UserData* GetUserData() const override;
   UserModel* GetUserModel() override;
 
-  // Override ScriptExecutorDelegate::Listener
+  // Override ScriptExecutorDelegate::NavigationListener
   void OnNavigationStateChanged() override;
+
+  // Override ScriptExecutorDelegate::Listener
+  void OnPause(const std::string& message,
+               const std::string& button_label) override;
 
   // Override ActionDelegate:
   void RunElementChecks(BatchElementChecker* checker) override;
@@ -400,6 +405,11 @@ class ScriptExecutor : public ActionDelegate,
                      const base::string16& cvc);
   void OnChosen(UserAction::Callback callback,
                 std::unique_ptr<TriggerContext> context);
+  void OnResume();
+
+  // Actions that can manipulate the UserActions should be interrupted, such
+  // that they do not overwrite the paused state.
+  bool ShouldInterruptOnPause(const ActionProto& proto);
 
   const std::string script_path_;
   std::unique_ptr<TriggerContext> additional_context_;
@@ -466,8 +476,12 @@ class ScriptExecutor : public ActionDelegate,
     base::OnceCallback<void()> end_prompt_on_navigation_callback;
   };
   CurrentActionData current_action_data_;
+  base::Optional<size_t> current_action_index_;
 
   const UserData* user_data_ = nullptr;
+
+  bool is_paused_ = false;
+  std::string last_status_message_;
 
   base::WeakPtrFactory<ScriptExecutor> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ScriptExecutor);

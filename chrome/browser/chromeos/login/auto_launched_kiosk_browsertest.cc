@@ -132,7 +132,7 @@ class AutoLaunchedKioskTest : public MixinBasedInProcessBrowserTest {
 
   void SetUp() override {
     skip_splash_wait_override_ =
-        AppLaunchController::SkipSplashScreenWaitForTesting();
+        KioskLaunchController::SkipSplashScreenWaitForTesting();
     login_manager_.set_session_restore_enabled();
     login_manager_.SetDefaultLoginSwitches(
         {std::make_pair("test_switch_1", ""),

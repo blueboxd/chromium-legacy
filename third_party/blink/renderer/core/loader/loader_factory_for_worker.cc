@@ -80,7 +80,7 @@ std::unique_ptr<WebURLLoader> LoaderFactoryForWorker::CreateURLLoader(
       wrapped, CreateTaskRunnerHandle(task_runner));
 }
 
-std::unique_ptr<CodeCacheLoader>
+std::unique_ptr<WebCodeCacheLoader>
 LoaderFactoryForWorker::CreateCodeCacheLoader() {
   return web_context_->CreateCodeCacheLoader();
 }

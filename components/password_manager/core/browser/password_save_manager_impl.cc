@@ -20,6 +20,7 @@
 #include "components/password_manager/core/browser/votes_uploader.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 
+using autofill::FieldRendererId;
 using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::FormStructure;
@@ -56,6 +57,7 @@ PasswordForm PendingCredentialsForNewCredentials(
   // The new password's value and element name should be empty.
   pending_credentials.new_password_value.clear();
   pending_credentials.new_password_element.clear();
+  pending_credentials.new_password_element_renderer_id = FieldRendererId();
   return pending_credentials;
 }
 

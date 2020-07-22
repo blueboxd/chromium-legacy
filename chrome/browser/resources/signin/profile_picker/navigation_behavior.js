@@ -88,6 +88,13 @@ export function navigateTo(route) {
   notifyObservers();
 }
 
+/**
+ * Navigates to the previous route.
+ */
+export function navigateToPreviousRoute() {
+  // TODO(crbug.com/1063856): Add implementation.
+}
+
 /** @polymerBehavior */
 export const NavigationBehavior = {
   /** @override */

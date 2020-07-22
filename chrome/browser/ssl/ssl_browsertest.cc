@@ -3564,8 +3564,7 @@ class SSLUIWorkerFetchTest
                                  bool strict_mixed_content_checking,
                                  bool strictly_block_blockable_mixed_content) {
     WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-    const content::WebPreferences& prefs =
-        tab->GetMainFrame()->GetRenderViewHost()->GetWebkitPreferences();
+    const content::WebPreferences& prefs = tab->GetOrCreateWebPreferences();
     ASSERT_EQ(prefs.strictly_block_blockable_mixed_content,
               strictly_block_blockable_mixed_content);
     ASSERT_EQ(prefs.allow_running_insecure_content,

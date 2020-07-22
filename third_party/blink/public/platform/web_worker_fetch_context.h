@@ -14,8 +14,8 @@
 #include "third_party/blink/public/mojom/loader/resource_load_info_notifier.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-shared.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-shared.h"
-#include "third_party/blink/public/platform/code_cache_loader.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
+#include "third_party/blink/public/platform/web_code_cache_loader.h"
 #include "third_party/blink/public/platform/web_document_subresource_filter.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -81,10 +81,10 @@ class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
       CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
           url_loader_factory) = 0;
 
-  // Returns a CodeCacheLoader that fetches data from code caches. If
+  // Returns a WebCodeCacheLoader that fetches data from code caches. If
   // a nullptr is returned then data would not be fetched from the code
   // cache.
-  virtual std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() {
+  virtual std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader() {
     return nullptr;
   }
 

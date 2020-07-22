@@ -34,7 +34,6 @@
 #include <memory>
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -45,6 +44,7 @@ namespace blink {
 
 class Element;
 class FullscreenOptions;
+class LocalFrame;
 class WebViewImpl;
 
 // FullscreenController is a per-WebView class that manages the transition into

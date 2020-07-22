@@ -73,11 +73,23 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_flac) {
   ExecuteTest("testFlacVariants()");
 }
 
-IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp3) {
+// Flaky on Marshmallow. https://crbug.com/1090770
+#if defined(OS_ANDROID)
+#define MAYBE_CodecSupportTest_mp3 DISABLED_CodecSupportTest_mp3
+#else
+#define MAYBE_CodecSupportTest_mp3 CodecSupportTest_mp3
+#endif
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, MAYBE_CodecSupportTest_mp3) {
   ExecuteTest("testMp3Variants()");
 }
 
-IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
+// Flaky on Marshmallow. https://crbug.com/1090770
+#if defined(OS_ANDROID)
+#define MAYBE_CodecSupportTest_mp4 DISABLED_CodecSupportTest_mp4
+#else
+#define MAYBE_CodecSupportTest_mp4 CodecSupportTest_mp4
+#endif
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, MAYBE_CodecSupportTest_mp4) {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   ExecuteTest("testMp4Variants(true)");  // has_proprietary_codecs=true
 #else
@@ -133,11 +145,17 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Mp4aVariants) {
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_HLS) {
+// Flaky on Marshmallow. https://crbug.com/1090770
+#if defined(OS_ANDROID)
+#define MAYBE_CodecSupportTest_HLS DISABLED_CodecSupportTest_HLS
+#else
+#define MAYBE_CodecSupportTest_HLS CodecSupportTest_HLS
+#endif
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, MAYBE_CodecSupportTest_HLS) {
 #if defined(OS_ANDROID)
   ExecuteTest("testHls(true)");  // has_hls_support=true
 #else
-  ExecuteTest("testHls(false)");            // has_hls_support=false
+  ExecuteTest("testHls(false)");  // has_hls_support=false
 #endif
 }
 

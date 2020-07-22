@@ -1244,9 +1244,8 @@ class RedirectToParentFocusManagerTest : public FocusManagerTest {
         GetWidget()->GetRootView()->AddChildView(std::make_unique<View>());
     anchor->SetFocusBehavior(View::FocusBehavior::ALWAYS);
 
-    BubbleDialogDelegateView* bubble_delegate =
-        TestBubbleDialogDelegateView::CreateAndShowBubble(anchor);
-    Widget* bubble_widget = bubble_delegate->GetWidget();
+    bubble_ = TestBubbleDialogDelegateView::CreateAndShowBubble(anchor);
+    Widget* bubble_widget = bubble_->GetWidget();
 
     parent_focus_manager_ = anchor->GetFocusManager();
     bubble_focus_manager_ = bubble_widget->GetFocusManager();
@@ -1258,8 +1257,10 @@ class RedirectToParentFocusManagerTest : public FocusManagerTest {
   }
 
  protected:
-  FocusManager* parent_focus_manager_;
-  FocusManager* bubble_focus_manager_;
+  FocusManager* parent_focus_manager_ = nullptr;
+  FocusManager* bubble_focus_manager_ = nullptr;
+
+  BubbleDialogDelegateView* bubble_ = nullptr;
 };
 
 // Test that when an accelerator is sent to a bubble that isn't registered,
@@ -1267,6 +1268,7 @@ class RedirectToParentFocusManagerTest : public FocusManagerTest {
 TEST_F(RedirectToParentFocusManagerTest, ParentHandlesAcceleratorFromBubble) {
   ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
   ui::TestAcceleratorTarget parent_return_target(true);
+  Widget* bubble_widget = bubble_->GetWidget();
 
   EXPECT_EQ(0, parent_return_target.accelerator_count());
   parent_focus_manager_->RegisterAccelerator(
@@ -1275,9 +1277,23 @@ TEST_F(RedirectToParentFocusManagerTest, ParentHandlesAcceleratorFromBubble) {
 
   EXPECT_TRUE(
       !bubble_focus_manager_->IsAcceleratorRegistered(return_accelerator));
-  // Accelerator was proccesed by the parent.
+
+  // The bubble should be closed after parent processed accelerator only if
+  // close_on_deactivate is true.
+  bubble_->set_close_on_deactivate(false);
+  // Accelerator was processed by the parent.
   EXPECT_TRUE(bubble_focus_manager_->ProcessAccelerator(return_accelerator));
   EXPECT_EQ(parent_return_target.accelerator_count(), 1);
+  EXPECT_FALSE(bubble_widget->IsClosed());
+
+  // Reset focus to the bubble widget. Focus was set to the the main widget
+  // to process accelerator.
+  bubble_focus_manager_->SetFocusedView(bubble_widget->GetRootView());
+
+  bubble_->set_close_on_deactivate(true);
+  EXPECT_TRUE(bubble_focus_manager_->ProcessAccelerator(return_accelerator));
+  EXPECT_EQ(parent_return_target.accelerator_count(), 2);
+  EXPECT_TRUE(bubble_widget->IsClosed());
 }
 
 // Test that when an accelerator is sent to a bubble that is registered on both
@@ -1286,6 +1302,7 @@ TEST_F(RedirectToParentFocusManagerTest, BubbleHandlesRegisteredAccelerators) {
   ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
   ui::TestAcceleratorTarget parent_return_target(true);
   ui::TestAcceleratorTarget bubble_return_target(true);
+  Widget* bubble_widget = bubble_->GetWidget();
 
   EXPECT_EQ(0, bubble_return_target.accelerator_count());
   EXPECT_EQ(0, parent_return_target.accelerator_count());
@@ -1297,10 +1314,32 @@ TEST_F(RedirectToParentFocusManagerTest, BubbleHandlesRegisteredAccelerators) {
       return_accelerator, ui::AcceleratorManager::kNormalPriority,
       &parent_return_target);
 
-  // Accelerator was proccesed by the bubble and not by the parent.
+  // The bubble shouldn't be closed after it processed accelerator without
+  // passing it to the parent.
+  bubble_->set_close_on_deactivate(true);
+  // Accelerator was processed by the bubble and not by the parent.
   EXPECT_TRUE(bubble_focus_manager_->ProcessAccelerator(return_accelerator));
   EXPECT_EQ(1, bubble_return_target.accelerator_count());
   EXPECT_EQ(0, parent_return_target.accelerator_count());
+  EXPECT_FALSE(bubble_widget->IsClosed());
+}
+
+// Test that when an accelerator is sent to a bubble that isn't registered
+// for either the bubble or the bubble's parent, the bubble isn't closed.
+TEST_F(RedirectToParentFocusManagerTest, NotProcessedAccelerator) {
+  ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
+  Widget* bubble_widget = bubble_->GetWidget();
+
+  EXPECT_TRUE(
+      !bubble_focus_manager_->IsAcceleratorRegistered(return_accelerator));
+  EXPECT_TRUE(
+      !parent_focus_manager_->IsAcceleratorRegistered(return_accelerator));
+
+  // The bubble shouldn't be closed if the accelerator was passed to the parent
+  // but the parent didn't process it.
+  bubble_->set_close_on_deactivate(true);
+  EXPECT_FALSE(bubble_focus_manager_->ProcessAccelerator(return_accelerator));
+  EXPECT_FALSE(bubble_widget->IsClosed());
 }
 
 #endif

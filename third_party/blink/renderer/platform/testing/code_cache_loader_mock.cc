@@ -7,7 +7,7 @@
 namespace blink {
 
 void CodeCacheLoaderMock::FetchFromCodeCacheSynchronously(
-    const GURL& url,
+    const WebURL& url,
     base::Time* response_time_out,
     mojo_base::BigBuffer* buffer_out) {
   *response_time_out = base::Time();
@@ -16,8 +16,8 @@ void CodeCacheLoaderMock::FetchFromCodeCacheSynchronously(
 
 void CodeCacheLoaderMock::FetchFromCodeCache(
     blink::mojom::CodeCacheType cache_type,
-    const GURL& kurl,
-    CodeCacheLoader::FetchCodeCacheCallback callback) {
+    const WebURL& url,
+    WebCodeCacheLoader::FetchCodeCacheCallback callback) {
   std::move(callback).Run(base::Time(), mojo_base::BigBuffer());
 }
 

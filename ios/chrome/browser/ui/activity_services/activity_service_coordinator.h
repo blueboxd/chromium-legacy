@@ -11,6 +11,7 @@
 @protocol ActivityServicePositioner;
 @protocol ActivityServicePresentation;
 class Browser;
+@protocol QRGenerationCommands;
 
 // ActivityServiceCoordinator provides a public interface for the share
 // menu feature.
@@ -38,6 +39,9 @@ class Browser;
 // Provider of share action presentation.
 @property(nonatomic, readwrite, weak) id<ActivityServicePresentation>
     presentationProvider;
+
+// Handler for activities that need to be executed within a certain scope.
+@property(nonatomic, weak) id<QRGenerationCommands> scopedHandler;
 
 @end
 

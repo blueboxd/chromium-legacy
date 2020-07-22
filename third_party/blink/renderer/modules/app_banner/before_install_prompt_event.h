@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_app_banner_prompt_result.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
@@ -23,6 +22,7 @@ namespace blink {
 class BeforeInstallPromptEvent;
 class BeforeInstallPromptEventInit;
 class ExceptionState;
+class LocalFrame;
 
 using UserChoiceProperty = ScriptPromiseProperty<Member<AppBannerPromptResult>,
                                                  ToV8UndefinedGenerator>;

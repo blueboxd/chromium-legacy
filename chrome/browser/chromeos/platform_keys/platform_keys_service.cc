@@ -14,6 +14,7 @@
 #include "base/task/thread_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/hash_value.h"
+#include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
 
 namespace chromeos {
@@ -47,6 +48,36 @@ void IntersectOnWorkerThread(const net::CertificateList& certs1,
 }
 
 }  // namespace
+
+std::string StatusToString(Status status) {
+  switch (status) {
+    case Status::kSuccess:
+      return "The operation was successfully executed.";
+    case Status::kErrorAlgorithmNotSupported:
+      return "Algorithm not supported.";
+    case Status::kErrorCertificateNotFound:
+      return "Certificate could not be found.";
+    case Status::kErrorInternal:
+      return "Internal Error.";
+    case Status::kErrorKeyAttributeRetrievalFailed:
+      return "Key attribute value retrieval failed.";
+    case Status::kErrorKeyAttributeSettingFailed:
+      return "Setting key attribute value failed.";
+    case Status::kErrorKeyNotAllowedForSigning:
+      return "This key is not allowed for signing. Either it was used for "
+             "signing before or it was not correctly generated.";
+    case Status::kErrorKeyNotFound:
+      return "Key not found.";
+    case Status::kErrorShutDown:
+      return "Delegate shut down.";
+    case Status::kNetErrorAddUserCertFailed:
+      return net::ErrorToString(net::ERR_ADD_USER_CERT_FAILED);
+    case Status::kNetErrorCertificateDateInvalid:
+      return net::ErrorToString(net::ERR_CERT_DATE_INVALID);
+    case Status::kNetErrorCertificateInvalid:
+      return net::ErrorToString(net::ERR_CERT_INVALID);
+  }
+}
 
 void IntersectCertificates(
     const net::CertificateList& certs1,

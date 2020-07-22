@@ -89,6 +89,9 @@ class MinimumVersionPolicyHandlerTest
                                 int warning,
                                 int eol_warning) const;
 
+  void VerifyUpdateRequiredNotification(const base::string16& expected_title,
+                                        const base::string16& expected_message);
+
   MinimumVersionPolicyHandler* GetMinimumVersionPolicyHandler() {
     return minimum_version_policy_handler_.get();
   }
@@ -218,6 +221,16 @@ base::Value MinimumVersionPolicyHandlerTest::CreateRequirement(
   dict.SetIntKey(MinimumVersionPolicyHandler::kWarningPeriod, warning);
   dict.SetIntKey(MinimumVersionPolicyHandler::KEolWarningPeriod, eol_warning);
   return dict;
+}
+
+void MinimumVersionPolicyHandlerTest::VerifyUpdateRequiredNotification(
+    const base::string16& expected_title,
+    const base::string16& expected_message) {
+  auto notification =
+      display_service()->GetNotification(kUpdateRequiredNotificationId);
+  ASSERT_TRUE(notification);
+  EXPECT_EQ(notification->title(), expected_title);
+  EXPECT_EQ(notification->message(), expected_message);
 }
 
 TEST_F(MinimumVersionPolicyHandlerTest, RequirementsNotMetState) {
@@ -423,11 +436,7 @@ TEST_F(MinimumVersionPolicyHandlerTest, NoNetworkNotifications) {
   base::string16 expected_message = base::ASCIIToUTF16(
       "managed.com requires you to download an update before the deadline. The "
       "update will download automatically when you connect to the internet.");
-  auto notification_long_waiting =
-      display_service()->GetNotification(kUpdateRequiredNotificationId);
-  ASSERT_TRUE(notification_long_waiting);
-  EXPECT_EQ(notification_long_waiting->title(), expected_title);
-  EXPECT_EQ(notification_long_waiting->message(), expected_message);
+  VerifyUpdateRequiredNotification(expected_title, expected_message);
 
   // Expire the notification timer to show new notification on the last day.
   const base::TimeDelta warning = base::TimeDelta::FromDays(kLongWarning - 1);
@@ -438,11 +447,8 @@ TEST_F(MinimumVersionPolicyHandlerTest, NoNetworkNotifications) {
   base::string16 expected_message_last_day = base::ASCIIToUTF16(
       "managed.com requires you to download an update today. The "
       "update will download automatically when you connect to the internet.");
-  auto notification_last_day =
-      display_service()->GetNotification(kUpdateRequiredNotificationId);
-  ASSERT_TRUE(notification_last_day);
-  EXPECT_EQ(notification_last_day->title(), expected_title_last_day);
-  EXPECT_EQ(notification_last_day->message(), expected_message_last_day);
+  VerifyUpdateRequiredNotification(expected_title_last_day,
+                                   expected_message_last_day);
 }
 
 TEST_F(MinimumVersionPolicyHandlerTest, MeteredNetworkNotifications) {
@@ -479,11 +485,7 @@ TEST_F(MinimumVersionPolicyHandlerTest, MeteredNetworkNotifications) {
       "managed.com requires you to connect to Wi-Fi and download an update "
       "before the deadline. Or, download from a metered connection (charges "
       "may apply).");
-  auto notification_long_waiting =
-      display_service()->GetNotification(kUpdateRequiredNotificationId);
-  ASSERT_TRUE(notification_long_waiting);
-  EXPECT_EQ(notification_long_waiting->title(), expected_title);
-  EXPECT_EQ(notification_long_waiting->message(), expected_message);
+  VerifyUpdateRequiredNotification(expected_title, expected_message);
 
   // Expire the notification timer to show new notification on the last day.
   const base::TimeDelta warning = base::TimeDelta::FromDays(kLongWarning - 1);
@@ -494,11 +496,8 @@ TEST_F(MinimumVersionPolicyHandlerTest, MeteredNetworkNotifications) {
   base::string16 expected_message_last_day = base::ASCIIToUTF16(
       "managed.com requires you to connect to Wi-Fi today to download an "
       "update. Or, download from a metered connection (charges may apply).");
-  auto notification_last_day =
-      display_service()->GetNotification(kUpdateRequiredNotificationId);
-  ASSERT_TRUE(notification_last_day);
-  EXPECT_EQ(notification_last_day->title(), expected_title_last_day);
-  EXPECT_EQ(notification_last_day->message(), expected_message_last_day);
+  VerifyUpdateRequiredNotification(expected_title_last_day,
+                                   expected_message_last_day);
 }
 
 TEST_F(MinimumVersionPolicyHandlerTest, EolNotifications) {
@@ -526,23 +525,15 @@ TEST_F(MinimumVersionPolicyHandlerTest, EolNotifications) {
   base::string16 expected_message = base::ASCIIToUTF16(
       "managed.com requires you to back up your data and return this device "
       "before the deadline.");
-  auto notification_long_waiting =
-      display_service()->GetNotification(kUpdateRequiredNotificationId);
-  ASSERT_TRUE(notification_long_waiting);
-  EXPECT_EQ(notification_long_waiting->title(), expected_title);
-  EXPECT_EQ(notification_long_waiting->message(), expected_message);
+  VerifyUpdateRequiredNotification(expected_title, expected_message);
 
   // Expire notification timer to show new notification a week before deadline.
   const base::TimeDelta warning = base::TimeDelta::FromDays(kLongWarning - 7);
   task_environment.FastForwardBy(warning);
 
   base::string16 expected_title_one_week =
-      base::ASCIIToUTF16("Return device within 7 days");
-  auto notification_one_week =
-      display_service()->GetNotification(kUpdateRequiredNotificationId);
-  ASSERT_TRUE(notification_one_week);
-  EXPECT_EQ(notification_one_week->title(), expected_title_one_week);
-  EXPECT_EQ(notification_one_week->message(), expected_message);
+      base::ASCIIToUTF16("Return device within 1 week");
+  VerifyUpdateRequiredNotification(expected_title_one_week, expected_message);
 
   // Expire the notification timer to show new notification on the last day.
   const base::TimeDelta warning_last_day = base::TimeDelta::FromDays(6);
@@ -553,11 +544,8 @@ TEST_F(MinimumVersionPolicyHandlerTest, EolNotifications) {
   base::string16 expected_message_last_day = base::ASCIIToUTF16(
       "managed.com requires you to back up your data and return this device "
       "today.");
-  auto notification_last_day =
-      display_service()->GetNotification(kUpdateRequiredNotificationId);
-  ASSERT_TRUE(notification_last_day);
-  EXPECT_EQ(notification_last_day->title(), expected_title_last_day);
-  EXPECT_EQ(notification_last_day->message(), expected_message_last_day);
+  VerifyUpdateRequiredNotification(expected_title_last_day,
+                                   expected_message_last_day);
 }
 
 TEST_F(MinimumVersionPolicyHandlerTest, LastHourEolNotifications) {
@@ -594,11 +582,8 @@ TEST_F(MinimumVersionPolicyHandlerTest, LastHourEolNotifications) {
   base::string16 expected_message_last_day = base::ASCIIToUTF16(
       "managed.com requires you to back up your data and return this device "
       "today.");
-  auto notification_last_day =
-      display_service()->GetNotification(kUpdateRequiredNotificationId);
-  ASSERT_TRUE(notification_last_day);
-  EXPECT_EQ(notification_last_day->title(), expected_title_last_day);
-  EXPECT_EQ(notification_last_day->message(), expected_message_last_day);
+  VerifyUpdateRequiredNotification(expected_title_last_day,
+                                   expected_message_last_day);
 }
 
 }  // namespace policy

@@ -55,6 +55,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/common/three_d_api_types.h"
+#include "content/public/common/web_preferences.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -408,7 +409,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   std::vector<WebContents*> GetInnerWebContents() override;
   WebContentsImpl* GetResponsibleWebContents() override;
   void DidChangeVisibleSecurityState() override;
-  void NotifyPreferencesChanged() override;
   void SyncRendererPrefs() override;
 
   void Stop() override;
@@ -533,6 +533,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Implementation of PageNavigator.
   WebContents* OpenURL(const OpenURLParams& params) override;
+
+  const WebPreferences& GetOrCreateWebPreferences() override;
+  void NotifyPreferencesChanged() override;
+  void SetWebPreferences(const WebPreferences& prefs) override;
 
   // RenderFrameHostDelegate ---------------------------------------------------
   bool OnMessageReceived(RenderFrameHostImpl* render_frame_host,
@@ -810,6 +814,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   RenderFrameHostImpl* GetPendingMainFrame() override;
   void DidFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source) override;
   void OnThemeColorChanged(RenderViewHostImpl* source) override;
+
+  void RecomputeWebPreferencesSlow() override;
+  bool IsWebPreferencesSet() const override;
 
   // NavigatorDelegate ---------------------------------------------------------
 
@@ -1910,6 +1917,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   mojo::Remote<device::mojom::GeolocationContext> geolocation_context_;
 
   std::unique_ptr<WakeLockContextHost> wake_lock_context_host_;
+
+  // The last set/computed value of WebPreferences for this WebContents, either
+  // set directly through SetWebPreferences, or set after recomputing values
+  // from RenderViewHostImpl::ComputeWebPreferences.
+  std::unique_ptr<WebPreferences> web_preferences_;
 
 #if defined(OS_ANDROID)
   std::unique_ptr<NFCHost> nfc_host_;

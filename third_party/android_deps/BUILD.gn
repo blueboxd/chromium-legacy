@@ -542,6 +542,28 @@ android_aar_prebuilt("androidx_savedstate_savedstate_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_slice_slice_builders_java") {
+  aar_path = "libs/androidx_slice_slice_builders/slice-builders-1.0.0.aar"
+  info_path =
+      "libs/androidx_slice_slice_builders/androidx_slice_slice_builders.info"
+  deps = [
+    ":androidx_annotation_annotation_java",
+    ":androidx_core_core_java",
+    ":androidx_slice_slice_core_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_slice_slice_core_java") {
+  aar_path = "libs/androidx_slice_slice_core/slice-core-1.0.0.aar"
+  info_path = "libs/androidx_slice_slice_core/androidx_slice_slice_core.info"
+  deps = [
+    ":androidx_annotation_annotation_java",
+    ":androidx_appcompat_appcompat_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("androidx_swiperefreshlayout_swiperefreshlayout_java") {
   aar_path = "libs/androidx_swiperefreshlayout_swiperefreshlayout/swiperefreshlayout-1.0.0.aar"
   info_path = "libs/androidx_swiperefreshlayout_swiperefreshlayout/androidx_swiperefreshlayout_swiperefreshlayout.info"

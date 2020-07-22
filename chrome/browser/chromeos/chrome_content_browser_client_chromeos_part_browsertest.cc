@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientChromeOsPartTest,
   Browser* browser = settings->FindBrowserForProfile(profile);
   auto* web_contents = browser->tab_strip_model()->GetActiveWebContents();
   content::WebPreferences window_prefs =
-      web_contents->GetRenderViewHost()->GetWebkitPreferences();
+      web_contents->GetOrCreateWebPreferences();
   EXPECT_EQ(kDefaultFontSize, window_prefs.default_font_size);
   EXPECT_EQ(kDefaultFixedFontSize, window_prefs.default_fixed_font_size);
 }

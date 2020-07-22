@@ -269,8 +269,8 @@ public class PageInfoController
             PageInfoViewV2 view2 = (PageInfoViewV2) mView;
             mConnectionController =
                     new PageInfoConnectionController(this, view2.getConnectionRowView());
-            mPermissionsController =
-                    new PageInfoPermissionsController(this, view2.getPermissionsRowView());
+            mPermissionsController = new PageInfoPermissionsController(
+                    this, view2.getPermissionsRowView(), mDelegate, mDisplayUrlBuilder.toString());
             mCookiesController = new PageInfoCookiesController(
                     this, view2.getCookiesRowView(), viewParams.cookieControlsShown, mFullUrl);
         } else {

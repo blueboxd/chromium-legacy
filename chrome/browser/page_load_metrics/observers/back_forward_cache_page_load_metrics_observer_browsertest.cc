@@ -188,12 +188,23 @@ IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
                        CumulativeLayoutShiftAfterBackForwardCacheRestore) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  Start();
+
+  const char path[] = "/layout-instability/simple-block-movement.html";
+  GURL url_a(embedded_test_server()->GetURL("a.com", path));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // Navigate to A.
-  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url_a));
+  {
+    auto waiter = CreatePageLoadMetricsTestWaiter();
+    waiter->AddPageExpectation(
+        page_load_metrics::PageLoadMetricsTestWaiter::TimingField::kFirstPaint);
+    waiter->AddPageExpectation(page_load_metrics::PageLoadMetricsTestWaiter::
+                                   TimingField::kLayoutShift);
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url_a));
+    waiter->Wait();
+  }
+
   content::RenderFrameHost* rfh_a = top_frame_host();
 
   // Navigate to B.
@@ -201,10 +212,35 @@ IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // Go back to A.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(web_contents()));
-  EXPECT_EQ(rfh_a, top_frame_host());
-  EXPECT_FALSE(rfh_a->IsInBackForwardCache());
+  double next_score;
+  {
+    auto waiter = CreatePageLoadMetricsTestWaiter();
+    waiter->AddPageExpectation(
+        page_load_metrics::PageLoadMetricsTestWaiter::TimingField::
+            kFirstPaintAfterBackForwardCacheRestore);
+    waiter->AddPageExpectation(page_load_metrics::PageLoadMetricsTestWaiter::
+                                   TimingField::kLayoutShift);
+    web_contents()->GetController().GoBack();
+    EXPECT_TRUE(WaitForLoadStop(web_contents()));
+    EXPECT_EQ(rfh_a, top_frame_host());
+    EXPECT_FALSE(rfh_a->IsInBackForwardCache());
+
+    base::ListValue expectations =
+        EvalJs(web_contents(), "cls_run_tests").ExtractList();
+    next_score = EvalJs(web_contents(),
+                        R"((async() => {
+const shifter = document.querySelector('#shifter');
+const currentTop =
+  parseInt(getComputedStyle(shifter).getPropertyValue('top'), 10);
+const newTop = 320;
+shifter.style.top = newTop + 'px';
+const score = computeExpectedScore(
+    300 * (200 + newTop - currentTop), newTop - currentTop);
+return score;
+})())")
+                     .ExtractDouble();
+    waiter->Wait();
+  }
 
   // The RenderFrameHost for the page B was likely in the back-forward cache
   // just after the history navigation, but now this might be evicted due to
@@ -216,7 +252,13 @@ IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
   EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url_b));
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
-  // As A enters to the back-forward cache once, CLS is recorded.
+  auto samples = histogram_tester().GetAllSamples(
+      internal::
+          kHistogramCumulativeShiftScoreMainFrameAfterBackForwardCacheRestore);
+  EXPECT_EQ(1ul, samples.size());
+  EXPECT_EQ(base::Bucket(page_load_metrics::LayoutShiftUmaValue(next_score), 1),
+            samples[0]);
+
   histogram_tester().ExpectTotalCount(
       internal::
           kHistogramCumulativeShiftScoreMainFrameAfterBackForwardCacheRestore,

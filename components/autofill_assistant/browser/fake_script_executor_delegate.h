@@ -72,11 +72,14 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   bool HasNavigationError() override;
   bool IsNavigatingToNewDocument() override;
   void RequireUI() override;
-  void AddListener(NavigationListener* listener) override;
-  void RemoveListener(NavigationListener* listener) override;
+  void AddNavigationListener(
+      ScriptExecutorDelegate::NavigationListener* listener) override;
+  void RemoveNavigationListener(
+      ScriptExecutorDelegate::NavigationListener* listener) override;
+  void AddListener(ScriptExecutorDelegate::Listener* listener) override;
+  void RemoveListener(ScriptExecutorDelegate::Listener* listener) override;
   void SetExpandSheetForPromptAction(bool expand) override;
   void SetBrowseDomainsWhitelist(std::vector<std::string> domains) override;
-
   void SetGenericUi(
       std::unique_ptr<GenericUserInterfaceProto> generic_ui,
       base::OnceCallback<void(const ClientStatus&)> end_action_callback,
@@ -105,7 +108,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   std::vector<AutofillAssistantState> GetStateHistory() {
     return state_history_;
   }
-  AutofillAssistantState GetState() {
+  AutofillAssistantState GetState() const {
     return state_history_.empty() ? AutofillAssistantState::INACTIVE
                                   : state_history_.back();
   }
@@ -122,10 +125,12 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
     navigating_to_new_document_ = navigating;
     navigation_error_ = error;
 
-    for (auto* listener : listeners_) {
+    for (auto* listener : navigation_listeners_) {
       listener->OnNavigationStateChanged();
     }
   }
+
+  bool HasNavigationListeners() { return !navigation_listeners_.empty(); }
 
   bool HasListeners() { return !listeners_.empty(); }
 
@@ -146,7 +151,8 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   std::unique_ptr<UserData> payment_request_info_;
   bool navigating_to_new_document_ = false;
   bool navigation_error_ = false;
-  std::set<ScriptExecutorDelegate::NavigationListener*> listeners_;
+  std::set<ScriptExecutorDelegate::NavigationListener*> navigation_listeners_;
+  std::set<ScriptExecutorDelegate::Listener*> listeners_;
   ViewportMode viewport_mode_ = ViewportMode::NO_RESIZE;
   ConfigureBottomSheetProto::PeekMode peek_mode_ =
       ConfigureBottomSheetProto::HANDLE;

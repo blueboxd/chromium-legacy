@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 
+#include "base/containers/flat_set.h"
 #include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -50,11 +51,12 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   bool IsFrameClosed() override;
   int AddObserver(Observer* observer) override;
   void RemoveObserver(int player_id) override;
-  void DidPlay(int player_id,
-               bool has_video,
-               bool has_audio,
-               MediaContentType media_content_type) override;
-  void DidPause(int player_id) override;
+  void DidMediaMetadataChange(int player_id,
+                              bool has_audio,
+                              bool has_video,
+                              MediaContentType media_content_type) override;
+  void DidPlay(int player_id) override;
+  void DidPause(int player_id, bool reached_end_of_stream) override;
   void PlayerGone(int player_id) override;
   void SetIdle(int player_id, bool is_idle) override;
   bool IsIdle(int player_id) override;
@@ -160,10 +162,13 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   base::TimeTicks background_video_start_time_;
 #endif  // OS_ANDROID
 
+  // Players with a video track.
+  base::flat_set<int> players_with_video_;
+
   // The currently playing local videos. Used to determine whether
   // OnMediaDelegatePlay() should allow the videos to play in the background or
   // not.
-  std::set<int> playing_videos_;
+  base::flat_set<int> playing_videos_;
 
   // Determined at construction time based on system information; determines
   // when the idle cleanup timer should be fired more aggressively.

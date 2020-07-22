@@ -13070,9 +13070,9 @@ TEST_F(WebFrameTest, FirstLetterHasDOMNodeIdWhenPrinting) {
   EXPECT_EQ(text_runs[1].dom_node_id, text_runs[2].dom_node_id);
 }
 
-TEST_F(WebFrameTest, ExecuteCommandProducesUserGesture) {
+TEST_F(WebFrameTest, RightClickActivatesForExecuteCommand) {
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad("about:blank");
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad("about:blank");
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
 
   // Setup a mock clipboard host.
@@ -13082,6 +13082,17 @@ TEST_F(WebFrameTest, ExecuteCommandProducesUserGesture) {
   EXPECT_FALSE(frame->GetFrame()->HasStickyUserActivation());
   frame->ExecuteScript(WebScriptSource(WebString("document.execCommand('copy');")));
   EXPECT_FALSE(frame->GetFrame()->HasStickyUserActivation());
+
+  // Right-click to activate the page.
+  WebMouseEvent mouse_event(WebInputEvent::Type::kMouseDown,
+                            WebInputEvent::kNoModifiers,
+                            WebInputEvent::GetStaticTimeStampForTests());
+  mouse_event.button = WebMouseEvent::Button::kRight;
+  mouse_event.click_count = 1;
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_event, ui::LatencyInfo()));
+  RunPendingTasks();
+
   frame->ExecuteCommand(WebString::FromUTF8("Paste"));
   EXPECT_TRUE(frame->GetFrame()->HasStickyUserActivation());
 }

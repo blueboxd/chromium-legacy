@@ -83,6 +83,7 @@ std::string URLDataSource::GetContentSecurityPolicy(
     case network::mojom::CSPDirectiveName::FrameAncestors:
       return "frame-ancestors 'none';";
     case network::mojom::CSPDirectiveName::BaseURI:
+    case network::mojom::CSPDirectiveName::BlockAllMixedContent:
     case network::mojom::CSPDirectiveName::ConnectSrc:
     case network::mojom::CSPDirectiveName::FrameSrc:
     case network::mojom::CSPDirectiveName::FontSrc:
@@ -92,6 +93,7 @@ std::string URLDataSource::GetContentSecurityPolicy(
     case network::mojom::CSPDirectiveName::MediaSrc:
     case network::mojom::CSPDirectiveName::PrefetchSrc:
     case network::mojom::CSPDirectiveName::ReportURI:
+    case network::mojom::CSPDirectiveName::RequireTrustedTypesFor:
     case network::mojom::CSPDirectiveName::Sandbox:
     case network::mojom::CSPDirectiveName::ScriptSrcAttr:
     case network::mojom::CSPDirectiveName::ScriptSrcElem:
@@ -100,6 +102,7 @@ std::string URLDataSource::GetContentSecurityPolicy(
     case network::mojom::CSPDirectiveName::StyleSrcElem:
     case network::mojom::CSPDirectiveName::UpgradeInsecureRequests:
     case network::mojom::CSPDirectiveName::TreatAsPublicAddress:
+    case network::mojom::CSPDirectiveName::TrustedTypes:
     case network::mojom::CSPDirectiveName::WorkerSrc:
     case network::mojom::CSPDirectiveName::ReportTo:
     case network::mojom::CSPDirectiveName::NavigateTo:

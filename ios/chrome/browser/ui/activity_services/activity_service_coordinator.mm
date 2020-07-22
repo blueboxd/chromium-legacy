@@ -38,9 +38,7 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 
 @interface ActivityServiceCoordinator ()
 
-@property(nonatomic, weak)
-    id<BrowserCommands, FindInPageCommands, QRGenerationCommands>
-        handler;
+@property(nonatomic, weak) id<BrowserCommands, FindInPageCommands> handler;
 
 // The time when the Share Page operation started.
 @property(nonatomic, assign) base::TimeTicks sharePageStartTime;
@@ -69,8 +67,7 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 #pragma mark - Public methods
 
 - (void)start {
-  self.handler = static_cast<
-      id<BrowserCommands, FindInPageCommands, QRGenerationCommands>>(
+  self.handler = static_cast<id<BrowserCommands, FindInPageCommands>>(
       self.browser->GetCommandDispatcher());
 
   ChromeBrowserState* browserState = self.browser->GetBrowserState();
@@ -78,6 +75,7 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
       ios::BookmarkModelFactory::GetForBrowserState(browserState);
   self.mediator =
       [[ActivityServiceMediator alloc] initWithHandler:self.handler
+                                   qrGenerationHandler:self.scopedHandler
                                            prefService:browserState->GetPrefs()
                                          bookmarkModel:bookmarkModel];
 

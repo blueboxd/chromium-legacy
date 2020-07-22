@@ -91,9 +91,8 @@ LocalPolicyTestServer::LocalPolicyTestServer(
     : net::LocalTestServer(net::BaseTestServer::TYPE_HTTP, base::FilePath()) {
   // Read configuration from a file under |source_root|.
   base::ScopedAllowBlockingForTesting allow_blocking;
-  base::FilePath source_root;
-  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root));
-  config_file_ = source_root.AppendASCII(source_root_relative_config_file);
+  config_file_ = base::PathService::CheckedGet(base::DIR_SOURCE_ROOT)
+                     .AppendASCII(source_root_relative_config_file);
 }
 
 LocalPolicyTestServer::~LocalPolicyTestServer() {}

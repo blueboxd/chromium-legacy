@@ -42,6 +42,7 @@ UploadState GetUploadToGoogleState(const SyncService* sync_service,
 
   switch (sync_service->GetTransportState()) {
     case SyncService::TransportState::DISABLED:
+    case SyncService::TransportState::PAUSED:
       return UploadState::NOT_ACTIVE;
 
     case SyncService::TransportState::START_DEFERRED:

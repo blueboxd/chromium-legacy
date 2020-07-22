@@ -8,16 +8,20 @@
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #include "url/gurl.h"
 
+@protocol QRGenerationCommands;
+
 // QRGeneratorCoordinator presents the public interface for the QR code
 // generation feature.
 @interface QRGeneratorCoordinator : ChromeCoordinator
 
 // Initializes an instance with a base |viewController|, the current |browser|,
-// the |title| and |URL| of a webpage to generate a QR code for.
+// the |title| and |URL| of a webpage to generate a QR code for, and a |handler|
+// to handle commands execution.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser
                                      title:(NSString*)title
                                        URL:(const GURL&)URL
+                                   handler:(id<QRGenerationCommands>)handler
     NS_DESIGNATED_INITIALIZER;
 
 // Unavailable, use -initWithBaseViewController:browser:title:URL:.

@@ -4,65 +4,38 @@
 
 #include "content/browser/media/session/media_session_controller.h"
 
-#include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "media/base/media_content_type.h"
 
 namespace content {
 
-MediaSessionController::MediaSessionController(
-    const MediaPlayerId& id,
-    MediaWebContentsObserver* media_web_contents_observer)
+MediaSessionController::MediaSessionController(const MediaPlayerId& id,
+                                               WebContents* web_contents)
     : id_(id),
-      media_web_contents_observer_(media_web_contents_observer),
-      media_session_(
-          MediaSessionImpl::Get(media_web_contents_observer_->web_contents())) {
-}
+      web_contents_(web_contents),
+      media_session_(MediaSessionImpl::Get(web_contents)) {}
 
 MediaSessionController::~MediaSessionController() {
   media_session_->RemovePlayer(this, player_id_);
 }
 
-bool MediaSessionController::OnPlaybackStarted(
+void MediaSessionController::SetMetadata(
     bool has_audio,
     bool has_video,
     media::MediaContentType media_content_type) {
-  is_playback_in_progress_ = true;
-
-  // Store these as we will need them later.
   has_audio_ = has_audio;
   has_video_ = has_video;
   media_content_type_ = media_content_type;
+  AddOrRemovePlayer();
+}
 
-  // Don't generate a new id if one has already been set.
-  if (!has_session_) {
-    // These objects are only created on the UI thread, so this is safe.
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    static uint32_t player_id = 0;
-    player_id_ = static_cast<int>(player_id++);
-  }
-
-  // Don't bother with a MediaSession for remote players or without audio.  If
-  // we already have a session from a previous call, release it.
-  if (!IsMediaSessionNeeded()) {
-    has_session_ = false;
-    media_session_->RemovePlayer(this, player_id_);
-    return true;
-  }
-
-  // If a session can't be created, force a pause immediately.  Attempt to add a
-  // session even if we already have one.  MediaSession expects AddPlayer() to
-  // be called after OnPlaybackPaused() to reactivate the session.
-  if (!media_session_->AddPlayer(this, player_id_, media_content_type)) {
-    OnSuspend(player_id_);
-    return false;
-  }
-
-  has_session_ = true;
-  return true;
+bool MediaSessionController::OnPlaybackStarted() {
+  is_playback_in_progress_ = true;
+  return AddOrRemovePlayer();
 }
 
 void MediaSessionController::OnSuspend(int player_id) {
@@ -168,22 +141,41 @@ bool MediaSessionController::IsMediaSessionNeeded() const {
 
   // We want to make sure we do not request audio focus on a muted tab as it
   // would break user expectations by pausing/ducking other playbacks.
-  const bool has_audio =
-      has_audio_ &&
-      !media_web_contents_observer_->web_contents()->IsAudioMuted();
-  return has_audio || media_web_contents_observer_->web_contents()
-                          ->HasPictureInPictureVideo();
+  const bool has_audio = has_audio_ && !web_contents_->IsAudioMuted();
+  return has_audio || web_contents_->HasPictureInPictureVideo();
 }
 
-void MediaSessionController::AddOrRemovePlayer() {
+bool MediaSessionController::AddOrRemovePlayer() {
   const bool needs_session = IsMediaSessionNeeded();
-  if (needs_session && !has_session_) {
+
+  if (needs_session) {
+    // Don't generate a new id if one has already been set.
+    if (!has_session_) {
+      // These objects are only created on the UI thread, so this is safe.
+      DCHECK_CURRENTLY_ON(BrowserThread::UI);
+      static uint32_t player_id = 0;
+      player_id_ = static_cast<int>(player_id++);
+    }
+
+    // Attempt to add a session even if we already have one.  MediaSession
+    // expects AddPlayer() to be called after OnPlaybackPaused() to reactivate
+    // the session.
     has_session_ =
         media_session_->AddPlayer(this, player_id_, media_content_type_);
-  } else if (!needs_session && has_session_) {
+    if (!has_session_) {
+      // If a session can't be created, force a pause immediately.
+      OnSuspend(player_id_);
+      return false;
+    }
+    return true;
+  }
+
+  if (has_session_) {
     has_session_ = false;
     media_session_->RemovePlayer(this, player_id_);
   }
+
+  return true;
 }
 
 bool MediaSessionController::HasVideo(int player_id) const {

@@ -61,7 +61,7 @@ class TestingPlatformSupport : public Platform {
 
   // Platform:
   WebString DefaultLocale() override;
-  std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() override {
+  std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader() override {
     return std::make_unique<CodeCacheLoaderMock>();
   }
   WebData GetDataResource(int resource_id,

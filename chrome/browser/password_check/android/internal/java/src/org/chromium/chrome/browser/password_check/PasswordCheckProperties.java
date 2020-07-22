@@ -34,8 +34,11 @@ class PasswordCheckProperties {
         static final PropertyModel
                 .ReadableObjectPropertyKey<CompromisedCredential> COMPROMISED_CREDENTIAL =
                 new PropertyModel.ReadableObjectPropertyKey<>("compromised_credential");
+        static final PropertyModel.ReadableObjectPropertyKey<
+                PasswordCheckCoordinator.CredentialEventHandler> CREDENTIAL_HANDLER =
+                new PropertyModel.ReadableObjectPropertyKey<>("credential_handler");
 
-        static final PropertyKey[] ALL_KEYS = {COMPROMISED_CREDENTIAL};
+        static final PropertyKey[] ALL_KEYS = {COMPROMISED_CREDENTIAL, CREDENTIAL_HANDLER};
 
         private CompromisedCredentialProperties() {}
     }

@@ -18,6 +18,31 @@ let l1LeafCert = null;
 const INVALID_CERT = new Uint8Array([1, 2, 3, 4, 5]);
 
 function registerAsCertificateProvider() {
+  function reportCertificates(request) {
+    assertTrue(Number.isInteger(request.certificatesRequestId));
+    const validCertInfo = {
+      certificateChain: [l1LeafCert.buffer],
+      supportedAlgorithms: ['RSASSA_PKCS1_v1_5_SHA1']
+    };
+    const invalidCertInfo = {
+      certificateChain: [INVALID_CERT.buffer],
+      supportedAlgorithms: ['RSASSA_PKCS1_v1_5_SHA256']
+    };
+    chrome.certificateProvider.setCertificates(
+        {
+          certificatesRequestId: request.certificatesRequestId,
+          clientCertificates: [validCertInfo, invalidCertInfo]
+        },
+        () => {
+          chrome.test.succeed();
+        });
+  }
+
+  chrome.certificateProvider.onCertificatesUpdateRequested.addListener(
+      reportCertificates);
+}
+
+function registerAsLegacyCertificateProvider() {
   function checkResult(rejectedCerts) {
     assertEq(1, rejectedCerts.length);
     assertEq(INVALID_CERT, new Uint8Array(rejectedCerts[0]));
@@ -44,15 +69,15 @@ function registerAsCertificateProvider() {
 // used on its own.
 function setCertificates() {
   const validCertInfo = {
-    certificate: l1LeafCert.buffer,
-    supportedHashes: ['SHA1']
+    certificateChain: [l1LeafCert.buffer],
+    supportedAlgorithms: ['RSASSA_PKCS1_v1_5_SHA1']
   };
   const invalidCertInfo = {
-    certificate: INVALID_CERT.buffer,
-    supportedHashes: ['SHA256']
+    certificateChain: [INVALID_CERT.buffer],
+    supportedAlgorithms: ['RSASSA_PKCS1_v1_5_SHA256']
   };
   chrome.certificateProvider.setCertificates(
-      [validCertInfo, invalidCertInfo], () => {
+      {clientCertificates: [validCertInfo, invalidCertInfo]}, () => {
         const success = !chrome.runtime.lastError;
         domAutomationController.send(success);
       });
@@ -60,7 +85,7 @@ function setCertificates() {
 
 // Indicates that there are no certificates available.
 function unsetCertificates() {
-  chrome.certificateProvider.setCertificates([], () => {
+  chrome.certificateProvider.setCertificates({clientCertificates: []}, () => {
     const success = !chrome.runtime.lastError;
     domAutomationController.send(success);
   });
@@ -70,6 +95,23 @@ let signatureRequestData;
 let signatureCallback;
 
 function registerForSignatureRequests() {
+  chrome.certificateProvider.onSignatureRequested.addListener(function(
+      request) {
+    assertTrue(Number.isInteger(request.signRequestId));
+    assertEq(l1LeafCert.buffer, request.certificate);
+    // The sign request must refer to the only algorithm that was declared to be
+    // supported.
+    assertEq('RSASSA_PKCS1_v1_5_SHA1', request.algorithm);
+    signatureCallback = (signature) => {
+      chrome.certificateProvider.reportSignature(
+          {signRequestId: request.signRequestId, signature: signature});
+    };
+    signatureRequestData = request.input;
+    chrome.test.sendMessage('signature request received');
+  });
+}
+
+function registerForLegacySignatureRequests() {
   chrome.certificateProvider.onSignDigestRequested.addListener(function(
       request, callback) {
     assertEq(l1LeafCert.buffer, request.certificate);

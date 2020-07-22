@@ -88,6 +88,7 @@ struct AXEventNotificationDetails;
 struct AXLocationChangeNotificationDetails;
 struct ContextMenuParams;
 struct GlobalRequestID;
+struct WebPreferences;
 
 namespace mojom {
 class CreateNewWindowParams;
@@ -455,6 +456,16 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // of the video to be in Picture-in-Picture mode.
   virtual void UpdatePictureInPictureSurfaceId(const viz::SurfaceId& surface_id,
                                                const gfx::Size& natural_size) {}
+
+  // Returns a copy of the current WebPreferences associated with this
+  // RenderFrameHost's WebContents. If it does not exist, this will create one
+  // and send the newly computed value to all renderers.
+  // Note that this will not trigger a recomputation of WebPreferences if it
+  // already exists - this will return the last computed/set value of
+  // WebPreferences. If we want to guarantee that the value reflects the current
+  // state of the WebContents, NotifyPreferencesChanged() should be called
+  // before calling this.
+  virtual const WebPreferences& GetOrCreateWebPreferences() = 0;
 
   // Returns the visibility of the delegate.
   virtual Visibility GetVisibility();

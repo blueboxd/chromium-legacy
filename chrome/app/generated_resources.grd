@@ -6024,7 +6024,7 @@ the Bookmarks menu.">
           Move to Google Account?
         </message>
         <message name="IDS_PASSWORD_MANAGER_MOVE_HINT" desc="Label describing the effect of moving an existing credential to the user's account store">
-          Move your password to your Google account to access it securely wherever you're signed in
+          Move your password to your Google Account to access it securely wherever you're signed in
         </message>
         <message name="IDS_PASSWORD_MANAGER_UNSYNCED_CREDENTIALS_BUBBLE_TITLE" desc="The title of the 'save unsynced credentials' bubble.">
           Passwords not saved

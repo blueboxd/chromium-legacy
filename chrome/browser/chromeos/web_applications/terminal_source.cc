@@ -101,6 +101,8 @@ TerminalSource::TerminalSource(Profile* profile,
       terminal_origin, ContentSettingsType::NOTIFICATIONS);
   webui_allowlist->RegisterAutoGrantedPermission(
       terminal_origin, ContentSettingsType::CLIPBOARD_READ_WRITE);
+  webui_allowlist->RegisterAutoGrantedPermission(terminal_origin,
+                                                 ContentSettingsType::COOKIES);
 }
 
 TerminalSource::~TerminalSource() = default;

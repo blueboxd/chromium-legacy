@@ -275,7 +275,11 @@ class ProfileSyncService : public SyncService,
   // Callbacks for SyncUserSettingsImpl.
   void SyncAllowedByPlatformChanged(bool allowed);
 
-  bool IsEngineAllowedToStart() const;
+  bool IsEngineAllowedToRun() const;
+
+  // Same as GetTransportState() returning PAUSED. In this state, the engine
+  // shouldn't run.
+  bool IsInPausedState() const;
 
   // Reconfigures the data type manager with the latest enabled types.
   // Note: Does not initialize the engine if it is not already initialized.

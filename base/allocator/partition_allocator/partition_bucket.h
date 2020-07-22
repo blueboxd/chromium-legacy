@@ -61,10 +61,10 @@ struct PartitionBucket {
   }
 
   static ALWAYS_INLINE size_t get_direct_map_size(size_t size) {
-    // Caller must check that the size is not above the kGenericMaxDirectMapped
+    // Caller must check that the size is not above the kMaxDirectMapped
     // limit before calling. This also guards against integer overflow in the
     // calculation here.
-    PA_DCHECK(size <= kGenericMaxDirectMapped);
+    PA_DCHECK(size <= kMaxDirectMapped);
     return (size + kSystemPageOffsetMask) & kSystemPageBaseMask;
   }
 

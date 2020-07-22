@@ -444,8 +444,7 @@ void PrefsTabHelper::Observe(int type,
 }
 
 void PrefsTabHelper::UpdateWebPreferences() {
-  web_contents_->GetRenderViewHost()->UpdateWebkitPreferences(
-      web_contents_->GetRenderViewHost()->GetWebkitPreferences());
+  web_contents_->NotifyPreferencesChanged();
 }
 
 void PrefsTabHelper::UpdateRendererPreferences() {
@@ -476,10 +475,9 @@ void PrefsTabHelper::OnFontFamilyPrefChanged(const std::string& pref_name) {
     PrefService* prefs = profile_->GetPrefs();
     std::string pref_value = prefs->GetString(pref_name);
     if (pref_value.empty()) {
-      WebPreferences web_prefs =
-          web_contents_->GetRenderViewHost()->GetWebkitPreferences();
+      WebPreferences web_prefs = web_contents_->GetOrCreateWebPreferences();
       OverrideFontFamily(&web_prefs, generic_family, script, std::string());
-      web_contents_->GetRenderViewHost()->UpdateWebkitPreferences(web_prefs);
+      web_contents_->SetWebPreferences(web_prefs);
       return;
     }
   }

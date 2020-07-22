@@ -2,43 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_LOADER_CODE_CACHE_LOADER_IMPL_H_
-#define CONTENT_RENDERER_LOADER_CODE_CACHE_LOADER_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_CODE_CACHE_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_CODE_CACHE_LOADER_H_
 
 #include "base/containers/span.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/synchronization/waitable_event_watcher.h"
-#include "third_party/blink/public/platform/code_cache_loader.h"
+#include "third_party/blink/public/platform/web_code_cache_loader.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace blink {
 
 // This class is loading V8 compilation code cache for scripts
 // (either separate script resources, or inline scripts in html file).
 // It is talking to the browser process and uses per-site isolated
 // cache backend to avoid cross-origin contamination.
-class CodeCacheLoaderImpl : public blink::CodeCacheLoader {
+class BLINK_PLATFORM_EXPORT CodeCacheLoader : public WebCodeCacheLoader {
  public:
-  CodeCacheLoaderImpl();
-  explicit CodeCacheLoaderImpl(base::WaitableEvent* terminate_sync_load_event);
+  CodeCacheLoader();
+  explicit CodeCacheLoader(base::WaitableEvent* terminate_sync_load_event);
 
-  ~CodeCacheLoaderImpl() override;
+  ~CodeCacheLoader() override;
 
   // Fetches code cache corresponding to |url| and returns response in
   // |response_time_out| and |data_out|.  |response_time_out| and |data_out|
   // cannot be nullptrs. This only fetches from the Javascript cache.
-  void FetchFromCodeCacheSynchronously(const GURL& url,
+  void FetchFromCodeCacheSynchronously(const WebURL& url,
                                        base::Time* response_time_out,
                                        mojo_base::BigBuffer* data_out) override;
 
-  void FetchFromCodeCache(blink::mojom::CodeCacheType cache_type,
-                          const GURL& url,
+  void FetchFromCodeCache(mojom::CodeCacheType cache_type,
+                          const WebURL& url,
                           FetchCodeCacheCallback callback) override;
 
  private:
-  void FetchFromCodeCacheImpl(blink::mojom::CodeCacheType cache_type,
-                              const GURL& url,
+  void FetchFromCodeCacheImpl(mojom::CodeCacheType cache_type,
+                              const WebURL& url,
                               FetchCodeCacheCallback callback,
                               base::WaitableEvent* event);
 
@@ -56,9 +56,9 @@ class CodeCacheLoaderImpl : public blink::CodeCacheLoader {
   bool terminated_ = false;
   base::WaitableEventWatcher terminate_watcher_;
   base::WaitableEvent* terminate_sync_load_event_ = nullptr;
-  base::WeakPtrFactory<CodeCacheLoaderImpl> weak_ptr_factory_{this};
+  base::WeakPtrFactory<CodeCacheLoader> weak_ptr_factory_{this};
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_CODE_CACHE_LOADER_H_

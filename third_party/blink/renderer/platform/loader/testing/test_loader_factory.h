@@ -39,7 +39,7 @@ class TestLoaderFactory : public ResourceFetcher::LoaderFactory {
             std::move(task_runner)));
   }
 
-  std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() override {
+  std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader() override {
     return Platform::Current()->CreateCodeCacheLoader();
   }
 

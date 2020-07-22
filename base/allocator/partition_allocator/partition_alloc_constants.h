@@ -28,14 +28,14 @@ namespace base {
 // Slot span sizes are adjusted depending on the allocation size, to make sure
 // the packing does not lead to unused (wasted) space at the end of the last
 // system page of the span. For our current maximum slot span size of 64 KiB and
-// other constant values, we pack _all_ `PartitionRootGeneric::Alloc` sizes
-// perfectly up against the end of a system page.
+// other constant values, we pack _all_ `PartitionRoot::Alloc` sizes perfectly
+// up against the end of a system page.
 
 #if defined(_MIPS_ARCH_LOONGSON)
 static const size_t kPartitionPageShift = 16;  // 64 KiB
 #elif defined(ARCH_CPU_PPC64)
 static const size_t kPartitionPageShift = 18;  // 256 KiB
-#elif defined (OS_MACOSX) && defined(ARCH_CPU_ARM64)
+#elif defined(OS_MACOSX) && defined(ARCH_CPU_ARM64)
 static const size_t kPartitionPageShift = 16;  // 64 KiB
 #else
 static const size_t kPartitionPageShift = 14;  // 16 KiB
@@ -134,7 +134,6 @@ static const size_t kSuperPageBaseMask = ~kSuperPageOffsetMask;
 static const size_t kNumPartitionPagesPerSuperPage =
     kSuperPageSize / kPartitionPageSize;
 
-// The following kGeneric* constants apply to the generic variants of the API.
 // The "order" of an allocation is closely related to the power-of-1 size of the
 // allocation. More precisely, the order is the bit index of the
 // most-significant-bit in the allocation size, where the bit numbers starts at
@@ -155,32 +154,29 @@ static_assert(alignof(std::max_align_t) <= 16,
 // bytes on 64 bit ones.
 #if ENABLE_TAG_FOR_MTE_CHECKED_PTR
 // MTECheckedPtr requires 16B-alignment because kBytesPerPartitionTag is 16.
-static const size_t kGenericMinBucketedOrder = 5;
+static const size_t kMinBucketedOrder = 5;
 #else
-static const size_t kGenericMinBucketedOrder =
+static const size_t kMinBucketedOrder =
     alignof(std::max_align_t) == 16 ? 5 : 4;  // 2^(order - 1), that is 16 or 8.
 #endif
 // The largest bucketed order is 1 << (20 - 1), storing [512 KiB, 1 MiB):
-static const size_t kGenericMaxBucketedOrder = 20;
-static const size_t kGenericNumBucketedOrders =
-    (kGenericMaxBucketedOrder - kGenericMinBucketedOrder) + 1;
+static const size_t kMaxBucketedOrder = 20;
+static const size_t kNumBucketedOrders =
+    (kMaxBucketedOrder - kMinBucketedOrder) + 1;
 // Eight buckets per order (for the higher orders), e.g. order 8 is 128, 144,
 // 160, ..., 240:
-static const size_t kGenericNumBucketsPerOrderBits = 3;
-static const size_t kGenericNumBucketsPerOrder =
-    1 << kGenericNumBucketsPerOrderBits;
-static const size_t kGenericNumBuckets =
-    kGenericNumBucketedOrders * kGenericNumBucketsPerOrder;
-static const size_t kGenericSmallestBucket = 1
-                                             << (kGenericMinBucketedOrder - 1);
-static const size_t kGenericMaxBucketSpacing =
-    1 << ((kGenericMaxBucketedOrder - 1) - kGenericNumBucketsPerOrderBits);
-static const size_t kGenericMaxBucketed =
-    (1 << (kGenericMaxBucketedOrder - 1)) +
-    ((kGenericNumBucketsPerOrder - 1) * kGenericMaxBucketSpacing);
+static const size_t kNumBucketsPerOrderBits = 3;
+static const size_t kNumBucketsPerOrder = 1 << kNumBucketsPerOrderBits;
+static const size_t kNumBuckets = kNumBucketedOrders * kNumBucketsPerOrder;
+static const size_t kSmallestBucket = 1 << (kMinBucketedOrder - 1);
+static const size_t kMaxBucketSpacing =
+    1 << ((kMaxBucketedOrder - 1) - kNumBucketsPerOrderBits);
+static const size_t kMaxBucketed =
+    (1 << (kMaxBucketedOrder - 1)) +
+    ((kNumBucketsPerOrder - 1) * kMaxBucketSpacing);
 // Limit when downsizing a direct mapping using `realloc`:
-static const size_t kGenericMinDirectMappedDownsize = kGenericMaxBucketed + 1;
-static const size_t kGenericMaxDirectMapped =
+static const size_t kMinDirectMappedDownsize = kMaxBucketed + 1;
+static const size_t kMaxDirectMapped =
     (1UL << 31) + kPageAllocationGranularity;  // 2 GiB plus 1 more page.
 static const size_t kBitsPerSizeT = sizeof(void*) * CHAR_BIT;
 
@@ -198,7 +194,7 @@ static const size_t kReasonableSizeOfUnusedPages = 1024 * 1024 * 1024;  // 1 GiB
 static const unsigned char kUninitializedByte = 0xAB;
 static const unsigned char kFreedByte = 0xCD;
 
-// Flags for `PartitionAllocGenericFlags`.
+// Flags for `PartitionAllocFlags`.
 enum PartitionAllocFlags {
   PartitionAllocReturnNull = 1 << 0,
   PartitionAllocZeroFill = 1 << 1,

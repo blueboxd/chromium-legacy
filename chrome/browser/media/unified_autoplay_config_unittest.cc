@@ -51,10 +51,7 @@ class UnifiedAutoplaySoundSettingsTest
   }
 
   content::AutoplayPolicy GetAppliedAutoplayPolicy() {
-    return web_contents()
-        ->GetRenderViewHost()
-        ->GetWebkitPreferences()
-        .autoplay_policy;
+    return web_contents()->GetOrCreateWebPreferences().autoplay_policy;
   }
 
   void NavigateToTestPage() {

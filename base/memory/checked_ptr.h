@@ -81,6 +81,15 @@ struct CheckedPtrNoOpImpl {
     return reinterpret_cast<void*>(wrapped_ptr);
   }
 
+  // Upcasts the wrapped pointer.
+  template <typename To, typename From>
+  static ALWAYS_INLINE constexpr uintptr_t Upcast(uintptr_t wrapped_ptr) {
+    static_assert(std::is_convertible<From*, To*>::value,
+                  "From must be convertible to To.");
+    return reinterpret_cast<uintptr_t>(
+        static_cast<To*>(reinterpret_cast<From*>(wrapped_ptr)));
+  }
+
   // Advance the wrapped pointer by |delta| bytes.
   static ALWAYS_INLINE uintptr_t Advance(uintptr_t wrapped_ptr, size_t delta) {
     return wrapped_ptr + delta;
@@ -315,6 +324,36 @@ struct CheckedPtr2OrMTEImpl {
     return ExtractPtr(wrapped_ptr);
   }
 
+  // Upcasts the wrapped pointer.
+  template <typename To, typename From>
+  static ALWAYS_INLINE uintptr_t Upcast(uintptr_t wrapped_ptr) {
+    static_assert(std::is_convertible<From*, To*>::value,
+                  "From must be convertible to To.");
+
+#if ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR
+    if (IsPtrUnaffectedByUpcast<To, From>())
+      return wrapped_ptr;
+
+    // CheckedPtr2 doesn't support a pointer pointing in the middle of an
+    // allocated object, so disable the generation tag.
+    //
+    // Clearing tag is not needed for ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR,
+    // but do it anyway for apples-to-apples comparison with
+    // ENABLE_TAG_FOR_CHECKED_PTR2.
+    uintptr_t base_addr = reinterpret_cast<uintptr_t>(
+        static_cast<To*>(reinterpret_cast<From*>(ExtractPtr(wrapped_ptr))));
+    return base_addr;
+#elif ENABLE_TAG_FOR_MTE_CHECKED_PTR
+    // The top-bit generation tag must not affect the result of upcast.
+    return reinterpret_cast<uintptr_t>(
+        static_cast<To*>(reinterpret_cast<From*>(wrapped_ptr)));
+#else
+    static_assert(std::is_void<To>::value,  // Always false.
+                  "Unknown tagging mode");
+    return 0;
+#endif
+  }
+
   // Advance the wrapped pointer by |delta| bytes.
   static ALWAYS_INLINE uintptr_t Advance(uintptr_t wrapped_ptr, size_t delta) {
     // Mask out the generation to disable the protection. It's not supported for
@@ -334,6 +373,17 @@ struct CheckedPtr2OrMTEImpl {
   }
   static ALWAYS_INLINE uintptr_t ExtractGeneration(uintptr_t wrapped_ptr) {
     return wrapped_ptr & kGenerationMask;
+  }
+
+  template <typename To, typename From>
+  static constexpr ALWAYS_INLINE bool IsPtrUnaffectedByUpcast() {
+    static_assert(std::is_convertible<From*, To*>::value,
+                  "From must be convertible to To.");
+    uintptr_t d = 0x10000;
+    From* dp = reinterpret_cast<From*>(d);
+    To* bp = dp;
+    uintptr_t b = reinterpret_cast<uintptr_t>(bp);
+    return b == d;
   }
 
   // This relies on nullptr and 0 being equal in the eyes of reinterpret_cast,
@@ -385,6 +435,23 @@ class CheckedPtr {
   // NOLINTNEXTLINE(runtime/explicit)
   ALWAYS_INLINE CheckedPtr(T* p) noexcept : wrapped_ptr_(Impl::WrapRawPtr(p)) {}
 
+  // Deliberately implicit in order to support implicit upcast.
+  template <typename U,
+            typename Unused = std::enable_if_t<
+                std::is_convertible<U*, T*>::value &&
+                !std::is_void<typename std::remove_cv<T>::type>::value>>
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  ALWAYS_INLINE CheckedPtr(const CheckedPtr<U, Impl>& ptr) noexcept
+      : wrapped_ptr_(Impl::template Upcast<T, U>(ptr.wrapped_ptr_)) {}
+  // Deliberately implicit in order to support implicit upcast.
+  template <typename U,
+            typename Unused = std::enable_if_t<
+                std::is_convertible<U*, T*>::value &&
+                !std::is_void<typename std::remove_cv<T>::type>::value>>
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  ALWAYS_INLINE CheckedPtr(CheckedPtr<U, Impl>&& ptr) noexcept
+      : wrapped_ptr_(Impl::template Upcast<T, U>(ptr.wrapped_ptr_)) {}
+
   // In addition to nullptr_t ctor above, CheckedPtr needs to have these
   // as |=default| or |constexpr| to avoid hitting -Wglobal-constructors in
   // cases like this:
@@ -395,12 +462,30 @@ class CheckedPtr {
   CheckedPtr& operator=(const CheckedPtr&) noexcept = default;
   CheckedPtr& operator=(CheckedPtr&&) noexcept = default;
 
+  ALWAYS_INLINE CheckedPtr& operator=(std::nullptr_t) noexcept {
+    wrapped_ptr_ = Impl::GetWrappedNullPtr();
+    return *this;
+  }
   ALWAYS_INLINE CheckedPtr& operator=(T* p) noexcept {
     wrapped_ptr_ = Impl::WrapRawPtr(p);
     return *this;
   }
-  ALWAYS_INLINE CheckedPtr& operator=(std::nullptr_t) noexcept {
-    wrapped_ptr_ = Impl::GetWrappedNullPtr();
+
+  // Upcast assignment
+  template <typename U,
+            typename Unused = std::enable_if_t<
+                std::is_convertible<U*, T*>::value &&
+                !std::is_void<typename std::remove_cv<T>::type>::value>>
+  ALWAYS_INLINE CheckedPtr& operator=(const CheckedPtr<U, Impl>& ptr) noexcept {
+    wrapped_ptr_ = Impl::template Upcast<T, U>(ptr.wrapped_ptr_);
+    return *this;
+  }
+  template <typename U,
+            typename Unused = std::enable_if_t<
+                std::is_convertible<U*, T*>::value &&
+                !std::is_void<typename std::remove_cv<T>::type>::value>>
+  ALWAYS_INLINE CheckedPtr& operator=(CheckedPtr<U, Impl>&& ptr) noexcept {
+    wrapped_ptr_ = Impl::template Upcast<T, U>(ptr.wrapped_ptr_);
     return *this;
   }
 

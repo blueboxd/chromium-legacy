@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/editing/writing_direction.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_font_element.h"
@@ -416,20 +417,20 @@ bool StyleCommands::IsUnicodeBidiNestedOrMultipleEmbeddings(
          value_id == CSSValueID::kPlaintext;
 }
 
-mojo_base::mojom::blink::TextDirection StyleCommands::TextDirectionForSelection(
+WritingDirection StyleCommands::TextDirectionForSelection(
     const VisibleSelection& selection,
     EditingStyle* typing_style,
     bool& has_nested_or_multiple_embeddings) {
   has_nested_or_multiple_embeddings = true;
 
   if (selection.IsNone())
-    return mojo_base::mojom::blink::TextDirection::UNKNOWN_DIRECTION;
+    return WritingDirection::kNatural;
 
   const Position position = MostForwardCaretPosition(selection.Start());
 
   const Node* anchor_node = position.AnchorNode();
   if (!anchor_node)
-    return mojo_base::mojom::blink::TextDirection::UNKNOWN_DIRECTION;
+    return WritingDirection::kNatural;
 
   Position end;
   if (selection.IsRange()) {
@@ -454,12 +455,12 @@ mojo_base::mojom::blink::TextDirection StyleCommands::TextDirectionForSelection(
       const CSSValueID unicode_bidi_value =
           unicode_bidi_identifier_value->GetValueID();
       if (IsUnicodeBidiNestedOrMultipleEmbeddings(unicode_bidi_value))
-        return mojo_base::mojom::blink::TextDirection::UNKNOWN_DIRECTION;
+        return WritingDirection::kNatural;
     }
   }
 
   if (selection.IsCaret()) {
-    mojo_base::mojom::blink::TextDirection direction;
+    WritingDirection direction;
     if (typing_style && typing_style->GetTextDirection(direction)) {
       has_nested_or_multiple_embeddings = false;
       return direction;
@@ -471,8 +472,7 @@ mojo_base::mojom::blink::TextDirection StyleCommands::TextDirectionForSelection(
   // The selection is either a caret with no typing attributes or a range in
   // which no embedding is added, so just use the start position to decide.
   const Node* block = EnclosingBlock(anchor_node);
-  mojo_base::mojom::blink::TextDirection found_direction =
-      mojo_base::mojom::blink::TextDirection::UNKNOWN_DIRECTION;
+  WritingDirection found_direction = WritingDirection::kNatural;
 
   for (Node& runner : NodeTraversal::InclusiveAncestorsOf(*anchor_node)) {
     if (runner == block)
@@ -496,7 +496,7 @@ mojo_base::mojom::blink::TextDirection StyleCommands::TextDirectionForSelection(
       continue;
 
     if (unicode_bidi_value == CSSValueID::kBidiOverride)
-      return mojo_base::mojom::blink::TextDirection::UNKNOWN_DIRECTION;
+      return WritingDirection::kNatural;
 
     DCHECK(EditingStyleUtilities::IsEmbedOrIsolate(unicode_bidi_value))
         << static_cast<int>(unicode_bidi_value);
@@ -511,19 +511,17 @@ mojo_base::mojom::blink::TextDirection StyleCommands::TextDirectionForSelection(
         direction_value != CSSValueID::kRtl)
       continue;
 
-    if (found_direction !=
-        mojo_base::mojom::blink::TextDirection::UNKNOWN_DIRECTION)
-      return mojo_base::mojom::blink::TextDirection::UNKNOWN_DIRECTION;
+    if (found_direction != WritingDirection::kNatural)
+      return WritingDirection::kNatural;
 
     // In the range case, make sure that the embedding element persists until
     // the end of the range.
     if (selection.IsRange() && !end.AnchorNode()->IsDescendantOf(element))
-      return mojo_base::mojom::blink::TextDirection::UNKNOWN_DIRECTION;
+      return WritingDirection::kNatural;
 
-    found_direction =
-        direction_value == CSSValueID::kLtr
-            ? mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT
-            : mojo_base::mojom::blink::TextDirection::RIGHT_TO_LEFT;
+    found_direction = direction_value == CSSValueID::kLtr
+                          ? WritingDirection::kLeftToRight
+                          : WritingDirection::kRightToLeft;
   }
   has_nested_or_multiple_embeddings = false;
   return found_direction;
@@ -531,14 +529,13 @@ mojo_base::mojom::blink::TextDirection StyleCommands::TextDirectionForSelection(
 
 EditingTriState StyleCommands::StateTextWritingDirection(
     LocalFrame& frame,
-    mojo_base::mojom::blink::TextDirection direction) {
+    WritingDirection direction) {
   frame.GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   bool has_nested_or_multiple_embeddings;
-  mojo_base::mojom::blink::TextDirection selection_direction =
-      TextDirectionForSelection(
-          frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated(),
-          frame.GetEditor().TypingStyle(), has_nested_or_multiple_embeddings);
+  WritingDirection selection_direction = TextDirectionForSelection(
+      frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated(),
+      frame.GetEditor().TypingStyle(), has_nested_or_multiple_embeddings);
   // TODO(editing-dev): We should be returning MixedTriState when
   // selectionDirection == direction && hasNestedOrMultipleEmbeddings
   return (selection_direction == direction &&
@@ -550,22 +547,19 @@ EditingTriState StyleCommands::StateTextWritingDirection(
 EditingTriState StyleCommands::StateTextWritingDirectionLeftToRight(
     LocalFrame& frame,
     Event*) {
-  return StateTextWritingDirection(
-      frame, mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT);
+  return StateTextWritingDirection(frame, WritingDirection::kLeftToRight);
 }
 
 EditingTriState StyleCommands::StateTextWritingDirectionNatural(
     LocalFrame& frame,
     Event*) {
-  return StateTextWritingDirection(
-      frame, mojo_base::mojom::blink::TextDirection::UNKNOWN_DIRECTION);
+  return StateTextWritingDirection(frame, WritingDirection::kNatural);
 }
 
 EditingTriState StyleCommands::StateTextWritingDirectionRightToLeft(
     LocalFrame& frame,
     Event*) {
-  return StateTextWritingDirection(
-      frame, mojo_base::mojom::blink::TextDirection::RIGHT_TO_LEFT);
+  return StateTextWritingDirection(frame, WritingDirection::kRightToLeft);
 }
 
 EditingTriState StyleCommands::StateUnderline(LocalFrame& frame, Event*) {

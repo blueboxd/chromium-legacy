@@ -444,12 +444,12 @@ uint16_t XCursorLoader::CursorNamesToChar(
 
 bool XCursorLoader::SupportsCreateCursor() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return render_version_ >= base::Version("0.5");
+  return render_version_.IsValid() && render_version_ >= base::Version("0.5");
 }
 
 bool XCursorLoader::SupportsCreateAnimCursor() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return render_version_ >= base::Version("0.8");
+  return render_version_.IsValid() && render_version_ >= base::Version("0.8");
 }
 
 // This is ported from libxcb-cursor's parse_cursor_file.c:

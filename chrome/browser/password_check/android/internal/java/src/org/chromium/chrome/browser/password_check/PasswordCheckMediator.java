@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.password_check;
 
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.COMPROMISED_CREDENTIAL;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.CREDENTIAL_HANDLER;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_STATUS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.ITEMS;
 
@@ -19,11 +20,13 @@ import java.util.List;
  * Contains the logic for the PasswordCheck component. It sets the state of the model and reacts to
  * events like clicks.
  */
-class PasswordCheckMediator {
+class PasswordCheckMediator implements PasswordCheckCoordinator.CredentialEventHandler {
     private PropertyModel mModel;
+    private PasswordCheckComponentUi.Delegate mDelegate;
 
-    void initialize(PropertyModel model) {
+    void initialize(PropertyModel model, PasswordCheckComponentUi.Delegate delegate) {
         mModel = model;
+        mDelegate = delegate;
     }
 
     void onCompromisedCredentialsAvailable(
@@ -43,7 +46,13 @@ class PasswordCheckMediator {
                             .Builder(PasswordCheckProperties.CompromisedCredentialProperties
                                              .ALL_KEYS)
                             .with(COMPROMISED_CREDENTIAL, credential)
+                            .with(CREDENTIAL_HANDLER, this)
                             .build()));
         }
+    }
+
+    @Override
+    public void onRemove(CompromisedCredential credential) {
+        mDelegate.removeCredential(credential);
     }
 }

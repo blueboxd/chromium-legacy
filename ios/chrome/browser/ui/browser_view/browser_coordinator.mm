@@ -233,8 +233,6 @@
                    forProtocol:@protocol(BrowserCoordinatorCommands)];
   [self.dispatcher startDispatchingToTarget:self
                                 forProtocol:@protocol(PageInfoCommands)];
-  [self.dispatcher startDispatchingToTarget:self
-                                forProtocol:@protocol(QRGenerationCommands)];
   [self installDelegatesForAllWebStates];
   [self installDelegatesForBrowser];
   [self addWebStateListObserver];
@@ -526,9 +524,12 @@
       initWithBaseViewController:self.viewController
                          browser:self.browser
                         scenario:ActivityScenario::TabShareButton];
+
   self.activityServiceCoordinator.positionProvider =
       [self.viewController activityServicePositioner];
   self.activityServiceCoordinator.presentationProvider = self;
+  self.activityServiceCoordinator.scopedHandler = self;
+
   [self.activityServiceCoordinator start];
 }
 
@@ -750,7 +751,8 @@
       initWithBaseViewController:self.viewController
                          browser:self.browser
                            title:command.title
-                             URL:command.URL];
+                             URL:command.URL
+                         handler:self];
   [self.qrGeneratorCoordinator start];
 }
 

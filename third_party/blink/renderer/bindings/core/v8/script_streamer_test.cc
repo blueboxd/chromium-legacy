@@ -72,7 +72,7 @@ class NoopLoaderFactory final : public ResourceFetcher::LoaderFactory {
       scoped_refptr<base::SingleThreadTaskRunner>) override {
     return std::make_unique<NoopWebURLLoader>();
   }
-  std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() override {
+  std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader() override {
     return Platform::Current()->CreateCodeCacheLoader();
   }
 

@@ -1515,5 +1515,91 @@ TEST_F(ScriptExecutorTest, ReportDirectActionsChoices) {
   EXPECT_TRUE(processed_actions_capture[0].direct_action());
 }
 
+TEST_F(ScriptExecutorTest, PauseAndResume) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_tell()->set_message("Tell");
+  actions_response.add_actions()
+      ->mutable_prompt()
+      ->add_choices()
+      ->mutable_chip()
+      ->set_text("Chip");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+
+  executor_->Run(&user_data_, executor_callback_.Get());
+  EXPECT_EQ("Tell", delegate_.GetStatusMessage());
+  EXPECT_EQ(AutofillAssistantState::PROMPT, delegate_.GetState());
+
+  executor_->OnPause("Paused", "Button");
+  EXPECT_EQ("Paused", delegate_.GetStatusMessage());
+  EXPECT_EQ(AutofillAssistantState::STOPPED, delegate_.GetState());
+  ASSERT_THAT(*delegate_.GetUserActions(), SizeIs(1));
+  EXPECT_THAT(
+      *delegate_.GetUserActions(),
+      ElementsAre(Property(&UserAction::chip,
+                           AllOf(Field(&Chip::text, StrEq("Button")),
+                                 Field(&Chip::type, HIGHLIGHTED_ACTION)))));
+
+  (*delegate_.GetUserActions())[0].Call(TriggerContext::CreateEmpty());
+  EXPECT_EQ("Tell", delegate_.GetStatusMessage());
+  EXPECT_THAT(delegate_.GetStateHistory(),
+              ElementsAre(AutofillAssistantState::PROMPT,
+                          AutofillAssistantState::STOPPED,
+                          AutofillAssistantState::RUNNING,
+                          AutofillAssistantState::PROMPT));
+}
+
+TEST_F(ScriptExecutorTest, PauseAndResumeWithOngoingAction) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_tell()->set_message("Tell");
+  auto* wait_for_dom = actions_response.add_actions()->mutable_wait_for_dom();
+  wait_for_dom->set_timeout_ms(5000);
+  *wait_for_dom->mutable_wait_condition()->mutable_match() =
+      ToSelectorProto("element");
+  auto* prompt = actions_response.add_actions()->mutable_prompt();
+  prompt->set_message("Prompt");
+  prompt->add_choices()->mutable_chip()->set_text("Chip");
+  actions_response.add_actions()->mutable_tell()->set_message("Finished");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+
+  // At first we don't find the element, to keep the |WaitForDomAction| running.
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillOnce(RunOnceCallback<1>(ClientStatus()));
+
+  executor_->Run(&user_data_, executor_callback_.Get());
+  EXPECT_EQ("Tell", delegate_.GetStatusMessage());
+  EXPECT_THAT(delegate_.GetState(), Not(Eq(AutofillAssistantState::PROMPT)));
+
+  executor_->OnPause("Paused", "Button");
+  EXPECT_EQ("Paused", delegate_.GetStatusMessage());
+  EXPECT_EQ(AutofillAssistantState::STOPPED, delegate_.GetState());
+  ASSERT_THAT(*delegate_.GetUserActions(), SizeIs(1));
+  EXPECT_THAT(
+      *delegate_.GetUserActions(),
+      ElementsAre(Property(&UserAction::chip,
+                           AllOf(Field(&Chip::text, StrEq("Button")),
+                                 Field(&Chip::type, HIGHLIGHTED_ACTION)))));
+
+  // Resume, this should not restart the |WaitForDomAction|, it should also
+  // not advance to the next action (i.e. |PromptAction|), so the status
+  // status message is the one from |TellAction|.
+  EXPECT_CALL(mock_web_controller_, OnElementCheck(_, _)).Times(0);
+  (*delegate_.GetUserActions())[0].Call(TriggerContext::CreateEmpty());
+  EXPECT_EQ("Tell", delegate_.GetStatusMessage());
+  EXPECT_EQ(AutofillAssistantState::RUNNING, delegate_.GetState());
+
+  // We have resumed, the |WaitForDom| should now finish and advance the script.
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(Eq(Selector({"element"})), _))
+      .WillOnce(RunOnceCallback<1>(OkClientStatus()));
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1000));
+  EXPECT_EQ("Prompt", delegate_.GetStatusMessage());
+  EXPECT_EQ(AutofillAssistantState::PROMPT, delegate_.GetState());
+}
+
 }  // namespace
 }  // namespace autofill_assistant

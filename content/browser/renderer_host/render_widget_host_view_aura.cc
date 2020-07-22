@@ -326,11 +326,11 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
 
   RenderWidgetHostOwnerDelegate* owner_delegate = host()->owner_delegate();
   if (owner_delegate) {
-    // TODO(mostynb): actually use prefs.  Landing this as a separate CL
-    // first to rebaseline some unreliable web tests.
     // NOTE: This will not be run for child frame widgets, which do not have
     // an owner delegate and won't get a RenderViewHost here.
-    ignore_result(owner_delegate->GetWebkitPreferencesForWidget());
+    double_tap_to_zoom_enabled_ =
+        owner_delegate->GetWebkitPreferencesForWidget()
+            .double_tap_to_zoom_enabled;
   }
 }
 
@@ -1673,8 +1673,7 @@ bool RenderWidgetHostViewAura::RequiresDoubleTapGestureEvents() const {
   // TODO(crbug.com/916715): Child local roots do not work here?
   if (!owner_delegate)
     return false;
-  return owner_delegate->GetWebkitPreferencesForWidget()
-      .double_tap_to_zoom_enabled;
+  return double_tap_to_zoom_enabled_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

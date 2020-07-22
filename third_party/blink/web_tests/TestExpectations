@@ -2895,8 +2895,6 @@ crbug.com/626703 [ Linux ] external/wpt/mathml/presentation-markup/operators/mo-
 crbug.com/626703 [ Mac ] external/wpt/mathml/presentation-markup/operators/mo-lspace-rspace-dynamic.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/operators/mo-lspace-rspace-dynamic.html [ Failure ]
 crbug.com/626703 [ Retina ] external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw-from-coop.https.html [ Timeout ]
-crbug.com/1099208 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-popup-same-origin.https.html [ Crash ]
-crbug.com/1099208 external/wpt/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-popup-same-origin-coep-report-to.https.html [ Crash ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/preload/onload-event.html [ Timeout ]
@@ -6852,9 +6850,6 @@ crbug.com/1100786 [ Mac10.10 ] storage/indexeddb/transaction-active-flag.html [ 
 crbug.com/1101699 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-answer.html [ Pass Failure ]
 crbug.com/1101699 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-pranswer.html [ Pass Failure ]
 crbug.com/1101699 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-rollback.html [ Pass Failure ]
-
-# Temporarily disable to land a devtools change
-crbug.com/1107339 http/tests/devtools/extensions/extensions-api.js [ Pass Failure ]
 
 # Sheriff 2020-07-07
 # Additionally disabled on mac due to crbug.com/988248

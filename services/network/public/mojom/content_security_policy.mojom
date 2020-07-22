@@ -96,6 +96,7 @@ enum CSPDirectiveName {
   Unknown,
 
   BaseURI,
+  BlockAllMixedContent,
   ChildSrc,
   ConnectSrc,
   DefaultSrc,
@@ -111,6 +112,7 @@ enum CSPDirectiveName {
   PrefetchSrc,
   ReportTo,
   ReportURI,
+  RequireTrustedTypesFor,
   Sandbox,
   ScriptSrc,
   ScriptSrcAttr,
@@ -119,6 +121,7 @@ enum CSPDirectiveName {
   StyleSrcAttr,
   StyleSrcElem,
   TreatAsPublicAddress,
+  TrustedTypes,
   UpgradeInsecureRequests,
   WorkerSrc,
 };

@@ -276,7 +276,7 @@ class DeviceLocalAccountPolicyService {
 
   // Path to the directory that contains the cached policy for components
   // for device-local accounts.
-  base::FilePath component_policy_cache_root_;
+  const base::FilePath component_policy_cache_root_;
 
   base::WeakPtrFactory<DeviceLocalAccountPolicyService> weak_factory_{this};
 

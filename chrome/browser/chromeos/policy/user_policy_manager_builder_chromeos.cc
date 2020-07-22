@@ -265,9 +265,8 @@ void CreateConfigurationPolicyProvider(
       profile_dir.Append(kPolicy).Append(kComponentsDir);
   const base::FilePath external_data_dir =
       profile_dir.Append(kPolicy).Append(kPolicyExternalDataDir);
-  base::FilePath policy_key_dir;
-  CHECK(base::PathService::Get(chromeos::dbus_paths::DIR_USER_POLICY_KEYS,
-                               &policy_key_dir));
+  const base::FilePath policy_key_dir =
+      base::PathService::CheckedGet(chromeos::dbus_paths::DIR_USER_POLICY_KEYS);
 
   std::unique_ptr<UserCloudPolicyStoreChromeOS> store =
       std::make_unique<UserCloudPolicyStoreChromeOS>(

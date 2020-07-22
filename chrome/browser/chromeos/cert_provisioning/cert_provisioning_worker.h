@@ -128,7 +128,7 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
 
   void GenerateRegularKey();
   void OnGenerateRegularKeyDone(const std::string& public_key_spki_der,
-                                const std::string& error_message);
+                                platform_keys::Status status);
 
   void GenerateKeyForVa();
   void OnGenerateKeyForVaDone(base::TimeTicks start_time,
@@ -154,12 +154,12 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
   void OnRegisterKeyDone(const attestation::TpmChallengeKeyResult& result);
 
   void MarkKey();
-  void OnMarkKeyDone(const std::string& error_message);
+  void OnMarkKeyDone(platform_keys::Status status);
 
   void SignCsr();
   void OnSignCsrDone(base::TimeTicks start_time,
                      const std::string& signature,
-                     const std::string& error_message);
+                     platform_keys::Status status);
 
   void FinishCsr();
   void OnFinishCsrDone(policy::DeviceManagementStatus status,
@@ -174,7 +174,7 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
       const std::string& pem_encoded_certificate);
 
   void ImportCert(const std::string& pem_encoded_certificate);
-  void OnImportCertDone(const std::string& error_message);
+  void OnImportCertDone(platform_keys::Status status);
 
   void ScheduleNextStep(base::TimeDelta delay);
   void CancelScheduledTasks();
@@ -205,7 +205,7 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
 
   void CleanUpAndRunCallback();
   void OnDeleteVaKeyDone(base::Optional<bool> delete_result);
-  void OnRemoveKeyDone(const std::string& error_message);
+  void OnRemoveKeyDone(platform_keys::Status status);
   void OnCleanUpDone();
 
   // Returns true if there are no errors and the flow can be continued.

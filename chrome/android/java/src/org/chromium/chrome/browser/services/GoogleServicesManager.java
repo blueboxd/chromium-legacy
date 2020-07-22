@@ -44,10 +44,6 @@ public class GoogleServicesManager implements ApplicationStateListener {
     @SuppressLint("StaticFieldLeak")
     private static GoogleServicesManager sGoogleServicesManager;
 
-    private final ChromeSigninController mChromeSigninController;
-
-    private final SigninHelper mSigninHelper;
-
     /**
      * A helper method for retrieving the application-wide GoogleServicesManager.
      * <p/>
@@ -64,21 +60,17 @@ public class GoogleServicesManager implements ApplicationStateListener {
     }
 
     private GoogleServicesManager() {
-        try {
-            TraceEvent.begin("GoogleServicesManager.GoogleServicesManager");
+        try (TraceEvent ignored =
+                        TraceEvent.scoped("GoogleServicesManager.GoogleServicesManager")) {
             ThreadUtils.assertOnUiThread();
-
-            mChromeSigninController = ChromeSigninController.get();
-            mSigninHelper = SigninHelper.get();
-
             // The sign out flow starts by clearing the signed in user in the ChromeSigninController
             // on the Java side, and then performs a sign out on the native side. If there is a
             // crash on the native side then the signin state may get out of sync. Make sure that
             // the native side is signed out if the Java side doesn't have a currently signed in
             // user.
-            // TODO(bsazonov): Move this to SigninManager.
+            // TODO(https://crbug.com/1107942): Move this to SigninManager.
             SigninManager signinManager = IdentityServicesProvider.get().getSigninManager();
-            if (!mChromeSigninController.isSignedIn()
+            if (!ChromeSigninController.get().isSignedIn()
                     && signinManager.getIdentityManager().hasPrimaryAccount()) {
                 Log.w(TAG, "Signed in state got out of sync, forcing native sign out");
                 // TODO(https://crbug.com/873116): Pass the correct reason for the signout.
@@ -89,8 +81,6 @@ public class GoogleServicesManager implements ApplicationStateListener {
             SyncController.get();
 
             ApplicationStatus.registerApplicationStateListener(this);
-        } finally {
-            TraceEvent.end("GoogleServicesManager.GoogleServicesManager");
         }
     }
 
@@ -100,13 +90,10 @@ public class GoogleServicesManager implements ApplicationStateListener {
      * and updates state accordingly.
      */
     public void onMainActivityStart() {
-        try {
-            TraceEvent.begin("GoogleServicesManager.onMainActivityStart");
+        try (TraceEvent ignored = TraceEvent.scoped("GoogleServicesManager.onMainActivityStart")) {
             boolean accountsChanged =
                     SigninPreferencesManager.getInstance().checkAndClearAccountsChangedPref();
-            mSigninHelper.validateAccountSettings(accountsChanged);
-        } finally {
-            TraceEvent.end("GoogleServicesManager.onMainActivityStart");
+            SigninHelper.get().validateAccountSettings(accountsChanged);
         }
     }
 

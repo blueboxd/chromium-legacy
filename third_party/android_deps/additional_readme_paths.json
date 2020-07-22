@@ -52,6 +52,8 @@
     "libs/androidx_print_print",
     "libs/androidx_recyclerview_recyclerview",
     "libs/androidx_savedstate_savedstate",
+    "libs/androidx_slice_slice_builders",
+    "libs/androidx_slice_slice_core",
     "libs/androidx_slidingpanelayout_slidingpanelayout",
     "libs/androidx_swiperefreshlayout_swiperefreshlayout",
     "libs/androidx_test_core",

@@ -65,6 +65,7 @@
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/core/editing/writing_direction.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/text_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -632,17 +633,14 @@ void Editor::Redo() {
   undo_stack_->Redo();
 }
 
-void Editor::SetBaseWritingDirection(
-    mojo_base::mojom::blink::TextDirection direction) {
+void Editor::SetBaseWritingDirection(WritingDirection direction) {
   Element* focused_element = GetFrame().GetDocument()->FocusedElement();
   if (auto* text_control = ToTextControlOrNull(focused_element)) {
-    if (direction == mojo_base::mojom::blink::TextDirection::UNKNOWN_DIRECTION)
+    if (direction == WritingDirection::kNatural)
       return;
     text_control->setAttribute(
         html_names::kDirAttr,
-        direction == mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT
-            ? "ltr"
-            : "rtl");
+        direction == WritingDirection::kLeftToRight ? "ltr" : "rtl");
     text_control->DispatchInputEvent();
     return;
   }
@@ -651,11 +649,9 @@ void Editor::SetBaseWritingDirection(
       MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode);
   style->SetProperty(
       CSSPropertyID::kDirection,
-      direction == mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT
+      direction == WritingDirection::kLeftToRight
           ? "ltr"
-          : direction == mojo_base::mojom::blink::TextDirection::RIGHT_TO_LEFT
-                ? "rtl"
-                : "inherit",
+          : direction == WritingDirection::kRightToLeft ? "rtl" : "inherit",
       /* important */ false, GetFrame().DomWindow()->GetSecureContextMode());
   ApplyParagraphStyleToSelection(
       style, InputEvent::InputType::kFormatSetBlockTextDirection);

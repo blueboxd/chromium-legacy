@@ -24,8 +24,8 @@ namespace chromeos {
 
 class KioskLaunchControllerTest : public InProcessBrowserTest {
  public:
-  using AppState = WebKioskController::AppState;
-  using NetworkUIState = WebKioskController::NetworkUIState;
+  using AppState = KioskLaunchController::AppState;
+  using NetworkUIState = KioskLaunchController::NetworkUIState;
 
   KioskLaunchControllerTest() = default;
   KioskLaunchControllerTest(const KioskLaunchControllerTest&) = delete;

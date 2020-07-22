@@ -89,10 +89,7 @@ void CaptioningController::SetTextTrackSettings(
     const JavaParamRef<jstring>& textTrackTextColor,
     const JavaParamRef<jstring>& textTrackTextShadow,
     const JavaParamRef<jstring>& textTrackTextSize) {
-  auto web_prefs = web_contents()
-                       ->GetMainFrame()
-                       ->GetRenderViewHost()
-                       ->GetWebkitPreferences();
+  auto web_prefs = web_contents()->GetOrCreateWebPreferences();
   web_prefs.text_tracks_enabled = textTracksEnabled;
   web_prefs.text_track_background_color =
       AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackBackgroundColor));
@@ -108,8 +105,7 @@ void CaptioningController::SetTextTrackSettings(
       AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackTextShadow));
   web_prefs.text_track_text_size =
       AddCSSImportant(ConvertJavaStringToUTF8(env, textTrackTextSize));
-  web_contents()->GetMainFrame()->GetRenderViewHost()->UpdateWebkitPreferences(
-      web_prefs);
+  web_contents()->SetWebPreferences(web_prefs);
 }
 
 jlong JNI_CaptioningController_Init(

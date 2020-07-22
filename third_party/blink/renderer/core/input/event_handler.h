@@ -60,6 +60,7 @@ class DataTransfer;
 class PaintLayer;
 class Element;
 class Event;
+class EventHandlerRegistry;
 template <typename EventType>
 class EventWithHitTestResults;
 class HTMLFrameSetElement;

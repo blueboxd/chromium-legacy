@@ -37,6 +37,9 @@ class MockRenderFrameHostDelegate : public RenderFrameHostDelegate {
                                     MediaResponseCallback callback) {
     return RequestMediaAccessPermission(request, &callback);
   }
+  const WebPreferences& GetOrCreateWebPreferences() override {
+    return mock_web_preferences_;
+  }
   MOCK_METHOD2(RequestMediaAccessPermission,
                void(const MediaStreamRequest& request,
                     MediaResponseCallback* callback));
@@ -44,6 +47,9 @@ class MockRenderFrameHostDelegate : public RenderFrameHostDelegate {
                bool(RenderFrameHost* render_frame_host,
                     const url::Origin& security_origin,
                     blink::mojom::MediaStreamType type));
+
+ private:
+  WebPreferences mock_web_preferences_;
 };
 
 class MockResponseCallback {
@@ -417,6 +423,7 @@ class MediaStreamUIProxyFeaturePolicyTest
 
  private:
   class TestRFHDelegate : public RenderFrameHostDelegate {
+   public:
     void RequestMediaAccessPermission(const MediaStreamRequest& request,
                                       MediaResponseCallback callback) override {
       blink::MediaStreamDevices devices;
@@ -435,6 +442,13 @@ class MediaStreamUIProxyFeaturePolicyTest
       std::move(callback).Run(
           devices, blink::mojom::MediaStreamRequestResult::OK, std::move(ui));
     }
+
+    const WebPreferences& GetOrCreateWebPreferences() override {
+      return mock_web_preferences_;
+    }
+
+   private:
+    WebPreferences mock_web_preferences_;
   };
 
   void GetResultForRequestOnIOThread(

@@ -92,6 +92,14 @@ void ClientSettings::UpdateFromProto(const ClientSettingsProto& proto) {
   if (proto.has_talkback_sheet_size_fraction()) {
     talkback_sheet_size_fraction = proto.talkback_sheet_size_fraction();
   }
+  if (proto.has_back_button_settings()) {
+    if (proto.back_button_settings().has_message() &&
+        proto.back_button_settings().has_undo_label()) {
+      back_button_settings = proto.back_button_settings();
+    } else {
+      back_button_settings.reset();
+    }
+  }
 }
 
 }  // namespace autofill_assistant

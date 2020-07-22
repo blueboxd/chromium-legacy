@@ -886,6 +886,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void OverrideWebkitPrefs(RenderViewHost* render_view_host,
                                    WebPreferences* prefs) {}
 
+  // Similar to OverrideWebkitPrefs, but is only called after navigations. Some
+  // attributes in WebPreferences might need its value updated after navigation,
+  // and this method will give the opportunity for embedder to update them.
+  // Returns true if some values |prefs| changed due to embedder override.
+  virtual bool OverrideWebPreferencesAfterNavigation(WebContents* web_contents,
+                                                     WebPreferences* prefs);
+
   // Notifies that BrowserURLHandler has been created, so that the embedder can
   // optionally add their own handlers.
   virtual void BrowserURLHandlerCreated(BrowserURLHandler* handler) {}

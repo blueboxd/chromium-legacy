@@ -35,6 +35,56 @@ void PaymentManager::setUserHint(const String& user_hint) {
 
 ScriptPromise PaymentManager::enableDelegations(
     ScriptState* script_state,
+    const Vector<V8PaymentDelegation>& delegations,
+    ExceptionState& exception_state) {
+  if (!script_state->ContextIsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Cannot enable payment delegations");
+    return ScriptPromise();
+  }
+
+  if (enable_delegations_resolver_) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Cannot call enableDelegations() again until the previous "
+        "enableDelegations() is finished");
+    return ScriptPromise();
+  }
+
+  using MojoPaymentDelegation = payments::mojom::blink::PaymentDelegation;
+  Vector<MojoPaymentDelegation> mojo_delegations;
+  for (auto delegation : delegations) {
+    MojoPaymentDelegation mojo_delegation = MojoPaymentDelegation::PAYER_EMAIL;
+    switch (delegation.AsEnum()) {
+      case V8PaymentDelegation::Enum::kShippingAddress:
+        mojo_delegation = MojoPaymentDelegation::SHIPPING_ADDRESS;
+        break;
+      case V8PaymentDelegation::Enum::kPayerName:
+        mojo_delegation = MojoPaymentDelegation::PAYER_NAME;
+        break;
+      case V8PaymentDelegation::Enum::kPayerPhone:
+        mojo_delegation = MojoPaymentDelegation::PAYER_PHONE;
+        break;
+      case V8PaymentDelegation::Enum::kPayerEmail:
+        mojo_delegation = MojoPaymentDelegation::PAYER_EMAIL;
+        break;
+      default:
+        NOTREACHED();
+    }
+    mojo_delegations.push_back(mojo_delegation);
+  }
+
+  manager_->EnableDelegations(
+      std::move(mojo_delegations),
+      WTF::Bind(&PaymentManager::OnEnableDelegationsResponse,
+                WrapPersistent(this)));
+  enable_delegations_resolver_ =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  return enable_delegations_resolver_->Promise();
+}
+
+ScriptPromise PaymentManager::enableDelegations(
+    ScriptState* script_state,
     const Vector<String>& stringified_delegations,
     ExceptionState& exception_state) {
   if (!script_state->ContextIsValid()) {

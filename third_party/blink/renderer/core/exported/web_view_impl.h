@@ -107,6 +107,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   static WebViewImpl* Create(
       WebViewClient*,
       mojom::blink::PageVisibilityState visibility,
+      bool is_inside_portal,
       bool compositing_enabled,
       WebViewImpl* opener,
       mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle);
@@ -200,7 +201,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetPageFrozen(bool frozen) override;
   WebFrameWidget* MainFrameWidget() override;
   void SetBaseBackgroundColor(SkColor) override;
-  void SetInsidePortal(bool inside_portal) override;
   void PaintContent(cc::PaintCanvas*, const gfx::Rect&) override;
   void SetTextAutosizerPageInfo(const WebTextAutosizerPageInfo&) override;
 
@@ -222,6 +222,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                              base::Optional<base::TimeTicks> navigation_start,
                              SetPageLifecycleStateCallback callback) override;
   void AudioStateChanged(bool is_audio_playing) override;
+  void SetInsidePortal(bool is_inside_portal) override;
 
   void DispatchPagehide();
   void DispatchPageshow(base::TimeTicks navigation_start);
@@ -496,6 +497,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebViewImpl(
       WebViewClient*,
       mojom::blink::PageVisibilityState visibility,
+      bool is_inside_portal,
       bool does_composite,
       WebViewImpl* opener,
       mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle);

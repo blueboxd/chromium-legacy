@@ -35,10 +35,6 @@ IPC_MESSAGE_ROUTED1(PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames,
 // Sends updated preferences to the renderer.
 IPC_MESSAGE_ROUTED1(PageMsg_SetRendererPrefs, blink::mojom::RendererPreferences)
 
-// Sent to all renderers when a portal web contents is activated or if a
-// web contents is adopted as a portal.
-IPC_MESSAGE_ROUTED1(PageMsg_SetInsidePortal, bool /* inside_portal */)
-
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 

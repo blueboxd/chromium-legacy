@@ -1965,7 +1965,7 @@ bool NavigationControllerImpl::IsURLSameDocumentNavigation(
     last_committed_url = last_committed->GetURL();
   }
 
-  WebPreferences prefs = rfh->GetRenderViewHost()->GetWebkitPreferences();
+  WebPreferences prefs = rfhi->GetOrCreateWebPreferences();
   const url::Origin& committed_origin =
       rfhi->frame_tree_node()->current_origin();
   bool is_same_origin = last_committed_url.is_empty() ||

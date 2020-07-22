@@ -40,7 +40,7 @@ possibility of inlining.
 For an example of how to use partitions to get good performance and good safety,
 see Blink's usage, as described in `wtf/allocator/Allocator.md`.
 
-Large allocations (> kGenericMaxBucketed == 960KB) are realized by direct
+Large allocations (> kMaxBucketed == 960KB) are realized by direct
 memory mmapping. This size makes sense because 960KB = 0xF0000. The next larger
 bucket size is 1MB = 0x100000 which is greater than 1/2 the available space in
 a SuperPage meaning it would not be possible to pack even 2 sequential

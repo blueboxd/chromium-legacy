@@ -58,11 +58,13 @@
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser
                                      title:(NSString*)title
-                                       URL:(const GURL&)URL {
+                                       URL:(const GURL&)URL
+                                   handler:(id<QRGenerationCommands>)handler {
   if (self = [super initWithBaseViewController:viewController
                                        browser:browser]) {
     _title = title;
     _URL = URL;
+    _handler = handler;
   }
   return self;
 }
@@ -70,9 +72,6 @@
 #pragma mark - Chrome Coordinator
 
 - (void)start {
-  self.handler = HandlerForProtocol(self.browser->GetCommandDispatcher(),
-                                    QRGenerationCommands);
-
   self.viewController = [[QRGeneratorViewController alloc] init];
 
   [self.viewController setModalPresentationStyle:UIModalPresentationFormSheet];

@@ -233,6 +233,7 @@ class EmptyEventListener final : public NativeEventListener {
 WebView* WebView::Create(
     WebViewClient* client,
     bool is_hidden,
+    bool is_inside_portal,
     bool compositing_enabled,
     WebView* opener,
     CrossVariantMojoAssociatedReceiver<mojom::PageBroadcastInterfaceBase>
@@ -241,20 +242,22 @@ WebView* WebView::Create(
       client,
       is_hidden ? mojom::blink::PageVisibilityState::kHidden
                 : mojom::blink::PageVisibilityState::kVisible,
-      compositing_enabled, static_cast<WebViewImpl*>(opener),
+      is_inside_portal, compositing_enabled, static_cast<WebViewImpl*>(opener),
       std::move(page_handle));
 }
 
 WebViewImpl* WebViewImpl::Create(
     WebViewClient* client,
     mojom::blink::PageVisibilityState visibility,
+    bool is_inside_portal,
     bool compositing_enabled,
     WebViewImpl* opener,
     mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle) {
   // Take a self-reference for WebViewImpl that is released by calling Close(),
   // then return a raw pointer to the caller.
-  auto web_view = base::AdoptRef(new WebViewImpl(
-      client, visibility, compositing_enabled, opener, std::move(page_handle)));
+  auto web_view = base::AdoptRef(
+      new WebViewImpl(client, visibility, is_inside_portal, compositing_enabled,
+                      opener, std::move(page_handle)));
   web_view->AddRef();
   return web_view.get();
 }
@@ -278,6 +281,7 @@ void WebViewImpl::SetPrerendererClient(
 WebViewImpl::WebViewImpl(
     WebViewClient* client,
     mojom::blink::PageVisibilityState visibility,
+    bool is_inside_portal,
     bool does_composite,
     WebViewImpl* opener,
     mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle)
@@ -302,6 +306,10 @@ WebViewImpl::WebViewImpl(
 
   SetVisibilityState(visibility, /*is_initial_state=*/true);
   lifecycle_state_->visibility = visibility;
+
+  // We pass this state to Page, but it's only used by the main frame in the
+  // page.
+  SetInsidePortal(is_inside_portal);
 
   // When not compositing, keep the Page in the loop so that it will paint all
   // content into the root layer, as multiple layers can only be used when

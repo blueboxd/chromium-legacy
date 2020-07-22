@@ -65,9 +65,6 @@
 (allow ipc-posix-shm-read-data
   (ipc-posix-name "apple.shm.notification_center"))
 
-; https://crbug.com/515280
-(if (>= os-version 1011)
-  (allow file-read* (subpath "/System/Library/Extensions")))
 
 ; Needed for VideoToolbox usage - https://crbug.com/767037
 (if (>= os-version 1013)
@@ -78,6 +75,7 @@
 ))
 
 (allow sysctl-read
+  (sysctl-name "hw.cachelinesize")
   (sysctl-name "hw.logicalcpu_max")
   (sysctl-name "hw.memsize")
   (sysctl-name "hw.model")
@@ -92,7 +90,9 @@
 (allow file-read*
   (subpath "/Library/GPUBundles")
   (subpath "/Library/Video/Plug-Ins")
+  (subpath "/System/Library/ColorSync/Profiles")
   (subpath "/System/Library/CoreServices/RawCamera.bundle")
+  (subpath "/System/Library/Extensions")  ; https://crbug.com/515280
   (subpath "/System/Library/Video/Plug-Ins")
 )
 

@@ -113,11 +113,12 @@ void RenderFrameHostAndroid::GetCanonicalUrlForSharing(
       base::android::ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 
-bool RenderFrameHostAndroid::IsPaymentFeaturePolicyEnabled(
+bool RenderFrameHostAndroid::IsFeatureEnabled(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>&) const {
+    const base::android::JavaParamRef<jobject>&,
+    jint feature) const {
   return render_frame_host_->IsFeatureEnabled(
-      blink::mojom::FeaturePolicyFeature::kPayment);
+      static_cast<blink::mojom::FeaturePolicyFeature>(feature));
 }
 
 ScopedJavaLocalRef<jobject>

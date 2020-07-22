@@ -5,12 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PRIVATE_FRAME_CLIENT_HINTS_PREFERENCES_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PRIVATE_FRAME_CLIENT_HINTS_PREFERENCES_CONTEXT_H_
 
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
+
+class LocalFrame;
 
 class FrameClientHintsPreferencesContext final
     : public ClientHintsPreferences::Context {

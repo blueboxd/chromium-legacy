@@ -477,7 +477,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   frame_test_helpers::TestWebViewClient web_view_client;
   frame_test_helpers::TestWebWidgetClient web_widget_client;
   WebViewImpl* web_view = static_cast<WebViewImpl*>(WebView::Create(
-      &web_view_client, false,
+      &web_view_client, /*is_hidden=*/false, /*is_inside_portal=*/false,
       /*compositing_enabled=*/true, nullptr, mojo::NullAssociatedReceiver()));
 
   EXPECT_NE(SK_ColorBLUE, web_view->BackgroundColor());
@@ -2711,7 +2711,7 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
   // Note: this test doesn't use WebViewHelper since WebViewHelper creates an
   // internal WebViewClient on demand if the supplied WebViewClient is null.
   WebViewImpl* web_view = static_cast<WebViewImpl*>(WebView::Create(
-      nullptr, false,
+      nullptr, false, /*is_inside_portal=*/false,
       /*compositing_enabled=*/false, nullptr, mojo::NullAssociatedReceiver()));
   frame_test_helpers::TestWebFrameClient web_frame_client;
   frame_test_helpers::TestWebWidgetClient web_widget_client;
@@ -4084,7 +4084,7 @@ TEST_F(WebViewTest, SetHasTouchEventHandlers) {
   frame_test_helpers::TestWebViewClient web_view_client;
   frame_test_helpers::TestWebWidgetClient web_widget_client;
   WebViewImpl* web_view_impl = static_cast<WebViewImpl*>(WebView::Create(
-      &web_view_client, false,
+      &web_view_client, /*is_hidden*/ false, /*is_inside_portal=*/false,
       /*compositing_enabled=*/true, nullptr, mojo::NullAssociatedReceiver()));
 
   frame_test_helpers::TestWebFrameClient web_frame_client;

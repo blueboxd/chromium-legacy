@@ -18,6 +18,7 @@ GIN_EXPORT extern const base::Feature kV8ConcurrentInlining;
 GIN_EXPORT extern const base::Feature kV8PerContextMarkingWorklist;
 GIN_EXPORT extern const base::Feature kV8FlushEmbeddedBlobICache;
 GIN_EXPORT extern const base::Feature kV8ReduceConcurrentMarkingTasks;
+GIN_EXPORT extern const base::Feature kV8NoReclaimUnmodifiedWrappers;
 
 }  // namespace features
 

@@ -56,6 +56,17 @@ TEST_F(GenerateQrCodeActivityTest, FlagOff_ActivityDisabled) {
   EXPECT_FALSE([activity canPerformWithActivityItems:@[]]);
 }
 
+// Tests that the activity cannot be performed when its handler is nil.
+TEST_F(GenerateQrCodeActivityTest, NilHandler_ActivityDisabled) {
+  scoped_features_.InitAndEnableFeature(kQRCodeGeneration);
+  GenerateQrCodeActivity* activity =
+      [[GenerateQrCodeActivity alloc] initWithURL:GURL("https://example.com")
+                                            title:@"Some title"
+                                          handler:nil];
+
+  EXPECT_FALSE([activity canPerformWithActivityItems:@[]]);
+}
+
 // Tests that the right handler method is invoked upon execution.
 TEST_F(GenerateQrCodeActivityTest, Execution) {
   __block GURL fakeURL("https://example.com");

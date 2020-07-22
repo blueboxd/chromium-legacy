@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.init.AsyncInitTaskRunner;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountId;
@@ -98,6 +99,8 @@ public class ChromeBackupAgentTest {
     private ChromeBackupAgent.Natives mChromeBackupAgentJniMock;
     @Mock
     private IdentityManager mIdentityManagerMock;
+    @Mock
+    private Profile mProfile;
 
     private ChromeBackupAgent mAgent;
     private AsyncInitTaskRunner mTaskRunner;
@@ -126,6 +129,7 @@ public class ChromeBackupAgentTest {
         });
 
         MockitoAnnotations.initMocks(this);
+        Profile.setLastUsedProfileForTesting(mProfile);
         mocker.mock(ChromeBackupAgentJni.TEST_HOOKS, mChromeBackupAgentJniMock);
 
         when(mChromeBackupAgentJniMock.getBoolBackupNames(mAgent))
@@ -135,7 +139,7 @@ public class ChromeBackupAgentTest {
 
         IdentityServicesProvider identityServicesProvider = mock(IdentityServicesProvider.class);
         IdentityServicesProvider.setInstanceForTests(identityServicesProvider);
-        when(identityServicesProvider.getIdentityManager()).thenReturn(mIdentityManagerMock);
+        when(identityServicesProvider.getIdentityManager(any())).thenReturn(mIdentityManagerMock);
         when(mIdentityManagerMock.getPrimaryAccountInfo(ConsentLevel.SYNC)).thenReturn(null);
 
         // Mock initializing the browser

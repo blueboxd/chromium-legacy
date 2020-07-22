@@ -93,8 +93,7 @@ class MediaEngagementScoreDetailsProviderImpl
  private:
   const std::string GetAppliedAutoplayPolicy() {
     switch (web_ui_->GetWebContents()
-                ->GetRenderViewHost()
-                ->GetWebkitPreferences()
+                ->GetOrCreateWebPreferences()
                 .autoplay_policy) {
       case content::AutoplayPolicy::kNoUserGestureRequired:
         return "no-user-gesture-required";

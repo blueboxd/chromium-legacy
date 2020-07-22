@@ -18,7 +18,7 @@
 namespace content {
 
 class MediaSessionImpl;
-class MediaWebContentsObserver;
+class WebContents;
 
 // Helper class for controlling a single player's MediaSession instance.  Sends
 // browser side MediaSession commands back to a player hosted in the renderer
@@ -26,16 +26,17 @@ class MediaWebContentsObserver;
 class CONTENT_EXPORT MediaSessionController
     : public MediaSessionPlayerObserver {
  public:
-  MediaSessionController(const MediaPlayerId& id,
-                         MediaWebContentsObserver* media_web_contents_observer);
+  MediaSessionController(const MediaPlayerId& id, WebContents* web_contents);
   ~MediaSessionController() override;
 
-  // Must be called when playback starts. May be called more than once; does
-  // nothing if none of the input parameters have changed since the last call.
-  // Returns false if a media session cannot be created.
-  bool OnPlaybackStarted(bool has_audio,
-                         bool has_video,
-                         media::MediaContentType media_content_type);
+  // Must be called when media player metadata changes.
+  void SetMetadata(bool has_audio,
+                   bool has_video,
+                   media::MediaContentType media_content_type);
+
+  // Must be called when playback starts.  Returns false if a media session
+  // cannot be created.
+  bool OnPlaybackStarted();
 
   // Must be called when a pause occurs on the renderer side media player; keeps
   // the MediaSession instance in sync with renderer side behavior.
@@ -72,19 +73,19 @@ class CONTENT_EXPORT MediaSessionController
   // Called when the media picture-in-picture availability has changed.
   void OnPictureInPictureAvailabilityChanged(bool available);
 
+ private:
   bool IsMediaSessionNeeded() const;
 
   // Determines whether a session is needed and adds or removes the player
   // accordingly.
-  void AddOrRemovePlayer();
+  bool AddOrRemovePlayer();
 
- private:
   const MediaPlayerId id_;
 
-  // Non-owned pointer; |media_web_contents_observer_| is the owner of |this|.
-  MediaWebContentsObserver* const media_web_contents_observer_;
+  // Outlives |this|.
+  WebContents* const web_contents_;
 
-  // Non-owned pointer; lifetime is the same as |media_web_contents_observer_|.
+  // Outlives |this|.
   MediaSessionImpl* const media_session_;
 
   base::Optional<media_session::MediaPosition> position_;

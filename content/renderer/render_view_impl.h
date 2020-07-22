@@ -405,7 +405,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void SetPageFrozen(bool frozen);
   void OnTextAutosizerPageInfoChanged(
       const blink::WebTextAutosizerPageInfo& page_info);
-  void OnSetInsidePortal(bool inside_portal);
 
   // Adding a new message handler? Please add it in alphabetical order above
   // and put it in the same position in the .cc file.

@@ -110,9 +110,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   SiteInstanceImpl* GetSiteInstance() override;
   bool IsRenderViewLive() override;
   void NotifyMoveOrResizeStarted() override;
-  WebPreferences GetWebkitPreferences() override;
-  void UpdateWebkitPreferences(const WebPreferences& prefs) override;
   void OnWebkitPreferencesChanged() override;
+
+  void SendWebPreferencesToRenderer();
 
   // RenderProcessHostObserver implementation
   void RenderProcessExited(RenderProcessHost* host,
@@ -369,11 +369,6 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // True if the render view can be shut down suddenly.
   bool sudden_termination_allowed_ = false;
-
-  // This is updated every time UpdateWebkitPreferences is called. That method
-  // is in turn called when any of the settings change that the WebPreferences
-  // values depend on.
-  std::unique_ptr<WebPreferences> web_preferences_;
 
   // The timeout monitor that runs from when the page close is started in
   // ClosePage() until either the render process ACKs the close with an IPC to

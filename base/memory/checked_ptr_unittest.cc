@@ -513,6 +513,86 @@ TEST_F(CheckedPtrTest, Cast) {
   EXPECT_EQ(checked_derived_ptr4->d, 1024);
 }
 
+TEST_F(CheckedPtrTest, UpcastConvertible) {
+  {
+    Derived derived_val(42, 84, 1024);
+    CheckedPtr<Derived> checked_derived_ptr = &derived_val;
+
+    CheckedPtr<Base1> checked_base1_ptr(checked_derived_ptr);
+    EXPECT_EQ(checked_base1_ptr->b1, 42);
+    CheckedPtr<Base2> checked_base2_ptr(checked_derived_ptr);
+    EXPECT_EQ(checked_base2_ptr->b2, 84);
+
+    checked_base1_ptr = checked_derived_ptr;
+    EXPECT_EQ(checked_base1_ptr->b1, 42);
+    checked_base2_ptr = checked_derived_ptr;
+    EXPECT_EQ(checked_base2_ptr->b2, 84);
+
+    EXPECT_EQ(checked_base1_ptr, checked_derived_ptr);
+    EXPECT_EQ(checked_base2_ptr, checked_derived_ptr);
+  }
+
+  {
+    Derived derived_val(42, 84, 1024);
+    CheckedPtr<Derived> checked_derived_ptr = &derived_val;
+
+    CheckedPtr<Base1> checked_base1_ptr(std::move(checked_derived_ptr));
+    EXPECT_EQ(checked_base1_ptr->b1, 42);
+    CheckedPtr<Base2> checked_base2_ptr(std::move(checked_derived_ptr));
+    EXPECT_EQ(checked_base2_ptr->b2, 84);
+
+    checked_base1_ptr = std::move(checked_derived_ptr);
+    EXPECT_EQ(checked_base1_ptr->b1, 42);
+    checked_base2_ptr = std::move(checked_derived_ptr);
+    EXPECT_EQ(checked_base2_ptr->b2, 84);
+
+    EXPECT_EQ(checked_base1_ptr, checked_derived_ptr);
+    EXPECT_EQ(checked_base2_ptr, checked_derived_ptr);
+  }
+}
+
+TEST_F(CheckedPtrTest, UpcastNotConvertible) {
+  class Base {};
+  class Derived : private Base {};
+  class Unrelated {};
+  EXPECT_FALSE(
+      (std::is_convertible<CheckedPtr<Derived>, CheckedPtr<Base>>::value));
+  EXPECT_FALSE(
+      (std::is_convertible<CheckedPtr<Unrelated>, CheckedPtr<Base>>::value));
+  EXPECT_FALSE(
+      (std::is_convertible<CheckedPtr<Unrelated>, CheckedPtr<void>>::value));
+  EXPECT_FALSE(
+      (std::is_convertible<CheckedPtr<void>, CheckedPtr<Unrelated>>::value));
+  EXPECT_FALSE(
+      (std::is_convertible<CheckedPtr<int64_t>, CheckedPtr<int32_t>>::value));
+  EXPECT_FALSE(
+      (std::is_convertible<CheckedPtr<int16_t>, CheckedPtr<int32_t>>::value));
+}
+
+TEST_F(CheckedPtrTest, UpcastPerformance) {
+  {
+    Derived derived_val(42, 84, 1024);
+    CountingCheckedPtr<Derived> checked_derived_ptr = &derived_val;
+    CountingCheckedPtr<Base1> checked_base1_ptr(checked_derived_ptr);
+    CountingCheckedPtr<Base2> checked_base2_ptr(checked_derived_ptr);
+    checked_base1_ptr = checked_derived_ptr;
+    checked_base2_ptr = checked_derived_ptr;
+  }
+
+  {
+    Derived derived_val(42, 84, 1024);
+    CountingCheckedPtr<Derived> checked_derived_ptr = &derived_val;
+    CountingCheckedPtr<Base1> checked_base1_ptr(std::move(checked_derived_ptr));
+    CountingCheckedPtr<Base2> checked_base2_ptr(std::move(checked_derived_ptr));
+    checked_base1_ptr = std::move(checked_derived_ptr);
+    checked_base2_ptr = std::move(checked_derived_ptr);
+  }
+
+  EXPECT_EQ(g_get_for_comparison_cnt, 0);
+  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+}
+
 TEST_F(CheckedPtrTest, CustomSwap) {
   int foo1, foo2;
   CountingCheckedPtr<int> ptr1(&foo1);

@@ -248,7 +248,8 @@ public class AndroidSyncSettingsTest {
     @SmallTest
     @Feature({"Sync"})
     public void testToggleChromeSyncFromSettings() throws InterruptedException {
-        setMasterSyncAllowsChromeSync();
+        mSyncContentResolverDelegate.setMasterSyncAutomatically(true);
+        mSyncContentResolverDelegate.waitForLastNotificationCompleted();
 
         // First sync
         mSyncContentResolverDelegate.setIsSyncable(mAccount, mAuthority, 1);

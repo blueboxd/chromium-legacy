@@ -30,7 +30,7 @@ class WebContents;
 
 namespace chromeos {
 
-class AppLaunchController;
+class KioskLaunchController;
 class ExistingUserController;
 class OobeUI;
 class WebUILoginView;
@@ -103,9 +103,9 @@ class LoginDisplayHost {
   // Result should not be stored.
   virtual WizardController* GetWizardController() = 0;
 
-  // Returns current AppLaunchController, if it exists.
+  // Returns current KioskLaunchController, if it exists.
   // Result should not be stored.
-  virtual AppLaunchController* GetAppLaunchController() = 0;
+  virtual KioskLaunchController* GetKioskLaunchController() = 0;
 
   // Starts screen for adding user into session.
   // |completion_callback| is invoked after login display host shutdown.

@@ -92,6 +92,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_observer.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -111,6 +112,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "content/test/render_document_feature.h"
+#include "content/test/test_content_browser_client.h"
 #include "ipc/constants.mojom.h"
 #include "ipc/ipc_security_test_util.h"
 #include "media/base/media_switches.h"
@@ -1096,14 +1098,13 @@ class OutgoingTextAutosizerPageInfoIPCWatcher {
 // Make sure that when a relevant feature of the main frame changes, e.g. the
 // frame width, that the browser is notified.
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, TextAutosizerPageInfo) {
-  WebPreferences prefs =
-      web_contents()->GetRenderViewHost()->GetWebkitPreferences();
+  WebPreferences prefs = web_contents()->GetOrCreateWebPreferences();
   prefs.text_autosizing_enabled = true;
 
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
-  web_contents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+  web_contents()->SetWebPreferences(prefs);
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   ASSERT_EQ(1U, root->child_count());
@@ -1119,7 +1120,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, TextAutosizerPageInfo) {
   OutgoingTextAutosizerPageInfoIPCWatcher ipc_watcher(
       child_rph, base::Optional<int>(), prefs.device_scale_adjustment);
   // Change the device scale adjustment to trigger a RemotePageInfo update.
-  web_contents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+  web_contents()->SetWebPreferences(prefs);
   // Make sure we receive a ViewHostMsg from the main frame's renderer.
   interceptor->WaitForPageInfo(base::Optional<int>(),
                                prefs.device_scale_adjustment);
@@ -14315,22 +14316,29 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
 // Touchscreen DoubleTapZoom is only supported on Android & ChromeOS at present.
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-namespace {
+// A test ContentBrowserClient implementation which enforces
+// WebPreferences' |double_tap_to_zoom_enabled| to be true.
+class DoubleTapZoomContentBrowserClient : public TestContentBrowserClient {
+ public:
+  DoubleTapZoomContentBrowserClient() = default;
 
-void EnableDoubleTapZoomInRenderView(FrameTreeNode* node) {
-  content::RenderViewHost* rvh =
-      node->current_frame_host()->GetRenderViewHost();
-  content::WebPreferences web_prefs = rvh->GetWebkitPreferences();
-  if (web_prefs.double_tap_to_zoom_enabled)
-    return;
-  web_prefs.double_tap_to_zoom_enabled = true;
-  rvh->UpdateWebkitPreferences(web_prefs);
-}
+  void OverrideWebkitPrefs(content::RenderViewHost* rvh,
+                           content::WebPreferences* web_prefs) override {
+    web_prefs->double_tap_to_zoom_enabled = true;
+  }
 
-}  // namespace
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DoubleTapZoomContentBrowserClient);
+};
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        TouchscreenAnimateDoubleTapZoomInOOPIF) {
+  // Install a client forcing double-tap zoom to be enabled.
+  DoubleTapZoomContentBrowserClient content_browser_client;
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&content_browser_client);
+  web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -14339,12 +14347,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   ASSERT_EQ(1u, root->child_count());
   FrameTreeNode* child_b = root->child_at(0);
   ASSERT_TRUE(child_b);
-
-  // Enable double-tap zoom. This must be done separately for the main frame and
-  // for the oopif frame since RenderViewHost::UpdateWebkitPreferences() only
-  // sends the IPC to its own RenderView.
-  EnableDoubleTapZoomInRenderView(root);
-  EnableDoubleTapZoomInRenderView(child_b);
 
   RenderFrameSubmissionObserver observer_a(root);
   // We need to observe a root frame submission to pick up the initial page
@@ -14411,6 +14413,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
     observer_a.WaitForAnyFrameSubmission();
     new_page_scale = observer_a.LastRenderFrameMetadata().page_scale_factor;
   } while (new_page_scale < target_scale);
+
+  SetBrowserClientForTesting(old_client);
 }
 #endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
 

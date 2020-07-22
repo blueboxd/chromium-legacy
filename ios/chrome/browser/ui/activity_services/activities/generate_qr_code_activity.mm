@@ -57,7 +57,7 @@ NSString* const kGenerateQrCodeActivityType =
 }
 
 - (BOOL)canPerformWithActivityItems:(NSArray*)activityItems {
-  return base::FeatureList::IsEnabled(kQRCodeGeneration);
+  return base::FeatureList::IsEnabled(kQRCodeGeneration) && self.handler;
 }
 
 + (UIActivityCategory)activityCategory {

@@ -11,7 +11,19 @@ import android.view.MenuItem;
  */
 interface PasswordCheckComponentUi {
     /**
-     * Handle the request of the user to show the help page for the Check Passwords view.
+     * A delegate that handles native tasks for the UI component.
      */
-    public boolean handleHelp(MenuItem item);
+    interface Delegate {
+        /**
+         * Remove the given credential from the password store.
+         * @param credential A {@link CompromisedCredential}.
+         */
+        void removeCredential(CompromisedCredential credential);
+    }
+
+    /**
+     * Handle the request of the user to show the help page for the Check Passwords view.
+     * @param item A {@link MenuItem}.
+     */
+    boolean handleHelp(MenuItem item);
 }

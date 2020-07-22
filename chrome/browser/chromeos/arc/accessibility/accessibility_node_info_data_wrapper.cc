@@ -318,6 +318,10 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   AccessibilityInfoDataWrapper::Serialize(out_data);
 
   bool is_node_tree_root = tree_source_->IsRootOfNodeTree(GetId());
+  // String properties that doesn't belong to any of existing chrome
+  // automation string properties are pushed into description.
+  // TODO: Refactor this to make clear the functionality(b/158633575).
+  std::vector<std::string> descriptions;
 
   // String properties.
   const std::string name = ComputeAXName(true);
@@ -368,10 +372,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
       out_data->AddStringAttribute(ax::mojom::StringAttribute::kValue,
                                    state_description);
     } else {
-      // TODO(sahok): Append strings anotated as kDescription(which is now
-      // overwritten).
-      out_data->AddStringAttribute(ax::mojom::StringAttribute::kDescription,
-                                   state_description);
+      descriptions.push_back(state_description);
     }
   }
 
@@ -399,8 +400,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
     if (ui::SupportsSelected(out_data->role)) {
       out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
     } else {
-      out_data->AddStringAttribute(
-          ax::mojom::StringAttribute::kDescription,
+      descriptions.push_back(
           l10n_util::GetStringUTF8(IDS_ARC_ACCESSIBILITY_SELECTED_STATUS));
     }
   }
@@ -475,6 +475,11 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
     out_data->AddStringListAttribute(
         ax::mojom::StringListAttribute::kCustomActionDescriptions,
         custom_action_descriptions);
+  }
+
+  if (!descriptions.empty()) {
+    out_data->AddStringAttribute(ax::mojom::StringAttribute::kDescription,
+                                 base::JoinString(descriptions, " "));
   }
 }
 

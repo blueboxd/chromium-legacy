@@ -46,6 +46,8 @@
 
 namespace blink {
 
+class IntSize;
+
 class CORE_EXPORT WindowPerformance final : public Performance,
                                             public PerformanceMonitor::Client,
                                             public ExecutionContextClient {

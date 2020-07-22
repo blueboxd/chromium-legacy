@@ -93,6 +93,7 @@ class WebView {
   //
   // clients may be null, but should both be null or not together.
   // |is_hidden| defines the initial visibility of the page.
+  // [is_inside_portal] defines whether the page is inside_portal.
   // |compositing_enabled| dictates whether accelerated compositing should be
   // enabled for the page. It must be false if no clients are provided, or if a
   // LayerTreeView will not be set for the WebWidget.
@@ -104,6 +105,7 @@ class WebView {
   BLINK_EXPORT static WebView* Create(
       WebViewClient*,
       bool is_hidden,
+      bool is_inside_portal,
       bool compositing_enabled,
       WebView* opener,
       CrossVariantMojoAssociatedReceiver<mojom::PageBroadcastInterfaceBase>
@@ -452,9 +454,6 @@ class WebView {
   virtual WebFrameWidget* MainFrameWidget() = 0;
 
   // Portals --------------------------------------------------------------
-
-  // Informs the page that it is inside a portal.
-  virtual void SetInsidePortal(bool inside_portal) = 0;
 
   // Use to transfer TextAutosizer state from the local main frame renderer to
   // remote main frame renderers.

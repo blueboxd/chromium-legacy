@@ -449,10 +449,18 @@ void DOMWindow::ReportCoopAccess(v8::Isolate* isolate,
     return;
 
   DOMWindow* accessing_window = CurrentDOMWindow(isolate);
+  Frame* accessing_frame = accessing_window->GetFrame();
+
+  // A frame might be destroyed, but its context can still be able to execute
+  // some code. Those accesses are ignored. See https://crbug.com/1108256.
+  if (!accessing_frame)
+    return;
+
   // Iframes are allowed to trigger reports, only when they are same-origin with
   // their top-level document.
-  if (accessing_window->GetFrame()->IsCrossOriginToParentFrame())
+  if (accessing_frame->IsCrossOriginToParentFrame())
     return;
+
   const base::UnguessableToken& accessing_main_frame =
       accessing_window->GetFrame()->Tree().Top().GetFrameToken();
 

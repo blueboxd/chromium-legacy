@@ -107,7 +107,7 @@ std::unique_ptr<WebURLLoader> LoaderFactoryForFrame::CreateURLLoader(
       webreq, frame_scheduler->CreateResourceLoadingTaskRunnerHandle());
 }
 
-std::unique_ptr<CodeCacheLoader>
+std::unique_ptr<WebCodeCacheLoader>
 LoaderFactoryForFrame::CreateCodeCacheLoader() {
   return Platform::Current()->CreateCodeCacheLoader();
 }

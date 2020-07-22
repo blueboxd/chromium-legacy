@@ -7,18 +7,26 @@ package org.chromium.components.page_info;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+
 /**
  * Class for controlling the page info permissions section.
  */
 public class PageInfoPermissionsController implements PageInfoSubpageController {
     private PageInfoMainPageController mMainController;
     private PageInfoRowView mRowView;
+    private PageInfoControllerDelegate mDelegate;
     private String mTitle;
+    private String mPageUrl;
+    private Fragment mSubpageFragment;
 
-    public PageInfoPermissionsController(
-            PageInfoMainPageController mainController, PageInfoRowView view) {
+    public PageInfoPermissionsController(PageInfoMainPageController mainController,
+            PageInfoRowView view, PageInfoControllerDelegate delegate, String pageUrl) {
         mMainController = mainController;
         mRowView = view;
+        mDelegate = delegate;
+        mPageUrl = pageUrl;
     }
 
     private void launchSubpage() {
@@ -32,15 +40,22 @@ public class PageInfoPermissionsController implements PageInfoSubpageController 
 
     @Override
     public View createViewForSubpage(ViewGroup parent) {
-        // TODO(crbug.com/1077766): Create and set the permissions specific view.
-        return null;
+        assert mSubpageFragment == null;
+        mSubpageFragment = mDelegate.getPermissionsSubpageFragmentForUrl(mPageUrl);
+        AppCompatActivity host = (AppCompatActivity) mRowView.getContext();
+        host.getSupportFragmentManager().beginTransaction().add(mSubpageFragment, null).commitNow();
+        return mSubpageFragment.getView();
     }
 
     @Override
     public void onSubPageAttached() {}
 
     @Override
-    public void onSubpageRemoved() {}
+    public void onSubpageRemoved() {
+        AppCompatActivity host = (AppCompatActivity) mRowView.getContext();
+        host.getSupportFragmentManager().beginTransaction().remove(mSubpageFragment).commitNow();
+        mSubpageFragment = null;
+    }
 
     public void setPermissions(PageInfoView.PermissionParams params) {
         mTitle = mRowView.getContext().getResources().getString(

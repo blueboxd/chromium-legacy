@@ -101,14 +101,17 @@ class FakeWebMediaPlayerDelegate
     observer_ = nullptr;
   }
 
-  void DidPlay(int delegate_id,
-               bool has_video,
-               bool has_audio,
-               media::MediaContentType type) override {
+  void DidMediaMetadataChange(int delegate_id,
+                              bool has_audio,
+                              bool has_video,
+                              media::MediaContentType type) override {
+    EXPECT_EQ(delegate_id_, delegate_id);
+  }
+
+  void DidPlay(int delegate_id) override {
     EXPECT_EQ(delegate_id_, delegate_id);
     EXPECT_FALSE(playing_);
     playing_ = true;
-    has_video_ = has_video;
     is_gone_ = false;
   }
 
@@ -116,8 +119,9 @@ class FakeWebMediaPlayerDelegate
     EXPECT_EQ(delegate_id_, delegate_id);
   }
 
-  void DidPause(int delegate_id) override {
+  void DidPause(int delegate_id, bool reached_end_of_stream) override {
     EXPECT_EQ(delegate_id_, delegate_id);
+    EXPECT_FALSE(reached_end_of_stream);
     EXPECT_TRUE(playing_);
     EXPECT_FALSE(is_gone_);
     playing_ = false;
@@ -179,7 +183,6 @@ class FakeWebMediaPlayerDelegate
   int delegate_id_ = 1234;
   Observer* observer_ = nullptr;
   bool playing_ = false;
-  bool has_video_ = false;
   bool is_hidden_ = false;
   bool is_gone_ = true;
   bool is_idle_ = false;

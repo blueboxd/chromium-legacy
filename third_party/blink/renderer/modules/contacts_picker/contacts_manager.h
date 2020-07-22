@@ -7,6 +7,7 @@
 
 #include "third_party/blink/public/mojom/contacts/contacts_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_contact_property.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_contacts_select_options.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -31,9 +32,14 @@ class ContactsManager final : public ScriptWrappable {
 
   // Web-exposed function defined in the IDL file.
   ScriptPromise select(ScriptState* script_state,
-                       const Vector<String>& properties,
+                       const Vector<V8ContactProperty>& properties,
                        ContactsSelectOptions* options,
                        ExceptionState& exception_state);
+  // TODO(crbug.com/1050474): Remove Vector<String> version.
+  ScriptPromise select(ScriptState* script_state,
+                       const Vector<String>& properties,
+                       ContactsSelectOptions* options,
+                       ExceptionState& exception_state);  // DEPRECATED
   ScriptPromise getProperties(ScriptState* script_state);
 
   void Trace(Visitor*) const override;

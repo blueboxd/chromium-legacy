@@ -336,9 +336,8 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, SyncPausedState) {
   if (base::FeatureList::IsEnabled(switches::kStopSyncInPausedState)) {
     // Sync should have shut itself down.
     EXPECT_EQ(GetSyncService(0)->GetTransportState(),
-              syncer::SyncService::TransportState::DISABLED);
-    EXPECT_TRUE(GetSyncService(0)->HasDisableReason(
-        syncer::SyncService::DISABLE_REASON_PAUSED));
+              syncer::SyncService::TransportState::PAUSED);
+    EXPECT_FALSE(GetSyncService(0)->IsEngineInitialized());
   } else {
     ASSERT_TRUE(AttemptToTriggerAuthError());
 
@@ -405,9 +404,8 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, ShouldTrackDeletionsInSyncPausedState) {
   if (base::FeatureList::IsEnabled(switches::kStopSyncInPausedState)) {
     // Sync should have shut itself down.
     EXPECT_EQ(GetSyncService(0)->GetTransportState(),
-              syncer::SyncService::TransportState::DISABLED);
-    EXPECT_TRUE(GetSyncService(0)->HasDisableReason(
-        syncer::SyncService::DISABLE_REASON_PAUSED));
+              syncer::SyncService::TransportState::PAUSED);
+    EXPECT_FALSE(GetSyncService(0)->IsEngineInitialized());
   } else {
     ASSERT_TRUE(AttemptToTriggerAuthError());
 

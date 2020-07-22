@@ -40,7 +40,7 @@ class UiDelegate {
   virtual ~UiDelegate() = default;
 
   // Returns the current state of the controller.
-  virtual AutofillAssistantState GetState() = 0;
+  virtual AutofillAssistantState GetState() const = 0;
 
   // Called when user interaction within the allowed touchable area was
   // detected. This should cause rerun of preconditions check.
@@ -179,6 +179,10 @@ class UiDelegate {
   // Reports a fatal error to Autofill Assistant, which should then stop.
   virtual void OnFatalError(const std::string& error_message,
                             Metrics::DropOutReason reason) = 0;
+
+  // Reports that Autofill Assistant should be Stopped.
+  virtual void OnStop(const std::string& message,
+                      const std::string& button_label) = 0;
 
   // Returns whether the viewport should be resized.
   virtual ViewportMode GetViewportMode() = 0;

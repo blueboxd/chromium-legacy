@@ -60,13 +60,13 @@ void CertificateHelperForTesting::GetCertificates(
     const platform_keys::GetCertificatesCallback& callback) {
   auto result = std::make_unique<net::CertificateList>();
   *result = cert_list_;
-  std::move(callback).Run(std::move(result), "");
+  std::move(callback).Run(std::move(result), platform_keys::Status::kSuccess);
 }
 
 scoped_refptr<net::X509Certificate> CertificateHelperForTesting::AddCert(
     CertScope cert_scope,
     const base::Optional<CertProfileId>& cert_profile_id,
-    const std::string& error_message,
+    platform_keys::Status status,
     base::Time not_valid_before,
     base::Time not_valid_after) {
   net::CertBuilder cert_builder(template_cert_->cert_buffer(),
@@ -80,7 +80,7 @@ scoped_refptr<net::X509Certificate> CertificateHelperForTesting::AddCert(
           GetPlatformKeysTokenId(cert_scope),
           platform_keys::GetSubjectPublicKeyInfo(cert),
           platform_keys::KeyAttributeType::CertificateProvisioningId, _))
-      .WillRepeatedly(RunOnceCallback<3>(cert_profile_id, error_message));
+      .WillRepeatedly(RunOnceCallback<3>(cert_profile_id, status));
 
   cert_list_.push_back(cert);
   return cert;
@@ -93,19 +93,19 @@ scoped_refptr<net::X509Certificate> CertificateHelperForTesting::AddCert(
       base::Time::Now() - base::TimeDelta::FromDays(1);
   base::Time not_valid_after =
       base::Time::Now() + base::TimeDelta::FromDays(365);
-  return AddCert(cert_scope, cert_profile_id, /*error_message=*/"",
+  return AddCert(cert_scope, cert_profile_id, platform_keys::Status::kSuccess,
                  not_valid_before, not_valid_after);
 }
 
 scoped_refptr<net::X509Certificate> CertificateHelperForTesting::AddCert(
     CertScope cert_scope,
     const base::Optional<CertProfileId>& cert_profile_id,
-    const std::string& error_message) {
+    platform_keys::Status status) {
   base::Time not_valid_before =
       base::Time::Now() - base::TimeDelta::FromDays(1);
   base::Time not_valid_after =
       base::Time::Now() + base::TimeDelta::FromDays(365);
-  return AddCert(cert_scope, cert_profile_id, error_message, not_valid_before,
+  return AddCert(cert_scope, cert_profile_id, status, not_valid_before,
                  not_valid_after);
 }
 

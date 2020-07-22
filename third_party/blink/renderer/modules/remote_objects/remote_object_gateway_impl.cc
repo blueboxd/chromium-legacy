@@ -6,6 +6,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/remote_objects/remote_object.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
@@ -80,6 +81,12 @@ RemoteObjectGatewayImpl::RemoteObjectGatewayImpl(
 void RemoteObjectGatewayImpl::OnClearWindowObjectInMainWorld() {
   for (const auto& pair : named_objects_)
     InjectNamed(pair.key, pair.value);
+}
+
+void RemoteObjectGatewayImpl::Trace(Visitor* visitor) const {
+  visitor->Trace(receiver_);
+  visitor->Trace(object_host_);
+  Supplement<LocalFrame>::Trace(visitor);
 }
 
 void RemoteObjectGatewayImpl::AddNamedObject(const WTF::String& name,

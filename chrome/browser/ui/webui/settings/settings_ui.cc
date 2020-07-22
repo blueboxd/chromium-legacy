@@ -268,6 +268,11 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "enablePasswordCheck",
       base::FeatureList::IsEnabled(password_manager::features::kPasswordCheck));
 
+  html_source->AddBoolean(
+      "editPasswordsInSettings",
+      base::FeatureList::IsEnabled(
+          password_manager::features::kEditPasswordsInDesktopSettings));
+
   html_source->AddBoolean("showImportPasswords",
                           base::FeatureList::IsEnabled(
                               password_manager::features::kPasswordImport));
@@ -299,12 +304,11 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
           chromeos::ProfileHelper::Get()
               ->GetUserByProfile(profile)
               ->GetAccountId()));
-#endif
 
-#if defined(OS_CHROMEOS)
   // This is the browser settings page.
   html_source->AddBoolean("isOSSettings", false);
 #endif
+
   AddSettingsPageUIHandler(std::make_unique<AboutHandler>());
   AddSettingsPageUIHandler(std::make_unique<ResetSettingsHandler>(profile));
 

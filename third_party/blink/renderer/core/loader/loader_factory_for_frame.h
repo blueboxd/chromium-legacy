@@ -27,7 +27,7 @@ class LoaderFactoryForFrame final : public ResourceFetcher::LoaderFactory {
       const ResourceRequest&,
       const ResourceLoaderOptions&,
       scoped_refptr<base::SingleThreadTaskRunner>) override;
-  std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() override;
+  std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader() override;
 
  private:
   const Member<DocumentLoader> document_loader_;

@@ -2950,10 +2950,11 @@ TEST_F(NavigationControllerTest,
   // Test allow_universal_access_from_file_urls flag.
   const GURL different_origin_url("http://www.example.com");
   MockRenderProcessHost* rph = main_test_rfh()->GetProcess();
-  WebPreferences prefs = test_rvh()->GetWebkitPreferences();
+  WebPreferences prefs =
+      controller.GetWebContents()->GetOrCreateWebPreferences();
   prefs.allow_universal_access_from_file_urls = true;
-  test_rvh()->UpdateWebkitPreferences(prefs);
-  prefs = test_rvh()->GetWebkitPreferences();
+  controller.GetWebContents()->SetWebPreferences(prefs);
+  prefs = controller.GetWebContents()->GetOrCreateWebPreferences();
   EXPECT_TRUE(prefs.allow_universal_access_from_file_urls);
 
   // Allow same-document navigation to be cross-origin if existing URL is file

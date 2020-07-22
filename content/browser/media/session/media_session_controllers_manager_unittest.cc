@@ -79,8 +79,7 @@ class MediaSessionControllersManagerTest
 
     media_player_id_ = MediaPlayerId(contents()->GetMainFrame(), 1);
     media_player_id2_ = MediaPlayerId(contents()->GetMainFrame(), 2);
-    manager_ = std::make_unique<MediaSessionControllersManager>(
-        contents()->media_web_contents_observer());
+    manager_ = std::make_unique<MediaSessionControllersManager>(contents());
   }
 
   MediaSessionImpl* media_session() {
@@ -117,22 +116,25 @@ class MediaSessionControllersManagerTest
 TEST_P(MediaSessionControllersManagerTest, ActivateDeactivateSession) {
   ASSERT_FALSE(media_session()->IsActive());
 
-  EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true,
-                                    media::MediaContentType::Transient, false));
+  manager_->OnMetadata(media_player_id_, true, false,
+                       media::MediaContentType::Transient);
+  manager_->OnMetadata(media_player_id2_, true, false,
+                       media::MediaContentType::Transient);
+  EXPECT_FALSE(media_session()->IsActive());
+
+  EXPECT_TRUE(manager_->RequestPlay(media_player_id_));
   EXPECT_EQ(media_session()->IsActive(), IsMediaSessionEnabled());
 
   // RequestPlay() for the same player has no effect.
-  EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true,
-                                    media::MediaContentType::Transient, false));
+  EXPECT_TRUE(manager_->RequestPlay(media_player_id_));
   EXPECT_EQ(media_session()->IsActive(), IsMediaSessionEnabled());
 
   // RequestPlay() for another player should keep the session active until both
   // are stopped.
-  EXPECT_TRUE(manager_->RequestPlay(media_player_id2_, true,
-                                    media::MediaContentType::Transient, false));
+  EXPECT_TRUE(manager_->RequestPlay(media_player_id2_));
   EXPECT_EQ(media_session()->IsActive(), IsMediaSessionEnabled());
 
-  manager_->OnEnd(media_player_id_);
+  manager_->OnPause(media_player_id_, true);
   EXPECT_EQ(media_session()->IsActive(), IsMediaSessionEnabled());
 
   manager_->OnEnd(media_player_id2_);
@@ -140,8 +142,9 @@ TEST_P(MediaSessionControllersManagerTest, ActivateDeactivateSession) {
 }
 
 TEST_P(MediaSessionControllersManagerTest, RenderFrameDeletedRemovesHost) {
-  EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true,
-                                    media::MediaContentType::Transient, false));
+  manager_->OnMetadata(media_player_id_, true, false,
+                       media::MediaContentType::Transient);
+  EXPECT_TRUE(manager_->RequestPlay(media_player_id_));
   ASSERT_EQ(media_session()->IsActive(), IsMediaSessionEnabled());
 
   manager_->RenderFrameDeleted(contents()->GetMainFrame());
@@ -149,20 +152,22 @@ TEST_P(MediaSessionControllersManagerTest, RenderFrameDeletedRemovesHost) {
 }
 
 TEST_P(MediaSessionControllersManagerTest, OnPauseSuspends) {
-  EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true,
-                                    media::MediaContentType::Transient, false));
+  manager_->OnMetadata(media_player_id_, true, false,
+                       media::MediaContentType::Transient);
+  EXPECT_TRUE(manager_->RequestPlay(media_player_id_));
   ASSERT_FALSE(media_session()->IsSuspended());
 
-  manager_->OnPause(media_player_id_);
+  manager_->OnPause(media_player_id_, false);
   EXPECT_EQ(media_session()->IsSuspended(), IsMediaSessionEnabled());
 }
 
 TEST_P(MediaSessionControllersManagerTest, OnPauseIdNotFound) {
-  EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true,
-                                    media::MediaContentType::Transient, false));
+  manager_->OnMetadata(media_player_id_, true, false,
+                       media::MediaContentType::Transient);
+  EXPECT_TRUE(manager_->RequestPlay(media_player_id_));
   ASSERT_FALSE(media_session()->IsSuspended());
 
-  manager_->OnPause(media_player_id2_);
+  manager_->OnPause(media_player_id2_, false);
   EXPECT_FALSE(media_session()->IsSuspended());
 }
 
@@ -170,6 +175,9 @@ TEST_P(MediaSessionControllersManagerTest, PositionState) {
   // If not enabled, no adds will occur, as RequestPlay returns early.
   if (!IsMediaSessionEnabled())
     return;
+
+  manager_->OnMetadata(media_player_id_, true, false,
+                       media::MediaContentType::Transient);
 
   {
     media_session::test::MockMediaSessionMojoObserver observer(
@@ -180,8 +188,7 @@ TEST_P(MediaSessionControllersManagerTest, PositionState) {
 
     manager_->OnMediaPositionStateChanged(media_player_id_, expected_position);
 
-    EXPECT_TRUE(manager_->RequestPlay(
-        media_player_id_, true, media::MediaContentType::Transient, false));
+    EXPECT_TRUE(manager_->RequestPlay(media_player_id_));
 
     // Media session should be updated with the last received position for that
     // player.
@@ -202,12 +209,11 @@ TEST_P(MediaSessionControllersManagerTest, PositionState) {
     observer->WaitForExpectedPosition(expected_position);
 
     // Replay the current player.
-    manager_->OnEnd(media_player_id_);
+    manager_->OnPause(media_player_id_, true);
     observer =
         std::make_unique<media_session::test::MockMediaSessionMojoObserver>(
             *media_session());
-    EXPECT_TRUE(manager_->RequestPlay(
-        media_player_id_, true, media::MediaContentType::Transient, false));
+    EXPECT_TRUE(manager_->RequestPlay(media_player_id_));
 
     // Media session should still see the last received position for that
     // player.
@@ -220,6 +226,11 @@ TEST_P(MediaSessionControllersManagerTest, MultiplePlayersWithPositionState) {
   if (!IsMediaSessionEnabled())
     return;
 
+  manager_->OnMetadata(media_player_id_, true, false,
+                       media::MediaContentType::Transient);
+  manager_->OnMetadata(media_player_id2_, true, false,
+                       media::MediaContentType::Transient);
+
   media_session::MediaPosition expected_position1(1.0, base::TimeDelta(),
                                                   base::TimeDelta());
   media_session::MediaPosition expected_position2(
@@ -231,14 +242,12 @@ TEST_P(MediaSessionControllersManagerTest, MultiplePlayersWithPositionState) {
   manager_->OnMediaPositionStateChanged(media_player_id2_, expected_position2);
 
   // If there is exactly one player, media session uses its position.
-  EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true,
-                                    media::MediaContentType::Transient, false));
+  EXPECT_TRUE(manager_->RequestPlay(media_player_id_));
   observer.WaitForExpectedPosition(expected_position1);
 
   // If there is more than one player, media session doesn't know about
   // position.
-  EXPECT_TRUE(manager_->RequestPlay(media_player_id2_, true,
-                                    media::MediaContentType::Transient, false));
+  EXPECT_TRUE(manager_->RequestPlay(media_player_id2_));
   observer.WaitForEmptyPosition();
 
   // Change the position of the second player.
@@ -247,7 +256,7 @@ TEST_P(MediaSessionControllersManagerTest, MultiplePlayersWithPositionState) {
   manager_->OnMediaPositionStateChanged(media_player_id2_, new_position);
 
   // Stop the first player.
-  manager_->OnEnd(media_player_id_);
+  manager_->OnPause(media_player_id_, true);
 
   // There is exactly one player again (the second one). Media session should
   // use its updated position.
@@ -258,11 +267,13 @@ TEST_P(MediaSessionControllersManagerTest, PictureInPictureAvailability) {
   if (!IsMediaSessionEnabled())
     return;
 
+  manager_->OnMetadata(media_player_id_, true, false,
+                       media::MediaContentType::Transient);
+
   media_session::test::MockMediaSessionMojoObserver observer(*media_session());
 
   manager_->OnPictureInPictureAvailabilityChanged(media_player_id_, true);
-  EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true,
-                                    media::MediaContentType::Transient, false));
+  EXPECT_TRUE(manager_->RequestPlay(media_player_id_));
 
   observer.WaitForExpectedActions(AppendPictureInPictureActionsTo({}));
 
@@ -276,6 +287,11 @@ TEST_P(MediaSessionControllersManagerTest,
   if (!IsMediaSessionEnabled())
     return;
 
+  manager_->OnMetadata(media_player_id_, true, false,
+                       media::MediaContentType::Persistent);
+  manager_->OnMetadata(media_player_id2_, true, false,
+                       media::MediaContentType::Persistent);
+
   media_session::test::MockMediaSessionMojoObserver observer(*media_session());
 
   manager_->OnPictureInPictureAvailabilityChanged(media_player_id_, true);
@@ -283,22 +299,20 @@ TEST_P(MediaSessionControllersManagerTest,
 
   // If there is exactly one player, media session uses its Picture-In-Picture
   // availability.
-  EXPECT_TRUE(manager_->RequestPlay(
-      media_player_id_, true, media::MediaContentType::Persistent, false));
+  EXPECT_TRUE(manager_->RequestPlay(media_player_id_));
   observer.WaitForExpectedActions(
       AppendPictureInPictureActionsTo(GetDefaultActions()));
 
   // If there is more than one player, media session doesn't know about
   // Picture-In-Picture availability.
-  EXPECT_TRUE(manager_->RequestPlay(
-      media_player_id2_, true, media::MediaContentType::Persistent, false));
+  EXPECT_TRUE(manager_->RequestPlay(media_player_id2_));
   observer.WaitForExpectedActions(GetDefaultActions());
 
   // Change the Picture-In-Picture availability of the first player.
   manager_->OnPictureInPictureAvailabilityChanged(media_player_id_, false);
 
   // Stop the second player.
-  manager_->OnEnd(media_player_id2_);
+  manager_->OnPause(media_player_id2_, true);
 
   // There is exactly one player again (the second one). Media session should
   // use its updated Picture-In-Picture availability.

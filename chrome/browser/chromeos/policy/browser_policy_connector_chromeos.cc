@@ -146,9 +146,9 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS() {
       state_keys_broker_ = std::make_unique<ServerBackedStateKeysBroker>(
           chromeos::SessionManagerClient::Get());
 
-      base::FilePath device_policy_external_data_path;
-      CHECK(base::PathService::Get(chromeos::DIR_DEVICE_POLICY_EXTERNAL_DATA,
-                                   &device_policy_external_data_path));
+      const base::FilePath device_policy_external_data_path =
+          base::PathService::CheckedGet(
+              chromeos::DIR_DEVICE_POLICY_EXTERNAL_DATA);
 
       auto external_data_manager =
           std::make_unique<DevicePolicyCloudExternalDataManager>(

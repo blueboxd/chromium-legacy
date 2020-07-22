@@ -17,6 +17,7 @@ import org.chromium.components.payments.OriginSecurityChecker;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.SslValidityChecker;
 import org.chromium.components.user_prefs.UserPrefs;
+import org.chromium.content_public.browser.FeaturePolicyFeature;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
@@ -168,7 +169,7 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
 
     @Override
     public PaymentRequest createImpl() {
-        if (!mRenderFrameHost.isPaymentFeaturePolicyEnabled()) {
+        if (!mRenderFrameHost.isFeatureEnabled(FeaturePolicyFeature.PAYMENT)) {
             mRenderFrameHost.getRemoteInterfaces().onConnectionError(
                     new MojoException(MojoResult.PERMISSION_DENIED));
             return null;

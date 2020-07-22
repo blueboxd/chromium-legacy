@@ -1188,11 +1188,9 @@ public class BookmarkTest {
                     mBookmarkModel.getOtherFolderId(), 0, TEST_TITLE_A, TEST_URL_A);
         });
 
-        // Dismiss promo header and simulate a sign in.
-        mSyncDelegate.setMasterSyncAutomatically(false);
         TestThreadUtils.runOnUiThreadBlocking(adapter::simulateSignInForTests);
-        Assert.assertEquals(
-                "Expected \"Other Bookmarks\" folder to appear!", 2, adapter.getItemCount());
+        Assert.assertEquals("Expected promo and \"Other Bookmarks\" folder to appear!", 3,
+                adapter.getItemCount());
     }
 
     @Test

@@ -193,5 +193,10 @@ LocalFrame* GetTargetSubframe(
   return SubframeForTargetNode(hit_test_result.InnerNode(), is_remote_frame);
 }
 
+void PointerEventTarget::Trace(Visitor* visitor) const {
+  visitor->Trace(target_element);
+  visitor->Trace(target_frame);
+}
+
 }  // namespace event_handling_util
 }  // namespace blink

@@ -272,6 +272,24 @@ void NavigationStateChangeListener::OnNavigationStateChanged() {
   events.emplace_back(state);
 }
 
+class ScriptExecutorListener : public ScriptExecutorDelegate::Listener {
+ public:
+  explicit ScriptExecutorListener() = default;
+  ~ScriptExecutorListener() override;
+
+  void OnPause(const std::string& message,
+               const std::string& button_label) override;
+
+  int pause_count = 0;
+};
+
+ScriptExecutorListener::~ScriptExecutorListener() {}
+
+void ScriptExecutorListener::OnPause(const std::string& message,
+                                     const std::string& button_label) {
+  ++pause_count;
+}
+
 TEST_F(ControllerTest, FetchAndRunScriptsWithChip) {
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "script1");
@@ -817,10 +835,10 @@ TEST_F(ControllerTest, SuccessfulNavigation) {
   EXPECT_FALSE(controller_->HasNavigationError());
 
   NavigationStateChangeListener listener(controller_.get());
-  controller_->AddListener(&listener);
+  controller_->AddNavigationListener(&listener);
   content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL("http://initialurl.com"), web_contents()->GetMainFrame());
-  controller_->RemoveListener(&listener);
+  controller_->RemoveNavigationListener(&listener);
 
   EXPECT_FALSE(controller_->IsNavigatingToNewDocument());
   EXPECT_FALSE(controller_->HasNavigationError());
@@ -834,11 +852,11 @@ TEST_F(ControllerTest, FailedNavigation) {
   EXPECT_FALSE(controller_->HasNavigationError());
 
   NavigationStateChangeListener listener(controller_.get());
-  controller_->AddListener(&listener);
+  controller_->AddNavigationListener(&listener);
   content::NavigationSimulator::NavigateAndFailFromDocument(
       GURL("http://initialurl.com"), net::ERR_CONNECTION_TIMED_OUT,
       web_contents()->GetMainFrame());
-  controller_->RemoveListener(&listener);
+  controller_->RemoveNavigationListener(&listener);
 
   EXPECT_FALSE(controller_->IsNavigatingToNewDocument());
   EXPECT_TRUE(controller_->HasNavigationError());
@@ -852,7 +870,7 @@ TEST_F(ControllerTest, NavigationWithRedirects) {
   EXPECT_FALSE(controller_->HasNavigationError());
 
   NavigationStateChangeListener listener(controller_.get());
-  controller_->AddListener(&listener);
+  controller_->AddNavigationListener(&listener);
 
   std::unique_ptr<content::NavigationSimulator> simulator =
       content::NavigationSimulator::CreateRendererInitiated(
@@ -870,7 +888,7 @@ TEST_F(ControllerTest, NavigationWithRedirects) {
   EXPECT_FALSE(controller_->IsNavigatingToNewDocument());
   EXPECT_FALSE(controller_->HasNavigationError());
 
-  controller_->RemoveListener(&listener);
+  controller_->RemoveNavigationListener(&listener);
 
   // Redirection should not be reported as a state change.
   EXPECT_THAT(listener.events, ElementsAre(NavigationState{true, false},
@@ -882,13 +900,13 @@ TEST_F(ControllerTest, EventuallySuccessfulNavigation) {
   EXPECT_FALSE(controller_->HasNavigationError());
 
   NavigationStateChangeListener listener(controller_.get());
-  controller_->AddListener(&listener);
+  controller_->AddNavigationListener(&listener);
   content::NavigationSimulator::NavigateAndFailFromDocument(
       GURL("http://initialurl.com"), net::ERR_CONNECTION_TIMED_OUT,
       web_contents()->GetMainFrame());
   content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL("http://initialurl.com"), web_contents()->GetMainFrame());
-  controller_->RemoveListener(&listener);
+  controller_->RemoveNavigationListener(&listener);
 
   EXPECT_FALSE(controller_->IsNavigatingToNewDocument());
   EXPECT_FALSE(controller_->HasNavigationError());
@@ -907,11 +925,11 @@ TEST_F(ControllerTest, EventuallySuccessfulNavigation) {
 
 TEST_F(ControllerTest, RemoveListener) {
   NavigationStateChangeListener listener(controller_.get());
-  controller_->AddListener(&listener);
+  controller_->AddNavigationListener(&listener);
   content::NavigationSimulator::NavigateAndCommitFromDocument(
       GURL("http://initialurl.com"), web_contents()->GetMainFrame());
   listener.events.clear();
-  controller_->RemoveListener(&listener);
+  controller_->RemoveNavigationListener(&listener);
 
   content::NavigationSimulator::NavigateAndFailFromDocument(
       GURL("http://initialurl.com"), net::ERR_CONNECTION_TIMED_OUT,
@@ -2498,6 +2516,88 @@ TEST_F(ControllerTest, ShutdownDirectlyWhenNeverHadUi) {
               Shutdown(Metrics::DropOutReason::NO_INITIAL_SCRIPTS));
   Start("http://a.example.com/path");
   EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
+}
+
+TEST_F(ControllerTest, PauseAndResume) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "script")
+      ->mutable_presentation()
+      ->set_autostart(true);
+  SetupScripts(script_response);
+
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_tell()->set_message("Hello World");
+  auto* action = actions_response.add_actions()->mutable_prompt();
+  action->add_choices()->mutable_chip()->set_text("ok");
+
+  SetupActionsForScript("script", actions_response);
+  Start("http://a.example.com/path");
+
+  EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::STARTING,
+                                   AutofillAssistantState::RUNNING,
+                                   AutofillAssistantState::PROMPT));
+  EXPECT_THAT(controller_->GetStatusMessage(), StrEq("Hello World"));
+  EXPECT_THAT(controller_->GetUserActions(),
+              ElementsAre(Property(&UserAction::chip,
+                                   AllOf(Field(&Chip::text, StrEq("ok")),
+                                         Field(&Chip::type, NORMAL_ACTION)))));
+
+  ScriptExecutorListener listener;
+  controller_->AddListener(&listener);
+  EXPECT_CALL(mock_observer_, OnStatusMessageChanged("Stop"));
+  controller_->OnStop("Stop", "Undo");
+  EXPECT_EQ(1, listener.pause_count);
+  controller_->RemoveListener(&listener);
+
+  EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
+  EXPECT_THAT(controller_->GetStatusMessage(), StrEq("Stop"));
+  EXPECT_THAT(
+      controller_->GetUserActions(),
+      ElementsAre(Property(&UserAction::chip,
+                           AllOf(Field(&Chip::text, StrEq("Undo")),
+                                 Field(&Chip::type, HIGHLIGHTED_ACTION)))));
+
+  EXPECT_CALL(mock_observer_, OnStatusMessageChanged("Hello World"));
+  EXPECT_TRUE(controller_->PerformUserAction(0));
+
+  EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::STARTING,
+                                   AutofillAssistantState::RUNNING,
+                                   AutofillAssistantState::PROMPT,
+                                   AutofillAssistantState::STOPPED,
+                                   AutofillAssistantState::RUNNING,
+                                   AutofillAssistantState::PROMPT));
+  EXPECT_THAT(controller_->GetStatusMessage(), StrEq("Hello World"));
+  EXPECT_THAT(controller_->GetUserActions(),
+              ElementsAre(Property(&UserAction::chip,
+                                   AllOf(Field(&Chip::text, StrEq("ok")),
+                                         Field(&Chip::type, NORMAL_ACTION)))));
+}
+
+TEST_F(ControllerTest, PauseAndNavigate) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "script")
+      ->mutable_presentation()
+      ->set_autostart(true);
+  SetupScripts(script_response);
+
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()->mutable_tell()->set_message("Hello World");
+  auto* action = actions_response.add_actions()->mutable_prompt();
+  action->add_choices()->mutable_chip()->set_text("ok");
+
+  SetupActionsForScript("script", actions_response);
+  Start("http://a.example.com/path");
+
+  EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::STARTING,
+                                   AutofillAssistantState::RUNNING,
+                                   AutofillAssistantState::PROMPT));
+  controller_->OnStop("Stop", "Undo");
+
+  EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
+
+  EXPECT_CALL(mock_client_, Shutdown(Metrics::DropOutReason::NAVIGATION));
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL("http://b.example.com/path"));
 }
 
 }  // namespace autofill_assistant

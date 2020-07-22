@@ -115,10 +115,8 @@ IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, FontSize) {
   dialog->ShowSystemDialog();
 
   // Dialog font sizes are still the default values.
-  content::WebPreferences dialog_prefs = dialog->GetWebUIForTest()
-                                             ->GetWebContents()
-                                             ->GetRenderViewHost()
-                                             ->GetWebkitPreferences();
+  content::WebPreferences dialog_prefs =
+      dialog->GetWebUIForTest()->GetWebContents()->GetOrCreateWebPreferences();
   EXPECT_EQ(kDefaultFontSize, dialog_prefs.default_font_size);
   EXPECT_EQ(kDefaultFixedFontSize, dialog_prefs.default_fixed_font_size);
 }

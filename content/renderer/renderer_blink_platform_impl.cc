@@ -41,7 +41,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
-#include "content/renderer/loader/code_cache_loader_impl.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
@@ -83,6 +82,7 @@
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
+#include "third_party/blink/public/platform/web_code_cache_loader.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -205,9 +205,9 @@ void RendererBlinkPlatformImpl::Shutdown() {}
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr<blink::CodeCacheLoader>
+std::unique_ptr<blink::WebCodeCacheLoader>
 RendererBlinkPlatformImpl::CreateCodeCacheLoader() {
-  return std::make_unique<CodeCacheLoaderImpl>();
+  return blink::WebCodeCacheLoader::Create();
 }
 
 std::unique_ptr<blink::WebURLLoaderFactory>
@@ -313,7 +313,7 @@ void RendererBlinkPlatformImpl::CacheMetadata(
 
 void RendererBlinkPlatformImpl::FetchCachedCode(
     blink::mojom::CodeCacheType cache_type,
-    const GURL& url,
+    const blink::WebURL& url,
     FetchCachedCodeCallback callback) {
   GetCodeCacheHost().FetchCachedCode(
       cache_type, url,

@@ -336,6 +336,7 @@ blink_core_sources("editing") {
     "visible_units_paragraph.cc",
     "visible_units_sentence.cc",
     "visible_units_word.cc",
+    "writing_direction.h",
   ]
 
   if (is_mac) {

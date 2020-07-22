@@ -63,7 +63,7 @@ class ResourceLoaderTest : public testing::Test {
         scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
       return std::make_unique<NoopWebURLLoader>(std::move(task_runner));
     }
-    std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() override {
+    std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader() override {
       return Platform::Current()->CreateCodeCacheLoader();
     }
   };

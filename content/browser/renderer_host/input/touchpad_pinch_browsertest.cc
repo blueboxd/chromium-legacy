@@ -252,10 +252,9 @@ IN_PROC_BROWSER_TEST_P(TouchpadPinchBrowserTest,
                        WheelListenerPreventingDoubleTap) {
   LoadURL();
 
-  WebPreferences prefs =
-      shell()->web_contents()->GetRenderViewHost()->GetWebkitPreferences();
+  WebPreferences prefs = shell()->web_contents()->GetOrCreateWebPreferences();
   prefs.double_tap_to_zoom_enabled = true;
-  shell()->web_contents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+  shell()->web_contents()->SetWebPreferences(prefs);
 
   EnsureNoScaleChangeWhenCanceled(
       base::BindOnce([](WebContents* web_contents, gfx::PointF position) {

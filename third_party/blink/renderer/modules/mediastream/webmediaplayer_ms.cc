@@ -627,6 +627,12 @@ void WebMediaPlayerMS::ReloadVideo() {
   DCHECK_NE(renderer_action, RendererReloadAction::KEEP_RENDERER);
   if (!paused_)
     delegate_->DidPlayerSizeChange(delegate_id_, NaturalSize());
+
+  // TODO(perkj, magjed): We use OneShot focus type here so that it takes
+  // audio focus once it starts, and then will not respond to further audio
+  // focus changes. See https://crbug.com/596516 for more details.
+  delegate_->DidMediaMetadataChange(delegate_id_, HasAudio(), HasVideo(),
+                                    media::MediaContentType::OneShot);
 }
 
 void WebMediaPlayerMS::ReloadAudio() {
@@ -679,6 +685,12 @@ void WebMediaPlayerMS::ReloadAudio() {
     default:
       break;
   }
+
+  // TODO(perkj, magjed): We use OneShot focus type here so that it takes
+  // audio focus once it starts, and then will not respond to further audio
+  // focus changes. See https://crbug.com/596516 for more details.
+  delegate_->DidMediaMetadataChange(delegate_id_, HasAudio(), HasVideo(),
+                                    media::MediaContentType::OneShot);
 }
 
 void WebMediaPlayerMS::Play() {
@@ -700,16 +712,7 @@ void WebMediaPlayerMS::Play() {
   if (HasVideo())
     delegate_->DidPlayerSizeChange(delegate_id_, NaturalSize());
 
-  // |delegate_| expects the notification only if there is at least one track
-  // actually playing. A media stream might have none since tracks can be
-  // removed from the stream.
-  if (HasAudio() || HasVideo()) {
-    // TODO(perkj, magjed): We use OneShot focus type here so that it takes
-    // audio focus once it starts, and then will not respond to further audio
-    // focus changes. See https://crbug.com/596516 for more details.
-    delegate_->DidPlay(delegate_id_, HasVideo(), HasAudio(),
-                       media::MediaContentType::OneShot);
-  }
+  delegate_->DidPlay(delegate_id_);
 
   delegate_->SetIdle(delegate_id_, false);
   paused_ = false;
@@ -733,7 +736,7 @@ void WebMediaPlayerMS::Pause() {
   if (audio_renderer_)
     audio_renderer_->Pause();
 
-  delegate_->DidPause(delegate_id_);
+  delegate_->DidPause(delegate_id_, /* reached_end_of_stream = */ false);
   delegate_->SetIdle(delegate_id_, true);
 
   paused_ = true;

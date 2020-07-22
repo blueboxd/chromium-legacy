@@ -116,31 +116,47 @@ TEST_F(RendererWebMediaPlayerDelegateTest, SendsMessagesCorrectly) {
   StrictMock<MockWebMediaPlayerDelegateObserver> observer;
   const int delegate_id = delegate_manager_->AddObserver(&observer);
 
-  // Verify the playing message.
+  // Verify the metadata message.
   {
-    const bool kHasVideo = true, kHasAudio = false;
+    const bool kHasAudio = false;
+    const bool kHasVideo = true;
     const media::MediaContentType kMediaContentType =
         media::MediaContentType::Transient;
-    delegate_manager_->DidPlay(delegate_id, kHasVideo, kHasAudio,
-                               kMediaContentType);
+    delegate_manager_->DidMediaMetadataChange(delegate_id, kHasAudio, kHasVideo,
+                                              kMediaContentType);
+
+    const IPC::Message* msg = test_sink().GetUniqueMessageMatching(
+        MediaPlayerDelegateHostMsg_OnMediaMetadataChanged::ID);
+    ASSERT_TRUE(msg);
+
+    std::tuple<int, bool, bool, media::MediaContentType> result;
+    ASSERT_TRUE(
+        MediaPlayerDelegateHostMsg_OnMediaMetadataChanged::Read(msg, &result));
+    EXPECT_EQ(delegate_id, std::get<0>(result));
+    EXPECT_EQ(kHasAudio, std::get<1>(result));
+    EXPECT_EQ(kHasVideo, std::get<2>(result));
+    EXPECT_EQ(kMediaContentType, std::get<3>(result));
+  }
+
+  // Verify the playing message.
+  {
+    test_sink().ClearMessages();
+    delegate_manager_->DidPlay(delegate_id);
 
     const IPC::Message* msg = test_sink().GetUniqueMessageMatching(
         MediaPlayerDelegateHostMsg_OnMediaPlaying::ID);
     ASSERT_TRUE(msg);
 
-    std::tuple<int, bool, bool, media::MediaContentType> result;
+    std::tuple<int> result;
     ASSERT_TRUE(MediaPlayerDelegateHostMsg_OnMediaPlaying::Read(msg, &result));
     EXPECT_EQ(delegate_id, std::get<0>(result));
-    EXPECT_EQ(kHasVideo, std::get<1>(result));
-    EXPECT_EQ(kHasAudio, std::get<2>(result));
-    EXPECT_EQ(kMediaContentType, std::get<3>(result));
   }
 
   // Verify the paused message.
   {
     test_sink().ClearMessages();
     const bool kReachedEndOfStream = false;
-    delegate_manager_->DidPause(delegate_id);
+    delegate_manager_->DidPause(delegate_id, kReachedEndOfStream);
 
     const IPC::Message* msg = test_sink().GetUniqueMessageMatching(
         MediaPlayerDelegateHostMsg_OnMediaPaused::ID);
@@ -270,8 +286,9 @@ TEST_F(RendererWebMediaPlayerDelegateTest, PlaySuspendsLowEndIdleDelegates) {
 
   // Calling play on the first player should suspend the other idle player.
   EXPECT_CALL(observer_2_, OnIdleTimeout());
-  delegate_manager_->DidPlay(delegate_id_1, true, true,
-                             media::MediaContentType::Persistent);
+  delegate_manager_->DidMediaMetadataChange(
+      delegate_id_1, true, true, media::MediaContentType::Persistent);
+  delegate_manager_->DidPlay(delegate_id_1);
   delegate_manager_->SetIdle(delegate_id_1, false);
   tick_clock_.Advance(base::TimeDelta::FromMicroseconds(1));
   RunLoopOnce();
@@ -350,27 +367,27 @@ TEST_F(RendererWebMediaPlayerDelegateTest, Histograms) {
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectTotalCount("Media.Android.BackgroundVideoTime", 0);
 
+  delegate_manager_->DidMediaMetadataChange(
+      delegate_id, true, true, media::MediaContentType::Persistent);
+
   // Play/pause while not hidden doesn't record anything.
-  delegate_manager_->DidPlay(delegate_id, true, true,
-                             MediaContentType::Persistent);
+  delegate_manager_->DidPlay(delegate_id);
   RunLoopOnce();
-  delegate_manager_->DidPause(delegate_id);
+  delegate_manager_->DidPause(delegate_id, false);
   RunLoopOnce();
   histogram_tester.ExpectTotalCount("Media.Android.BackgroundVideoTime", 0);
 
   // Play/pause while hidden does.
   delegate_manager_->SetFrameHiddenForTesting(true);
-  delegate_manager_->DidPlay(delegate_id, true, true,
-                             MediaContentType::Persistent);
+  delegate_manager_->DidPlay(delegate_id);
   RunLoopOnce();
-  delegate_manager_->DidPause(delegate_id);
+  delegate_manager_->DidPause(delegate_id, false);
   RunLoopOnce();
   histogram_tester.ExpectTotalCount("Media.Android.BackgroundVideoTime", 1);
 
   // As does ending background playback by becoming visible.
   delegate_manager_->SetFrameHiddenForTesting(true);
-  delegate_manager_->DidPlay(delegate_id, true, true,
-                             MediaContentType::Persistent);
+  delegate_manager_->DidPlay(delegate_id);
   RunLoopOnce();
   delegate_manager_->SetFrameHiddenForTesting(false);
   RunLoopOnce();

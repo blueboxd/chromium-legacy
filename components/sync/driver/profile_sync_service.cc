@@ -275,7 +275,7 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
   startup_controller_ = std::make_unique<StartupController>(
       base::BindRepeating(&ProfileSyncService::GetPreferredDataTypes,
                           base::Unretained(this)),
-      base::BindRepeating(&ProfileSyncService::IsEngineAllowedToStart,
+      base::BindRepeating(&ProfileSyncService::IsEngineAllowedToRun,
                           base::Unretained(this)),
       base::BindRepeating(&ProfileSyncService::StartUpSlowEngineComponents,
                           base::Unretained(this)));
@@ -412,7 +412,7 @@ void ProfileSyncService::CredentialsChanged() {
   // If the engine isn't allowed to start anymore due to the credentials change,
   // then shut down. This happens when the user signs out on the web, i.e. we're
   // in the "Sync paused" state.
-  if (!IsEngineAllowedToStart()) {
+  if (!IsEngineAllowedToRun()) {
     // TODO(crbug/1031162): Remove once traffic investigation is closed.
     EmitUmaMetricWithEmitTimeMinutes(
         "Sync.PeakAnalysis.StopAfterCredentialsChanged");
@@ -436,14 +436,19 @@ void ProfileSyncService::CredentialsChanged() {
   NotifyObservers();
 }
 
-bool ProfileSyncService::IsEngineAllowedToStart() const {
+bool ProfileSyncService::IsEngineAllowedToRun() const {
   // USER_CHOICE (i.e. the Sync feature toggle) and PLATFORM_OVERRIDE (i.e.
   // Android's "MasterSync" toggle) do not prevent starting up the Sync
   // transport.
   auto disable_reasons = GetDisableReasons();
   disable_reasons.RemoveAll(SyncService::DisableReasonSet(
       DISABLE_REASON_USER_CHOICE, DISABLE_REASON_PLATFORM_OVERRIDE));
-  return disable_reasons.Empty();
+  return disable_reasons.Empty() && !IsInPausedState();
+}
+
+bool ProfileSyncService::IsInPausedState() const {
+  return auth_manager_->IsSyncPaused() &&
+         base::FeatureList::IsEnabled(switches::kStopSyncInPausedState);
 }
 
 void ProfileSyncService::OnProtocolEvent(const ProtocolEvent& event) {
@@ -509,7 +514,7 @@ void ProfileSyncService::OnDataTypeRequestsSyncStartup(ModelType type) {
 }
 
 void ProfileSyncService::StartUpSlowEngineComponents() {
-  DCHECK(IsEngineAllowedToStart());
+  DCHECK(IsEngineAllowedToRun());
 
   const CoreAccountInfo authenticated_account_info =
       GetAuthenticatedAccountInfo();
@@ -756,25 +761,17 @@ SyncService::DisableReasonSet ProfileSyncService::GetDisableReasons() const {
   if (unrecoverable_error_reason_ != ERROR_REASON_UNSET) {
     result.Put(DISABLE_REASON_UNRECOVERABLE_ERROR);
   }
-  if (base::FeatureList::IsEnabled(switches::kStopSyncInPausedState)) {
-    // Some crashes on Chrome OS (crbug.com/1043642) suggest that
-    // ProfileSyncService gets called after its shutdown. It's not clear why
-    // this actually happens. To avoid crashes check that |auth_manager_| isn't
-    // null.
-    if (auth_manager_ && auth_manager_->IsSyncPaused()) {
-      result.Put(DISABLE_REASON_PAUSED);
-    }
-  }
   return result;
 }
 
 SyncService::TransportState ProfileSyncService::GetTransportState() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!IsEngineAllowedToStart()) {
+  if (!IsEngineAllowedToRun()) {
     // We generally shouldn't have an engine while in a disabled state, but it
     // can happen if this method gets called during ShutdownImpl().
-    return TransportState::DISABLED;
+    return IsInPausedState() ? TransportState::PAUSED
+                             : TransportState::DISABLED;
   }
 
   if (!engine_ || !engine_->IsInitialized()) {
@@ -900,7 +897,7 @@ void ProfileSyncService::OnEngineInitialized(
   // TODO(treib): Based on some crash reports, it seems like the user could have
   // signed out already at this point, so many of the steps below, including
   // datatype reconfiguration, should not be triggered.
-  DCHECK(IsEngineAllowedToStart());
+  DCHECK(IsEngineAllowedToRun());
 
   // The very first time the backend initializes is effectively the first time
   // we can say we successfully "synced".  LastSyncedTime will only be null in

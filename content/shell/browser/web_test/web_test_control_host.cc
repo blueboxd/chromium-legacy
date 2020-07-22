@@ -551,8 +551,6 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
 
   const gfx::Size window_size = Shell::GetShellDefaultSize();
 
-  RenderViewHost* main_render_view_host = nullptr;
-
   if (!main_window_) {
     TRACE_EVENT0("shell",
                  "WebTestControlHost::PrepareForWebTest::CreateMainWindow");
@@ -560,8 +558,7 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
         browser_context, GURL(url::kAboutBlankURL), nullptr, window_size);
     WebContentsObserver::Observe(main_window_->web_contents());
 
-    main_render_view_host = main_window_->web_contents()->GetRenderViewHost();
-    default_prefs_ = main_render_view_host->GetWebkitPreferences();
+    default_prefs_ = main_window_->web_contents()->GetOrCreateWebPreferences();
   } else {
     // Set a different size first to reset the possibly inconsistent state
     // caused by the previous test using unfortunate synchronous resize mode.
@@ -574,8 +571,7 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
         gfx::ScaleToCeiledSize(window_size, 0.5f, 1));
     main_window_->ResizeWebContentForTests(window_size);
 
-    main_render_view_host = main_window_->web_contents()->GetRenderViewHost();
-    main_render_view_host->UpdateWebkitPreferences(default_prefs_);
+    main_window_->web_contents()->SetWebPreferences(default_prefs_);
 
     main_window_->web_contents()->WasShown();
   }
@@ -600,6 +596,8 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
   // headless mode.
   main_window_->ActivateContents(main_window_->web_contents());
 
+  RenderViewHost* main_render_view_host =
+      main_window_->web_contents()->GetRenderViewHost();
   {
     TRACE_EVENT0("shell", "WebTestControlHost::PrepareForWebTest::Flush");
     // Round-trip through the InputHandler mojom interface to the compositor

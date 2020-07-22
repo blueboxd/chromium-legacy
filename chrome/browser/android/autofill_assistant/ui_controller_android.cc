@@ -822,8 +822,28 @@ bool UiControllerAndroid::OnBackButtonClicked(
     return false;
   }
 
-  CloseOrCancel(-1, TriggerContext::CreateEmpty(),
-                Metrics::DropOutReason::BACK_BUTTON_CLICKED);
+  if (ui_delegate_ == nullptr ||
+      ui_delegate_->GetState() == AutofillAssistantState::STOPPED) {
+    if (client_->GetWebContents() != nullptr &&
+        client_->GetWebContents()->GetController().CanGoBack()) {
+      client_->GetWebContents()->GetController().GoBack();
+    }
+    DestroySelf();  // Destroying UI here because Shutdown does not do so in
+                    // all cases.
+    Shutdown(Metrics::DropOutReason::BACK_BUTTON_CLICKED);
+    return true;
+  }
+
+  // ui_delegate_ must never be nullptr here!
+  auto back_button_settings =
+      ui_delegate_->GetClientSettings().back_button_settings;
+  if (back_button_settings.has_value()) {
+    ui_delegate_->OnStop(back_button_settings->message(),
+                         back_button_settings->undo_label());
+  } else {
+    CloseOrCancel(-1, TriggerContext::CreateEmpty(),
+                  Metrics::DropOutReason::BACK_BUTTON_CLICKED);
+  }
   return true;
 }
 

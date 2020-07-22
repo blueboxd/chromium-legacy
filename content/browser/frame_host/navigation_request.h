@@ -90,6 +90,15 @@ struct CrossOriginOpenerPolicyStatus {
   // string.
   bool require_browsing_instance_swap = false;
 
+  // As detailed in
+  // https://github.com/camillelamy/explainers/blob/master/coop_reporting.md#browsing-context-changes:
+  // Set to true when the Cross-Origin-Opener-Policy-Report-Only value of the
+  // involved documents would cause a browsing context group swap.
+  bool virtual_browsing_instance_swap = false;
+
+  // The virtual browsing context group of the document to commit.
+  int virtual_browsing_context_group;
+
   // When a page has a reachable opener and COOP triggers a browsing instance
   // swap we potentially break the page. This is one of the case that can be
   // reported using the COOP reporting API.
@@ -1051,7 +1060,7 @@ class CONTENT_EXPORT NavigationRequest
 
   // Updates the internal coop_status assuming the page navigated to has
   // cross-origin-opener-policy |coop| and cross-origin-embedder-policy |coep|.
-  void UpdateCoopStatus(network::mojom::CrossOriginOpenerPolicyValue coop);
+  void UpdateCoopStatus(const network::CrossOriginOpenerPolicy& coop);
 
   FrameTreeNode* const frame_tree_node_;
 

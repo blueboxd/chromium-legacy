@@ -28,13 +28,13 @@ class PrefService;
 @interface ActivityServiceMediator : NSObject
 
 // Initializes a mediator instance with a |handler| used to execute action, a
-// |prefService| to read settings and policies, and a |bookmarkModel| to
-// retrieve bookmark states.
-- (instancetype)
-    initWithHandler:
-        (id<BrowserCommands, FindInPageCommands, QRGenerationCommands>)handler
-        prefService:(PrefService*)prefService
-      bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+// |qrGenerationHandler| to execute QR generation actions, a |prefService| to
+// read settings and policies, and a |bookmarkModel| to retrieve bookmark
+// states.
+- (instancetype)initWithHandler:(id<BrowserCommands, FindInPageCommands>)handler
+            qrGenerationHandler:(id<QRGenerationCommands>)qrGenerationHandler
+                    prefService:(PrefService*)prefService
+                  bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 

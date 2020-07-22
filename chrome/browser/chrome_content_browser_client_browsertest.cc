@@ -368,6 +368,11 @@ IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, PrefersColorScheme) {
 
 IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, FeatureOverridesChromeSchemes) {
   test_theme_.SetDarkMode(true);
+  browser()
+      ->tab_strip_model()
+      ->GetActiveWebContents()
+      ->GetRenderViewHost()
+      ->OnWebkitPreferencesChanged();
 
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIDownloadsURL));
 
@@ -384,6 +389,11 @@ IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, FeatureOverridesChromeSchemes) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, FeatureOverridesPdfUI) {
   test_theme_.SetDarkMode(true);
+  browser()
+      ->tab_strip_model()
+      ->GetActiveWebContents()
+      ->GetRenderViewHost()
+      ->OnWebkitPreferencesChanged();
 
   std::string pdf_extension_url(extensions::kExtensionScheme);
   pdf_extension_url.append(url::kStandardSchemeSeparator);

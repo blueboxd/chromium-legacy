@@ -193,6 +193,76 @@ std::string ProtocolUtils::CreateNextScriptActionsRequest(
 }
 
 // static
+std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
+                                                    const ActionProto& action) {
+  switch (action.action_info_case()) {
+    case ActionProto::ActionInfoCase::kClick:
+      return std::make_unique<ClickAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kTell:
+      return std::make_unique<TellAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kFocusElement:
+      return std::make_unique<FocusElementAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kUseAddress:
+      return std::make_unique<UseAddressAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kUseCard:
+      return std::make_unique<UseCreditCardAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kWaitForDom:
+      return std::make_unique<WaitForDomAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kSelectOption:
+      return std::make_unique<SelectOptionAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kNavigate:
+      return std::make_unique<NavigateAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kPrompt:
+      return std::make_unique<PromptAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kStop:
+      return std::make_unique<StopAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kHighlightElement:
+      return std::make_unique<HighlightElementAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kUploadDom:
+      return std::make_unique<UploadDomAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kShowDetails:
+      return std::make_unique<ShowDetailsAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kCollectUserData:
+      return std::make_unique<CollectUserDataAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kSetFormValue:
+      return std::make_unique<SetFormFieldValueAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kShowProgressBar:
+      return std::make_unique<ShowProgressBarAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kSetAttribute:
+      return std::make_unique<SetAttributeAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kShowInfoBox:
+      return std::make_unique<ShowInfoBoxAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kExpectNavigation:
+      return std::make_unique<ExpectNavigationAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kWaitForNavigation:
+      return std::make_unique<WaitForNavigationAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kConfigureBottomSheet:
+      return std::make_unique<ConfigureBottomSheetAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kShowForm:
+      return std::make_unique<ShowFormAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kPopupMessage:
+      return std::make_unique<PopupMessageAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kWaitForDocument:
+      return std::make_unique<WaitForDocumentAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kShowGenericUi:
+      return std::make_unique<ShowGenericUiAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kGeneratePasswordForFormField:
+      return std::make_unique<GeneratePasswordForFormFieldAction>(delegate,
+                                                                  action);
+    case ActionProto::ActionInfoCase::kSaveGeneratedPassword:
+      return std::make_unique<SaveGeneratedPasswordAction>(delegate, action);
+    case ActionProto::ActionInfoCase::kConfigureUiState:
+      return std::make_unique<ConfigureUiStateAction>(delegate, action);
+    case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
+      VLOG(1) << "Encountered action with ACTION_INFO_NOT_SET";
+      return std::make_unique<UnsupportedAction>(delegate, action);
+    }
+      // Intentionally no default case to ensure a compilation error for new
+      // cases added to the proto.
+  }
+}
+
+// static
 bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
                                  const std::string& response,
                                  std::string* return_global_payload,
@@ -217,138 +287,7 @@ bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
   }
 
   for (const auto& action : response_proto.actions()) {
-    std::unique_ptr<Action> client_action;
-    switch (action.action_info_case()) {
-      case ActionProto::ActionInfoCase::kClick: {
-        client_action = std::make_unique<ClickAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kTell: {
-        client_action = std::make_unique<TellAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kFocusElement: {
-        client_action = std::make_unique<FocusElementAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kUseAddress:
-        client_action = std::make_unique<UseAddressAction>(delegate, action);
-        break;
-      case ActionProto::ActionInfoCase::kUseCard: {
-        client_action = std::make_unique<UseCreditCardAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kWaitForDom: {
-        client_action = std::make_unique<WaitForDomAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kSelectOption: {
-        client_action = std::make_unique<SelectOptionAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kNavigate: {
-        client_action = std::make_unique<NavigateAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kPrompt: {
-        client_action = std::make_unique<PromptAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kStop: {
-        client_action = std::make_unique<StopAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kHighlightElement: {
-        client_action =
-            std::make_unique<HighlightElementAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kUploadDom: {
-        client_action = std::make_unique<UploadDomAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kShowDetails: {
-        client_action = std::make_unique<ShowDetailsAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kCollectUserData: {
-        client_action =
-            std::make_unique<CollectUserDataAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kSetFormValue: {
-        client_action =
-            std::make_unique<SetFormFieldValueAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kShowProgressBar: {
-        client_action =
-            std::make_unique<ShowProgressBarAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kSetAttribute: {
-        client_action = std::make_unique<SetAttributeAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kShowInfoBox: {
-        client_action = std::make_unique<ShowInfoBoxAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kExpectNavigation: {
-        client_action =
-            std::make_unique<ExpectNavigationAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kWaitForNavigation: {
-        client_action =
-            std::make_unique<WaitForNavigationAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kConfigureBottomSheet: {
-        client_action =
-            std::make_unique<ConfigureBottomSheetAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kShowForm: {
-        client_action = std::make_unique<ShowFormAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kPopupMessage: {
-        client_action = std::make_unique<PopupMessageAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kWaitForDocument: {
-        client_action =
-            std::make_unique<WaitForDocumentAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kShowGenericUi: {
-        client_action = std::make_unique<ShowGenericUiAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kGeneratePasswordForFormField: {
-        client_action = std::make_unique<GeneratePasswordForFormFieldAction>(
-            delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kSaveGeneratedPassword: {
-        client_action =
-            std::make_unique<SaveGeneratedPasswordAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::kConfigureUiState: {
-        client_action =
-            std::make_unique<ConfigureUiStateAction>(delegate, action);
-        break;
-      }
-      case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {
-        VLOG(1) << "Encountered action with ACTION_INFO_NOT_SET";
-        client_action = std::make_unique<UnsupportedAction>(delegate, action);
-        break;
-      }
-        // Intentionally no default case to ensure a compilation error for new
-        // cases added to the proto.
-    }
+    std::unique_ptr<Action> client_action = CreateAction(delegate, action);
     if (client_action == nullptr) {
       VLOG(1) << "Encountered action with Unknown or unsupported action with "
                  "action_case="

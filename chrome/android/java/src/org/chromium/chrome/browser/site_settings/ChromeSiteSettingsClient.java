@@ -46,17 +46,19 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
     private static final float FAVICON_TEXT_SIZE_FRACTION = 0.625f;
 
     private final Context mContext;
+    private final BrowserContextHandle mBrowserContext;
     private ChromeSiteSettingsHelpClient mChromeSiteSettingsHelpClient;
     private ChromeWebappSettingsClient mChromeWebappSettingsClient;
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
 
-    public ChromeSiteSettingsClient(Context context) {
+    public ChromeSiteSettingsClient(Context context, BrowserContextHandle browserContext) {
         mContext = context;
+        mBrowserContext = browserContext;
     }
 
     @Override
     public BrowserContextHandle getBrowserContextHandle() {
-        return Profile.getLastUsedRegularProfile();
+        return mBrowserContext;
     }
 
     @Override

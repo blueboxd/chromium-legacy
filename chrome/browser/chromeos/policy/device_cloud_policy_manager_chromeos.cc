@@ -175,9 +175,9 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
   // Create the component cloud policy service for fetching, caching and
   // exposing policy for extensions.
   if (!component_policy_disabled_for_testing_) {
-    base::FilePath component_policy_cache_dir;
-    CHECK(base::PathService::Get(chromeos::DIR_SIGNIN_PROFILE_COMPONENT_POLICY,
-                                 &component_policy_cache_dir));
+    const base::FilePath component_policy_cache_dir =
+        base::PathService::CheckedGet(
+            chromeos::DIR_SIGNIN_PROFILE_COMPONENT_POLICY);
     CHECK(signin_profile_forwarding_schema_registry_);
     CreateComponentCloudPolicyService(
         dm_protocol::kChromeSigninExtensionPolicyType,

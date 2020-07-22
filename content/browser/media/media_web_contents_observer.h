@@ -125,11 +125,12 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void OnMediaPaused(RenderFrameHost* render_frame_host,
                      int delegate_id,
                      bool reached_end_of_stream);
-  void OnMediaPlaying(RenderFrameHost* render_frame_host,
-                      int delegate_id,
-                      bool has_video,
-                      bool has_audio,
-                      media::MediaContentType media_content_type);
+  void OnMediaMetadataChanged(RenderFrameHost* render_frame_host,
+                              int delegate_id,
+                              bool has_video,
+                              bool has_audio,
+                              media::MediaContentType media_content_type);
+  void OnMediaPlaying(RenderFrameHost* render_frame_host, int delegate_id);
   void OnMediaEffectivelyFullscreenChanged(
       RenderFrameHost* render_frame_host,
       int delegate_id,

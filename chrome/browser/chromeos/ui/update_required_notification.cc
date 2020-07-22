@@ -32,11 +32,19 @@ base::string16 GetTitle(NotificationType type, int days_remaining) {
   switch (type) {
     case NotificationType::kNoConnection:
     case NotificationType::kMeteredConnection:
-      return l10n_util::GetPluralStringFUTF16(
-          IDS_UPDATE_REQUIRED_NETWORK_LIMITATION_TITLE_DAYS, days_remaining);
+      return (days_remaining % 7)
+                 ? l10n_util::GetPluralStringFUTF16(
+                       IDS_UPDATE_REQUIRED_NETWORK_LIMITATION_TITLE_DAYS,
+                       days_remaining)
+                 : l10n_util::GetPluralStringFUTF16(
+                       IDS_UPDATE_REQUIRED_NETWORK_LIMITATION_TITLE_WEEKS,
+                       days_remaining / 7);
     case NotificationType::kEolReached:
-      return l10n_util::GetPluralStringFUTF16(
-          IDS_UPDATE_REQUIRED_EOL_TITLE_DAYS, days_remaining);
+      return (days_remaining % 7)
+                 ? l10n_util::GetPluralStringFUTF16(
+                       IDS_UPDATE_REQUIRED_EOL_TITLE_DAYS, days_remaining)
+                 : l10n_util::GetPluralStringFUTF16(
+                       IDS_UPDATE_REQUIRED_EOL_TITLE_WEEKS, days_remaining / 7);
   }
 }
 
@@ -95,10 +103,13 @@ message_center::NotificationPriority GetNotificationPriority(
 }
 
 message_center::SystemNotificationWarningLevel GetWarningLevel(
+    NotificationType type,
     int days_remaining) {
-  return days_remaining > 1
-             ? message_center::SystemNotificationWarningLevel::WARNING
-             : message_center::SystemNotificationWarningLevel::CRITICAL_WARNING;
+  if ((NotificationType::kEolReached == type && days_remaining <= 7) ||
+      days_remaining <= 1) {
+    return message_center::SystemNotificationWarningLevel::CRITICAL_WARNING;
+  }
+  return message_center::SystemNotificationWarningLevel::WARNING;
 }
 
 }  // namespace
@@ -124,7 +135,8 @@ void UpdateRequiredNotification::Show(NotificationType type,
     return;
   }
 
-  DisplayNotification(title, body, button, GetWarningLevel(days_remaining),
+  DisplayNotification(title, body, button,
+                      GetWarningLevel(type, days_remaining),
                       GetNotificationPriority(days_remaining));
 }
 

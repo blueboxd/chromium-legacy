@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/timing/performance_resource_timing.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
 namespace blink {

@@ -131,6 +131,89 @@ const Vector<String>& ContactsManager::GetProperties(
   return properties_;
 }
 
+ScriptPromise ContactsManager::select(
+    ScriptState* script_state,
+    const Vector<V8ContactProperty>& properties,
+    ContactsSelectOptions* options,
+    ExceptionState& exception_state) {
+  LocalFrame* frame = script_state->ContextIsValid()
+                          ? LocalDOMWindow::From(script_state)->GetFrame()
+                          : nullptr;
+
+  if (!frame || !frame->IsMainFrame()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The contacts API can only be used in the top frame");
+    return ScriptPromise();
+  }
+
+  if (!LocalFrame::HasTransientUserActivation(frame)) {
+    exception_state.ThrowSecurityError(
+        "A user gesture is required to call this method");
+    return ScriptPromise();
+  }
+
+  if (properties.IsEmpty()) {
+    exception_state.ThrowTypeError("At least one property must be provided");
+    return ScriptPromise();
+  }
+
+  if (contact_picker_in_use_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Contacts Picker is already in use.");
+    return ScriptPromise();
+  }
+
+  bool include_names = false;
+  bool include_emails = false;
+  bool include_tel = false;
+  bool include_addresses = false;
+  bool include_icons = false;
+
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  for (const auto& property : properties) {
+    if (!RuntimeEnabledFeatures::ContactsManagerExtraPropertiesEnabled(
+            execution_context) &&
+        (property == V8ContactProperty::Enum::kAddress ||
+         property == V8ContactProperty::Enum::kIcon)) {
+      exception_state.ThrowTypeError(
+          "The provided value '" + property.AsString() +
+          "' is not a valid enum value of type ContactProperty");
+      return ScriptPromise();
+    }
+
+    switch (property.AsEnum()) {
+      case V8ContactProperty::Enum::kName:
+        include_names = true;
+        break;
+      case V8ContactProperty::Enum::kEmail:
+        include_emails = true;
+        break;
+      case V8ContactProperty::Enum::kTel:
+        include_tel = true;
+        break;
+      case V8ContactProperty::Enum::kAddress:
+        include_addresses = true;
+        break;
+      case V8ContactProperty::Enum::kIcon:
+        include_icons = true;
+        break;
+    }
+  }
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  contact_picker_in_use_ = true;
+  GetContactsManager(script_state)
+      ->Select(options->multiple(), include_names, include_emails, include_tel,
+               include_addresses, include_icons,
+               WTF::Bind(&ContactsManager::OnContactsSelected,
+                         WrapPersistent(this), WrapPersistent(resolver)));
+
+  return promise;
+}
+
 ScriptPromise ContactsManager::select(ScriptState* script_state,
                                       const Vector<String>& properties,
                                       ContactsSelectOptions* options,

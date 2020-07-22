@@ -430,12 +430,11 @@ void WebContentController::HandleGetTitle(int64_t id) {
 void WebContentController::HandleSetAutoMediaPlaybackPolicy(
     const webview::SetAutoMediaPlaybackPolicyRequest& request) {
   content::WebContents* contents = GetWebContents();
-  content::WebPreferences prefs =
-      contents->GetRenderViewHost()->GetWebkitPreferences();
+  content::WebPreferences prefs = contents->GetOrCreateWebPreferences();
   prefs.autoplay_policy = request.require_user_gesture()
                               ? content::AutoplayPolicy::kUserGestureRequired
                               : content::AutoplayPolicy::kNoUserGestureRequired;
-  contents->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+  contents->SetWebPreferences(prefs);
 }
 
 void WebContentController::HandleResize(const gfx::Size& size) {

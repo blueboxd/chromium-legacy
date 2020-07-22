@@ -33,15 +33,15 @@ struct CertificateHelperForTesting {
   ~CertificateHelperForTesting();
 
   // Generates and adds a certificate to internal fake certificate storage.
-  // Returns refpointer to the generated certificate. If |error_message| is not
-  // empty, an attempt to retrieve |cert_profile_id| via
-  // PlatformKeysService::GetAttributeForKey() will fail with |error_message|.
+  // Returns refpointer to the generated certificate. If |status| is an error
+  // status, an attempt to retrieve |cert_profile_id| via
+  // PlatformKeysService::GetAttributeForKey() will fail with |status|.
   // |not_valid_before|, |not_valid_after| configure validity period of the
   // certificate.
   scoped_refptr<net::X509Certificate> AddCert(
       CertScope cert_scope,
       const base::Optional<CertProfileId>& cert_profile_id,
-      const std::string& error_message,
+      platform_keys::Status status,
       base::Time not_valid_before,
       base::Time not_valid_after);
 
@@ -56,7 +56,7 @@ struct CertificateHelperForTesting {
   scoped_refptr<net::X509Certificate> AddCert(
       CertScope cert_scope,
       const base::Optional<CertProfileId>& cert_profile_id,
-      const std::string& error_message);
+      platform_keys::Status status);
 
   void ClearCerts();
   const net::CertificateList& GetCerts() const;

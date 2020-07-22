@@ -42,7 +42,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD(void, SetStatusAreaVisible, (bool), (override));
   MOCK_METHOD(void, StartWizard, (OobeScreenId), (override));
   MOCK_METHOD(WizardController*, GetWizardController, (), (override));
-  MOCK_METHOD(AppLaunchController*, GetAppLaunchController, (), (override));
+  MOCK_METHOD(KioskLaunchController*, GetKioskLaunchController, (), (override));
 
   // Workaround for move-only args in GMock.
   MOCK_METHOD(void, MockStartUserAdding, (base::OnceClosure*));

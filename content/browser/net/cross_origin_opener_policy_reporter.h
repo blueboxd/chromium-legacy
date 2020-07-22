@@ -70,6 +70,9 @@ class CONTENT_EXPORT CrossOriginOpenerPolicyReporter final
       mojo::PendingReceiver<network::mojom::CrossOriginOpenerPolicyReporter>
           receiver) override;
 
+  // Generate a new, previously unused, virtualBrowsingContextId.
+  static int NextVirtualBrowsingContextGroup();
+
  private:
   friend class CrossOriginOpenerPolicyReporterTest;
 

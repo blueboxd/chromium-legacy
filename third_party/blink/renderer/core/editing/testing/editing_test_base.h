@@ -15,6 +15,7 @@
 namespace blink {
 
 class FrameSelection;
+class HTMLElement;
 
 class EditingTestBase : public PageTestBase {
   USING_FAST_MALLOC(EditingTestBase);

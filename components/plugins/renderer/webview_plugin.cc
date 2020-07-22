@@ -263,6 +263,7 @@ WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
   web_view_ =
       WebView::Create(/*client=*/this,
                       /*is_hidden=*/false,
+                      /*is_inside_portal=*/false,
                       /*compositing_enabled=*/false,
                       /*opener=*/nullptr, mojo::NullAssociatedReceiver());
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a

@@ -726,11 +726,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
 #endif  // defined(OS_ANDROID)
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  if (url.host_piece() == chrome::kChromeUIProfilePickerHost &&
-      base::FeatureList::IsEnabled(features::kNewProfilePicker)) {
+  if (url.host_piece() == chrome::kChromeUIProfilePickerHost) {
     return &NewWebUI<ProfilePickerUI>;
   }
-
   if (url.host_piece() == chrome::kChromeUIMdUserManagerHost)
     return &NewWebUI<UserManagerUI>;
   if (url.host_piece() == chrome::kChromeUISigninErrorHost &&

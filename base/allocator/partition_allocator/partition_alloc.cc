@@ -69,18 +69,17 @@ static_assert(kPageMetadataSize * kNumPartitionPagesPerSuperPage <=
                   kSystemPageSize,
               "page metadata fits in hole");
 // Limit to prevent callers accidentally overflowing an int size.
-static_assert(kGenericMaxDirectMapped <=
-                  (1UL << 31) + kPageAllocationGranularity,
+static_assert(kMaxDirectMapped <= (1UL << 31) + kPageAllocationGranularity,
               "maximum direct mapped allocation");
 // Check that some of our zanier calculations worked out as expected.
 #if ENABLE_TAG_FOR_MTE_CHECKED_PTR
-static_assert(kGenericSmallestBucket >= alignof(std::max_align_t),
+static_assert(kSmallestBucket >= alignof(std::max_align_t),
               "generic smallest bucket");
 #else
-static_assert(kGenericSmallestBucket == alignof(std::max_align_t),
+static_assert(kSmallestBucket == alignof(std::max_align_t),
               "generic smallest bucket");
 #endif
-static_assert(kGenericMaxBucketed == 983040, "generic max bucketed");
+static_assert(kMaxBucketed == 983040, "generic max bucketed");
 static_assert(kMaxSystemPagesPerSlotSpan < (1 << 8),
               "System pages per slot span must be less than 128.");
 
@@ -243,19 +242,19 @@ void PartitionRoot<thread_safe>::Init(bool enforce_alignment) {
   size_t order;
   for (order = 0; order <= kBitsPerSizeT; ++order) {
     size_t order_index_shift;
-    if (order < kGenericNumBucketsPerOrderBits + 1)
+    if (order < kNumBucketsPerOrderBits + 1)
       order_index_shift = 0;
     else
-      order_index_shift = order - (kGenericNumBucketsPerOrderBits + 1);
+      order_index_shift = order - (kNumBucketsPerOrderBits + 1);
     order_index_shifts[order] = order_index_shift;
     size_t sub_order_index_mask;
     if (order == kBitsPerSizeT) {
       // This avoids invoking undefined behavior for an excessive shift.
       sub_order_index_mask =
-          static_cast<size_t>(-1) >> (kGenericNumBucketsPerOrderBits + 1);
+          static_cast<size_t>(-1) >> (kNumBucketsPerOrderBits + 1);
     } else {
       sub_order_index_mask = ((static_cast<size_t>(1) << order) - 1) >>
-                             (kGenericNumBucketsPerOrderBits + 1);
+                             (kNumBucketsPerOrderBits + 1);
     }
     order_sub_index_masks[order] = sub_order_index_mask;
   }
@@ -267,47 +266,46 @@ void PartitionRoot<thread_safe>::Init(bool enforce_alignment) {
   // We avoid them in the bucket lookup map, but we tolerate them to keep the
   // code simpler and the structures more generic.
   size_t i, j;
-  size_t current_size = kGenericSmallestBucket;
-  size_t current_increment =
-      kGenericSmallestBucket >> kGenericNumBucketsPerOrderBits;
+  size_t current_size = kSmallestBucket;
+  size_t current_increment = kSmallestBucket >> kNumBucketsPerOrderBits;
   Bucket* bucket = &buckets[0];
-  for (i = 0; i < kGenericNumBucketedOrders; ++i) {
-    for (j = 0; j < kGenericNumBucketsPerOrder; ++j) {
+  for (i = 0; i < kNumBucketedOrders; ++i) {
+    for (j = 0; j < kNumBucketsPerOrder; ++j) {
       bucket->Init(current_size);
       // Disable pseudo buckets so that touching them faults.
-      if (current_size % kGenericSmallestBucket)
+      if (current_size % kSmallestBucket)
         bucket->active_pages_head = nullptr;
       current_size += current_increment;
       ++bucket;
     }
     current_increment <<= 1;
   }
-  PA_DCHECK(current_size == 1 << kGenericMaxBucketedOrder);
-  PA_DCHECK(bucket == &buckets[0] + kGenericNumBuckets);
+  PA_DCHECK(current_size == 1 << kMaxBucketedOrder);
+  PA_DCHECK(bucket == &buckets[0] + kNumBuckets);
 
   // Then set up the fast size -> bucket lookup table.
   bucket = &buckets[0];
   Bucket** bucket_ptr = &bucket_lookups[0];
   for (order = 0; order <= kBitsPerSizeT; ++order) {
-    for (j = 0; j < kGenericNumBucketsPerOrder; ++j) {
-      if (order < kGenericMinBucketedOrder) {
+    for (j = 0; j < kNumBucketsPerOrder; ++j) {
+      if (order < kMinBucketedOrder) {
         // Use the bucket of the finest granularity for malloc(0) etc.
         *bucket_ptr++ = &buckets[0];
-      } else if (order > kGenericMaxBucketedOrder) {
+      } else if (order > kMaxBucketedOrder) {
         *bucket_ptr++ = Bucket::get_sentinel_bucket();
       } else {
         Bucket* valid_bucket = bucket;
         // Skip over invalid buckets.
-        while (valid_bucket->slot_size % kGenericSmallestBucket)
+        while (valid_bucket->slot_size % kSmallestBucket)
           valid_bucket++;
         *bucket_ptr++ = valid_bucket;
         bucket++;
       }
     }
   }
-  PA_DCHECK(bucket == &buckets[0] + kGenericNumBuckets);
-  PA_DCHECK(bucket_ptr == &bucket_lookups[0] + ((kBitsPerSizeT + 1) *
-                                                kGenericNumBucketsPerOrder));
+  PA_DCHECK(bucket == &buckets[0] + kNumBuckets);
+  PA_DCHECK(bucket_ptr ==
+            &bucket_lookups[0] + ((kBitsPerSizeT + 1) * kNumBucketsPerOrder));
   // And there's one last bucket lookup that will be hit for e.g. malloc(-1),
   // which tries to overflow to a non-existent order.
   *bucket_ptr = Bucket::get_sentinel_bucket();
@@ -325,7 +323,7 @@ bool PartitionRoot<thread_safe>::ReallocDirectMappedInPlace(
   // Note that the new size might be a bucketed size; this function is called
   // whenever we're reallocating a direct mapped allocation.
   size_t new_size = Bucket::get_direct_map_size(raw_size);
-  if (new_size < kGenericMinDirectMappedDownsize)
+  if (new_size < kMinDirectMappedDownsize)
     return false;
 
   // bucket->slot_size is the current size of the allocation.
@@ -394,7 +392,7 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
     return nullptr;
   }
 
-  if (new_size > kGenericMaxDirectMapped) {
+  if (new_size > kMaxDirectMapped) {
     if (flags & PartitionAllocReturnNull)
       return nullptr;
     internal::PartitionExcessiveAllocationSize(new_size);
@@ -643,7 +641,7 @@ void PartitionRoot<thread_safe>::PurgeMemory(int flags) {
   if (flags & PartitionPurgeDecommitEmptyPages)
     DecommitEmptyPages();
   if (flags & PartitionPurgeDiscardUnusedSystemPages) {
-    for (size_t i = 0; i < kGenericNumBuckets; ++i) {
+    for (size_t i = 0; i < kNumBuckets; ++i) {
       Bucket* bucket = &buckets[i];
       if (bucket->slot_size >= kSystemPageSize)
         PartitionPurgeBucket(bucket);
@@ -758,10 +756,10 @@ void PartitionRoot<thread_safe>::DumpStats(const char* partition_name,
         std::unique_ptr<uint32_t[]>(new uint32_t[kMaxReportableDirectMaps]);
   }
 
-  PartitionBucketMemoryStats bucket_stats[kGenericNumBuckets];
+  PartitionBucketMemoryStats bucket_stats[kNumBuckets];
   size_t num_direct_mapped_allocations = 0;
   {
-    for (size_t i = 0; i < kGenericNumBuckets; ++i) {
+    for (size_t i = 0; i < kNumBuckets; ++i) {
       const Bucket* bucket = &buckets[i];
       // Don't report the pseudo buckets that the generic allocator sets up in
       // order to preserve a fast size->bucket map (see
@@ -795,7 +793,7 @@ void PartitionRoot<thread_safe>::DumpStats(const char* partition_name,
     // Call |PartitionsDumpBucketStats| after collecting stats because it can
     // try to allocate using |PartitionRoot::Alloc()| and it can't
     // obtain the lock.
-    for (size_t i = 0; i < kGenericNumBuckets; ++i) {
+    for (size_t i = 0; i < kNumBuckets; ++i) {
       if (bucket_stats[i].is_valid)
         dumper->PartitionsDumpBucketStats(partition_name, &bucket_stats[i]);
     }

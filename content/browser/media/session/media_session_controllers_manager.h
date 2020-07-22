@@ -25,33 +25,35 @@ struct MediaPosition;
 namespace content {
 
 class MediaSessionController;
-class MediaWebContentsObserver;
 class RenderFrameHost;
+class WebContents;
 
 // MediaSessionControllersManager is a delegate of MediaWebContentsObserver that
 // handles MediaSessionController instances.
 class CONTENT_EXPORT MediaSessionControllersManager {
  public:
-  explicit MediaSessionControllersManager(
-      MediaWebContentsObserver* media_web_contents_observer);
+  explicit MediaSessionControllersManager(WebContents* web_contents);
   ~MediaSessionControllersManager();
 
   // Clear all the MediaSessionController associated with the given
   // |render_frame_host|.
   void RenderFrameDeleted(RenderFrameHost* render_frame_host);
 
+  // Called whenever a player's metadata changes.
+  void OnMetadata(const MediaPlayerId& id,
+                  bool has_audio,
+                  bool has_video,
+                  media::MediaContentType media_content_type);
+
   // Called before a player starts playing. It will be added to the media
   // session and will have a controller associated with it.
   // Returns whether the player was added to the session and can start playing.
-  bool RequestPlay(const MediaPlayerId& id,
-                   bool has_audio,
-                   media::MediaContentType media_content_type,
-                   bool has_video);
+  bool RequestPlay(const MediaPlayerId& id);
 
   // Called when the given player |id| has paused.
-  void OnPause(const MediaPlayerId& id);
+  void OnPause(const MediaPlayerId& id, bool reached_end_of_stream);
 
-  // Called when the given player |id| has ended.
+  // Called when the given player |id| has been destroyed.
   void OnEnd(const MediaPlayerId& id);
 
   // Called when the media position state for the player |id| has changed.
@@ -79,8 +81,7 @@ class CONTENT_EXPORT MediaSessionControllersManager {
   // one and placing it in |controllers_map_| if necessary.
   MediaSessionController* FindOrCreateController(const MediaPlayerId& id);
 
-  // Weak pointer because |this| is owned by |media_web_contents_observer_|.
-  MediaWebContentsObserver* const media_web_contents_observer_;
+  WebContents* const web_contents_;
 
   ControllersMap controllers_map_;
 

@@ -338,6 +338,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       client_(client),
       encrypted_client_(encrypted_client),
       delegate_(delegate),
+      delegate_has_audio_(HasUnmutedAudio()),
       defer_load_cb_(params->defer_load_cb()),
       adjust_allocated_memory_cb_(params->adjust_allocated_memory_cb()),
       tick_clock_(base::DefaultTickClock::GetInstance()),
@@ -992,6 +993,13 @@ void WebMediaPlayerImpl::SetVolume(double volume) {
   if (watch_time_reporter_)
     watch_time_reporter_->OnVolumeChange(volume);
   delegate_->DidPlayerMutedStatusChange(delegate_id_, volume == 0.0);
+
+  if (delegate_has_audio_ != HasUnmutedAudio()) {
+    delegate_has_audio_ = HasUnmutedAudio();
+    delegate_->DidMediaMetadataChange(
+        delegate_id_, delegate_has_audio_, HasVideo(),
+        DurationToMediaContentType(GetPipelineMediaDuration()));
+  }
 
   // The play state is updated because the player might have left the autoplay
   // muted state.
@@ -1980,6 +1988,11 @@ void WebMediaPlayerImpl::OnMetadata(const PipelineMetadata& metadata) {
   if (observer_)
     observer_->OnMetadataChanged(pipeline_metadata_);
 
+  delegate_has_audio_ = HasUnmutedAudio();
+  delegate_->DidMediaMetadataChange(
+      delegate_id_, delegate_has_audio_, HasVideo(),
+      DurationToMediaContentType(GetPipelineMediaDuration()));
+
   // TODO(dalecurtis): Don't create these until kReadyStateHaveFutureData; when
   // we create them early we just increase the chances of needing to throw them
   // away unnecessarily.
@@ -2245,12 +2258,15 @@ void WebMediaPlayerImpl::OnDurationChange() {
                                50 /* bucket_count */);
   }
 
-  // TODO(sandersd): We should call delegate_->DidPlay() with the new duration,
-  // especially if it changed from  <5s to >5s.
   if (ready_state_ == WebMediaPlayer::kReadyStateHaveNothing)
     return;
 
   client_->DurationChanged();
+
+  delegate_->DidMediaMetadataChange(
+      delegate_id_, delegate_has_audio_, HasVideo(),
+      DurationToMediaContentType(GetPipelineMediaDuration()));
+
   if (watch_time_reporter_)
     watch_time_reporter_->OnDurationChanged(GetPipelineMediaDuration());
 }
@@ -2985,22 +3001,9 @@ void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state,
 
   // Prevent duplicate delegate calls.
   // TODO(sandersd): Move this deduplication into the delegate itself.
-  // TODO(sandersd): WebContentsObserverConsistencyChecker does not allow
-  // sending the 'playing' IPC more than once in a row, even if the metadata has
-  // changed. Figure out whether it should.
-  // Pretend that the media has no audio if it never played unmuted. This is to
-  // avoid any action related to audible media such as taking audio focus or
-  // showing a media notification. To preserve a consistent experience, it does
-  // not apply if a media was audible so the system states do not flicker
-  // depending on whether the user muted the player.
-  bool has_audio = HasAudio() && !client_->WasAlwaysMuted();
-  if (delegate_state_ == new_state &&
-      (delegate_state_ != DelegateState::PLAYING ||
-       delegate_has_audio_ == has_audio)) {
+  if (delegate_state_ == new_state)
     return;
-  }
   delegate_state_ = new_state;
-  delegate_has_audio_ = has_audio;
 
   switch (new_state) {
     case DelegateState::GONE:
@@ -3009,13 +3012,11 @@ void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state,
     case DelegateState::PLAYING: {
       if (HasVideo())
         delegate_->DidPlayerSizeChange(delegate_id_, NaturalSize());
-      delegate_->DidPlay(
-          delegate_id_, HasVideo(), has_audio,
-          DurationToMediaContentType(GetPipelineMediaDuration()));
+      delegate_->DidPlay(delegate_id_);
       break;
     }
     case DelegateState::PAUSED:
-      delegate_->DidPause(delegate_id_);
+      delegate_->DidPause(delegate_id_, ended_);
       break;
   }
 
@@ -3174,8 +3175,7 @@ WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_flinging,
   } else if (paused_) {
     // TODO(sandersd): Is it possible to have a suspended session, be ended,
     // and not be paused? If so we should be in a PLAYING state.
-    result.delegate_state =
-        ended_ ? DelegateState::GONE : DelegateState::PAUSED;
+    result.delegate_state = DelegateState::PAUSED;
     result.is_idle = !seeking_;
   } else {
     result.delegate_state = DelegateState::PLAYING;
@@ -3874,6 +3874,15 @@ WebMediaPlayerImpl::GetLearningTaskController(const char* task_name) {
       task.name, remote_ltc.BindNewPipeAndPassReceiver());
   return std::make_unique<learning::MojoLearningTaskController>(
       task, std::move(remote_ltc));
+}
+
+bool WebMediaPlayerImpl::HasUnmutedAudio() const {
+  // Pretend that the media has no audio if it never played unmuted. This is to
+  // avoid any action related to audible media such as taking audio focus or
+  // showing a media notification. To preserve a consistent experience, it does
+  // not apply if a media was audible so the system states do not flicker
+  // depending on whether the user muted the player.
+  return HasAudio() && !client_->WasAlwaysMuted();
 }
 
 }  // namespace media

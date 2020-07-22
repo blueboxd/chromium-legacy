@@ -66,7 +66,9 @@ bool IsSyncDisabledForSharing(syncer::SyncService* sync_service) {
     return false;
 
   if (sync_service->GetTransportState() ==
-      syncer::SyncService::TransportState::DISABLED) {
+          syncer::SyncService::TransportState::DISABLED ||
+      sync_service->GetTransportState() ==
+          syncer::SyncService::TransportState::PAUSED) {
     return true;
   }
 

@@ -642,13 +642,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   std::unique_ptr<learning::LearningTaskController> GetLearningTaskController(
       const char* task_name);
 
-  blink::WebLocalFrame* const frame_;
+  // Returns whether the player has an audio track and whether it should be
+  // allowed to play it.
+  bool HasUnmutedAudio() const;
 
-  // The playback state last reported to |delegate_|, to avoid setting duplicate
-  // states.
-  // TODO(sandersd): The delegate should be implementing deduplication.
-  DelegateState delegate_state_ = DelegateState::GONE;
-  bool delegate_has_audio_ = false;
+  blink::WebLocalFrame* const frame_;
 
   blink::WebMediaPlayer::NetworkState network_state_ =
       WebMediaPlayer::kNetworkStateEmpty;
@@ -747,6 +745,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // to outlive |this|; thus it is safe to store |delegate_| as a raw pointer.
   blink::WebMediaPlayerDelegate* const delegate_;
   int delegate_id_ = 0;
+
+  // The playback state last reported to |delegate_|, to avoid setting duplicate
+  // states.
+  // TODO(sandersd): The delegate should be implementing deduplication.
+  DelegateState delegate_state_ = DelegateState::GONE;
+  bool delegate_has_audio_ = false;
 
   WebMediaPlayerParams::DeferLoadCB defer_load_cb_;
 

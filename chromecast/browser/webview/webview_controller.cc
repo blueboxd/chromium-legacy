@@ -43,11 +43,14 @@ class WebviewUserData : public base::SupportsUserData::Data {
 };
 
 void UpdateWebkitPreferences(content::RenderViewHost* render_view_host) {
-  content::WebPreferences prefs = render_view_host->GetWebkitPreferences();
+  content::WebPreferences prefs =
+      content::WebContents::FromRenderViewHost(render_view_host)
+          ->GetOrCreateWebPreferences();
   // Allow Webviews to show scrollbars. These are globally disabled since Cast
   // Apps are not expected to be scrollable.
   prefs.hide_scrollbars = false;
-  render_view_host->UpdateWebkitPreferences(prefs);
+  content::WebContents::FromRenderViewHost(render_view_host)
+      ->SetWebPreferences(prefs);
 }
 
 }  // namespace
@@ -143,10 +146,9 @@ void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
 void WebviewController::HandleUpdateSettings(
     const webview::UpdateSettingsRequest& request) {
   content::WebContents* contents = GetWebContents();
-  content::WebPreferences prefs =
-      contents->GetRenderViewHost()->GetWebkitPreferences();
+  content::WebPreferences prefs = contents->GetOrCreateWebPreferences();
   prefs.javascript_enabled = request.javascript_enabled();
-  contents->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+  contents->SetWebPreferences(prefs);
 
   has_navigation_delegate_ = request.has_navigation_delegate();
 

@@ -3170,6 +3170,25 @@ content::TtsPlatform* ChromeContentBrowserClient::GetTtsPlatform() {
 #endif
 }
 
+bool UpdatePreferredColorSchemesBasedOnURLIfNeeded(WebPreferences* web_prefs,
+                                                   const GURL& url) {
+  // Force a light preferred color scheme on certain URLs if kWebUIDarkMode is
+  // disabled; some of the UI is not yet correctly themed.
+  if (base::FeatureList::IsEnabled(features::kWebUIDarkMode))
+    return false;
+  bool force_light = url.SchemeIs(content::kChromeUIScheme);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (!force_light) {
+    force_light = url.SchemeIs(extensions::kExtensionScheme) &&
+                  url.host_piece() == extension_misc::kPdfExtensionId;
+  }
+#endif
+  auto old_preferred_color_scheme = web_prefs->preferred_color_scheme;
+  if (force_light)
+    web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
+  return old_preferred_color_scheme != web_prefs->preferred_color_scheme;
+}
+
 void ChromeContentBrowserClient::OverrideWebkitPrefs(
     RenderViewHost* rvh,
     WebPreferences* web_prefs) {
@@ -3480,24 +3499,10 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   }
 #endif  // !defined(OS_ANDROID)
 
-  web_prefs->translate_service_available = TranslateService::IsAvailable(prefs);
+  UpdatePreferredColorSchemesBasedOnURLIfNeeded(
+      web_prefs, rvh->GetSiteInstance()->GetSiteURL());
 
-  // Force a light preferred color scheme on certain URLs if kWebUIDarkMode is
-  // disabled; some of the UI is not yet correctly themed. Note: the WebUI CSS
-  // explicitly uses light (instead of not dark), which is why we don't reset
-  // back to no-preference. https://crbug.com/965811
-  if (!base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
-    const GURL url = rvh->GetSiteInstance()->GetSiteURL();
-    bool force_light = url.SchemeIs(content::kChromeUIScheme);
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    if (!force_light) {
-      force_light = url.SchemeIs(extensions::kExtensionScheme) &&
-                    url.host_piece() == extension_misc::kPdfExtensionId;
-    }
-#endif
-    if (force_light)
-      web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
-  }
+  web_prefs->translate_service_available = TranslateService::IsAvailable(prefs);
 
   base::Optional<ui::CaptionStyle> style =
       captions::GetCaptionStyleFromUserSettings(prefs,
@@ -3516,6 +3521,13 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->OverrideWebkitPrefs(rvh, web_prefs);
+}
+
+bool ChromeContentBrowserClient::OverrideWebPreferencesAfterNavigation(
+    WebContents* web_contents,
+    WebPreferences* prefs) {
+  return UpdatePreferredColorSchemesBasedOnURLIfNeeded(
+      prefs, web_contents->GetLastCommittedURL());
 }
 
 void ChromeContentBrowserClient::BrowserURLHandlerCreated(

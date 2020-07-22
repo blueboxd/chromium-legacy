@@ -1007,7 +1007,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, Navigation) {
                                  "/set-header?"
                                  "Cross-Origin-Opener-Policy: same-origin&"
                                  "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339): Replace by true.
+          true,
       },
       {
           // different-origin => change.
@@ -1016,7 +1016,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, Navigation) {
                                  "/set-header?"
                                  "Cross-Origin-Opener-Policy: same-origin&"
                                  "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339): Replace by true.
+          true,
       },
       {
           // different-site => change.
@@ -1025,7 +1025,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, Navigation) {
                                  "/set-header?"
                                  "Cross-Origin-Opener-Policy: same-origin&"
                                  "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339): Replace by true.
+          true,
       },
 
       // coop <-> coop.
@@ -1051,7 +1051,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, Navigation) {
                                  "/set-header?"
                                  "Cross-Origin-Opener-Policy: same-origin&"
                                  "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339): Replace by true.
+          true,
       },
       {
           // different-site => keep.
@@ -1063,7 +1063,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, Navigation) {
                                  "/set-header?"
                                  "Cross-Origin-Opener-Policy: same-origin&"
                                  "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339): Replace by true.
+          true,
       },
 
       // non-coop <-> coop-ro.
@@ -1075,7 +1075,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, Navigation) {
               "/set-header?"
               "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
               "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339): Replace by true.
+          true,
       },
       {
           // different-origin => change.
@@ -1085,7 +1085,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, Navigation) {
               "/set-header?"
               "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
               "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339): Replace by true.
+          true,
       },
       {
           // different-site => change.
@@ -1095,7 +1095,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, Navigation) {
               "/set-header?"
               "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
               "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339): Replace by true.
+          true,
       },
 
       // coop-ro <-> coop-ro.
@@ -1125,7 +1125,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, Navigation) {
               "/set-header?"
               "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
               "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339): Replace by true.
+          true,
       },
       {
           // different-site => keep.
@@ -1139,7 +1139,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, Navigation) {
               "/set-header?"
               "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
               "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339): Replace by true.
+          true,
       },
 
       // coop <-> coop-ro.
@@ -1154,7 +1154,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, Navigation) {
               "/set-header?"
               "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
               "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339): Replace by true.
+          true,
       },
       {
           // different-origin => change.
@@ -1167,7 +1167,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, Navigation) {
               "/set-header?"
               "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
               "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339): Replace by true.
+          true,
       },
       {
           // different-site => change
@@ -1180,7 +1180,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, Navigation) {
               "/set-header?"
               "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
               "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339): Replace by true.
+          true,
       },
       // TODO(https://crbug.com/1101339). Test with COEP-RO.
       // TODO(https://crbug.com/1101339). Test with COOP-RO+COOP.
@@ -1272,7 +1272,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, WindowOpen) {
               "/set-header?"
               "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
               "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/11001339): Replace by true.
+          true,
       },
 
       // non-coop opens coop.
@@ -1282,7 +1282,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, WindowOpen) {
                                  "/set-header?"
                                  "Cross-Origin-Opener-Policy: same-origin&"
                                  "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/11001339): Replace by true.
+          true,
       },
 
       // coop opens non-coop.
@@ -1292,7 +1292,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, WindowOpen) {
                                  "Cross-Origin-Opener-Policy: same-origin&"
                                  "Cross-Origin-Embedder-Policy: require-corp"),
           https_server()->GetURL("a.com", "/title1.html"),
-          false,  // TODO(https://crbug.com/11001339): Replace by true.
+          true,
       },
 
       // coop-ro opens coop-ro (same-origin).
@@ -1322,7 +1322,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, WindowOpen) {
               "/set-header?"
               "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
               "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/11001339): Replace by true.
+          true,
       },
 
       // TODO(https://crbug.com/1101339). Test with COEP-RO.
@@ -1393,14 +1393,14 @@ void RunTest(const VirtualBcgAllowPopupTestCase& test_case, Shell* shell) {
   int group_navigate = VirtualBrowsingContextGroup(shell->web_contents());
 
   if (test_case.expect_different_group_window_open)
-    EXPECT_NE(group_initial, group_navigate);
-  else
-    EXPECT_EQ(group_initial, group_navigate);
-
-  if (test_case.expect_different_group_navigation)
     EXPECT_NE(group_initial, group_openee);
   else
     EXPECT_EQ(group_initial, group_openee);
+
+  if (test_case.expect_different_group_navigation)
+    EXPECT_NE(group_initial, group_navigate);
+  else
+    EXPECT_EQ(group_initial, group_navigate);
 
   popup->Close();
 }
@@ -1418,8 +1418,8 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
               "/set-header?"
               "Cross-Origin-Opener-Policy: same-origin-allow-popups&"
               "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
+          true,
       },
       {
           // cross-origin.
@@ -1429,8 +1429,8 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
               "/set-header?"
               "Cross-Origin-Opener-Policy: same-origin-allow-popups&"
               "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
+          true,
       },
       {
           // cross-site.
@@ -1440,8 +1440,8 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
               "/set-header?"
               "Cross-Origin-Opener-Policy: same-origin-allow-popups&"
               "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
+          true,
       },
   };
   for (const auto& test : kTestCases)
@@ -1460,7 +1460,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
               "Cross-Origin-Opener-Policy: same-origin-allow-popups&"
               "Cross-Origin-Embedder-Policy: require-corp"),
           https_server()->GetURL("a.com", "/title1.html"), false,
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
       },
       {
           // cross-origin.
@@ -1470,7 +1470,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
               "Cross-Origin-Opener-Policy: same-origin-allow-popups&"
               "Cross-Origin-Embedder-Policy: require-corp"),
           https_server()->GetURL("a.a.com", "/title1.html"), false,
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
       },
       {
           // cross-site.
@@ -1480,7 +1480,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
               "Cross-Origin-Opener-Policy: same-origin-allow-popups&"
               "Cross-Origin-Embedder-Policy: require-corp"),
           https_server()->GetURL("a.com", "/title1.html"), false,
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
       },
   };
   for (const auto& test : kTestCases)
@@ -1499,7 +1499,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
                                  "same-origin-allow-popups&"
                                  "Cross-Origin-Embedder-Policy: require-corp"),
           https_server()->GetURL("a.com", "/title1.html"), false,
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
       },
       {
           // cross-origin.
@@ -1509,7 +1509,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
                                  "same-origin-allow-popups&"
                                  "Cross-Origin-Embedder-Policy: require-corp"),
           https_server()->GetURL("a.a.com", "/title1.html"), false,
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
       },
       {
           // cross-site.
@@ -1519,7 +1519,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
                                  "same-origin-allow-popups&"
                                  "Cross-Origin-Embedder-Policy: require-corp"),
           https_server()->GetURL("a.com", "/title1.html"), false,
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
       },
   };
   for (const auto& test : kTestCases)
@@ -1557,8 +1557,8 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
               "/set-header?"
               "Cross-Origin-Opener-Policy: same-origin-allow-popups&"
               "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
+          true,
       },
       {
           // cross-site.
@@ -1572,8 +1572,8 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
               "/set-header?"
               "Cross-Origin-Opener-Policy: same-origin-allow-popups&"
               "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
+          true,
       },
 
   };
@@ -1598,7 +1598,7 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
                                  "same-origin-allow-popups&"
                                  "Cross-Origin-Embedder-Policy: require-corp"),
           false,
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
       },
       {
           // cross-origin.
@@ -1612,8 +1612,8 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
                                  "Cross-Origin-Opener-Policy-Report-Only: "
                                  "same-origin-allow-popups&"
                                  "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
+          true,
       },
       {
           // cross-site.
@@ -1627,8 +1627,8 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
                                  "Cross-Origin-Opener-Policy-Report-Only: "
                                  "same-origin-allow-popups&"
                                  "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
+          true,
       },
   };
   for (const auto& test : kTestCases)
@@ -1651,8 +1651,8 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
                                  "Cross-Origin-Opener-Policy: "
                                  "same-origin-allow-popups&"
                                  "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
+          true,
       },
       {
           // cross-origin.
@@ -1666,8 +1666,8 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
               "/set-header?"
               "Cross-Origin-Opener-Policy: same-origin-allow-popups&"
               "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
+          true,
       },
       {
           // cross-site.
@@ -1681,8 +1681,8 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
               "/set-header?"
               "Cross-Origin-Opener-Policy: same-origin-allow-popups&"
               "Cross-Origin-Embedder-Policy: require-corp"),
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
+          true,
       },
   };
 
@@ -1704,8 +1704,8 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
               "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
               "Cross-Origin-Embedder-Policy: require-corp"),
           https_server()->GetURL("a.com", "/title1.html"),
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
+          true,
       },
       {
           // cross-origin.
@@ -1716,8 +1716,8 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
               "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
               "Cross-Origin-Embedder-Policy: require-corp"),
           https_server()->GetURL("b.a.com", "/title1.html"),
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
+          true,
       },
       {
           // cross-site.
@@ -1728,8 +1728,8 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
               "Cross-Origin-Opener-Policy-Report-Only: same-origin&"
               "Cross-Origin-Embedder-Policy: require-corp"),
           https_server()->GetURL("b.com", "/title1.html"),
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
-          false,  // TODO(https://crbug.com/1101339). Replace with true.
+          true,
+          true,
       },
   };
 
@@ -1767,12 +1767,12 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest, HistoryNavigation) {
   EXPECT_TRUE(WaitForLoadStop(web_contents()));
   int group_4 = VirtualBrowsingContextGroup(web_contents());
 
-  EXPECT_EQ(group_1, group_2);  // TODO(https://crbug.com/1101339) Use EXPECT_NE
-  EXPECT_EQ(group_1, group_3);  // TODO(https://crbug.com/1101339) Use EXPECT_NE
-  EXPECT_EQ(group_1, group_4);  // TODO(https://crbug.com/1101339) Use EXPECT_NE
-  EXPECT_EQ(group_2, group_3);  // TODO(https://crbug.com/1101339) Use EXPECT_NE
-  EXPECT_EQ(group_2, group_4);  // TODO(https://crbug.com/1101339) Use EXPECT_NE
-  EXPECT_EQ(group_3, group_4);  // TODO(https://crbug.com/1101339) Use EXPECT_NE
+  EXPECT_NE(group_1, group_2);
+  EXPECT_NE(group_1, group_3);
+  EXPECT_NE(group_1, group_4);
+  EXPECT_NE(group_2, group_3);
+  EXPECT_NE(group_2, group_4);
+  EXPECT_NE(group_3, group_4);
 }
 
 // 1. A1 opens B2 (same virtual browsing context group).
@@ -1814,10 +1814,14 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
   int group_4 = VirtualBrowsingContextGroup(popup);
 
   EXPECT_EQ(group_1, group_2);
-  EXPECT_EQ(group_2, group_3);  // TODO(https://crbug.com/1101339) Use EXPECT_NE
-  EXPECT_EQ(group_3, group_4);  // TODO(https://crbug.com/1101339) Use EXPECT_NE
-  EXPECT_EQ(group_4, group_1);  // TODO(https://crbug.com/1101339) Use EXPECT_NE
+  EXPECT_NE(group_2, group_3);
+  EXPECT_NE(group_3, group_4);
+  EXPECT_NE(group_4, group_1);
 }
+
+// TODO(https://crbug.com/1101339). Test inheritance of the virtual browsing
+// context group when using window.open from an iframe, same-origin and
+// cross-origin.
 
 INSTANTIATE_TEST_SUITE_P(All,
                          CrossOriginOpenerPolicyBrowserTest,

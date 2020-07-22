@@ -47,6 +47,7 @@ android_library("internal_ui_factory_java") {
 android_library("internal_java") {
   deps = [
     ":java_resources",
+    ":public_factory_java",
     "//base:base_java",
     "//base:jni_java",
     "//chrome/android:chrome_app_java_resources",
@@ -55,6 +56,7 @@ android_library("internal_java") {
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/settings:java",
     "//chrome/browser/ui/android/strings:ui_strings_grd",
+    "//components/browser_ui/widget/android:java",
     "//components/embedder_support/android:util_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_fragment_fragment_java",

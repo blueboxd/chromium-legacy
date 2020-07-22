@@ -5,16 +5,22 @@
 package org.chromium.chrome.browser.password_check;
 
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.COMPROMISED_CREDENTIAL;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.CREDENTIAL_HANDLER;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_STATUS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.ITEMS;
 import static org.chromium.components.embedder_support.util.UrlUtilities.stripScheme;
 
+import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.chrome.browser.password_check.PasswordCheckProperties.ItemType;
 import org.chromium.chrome.browser.password_check.internal.R;
+import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuButton;
+import org.chromium.components.browser_ui.widget.listmenu.ListMenuItemProperties;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -27,9 +33,11 @@ import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
  */
 class PasswordCheckViewBinder {
     /**
-     * Called whenever a property in the given model changes. It updates the given view accordingly.
-     * @param model The observed {@link PropertyModel}. Its data need to be reflected in the view.
-     * @param view The {@link PasswordCheckFragmentView} to update.
+     * Called whenever a property in the given model changes. It updates the given view
+     * accordingly.
+     *
+     * @param model       The observed {@link PropertyModel}. Its data is reflected in the view.
+     * @param view        The {@link PasswordCheckFragmentView} to update.
      * @param propertyKey The {@link PropertyKey} which changed.
      */
     static void bindPasswordCheckView(
@@ -47,7 +55,8 @@ class PasswordCheckViewBinder {
 
     /**
      * Factory used to create a new View inside the list inside the PasswordCheckFragmentView.
-     * @param parent The parent {@link ViewGroup} of the new item.
+     *
+     * @param parent   The parent {@link ViewGroup} of the new item.
      * @param itemType The type of View to create.
      */
     private static PasswordCheckViewHolder createViewHolder(
@@ -67,8 +76,9 @@ class PasswordCheckViewBinder {
 
     /**
      * This method creates a model change processor for each recycler view item when it is created.
-     * @param holder A {@link PasswordCheckViewHolder} holding the view and view binder for the MCP.
-     * @param item A {@link MVCListAdapter.ListItem} holding the {@link PropertyModel} for the MCP.
+     *
+     * @param holder A {@link PasswordCheckViewHolder} holding a view and view binder for the MCP.
+     * @param item   A {@link MVCListAdapter.ListItem} holding a {@link PropertyModel} for the MCP.
      */
     private static void connectPropertyModel(
             PasswordCheckViewHolder holder, MVCListAdapter.ListItem item) {
@@ -76,11 +86,12 @@ class PasswordCheckViewBinder {
     }
 
     /**
-     * Called whenever a credential is bound to this view holder. Please note that this method
-     * might be called on a recycled view with old data, so make sure to always reset unused
-     * properties to default values.
-     * @param model The model containing the data for the view
-     * @param view The view to be bound
+     * Called whenever a credential is bound to this view holder. Please note that this method might
+     * be called on a recycled view with old data, so make sure to always reset unused properties to
+     * default values.
+     *
+     * @param model       The model containing the data for the view
+     * @param view        The view to be bound
      * @param propertyKey The key of the property to be bound
      */
     private static void bindCredentialView(
@@ -100,16 +111,27 @@ class PasswordCheckViewBinder {
             reason.setText(credential.isPhished()
                             ? R.string.password_check_credential_row_reason_phished
                             : R.string.password_check_credential_row_reason_leaked);
+
+            ListMenuButton more = view.findViewById(R.id.credential_menu_button);
+            more.setDelegate(() -> {
+                return createCredentialMenu(view.getContext(), model.get(COMPROMISED_CREDENTIAL),
+                        model.get(CREDENTIAL_HANDLER));
+            });
+        } else if (propertyKey == CREDENTIAL_HANDLER) {
+            assert model.get(CREDENTIAL_HANDLER) != null;
+            // Is read-only and must therefore be bound initially, so no action required.
         } else {
             assert false : "Unhandled update to property:" + propertyKey;
         }
     }
 
     /**
-     * Called whenever a property in the given model changes. It updates the given view accordingly.
-     * @param model The observed {@link PropertyModel}. Its data need to be reflected in the view.
-     * @param view The {@link View} of the header to update.
-     * @param key The {@link PropertyKey} which changed.
+     * Called whenever a property in the given model changes. It updates the given view
+     * accordingly.
+     *
+     * @param model The observed {@link PropertyModel}. Its data needs to be reflected in the view.
+     * @param view  The {@link View} of the header to update.
+     * @param key   The {@link PropertyKey} which changed.
      */
     private static void bindHeaderView(PropertyModel model, View view, PropertyKey key) {
         if (key == CHECK_STATUS) {
@@ -120,4 +142,20 @@ class PasswordCheckViewBinder {
     }
 
     private PasswordCheckViewBinder() {}
+
+    private static ListMenu createCredentialMenu(Context context, CompromisedCredential credential,
+            PasswordCheckCoordinator.CredentialEventHandler credentialHandler) {
+        MVCListAdapter.ModelList menuItems = new MVCListAdapter.ModelList();
+        menuItems.add(
+                BasicListMenu.buildMenuListItem(org.chromium.chrome.R.string.remove, 0, 0, true));
+        ListMenu.Delegate delegate = (listModel) -> {
+            int textId = listModel.get(ListMenuItemProperties.TITLE_ID);
+            if (textId == org.chromium.chrome.R.string.remove) {
+                credentialHandler.onRemove(credential);
+            } else {
+                assert false : "No action defined for " + context.getString(textId);
+            }
+        };
+        return new BasicListMenu(context, menuItems, delegate);
+    }
 }

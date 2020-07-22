@@ -121,7 +121,7 @@ class MediaWebContentsObserver::PlayerInfo {
 MediaWebContentsObserver::MediaWebContentsObserver(WebContents* web_contents)
     : WebContentsObserver(web_contents),
       audible_metrics_(GetAudibleMetrics()),
-      session_controllers_manager_(this),
+      session_controllers_manager_(web_contents),
       power_experiment_manager_(MediaPowerExperimentManager::Instance()) {}
 
 MediaWebContentsObserver::~MediaWebContentsObserver() = default;
@@ -204,6 +204,8 @@ bool MediaWebContentsObserver::OnMessageReceived(
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnMediaDestroyed,
                         OnMediaDestroyed)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnMediaPaused, OnMediaPaused)
+    IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnMediaMetadataChanged,
+                        OnMediaMetadataChanged)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnMediaPlaying,
                         OnMediaPlaying)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnMutedStatusChanged,
@@ -263,7 +265,9 @@ void MediaWebContentsObserver::OnMediaDestroyed(
     RenderFrameHost* render_frame_host,
     int delegate_id) {
   // TODO(liberato): Should we skip power manager notifications in this case?
-  OnMediaPaused(render_frame_host, delegate_id, true);
+  const MediaPlayerId player_id(render_frame_host, delegate_id);
+  player_info_map_.erase(player_id);
+  session_controllers_manager_.OnEnd(player_id);
 }
 
 void MediaWebContentsObserver::OnMediaPaused(RenderFrameHost* render_frame_host,
@@ -276,23 +280,17 @@ void MediaWebContentsObserver::OnMediaPaused(RenderFrameHost* render_frame_host,
 
   player_info->SetIsStopped(reached_end_of_stream);
 
-  if (reached_end_of_stream)
-    session_controllers_manager_.OnEnd(player_id);
-  else
-    session_controllers_manager_.OnPause(player_id);
+  session_controllers_manager_.OnPause(player_id, reached_end_of_stream);
 }
 
-void MediaWebContentsObserver::OnMediaPlaying(
+void MediaWebContentsObserver::OnMediaMetadataChanged(
     RenderFrameHost* render_frame_host,
     int delegate_id,
-    bool has_video,
     bool has_audio,
+    bool has_video,
     media::MediaContentType media_content_type) {
   const MediaPlayerId player_id(render_frame_host, delegate_id);
 
-  // TODO(wdzierzanowski): OnMediaPlaying() should only ever be called for a
-  // player that has started playing (crbug.com/1091203).  For now, we must
-  // handle updating the metadata here as well.
   PlayerInfo* player_info = GetPlayerInfo(player_id);
   if (!player_info) {
     PlayerInfoMap::iterator it;
@@ -304,8 +302,20 @@ void MediaWebContentsObserver::OnMediaPlaying(
   player_info->set_has_audio(has_audio);
   player_info->set_has_video(has_video);
 
-  if (!session_controllers_manager_.RequestPlay(
-          player_id, has_audio, media_content_type, has_video)) {
+  session_controllers_manager_.OnMetadata(player_id, has_audio, has_video,
+                                          media_content_type);
+}
+
+void MediaWebContentsObserver::OnMediaPlaying(
+    RenderFrameHost* render_frame_host,
+    int delegate_id) {
+  const MediaPlayerId player_id(render_frame_host, delegate_id);
+
+  PlayerInfo* player_info = GetPlayerInfo(player_id);
+  if (!player_info)
+    return;
+
+  if (!session_controllers_manager_.RequestPlay(player_id)) {
     // Return early to avoid spamming WebContents with playing/stopped
     // notifications.  If RequestPlay() fails, media session will send a pause
     // signal right away.

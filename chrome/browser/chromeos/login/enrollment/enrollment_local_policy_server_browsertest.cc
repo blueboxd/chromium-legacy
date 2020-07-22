@@ -871,7 +871,7 @@ class KioskEnrollmentTest : public EnrollmentLocalPolicyServerBase {
   void SetUp() override {
     needs_background_networking_ = true;
     skip_splash_wait_override_ =
-        AppLaunchController::SkipSplashScreenWaitForTesting();
+        KioskLaunchController::SkipSplashScreenWaitForTesting();
     EnrollmentLocalPolicyServerBase::SetUp();
   }
 

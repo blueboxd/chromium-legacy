@@ -87,14 +87,17 @@ static CSPDirectiveName CSPFallback(CSPDirectiveName directive,
       return CSPDirectiveName::DefaultSrc;
 
     case CSPDirectiveName::BaseURI:
+    case CSPDirectiveName::BlockAllMixedContent:
     case CSPDirectiveName::DefaultSrc:
     case CSPDirectiveName::FormAction:
     case CSPDirectiveName::FrameAncestors:
     case CSPDirectiveName::NavigateTo:
     case CSPDirectiveName::ReportTo:
     case CSPDirectiveName::ReportURI:
+    case CSPDirectiveName::RequireTrustedTypesFor:
     case CSPDirectiveName::Sandbox:
     case CSPDirectiveName::TreatAsPublicAddress:
+    case CSPDirectiveName::TrustedTypes:
     case CSPDirectiveName::UpgradeInsecureRequests:
       return CSPDirectiveName::Unknown;
     case CSPDirectiveName::Unknown:
@@ -128,6 +131,7 @@ const char* ErrorMessage(CSPDirectiveName directive) {
              "following Content Security Policy directive: \"$2\".";
 
     case CSPDirectiveName::BaseURI:
+    case CSPDirectiveName::BlockAllMixedContent:
     case CSPDirectiveName::ChildSrc:
     case CSPDirectiveName::ConnectSrc:
     case CSPDirectiveName::DefaultSrc:
@@ -139,6 +143,7 @@ const char* ErrorMessage(CSPDirectiveName directive) {
     case CSPDirectiveName::PrefetchSrc:
     case CSPDirectiveName::ReportTo:
     case CSPDirectiveName::ReportURI:
+    case CSPDirectiveName::RequireTrustedTypesFor:
     case CSPDirectiveName::Sandbox:
     case CSPDirectiveName::ScriptSrc:
     case CSPDirectiveName::ScriptSrcAttr:
@@ -147,6 +152,7 @@ const char* ErrorMessage(CSPDirectiveName directive) {
     case CSPDirectiveName::StyleSrcAttr:
     case CSPDirectiveName::StyleSrcElem:
     case CSPDirectiveName::TreatAsPublicAddress:
+    case CSPDirectiveName::TrustedTypes:
     case CSPDirectiveName::UpgradeInsecureRequests:
     case CSPDirectiveName::WorkerSrc:
     case CSPDirectiveName::Unknown:
@@ -765,6 +771,16 @@ void AddContentSecurityPolicyFromHeader(base::StringPiece header,
               directive.second.as_string().c_str()));
         }
         break;
+
+        // We check the following three directives so that we do not trigger a
+        // warning because of an unrecognized directive. However, we skip
+        // parsing them for now since we do not need these directives here (they
+        // are parsed and enforced in the blink CSP parser).
+      case CSPDirectiveName::BlockAllMixedContent:
+      case CSPDirectiveName::RequireTrustedTypesFor:
+      case CSPDirectiveName::TrustedTypes:
+        break;
+
       case CSPDirectiveName::ReportTo:
         out->use_reporting_api = true;
         out->report_endpoints.clear();
@@ -931,6 +947,8 @@ void UpgradeInsecureRequest(GURL* url) {
 CSPDirectiveName ToCSPDirectiveName(const std::string& name) {
   if (name == "base-uri")
     return CSPDirectiveName::BaseURI;
+  if (name == "block-all-mixed-content")
+    return CSPDirectiveName::BlockAllMixedContent;
   if (name == "child-src")
     return CSPDirectiveName::ChildSrc;
   if (name == "connect-src")
@@ -957,6 +975,8 @@ CSPDirectiveName ToCSPDirectiveName(const std::string& name) {
     return CSPDirectiveName::PrefetchSrc;
   if (name == "report-uri")
     return CSPDirectiveName::ReportURI;
+  if (name == "require-trusted-types-for")
+    return CSPDirectiveName::RequireTrustedTypesFor;
   if (name == "sandbox")
     return CSPDirectiveName::Sandbox;
   if (name == "script-src")
@@ -973,6 +993,8 @@ CSPDirectiveName ToCSPDirectiveName(const std::string& name) {
     return CSPDirectiveName::StyleSrcElem;
   if (name == "treat-as-public-address")
     return CSPDirectiveName::TreatAsPublicAddress;
+  if (name == "trusted-types")
+    return CSPDirectiveName::TrustedTypes;
   if (name == "upgrade-insecure-requests")
     return CSPDirectiveName::UpgradeInsecureRequests;
   if (name == "worker-src")
@@ -989,6 +1011,8 @@ std::string ToString(CSPDirectiveName name) {
   switch (name) {
     case CSPDirectiveName::BaseURI:
       return "base-uri";
+    case CSPDirectiveName::BlockAllMixedContent:
+      return "block-all-mixed-content";
     case CSPDirectiveName::ChildSrc:
       return "child-src";
     case CSPDirectiveName::ConnectSrc:
@@ -1015,6 +1039,8 @@ std::string ToString(CSPDirectiveName name) {
       return "prefetch-src";
     case CSPDirectiveName::ReportURI:
       return "report-uri";
+    case CSPDirectiveName::RequireTrustedTypesFor:
+      return "require-trusted-types-for";
     case CSPDirectiveName::Sandbox:
       return "sandbox";
     case CSPDirectiveName::ScriptSrc:
@@ -1033,6 +1059,8 @@ std::string ToString(CSPDirectiveName name) {
       return "upgrade-insecure-requests";
     case CSPDirectiveName::TreatAsPublicAddress:
       return "treat-as-public-address";
+    case CSPDirectiveName::TrustedTypes:
+      return "trusted-types";
     case CSPDirectiveName::WorkerSrc:
       return "worker-src";
     case CSPDirectiveName::ReportTo:

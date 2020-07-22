@@ -91,6 +91,7 @@
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
 #include "third_party/blink/renderer/core/editing/surrounding_text.h"
+#include "third_party/blink/renderer/core/editing/writing_direction.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
@@ -805,18 +806,15 @@ void LocalFrame::SetTextDirection(base::i18n::TextDirection direction) {
 
   switch (direction) {
     case base::i18n::TextDirection::UNKNOWN_DIRECTION:
-      editor.SetBaseWritingDirection(
-          mojo_base::mojom::blink::TextDirection::UNKNOWN_DIRECTION);
+      editor.SetBaseWritingDirection(WritingDirection::kNatural);
       break;
 
     case base::i18n::TextDirection::LEFT_TO_RIGHT:
-      editor.SetBaseWritingDirection(
-          mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT);
+      editor.SetBaseWritingDirection(WritingDirection::kLeftToRight);
       break;
 
     case base::i18n::TextDirection::RIGHT_TO_LEFT:
-      editor.SetBaseWritingDirection(
-          mojo_base::mojom::blink::TextDirection::RIGHT_TO_LEFT);
+      editor.SetBaseWritingDirection(WritingDirection::kRightToLeft);
       break;
 
     default:

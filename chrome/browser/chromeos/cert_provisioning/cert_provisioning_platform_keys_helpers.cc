@@ -49,17 +49,17 @@ void CertIterator::Cancel() {
 
 void CertIterator::OnGetCertificatesDone(
     std::unique_ptr<net::CertificateList> existing_certs,
-    const std::string& error_message) {
+    platform_keys::Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!error_message.empty()) {
-    StopIteration(error_message);
+  if (status != platform_keys::Status::kSuccess) {
+    StopIteration(status);
     return;
   }
 
   // No work to do, return empty error message.
   if (!existing_certs || existing_certs->empty()) {
-    StopIteration(error_message);
+    StopIteration(status);
     return;
   }
 
@@ -78,7 +78,7 @@ void CertIterator::OnGetCertificatesDone(
 void CertIterator::OnGetAttributeForKeyDone(
     scoped_refptr<net::X509Certificate> cert,
     const base::Optional<std::string>& attr_value,
-    const std::string& error_message) {
+    platform_keys::Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(wait_counter_ > 0);
 
@@ -87,27 +87,28 @@ void CertIterator::OnGetAttributeForKeyDone(
   // nullopt for cert_profile_id and empty error message. When
   // PlatformKeysService switches to error codes, a code for such situation
   // should not be returned via callback and cert collection can be continued.
-  if (!error_message.empty()) {
-    StopIteration(error_message);
+  if (status != platform_keys::Status::kSuccess) {
+    StopIteration(status);
     return;
   }
 
   if (attr_value) {
-    for_each_callback_.Run(cert, attr_value.value(), /*error_message=*/"");
+    for_each_callback_.Run(cert, attr_value.value(),
+                           platform_keys::Status::kSuccess);
   }
 
   --wait_counter_;
   if (wait_counter_ == 0) {
-    StopIteration(/*error_message=*/"");
+    StopIteration(platform_keys::Status::kSuccess);
   }
 }
 
-void CertIterator::StopIteration(const std::string& error_message) {
+void CertIterator::StopIteration(platform_keys::Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!on_finished_callback_.is_null());
 
   weak_factory_.InvalidateWeakPtrs();
-  std::move(on_finished_callback_).Run(error_message);
+  std::move(on_finished_callback_).Run(status);
 }
 
 // ========= LatestCertsWithIdsGetter ==========================================
@@ -146,11 +147,11 @@ bool LatestCertsWithIdsGetter::IsRunning() const {
 void LatestCertsWithIdsGetter::ProcessOneCert(
     scoped_refptr<net::X509Certificate> new_cert,
     const CertProfileId& cert_profile_id,
-    const std::string& error_message) {
+    platform_keys::Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!error_message.empty()) {
-    OnIterationFinished(error_message);
+  if (status != platform_keys::Status::kSuccess) {
+    OnIterationFinished(status);
     return;
   }
 
@@ -168,17 +169,17 @@ void LatestCertsWithIdsGetter::ProcessOneCert(
 }
 
 void LatestCertsWithIdsGetter::OnIterationFinished(
-    const std::string& error_message) {
+    platform_keys::Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback_.is_null());
 
   weak_factory_.InvalidateWeakPtrs();
 
-  if (!error_message.empty()) {
+  if (status != platform_keys::Status::kSuccess) {
     certs_with_ids_ = {};
   }
 
-  std::move(callback_).Run(std::move(certs_with_ids_), error_message);
+  std::move(callback_).Run(std::move(certs_with_ids_), status);
 }
 
 // ========= CertDeleter =======================================================
@@ -217,11 +218,11 @@ void CertDeleter::Cancel() {
 
 void CertDeleter::ProcessOneCert(scoped_refptr<net::X509Certificate> cert,
                                  const CertProfileId& cert_profile_id,
-                                 const std::string& error_message) {
+                                 platform_keys::Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!error_message.empty()) {
-    ReturnStatus(error_message);
+  if (status != platform_keys::Status::kSuccess) {
+    ReturnStatus(status);
     return;
   }
 
@@ -266,12 +267,12 @@ void CertDeleter::DeleteCert(scoped_refptr<net::X509Certificate> cert) {
                           weak_factory_.GetWeakPtr()));
 }
 
-void CertDeleter::OnDeleteCertDone(const std::string& error_message) {
+void CertDeleter::OnDeleteCertDone(platform_keys::Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(pending_delete_tasks_counter_ > 0);
 
-  if (!error_message.empty()) {
-    ReturnStatus(error_message);
+  if (status != platform_keys::Status::kSuccess) {
+    ReturnStatus(status);
     return;
   }
 
@@ -279,7 +280,7 @@ void CertDeleter::OnDeleteCertDone(const std::string& error_message) {
   CheckStateAndMaybeFinish();
 }
 
-void CertDeleter::OnIterationFinished(const std::string& error_message) {
+void CertDeleter::OnIterationFinished(platform_keys::Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   iteration_finished_ = true;
@@ -293,15 +294,15 @@ void CertDeleter::CheckStateAndMaybeFinish() {
     return;
   }
 
-  ReturnStatus(/*error_message=*/"");
+  ReturnStatus(platform_keys::Status::kSuccess);
 }
 
-void CertDeleter::ReturnStatus(const std::string& error_message) {
+void CertDeleter::ReturnStatus(platform_keys::Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!callback_.is_null());
 
   weak_factory_.InvalidateWeakPtrs();
-  std::move(callback_).Run(error_message);
+  std::move(callback_).Run(status);
 }
 
 }  // namespace cert_provisioning

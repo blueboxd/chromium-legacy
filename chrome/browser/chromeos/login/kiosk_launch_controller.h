@@ -192,18 +192,6 @@ class KioskLaunchController : public KioskProfileLoader::Delegate,
   base::WeakPtrFactory<KioskLaunchController> weak_ptr_factory_{this};
 };
 
-// TODO(crbug.com/1046364): Some places are still using legacy kiosk controllers
-// names. This is done in order not to break them. Remove this.
-class ArcKioskController : public KioskLaunchController {
-  using KioskLaunchController::KioskLaunchController;
-};
-class AppLaunchController : public KioskLaunchController {
-  using KioskLaunchController::KioskLaunchController;
-};
-class WebKioskController : public KioskLaunchController {
-  using KioskLaunchController::KioskLaunchController;
-};
-
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_KIOSK_LAUNCH_CONTROLLER_H_

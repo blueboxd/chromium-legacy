@@ -91,13 +91,13 @@ EnterprisePlatformKeysInternalGenerateKeyFunction::Run() {
 
 void EnterprisePlatformKeysInternalGenerateKeyFunction::OnGeneratedKey(
     const std::string& public_key_der,
-    const std::string& error_message) {
+    chromeos::platform_keys::Status status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (error_message.empty()) {
+  if (status == chromeos::platform_keys::Status::kSuccess) {
     Respond(ArgumentList(api_epki::GenerateKey::Results::Create(
         std::vector<uint8_t>(public_key_der.begin(), public_key_der.end()))));
   } else {
-    Respond(Error(error_message));
+    Respond(Error(chromeos::platform_keys::StatusToString(status)));
   }
 }
 
@@ -127,10 +127,10 @@ EnterprisePlatformKeysGetCertificatesFunction::Run() {
 
 void EnterprisePlatformKeysGetCertificatesFunction::OnGotCertificates(
     std::unique_ptr<net::CertificateList> certs,
-    const std::string& error_message) {
+    chromeos::platform_keys::Status status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!error_message.empty()) {
-    Respond(Error(error_message));
+  if (status != chromeos::platform_keys::Status::kSuccess) {
+    Respond(Error(chromeos::platform_keys::StatusToString(status)));
     return;
   }
 
@@ -187,12 +187,12 @@ EnterprisePlatformKeysImportCertificateFunction::Run() {
 }
 
 void EnterprisePlatformKeysImportCertificateFunction::OnImportedCertificate(
-    const std::string& error_message) {
+    chromeos::platform_keys::Status status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (error_message.empty())
+  if (status == chromeos::platform_keys::Status::kSuccess)
     Respond(NoArguments());
   else
-    Respond(Error(error_message));
+    Respond(Error(chromeos::platform_keys::StatusToString(status)));
 }
 
 EnterprisePlatformKeysRemoveCertificateFunction::
@@ -234,12 +234,12 @@ EnterprisePlatformKeysRemoveCertificateFunction::Run() {
 }
 
 void EnterprisePlatformKeysRemoveCertificateFunction::OnRemovedCertificate(
-    const std::string& error_message) {
+    chromeos::platform_keys::Status status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (error_message.empty())
+  if (status == chromeos::platform_keys::Status::kSuccess)
     Respond(NoArguments());
   else
-    Respond(Error(error_message));
+    Respond(Error(chromeos::platform_keys::StatusToString(status)));
 }
 
 EnterprisePlatformKeysInternalGetTokensFunction::
@@ -262,10 +262,10 @@ EnterprisePlatformKeysInternalGetTokensFunction::Run() {
 void EnterprisePlatformKeysInternalGetTokensFunction::OnGotTokens(
     std::unique_ptr<std::vector<chromeos::platform_keys::TokenId>>
         platform_keys_token_ids,
-    const std::string& error_message) {
+    chromeos::platform_keys::Status status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!error_message.empty()) {
-    Respond(Error(error_message));
+  if (status != chromeos::platform_keys::Status::kSuccess) {
+    Respond(Error(chromeos::platform_keys::StatusToString(status)));
     return;
   }
 

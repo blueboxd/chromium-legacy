@@ -86,10 +86,8 @@ void LoginDisplayHostCommon::FinalizeImmediately() {
   delete this;
 }
 
-AppLaunchController* LoginDisplayHostCommon::GetAppLaunchController() {
-  // TODO(crbug.com/1046364): Some places are still using legacy
-  // AppLaunchController. Remove casting after they are changed.
-  return reinterpret_cast<AppLaunchController*>(app_launch_controller_.get());
+KioskLaunchController* LoginDisplayHostCommon::GetKioskLaunchController() {
+  return app_launch_controller_.get();
 }
 
 void LoginDisplayHostCommon::StartUserAdding(

@@ -317,13 +317,11 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
   }
 
   void SetJsEnabledForActiveView(bool enabled) {
-    content::RenderViewHost* view = browser()
-                                        ->tab_strip_model()
-                                        ->GetActiveWebContents()
-                                        ->GetRenderViewHost();
-    content::WebPreferences prefs = view->GetWebkitPreferences();
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    content::WebPreferences prefs = web_contents->GetOrCreateWebPreferences();
     prefs.javascript_enabled = enabled;
-    view->UpdateWebkitPreferences(prefs);
+    web_contents->SetWebPreferences(prefs);
   }
 
   void TestProfilesIndependent(Browser* browser_a, Browser* browser_b);

@@ -8,7 +8,6 @@
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
@@ -66,10 +65,7 @@ class PointerEventTarget {
   DISALLOW_NEW();
 
  public:
-  void Trace(Visitor* visitor) const {
-    visitor->Trace(target_element);
-    visitor->Trace(target_frame);
-  }
+  void Trace(Visitor* visitor) const;
 
   Member<Element> target_element;
   Member<LocalFrame> target_frame;

@@ -55,7 +55,7 @@ class TabletModePageBehaviorTest : public InProcessBrowserTest {
 
   content::WebPreferences GetWebKitPreferences(
       content::WebContents* web_contents) const {
-    return web_contents->GetRenderViewHost()->GetWebkitPreferences();
+    return web_contents->GetOrCreateWebPreferences();
   }
 
   void ValidateWebPrefs(content::WebContents* web_contents,

@@ -798,9 +798,9 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient_StopSync) {
   // The observer should have been notified of the auth error state.
   EXPECT_EQ(rejected_by_client, observer.auth_error());
   // The Sync engine should have been shut down.
-  EXPECT_EQ(SyncService::TransportState::DISABLED,
+  EXPECT_FALSE(service()->IsEngineInitialized());
+  EXPECT_EQ(SyncService::TransportState::PAUSED,
             service()->GetTransportState());
-  EXPECT_TRUE(service()->HasDisableReason(SyncService::DISABLE_REASON_PAUSED));
 
   service()->RemoveObserver(&observer);
 }
@@ -1517,8 +1517,9 @@ TEST_F(ProfileSyncServiceTest,
   identity_test_env()->SetInvalidRefreshTokenForPrimaryAccount();
   ASSERT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
             service()->GetAuthError().state());
-  ASSERT_EQ(SyncService::DisableReasonSet(SyncService::DISABLE_REASON_PAUSED),
-            service()->GetDisableReasons());
+  ASSERT_EQ(SyncService::TransportState::PAUSED,
+            service()->GetTransportState());
+  ASSERT_TRUE(service()->GetDisableReasons().Empty());
 
   // Verify that sync service does not provide demographics when sync is paused.
   UserDemographicsResult user_demographics_result =

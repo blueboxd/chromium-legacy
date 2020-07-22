@@ -129,13 +129,14 @@ PushMessagingAppIdentifier PushMessagingAppIdentifier::FindByAppId(
   const base::DictionaryValue* map =
       profile->GetPrefs()->GetDictionary(prefs::kPushMessagingAppIdentifierMap);
 
-  std::string map_value;
-  if (!map->GetStringWithoutPathExpansion(app_id, &map_value))
+  const std::string* map_value = map->FindStringKey(app_id);
+
+  if (!map_value || map_value->empty())
     return PushMessagingAppIdentifier();
 
   GURL origin;
   int64_t service_worker_registration_id;
-  if (!GetOriginAndSWRFromPrefValue(map_value, &origin,
+  if (!GetOriginAndSWRFromPrefValue(*map_value, &origin,
                                     &service_worker_registration_id)) {
     NOTREACHED();
     return PushMessagingAppIdentifier();

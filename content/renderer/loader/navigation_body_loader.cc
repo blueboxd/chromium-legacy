@@ -7,11 +7,11 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "content/public/common/referrer.h"
-#include "content/renderer/loader/code_cache_loader_impl.h"
 #include "content/renderer/loader/resource_load_stats.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/platform/web_code_cache_loader.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 
 namespace content {
@@ -194,7 +194,7 @@ void NavigationBodyLoader::StartLoadingBody(
                                  content::PREVIEWS_OFF);
 
   if (use_isolated_code_cache) {
-    code_cache_loader_ = std::make_unique<CodeCacheLoaderImpl>();
+    code_cache_loader_ = blink::WebCodeCacheLoader::Create();
     code_cache_loader_->FetchFromCodeCache(
         blink::mojom::CodeCacheType::kJavascript,
         resource_load_info_->original_url,

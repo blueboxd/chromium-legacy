@@ -35,8 +35,7 @@
 #error "This file requires ARC support."
 #endif
 
-@protocol
-    HandlerProtocols <BrowserCommands, FindInPageCommands, QRGenerationCommands>
+@protocol HandlerProtocols <BrowserCommands, FindInPageCommands>
 @end
 
 class ActivityServiceMediatorTest : public PlatformTest {
@@ -47,13 +46,16 @@ class ActivityServiceMediatorTest : public PlatformTest {
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
 
     mocked_handler_ = OCMStrictProtocolMock(@protocol(HandlerProtocols));
+    mocked_qr_generation_handler_ =
+        OCMStrictProtocolMock(@protocol(QRGenerationCommands));
     mocked_thumbnail_generator_ =
         OCMStrictClassMock([ChromeActivityItemThumbnailGenerator class]);
 
-    mediator_ =
-        [[ActivityServiceMediator alloc] initWithHandler:mocked_handler_
-                                             prefService:pref_service_.get()
-                                           bookmarkModel:nil];
+    mediator_ = [[ActivityServiceMediator alloc]
+            initWithHandler:mocked_handler_
+        qrGenerationHandler:mocked_qr_generation_handler_
+                prefService:pref_service_.get()
+              bookmarkModel:nil];
   }
 
   void VerifyTypes(NSArray* activities, NSArray* expected_types) {
@@ -64,6 +66,7 @@ class ActivityServiceMediatorTest : public PlatformTest {
   }
 
   id mocked_handler_;
+  id mocked_qr_generation_handler_;
   id mocked_thumbnail_generator_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   base::HistogramTester histograms_tester_;

@@ -1548,6 +1548,7 @@ enum HistogramValue {
   CERTIFICATEPROVIDER_SETCERTIFICATES = 1485,
   AUTOTESTPRIVATE_DISABLEAUTOMATION = 1486,
   INPUT_IME_SETASSISTIVEWINDOWBUTTONHIGHLIGHTED = 1487,
+  CERTIFICATEPROVIDER_REPORTSIGNATURE = 1488,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

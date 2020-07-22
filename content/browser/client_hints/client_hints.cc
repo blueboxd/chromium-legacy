@@ -24,6 +24,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -436,9 +437,9 @@ bool ShouldAddClientHint(const ClientHintsExtendedData& data,
 }
 
 bool IsJavascriptEnabled(FrameTreeNode* frame_tree_node) {
-  RenderViewHost* render_view_host =
-      frame_tree_node->current_frame_host()->GetRenderViewHost();
-  return render_view_host->GetWebkitPreferences().javascript_enabled;
+  return WebContents::FromRenderFrameHost(frame_tree_node->current_frame_host())
+      ->GetOrCreateWebPreferences()
+      .javascript_enabled;
 }
 
 bool ShouldAddClientHints(const GURL& url,

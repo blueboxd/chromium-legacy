@@ -546,7 +546,7 @@ void* PartitionBucket<thread_safe>::SlowPathAlloc(
   PartitionPage<thread_safe>* new_page = nullptr;
   *is_already_zeroed = false;
 
-  // For the PartitionRootGeneric::Alloc() API, we have a bunch of buckets
+  // For the PartitionRoot::Alloc() API, we have a bunch of buckets
   // marked as special cases. We bounce them through to the slow path so that
   // we can still have a blazing fast hot path due to lack of corner-case
   // branches.
@@ -557,11 +557,11 @@ void* PartitionBucket<thread_safe>::SlowPathAlloc(
   // the empty or decommitted lists which affects the subsequent conditional.
   bool return_null = flags & PartitionAllocReturnNull;
   if (UNLIKELY(is_direct_mapped())) {
-    PA_DCHECK(size > kGenericMaxBucketed);
+    PA_DCHECK(size > kMaxBucketed);
     PA_DCHECK(this == get_sentinel_bucket());
     PA_DCHECK(active_pages_head ==
               PartitionPage<thread_safe>::get_sentinel_page());
-    if (size > kGenericMaxDirectMapped) {
+    if (size > kMaxDirectMapped) {
       if (return_null)
         return nullptr;
       PartitionExcessiveAllocationSize(size);

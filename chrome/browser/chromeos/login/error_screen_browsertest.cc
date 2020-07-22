@@ -251,8 +251,8 @@ class KioskErrorScreenTest : public MixinBasedInProcessBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
 
     skip_splash_wait_override_ =
-        AppLaunchController::SkipSplashScreenWaitForTesting();
-    network_wait_override_ = AppLaunchController::SetNetworkWaitForTesting(
+        KioskLaunchController::SkipSplashScreenWaitForTesting();
+    network_wait_override_ = KioskLaunchController::SetNetworkWaitForTesting(
         base::TimeDelta::FromSeconds(0));
 
     fake_cws_.Init(embedded_test_server());

@@ -7,15 +7,20 @@ package org.chromium.chrome.browser.password_check;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CheckStatus.SUCCESS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.COMPROMISED_CREDENTIAL;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.CompromisedCredentialProperties.CREDENTIAL_HANDLER;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_STATUS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.ITEMS;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.password_check.PasswordCheckProperties.ItemType;
@@ -23,7 +28,7 @@ import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Controller tests verify that the PasswordCheck controller modifies the model if the API is used
@@ -33,13 +38,19 @@ import java.util.Arrays;
 public class PasswordCheckControllerTest {
     private static final CompromisedCredential ANA =
             new CompromisedCredential("https://m.a.xyz/", "Ana", "password", false);
+    private static final CompromisedCredential BOB =
+            new CompromisedCredential("https://www.b.ch/", "Baub", "DoneSth", true);
+
+    @Mock
+    private PasswordCheckComponentUi.Delegate mDelegate;
 
     private final PasswordCheckMediator mMediator = new PasswordCheckMediator();
     private final PropertyModel mModel = PasswordCheckProperties.createDefaultModel();
 
     @Before
     public void setUp() {
-        mMediator.initialize(mModel);
+        MockitoAnnotations.initMocks(this);
+        mMediator.initialize(mModel, mDelegate);
     }
 
     @Test
@@ -49,11 +60,18 @@ public class PasswordCheckControllerTest {
 
     @Test
     public void testCreatesHeaderAndEntryForCredentials() {
-        mMediator.onCompromisedCredentialsAvailable(SUCCESS, Arrays.asList(ANA));
+        mMediator.onCompromisedCredentialsAvailable(SUCCESS, Collections.singletonList(ANA));
         ListModel<MVCListAdapter.ListItem> itemList = mModel.get(ITEMS);
         assertThat(itemList.get(0).type, is(ItemType.HEADER));
         assertThat(itemList.get(0).model.get(CHECK_STATUS), is(SUCCESS));
         assertThat(itemList.get(1).type, is(ItemType.COMPROMISED_CREDENTIAL));
         assertThat(itemList.get(1).model.get(COMPROMISED_CREDENTIAL), is(ANA));
+        assertThat(itemList.get(1).model.get(CREDENTIAL_HANDLER), is(mMediator));
+    }
+
+    @Test
+    public void testRemovingElementTriggersDelegate() {
+        mMediator.onRemove(ANA);
+        verify(mDelegate).removeCredential(eq(ANA));
     }
 }

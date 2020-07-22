@@ -366,6 +366,12 @@ bool ContentBrowserClient::AllowSignedExchange(BrowserContext* context) {
   return true;
 }
 
+bool ContentBrowserClient::OverrideWebPreferencesAfterNavigation(
+    WebContents* web_contents,
+    WebPreferences* prefs) {
+  return false;
+}
+
 bool ContentBrowserClient::IsDataSaverEnabled(BrowserContext* context) {
   DCHECK(context);
   return false;

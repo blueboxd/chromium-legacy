@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/no_destructor.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/attestation/tpm_challenge_key_result.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
@@ -331,9 +332,11 @@ void CertProvisioningWorkerImpl::GenerateRegularKey() {
 
 void CertProvisioningWorkerImpl::OnGenerateRegularKeyDone(
     const std::string& public_key_spki_der,
-    const std::string& error_message) {
-  if (!error_message.empty() || public_key_spki_der.empty()) {
-    LOG(ERROR) << "Failed to prepare a non-VA key: " << error_message;
+    platform_keys::Status status) {
+  if (status != platform_keys::Status::kSuccess ||
+      public_key_spki_der.empty()) {
+    LOG(ERROR) << "Failed to prepare a non-VA key: "
+               << platform_keys::StatusToString(status);
     UpdateState(CertProvisioningWorkerState::kFailed);
     return;
   }
@@ -509,12 +512,12 @@ void CertProvisioningWorkerImpl::MarkKey() {
                      weak_factory_.GetWeakPtr()));
 }
 
-void CertProvisioningWorkerImpl::OnMarkKeyDone(
-    const std::string& error_message) {
+void CertProvisioningWorkerImpl::OnMarkKeyDone(platform_keys::Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!error_message.empty()) {
-    LOG(ERROR) << "Failed to mark a key: " << error_message;
+  if (status != platform_keys::Status::kSuccess) {
+    LOG(ERROR) << "Failed to mark a key: "
+               << platform_keys::StatusToString(status);
     UpdateState(CertProvisioningWorkerState::kFailed);
     return;
   }
@@ -539,16 +542,16 @@ void CertProvisioningWorkerImpl::SignCsr() {
                           weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
 }
 
-void CertProvisioningWorkerImpl::OnSignCsrDone(
-    base::TimeTicks start_time,
-    const std::string& signature,
-    const std::string& error_message) {
+void CertProvisioningWorkerImpl::OnSignCsrDone(base::TimeTicks start_time,
+                                               const std::string& signature,
+                                               platform_keys::Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   RecordCsrSignTime(cert_scope_, base::TimeTicks::Now() - start_time);
 
-  if (!error_message.empty()) {
-    LOG(ERROR) << "Failed to sign CSR: " << error_message;
+  if (status != platform_keys::Status::kSuccess) {
+    LOG(ERROR) << "Failed to sign CSR: "
+               << platform_keys::StatusToString(status);
     UpdateState(CertProvisioningWorkerState::kFailed);
     return;
   }
@@ -634,11 +637,12 @@ void CertProvisioningWorkerImpl::ImportCert(
 }
 
 void CertProvisioningWorkerImpl::OnImportCertDone(
-    const std::string& error_message) {
+    platform_keys::Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!error_message.empty()) {
-    LOG(ERROR) << "Failed to import certificate: " << error_message;
+  if (status != platform_keys::Status::kSuccess) {
+    LOG(ERROR) << "Failed to import certificate: "
+               << platform_keys::StatusToString(status);
     UpdateState(CertProvisioningWorkerState::kFailed);
     return;
   }
@@ -785,12 +789,12 @@ void CertProvisioningWorkerImpl::OnDeleteVaKeyDone(
   OnCleanUpDone();
 }
 
-void CertProvisioningWorkerImpl::OnRemoveKeyDone(
-    const std::string& error_message) {
+void CertProvisioningWorkerImpl::OnRemoveKeyDone(platform_keys::Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!error_message.empty()) {
-    LOG(ERROR) << "Failed to delete a key: " << error_message;
+  if (status != platform_keys::Status::kSuccess) {
+    LOG(ERROR) << "Failed to delete a key: "
+               << platform_keys::StatusToString(status);
   }
 
   OnCleanUpDone();

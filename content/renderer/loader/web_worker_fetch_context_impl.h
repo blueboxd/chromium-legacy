@@ -117,7 +117,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       blink::CrossVariantMojoRemote<
           network::mojom::URLLoaderFactoryInterfaceBase> url_loader_factory)
       override;
-  std::unique_ptr<blink::CodeCacheLoader> CreateCodeCacheLoader() override;
+  std::unique_ptr<blink::WebCodeCacheLoader> CreateCodeCacheLoader() override;
   void WillSendRequest(blink::WebURLRequest&) override;
   blink::mojom::ControllerServiceWorkerMode GetControllerServiceWorkerMode()
       const override;

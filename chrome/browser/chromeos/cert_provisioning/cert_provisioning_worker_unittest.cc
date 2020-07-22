@@ -269,40 +269,41 @@ const std::string& GetPublicKey() {
 #define EXPECT_DOWNLOAD_CERT_NO_OP(DOWNLOAD_CERT_FUNC) \
   { EXPECT_CALL(cloud_policy_client_, DOWNLOAD_CERT_FUNC).Times(1); }
 
-#define EXPECT_SET_ATTRIBUTE_FOR_KEY_OK(SET_FUNC)            \
-  {                                                          \
-    EXPECT_CALL(*platform_keys_service_, SET_FUNC)           \
-        .Times(1)                                            \
-        .WillOnce(RunOnceCallback<4>(/*error_message=*/"")); \
+#define EXPECT_SET_ATTRIBUTE_FOR_KEY_OK(SET_FUNC)                       \
+  {                                                                     \
+    EXPECT_CALL(*platform_keys_service_, SET_FUNC)                      \
+        .Times(1)                                                       \
+        .WillOnce(RunOnceCallback<4>(platform_keys::Status::kSuccess)); \
   }
 
-#define EXPECT_SET_ATTRIBUTE_FOR_KEY_FAIL(SET_FUNC)                    \
-  {                                                                    \
-    EXPECT_CALL(*platform_keys_service_, SET_FUNC)                     \
-        .Times(1)                                                      \
-        .WillOnce(RunOnceCallback<4>(/*error_message=*/"Test error")); \
+#define EXPECT_SET_ATTRIBUTE_FOR_KEY_FAIL(SET_FUNC)                           \
+  {                                                                           \
+    EXPECT_CALL(*platform_keys_service_, SET_FUNC)                            \
+        .Times(1)                                                             \
+        .WillOnce(RunOnceCallback<4>(platform_keys::Status::kErrorInternal)); \
   }
 
-#define EXPECT_SIGN_RSAPKC1_DIGEST_OK(SIGN_FUNC)                         \
-  {                                                                      \
-    EXPECT_CALL(*platform_keys_service_, SIGN_FUNC)                      \
-        .Times(1)                                                        \
-        .WillOnce(RunOnceCallback<4>(kSignature, /*error_message=*/"")); \
+#define EXPECT_SIGN_RSAPKC1_DIGEST_OK(SIGN_FUNC)                              \
+  {                                                                           \
+    EXPECT_CALL(*platform_keys_service_, SIGN_FUNC)                           \
+        .Times(1)                                                             \
+        .WillOnce(                                                            \
+            RunOnceCallback<4>(kSignature, platform_keys::Status::kSuccess)); \
   }
 
-#define EXPECT_SIGN_RSAPKC1_DIGEST_FAIL(SIGN_FUNC)                     \
-  {                                                                    \
-    EXPECT_CALL(*platform_keys_service_, SIGN_FUNC)                    \
-        .Times(1)                                                      \
-        .WillOnce(RunOnceCallback<4>(/*signature=*/"",                 \
-                                     /*error_message=*/"Test error")); \
+#define EXPECT_SIGN_RSAPKC1_DIGEST_FAIL(SIGN_FUNC)                            \
+  {                                                                           \
+    EXPECT_CALL(*platform_keys_service_, SIGN_FUNC)                           \
+        .Times(1)                                                             \
+        .WillOnce(RunOnceCallback<4>(/*signature=*/"",                        \
+                                     platform_keys::Status::kErrorInternal)); \
   }
 
-#define EXPECT_IMPORT_CERTIFICATE_OK(IMPORT_FUNC)            \
-  {                                                          \
-    EXPECT_CALL(*platform_keys_service_, IMPORT_FUNC)        \
-        .Times(1)                                            \
-        .WillOnce(RunOnceCallback<2>(/*error_message=*/"")); \
+#define EXPECT_IMPORT_CERTIFICATE_OK(IMPORT_FUNC)                       \
+  {                                                                     \
+    EXPECT_CALL(*platform_keys_service_, IMPORT_FUNC)                   \
+        .Times(1)                                                       \
+        .WillOnce(RunOnceCallback<2>(platform_keys::Status::kSuccess)); \
   }
 
 class CallbackObserver {
@@ -500,7 +501,8 @@ TEST_F(CertProvisioningWorkerTest, NoVaSuccess) {
                 GenerateRSAKey(platform_keys::TokenId::kUser,
                                kNonVaKeyModulusLengthBits, /*callback=*/_))
         .Times(1)
-        .WillOnce(RunOnceCallback<2>(GetPublicKey(), ""));
+        .WillOnce(RunOnceCallback<2>(GetPublicKey(),
+                                     platform_keys::Status::kSuccess));
 
     EXPECT_START_CSR_OK_WITHOUT_VA(ClientCertProvisioningStartCsr(
         kCertScopeStrUser, kCertProfileId, kCertProfileVersion, GetPublicKey(),
@@ -985,7 +987,7 @@ TEST_F(CertProvisioningWorkerTest, RemoveRegisteredKey) {
         RemoveKey(platform_keys::TokenId::kUser,
                   /*public_key_spki_der=*/GetPublicKey(), /*callback=*/_))
         .Times(1)
-        .WillOnce(RunOnceCallback<2>(/*error_message=*/""));
+        .WillOnce(RunOnceCallback<2>(platform_keys::Status::kSuccess));
 
     EXPECT_CALL(callback_observer_,
                 Callback(cert_profile, CertProvisioningWorkerState::kFailed))

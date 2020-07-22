@@ -125,7 +125,7 @@ class CertProvisioningSchedulerImpl
 
   void InitialUpdateCerts();
   void DeleteCertsWithoutPolicy();
-  void OnDeleteCertsWithoutPolicyDone(const std::string& error_message);
+  void OnDeleteCertsWithoutPolicyDone(platform_keys::Status status);
   void CancelWorkersWithoutPolicy(const std::vector<CertProfile>& profiles);
   void CleanVaKeysIfIdle();
   void OnCleanVaKeysIfIdleDone(base::Optional<bool> delete_result);
@@ -138,7 +138,7 @@ class CertProvisioningSchedulerImpl
       std::vector<CertProfile> profiles,
       base::flat_map<CertProfileId, scoped_refptr<net::X509Certificate>>
           existing_certs_with_ids,
-      const std::string& error_message);
+      platform_keys::Status status);
 
   void OnPrefsChange();
   void DailyUpdateCerts();

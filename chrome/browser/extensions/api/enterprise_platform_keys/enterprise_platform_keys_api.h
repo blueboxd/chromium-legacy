@@ -28,9 +28,9 @@ class EnterprisePlatformKeysInternalGenerateKeyFunction
   ResponseAction Run() override;
 
   // Called when the key was generated. If an error occurred, |public_key_der|
-  // will be empty and instead |error_message| be set.
+  // will be empty.
   void OnGeneratedKey(const std::string& public_key_der,
-                      const std::string& error_message);
+                      chromeos::platform_keys::Status status);
 
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeysInternal.generateKey",
                              ENTERPRISE_PLATFORMKEYSINTERNAL_GENERATEKEY)
@@ -42,9 +42,9 @@ class EnterprisePlatformKeysGetCertificatesFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
   // Called when the list of certificates was determined. If an error occurred,
-  // |certs| will be NULL and instead |error_message| be set.
+  // |certs| will be nullptr.
   void OnGotCertificates(std::unique_ptr<net::CertificateList> certs,
-                         const std::string& error_message);
+                         chromeos::platform_keys::Status status);
 
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeys.getCertificates",
                              ENTERPRISE_PLATFORMKEYS_GETCERTIFICATES)
@@ -56,9 +56,8 @@ class EnterprisePlatformKeysImportCertificateFunction
   ~EnterprisePlatformKeysImportCertificateFunction() override;
   ResponseAction Run() override;
 
-  // Called when the certificate was imported. Only if an error occurred,
-  // |error_message| will be set.
-  void OnImportedCertificate(const std::string& error_message);
+  // Called when the certificate was imported.
+  void OnImportedCertificate(chromeos::platform_keys::Status status);
 
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeys.importCertificate",
                              ENTERPRISE_PLATFORMKEYS_IMPORTCERTIFICATE)
@@ -70,9 +69,8 @@ class EnterprisePlatformKeysRemoveCertificateFunction
   ~EnterprisePlatformKeysRemoveCertificateFunction() override;
   ResponseAction Run() override;
 
-  // Called when the certificate was removed. Only if an error occurred,
-  // |error_message| will be set.
-  void OnRemovedCertificate(const std::string& error_message);
+  // Called when the certificate was removed.
+  void OnRemovedCertificate(chromeos::platform_keys::Status status);
 
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeys.removeCertificate",
                              ENTERPRISE_PLATFORMKEYS_REMOVECERTIFICATE)
@@ -85,10 +83,10 @@ class EnterprisePlatformKeysInternalGetTokensFunction
   ResponseAction Run() override;
 
   // Called when the list of tokens was determined. If an error occurred,
-  // |token_ids| will be NULL and instead |error_message| be set.
+  // |token_ids| will be nullptr.
   void OnGotTokens(
       std::unique_ptr<std::vector<chromeos::platform_keys::TokenId>> token_ids,
-      const std::string& error_message);
+      chromeos::platform_keys::Status status);
 
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeysInternal.getTokens",
                              ENTERPRISE_PLATFORMKEYSINTERNAL_GETTOKENS)

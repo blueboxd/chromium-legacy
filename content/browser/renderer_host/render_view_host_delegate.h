@@ -46,6 +46,7 @@ class RenderViewHostDelegateView;
 class SessionStorageNamespace;
 class SiteInstance;
 class WebContents;
+struct WebPreferences;
 
 //
 // RenderViewHostDelegate
@@ -151,6 +152,32 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // TODO(ajwong): Remove once the main frame RenderFrameHost is no longer
   // created by the RenderViewHost.
   virtual FrameTree* GetFrameTree();
+
+  // Returns a copy of the current WebPreferences associated with this
+  // RenderViewHost's WebContents. If it does not exist, this will create one
+  // and send the newly computed value to all renderers.
+  // Note that this will not trigger a recomputation of WebPreferences if it
+  // already exists - this will return the last computed/set value of
+  // WebPreferences. If we want to guarantee that the value reflects the current
+  // state of the WebContents, NotifyPreferencesChanged() should be called
+  // before calling this.
+  virtual const WebPreferences& GetOrCreateWebPreferences() = 0;
+
+  // Returns true if the WebPreferences for this RenderViewHost is not null.
+  virtual bool IsWebPreferencesSet() const;
+
+  // Sets the WebPreferences for the WebContents associated with this
+  // RenderViewHost to |prefs| and send the new value to all renderers in the
+  // WebContents.
+  virtual void SetWebPreferences(const WebPreferences& prefs) {}
+
+  // Triggers a total recomputation of WebPreferences by resetting the current
+  // cached WebPreferences to null and triggering the recomputation path for
+  // both the "slow" attributes (hardware configurations/things that require
+  // slow platform/device polling) which normally won't get recomputed after
+  // the first time we set it and "fast" attributes (which always gets
+  // recomputed).
+  virtual void RecomputeWebPreferencesSlow() {}
 
   // Whether the user agent is overridden using the Chrome for Android "Request
   // Desktop Site" feature.

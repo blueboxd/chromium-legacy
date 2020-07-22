@@ -27,6 +27,7 @@
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
 
 namespace blink {
+class WebCodeCacheLoader;
 struct WebNavigationParams;
 }  // namespace blink
 
@@ -35,8 +36,6 @@ struct URLLoaderCompletionStatus;
 }  // namespace network
 
 namespace content {
-
-class CodeCacheLoaderImpl;
 
 // Navigation request is started in the browser process, and all redirects
 // and final response are received there. Then we pass URLLoader and
@@ -155,7 +154,7 @@ class CONTENT_EXPORT NavigationBodyLoader
   mojo::SimpleWatcher handle_watcher_;
 
   // This loader is live while retrieving the code cache.
-  std::unique_ptr<CodeCacheLoaderImpl> code_cache_loader_;
+  std::unique_ptr<blink::WebCodeCacheLoader> code_cache_loader_;
 
   // The final status received from network or cancelation status if aborted.
   network::URLLoaderCompletionStatus status_;

@@ -881,7 +881,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       owned_render_widget_host_->set_owned_by_render_frame_host(true);
 #if defined(OS_ANDROID)
       owned_render_widget_host_->SetForceEnableZoom(
-          render_view_host_->GetWebkitPreferences().force_enable_zoom);
+          delegate_->GetOrCreateWebPreferences().force_enable_zoom);
 #endif  // defined(OS_ANDROID)
     }
 
@@ -904,6 +904,13 @@ RenderFrameHostImpl::RenderFrameHostImpl(
                                  : frame_tree_node_->opener();
   if (frame_owner)
     CSPContext::SetSelf(frame_owner->current_origin());
+
+  // New RenderFrameHostImpl are put in their own virtual browsing context
+  // group. Then, they can inherit from:
+  // 1) Their opener in RenderFrameHostImpl::CreateNewWindow().
+  // 2) Their navigation in RenderFrameHostImpl::DidCommitNavigationInternal().
+  virtual_browsing_context_group_ =
+      CrossOriginOpenerPolicyReporter::NextVirtualBrowsingContextGroup();
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
@@ -1428,13 +1435,17 @@ bool RenderFrameHostImpl::IsSandboxed(network::mojom::WebSandboxFlags flags) {
   return static_cast<int>(active_sandbox_flags_) & static_cast<int>(flags);
 }
 
+WebPreferences RenderFrameHostImpl::GetOrCreateWebPreferences() {
+  return delegate()->GetOrCreateWebPreferences();
+}
+
 blink::PendingURLLoaderFactoryBundle::OriginMap
 RenderFrameHostImpl::CreateURLLoaderFactoriesForIsolatedWorlds(
     const url::Origin& main_world_origin,
     const base::flat_set<url::Origin>& isolated_world_origins,
     network::mojom::ClientSecurityStatePtr client_security_state,
     network::mojom::TrustTokenRedemptionPolicy trust_token_redemption_policy) {
-  WebPreferences preferences = GetRenderViewHost()->GetWebkitPreferences();
+  WebPreferences preferences = GetOrCreateWebPreferences();
 
   blink::PendingURLLoaderFactoryBundle::OriginMap result;
   for (const url::Origin& isolated_world_origin : isolated_world_origins) {
@@ -4678,7 +4689,7 @@ void RenderFrameHostImpl::CreateNewWindow(
   // even if the embedding app doesn't support multiple windows. In this case,
   // window.open() will return "window" and navigate it to whatever URL was
   // passed.
-  if (!render_view_host_->GetWebkitPreferences().supports_multiple_windows) {
+  if (!GetOrCreateWebPreferences().supports_multiple_windows) {
     // See crbug.com/1083819, we should ignore if the URL is javascript: scheme,
     // previously we already filtered out javascript: scheme and replace the
     // URL with |kBlockedURL|, so we check against |kBlockedURL| here.
@@ -4739,6 +4750,11 @@ void RenderFrameHostImpl::CreateNewWindow(
   if (!params->opener_suppressed)
     popup_coep = cross_origin_embedder_policy();
 
+  int popup_virtual_browsing_context_group =
+      params->opener_suppressed
+          ? CrossOriginOpenerPolicyReporter::NextVirtualBrowsingContextGroup()
+          : top_level_opener->virtual_browsing_context_group();
+
   // If the opener is suppressed or script access is disallowed, we should
   // open the window in a new BrowsingInstance, and thus a new process. That
   // means the current renderer process will not be able to route messages to
@@ -4776,6 +4792,8 @@ void RenderFrameHostImpl::CreateNewWindow(
   main_frame->SetOriginAndIsolationInfoOfNewFrame(GetLastCommittedOrigin());
   main_frame->cross_origin_opener_policy_ = popup_coop;
   main_frame->cross_origin_embedder_policy_ = popup_coep;
+  main_frame->virtual_browsing_context_group_ =
+      popup_virtual_browsing_context_group;
 
   // If inheriting coop (checking this via |opener_suppressed|) and the original
   // coop page has a reporter we make sure the the newly created popup also has
@@ -7748,7 +7766,7 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   // file: URLs can be allowed to access any other origin, based on settings.
   bool bypass_checks_for_file_scheme = false;
   if (params->origin.scheme() == url::kFileScheme) {
-    WebPreferences prefs = render_view_host_->GetWebkitPreferences();
+    WebPreferences prefs = GetOrCreateWebPreferences();
     if (prefs.allow_universal_access_from_file_urls)
       bypass_checks_for_file_scheme = true;
   }
@@ -8021,6 +8039,9 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   // is expected to be received in DidSetFramePolicyHeaders(..).
   active_sandbox_flags_control_ = navigation_request->SandboxFlagsToCommit();
 
+  virtual_browsing_context_group_ =
+      navigation_request->coop_status().virtual_browsing_context_group;
+
   // If we still have a PeakGpuMemoryTracker, then the loading it was observing
   // never completed. Cancel it's callback so that we don't report partial
   // loads to UMA.
@@ -8052,14 +8073,24 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
 
   // If this navigation had a COOP BrowsingInstance swap that severed an opener,
   // and we have a reporter on the page we're going to, report it here.
-  if (navigation_request->coop_status()
-          .had_opener_before_browsing_instance_swap &&
-      coop_reporter) {
-    coop_reporter->QueueOpenerBreakageReport(
-        coop_reporter->GetPreviousDocumentUrlForReporting(
-            navigation_request->GetRedirectChain(),
-            navigation_request->common_params().referrer->url),
-        false /* is_reported_from_document */, false /* is_report_only */);
+  const CrossOriginOpenerPolicyStatus& coop_status =
+      navigation_request->coop_status();
+  if (coop_status.had_opener_before_browsing_instance_swap && coop_reporter) {
+    if (coop_status.require_browsing_instance_swap) {
+      coop_reporter->QueueOpenerBreakageReport(
+          coop_reporter->GetPreviousDocumentUrlForReporting(
+              navigation_request->GetRedirectChain(),
+              navigation_request->common_params().referrer->url),
+          false /* is_reported_from_document */, false /* is_report_only */);
+    }
+
+    if (coop_status.virtual_browsing_instance_swap) {
+      coop_reporter->QueueOpenerBreakageReport(
+          coop_reporter->GetPreviousDocumentUrlForReporting(
+              navigation_request->GetRedirectChain(),
+              navigation_request->common_params().referrer->url),
+          false /* is_reported_from_document */, true /* is_report_only */);
+    }
   }
 
   frame_tree_node()->navigator().DidNavigate(this, *params,

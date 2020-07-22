@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.password_check;
 
+import java.util.Objects;
+
 /**
  * This class holds the data used to represent a compromised credential in the Password Check
  * settings screen.
@@ -38,5 +40,19 @@ public class CompromisedCredential {
     }
     public boolean isPhished() {
         return mPhished;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CompromisedCredential that = (CompromisedCredential) o;
+        return mPhished == that.mPhished && mUsername.equals(that.mUsername)
+                && mPassword.equals(that.mPassword) && mOriginUrl.equals(that.mOriginUrl);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mUsername, mPassword, mOriginUrl, mPhished);
     }
 }

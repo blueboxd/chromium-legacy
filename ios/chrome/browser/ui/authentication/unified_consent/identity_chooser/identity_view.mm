@@ -62,6 +62,7 @@ const CGFloat kVerticalMargin = 12.;
 
     // Title.
     _title = [[UILabel alloc] init];
+    _title.adjustsFontForContentSizeCategory = YES;
     _title.translatesAutoresizingMaskIntoConstraints = NO;
     _title.numberOfLines = 0;
     _title.textColor = UIColor.cr_labelColor;
@@ -70,6 +71,7 @@ const CGFloat kVerticalMargin = 12.;
 
     // Subtitle.
     _subtitle = [[UILabel alloc] init];
+    _subtitle.adjustsFontForContentSizeCategory = YES;
     _subtitle.translatesAutoresizingMaskIntoConstraints = NO;
     _subtitle.numberOfLines = 0;
     _subtitle.textColor = UIColor.cr_secondaryLabelColor;

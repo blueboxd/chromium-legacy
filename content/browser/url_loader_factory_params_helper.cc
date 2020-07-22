@@ -13,6 +13,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -115,11 +116,11 @@ URLLoaderFactoryParamsHelper::CreateForFrame(
       process,
       frame_origin,  // origin
       frame_origin,  // request_initiator_site_lock
-      false,  // is_trusted
+      false,         // is_trusted
       frame->GetTopFrameToken(), frame->GetIsolationInfoForSubresources(),
       std::move(client_security_state), std::move(coep_reporter),
-      frame->GetRenderViewHost()
-          ->GetWebkitPreferences()
+      WebContents::FromRenderFrameHost(frame)
+          ->GetOrCreateWebPreferences()
           .allow_universal_access_from_file_urls,
       false,  // is_for_isolated_world
       frame->CreateCookieAccessObserver(), trust_token_redemption_policy);
@@ -141,8 +142,8 @@ URLLoaderFactoryParamsHelper::CreateForIsolatedWorld(
       frame->GetTopFrameToken(), frame->GetIsolationInfoForSubresources(),
       std::move(client_security_state),
       mojo::NullRemote(),  // coep_reporter
-      frame->GetRenderViewHost()
-          ->GetWebkitPreferences()
+      WebContents::FromRenderFrameHost(frame)
+          ->GetOrCreateWebPreferences()
           .allow_universal_access_from_file_urls,
       true,  // is_for_isolated_world
       frame->CreateCookieAccessObserver(), trust_token_redemption_policy);
@@ -159,13 +160,13 @@ URLLoaderFactoryParamsHelper::CreateForPrefetch(
   return CreateParams(frame->GetProcess(),
                       frame_origin,  // origin
                       frame_origin,  // request_initiator_site_lock
-                      true,  // is_trusted
+                      true,          // is_trusted
                       frame->GetTopFrameToken(),
                       net::IsolationInfo(),  // isolation_info
                       std::move(client_security_state),
                       mojo::NullRemote(),  // coep_reporter
-                      frame->GetRenderViewHost()
-                          ->GetWebkitPreferences()
+                      WebContents::FromRenderFrameHost(frame)
+                          ->GetOrCreateWebPreferences()
                           .allow_universal_access_from_file_urls,
                       false,  // is_for_isolated_world
                       frame->CreateCookieAccessObserver(),

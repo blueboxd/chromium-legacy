@@ -20,6 +20,11 @@ Vector<double> SequenceTest::identityDoubleSequence(
   return arg;
 }
 
+Vector<V8FoodEnum> SequenceTest::identityFoodEnumSequence(
+    const Vector<V8FoodEnum>& arg) const {
+  return arg;
+}
+
 Vector<String> SequenceTest::identityFoodEnumSequence(
     const Vector<String>& arg) const {
   return arg;

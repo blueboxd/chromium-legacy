@@ -272,8 +272,8 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ContextWebPreferences) {
   HeadlessWebContentsImpl* contents_impl =
       HeadlessWebContentsImpl::From(web_contents);
   EXPECT_TRUE(contents_impl->web_contents()
-                  ->GetRenderViewHost()
-                  ->GetWebkitPreferences().hide_scrollbars);
+                  ->GetOrCreateWebPreferences()
+                  .hide_scrollbars);
 }
 
 }  // namespace headless

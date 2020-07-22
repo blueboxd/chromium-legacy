@@ -22,7 +22,6 @@
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
-#include "content/renderer/loader/code_cache_loader_impl.h"
 #include "content/renderer/loader/frame_request_blocker.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/resource_dispatcher.h"
@@ -35,6 +34,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
+#include "third_party/blink/public/platform/web_code_cache_loader.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 
 namespace content {
@@ -449,9 +449,9 @@ WebWorkerFetchContextImpl::WrapURLLoaderFactory(
           std::move(url_loader_factory)));
 }
 
-std::unique_ptr<blink::CodeCacheLoader>
+std::unique_ptr<blink::WebCodeCacheLoader>
 WebWorkerFetchContextImpl::CreateCodeCacheLoader() {
-  return std::make_unique<CodeCacheLoaderImpl>(terminate_sync_load_event_);
+  return blink::WebCodeCacheLoader::Create(terminate_sync_load_event_);
 }
 
 void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {

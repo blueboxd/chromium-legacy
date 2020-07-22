@@ -45,8 +45,8 @@ class WebKioskTest : public OobeBaseTest {
     set_exit_when_last_browser_closes(false);
     needs_background_networking_ = true;
     skip_splash_wait_override_ =
-        WebKioskController::SkipSplashScreenWaitForTesting();
-    network_wait_override_ = WebKioskController::SetNetworkWaitForTesting(
+        KioskLaunchController::SkipSplashScreenWaitForTesting();
+    network_wait_override_ = KioskLaunchController::SetNetworkWaitForTesting(
         base::TimeDelta::FromSeconds(0));
   }
 
@@ -98,7 +98,7 @@ class WebKioskTest : public OobeBaseTest {
   void SetBlockAppLaunch(bool block) {
     if (block)
       block_app_launch_override_ =
-          WebKioskController::BlockAppLaunchForTesting();
+          KioskLaunchController::BlockAppLaunchForTesting();
     else
       block_app_launch_override_.reset();
   }

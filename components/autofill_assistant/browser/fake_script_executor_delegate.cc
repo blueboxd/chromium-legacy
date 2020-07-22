@@ -172,11 +172,23 @@ void FakeScriptExecutorDelegate::RequireUI() {
   require_ui_ = true;
 }
 
-void FakeScriptExecutorDelegate::AddListener(NavigationListener* listener) {
+void FakeScriptExecutorDelegate::AddNavigationListener(
+    ScriptExecutorDelegate::NavigationListener* listener) {
+  navigation_listeners_.insert(listener);
+}
+
+void FakeScriptExecutorDelegate::RemoveNavigationListener(
+    ScriptExecutorDelegate::NavigationListener* listener) {
+  navigation_listeners_.erase(listener);
+}
+
+void FakeScriptExecutorDelegate::AddListener(
+    ScriptExecutorDelegate::Listener* listener) {
   listeners_.insert(listener);
 }
 
-void FakeScriptExecutorDelegate::RemoveListener(NavigationListener* listener) {
+void FakeScriptExecutorDelegate::RemoveListener(
+    ScriptExecutorDelegate::Listener* listener) {
   listeners_.erase(listener);
 }
 

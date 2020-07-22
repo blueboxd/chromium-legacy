@@ -200,19 +200,14 @@ class SigninProfileExtensionsPolicyTest
   DISALLOW_COPY_AND_ASSIGN(SigninProfileExtensionsPolicyTest);
 };
 
-base::FilePath GetTestDataDir() {
-  base::FilePath test_data_dir;
-  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-  return test_data_dir;
-}
-
 }  // namespace
 
 // Tests that a whitelisted app gets installed.
 IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
                        WhitelistedAppInstallation) {
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
-      GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath),
+      base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
+          .AppendASCII(kWhitelistedAppCrxPath),
       ExtensionForceInstallMixin::WaitMode::kLoad));
   const extensions::Extension* extension =
       extension_force_install_mixin_.GetEnabledExtension(kWhitelistedAppId);
@@ -228,8 +223,10 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
   ExtensionInstallErrorObserver install_error_observer(profile,
                                                        kNotWhitelistedAppId);
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromSourceDir(
-      GetTestDataDir().AppendASCII(kNotWhitelistedAppPath),
-      GetTestDataDir().AppendASCII(kNotWhitelistedAppPemPath),
+      base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
+          .AppendASCII(kNotWhitelistedAppPath),
+      base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
+          .AppendASCII(kNotWhitelistedAppPemPath),
       ExtensionForceInstallMixin::WaitMode::kNone));
   install_error_observer.Wait();
   EXPECT_FALSE(extension_force_install_mixin_.GetInstalledExtension(
@@ -242,7 +239,8 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
 IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
                        WhitelistedExtensionInstallation) {
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
-      GetTestDataDir().AppendASCII(kWhitelistedExtensionCrxPath),
+      base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
+          .AppendASCII(kWhitelistedExtensionCrxPath),
       ExtensionForceInstallMixin::WaitMode::kLoad));
 
   const extensions::Extension* extension =
@@ -260,8 +258,10 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
   ExtensionInstallErrorObserver install_error_observer(
       profile, kNotWhitelistedExtensionId);
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromSourceDir(
-      GetTestDataDir().AppendASCII(kNotWhitelistedExtensionPath),
-      GetTestDataDir().AppendASCII(kNotWhitelistedExtensionPemPath),
+      base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
+          .AppendASCII(kNotWhitelistedExtensionPath),
+      base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
+          .AppendASCII(kNotWhitelistedExtensionPemPath),
       ExtensionForceInstallMixin::WaitMode::kNone));
   install_error_observer.Wait();
   EXPECT_FALSE(extension_force_install_mixin_.GetInstalledExtension(
@@ -282,7 +282,8 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest, BackgroundPage) {
   EXPECT_FALSE(
       chromeos::ProfileHelper::SigninProfileHasLoginScreenExtensions());
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
-      GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath),
+      base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
+          .AppendASCII(kWhitelistedAppCrxPath),
       ExtensionForceInstallMixin::WaitMode::kBackgroundPageReady));
   EXPECT_TRUE(extension_force_install_mixin_.IsExtensionBackgroundPageReady(
       kWhitelistedAppId));
@@ -293,10 +294,12 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest, BackgroundPage) {
 IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
                        MultipleAppsOrExtensions) {
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
-      GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath),
+      base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
+          .AppendASCII(kWhitelistedAppCrxPath),
       ExtensionForceInstallMixin::WaitMode::kLoad));
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
-      GetTestDataDir().AppendASCII(kWhitelistedExtensionCrxPath),
+      base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
+          .AppendASCII(kWhitelistedExtensionCrxPath),
       ExtensionForceInstallMixin::WaitMode::kLoad));
 
   EXPECT_TRUE(
@@ -312,10 +315,12 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
   Profile* profile = GetInitialProfile();
 
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
-      GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath),
+      base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
+          .AppendASCII(kWhitelistedAppCrxPath),
       ExtensionForceInstallMixin::WaitMode::kBackgroundPageReady));
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
-      GetTestDataDir().AppendASCII(kWhitelistedExtensionCrxPath),
+      base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
+          .AppendASCII(kWhitelistedExtensionCrxPath),
       ExtensionForceInstallMixin::WaitMode::kBackgroundPageReady));
 
   content::StoragePartition* storage_partition_for_app =
@@ -350,7 +355,8 @@ class SigninProfileExtensionsPolicyOfflineLaunchTest
             kWhitelistedAppId);
 
     EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
-        GetTestDataDir().AppendASCII(kWhitelistedAppCrxPath),
+        base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
+            .AppendASCII(kWhitelistedAppCrxPath),
         ExtensionForceInstallMixin::WaitMode::kNone));
 
     // In the non-PRE test, this simulates inability to make network requests

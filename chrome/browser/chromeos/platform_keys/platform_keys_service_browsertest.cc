@@ -126,8 +126,8 @@ ScopedSoftokenAttrsMapping::~ScopedSoftokenAttrsMapping() {
 
 // A helper that waits until execution of an asynchronous PlatformKeysService
 // operation has finished and provides access to the results.
-// Note: all PlatformKeysService operations have a trailing const std::string&
-// error_message argument that is filled in case of an error.
+// Note: all PlatformKeysService operations have a trailing status argument that
+// is filled in case of an error.
 template <typename... ResultCallbackArgs>
 class ExecutionWaiter {
  public:
@@ -139,7 +139,7 @@ class ExecutionWaiter {
   // Returns the callback to be passed to the PlatformKeysService operation
   // invocation.
   base::RepeatingCallback<void(ResultCallbackArgs... result_callback_args,
-                               const std::string& error_message)>
+                               Status status)>
   GetCallback() {
     return base::BindRepeating(&ExecutionWaiter::OnExecutionDone,
                                weak_ptr_factory_.GetWeakPtr());
@@ -148,10 +148,10 @@ class ExecutionWaiter {
   // Waits until the callback returned by GetCallback() has been called.
   void Wait() { run_loop_.Run(); }
 
-  // Returns the error message passed to the callback.
-  const std::string& error_message() {
+  // Returns the status passed to the callback.
+  Status status() const {
     EXPECT_TRUE(done_);
-    return error_message_;
+    return status_;
   }
 
  protected:
@@ -168,19 +168,19 @@ class ExecutionWaiter {
 
  private:
   void OnExecutionDone(ResultCallbackArgs... result_callback_args,
-                       const std::string& error_message) {
+                       Status status) {
     EXPECT_FALSE(done_);
     done_ = true;
     result_callback_args_ = ResultCallbackArgsTuple(
         std::forward<ResultCallbackArgs>(result_callback_args)...);
-    error_message_ = error_message;
+    status_ = status;
     run_loop_.Quit();
   }
 
   base::RunLoop run_loop_;
   bool done_ = false;
   ResultCallbackArgsTuple result_callback_args_;
-  std::string error_message_;
+  Status status_ = Status::kSuccess;
 
   base::WeakPtrFactory<ExecutionWaiter> weak_ptr_factory_{this};
 };
@@ -441,7 +441,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerProfileBrowserTest, GetTokens) {
   platform_keys_service()->GetTokens(get_tokens_waiter.GetCallback());
   get_tokens_waiter.Wait();
 
-  EXPECT_TRUE(get_tokens_waiter.error_message().empty());
+  EXPECT_EQ(get_tokens_waiter.status(), Status::kSuccess);
   ASSERT_TRUE(get_tokens_waiter.token_ids());
   EXPECT_THAT(*get_tokens_waiter.token_ids(),
               ::testing::UnorderedElementsAreArray(GetParam().token_ids));
@@ -465,7 +465,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerProfileBrowserTest, GetAllKeys) {
                                         get_all_keys_waiter.GetCallback());
     get_all_keys_waiter.Wait();
 
-    EXPECT_TRUE(get_all_keys_waiter.error_message().empty());
+    EXPECT_EQ(get_all_keys_waiter.status(), Status::kSuccess);
     std::vector<std::string> public_keys = get_all_keys_waiter.public_keys();
     ASSERT_EQ(public_keys.size(), 1U);
     EXPECT_EQ(public_keys[0], token_key_map[token_id]);
@@ -507,7 +507,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerProfileBrowserTest,
         token_id, spki_der, kAttributeType, token_to_value[token_id],
         set_attr_waiter.GetCallback());
     set_attr_waiter.Wait();
-    EXPECT_TRUE(set_attr_waiter.error_message().empty());
+    EXPECT_EQ(set_attr_waiter.status(), Status::kSuccess);
   }
 
   // Verify the token-specific attribute value for the key on each token.
@@ -518,7 +518,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerProfileBrowserTest,
         token_id, spki_der, kAttributeType, get_attr_waiter.GetCallback());
     get_attr_waiter.Wait();
 
-    EXPECT_TRUE(get_attr_waiter.error_message().empty());
+    EXPECT_EQ(get_attr_waiter.status(), Status::kSuccess);
     ASSERT_TRUE(get_attr_waiter.attribute_value());
     EXPECT_EQ(get_attr_waiter.attribute_value().value(),
               token_to_value[token_id]);
@@ -564,7 +564,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerTokenBrowserTest,
   platform_keys_service()->GenerateRSAKey(token_id, kKeySize,
                                           generate_key_waiter.GetCallback());
   generate_key_waiter.Wait();
-  EXPECT_TRUE(generate_key_waiter.error_message().empty());
+  EXPECT_EQ(generate_key_waiter.status(), Status::kSuccess);
 
   const std::string public_key_spki_der =
       generate_key_waiter.public_key_spki_der();
@@ -575,7 +575,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerTokenBrowserTest,
       token_id, kDataToSign, public_key_spki_der, kHashAlgorithm,
       sign_waiter.GetCallback());
   sign_waiter.Wait();
-  EXPECT_TRUE(sign_waiter.error_message().empty());
+  EXPECT_EQ(sign_waiter.status(), Status::kSuccess);
 
   crypto::SignatureVerifier signature_verifier;
   ASSERT_TRUE(signature_verifier.VerifyInit(
@@ -612,7 +612,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerTokenBrowserTest,
       get_attribute_for_key_execution_waiter.GetCallback());
   get_attribute_for_key_execution_waiter.Wait();
 
-  EXPECT_TRUE(get_attribute_for_key_execution_waiter.error_message().empty());
+  EXPECT_EQ(get_attribute_for_key_execution_waiter.status(), Status::kSuccess);
   ASSERT_TRUE(get_attribute_for_key_execution_waiter.attribute_value());
   EXPECT_EQ(get_attribute_for_key_execution_waiter.attribute_value().value(),
             kAttributeValue);
@@ -635,7 +635,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerTokenBrowserTest,
       get_attribute_for_key_execution_waiter.GetCallback());
   get_attribute_for_key_execution_waiter.Wait();
 
-  EXPECT_FALSE(get_attribute_for_key_execution_waiter.error_message().empty());
+  EXPECT_NE(get_attribute_for_key_execution_waiter.status(), Status::kSuccess);
   EXPECT_FALSE(get_attribute_for_key_execution_waiter.attribute_value());
 }
 
@@ -654,7 +654,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerTokenBrowserTest,
       set_attribute_for_key_execution_waiter.GetCallback());
   set_attribute_for_key_execution_waiter.Wait();
 
-  EXPECT_FALSE(set_attribute_for_key_execution_waiter.error_message().empty());
+  EXPECT_NE(set_attribute_for_key_execution_waiter.status(), Status::kSuccess);
 }
 
 IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerTokenBrowserTest,
@@ -679,7 +679,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerTokenBrowserTest,
                                      remove_key_waiter.GetCallback());
   remove_key_waiter.Wait();
 
-  EXPECT_TRUE(remove_key_waiter.error_message().empty());
+  EXPECT_EQ(remove_key_waiter.status(), Status::kSuccess);
   EXPECT_FALSE(crypto::FindNSSKeyFromPublicKeyInfo(public_key_bytes_1));
   EXPECT_TRUE(crypto::FindNSSKeyFromPublicKeyInfo(public_key_bytes_2));
 }
@@ -717,7 +717,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerTokenBrowserTest,
   platform_keys_service()->RemoveKey(token_id, public_key,
                                      remove_key_waiter.GetCallback());
   remove_key_waiter.Wait();
-  EXPECT_FALSE(remove_key_waiter.error_message().empty());
+  EXPECT_NE(remove_key_waiter.status(), Status::kSuccess);
 
   // Assert that the certificate is not removed.
   GetCertificatesExecutionWaiter get_certificates_waiter_3;
@@ -742,7 +742,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerTokenBrowserTest,
                                       get_all_keys_waiter.GetCallback());
   get_all_keys_waiter.Wait();
 
-  EXPECT_TRUE(get_all_keys_waiter.error_message().empty());
+  EXPECT_EQ(get_all_keys_waiter.status(), Status::kSuccess);
   std::vector<std::string> public_keys = get_all_keys_waiter.public_keys();
   EXPECT_TRUE(public_keys.empty());
 }
@@ -777,7 +777,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerUnavailableTokenBrowserTest,
   platform_keys_service()->GenerateRSAKey(token_id, kKeySize,
                                           generate_key_waiter.GetCallback());
   generate_key_waiter.Wait();
-  EXPECT_FALSE(generate_key_waiter.error_message().empty());
+  EXPECT_NE(generate_key_waiter.status(), Status::kSuccess);
 }
 
 INSTANTIATE_TEST_SUITE_P(

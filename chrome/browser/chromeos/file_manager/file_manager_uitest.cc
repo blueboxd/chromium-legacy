@@ -43,10 +43,10 @@ class FileManagerUITest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents();
 
     // Set prefs required for cut/paste.
-    auto web_prefs = web_contents->GetRenderViewHost()->GetWebkitPreferences();
+    auto web_prefs = web_contents->GetOrCreateWebPreferences();
     web_prefs.dom_paste_enabled = true;
     web_prefs.javascript_can_access_clipboard = true;
-    web_contents->GetRenderViewHost()->UpdateWebkitPreferences(web_prefs);
+    web_contents->SetWebPreferences(web_prefs);
 
     ASSERT_TRUE(web_contents);
     ui_test_utils::NavigateToURL(browser(), url);

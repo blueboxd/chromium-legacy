@@ -42,9 +42,9 @@ class PlatformKeysInternalSelectClientCertificatesFunction
   ResponseAction Run() override;
 
   // Called when the certificates were selected. If an error occurred, |certs|
-  // will be null and instead |error_message| be set.
+  // will be null.
   void OnSelectedCertificates(std::unique_ptr<net::CertificateList> matches,
-                              const std::string& error_message);
+                              chromeos::platform_keys::Status status);
 
   DECLARE_EXTENSION_FUNCTION("platformKeysInternal.selectClientCertificates",
                              PLATFORMKEYSINTERNAL_SELECTCLIENTCERTIFICATES)
@@ -75,8 +75,9 @@ class PlatformKeysInternalSignFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
   // Called when the signature was generated. If an error occurred,
-  // |signature| will be empty and instead |error_message| be set.
-  void OnSigned(const std::string& signature, const std::string& error_message);
+  // |signature| will be empty.
+  void OnSigned(const std::string& signature,
+                chromeos::platform_keys::Status status);
 
   DECLARE_EXTENSION_FUNCTION("platformKeysInternal.sign",
                              PLATFORMKEYSINTERNAL_SIGN)

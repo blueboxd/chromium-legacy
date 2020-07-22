@@ -44,6 +44,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/rsa_private_key.h"
+#include "crypto/signature_creator.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -79,9 +80,19 @@ void StoreDigest(std::vector<uint8_t>* digest,
   callback.Run();
 }
 
-bool RsaSign(const std::vector<uint8_t>& digest,
-             crypto::RSAPrivateKey* key,
-             std::vector<uint8_t>* signature) {
+bool RsaSignRawData(const std::vector<uint8_t>& input,
+                    crypto::RSAPrivateKey* key,
+                    std::vector<uint8_t>* signature) {
+  auto signature_creator =
+      crypto::SignatureCreator::Create(key, crypto::SignatureCreator::SHA1);
+  return signature_creator &&
+         signature_creator->Update(input.data(), input.size()) &&
+         signature_creator->Final(signature);
+}
+
+bool RsaSignPrehashed(const std::vector<uint8_t>& digest,
+                      crypto::RSAPrivateKey* key,
+                      std::vector<uint8_t>* signature) {
   RSA* rsa_key = EVP_PKEY_get0_RSA(key->key());
   if (!rsa_key)
     return false;
@@ -251,10 +262,11 @@ class CertificateProviderApiMockedExtensionTest
                                                  raw_certificate.size());
   }
 
-  // Tests the api by navigating to a webpage that requests to sign a digest
-  // with the available certificate.
-  // This signs the request and replies to the page.
-  void TestNavigationToCertificateRequestingWebPage() {
+  // Tests the api by navigating to a webpage that requests to perform a
+  // signature operation with the available certificate.
+  // This signs the request, with additionally hashing it if |is_raw_data| is
+  // true, and replies to the page.
+  void TestNavigationToCertificateRequestingWebPage(bool is_raw_data) {
     content::TestNavigationObserver navigation_observer(
         nullptr /* no WebContents */);
     navigation_observer.StartWatchingNewWebContents();
@@ -278,18 +290,17 @@ class CertificateProviderApiMockedExtensionTest
     scoped_refptr<net::X509Certificate> certificate = GetCertificate();
     CheckCertificateProvidedByExtension(*certificate, *extension());
 
-    // Fetch the digest from the sign request.
-    std::vector<uint8_t> request_digest;
+    // Fetch the data from the sign request.
+    std::vector<uint8_t> request_data;
     {
       base::RunLoop run_loop;
       GetExtensionMainFrame()->ExecuteJavaScriptForTests(
           base::ASCIIToUTF16("signatureRequestData;"),
-          base::BindOnce(&StoreDigest, &request_digest,
-                         run_loop.QuitClosure()));
+          base::BindOnce(&StoreDigest, &request_data, run_loop.QuitClosure()));
       run_loop.Run();
     }
 
-    // Sign the digest using the private key.
+    // Load the private key.
     std::string key_pk8 = GetKeyPk8();
     const uint8_t* const key_pk8_begin =
         reinterpret_cast<const uint8_t*>(key_pk8.data());
@@ -298,8 +309,12 @@ class CertificateProviderApiMockedExtensionTest
             key_pk8_begin, key_pk8_begin + key_pk8.size())));
     ASSERT_TRUE(key);
 
+    // Sign using the private key.
     std::vector<uint8_t> signature;
-    EXPECT_TRUE(RsaSign(request_digest, key.get(), &signature));
+    if (is_raw_data)
+      EXPECT_TRUE(RsaSignRawData(request_data, key.get(), &signature));
+    else
+      EXPECT_TRUE(RsaSignPrehashed(request_data, key.get(), &signature));
 
     // Inject the signature back to the extension and let it reply.
     ExecuteJavascript("replyWithSignature(" + JsUint8Array(signature) + ");");
@@ -442,23 +457,34 @@ class CertificateProviderRequestPinTest : public CertificateProviderApiTest {
 }  // namespace
 
 // Tests an extension that only provides certificates in response to the
-// onCertificatesRequested event.
+// onCertificatesUpdateRequested event.
 IN_PROC_BROWSER_TEST_F(CertificateProviderApiMockedExtensionTest,
                        ResponsiveExtension) {
   ExecuteJavascript("registerAsCertificateProvider();");
   ExecuteJavascript("registerForSignatureRequests();");
 
-  TestNavigationToCertificateRequestingWebPage();
+  TestNavigationToCertificateRequestingWebPage(/*is_raw_data=*/true);
 }
 
-// Tests that signing a request twice will fail.
+// Tests an extension that only provides certificates in response to the
+// legacy onCertificatesRequested event.
 IN_PROC_BROWSER_TEST_F(CertificateProviderApiMockedExtensionTest,
-                       ExtensionSigningTwice) {
-  ExecuteJavascript("registerAsCertificateProvider();");
-  ExecuteJavascript("registerForSignatureRequests();");
+                       LegacyResponsiveExtension) {
+  ExecuteJavascript("registerAsLegacyCertificateProvider();");
+  ExecuteJavascript("registerForLegacySignatureRequests();");
+
+  TestNavigationToCertificateRequestingWebPage(/*is_raw_data=*/false);
+}
+
+// Tests that signing a request twice in response to the legacy
+// onSignDigestRequested event will fail.
+IN_PROC_BROWSER_TEST_F(CertificateProviderApiMockedExtensionTest,
+                       LegacyExtensionSigningTwice) {
+  ExecuteJavascript("registerAsLegacyCertificateProvider();");
+  ExecuteJavascript("registerForLegacySignatureRequests();");
 
   // This causes a signature request that will be replied to.
-  TestNavigationToCertificateRequestingWebPage();
+  TestNavigationToCertificateRequestingWebPage(/*is_raw_data=*/false);
 
   // Replying to the signature request a second time must fail.
   bool success = true;
@@ -468,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiMockedExtensionTest,
 }
 
 // Tests an extension that provides certificates both proactively with
-// setCertificates() and in response to certificatesRequested().
+// setCertificates() and in response to onCertificatesUpdateRequested.
 IN_PROC_BROWSER_TEST_F(CertificateProviderApiMockedExtensionTest,
                        ProactiveAndResponsiveExtension) {
   ExecuteJavascript("registerAsCertificateProvider();");
@@ -478,7 +504,25 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiMockedExtensionTest,
   scoped_refptr<net::X509Certificate> certificate = GetCertificate();
   CheckCertificateProvidedByExtension(*certificate, *extension());
 
-  TestNavigationToCertificateRequestingWebPage();
+  TestNavigationToCertificateRequestingWebPage(/*is_raw_data=*/true);
+
+  // Remove the certificate.
+  ExecuteJavascriptAndWaitForCallback("unsetCertificates();");
+  CheckCertificateAbsent(*certificate);
+}
+
+// Tests an extension that provides certificates both proactively with
+// setCertificates() and in response to the legacy onCertificatesRequested.
+IN_PROC_BROWSER_TEST_F(CertificateProviderApiMockedExtensionTest,
+                       ProactiveAndLegacyResponsiveExtension) {
+  ExecuteJavascript("registerAsLegacyCertificateProvider();");
+  ExecuteJavascript("registerForLegacySignatureRequests();");
+  ExecuteJavascriptAndWaitForCallback("setCertificates();");
+
+  scoped_refptr<net::X509Certificate> certificate = GetCertificate();
+  CheckCertificateProvidedByExtension(*certificate, *extension());
+
+  TestNavigationToCertificateRequestingWebPage(/*is_raw_data=*/false);
 
   // Remove the certificate.
   ExecuteJavascriptAndWaitForCallback("unsetCertificates();");
@@ -495,7 +539,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiMockedExtensionTest,
   scoped_refptr<net::X509Certificate> certificate = GetCertificate();
   CheckCertificateProvidedByExtension(*certificate, *extension());
 
-  TestNavigationToCertificateRequestingWebPage();
+  TestNavigationToCertificateRequestingWebPage(/*is_raw_data=*/true);
 
   // Remove the certificate.
   ExecuteJavascriptAndWaitForCallback("unsetCertificates();");

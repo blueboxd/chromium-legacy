@@ -355,6 +355,7 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
   DCHECK(stringId);
   DCHECK(parentView);
   UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
+  label.adjustsFontForContentSizeCategory = YES;
   label.translatesAutoresizingMaskIntoConstraints = NO;
   label.font = [UIFont preferredFontForTextStyle:fontStyle];
   label.textColor = textColor;

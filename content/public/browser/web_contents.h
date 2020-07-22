@@ -88,6 +88,7 @@ class WebUI;
 struct CustomContextMenuContext;
 struct DropData;
 struct MHTMLGenerationParams;
+struct WebPreferences;
 
 // WebContents is the core class in content/. A WebContents renders web content
 // (usually HTML) in a rectangular area.
@@ -654,10 +655,6 @@ class WebContents : public PageNavigator,
   // Invoked when visible security state changes.
   virtual void DidChangeVisibleSecurityState() = 0;
 
-  // Notify this WebContents that the preferences have changed. This will send
-  // an IPC to all the renderer processes associated with this WebContents.
-  virtual void NotifyPreferencesChanged() = 0;
-
   // Sends the current preferences to all renderer processes for the current
   // page.
   virtual void SyncRendererPrefs() = 0;
@@ -958,6 +955,32 @@ class WebContents : public PageNavigator,
 
   // Returns whether the renderer is in fullscreen mode.
   virtual bool IsFullscreen() = 0;
+
+  // Returns a copy of the current WebPreferences associated with this
+  // WebContents. If it does not exist, this will create one and send the newly
+  // computed value to all renderers.
+  // Note that this will not trigger a recomputation of WebPreferences if it
+  // already exists - this will return the last computed/set value of
+  // WebPreferences. If we want to guarantee that the value reflects the current
+  // state of the WebContents, NotifyPreferencesChanged() should be called
+  // before calling this.
+  virtual const WebPreferences& GetOrCreateWebPreferences() = 0;
+
+  // Notify this WebContents that the preferences have changed, so it needs to
+  // recompute the current WebPreferences based on the current state of the
+  // WebContents, etc. This will send an IPC to all the renderer processes
+  // associated with this WebContents.
+  virtual void NotifyPreferencesChanged() = 0;
+
+  // Sets the WebPreferences to |prefs|. This will send an IPC to all the
+  // renderer processes associated with this WebContents.
+  // Note that this is different from NotifyPreferencesChanged, which recomputes
+  // the WebPreferences based on the current state of things. Instead, we're
+  // setting this to a specific value. This also means that if we trigger a
+  // recomputation of WebPreferences after this, the WebPreferences value will
+  // be overridden (and some attributes of |prefs| that are set here but not in
+  // RenderViewHostImpl::ComputeWebPreferences() will get overridden).
+  virtual void SetWebPreferences(const WebPreferences& prefs) = 0;
 
   // Requests the renderer to exit fullscreen.
   // |will_cause_resize| indicates whether the fullscreen change causes a

@@ -82,6 +82,7 @@ ScriptExecutor::ScriptExecutor(
 }
 
 ScriptExecutor::~ScriptExecutor() {
+  delegate_->RemoveNavigationListener(this);
   delegate_->RemoveListener(this);
 }
 
@@ -100,6 +101,7 @@ void ScriptExecutor::Run(const UserData* user_data,
   DCHECK(user_data);
   user_data_ = user_data;
 
+  delegate_->AddNavigationListener(this);
   delegate_->AddListener(this);
 
   callback_ = std::move(callback);
@@ -173,6 +175,90 @@ void ScriptExecutor::OnNavigationStateChanged() {
   if (navigation_info.ended() &&
       current_action_data_.end_prompt_on_navigation_callback) {
     std::move(current_action_data_.end_prompt_on_navigation_callback).Run();
+  }
+}
+
+bool ScriptExecutor::ShouldInterruptOnPause(const ActionProto& proto) {
+  switch (proto.action_info_case()) {
+    case ActionProto::ActionInfoCase::kPrompt:
+    case ActionProto::ActionInfoCase::kCollectUserData:
+    case ActionProto::ActionInfoCase::kShowGenericUi:
+      return true;
+    case ActionProto::ActionInfoCase::kClick:
+    case ActionProto::ActionInfoCase::kTell:
+    case ActionProto::ActionInfoCase::kFocusElement:
+    case ActionProto::ActionInfoCase::kUseAddress:
+    case ActionProto::ActionInfoCase::kUseCard:
+    case ActionProto::ActionInfoCase::kWaitForDom:
+    case ActionProto::ActionInfoCase::kSelectOption:
+    case ActionProto::ActionInfoCase::kNavigate:
+    case ActionProto::ActionInfoCase::kStop:
+    case ActionProto::ActionInfoCase::kHighlightElement:
+    case ActionProto::ActionInfoCase::kUploadDom:
+    case ActionProto::ActionInfoCase::kShowDetails:
+    case ActionProto::ActionInfoCase::kSetFormValue:
+    case ActionProto::ActionInfoCase::kShowProgressBar:
+    case ActionProto::ActionInfoCase::kSetAttribute:
+    case ActionProto::ActionInfoCase::kShowInfoBox:
+    case ActionProto::ActionInfoCase::kExpectNavigation:
+    case ActionProto::ActionInfoCase::kWaitForNavigation:
+    case ActionProto::ActionInfoCase::kConfigureBottomSheet:
+    case ActionProto::ActionInfoCase::kShowForm:
+    case ActionProto::ActionInfoCase::kPopupMessage:
+    case ActionProto::ActionInfoCase::kWaitForDocument:
+    case ActionProto::ActionInfoCase::kGeneratePasswordForFormField:
+    case ActionProto::ActionInfoCase::kSaveGeneratedPassword:
+    case ActionProto::ActionInfoCase::kConfigureUiState:
+    case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET:
+      return false;
+  }
+}
+
+void ScriptExecutor::OnPause(const std::string& message,
+                             const std::string& button_label) {
+  if (current_action_index_.has_value()) {
+    DCHECK_LT(*current_action_index_, actions_.size());
+    if (ShouldInterruptOnPause(actions_[*current_action_index_]->proto())) {
+      actions_[*current_action_index_] = ProtocolUtils::CreateAction(
+          this, actions_[*current_action_index_]->proto());
+      current_action_data_ = CurrentActionData();
+      current_action_index_.reset();
+    }
+  }
+
+  delegate_->ClearInfoBox();
+  delegate_->SetDetails(nullptr);
+  delegate_->SetCollectUserDataOptions(nullptr);
+  delegate_->SetForm(nullptr, base::DoNothing(), base::DoNothing());
+
+  last_status_message_ = GetStatusMessage();
+  delegate_->SetStatusMessage(message);
+
+  auto user_actions = std::make_unique<std::vector<UserAction>>();
+
+  UserAction undo_action;
+  Chip undo_chip;
+  undo_chip.type = ChipType::HIGHLIGHTED_ACTION;
+  undo_chip.text = button_label;
+  undo_action.chip() = undo_chip;
+  undo_action.SetCallback(base::BindOnce(&ScriptExecutor::OnResume,
+                                         weak_ptr_factory_.GetWeakPtr()));
+  user_actions->emplace_back(std::move(undo_action));
+
+  delegate_->SetUserActions(std::move(user_actions));
+  delegate_->EnterState(AutofillAssistantState::STOPPED);
+  is_paused_ = true;
+}
+
+void ScriptExecutor::OnResume() {
+  DCHECK(is_paused_);
+  is_paused_ = false;
+
+  delegate_->EnterState(AutofillAssistantState::RUNNING);
+  delegate_->SetStatusMessage(last_status_message_);
+
+  if (!current_action_index_.has_value()) {
+    ProcessNextAction();
   }
 }
 
@@ -760,6 +846,11 @@ void ScriptExecutor::RunCallbackWithResult(const Result& result) {
 }
 
 void ScriptExecutor::ProcessNextAction() {
+  current_action_index_.reset();
+  if (is_paused_) {
+    return;
+  }
+
   // We could get into a strange situation if ProcessNextAction is called before
   // the action was reported as processed, which should not happen. In that case
   // we could have more |processed_actions| than |actions_|.
@@ -770,7 +861,8 @@ void ScriptExecutor::ProcessNextAction() {
     return;
   }
 
-  Action* action = actions_[processed_actions_.size()].get();
+  current_action_index_ = processed_actions_.size();
+  Action* action = actions_[*current_action_index_].get();
   should_clean_contextual_ui_on_finish_ = action->proto().clean_contextual_ui();
   int delay_ms = action->proto().action_delay_ms();
   if (delay_ms > 0) {
@@ -826,11 +918,10 @@ void ScriptExecutor::OnProcessedAction(
           processed_action.status());
       processed_action.set_status(ProcessedActionStatusProto::NAVIGATION_ERROR);
     }
-    VLOG(1) << "Action failed: " << processed_action.status()
-            << ", get more actions";
-    // Report error immediately, interrupting action processing.
-    GetNextActions();
-    return;
+    VLOG(1) << "Action failed: " << processed_action.status();
+    // Remove unexecuted actions, this will cause the |ProcessNextActions| call
+    // to immediately ask for new actions.
+    actions_.resize(processed_actions_.size());
   }
   ProcessNextAction();
 }
@@ -890,11 +981,11 @@ ScriptExecutor::WaitForDomOperation::WaitForDomOperation(
                        .periodic_element_check_interval) {}
 
 ScriptExecutor::WaitForDomOperation::~WaitForDomOperation() {
-  delegate_->RemoveListener(this);
+  delegate_->RemoveNavigationListener(this);
 }
 
 void ScriptExecutor::WaitForDomOperation::Run() {
-  delegate_->AddListener(this);
+  delegate_->AddNavigationListener(this);
   Start();
 }
 

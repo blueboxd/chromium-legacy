@@ -4433,6 +4433,61 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithDomainControlEnabled,
   ExpectNotRestoredDidNotChange(FROM_HERE);
 }
 
+// Check that if WebPreferences was changed while a page was bfcached, it will
+// get up-to-date WebPreferences when it was restored.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebPreferences) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  int browsing_instance_id = rfh_a->GetSiteInstance()->GetBrowsingInstanceId();
+
+  // A should prefer light color scheme (which is the default).
+  bool matches_light;
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(
+      web_contents(),
+      "window.domAutomationController.send(window."
+      "matchMedia('(prefers-color-scheme: light)').matches)",
+      &matches_light));
+  EXPECT_TRUE(matches_light);
+
+  // 2) Navigate to B. A should be stored in the back-forward cache.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  EXPECT_NE(browsing_instance_id,
+            rfh_b->GetSiteInstance()->GetBrowsingInstanceId());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_NE(rfh_a, rfh_b);
+
+  WebPreferences prefs = web_contents()->GetOrCreateWebPreferences();
+  prefs.preferred_color_scheme = blink::PreferredColorScheme::kDark;
+  web_contents()->SetWebPreferences(prefs);
+
+  // 3) Set WebPreferences to prefer dark color scheme.
+  bool b_matches_dark;
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(
+      web_contents(),
+      "window.domAutomationController.send(window."
+      "matchMedia('(prefers-color-scheme: dark)').matches)",
+      &b_matches_dark));
+  EXPECT_TRUE(b_matches_dark);
+  // 4) Go back to A, which should also prefer the dark color scheme now.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(rfh_a, current_frame_host());
+
+  bool a_matches_dark;
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(
+      web_contents(),
+      "window.domAutomationController.send(window."
+      "matchMedia('(prefers-color-scheme: dark)').matches)",
+      &a_matches_dark));
+  EXPECT_TRUE(a_matches_dark);
+}
+
 // Check the BackForwardCache is disabled when there is a nested WebContents
 // inside a page.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, NestedWebContents) {

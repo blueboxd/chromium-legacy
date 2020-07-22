@@ -398,6 +398,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void EvictFromBackForwardCacheWithReasons(
       const BackForwardCacheCanStoreDocumentResult& can_store);
 
+  // Returns the current WebPreferences for the WebContents associated with this
+  // RenderFrameHost. Will create one if it does not exist (and update all the
+  // renderers with the newly computed value).
+  WebPreferences GetOrCreateWebPreferences();
+
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
 
@@ -3035,9 +3040,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Whenever we detect that the enforcement of a report-only COOP policy would
   // have resulted in a BrowsingInstance switch, we assign a new virtual
   // browsing context group ID to the RenderFrameHostImpl that has navigated.
-  //
-  // TODO(https://crbug.com/1101339): Implement this.
-  int virtual_browsing_context_group_ = -1;
+  int virtual_browsing_context_group_;
 
   // Navigation ID for the last committed cross-document non-bfcached navigation
   // in this RenderFrameHost.

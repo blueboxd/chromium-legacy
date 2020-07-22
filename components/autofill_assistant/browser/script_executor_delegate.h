@@ -47,6 +47,13 @@ class ScriptExecutorDelegate {
     virtual void OnNavigationStateChanged() = 0;
   };
 
+  class Listener : public base::CheckedObserver {
+   public:
+    // The execution flow is being stopped.
+    virtual void OnPause(const std::string& message,
+                         const std::string& button_label) = 0;
+  };
+
   virtual const ClientSettings& GetSettings() = 0;
   virtual const GURL& GetCurrentURL() = 0;
   virtual const GURL& GetDeeplinkURL() = 0;
@@ -138,13 +145,20 @@ class ScriptExecutorDelegate {
   // until the end of the flow.
   virtual void RequireUI() = 0;
 
-  // Register a listener that can be told about changes. Duplicate calls are
-  // ignored.
-  virtual void AddListener(NavigationListener* listener) = 0;
+  // Register a navigation listener that can be told about navigation state
+  // changes. Duplicate calls are ignored.
+  virtual void AddNavigationListener(NavigationListener* listener) = 0;
 
-  // Removes a previously registered listener. Does nothing if no such listeners
+  // Removes a previously registered navigation listener. Does nothing if no
+  // such listener exists.
+  virtual void RemoveNavigationListener(NavigationListener* listener) = 0;
+
+  // Add a listener that can be told about changes. Duplicate calls are ignored.
+  virtual void AddListener(Listener* listener) = 0;
+
+  // Removes a previously registered listener. Does nothing if no such listener
   // exists.
-  virtual void RemoveListener(NavigationListener* listener) = 0;
+  virtual void RemoveListener(Listener* listener) = 0;
 
   // Set how the sheet should behave when entering a prompt state.
   virtual void SetExpandSheetForPromptAction(bool expand) = 0;

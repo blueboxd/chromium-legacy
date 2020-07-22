@@ -8,6 +8,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.components.browser_ui.webshare.ShareServiceImpl;
+import org.chromium.content_public.browser.FeaturePolicyFeature;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.services.service_manager.InterfaceFactory;
 import org.chromium.webshare.mojom.ShareService;
@@ -27,7 +28,9 @@ public class ShareServiceImplementationFactory implements InterfaceFactory<Share
         ShareServiceImpl.WebShareDelegate delegate = new ShareServiceImpl.WebShareDelegate() {
             @Override
             public boolean canShare() {
-                return mWebContents.getTopLevelNativeWindow().getActivity() != null;
+                return mWebContents.getTopLevelNativeWindow().getActivity() != null
+                        && mWebContents.getMainFrame().isFeatureEnabled(
+                                FeaturePolicyFeature.WEB_SHARE);
             }
 
             @Override

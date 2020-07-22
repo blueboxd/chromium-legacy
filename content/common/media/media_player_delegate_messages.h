@@ -89,11 +89,14 @@ IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnMediaPaused,
                     int /* delegate_id, distinguishes instances */,
                     bool /* reached end of stream */)
 
-IPC_MESSAGE_ROUTED4(MediaPlayerDelegateHostMsg_OnMediaPlaying,
+IPC_MESSAGE_ROUTED4(MediaPlayerDelegateHostMsg_OnMediaMetadataChanged,
                     int /* delegate_id, distinguishes instances */,
-                    bool /* has_video */,
                     bool /* has_audio */,
+                    bool /* has_video */,
                     media::MediaContentType /* media_content_type */)
+
+IPC_MESSAGE_ROUTED1(MediaPlayerDelegateHostMsg_OnMediaPlaying,
+                    int /* delegate_id, distinguishes instances */)
 
 IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnMutedStatusChanged,
                     int /* delegate_id, distinguishes instances */,

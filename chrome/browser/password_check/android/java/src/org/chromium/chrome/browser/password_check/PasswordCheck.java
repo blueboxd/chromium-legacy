@@ -11,7 +11,7 @@ import android.content.Context;
  * the compromised passwords and exposes actions that will help the users to make safer their
  * credentials.
  */
-public interface PasswordCheck {
+public interface PasswordCheck extends PasswordCheckComponentUi.Delegate {
     /**
      * Initializes the PasswordCheck UI and launches it.
      * @param context A {@link Context} to create views and retrieve resources.

@@ -475,8 +475,8 @@ class KioskTest : public OobeBaseTest {
     mock_user_manager_.reset(new MockUserManager);
     ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
     skip_splash_wait_override_ =
-        AppLaunchController::SkipSplashScreenWaitForTesting();
-    network_wait_override_ = AppLaunchController::SetNetworkWaitForTesting(
+        KioskLaunchController::SkipSplashScreenWaitForTesting();
+    network_wait_override_ = KioskLaunchController::SetNetworkWaitForTesting(
         base::TimeDelta::FromSeconds(kTestNetworkTimeoutSeconds));
 
     OobeBaseTest::SetUp();
@@ -503,7 +503,7 @@ class KioskTest : public OobeBaseTest {
   void TearDownOnMainThread() override {
     owner_settings_service_.reset();
     settings_helper_.RestoreRealDeviceSettingsProvider();
-    AppLaunchController::SetNetworkTimeoutCallbackForTesting(nullptr);
+    KioskLaunchController::SetNetworkTimeoutCallbackForTesting(nullptr);
     AppLaunchSigninScreen::SetUserManagerForTesting(nullptr);
 
     OobeBaseTest::TearDownOnMainThread();
@@ -657,7 +657,7 @@ class KioskTest : public OobeBaseTest {
   }
 
   void WaitForAppLaunchNetworkTimeout() {
-    if (GetAppLaunchController()->network_wait_timedout())
+    if (GetKioskLaunchController()->network_wait_timedout())
       return;
 
     scoped_refptr<content::MessageLoopRunner> runner =
@@ -665,11 +665,11 @@ class KioskTest : public OobeBaseTest {
 
     base::OnceClosure callback =
         base::BindOnce(&OnNetworkWaitTimedOut, runner->QuitClosure());
-    AppLaunchController::SetNetworkTimeoutCallbackForTesting(&callback);
+    KioskLaunchController::SetNetworkTimeoutCallbackForTesting(&callback);
 
     runner->Run();
 
-    CHECK(GetAppLaunchController()->network_wait_timedout());
+    CHECK(GetKioskLaunchController()->network_wait_timedout());
   }
 
   void EnableConsumerKioskMode() {
@@ -717,7 +717,8 @@ class KioskTest : public OobeBaseTest {
 
     // Configure network should bring up lock screen for owner.
     OobeScreenWaiter lock_screen_waiter(OobeScreen::SCREEN_ACCOUNT_PICKER);
-    static_cast<AppLaunchSplashScreenView::Delegate*>(GetAppLaunchController())
+    static_cast<AppLaunchSplashScreenView::Delegate*>(
+        GetKioskLaunchController())
         ->OnConfigureNetwork();
     lock_screen_waiter.Wait();
 
@@ -726,11 +727,11 @@ class KioskTest : public OobeBaseTest {
 
     // A network error screen should be shown after authenticating.
     OobeScreenWaiter error_screen_waiter(ErrorScreenView::kScreenId);
-    static_cast<AppLaunchSigninScreen::Delegate*>(GetAppLaunchController())
+    static_cast<AppLaunchSigninScreen::Delegate*>(GetKioskLaunchController())
         ->OnOwnerSigninSuccess();
     error_screen_waiter.Wait();
 
-    ASSERT_TRUE(GetAppLaunchController()->showing_network_dialog());
+    ASSERT_TRUE(GetKioskLaunchController()->showing_network_dialog());
 
     SimulateNetworkOnline();
     WaitForAppLaunchSuccess();
@@ -782,14 +783,14 @@ class KioskTest : public OobeBaseTest {
         NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE);
   }
 
-  AppLaunchController* GetAppLaunchController() {
-    return LoginDisplayHost::default_host()->GetAppLaunchController();
+  KioskLaunchController* GetKioskLaunchController() {
+    return LoginDisplayHost::default_host()->GetKioskLaunchController();
   }
 
   void BlockAppLaunch(bool block) {
     if (block) {
       block_app_launch_override_ =
-          AppLaunchController::BlockAppLaunchForTesting();
+          KioskLaunchController::BlockAppLaunchForTesting();
     } else {
       block_app_launch_override_.reset();
     }
@@ -978,7 +979,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppWithNetworkConfigAccelerator) {
   GetLoginUI()->CallJavascriptFunctionUnsafe(
       "cr.ui.Oobe.handleAccelerator", base::Value("app_launch_network_config"));
   error_screen_waiter.Wait();
-  ASSERT_TRUE(GetAppLaunchController()->showing_network_dialog());
+  ASSERT_TRUE(GetKioskLaunchController()->showing_network_dialog());
 
   // Continue button should be visible since we are online.
   test::OobeJS().ExpectVisible("error-message-md-continue-button");
@@ -1030,7 +1031,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_LaunchAppNetworkPortal) {
   // require owner auth to configure network.
   OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
 
-  ASSERT_TRUE(GetAppLaunchController()->showing_network_dialog());
+  ASSERT_TRUE(GetKioskLaunchController()->showing_network_dialog());
   SimulateNetworkOnline();
   WaitForAppLaunchSuccess();
 }
@@ -1417,7 +1418,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, NoEnterpriseAutoLaunchWhenUntrusted) {
   login_display_host->StartKiosk(KioskAppId::ForChromeApp(test_app_id()), true);
 
   // Check that no launch has started.
-  EXPECT_FALSE(login_display_host->GetAppLaunchController());
+  EXPECT_FALSE(login_display_host->GetKioskLaunchController());
 }
 
 IN_PROC_BROWSER_TEST_F(KioskTest, SpokenFeedback) {

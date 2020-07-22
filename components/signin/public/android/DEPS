@@ -10,7 +10,6 @@ specific_include_rules = {
     "+components/signin/core/browser/android/java/src/org/chromium/components/signin/AccountManagerFacade.java",
     "+components/signin/core/browser/android/java/src/org/chromium/components/signin/AccountUtils.java",
     "+components/signin/core/browser/android/java/src/org/chromium/components/signin/AuthException.java",
-    "+components/signin/core/browser/android/java/src/org/chromium/components/signin/ChromeSigninController.java",
     "+components/signin/core/browser/android/java/src/org/chromium/components/signin/AccessTokenData.java",
   ],
   "ProfileOAuth2TokenServiceDelegateTest.java": [

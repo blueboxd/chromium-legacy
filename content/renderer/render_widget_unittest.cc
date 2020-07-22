@@ -233,6 +233,7 @@ class RenderWidgetUnittest : public testing::Test {
 
     web_view_ = blink::WebView::Create(/*client=*/&web_view_client_,
                                        /*is_hidden=*/false,
+                                       /*is_inside_portal=*/false,
                                        /*compositing_enabled=*/true, nullptr,
                                        mojo::NullAssociatedReceiver());
     widget_ = std::make_unique<InteractiveRenderWidget>(&compositor_deps_);

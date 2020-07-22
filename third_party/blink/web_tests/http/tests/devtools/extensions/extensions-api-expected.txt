@@ -17,6 +17,9 @@ RUNNING TEST: extension_testAPI
         }
         reload : <function>
     }
+    languageServices : {
+        registerLanguageExtensionPlugin : <function>
+    }
     network : {
         addRequestHeaders : <function>
         getHAR : <function>

@@ -229,9 +229,9 @@ class PartitionAllocTest : public testing::Test {
   }
 
   enum ReturnNullTestMode {
-    kPartitionAllocGenericFlags,
-    kPartitionReallocGenericFlags,
-    kPartitionRootGenericTryRealloc,
+    kPartitionAllocFlags,
+    kPartitionReallocFlags,
+    kPartitionRootTryRealloc,
   };
 
   void DoReturnNullTest(size_t alloc_size, ReturnNullTestMode mode) {
@@ -255,19 +255,19 @@ class PartitionAllocTest : public testing::Test {
 
     for (i = 0; i < num_allocations; ++i) {
       switch (mode) {
-        case kPartitionAllocGenericFlags: {
+        case kPartitionAllocFlags: {
           ptrs[i] = allocator.root()->AllocFlags(PartitionAllocReturnNull,
                                                  alloc_size, type_name);
           break;
         }
-        case kPartitionReallocGenericFlags: {
+        case kPartitionReallocFlags: {
           ptrs[i] = allocator.root()->AllocFlags(PartitionAllocReturnNull, 1,
                                                  type_name);
           ptrs[i] = allocator.root()->ReallocFlags(
               PartitionAllocReturnNull, ptrs[i], alloc_size, type_name);
           break;
         }
-        case kPartitionRootGenericTryRealloc: {
+        case kPartitionRootTryRealloc: {
           ptrs[i] = allocator.root()->AllocFlags(PartitionAllocReturnNull, 1,
                                                  type_name);
           ptrs[i] =
@@ -665,11 +665,11 @@ TEST_F(PartitionAllocTest, MultiPageAllocs) {
 
 // Test the generic allocation functions that can handle arbitrary sizes and
 // reallocing etc.
-TEST_F(PartitionAllocTest, GenericAlloc) {
+TEST_F(PartitionAllocTest, Alloc) {
   void* ptr = allocator.root()->Alloc(1, type_name);
   EXPECT_TRUE(ptr);
   allocator.root()->Free(ptr);
-  ptr = allocator.root()->Alloc(kGenericMaxBucketed + 1, type_name);
+  ptr = allocator.root()->Alloc(kMaxBucketed + 1, type_name);
   EXPECT_TRUE(ptr);
   allocator.root()->Free(ptr);
 
@@ -684,12 +684,11 @@ TEST_F(PartitionAllocTest, GenericAlloc) {
   EXPECT_EQ(ptr, new_ptr);
   new_ptr = allocator.root()->Realloc(ptr, 1, type_name);
   EXPECT_EQ(ptr, new_ptr);
-  new_ptr = allocator.root()->Realloc(ptr, kGenericSmallestBucket, type_name);
+  new_ptr = allocator.root()->Realloc(ptr, kSmallestBucket, type_name);
   EXPECT_EQ(ptr, new_ptr);
 
   // Change the size of the realloc, switching buckets.
-  new_ptr =
-      allocator.root()->Realloc(ptr, kGenericSmallestBucket + 1, type_name);
+  new_ptr = allocator.root()->Realloc(ptr, kSmallestBucket + 1, type_name);
   EXPECT_NE(new_ptr, ptr);
   // Check that the realloc copied correctly.
   char* new_char_ptr = static_cast<char*>(new_ptr);
@@ -698,8 +697,8 @@ TEST_F(PartitionAllocTest, GenericAlloc) {
   // Subtle: this checks for an old bug where we copied too much from the
   // source of the realloc. The condition can be detected by a trashing of
   // the uninitialized value in the space of the upsized allocation.
-  EXPECT_EQ(kUninitializedByte, static_cast<unsigned char>(
-                                    *(new_char_ptr + kGenericSmallestBucket)));
+  EXPECT_EQ(kUninitializedByte,
+            static_cast<unsigned char>(*(new_char_ptr + kSmallestBucket)));
 #endif
   *new_char_ptr = 'B';
   // The realloc moved. To check that the old allocation was freed, we can
@@ -719,7 +718,7 @@ TEST_F(PartitionAllocTest, GenericAlloc) {
 
   // Upsize the realloc to outside the partition.
   ptr = new_ptr;
-  new_ptr = allocator.root()->Realloc(ptr, kGenericMaxBucketed + 1, type_name);
+  new_ptr = allocator.root()->Realloc(ptr, kMaxBucketed + 1, type_name);
   EXPECT_NE(new_ptr, ptr);
   new_char_ptr = static_cast<char*>(new_ptr);
   EXPECT_EQ(*new_char_ptr, 'C');
@@ -727,12 +726,12 @@ TEST_F(PartitionAllocTest, GenericAlloc) {
 
   // Upsize and downsize the realloc, remaining outside the partition.
   ptr = new_ptr;
-  new_ptr = allocator.root()->Realloc(ptr, kGenericMaxBucketed * 10, type_name);
+  new_ptr = allocator.root()->Realloc(ptr, kMaxBucketed * 10, type_name);
   new_char_ptr = static_cast<char*>(new_ptr);
   EXPECT_EQ(*new_char_ptr, 'D');
   *new_char_ptr = 'E';
   ptr = new_ptr;
-  new_ptr = allocator.root()->Realloc(ptr, kGenericMaxBucketed * 2, type_name);
+  new_ptr = allocator.root()->Realloc(ptr, kMaxBucketed * 2, type_name);
   new_char_ptr = static_cast<char*>(new_ptr);
   EXPECT_EQ(*new_char_ptr, 'E');
   *new_char_ptr = 'F';
@@ -750,7 +749,7 @@ TEST_F(PartitionAllocTest, GenericAlloc) {
 
 // Test the generic allocation functions can handle some specific sizes of
 // interest.
-TEST_F(PartitionAllocTest, GenericAllocSizes) {
+TEST_F(PartitionAllocTest, AllocSizes) {
   void* ptr = allocator.root()->Alloc(0, type_name);
   EXPECT_TRUE(ptr);
   allocator.root()->Free(ptr);
@@ -842,7 +841,7 @@ TEST_F(PartitionAllocTest, GenericAllocSizes) {
 }
 
 // Test that we can fetch the real allocated size after an allocation.
-TEST_F(PartitionAllocTest, GenericAllocGetSizeAndOffset) {
+TEST_F(PartitionAllocTest, AllocGetSizeAndOffset) {
   void* ptr;
   size_t requested_size, actual_size, predicted_size;
 
@@ -940,7 +939,7 @@ TEST_F(PartitionAllocTest, GenericAllocGetSizeAndOffset) {
   }
 
   // Too large allocation.
-  requested_size = kGenericMaxDirectMapped + 1;
+  requested_size = kMaxDirectMapped + 1;
   predicted_size = allocator.root()->ActualSize(requested_size);
   EXPECT_EQ(requested_size, predicted_size);
 }
@@ -1020,11 +1019,11 @@ TEST_F(PartitionAllocTest, Realloc) {
   allocator.root()->Free(ptr);
 
   // Test that shrinking a direct mapped allocation happens in-place.
-  size = kGenericMaxBucketed + 16 * kSystemPageSize;
+  size = kMaxBucketed + 16 * kSystemPageSize;
   ptr = allocator.root()->Alloc(size, type_name);
   size_t actual_size = allocator.root()->GetSize(ptr);
-  ptr2 = allocator.root()->Realloc(
-      ptr, kGenericMaxBucketed + 8 * kSystemPageSize, type_name);
+  ptr2 = allocator.root()->Realloc(ptr, kMaxBucketed + 8 * kSystemPageSize,
+                                   type_name);
   EXPECT_EQ(ptr, ptr2);
   EXPECT_EQ(actual_size - 8 * kSystemPageSize, allocator.root()->GetSize(ptr2));
 
@@ -1510,40 +1509,38 @@ TEST_F(PartitionAllocTest, LostFreePagesBug) {
 // process, so they won't pollute other tests.
 TEST_F(PartitionAllocDeathTest, RepeatedAllocReturnNullDirect) {
   // A direct-mapped allocation size.
-  EXPECT_DEATH(DoReturnNullTest(32 * 1024 * 1024, kPartitionAllocGenericFlags),
+  EXPECT_DEATH(DoReturnNullTest(32 * 1024 * 1024, kPartitionAllocFlags),
                "DoReturnNullTest");
 }
 
 // Repeating above test with Realloc
 TEST_F(PartitionAllocDeathTest, RepeatedReallocReturnNullDirect) {
-  EXPECT_DEATH(
-      DoReturnNullTest(32 * 1024 * 1024, kPartitionReallocGenericFlags),
-      "DoReturnNullTest");
+  EXPECT_DEATH(DoReturnNullTest(32 * 1024 * 1024, kPartitionReallocFlags),
+               "DoReturnNullTest");
 }
 
 // Repeating above test with TryRealloc
 TEST_F(PartitionAllocDeathTest, RepeatedTryReallocReturnNullDirect) {
-  EXPECT_DEATH(
-      DoReturnNullTest(32 * 1024 * 1024, kPartitionRootGenericTryRealloc),
-      "DoReturnNullTest");
+  EXPECT_DEATH(DoReturnNullTest(32 * 1024 * 1024, kPartitionRootTryRealloc),
+               "DoReturnNullTest");
 }
 
 // Test "return null" with a 512 kB block size.
 TEST_F(PartitionAllocDeathTest, RepeatedAllocReturnNull) {
   // A single-slot but non-direct-mapped allocation size.
-  EXPECT_DEATH(DoReturnNullTest(512 * 1024, kPartitionAllocGenericFlags),
+  EXPECT_DEATH(DoReturnNullTest(512 * 1024, kPartitionAllocFlags),
                "DoReturnNullTest");
 }
 
 // Repeating above test with Realloc.
 TEST_F(PartitionAllocDeathTest, RepeatedReallocReturnNull) {
-  EXPECT_DEATH(DoReturnNullTest(512 * 1024, kPartitionReallocGenericFlags),
+  EXPECT_DEATH(DoReturnNullTest(512 * 1024, kPartitionReallocFlags),
                "DoReturnNullTest");
 }
 
 // Repeating above test with TryRealloc.
 TEST_F(PartitionAllocDeathTest, RepeatedTryReallocReturnNull) {
-  EXPECT_DEATH(DoReturnNullTest(512 * 1024, kPartitionRootGenericTryRealloc),
+  EXPECT_DEATH(DoReturnNullTest(512 * 1024, kPartitionRootTryRealloc),
                "DoReturnNullTest");
 }
 
@@ -1557,8 +1554,7 @@ TEST_F(PartitionAllocDeathTest, LargeAllocs) {
   // Largest alloc.
   EXPECT_DEATH(allocator.root()->Alloc(static_cast<size_t>(-1), type_name), "");
   // And the smallest allocation we expect to die.
-  EXPECT_DEATH(allocator.root()->Alloc(kGenericMaxDirectMapped + 1, type_name),
-               "");
+  EXPECT_DEATH(allocator.root()->Alloc(kMaxDirectMapped + 1, type_name), "");
 }
 
 // Check that our immediate double-free detection works.
@@ -1590,7 +1586,7 @@ TEST_F(PartitionAllocDeathTest, GuardPages) {
 // (for metadata), and then rounds that size to kPageAllocationGranularity.
 // To be able to reliably write one past a direct allocation, choose a size
 // that's
-// a) larger than kGenericMaxBucketed (to make the allocation direct)
+// a) larger than kMaxBucketed (to make the allocation direct)
 // b) aligned at kPageAllocationGranularity boundaries after
 //    kPartitionPageSize has been added to it.
 // (On 32-bit, PartitionAlloc adds another kSystemPageSize to the
@@ -1599,11 +1595,11 @@ TEST_F(PartitionAllocDeathTest, GuardPages) {
 // hand to PartitionAlloc and we don't need to worry about allocation
 // granularities.)
 #define ALIGN(N, A) (((N) + (A)-1) / (A) * (A))
-  const int kSize = ALIGN(kGenericMaxBucketed + 1 + kPartitionPageSize,
-                          kPageAllocationGranularity) -
-                    kPartitionPageSize;
+  const int kSize =
+      ALIGN(kMaxBucketed + 1 + kPartitionPageSize, kPageAllocationGranularity) -
+      kPartitionPageSize;
 #undef ALIGN
-  static_assert(kSize > kGenericMaxBucketed,
+  static_assert(kSize > kMaxBucketed,
                 "allocation not large enough for direct allocation");
   size_t size = kSize - kExtraAllocSize;
   void* ptr = allocator.root()->Alloc(size, type_name);
@@ -1619,7 +1615,7 @@ TEST_F(PartitionAllocDeathTest, GuardPages) {
 
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
-// Tests that |PartitionDumpStatsGeneric| and |PartitionDumpStats| run without
+// Tests that |PartitionDumpStats| and |PartitionDumpStats| run without
 // crashing and return non-zero values when memory is allocated.
 TEST_F(PartitionAllocTest, DumpMemoryStats) {
   {
@@ -1738,8 +1734,8 @@ TEST_F(PartitionAllocTest, DumpMemoryStats) {
 
   // This test checks for correct direct mapped accounting.
   {
-    size_t size_smaller = kGenericMaxBucketed + 1;
-    size_t size_bigger = (kGenericMaxBucketed * 2) + 1;
+    size_t size_smaller = kMaxBucketed + 1;
+    size_t size_bigger = (kMaxBucketed * 2) + 1;
     size_t real_size_smaller =
         (size_smaller + kSystemPageOffsetMask) & kSystemPageBaseMask;
     size_t real_size_bigger =
@@ -1806,7 +1802,7 @@ TEST_F(PartitionAllocTest, DumpMemoryStats) {
       EXPECT_TRUE(dumper.IsMemoryAllocationRecorded());
 
       size_t slot_size =
-          requested_size + (requested_size / kGenericNumBucketsPerOrder);
+          requested_size + (requested_size / kNumBucketsPerOrder);
       const PartitionBucketMemoryStats* stats =
           dumper.GetBucketStats(slot_size);
       EXPECT_TRUE(stats);
@@ -1832,7 +1828,7 @@ TEST_F(PartitionAllocTest, DumpMemoryStats) {
       EXPECT_FALSE(dumper.IsMemoryAllocationRecorded());
 
       size_t slot_size =
-          requested_size + (requested_size / kGenericNumBucketsPerOrder);
+          requested_size + (requested_size / kNumBucketsPerOrder);
       const PartitionBucketMemoryStats* stats =
           dumper.GetBucketStats(slot_size);
       EXPECT_TRUE(stats);
@@ -1859,7 +1855,7 @@ TEST_F(PartitionAllocTest, DumpMemoryStats) {
       EXPECT_TRUE(dumper.IsMemoryAllocationRecorded());
 
       size_t slot_size =
-          requested_size + (requested_size / kGenericNumBucketsPerOrder);
+          requested_size + (requested_size / kNumBucketsPerOrder);
       const PartitionBucketMemoryStats* stats =
           dumper.GetBucketStats(slot_size);
       EXPECT_TRUE(stats);

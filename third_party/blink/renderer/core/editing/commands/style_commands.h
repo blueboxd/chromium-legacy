@@ -47,6 +47,7 @@ class LocalFrame;
 
 enum class EditingTriState;
 enum class EditorCommandSource;
+enum class WritingDirection;
 
 // This class provides static functions about commands related to style.
 class StyleCommands {
@@ -203,11 +204,11 @@ class StyleCommands {
 
   // TODO(editing-dev): We should make |textDirectionForSelection()| to take
   // |selectionInDOMTree|.
-  static mojo_base::mojom::blink::TextDirection
-  TextDirectionForSelection(const VisibleSelection&, EditingStyle*, bool&);
-  static EditingTriState StateTextWritingDirection(
-      LocalFrame&,
-      mojo_base::mojom::blink::TextDirection);
+  static WritingDirection TextDirectionForSelection(const VisibleSelection&,
+                                                    EditingStyle*,
+                                                    bool&);
+  static EditingTriState StateTextWritingDirection(LocalFrame&,
+                                                   WritingDirection);
 };
 
 }  // namespace blink

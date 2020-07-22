@@ -57,6 +57,10 @@ class ProtocolUtils {
       const ClientContextProto& client_context,
       const std::string& client_account);
 
+  // Create an action from the |action|.
+  static std::unique_ptr<Action> CreateAction(ActionDelegate* delegate,
+                                              const ActionProto& action);
+
   // Parse actions from the given |response|, which can be an empty string.
   //
   // Pass in nullptr for |return_global_payload| or |return_script_payload| to

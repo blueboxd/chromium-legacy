@@ -81,7 +81,19 @@ class DefaultDelegate : public CertificateProviderService::Delegate,
   extensions::EventRouter* const event_router_;
 };
 
-// Constructs the "onCertificatesRequested" event.
+// Constructs the "onCertificatesUpdateRequested" event.
+std::unique_ptr<extensions::Event> BuildOnCertificatesUpdateRequestedEvent(
+    int request_id) {
+  api_cp::CertificatesUpdateRequest certificates_update_request;
+  certificates_update_request.certificates_request_id = request_id;
+  auto event_args = std::make_unique<base::ListValue>();
+  event_args->Append(certificates_update_request.ToValue());
+  return std::make_unique<extensions::Event>(
+      extensions::events::CERTIFICATEPROVIDER_ON_CERTIFICATES_UPDATE_REQUESTED,
+      api_cp::OnCertificatesUpdateRequested::kEventName, std::move(event_args));
+}
+
+// Constructs the legacy "onCertificatesRequested" event.
 std::unique_ptr<extensions::Event> BuildOnCertificatesRequestedEvent(
     int request_id) {
   auto event_args = std::make_unique<base::ListValue>();
@@ -91,11 +103,52 @@ std::unique_ptr<extensions::Event> BuildOnCertificatesRequestedEvent(
       api_cp::OnCertificatesRequested::kEventName, std::move(event_args));
 }
 
-// Constructs the "onSignDigestRequested" event.
+// Constructs the "onSignatureRequested" event.
+std::unique_ptr<extensions::Event> BuildOnSignatureRequestedEvent(
+    int request_id,
+    uint16_t algorithm,
+    const net::X509Certificate& certificate,
+    base::span<const uint8_t> input) {
+  api_cp::SignatureRequest request;
+  request.sign_request_id = request_id;
+  switch (algorithm) {
+    case SSL_SIGN_RSA_PKCS1_MD5_SHA1:
+      request.algorithm = api_cp::ALGORITHM_RSASSA_PKCS1_V1_5_MD5_SHA1;
+      break;
+    case SSL_SIGN_RSA_PKCS1_SHA1:
+      request.algorithm = api_cp::ALGORITHM_RSASSA_PKCS1_V1_5_SHA1;
+      break;
+    case SSL_SIGN_RSA_PKCS1_SHA256:
+      request.algorithm = api_cp::ALGORITHM_RSASSA_PKCS1_V1_5_SHA256;
+      break;
+    case SSL_SIGN_RSA_PKCS1_SHA384:
+      request.algorithm = api_cp::ALGORITHM_RSASSA_PKCS1_V1_5_SHA384;
+      break;
+    case SSL_SIGN_RSA_PKCS1_SHA512:
+      request.algorithm = api_cp::ALGORITHM_RSASSA_PKCS1_V1_5_SHA512;
+      break;
+    default:
+      LOG(ERROR) << "Unknown signature algorithm";
+      return nullptr;
+  }
+  request.input.assign(input.begin(), input.end());
+  base::StringPiece cert_der =
+      net::x509_util::CryptoBufferAsStringPiece(certificate.cert_buffer());
+  request.certificate.assign(cert_der.begin(), cert_der.end());
+
+  auto event_args = std::make_unique<base::ListValue>();
+  event_args->Append(request.ToValue());
+
+  return std::make_unique<extensions::Event>(
+      extensions::events::CERTIFICATEPROVIDER_ON_SIGNATURE_REQUESTED,
+      api_cp::OnSignatureRequested::kEventName, std::move(event_args));
+}
+
+// Constructs the legacy "onSignDigestRequested" event.
 std::unique_ptr<extensions::Event> BuildOnSignDigestRequestedEvent(
     int request_id,
     uint16_t algorithm,
-    const scoped_refptr<net::X509Certificate>& certificate,
+    const net::X509Certificate& certificate,
     base::span<const uint8_t> input) {
   api_cp::SignRequest request;
 
@@ -121,7 +174,7 @@ std::unique_ptr<extensions::Event> BuildOnSignDigestRequestedEvent(
       return nullptr;
   }
   base::StringPiece cert_der =
-      net::x509_util::CryptoBufferAsStringPiece(certificate->cert_buffer());
+      net::x509_util::CryptoBufferAsStringPiece(certificate.cert_buffer());
   request.certificate.assign(cert_der.begin(), cert_der.end());
 
   // The extension expects the input to be hashed ahead of time.
@@ -149,6 +202,8 @@ DefaultDelegate::DefaultDelegate(CertificateProviderService* service,
     : service_(service), registry_(registry), event_router_(event_router) {
   DCHECK(service_);
   registry_->AddObserver(this);
+  event_router_->RegisterObserver(
+      this, api_cp::OnCertificatesUpdateRequested::kEventName);
   event_router_->RegisterObserver(this,
                                   api_cp::OnCertificatesRequested::kEventName);
 }
@@ -159,14 +214,29 @@ DefaultDelegate::~DefaultDelegate() {
 }
 
 std::vector<std::string> DefaultDelegate::CertificateProviderExtensions() {
-  const base::flat_set<std::string> ids =
+  base::flat_set<std::string> ids = GetSubscribedExtensions(
+      api_cp::OnCertificatesUpdateRequested::kEventName);
+  const base::flat_set<std::string> legacy_ids =
       GetSubscribedExtensions(api_cp::OnCertificatesRequested::kEventName);
+  ids.insert(legacy_ids.begin(), legacy_ids.end());
   return std::vector<std::string>(ids.begin(), ids.end());
 }
 
 void DefaultDelegate::BroadcastCertificateRequest(int request_id) {
+  // First, broadcast the event to the extensions that use the up-to-date
+  // version of the API.
+  const auto up_to_date_api_extension_ids = GetSubscribedExtensions(
+      api_cp::OnCertificatesUpdateRequested::kEventName);
+  for (const std::string& extension_id : up_to_date_api_extension_ids) {
+    event_router_->DispatchEventToExtension(
+        extension_id, BuildOnCertificatesUpdateRequestedEvent(request_id));
+  }
+  // Second, broadcast the event to the extensions that only listen for the
+  // legacy event.
   for (const std::string& extension_id :
        GetSubscribedExtensions(api_cp::OnCertificatesRequested::kEventName)) {
+    if (up_to_date_api_extension_ids.contains(extension_id))
+      continue;
     event_router_->DispatchEventToExtension(
         extension_id, BuildOnCertificatesRequestedEvent(request_id));
   }
@@ -178,11 +248,19 @@ bool DefaultDelegate::DispatchSignRequestToExtension(
     uint16_t algorithm,
     const scoped_refptr<net::X509Certificate>& certificate,
     base::span<const uint8_t> input) {
-  if (!event_router_->ExtensionHasEventListener(
-          extension_id, api_cp::OnSignDigestRequested::kEventName))
-    return false;
-  std::unique_ptr<extensions::Event> event = BuildOnSignDigestRequestedEvent(
-      request_id, algorithm, certificate, input);
+  DCHECK(certificate);
+  std::unique_ptr<extensions::Event> event;
+  // Send the up-to-date version of the event, and fall back to the legacy event
+  // if the extension is only listening for that one.
+  if (event_router_->ExtensionHasEventListener(
+          extension_id, api_cp::OnSignatureRequested::kEventName)) {
+    event = BuildOnSignatureRequestedEvent(request_id, algorithm, *certificate,
+                                           input);
+  } else if (event_router_->ExtensionHasEventListener(
+                 extension_id, api_cp::OnSignDigestRequested::kEventName)) {
+    event = BuildOnSignDigestRequestedEvent(request_id, algorithm, *certificate,
+                                            input);
+  }
   if (!event)
     return false;
   event_router_->DispatchEventToExtension(extension_id, std::move(event));
@@ -192,8 +270,12 @@ bool DefaultDelegate::DispatchSignRequestToExtension(
 void DefaultDelegate::OnListenerRemoved(
     const extensions::EventListenerInfo& details) {
   if (!event_router_->ExtensionHasEventListener(
-          details.extension_id, api_cp::OnCertificatesRequested::kEventName))
+          details.extension_id,
+          api_cp::OnCertificatesUpdateRequested::kEventName) &&
+      !event_router_->ExtensionHasEventListener(
+          details.extension_id, api_cp::OnCertificatesRequested::kEventName)) {
     service_->OnExtensionUnregistered(details.extension_id);
+  }
 }
 
 void DefaultDelegate::OnExtensionUnloaded(

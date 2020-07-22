@@ -2836,11 +2836,16 @@
     Instructions from your device administrator:
   </message>
 
-  <!-- Update Required Notiifcation Strings-->
+  <!-- Update Required Notification Strings-->
   <message name="IDS_UPDATE_REQUIRED_NETWORK_LIMITATION_TITLE_DAYS" desc="The title of the notification dialog informing the user that the device is not connected to a network suitable for downloading updates and an update is required within one or more days.">
     {0, plural,
       =1 {Last day to update device}
       other {Update device within # days}}
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_NETWORK_LIMITATION_TITLE_WEEKS" desc="The title of the notification dialog informing the user that the device is not connected to a network suitable for downloading updates and an update is required within one or more weeks.">
+    {0, plural,
+      =1 {Update device within 1 week}
+      other {Update device within # weeks}}
   </message>
   <message name="IDS_UPDATE_REQUIRED_NO_NETWORK_MESSAGE" desc="The body text of the notification dialog informing the user that the device is not connected to the internet and an update is required.">
     <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires you to download an update before the deadline. The update will download automatically when you connect to the internet.
@@ -2858,6 +2863,11 @@
     {0, plural,
       =1 {Immediate return required}
       other {Return device within # days}}
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_EOL_TITLE_WEEKS" desc="The title of the notification dialog informing the user that the device has reached end of life and should be returned within one or more weeks.">
+    {0, plural,
+      =1 {Return device within 1 week}
+      other {Return device within # weeks}}
   </message>
   <message name="IDS_UPDATE_REQUIRED_EOL_MESSAGE_IMMEDIATE" desc="The body text of the noti fication dialog informing the user that the device has reached end of life and it is last day to return it.">
     <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires you to back up your data and return this device today.

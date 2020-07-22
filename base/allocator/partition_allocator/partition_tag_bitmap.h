@@ -60,7 +60,7 @@ static constexpr size_t kBytesPerPartitionTagShift = 4;
 static constexpr size_t kBytesPerPartitionTag = 1U
                                                 << kBytesPerPartitionTagShift;
 static_assert(
-    kGenericMinBucketedOrder >= kBytesPerPartitionTagShift + 1,
+    kMinBucketedOrder >= kBytesPerPartitionTagShift + 1,
     "MTECheckedPtr requires kBytesPerPartitionTagShift-bytes alignment.");
 
 static constexpr size_t kBytesPerPartitionTagRatio =
@@ -144,4 +144,4 @@ static constexpr size_t kReservedTagBitmapSize = 0;
 }  // namespace internal
 }  // namespace base
 
-#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_TAG_CONSTANTS_H_
+#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_TAG_BITMAP_H_

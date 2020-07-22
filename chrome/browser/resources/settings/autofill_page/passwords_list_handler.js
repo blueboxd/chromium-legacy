@@ -80,6 +80,14 @@ Polymer({
     },
 
     /** @private */
+    editPasswordsInSettings_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('editPasswordsInSettings');
+      }
+    },
+
+    /** @private */
     showPasswordEditDialog_: {type: Boolean, value: false},
 
     /** @private */

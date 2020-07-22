@@ -10,15 +10,17 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/mojom/remote_objects/remote_objects.mojom-blink.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
+
+class LocalFrame;
 
 class MODULES_EXPORT RemoteObjectGatewayImpl
     : public GarbageCollected<RemoteObjectGatewayImpl>,
@@ -51,11 +53,7 @@ class MODULES_EXPORT RemoteObjectGatewayImpl
 
   void OnClearWindowObjectInMainWorld();
 
-  void Trace(Visitor* visitor) const override {
-    visitor->Trace(receiver_);
-    visitor->Trace(object_host_);
-    Supplement<LocalFrame>::Trace(visitor);
-  }
+  void Trace(Visitor* visitor) const override;
 
   void BindRemoteObjectReceiver(
       int32_t object_id,

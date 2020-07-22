@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_test_helpers.h"
 #include "chrome/browser/chromeos/platform_keys/mock_platform_keys_service.h"
+#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "content/public/test/browser_task_environment.h"
 #include "net/cert/x509_certificate.h"
@@ -70,9 +71,9 @@ class IteratorCallbackObserver {
               ForEachCallback,
               (scoped_refptr<net::X509Certificate> cert,
                const CertProfileId& cert_id,
-               const std::string& error_message));
+               platform_keys::Status status));
 
-  MOCK_METHOD(void, OnFinishedCallback, (const std::string& error_message));
+  MOCK_METHOD(void, OnFinishedCallback, (platform_keys::Status status));
 };
 
 TEST_F(CertProvisioningCertIteratorTest, NoCertificates) {
@@ -81,7 +82,8 @@ TEST_F(CertProvisioningCertIteratorTest, NoCertificates) {
   base::RunLoop run_loop;
   IteratorCallbackObserver callback_observer;
 
-  EXPECT_CALL(callback_observer, OnFinishedCallback(/*error_message=*/""))
+  EXPECT_CALL(callback_observer,
+              OnFinishedCallback(platform_keys::Status::kSuccess))
       .Times(1)
       .WillOnce(Invoke(&run_loop, &base::RunLoop::Quit));
 
@@ -101,11 +103,13 @@ TEST_F(CertProvisioningCertIteratorTest, OneCertificate) {
 
   {
     testing::InSequence seq;
-    EXPECT_CALL(callback_observer, ForEachCallback(/*cert=*/cert,
-                                                   /*cert_id=*/kCertProfileId,
-                                                   /*error_message=*/""))
+    EXPECT_CALL(callback_observer,
+                ForEachCallback(/*cert=*/cert,
+                                /*cert_id=*/kCertProfileId,
+                                platform_keys::Status::kSuccess))
         .Times(1);
-    EXPECT_CALL(callback_observer, OnFinishedCallback(/*error_message=*/""))
+    EXPECT_CALL(callback_observer,
+                OnFinishedCallback(platform_keys::Status::kSuccess))
         .Times(1)
         .WillOnce(Invoke(&run_loop, &base::RunLoop::Quit));
   }
@@ -126,14 +130,15 @@ TEST_F(CertProvisioningCertIteratorTest, ManyCertificates) {
   testing::ExpectationSet expect_set;
   for (const auto& id : ids) {
     auto cert = certificate_helper_.AddCert(kCertScope, id);
-    expect_set +=
-        EXPECT_CALL(callback_observer,
-                    ForEachCallback(/*cert=*/cert,
-                                    /*cert_id=*/id, /*error_message=*/""))
-            .Times(1);
+    expect_set += EXPECT_CALL(callback_observer,
+                              ForEachCallback(/*cert=*/cert,
+                                              /*cert_id=*/id,
+                                              platform_keys::Status::kSuccess))
+                      .Times(1);
   }
 
-  EXPECT_CALL(callback_observer, OnFinishedCallback(/*error_message=*/""))
+  EXPECT_CALL(callback_observer,
+              OnFinishedCallback(platform_keys::Status::kSuccess))
       .Times(1)
       .After(expect_set)
       .WillOnce(Invoke(&run_loop, &base::RunLoop::Quit));
@@ -146,18 +151,19 @@ TEST_F(CertProvisioningCertIteratorTest, ManyCertificates) {
 
 TEST_F(CertProvisioningCertIteratorTest, CertificateWithError) {
   const CertScope kCertScope = CertScope::kDevice;
-  const char kError[] = "test error";
+  const platform_keys::Status kErrorStatus =
+      platform_keys::Status::kErrorInternal;
 
   certificate_helper_.AddCert(kCertScope, /*cert_profile_id=*/"id1");
   certificate_helper_.AddCert(kCertScope, /*cert_profile_id=*/"id2");
   certificate_helper_.AddCert(kCertScope, /*cert_profile_id=*/base::nullopt,
-                              /*error_message=*/kError);
+                              kErrorStatus);
   certificate_helper_.AddCert(kCertScope, /*cert_profile_id=*/"id3");
   certificate_helper_.AddCert(kCertScope, /*cert_profile_id=*/"id4");
 
   base::RunLoop run_loop;
   IteratorCallbackObserver callback_observer;
-  EXPECT_CALL(callback_observer, OnFinishedCallback(kError))
+  EXPECT_CALL(callback_observer, OnFinishedCallback(kErrorStatus))
       .Times(1)
       .WillOnce(Invoke(&run_loop, &base::RunLoop::Quit));
 
@@ -182,20 +188,20 @@ class GetterCallbackObserver {
   }
 
   const CertMap& GetMap() { return cert_map_; }
-  const std::string GetError() { return error_message_; }
+  platform_keys::Status GetStatus() const { return status_; }
 
   void WaitForCallback() { loop_.Run(); }
 
  protected:
-  void Callback(CertMap certs_with_ids, const std::string& error_message) {
+  void Callback(CertMap certs_with_ids, platform_keys::Status status) {
     cert_map_ = std::move(certs_with_ids);
-    error_message_ = error_message;
+    status_ = status;
     loop_.Quit();
   }
 
   base::RunLoop loop_;
   CertMap cert_map_;
-  std::string error_message_;
+  platform_keys::Status status_ = platform_keys::Status::kSuccess;
 };
 
 TEST_F(CertPrivisioningCertGetter, NoCertificates) {
@@ -207,7 +213,7 @@ TEST_F(CertPrivisioningCertGetter, NoCertificates) {
   callback_observer.WaitForCallback();
 
   EXPECT_TRUE(callback_observer.GetMap().empty());
-  EXPECT_TRUE(callback_observer.GetError().empty());
+  EXPECT_EQ(callback_observer.GetStatus(), platform_keys::Status::kSuccess);
 }
 
 TEST_F(CertPrivisioningCertGetter, SingleCertificateWithId) {
@@ -224,7 +230,7 @@ TEST_F(CertPrivisioningCertGetter, SingleCertificateWithId) {
   callback_observer.WaitForCallback();
 
   EXPECT_EQ(callback_observer.GetMap(), cert_map);
-  EXPECT_TRUE(callback_observer.GetError().empty());
+  EXPECT_EQ(callback_observer.GetStatus(), platform_keys::Status::kSuccess);
 }
 
 TEST_F(CertPrivisioningCertGetter, ManyCertificatesWithId) {
@@ -243,7 +249,7 @@ TEST_F(CertPrivisioningCertGetter, ManyCertificatesWithId) {
   callback_observer.WaitForCallback();
 
   EXPECT_EQ(callback_observer.GetMap(), cert_map);
-  EXPECT_TRUE(callback_observer.GetError().empty());
+  EXPECT_EQ(callback_observer.GetStatus(), platform_keys::Status::kSuccess);
 }
 
 TEST_F(CertPrivisioningCertGetter, ManyCertificatesWithoutId) {
@@ -259,7 +265,7 @@ TEST_F(CertPrivisioningCertGetter, ManyCertificatesWithoutId) {
   callback_observer.WaitForCallback();
 
   EXPECT_TRUE(callback_observer.GetMap().empty());
-  EXPECT_TRUE(callback_observer.GetError().empty());
+  EXPECT_EQ(callback_observer.GetStatus(), platform_keys::Status::kSuccess);
 }
 
 TEST_F(CertPrivisioningCertGetter, CertificatesWithAndWithoutIds) {
@@ -283,7 +289,7 @@ TEST_F(CertPrivisioningCertGetter, CertificatesWithAndWithoutIds) {
   callback_observer.WaitForCallback();
 
   EXPECT_EQ(callback_observer.GetMap(), cert_map);
-  EXPECT_TRUE(callback_observer.GetError().empty());
+  EXPECT_EQ(callback_observer.GetStatus(), platform_keys::Status::kSuccess);
 }
 
 //================= CertProvisioningCertDeleterTest ============================
@@ -297,17 +303,17 @@ class DeleterCallbackObserver {
                           base::Unretained(this));
   }
 
-  const std::string GetError() { return error_message_; }
+  platform_keys::Status GetStatus() { return status_; }
   void WaitForCallback() { loop_.Run(); }
 
  protected:
-  void Callback(const std::string& error_message) {
-    error_message_ = error_message;
+  void Callback(platform_keys::Status status) {
+    status_ = status;
     loop_.Quit();
   }
 
   base::RunLoop loop_;
-  std::string error_message_;
+  platform_keys::Status status_;
 };
 
 TEST_F(CertProvisioningCertDeleterTest, NoCertificates) {
@@ -322,7 +328,7 @@ TEST_F(CertProvisioningCertDeleterTest, NoCertificates) {
                            callback_observer.GetCallback());
   callback_observer.WaitForCallback();
 
-  EXPECT_TRUE(callback_observer.GetError().empty());
+  EXPECT_EQ(callback_observer.GetStatus(), platform_keys::Status::kSuccess);
 }
 
 TEST_F(CertProvisioningCertDeleterTest, SomeCertsWithoutPolicy) {
@@ -336,7 +342,7 @@ TEST_F(CertProvisioningCertDeleterTest, SomeCertsWithoutPolicy) {
                 RemoveCertificate(GetPlatformKeysTokenId(kCertScope), cert,
                                   /*callback=*/_))
         .Times(1)
-        .WillOnce(RunOnceCallback<2>(/*error_message=*/""));
+        .WillOnce(RunOnceCallback<2>(platform_keys::Status::kSuccess));
   }
 
   for (const auto& id : cert_ids_to_keep) {
@@ -349,7 +355,7 @@ TEST_F(CertProvisioningCertDeleterTest, SomeCertsWithoutPolicy) {
                            callback_observer.GetCallback());
   callback_observer.WaitForCallback();
 
-  EXPECT_TRUE(callback_observer.GetError().empty());
+  EXPECT_EQ(callback_observer.GetStatus(), platform_keys::Status::kSuccess);
 }
 
 TEST_F(CertProvisioningCertDeleterTest, CertWasRenewed) {
@@ -361,16 +367,16 @@ TEST_F(CertProvisioningCertDeleterTest, CertWasRenewed) {
   base::Time t2 = t1 + base::TimeDelta::FromDays(30);
   base::Time t3 = t2 + base::TimeDelta::FromDays(30);
 
-  auto cert = certificate_helper_.AddCert(kCertScope, kRenewedCertId,
-                                          /*error_message=*/"", t1, t2);
+  auto cert = certificate_helper_.AddCert(
+      kCertScope, kRenewedCertId, platform_keys::Status::kSuccess, t1, t2);
   EXPECT_CALL(platform_keys_service_,
               RemoveCertificate(GetPlatformKeysTokenId(kCertScope), cert,
                                 /*callback=*/_))
       .Times(1)
-      .WillOnce(RunOnceCallback<2>(/*error_message=*/""));
+      .WillOnce(RunOnceCallback<2>(platform_keys::Status::kSuccess));
 
-  certificate_helper_.AddCert(kCertScope, kRenewedCertId, /*error_message=*/"",
-                              t2, t3);
+  certificate_helper_.AddCert(kCertScope, kRenewedCertId,
+                              platform_keys::Status::kSuccess, t2, t3);
   certificate_helper_.AddCert(kCertScope, kCertId2);
 
   DeleterCallbackObserver callback_observer;
@@ -379,16 +385,17 @@ TEST_F(CertProvisioningCertDeleterTest, CertWasRenewed) {
                            callback_observer.GetCallback());
   callback_observer.WaitForCallback();
 
-  EXPECT_TRUE(callback_observer.GetError().empty());
+  EXPECT_EQ(callback_observer.GetStatus(), platform_keys::Status::kSuccess);
 }
 
 TEST_F(CertProvisioningCertDeleterTest, PropogateError) {
   const CertScope kCertScope = CertScope::kDevice;
-  const char kErrorMsg[] = "error 123";
+  const platform_keys::Status kErrorStatus =
+      platform_keys::Status::kErrorInternal;
 
   certificate_helper_.AddCert(kCertScope, "id1");
   EXPECT_CALL(platform_keys_service_, RemoveCertificate)
-      .WillOnce(RunOnceCallback<2>(kErrorMsg));
+      .WillOnce(RunOnceCallback<2>(kErrorStatus));
 
   DeleterCallbackObserver callback_observer;
   CertDeleter cert_deleter(kCertScope, &platform_keys_service_);
@@ -396,7 +403,7 @@ TEST_F(CertProvisioningCertDeleterTest, PropogateError) {
                            callback_observer.GetCallback());
   callback_observer.WaitForCallback();
 
-  EXPECT_EQ(callback_observer.GetError(), kErrorMsg);
+  EXPECT_EQ(callback_observer.GetStatus(), kErrorStatus);
 }
 
 }  // namespace

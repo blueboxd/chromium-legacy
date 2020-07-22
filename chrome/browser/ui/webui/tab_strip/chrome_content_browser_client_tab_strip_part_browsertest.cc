@@ -42,7 +42,7 @@ IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientTabStripPartTest,
       default_prefs.minimum_logical_font_size;
 
   content::WebPreferences preexisting_tab_strip_prefs =
-      CreateTabStripWebContents()->GetRenderViewHost()->GetWebkitPreferences();
+      CreateTabStripWebContents()->GetOrCreateWebPreferences();
 
   Profile* profile = browser()->profile();
   PrefService* profile_prefs = profile->GetPrefs();
@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientTabStripPartTest,
             preexisting_tab_strip_prefs.minimum_logical_font_size);
 
   content::WebPreferences new_tab_strip_prefs =
-      CreateTabStripWebContents()->GetRenderViewHost()->GetWebkitPreferences();
+      CreateTabStripWebContents()->GetOrCreateWebPreferences();
   EXPECT_EQ(kDefaultFontSize, new_tab_strip_prefs.default_font_size);
   EXPECT_EQ(kDefaultFixedFontSize, new_tab_strip_prefs.default_fixed_font_size);
   EXPECT_EQ(kDefaultMinimumFontSize, new_tab_strip_prefs.minimum_font_size);

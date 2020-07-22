@@ -39,9 +39,9 @@
 
 @interface ActivityServiceMediator ()
 
-@property(nonatomic, weak)
-    id<BrowserCommands, FindInPageCommands, QRGenerationCommands>
-        handler;
+@property(nonatomic, weak) id<BrowserCommands, FindInPageCommands> handler;
+
+@property(nonatomic, weak) id<QRGenerationCommands> qrGenerationHandler;
 
 @property(nonatomic, assign) PrefService* prefService;
 
@@ -53,13 +53,13 @@
 
 #pragma mark - Public
 
-- (instancetype)
-    initWithHandler:
-        (id<BrowserCommands, FindInPageCommands, QRGenerationCommands>)handler
-        prefService:(PrefService*)prefService
-      bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel {
+- (instancetype)initWithHandler:(id<BrowserCommands, FindInPageCommands>)handler
+            qrGenerationHandler:(id<QRGenerationCommands>)qrGenerationHandler
+                    prefService:(PrefService*)prefService
+                  bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel {
   if (self = [super init]) {
     _handler = handler;
+    _qrGenerationHandler = qrGenerationHandler;
     _prefService = prefService;
     _bookmarkModel = bookmarkModel;
   }
@@ -103,7 +103,7 @@
     GenerateQrCodeActivity* generateQrCodeActivity =
         [[GenerateQrCodeActivity alloc] initWithURL:data.shareURL
                                               title:data.title
-                                            handler:self.handler];
+                                            handler:self.qrGenerationHandler];
     [applicationActivities addObject:generateQrCodeActivity];
 
     FindInPageActivity* findInPageActivity =

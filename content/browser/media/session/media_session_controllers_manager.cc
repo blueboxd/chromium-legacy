@@ -22,8 +22,8 @@ bool IsMediaSessionEnabled() {
 }  // namespace
 
 MediaSessionControllersManager::MediaSessionControllersManager(
-    MediaWebContentsObserver* media_web_contents_observer)
-    : media_web_contents_observer_(media_web_contents_observer) {}
+    WebContents* web_contents)
+    : web_contents_(web_contents) {}
 
 MediaSessionControllersManager::~MediaSessionControllersManager() = default;
 
@@ -39,40 +39,40 @@ void MediaSessionControllersManager::RenderFrameDeleted(
       });
 }
 
-bool MediaSessionControllersManager::RequestPlay(
+void MediaSessionControllersManager::OnMetadata(
     const MediaPlayerId& id,
     bool has_audio,
-    media::MediaContentType media_content_type,
-    bool has_video) {
-  if (!IsMediaSessionEnabled())
-    return true;
-
-  // Since we don't remove session instances on pause, there may be an existing
-  // instance for this playback attempt.  In this case, try to reinitialize it
-  // with the new settings.  If they are the same, this is a no-op.
-  MediaSessionController* const controller = FindOrCreateController(id);
-  return controller->OnPlaybackStarted(has_audio, has_video,
-                                       media_content_type);
-}
-
-void MediaSessionControllersManager::OnPause(const MediaPlayerId& id) {
+    bool has_video,
+    media::MediaContentType media_content_type) {
   if (!IsMediaSessionEnabled())
     return;
 
   MediaSessionController* const controller = FindOrCreateController(id);
-  controller->OnPlaybackPaused(false);
+  controller->SetMetadata(has_audio, has_video, media_content_type);
+}
+
+bool MediaSessionControllersManager::RequestPlay(const MediaPlayerId& id) {
+  if (!IsMediaSessionEnabled())
+    return true;
+
+  MediaSessionController* const controller = FindOrCreateController(id);
+  return controller->OnPlaybackStarted();
+}
+
+void MediaSessionControllersManager::OnPause(const MediaPlayerId& id,
+                                             bool reached_end_of_stream) {
+  if (!IsMediaSessionEnabled())
+    return;
+
+  MediaSessionController* const controller = FindOrCreateController(id);
+  controller->OnPlaybackPaused(reached_end_of_stream);
 }
 
 void MediaSessionControllersManager::OnEnd(const MediaPlayerId& id) {
   if (!IsMediaSessionEnabled())
     return;
 
-  // TODO(wdzierzanowski): OnEnd() currently doubles as signal that playback
-  // has ended and that the player has been destroyed.  Replace the following
-  // call with removing the controller from the map once OnEnd() is only issued
-  // on player destruction.  https://crbug.com/1091203
-  MediaSessionController* const controller = FindOrCreateController(id);
-  controller->OnPlaybackPaused(true);
+  controllers_map_.erase(id);
 }
 
 void MediaSessionControllersManager::OnMediaPositionStateChanged(
@@ -118,7 +118,7 @@ MediaSessionController* MediaSessionControllersManager::FindOrCreateController(
   if (it == controllers_map_.end()) {
     it = controllers_map_
              .emplace(id, std::make_unique<MediaSessionController>(
-                              id, media_web_contents_observer_))
+                              id, web_contents_))
              .first;
   }
   return it->second.get();

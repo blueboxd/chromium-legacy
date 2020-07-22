@@ -696,6 +696,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // See OnDisplayMetricsChanged() for details.
   bool needs_to_update_display_metrics_ = false;
 
+  // Saved value of WebPreferences' |double_tap_to_zoom_enabled|.
+  bool double_tap_to_zoom_enabled_ = false;
+
   Visibility visibility_ = Visibility::HIDDEN;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_{this};

@@ -261,12 +261,12 @@ void CertProvisioningSchedulerImpl::DeleteCertsWithoutPolicy() {
 }
 
 void CertProvisioningSchedulerImpl::OnDeleteCertsWithoutPolicyDone(
-    const std::string& error_message) {
+    platform_keys::Status status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!error_message.empty()) {
+  if (status != platform_keys::Status::kSuccess) {
     LOG(ERROR) << "Failed to delete certificates without policies: "
-               << error_message;
+               << platform_keys::StatusToString(status);
   }
 
   DeserializeWorkers();
@@ -419,11 +419,12 @@ void CertProvisioningSchedulerImpl::UpdateCertListWithExistingCerts(
     std::vector<CertProfile> profiles,
     base::flat_map<CertProfileId, scoped_refptr<net::X509Certificate>>
         existing_certs_with_ids,
-    const std::string& error_message) {
+    platform_keys::Status status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!error_message.empty()) {
-    LOG(ERROR) << "Failed to get existing cert ids: " << error_message;
+  if (status != platform_keys::Status::kSuccess) {
+    LOG(ERROR) << "Failed to get existing cert ids: "
+               << platform_keys::StatusToString(status);
     return;
   }
 

@@ -2091,7 +2091,12 @@ void WebContentsImpl::DidActivatePortal(
 }
 
 void WebContentsImpl::NotifyInsidePortal(bool inside_portal) {
-  SendPageMessage(new PageMsg_SetInsidePortal(MSG_ROUTING_NONE, inside_portal));
+  ExecutePageBroadcastMethod(base::BindRepeating(
+      [](bool inside_portal, RenderViewHostImpl* rvh) {
+        if (auto& broadcast = rvh->GetAssociatedPageBroadcast())
+          broadcast->SetInsidePortal(inside_portal);
+      },
+      inside_portal));
 }
 
 void WebContentsImpl::DidChangeVisibleSecurityState() {
@@ -2102,14 +2107,15 @@ void WebContentsImpl::DidChangeVisibleSecurityState() {
 }
 
 void WebContentsImpl::NotifyPreferencesChanged() {
-  std::set<RenderViewHost*> render_view_host_set;
-  for (FrameTreeNode* node : frame_tree_.Nodes()) {
-    render_view_host_set.insert(
-        node->current_frame_host()->GetRenderViewHost());
-  }
-
-  for (RenderViewHost* render_view_host : render_view_host_set)
-    render_view_host->OnWebkitPreferencesChanged();
+  // Recompute the WebPreferences based on the current state of the WebContents,
+  // etc. Note that OnWebkitPreferencesChanged will update the WebPreferences
+  // of the WebContents, so it doesn't matter which RenderViewHost we're calling
+  // it on as long as it belongs to this WebContents. It will also call
+  // SetWebPreferences and send the updated WebPreferences to all RenderViews
+  // for this WebContents.
+  // TODO(rakina): Move OnWebkitPreferencesChanged to WebContents.
+  RenderViewHost* main_render_view_host = GetRenderViewHost();
+  main_render_view_host->OnWebkitPreferencesChanged();
 }
 
 void WebContentsImpl::SyncRendererPrefs() {
@@ -4589,6 +4595,28 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
     max_loaded_frame_count_ =
         GetMainFrame()->frame_tree_node()->GetFrameTreeSize();
   }
+
+  if (web_preferences_) {
+    // Update the WebPreferences for this WebContents that depends on changes
+    // that might occur during navigation. This will only update the preferences
+    // that needs to be updated (and won't cause an update/overwrite preferences
+    // that needs to stay the same after navigations).
+    bool value_changed_due_to_override =
+        GetContentClient()->browser()->OverrideWebPreferencesAfterNavigation(
+            this, web_preferences_.get());
+    // We need to update the WebPreferences value on the renderer if the value
+    // is changed due to the override above, or if the navigation is served from
+    // the back-forward cache, because the WebPreferences value stored in the
+    // renderer might be stale (because we don't send WebPreferences updates to
+    // bfcached renderers).
+    // TODO(rakina): Maybe handle the back-forward cache case in
+    // ReadyToCommitNavigation instead?
+    if (value_changed_due_to_override ||
+        NavigationRequest::From(navigation_handle)
+            ->IsServedFromBackForwardCache()) {
+      SetWebPreferences(*web_preferences_.get());
+    }
+  }
 }
 
 void WebContentsImpl::DidFailLoadWithError(
@@ -4873,6 +4901,36 @@ void WebContentsImpl::ResourceLoadComplete(
     observer.ResourceLoadComplete(render_frame_host, request_id,
                                   *resource_load_info);
   }
+}
+
+const WebPreferences& WebContentsImpl::GetOrCreateWebPreferences() {
+  // Compute WebPreferences based on the current state if it's null.
+  if (!web_preferences_)
+    GetRenderViewHost()->OnWebkitPreferencesChanged();
+  return *web_preferences_.get();
+}
+
+bool WebContentsImpl::IsWebPreferencesSet() const {
+  return web_preferences_.get();
+}
+
+void WebContentsImpl::SetWebPreferences(const WebPreferences& prefs) {
+  web_preferences_ = std::make_unique<WebPreferences>(prefs);
+  // Get all the RenderViewHosts (except the ones for currently back-forward
+  // cached pages), and make them send the current WebPreferences
+  // to the renderer. WebPreferences updates for back-forward cached pages will
+  // be sent when we restore those pages from the back-forward cache.
+  for (auto& rvh : frame_tree_.render_view_hosts()) {
+    rvh.second->SendWebPreferencesToRenderer();
+  }
+}
+
+void WebContentsImpl::RecomputeWebPreferencesSlow() {
+  // Resets |web_preferences_| so that we won't have any cached value for slow
+  // attributes (which won't get recomputed if we have pre-existing values for
+  // them).
+  web_preferences_.reset();
+  GetRenderViewHost()->OnWebkitPreferencesChanged();
 }
 
 void WebContentsImpl::PrintCrossProcessSubframe(

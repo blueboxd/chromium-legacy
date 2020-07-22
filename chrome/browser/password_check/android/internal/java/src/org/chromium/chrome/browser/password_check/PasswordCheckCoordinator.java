@@ -20,12 +20,23 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 class PasswordCheckCoordinator implements PasswordCheckComponentUi {
     private final PasswordCheckFragmentView mFragmentView;
 
+    /**
+     * Blueprint for a class that handles interactions with credentials.
+     */
+    interface CredentialEventHandler {
+        /**
+         * Removes the given Credential from the password store.
+         * @param credential A {@link CompromisedCredential} to be removed.
+         */
+        void onRemove(CompromisedCredential credential);
+    }
+
     PasswordCheckCoordinator(PasswordCheckFragmentView fragmentView) {
         mFragmentView = fragmentView;
         PropertyModel model = PasswordCheckProperties.createDefaultModel();
         PasswordCheckMediator mediator = new PasswordCheckMediator();
         PasswordCheckCoordinator.setUpModelChangeProcessors(model, mFragmentView);
-        mediator.initialize(model);
+        mediator.initialize(model, PasswordCheckFactory.create());
     }
 
     // TODO(crbug.com/1101256): Move to view code.

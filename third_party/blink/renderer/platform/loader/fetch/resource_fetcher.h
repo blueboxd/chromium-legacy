@@ -49,7 +49,6 @@
 namespace blink {
 
 enum class ResourceType : uint8_t;
-class CodeCacheLoader;
 class DetachableConsoleLogger;
 class DetachableUseCounter;
 class DetachableResourceFetcherProperties;
@@ -62,6 +61,7 @@ class ResourceError;
 class ResourceLoadObserver;
 class ResourceTimingInfo;
 class SubresourceWebBundle;
+class WebCodeCacheLoader;
 class WebURLLoader;
 struct ResourceFetcherInit;
 struct ResourceLoaderOptions;
@@ -97,7 +97,7 @@ class PLATFORM_EXPORT ResourceFetcher
         scoped_refptr<base::SingleThreadTaskRunner>) = 0;
 
     // Create a code cache loader to fetch data from code caches.
-    virtual std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader() = 0;
+    virtual std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader() = 0;
   };
 
   // ResourceFetcher creators are responsible for setting consistent objects
@@ -153,7 +153,7 @@ class PLATFORM_EXPORT ResourceFetcher
                                                 const ResourceLoaderOptions&);
   // Create a code cache loader. This cannot be called after ClearContext is
   // called.
-  std::unique_ptr<CodeCacheLoader> CreateCodeCacheLoader();
+  std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader();
 
   Resource* CachedResource(const KURL&) const;
   static void AddPriorityObserverForTesting(const KURL&,

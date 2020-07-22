@@ -18,4 +18,9 @@ class PasswordCheckImpl implements PasswordCheck {
         SettingsLauncher launcher = new SettingsLauncherImpl();
         launcher.launchSettingsActivity(context, PasswordCheckFragmentView.class);
     }
+
+    @Override
+    public void removeCredential(CompromisedCredential credential) {
+        // TODO(crbug.com/1106726): Call native method through bridge.
+    }
 }

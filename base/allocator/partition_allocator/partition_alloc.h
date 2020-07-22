@@ -88,7 +88,7 @@
 // We use this to make MEMORY_TOOL_REPLACES_ALLOCATOR behave the same for max
 // size as other alloc code.
 #define CHECK_MAX_SIZE_OR_RETURN_NULLPTR(size, flags) \
-  if (size > kGenericMaxDirectMapped) {               \
+  if (size > kMaxDirectMapped) {                      \
     if (flags & PartitionAllocReturnNull) {           \
       return nullptr;                                 \
     }                                                 \
@@ -372,7 +372,7 @@ struct PartitionBucketMemoryStats {
 };
 
 // Interface that is passed to PartitionDumpStats and
-// PartitionDumpStatsGeneric for using the memory statistics.
+// PartitionDumpStats for using the memory statistics.
 class BASE_EXPORT PartitionStatsDumper {
  public:
   // Called to dump total memory used by partition, once per partition.
@@ -431,9 +431,8 @@ struct BASE_EXPORT PartitionRoot {
   // sizes.  It is one flat array instead of a 2D array because in the 2D
   // world, we'd need to index array[blah][max+1] which risks undefined
   // behavior.
-  Bucket* bucket_lookups[((kBitsPerSizeT + 1) * kGenericNumBucketsPerOrder) +
-                         1] = {};
-  Bucket buckets[kGenericNumBuckets] = {};
+  Bucket* bucket_lookups[((kBitsPerSizeT + 1) * kNumBucketsPerOrder) + 1] = {};
+  Bucket buckets[kNumBuckets] = {};
 
   PartitionRoot() = default;
   explicit PartitionRoot(bool enable_tag_pointers) {
@@ -795,14 +794,14 @@ PartitionRoot<thread_safe>::SizeToBucket(size_t size) const {
   size_t order = kBitsPerSizeT - bits::CountLeadingZeroBitsSizeT(size);
   // The order index is simply the next few bits after the most significant bit.
   size_t order_index =
-      (size >> order_index_shifts[order]) & (kGenericNumBucketsPerOrder - 1);
+      (size >> order_index_shifts[order]) & (kNumBucketsPerOrder - 1);
   // And if the remaining bits are non-zero we must bump the bucket up.
   size_t sub_order_index = size & order_sub_index_masks[order];
-  Bucket* bucket = bucket_lookups[(order << kGenericNumBucketsPerOrderBits) +
+  Bucket* bucket = bucket_lookups[(order << kNumBucketsPerOrderBits) +
                                   order_index + !!sub_order_index];
   PA_CHECK(bucket);
   PA_DCHECK(!bucket->slot_size || bucket->slot_size >= size);
-  PA_DCHECK(!(bucket->slot_size % kGenericSmallestBucket));
+  PA_DCHECK(!(bucket->slot_size % kSmallestBucket));
   return bucket;
 }
 
@@ -914,7 +913,7 @@ ALWAYS_INLINE size_t PartitionRoot<thread_safe>::ActualSize(size_t size) {
   auto* bucket = SizeToBucket(size);
   if (LIKELY(!bucket->is_direct_mapped())) {
     size = bucket->slot_size;
-  } else if (size > kGenericMaxDirectMapped) {
+  } else if (size > kMaxDirectMapped) {
     // Too large to allocate => return the size unchanged.
   } else {
     size = Bucket::get_direct_map_size(size);

@@ -30,6 +30,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
 
@@ -55,6 +56,7 @@ import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -287,6 +289,7 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
     private final Client mClient;
     private final boolean mShowDataSource;
     private final PaymentUisShowStateReconciler mPaymentUisShowStateReconciler;
+    private final Profile mProfile;
 
     /**
      * The top level container of this UI. When needing to call show() or hide(), use {@link
@@ -364,6 +367,7 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
         mShowDataSource = showDataSource;
         mAnimatorTranslation = mContext.getResources().getDimensionPixelSize(
                 R.dimen.payments_ui_translation);
+        mProfile = profile;
 
         mReadyToPayNotifierForTest = new NotifierForTest(new Runnable() {
             @Override
@@ -1122,12 +1126,10 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
         if (!mShowDataSource) {
             message = mContext.getString(R.string.payments_card_and_address_settings);
         } else {
-            CoreAccountInfo coreAccountInfo =
-                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
-                            ConsentLevel.SYNC);
-            if (coreAccountInfo != null) {
-                message = mContext.getString(R.string.payments_card_and_address_settings_signed_in,
-                        coreAccountInfo.getEmail());
+            String email = getEmail();
+            if (email != null) {
+                message = mContext.getString(
+                        R.string.payments_card_and_address_settings_signed_in, email);
             } else {
                 message =
                         mContext.getString(R.string.payments_card_and_address_settings_signed_out);
@@ -1150,6 +1152,17 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
                 R.dimen.editor_dialog_section_large_spacing);
         ViewCompat.setPaddingRelative(view, paddingSize, paddingSize, paddingSize, paddingSize);
         parent.addView(view);
+    }
+
+    /** @return The email of signed in user or null. */
+    @Nullable
+    private String getEmail() {
+        IdentityManager identityManager =
+                IdentityServicesProvider.get().getIdentityManager(mProfile);
+        if (identityManager == null) return null;
+        CoreAccountInfo info = identityManager.getPrimaryAccountInfo(ConsentLevel.SYNC);
+        if (info == null) return null;
+        return info.getEmail();
     }
 
     private Callback<SectionInformation> createUpdateSectionCallback(@DataType final int type) {

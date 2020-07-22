@@ -211,10 +211,9 @@ void DomDistillerViewerSource::StartDataRequest(
     return;
 #if !defined(OS_ANDROID)
   // Don't allow loading of mixed content on Reader Mode pages.
-  content::WebPreferences prefs =
-      web_contents->GetRenderViewHost()->GetWebkitPreferences();
+  content::WebPreferences prefs = web_contents->GetOrCreateWebPreferences();
   prefs.strict_mixed_content_checking = true;
-  web_contents->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+  web_contents->SetWebPreferences(prefs);
 #endif  // !defined(OS_ANDROID)
   if (kViewerCssPath == path) {
     std::string css = viewer::GetCss();

@@ -83,3 +83,20 @@ var DiceWebSigninInterceptTest = class extends SigninBrowserTest {
 TEST_F('DiceWebSigninInterceptTest', 'Bubble', function() {
   mocha.run();
 });
+
+/**
+ * Test fixture for
+ * chrome/browser/resources/signin/profile_picker/profile_creation_flow/profile_type_choice.html.
+ * This has to be declared as a variable for TEST_F to find it correctly.
+ */
+// eslint-disable-next-line no-var
+var ProfileCreationFlowTest = class extends SigninBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://profile-picker/test_loader.html?module=signin/profile_creation_flow_test.js';
+  }
+};
+
+TEST_F('ProfileCreationFlowTest', 'BackButton', function() {
+  mocha.run();
+});

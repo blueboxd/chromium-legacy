@@ -138,11 +138,7 @@ class SyncService : public KeyedService {
     // again until either the browser is restarted, or the user fully signs out
     // and back in again.
     DISABLE_REASON_UNRECOVERABLE_ERROR,
-    // Sync is paused because the user signed out on the web. This is different
-    // from NOT_SIGNED_IN: In this case, there *is* still a primary account, but
-    // it doesn't have valid credentials.
-    DISABLE_REASON_PAUSED,
-    DISABLE_REASON_LAST = DISABLE_REASON_PAUSED,
+    DISABLE_REASON_LAST = DISABLE_REASON_UNRECOVERABLE_ERROR,
   };
 
   using DisableReasonSet =
@@ -155,6 +151,9 @@ class SyncService : public KeyedService {
     // Sync is inactive, e.g. due to enterprise policy, or simply because there
     // is no authenticated user.
     DISABLED,
+    // Sync is paused, e.g. because the user signed out on the web, and the
+    // engine is inactive.
+    PAUSED,
     // Sync's startup was deferred, so that it doesn't slow down browser
     // startup. Once the deferral time (usually 10s) expires, or something
     // requests immediate startup, Sync will actually start.

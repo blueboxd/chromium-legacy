@@ -375,7 +375,7 @@ bool RenderViewHostImpl::CreateRenderView(
       delegate_->GetRendererPrefs(GetProcess()->GetBrowserContext()).Clone();
   RenderViewHostImpl::GetPlatformSpecificPrefs(
       params->renderer_preferences.get());
-  params->web_preferences = GetWebkitPreferences();
+  params->web_preferences = delegate_->GetOrCreateWebPreferences();
   params->view_id = GetRoutingID();
   if (main_rfh) {
     params->main_frame_routing_id = main_frame_routing_id_;
@@ -533,7 +533,9 @@ bool RenderViewHostImpl::IsNeverComposited() {
 }
 
 WebPreferences RenderViewHostImpl::GetWebkitPreferencesForWidget() {
-  return GetWebkitPreferences();
+  if (!delegate_)
+    return WebPreferences();
+  return delegate_->GetOrCreateWebPreferences();
 }
 
 void RenderViewHostImpl::ShowContextMenu(RenderFrameHost* render_frame_host,
@@ -700,8 +702,9 @@ const WebPreferences RenderViewHostImpl::ComputeWebPreferences() {
 void RenderViewHostImpl::SetSlowWebPreferences(
     const base::CommandLine& command_line,
     WebPreferences* prefs) {
-  if (web_preferences_.get()) {
-#define SET_FROM_CACHE(prefs, field) prefs->field = web_preferences_->field
+  if (delegate_->IsWebPreferencesSet()) {
+    auto web_preferences = delegate_->GetOrCreateWebPreferences();
+#define SET_FROM_CACHE(prefs, field) prefs->field = web_preferences.field
 
     SET_FROM_CACHE(prefs, touch_event_feature_detection_enabled);
     SET_FROM_CACHE(prefs, available_pointer_types);
@@ -1023,16 +1026,9 @@ void RenderViewHostImpl::RequestSetBounds(const gfx::Rect& bounds) {
     delegate_->RequestSetBounds(bounds);
 }
 
-WebPreferences RenderViewHostImpl::GetWebkitPreferences() {
-  if (!web_preferences_.get()) {
-    OnWebkitPreferencesChanged();
-  }
-  return *web_preferences_;
-}
-
-void RenderViewHostImpl::UpdateWebkitPreferences(const WebPreferences& prefs) {
-  web_preferences_.reset(new WebPreferences(prefs));
-  Send(new ViewMsg_UpdateWebPreferences(GetRoutingID(), prefs));
+void RenderViewHostImpl::SendWebPreferencesToRenderer() {
+  Send(new ViewMsg_UpdateWebPreferences(
+      GetRoutingID(), delegate_->GetOrCreateWebPreferences()));
 }
 
 void RenderViewHostImpl::OnWebkitPreferencesChanged() {
@@ -1042,13 +1038,14 @@ void RenderViewHostImpl::OnWebkitPreferencesChanged() {
   if (updating_web_preferences_)
     return;
   updating_web_preferences_ = true;
-  UpdateWebkitPreferences(ComputeWebPreferences());
+  delegate_->SetWebPreferences(ComputeWebPreferences());
 #if defined(OS_ANDROID)
   for (FrameTreeNode* node : GetDelegate()->GetFrameTree()->Nodes()) {
     RenderFrameHostImpl* rfh = node->current_frame_host();
     if (rfh->is_local_root()) {
       if (auto* rwh = rfh->GetRenderWidgetHost())
-        rwh->SetForceEnableZoom(web_preferences_->force_enable_zoom);
+        rwh->SetForceEnableZoom(
+            delegate_->GetOrCreateWebPreferences().force_enable_zoom);
     }
   }
 #endif
@@ -1059,8 +1056,7 @@ void RenderViewHostImpl::OnHardwareConfigurationChanged() {
   // OnWebkitPreferencesChanged is a no-op when this is true.
   if (updating_web_preferences_)
     return;
-  web_preferences_.reset();
-  OnWebkitPreferencesChanged();
+  delegate_->RecomputeWebPreferencesSlow();
 }
 
 void RenderViewHostImpl::EnablePreferredSizeMode() {

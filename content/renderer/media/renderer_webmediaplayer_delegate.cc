@@ -71,6 +71,7 @@ void RendererWebMediaPlayerDelegate::RemoveObserver(int player_id) {
   id_map_.Remove(player_id);
   idle_player_map_.erase(player_id);
   stale_players_.erase(player_id);
+  players_with_video_.erase(player_id);
   playing_videos_.erase(player_id);
 
   Send(
@@ -79,27 +80,38 @@ void RendererWebMediaPlayerDelegate::RemoveObserver(int player_id) {
   ScheduleUpdateTask();
 }
 
-void RendererWebMediaPlayerDelegate::DidPlay(
+void RendererWebMediaPlayerDelegate::DidMediaMetadataChange(
     int player_id,
-    bool has_video,
     bool has_audio,
+    bool has_video,
     MediaContentType media_content_type) {
   DVLOG(2) << __func__ << "(" << player_id << ", " << has_video << ", "
            << has_audio << ", " << static_cast<int>(media_content_type) << ")";
-  DCHECK(id_map_.Lookup(player_id));
 
-  has_played_media_ = true;
   if (has_video) {
-    if (!playing_videos_.count(player_id)) {
-      playing_videos_.insert(player_id);
-      has_played_video_ = true;
-    }
+    players_with_video_.insert(player_id);
   } else {
+    players_with_video_.erase(player_id);
     playing_videos_.erase(player_id);
   }
 
-  Send(new MediaPlayerDelegateHostMsg_OnMediaPlaying(
-      routing_id(), player_id, has_video, has_audio, media_content_type));
+  Send(new MediaPlayerDelegateHostMsg_OnMediaMetadataChanged(
+      routing_id(), player_id, has_audio, has_video, media_content_type));
+
+  ScheduleUpdateTask();
+}
+
+void RendererWebMediaPlayerDelegate::DidPlay(int player_id) {
+  DVLOG(2) << __func__ << "(" << player_id << ")";
+  DCHECK(id_map_.Lookup(player_id));
+
+  has_played_media_ = true;
+  if (players_with_video_.count(player_id) == 1) {
+    playing_videos_.insert(player_id);
+    has_played_video_ = true;
+  }
+
+  Send(new MediaPlayerDelegateHostMsg_OnMediaPlaying(routing_id(), player_id));
 
   ScheduleUpdateTask();
 }
@@ -117,12 +129,14 @@ void RendererWebMediaPlayerDelegate::DidPlayerMediaPositionStateChange(
       routing_id(), delegate_id, position));
 }
 
-void RendererWebMediaPlayerDelegate::DidPause(int player_id) {
-  DVLOG(2) << __func__ << "(" << player_id << ")";
+void RendererWebMediaPlayerDelegate::DidPause(int player_id,
+                                              bool reached_end_of_stream) {
+  DVLOG(2) << __func__ << "(" << player_id << ", " << reached_end_of_stream
+           << ")";
   DCHECK(id_map_.Lookup(player_id));
   playing_videos_.erase(player_id);
   Send(new MediaPlayerDelegateHostMsg_OnMediaPaused(routing_id(), player_id,
-                                                    false));
+                                                    reached_end_of_stream));
 
   // Required to keep background playback statistics up to date.
   ScheduleUpdateTask();
@@ -131,6 +145,7 @@ void RendererWebMediaPlayerDelegate::DidPause(int player_id) {
 void RendererWebMediaPlayerDelegate::PlayerGone(int player_id) {
   DVLOG(2) << __func__ << "(" << player_id << ")";
   DCHECK(id_map_.Lookup(player_id));
+  players_with_video_.erase(player_id);
   playing_videos_.erase(player_id);
   Send(
       new MediaPlayerDelegateHostMsg_OnMediaDestroyed(routing_id(), player_id));

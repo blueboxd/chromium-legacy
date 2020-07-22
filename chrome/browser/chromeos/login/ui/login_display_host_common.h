@@ -22,7 +22,6 @@ class AccountId;
 namespace chromeos {
 
 class DemoAppLauncher;
-class KioskLaunchController;
 
 // LoginDisplayHostCommon contains code which is not specific to a particular UI
 // implementation - the goal is to reduce code duplication between
@@ -38,7 +37,7 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   void BeforeSessionStart() final;
   void Finalize(base::OnceClosure completion_callback) final;
   void FinalizeImmediately() final;
-  AppLaunchController* GetAppLaunchController() final;
+  KioskLaunchController* GetKioskLaunchController() final;
   void StartUserAdding(base::OnceClosure completion_callback) final;
   void StartSignInScreen() final;
   void PrewarmAuthentication() final;

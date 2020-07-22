@@ -90,18 +90,18 @@ class ExtensionPlatformKeysService : public KeyedService {
   void SetSelectDelegate(std::unique_ptr<SelectDelegate> delegate);
 
   // If the generation was successful, |public_key_spki_der| will contain the
-  // DER encoding of the SubjectPublicKeyInfo of the generated key and
-  // |error_message| will be empty. If it failed, |public_key_spki_der| will be
-  // empty and |error_message| contain an error message.
+  // DER encoding of the SubjectPublicKeyInfo of the generated key. If it
+  // failed, |public_key_spki_der| will be empty.
   using GenerateKeyCallback =
       base::Callback<void(const std::string& public_key_spki_der,
-                          const std::string& error_message)>;
+                          platform_keys::Status status)>;
 
   // Generates an RSA key pair with |modulus_length_bits| and registers the key
   // to allow a single sign operation by the given extension. |token_id|
-  // specifies the token to store the key pair on. |callback| will be invoked
-  // with the resulting public key or an error. Will only call back during the
-  // lifetime of this object.
+  // specifies the token to store the key pair on. If the generation was
+  // successful, |callback| will be invoked with the resulting public key. If it
+  // failed, the resulting public key will be empty. Will only call back during
+  // the lifetime of this object.
   void GenerateRSAKey(platform_keys::TokenId token_id,
                       unsigned int modulus_length_bits,
                       const std::string& extension_id,
@@ -109,8 +109,9 @@ class ExtensionPlatformKeysService : public KeyedService {
 
   // Generates an EC key pair with |named_curve| and registers the key to allow
   // a single sign operation by the given extension. |token_id| specifies the
-  // token to store the key pair on. |callback| will be invoked with the
-  // resulting public key or an error. Will only call back during the lifetime
+  // token to store the key pair on. If the generation was successful,
+  // |callback| will be invoked with the resulting public key. If it failed, the
+  // resulting public key will be empty. Will only call back during the lifetime
   // of this object.
   void GenerateECKey(platform_keys::TokenId token_id,
                      const std::string& named_curve,
@@ -122,11 +123,10 @@ class ExtensionPlatformKeysService : public KeyedService {
   // ProfileHelper::IsSigninProfile.
   bool IsUsingSigninProfile();
 
-  // If signing was successful, |signature| will be contain the signature and
-  // |error_message| will be empty. If it failed, |signature| will be empty and
-  // |error_message| contain an error message.
+  // If signing was successful, |signature| will contain the signature. If it
+  // failed, |signature| will be empty.
   using SignCallback = base::Callback<void(const std::string& signature,
-                                           const std::string& error_message)>;
+                                           platform_keys::Status status)>;
 
   // Digests |data|, applies PKCS1 padding if specified by |hash_algorithm| and
   // chooses the signature algorithm according to |key_type| and signs the data
@@ -137,8 +137,9 @@ class ExtensionPlatformKeysService : public KeyedService {
   // If the extension does not have permissions for signing with this key, the
   // operation aborts. In case of a one time permission (granted after
   // generating the key), this function also removes the permission to prevent
-  // future signing attempts. |callback| will be invoked with the signature or
-  // an error message. Will only call back during the lifetime of this object.
+  // future signing attempts. If signing was successful, |callback| will be
+  // invoked with the signature. If it failed, the resulting signature will be
+  // empty. Will only call back during the lifetime of this object.
   void SignDigest(base::Optional<platform_keys::TokenId> token_id,
                   const std::string& data,
                   const std::string& public_key_spki_der,
@@ -156,8 +157,9 @@ class ExtensionPlatformKeysService : public KeyedService {
   // If the extension does not have permissions for signing with this key, the
   // operation aborts. In case of a one time permission (granted after
   // generating the key), this function also removes the permission to prevent
-  // future signing attempts. |callback| will be invoked with the signature or
-  // an error message. Will only call back during the lifetime of this object.
+  // future signing attempts. If signing was successful, |callback| will be
+  // invoked with the signature. If it failed, the resulting signature will be
+  // empty. Will only call back during the lifetime of this object.
   void SignRSAPKCS1Raw(base::Optional<platform_keys::TokenId> token_id,
                        const std::string& data,
                        const std::string& public_key_spki_der,
@@ -165,12 +167,11 @@ class ExtensionPlatformKeysService : public KeyedService {
                        const SignCallback& callback);
 
   // If the certificate request could be processed successfully, |matches| will
-  // contain the list of matching certificates (maybe empty) and |error_message|
-  // will be empty. If an error occurred, |matches| will be null and
-  // |error_message| contain an error message.
+  // contain the list of matching certificates (maybe empty). If an error
+  // occurred, |matches| will be null.
   using SelectCertificatesCallback =
       base::Callback<void(std::unique_ptr<net::CertificateList> matches,
-                          const std::string& error_message)>;
+                          platform_keys::Status status)>;
 
   // Returns a list of certificates matching |request|.
   // 1) all certificates that match the request (like being rooted in one of the
@@ -182,9 +183,10 @@ class ExtensionPlatformKeysService : public KeyedService {
   // which will the extension will also be granted access to.
   // 4) only certificates, that the extension has unlimited sign permission for,
   // will be returned.
-  // |callback| will be invoked with these certificates or an error message.
-  // Will only call back during the lifetime of this object. |web_contents| must
-  // not be null.
+  // If selection was successful, |callback| will be invoked with these
+  // certificates. If it failed, the resulting certificate list will be empty
+  // and an error status will be returned. Will only call back during the
+  // lifetime of this object. |web_contents| must not be null.
   void SelectClientCertificates(
       const platform_keys::ClientCertificateRequest& request,
       std::unique_ptr<net::CertificateList> client_certificates,
@@ -214,12 +216,12 @@ class ExtensionPlatformKeysService : public KeyedService {
   // Callback used by |GenerateRSAKey|.
   // If the key generation was successful, registers the generated public key
   // for the given extension. If any error occurs during key generation or
-  // registration, calls |callback| with an error. Otherwise, on success, calls
-  // |callback| with the public key.
+  // registration, calls |callback| with an error status. Otherwise, on success,
+  // calls |callback| with the public key.
   void GeneratedKey(const std::string& extension_id,
                     const GenerateKeyCallback& callback,
                     const std::string& public_key_spki_der,
-                    const std::string& error_message);
+                    platform_keys::Status status);
 
   content::BrowserContext* const browser_context_ = nullptr;
   platform_keys::PlatformKeysService* const platform_keys_service_ = nullptr;

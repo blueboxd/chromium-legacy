@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/editing/serializers/html_interchange.h"
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
+#include "third_party/blink/renderer/core/editing/writing_direction.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_font_element.h"
@@ -635,8 +636,7 @@ bool EditingStyle::IsEmpty() const {
          font_size_delta_ == kNoFontDelta;
 }
 
-bool EditingStyle::GetTextDirection(
-    mojo_base::mojom::blink::TextDirection& writing_direction) const {
+bool EditingStyle::GetTextDirection(WritingDirection& writing_direction) const {
   if (!mutable_style_)
     return false;
 
@@ -657,15 +657,14 @@ bool EditingStyle::GetTextDirection(
 
     writing_direction =
         direction_identifier_value->GetValueID() == CSSValueID::kLtr
-            ? mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT
-            : mojo_base::mojom::blink::TextDirection::RIGHT_TO_LEFT;
+            ? WritingDirection::kLeftToRight
+            : WritingDirection::kRightToLeft;
 
     return true;
   }
 
   if (unicode_bidi_value == CSSValueID::kNormal) {
-    writing_direction =
-        mojo_base::mojom::blink::TextDirection::UNKNOWN_DIRECTION;
+    writing_direction = WritingDirection::kNatural;
     return true;
   }
 

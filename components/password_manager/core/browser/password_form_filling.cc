@@ -229,7 +229,6 @@ PasswordFormFillData CreatePasswordFormFillData(
   result.action = form_on_page.action;
   result.uses_account_store = preferred_match.IsUsingAccountStore();
   result.wait_for_username = wait_for_username;
-  result.has_renderer_ids = form_on_page.has_renderer_ids;
 
   // Note that many of the |FormFieldData| members are not initialized for
   // |username_field| and |password_field| because they are currently not used

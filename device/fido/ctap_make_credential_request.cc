@@ -32,7 +32,7 @@ bool AreMakeCredentialRequestMapKeysCorrect(
   return std::all_of(
       request_map.begin(), request_map.end(), [](const auto& param) {
         return (param.first.is_integer() && 1u <= param.first.GetInteger() &&
-                param.first.GetInteger() <= 9u);
+                param.first.GetInteger() <= 10u);
       });
 }
 
@@ -203,6 +203,25 @@ base::Optional<CtapMakeCredentialRequest> CtapMakeCredentialRequest::Parse(
     request.pin_protocol = pin_protocol_it->second.GetUnsigned();
   }
 
+  const auto enterprise_attestation_it = request_map.find(cbor::Value(10));
+  if (enterprise_attestation_it != request_map.end()) {
+    if (!enterprise_attestation_it->second.is_unsigned()) {
+      return base::nullopt;
+    }
+    switch (enterprise_attestation_it->second.GetUnsigned()) {
+      case 1:
+        request.attestation_preference = AttestationConveyancePreference::
+            kEnterpriseIfRPListedOnAuthenticator;
+        break;
+      case 2:
+        request.attestation_preference =
+            AttestationConveyancePreference::kEnterpriseApprovedByBrowser;
+        break;
+      default:
+        return base::nullopt;
+    }
+  }
+
   return request;
 }
 
@@ -290,6 +309,17 @@ AsCTAPRequestValuePair(const CtapMakeCredentialRequest& request) {
 
   if (!option_map.empty()) {
     cbor_map[cbor::Value(7)] = cbor::Value(std::move(option_map));
+  }
+
+  switch (request.attestation_preference) {
+    case AttestationConveyancePreference::kEnterpriseIfRPListedOnAuthenticator:
+      cbor_map.emplace(10, static_cast<int64_t>(1));
+      break;
+    case AttestationConveyancePreference::kEnterpriseApprovedByBrowser:
+      cbor_map.emplace(10, static_cast<int64_t>(2));
+      break;
+    default:
+      break;
   }
 
   return std::make_pair(CtapRequestCommand::kAuthenticatorMakeCredential,

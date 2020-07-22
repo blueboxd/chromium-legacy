@@ -64,18 +64,22 @@ CancelCallbackOnce DummyDriveService::GetAllFileList(
   return CancelCallbackOnce();
 }
 
-CancelCallback DummyDriveService::GetFileListInDirectory(
+CancelCallbackOnce DummyDriveService::GetFileListInDirectory(
     const std::string& directory_resource_id,
-    const FileListCallback& callback) { return CancelCallback(); }
+    const FileListCallback& callback) {
+  return CancelCallbackOnce();
+}
 
 CancelCallback DummyDriveService::Search(
     const std::string& search_query,
     const FileListCallback& callback) { return CancelCallback(); }
 
-CancelCallback DummyDriveService::SearchByTitle(
+CancelCallbackOnce DummyDriveService::SearchByTitle(
     const std::string& title,
     const std::string& directory_resource_id,
-    const FileListCallback& callback) { return CancelCallback(); }
+    const FileListCallback& callback) {
+  return CancelCallbackOnce();
+}
 
 CancelCallback DummyDriveService::GetChangeList(int64_t start_changestamp,
                                                 ChangeListCallback callback) {
@@ -89,10 +93,10 @@ CancelCallback DummyDriveService::GetChangeListByToken(
   return CancelCallback();
 }
 
-CancelCallback DummyDriveService::GetRemainingChangeList(
+CancelCallbackOnce DummyDriveService::GetRemainingChangeList(
     const GURL& next_link,
     ChangeListCallback callback) {
-  return CancelCallback();
+  return CancelCallbackOnce();
 }
 
 CancelCallback DummyDriveService::GetRemainingTeamDriveList(
@@ -101,9 +105,11 @@ CancelCallback DummyDriveService::GetRemainingTeamDriveList(
   return CancelCallback();
 }
 
-CancelCallback DummyDriveService::GetRemainingFileList(
+CancelCallbackOnce DummyDriveService::GetRemainingFileList(
     const GURL& next_link,
-    const FileListCallback& callback) { return CancelCallback(); }
+    const FileListCallback& callback) {
+  return CancelCallback();
+}
 
 CancelCallback DummyDriveService::GetFileResource(
     const std::string& resource_id,
@@ -165,17 +171,19 @@ CancelCallback DummyDriveService::AddResourceToDirectory(
     const std::string& resource_id,
     const EntryActionCallback& callback) { return CancelCallback(); }
 
-CancelCallback DummyDriveService::RemoveResourceFromDirectory(
+CancelCallbackOnce DummyDriveService::RemoveResourceFromDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
-    const EntryActionCallback& callback) { return CancelCallback(); }
+    const EntryActionCallback& callback) {
+  return CancelCallback();
+}
 
-CancelCallback DummyDriveService::AddNewDirectory(
+CancelCallbackOnce DummyDriveService::AddNewDirectory(
     const std::string& parent_resource_id,
     const std::string& directory_title,
     const AddNewDirectoryOptions& options,
     FileResourceCallback callback) {
-  return CancelCallback();
+  return CancelCallbackOnce();
 }
 
 CancelCallback DummyDriveService::InitiateUploadNewFile(

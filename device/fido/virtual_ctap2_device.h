@@ -155,6 +155,20 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     // advertised and supported to aid testing of unknown public-key types.
     bool support_invalid_for_testing_algorithm = false;
 
+    // support_enterprise_attestation indicates whether enterprise attestation
+    // support will be advertised in the getInfo response and whether requests
+    // will be honored during makeCredential.
+    bool support_enterprise_attestation = false;
+
+    // always_return_enterprise_attestation causes the authenticator to,
+    // invalidly, always signal that the returned attestation is an enterprise
+    // attestation, even when it wasn't requested.
+    bool always_return_enterprise_attestation = false;
+
+    // enterprise_attestation_rps enumerates the RP IDs that will trigger
+    // enterprise attestation when the platform requests ep=1.
+    std::vector<std::string> enterprise_attestation_rps;
+
     // ignore_u2f_credentials causes credentials created over the
     // authenticator's U2F interface not to be available over CTAP2 for
     // assertions.

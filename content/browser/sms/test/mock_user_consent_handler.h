@@ -17,9 +17,7 @@ class MockUserConsentHandler : public UserConsentHandler {
   ~MockUserConsentHandler();
   MOCK_METHOD(void,
               RequestUserConsent,
-              (RenderFrameHost * frame_host,
-               const url::Origin& origin,
-               const std::string& one_time_code,
+              (const std::string& one_time_code,
                CompletionCallback on_complete),
               (override));
   MOCK_METHOD(bool, is_active, (), (const, override));

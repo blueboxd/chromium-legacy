@@ -132,7 +132,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   FontSupport font_support;
   scoped_refptr<gpu::ServiceFontManager> font_manager(
-      new gpu::ServiceFontManager(&font_support));
+      new gpu::ServiceFontManager(&font_support,
+                                  false /* disable_oopr_debug_crash_dump */));
   cc::ServicePaintCache paint_cache;
   std::vector<SkDiscardableHandleId> locked_handles;
   if (bytes_for_fonts > 0u) {

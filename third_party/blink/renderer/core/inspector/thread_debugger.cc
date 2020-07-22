@@ -155,7 +155,9 @@ void ThreadDebugger::PromiseRejectionRevoked(v8::Local<v8::Context> context,
 // TODO(mustaq): Fix the caller in v8/src.
 void ThreadDebugger::beginUserGesture() {
   auto* window = CurrentDOMWindow(isolate_);
-  LocalFrame::NotifyUserActivation(window ? window->GetFrame() : nullptr);
+  LocalFrame::NotifyUserActivation(
+      window ? window->GetFrame() : nullptr,
+      mojom::blink::UserActivationNotificationType::kDevTools);
 }
 
 // TODO(mustaq): Fix the caller in v8/src.

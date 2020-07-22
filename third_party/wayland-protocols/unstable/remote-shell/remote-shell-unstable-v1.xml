@@ -1167,7 +1167,7 @@
     </request>
   </interface>
 
-  <interface name="zcr_toast_surface_v1" version="1">
+  <interface name="zcr_toast_surface_v1" version="28">
     <description summary="A toast window">
       An interface that may be implemented by a wl_surface to host
       toast contents.

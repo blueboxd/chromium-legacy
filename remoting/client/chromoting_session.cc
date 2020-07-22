@@ -529,7 +529,7 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
       session_context_->audio_player_weak_factory->GetWeakPtr()));
 
   signaling_ = std::make_unique<FtlSignalStrategy>(
-      runtime_->CreateOAuthTokenGetter(),
+      runtime_->CreateOAuthTokenGetter(), runtime_->url_loader_factory(),
       std::make_unique<FtlClientUuidDeviceIdProvider>());
   logger_->SetSignalStrategyType(ChromotingEvent::SignalStrategyType::FTL);
 

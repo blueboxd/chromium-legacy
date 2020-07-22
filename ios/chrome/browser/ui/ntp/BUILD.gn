@@ -95,6 +95,7 @@ source_set("ntp_internal") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/drag_and_drop",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/history",
     "//ios/chrome/browser/metrics:metrics_internal",

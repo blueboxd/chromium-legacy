@@ -60,7 +60,7 @@ FakeDriveServiceWrapper::FakeDriveServiceWrapper()
 
 FakeDriveServiceWrapper::~FakeDriveServiceWrapper() {}
 
-CancelCallback FakeDriveServiceWrapper::AddNewDirectory(
+CancelCallbackOnce FakeDriveServiceWrapper::AddNewDirectory(
     const std::string& parent_resource_id,
     const std::string& directory_name,
     const drive::AddNewDirectoryOptions& options,

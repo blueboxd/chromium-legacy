@@ -41,6 +41,9 @@
 #include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
+#if defined(OS_WIN)
+#include "base/win/wmi.h"
+#endif
 #include "components/version_info/version_info.h"
 
 #if defined(OS_CHROMEOS)
@@ -202,6 +205,19 @@ std::string GetDeviceName() {
 #else
   return GetMachineName();
 #endif
+}
+
+std::unique_ptr<em::BrowserDeviceIdentifier> GetBrowserDeviceIdentifier() {
+  std::unique_ptr<em::BrowserDeviceIdentifier> device_identifier =
+      std::make_unique<em::BrowserDeviceIdentifier>();
+  device_identifier->set_computer_name(GetMachineName());
+#if defined(OS_WIN)
+  device_identifier->set_serial_number(base::UTF16ToUTF8(
+      base::win::WmiComputerSystemInfo::Get().serial_number()));
+#else
+  device_identifier->set_serial_number("");
+#endif
+  return device_identifier;
 }
 
 }  // namespace policy

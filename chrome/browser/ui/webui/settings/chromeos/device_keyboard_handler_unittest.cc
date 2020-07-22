@@ -199,8 +199,9 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
       1, ui::INPUT_DEVICE_INTERNAL, "AT Translated Set 2 keyboard", "",
       base::FilePath("/devices/platform/i8042/serio0/input/input1"), 1, 1,
       0xab41);
-  fake_udev->AddFakeDevice(internal_kbd.name, internal_kbd.sys_path.value(), {},
-                           {});
+  fake_udev->AddFakeDevice(internal_kbd.name, internal_kbd.sys_path.value(),
+                           /*subsystem=*/"input", /*sysattrs=*/{},
+                           /*properties=*/{});
   // Generic external USB keyboard.
   const ui::InputDevice external_generic_kbd(
       2, ui::INPUT_DEVICE_USB, "Logitech USB Keyboard", "",
@@ -209,7 +210,9 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
                      "input/input2"),
       0x046d, 0xc31c, 0x0111);
   fake_udev->AddFakeDevice(external_generic_kbd.name,
-                           external_generic_kbd.sys_path.value(), {}, {});
+                           external_generic_kbd.sys_path.value(),
+                           /*subsystem=*/"input", /*sysattrs=*/{},
+                           /*properties=*/{});
   // Apple keyboard.
   const ui::InputDevice external_apple_kbd(
       3, ui::INPUT_DEVICE_USB, "Apple Inc. Apple Keyboard", "",
@@ -217,16 +220,19 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
                      "0003:05AC:026C.000A/input/input3"),
       0x05ac, 0x026c, 0x0111);
   fake_udev->AddFakeDevice(external_apple_kbd.name,
-                           external_apple_kbd.sys_path.value(), {}, {});
+                           external_apple_kbd.sys_path.value(),
+                           /*subsystem=*/"input", /*sysattrs=*/{},
+                           /*properties=*/{});
   // Chrome OS external USB keyboard.
   const ui::InputDevice external_chromeos_kbd(
       4, ui::INPUT_DEVICE_USB, "LG USB Keyboard", "",
       base::FilePath("/devices/pci0000:00/0000:00:14.0/usb1/1-1/1-1:1.0/"
                      "0003:04CA:0082.000B/input/input4"),
       0x04ca, 0x0082, 0x0111);
-  fake_udev->AddFakeDevice(external_chromeos_kbd.name,
-                           external_chromeos_kbd.sys_path.value(), {},
-                           {{"CROS_KEYBOARD_TOP_ROW_LAYOUT", "1"}});
+  fake_udev->AddFakeDevice(
+      external_chromeos_kbd.name, external_chromeos_kbd.sys_path.value(),
+      /*subsystem=*/"input", /*sysattrs=*/{},
+      /*properties=*/{{"CROS_KEYBOARD_TOP_ROW_LAYOUT", "1"}});
 
   // An internal keyboard shouldn't change the defaults.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(

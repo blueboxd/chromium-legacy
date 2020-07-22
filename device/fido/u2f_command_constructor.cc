@@ -31,7 +31,12 @@ bool IsConvertibleToU2fRegisterCommand(
 
 bool ShouldPreferCTAP2EvenIfItNeedsAPIN(
     const CtapMakeCredentialRequest& request) {
-  return request.hmac_secret;
+  return request.hmac_secret ||
+         // U2F devices can only support |kEnterpriseApprovedByBrowser| so
+         // |kEnterpriseIfRPListedOnAuthenticator| should go over CTAP2.
+         request.attestation_preference ==
+             AttestationConveyancePreference::
+                 kEnterpriseIfRPListedOnAuthenticator;
 }
 
 bool IsConvertibleToU2fSignCommand(const CtapGetAssertionRequest& request) {
@@ -52,7 +57,7 @@ base::Optional<std::vector<uint8_t>> ConvertToU2fRegisterCommand(
 
   const bool is_invidual_attestation =
       request.attestation_preference ==
-      AttestationConveyancePreference::kEnterprise;
+      AttestationConveyancePreference::kEnterpriseApprovedByBrowser;
   return ConstructU2fRegisterCommand(
       fido_parsing_utils::CreateSHA256Hash(request.rp.id),
       request.client_data_hash, is_invidual_attestation);

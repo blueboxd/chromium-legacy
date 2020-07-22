@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler_delegate_impl.h"
 
+#include "base/system/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
-#include "components/version_info/version_info.h"
 
 namespace policy {
 
@@ -92,9 +92,9 @@ void MinimumVersionPolicyHandlerDelegateImpl::
   }
 }
 
-const base::Version&
-MinimumVersionPolicyHandlerDelegateImpl::GetCurrentVersion() const {
-  return version_info::GetVersion();
+base::Version MinimumVersionPolicyHandlerDelegateImpl::GetCurrentVersion()
+    const {
+  return base::Version(base::SysInfo::OperatingSystemVersion());
 }
 
 }  // namespace policy

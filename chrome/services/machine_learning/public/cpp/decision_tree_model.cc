@@ -8,20 +8,17 @@
 #include <string>
 #include <utility>
 
-#include "chrome/services/machine_learning/public/mojom/decision_tree.mojom-shared.h"
+#include "chrome/services/machine_learning/public/cpp/decision_tree/prediction_model.h"
 #include "chrome/services/machine_learning/public/mojom/decision_tree.mojom.h"
-#include "components/optimization_guide/optimization_guide_enums.h"
-#include "components/optimization_guide/prediction_model.h"
 #include "components/optimization_guide/proto/models.pb.h"
 
 namespace machine_learning {
 
 DecisionTreeModel::DecisionTreeModel(
     std::unique_ptr<optimization_guide::proto::PredictionModel> model_proto)
-    : prediction_model_(model_proto
-                            ? optimization_guide::PredictionModel::Create(
-                                  std::move(model_proto))
-                            : nullptr) {}
+    : prediction_model_(model_proto ? decision_tree::PredictionModel::Create(
+                                          std::move(model_proto))
+                                    : nullptr) {}
 
 DecisionTreeModel::~DecisionTreeModel() = default;
 
@@ -44,21 +41,15 @@ mojom::DecisionTreePredictionResult DecisionTreeModel::Predict(
     double* prediction_score) {
   if (!IsValid())
     return mojom::DecisionTreePredictionResult::kUnknown;
-  double score;
-  optimization_guide::OptimizationTargetDecision target_decision =
+
+  double score = 0.0;
+  mojom::DecisionTreePredictionResult result =
       prediction_model_->Predict(model_features, &score);
 
   if (prediction_score)
     *prediction_score = score;
 
-  switch (target_decision) {
-    case optimization_guide::OptimizationTargetDecision::kPageLoadMatches:
-      return mojom::DecisionTreePredictionResult::kTrue;
-    case optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch:
-      return mojom::DecisionTreePredictionResult::kFalse;
-    default:
-      return mojom::DecisionTreePredictionResult::kUnknown;
-  }
+  return result;
 }
 
 bool DecisionTreeModel::IsValid() const {

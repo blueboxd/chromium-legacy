@@ -231,7 +231,6 @@ bool StructTraits<autofill::mojom::PasswordFormFillDataDataView,
 
   out->uses_account_store = data.uses_account_store();
   out->wait_for_username = data.wait_for_username();
-  out->has_renderer_ids = data.has_renderer_ids();
   out->username_may_use_prefilled_placeholder =
       data.username_may_use_prefilled_placeholder();
 
@@ -280,8 +279,6 @@ bool StructTraits<
       !data.ReadSubmissionEvent(&out->submission_event))
     return false;
 
-  out->username_marked_by_site = data.username_marked_by_site();
-
   if (!data.ReadUsernameValue(&out->username_value) ||
       !data.ReadAllPossibleUsernames(&out->all_possible_usernames) ||
       !data.ReadAllPossiblePasswords(&out->all_possible_passwords) ||
@@ -294,8 +291,6 @@ bool StructTraits<
   if (!data.ReadNewPasswordElement(&out->new_password_element) ||
       !data.ReadNewPasswordValue(&out->new_password_value))
     return false;
-
-  out->new_password_marked_by_site = data.new_password_marked_by_site();
 
   if (!data.ReadConfirmationPasswordElement(
           &out->confirmation_password_element))

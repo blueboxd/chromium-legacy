@@ -50,8 +50,12 @@ public class MainSettings extends PreferenceFragmentCompat
         implements TemplateUrlService.LoadListener, ProfileSyncService.SyncStateChangedListener,
                    SigninManager.SignInStateObserver {
     public static final String PREF_ACCOUNT_SECTION = "account_section";
+    public static final String PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION =
+            "account_and_google_services_section";
     public static final String PREF_SIGN_IN = "sign_in";
     public static final String PREF_SYNC_AND_SERVICES = "sync_and_services";
+    public static final String PREF_MANAGE_SYNC = "manage_sync";
+    public static final String PREF_GOOGLE_SERVICES = "google_services";
     public static final String PREF_SEARCH_ENGINE = "search_engine";
     public static final String PREF_PASSWORDS = "passwords";
     public static final String PREF_HOMEPAGE = "homepage";
@@ -64,12 +68,13 @@ public class MainSettings extends PreferenceFragmentCompat
     public static final String PREF_DEVELOPER = "developer";
 
     // Used for elevating the privacy section behind the flag (see crbug.com/1099233).
-    public static final int PRIVACY_ORDER_DEFAULT = 14;
-    public static final int PRIVACY_ORDER_ELEVATED = 8;
+    public static final int PRIVACY_ORDER_DEFAULT = 17;
+    public static final int PRIVACY_ORDER_ELEVATED = 11;
 
     private final ManagedPreferenceDelegate mManagedPreferenceDelegate;
     private final Map<String, Preference> mAllPreferences = new HashMap<>();
     private SignInPreference mSignInPreference;
+    private ChromeBasePreference mManageSync;
 
     public MainSettings() {
         setHasOptionsMenu(true);
@@ -205,6 +210,17 @@ public class MainSettings extends PreferenceFragmentCompat
                     .setTitle(SafetyCheckSettingsFragment.getSafetyCheckSettingsElementTitle(
                             getContext()));
         }
+
+        // Replace the account section header, replace SyncAndServicesSettings with
+        // ManageSyncSettings and add GoogleServicesSettings row if this flag is enabled.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
+            getPreferenceScreen().removePreference(findPreference(PREF_ACCOUNT_SECTION));
+            getPreferenceScreen().removePreference(findPreference(PREF_SYNC_AND_SERVICES));
+
+            findPreference(PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION).setVisible(true);
+            mManageSync.setVisible(true);
+            findPreference(PREF_GOOGLE_SERVICES).setVisible(true);
+        }
     }
 
     /**
@@ -218,6 +234,7 @@ public class MainSettings extends PreferenceFragmentCompat
             mAllPreferences.put(preference.getKey(), preference);
         }
         mSignInPreference = (SignInPreference) mAllPreferences.get(PREF_SIGN_IN);
+        mManageSync = (ChromeBasePreference) findPreference(PREF_MANAGE_SYNC);
     }
 
     private void setManagedPreferenceDelegateForPreference(String key) {
@@ -233,6 +250,13 @@ public class MainSettings extends PreferenceFragmentCompat
         } else {
             removePreferenceIfPresent(PREF_SIGN_IN);
         }
+
+        boolean hasPrimaryAccount = IdentityServicesProvider.get()
+                                            .getIdentityManager(Profile.getLastUsedRegularProfile())
+                                            .hasPrimaryAccount();
+        mManageSync.setVisible(
+                ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+                && hasPrimaryAccount);
 
         updateSyncAndServicesPreference();
         updateSearchEnginePreference();
@@ -269,10 +293,12 @@ public class MainSettings extends PreferenceFragmentCompat
     }
 
     private void updateSyncAndServicesPreference() {
-        ChromeBasePreference syncAndServices =
-                (ChromeBasePreference) findPreference(PREF_SYNC_AND_SERVICES);
-        syncAndServices.setIcon(SyncSettingsUtils.getSyncStatusIcon(getActivity()));
-        syncAndServices.setSummary(SyncSettingsUtils.getSyncStatusSummary(getActivity()));
+        ChromeBasePreference preference = findPreference(
+                ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+                        ? PREF_MANAGE_SYNC
+                        : PREF_SYNC_AND_SERVICES);
+        preference.setIcon(SyncSettingsUtils.getSyncStatusIcon(getActivity()));
+        preference.setSummary(SyncSettingsUtils.getSyncStatusSummary(getActivity()));
     }
 
     private void updateSearchEnginePreference() {
@@ -320,8 +346,14 @@ public class MainSettings extends PreferenceFragmentCompat
     }
 
     private void onSignInPreferenceStateChanged() {
-        // Remove "Account" section header if the personalized sign-in promo is shown.
-        if (mSignInPreference.getState() == SignInPreference.State.PERSONALIZED_PROMO) {
+        // Remove "Account" section header if the personalized sign-in promo is shown. Remove
+        // "You and Google" section header if the personalized sync promo is shown.
+        boolean isShowingPersonalizedPromo =
+                mSignInPreference.getState() == SignInPreference.State.PERSONALIZED_PROMO;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
+            findPreference(PREF_ACCOUNT_AND_GOOGLE_SERVICES_SECTION)
+                    .setVisible(!isShowingPersonalizedPromo);
+        } else if (isShowingPersonalizedPromo) {
             removePreferenceIfPresent(PREF_ACCOUNT_SECTION);
         } else {
             addPreferenceIfAbsent(PREF_ACCOUNT_SECTION);

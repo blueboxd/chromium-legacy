@@ -10,6 +10,10 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "chrome/services/machine_learning/machine_learning_service.h"  // nogncheck
+#include "chrome/services/machine_learning/public/mojom/machine_learning_service.mojom.h"  // nogncheck
+#include "chrome/services/qrcode_generator/public/mojom/qrcode_generator.mojom.h"  // nogncheck
+#include "chrome/services/qrcode_generator/qrcode_generator_service_impl.h"  // nogncheck
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/services/language_detection/language_detection_service_impl.h"
@@ -54,9 +58,6 @@
 #if BUILDFLAG(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
 #include "chrome/services/file_util/file_util_service.h"  // nogncheck
 #endif
-
-#include "chrome/services/qrcode_generator/public/mojom/qrcode_generator.mojom.h"  // nogncheck
-#include "chrome/services/qrcode_generator/qrcode_generator_service_impl.h"  // nogncheck
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/services/removable_storage_writer/public/mojom/removable_storage_writer.mojom.h"
@@ -115,6 +116,13 @@ auto RunQRCodeGeneratorService(
     mojo::PendingReceiver<qrcode_generator::mojom::QRCodeGeneratorService>
         receiver) {
   return std::make_unique<qrcode_generator::QRCodeGeneratorServiceImpl>(
+      std::move(receiver));
+}
+
+auto RunMachineLearningService(
+    mojo::PendingReceiver<machine_learning::mojom::MachineLearningService>
+        receiver) {
+  return std::make_unique<machine_learning::MachineLearningService>(
       std::move(receiver));
 }
 
@@ -264,6 +272,7 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
     RunUnzipper,
     RunLanguageDetectionService,
     RunQRCodeGeneratorService,
+    RunMachineLearningService,
 
 #if !defined(OS_ANDROID)
     RunProfileImporter,

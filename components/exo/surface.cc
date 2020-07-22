@@ -1171,6 +1171,9 @@ void Surface::UpdateContentSize() {
   if (content_size_ != content_size) {
     content_size_ = content_size;
     window_->SetBounds(gfx::Rect(window_->bounds().origin(), content_size_));
+
+    for (SurfaceObserver& observer : observers_)
+      observer.OnContentSizeChanged(this);
   }
 }
 

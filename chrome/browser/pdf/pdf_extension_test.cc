@@ -809,6 +809,12 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, DownloadControls) {
   RunTestsInJsModule("download_controls_test.js", "test.pdf");
 }
 
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ViewerPdfToolbarNew) {
+  // Although this test file does not require a PDF to be loaded, loading the
+  // elements without loading a PDF is difficult.
+  RunTestsInJsModule("viewer_pdf_toolbar_new_test.js", "test.pdf");
+}
+
 IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ToolbarManager) {
   RunTestsInJsModule("toolbar_manager_test.js", "test.pdf");
 }

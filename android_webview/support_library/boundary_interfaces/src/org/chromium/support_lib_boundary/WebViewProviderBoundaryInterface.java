@@ -20,9 +20,6 @@ public interface WebViewProviderBoundaryInterface {
     void addWebMessageListener(String jsObjectName, String[] allowedOriginRules,
             /* WebMessageListener */ InvocationHandler listener);
     void removeWebMessageListener(String jsObjectName);
-    // TODO(ctzsm): Remove the following interface after AndroidX patch landed.
-    /* ScriptReference */ InvocationHandler addDocumentStartJavascript(
-            String script, String[] allowedOriginRules);
     /* ScriptReference */ InvocationHandler addDocumentStartJavaScript(
             String script, String[] allowedOriginRules);
     WebViewClient getWebViewClient();

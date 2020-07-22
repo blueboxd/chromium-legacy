@@ -60,7 +60,7 @@ void MockRawClipboardHost::Write(const base::string16& format,
   if (needs_reset_)
     Reset();
   // Simulate the underlying platform copying this data.
-  std::vector<const uint8_t> data_copy(data.data(), data.data() + data.size());
+  std::vector<uint8_t> data_copy(data.data(), data.data() + data.size());
 
   // Provide one commonly-used format on some platforms, where the platforms
   // automatically convert between certain format names, for use in testing.
@@ -81,7 +81,7 @@ void MockRawClipboardHost::Write(const base::string16& format,
         reinterpret_cast<const char*>(data_copy.data()), data_copy.size()));
     mock_clipboard_host_->WriteText(text);
   }
-  raw_data_map_[format] = std::move(data_copy);
+  raw_data_map_[format] = data_copy;
 }
 
 void MockRawClipboardHost::CommitWrite() {

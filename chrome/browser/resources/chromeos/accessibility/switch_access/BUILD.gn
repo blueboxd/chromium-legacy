@@ -324,6 +324,7 @@ js_library("navigation_manager") {
     ":switch_access_constants",
     ":switch_access_node",
     ":switch_access_predicate",
+    "../common:event_handler",
     "../common:repeated_event_handler",
   ]
   externs_list = [

@@ -19,12 +19,17 @@
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/tokens/worker_tokens.mojom.h"
 
 namespace content {
 
 namespace {
 
 const int kProcessId = 1;
+
+blink::mojom::DedicatedWorkerToken CreateDedicatedWorkerToken() {
+  return blink::mojom::DedicatedWorkerToken(base::UnguessableToken());
+}
 
 }  // namespace
 
@@ -96,7 +101,7 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
 TEST_F(WorkerScriptLoaderFactoryTest, ServiceWorkerContainerHost) {
   // Make the factory.
   auto factory = std::make_unique<WorkerScriptLoaderFactory>(
-      kProcessId, DedicatedWorkerId(), SharedWorkerId(),
+      kProcessId, CreateDedicatedWorkerToken(), SharedWorkerId(),
       service_worker_handle_.get(), /*appcache_host=*/nullptr,
       browser_context_getter_, network_loader_factory_);
 
@@ -121,7 +126,7 @@ TEST_F(WorkerScriptLoaderFactoryTest, ServiceWorkerContainerHost) {
 TEST_F(WorkerScriptLoaderFactoryTest, NullServiceWorkerHandle) {
   // Make the factory.
   auto factory = std::make_unique<WorkerScriptLoaderFactory>(
-      kProcessId, DedicatedWorkerId(), SharedWorkerId(),
+      kProcessId, CreateDedicatedWorkerToken(), SharedWorkerId(),
       service_worker_handle_.get(), nullptr /* appcache_host */,
       browser_context_getter_, network_loader_factory_);
 
@@ -145,7 +150,7 @@ TEST_F(WorkerScriptLoaderFactoryTest, NullServiceWorkerHandle) {
 TEST_F(WorkerScriptLoaderFactoryTest, NullBrowserContext) {
   // Make the factory.
   auto factory = std::make_unique<WorkerScriptLoaderFactory>(
-      kProcessId, DedicatedWorkerId(), SharedWorkerId(),
+      kProcessId, CreateDedicatedWorkerToken(), SharedWorkerId(),
       service_worker_handle_.get(), nullptr /* appcache_host */,
       browser_context_getter_, network_loader_factory_);
 

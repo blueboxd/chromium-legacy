@@ -63,7 +63,10 @@ class InvalidationLogger;
 // http://crbug.com/78462 and http://crbug.com/124149.
 class InvalidationService {
  public:
-  virtual ~InvalidationService() {}
+  InvalidationService() = default;
+  InvalidationService(const InvalidationService& other) = delete;
+  InvalidationService& operator=(const InvalidationService& other) = delete;
+  virtual ~InvalidationService() = default;
 
   // Starts sending notifications to |handler|.  |handler| must not be NULL,
   // and it must not already be registered.

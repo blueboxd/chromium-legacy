@@ -59,7 +59,8 @@ SmsService::SmsService(
           switches::kWebOtpBackend) == switches::kWebOtpBackendSmsVerification;
 
   if (needs_user_prompt) {
-    consent_handler_ = std::make_unique<PromptBasedUserConsentHandler>();
+    consent_handler_ = std::make_unique<PromptBasedUserConsentHandler>(
+        render_frame_host(), origin_);
   } else {
     consent_handler_ = std::make_unique<NoopUserConsentHandler>();
   }
@@ -137,9 +138,8 @@ void SmsService::OnReceive(const std::string& one_time_code) {
   one_time_code_ = one_time_code;
 
   consent_handler_->RequestUserConsent(
-      render_frame_host(), origin_, one_time_code,
-      base::BindOnce(&SmsService::CompleteRequest,
-                     weak_ptr_factory_.GetWeakPtr()));
+      one_time_code, base::BindOnce(&SmsService::CompleteRequest,
+                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SmsService::Abort() {

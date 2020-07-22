@@ -372,6 +372,7 @@ Program::UniformInfo::UniformInfo(const std::string& client_name,
     case GL_UNSIGNED_INT_SAMPLER_3D:
     case GL_UNSIGNED_INT_SAMPLER_CUBE:
     case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
+    case GL_SAMPLER_EXTERNAL_2D_Y2Y_EXT:
       accepts_api_type = UniformApiType::kUniform1i;
       break;
 

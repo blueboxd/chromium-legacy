@@ -23,7 +23,7 @@ INCLUDE_CPP_FILES_ONLY = (r'.*\.(cc|h)$',)
 
 def _CheckChangeLintsClean(input_api, output_api):
   sources = lambda x: input_api.FilterSourceFile(
-      x, white_list=INCLUDE_CPP_FILES_ONLY)
+      x, files_to_check=INCLUDE_CPP_FILES_ONLY)
   return input_api.canned_checks.CheckChangeLintsClean(
       input_api, output_api, sources, LINT_FILTERS, VERBOSITY_LEVEL)
 

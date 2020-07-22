@@ -603,7 +603,7 @@ void GaiaCookieManagerService::ForceOnCookieChangeProcessing() {
           false /* httponly */, net::CookieSameSite::NO_RESTRICTION,
           net::COOKIE_PRIORITY_DEFAULT));
   OnCookieChange(
-      net::CookieChangeInfo(*cookie, net::CookieAccessSemantics::UNKNOWN,
+      net::CookieChangeInfo(*cookie, net::CookieAccessResult(),
                             net::CookieChangeCause::UNKNOWN_DELETION));
 }
 

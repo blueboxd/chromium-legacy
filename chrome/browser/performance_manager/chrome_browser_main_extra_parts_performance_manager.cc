@@ -19,7 +19,7 @@
 #include "chrome/browser/performance_manager/observers/isolation_context_metrics.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
 #include "chrome/browser/performance_manager/policies/background_tab_loading_policy.h"
-#include "chrome/browser/performance_manager/policies/high_pmf_memory_pressure_policy.h"
+#include "chrome/browser/performance_manager/policies/high_pmf_discard_policy.h"
 #include "chrome/browser/performance_manager/policies/policy_features.h"
 #include "chrome/browser/performance_manager/policies/working_set_trimmer_policy.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -120,17 +120,16 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
         std::make_unique<
             performance_manager::policies::BackgroundTabLoadingPolicy>());
   }
+
+  if (base::FeatureList::IsEnabled(
+          performance_manager::features::kHighPMFDiscardPolicy)) {
+    graph->PassToGraph(std::make_unique<
+                       performance_manager::policies::HighPMFDiscardPolicy>());
+  }
 #endif  // !defined(OS_ANDROID)
 
   graph->PassToGraph(
       std::make_unique<performance_manager::metrics::MemoryPressureMetrics>());
-
-  if (base::FeatureList::IsEnabled(
-          performance_manager::features::kHighPMFMemoryPressureSignals)) {
-    graph->PassToGraph(
-        std::make_unique<
-            performance_manager::policies::HighPMFMemoryPressurePolicy>());
-  }
 
   if (base::FeatureList::IsEnabled(
           performance_manager::features::kTabLoadingFrameNavigationThrottles)) {

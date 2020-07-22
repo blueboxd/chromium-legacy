@@ -448,9 +448,11 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   // Inserts |cc| into cookies_. Returns an iterator that points to the inserted
   // cookie in cookies_. Guarantee: all iterators to cookies_ remain valid.
-  CookieMap::iterator InternalInsertCookie(const std::string& key,
-                                           std::unique_ptr<CanonicalCookie> cc,
-                                           bool sync_to_store);
+  CookieMap::iterator InternalInsertCookie(
+      const std::string& key,
+      std::unique_ptr<CanonicalCookie> cc,
+      bool sync_to_store,
+      const CookieAccessResult& access_result);
 
   // Sets all cookies from |list| after deleting any equivalent cookie.
   // For data gathering purposes, this routine is treated as if it is

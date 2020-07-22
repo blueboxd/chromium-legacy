@@ -4439,6 +4439,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   }
 
   resources.FragmentPrecisionHigh = has_fragment_precision_high_;
+  resources.EXT_YUV_target = features().ext_yuv_target ? 1 : 0;
 
   ShShaderSpec shader_spec;
   switch (feature_info_->context_type()) {

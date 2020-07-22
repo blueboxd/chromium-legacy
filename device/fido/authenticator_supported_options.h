@@ -92,6 +92,11 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
   // Indicates whether the authenticator supports an extension for passing
   // information from the collectedClientData structure with a CTAP request.
   bool supports_android_client_data_ext = false;
+  // True iff enterprise attestation is supported and enabled. (In CTAP2 this is
+  // a tri-state, but the state that represents "administratively disabled" is
+  // uninteresting to Chromium because we do not support the administrative
+  // operation to configure it. Thus this member reduces to a boolean.)
+  bool enterprise_attestation = false;
 };
 
 COMPONENT_EXPORT(DEVICE_FIDO)

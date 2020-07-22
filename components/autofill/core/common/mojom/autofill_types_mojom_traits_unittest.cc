@@ -81,7 +81,6 @@ void CreateTestPasswordForm(PasswordForm* form) {
   form->affiliated_web_realm = "https://foo.com/";
   form->submit_element = base::ASCIIToUTF16("test_submit");
   form->username_element = base::ASCIIToUTF16("username");
-  form->username_marked_by_site = true;
   form->username_value = base::ASCIIToUTF16("test@gmail.com");
   form->all_possible_usernames.push_back(ValueElementPair(
       base::ASCIIToUTF16("Jerry_1"), base::ASCIIToUTF16("id1")));
@@ -96,7 +95,6 @@ void CreateTestPasswordForm(PasswordForm* form) {
   form->password_value = base::ASCIIToUTF16("test");
   form->new_password_element = base::ASCIIToUTF16("new_password");
   form->new_password_value = base::ASCIIToUTF16("new_password_value");
-  form->new_password_marked_by_site = false;
   form->new_password_element = base::ASCIIToUTF16("confirmation_password");
   form->date_created = AutofillClock::Now();
   form->date_synced = AutofillClock::Now();

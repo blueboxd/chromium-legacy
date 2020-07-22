@@ -226,9 +226,11 @@ void Frame::DidChangeVisibilityState() {
     child_frames[i]->DidChangeVisibilityState();
 }
 
-void Frame::NotifyUserActivationInLocalTree() {
-  for (Frame* node = this; node; node = node->Tree().Parent())
-    node->user_activation_state_.Activate();
+void Frame::NotifyUserActivationInLocalTree(
+    mojom::blink::UserActivationNotificationType notification_type) {
+  for (Frame* node = this; node; node = node->Tree().Parent()) {
+    node->user_activation_state_.Activate(notification_type);
+  }
 
   // See the "Same-origin Visibility" section in |UserActivationState| class
   // doc.
@@ -244,7 +246,7 @@ void Frame::NotifyUserActivationInLocalTree() {
       if (local_frame_node &&
           security_origin->CanAccess(
               local_frame_node->GetSecurityContext()->GetSecurityOrigin())) {
-        node->user_activation_state_.Activate();
+        node->user_activation_state_.Activate(notification_type);
       }
     }
   }

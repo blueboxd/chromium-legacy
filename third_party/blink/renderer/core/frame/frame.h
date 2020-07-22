@@ -37,6 +37,7 @@
 #include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/scroll_direction.mojom-blink-forward.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
@@ -176,7 +177,8 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   virtual void DidChangeVisibilityState();
 
   // This should never be called from outside Frame or WebFrame.
-  void NotifyUserActivationInLocalTree();
+  void NotifyUserActivationInLocalTree(
+      mojom::blink::UserActivationNotificationType notification_type);
 
   // This should never be called from outside Frame or WebFrame.
   bool ConsumeTransientUserActivationInLocalTree();

@@ -27,6 +27,9 @@
 // Container for this object's observers.
 @property(nonatomic, strong) SceneStateObserverList* observers;
 
+// Agents attached to this scene.
+@property(nonatomic, strong) NSMutableArray<id<SceneAgent>>* agents;
+
 @end
 
 @implementation SceneState
@@ -38,6 +41,7 @@
     _appState = appState;
     _observers = [SceneStateObserverList
         observersWithProtocol:@protocol(SceneStateObserver)];
+    _agents = [[NSMutableArray alloc] init];
   }
   return self;
 }
@@ -50,6 +54,12 @@
 
 - (void)removeObserver:(id<SceneStateObserver>)observer {
   [self.observers removeObserver:observer];
+}
+
+- (void)addAgent:(id<SceneAgent>)agent {
+  DCHECK(agent);
+  [self.agents addObject:agent];
+  [agent setSceneState:self];
 }
 
 #pragma mark - Setters & Getters.

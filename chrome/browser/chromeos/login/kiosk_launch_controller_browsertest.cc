@@ -242,7 +242,6 @@ IN_PROC_BROWSER_TEST_F(KioskLaunchControllerTest,
   launch_controls()->OnAppInstalling();
   ExpectState(AppState::INSTALLING, NetworkUIState::NOT_SHOWING);
 
-  EXPECT_CALL(*launcher(), RestartLauncher()).Times(1);
   SetOnline(false);
   launch_controls()->InitializeNetwork();
   ExpectState(AppState::INIT_NETWORK, NetworkUIState::SHOWING);

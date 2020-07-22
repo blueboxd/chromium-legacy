@@ -25,7 +25,7 @@ NGGridLayoutAlgorithm::NGGridLayoutAlgorithm(
 scoped_refptr<const NGLayoutResult> NGGridLayoutAlgorithm::Layout() {
   switch (state_) {
     case GridLayoutAlgorithmState::kMeasuringItems:
-      BuildTrackLists();
+      SetSpecifiedTracks();
       ConstructAndAppendGridItems();
       row_track_collection_.FinalizeRanges();
       column_track_collection_.FinalizeRanges();
@@ -122,32 +122,21 @@ NGConstraintSpace NGGridLayoutAlgorithm::BuildSpaceForGridItem(
   return space_builder.ToConstraintSpace();
 }
 
-void NGGridLayoutAlgorithm::BuildTrackLists() {
+void NGGridLayoutAlgorithm::SetSpecifiedTracks() {
   const ComputedStyle& grid_style = Style();
-  AddRepeaters(grid_style.GridTemplateColumns(),
-               grid_style.GridAutoRepeatColumns(),
-               grid_style.GridAutoRepeatColumnsInsertionPoint(),
-               grid_style.GridAutoRepeatColumnsType(), column_track_list_);
-  AddRepeaters(grid_style.GridTemplateRows(), grid_style.GridAutoRepeatRows(),
-               grid_style.GridAutoRepeatRowsInsertionPoint(),
-               grid_style.GridAutoRepeatRowsType(), row_track_list_);
-
   // TODO(kschmi): Auto track repeat count should be based on the number of
   // children, rather than specified auto-column/track.
-  NGGridTrackList implicit_rows;
-  NGGridTrackList implicit_columns;
-  implicit_rows.AddRepeater(grid_style.GridAutoRows(), /* repeat_count */ 1);
-  implicit_columns.AddRepeater(grid_style.GridAutoColumns(),
-                               /* repeat_count */ 1);
-
   // TODO(janewman): We need to implement calculation for track auto repeat
   // count so this can be used outside of testing.
   column_track_collection_.SetSpecifiedTracks(
-      column_track_list_, implicit_columns,
+      &grid_style.GridTemplateColumns().NGTrackList(),
+      &grid_style.GridAutoColumns().NGTrackList(),
       automatic_column_repetitions_for_testing);
 
   row_track_collection_.SetSpecifiedTracks(
-      row_track_list_, implicit_rows, automatic_row_repetitions_for_testing);
+      &grid_style.GridTemplateRows().NGTrackList(),
+      &grid_style.GridAutoRows().NGTrackList(),
+      automatic_row_repetitions_for_testing);
 }
 
 void NGGridLayoutAlgorithm::EnsureTrackCoverageForGridItem(
@@ -172,49 +161,6 @@ void NGGridLayoutAlgorithm::EnsureTrackCoverageForGridPositions(
     track_collection.EnsureTrackCoverage(
         start_position.IntegerPosition(),
         end_position.IntegerPosition() - start_position.IntegerPosition() + 1);
-  }
-}
-
-void NGGridLayoutAlgorithm::AddRepeaters(
-    const Vector<GridTrackSize>& template_tracks,
-    const Vector<GridTrackSize>& auto_tracks,
-    wtf_size_t auto_insertion_point,
-    AutoRepeatType repeat_type,
-    NGGridTrackList& track_list) {
-  wtf_size_t repeat_start = NGGridBlockTrackCollection::kInvalidRangeIndex;
-  // TODO(janewman): Track lists should live on the computed style, mirroring
-  // the legacy layout's template_tracks and auto tracks vectors. For now, build
-  // up the NG version from what already exists on the computed style.
-  for (wtf_size_t i = 0; i < template_tracks.size(); ++i) {
-    const GridTrackSize& current_track = template_tracks[i];
-    // If this is the insertion point for an auto repeater, add it here.
-    if (!auto_tracks.IsEmpty() && i == auto_insertion_point) {
-      track_list.AddAutoRepeater(auto_tracks, repeat_type);
-      repeat_start = NGGridBlockTrackCollection::kInvalidRangeIndex;
-    }
-    // As the legacy implementation expands repeaters out, compress repeated
-    // tracks. As this work will be removed once this is done in style, this is
-    // only implemented for the simple case of a single track being repeated,
-    // e.g. we will compress repeat(20, 100px) down into a single repeater, but
-    // will not compress repeat(20, 10px 20px) at all.
-    if (i + 1 < template_tracks.size()) {
-      const GridTrackSize& next_track = template_tracks[i + 1];
-      if (current_track == next_track && i + 1 != auto_insertion_point) {
-        if (repeat_start == NGGridBlockTrackCollection::kInvalidRangeIndex) {
-          repeat_start = i;
-        }
-        continue;
-      }
-    }
-    wtf_size_t repeat_count;
-    if (repeat_start == NGGridBlockTrackCollection::kInvalidRangeIndex)
-      repeat_count = 1;
-    else
-      repeat_count = i + 1 - repeat_start;
-    DCHECK_NE(0u, repeat_count);
-    DCHECK_NE(NGGridBlockTrackCollection::kInvalidRangeIndex, repeat_count);
-    track_list.AddRepeater({template_tracks[i]}, repeat_count);
-    repeat_start = NGGridBlockTrackCollection::kInvalidRangeIndex;
   }
 }
 

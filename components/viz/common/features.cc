@@ -19,9 +19,6 @@ namespace features {
 const base::Feature kForcePreferredIntervalForVideo{
     "ForcePreferredIntervalForVideo", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kUseSkiaForGLReadback{"UseSkiaForGLReadback",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Use the SkiaRenderer.
 #if defined(OS_LINUX) && !(defined(OS_CHROMEOS) || BUILDFLAG(IS_CHROMECAST))
 const base::Feature kUseSkiaRenderer{"UseSkiaRenderer",
@@ -89,14 +86,6 @@ bool IsForcePreferredIntervalForVideoEnabled() {
 bool IsVizHitTestingDebugEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableVizHitTestDebug);
-}
-
-bool IsUsingSkiaForGLReadback() {
-  // Viz for webview requires Skia Readback.
-  if (IsUsingVizForWebView())
-    return true;
-
-  return base::FeatureList::IsEnabled(kUseSkiaForGLReadback);
 }
 
 bool IsUsingSkiaRenderer() {

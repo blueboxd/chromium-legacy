@@ -359,6 +359,9 @@ class RootNodeWrapper extends SARootNode {
          rootNode.parent.role === chrome.automation.RoleType.WINDOW)) {
       return WindowRootNode.buildTree(rootNode);
     }
+    if (rootNode.role === chrome.automation.RoleType.KEYBOARD) {
+      return KeyboardRootNode.buildTree();
+    }
 
     const root = new RootNodeWrapper(rootNode);
     const childConstructor = (node) => NodeWrapper.create(node, root);

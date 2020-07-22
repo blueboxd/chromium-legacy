@@ -200,6 +200,7 @@ public class AppBannerManagerTest {
         ThreadUtils.runOnUiThreadBlocking(
                 () -> { AppBannerManager.setAppDetailsDelegate(mDetailsDelegate); });
 
+        AppBannerManager.ignoreChromeChannelForTesting();
         AppBannerManager.setTotalEngagementForTesting(10);
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mUiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());

@@ -41,6 +41,8 @@ DecoderPriority GetDefaultVideoDecoderPriority(
     const VideoDecoderConfig& config) {
 #if defined(OS_ANDROID)
   constexpr auto kSoftwareDecoderHeightCutoff = 360;
+#elif defined(OS_CHROMEOS)
+  constexpr auto kSoftwareDecoderHeightCutoff = 360;
 #else
   constexpr auto kSoftwareDecoderHeightCutoff = 720;
 #endif

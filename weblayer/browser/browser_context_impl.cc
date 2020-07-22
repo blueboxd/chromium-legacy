@@ -69,6 +69,11 @@ void BindWakeLockProvider(
 
 }  // namespace
 
+namespace prefs {
+// Used to persist the public SettingType::UKM_ENABLED API.
+const char kUkmEnabled[] = "weblayer.ukm_enabled";
+}  // namespace prefs
+
 class ResourceContextImpl : public content::ResourceContext {
  public:
   ResourceContextImpl() = default;
@@ -242,6 +247,8 @@ void BrowserContextImpl::CreateUserPrefService() {
 
 void BrowserContextImpl::RegisterPrefs(
     user_prefs::PrefRegistrySyncable* pref_registry) {
+  pref_registry->RegisterBooleanPref(prefs::kUkmEnabled, false);
+
   // This pref is used by captive_portal::CaptivePortalService (as well as other
   // potential use cases in the future, as it is used for various purposes
   // through //chrome).
@@ -258,7 +265,7 @@ void BrowserContextImpl::RegisterPrefs(
   blocked_content::SafeBrowsingTriggeredPopupBlocker::RegisterProfilePrefs(
       pref_registry);
   pref_registry->RegisterBooleanPref(
-      prefs::kOfferTranslateEnabled, true,
+      ::prefs::kOfferTranslateEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #if defined(OS_ANDROID)
   cdm::MediaDrmStorageImpl::RegisterProfilePrefs(pref_registry);

@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/hash/sha1.h"
@@ -249,8 +250,8 @@ class CertificateProviderApiMockedExtensionTest
   std::string GetKeyPk8() const {
     std::string key_pk8;
     base::ScopedAllowBlockingForTesting allow_io;
-    base::ReadFileToString(extension_path_.AppendASCII("l1_leaf.pk8"),
-                           &key_pk8);
+    EXPECT_TRUE(base::ReadFileToString(
+        extension_path_.AppendASCII("l1_leaf.pk8"), &key_pk8));
     return key_pk8;
   }
 
@@ -302,11 +303,9 @@ class CertificateProviderApiMockedExtensionTest
 
     // Load the private key.
     std::string key_pk8 = GetKeyPk8();
-    const uint8_t* const key_pk8_begin =
-        reinterpret_cast<const uint8_t*>(key_pk8.data());
     std::unique_ptr<crypto::RSAPrivateKey> key(
-        crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(std::vector<uint8_t>(
-            key_pk8_begin, key_pk8_begin + key_pk8.size())));
+        crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(
+            base::as_bytes(base::make_span(key_pk8))));
     ASSERT_TRUE(key);
 
     // Sign using the private key.
@@ -523,6 +522,30 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiMockedExtensionTest,
   CheckCertificateProvidedByExtension(*certificate, *extension());
 
   TestNavigationToCertificateRequestingWebPage(/*is_raw_data=*/false);
+
+  // Remove the certificate.
+  ExecuteJavascriptAndWaitForCallback("unsetCertificates();");
+  CheckCertificateAbsent(*certificate);
+}
+
+// Tests an extension that provides certificates both proactively with
+// setCertificates() and in response to both events:
+// onCertificatesUpdateRequested and legacy onCertificatesRequested. Verify that
+// the non-legacy signature event is used.
+IN_PROC_BROWSER_TEST_F(CertificateProviderApiMockedExtensionTest,
+                       ProactiveAndRedundantLegacyResponsiveExtension) {
+  ExecuteJavascript("registerAsCertificateProvider();");
+  ExecuteJavascript("registerAsLegacyCertificateProvider();");
+  ExecuteJavascript("registerForSignatureRequests();");
+  ExecuteJavascript("registerForLegacySignatureRequests();");
+  ExecuteJavascriptAndWaitForCallback("setCertificates();");
+
+  scoped_refptr<net::X509Certificate> certificate = GetCertificate();
+  CheckCertificateProvidedByExtension(*certificate, *extension());
+
+  // Note that this verifies that the non-legacy signature event is used, since
+  // we're processing the raw data signature operation here.
+  TestNavigationToCertificateRequestingWebPage(/*is_raw_data=*/true);
 
   // Remove the certificate.
   ExecuteJavascriptAndWaitForCallback("unsetCertificates();");

@@ -1314,7 +1314,8 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackSizeList(
     GridTrackSizingDirection direction,
     const ComputedStyle& style) {
   const Vector<GridTrackSize>& auto_track_sizes =
-      direction == kForColumns ? style.GridAutoColumns() : style.GridAutoRows();
+      direction == kForColumns ? style.GridAutoColumns().LegacyTrackList()
+                               : style.GridAutoRows().LegacyTrackList();
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   for (auto& track_size : auto_track_sizes) {
@@ -1359,7 +1360,8 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
     const ComputedStyle& style) {
   bool is_row_axis = direction == kForColumns;
   const Vector<GridTrackSize>& track_sizes =
-      is_row_axis ? style.GridTemplateColumns() : style.GridTemplateRows();
+      is_row_axis ? style.GridTemplateColumns().LegacyTrackList()
+                  : style.GridTemplateRows().LegacyTrackList();
   const Vector<GridTrackSize>& auto_repeat_track_sizes =
       is_row_axis ? style.GridAutoRepeatColumns() : style.GridAutoRepeatRows();
   bool is_layout_grid = layout_object && layout_object->IsLayoutGrid();

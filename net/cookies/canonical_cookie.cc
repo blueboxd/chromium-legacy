@@ -676,7 +676,7 @@ CookieAccessResult CanonicalCookie::IncludeForRequestURL(
   }
 
   // TODO(chlily): Log metrics.
-  return CookieAccessResult(effective_same_site, status);
+  return CookieAccessResult(effective_same_site, status, access_semantics);
 }
 
 CookieAccessResult CanonicalCookie::IsSetPermittedInContext(
@@ -691,6 +691,7 @@ void CanonicalCookie::IsSetPermittedInContext(
     const CookieOptions& options,
     CookieAccessSemantics access_semantics,
     CookieAccessResult* access_result) const {
+  access_result->access_semantics = access_semantics;
   if (options.exclude_httponly() && IsHttpOnly()) {
     DVLOG(net::cookie_util::kVlogSetCookies)
         << "HttpOnly cookie not permitted in script context.";

@@ -240,7 +240,8 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
   document_under_mouse_ = local_root.DocumentAtPoint(
       PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition()));
   LocalFrame::NotifyUserActivation(
-      document_under_mouse_ ? document_under_mouse_->GetFrame() : nullptr);
+      document_under_mouse_ ? document_under_mouse_->GetFrame() : nullptr,
+      mojom::blink::UserActivationNotificationType::kInteraction);
   if ((drag_destination_action_ & kDragDestinationActionDHTML) &&
       document_is_handling_drag_) {
     bool prevented_default = false;

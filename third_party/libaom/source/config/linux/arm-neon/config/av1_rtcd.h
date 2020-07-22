@@ -840,7 +840,13 @@ void av1_get_nz_map_contexts_c(const uint8_t* const levels,
                                const TX_SIZE tx_size,
                                const TX_CLASS tx_class,
                                int8_t* const coeff_contexts);
-#define av1_get_nz_map_contexts av1_get_nz_map_contexts_c
+void av1_get_nz_map_contexts_neon(const uint8_t* const levels,
+                                  const int16_t* const scan,
+                                  const uint16_t eob,
+                                  const TX_SIZE tx_size,
+                                  const TX_CLASS tx_class,
+                                  int8_t* const coeff_contexts);
+#define av1_get_nz_map_contexts av1_get_nz_map_contexts_neon
 
 int64_t av1_highbd_block_error_c(const tran_low_t* coeff,
                                  const tran_low_t* dqcoeff,

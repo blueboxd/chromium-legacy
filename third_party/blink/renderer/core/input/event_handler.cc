@@ -796,7 +796,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   }
 
   LocalFrame::NotifyUserActivation(
-      frame_,
+      frame_, mojom::blink::UserActivationNotificationType::kInteraction,
       RuntimeEnabledFeatures::BrowserVerifiedUserActivationMouseEnabled());
 
   if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled()) {

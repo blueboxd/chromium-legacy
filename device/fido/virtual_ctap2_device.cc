@@ -166,7 +166,8 @@ std::vector<uint8_t> ConstructMakeCredentialResponse(
     const base::Optional<std::vector<uint8_t>> attestation_certificate,
     base::span<const uint8_t> signature,
     AuthenticatorData authenticator_data,
-    base::Optional<std::vector<uint8_t>> android_client_data_ext) {
+    base::Optional<std::vector<uint8_t>> android_client_data_ext,
+    bool enterprise_attestation_requested) {
   cbor::Value::MapValue attestation_map;
   attestation_map.emplace("alg", -7);
   attestation_map.emplace("sig", fido_parsing_utils::Materialize(signature));
@@ -187,6 +188,8 @@ std::vector<uint8_t> ConstructMakeCredentialResponse(
     make_credential_response.set_android_client_data_ext(
         *android_client_data_ext);
   }
+  make_credential_response.enterprise_attestation_returned =
+      enterprise_attestation_requested;
   return AsCTAPStyleCBORBytes(make_credential_response);
 }
 
@@ -526,6 +529,11 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
   if (config.support_android_client_data_extension) {
     options_updated = true;
     options.supports_android_client_data_ext = true;
+  }
+
+  if (config.support_enterprise_attestation) {
+    options_updated = true;
+    options.enterprise_attestation = true;
   }
 
   if (options_updated) {
@@ -963,9 +971,29 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
   DCHECK(status);
 
   base::Optional<std::vector<uint8_t>> attestation_cert;
+  bool enterprise_attestation_requested = false;
   if (!mutable_state()->self_attestation) {
-    attestation_cert = GenerateAttestationCertificate(
-        false /* individual_attestation_requested */);
+    if (config_.support_enterprise_attestation) {
+      switch (request.attestation_preference) {
+        case AttestationConveyancePreference::
+            kEnterpriseIfRPListedOnAuthenticator:
+          if (base::Contains(config_.enterprise_attestation_rps,
+                             request.rp.id)) {
+            enterprise_attestation_requested = true;
+          }
+          break;
+        case AttestationConveyancePreference::kEnterpriseApprovedByBrowser:
+          enterprise_attestation_requested = true;
+          break;
+        default:
+          enterprise_attestation_requested = false;
+      }
+    }
+    if (config_.always_return_enterprise_attestation) {
+      enterprise_attestation_requested = true;
+    }
+    attestation_cert =
+        GenerateAttestationCertificate(enterprise_attestation_requested);
     if (!attestation_cert) {
       DLOG(ERROR) << "Failed to generate attestation certificate.";
       return CtapDeviceResponseCode::kCtap2ErrOther;
@@ -999,7 +1027,7 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
 
   *response = ConstructMakeCredentialResponse(
       std::move(attestation_cert), sig, std::move(authenticator_data),
-      std::move(opt_android_client_data_ext));
+      std::move(opt_android_client_data_ext), enterprise_attestation_requested);
   RegistrationData registration(std::move(private_key), rp_id_hash,
                                 1 /* signature counter */);
 

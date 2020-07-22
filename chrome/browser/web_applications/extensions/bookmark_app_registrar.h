@@ -51,6 +51,8 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
       const web_app::AppId& app_id) const override;
   web_app::DisplayMode GetAppUserDisplayMode(
       const web_app::AppId& app_id) const override;
+  std::vector<web_app::DisplayMode> GetAppDisplayModeOverride(
+      const web_app::AppId& app_id) const override;
   base::Time GetAppLastLaunchTime(const web_app::AppId& app_id) const override;
   base::Time GetAppInstallTime(const web_app::AppId& app_id) const override;
   std::vector<WebApplicationIconInfo> GetAppIconInfos(

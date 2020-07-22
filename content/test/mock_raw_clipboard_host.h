@@ -41,7 +41,7 @@ class MockRawClipboardHost : public blink::mojom::RawClipboardHost {
   // The associated sanitized clipboard, for emulating platform-specific
   // clipboard type conversions. Owned by WebTestContentBrowserClient.
   MockClipboardHost* const mock_clipboard_host_;
-  std::map<base::string16, std::vector<const uint8_t>> raw_data_map_;
+  std::map<base::string16, std::vector<uint8_t>> raw_data_map_;
   // Tracks whether a commit has happened since the last write. After a
   // sequence of writes are committed, future writes should clear the clipboard
   // before continuing to write.

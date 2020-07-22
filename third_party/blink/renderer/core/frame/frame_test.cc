@@ -52,21 +52,25 @@ class FrameTest : public PageTestBase {
 
 TEST_F(FrameTest, NoGesture) {
   // A nullptr LocalFrame* will not set user gesture state.
-  LocalFrame::NotifyUserActivation(nullptr);
+  LocalFrame::NotifyUserActivation(
+      nullptr, mojom::UserActivationNotificationType::kTest);
   EXPECT_FALSE(GetDocument().GetFrame()->HasStickyUserActivation());
 }
 
 TEST_F(FrameTest, PossiblyExisting) {
   // A non-null LocalFrame* will set state, but a subsequent nullptr Document*
   // token will not override it.
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   EXPECT_TRUE(GetDocument().GetFrame()->HasStickyUserActivation());
-  LocalFrame::NotifyUserActivation(nullptr);
+  LocalFrame::NotifyUserActivation(
+      nullptr, mojom::UserActivationNotificationType::kTest);
   EXPECT_TRUE(GetDocument().GetFrame()->HasStickyUserActivation());
 }
 
 TEST_F(FrameTest, NavigateDifferentDomain) {
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   EXPECT_TRUE(GetDocument().GetFrame()->HasStickyUserActivation());
   EXPECT_FALSE(
       GetDocument().GetFrame()->HadStickyUserActivationBeforeNavigation());
@@ -80,7 +84,8 @@ TEST_F(FrameTest, NavigateDifferentDomain) {
 }
 
 TEST_F(FrameTest, NavigateSameDomainMultipleTimes) {
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   EXPECT_TRUE(GetDocument().GetFrame()->HasStickyUserActivation());
   EXPECT_FALSE(
       GetDocument().GetFrame()->HadStickyUserActivationBeforeNavigation());
@@ -115,7 +120,8 @@ TEST_F(FrameTest, NavigateSameDomainMultipleTimes) {
 }
 
 TEST_F(FrameTest, NavigateSameDomainDifferentDomain) {
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   EXPECT_TRUE(GetDocument().GetFrame()->HasStickyUserActivation());
   EXPECT_FALSE(
       GetDocument().GetFrame()->HadStickyUserActivationBeforeNavigation());
@@ -152,7 +158,8 @@ TEST_F(FrameTest, UserActivationInterfaceTest) {
   EXPECT_FALSE(
       LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
 
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
 
   // Now both sticky and transient bits are true, hence consumable.
   EXPECT_TRUE(GetDocument().GetFrame()->HasStickyUserActivation());

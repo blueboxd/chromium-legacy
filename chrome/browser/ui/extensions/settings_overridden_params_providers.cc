@@ -79,8 +79,12 @@ struct SecondarySearchInfo {
 
   Type type;
 
+  // The origin of the search engine. Only populated if the secondary search
+  // is not from another extension.
+  GURL origin;
+
   // The name of the search engine; only populated when |type| is
-  // kOtherDefaultOption.
+  // kNonGoogleInDefaultList.
   base::string16 name;
 };
 
@@ -94,8 +98,15 @@ SecondarySearchInfo GetSecondarySearchInfo(Profile* profile) {
   // the search engine.
   DCHECK_GE(num_overriding_extensions, 1u);
 
-  if (num_overriding_extensions > 1)  // Another extension would take over.
+  if (num_overriding_extensions > 1) {
+    // Another extension would take over.
+    // NOTE(devlin): Theoretically, we could try and figure out exactly which
+    // extension would take over, and include the origin of the secondary
+    // search. However, this (>1 overriding extension) is an uncommon case, and
+    // all that will happen is that we'll prompt the user that the new extension
+    // is overriding search.
     return {SecondarySearchInfo::Type::kOther};
+  }
 
   const TemplateURLService* const template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile);
@@ -109,18 +120,19 @@ SecondarySearchInfo GetSecondarySearchInfo(Profile* profile) {
     return {SecondarySearchInfo::Type::kOther};
   }
 
-  if (IsGoogleSearch(*secondary_search, *template_url_service))
-    return {SecondarySearchInfo::Type::kGoogle};
+  const GURL search_url = secondary_search->GenerateSearchURL(
+      template_url_service->search_terms_data());
+  const GURL origin = search_url.GetOrigin();
+  if (google_util::IsGoogleSearchUrl(search_url))
+    return {SecondarySearchInfo::Type::kGoogle, origin};
 
   if (!template_url_service->ShowInDefaultList(secondary_search)) {
     // Found another search engine, but it's not one of the default options.
-    return {SecondarySearchInfo::Type::kOther};
+    return {SecondarySearchInfo::Type::kOther, origin};
   }
 
-  DCHECK(!secondary_search->short_name().empty());
-
   // The secondary search engine is another of the defaults.
-  return {SecondarySearchInfo::Type::kNonGoogleInDefaultList,
+  return {SecondarySearchInfo::Type::kNonGoogleInDefaultList, origin,
           secondary_search->short_name()};
 }
 
@@ -230,6 +242,20 @@ GetSearchOverriddenParams(Profile* profile) {
   GURL search_url(default_search->url());
   DCHECK(search_url.is_valid()) << default_search->url();
 
+  // Check whether the secondary search is the same search the extension set.
+  // This can happen if the user set a search engine, and then installed an
+  // extension that set the same one.
+  SecondarySearchInfo secondary_search = GetSecondarySearchInfo(profile);
+  // NOTE: Normally, we wouldn't want to use direct equality comparison of
+  // GURL::GetOrigin() because of edge cases like inner URLs with filesystem,
+  // etc. This okay here, because if the origins don't match, we'll show the
+  // dialog to the user. That's likely good if any extension is doing something
+  // as crazy as using filesystem: URLs as a search engine.
+  if (!secondary_search.origin.is_empty() &&
+      secondary_search.origin == search_url.GetOrigin()) {
+    return base::nullopt;
+  }
+
   // Format the URL for display.
   const url_formatter::FormatUrlTypes kFormatRules =
       url_formatter::kFormatUrlOmitTrivialSubdomains |
@@ -245,8 +271,6 @@ GetSearchOverriddenParams(Profile* profile) {
       "Extensions.SettingsOverridden.BackToOtherSearchOverriddenDialogResult";
   constexpr char kBackToGoogleHistogramName[] =
       "Extensions.SettingsOverridden.BackToGoogleSearchOverriddenDialogResult";
-
-  SecondarySearchInfo secondary_search = GetSecondarySearchInfo(profile);
 
   const char* histogram_name = nullptr;
   const gfx::VectorIcon* icon = nullptr;

@@ -8,6 +8,8 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+
 import org.chromium.base.Callback;
 import org.chromium.base.UnguessableToken;
 import org.chromium.base.annotations.CalledByNative;
@@ -15,8 +17,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.paintpreview.browser.NativePaintPreviewServiceProvider;
 import org.chromium.url.GURL;
-
-import javax.annotation.Nonnull;
 
 /**
  * This class and its native counterpart (player_compositor_delegate.cc) communicate with the Paint
@@ -35,7 +35,7 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
     private long mNativePlayerCompositorDelegate;
 
     PlayerCompositorDelegateImpl(NativePaintPreviewServiceProvider service, GURL url,
-            String directoryKey, @Nonnull CompositorListener compositorListener,
+            String directoryKey, @NonNull CompositorListener compositorListener,
             Runnable compositorErrorCallback) {
         mCompositorListener = compositorListener;
         if (service != null && service.getNativeService() != 0) {

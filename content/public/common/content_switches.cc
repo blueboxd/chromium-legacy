@@ -966,6 +966,9 @@ const char kRemoteDebuggingSocketName[]     = "remote-debugging-socket-name";
 // Block ChildProcessMain thread of the renderer's ChildProcessService until a
 // Java debugger is attached.
 const char kRendererWaitForJavaDebugger[] = "renderer-wait-for-java-debugger";
+
+// Disables debug crash dumps for OOPR.
+const char kDisableOoprDebugCrashDump[] = "disable-oopr-debug-crash-dump";
 #endif
 
 // Enable the experimental Accessibility Object Model APIs in development.

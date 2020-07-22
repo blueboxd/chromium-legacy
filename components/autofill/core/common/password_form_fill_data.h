@@ -49,10 +49,7 @@ struct PasswordFormFillData {
   PasswordFormFillData& operator=(PasswordFormFillData&&);
   ~PasswordFormFillData();
 
-  // If |has_renderer_ids| == true then |form_renderer_id| contains the unique
-  // renderer form id. No special values for |has_renderer_ids| == false case
-  // was introduced because the absent of ids is just temprorary situation while
-  // the old form parsing still exists.
+  // Contains the unique renderer form id.
   // If there is no form tag then |form_renderer_id|.is_null().
   // Username and Password elements renderer ids are in
   // |username_field.unique_renderer_id| and |password_field.unique_renderer_id|
@@ -93,11 +90,6 @@ struct PasswordFormFillData {
   // form. This can happen, for example, if action URI's of the observed form
   // and our saved representation don't match up.
   bool wait_for_username = false;
-
-  // True if renderer ids for form, username and password fields are present.
-  // TODO(https://crbug.com/831123): Remove this field when old parsing is
-  // removed and filling by renderer ids is by default.
-  bool has_renderer_ids = false;
 };
 
 // If |data.wait_for_username| is set, the renderer does not need to receive

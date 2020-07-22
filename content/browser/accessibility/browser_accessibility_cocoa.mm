@@ -1861,6 +1861,23 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
 
   base::string16 deletedText = oldValue.substr(i, oldValue.length() - i - j);
   base::string16 insertedText = newValue.substr(i, newValue.length() - i - j);
+
+  // Heuristic for editable combobox. If more than 1 character is inserted or
+  // deleted, and the caret is at the end of the field, assume the entire text
+  // field changed.
+  // TODO(nektar) Remove this once editing intents are implemented,
+  // and the actual inserted and deleted text is passed over from Blink.
+  if ([self internalRole] == ax::mojom::Role::kTextFieldWithComboBox &&
+      (deletedText.length() > 1 || insertedText.length() > 1)) {
+    int sel_start, sel_end;
+    _owner->GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart, &sel_start);
+    _owner->GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, &sel_end);
+    if (size_t{sel_start} == newValue.length() &&
+        size_t{sel_end} == newValue.length()) {
+      // Don't include oldValue as it would be announced -- very confusing.
+      return content::AXTextEdit(newValue, base::string16());
+    }
+  }
   return content::AXTextEdit(insertedText, deletedText);
 }
 

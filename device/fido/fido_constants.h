@@ -324,6 +324,7 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kBioEnrollmentMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kBioEnrollmentPreviewMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kUvTokenMapKey[];
 extern const char kDefaultCredProtectKey[];
+extern const char kEnterpriseAttestationKey[];
 
 // HID transport specific constants.
 constexpr uint32_t kHidBroadcastChannel = 0xffffffff;

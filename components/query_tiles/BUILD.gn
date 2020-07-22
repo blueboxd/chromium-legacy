@@ -85,6 +85,7 @@ if (is_android) {
       "//base:base_java",
       "//base:jni_java",
       "//components/browser_ui/widget/android:java",
+      "//third_party/android_deps:androidx_annotation_annotation_java",
       "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
       "//ui/android:ui_java",
     ]
@@ -120,6 +121,7 @@ if (is_android) {
       ":test_support_java",
       "//base:base_java",
       "//base:base_junit_test_support",
+      "//third_party/android_deps:robolectric_all_java",
       "//third_party/junit",
     ]
   }

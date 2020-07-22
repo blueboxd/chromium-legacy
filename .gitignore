@@ -199,8 +199,6 @@ vs-chromium-project.txt
 /components/search_engines/prepopulated_engines.xml
 /components/site_isolation/internal
 /components/suggestions.xml
-/components/test/data/paint_preview/**/*.pb
-/components/test/data/paint_preview/**/*.skp
 /components/variations.xml
 /components/zucchini/testdata/*.exe
 /content/browser/service_worker/proto.xml

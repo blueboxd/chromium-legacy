@@ -26,6 +26,7 @@ mojom_component("frame") {
     "reporting_observer.mojom",
     "sudden_termination_disabler_type.mojom",
     "tree_scope_type.mojom",
+    "user_activation_notification_type.mojom",
     "user_activation_update_types.mojom",
   ]
 

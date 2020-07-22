@@ -38,6 +38,7 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -111,6 +112,18 @@ class WebAppBrowserTest : public WebAppControllerBrowserTest {
     AppId app_id = observer.AwaitNextInstall();
     chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
     return app_id;
+  }
+};
+
+// A dedicated test fixture for DisplayOverride, which is supported
+// only for the new web apps mode, and requires a command line switch
+// to enable manifest parsing.
+class WebAppBrowserTest_DisplayOverride : public WebAppBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    WebAppBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "DisplayOverride");
   }
 };
 
@@ -269,6 +282,23 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, HasMinimalUiButtons) {
                            /*open_as_window=*/true));
   EXPECT_FALSE(has_buttons(DisplayMode::kMinimalUi,
                            /*open_as_window=*/false));
+}
+
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_DisplayOverride, DisplayOverride) {
+  GURL test_url = https_server()->GetURL(
+      "/banners/"
+      "manifest_test_page.html?manifest=manifest_display_override.json");
+  NavigateToURLAndWait(browser(), test_url);
+
+  const AppId app_id = InstallPwaForCurrentUrl();
+  auto* provider = WebAppProvider::Get(profile());
+
+  std::vector<DisplayMode> app_display_mode_override =
+      provider->registrar().GetAppDisplayModeOverride(app_id);
+
+  ASSERT_EQ(2u, app_display_mode_override.size());
+  EXPECT_EQ(DisplayMode::kMinimalUi, app_display_mode_override[0]);
+  EXPECT_EQ(DisplayMode::kStandalone, app_display_mode_override[1]);
 }
 
 // Tests that desktop PWAs open links in the browser.
@@ -931,6 +961,12 @@ INSTANTIATE_TEST_SUITE_P(All,
                          WebAppTabRestoreBrowserTest,
                          ::testing::Values(ProviderType::kBookmarkApps,
                                            ProviderType::kWebApps),
+                         ProviderTypeParamToString);
+
+// DisplayOverride is supported only for the new web apps mode
+INSTANTIATE_TEST_SUITE_P(All,
+                         WebAppBrowserTest_DisplayOverride,
+                         ::testing::Values(ProviderType::kWebApps),
                          ProviderTypeParamToString);
 
 }  // namespace web_app

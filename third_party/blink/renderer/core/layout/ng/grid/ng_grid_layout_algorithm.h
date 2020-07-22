@@ -44,7 +44,7 @@ class CORE_EXPORT NGGridLayoutAlgorithm
   NGConstraintSpace BuildSpaceForGridItem(const NGBlockNode& node) const;
 
   // Sets the specified tracks for row and column track lists.
-  void BuildTrackLists();
+  void SetSpecifiedTracks();
   // Ensures a range boundary will exist on the start and end of the grid item.
   void EnsureTrackCoverageForGridItem(const NGBlockNode& grid_item);
   // Helper for EnsureTrackCoverageForGridItem.
@@ -57,24 +57,12 @@ class CORE_EXPORT NGGridLayoutAlgorithm
   void SetAutomaticTrackRepetitionsForTesting(wtf_size_t auto_column,
                                               wtf_size_t auto_row);
 
-  // TODO(janewman): Track lists should live on the computed style, mirroring
-  // the legacy layout's template_tracks and auto tracks vectors. For now, this
-  // method builds a NGGridTrackList from the legacy types that are already
-  // computed in style.
-  static void AddRepeaters(const Vector<GridTrackSize>& template_tracks,
-                           const Vector<GridTrackSize>& auto_tracks,
-                           wtf_size_t auto_insertion_point,
-                           AutoRepeatType repeat_type,
-                           NGGridTrackList& track_list);
-
   enum class GridLayoutAlgorithmState {
     kMeasuringItems,
   };
   GridLayoutAlgorithmState state_;
 
   Vector<GridItemData> items_;
-  NGGridTrackList column_track_list_;
-  NGGridTrackList row_track_list_;
   NGGridBlockTrackCollection column_track_collection_;
   NGGridBlockTrackCollection row_track_collection_;
   wtf_size_t automatic_column_repetitions_for_testing =

@@ -104,6 +104,7 @@
 #include "chromecast/media/audio/cast_audio_manager_android.h"  //nogncheck
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/core/app/crashpad.h"
+#include "media/audio/android/audio_manager_android.h"
 #else
 #include "chromecast/browser/memory_pressure_controller_impl.h"
 #endif  // defined(OS_ANDROID)
@@ -276,6 +277,13 @@ CastContentBrowserClient::CreateAudioManager(
       ServiceConnector::MakeRemote(kBrowserProcessClientId),
       BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
 #elif defined(OS_ANDROID)
+  if (GetSwitchValueBoolean(switches::kEnableChromeAudioManagerAndroid,
+                            false)) {
+    LOG(INFO) << "Use AudioManagerAndroid instead of CastAudioManagerAndroid.";
+    return std::make_unique<::media::AudioManagerAndroid>(
+        std::move(audio_thread), audio_log_factory);
+  }
+
   return std::make_unique<media::CastAudioManagerAndroid>(
       std::move(audio_thread), audio_log_factory,
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,

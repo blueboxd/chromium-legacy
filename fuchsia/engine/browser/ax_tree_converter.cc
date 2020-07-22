@@ -183,5 +183,10 @@ bool ConvertAction(fuchsia::accessibility::semantics::Action fuchsia_action,
     case fuchsia::accessibility::semantics::Action::SET_VALUE:
     case fuchsia::accessibility::semantics::Action::SHOW_ON_SCREEN:
       return false;
+    default:
+      LOG(WARNING)
+          << "Unknown fuchsia::accessibility::semantics::Action with value "
+          << static_cast<int>(fuchsia_action);
+      return false;
   }
 }

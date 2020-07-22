@@ -99,19 +99,18 @@ constexpr base::FeatureParam<int> UrgentDiscardingParams::kDiscardStrategy;
 // static
 UrgentDiscardingParams UrgentDiscardingParams::GetParams() {
   UrgentDiscardingParams params = {};
-  params.discard_strategy_ =
-      static_cast<UrgentDiscardingParams::DiscardStrategy>(
-          UrgentDiscardingParams::kDiscardStrategy.Get());
+  params.discard_strategy_ = static_cast<DiscardStrategy>(
+      UrgentDiscardingParams::kDiscardStrategy.Get());
   return params;
 }
 
 const base::Feature kBackgroundTabLoadingFromPerformanceManager{
     "BackgroundTabLoadingFromPerformanceManager",
     base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
-const base::Feature kHighPMFMemoryPressureSignals{
-    "HighPMFMemoryPressureSignals", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kHighPMFDiscardPolicy{"HighPMFDiscardPolicy",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 }  // namespace features
 }  // namespace performance_manager

@@ -894,6 +894,13 @@ bool ValidateCopyTexFormatHelper(const FeatureInfo* feature_info,
     *output_error_msg = std::string("no valid color image");
     return false;
   }
+  // YUV formats are not valid for CopyTex[Sub]Image.
+  if (internal_format == GL_RGB_YCRCB_420_CHROMIUM ||
+      internal_format == GL_RGB_YCBCR_420V_CHROMIUM ||
+      read_format == GL_RGB_YCRCB_420_CHROMIUM ||
+      read_format == GL_RGB_YCBCR_420V_CHROMIUM) {
+    return false;
+  }
   // Check we have compatible formats.
   uint32_t channels_exist = GLES2Util::GetChannelsForFormat(read_format);
   uint32_t channels_needed = GLES2Util::GetChannelsForFormat(internal_format);

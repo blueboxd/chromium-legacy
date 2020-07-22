@@ -416,6 +416,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 if (shouldShowCursorInLocationBar()) {
                     mLocationBar.showUrlBarCursorWithoutFocusAnimations();
                 }
+                // Paint preview status might have been changed. Update the omnibox chip.
+                mLocationBar.updateStatusIcon();
             }
 
             @Override

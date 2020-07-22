@@ -29,6 +29,7 @@ run_jsbundler("accessibility_common_copied_files") {
     "automation_util.js",
     "closure_shim.js",
     "constants.js",
+    "event_handler.js",
     "repeated_event_handler.js",
     "repeated_tree_change_handler.js",
     "tree_walker.js",
@@ -78,6 +79,10 @@ js_library("automation_util") {
     "$externs_path/automation.js",
     "$externs_path/chrome_extensions.js",
   ]
+}
+
+js_library("event_handler") {
+  externs_list = [ "$externs_path/automation.js" ]
 }
 
 js_library("repeated_event_handler") {

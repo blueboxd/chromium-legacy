@@ -21,9 +21,9 @@ namespace vr {
 template <typename M, typename V>
 class VectorBinding : public BindingBase {
  public:
-  typedef VectorElementBinding<M, V> ElementBinding;
-  typedef base::Callback<void(ElementBinding*)> ModelAddedCallback;
-  typedef base::Callback<void(ElementBinding*)> ModelRemovedCallback;
+  using ElementBinding = VectorElementBinding<M, V>;
+  using ModelAddedCallback = base::RepeatingCallback<void(ElementBinding*)>;
+  using ModelRemovedCallback = base::RepeatingCallback<void(ElementBinding*)>;
 
   VectorBinding(std::vector<M>* models,
                 const ModelAddedCallback& added_callback,

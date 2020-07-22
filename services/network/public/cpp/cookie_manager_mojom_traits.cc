@@ -433,13 +433,16 @@ bool StructTraits<
                                    net::CookieAccessResult* out) {
   net::CookieEffectiveSameSite effective_same_site;
   net::CookieInclusionStatus status;
+  net::CookieAccessSemantics access_semantics;
 
   if (!c.ReadEffectiveSameSite(&effective_same_site))
     return false;
   if (!c.ReadStatus(&status))
     return false;
+  if (!c.ReadAccessSemantics(&access_semantics))
+    return false;
 
-  *out = {effective_same_site, status};
+  *out = {effective_same_site, status, access_semantics};
 
   return true;
 }
@@ -465,17 +468,16 @@ bool StructTraits<
     net::CookieChangeInfo>::Read(network::mojom::CookieChangeInfoDataView info,
                                  net::CookieChangeInfo* out) {
   net::CanonicalCookie cookie;
-  net::CookieAccessSemantics access_semantics =
-      net::CookieAccessSemantics::UNKNOWN;
+  net::CookieAccessResult access_result;
   net::CookieChangeCause cause = net::CookieChangeCause::EXPLICIT;
   if (!info.ReadCookie(&cookie))
     return false;
-  if (!info.ReadAccessSemantics(&access_semantics))
+  if (!info.ReadAccessResult(&access_result))
     return false;
   if (!info.ReadCause(&cause))
     return false;
 
-  *out = net::CookieChangeInfo(cookie, access_semantics, cause);
+  *out = net::CookieChangeInfo(cookie, access_result, cause);
   return true;
 }
 

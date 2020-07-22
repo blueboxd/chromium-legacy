@@ -11,6 +11,7 @@
 #include "chrome/services/machine_learning/decision_tree_predictor.h"
 #include "chrome/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace machine_learning {
 
@@ -24,8 +25,13 @@ void MachineLearningService::LoadDecisionTree(
     mojom::DecisionTreeModelSpecPtr spec,
     mojo::PendingReceiver<mojom::DecisionTreePredictor> receiver,
     LoadDecisionTreeCallback callback) {
-  // TODO(crbug/1102425): Implement this.
-  std::move(callback).Run(mojom::LoadModelResult::kLoadModelError);
+  auto predictor = DecisionTreePredictor::FromModelSpec(std::move(spec));
+  if (predictor->IsValid()) {
+    mojo::MakeSelfOwnedReceiver(std::move(predictor), std::move(receiver));
+    std::move(callback).Run(mojom::LoadModelResult::kOk);
+  } else {
+    std::move(callback).Run(mojom::LoadModelResult::kModelSpecError);
+  }
 }
 
 }  // namespace machine_learning

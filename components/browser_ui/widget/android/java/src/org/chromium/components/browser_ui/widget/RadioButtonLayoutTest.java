@@ -58,12 +58,7 @@ public class RadioButtonLayoutTest {
         for (int i = 0; i < layout.getChildCount(); i++) {
             View child = layout.getChildAt(i);
             MarginLayoutParams params = (MarginLayoutParams) child.getLayoutParams();
-
-            if (i < layout.getChildCount() - 1) {
-                Assert.assertNotEquals(0, params.bottomMargin);
-            } else {
-                Assert.assertEquals(0, params.bottomMargin);
-            }
+            Assert.assertEquals(0, params.bottomMargin);
         }
 
         // Add more options.
@@ -77,12 +72,7 @@ public class RadioButtonLayoutTest {
         for (int i = 0; i < layout.getChildCount(); i++) {
             View child = layout.getChildAt(i);
             MarginLayoutParams params = (MarginLayoutParams) child.getLayoutParams();
-
-            if (i < layout.getChildCount() - 1) {
-                Assert.assertNotEquals(0, params.bottomMargin);
-            } else {
-                Assert.assertEquals(0, params.bottomMargin);
-            }
+            Assert.assertEquals(0, params.bottomMargin);
         }
     }
 

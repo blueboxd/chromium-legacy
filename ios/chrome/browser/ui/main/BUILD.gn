@@ -33,6 +33,8 @@ source_set("scene") {
     "scene_delegate.mm",
     "scene_state.h",
     "scene_state.mm",
+    "ui_blocker_scene_agent.h",
+    "ui_blocker_scene_agent.mm",
   ]
 
   deps = [

@@ -19,6 +19,7 @@ class MockHidDeviceObserver : public HidChooserContext::DeviceObserver {
   MOCK_METHOD1(OnDeviceAdded, void(const device::mojom::HidDeviceInfo&));
   MOCK_METHOD1(OnDeviceRemoved, void(const device::mojom::HidDeviceInfo&));
   MOCK_METHOD0(OnHidManagerConnectionError, void());
+  MOCK_METHOD0(OnHidChooserContextShutdown, void());
 };
 
 #endif  // CHROME_BROWSER_HID_MOCK_HID_DEVICE_OBSERVER_H_

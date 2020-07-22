@@ -7,6 +7,9 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/ui/settings/password/password_details/password_details_view_controller_delegate.h"
+
+class IOSChromePasswordCheckManager;
 @protocol PasswordDetailsConsumer;
 
 namespace autofill {
@@ -14,16 +17,21 @@ struct PasswordForm;
 }
 
 // This mediator fetches and organises the credentials for its consumer.
-@interface PasswordDetailsMediator : NSObject
+@interface PasswordDetailsMediator
+    : NSObject <PasswordDetailsViewControllerDelegate>
 
 // PasswordForm is converted to the PasswordDetails and passed to a consumer.
 - (instancetype)initWithPassword:(const autofill::PasswordForm&)passwordForm
+            passwordCheckManager:(IOSChromePasswordCheckManager*)manager
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
 // Consumer of this mediator.
 @property(nonatomic, weak) id<PasswordDetailsConsumer> consumer;
+
+// Disconnects the mediator from all observers.
+- (void)disconnect;
 
 @end
 

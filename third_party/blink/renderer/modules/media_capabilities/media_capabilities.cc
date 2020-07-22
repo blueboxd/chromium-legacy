@@ -114,7 +114,19 @@ double GetLearningNnrThreshold() {
 }
 
 // static
-bool UseGpuFactoriesForPowerEfficient() {
+bool UseGpuFactoriesForPowerEfficient(
+    ExecutionContext* execution_context,
+    const MediaKeySystemAccess* key_system_access) {
+  // TODO(1105258): GpuFactories isn't available in worker scope yet.
+  if (!execution_context || execution_context->IsWorkerGlobalScope())
+    return false;
+
+  // TODO(1105258): Decoding w/ EME often means we can't use the GPU accelerated
+  // path. Add additional logic to detect when GPU acceleration is really
+  // available.
+  if (key_system_access)
+    return false;
+
   return base::FeatureList::IsEnabled(
       media::kMediaCapabilitiesQueryGpuFactories);
 }
@@ -1084,7 +1096,7 @@ void MediaCapabilities::GetPerfInfo(
       std::move(features), WTF::Bind(&MediaCapabilities::OnPerfHistoryInfo,
                                      WrapPersistent(this), callback_id));
 
-  if (UseGpuFactoriesForPowerEfficient()) {
+  if (UseGpuFactoriesForPowerEfficient(execution_context, access)) {
     GetGpuFactoriesSupport(callback_id, video_codec, video_profile,
                            video_color_space, decoding_config);
   }
@@ -1131,11 +1143,15 @@ void MediaCapabilities::GetGpuFactoriesSupport(
     media::VideoCodecProfile video_profile,
     media::VideoColorSpace video_color_space,
     const MediaDecodingConfiguration* decoding_config) {
-  DCHECK(UseGpuFactoriesForPowerEfficient());
   DCHECK(decoding_config->hasVideo());
   DCHECK(pending_cb_map_.Contains(callback_id));
+
+  PendingCallbackState* pending_cb = pending_cb_map_.at(callback_id);
   ExecutionContext* execution_context =
       pending_cb_map_.at(callback_id)->resolver->GetExecutionContext();
+
+  DCHECK(UseGpuFactoriesForPowerEfficient(execution_context,
+                                          pending_cb->key_system_access));
 
   // Frame may become detached in the time it takes us to get callback for
   // NotifyDecoderSupportKnown. In this case, report false as a means of clean
@@ -1204,6 +1220,8 @@ void MediaCapabilities::GetGpuFactoriesSupport(
 void MediaCapabilities::ResolveCallbackIfReady(int callback_id) {
   DCHECK(pending_cb_map_.Contains(callback_id));
   PendingCallbackState* pending_cb = pending_cb_map_.at(callback_id);
+  ExecutionContext* execution_context =
+      pending_cb_map_.at(callback_id)->resolver->GetExecutionContext();
 
   if (!pending_cb->db_is_power_efficient.has_value())
     return;
@@ -1219,7 +1237,8 @@ void MediaCapabilities::ResolveCallbackIfReady(int callback_id) {
       !pending_cb->is_bad_window_prediction_smooth.has_value())
     return;
 
-  if (UseGpuFactoriesForPowerEfficient() &&
+  if (UseGpuFactoriesForPowerEfficient(execution_context,
+                                       pending_cb->key_system_access) &&
       !pending_cb->is_gpu_factories_supported.has_value()) {
     return;
   }
@@ -1237,7 +1256,8 @@ void MediaCapabilities::ResolveCallbackIfReady(int callback_id) {
   info->setSupported(true);
   info->setKeySystemAccess(pending_cb->key_system_access);
 
-  if (UseGpuFactoriesForPowerEfficient()) {
+  if (UseGpuFactoriesForPowerEfficient(execution_context,
+                                       pending_cb->key_system_access)) {
     info->setPowerEfficient(*pending_cb->is_gpu_factories_supported);
   } else {
     info->setPowerEfficient(*pending_cb->db_is_power_efficient);

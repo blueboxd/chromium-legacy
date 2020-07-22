@@ -92,6 +92,10 @@ cbor::Value AsCBOR(const AuthenticatorSupportedOptions& options) {
                        static_cast<int64_t>(options.default_cred_protect));
   }
 
+  if (options.enterprise_attestation) {
+    option_map.emplace(kEnterpriseAttestationKey, true);
+  }
+
   return cbor::Value(std::move(option_map));
 }
 

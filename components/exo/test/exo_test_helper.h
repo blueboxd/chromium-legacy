@@ -61,13 +61,17 @@ class ExoTestHelper {
   // Creates window of size (width, height) at center of screen.
   ExoTestWindow CreateWindow(int width, int height, bool is_modal);
   std::unique_ptr<ClientControlledShellSurface>
-  CreateClientControlledShellSurface(Surface* surface, bool is_modal = false);
+  CreateClientControlledShellSurface(Surface* surface,
+                                     bool is_modal = false,
+                                     bool default_scale_cancellation = true);
   std::unique_ptr<InputMethodSurface> CreateInputMethodSurface(
       Surface* surface,
-      InputMethodSurfaceManager* surface_manager);
+      InputMethodSurfaceManager* surface_manager,
+      bool default_scale_cancellation = true);
   std::unique_ptr<ToastSurface> CreateToastSurface(
       Surface* surface,
-      ToastSurfaceManager* surface_manager);
+      ToastSurfaceManager* surface_manager,
+      bool default_scale_cancellation = true);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExoTestHelper);

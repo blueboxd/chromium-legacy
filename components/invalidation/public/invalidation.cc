@@ -62,6 +62,8 @@ Invalidation Invalidation::InitFromDroppedInvalidation(
 
 Invalidation::Invalidation(const Invalidation& other) = default;
 
+Invalidation& Invalidation::operator=(const Invalidation& other) = default;
+
 Invalidation::~Invalidation() = default;
 
 Topic Invalidation::topic() const {

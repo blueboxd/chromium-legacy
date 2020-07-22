@@ -121,13 +121,16 @@ class MockIt2MeHost : public It2MeHost {
                std::unique_ptr<RegisterSupportHostRequest> register_request,
                std::unique_ptr<LogToServer> log_to_server,
                base::WeakPtr<It2MeHost::Observer> observer,
-               std::unique_ptr<SignalStrategy> signal_strategy,
+               CreateSignalStrategyCallback create_signal_strategy,
                const std::string& username,
                const protocol::IceConfig& ice_config) override;
   void Disconnect() override;
 
  private:
   ~MockIt2MeHost() override = default;
+
+  void CreateSignalStrategyOnNetworkThread(
+      CreateSignalStrategyCallback create_signal_strategy);
 
   void RunSetState(It2MeHostState state);
 
@@ -141,7 +144,7 @@ void MockIt2MeHost::Connect(
     std::unique_ptr<RegisterSupportHostRequest> register_request,
     std::unique_ptr<LogToServer> log_to_server,
     base::WeakPtr<It2MeHost::Observer> observer,
-    std::unique_ptr<SignalStrategy> signal_strategy,
+    CreateSignalStrategyCallback create_signal_strategy,
     const std::string& username,
     const protocol::IceConfig& ice_config) {
   DCHECK(context->ui_task_runner()->BelongsToCurrentThread());
@@ -152,8 +155,12 @@ void MockIt2MeHost::Connect(
 
   host_context_ = std::move(context);
   observer_ = std::move(observer);
-  signal_strategy_ = std::move(signal_strategy);
   register_request_ = std::move(register_request);
+
+  host_context()->network_task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&MockIt2MeHost::CreateSignalStrategyOnNetworkThread, this,
+                     std::move(create_signal_strategy)));
 
   OnPolicyUpdate(std::move(policies));
 
@@ -183,7 +190,15 @@ void MockIt2MeHost::Disconnect() {
     return;
   }
 
+  signal_strategy_.reset();
+
   RunSetState(kDisconnected);
+}
+
+void MockIt2MeHost::CreateSignalStrategyOnNetworkThread(
+    CreateSignalStrategyCallback create_signal_strategy) {
+  DCHECK(host_context()->network_task_runner()->BelongsToCurrentThread());
+  signal_strategy_ = std::move(create_signal_strategy).Run(host_context());
 }
 
 void MockIt2MeHost::RunSetState(It2MeHostState state) {
@@ -254,7 +269,7 @@ class It2MeNativeMessagingHostTest : public testing::Test {
   base::File input_write_file_;
   base::File output_read_file_;
 
-  std::unique_ptr<base::test::SingleThreadTaskEnvironment> task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
   std::unique_ptr<base::RunLoop> test_run_loop_;
 
   std::unique_ptr<base::Thread> host_thread_;
@@ -274,9 +289,8 @@ class It2MeNativeMessagingHostTest : public testing::Test {
 };
 
 void It2MeNativeMessagingHostTest::SetUp() {
-  task_environment_ =
-      std::make_unique<base::test::SingleThreadTaskEnvironment>();
-  test_run_loop_.reset(new base::RunLoop());
+  task_environment_ = std::make_unique<base::test::TaskEnvironment>();
+  test_run_loop_ = std::make_unique<base::RunLoop>();
 
   // Run the host on a dedicated thread.
   host_thread_.reset(new base::Thread("host_thread"));

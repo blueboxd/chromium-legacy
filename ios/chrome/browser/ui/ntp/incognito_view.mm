@@ -9,6 +9,8 @@
 #include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
+#import "ios/chrome/browser/drag_and_drop/url_drag_drop_handler.h"
 #import "ios/chrome/browser/ui/ntp/incognito_cookies_view.h"
 #import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
@@ -121,7 +123,7 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 
 }  // namespace
 
-@interface IncognitoView ()
+@interface IncognitoView () <URLDropDelegate>
 
 @property(nonatomic, strong) IncognitoCookiesView* cookiesView;
 
@@ -150,12 +152,22 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 
   // The UrlLoadingService associated with this view.
   UrlLoadingBrowserAgent* _URLLoader;  // weak
+
+  // Handles drop interactions for this view.
+  URLDragDropHandler* _dragDropHandler;
 }
 - (instancetype)initWithFrame:(CGRect)frame
                     URLLoader:(UrlLoadingBrowserAgent*)URLLoader {
   self = [super initWithFrame:frame];
   if (self) {
     _URLLoader = URLLoader;
+
+    if (DragAndDropIsEnabled()) {
+      _dragDropHandler = [[URLDragDropHandler alloc] init];
+      _dragDropHandler.dropDelegate = self;
+      [self addInteraction:[[UIDropInteraction alloc]
+                               initWithDelegate:_dragDropHandler]];
+    }
 
     self.alwaysBounceVertical = YES;
     // The bottom safe area is taken care of with the bottomUnsafeArea guides.
@@ -348,6 +360,16 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   _visibleDataLabel.attributedText =
       FormatHTMLListForUILabel(l10n_util::GetNSString(IDS_NEW_TAB_OTR_VISIBLE));
   _visibleDataLabel.textColor = bodyTextColor;
+}
+
+#pragma mark - URLDropDelegate
+
+- (BOOL)canHandleURLDropInView:(UIView*)view {
+  return YES;
+}
+
+- (void)view:(UIView*)view didDropURL:(const GURL&)URL atPoint:(CGPoint)point {
+  _URLLoader->Load(UrlLoadParams::InCurrentTab(URL));
 }
 
 #pragma mark - Private

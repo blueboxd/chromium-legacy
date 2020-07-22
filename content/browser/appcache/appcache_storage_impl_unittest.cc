@@ -1045,10 +1045,10 @@ class AppCacheStorageImplTest : public testing::Test {
     MakeCacheAndGroup(kManifestUrl, 2, 1, valid_token_expires(), true);
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::FALLBACK, 1));
     cache_->AddEntry(kEntryUrl2, AppCacheEntry(AppCacheEntry::FALLBACK, 2));
-    cache_->fallback_namespaces_.push_back(AppCacheNamespace(
-        APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespace2, kEntryUrl2));
-    cache_->fallback_namespaces_.push_back(AppCacheNamespace(
-        APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespace, kEntryUrl));
+    cache_->fallback_namespaces_.emplace_back(APPCACHE_FALLBACK_NAMESPACE,
+                                              kFallbackNamespace2, kEntryUrl2);
+    cache_->fallback_namespaces_.emplace_back(APPCACHE_FALLBACK_NAMESPACE,
+                                              kFallbackNamespace, kEntryUrl);
     AppCacheDatabase::CacheRecord cache_record;
     std::vector<AppCacheDatabase::EntryRecord> entries;
     std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
@@ -1107,10 +1107,10 @@ class AppCacheStorageImplTest : public testing::Test {
     MakeCacheAndGroup(kManifestUrl, 2, 1, invalid_token_expires(), true);
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::FALLBACK, 1));
     cache_->AddEntry(kEntryUrl2, AppCacheEntry(AppCacheEntry::FALLBACK, 2));
-    cache_->fallback_namespaces_.push_back(AppCacheNamespace(
-        APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespace2, kEntryUrl2));
-    cache_->fallback_namespaces_.push_back(AppCacheNamespace(
-        APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespace, kEntryUrl));
+    cache_->fallback_namespaces_.emplace_back(APPCACHE_FALLBACK_NAMESPACE,
+                                              kFallbackNamespace2, kEntryUrl2);
+    cache_->fallback_namespaces_.emplace_back(APPCACHE_FALLBACK_NAMESPACE,
+                                              kFallbackNamespace, kEntryUrl);
     AppCacheDatabase::CacheRecord cache_record;
     std::vector<AppCacheDatabase::EntryRecord> entries;
     std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
@@ -1175,10 +1175,10 @@ class AppCacheStorageImplTest : public testing::Test {
     MakeCacheAndGroup(kManifestUrl, 2, 1, token_expires, true);
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::INTERCEPT, 1));
     cache_->AddEntry(kEntryUrl2, AppCacheEntry(AppCacheEntry::INTERCEPT, 2));
-    cache_->intercept_namespaces_.push_back(AppCacheNamespace(
-        APPCACHE_INTERCEPT_NAMESPACE, kInterceptNamespace2, kEntryUrl2));
-    cache_->intercept_namespaces_.push_back(AppCacheNamespace(
-        APPCACHE_INTERCEPT_NAMESPACE, kInterceptNamespace, kEntryUrl));
+    cache_->intercept_namespaces_.emplace_back(
+        APPCACHE_INTERCEPT_NAMESPACE, kInterceptNamespace2, kEntryUrl2);
+    cache_->intercept_namespaces_.emplace_back(APPCACHE_INTERCEPT_NAMESPACE,
+                                               kInterceptNamespace, kEntryUrl);
     AppCacheDatabase::CacheRecord cache_record;
     std::vector<AppCacheDatabase::EntryRecord> entries;
     std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
@@ -1277,8 +1277,8 @@ class AppCacheStorageImplTest : public testing::Test {
     fallback_namespace_record.namespace_.namespace_url = kFallbackNamespace;
     fallback_namespace_record.origin = url::Origin::Create(manifest_url);
     EXPECT_TRUE(database()->InsertNamespace(&fallback_namespace_record));
-    cache_->fallback_namespaces_.push_back(AppCacheNamespace(
-        APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespace, kEntryUrl2));
+    cache_->fallback_namespaces_.emplace_back(APPCACHE_FALLBACK_NAMESPACE,
+                                              kFallbackNamespace, kEntryUrl2);
   }
 
   void Verify_FindMainResponseWithMultipleHits() {
@@ -1389,12 +1389,12 @@ class AppCacheStorageImplTest : public testing::Test {
         kEntryUrl,
         AppCacheEntry(AppCacheEntry::EXPLICIT | AppCacheEntry::FOREIGN, 1));
     cache_->AddEntry(kEntryUrl2, AppCacheEntry(AppCacheEntry::FALLBACK, 2));
-    cache_->fallback_namespaces_.push_back(AppCacheNamespace(
-        APPCACHE_FALLBACK_NAMESPACE, kFallbackNamespace, kEntryUrl2));
-    cache_->online_whitelist_namespaces_.push_back(AppCacheNamespace(
-        APPCACHE_NETWORK_NAMESPACE, kOnlineNamespace, GURL()));
-    cache_->online_whitelist_namespaces_.push_back(AppCacheNamespace(
-        APPCACHE_NETWORK_NAMESPACE, kOnlineNamespaceWithinFallback, GURL()));
+    cache_->fallback_namespaces_.emplace_back(APPCACHE_FALLBACK_NAMESPACE,
+                                              kFallbackNamespace, kEntryUrl2);
+    cache_->online_whitelist_namespaces_.emplace_back(
+        APPCACHE_NETWORK_NAMESPACE, kOnlineNamespace, GURL());
+    cache_->online_whitelist_namespaces_.emplace_back(
+        APPCACHE_NETWORK_NAMESPACE, kOnlineNamespaceWithinFallback, GURL());
 
     AppCacheDatabase::EntryRecord entry_record;
     entry_record.cache_id = 1;
@@ -1485,7 +1485,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
   class MockAppCacheFrontend : public blink::mojom::AppCacheFrontend {
    public:
-    MockAppCacheFrontend() : error_event_was_raised_(false) {}
+    MockAppCacheFrontend() = default;
 
     void CacheSelected(blink::mojom::AppCacheInfoPtr info) override {}
     void EventRaised(blink::mojom::AppCacheEventID event_id) override {}
@@ -1502,7 +1502,7 @@ class AppCacheStorageImplTest : public testing::Test {
         mojo::PendingRemote<network::mojom::URLLoaderFactory>
             url_loader_factory) override {}
 
-    bool error_event_was_raised_;
+    bool error_event_was_raised_ = false;
   };
 
   enum ReinitTestCase {

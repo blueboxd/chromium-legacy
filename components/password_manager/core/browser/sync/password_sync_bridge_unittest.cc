@@ -201,10 +201,6 @@ class MockSyncMetadataStore : public PasswordStoreSync::MetadataStore {
 
 class MockPasswordStoreSync : public PasswordStoreSync {
  public:
-  MOCK_METHOD1(FillAutofillableLogins,
-               bool(std::vector<std::unique_ptr<autofill::PasswordForm>>*));
-  MOCK_METHOD1(FillBlacklistLogins,
-               bool(std::vector<std::unique_ptr<autofill::PasswordForm>>*));
   MOCK_METHOD1(ReadAllLogins, FormRetrievalResult(PrimaryKeyToFormMap*));
   MOCK_METHOD1(RemoveLoginByPrimaryKeySync, PasswordStoreChangeList(int));
   MOCK_METHOD0(DeleteUndecryptableLogins, DatabaseCleanupResult());

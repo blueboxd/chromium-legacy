@@ -160,7 +160,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, CaptureVisibleTabRace) {
                                   "test_race.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, CaptureVisibleFile) {
+// https://crbug.com/1107934 Flaky on Windows, Linux, ChromeOS.
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
+#define MAYBE_CaptureVisibleFile DISABLED_CaptureVisibleFile
+#else
+#define MAYBE_CaptureVisibleFile CaptureVisibleFile
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiCaptureTest, MAYBE_CaptureVisibleFile) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
                                   "test_file.html")) << message_;
 }

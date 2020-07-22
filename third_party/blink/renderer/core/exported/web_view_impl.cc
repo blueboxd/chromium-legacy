@@ -1826,7 +1826,9 @@ WebInputEventResult WebViewImpl::HandleCapturedMouseEvent(
       break;
     case WebInputEvent::Type::kMouseDown:
       event_type = event_type_names::kMousedown;
-      LocalFrame::NotifyUserActivation(element->GetDocument().GetFrame());
+      LocalFrame::NotifyUserActivation(
+          element->GetDocument().GetFrame(),
+          mojom::blink::UserActivationNotificationType::kInteraction);
       break;
     case WebInputEvent::Type::kMouseUp:
       event_type = event_type_names::kMouseup;

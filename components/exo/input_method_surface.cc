@@ -21,15 +21,14 @@ namespace exo {
 
 InputMethodSurface::InputMethodSurface(InputMethodSurfaceManager* manager,
                                        Surface* surface,
-                                       double default_device_scale_factor)
+                                       bool default_scale_cancellation)
     : ClientControlledShellSurface(
           surface,
           true /* can_minimize */,
-          ash::kShellWindowId_ArcVirtualKeyboardContainer),
+          ash::kShellWindowId_ArcVirtualKeyboardContainer,
+          default_scale_cancellation),
       manager_(manager),
-      input_method_bounds_(),
-      default_device_scale_factor_(default_device_scale_factor) {
-  SetScale(default_device_scale_factor);
+      input_method_bounds_() {
   host_window()->SetName("ExoInputMethodSurface");
   host_window()->SetProperty(kInputMethodSurface, this);
 }
@@ -71,7 +70,7 @@ void InputMethodSurface::OnSurfaceCommit() {
   }
 
   const gfx::Rect new_bounds = gfx::ConvertRectToDIP(
-      default_device_scale_factor_, root_surface()->hit_test_region().bounds());
+      GetScale(), root_surface()->hit_test_region().bounds());
   if (input_method_bounds_ != new_bounds) {
     input_method_bounds_ = new_bounds;
     manager_->OnTouchableBoundsChanged(this);

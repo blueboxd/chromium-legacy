@@ -92,7 +92,8 @@ GamepadList* NavigatorGamepad::Gamepads() {
   // visible.
   if (GetFrame() && GetPage() && GetPage()->IsPageVisible() &&
       GamepadComparisons::HasUserActivation(gamepads_)) {
-    LocalFrame::NotifyUserActivation(GetFrame());
+    LocalFrame::NotifyUserActivation(
+        GetFrame(), mojom::blink::UserActivationNotificationType::kInteraction);
   }
   is_gamepads_exposed_ = true;
 

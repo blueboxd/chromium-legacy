@@ -311,7 +311,9 @@ class CORE_EXPORT WebLocalFrameImpl final
   void WasHidden() override;
   void WasShown() override;
   void SetAllowsCrossBrowsingInstanceFrameLookup() override;
-  void NotifyUserActivation() override;
+  void NotifyUserActivation(
+      mojom::blink::UserActivationNotificationType notification_type =
+          mojom::blink::UserActivationNotificationType::kNone) override;
   bool HasStickyUserActivation() override;
   bool HasTransientUserActivation() override;
   bool ConsumeTransientUserActivation(UserActivationUpdateSource) override;

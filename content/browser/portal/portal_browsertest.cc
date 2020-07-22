@@ -26,15 +26,18 @@
 #include "content/browser/portal/portal.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_touchpad_pinch_gesture.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame.mojom-test-utils.h"
+#include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_type.h"
 #include "content/public/test/accessibility_notification_waiter.h"
@@ -2273,6 +2276,117 @@ IN_PROC_BROWSER_TEST_F(PortalOriginTrialBrowserTest, WithTrialToken) {
                             GURL("https://portal.test/?origintrial=portals")));
   EXPECT_EQ(PlatformSupportsPortalsOriginTrial(),
             EvalJs(web_contents_impl, "'HTMLPortalElement' in self"));
+}
+
+class PortalPixelBrowserTest : public PortalBrowserTest {
+ public:
+  void SetUp() override {
+    EnablePixelOutput();
+    PortalBrowserTest::SetUp();
+  }
+};
+
+// Ensures content is correctly rastered with respect to the page scale factor.
+// Note: a portaled page is unique in that it has both kinds of page scale
+// factor simultaneously; an external page scale factor that comes from the
+// page scale on the embedder page as well as the natural page scale factor on
+// the portal page. Though the portal cannot be pinch-zoomed until activated,
+// it may use a viewport <meta> tag to set an initial scale factor. This test
+// loads a portal that has a zoomed out page, then pinch zooms in on the
+// embedder page. Both page scales should be accounted for so the pattern in
+// the portal should appear the correct size (4x4 checkerboard tiles) as well
+// as be re-rastered for the embedder's zoom so it should appear crisp.
+IN_PROC_BROWSER_TEST_F(PortalPixelBrowserTest, PageScaleRaster) {
+  ShellContentBrowserClient::Get()->set_override_web_preferences_callback(
+      base::BindRepeating([](WebPreferences* prefs) {
+        // Enable processing of the viewport <meta> tag in the same way the
+        // Android browser would.
+        prefs->viewport_enabled = true;
+        prefs->viewport_meta_enabled = true;
+        prefs->shrinks_viewport_contents_to_fit = true;
+        prefs->viewport_style = content::ViewportStyle::MOBILE;
+
+        // Hide scrollbars to make pixel testing more robust.
+        prefs->hide_scrollbars = true;
+      }));
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL("portal.test", "/portals/raster.html")));
+
+  auto* main_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  std::vector<WebContents*> inner_web_contents =
+      main_contents->GetInnerWebContents();
+  ASSERT_EQ(1u, inner_web_contents.size());
+  auto* portal_contents = static_cast<WebContentsImpl*>(inner_web_contents[0]);
+
+  RenderFrameSubmissionObserver portal_frame_observer(
+      portal_contents->GetFrameTree()->root());
+
+  // Perform a pinch-zoom action into the top-left of the page.
+  {
+    content::RenderWidgetHostImpl* widget_host =
+        content::RenderWidgetHostImpl::From(
+            main_contents->GetRenderViewHost()->GetWidget());
+
+    content::SyntheticPinchGestureParams params;
+    params.gesture_source_type =
+        content::SyntheticGestureParams::TOUCHPAD_INPUT;
+    params.scale_factor = 4.f;
+    params.anchor = gfx::PointF();
+    params.relative_pointer_speed_in_pixels_s = 40000;
+    auto pinch_gesture =
+        std::make_unique<content::SyntheticTouchpadPinchGesture>(params);
+
+    base::RunLoop run_loop;
+    widget_host->QueueSyntheticGesture(
+        std::move(pinch_gesture),
+        base::BindOnce(
+            [](base::OnceClosure quit_closure,
+               content::SyntheticGesture::Result result) {
+              EXPECT_EQ(content::SyntheticGesture::GESTURE_FINISHED, result);
+              std::move(quit_closure).Run();
+            },
+            run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  const float kScaleTolerance = 0.1f;
+
+  // The portal should have its external page scale factor set from the main
+  // frame's pinch zoom. However, it should have a page scale factor set as
+  // well, coming from the initial-scale value of its viewport <meta> tag.
+  {
+    portal_frame_observer.WaitForExternalPageScaleFactor(4.f, kScaleTolerance);
+    EXPECT_EQ(
+        0.5, portal_frame_observer.LastRenderFrameMetadata().page_scale_factor);
+  }
+
+  // This test passes if the result matches the previously rendered
+  // expectation. A small amount of jitter is allowed due to differences in
+  // graphics drivers or raster code, but the resulting image should appear
+  // crisp.
+  {
+    // Compare only the top-left 200x200 rect - the checkerboard DIV is 100x100
+    // with initial-scale of 0.5. The embedder page zooms in to 4x so the
+    // content rect should only be 200x200 output pixels.
+    const gfx::Size kCompareSize(200, 200);
+    base::FilePath reference =
+        content::GetTestFilePath("portals", "raster-expected.png");
+    EXPECT_TRUE(CompareWebContentsOutputToReference(main_contents, reference,
+                                                    kCompareSize));
+  }
+
+  // Now activate the portal. Since this replaces the embedder as the main
+  // WebContents, the external page scale factor coming from the embedder
+  // should be cleared.
+  {
+    RenderFrameHostImpl* main_frame = main_contents->GetMainFrame();
+    ExecuteScriptAsync(main_frame,
+                       "document.querySelector('portal').activate();");
+    portal_frame_observer.WaitForExternalPageScaleFactor(1.f, kScaleTolerance);
+  }
 }
 
 }  // namespace content

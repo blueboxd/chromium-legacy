@@ -7,6 +7,7 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
+@protocol ApplicationCommands;
 class IOSChromePasswordCheckManager;
 @class PasswordIssuesCoordinator;
 
@@ -32,6 +33,8 @@ class IOSChromePasswordCheckManager;
                                    browser:(Browser*)browser NS_UNAVAILABLE;
 
 @property(nonatomic, weak) id<PasswordIssuesCoordinatorDelegate> delegate;
+
+@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 
 @end
 

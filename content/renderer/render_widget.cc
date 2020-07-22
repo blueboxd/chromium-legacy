@@ -690,7 +690,10 @@ void RenderWidget::UpdateVisualProperties(
     }
   }
 
-  if (!delegate()) {
+  // All non-top-level Widgets (child local-root frames, Portals, GuestViews,
+  // etc.) propagate and consume the page scale factor as "external", meaning
+  // that it comes from the top level widget's page scale.
+  if (!delegate() || for_nested_main_frame_) {
     // The main frame controls the page scale factor, from blink. For other
     // frame widgets, the page scale is received from its parent as part of
     // the visual properties here. While blink doesn't need to know this
@@ -724,6 +727,15 @@ void RenderWidget::UpdateVisualProperties(
           visual_properties.page_scale_factor,
           visual_properties.is_pinch_gesture_active);
     }
+  } else {
+    // Ensure scale factors used in nested widgets are reset to their default
+    // values, they may be leftover from when a widget was nested and was
+    // promoted to top level (e.g. portal activation).
+    layer_tree_host_->SetExternalPageScaleFactor(
+        1.f,
+        /*is_pinch_gesture_active=*/false);
+    page_scale_factor_from_mainframe_ = 1.f;
+    is_pinch_gesture_active_from_mainframe_ = false;
   }
 
   if (old_visible_viewport_size != visible_viewport_size_) {

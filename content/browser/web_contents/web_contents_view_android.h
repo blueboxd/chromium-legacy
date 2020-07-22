@@ -109,6 +109,7 @@ class WebContentsViewAndroid : public WebContentsView,
   int GetBottomControlsMinHeight() const override;
   bool ShouldAnimateBrowserControlsHeightChanges() const override;
   bool DoBrowserControlsShrinkRendererSize() const override;
+  bool ShouldPinTopControlsToContentTop() const override;
 
   // ui::EventHandlerAndroid implementation.
   bool OnTouchEvent(const ui::MotionEventAndroid& event) override;

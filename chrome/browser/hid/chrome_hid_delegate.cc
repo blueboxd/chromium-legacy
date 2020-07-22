@@ -121,3 +121,8 @@ void ChromeHidDelegate::OnHidManagerConnectionError() {
   for (auto& observer : observer_list_)
     observer.OnHidManagerConnectionError();
 }
+
+void ChromeHidDelegate::OnHidChooserContextShutdown() {
+  device_observer_.RemoveAll();
+  permission_observer_.RemoveAll();
+}

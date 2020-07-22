@@ -125,12 +125,6 @@ void AppLaunchSplashScreenHandler::UpdateAppLaunchState(AppLaunchState state) {
         l10n_util::GetStringUTF8(GetProgressMessageFromState(state_)));
   }
 
-  // When we are asked to initialize network, we should remember that this app
-  // requires network.
-  if (state_ == AppLaunchState::APP_LAUNCH_STATE_PREPARING_NETWORK) {
-    network_required_ = true;
-  }
-
   UpdateState(NetworkError::ERROR_REASON_UPDATE);
 }
 
@@ -145,7 +139,7 @@ void AppLaunchSplashScreenHandler::ShowNetworkConfigureUI() {
 
   // We should not block users when the network was not required by the
   // controller.
-  if (!network_required_) {
+  if (!delegate_->IsNetworkRequired()) {
     state = NetworkStateInformer::ONLINE;
   }
 

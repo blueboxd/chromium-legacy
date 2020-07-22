@@ -608,8 +608,9 @@ WebLocalFrame* WebLocalFrame::FrameForCurrentContext() {
   return FrameForContext(context);
 }
 
-void WebLocalFrameImpl::NotifyUserActivation() {
-  LocalFrame::NotifyUserActivation(GetFrame());
+void WebLocalFrameImpl::NotifyUserActivation(
+    mojom::blink::UserActivationNotificationType notification_type) {
+  LocalFrame::NotifyUserActivation(GetFrame(), notification_type);
 }
 
 bool WebLocalFrameImpl::HasStickyUserActivation() {
@@ -2164,7 +2165,10 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const WebURL& url) {
           GetFrame()->GetDocument()->Url().Protocol()))
     return;
 
-  LocalFrame::NotifyUserActivation(GetFrame());
+  // TODO(mustaq): This is called only through the user typing a javascript URL
+  // into the omnibox.  See https://crbug.com/1082900
+  LocalFrame::NotifyUserActivation(
+      GetFrame(), mojom::blink::UserActivationNotificationType::kInteraction);
   GetFrame()->GetScriptController().ExecuteJavaScriptURL(
       url, network::mojom::CSPDisposition::DO_NOT_CHECK,
       &DOMWrapperWorld::MainWorld());

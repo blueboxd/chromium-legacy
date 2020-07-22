@@ -149,4 +149,8 @@ bool FidoAuthenticator::SupportsHMACSecretExtension() const {
   return false;
 }
 
+bool FidoAuthenticator::SupportsEnterpriseAttestation() const {
+  return false;
+}
+
 }  // namespace device

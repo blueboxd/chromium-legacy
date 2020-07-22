@@ -116,11 +116,13 @@ class MediaHistoryKeyedService : public KeyedService,
     static GetMediaFeedItemsRequest CreateItemsForFeed(
         int64_t feed_id,
         unsigned limit,
-        bool fetched_items_should_be_safe);
+        bool fetched_items_should_be_safe,
+        base::Optional<media_feeds::mojom::MediaFeedItemType> filter_by_type);
 
     static GetMediaFeedItemsRequest CreateItemsForContinueWatching(
         unsigned limit,
-        bool fetched_items_should_be_safe);
+        bool fetched_items_should_be_safe,
+        base::Optional<media_feeds::mojom::MediaFeedItemType> filter_by_type);
 
     GetMediaFeedItemsRequest();
     GetMediaFeedItemsRequest(const GetMediaFeedItemsRequest& t);
@@ -138,6 +140,9 @@ class MediaHistoryKeyedService : public KeyedService,
     // True if the item should have passed Safe Search checks. Only valid for
     // |kContinueWatching| and |kItemsForFeed|.
     bool fetched_items_should_be_safe = false;
+
+    // The item type to filter by.
+    base::Optional<media_feeds::mojom::MediaFeedItemType> filter_by_type;
   };
   void GetMediaFeedItems(
       const GetMediaFeedItemsRequest& request,
@@ -252,7 +257,8 @@ class MediaHistoryKeyedService : public KeyedService,
     static GetMediaFeedsRequest CreateTopFeedsForDisplay(
         unsigned limit,
         int fetched_items_min,
-        bool fetched_items_min_should_be_safe);
+        bool fetched_items_min_should_be_safe,
+        base::Optional<media_feeds::mojom::MediaFeedItemType> filter_by_type);
 
     GetMediaFeedsRequest();
     GetMediaFeedsRequest(const GetMediaFeedsRequest& t);
@@ -271,6 +277,9 @@ class MediaHistoryKeyedService : public KeyedService,
     // should have passed safe search. Only valid for |kTopFeedsForDisplay|.
     base::Optional<int> fetched_items_min;
     bool fetched_items_min_should_be_safe = false;
+
+    // The item type to filter by.
+    base::Optional<media_feeds::mojom::MediaFeedItemType> filter_by_type;
   };
   void GetMediaFeeds(
       const GetMediaFeedsRequest& request,

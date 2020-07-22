@@ -194,6 +194,8 @@ class TabImpl : public Tab,
   jboolean CanTranslate(JNIEnv* env);
   void ShowTranslateUi(JNIEnv* env);
   void SetTopControlsMinHeight(JNIEnv* env, int min_height);
+  void SetPinTopControlsToContentTop(JNIEnv* env,
+                                     jboolean pin_top_controls_to_content_top);
 #endif
 
   ErrorPageDelegate* error_page_delegate() { return error_page_delegate_; }
@@ -262,6 +264,7 @@ class TabImpl : public Tab,
   int GetBottomControlsHeight() override;
   bool DoBrowserControlsShrinkRendererSize(
       const content::WebContents* web_contents) override;
+  bool ShouldPinTopControlsToContentTop() override;
   bool EmbedsFullscreenWidget() override;
   void RequestMediaAccessPermission(
       content::WebContents* web_contents,
@@ -367,6 +370,7 @@ class TabImpl : public Tab,
   std::unique_ptr<BrowserControlsNavigationStateHandler>
       browser_controls_navigation_state_handler_;
   int top_controls_min_height_ = 0;
+  bool pin_top_controls_to_content_top_ = false;
 
   // Last value supplied to UpdateBrowserControlsConstraint(). This *constraint*
   // can be SHOWN, if for example a modal dialog is forcing the controls to be

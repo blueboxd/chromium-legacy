@@ -247,6 +247,7 @@ TextureCompareFuncValidator texture_compare_func;
 
 ValueValidator<GLenum> texture_compare_mode;
 ValueValidator<GLenum> texture_depth_renderable_internal_format;
+ValueValidator<GLenum> texture_fbo_target;
 ValueValidator<GLenum> texture_format;
 ValueValidator<GLenum> texture_internal_format;
 ValueValidator<GLenum> texture_internal_format_storage;

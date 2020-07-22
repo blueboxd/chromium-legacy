@@ -156,8 +156,8 @@ class StyleBuilderConverter {
   static GridPosition ConvertGridPosition(StyleResolverState&, const CSSValue&);
   static GridTrackSize ConvertGridTrackSize(StyleResolverState&,
                                             const CSSValue&);
-  static Vector<GridTrackSize> ConvertGridTrackSizeList(StyleResolverState&,
-                                                        const CSSValue&);
+  static GridTrackList ConvertGridTrackSizeList(StyleResolverState&,
+                                                const CSSValue&);
   template <typename T>
   static T ConvertLineWidth(StyleResolverState&, const CSSValue&);
   static float ConvertBorderWidth(StyleResolverState&, const CSSValue&);
@@ -227,7 +227,7 @@ class StyleBuilderConverter {
 
   static void ConvertGridTrackList(
       const CSSValue&,
-      Vector<GridTrackSize>&,
+      GridTrackList&,
       NamedGridLinesMap&,
       OrderedNamedGridLines&,
       Vector<GridTrackSize>& auto_repeat_track_sizes,

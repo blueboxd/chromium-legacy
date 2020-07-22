@@ -20,6 +20,9 @@
 
 @interface PasswordDetailsCoordinator () <PasswordDetailsHandler> {
   autofill::PasswordForm _password;
+
+  // Manager responsible for password check feature.
+  IOSChromePasswordCheckManager* _manager;
 }
 
 // Main view controller for this coordinator.
@@ -28,20 +31,31 @@
 // Main mediator for this coordinator.
 @property(nonatomic, strong) PasswordDetailsMediator* mediator;
 
+// Dispatcher.
+@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+
 @end
 
 @implementation PasswordDetailsCoordinator
 
 @synthesize baseNavigationController = _baseNavigationController;
 
-- (instancetype)initWithBaseNavigationController:
-                    (UINavigationController*)navigationController
-                                        password:(const autofill::PasswordForm&)
-                                                     password {
+- (instancetype)
+    initWithBaseNavigationController:
+        (UINavigationController*)navigationController
+                            password:(const autofill::PasswordForm&)password
+                passwordCheckManager:(IOSChromePasswordCheckManager*)manager
+                          dispatcher:(id<ApplicationCommands>)dispatcher {
   self = [super initWithBaseViewController:navigationController browser:nil];
   if (self) {
-    _password = password;
+    DCHECK(navigationController);
+    DCHECK(manager);
+    DCHECK(dispatcher);
+
     _baseNavigationController = navigationController;
+    _password = password;
+    _manager = manager;
+    _dispatcher = dispatcher;
   }
   return self;
 }
@@ -54,15 +68,18 @@
   self.viewController =
       [[PasswordDetailsViewController alloc] initWithStyle:style];
 
-  self.mediator = [[PasswordDetailsMediator alloc] initWithPassword:_password];
+  self.mediator = [[PasswordDetailsMediator alloc] initWithPassword:_password
+                                               passwordCheckManager:_manager];
   self.mediator.consumer = self.viewController;
   self.viewController.handler = self;
+  self.viewController.commandsDispatcher = self.dispatcher;
 
   [self.baseNavigationController pushViewController:self.viewController
                                            animated:YES];
 }
 
 - (void)stop {
+  [self.mediator disconnect];
   self.mediator = nil;
   self.viewController = nil;
 }

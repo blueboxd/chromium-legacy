@@ -23,7 +23,8 @@
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='hoverable'",
       "position": [8, 0],
-      "bounds": [216, 100],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
       "backgroundColor": "#90EE90"
     }
   ],

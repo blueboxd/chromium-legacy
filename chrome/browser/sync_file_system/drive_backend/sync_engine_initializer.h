@@ -99,7 +99,7 @@ class SyncEngineInitializer : public SyncTask {
   SyncEngineContext* sync_context_;  // Not owned.
   leveldb::Env* env_override_;
 
-  google_apis::CancelCallback cancel_callback_;
+  google_apis::CancelCallbackOnce cancel_callback_;
   base::FilePath database_path_;
 
   int find_sync_root_retry_count_;

@@ -171,7 +171,6 @@ class NearbyShareDeviceDataUpdaterImplTest : public ::testing::Test {
                   client->update_device_requests()[0].request);
 
     // Send and verify the response.
-    size_t num_results = results_.size();
     size_t num_responses = responses_.size();
     switch (result) {
       case UpdateDeviceRequestResult::kSuccess:
@@ -186,14 +185,12 @@ class NearbyShareDeviceDataUpdaterImplTest : public ::testing::Test {
         FastForward(kTestTimeout);
         return;
     }
-    EXPECT_EQ(num_results + 1, results_.size());
     EXPECT_EQ(num_responses + 1, responses_.size());
 
-    bool success = result == UpdateDeviceRequestResult::kSuccess;
-    EXPECT_EQ(success, results_.back());
-    VerifyResponse(
-        success ? base::make_optional(TestResponse()) : base::nullopt,
-        responses_.back());
+    VerifyResponse(result == UpdateDeviceRequestResult::kSuccess
+                       ? base::make_optional(TestResponse())
+                       : base::nullopt,
+                   responses_.back());
   }
 
  private:
@@ -203,16 +200,13 @@ class NearbyShareDeviceDataUpdaterImplTest : public ::testing::Test {
   }
 
   // The callback passed into UpdateDeviceData().
-  void OnResult(bool success,
-                const base::Optional<nearbyshare::proto::UpdateDeviceResponse>&
+  void OnResult(const base::Optional<nearbyshare::proto::UpdateDeviceResponse>&
                     response) {
-    results_.push_back(success);
     responses_.push_back(response);
   }
 
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  std::vector<bool> results_;
   std::vector<base::Optional<nearbyshare::proto::UpdateDeviceResponse>>
       responses_;
   FakeNearbyShareClientFactory fake_client_factory_;

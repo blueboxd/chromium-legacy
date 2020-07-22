@@ -33,10 +33,9 @@ struct SerialDriverInfo {
   int minor_end;  // Inclusive.
 };
 
-std::vector<SerialDriverInfo> ReadSerialDriverInfo() {
+std::vector<SerialDriverInfo> ReadSerialDriverInfo(const base::FilePath& path) {
   std::string tty_drivers;
-  if (!base::ReadFileToString(base::FilePath("/proc/tty/drivers"),
-                              &tty_drivers)) {
+  if (!base::ReadFileToString(path, &tty_drivers)) {
     return {};
   }
 
@@ -84,12 +83,22 @@ std::vector<SerialDriverInfo> ReadSerialDriverInfo() {
 
 }  // namespace
 
-SerialDeviceEnumeratorLinux::SerialDeviceEnumeratorLinux() {
+// static
+std::unique_ptr<SerialDeviceEnumeratorLinux>
+SerialDeviceEnumeratorLinux::Create() {
+  return std::make_unique<SerialDeviceEnumeratorLinux>(
+      base::FilePath("/proc/tty/drivers"));
+}
+
+SerialDeviceEnumeratorLinux::SerialDeviceEnumeratorLinux(
+    const base::FilePath& tty_driver_info_path)
+    : tty_driver_info_path_(tty_driver_info_path) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 
   watcher_ = UdevWatcher::StartWatching(
       this, {UdevWatcher::Filter(kSubsystemTty, "")});
-  watcher_->EnumerateExistingDevices();
+  if (watcher_)
+    watcher_->EnumerateExistingDevices();
 }
 
 SerialDeviceEnumeratorLinux::~SerialDeviceEnumeratorLinux() {
@@ -121,7 +130,7 @@ void SerialDeviceEnumeratorLinux::OnDeviceAdded(ScopedUdevDevicePtr device) {
     return;
   }
 
-  for (const auto& driver : ReadSerialDriverInfo()) {
+  for (const auto& driver : ReadSerialDriverInfo(tty_driver_info_path_)) {
     if (major == driver.major && minor >= driver.minor_start &&
         minor <= driver.minor_end) {
       CreatePort(std::move(device), syspath);
@@ -164,7 +173,7 @@ void SerialDeviceEnumeratorLinux::CreatePort(ScopedUdevDevicePtr device,
   const char* vendor_id =
       udev_device_get_property_value(device.get(), "ID_VENDOR_ID");
   const char* product_id =
-      udev_device_get_property_value(device.get(), "ID_PRODUCT_ID");
+      udev_device_get_property_value(device.get(), "ID_MODEL_ID");
   const char* product_name_enc =
       udev_device_get_property_value(device.get(), "ID_MODEL_ENC");
   const char* serial_number =

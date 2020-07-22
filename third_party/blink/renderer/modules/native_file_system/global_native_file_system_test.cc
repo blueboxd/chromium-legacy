@@ -135,7 +135,8 @@ TEST_F(GlobalNativeFileSystemTest, UserActivationChooseEntriesSuccessful) {
   LocalFrame* frame = &GetFrame();
   EXPECT_FALSE(frame->HasStickyUserActivation());
 
-  LocalFrame::NotifyUserActivation(frame);
+  LocalFrame::NotifyUserActivation(
+      frame, mojom::UserActivationNotificationType::kTest);
   EXPECT_TRUE(frame->HasStickyUserActivation());
 
   base::RunLoop manager_run_loop;
@@ -191,7 +192,8 @@ TEST_F(GlobalNativeFileSystemTest, UserActivationChooseEntriesErrors) {
   MockNativeFileSystemManager manager(frame->GetBrowserInterfaceBroker());
 
   for (const NativeFileSystemStatus& status : statuses) {
-    LocalFrame::NotifyUserActivation(frame);
+    LocalFrame::NotifyUserActivation(
+        frame, mojom::UserActivationNotificationType::kTest);
     EXPECT_TRUE(frame->HasStickyUserActivation());
 
     base::RunLoop manager_run_loop;

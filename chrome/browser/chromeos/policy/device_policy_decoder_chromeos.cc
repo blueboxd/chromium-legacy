@@ -1535,20 +1535,19 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
         nullptr);
   }
 
-  if (policy.has_minimum_chrome_version_enforced()) {
-    const em::StringPolicyProto& container(
-        policy.minimum_chrome_version_enforced());
+  if (policy.has_device_minimum_version()) {
+    const em::StringPolicyProto& container(policy.device_minimum_version());
     if (container.has_value()) {
-      SetJsonDevicePolicy(key::kMinimumChromeVersionEnforced, container.value(),
+      SetJsonDevicePolicy(key::kDeviceMinimumVersion, container.value(),
                           policies);
     }
   }
 
-  if (policy.has_minimum_chrome_version_aue_message()) {
+  if (policy.has_device_minimum_version_aue_message()) {
     const em::StringPolicyProto& container(
-        policy.minimum_chrome_version_aue_message());
+        policy.device_minimum_version_aue_message());
     if (container.has_value()) {
-      policies->Set(key::kMinimumChromeVersionAueMessage,
+      policies->Set(key::kDeviceMinimumVersionAueMessage,
                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                     POLICY_SOURCE_CLOUD, base::Value(container.value()),
                     nullptr);

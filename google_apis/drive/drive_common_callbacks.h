@@ -24,6 +24,7 @@ typedef base::OnceCallback<void(DriveApiErrorCode error,
 // callback passed with the request is invoked with DRIVE_CANCELLED. If the
 // request is already finished, nothing happens.
 typedef base::OnceClosure CancelCallbackOnce;
+typedef base::RepeatingClosure CancelCallbackRepeating;
 // TODO(https://crbug.com/1007686): Remove usage of CancelCallback
 typedef base::Closure CancelCallback;
 

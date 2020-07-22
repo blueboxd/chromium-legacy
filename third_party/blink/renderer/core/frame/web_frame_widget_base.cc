@@ -675,11 +675,13 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
       event_type = event_type_names::kMousedown;
       if (!GetPage() || !GetPage()->GetPointerLockController().GetElement())
         break;
-      LocalFrame::NotifyUserActivation(GetPage()
-                                           ->GetPointerLockController()
-                                           .GetElement()
-                                           ->GetDocument()
-                                           .GetFrame());
+      LocalFrame::NotifyUserActivation(
+          GetPage()
+              ->GetPointerLockController()
+              .GetElement()
+              ->GetDocument()
+              .GetFrame(),
+          mojom::blink::UserActivationNotificationType::kInteraction);
       break;
     case WebInputEvent::Type::kMouseUp:
       event_type = event_type_names::kMouseup;

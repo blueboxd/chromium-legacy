@@ -634,7 +634,9 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
   // associated with so just pick the pointer event that comes.
   if (event.GetType() == WebInputEvent::Type::kPointerUp &&
       !non_hovering_pointers_canceled_ && pointer_event_target.target_frame) {
-    LocalFrame::NotifyUserActivation(pointer_event_target.target_frame);
+    LocalFrame::NotifyUserActivation(
+        pointer_event_target.target_frame,
+        mojom::blink::UserActivationNotificationType::kInteraction);
   }
 
   WebInputEventResult result = DispatchTouchPointerEvent(

@@ -116,8 +116,8 @@ class ReportSchedulerTest : public ::testing::Test {
   }
 
   void CreateScheduler() {
-    scheduler_ =
-        std::make_unique<ReportScheduler>(client_, std::move(generator_ptr_));
+    scheduler_ = std::make_unique<ReportScheduler>(
+        client_, std::move(generator_ptr_), &report_delegate_factory_);
     scheduler_->SetReportUploaderForTesting(std::move(uploader_ptr_));
   }
 

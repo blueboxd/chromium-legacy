@@ -206,7 +206,8 @@ class MediaControlsOrientationLockDelegateTest
   }
 
   void SimulateEnterFullscreen() {
-    LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+    LocalFrame::NotifyUserActivation(
+        GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
     Fullscreen::RequestFullscreen(Video());
     test::RunPendingTasks();
   }
@@ -407,7 +408,8 @@ class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
   }
 
   void PlayVideo() {
-    LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+    LocalFrame::NotifyUserActivation(
+        GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
     Video().Play();
     test::RunPendingTasks();
   }

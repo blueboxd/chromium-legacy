@@ -34,8 +34,6 @@ import java.util.List;
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class RadioButtonWithDescriptionLayoutTest {
-    private static final String NON_ZERO_MARGIN_ASSERT_MESSAGE =
-            "First N-1 items should have a non-zero margin";
     private static final String ZERO_MARGIN_ASSERT_MESSAGE =
             "The last item should have a zero margin";
     private static final String PRIMARY_MATCH_ASSERT_MESSAGE =
@@ -80,12 +78,7 @@ public class RadioButtonWithDescriptionLayoutTest {
         for (int i = 0; i < layout.getChildCount(); i++) {
             View child = layout.getChildAt(i);
             MarginLayoutParams params = (MarginLayoutParams) child.getLayoutParams();
-
-            if (i < layout.getChildCount() - 1) {
-                Assert.assertNotEquals(NON_ZERO_MARGIN_ASSERT_MESSAGE, 0, params.bottomMargin);
-            } else {
-                Assert.assertEquals(ZERO_MARGIN_ASSERT_MESSAGE, 0, params.bottomMargin);
-            }
+            Assert.assertEquals(ZERO_MARGIN_ASSERT_MESSAGE, 0, params.bottomMargin);
         }
 
         // Add more buttons.
@@ -100,12 +93,7 @@ public class RadioButtonWithDescriptionLayoutTest {
         for (int i = 0; i < layout.getChildCount(); i++) {
             View child = layout.getChildAt(i);
             MarginLayoutParams params = (MarginLayoutParams) child.getLayoutParams();
-
-            if (i < layout.getChildCount() - 1) {
-                Assert.assertNotEquals(NON_ZERO_MARGIN_ASSERT_MESSAGE, 0, params.bottomMargin);
-            } else {
-                Assert.assertEquals(ZERO_MARGIN_ASSERT_MESSAGE, 0, params.bottomMargin);
-            }
+            Assert.assertEquals(ZERO_MARGIN_ASSERT_MESSAGE, 0, params.bottomMargin);
         }
     }
 

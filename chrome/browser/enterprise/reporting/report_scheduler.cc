@@ -13,64 +13,60 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/reporting/prefs.h"
-#include "chrome/browser/net/system_network_context_manager.h"
-#include "chrome/browser/policy/chrome_browser_policy_connector.h"
-#include "chrome/browser/upgrade_detector/build_state.h"
-#include "chrome/common/chrome_constants.h"
+#include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
 #include "chrome/common/pref_names.h"
 #include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/prefs/pref_service.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace em = enterprise_management;
 
 namespace enterprise_reporting {
+
 namespace {
 
 constexpr base::TimeDelta kDefaultUploadInterval =
     base::TimeDelta::FromHours(24);  // Default upload interval is 24 hours.
 const int kMaximumRetry = 10;  // Retry 10 times takes about 15 to 19 hours.
 
-// Returns true if cloud reporting is enabled.
-bool IsReportingEnabled() {
-  return g_browser_process->local_state()->GetBoolean(
-      prefs::kCloudReportingEnabled);
-}
-
-// Returns true if this build should generate basic reports when an update is
-// detected.
-constexpr bool ShouldReportUpdates() {
-#if defined(OS_CHROMEOS)
-  return false;
-#else
-  return true;
-#endif
-}
-
 }  // namespace
+
+ReportScheduler::Delegate::Delegate() = default;
+ReportScheduler::Delegate::~Delegate() = default;
+
+void ReportScheduler::Delegate::SetReportTriggerCallback(
+    ReportScheduler::ReportTriggerCallback callback) {
+  DCHECK(trigger_report_callback_.is_null());
+  trigger_report_callback_ = std::move(callback);
+}
 
 ReportScheduler::ReportScheduler(
     policy::CloudPolicyClient* client,
     std::unique_ptr<ReportGenerator> report_generator,
-    Profile* profile)
-    : cloud_policy_client_(std::move(client)),
-      report_generator_(std::move(report_generator)),
-      extension_request_observer_factory_(profile) {
+    ReportingDelegateFactoryDesktop* delegate_factory)
+    : ReportScheduler(std::move(client),
+                      std::move(report_generator),
+                      delegate_factory->GetReportSchedulerDelegate()) {}
+
+ReportScheduler::ReportScheduler(
+    policy::CloudPolicyClient* client,
+    std::unique_ptr<ReportGenerator> report_generator,
+    std::unique_ptr<ReportScheduler::Delegate> delegate)
+    : delegate_(std::move(delegate)),
+      cloud_policy_client_(std::move(client)),
+      report_generator_(std::move(report_generator)) {
+  delegate_->SetReportTriggerCallback(
+      base::BindRepeating(&ReportScheduler::GenerateAndUploadReport,
+                          weak_ptr_factory_.GetWeakPtr()));
   RegisterPrefObserver();
 }
 
-ReportScheduler::~ReportScheduler() {
-  // If new profiles have been added since the last report was sent, they won't
-  // be reported until the next launch, since Chrome is shutting down. However,
-  // the (now obsolete) Enterprise.CloudReportingStaleProfileCount metric has
-  // shown that this very rarely happens, with 99.23% of samples reporting no
-  // stale profiles and 0.72% reporting a single stale profile.
-  if (ShouldReportUpdates())
-    g_browser_process->GetBuildState()->RemoveObserver(this);
+ReportScheduler::~ReportScheduler() = default;
+
+bool ReportScheduler::IsReportingEnabled() const {
+  return delegate_->GetLocalState()->GetBoolean(prefs::kCloudReportingEnabled);
 }
 
 bool ReportScheduler::IsNextReportScheduledForTesting() const {
@@ -86,16 +82,8 @@ void ReportScheduler::OnDMTokenUpdated() {
   OnReportEnabledPrefChanged();
 }
 
-void ReportScheduler::OnUpdate(const BuildState* build_state) {
-  DCHECK(ShouldReportUpdates());
-  // A new version has been detected on the machine and a restart is now needed
-  // for it to take effect. Send a basic report (without profile info)
-  // immediately.
-  GenerateAndUploadReport(kTriggerUpdate);
-}
-
 void ReportScheduler::RegisterPrefObserver() {
-  pref_change_registrar_.Init(g_browser_process->local_state());
+  pref_change_registrar_.Init(delegate_->GetLocalState());
   pref_change_registrar_.Add(
       prefs::kCloudReportingEnabled,
       base::BindRepeating(&ReportScheduler::OnReportEnabledPrefChanged,
@@ -122,31 +110,16 @@ void ReportScheduler::OnReportEnabledPrefChanged() {
 
   // Start the periodic report timer.
   const base::Time last_upload_timestamp =
-      g_browser_process->local_state()->GetTime(kLastUploadTimestamp);
+      delegate_->GetLocalState()->GetTime(kLastUploadTimestamp);
   Start(last_upload_timestamp);
 
-  if (ShouldReportUpdates()) {
-    // Watch for browser updates if not already doing so.
-    auto* build_state = g_browser_process->GetBuildState();
-    if (!build_state->HasObserver(this)) {
-      build_state->AddObserver(this);
-
-      // Generate and upload a basic report immediately if the version has
-      // changed since the last upload and the last upload was less than 24h
-      // ago.
-      if (g_browser_process->local_state()->GetString(kLastUploadVersion) !=
-              chrome::kChromeVersion &&
-          last_upload_timestamp + kDefaultUploadInterval > base::Time::Now()) {
-        GenerateAndUploadReport(kTriggerNewVersion);
-      }
-    }
-  }
+  delegate_->StartWatchingUpdatesIfNeeded(last_upload_timestamp,
+                                          kDefaultUploadInterval);
 }
 
 void ReportScheduler::Stop() {
   request_timer_.Stop();
-  if (ShouldReportUpdates())
-    g_browser_process->GetBuildState()->RemoveObserver(this);
+  delegate_->StopWatchingUpdates();
 }
 
 bool ReportScheduler::SetupBrowserPolicyClientRegistration() {
@@ -246,18 +219,14 @@ void ReportScheduler::OnReportUploaded(ReportUploader::ReportStatus status) {
       // Schedule the next report for success. Reset uploader to reset failure
       // count.
       report_uploader_.reset();
-      if (ShouldReportUpdates()) {
-        // Remember what browser version made this upload.
-        g_browser_process->local_state()->SetString(kLastUploadVersion,
-                                                    chrome::kChromeVersion);
-      }
+      delegate_->SaveLastUploadVersion();
       FALLTHROUGH;
     case ReportUploader::kTransientError:
       // Stop retrying and schedule the next report to avoid stale report.
       // Failure count is not reset so retry delay remains.
       if (active_trigger_ == kTriggerTimer) {
         const base::Time now = base::Time::Now();
-        g_browser_process->local_state()->SetTime(kLastUploadTimestamp, now);
+        delegate_->GetLocalState()->SetTime(kLastUploadTimestamp, now);
         if (IsReportingEnabled())
           Start(now);
       }

@@ -177,7 +177,7 @@ PlayerCompositorDelegate::~PlayerCompositorDelegate() {
 }
 
 void PlayerCompositorDelegate::OnCompositorServiceDisconnected() {
-  DVLOG(1) << "Compositor service disconnected.";
+  LOG(ERROR) << "Compositor service disconnected.";
   if (compositor_error_)
     std::move(compositor_error_).Run();
 }
@@ -243,7 +243,7 @@ void PlayerCompositorDelegate::SendCompositeRequest(
 }
 
 void PlayerCompositorDelegate::OnCompositorClientDisconnected() {
-  DVLOG(1) << "Compositor client disconnected.";
+  LOG(ERROR) << "Compositor client disconnected.";
   if (compositor_error_)
     std::move(compositor_error_).Run();
 }

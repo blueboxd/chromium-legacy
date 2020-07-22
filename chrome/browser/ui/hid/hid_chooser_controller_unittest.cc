@@ -73,6 +73,13 @@ class HidChooserControllerTest : public ChromeRenderViewHostTestHarness {
     chooser_context->AddDeviceObserver(&mock_device_observer_);
   }
 
+  void TearDown() override {
+    auto* chooser_context = HidChooserContextFactory::GetForProfile(profile());
+    chooser_context->RemoveDeviceObserver(&mock_device_observer_);
+
+    ChromeRenderViewHostTestHarness::TearDown();
+  }
+
   std::unique_ptr<HidChooserController> CreateHidChooserController(
       std::vector<blink::mojom::HidDeviceFilterPtr> filters,
       content::HidChooser::Callback callback = base::DoNothing()) {

@@ -320,6 +320,10 @@ bool WebContentsDelegate::DoBrowserControlsShrinkRendererSize(
   return false;
 }
 
+bool WebContentsDelegate::ShouldPinTopControlsToContentTop() {
+  return false;
+}
+
 PictureInPictureResult WebContentsDelegate::EnterPictureInPicture(
     WebContents* web_contents,
     const viz::SurfaceId&,

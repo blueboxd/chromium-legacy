@@ -263,11 +263,21 @@ bool ChromeAuthenticatorRequestDelegate::ShouldPermitIndividualAttestation(
 void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
     const std::string& relying_party_id,
     const device::FidoAuthenticator* authenticator,
+    bool is_enterprise_attestation,
     base::OnceCallback<void(bool)> callback) {
   if (IsWebauthnRPIDListedInEnterprisePolicy(browser_context(),
                                              relying_party_id)) {
+    // Enterprise attestations should have been approved already and not reach
+    // this point.
+    DCHECK(!is_enterprise_attestation);
     std::move(callback).Run(true);
     return;
+  }
+
+  if (is_enterprise_attestation) {
+    // This will require additional UI that is not yet ready. Therefore, at this
+    // stage, it is always rejected.
+    std::move(callback).Run(false);
   }
 
   // Cryptotoken displays its own attestation consent prompt.

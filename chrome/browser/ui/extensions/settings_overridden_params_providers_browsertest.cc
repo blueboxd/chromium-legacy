@@ -20,6 +20,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
+#include "extensions/test/test_extension_dir.h"
 
 class SettingsOverriddenParamsProvidersBrowserTest
     : public extensions::ExtensionBrowserTest {
@@ -57,10 +58,9 @@ class SettingsOverriddenParamsProvidersBrowserTest
   // |new_search_name_out| will be populated with the new search provider's
   // name.
   void SetNewDefaultSearch(bool new_search_shows_in_default_list,
-                           std::string* new_search_name_out) {
+                           const TemplateURL** new_turl_out) {
     // Find a search provider that isn't Google, and set it as the default.
-    TemplateURLService* const template_url_service =
-        TemplateURLServiceFactory::GetForProfile(profile());
+    TemplateURLService* const template_url_service = GetTemplateURLService();
     TemplateURLService::TemplateURLVector template_urls =
         template_url_service->GetTemplateURLs();
     auto iter =
@@ -75,8 +75,12 @@ class SettingsOverriddenParamsProvidersBrowserTest
     ASSERT_NE(template_urls.end(), iter);
     // iter != template_urls.end());
     template_url_service->SetUserSelectedDefaultSearchProvider(*iter);
-    if (new_search_name_out)
-      *new_search_name_out = base::UTF16ToUTF8((*iter)->short_name());
+    if (new_turl_out)
+      *new_turl_out = *iter;
+  }
+
+  TemplateURLService* GetTemplateURLService() {
+    return TemplateURLServiceFactory::GetForProfile(profile());
   }
 };
 
@@ -122,8 +126,10 @@ IN_PROC_BROWSER_TEST_F(SettingsOverriddenParamsProvidersBrowserTest,
 IN_PROC_BROWSER_TEST_F(SettingsOverriddenParamsProvidersBrowserTest,
                        GetExtensionControllingSearch_NonGoogleSearch) {
   constexpr bool kNewSearchShowsInDefaultList = true;
-  std::string new_search_name;
-  SetNewDefaultSearch(kNewSearchShowsInDefaultList, &new_search_name);
+  const TemplateURL* new_turl = nullptr;
+  SetNewDefaultSearch(kNewSearchShowsInDefaultList, &new_turl);
+  ASSERT_TRUE(new_turl);
+  std::string new_search_name = base::UTF16ToUTF8(new_turl->short_name());
 
   const extensions::Extension* extension = AddExtensionControllingSearch();
   ASSERT_TRUE(extension);
@@ -139,8 +145,7 @@ IN_PROC_BROWSER_TEST_F(SettingsOverriddenParamsProvidersBrowserTest,
                        GetExtensionControllingSearch_NonDefaultSearch) {
   // Create and set a search provider that isn't one of the built-in default
   // options.
-  TemplateURLService* const template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile());
+  TemplateURLService* const template_url_service = GetTemplateURLService();
   template_url_service->Add(
       std::make_unique<TemplateURL>(*GenerateDummyTemplateURLData("test")));
 
@@ -174,6 +179,99 @@ IN_PROC_BROWSER_TEST_F(
             base::UTF16ToUTF8(params->dialog_title));
 }
 
+// Tests that null params are returned (indicating no dialog should be shown)
+// when an extension overrides search to the same domain that was previously
+// used using a prepopulated id.
+IN_PROC_BROWSER_TEST_F(SettingsOverriddenParamsProvidersBrowserTest,
+                       SearchOverriddenToSameSearch_PrepopulatedId) {
+  constexpr bool kNewSearchShowsInDefaultList = true;
+  const TemplateURL* new_turl = nullptr;
+  SetNewDefaultSearch(kNewSearchShowsInDefaultList, &new_turl);
+  ASSERT_TRUE(new_turl);
+  // Google's ID is the lowest valid ID (1); the new engine must be greater.
+  constexpr int kGooglePrepopulateId = 1;
+  EXPECT_GT(new_turl->prepopulate_id(), kGooglePrepopulateId);
+
+  constexpr char kManifestTemplate[] =
+      R"({
+           "name": "Search Override Extension",
+           "version": "0.1",
+           "manifest_version": 2,
+           "chrome_settings_overrides": {
+             "search_provider": {
+               "search_url": "%s/?q={searchTerms}",
+               "prepopulated_id": %d,
+               "is_default": true
+             }
+           }
+         })";
+  extensions::TestExtensionDir test_dir;
+
+  GURL search_url =
+      new_turl->GenerateSearchURL(GetTemplateURLService()->search_terms_data());
+  test_dir.WriteManifest(base::StringPrintf(
+      kManifestTemplate, search_url.GetOrigin().spec().c_str(),
+      new_turl->prepopulate_id()));
+
+  const extensions::Extension* extension =
+      InstallExtensionWithPermissionsGranted(test_dir.UnpackedPath(), 1);
+  ASSERT_TRUE(extension);
+  EXPECT_EQ(extension,
+            extensions::GetExtensionOverridingSearchEngine(profile()));
+
+  base::Optional<ExtensionSettingsOverriddenDialog::Params> params =
+      settings_overridden_params::GetSearchOverriddenParams(profile());
+  EXPECT_FALSE(params) << "Unexpected params: " << params->dialog_title;
+}
+
+// Tests that null params are returned (indicating no dialog should be shown)
+// when an extension overrides search to the same domain that was previously
+// used using a custom search definition.
+IN_PROC_BROWSER_TEST_F(SettingsOverriddenParamsProvidersBrowserTest,
+                       SearchOverriddenToSameSearch_SameDomain) {
+  constexpr bool kNewSearchShowsInDefaultList = true;
+  const TemplateURL* new_turl = nullptr;
+  SetNewDefaultSearch(kNewSearchShowsInDefaultList, &new_turl);
+  ASSERT_TRUE(new_turl);
+  // Google's ID is the lowest valid ID (1); the new engine must be greater.
+  constexpr int kGooglePrepopulateId = 1;
+  EXPECT_GT(new_turl->prepopulate_id(), kGooglePrepopulateId);
+
+  constexpr char kManifestTemplate[] =
+      R"({
+           "name": "Search Override Extension",
+           "version": "0.1",
+           "manifest_version": 2,
+           "chrome_settings_overrides": {
+             "search_provider": {
+               "search_url": "%s/?q={searchTerms}",
+               "name": "New Search",
+               "keyword": "word",
+               "encoding": "UTF-8",
+               "favicon_url": "https://example.com/favicon.ico",
+               "is_default": true
+             }
+           }
+         })";
+
+  extensions::TestExtensionDir test_dir;
+
+  GURL search_url =
+      new_turl->GenerateSearchURL(GetTemplateURLService()->search_terms_data());
+  test_dir.WriteManifest(base::StringPrintf(
+      kManifestTemplate, search_url.GetOrigin().spec().c_str()));
+
+  const extensions::Extension* extension =
+      InstallExtensionWithPermissionsGranted(test_dir.UnpackedPath(), 1);
+  ASSERT_TRUE(extension);
+  EXPECT_EQ(extension,
+            extensions::GetExtensionOverridingSearchEngine(profile()));
+
+  base::Optional<ExtensionSettingsOverriddenDialog::Params> params =
+      settings_overridden_params::GetSearchOverriddenParams(profile());
+  EXPECT_FALSE(params) << "Unexpected params: " << params->dialog_title;
+}
+
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 // Tests the dialog display when the default search engine has changed; in this
@@ -181,8 +279,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(SettingsOverriddenParamsProvidersBrowserTest,
                        DialogParamsWithNonDefaultSearch) {
   // Find a search provider that isn't Google, and set it as the default.
-  TemplateURLService* const template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile());
+  TemplateURLService* const template_url_service = GetTemplateURLService();
   TemplateURLService::TemplateURLVector template_urls =
       template_url_service->GetTemplateURLs();
   auto iter = std::find_if(template_urls.begin(), template_urls.end(),

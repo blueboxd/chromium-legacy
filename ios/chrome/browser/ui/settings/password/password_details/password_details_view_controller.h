@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/settings/autofill/autofill_edit_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
 
+@protocol ApplicationCommands;
 @protocol PasswordDetailsHandler;
 @protocol PasswordDetailsViewControllerDelegate;
 
@@ -20,6 +21,9 @@
 
 // Delegate for PasswordDetails related actions e.g. Password editing.
 @property(nonatomic, weak) id<PasswordDetailsViewControllerDelegate> delegate;
+
+// Dispatcher for this ViewController.
+@property(nonatomic, weak) id<ApplicationCommands> commandsDispatcher;
 
 @end
 

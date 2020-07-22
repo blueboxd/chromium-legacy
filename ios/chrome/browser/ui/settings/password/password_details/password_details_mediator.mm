@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator.h"
 
 #include "components/autofill/core/common/password_form.h"
+#include "ios/chrome/browser/passwords/password_check_observer_bridge.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_view_controller_delegate.h"
@@ -13,22 +14,32 @@
 #error "This file requires ARC support."
 #endif
 
-namespace autofill {
-struct PasswordForm;
-}
+using CompromisedCredentialsView =
+    password_manager::CompromisedCredentialsManager::CredentialsView;
 
-@interface PasswordDetailsMediator () <PasswordDetailsViewControllerDelegate> {
+@interface PasswordDetailsMediator () <PasswordCheckObserver,
+                                       PasswordDetailsViewControllerDelegate> {
   autofill::PasswordForm _password;
+
+  // Password Check manager.
+  IOSChromePasswordCheckManager* _manager;
+
+  // Listens to compromised passwords changes.
+  std::unique_ptr<PasswordCheckObserverBridge> _passwordCheckObserver;
 }
 
 @end
 
 @implementation PasswordDetailsMediator
 
-- (instancetype)initWithPassword:(const autofill::PasswordForm&)passwordForm {
+- (instancetype)initWithPassword:(const autofill::PasswordForm&)passwordForm
+            passwordCheckManager:(IOSChromePasswordCheckManager*)manager {
   self = [super init];
   if (self) {
+    _manager = manager;
     _password = passwordForm;
+    _passwordCheckObserver.reset(
+        new PasswordCheckObserverBridge(self, manager));
   }
   return self;
 }
@@ -38,10 +49,11 @@ struct PasswordForm;
     return;
   _consumer = consumer;
 
-  PasswordDetails* password =
-      [[PasswordDetails alloc] initWithPasswordForm:_password];
+  [self fetchPasswordWith:_manager->GetCompromisedCredentials()];
+}
 
-  [self.consumer setPassword:password];
+- (void)disconnect {
+  _manager->RemoveObserver(_passwordCheckObserver.get());
 }
 
 #pragma mark - PasswordDetailsViewControllerDelegate
@@ -49,6 +61,37 @@ struct PasswordForm;
             (PasswordDetailsViewController*)viewController
                didEditPasswordDetails:(PasswordDetails*)password {
   // TODO:(crbug.com/1075494) - Edit password accordingly.
+}
+
+#pragma mark - PasswordCheckObserver
+
+- (void)passwordCheckStateDidChange:(PasswordCheckState)state {
+  // No-op. Changing password check state has no effect on compromised
+  // passwords.
+}
+
+- (void)compromisedCredentialsDidChange:
+    (CompromisedCredentialsView)credentials {
+  [self fetchPasswordWith:credentials];
+}
+
+#pragma mark - Private
+
+// Updates password details and sets it to a consumer.
+- (void)fetchPasswordWith:(CompromisedCredentialsView)credentials {
+  PasswordDetails* password =
+      [[PasswordDetails alloc] initWithPasswordForm:_password];
+  password.compromised = NO;
+
+  for (const auto& credential : credentials) {
+    if (std::tie(credential.signon_realm, credential.username,
+                 credential.password) == std::tie(_password.signon_realm,
+                                                  _password.username_value,
+                                                  _password.password_value))
+      password.compromised = YES;
+  }
+
+  [self.consumer setPassword:password];
 }
 
 @end

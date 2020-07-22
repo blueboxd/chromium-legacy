@@ -20,6 +20,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/enterprise/browser/reporting/report_request_definition.h"
+#include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/browser_task_environment.h"
@@ -304,6 +305,9 @@ TEST_F(ReportGeneratorTest, GenerateBasicReport) {
   EXPECT_NE(std::string(), basic_request->computer_name());
   EXPECT_NE(std::string(), basic_request->os_user_name());
   VerifySerialNumber(basic_request->serial_number());
+  EXPECT_EQ(
+      policy::GetBrowserDeviceIdentifier()->SerializePartialAsString(),
+      basic_request->browser_device_identifier().SerializePartialAsString());
 
   EXPECT_TRUE(basic_request->has_os_report());
   auto& os_report = basic_request->os_report();

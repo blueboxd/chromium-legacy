@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/public/common/frame/user_activation_state.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink-forward.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,7 +43,8 @@ TEST_F(UserActivationStateTest, ConsumptionTest) {
   EXPECT_FALSE(user_activation_state.ConsumeIfActive());
   EXPECT_FALSE(user_activation_state.ConsumeIfActive());
 
-  user_activation_state.Activate();
+  user_activation_state.Activate(
+      mojom::blink::UserActivationNotificationType::kTest);
 
   // After activation, both sticky and transient bits are set, and consumption
   // attempt succeeds once.
@@ -62,7 +64,8 @@ TEST_F(UserActivationStateTest, ConsumptionTest) {
 TEST_F(UserActivationStateTest, ExpirationTest) {
   UserActivationState user_activation_state;
 
-  user_activation_state.Activate();
+  user_activation_state.Activate(
+      mojom::blink::UserActivationNotificationType::kTest);
 
   // Right before activation expiry, both bits remain set.
   AdvanceClock(base::TimeDelta::FromMilliseconds(4995));
@@ -78,7 +81,8 @@ TEST_F(UserActivationStateTest, ExpirationTest) {
 TEST_F(UserActivationStateTest, ClearingTest) {
   UserActivationState user_activation_state;
 
-  user_activation_state.Activate();
+  user_activation_state.Activate(
+      mojom::blink::UserActivationNotificationType::kTest);
 
   EXPECT_TRUE(user_activation_state.HasBeenActive());
   EXPECT_TRUE(user_activation_state.IsActive());
@@ -93,27 +97,33 @@ TEST_F(UserActivationStateTest, ConsumptionPlusExpirationTest) {
   UserActivationState user_activation_state;
 
   // An activation is consumable before expiry.
-  user_activation_state.Activate();
+  user_activation_state.Activate(
+      mojom::blink::UserActivationNotificationType::kTest);
   AdvanceClock(base::TimeDelta::FromMilliseconds(900));
   EXPECT_TRUE(user_activation_state.ConsumeIfActive());
 
   // An activation is not consumable after expiry.
-  user_activation_state.Activate();
+  user_activation_state.Activate(
+      mojom::blink::UserActivationNotificationType::kTest);
   AdvanceClock(base::TimeDelta::FromSeconds(5));
   EXPECT_FALSE(user_activation_state.ConsumeIfActive());
 
   // Consecutive activations within expiry is consumable only once.
-  user_activation_state.Activate();
+  user_activation_state.Activate(
+      mojom::blink::UserActivationNotificationType::kTest);
   AdvanceClock(base::TimeDelta::FromMilliseconds(900));
-  user_activation_state.Activate();
+  user_activation_state.Activate(
+      mojom::blink::UserActivationNotificationType::kTest);
   EXPECT_TRUE(user_activation_state.ConsumeIfActive());
   EXPECT_FALSE(user_activation_state.ConsumeIfActive());
 
   // Non-consecutive activations within expiry is consumable separately.
-  user_activation_state.Activate();
+  user_activation_state.Activate(
+      mojom::blink::UserActivationNotificationType::kTest);
   EXPECT_TRUE(user_activation_state.ConsumeIfActive());
   AdvanceClock(base::TimeDelta::FromSeconds(900));
-  user_activation_state.Activate();
+  user_activation_state.Activate(
+      mojom::blink::UserActivationNotificationType::kTest);
   EXPECT_TRUE(user_activation_state.ConsumeIfActive());
 }
 
@@ -133,7 +143,7 @@ TEST_F(UserActivationStateTest, TransferBooleanTest) {
 
   // Transfer from inactive source to active target.
   source.Clear();
-  target.Activate();
+  target.Activate(mojom::blink::UserActivationNotificationType::kTest);
   target.TransferFrom(source);
 
   EXPECT_FALSE(source.HasBeenActive());
@@ -142,7 +152,7 @@ TEST_F(UserActivationStateTest, TransferBooleanTest) {
   EXPECT_TRUE(target.IsActive());
 
   // Transfer from active source to inactive target.
-  source.Activate();
+  source.Activate(mojom::blink::UserActivationNotificationType::kTest);
   target.Clear();
   target.TransferFrom(source);
 
@@ -152,8 +162,8 @@ TEST_F(UserActivationStateTest, TransferBooleanTest) {
   EXPECT_TRUE(target.IsActive());
 
   // Transfer from active source to active target.
-  source.Activate();
-  target.Activate();
+  source.Activate(mojom::blink::UserActivationNotificationType::kTest);
+  target.Activate(mojom::blink::UserActivationNotificationType::kTest);
   target.TransferFrom(source);
 
   EXPECT_FALSE(source.HasBeenActive());
@@ -167,9 +177,9 @@ TEST_F(UserActivationStateTest, TransferExpirationTest) {
   UserActivationState target;
 
   // Source activated before target.
-  source.Activate();
+  source.Activate(mojom::blink::UserActivationNotificationType::kTest);
   AdvanceClock(base::TimeDelta::FromSeconds(1));
-  target.Activate();
+  target.Activate(mojom::blink::UserActivationNotificationType::kTest);
   target.TransferFrom(source);
 
   AdvanceClock(base::TimeDelta::FromMilliseconds(4995));
@@ -178,9 +188,9 @@ TEST_F(UserActivationStateTest, TransferExpirationTest) {
   EXPECT_FALSE(target.IsActive());
 
   // Source activated after target.
-  target.Activate();
+  target.Activate(mojom::blink::UserActivationNotificationType::kTest);
   AdvanceClock(base::TimeDelta::FromSeconds(1));
-  source.Activate();
+  source.Activate(mojom::blink::UserActivationNotificationType::kTest);
   target.TransferFrom(source);
 
   AdvanceClock(base::TimeDelta::FromMilliseconds(4995));
@@ -189,8 +199,8 @@ TEST_F(UserActivationStateTest, TransferExpirationTest) {
   EXPECT_FALSE(target.IsActive());
 
   // Source and target activated at the same time.
-  source.Activate();
-  target.Activate();
+  source.Activate(mojom::blink::UserActivationNotificationType::kTest);
+  target.Activate(mojom::blink::UserActivationNotificationType::kTest);
   target.TransferFrom(source);
 
   AdvanceClock(base::TimeDelta::FromMilliseconds(4995));
@@ -199,7 +209,7 @@ TEST_F(UserActivationStateTest, TransferExpirationTest) {
   EXPECT_FALSE(target.IsActive());
 
   // Inactive target received transfer from active source after a delay.
-  source.Activate();
+  source.Activate(mojom::blink::UserActivationNotificationType::kTest);
   target.Clear();
   AdvanceClock(base::TimeDelta::FromSeconds(1));
   target.TransferFrom(source);
@@ -211,7 +221,7 @@ TEST_F(UserActivationStateTest, TransferExpirationTest) {
 
   // Active target received transfer from inactive source after a delay.
   source.Clear();
-  target.Activate();
+  target.Activate(mojom::blink::UserActivationNotificationType::kTest);
   AdvanceClock(base::TimeDelta::FromSeconds(1));
   target.TransferFrom(source);
 

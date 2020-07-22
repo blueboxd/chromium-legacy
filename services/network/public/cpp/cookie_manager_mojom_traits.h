@@ -197,6 +197,10 @@ struct StructTraits<network::mojom::CookieAccessResultDataView,
       const net::CookieAccessResult& c) {
     return c.status;
   }
+  static const net::CookieAccessSemantics& access_semantics(
+      const net::CookieAccessResult& c) {
+    return c.access_semantics;
+  }
   static bool Read(network::mojom::CookieAccessResultDataView access_result,
                    net::CookieAccessResult* out);
 };
@@ -222,9 +226,9 @@ struct StructTraits<network::mojom::CookieChangeInfoDataView,
   static const net::CanonicalCookie& cookie(const net::CookieChangeInfo& c) {
     return c.cookie;
   }
-  static net::CookieAccessSemantics access_semantics(
+  static const net::CookieAccessResult& access_result(
       const net::CookieChangeInfo& c) {
-    return c.access_semantics;
+    return c.access_result;
   }
   static net::CookieChangeCause cause(const net::CookieChangeInfo& c) {
     return c.cause;

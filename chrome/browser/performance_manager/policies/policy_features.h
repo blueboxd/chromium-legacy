@@ -82,22 +82,22 @@ extern const base::Feature kPageFreezingFromPerformanceManager;
 // than via TabManager.
 extern const base::Feature kUrgentDiscardingFromPerformanceManager;
 
+// The discard strategy to use.
+// Integer values are specified to allow conversion from the integer value in
+// the DiscardStrategy feature param.
+enum class DiscardStrategy : int {
+  // Discards the least recently used tab among the eligible ones. This is the
+  // default strategy.
+  LRU = 0,
+  // Discard the tab with the biggest resident set among the eligible ones.
+  BIGGEST_RSS = 1,
+};
+
 class UrgentDiscardingParams {
  public:
   ~UrgentDiscardingParams();
 
   static UrgentDiscardingParams GetParams();
-
-  // The discard strategy to use.
-  // Integer values are specified to allow conversion from the integer value in
-  // the DiscardStrategy feature param.
-  enum class DiscardStrategy : int {
-    // Discards the least recently used tab among the eligible ones. This is the
-    // default strategy.
-    LRU = 0,
-    // Discard the tab with the biggest resident set among the eligible ones.
-    BIGGEST_RSS = 1,
-  };
 
   DiscardStrategy discard_strategy() const { return discard_strategy_; }
 
@@ -115,11 +115,11 @@ class UrgentDiscardingParams {
 // Enable background tab loading of pages (restored via session restore)
 // directly from Performance Manager rather than via TabLoader.
 extern const base::Feature kBackgroundTabLoadingFromPerformanceManager;
-#endif
 
-// Feature that controls whether or not memory pressure signals will be emitted
+// Feature that controls whether or not tabs should be automatically discarded
 // when the total PMF is too high.
-extern const base::Feature kHighPMFMemoryPressureSignals;
+extern const base::Feature kHighPMFDiscardPolicy;
+#endif
 
 }  // namespace features
 }  // namespace performance_manager

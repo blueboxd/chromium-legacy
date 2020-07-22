@@ -332,7 +332,10 @@ void HTMLVideoElement::OnPlay() {
     return;
   }
 
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  // TODO(mustaq): This is problematic, see https://crbug.com/1082258.
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(),
+      mojom::blink::UserActivationNotificationType::kMedia);
   webkitEnterFullscreen();
 }
 

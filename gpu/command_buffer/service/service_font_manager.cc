@@ -109,7 +109,8 @@ class ServiceFontManager::SkiaDiscardableManager
     // it can be fixed.
     NOTREACHED();
 
-    if (dump_count_ < kMaxDumps && base::RandInt(1, 100) == 1) {
+    if (dump_count_ < kMaxDumps && base::RandInt(1, 100) == 1 &&
+        !font_manager_->disable_oopr_debug_crash_dump()) {
       ++dump_count_;
       base::debug::DumpWithoutCrashing();
     }
@@ -137,11 +138,13 @@ class ServiceFontManager::SkiaDiscardableManager
   scoped_refptr<ServiceFontManager> font_manager_;
 };
 
-ServiceFontManager::ServiceFontManager(Client* client)
+ServiceFontManager::ServiceFontManager(Client* client,
+                                       bool disable_oopr_debug_crash_dump)
     : client_(client),
       client_thread_id_(base::PlatformThread::CurrentId()),
       strike_client_(std::make_unique<SkStrikeClient>(
-          sk_make_sp<SkiaDiscardableManager>(this))) {}
+          sk_make_sp<SkiaDiscardableManager>(this))),
+      disable_oopr_debug_crash_dump_(disable_oopr_debug_crash_dump) {}
 
 ServiceFontManager::~ServiceFontManager() {
   DCHECK(destroyed_);

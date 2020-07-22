@@ -650,7 +650,8 @@ TEST_F(WebFrameTest, RequestExecuteV8FunctionWhileSuspendedWithUserGesture) {
   // Suspend scheduled tasks so the script doesn't run.
   web_view_helper.GetWebView()->GetPage()->SetPaused(true);
   LocalFrame::NotifyUserActivation(
-      web_view_helper.LocalMainFrame()->GetFrame());
+      web_view_helper.LocalMainFrame()->GetFrame(),
+      mojom::UserActivationNotificationType::kTest);
   ScriptExecutionCallbackHelper callback_helper(
       web_view_helper.LocalMainFrame()->MainWorldScriptContext());
   WebScriptSource script_source("navigator.userActivation.isActive;");
@@ -7100,7 +7101,8 @@ TEST_F(WebFrameTest, ModifiedClickNewWindow) {
   FrameLoadRequest frame_request(window, ResourceRequest(destination));
   frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(event));
   frame_request.SetTriggeringEventInfo(TriggeringEventInfo::kFromTrustedEvent);
-  LocalFrame::NotifyUserActivation(frame);
+  LocalFrame::NotifyUserActivation(
+      frame, mojom::UserActivationNotificationType::kTest);
   web_frame_client.IgnoreNavigations();
   frame->Loader().StartNavigation(frame_request, WebFrameLoadType::kStandard);
   frame_test_helpers::PumpPendingRequestsForFrameToLoad(
@@ -7838,7 +7840,8 @@ TEST_F(WebFrameTest, FullscreenLayerSize) {
 
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   Document* document = frame->GetDocument();
-  LocalFrame::NotifyUserActivation(frame);
+  LocalFrame::NotifyUserActivation(
+      frame, mojom::UserActivationNotificationType::kTest);
   Element* div_fullscreen = document->getElementById("div1");
   Fullscreen::RequestFullscreen(*div_fullscreen);
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
@@ -7875,7 +7878,8 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
 
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   Document* document = frame->GetDocument();
-  LocalFrame::NotifyUserActivation(frame);
+  LocalFrame::NotifyUserActivation(
+      frame, mojom::UserActivationNotificationType::kTest);
   Element* div_fullscreen = document->getElementById("div1");
   Fullscreen::RequestFullscreen(*div_fullscreen);
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
@@ -7942,7 +7946,8 @@ TEST_F(WebFrameTest, FullscreenMainFrame) {
 
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   Document* document = frame->GetDocument();
-  LocalFrame::NotifyUserActivation(frame);
+  LocalFrame::NotifyUserActivation(
+      frame, mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*document->documentElement());
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
   web_view_impl->MainFrameWidget()->DidEnterFullscreen();
@@ -7991,7 +7996,8 @@ TEST_F(WebFrameTest, FullscreenSubframe) {
           web_view_helper.GetWebView()->MainFrame()->FirstChild())
           ->GetFrame();
   Document* document = frame->GetDocument();
-  LocalFrame::NotifyUserActivation(frame);
+  LocalFrame::NotifyUserActivation(
+      frame, mojom::UserActivationNotificationType::kTest);
   Element* div_fullscreen = document->getElementById("div1");
   Fullscreen::RequestFullscreen(*div_fullscreen);
   web_view_impl->MainFrameWidget()->DidEnterFullscreen();
@@ -8029,13 +8035,15 @@ TEST_F(WebFrameTest, FullscreenNestedExit) {
   Document* iframe_doc = iframe->contentDocument();
   Element* iframe_body = iframe_doc->body();
 
-  LocalFrame::NotifyUserActivation(top_doc->GetFrame());
+  LocalFrame::NotifyUserActivation(
+      top_doc->GetFrame(), mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*top_body);
 
   web_view_impl->MainFrameWidget()->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
 
-  LocalFrame::NotifyUserActivation(iframe_doc->GetFrame());
+  LocalFrame::NotifyUserActivation(
+      iframe_doc->GetFrame(), mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*iframe_body);
 
   web_view_impl->MainFrameWidget()->DidEnterFullscreen();
@@ -8079,7 +8087,8 @@ TEST_F(WebFrameTest, FullscreenWithTinyViewport) {
   EXPECT_FLOAT_EQ(5.0, web_view_impl->MaximumPageScaleFactor());
 
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
-  LocalFrame::NotifyUserActivation(frame);
+  LocalFrame::NotifyUserActivation(
+      frame, mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*frame->GetDocument()->documentElement());
   web_view_impl->MainFrameWidget()->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
@@ -8116,7 +8125,8 @@ TEST_F(WebFrameTest, FullscreenResizeWithTinyViewport) {
                           ->GetFrameView()
                           ->GetLayoutView();
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
-  LocalFrame::NotifyUserActivation(frame);
+  LocalFrame::NotifyUserActivation(
+      frame, mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*frame->GetDocument()->documentElement());
   web_view_impl->MainFrameWidget()->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
@@ -8179,7 +8189,8 @@ TEST_F(WebFrameTest, FullscreenRestoreScaleFactorUponExiting) {
 
   {
     LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
-    LocalFrame::NotifyUserActivation(frame);
+    LocalFrame::NotifyUserActivation(
+        frame, mojom::UserActivationNotificationType::kTest);
     Fullscreen::RequestFullscreen(*frame->GetDocument()->body());
   }
 
@@ -8239,7 +8250,8 @@ TEST_F(WebFrameTest, ClearFullscreenConstraintsOnNavigation) {
   EXPECT_FLOAT_EQ(5.0, web_view_impl->MaximumPageScaleFactor());
 
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
-  LocalFrame::NotifyUserActivation(frame);
+  LocalFrame::NotifyUserActivation(
+      frame, mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*frame->GetDocument()->documentElement());
   web_view_impl->MainFrameWidget()->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
@@ -8288,7 +8300,8 @@ TEST_F(WebFrameTest, OverlayFullscreenVideo) {
       web_widget_client.layer_tree_host();
 
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
-  LocalFrame::NotifyUserActivation(frame);
+  LocalFrame::NotifyUserActivation(
+      frame, mojom::UserActivationNotificationType::kTest);
   auto* video =
       To<HTMLVideoElement>(frame->GetDocument()->getElementById("video"));
   EXPECT_TRUE(video->UsesOverlayFullscreenVideo());
@@ -8360,7 +8373,8 @@ TEST_F(WebFrameTest, OverlayFullscreenVideoInIframe) {
       To<WebLocalFrameImpl>(
           web_view_helper.GetWebView()->MainFrame()->FirstChild())
           ->GetFrame();
-  LocalFrame::NotifyUserActivation(iframe);
+  LocalFrame::NotifyUserActivation(
+      iframe, mojom::UserActivationNotificationType::kTest);
   auto* video =
       To<HTMLVideoElement>(iframe->GetDocument()->getElementById("video"));
   EXPECT_TRUE(video->UsesOverlayFullscreenVideo());
@@ -8406,7 +8420,8 @@ TEST_F(WebFrameTest, WebXrImmersiveOverlay) {
   // It's not legal to switch the fullscreen element while in immersive-ar mode,
   // so set the fullscreen element first before activating that. This requires
   // user activation.
-  LocalFrame::NotifyUserActivation(frame);
+  LocalFrame::NotifyUserActivation(
+      frame, mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*overlay);
   EXPECT_FALSE(document->IsXrOverlay());
   document->SetIsXrOverlay(true, overlay);
@@ -12621,7 +12636,8 @@ TEST_F(WebFrameTest, ShowVirtualKeyboardOnElementFocus) {
 
   // Simulate an input element focus leading to Element::focus() call with a
   // user gesture.
-  LocalFrame::NotifyUserActivation(local_frame->GetFrame());
+  LocalFrame::NotifyUserActivation(
+      local_frame->GetFrame(), mojom::UserActivationNotificationType::kTest);
   local_frame->ExecuteScript(
       WebScriptSource("window.focus();"
                       "document.querySelector('input').focus();"));
@@ -13190,7 +13206,8 @@ TEST_F(WebFrameSimTest, EnterFullscreenResetScrollAndScaleState) {
 
   auto* frame = To<LocalFrame>(WebView().GetPage()->MainFrame());
   Element* element = frame->GetDocument()->body();
-  LocalFrame::NotifyUserActivation(frame);
+  LocalFrame::NotifyUserActivation(
+      frame, mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*element);
   WebView().MainFrameWidget()->DidEnterFullscreen();
 

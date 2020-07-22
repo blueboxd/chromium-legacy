@@ -2537,6 +2537,11 @@
     "expiry_milestone": 81
   },
   {
+    "name": "frame-throttle-fps",
+    "owners":[ "yjliu", "chromeos-wmp-eng"],
+    "expiry_milestone": 95
+  },
+  {
     "name": "freeze-user-agent",
     "owners": [ "yoavweiss", "aarontag" ],
     "expiry_milestone": 85
@@ -3230,6 +3235,11 @@
     "name": "omnibox-max-url-matches",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 92
+  },
+  {
+    "name": "omnibox-max-zero-suggest-matches",
+    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 95
   },
   {
     "name": "omnibox-on-device-head-suggestions-incognito",

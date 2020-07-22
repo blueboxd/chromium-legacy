@@ -79,6 +79,7 @@ static std::string GetStringTextureCompareFunc(uint32_t value);
 static std::string GetStringTextureCompareMode(uint32_t value);
 static std::string GetStringTextureDepthRenderableInternalFormat(
     uint32_t value);
+static std::string GetStringTextureFboTarget(uint32_t value);
 static std::string GetStringTextureFormat(uint32_t value);
 static std::string GetStringTextureInternalFormat(uint32_t value);
 static std::string GetStringTextureInternalFormatStorage(uint32_t value);

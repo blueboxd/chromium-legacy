@@ -40,11 +40,11 @@ using MinimumVersionRequirement =
 namespace policy {
 
 namespace {
-const char kFakeCurrentVersion[] = "80.25.4";
-const char kNewVersion[] = "81.4.2";
-const char kNewerVersion[] = "81.5.4";
-const char kNewestVersion[] = "82";
-const char kOldVersion[] = "78.1.5";
+const char kFakeCurrentVersion[] = "13305.20.0";
+const char kNewVersion[] = "13305.25.0";
+const char kNewerVersion[] = "13310.0.0";
+const char kNewestVersion[] = "13320.10.0";
+const char kOldVersion[] = "13301.0.0";
 const char kUpdateRequiredNotificationId[] = "policy.update_required";
 const char kCellularServicePath[] = "/service/cellular1";
 
@@ -66,7 +66,7 @@ class MinimumVersionPolicyHandlerTest
   // MinimumVersionPolicyHandler::Delegate:
   bool IsKioskMode() const;
   bool IsEnterpriseManaged() const;
-  const base::Version& GetCurrentVersion() const;
+  base::Version GetCurrentVersion() const;
   bool IsUserManaged() const;
   bool IsUserLoggedIn() const;
   bool IsLoginInProgress() const;
@@ -196,14 +196,13 @@ bool MinimumVersionPolicyHandlerTest::IsLoginInProgress() const {
   return false;
 }
 
-const base::Version& MinimumVersionPolicyHandlerTest::GetCurrentVersion()
-    const {
+base::Version MinimumVersionPolicyHandlerTest::GetCurrentVersion() const {
   return *current_version_;
 }
 
 void MinimumVersionPolicyHandlerTest::SetPolicyPref(base::Value value) {
   scoped_testing_cros_settings_.device_settings()->Set(
-      chromeos::kMinimumChromeVersionEnforced, value);
+      chromeos::kDeviceMinimumVersion, value);
 }
 
 /**
@@ -217,9 +216,9 @@ base::Value MinimumVersionPolicyHandlerTest::CreateRequirement(
     const int warning,
     const int eol_warning) const {
   base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetStringKey(MinimumVersionPolicyHandler::kChromeVersion, version);
+  dict.SetStringKey(MinimumVersionPolicyHandler::kChromeOsVersion, version);
   dict.SetIntKey(MinimumVersionPolicyHandler::kWarningPeriod, warning);
-  dict.SetIntKey(MinimumVersionPolicyHandler::KEolWarningPeriod, eol_warning);
+  dict.SetIntKey(MinimumVersionPolicyHandler::kEolWarningPeriod, eol_warning);
   return dict;
 }
 

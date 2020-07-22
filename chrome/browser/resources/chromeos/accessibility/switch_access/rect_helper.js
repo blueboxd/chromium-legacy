@@ -247,11 +247,10 @@ const RectHelper = {
     if (!rect1 || !rect2) {
       return false;
     }
-    const halfHeight = Math.round(rect1.height / 2);
-    const topBound = rect1.top - halfHeight;
-    const bottomBound = rect1.top + halfHeight;
+    const bottom1 = RectHelper.bottom(rect1);
+    const middle2 = RectHelper.center(rect2).y;
 
-    return topBound <= rect2.top && bottomBound >= rect2.top;
+    return rect1.top < middle2 && bottom1 > middle2;
   },
 
   /**

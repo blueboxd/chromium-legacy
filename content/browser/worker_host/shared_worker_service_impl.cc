@@ -329,8 +329,8 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
   // data across NetworkIsolationKeys and allow same-site cookies to be sent in
   // cross-site contexts. Fix this.
   WorkerScriptFetchInitiator::Start(
-      worker_process_host->GetID(), DedicatedWorkerId(), host->id(),
-      host->instance().url(), creator_render_frame_host,
+      worker_process_host->GetID(), blink::mojom::DedicatedWorkerToken(),
+      host->id(), host->instance().url(), creator_render_frame_host,
       net::SiteForCookies::FromOrigin(worker_origin),
       host->instance().constructor_origin(),
       net::IsolationInfo::Create(

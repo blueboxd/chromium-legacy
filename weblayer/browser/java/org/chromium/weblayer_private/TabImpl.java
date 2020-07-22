@@ -871,6 +871,10 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
         TabImplJni.get().setTopControlsMinHeight(mNativeTab, minHeight);
     }
 
+    /* package */ void setPinTopControlsToContentTop(boolean pinToContentTop) {
+        TabImplJni.get().setPinTopControlsToContentTop(mNativeTab, pinToContentTop);
+    }
+
     @CalledByNative
     private boolean doBrowserControlsShrinkRendererSize() {
         BrowserViewController viewController = getViewController();
@@ -993,5 +997,6 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
         boolean canTranslate(long nativeTabImpl);
         void showTranslateUi(long nativeTabImpl);
         void setTopControlsMinHeight(long nativeTabImpl, int minHeight);
+        void setPinTopControlsToContentTop(long nativeTabImpl, boolean pinToContentTop);
     }
 }

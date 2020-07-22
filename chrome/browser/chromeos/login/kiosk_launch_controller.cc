@@ -233,6 +233,10 @@ KioskAppManagerBase::App KioskLaunchController::GetAppData() {
   }
 }
 
+bool KioskLaunchController::IsNetworkRequired() {
+  return network_required_;
+}
+
 void KioskLaunchController::CleanUp() {
   network_wait_timer_.Stop();
   splash_wait_timer_.Stop();
@@ -300,6 +304,10 @@ void KioskLaunchController::InitializeNetwork() {
   network_wait_timer_.Start(FROM_HERE, g_network_wait_time, this,
                             &KioskLaunchController::OnNetworkWaitTimedOut);
 
+  // When we are asked to initialize network, we should remember that this app
+  // requires network.
+  network_required_ = true;
+
   splash_screen_view_->UpdateAppLaunchState(
       AppLaunchSplashScreenView::APP_LAUNCH_STATE_PREPARING_NETWORK);
 
@@ -310,9 +318,6 @@ void KioskLaunchController::InitializeNetwork() {
 }
 
 void KioskLaunchController::OnNetworkWaitTimedOut() {
-  DCHECK_EQ(
-      app_state_,
-      AppState::INIT_NETWORK);  // Otherwise we should be installing the app.
   DCHECK_EQ(network_ui_state_, NetworkUIState::NOT_SHOWING);
 
   auto connection_type = network::mojom::ConnectionType::CONNECTION_UNKNOWN;
@@ -500,7 +505,7 @@ void KioskLaunchController::ShowNetworkConfigureUI() {
   splash_screen_view_->ShowNetworkConfigureUI();
 }
 
-void KioskLaunchController::CloseNetworkConfigureScreenIfTimedout() {
+void KioskLaunchController::CloseNetworkConfigureScreenIfOnline() {
   if (network_ui_state_ == NetworkUIState::SHOWING && network_wait_timedout_) {
     SYSLOG(INFO) << "We are back online, closing network configure screen.";
     splash_screen_view_->ToggleNetworkConfig(false);
@@ -519,10 +524,9 @@ void KioskLaunchController::OnNetworkConfigRequested() {
     case AppState::INSTALLING:
       // When requesting to show network configure UI, we should cancel current
       // installation and restart it as soon as the network is configured.
-      // This is identical to what happens when we lose network connection
-      // during installation
-      network_ui_state_ = NetworkUIState::NEED_TO_SHOW;
-      OnNetworkStateChanged(/*online*/ false);
+      app_state_ = AppState::INIT_NETWORK;
+      app_launcher_->RestartLauncher();
+      MaybeShowNetworkConfigureUI();
       break;
     case AppState::LAUNCHED:
       // We do nothing since the splash screen is soon to be destroyed.
@@ -545,17 +549,15 @@ void KioskLaunchController::OnNetworkStateChanged(bool online) {
     if (network_ui_state_ == NetworkUIState::NOT_SHOWING ||
         network_wait_timedout_) {
       network_wait_timer_.Stop();
-      CloseNetworkConfigureScreenIfTimedout();
+      CloseNetworkConfigureScreenIfOnline();
       app_launcher_->ContinueWithNetworkReady();
     }
   }
 
-  if (app_state_ == AppState::INSTALLING && !online) {
+  if (app_state_ == AppState::INSTALLING && network_required_ && !online) {
     SYSLOG(WARNING)
         << "Connection lost during installation, restarting launcher.";
-    app_state_ = AppState::INIT_NETWORK;
-    app_launcher_->RestartLauncher();
-    MaybeShowNetworkConfigureUI();
+    OnNetworkWaitTimedOut();
   }
 }
 

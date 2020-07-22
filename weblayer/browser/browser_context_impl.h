@@ -21,6 +21,11 @@ namespace weblayer {
 class ProfileImpl;
 class ResourceContextImpl;
 
+namespace prefs {
+// WebLayer specific pref names.
+extern const char kUkmEnabled[];
+}  // namespace prefs
+
 class BrowserContextImpl : public content::BrowserContext {
  public:
   BrowserContextImpl(ProfileImpl* profile_impl, const base::FilePath& path);

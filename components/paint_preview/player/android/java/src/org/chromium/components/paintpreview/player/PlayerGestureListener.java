@@ -13,6 +13,7 @@ import org.chromium.url.GURL;
 public class PlayerGestureListener {
     private Runnable mUserInteractionCallback;
     private LinkClickHandler mLinkClickHandler;
+    private PlayerUserFrustrationDetector mUserFrustrationDetector;
 
     public PlayerGestureListener(
             LinkClickHandler linkClickHandler, Runnable userInteractionCallback) {
@@ -32,10 +33,12 @@ public class PlayerGestureListener {
             return;
         }
 
+        if (mUserFrustrationDetector != null) mUserFrustrationDetector.recordUnconsumedTap();
         PlayerUserActionRecorder.recordUnconsumedTap();
     }
 
     public void onLongPress() {
+        if (mUserFrustrationDetector != null) mUserFrustrationDetector.recordUnconsumedLongPress();
         PlayerUserActionRecorder.recordLongPress();
     }
 
@@ -52,5 +55,9 @@ public class PlayerGestureListener {
     public void onScale(boolean didFinish) {
         if (mUserInteractionCallback != null) mUserInteractionCallback.run();
         if (didFinish) PlayerUserActionRecorder.recordZoom();
+    }
+
+    public void setUserFrustrationDetector(PlayerUserFrustrationDetector userFrustrationDetector) {
+        mUserFrustrationDetector = userFrustrationDetector;
     }
 }

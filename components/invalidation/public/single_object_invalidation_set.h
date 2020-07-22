@@ -33,6 +33,8 @@ class INVALIDATION_EXPORT SingleObjectInvalidationSet {
 
   SingleObjectInvalidationSet();
   SingleObjectInvalidationSet(const SingleObjectInvalidationSet& other);
+  SingleObjectInvalidationSet& operator=(
+      const SingleObjectInvalidationSet& other);
   ~SingleObjectInvalidationSet();
 
   void Insert(const Invalidation& invalidation);

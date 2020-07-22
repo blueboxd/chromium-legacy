@@ -234,6 +234,7 @@ void remote_surface_set_window_geometry(wl_client* client,
                                         int32_t y,
                                         int32_t width,
                                         int32_t height) {
+  // DEPRECATED - Use set_bounds to send bounds info with a display_id.
   GetUserDataAs<ShellSurfaceBase>(resource)->SetGeometry(
       gfx::Rect(x, y, width, height));
 }
@@ -250,6 +251,7 @@ void remote_surface_set_orientation(wl_client* client,
 void remote_surface_set_scale(wl_client* client,
                               wl_resource* resource,
                               wl_fixed_t scale) {
+  // DEPRECATED (b/141715728) - The server updates the client's scale.
   GetUserDataAs<ClientControlledShellSurface>(resource)->SetScale(
       wl_fixed_to_double(scale));
 }
@@ -338,6 +340,7 @@ void remote_surface_set_rectangular_surface_shadow(wl_client* client,
                                                    int32_t y,
                                                    int32_t width,
                                                    int32_t height) {
+  // Shadow Bounds are set in pixels, and should not be scaled.
   ClientControlledShellSurface* shell_surface =
       GetUserDataAs<ClientControlledShellSurface>(resource);
   shell_surface->SetShadowBounds(gfx::Rect(x, y, width, height));
@@ -409,8 +412,11 @@ void remote_surface_start_move(wl_client* client,
                                wl_resource* resource,
                                int32_t x,
                                int32_t y) {
-  GetUserDataAs<ClientControlledShellSurface>(resource)->StartDrag(
-      HTCAPTION, gfx::PointF(x, y));
+  ClientControlledShellSurface* shell_surface =
+      GetUserDataAs<ClientControlledShellSurface>(resource);
+  float scale = shell_surface->GetClientToDpScale();
+  gfx::PointF p(x, y);
+  shell_surface->StartDrag(HTCAPTION, gfx::ScalePoint(p, scale));
 }
 
 void remote_surface_set_can_maximize(wl_client* client, wl_resource* resource) {
@@ -426,16 +432,22 @@ void remote_surface_set_min_size(wl_client* client,
                                  wl_resource* resource,
                                  int32_t width,
                                  int32_t height) {
-  GetUserDataAs<ClientControlledShellSurface>(resource)->SetMinimumSize(
-      gfx::Size(width, height));
+  ClientControlledShellSurface* shell_surface =
+      GetUserDataAs<ClientControlledShellSurface>(resource);
+  float scale = shell_surface->GetClientToDpScale();
+  gfx::Size s(width, height);
+  shell_surface->SetMinimumSize(gfx::ScaleToRoundedSize(s, scale));
 }
 
 void remote_surface_set_max_size(wl_client* client,
                                  wl_resource* resource,
                                  int32_t width,
                                  int32_t height) {
-  GetUserDataAs<ClientControlledShellSurface>(resource)->SetMaximumSize(
-      gfx::Size(width, height));
+  ClientControlledShellSurface* shell_surface =
+      GetUserDataAs<ClientControlledShellSurface>(resource);
+  float scale = shell_surface->GetClientToDpScale();
+  gfx::Size s(width, height);
+  shell_surface->SetMaximumSize(gfx::ScaleToRoundedSize(s, scale));
 }
 
 void remote_surface_set_aspect_ratio(wl_client* client,
@@ -461,8 +473,11 @@ void remote_surface_start_resize(wl_client* client,
                                  uint32_t direction,
                                  int32_t x,
                                  int32_t y) {
-  GetUserDataAs<ClientControlledShellSurface>(resource)->StartDrag(
-      Component(direction), gfx::PointF(x, y));
+  ClientControlledShellSurface* shell_surface =
+      GetUserDataAs<ClientControlledShellSurface>(resource);
+  float scale = shell_surface->GetClientToDpScale();
+  gfx::PointF p(x, y);
+  shell_surface->StartDrag(Component(direction), gfx::ScalePoint(p, scale));
 }
 
 void remote_surface_set_frame(wl_client* client,
@@ -531,6 +546,7 @@ void remote_surface_set_bounds(wl_client* client,
                                int32_t y,
                                int32_t width,
                                int32_t height) {
+  // Bounds are set in pixels, and should not be scaled.
   GetUserDataAs<ClientControlledShellSurface>(resource)->SetBounds(
       static_cast<int64_t>(display_id_hi) << 32 | display_id_lo,
       gfx::Rect(x, y, width, height));
@@ -839,7 +855,8 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
       int container,
       double default_device_scale_factor) {
     return display_->CreateClientControlledShellSurface(
-        surface, container, default_device_scale_factor);
+        surface, container, default_device_scale_factor,
+        use_default_scale_cancellation_);
   }
 
   std::unique_ptr<NotificationSurface> CreateNotificationSurface(
@@ -851,14 +868,15 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
   std::unique_ptr<InputMethodSurface> CreateInputMethodSurface(
       Surface* surface,
       double default_device_scale_factor) {
-    return display_->CreateInputMethodSurface(surface,
-                                              default_device_scale_factor);
+    return display_->CreateInputMethodSurface(
+        surface, default_device_scale_factor, use_default_scale_cancellation_);
   }
 
   std::unique_ptr<ToastSurface> CreateToastSurface(
       Surface* surface,
       double default_device_scale_factor) {
-    return display_->CreateToastSurface(surface, default_device_scale_factor);
+    return display_->CreateToastSurface(surface, default_device_scale_factor,
+                                        use_default_scale_cancellation_);
   }
 
   void SetUseDefaultScaleCancellation(bool use_default_scale) {

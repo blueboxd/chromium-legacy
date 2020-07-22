@@ -96,7 +96,10 @@ if (is_android) {
   }
 
   android_library("load_seed_result_enum_java") {
-    deps = [ "//base:base_java" ]
+    deps = [
+      "//base:base_java",
+      "//third_party/android_deps:androidx_annotation_annotation_java",
+    ]
     srcjar_deps = [ ":load_seed_result_enum_srcjar" ]
   }
 

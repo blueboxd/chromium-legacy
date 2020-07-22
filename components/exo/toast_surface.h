@@ -19,7 +19,7 @@ class ToastSurface : public ClientControlledShellSurface {
  public:
   ToastSurface(ToastSurfaceManager* manager,
                Surface* surface,
-               double default_device_scale_factor);
+               bool default_scale_cancellation);
   ~ToastSurface() override;
 
   // Overridden from SurfaceDelegate:

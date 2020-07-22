@@ -12,6 +12,7 @@
 #include "net/base/mock_network_change_notifier.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/browser/translate_client_impl.h"

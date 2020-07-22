@@ -358,7 +358,7 @@ Args that affect build speed:
  * `treat_warnings_as_errors = false` *(default=`true`)*
    * Causes any compiler warnings or lint checks to not fail the build.
    * Allows you to iterate without needing to satisfy static analysis checks.
- * `use_errorprone_java_compiler = false` *(default=`true`)
+ * `use_errorprone_java_compiler = false` *(default=`true`)*
    * Don't run Errorprone checks when compiling Java files.
    * Speeds up Java compiles by ~30% at the cost of not seeing ErrorProne
      warnings.

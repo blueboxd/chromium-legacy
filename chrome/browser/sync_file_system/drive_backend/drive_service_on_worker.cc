@@ -30,7 +30,7 @@ DriveServiceOnWorker::DriveServiceOnWorker(
 
 DriveServiceOnWorker::~DriveServiceOnWorker() {}
 
-google_apis::CancelCallback DriveServiceOnWorker::AddNewDirectory(
+google_apis::CancelCallbackOnce DriveServiceOnWorker::AddNewDirectory(
     const std::string& parent_resource_id,
     const std::string& directory_title,
     const drive::AddNewDirectoryOptions& options,
@@ -44,7 +44,7 @@ google_apis::CancelCallback DriveServiceOnWorker::AddNewDirectory(
                                     worker_task_runner_.get(), FROM_HERE,
                                     std::move(callback))));
 
-  return google_apis::CancelCallback();
+  return google_apis::CancelCallbackOnce();
 }
 
 google_apis::CancelCallback DriveServiceOnWorker::DeleteResource(
@@ -146,7 +146,7 @@ google_apis::CancelCallback DriveServiceOnWorker::GetChangeListByToken(
   return google_apis::CancelCallback();
 }
 
-google_apis::CancelCallback DriveServiceOnWorker::GetRemainingChangeList(
+google_apis::CancelCallbackOnce DriveServiceOnWorker::GetRemainingChangeList(
     const GURL& next_link,
     google_apis::ChangeListCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
@@ -158,7 +158,7 @@ google_apis::CancelCallback DriveServiceOnWorker::GetRemainingChangeList(
           RelayCallbackToTaskRunner(worker_task_runner_.get(), FROM_HERE,
                                     std::move(callback))));
 
-  return google_apis::CancelCallback();
+  return google_apis::CancelCallbackOnce();
 }
 
 std::string DriveServiceOnWorker::GetRootResourceId() const {
@@ -182,7 +182,7 @@ google_apis::CancelCallback DriveServiceOnWorker::GetRemainingTeamDriveList(
   return google_apis::CancelCallback();
 }
 
-google_apis::CancelCallback DriveServiceOnWorker::GetRemainingFileList(
+google_apis::CancelCallbackOnce DriveServiceOnWorker::GetRemainingFileList(
     const GURL& next_link,
     const google_apis::FileListCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
@@ -194,7 +194,7 @@ google_apis::CancelCallback DriveServiceOnWorker::GetRemainingFileList(
                      RelayCallbackToTaskRunner(worker_task_runner_.get(),
                                                FROM_HERE, callback)));
 
-  return google_apis::CancelCallback();
+  return google_apis::CancelCallbackOnce();
 }
 
 google_apis::CancelCallback DriveServiceOnWorker::GetFileResource(
@@ -212,7 +212,7 @@ google_apis::CancelCallback DriveServiceOnWorker::GetFileResource(
   return google_apis::CancelCallback();
 }
 
-google_apis::CancelCallback DriveServiceOnWorker::GetFileListInDirectory(
+google_apis::CancelCallbackOnce DriveServiceOnWorker::GetFileListInDirectory(
     const std::string& directory_resource_id,
     const google_apis::FileListCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
@@ -224,10 +224,11 @@ google_apis::CancelCallback DriveServiceOnWorker::GetFileListInDirectory(
                      RelayCallbackToTaskRunner(worker_task_runner_.get(),
                                                FROM_HERE, callback)));
 
-  return google_apis::CancelCallback();
+  return google_apis::CancelCallbackOnce();
 }
 
-google_apis::CancelCallback DriveServiceOnWorker::RemoveResourceFromDirectory(
+google_apis::CancelCallbackOnce
+DriveServiceOnWorker::RemoveResourceFromDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
     const google_apis::EntryActionCallback& callback) {
@@ -240,10 +241,10 @@ google_apis::CancelCallback DriveServiceOnWorker::RemoveResourceFromDirectory(
                      RelayCallbackToTaskRunner(worker_task_runner_.get(),
                                                FROM_HERE, callback)));
 
-  return google_apis::CancelCallback();
+  return google_apis::CancelCallbackOnce();
 }
 
-google_apis::CancelCallback DriveServiceOnWorker::SearchByTitle(
+google_apis::CancelCallbackOnce DriveServiceOnWorker::SearchByTitle(
     const std::string& title,
     const std::string& directory_resource_id,
     const google_apis::FileListCallback& callback) {
@@ -256,7 +257,7 @@ google_apis::CancelCallback DriveServiceOnWorker::SearchByTitle(
                      RelayCallbackToTaskRunner(worker_task_runner_.get(),
                                                FROM_HERE, callback)));
 
-  return google_apis::CancelCallback();
+  return google_apis::CancelCallbackOnce();
 }
 
 bool DriveServiceOnWorker::HasRefreshToken() const {
@@ -399,7 +400,8 @@ google_apis::CancelCallback DriveServiceOnWorker::GetUploadStatus(
   return google_apis::CancelCallback();
 }
 
-google_apis::CancelCallback DriveServiceOnWorker::MultipartUploadNewFile(
+google_apis::CancelCallbackRepeating
+DriveServiceOnWorker::MultipartUploadNewFile(
     const std::string& content_type,
     int64_t content_length,
     const std::string& parent_resource_id,
@@ -409,7 +411,7 @@ google_apis::CancelCallback DriveServiceOnWorker::MultipartUploadNewFile(
     google_apis::FileResourceCallback callback,
     google_apis::ProgressCallback progress_callback) {
   NOTREACHED();
-  return google_apis::CancelCallback();
+  return google_apis::CancelCallbackRepeating();
 }
 
 google_apis::CancelCallback DriveServiceOnWorker::MultipartUploadExistingFile(

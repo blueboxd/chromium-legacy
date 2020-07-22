@@ -55,6 +55,10 @@ class WebApp {
 
   DisplayMode user_display_mode() const { return user_display_mode_; }
 
+  const std::vector<DisplayMode>& display_mode_override() const {
+    return display_mode_override_;
+  }
+
   syncer::StringOrdinal user_page_ordinal() const { return user_page_ordinal_; }
   syncer::StringOrdinal user_launch_ordinal() const {
     return user_launch_ordinal_;
@@ -165,6 +169,7 @@ class WebApp {
   void SetBackgroundColor(base::Optional<SkColor> background_color);
   void SetDisplayMode(DisplayMode display_mode);
   void SetUserDisplayMode(DisplayMode user_display_mode);
+  void SetDisplayModeOverride(std::vector<DisplayMode> display_mode_override);
   void SetUserPageOrdinal(syncer::StringOrdinal page_ordinal);
   void SetUserLaunchOrdinal(syncer::StringOrdinal launch_ordinal);
   void SetWebAppChromeOsData(base::Optional<WebAppChromeOsData> chromeos_data);
@@ -210,6 +215,7 @@ class WebApp {
   base::Optional<SkColor> background_color_;
   DisplayMode display_mode_;
   DisplayMode user_display_mode_;
+  std::vector<DisplayMode> display_mode_override_;
   syncer::StringOrdinal user_page_ordinal_;
   syncer::StringOrdinal user_launch_ordinal_;
   base::Optional<WebAppChromeOsData> chromeos_data_;

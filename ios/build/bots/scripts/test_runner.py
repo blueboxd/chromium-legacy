@@ -49,6 +49,11 @@ class TestRunnerError(Error):
   pass
 
 
+class DeviceError(TestRunnerError):
+  """Base class for physical device related errors."""
+  pass
+
+
 class AppLaunchError(TestRunnerError):
   """The app failed to launch."""
   pass
@@ -61,21 +66,21 @@ class AppNotFoundError(TestRunnerError):
       'App does not exist: %s' % app_path)
 
 
-class SystemAlertPresentError(TestRunnerError):
+class SystemAlertPresentError(DeviceError):
   """System alert is shown on the device."""
   def __init__(self):
     super(SystemAlertPresentError, self).__init__(
       'System alert is shown on the device.')
 
 
-class DeviceDetectionError(TestRunnerError):
+class DeviceDetectionError(DeviceError):
   """Unexpected number of devices detected."""
   def __init__(self, udids):
     super(DeviceDetectionError, self).__init__(
       'Expected one device, found %s:\n%s' % (len(udids), '\n'.join(udids)))
 
 
-class DeviceRestartError(TestRunnerError):
+class DeviceRestartError(DeviceError):
   """Error restarting a device."""
   def __init__(self):
     super(DeviceRestartError, self).__init__('Error restarting a device')
@@ -95,7 +100,7 @@ class SimulatorNotFoundError(TestRunnerError):
         'Simulator does not exist: %s' % iossim_path)
 
 
-class TestDataExtractionError(TestRunnerError):
+class TestDataExtractionError(DeviceError):
   """Error extracting test data or crash reports from a device."""
   def __init__(self):
     super(TestDataExtractionError, self).__init__('Failed to extract test data')

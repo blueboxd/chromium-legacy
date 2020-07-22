@@ -118,6 +118,8 @@ android_library("java") {
     "//components/payments/mojom:mojom_java",
     "//content/public/android:content_java",
     "//mojo/public/java:bindings_java",
+    "//mojo/public/java:system_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
     "//url:gurl_java",
     "//url:origin_java",

@@ -12,7 +12,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "chrome/updater/control_service.h"
-#include "chrome/updater/update_service.h"
+#include "chrome/updater/service_scope.h"
 
 @class CRUControlServiceOutOfProcessImpl;
 
@@ -25,7 +25,7 @@ namespace updater {
 // All functions and callbacks must be called on the same sequence.
 class ControlServiceOutOfProcess : public ControlService {
  public:
-  explicit ControlServiceOutOfProcess(UpdateService::Scope scope);
+  explicit ControlServiceOutOfProcess(ServiceScope scope);
 
   // Overrides for ControlService.
   void Run(base::OnceClosure callback) override;

@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -22,8 +23,6 @@ import org.chromium.url.GURL;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.annotation.Nonnull;
 
 /**
  * This is the only public class in this package and is hence the access point of this component for
@@ -58,7 +57,7 @@ public class PlayerManager {
      */
     public PlayerManager(GURL url, Context context,
             NativePaintPreviewServiceProvider nativePaintPreviewServiceProvider,
-            String directoryKey, @Nonnull LinkClickHandler linkClickHandler,
+            String directoryKey, @NonNull LinkClickHandler linkClickHandler,
             @Nullable Runnable refreshCallback, Runnable viewReadyCallback,
             Runnable userInteractionCallback, int backgroundColor, Runnable compositorErrorCallback,
             boolean ignoreInitialScrollOffset) {
@@ -77,6 +76,12 @@ public class PlayerManager {
         mHostView.setBackgroundColor(backgroundColor);
         mViewReadyCallback = viewReadyCallback;
         mIgnoreInitialScrollOffset = ignoreInitialScrollOffset;
+    }
+
+    public void setUserFrustrationCallback(Runnable userFrustrationCallback) {
+        PlayerUserFrustrationDetector userFrustrationDetector =
+                new PlayerUserFrustrationDetector(userFrustrationCallback);
+        mPlayerGestureListener.setUserFrustrationDetector(userFrustrationDetector);
     }
 
     /**

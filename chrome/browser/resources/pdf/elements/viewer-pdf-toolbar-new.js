@@ -163,7 +163,11 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
 
   /** @param {!FittingType} fittingType */
   forceFit(fittingType) {
-    this.fittingType_ = fittingType;
+    // The fitting type is the new state. We want to set the button fitting type
+    // to the opposite value.
+    this.fittingType_ = fittingType === FittingType.FIT_TO_WIDTH ?
+        FittingType.FIT_TO_PAGE :
+        FittingType.FIT_TO_WIDTH;
   }
 
   fitToggle() {

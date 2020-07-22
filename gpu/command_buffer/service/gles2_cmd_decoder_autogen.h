@@ -1052,7 +1052,7 @@ error::Error GLES2DecoderImpl::HandleFramebufferTexture2D(
                                     "attachment");
     return error::kNoError;
   }
-  if (!validators_->texture_target.IsValid(textarget)) {
+  if (!validators_->texture_fbo_target.IsValid(textarget)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glFramebufferTexture2D", textarget,
                                     "textarget");
     return error::kNoError;

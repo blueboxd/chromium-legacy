@@ -13,10 +13,18 @@ sky@chromium.org
 tapted@chromium.org
 weili@chromium.org
 
-# Prefer ellyjones@ or tapted@ for mac specific changes.
+# Prefer avi@, ellyjones@, lgrey@, or tapted@ for mac specific changes.
+per-file *_mac.*=avi@chromium.org
+per-file *_cocoa.*=avi@chromium.org
+per-file *.mm=avi@chromium.org
+
 per-file *_mac.*=ellyjones@chromium.org
 per-file *_cocoa.*=ellyjones@chromium.org
 per-file *.mm=ellyjones@chromium.org
+
+per-file *_mac.*=lgrey@chromium.org
+per-file *_cocoa.*=lgrey@chromium.org
+per-file *.mm=lgrey@chromium.org
 
 # If you're doing structural changes get a review from one of the OWNERS.
 per-file BUILD.gn=*

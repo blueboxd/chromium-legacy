@@ -538,8 +538,10 @@ WebString WebPluginContainerImpl::ExecuteScriptURL(const WebURL& url,
   }
   script = script.Substring(strlen("javascript:"));
 
-  if (popups_allowed)
-    LocalFrame::NotifyUserActivation(frame);
+  if (popups_allowed) {
+    LocalFrame::NotifyUserActivation(
+        frame, mojom::blink::UserActivationNotificationType::kPlugin);
+  }
 
   v8::HandleScope handle_scope(ToIsolate(frame));
   v8::Local<v8::Value> result =

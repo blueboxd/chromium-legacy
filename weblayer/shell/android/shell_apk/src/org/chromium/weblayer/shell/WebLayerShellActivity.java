@@ -140,6 +140,7 @@ public class WebLayerShellActivity extends FragmentActivity {
     private Runnable mExitFullscreenRunnable;
     private View mBottomView;
     private int mTopViewMinHeight;
+    private boolean mTopViewPinnedToContentTop;
     private boolean mInIncognitoMode;
 
     @Override
@@ -181,8 +182,12 @@ public class WebLayerShellActivity extends FragmentActivity {
             popup.getMenuInflater().inflate(R.menu.app_menu, popup.getMenu());
             MenuItem bottomMenuItem = popup.getMenu().findItem(R.id.toggle_bottom_view_id);
             bottomMenuItem.setChecked(mBottomView != null);
-            MenuItem topMenuItem = popup.getMenu().findItem(R.id.toggle_top_view_min_height_id);
-            topMenuItem.setChecked(mTopViewMinHeight > 0);
+            popup.getMenu()
+                    .findItem(R.id.toggle_top_view_min_height_id)
+                    .setChecked(mTopViewMinHeight > 0);
+            popup.getMenu()
+                    .findItem(R.id.toggle_top_view_pinned_to_top_id)
+                    .setChecked(mTopViewPinnedToContentTop);
             popup.getMenu()
                     .findItem(R.id.translate_menu_id)
                     .setVisible(mBrowser.getActiveTab().canTranslate());
@@ -219,7 +224,15 @@ public class WebLayerShellActivity extends FragmentActivity {
 
                 if (item.getItemId() == R.id.toggle_top_view_min_height_id) {
                     mTopViewMinHeight = (mTopViewMinHeight == 0) ? 50 : 0;
-                    mBrowser.setTopView(mTopContentsContainer, mTopViewMinHeight, false);
+                    mBrowser.setTopView(
+                            mTopContentsContainer, mTopViewMinHeight, mTopViewPinnedToContentTop);
+                    return true;
+                }
+
+                if (item.getItemId() == R.id.toggle_top_view_pinned_to_top_id) {
+                    mTopViewPinnedToContentTop = !mTopViewPinnedToContentTop;
+                    mBrowser.setTopView(
+                            mTopContentsContainer, mTopViewMinHeight, mTopViewPinnedToContentTop);
                     return true;
                 }
 
@@ -294,7 +307,7 @@ public class WebLayerShellActivity extends FragmentActivity {
         mProfile.setBooleanSetting(SettingType.UKM_ENABLED, true);
         setTabCallbacks(mBrowser.getActiveTab(), fragment);
 
-        mBrowser.setTopView(mTopContentsContainer);
+        mBrowser.setTopView(mTopContentsContainer, /*minHeight=*/0, /*pinToContentTop=*/false);
         mTabListCallback = new TabListCallback() {
             @Override
             public void onActiveTabChanged(Tab activeTab) {

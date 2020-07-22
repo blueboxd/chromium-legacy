@@ -132,6 +132,7 @@ test("weblayer_browsertests") {
     "../browser/page_load_metrics_browsertest.cc",
     "../browser/popup_blocker_browsertest.cc",
     "../browser/prefetch_browsertest.cc",
+    "../browser/profile_browsertest.cc",
     "../browser/site_isolation_browsertest.cc",
     "../browser/ssl_browsertest.cc",
     "../browser/translate_browsertest.cc",

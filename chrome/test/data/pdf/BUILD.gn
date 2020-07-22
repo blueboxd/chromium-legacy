@@ -36,6 +36,8 @@ js_type_check("closure_compile") {
 
     #":toolbar_manager_test",
     #":touch_handling_test",
+    ":viewer_pdf_toolbar_new_test",
+
     #":viewport_test",
     ":whitespace_title_test",
 
@@ -105,6 +107,14 @@ js_library("test_util") {
 }
 
 js_library("title_test") {
+  externs_list = [ "$externs_path/test.js" ]
+}
+
+js_library("viewer_pdf_toolbar_new_test") {
+  deps = [
+    "//chrome/browser/resources/pdf:constants",
+    "//chrome/browser/resources/pdf/elements:viewer-pdf-toolbar-new",
+  ]
   externs_list = [ "$externs_path/test.js" ]
 }
 

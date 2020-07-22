@@ -66,10 +66,10 @@ class PlatformApiImpl : public CrosPlatformApi,
  private:
   // ChromeOS does not use auth manager, so we don't yet need to implement a
   // real auth provider.
-  class DummyAuthProvider : public assistant_client::AuthProvider {
+  class FakeAuthProvider : public assistant_client::AuthProvider {
    public:
-    DummyAuthProvider() = default;
-    ~DummyAuthProvider() override = default;
+    FakeAuthProvider() = default;
+    ~FakeAuthProvider() override = default;
 
     // assistant_client::AuthProvider overrides
     std::string GetAuthClientId() override;
@@ -98,7 +98,7 @@ class PlatformApiImpl : public CrosPlatformApi,
 
   AudioInputProviderImpl audio_input_provider_;
   AudioOutputProviderImpl audio_output_provider_;
-  DummyAuthProvider auth_provider_;
+  FakeAuthProvider auth_provider_;
   FileProviderImpl file_provider_;
   NetworkProviderImpl network_provider_;
   std::unique_ptr<SystemProviderImpl> system_provider_;

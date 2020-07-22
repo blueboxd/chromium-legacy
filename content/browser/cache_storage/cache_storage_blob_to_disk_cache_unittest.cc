@@ -75,10 +75,8 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
  protected:
   CacheStorageBlobToDiskCacheTest()
       : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
-        browser_context_(new TestBrowserContext()),
-        data_(kTestData),
-        callback_success_(false),
-        callback_called_(false) {}
+        browser_context_(std::make_unique<TestBrowserContext>()),
+        data_(kTestData) {}
 
   void SetUp() override {
     InitBlobStorage();
@@ -193,8 +191,8 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
       cache_storage_blob_to_disk_cache_;
   std::string data_;
 
-  bool callback_success_;
-  bool callback_called_;
+  bool callback_success_ = false;
+  bool callback_called_ = false;
 
  private:
   scoped_refptr<storage::QuotaManager> quota_manager_;

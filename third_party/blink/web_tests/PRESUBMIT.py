@@ -93,8 +93,7 @@ def _CheckForJSTest(input_api, output_api):
     jstest_re = input_api.re.compile(r'resources/js-test.js')
 
     def source_file_filter(path):
-        return input_api.FilterSourceFile(path,
-                                          white_list=[r'\.(html|js|php|pl|svg)$'])
+        return input_api.FilterSourceFile(path, files_to_check=[r'\.(html|js|php|pl|svg)$'])
 
     errors = input_api.canned_checks._FindNewViolationsOfRule(
         lambda _, x: not jstest_re.search(x), input_api, source_file_filter)

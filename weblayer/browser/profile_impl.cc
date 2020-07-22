@@ -170,6 +170,10 @@ ProfileImpl::ProfileImpl(const std::string& name)
   // Ensure WebCacheManager is created so that it starts observing
   // OnRenderProcessHostCreated events.
   web_cache::WebCacheManager::GetInstance();
+
+#if defined(OS_ANDROID)
+  WebLayerMetricsServiceClient::GetInstance()->UpdateUkm(false);
+#endif
 }
 
 ProfileImpl::~ProfileImpl() {
@@ -197,7 +201,7 @@ void ProfileImpl::RemoveProfileObserver(ProfileObserver* observer) {
   GetObservers().RemoveObserver(observer);
 }
 
-content::BrowserContext* ProfileImpl::GetBrowserContext() {
+BrowserContextImpl* ProfileImpl::GetBrowserContext() {
   if (browser_context_)
     return browser_context_.get();
 
@@ -360,9 +364,7 @@ std::unique_ptr<ProfileImpl> ProfileImpl::DestroyAndDeleteDataFromDisk(
 void ProfileImpl::OnProfileMarked(std::unique_ptr<ProfileImpl> profile,
                                   base::OnceClosure done_callback) {
   // Try to finish all writes and remove all data before nuking the profile.
-  static_cast<BrowserContextImpl*>(profile->GetBrowserContext())
-      ->pref_service()
-      ->CommitPendingWrite();
+  profile->GetBrowserContext()->pref_service()->CommitPendingWrite();
 
   // Unretained is safe here because DataClearer is owned by
   // BrowserContextImpl which is owned by this.
@@ -502,6 +504,7 @@ base::FilePath ProfileImpl::GetBrowserPersisterDataBaseDir() const {
 }
 
 void ProfileImpl::SetBooleanSetting(SettingType type, bool value) {
+  auto* pref_service = GetBrowserContext()->pref_service();
   switch (type) {
     case SettingType::BASIC_SAFE_BROWSING_ENABLED:
       basic_safe_browsing_enabled_ = value;
@@ -511,50 +514,51 @@ void ProfileImpl::SetBooleanSetting(SettingType type, bool value) {
           ->SetSafeBrowsingDisabled(!basic_safe_browsing_enabled_);
 #endif
       break;
-    case SettingType::UKM_ENABLED:
-      ukm_enabled_ = value;
+    case SettingType::UKM_ENABLED: {
 #if defined(OS_ANDROID)
-      WebLayerMetricsServiceClient::GetInstance()->EnableUkm(ukm_enabled_);
+      bool old_value = pref_service->GetBoolean(prefs::kUkmEnabled);
+#endif
+      pref_service->SetBoolean(prefs::kUkmEnabled, value);
+#if defined(OS_ANDROID)
+      // Trigger a purge if the current state no longer allows UKM.
+      bool must_purge = old_value && !value;
+      WebLayerMetricsServiceClient::GetInstance()->UpdateUkm(must_purge);
 #endif
       break;
+    }
     case SettingType::EXTENDED_REPORTING_SAFE_BROWSING_ENABLED:
 #if defined(OS_ANDROID)
-      static_cast<BrowserContextImpl*>(GetBrowserContext())
-          ->pref_service()
-          ->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled, value);
+      pref_service->SetBoolean(::prefs::kSafeBrowsingScoutReportingEnabled,
+                               value);
 #endif
       break;
     case SettingType::REAL_TIME_SAFE_BROWSING_ENABLED:
 #if defined(OS_ANDROID)
-      static_cast<BrowserContextImpl*>(GetBrowserContext())
-          ->pref_service()
-          ->SetBoolean(
-              unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
-              value);
+      pref_service->SetBoolean(
+          unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
+          value);
 #endif
       break;
   }
 }
 
 bool ProfileImpl::GetBooleanSetting(SettingType type) {
+  auto* pref_service = GetBrowserContext()->pref_service();
   switch (type) {
     case SettingType::BASIC_SAFE_BROWSING_ENABLED:
       return basic_safe_browsing_enabled_;
     case SettingType::UKM_ENABLED:
-      return ukm_enabled_;
+      return pref_service->GetBoolean(prefs::kUkmEnabled);
     case SettingType::EXTENDED_REPORTING_SAFE_BROWSING_ENABLED:
 #if defined(OS_ANDROID)
-      return static_cast<BrowserContextImpl*>(GetBrowserContext())
-          ->pref_service()
-          ->GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled);
+      return pref_service->GetBoolean(
+          ::prefs::kSafeBrowsingScoutReportingEnabled);
 #endif
       return false;
     case SettingType::REAL_TIME_SAFE_BROWSING_ENABLED:
 #if defined(OS_ANDROID)
-      return static_cast<BrowserContextImpl*>(GetBrowserContext())
-          ->pref_service()
-          ->GetBoolean(
-              unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
+      return pref_service->GetBoolean(
+          unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled);
 #endif
       return false;
   }

@@ -339,10 +339,7 @@ AndroidMetricsServiceClient::CreateLowEntropyProvider() {
   return metrics_state_manager_->CreateLowEntropyProvider();
 }
 
-void AndroidMetricsServiceClient::EnableUkm(bool enable) {
-  bool must_purge = ukm_enabled_ && !enable;
-  ukm_enabled_ = enable;
-
+void AndroidMetricsServiceClient::UpdateUkm(bool must_purge) {
   if (!ukm_service_)
     return;
   if (must_purge) {
@@ -479,7 +476,7 @@ base::TimeDelta AndroidMetricsServiceClient::GetStandardUploadInterval() {
 }
 
 bool AndroidMetricsServiceClient::IsUkmAllowedForAllProfiles() {
-  return ukm_enabled_;
+  return false;
 }
 
 bool AndroidMetricsServiceClient::ShouldStartUpFastForTesting() const {

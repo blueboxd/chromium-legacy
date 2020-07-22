@@ -757,7 +757,7 @@ void CastActivityManager::HandleLaunchSessionResponse(
     return;
   }
   logger_->LogInfo(mojom::LogCategory::kRoute, kLoggerComponent,
-                   "Received a LuanchSession response with status OK.",
+                   "Received a LaunchSession response with status OK.",
                    sink.id(), cast_source.source_id(),
                    MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
 

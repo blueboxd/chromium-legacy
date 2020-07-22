@@ -733,7 +733,7 @@ def main():
     # from PGO as well. Perhaps the training could be done asynchronously by
     # dedicated buildbots that upload profiles to the cloud.
     training_source = 'pgo_training-1.ii'
-    with open(training_source, 'w') as f:
+    with open(training_source, 'wb') as f:
       DownloadUrl(CDS_URL + '/' + training_source, f)
     train_cmd = [os.path.join(LLVM_INSTRUMENTED_DIR, 'bin', 'clang++'),
                 '-target', 'x86_64-unknown-unknown', '-O2', '-g', '-std=c++14',

@@ -7,6 +7,7 @@
 #include "chrome/browser/enterprise/reporting/browser_report_generator_desktop.h"
 #include "chrome/browser/enterprise/reporting/profile_report_generator_desktop.h"
 #include "chrome/browser/enterprise/reporting/report_generator_desktop.h"
+#include "chrome/browser/enterprise/reporting/report_scheduler_desktop.h"
 
 namespace enterprise_reporting {
 
@@ -23,6 +24,11 @@ ReportingDelegateFactoryDesktop::GetProfileReportGeneratorDelegate() {
 std::unique_ptr<ReportGenerator::Delegate>
 ReportingDelegateFactoryDesktop::GetReportGeneratorDelegate() {
   return std::make_unique<ReportGeneratorDesktop>();
+}
+
+std::unique_ptr<ReportScheduler::Delegate>
+ReportingDelegateFactoryDesktop::GetReportSchedulerDelegate() {
+  return std::make_unique<ReportSchedulerDesktop>();
 }
 
 }  // namespace enterprise_reporting

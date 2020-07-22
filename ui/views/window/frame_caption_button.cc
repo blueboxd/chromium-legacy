@@ -4,18 +4,24 @@
 
 #include "ui/views/window/frame_caption_button.h"
 
+#include <memory>
+
 #include "ui/base/hit_test.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/rrect_f.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
+#include "ui/views/controls/focus_ring.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/window/caption_button_layout_constants.h"
 #include "ui/views/window/hit_test_utils.h"
 
@@ -34,6 +40,29 @@ constexpr float kFadeOutRatio = 0.5f;
 constexpr float kDisabledButtonAlphaRatio = 0.5f;
 
 }  // namespace
+
+// Custom highlight path generator for clipping ink drops and drawing focus
+// rings.
+class FrameCaptionButton::HighlightPathGenerator
+    : public views::HighlightPathGenerator {
+ public:
+  explicit HighlightPathGenerator(FrameCaptionButton* frame_caption_button)
+      : frame_caption_button_(frame_caption_button) {}
+  HighlightPathGenerator(const HighlightPathGenerator&) = delete;
+  HighlightPathGenerator& operator=(const HighlightPathGenerator&) = delete;
+  ~HighlightPathGenerator() override = default;
+
+  // views::HighlightPathGenerator:
+  base::Optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
+    gfx::Rect bounds = gfx::ToRoundedRect(rect);
+    bounds.Inset(frame_caption_button_->GetInkdropInsets(bounds.size()));
+    return gfx::RRectF(gfx::RectF(bounds),
+                       frame_caption_button_->ink_drop_corner_radius());
+  }
+
+ private:
+  FrameCaptionButton* const frame_caption_button_;
+};
 
 // static
 const char FrameCaptionButton::kViewClassName[] = "FrameCaptionButton";
@@ -57,6 +86,9 @@ FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
   SetInkDropMode(InkDropMode::ON);
   set_ink_drop_visible_opacity(kInkDropVisibleOpacity);
   UpdateInkDropBaseColor();
+
+  views::HighlightPathGenerator::Install(
+      this, std::make_unique<HighlightPathGenerator>(this));
 
   // Do not flip the gfx::Canvas passed to the OnPaint() method. The snap left
   // and snap right button icons should not be flipped. The other icons are

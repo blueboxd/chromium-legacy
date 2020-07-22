@@ -945,7 +945,7 @@ void StyleCascade::MaybeUseCountSummaryDisplayBlock() {
   if (!state_.GetElement().HasTagName(html_names::kSummaryTag))
     return;
   CascadePriority priority = map_.At(CSSPropertyName(CSSPropertyID::kDisplay));
-  if (priority.GetOrigin() == CascadeOrigin::kUserAgent)
+  if (priority.GetOrigin() <= CascadeOrigin::kUserAgent)
     return;
   const CSSValue* value = ValueAt(match_result_, priority.GetPosition());
   if (auto* identifier = DynamicTo<CSSIdentifierValue>(value)) {

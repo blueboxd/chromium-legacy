@@ -3049,6 +3049,10 @@ void LayerTreeHostImpl::DidLoseLayerTreeFrameSink() {
   client_->DidLoseLayerTreeFrameSinkOnImplThread();
 }
 
+bool LayerTreeHostImpl::ShouldPinTopControlsToContentTop() const {
+  return active_tree_->pin_top_controls_to_content_top();
+}
+
 bool LayerTreeHostImpl::HaveRootScrollNode() const {
   return InnerViewportScrollNode();
 }
@@ -3777,6 +3781,10 @@ float LayerTreeHostImpl::CurrentTopControlsShownRatio() const {
 
 float LayerTreeHostImpl::CurrentBottomControlsShownRatio() const {
   return active_tree_->CurrentBottomControlsShownRatio();
+}
+
+gfx::ScrollOffset LayerTreeHostImpl::ViewportScrollOffset() const {
+  return viewport_->TotalScrollOffset();
 }
 
 void LayerTreeHostImpl::BindToClient(InputHandlerClient* client) {

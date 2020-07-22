@@ -136,14 +136,18 @@ Please email dpranke@chromium.org, who will approve new build configurations.
 
 Several builders are included in the CQ only for changes that affect specific
 directories. These used to be configured via Cq-Include-Trybots footers
-injected at CL upload time. They are now configured via `location_regexp` fields
-in [commit-queue.cfg][2], e.g.
+injected at CL upload time. They are now configured via the `location_regexp`
+attribute of the tryjob parameter to the try builder's definition e.g.
 
 ```
-  builders {
-    name: "chromium/try/my-specific-trybot"
-    location_regexp: ".+/{+]/path/to/my/specific/directory/.+"
-  }
+  try_.some_builder_function(
+      name = "my-specific-try-builder",
+      tryjob = try_.job(
+          location_regexp = [
+              ".+/{+]/path/to/my/specific/directory/.+"
+          ],
+      ),
+  )
 ```
 
 ## Flakiness

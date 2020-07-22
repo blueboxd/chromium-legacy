@@ -11,23 +11,33 @@ namespace blink {
 // not too long to make an "unattneded" page feel activated.
 constexpr base::TimeDelta kActivationLifespan = base::TimeDelta::FromSeconds(5);
 
-void UserActivationState::Activate() {
+void UserActivationState::Activate(
+    mojom::UserActivationNotificationType notification_type) {
   has_been_active_ = true;
+  notification_type_ = notification_type;
   ActivateTransientState();
 }
 
 void UserActivationState::Clear() {
   has_been_active_ = false;
+  notification_type_ = mojom::UserActivationNotificationType::kNone;
   DeactivateTransientState();
 }
 
+bool UserActivationState::HasBeenActive() const {
+  // TODO(mustaq): Usecount notification_type_ if returning true.
+  return has_been_active_;
+}
+
 bool UserActivationState::IsActive() const {
+  // TODO(mustaq): Usecount notification_type_ if returning true.
   return base::TimeTicks::Now() <= transient_state_expiry_time_;
 }
 
 bool UserActivationState::ConsumeIfActive() {
   if (!IsActive())
     return false;
+  // TODO(mustaq): Usecount notification_type_.
   DeactivateTransientState();
   return true;
 }

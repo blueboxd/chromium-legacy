@@ -421,9 +421,8 @@ class IdentityManagerTest : public testing::Test {
   void SimulateCookieDeletedByUser(
       network::mojom::CookieChangeListener* listener,
       const net::CanonicalCookie& cookie) {
-    listener->OnCookieChange(
-        net::CookieChangeInfo(cookie, net::CookieAccessSemantics::UNKNOWN,
-                              net::CookieChangeCause::EXPLICIT));
+    listener->OnCookieChange(net::CookieChangeInfo(
+        cookie, net::CookieAccessResult(), net::CookieChangeCause::EXPLICIT));
   }
 
   void SimulateOAuthMultiloginFinished(GaiaCookieManagerService* manager,
@@ -2033,9 +2032,8 @@ TEST_F(IdentityManagerTest, OnNetworkInitialized) {
       "SAPISID", std::string(), ".google.com", "/", base::Time(), base::Time(),
       base::Time(), /*secure=*/true, false, net::CookieSameSite::NO_RESTRICTION,
       net::COOKIE_PRIORITY_DEFAULT);
-  test_cookie_manager_ptr->DispatchCookieChange(
-      net::CookieChangeInfo(cookie, net::CookieAccessSemantics::UNKNOWN,
-                            net::CookieChangeCause::EXPLICIT));
+  test_cookie_manager_ptr->DispatchCookieChange(net::CookieChangeInfo(
+      cookie, net::CookieAccessResult(), net::CookieChangeCause::EXPLICIT));
   run_loop.Run();
 }
 

@@ -89,7 +89,8 @@ class NavigatorShareTest : public testing::Test {
   }
 
   void Share(const ShareData& share_data) {
-    LocalFrame::NotifyUserActivation(&GetFrame());
+    LocalFrame::NotifyUserActivation(
+        &GetFrame(), mojom::UserActivationNotificationType::kTest);
     Navigator* navigator = GetFrame().DomWindow()->navigator();
     NonThrowableExceptionState exception_state;
     ScriptPromise promise = NavigatorShare::share(GetScriptState(), *navigator,

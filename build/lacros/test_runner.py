@@ -5,10 +5,7 @@
 # found in the LICENSE file.
 """This script facilitates running tests for lacros.
 
-WARNING: currently, this script only supports running test targets that do not
-require a display server, such as base_unittests and url_unittests.
-TODO(crbug.com/1104318): Support test targets that require a display server by
-using ash_chrome.
+TODO(crbug.com/1104318): Document an overview and example usages.
 """
 
 import argparse
@@ -51,11 +48,9 @@ _TARGETS_REQUIRE_ASH_CHROME = [
     'unit_tests',
 ]
 
-
 def _GetAshChromeDirPath(version):
   """Returns a path to the dir storing the downloaded version of ash-chrome."""
   return os.path.join(_PREBUILT_ASH_CHROME_DIR, version)
-
 
 def _remove_unused_ash_chrome_versions(version_to_skip):
   """Removes unused ash-chrome versions to save disk space.
@@ -88,7 +83,6 @@ def _remove_unused_ash_chrome_versions(version_to_skip):
           'Removing ash-chrome: "%s" as it hasn\'t been used in the '
           'past %d days', p, days)
       shutil.rmtree(p)
-
 
 def _DownloadAshChromeIfNecessary(version):
   """Download a given version of ash-chrome if not already exists.
@@ -164,8 +158,67 @@ def _GetLatestVersionOfAshChrome():
       return f.read().strip()
 
 
+def _RunTestWithAshChrome(args, forward_args):
+  """Runs tests with ash-chrome.
+
+  args (dict): Args for this script.
+  forward_args (dict): Args to be forwarded to the test command.
+  """
+  ash_chrome_version = args.ash_chrome_version or _GetLatestVersionOfAshChrome()
+  _DownloadAshChromeIfNecessary(ash_chrome_version)
+  logging.info('Ash-chrome version: %s', ash_chrome_version)
+
+  ash_chrome_file = os.path.join(_GetAshChromeDirPath(ash_chrome_version),
+                                 'chrome')
+  try:
+    tmp_xdg_dir_name = tempfile.mkdtemp()
+    tmp_ash_data_dir_name = tempfile.mkdtemp()
+    ash_process = None
+
+    ash_env = os.environ.copy()
+    ash_env['XDG_RUNTIME_DIR'] = tmp_xdg_dir_name
+    ash_process = subprocess.Popen([
+        ash_chrome_file,
+        '--user-data-dir=%s' % tmp_ash_data_dir_name,
+        '--enable-wayland-server',
+        '--no-startup-window',
+    ],
+                                   env=ash_env)
+
+    # Determine whether ash-chrome is up and running by checking whether two
+    # files (lock file + socket) have been created in the |XDG_RUNTIME_DIR|.
+    # TODO(crbug.com/1107966): Figure out a more reliable hook to determine the
+    # status of ash-chrome, likely through mojo connection.
+    time_to_wait = 2
+    time_counter = 0
+    while len(os.listdir(tmp_xdg_dir_name)) < 2:
+      time.sleep(0.5)
+      time_counter += 0.5
+      if time_counter > time_to_wait:
+        raise RuntimeError('Timed out waiting for ash-chrome to start')
+
+    test_env = os.environ.copy()
+    test_env['EGL_PLATFORM'] = 'surfaceless'
+    test_env['XDG_RUNTIME_DIR'] = tmp_xdg_dir_name
+    test_process = subprocess.Popen([args.command] + forward_args, env=test_env)
+    return test_process.wait()
+
+  finally:
+    if ash_process and ash_process.poll() is None:
+      ash_process.terminate()
+      # Allow process to do cleanup and exit gracefully before killing.
+      time.sleep(0.5)
+      ash_process.kill()
+
+    shutil.rmtree(tmp_xdg_dir_name, ignore_errors=True)
+    shutil.rmtree(tmp_ash_data_dir_name, ignore_errors=True)
+
+
 def _RunTest(args, forward_args):
-  """Run tests with given args.
+  """Runs tests with given args.
+
+  TODO(crbug.com/1035562): Trap signals to make sure that spawned test process
+  and ash-chrome process are always cleaned up correctly.
 
   args (dict): Args for this script.
   forward_args (dict): Args to be forwarded to the test command.
@@ -187,7 +240,7 @@ def _RunTest(args, forward_args):
       and not args.ash_chrome_version):
     return subprocess.call([args.command] + forward_args)
 
-  raise RuntimeError('Run tests with ash-chrome is to be implemented')
+  return _RunTestWithAshChrome(args, forward_args)
 
 
 def Main():

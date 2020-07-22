@@ -110,8 +110,6 @@ source_set("app_install") {
   sources = [
     "setup/app_install.cc",
     "setup/app_install.h",
-    "setup/app_swap.cc",
-    "setup/app_swap.h",
   ]
 
   deps = [

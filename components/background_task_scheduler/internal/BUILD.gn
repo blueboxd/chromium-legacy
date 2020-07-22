@@ -107,6 +107,7 @@ if (is_android) {
       "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
       "//components/background_task_scheduler:public_java",
       "//content/public/test/android:content_java_test_support",
+      "//third_party/android_deps:androidx_test_runner_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/junit",
     ]

@@ -266,7 +266,8 @@ TEST_F(HTMLMediaElementEventListenersTest,
   // Set ReadyState as HaveMetadata and go fullscreen, so the timer is fired.
   EXPECT_NE(Video(), nullptr);
   SimulateReadyState(HTMLMediaElement::kHaveMetadata);
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*Video());
   Fullscreen::DidResolveEnterFullscreenRequest(GetDocument(),
                                                true /* granted */);

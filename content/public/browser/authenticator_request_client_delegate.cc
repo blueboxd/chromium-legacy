@@ -52,8 +52,9 @@ bool AuthenticatorRequestClientDelegate::ShouldPermitIndividualAttestation(
 void AuthenticatorRequestClientDelegate::ShouldReturnAttestation(
     const std::string& relying_party_id,
     const device::FidoAuthenticator* authenticator,
+    bool is_enterprise_attestation,
     base::OnceCallback<void(bool)> callback) {
-  std::move(callback).Run(true);
+  std::move(callback).Run(!is_enterprise_attestation);
 }
 
 bool AuthenticatorRequestClientDelegate::SupportsResidentKeys() {

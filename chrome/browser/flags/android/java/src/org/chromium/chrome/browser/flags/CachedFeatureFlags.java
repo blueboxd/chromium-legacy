@@ -76,6 +76,7 @@ public class CachedFeatureFlags {
             put(ChromeFeatureList.OMNIBOX_SUGGESTIONS_RECYCLER_VIEW, false);
             put(ChromeFeatureList.TEST_DEFAULT_DISABLED, false);
             put(ChromeFeatureList.TEST_DEFAULT_ENABLED, true);
+            put(ChromeFeatureList.REPORT_FEED_USER_ACTIONS, false);
         }
     };
 

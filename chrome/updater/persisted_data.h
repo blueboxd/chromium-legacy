@@ -29,7 +29,7 @@ struct RegistrationRequest;
 //
 // A mechanism to remove apps or app versions from prefs is needed.
 // TODO(sorin): crbug.com/1056450
-class PersistedData : public base::RefCounted<PersistedData> {
+class PersistedData : public base::RefCountedThreadSafe<PersistedData> {
  public:
   // Constructs a provider using the specified |pref_service|.
   // The associated preferences are assumed to already be registered.
@@ -69,7 +69,7 @@ class PersistedData : public base::RefCounted<PersistedData> {
   std::vector<std::string> GetAppIds() const;
 
  private:
-  friend class base::RefCounted<PersistedData>;
+  friend class base::RefCountedThreadSafe<PersistedData>;
   ~PersistedData();
 
   std::string GetString(const std::string& id, const std::string& key) const;

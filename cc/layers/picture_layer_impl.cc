@@ -1726,26 +1726,34 @@ void PictureLayerImpl::UpdateIdealScales() {
   DCHECK_GT(min_contents_scale, 0.f);
 
   ideal_device_scale_ = layer_tree_impl()->device_scale_factor();
+  ideal_page_scale_ = 1.f;
+  ideal_contents_scale_ = GetIdealContentsScale();
+
   if (layer_tree_impl()->PageScaleTransformNode()) {
+    DCHECK(!layer_tree_impl()->settings().is_layer_tree_for_subframe);
     ideal_page_scale_ = IsAffectedByPageScale()
                             ? layer_tree_impl()->current_page_scale_factor()
                             : 1.f;
-    ideal_contents_scale_ = GetIdealContentsScale();
-  } else {
-    // This layer may be in a layer tree embedded in a hierarchy that has its
-    // own page scale factor. We represent that here as
-    // 'external_page_scale_factor', a value that affects raster scale in the
-    // same way that page_scale_factor does, but doesn't affect any geometry
-    // calculations.
-    float external_page_scale_factor =
-        layer_tree_impl() ? layer_tree_impl()->external_page_scale_factor()
-                          : 1.f;
-    DCHECK(!layer_tree_impl() || external_page_scale_factor == 1.f ||
-           layer_tree_impl()->current_page_scale_factor() == 1.f);
-    ideal_page_scale_ = external_page_scale_factor;
-    ideal_contents_scale_ =
-        GetIdealContentsScale() * external_page_scale_factor;
   }
+
+  // This layer may be in a layer tree embedded in a hierarchy that has its own
+  // page scale factor. We represent that here as 'external_page_scale_factor',
+  // a value that affects raster scale in the same way that page_scale_factor
+  // does, but doesn't affect any geometry calculations. In a normal main frame
+  // or OOPIF, only one of current or external page scale factor is ever used
+  // but not both. The only exception to this is a main frame in a portal. It
+  // may have a current_page_scale_factor (e.g. due to a viewport <meta> tag)
+  // as well as an external_page_scale_factor coming from the page scale of its
+  // embedder page.
+  float external_page_scale_factor =
+      layer_tree_impl() ? layer_tree_impl()->external_page_scale_factor() : 1.f;
+  DCHECK(!layer_tree_impl() ||
+         !layer_tree_impl()->settings().is_layer_tree_for_subframe ||
+         external_page_scale_factor == 1.f ||
+         layer_tree_impl()->current_page_scale_factor() == 1.f);
+  ideal_page_scale_ *= external_page_scale_factor;
+  ideal_contents_scale_ *= external_page_scale_factor;
+
   ideal_contents_scale_ = base::ClampToRange(
       ideal_contents_scale_, min_contents_scale, kMaxIdealContentsScale);
   ideal_source_scale_ =

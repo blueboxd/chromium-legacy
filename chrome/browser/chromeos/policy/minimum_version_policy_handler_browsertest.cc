@@ -8,8 +8,11 @@
 #include "ash/public/cpp/system_tray_test_api.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/default_clock.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -62,8 +65,9 @@ namespace em = enterprise_management;
 namespace policy {
 
 namespace {
-const char kNewVersion[] = "99999.4.2";
-const char kUpdatedVersion[] = "99999.9";
+const char kNewVersion[] = "13335.4.2";
+const char kUpdatedVersion[] = "13340.0.0";
+const char kCurrentVersion[] = "13332.0.25";
 const int kNoWarning = 0;
 const int kLastDayWarningInDays = 1;
 const int kShortWarningInDays = 2;
@@ -91,6 +95,12 @@ policy::MinimumVersionPolicyHandler* GetMinimumVersionPolicyHandler() {
       ->GetMinimumVersionPolicyHandler();
 }
 
+void SetPlatformVersion(const std::string& platform_version) {
+  const std::string lsb_release = base::StringPrintf(
+      "CHROMEOS_RELEASE_VERSION=%s", platform_version.c_str());
+  base::SysInfo::SetChromeOSVersionInfoForTest(lsb_release, base::Time::Now());
+}
+
 }  //  namespace
 
 class MinimumVersionPolicyTestBase : public chromeos::LoginManagerTest {
@@ -106,6 +116,7 @@ class MinimumVersionPolicyTestBase : public chromeos::LoginManagerTest {
     fake_update_engine_client_ = fake_update_engine_client.get();
     chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
         std::move(fake_update_engine_client));
+    SetPlatformVersion(kCurrentVersion);
   }
 
   // Set new value for policy and wait till setting is changed.
@@ -142,14 +153,14 @@ void MinimumVersionPolicyTestBase::SetMinimumChromeVersionPolicy(
   em::ChromeDeviceSettingsProto& proto(device_policy->payload());
   std::string policy_value;
   EXPECT_TRUE(base::JSONWriter::Write(value, &policy_value));
-  proto.mutable_minimum_chrome_version_enforced()->set_value(policy_value);
+  proto.mutable_device_minimum_version()->set_value(policy_value);
 }
 
 void MinimumVersionPolicyTestBase::SetDevicePolicyAndWaitForSettingChange(
     const base::Value& value) {
   SetMinimumChromeVersionPolicy(value);
   helper_.RefreshPolicyAndWaitUntilDeviceSettingsUpdated(
-      {chromeos::kMinimumChromeVersionEnforced});
+      {chromeos::kDeviceMinimumVersion});
 }
 
 void MinimumVersionPolicyTestBase::SetAndRefreshMinimumChromeVersionPolicy(
@@ -167,9 +178,9 @@ base::Value MinimumVersionPolicyTestBase::CreateRequirement(
     const int warning,
     const int eol_warning) const {
   base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetStringKey(MinimumVersionPolicyHandler::kChromeVersion, version);
+  dict.SetStringKey(MinimumVersionPolicyHandler::kChromeOsVersion, version);
   dict.SetIntKey(MinimumVersionPolicyHandler::kWarningPeriod, warning);
-  dict.SetIntKey(MinimumVersionPolicyHandler::KEolWarningPeriod, eol_warning);
+  dict.SetIntKey(MinimumVersionPolicyHandler::kEolWarningPeriod, eol_warning);
   return dict;
 }
 

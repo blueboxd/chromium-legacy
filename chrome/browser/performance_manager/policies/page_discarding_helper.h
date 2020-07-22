@@ -41,9 +41,8 @@ class PageDiscardingHelper : public GraphOwned,
   // Selects a tab to discard based on |strategy| and posts to the UI thread to
   // discard it. This will try to discard a tab until there's been a successful
   // discard or until there's no more discard candidate.
-  void UrgentlyDiscardAPage(
-      features::UrgentDiscardingParams::DiscardStrategy discard_strategy,
-      base::OnceCallback<void(bool)> post_discard_cb);
+  void UrgentlyDiscardAPage(features::DiscardStrategy discard_strategy,
+                            base::OnceCallback<void(bool)> post_discard_cb);
 
   // PageNodeObserver:
   void OnBeforePageNodeRemoved(const PageNode* page_node) override;
@@ -77,7 +76,7 @@ class PageDiscardingHelper : public GraphOwned,
   // the attempt has been successful. |post_discard_cb| will be called once
   // there's been a successful discard or if there's no more discard candidates.
   void PostDiscardAttemptCallback(
-      features::UrgentDiscardingParams::DiscardStrategy discard_strategy,
+      features::DiscardStrategy discard_strategy,
       base::OnceCallback<void(bool)> post_discard_cb,
       bool success);
 

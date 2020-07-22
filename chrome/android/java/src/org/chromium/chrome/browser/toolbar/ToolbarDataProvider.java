@@ -108,6 +108,13 @@ public interface ToolbarDataProvider extends ToolbarCommonPropertiesModel {
     boolean isPreview();
 
     /**
+     * @return Whether the page currently shown is a paint preview.
+     */
+    default boolean isPaintPreview() {
+        return false;
+    }
+
+    /**
      * @return The current {@link ConnectionSecurityLevel}.
      */
     @ConnectionSecurityLevel

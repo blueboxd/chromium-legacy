@@ -20,18 +20,29 @@ const INVALID_CERT = new Uint8Array([1, 2, 3, 4, 5]);
 function registerAsCertificateProvider() {
   function reportCertificates(request) {
     assertTrue(Number.isInteger(request.certificatesRequestId));
-    const validCertInfo = {
+    const validCert = {
       certificateChain: [l1LeafCert.buffer],
       supportedAlgorithms: ['RSASSA_PKCS1_v1_5_SHA1']
     };
-    const invalidCertInfo = {
+    const invalidCertBadDer = {
       certificateChain: [INVALID_CERT.buffer],
       supportedAlgorithms: ['RSASSA_PKCS1_v1_5_SHA256']
+    };
+    const invalidCertEmpty = {
+      certificateChain: [],
+      supportedAlgorithms: ['RSASSA_PKCS1_v1_5_SHA256']
+    };
+    const invalidCertNoAlgorithms = {
+      certificateChain: [l1LeafCert.buffer],
+      supportedAlgorithms: []
     };
     chrome.certificateProvider.setCertificates(
         {
           certificatesRequestId: request.certificatesRequestId,
-          clientCertificates: [validCertInfo, invalidCertInfo]
+          clientCertificates: [
+            validCert, invalidCertBadDer, invalidCertEmpty,
+            invalidCertNoAlgorithms
+          ]
         },
         () => {
           chrome.test.succeed();
@@ -68,16 +79,30 @@ function registerAsLegacyCertificateProvider() {
 // This can be combined with registerAsCertificateProvider(), but can also be
 // used on its own.
 function setCertificates() {
-  const validCertInfo = {
+  const validCert = {
     certificateChain: [l1LeafCert.buffer],
     supportedAlgorithms: ['RSASSA_PKCS1_v1_5_SHA1']
   };
-  const invalidCertInfo = {
+  const invalidCertBadDer = {
     certificateChain: [INVALID_CERT.buffer],
     supportedAlgorithms: ['RSASSA_PKCS1_v1_5_SHA256']
   };
+  const invalidCertEmpty = {
+    certificateChain: [],
+    supportedAlgorithms: ['RSASSA_PKCS1_v1_5_SHA256']
+  };
+  const invalidCertNoAlgorithms = {
+    certificateChain: [l1LeafCert.buffer],
+    supportedAlgorithms: []
+  };
   chrome.certificateProvider.setCertificates(
-      {clientCertificates: [validCertInfo, invalidCertInfo]}, () => {
+      {
+        clientCertificates: [
+          validCert, invalidCertBadDer, invalidCertEmpty,
+          invalidCertNoAlgorithms
+        ]
+      },
+      () => {
         const success = !chrome.runtime.lastError;
         domAutomationController.send(success);
       });

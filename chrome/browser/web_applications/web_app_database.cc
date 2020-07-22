@@ -118,6 +118,12 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     local_data->set_display_mode(
         ToWebAppProtoDisplayMode(web_app.display_mode()));
   }
+
+  for (const DisplayMode& display_mode : web_app.display_mode_override()) {
+    local_data->add_display_mode_override(
+        ToWebAppProtoDisplayMode(display_mode));
+  }
+
   local_data->set_description(web_app.description());
   if (!web_app.scope().is_empty())
     local_data->set_scope(web_app.scope().spec());
@@ -315,6 +321,13 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   // Optional fields:
   if (local_data.has_display_mode())
     web_app->SetDisplayMode(ToMojomDisplayMode(local_data.display_mode()));
+
+  std::vector<DisplayMode> display_mode_override;
+  for (int i = 0; i < local_data.display_mode_override_size(); i++) {
+    WebAppProto::DisplayMode display_mode = local_data.display_mode_override(i);
+    display_mode_override.push_back(ToMojomDisplayMode(display_mode));
+  }
+  web_app->SetDisplayModeOverride(std::move(display_mode_override));
 
   if (local_data.has_description())
     web_app->SetDescription(local_data.description());

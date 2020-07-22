@@ -30,6 +30,11 @@ class MenuManager {
 
     /** @private {AutomationNode} */
     this.menuAutomationNode_;
+
+    /** @private {!EventHandler} */
+    this.clickHandler_ = new EventHandler(
+        [], chrome.automation.EventType.CLICKED,
+        this.onButtonClicked_.bind(this));
   }
 
   static get instance() {
@@ -203,32 +208,20 @@ class MenuManager {
     // If the menu hasn't fully loaded, wait for that before jumping.
     if (node.children.length < 1 ||
         node.firstChild.state[chrome.automation.StateType.OFFSCREEN]) {
-      const callback = () => {
-        node.removeEventListener(
-            chrome.automation.EventType.CHILDREN_CHANGED, callback, false);
-        node.removeEventListener(
-            chrome.automation.EventType.LOCATION_CHANGED, callback, false);
-        this.jumpToMenuAutomationNode_(node);
-      };
-      node.addEventListener(
-          chrome.automation.EventType.CHILDREN_CHANGED, callback, false);
-      node.addEventListener(
-          chrome.automation.EventType.LOCATION_CHANGED, callback, false);
+      new EventHandler(
+          node,
+          [
+            chrome.automation.EventType.CHILDREN_CHANGED,
+            chrome.automation.EventType.LOCATION_CHANGED
+          ],
+          this.jumpToMenuAutomationNode_.bind(this, node), {listenOnce: true})
+          .start();
       return;
     }
 
-    // Before overriding the reference to the current menu node, remove the
-    // event handler.
-    if (this.menuAutomationNode_) {
-      this.menuAutomationNode_.removeEventListener(
-          chrome.automation.EventType.CLICKED, MenuManager.onButtonClicked_,
-          false);
-    }
-
     this.menuAutomationNode_ = node;
-    this.menuAutomationNode_.addEventListener(
-        chrome.automation.EventType.CLICKED, MenuManager.onButtonClicked_,
-        false);
+    this.clickHandler_.setNodes(this.menuAutomationNode_);
+    this.clickHandler_.start();
     NavigationManager.jumpToSwitchAccessMenu(this.menuAutomationNode_);
   }
 
@@ -238,16 +231,15 @@ class MenuManager {
    * @param {!chrome.automation.AutomationEvent} event
    * @private
    */
-  static onButtonClicked_(event) {
-    const manager = MenuManager.instance;
-    const selectedAction = manager.asAction_(event.target.value);
-    if (!manager.isMenuOpen_ || !selectedAction ||
-        manager.handleGlobalActions_(selectedAction)) {
+  onButtonClicked_(event) {
+    const selectedAction = this.asAction_(event.target.value);
+    if (!this.isMenuOpen_ || !selectedAction ||
+        this.handleGlobalActions_(selectedAction)) {
       return;
     }
 
-    if (!manager.actionNode_.hasAction(selectedAction)) {
-      manager.refreshActions_();
+    if (!this.actionNode_.hasAction(selectedAction)) {
+      this.refreshActions_();
       return;
     }
 
@@ -255,21 +247,21 @@ class MenuManager {
     // having the menu on the group stack interferes with some actions. We do
     // not close the menu bubble until we receive the ActionResponse CLOSE_MENU.
     // If we receive a different response, we re-enter the menu.
-    NavigationManager.exitIfInGroup(manager.menuAutomationNode_);
-    const response = manager.actionNode_.performAction(selectedAction);
+    NavigationManager.exitIfInGroup(this.menuAutomationNode_);
+    const response = this.actionNode_.performAction(selectedAction);
     if (response === SAConstants.ActionResponse.CLOSE_MENU ||
-        !manager.hasValidMenuAutomationNode_()) {
+        !this.hasValidMenuAutomationNode_()) {
       MenuManager.exit();
     } else {
-      NavigationManager.jumpToSwitchAccessMenu(manager.menuAutomationNode_);
+      NavigationManager.jumpToSwitchAccessMenu(this.menuAutomationNode_);
     }
 
     switch (response) {
       case SAConstants.ActionResponse.RELOAD_MAIN_MENU:
-        manager.refreshActions_();
+        this.refreshActions_();
         break;
       case SAConstants.ActionResponse.OPEN_TEXT_NAVIGATION_MENU:
-        manager.openTextNavigation_();
+        this.openTextNavigation_();
     }
   }
 

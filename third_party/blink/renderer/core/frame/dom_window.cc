@@ -426,12 +426,14 @@ void DOMWindow::PostMessageForTesting(
 }
 
 void DOMWindow::InstallCoopAccessMonitor(
+    network::mojom::blink::CoopAccessReportType report_type,
     LocalFrame* accessing_frame,
     mojo::PendingRemote<network::mojom::blink::CrossOriginOpenerPolicyReporter>
         pending_reporter) {
   CoopAccessMonitor monitor;
 
   DCHECK(accessing_frame->IsMainFrame());
+  monitor.report_type = report_type;
   monitor.accessing_main_frame = accessing_frame->GetFrameToken();
 
   // TODO(arthursonzogni): Clean coop_access_monitor_ when a reporter is gone.
@@ -473,10 +475,8 @@ void DOMWindow::ReportCoopAccess(v8::Isolate* isolate,
 
     // TODO(arthursonzogni): Capture and send the SourceLocation.
     // TODO(arthursonzogni): Send the blocked-window-url.
-    // TODO(arthursonzogni): Send whether this was access-to-coop or
-    // access-from-coop.
 
-    it->reporter->QueueAccessReport(property_name);
+    it->reporter->QueueAccessReport(it->report_type, property_name);
 
     // TODO(arthursonzogni): In the access-from-coop case, dispatch a
     // reportingObserver event.

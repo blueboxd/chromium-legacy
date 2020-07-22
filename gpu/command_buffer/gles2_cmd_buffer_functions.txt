@@ -69,7 +69,7 @@ GL_APICALL GLsync       GL_APIENTRY glFenceSync (GLenumSyncCondition condition, 
 GL_APICALL void         GL_APIENTRY glFinish (void);
 GL_APICALL void         GL_APIENTRY glFlush (void);
 GL_APICALL void         GL_APIENTRY glFramebufferRenderbuffer (GLenumFramebufferTarget target, GLenumAttachment attachment, GLenumRenderBufferTarget renderbuffertarget, GLidRenderbuffer renderbuffer);
-GL_APICALL void         GL_APIENTRY glFramebufferTexture2D (GLenumFramebufferTarget target, GLenumAttachment attachment, GLenumTextureTarget textarget, GLidTexture texture, GLint level);
+GL_APICALL void         GL_APIENTRY glFramebufferTexture2D (GLenumFramebufferTarget target, GLenumAttachment attachment, GLenumTextureFboTarget textarget, GLidTexture texture, GLint level);
 GL_APICALL void         GL_APIENTRY glFramebufferTextureLayer (GLenumFramebufferTarget target, GLenumAttachment attachment, GLidTexture texture, GLint level, GLint layer);
 GL_APICALL void         GL_APIENTRY glFrontFace (GLenumFaceMode mode);
 GL_APICALL void         GL_APIENTRY glGenBuffers (GLsizeiNotNegative n, GLuint* buffers);

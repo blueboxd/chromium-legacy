@@ -31,10 +31,12 @@ class INVALIDATION_EXPORT AckHandle {
 
   bool IsValid() const;
 
+  // Explicitly copyable and assignable for STL containers.
+  AckHandle(const AckHandle& other);
+  AckHandle& operator=(const AckHandle& other);
   ~AckHandle();
 
  private:
-  // Explicitly copyable and assignable for STL containers.
   AckHandle(const std::string& state, base::Time timestamp);
 
   std::string state_;

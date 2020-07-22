@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_handler.h"
@@ -21,6 +22,7 @@
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -71,7 +73,7 @@ class PasswordDetailsViewControllerTest : public ChromeTableViewControllerTest {
     return controller;
   }
 
-  void ShowPassword() {
+  void ShowPassword(bool isCompromised = false) {
     auto form = autofill::PasswordForm();
     form.url = GURL("http://www.example.com/");
     form.action = GURL("http://www.example.com/accounts/Login");
@@ -84,6 +86,7 @@ class PasswordDetailsViewControllerTest : public ChromeTableViewControllerTest {
     form.scheme = autofill::PasswordForm::Scheme::kHtml;
     PasswordDetails* password =
         [[PasswordDetails alloc] initWithPasswordForm:form];
+    password.compromised = isCompromised;
 
     PasswordDetailsViewController* passwords_controller =
         static_cast<PasswordDetailsViewController*>(controller());
@@ -94,6 +97,16 @@ class PasswordDetailsViewControllerTest : public ChromeTableViewControllerTest {
     TableViewTextEditItem* cell =
         static_cast<TableViewTextEditItem*>(GetTableViewItem(section, item));
     EXPECT_NSEQ(expected_text, cell.textFieldValue);
+  }
+
+  void CheckDetailItemTextWithId(int expected_detail_text_id,
+                                 int section,
+                                 int item) {
+    SettingsImageDetailTextItem* cell =
+        static_cast<SettingsImageDetailTextItem*>(
+            GetTableViewItem(section, item));
+    EXPECT_NSEQ(l10n_util::GetNSString(expected_detail_text_id),
+                cell.detailText);
   }
 
   FakePasswordDetailsHandler* handler() { return handler_; }
@@ -124,4 +137,21 @@ TEST_F(PasswordDetailsViewControllerTest, TestPassword) {
   CheckEditCellText(@"http://www.example.com/", 0, 0);
   CheckEditCellText(@"test@egmail.com", 0, 1);
   CheckEditCellText(kMaskedPassword, 0, 2);
+}
+
+// Tests that compromised password is displayed properly.
+TEST_F(PasswordDetailsViewControllerTest, TestCompromisedPassword) {
+  ShowPassword(true);
+  EXPECT_EQ(2, NumberOfSections());
+  EXPECT_EQ(3, NumberOfItemsInSection(0));
+  EXPECT_EQ(2, NumberOfItemsInSection(1));
+
+  EXPECT_NSEQ(@"example.com", controller().title);
+  CheckEditCellText(@"http://www.example.com/", 0, 0);
+  CheckEditCellText(@"test@egmail.com", 0, 1);
+  CheckEditCellText(kMaskedPassword, 0, 2);
+
+  CheckTextCellTextWithId(IDS_IOS_CHANGE_COMPROMISED_PASSWORD, 1, 0);
+  CheckDetailItemTextWithId(IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION, 1,
+                            1);
 }

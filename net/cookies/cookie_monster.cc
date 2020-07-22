@@ -765,8 +765,10 @@ void CookieMonster::StoreLoadedCookies(
 
   for (auto& cookie : cookies) {
     CanonicalCookie* cookie_ptr = cookie.get();
-    auto inserted = InternalInsertCookie(GetKey(cookie_ptr->Domain()),
-                                         std::move(cookie), false);
+    CookieAccessResult access_result;
+    access_result.access_semantics = CookieAccessSemantics::UNKNOWN;
+    auto inserted = InternalInsertCookie(
+        GetKey(cookie_ptr->Domain()), std::move(cookie), false, access_result);
     const Time cookie_access_time(cookie_ptr->LastAccessDate());
     if (earliest_access_time_.is_null() ||
         cookie_access_time < earliest_access_time_) {
@@ -1115,7 +1117,8 @@ base::Time CookieMonster::EffectiveCreationTimeForMaybePreexistingCookie(
 CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
     const std::string& key,
     std::unique_ptr<CanonicalCookie> cc,
-    bool sync_to_store) {
+    bool sync_to_store,
+    const CookieAccessResult& access_result) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CanonicalCookie* cc_ptr = cc.get();
 
@@ -1132,19 +1135,16 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
 
   // See InitializeHistograms() for details.
   int32_t type_sample =
-      !cc_ptr->IsEffectivelySameSiteNone(GetAccessSemanticsForCookie(
-          *cc_ptr, false /* legacy_access_granted */))
+      !cc_ptr->IsEffectivelySameSiteNone(access_result.access_semantics)
           ? 1 << COOKIE_TYPE_SAME_SITE
           : 0;
   type_sample |= cc_ptr->IsHttpOnly() ? 1 << COOKIE_TYPE_HTTPONLY : 0;
   type_sample |= cc_ptr->IsSecure() ? 1 << COOKIE_TYPE_SECURE : 0;
   histogram_cookie_type_->Add(type_sample);
 
+  DCHECK(access_result.status.IsInclude());
   change_dispatcher_.DispatchChange(
-      CookieChangeInfo(*cc_ptr,
-                       GetAccessSemanticsForCookie(
-                           *cc_ptr, false /* legacy_access_granted */),
-                       CookieChangeCause::INSERTED),
+      CookieChangeInfo(*cc_ptr, access_result, CookieChangeCause::INSERTED),
       true);
 
   // If this is the first cookie in |cookies_| with this key, increment the
@@ -1256,7 +1256,7 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
 
       MaybeRecordCookieAccessWithOptions(*cc, options, true);
 
-      InternalInsertCookie(key, std::move(cc), true);
+      InternalInsertCookie(key, std::move(cc), true, access_result);
     } else {
       DVLOG(net::cookie_util::kVlogSetCookies)
           << "SetCookie() not storing already expired cookie.";
@@ -1296,7 +1296,11 @@ void CookieMonster::SetAllCookies(CookieList list,
           (cookie.ExpiryDate() - creation_time).InMinutes());
     }
 
-    InternalInsertCookie(key, std::make_unique<CanonicalCookie>(cookie), true);
+    CookieAccessResult access_result;
+    access_result.access_semantics = GetAccessSemanticsForCookie(
+        cookie, false /* legacy_semantics_granted */);
+    InternalInsertCookie(key, std::make_unique<CanonicalCookie>(cookie), true,
+                         access_result);
     GarbageCollect(creation_time, key);
   }
 
@@ -1365,7 +1369,10 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
   change_dispatcher_.DispatchChange(
       CookieChangeInfo(
           *cc,
-          GetAccessSemanticsForCookie(*cc, false /* legacy_access_granted */),
+          CookieAccessResult(CookieEffectiveSameSite::UNDEFINED,
+                             CookieInclusionStatus(),
+                             GetAccessSemanticsForCookie(
+                                 *cc, false /* legacy_access_granted */)),
           mapping.cause),
       mapping.notify);
 

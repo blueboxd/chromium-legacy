@@ -165,7 +165,7 @@ bool ServiceProcessState::DeleteServiceProcessDataRegion() {
     return false;
 
   if (PathExists(path))
-    return DeleteFile(path, false);
+    return base::DeleteFile(path);
 
   // Doesn't exist, so success.
   return true;

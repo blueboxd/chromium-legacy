@@ -118,7 +118,7 @@ class DriveServiceBatchOperationsInterface {
   // for small files than using |InitiateUploadNewFile| and |ResumeUpload|.
   // |content_type| and |content_length| should be the ones of the file to be
   // uploaded.  |callback| must not be null. |progress_callback| may be null.
-  virtual google_apis::CancelCallback MultipartUploadNewFile(
+  virtual google_apis::CancelCallbackRepeating MultipartUploadNewFile(
       const std::string& content_type,
       int64_t content_length,
       const std::string& parent_resource_id,
@@ -132,7 +132,7 @@ class DriveServiceBatchOperationsInterface {
   // for small files than using |InitiateUploadExistingFile| and |ResumeUpload|.
   // |content_type| and |content_length| should be the ones of the file to be
   // uploaded.  |callback| must not be null. |progress_callback| may be null.
-  virtual google_apis::CancelCallback MultipartUploadExistingFile(
+  virtual google_apis::CancelCallbackRepeating MultipartUploadExistingFile(
       const std::string& content_type,
       int64_t content_length,
       const std::string& resource_id,
@@ -229,7 +229,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   //
   // |directory_resource_id| must not be empty.
   // |callback| must not be null.
-  virtual google_apis::CancelCallback GetFileListInDirectory(
+  virtual google_apis::CancelCallbackOnce GetFileListInDirectory(
       const std::string& directory_resource_id,
       const google_apis::FileListCallback& callback) = 0;
 
@@ -254,7 +254,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   // GetRemainingFileList.
   //
   // |title| must not be empty, and |callback| must not be null.
-  virtual google_apis::CancelCallback SearchByTitle(
+  virtual google_apis::CancelCallbackOnce SearchByTitle(
       const std::string& title,
       const std::string& directory_resource_id,
       const google_apis::FileListCallback& callback) = 0;
@@ -290,7 +290,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   // completion.
   //
   // |next_link| must not be empty. |callback| must not be null.
-  virtual google_apis::CancelCallback GetRemainingChangeList(
+  virtual google_apis::CancelCallbackOnce GetRemainingChangeList(
       const GURL& next_link,
       google_apis::ChangeListCallback callback) = 0;
 
@@ -309,7 +309,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   // |callback| will be called upon completion.
   //
   // |next_link| must not be empty. |callback| must not be null.
-  virtual google_apis::CancelCallback GetRemainingFileList(
+  virtual google_apis::CancelCallbackOnce GetRemainingFileList(
       const GURL& next_link,
       const google_apis::FileListCallback& callback) = 0;
 
@@ -396,7 +396,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   // |resource_id| from a collection represented by the |parent_resource_id|.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
-  virtual google_apis::CancelCallback RemoveResourceFromDirectory(
+  virtual google_apis::CancelCallbackOnce RemoveResourceFromDirectory(
       const std::string& parent_resource_id,
       const std::string& resource_id,
       const google_apis::EntryActionCallback& callback) = 0;
@@ -409,7 +409,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   // This function cannot be named as "CreateDirectory" as it conflicts with
   // a macro on Windows.
   // |callback| must not be null.
-  virtual google_apis::CancelCallback AddNewDirectory(
+  virtual google_apis::CancelCallbackOnce AddNewDirectory(
       const std::string& parent_resource_id,
       const std::string& directory_title,
       const AddNewDirectoryOptions& options,

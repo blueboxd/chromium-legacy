@@ -24,7 +24,7 @@ class MinimumVersionPolicyHandlerDelegateImpl
   void ShowUpdateRequiredScreen() override;
   void RestartToLoginScreen() override;
   void HideUpdateRequiredScreenIfShown() override;
-  const base::Version& GetCurrentVersion() const override;
+  base::Version GetCurrentVersion() const override;
 };
 
 }  // namespace policy

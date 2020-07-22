@@ -159,13 +159,16 @@ ExoTestWindow ExoTestHelper::CreateWindow(int width,
 }
 
 std::unique_ptr<ClientControlledShellSurface>
-ExoTestHelper::CreateClientControlledShellSurface(Surface* surface,
-                                                  bool is_modal) {
+ExoTestHelper::CreateClientControlledShellSurface(
+    Surface* surface,
+    bool is_modal,
+    bool default_scale_cancellation) {
   int container = is_modal ? ash::kShellWindowId_SystemModalContainer
                            : ash::desks_util::GetActiveDeskContainerId();
   auto shell_surface = Display().CreateClientControlledShellSurface(
       surface, container,
-      WMHelper::GetInstance()->GetDefaultDeviceScaleFactor());
+      WMHelper::GetInstance()->GetDefaultDeviceScaleFactor(),
+      default_scale_cancellation);
 
   shell_surface->set_state_changed_callback(base::BindRepeating(
       &HandleWindowStateRequest, base::Unretained(shell_surface.get())));
@@ -178,10 +181,10 @@ ExoTestHelper::CreateClientControlledShellSurface(Surface* surface,
 
 std::unique_ptr<InputMethodSurface> ExoTestHelper::CreateInputMethodSurface(
     Surface* surface,
-    InputMethodSurfaceManager* surface_manager) {
+    InputMethodSurfaceManager* surface_manager,
+    bool default_scale_cancellation) {
   auto shell_surface = std::make_unique<InputMethodSurface>(
-      surface_manager, surface,
-      WMHelper::GetInstance()->GetDefaultDeviceScaleFactor());
+      surface_manager, surface, default_scale_cancellation);
 
   shell_surface->set_state_changed_callback(base::BindRepeating(
       &HandleWindowStateRequest, base::Unretained(shell_surface.get())));
@@ -194,10 +197,10 @@ std::unique_ptr<InputMethodSurface> ExoTestHelper::CreateInputMethodSurface(
 
 std::unique_ptr<ToastSurface> ExoTestHelper::CreateToastSurface(
     Surface* surface,
-    ToastSurfaceManager* surface_manager) {
+    ToastSurfaceManager* surface_manager,
+    bool default_scale_cancellation) {
   auto shell_surface = std::make_unique<ToastSurface>(
-      surface_manager, surface,
-      WMHelper::GetInstance()->GetDefaultDeviceScaleFactor());
+      surface_manager, surface, default_scale_cancellation);
 
   shell_surface->set_state_changed_callback(base::BindRepeating(
       &HandleWindowStateRequest, base::Unretained(shell_surface.get())));

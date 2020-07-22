@@ -11,12 +11,17 @@ FakeNearbyShareDeviceDataUpdater::FakeNearbyShareDeviceDataUpdater(
 FakeNearbyShareDeviceDataUpdater::~FakeNearbyShareDeviceDataUpdater() = default;
 
 void FakeNearbyShareDeviceDataUpdater::RunNextRequest(
-    bool success,
     const base::Optional<nearbyshare::proto::UpdateDeviceResponse>& response) {
-  FinishAttempt(success, response);
+  FinishAttempt(response);
 }
 
 void FakeNearbyShareDeviceDataUpdater::HandleNextRequest() {}
+
+FakeNearbyShareDeviceDataUpdaterFactory::
+    FakeNearbyShareDeviceDataUpdaterFactory() = default;
+
+FakeNearbyShareDeviceDataUpdaterFactory::
+    ~FakeNearbyShareDeviceDataUpdaterFactory() = default;
 
 std::unique_ptr<NearbyShareDeviceDataUpdater>
 FakeNearbyShareDeviceDataUpdaterFactory::CreateInstance(

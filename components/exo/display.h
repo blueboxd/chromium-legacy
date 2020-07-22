@@ -91,11 +91,11 @@ class Display {
   std::unique_ptr<XdgShellSurface> CreateXdgShellSurface(Surface* surface);
 
   // Creates a remote shell surface for an existing surface using |container|.
-  // The surface is scaled by 1 / |default_device_scale_factor|.
   std::unique_ptr<ClientControlledShellSurface>
   CreateClientControlledShellSurface(Surface* surface,
                                      int container,
-                                     double default_device_scale_factor);
+                                     double default_device_scale_factor,
+                                     bool default_scale_cancellation);
 
   // Creates a notification surface for a surface and notification id.
   std::unique_ptr<NotificationSurface> CreateNotificationSurface(
@@ -105,12 +105,14 @@ class Display {
   // Creates a input method surface for a surface.
   std::unique_ptr<InputMethodSurface> CreateInputMethodSurface(
       Surface* surface,
-      double default_device_scale_factor);
+      double default_device_scale_factor,
+      bool default_scale_cancellation);
 
   // Creates a toast surface for a surface.
   std::unique_ptr<ToastSurface> CreateToastSurface(
       Surface* surface,
-      double default_device_scale_factor);
+      double default_device_scale_factor,
+      bool default_scale_cancellation);
 #endif  // defined(OS_CHROMEOS)
 
   // Creates a sub-surface for an existing surface. The sub-surface will be

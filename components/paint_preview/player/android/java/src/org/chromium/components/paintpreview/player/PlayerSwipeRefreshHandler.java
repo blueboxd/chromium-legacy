@@ -8,9 +8,9 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 
-import org.chromium.third_party.android.swiperefresh.SwipeRefreshLayout;
+import androidx.annotation.NonNull;
 
-import javax.annotation.Nonnull;
+import org.chromium.third_party.android.swiperefresh.SwipeRefreshLayout;
 
 /**
  * A class for handling overscroll to refresh behavior for the Paint Preview player. This is based
@@ -33,7 +33,7 @@ public class PlayerSwipeRefreshHandler implements OverscrollHandler {
      * @param context The Context to create tha handler for.
      * @param refreshCallback The handler that refresh events are delegated to.
      */
-    public PlayerSwipeRefreshHandler(Context context, @Nonnull Runnable refreshCallback) {
+    public PlayerSwipeRefreshHandler(Context context, @NonNull Runnable refreshCallback) {
         mRefreshCallback = refreshCallback;
         mSwipeRefreshLayout = new SwipeRefreshLayout(context);
         mSwipeRefreshLayout.setLayoutParams(

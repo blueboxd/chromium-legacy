@@ -17,18 +17,30 @@ struct Credentials {
   string? access_token;
 };
 
+enum KaleidoscopeTab {
+  // The content will include content of all different types.
+  kForYou,
+
+  // The content will contain only TV shows.
+  kTVShows,
+
+  // The content will contain only Movies.
+  kMovies,
+};
+
 // Provides data for the kaleidoscope page.
 interface KaleidoscopeDataProvider {
   // Returns all the Media Feeds that Kaleidoscope might decide to show.
-  GetTopMediaFeeds() => (array<media_feeds.mojom.MediaFeed> feeds);
+  // Returned feeds will be appropriate for the |tab|.
+  GetTopMediaFeeds(KaleidoscopeTab tab) => (array<media_feeds.mojom.MediaFeed> feeds);
 
   // Returns all the items from a Media Feed that Kaleidoscope might decide to
-  // show.
-  GetMediaFeedContents(int64 feed_id) => (array<media_feeds.mojom.MediaFeedItem> items);
+  // show. Returned items will be appropriate for the |tab|.
+  GetMediaFeedContents(int64 feed_id, KaleidoscopeTab tab) => (array<media_feeds.mojom.MediaFeedItem> items);
 
   // Returns all the items from the Media Feeds Store that can be displayed for
-  // continue watching.
-  GetContinueWatchingMediaFeedItems() => (array<media_feeds.mojom.MediaFeedItem> items);
+  // continue watching. Returned items will be appropriate for the |tab|.
+  GetContinueWatchingMediaFeedItems(KaleidoscopeTab tab) => (array<media_feeds.mojom.MediaFeedItem> items);
 
   // Retrieves the current credentials.
   GetCredentials() => (Credentials credentials);

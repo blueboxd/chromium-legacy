@@ -100,6 +100,7 @@ void PlayerCompositorDelegateAndroid::OnCompositorReady(
       "Browser.PaintPreview.Player.CompositorProcessStartedCorrectly",
       compositor_started);
   if (!compositor_started && compositor_error_) {
+    LOG(ERROR) << "Compositor process failed to begin with code: " << status;
     std::move(compositor_error_).Run();
     return;
   }

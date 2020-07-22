@@ -314,11 +314,14 @@ class ClientControlledShellSurface::ScopedLockedToRoot {
 ////////////////////////////////////////////////////////////////////////////////
 // ClientControlledShellSurface, public:
 
-ClientControlledShellSurface::ClientControlledShellSurface(Surface* surface,
-                                                           bool can_minimize,
-                                                           int container)
+ClientControlledShellSurface::ClientControlledShellSurface(
+    Surface* surface,
+    bool can_minimize,
+    int container,
+    bool default_scale_cancellation)
     : ShellSurfaceBase(surface, gfx::Point(), true, can_minimize, container),
-      current_pin_(ash::WindowPinType::kNone) {
+      current_pin_(ash::WindowPinType::kNone),
+      use_default_scale_cancellation_(default_scale_cancellation) {
   display::Screen::GetScreen()->AddObserver(this);
 }
 
@@ -345,8 +348,32 @@ void ClientControlledShellSurface::SetBounds(int64_t display_id,
     return;
   }
 
+  // Handle the case where we receive bounds from the client before the initial
+  // scale has been set.
+  if (pending_scale_ == 0.0) {
+    DCHECK(!use_default_scale_cancellation_);
+    display::Display display;
+    if (display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id,
+                                                              &display)) {
+      SetScale(display.device_scale_factor());
+      CommitPendingScale();
+    }
+  }
+
+  float client_to_dp_scale = 1.f;
+  // When the client is scale-aware, we expect that it will resize windows when
+  // reacting to scale changes. Since we do not commit the scale until the
+  // buffer size changes, any bounds sent after a scale change and before the
+  // scale commit will result in mismatched sizes between widget and the buffer.
+  // To work around this, we use pending_scale_ to calculate bounds in DP
+  // instead of GetClientToDpScale().
+  if (!use_default_scale_cancellation_)
+    client_to_dp_scale = 1.f / pending_scale_;
+
+  gfx::Rect bounds_dp = gfx::ScaleToRoundedRect(bounds, client_to_dp_scale);
+
   SetDisplay(display_id);
-  SetGeometry(bounds);
+  SetGeometry(bounds_dp);
 }
 
 void ClientControlledShellSurface::SetBoundsOrigin(const gfx::Point& origin) {
@@ -472,13 +499,13 @@ void ClientControlledShellSurface::SetScale(double scale) {
 }
 
 void ClientControlledShellSurface::CommitPendingScale() {
-  if (pending_scale_ != scale_) {
-    gfx::Transform transform;
-    DCHECK_NE(pending_scale_, 0.0);
-    transform.Scale(1.0 / pending_scale_, 1.0 / pending_scale_);
-    host_window()->SetTransform(transform);
-    scale_ = pending_scale_;
-  }
+  if (pending_scale_ == scale_ || pending_scale_ == 0.0)
+    return;
+
+  gfx::Transform transform;
+  transform.Scale(1.0 / pending_scale_, 1.0 / pending_scale_);
+  host_window()->SetTransform(transform);
+  scale_ = pending_scale_;
 }
 
 void ClientControlledShellSurface::SetTopInset(int height) {
@@ -631,47 +658,53 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
     int bounds_change) {
   if (ignore_bounds_change_request_)
     return;
+
   // 1) Do no update the bounds unless we have geometry from client.
   // 2) Do not update the bounds if window is minimized unless it
   // exiting the minimzied state.
   // The bounds will be provided by client when unminimized.
-  if (!geometry().IsEmpty() && !window_bounds.IsEmpty() &&
-      (!widget_->IsMinimized() ||
-       requested_state != ash::WindowStateType::kMinimized) &&
-      bounds_changed_callback_) {
-    // Sends the client bounds, which matches the geometry
-    // when frame is enabled.
-    ash::NonClientFrameViewAsh* frame_view = GetFrameView();
+  if (geometry().IsEmpty() || window_bounds.IsEmpty() ||
+      (widget_->IsMinimized() &&
+       requested_state == ash::WindowStateType::kMinimized) ||
+      !bounds_changed_callback_) {
+    return;
+  }
 
-    // The client's geometry uses fullscreen in client controlled,
-    // (but the surface is placed under the frame), so just use
-    // the window bounds instead for maximixed state.
-    // Snapped window states in tablet mode do not include the caption height.
-    const bool becoming_snapped =
-        requested_state == ash::WindowStateType::kLeftSnapped ||
-        requested_state == ash::WindowStateType::kRightSnapped;
-    const bool is_tablet_mode = WMHelper::GetInstance()->InTabletMode();
-    gfx::Rect client_bounds =
-        widget_->IsMaximized() || (becoming_snapped && is_tablet_mode)
-            ? window_bounds
-            : frame_view->GetClientBoundsForWindowBounds(window_bounds);
-    gfx::Size current_size = frame_view->GetBoundsForClientView().size();
-    bool is_resize = client_bounds.size() != current_size &&
-                     !widget_->IsMaximized() && !widget_->IsFullscreen();
+  // Sends the client bounds, which matches the geometry
+  // when frame is enabled.
+  ash::NonClientFrameViewAsh* frame_view = GetFrameView();
 
-    bounds_changed_callback_.Run(current_state, requested_state, display_id,
-                                 client_bounds, is_resize, bounds_change);
+  // The client's geometry uses fullscreen in client controlled,
+  // (but the surface is placed under the frame), so just use
+  // the window bounds instead for maximixed state.
+  // Snapped window states in tablet mode do not include the caption height.
+  const bool becoming_snapped =
+      requested_state == ash::WindowStateType::kLeftSnapped ||
+      requested_state == ash::WindowStateType::kRightSnapped;
+  const bool is_tablet_mode = WMHelper::GetInstance()->InTabletMode();
+  gfx::Rect client_bounds =
+      widget_->IsMaximized() || (becoming_snapped && is_tablet_mode)
+          ? window_bounds
+          : frame_view->GetClientBoundsForWindowBounds(window_bounds);
+  gfx::Size current_size = frame_view->GetBoundsForClientView().size();
+  bool is_resize = client_bounds.size() != current_size &&
+                   !widget_->IsMaximized() && !widget_->IsFullscreen();
 
-    auto* window_state = GetWindowState();
-    if (server_reparent_window_ &&
-        window_state->GetDisplay().id() != display_id) {
-      ScopedSetBoundsLocally scoped_set_bounds(this);
-      int container_id = window_state->window()->parent()->id();
-      aura::Window* new_parent =
-          ash::Shell::GetRootWindowControllerWithDisplayId(display_id)
-              ->GetContainer(container_id);
-      new_parent->AddChild(window_state->window());
-    }
+  const float scale = 1.f / GetClientToDpScale();
+  const gfx::Rect scaled_client_bounds =
+      gfx::ScaleToRoundedRect(client_bounds, scale);
+  bounds_changed_callback_.Run(current_state, requested_state, display_id,
+                               scaled_client_bounds, is_resize, bounds_change);
+
+  auto* window_state = GetWindowState();
+  if (server_reparent_window_ &&
+      window_state->GetDisplay().id() != display_id) {
+    ScopedSetBoundsLocally scoped_set_bounds(this);
+    int container_id = window_state->window()->parent()->id();
+    aura::Window* new_parent =
+        ash::Shell::GetRootWindowControllerWithDisplayId(display_id)
+            ->GetContainer(container_id);
+    new_parent->AddChild(window_state->window());
   }
 }
 
@@ -689,8 +722,20 @@ void ClientControlledShellSurface::OnDragStarted(int component) {
 void ClientControlledShellSurface::OnDragFinished(bool canceled,
                                                   const gfx::PointF& location) {
   in_drag_ = false;
-  if (drag_finished_callback_)
-    drag_finished_callback_.Run(location.x(), location.y(), canceled);
+  if (!drag_finished_callback_)
+    return;
+
+  const float scale = 1.f / GetClientToDpScale();
+  const gfx::PointF scaled = gfx::ScalePoint(location, scale);
+  drag_finished_callback_.Run(scaled.x(), scaled.y(), canceled);
+}
+
+float ClientControlledShellSurface::GetClientToDpScale() const {
+  // If the default_device_scale_factor is used for scale cancellation,
+  // we expect the client will already send bounds in DP.
+  if (use_default_scale_cancellation_)
+    return 1.f;
+  return 1.f / scale_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -801,6 +846,8 @@ gfx::Size ClientControlledShellSurface::GetMaximumSize() const {
 void ClientControlledShellSurface::OnDeviceScaleFactorChanged(float old_dsf,
                                                               float new_dsf) {
   views::View::OnDeviceScaleFactorChanged(old_dsf, new_dsf);
+
+  UpdateWidgetBounds();
   UpdateFrameWidth();
 }
 
@@ -810,11 +857,14 @@ void ClientControlledShellSurface::OnDeviceScaleFactorChanged(float old_dsf,
 void ClientControlledShellSurface::OnDisplayMetricsChanged(
     const display::Display& new_display,
     uint32_t changed_metrics) {
+  if (!widget_)
+    return;
+
   // The PIP window bounds is adjusted in Ash when the screen is rotated, but
   // Android has an obsolete bounds for a while and applies it incorrectly.
   // We need to ignore those bounds change until the states are completely
   // synced on both sides.
-  if (widget_ && GetWindowState()->IsPip() &&
+  if (GetWindowState()->IsPip() &&
       changed_metrics & display::DisplayObserver::DISPLAY_METRIC_ROTATION) {
     gfx::Rect bounds_after_rotation =
         ash::PipPositioner::GetSnapFractionAppliedBounds(GetWindowState());
@@ -823,15 +873,24 @@ void ClientControlledShellSurface::OnDisplayMetricsChanged(
         GetWindowState()->window()->GetBoundsInScreen();
   }
 
-  if (!widget_ || !widget_->IsActive() ||
-      !WMHelper::GetInstance()->InTabletMode()) {
-    return;
-  }
-
   const display::Screen* screen = display::Screen::GetScreen();
   display::Display current_display =
       screen->GetDisplayNearestWindow(widget_->GetNativeWindow());
-  if (current_display.id() != new_display.id() ||
+  if (current_display.id() != new_display.id())
+    return;
+
+  if (!use_default_scale_cancellation_ &&
+      changed_metrics &
+          display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR) {
+    SetScale(new_display.device_scale_factor());
+    // Commit scale changes immediately if we expect that the window will not be
+    // resized.
+    if (frame_type_ != SurfaceFrameType::NORMAL || widget_->IsMaximized() ||
+        widget_->IsFullscreen())
+      CommitPendingScale();
+  }
+
+  if (!WMHelper::GetInstance()->InTabletMode() || !widget_->IsActive() ||
       !(changed_metrics & display::DisplayObserver::DISPLAY_METRIC_ROTATION)) {
     return;
   }
@@ -881,6 +940,13 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
     preserve_widget_bounds_ = is_display_move_pending;
   } else {
     preserve_widget_bounds_ = false;
+  }
+
+  if (!use_default_scale_cancellation_) {
+    bool needs_initial_commit = pending_scale_ == 0.0;
+    SetScale(current_display.device_scale_factor());
+    if (needs_initial_commit)
+      CommitPendingScale();
   }
 
   // Calculate a minimum window visibility required bounds.
@@ -1120,8 +1186,11 @@ void ClientControlledShellSurface::OnPostWidgetCommit() {
   UpdateFrame();
   UpdateBackdrop();
 
-  if (geometry_changed_callback_)
-    geometry_changed_callback_.Run(GetVisibleBounds());
+  if (geometry_changed_callback_) {
+    const float scale = 1.f / GetClientToDpScale();
+    const gfx::Rect scaled = gfx::ScaleToRoundedRect(GetVisibleBounds(), scale);
+    geometry_changed_callback_.Run(scaled);
+  }
 
   // Apply new top inset height.
   if (pending_top_inset_height_ != top_inset_height_) {
@@ -1131,7 +1200,8 @@ void ClientControlledShellSurface::OnPostWidgetCommit() {
   }
 
   // Update surface scale.
-  CommitPendingScale();
+  if (use_default_scale_cancellation_)
+    CommitPendingScale();
 
   widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
                                           pending_always_on_top_
@@ -1155,6 +1225,10 @@ void ClientControlledShellSurface::OnSurfaceDestroying(Surface* surface) {
   if (client_controlled_state_)
     client_controlled_state_->ResetDelegate();
   ShellSurfaceBase::OnSurfaceDestroying(surface);
+}
+
+void ClientControlledShellSurface::OnContentSizeChanged(Surface* surface) {
+  CommitPendingScale();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

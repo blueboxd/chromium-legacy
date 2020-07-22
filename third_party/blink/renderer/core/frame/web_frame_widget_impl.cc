@@ -505,7 +505,9 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
         break;
       case WebInputEvent::Type::kMouseDown:
         event_type = event_type_names::kMousedown;
-        LocalFrame::NotifyUserActivation(target->GetDocument().GetFrame());
+        LocalFrame::NotifyUserActivation(
+            target->GetDocument().GetFrame(),
+            mojom::blink::UserActivationNotificationType::kInteraction);
         break;
       case WebInputEvent::Type::kMouseUp:
         event_type = event_type_names::kMouseup;

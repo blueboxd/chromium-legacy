@@ -538,6 +538,7 @@
       'policies': [
         'NativeMessagingBlacklist',
         'NativeMessagingBlocklist',
+        'NativeMessagingAllowlist',
         'NativeMessagingWhitelist',
         'NativeMessagingUserLevelHosts',
       ],
@@ -919,8 +920,8 @@
         'DeviceRollbackToTargetVersion',
         'DeviceRollbackAllowedMilestones',
         'DeviceQuickFixBuildToken',
-        'MinimumChromeVersionEnforced',
-        'MinimumChromeVersionAueMessage',
+        'DeviceMinimumVersion',
+        'DeviceMinimumVersionAueMessage',
       ],
     },
     {
@@ -6457,6 +6458,7 @@
         'items': { 'type': 'string' },
       },
       'supported_on': ['chrome.*:34-'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -6468,12 +6470,41 @@
       'id': 252,
       'caption': '''Configure native messaging whitelist''',
       'tags': [],
-      'desc': '''Allows you to specify which native messaging hosts are not subject to the blacklist.
+      'desc': '''This policy is deprecated, please use the '<ph name="NATIVE_MESSAGING_ALLOWLIST_POLICY_NAME">NativeMessagingAllowlist</ph>' policy instead.
 
-          A blacklist value of * means all native messaging hosts are blacklisted and only native messaging hosts listed in the whitelist will be loaded.
+          Allows you to specify which native messaging hosts are not subject to the blocklist.
 
-          By default, all native messaging hosts are whitelisted, but if all native messaging hosts have been blacklisted by policy, the whitelist can be used to override that policy.''',
-      'label': '''Names of the native messaging hosts to exempt from the blacklist''',
+          A blocklist value of * means all native messaging hosts are blocked and only native messaging hosts listed in the allowlist will be loaded.
+
+          By default, all native messaging hosts are allowed, but if all native messaging hosts have been blocked by policy, the allowlist can be used to override that policy.''',
+      'label': '''Names of the native messaging hosts to exempt from the blocklist''',
+    },
+    {
+      'name': 'NativeMessagingAllowlist',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:86-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': [
+        'com.native.messaging.host.name1',
+        'com.native.messaging.host.name2',
+      ],
+      'id': 745,
+      'caption': '''Configure native messaging allowlist''',
+      'tags': [],
+      'desc': '''Allows you to specify which native messaging hosts are not subject to the blocklist.
+
+          A blocklist value of * means all native messaging hosts are blocked and only native messaging hosts listed in the allowlist will be loaded.
+
+          By default, all native messaging hosts are allowed, but if all native messaging hosts have been blocked by policy, the allowlist can be used to override that policy.''',
+      'label': '''Names of the native messaging hosts to exempt from the blocklist''',
     },
     {
       'name': 'NativeMessagingUserLevelHosts',
@@ -14954,7 +14985,7 @@
       'id': 394,
       'caption': '''Configure minimum allowed Chrome version for the device.''',
       'tags': [],
-      'desc': '''This policy is removed in M82, please use MinimumChromeVersionEnforced instead.
+      'desc': '''This policy is removed in M82, please use DeviceMinimumVersion instead.
 
       Configures the requirement of the minimum allowed version of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Versions below given are treated as obsolete and device would not allow user sign in before OS is updated.
 
@@ -14965,10 +14996,9 @@
       Here "Version" can be either an exact version like '61.0.3163.120' or a version prefix, like '61.0'  ''',
     },
     {
-      'name': 'MinimumChromeVersionEnforced',
+      'name': 'DeviceMinimumVersion',
       'owners': ['snijhara@google.com'],
-      'supported_on': ['chrome_os:86-'],
-      'future': True,
+      'future_on': ['chrome_os'],
       'device_only': True,
       'type': 'dict',
       'schema': {
@@ -14976,22 +15006,22 @@
         'items': {
           'type': 'object',
           'properties': {
-            'chrome_version': {
-              'description': '''Minimum allowed Chrome version''',
+            'chromeos_version': {
+              'description': '''Minimum allowed <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version''',
               'type': 'string',
             },
             'warning_period': {
-              'description': '''Time in days after which the user will be logged off if Chrome version is less than the "chrome_version"''',
+              'description': '''Time in days after which the user will be signed out if <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version is less than the specified <ph name="CHROMEOS_VERSION_PROPERTY_NAME">chromeos_version</ph>''',
               'type': 'integer',
               'minimum': 0,
             },
             'aue_warning_period': {
-              'description': '''Time in days after auto update expiration post which the user will be logged off''',
+              'description': '''Time in days after auto update expiration post which the user will be signed out if <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version is less than the specified <ph name="CHROMEOS_VERSION_PROPERTY_NAME">chromeos_version</ph>''',
               'type': 'integer',
               'minimum': 0,
             },
           },
-          'required': ['chrome_version'],
+          'required': ['chromeos_version'],
         },
       },
       'features': {
@@ -15000,41 +15030,41 @@
       },
       'example_value': [
         {
-          "chrome_version" : "78",
+          "chromeos_version" : "12215",
           "warning_period" : 0,
           "aue_warning_period" : 14
         }, {
-          "chrome_version" : "83",
+          "chromeos_version" : "13315.60.12",
           "warning_period" : 10,
           "aue_warning_period" : 21
         }
       ],
       'id': 670,
-      'caption': '''Configure minimum allowed Chrome version for the device.''',
+      'caption': '''Configure minimum allowed Chrome OS version for the device.''',
       'tags': [],
-      'desc': '''Configures the requirement of the minimum allowed version of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'desc': '''Configures the requirement of the minimum allowed version of <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.
 
-      When this policy is set to a non-empty list :
-      If none of the entries has a "chrome_version" greater than the current version in the device, then no restrictions are applied and the already existing restrictions are revoked.
-      If at least one of the entries has a "chrome_version" greater than the current version, the strongest entry is chosen whose version is closest to the current version.
-      In case of conflict, preference is given to the one with lesser "warning_period" or "aue_warning_period" and the policy is applied using that entry.
+      When this policy is set to a non-empty list:
+      If none of the entries has a <ph name="CHROMEOS_VERSION_PROPERTY_NAME">chromeos_version</ph> greater than the current version of the device, then no restrictions are applied and the already existing restrictions are revoked.
+      If at least one of the entries has a <ph name="CHROMEOS_VERSION_PROPERTY_NAME">chromeos_version</ph> greater than the current version, the strongest entry is chosen whose version is greater and closest to the current version.
+      In case of conflict, preference is given to the entry with lower <ph name="WARNING_PERIOD_PROPERTY_NAME">warning_period</ph> or <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME">aue_warning_period</ph> and the policy is applied using that entry.
 
-      If current version becomes obsolete during user session and the current network limits auto updates, an on-screen notification is shown to update the device within the "warning_period" shown in the notification.
-      No notifications are shown if the current network allows auto updates and the device must be updated within the "warning_period".
-      The "warning_period" starts from the time the policy is applied.
-      If the device is not updated till the expiry of the "warning_period", the user is logged out of the session.
-      If the current version is found to be obsolete at the time of login with expired "warning_period", the user is required to update the device before signing in.
+      If the current version becomes obsolete during user session and the current network limits auto updates, an on-screen notification is shown to update the device within the <ph name="WARNING_PERIOD_PROPERTY_NAME">warning_period</ph> shown in the notification.
+      No notifications are shown if the current network allows auto updates and the device must be updated within the <ph name="WARNING_PERIOD_PROPERTY_NAME">warning_period</ph>.
+      The <ph name="WARNING_PERIOD_PROPERTY_NAME">warning_period</ph> starts from the time the policy is applied.
+      If the device is not updated till the expiry of the <ph name="WARNING_PERIOD_PROPERTY_NAME">warning_period</ph>, the user is signed out of the session.
+      If the current version is found to be obsolete at the time of login with expired <ph name="WARNING_PERIOD_PROPERTY_NAME">warning_period</ph>, the user is required to update the device before signing in.
 
-      If current version becomes obsolete during user session and the device has reached auto update expiration, an on-screen notification is shown to return the device within "eol_warning_period".
-      If the device is found to have reached auto update expiration at the time of login with expired "eol_warning_period", the device is blocked for any user to sign in.
+      If the current version becomes obsolete during user session and the device has reached auto update expiration, an on-screen notification is shown to return the device within <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME">aue_warning_period</ph>.
+      If the device is found to have reached auto update expiration at the time of login with expired <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME">aue_warning_period</ph>, the device is blocked for any user to sign in.
 
-      If this policy is not set or set to empty, no restrictions are applied, already existing restrictions are revoked and user can sign in regardless of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version.
+      If this policy is not set or set to empty, no restrictions are applied, already existing restrictions are revoked and user can sign in regardless of <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version.
 
-      Here "chrome_version" can be either an exact version like '61.0.3163.120' or a version prefix, like '61.0'.
-      The "warning_period" and "aue_warning_period" are optional values specified in number of days. Default value for them is 0 days, which means that there is no warning period. ''',
+      Here <ph name="CHROMEOS_VERSION_PROPERTY_NAME">chromeos_version</ph> can be either an exact version like '13305.0.0' or a version prefix, like '13305'.
+      The <ph name="WARNING_PERIOD_PROPERTY_NAME">warning_period</ph> and <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME">aue_warning_period</ph> are optional values specified in number of days. Default value for them is 0 days, which means that there is no warning period.''',
     },
     {
-      'name': 'MinimumChromeVersionAueMessage',
+      'name': 'DeviceMinimumVersionAueMessage',
       'owners': ['snijhara@google.com', 'marcgrimme@chromium.org'],
       'future_on': ['chrome_os'],
       'device_only': True,
@@ -15046,16 +15076,16 @@
       },
       'example_value': 'This device has reached auto update expiration. Kindly return it.',
       'id': 714,
-      'caption': '''Configure auto update expiration message for MinimumChromeVersionEnforced policy''',
+      'caption': '''Configure auto update expiration message for DeviceMinimumVersion policy''',
       'tags': [],
-      'desc': '''This policy is only effective when the device has reached auto update expiration and does not meet the minimum allowed version of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> set through <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME">MinimumChromeVersionEnforced</ph> policy.
+      'desc': '''This policy is only effective when the device has reached auto update expiration and does not meet the minimum allowed version of <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> set through <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME">DeviceMinimumVersion</ph> policy.
 
       When this policy is set to a non-empty string :
-      If the warning time mentioned in <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME">MinimumChromeVersionEnforced</ph> policy has expired, this message is shown at the login screen when the device is blocked for any user to sign in.
-      If the warning time mentioned in <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME">MinimumChromeVersionEnforced</ph> policy has not expired, this message is shown in the Settings page after user sign in.
+      If the warning time mentioned in <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME">DeviceMinimumVersion</ph> policy has expired, this message is shown at the login screen when the device is blocked for any user to sign in.
+      If the warning time mentioned in <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME">DeviceMinimumVersion</ph> policy has not expired, this message is shown on the Chrome management page after user sign in.
 
-      If this policy is not set or set to empty, the default end-of-life message is shown to the user in both of the above cases.
-      The end of life message must be plain text without any formatting. No markup is allowed. ''',
+      If this policy is not set or set to empty, the default auto update expiration message is shown to the user in both of the above cases.
+      The auto update expiration message must be plain text without any formatting. No markup is allowed.''',
     },
     {
       'name': 'QuickUnlockModeWhitelist',
@@ -22556,12 +22586,12 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DevicePowerwashAllowed': 'device_powerwash_allowed.device_powerwash_allowed',
     'DeviceLoginScreenWebUsbAllowDevicesForUrls': 'device_login_screen_webusb_allow_devices_for_urls.device_login_screen_webusb_allow_devices_for_urls',
     'DeviceWebBasedAttestationAllowedUrls': 'device_web_based_attestation_allowed_urls.value',
-    'MinimumChromeVersionEnforced' : 'minimum_chrome_version_enforced.value',
+    'DeviceMinimumVersion': 'device_minimum_version.value',
     'SystemProxySettings': 'system_proxy_settings.system_proxy_settings',
     'DeviceLoginScreenPrivacyScreenEnabled': 'device_login_screen_privacy_screen_enabled.enabled',
     'RequiredClientCertificateForDevice': 'required_client_certificate_for_device.required_client_certificate_for_device',
     'DeviceCrostiniArcAdbSideloadingAllowed': 'device_crostini_arc_adb_sideloading_allowed.mode',
-    'MinimumChromeVersionAueMessage' : 'minimum_chrome_version_aue_message.value',
+    'DeviceMinimumVersionAueMessage': 'device_minimum_version_aue_message.value',
     'ManagedGuestSessionPrivacyWarningsEnabled' : 'managed_guest_session_privacy_warnings.enabled',
   },
   'policy_atomic_group_definitions': [
@@ -22764,6 +22794,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       'policies': [
         'NativeMessagingBlacklist',
         'NativeMessagingBlocklist',
+        'NativeMessagingAllowlist',
         'NativeMessagingWhitelist',
         'NativeMessagingUserLevelHosts',
       ],
@@ -23034,6 +23065,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 744,
+  'highest_id_currently_used': 745,
   'highest_atomic_group_id_currently_used': 38
 }

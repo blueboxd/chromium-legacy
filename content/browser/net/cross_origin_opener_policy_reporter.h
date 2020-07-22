@@ -45,7 +45,8 @@ class CONTENT_EXPORT CrossOriginOpenerPolicyReporter final
   void QueueOpenerBreakageReport(const GURL& other_url,
                                  bool is_reported_from_document,
                                  bool is_report_only) final;
-  void QueueAccessReport(const std::string& property) final;
+  void QueueAccessReport(network::mojom::CoopAccessReportType report_type,
+                         const std::string& property) final;
 
   // Returns the "previous" URL that is safe to expose.
   // Reference, "Next document URL for reporting" section:

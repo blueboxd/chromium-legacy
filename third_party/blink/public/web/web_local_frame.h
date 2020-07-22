@@ -27,6 +27,7 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-shared.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-shared.h"
 #include "third_party/blink/public/mojom/selection_menu/selection_menu_behavior.mojom-shared.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
@@ -736,7 +737,9 @@ class WebLocalFrame : public WebFrame {
   // User activation -----------------------------------------------------------
 
   // See blink::LocalFrame::NotifyUserActivation().
-  virtual void NotifyUserActivation() = 0;
+  virtual void NotifyUserActivation(
+      mojom::UserActivationNotificationType notification_type =
+          mojom::UserActivationNotificationType::kNone) = 0;
 
   // See blink::LocalFrame::HasStickyUserActivation().
   virtual bool HasStickyUserActivation() = 0;

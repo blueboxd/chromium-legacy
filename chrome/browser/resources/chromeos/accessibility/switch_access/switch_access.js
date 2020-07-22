@@ -65,31 +65,26 @@ class SwitchAccess {
     }
     // If it's not currently in the tree, listen for changes to the desktop
     // tree.
-    const onDesktopChildrenChanged = (event) => {
+    const eventPredicate = (event) => {
       if (predicate(event.target)) {
-        // If the event target is the node we're looking for, we've found it.
-        desktop.removeEventListener(
-            chrome.automation.EventType.CHILDREN_CHANGED,
-            onDesktopChildrenChanged, false);
-        foundCallback(event.target);
+        return true;
       } else if (event.target.children.length > 0) {
-        // Otherwise, see if one of its children is the node we're looking for.
+        // See if one of its children is the node we're looking for.
         const treeWalker = new AutomationTreeWalker(
             event.target, constants.Dir.FORWARD,
             {visit: predicate, root: (node) => node == event.target});
         treeWalker.next();
-        if (treeWalker.node) {
-          desktop.removeEventListener(
-              chrome.automation.EventType.CHILDREN_CHANGED,
-              onDesktopChildrenChanged, false);
-          foundCallback(treeWalker.node);
-        }
+        return !!treeWalker.node;
+      } else {
+        return false;
       }
     };
 
-    desktop.addEventListener(
-        chrome.automation.EventType.CHILDREN_CHANGED, onDesktopChildrenChanged,
-        false);
+    new EventHandler(
+        desktop, chrome.automation.EventType.CHILDREN_CHANGED,
+        (event) => foundCallback(event.target),
+        {listenOnce: true, predicate: eventPredicate})
+        .start();
   }
 
   /*

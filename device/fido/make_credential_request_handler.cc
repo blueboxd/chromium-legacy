@@ -301,6 +301,16 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
     return false;
   }
 
+  if (response.enterprise_attestation_returned &&
+      (request.attestation_preference !=
+           AttestationConveyancePreference::
+               kEnterpriseIfRPListedOnAuthenticator &&
+       request.attestation_preference !=
+           AttestationConveyancePreference::kEnterpriseApprovedByBrowser)) {
+    FIDO_LOG(ERROR) << "Enterprise attestation returned but not requested.";
+    return false;
+  }
+
   return true;
 }
 }  // namespace
@@ -956,6 +966,12 @@ void MakeCredentialRequestHandler::SpecializeRequestForAuthenticator(
 
   if (request->hmac_secret && !authenticator->SupportsHMACSecretExtension()) {
     request->hmac_secret = false;
+  }
+
+  if (request->attestation_preference !=
+          AttestationConveyancePreference::kNone &&
+      !authenticator->SupportsEnterpriseAttestation()) {
+    request->attestation_preference = AttestationConveyancePreference::kNone;
   }
 }
 

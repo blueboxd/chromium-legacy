@@ -2387,6 +2387,9 @@ Unknown properties are collapsed to zero. -->
   <int value="34" label="App install dialog shown"/>
   <int value="35" label="Cannot check service worker for null start URL"/>
   <int value="36" label="prefer_related_applications set to true"/>
+  <int value="37"
+      label="prefer_related_applications is only supported on Chrome Beta
+             &amp; Stable on Android"/>
 </enum>
 
 <enum name="AppBannersInstallEvent">
@@ -15954,6 +15957,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="16" label="showGridAreas.false"/>
   <int value="17" label="showGridAreas.true"/>
   <int value="18" label="showGridLineNumbers.names"/>
+  <int value="19" label="showGridTrackSizes.false"/>
+  <int value="20" label="showGridTrackSizes.true"/>
 </enum>
 
 <enum name="DevToolsIssuesPanelOpenedFrom">
@@ -21192,7 +21197,7 @@ Called by update_document_policy_enum.py.-->
   <int value="667" label="AdvancedProtectionDeepScanningEnabled"/>
   <int value="668" label="BlockUnsupportedFiletypes"/>
   <int value="669" label="URLsToNotCheckForMalwareOfDownloadedContent"/>
-  <int value="670" label="MinimumChromeVersionEnforced"/>
+  <int value="670" label="DeviceMinimumVersion"/>
   <int value="671" label="ReportDeviceTimezoneInfo"/>
   <int value="672" label="SystemProxySettings"/>
   <int value="673" label="UserDataSnapshotRetentionLimit"/>
@@ -21236,7 +21241,7 @@ Called by update_document_policy_enum.py.-->
   <int value="711" label="EnableExperimentalPolicies"/>
   <int value="712" label="PluginVmDataCollectionAllowed"/>
   <int value="713" label="IntensiveWakeUpThrottlingEnabled"/>
-  <int value="714" label="MinimumChromeVersionEolMessage"/>
+  <int value="714" label="DeviceMinimumVersionAueMessage"/>
   <int value="715" label="DefaultSearchProviderContextMenuAccessAllowed"/>
   <int value="716" label="CrostiniPortForwardingAllowed"/>
   <int value="717" label="VirtualKeyboardFeatures"/>
@@ -21267,6 +21272,7 @@ Called by update_document_policy_enum.py.-->
   <int value="742" label="AutoplayAllowlist"/>
   <int value="743" label="DevicePrinters"/>
   <int value="744" label="NativeMessagingBlocklist"/>
+  <int value="745" label="NativeMessagingAllowlist"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -40682,6 +40688,7 @@ from previous Chrome versions.
   <int value="-1107762575" label="enable-data-reduction-proxy-config-client"/>
   <int value="-1107103335" label="FsNosymfollow:enabled"/>
   <int value="-1105637876" label="FilteringScrollPrediction:enabled"/>
+  <int value="-1104914981" label="frame-throttle-fps"/>
   <int value="-1103099187" label="NotificationStackingBarRedesign:disabled"/>
   <int value="-1102212525" label="enable-tcp-fastopen"/>
   <int value="-1101334831" label="SyncSupportTrustedVaultPassphrase:disabled"/>
@@ -42736,6 +42743,7 @@ from previous Chrome versions.
   <int value="1166897718" label="TextSuggestionsTouchBar:disabled"/>
   <int value="1167350114" label="AndroidNightMode:enabled"/>
   <int value="1167613030" label="enable-permission-action-reporting"/>
+  <int value="1168226627" label="OmniboxMaxZeroSuggestMatches:enabled"/>
   <int value="1169418814" label="ManualFallbacksFilling:enabled"/>
   <int value="1173244409" label="AutofillUseMobileLabelDisambiguation:enabled"/>
   <int value="1174088940" label="enable-wasm"/>
@@ -42901,6 +42909,7 @@ from previous Chrome versions.
   <int value="1334185492" label="TurnOffStreamingMediaCaching:disabled"/>
   <int value="1338356182" label="AutofillAssistantChromeEntry:disabled"/>
   <int value="1338864675" label="EnableTouchableAppContextMenu:disabled"/>
+  <int value="1339191800" label="OmniboxMaxZeroSuggestMatches:disabled"/>
   <int value="1339426771" label="TopSitesFromSiteEngagement:disabled"/>
   <int value="1340690624" label="WebPaymentsMethodSectionOrderV2:disabled"/>
   <int value="1343050930" label="ContextualSearchUnityIntegration:enabled"/>
@@ -70070,6 +70079,8 @@ Full version information for the fingerprint enum values:
   <int value="8" label="Verification Failed"/>
   <int value="9" label="Post-install Failed"/>
   <int value="10" label="Abnormal Termination"/>
+  <int value="11" label="Update Cancelled"/>
+  <int value="12" label="Update Succeeded But Not Active"/>
 </enum>
 
 <enum name="UpdateEngineCertificateCheckStatus">

@@ -37,63 +37,63 @@ void DedicatedWorkerServiceImpl::RemoveObserver(Observer* observer) {
 
 void DedicatedWorkerServiceImpl::EnumerateDedicatedWorkers(Observer* observer) {
   for (const auto& kv : dedicated_worker_infos_) {
-    DedicatedWorkerId dedicated_worker_id = kv.first;
+    const blink::mojom::DedicatedWorkerToken& dedicated_worker_token = kv.first;
     const DedicatedWorkerInfo& dedicated_worker_info = kv.second;
 
     observer->OnWorkerCreated(
-        dedicated_worker_id, dedicated_worker_info.worker_process_id,
+        dedicated_worker_token, dedicated_worker_info.worker_process_id,
         dedicated_worker_info.ancestor_render_frame_host_id);
     if (dedicated_worker_info.final_response_url) {
       observer->OnFinalResponseURLDetermined(
-          dedicated_worker_id, *dedicated_worker_info.final_response_url);
+          dedicated_worker_token, *dedicated_worker_info.final_response_url);
     }
   }
 }
 
-DedicatedWorkerId DedicatedWorkerServiceImpl::GenerateNextDedicatedWorkerId() {
-  return dedicated_worker_id_generator_.GenerateNextId();
-}
-
 void DedicatedWorkerServiceImpl::NotifyWorkerCreated(
-    DedicatedWorkerId dedicated_worker_id,
+    const blink::mojom::DedicatedWorkerToken& worker_token,
     int worker_process_id,
     GlobalFrameRoutingId ancestor_render_frame_host_id) {
-  bool inserted =
-      dedicated_worker_infos_
-          .emplace(dedicated_worker_id,
-                   DedicatedWorkerInfo(worker_process_id,
-                                       ancestor_render_frame_host_id))
-          .second;
+  bool inserted = dedicated_worker_infos_
+                      .emplace(worker_token, DedicatedWorkerInfo(
+                                                 worker_process_id,
+                                                 ancestor_render_frame_host_id))
+                      .second;
   DCHECK(inserted);
 
   for (Observer& observer : observers_) {
-    observer.OnWorkerCreated(dedicated_worker_id, worker_process_id,
+    observer.OnWorkerCreated(worker_token, worker_process_id,
                              ancestor_render_frame_host_id);
   }
 }
 
 void DedicatedWorkerServiceImpl::NotifyBeforeWorkerDestroyed(
-    DedicatedWorkerId dedicated_worker_id,
+    const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
     GlobalFrameRoutingId ancestor_render_frame_host_id) {
-  size_t removed = dedicated_worker_infos_.erase(dedicated_worker_id);
-  DCHECK_EQ(removed, 1u);
+  size_t removed = dedicated_worker_infos_.erase(dedicated_worker_token);
+  DCHECK_EQ(1u, removed);
 
   for (Observer& observer : observers_) {
-    observer.OnBeforeWorkerDestroyed(dedicated_worker_id,
+    observer.OnBeforeWorkerDestroyed(dedicated_worker_token,
                                      ancestor_render_frame_host_id);
   }
 }
 
 void DedicatedWorkerServiceImpl::NotifyWorkerFinalResponseURLDetermined(
-    DedicatedWorkerId dedicated_worker_id,
+    const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
     const GURL& url) {
-  auto it = dedicated_worker_infos_.find(dedicated_worker_id);
+  auto it = dedicated_worker_infos_.find(dedicated_worker_token);
   DCHECK(it != dedicated_worker_infos_.end());
 
   it->second.final_response_url = url;
 
   for (Observer& observer : observers_)
-    observer.OnFinalResponseURLDetermined(dedicated_worker_id, url);
+    observer.OnFinalResponseURLDetermined(dedicated_worker_token, url);
+}
+
+bool DedicatedWorkerServiceImpl::HasToken(
+    const blink::mojom::DedicatedWorkerToken& worker_token) const {
+  return dedicated_worker_infos_.count(worker_token);
 }
 
 }  // namespace content

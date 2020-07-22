@@ -233,7 +233,9 @@ ScriptPromise ShowFilePickerImpl(
             // System messages to the browser.
             // TODO(https://crbug.com/1017270): Remove this after spec change,
             // or when activation moves to browser.
-            LocalFrame::NotifyUserActivation(local_frame);
+            LocalFrame::NotifyUserActivation(
+                local_frame, mojom::blink::UserActivationNotificationType::
+                                 kNativeFileSystem);
 
             if (return_as_sequence) {
               HeapVector<Member<NativeFileSystemHandle>> results;

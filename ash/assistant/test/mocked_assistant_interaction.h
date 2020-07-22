@@ -39,7 +39,7 @@ class MockedAssistantInteraction {
   TestAssistantService* service_;
   std::unique_ptr<InteractionResponse> response_;
 
-  std::string query_ = "<dummy-query>";
+  std::string query_ = "<fake-query>";
   Resolution resolution_ = Resolution::kNormal;
 };
 

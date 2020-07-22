@@ -110,6 +110,8 @@ static const char kDevToolsDualScreenDeviceEmulatedHistogram[] =
     "DevTools.DualScreenDeviceEmulated";
 static const char kDevtoolsGridSettingChangedHistogram[] =
     "DevTools.GridSettingChanged";
+static const char kDevtoolsCSSGridSettingsHistogram[] =
+    "DevTools.CSSGridSettings";
 
 static const char kRemotePageActionInspect[] = "inspect";
 static const char kRemotePageActionReload[] = "reload";
@@ -1261,6 +1263,8 @@ void DevToolsUIBindings::RecordEnumeratedHistogram(const std::string& name,
   else if (name == kDevToolsDualScreenDeviceEmulatedHistogram)
     base::UmaHistogramExactLinear(name, sample, boundary_value);
   else if (name == kDevtoolsGridSettingChangedHistogram)
+    base::UmaHistogramExactLinear(name, sample, boundary_value);
+  else if (name == kDevtoolsCSSGridSettingsHistogram)
     base::UmaHistogramExactLinear(name, sample, boundary_value);
   else
     frontend_host_->BadMessageRecieved();

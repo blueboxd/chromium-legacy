@@ -63,7 +63,7 @@ class ProfileImpl : public Profile {
   static void AddProfileObserver(ProfileObserver* observer);
   static void RemoveProfileObserver(ProfileObserver* observer);
 
-  content::BrowserContext* GetBrowserContext();
+  BrowserContextImpl* GetBrowserContext();
 
   // Called when the download subsystem has finished initializing. By this point
   // information about downloads that were interrupted by a previous crash would
@@ -72,6 +72,7 @@ class ProfileImpl : public Profile {
 
   // Path data is stored at, empty if off-the-record.
   const base::FilePath& data_path() const { return info_.data_path; }
+  const std::string& name() const { return info_.name; }
   DownloadDelegate* download_delegate() { return download_delegate_; }
 
   // Profile implementation:
@@ -158,7 +159,6 @@ class ProfileImpl : public Profile {
   std::unique_ptr<CookieManagerImpl> cookie_manager_;
 
   bool basic_safe_browsing_enabled_ = true;
-  bool ukm_enabled_ = false;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_profile_;

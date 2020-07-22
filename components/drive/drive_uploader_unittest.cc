@@ -25,10 +25,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using google_apis::CancelCallback;
-using google_apis::FileResource;
-using google_apis::DriveApiErrorCode;
+using google_apis::CancelCallbackRepeating;
 using google_apis::DRIVE_NO_CONNECTION;
 using google_apis::DRIVE_OTHER_ERROR;
+using google_apis::DriveApiErrorCode;
+using google_apis::FileResource;
 using google_apis::HTTP_CONFLICT;
 using google_apis::HTTP_CREATED;
 using google_apis::HTTP_NOT_FOUND;
@@ -56,7 +57,7 @@ const char kTestUploadExistingFileURL[] =
 const int64_t kUploadChunkSize = 1024 * 1024 * 1024;
 const char kTestETag[] = "test_etag";
 
-CancelCallback SendMultipartUploadResult(
+CancelCallbackRepeating SendMultipartUploadResult(
     DriveApiErrorCode response_code,
     int64_t content_length,
     google_apis::FileResourceCallback callback,
@@ -78,7 +79,7 @@ CancelCallback SendMultipartUploadResult(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), response_code, std::move(entry)));
-  return CancelCallback();
+  return CancelCallbackRepeating();
 }
 
 // Mock DriveService that verifies if the uploaded content matches the preset
@@ -233,7 +234,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
         base::BindOnce(std::move(callback), response, std::move(entry)));
   }
 
-  CancelCallback MultipartUploadNewFile(
+  CancelCallbackRepeating MultipartUploadNewFile(
       const std::string& content_type,
       int64_t content_length,
       const std::string& parent_resource_id,
@@ -254,7 +255,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
                                      std::move(callback), progress_callback);
   }
 
-  CancelCallback MultipartUploadExistingFile(
+  CancelCallbackRepeating MultipartUploadExistingFile(
       const std::string& content_type,
       int64_t content_length,
       const std::string& resource_id,
@@ -271,7 +272,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::BindOnce(std::move(callback), HTTP_PRECONDITION, nullptr));
-      return CancelCallback();
+      return CancelCallbackRepeating();
     }
 
     received_bytes_ = content_length;
@@ -326,7 +327,7 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
     return CancelCallback();
   }
 
-  CancelCallback MultipartUploadNewFile(
+  CancelCallbackRepeating MultipartUploadNewFile(
       const std::string& content_type,
       int64_t content_length,
       const std::string& parent_resource_id,
@@ -338,10 +339,10 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), DRIVE_NO_CONNECTION, nullptr));
-    return CancelCallback();
+    return CancelCallbackRepeating();
   }
 
-  CancelCallback MultipartUploadExistingFile(
+  CancelCallbackRepeating MultipartUploadExistingFile(
       const std::string& content_type,
       int64_t content_length,
       const std::string& resource_id,
@@ -352,7 +353,7 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), DRIVE_NO_CONNECTION, nullptr));
-    return CancelCallback();
+    return CancelCallbackRepeating();
   }
 };
 

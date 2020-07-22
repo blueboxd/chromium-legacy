@@ -643,7 +643,7 @@ void ChromeBrowserCloudManagementController::CreateReportScheduler() {
   auto generator = std::make_unique<enterprise_reporting::ReportGenerator>(
       &delegate_factory_);
   report_scheduler_ = std::make_unique<enterprise_reporting::ReportScheduler>(
-      cloud_policy_client_.get(), std::move(generator));
+      cloud_policy_client_.get(), std::move(generator), &delegate_factory_);
 
   NotifyCloudReportingLaunched();
 }

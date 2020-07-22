@@ -20,10 +20,13 @@
 #include "ios/net/cookies/system_cookie_util.h"
 #include "ios/web/common/features.h"
 #include "ios/web/public/test/web_task_environment.h"
+#include "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -171,11 +174,13 @@ class GaiaAuthFetcherIOSNSURLSessionBridgeTest : public ChromeWebTest {
   // Delegate for |url_session_mock_|, provided by |ns_url_session_bridge_|.
   id<NSURLSessionTaskDelegate> url_session_delegate_;
 
-  NSHTTPCookieStorage* http_cookie_storage_mock_;
   NSURLSession* url_session_mock_;
-  NSURLSessionDataTask* url_session_data_task_mock_;
-  NSURLSessionConfiguration* url_session_configuration_mock_;
+  NSURLSessionDataTask* url_session_data_task_;
+  NSURLSessionConfiguration* url_session_configuration_;
   DataTaskWithRequestCompletionHandler completion_handler_;
+
+ private:
+  __block base::OnceClosure quit_closure_;
 };
 
 #pragma mark - TestGaiaAuthFetcherIOSNSURLSessionBridge
@@ -196,12 +201,6 @@ NSURLSession* TestGaiaAuthFetcherIOSNSURLSessionBridge::CreateNSURLSession(
 #pragma mark - GaiaAuthFetcherIOSNSURLSessionBridgeTest
 
 void GaiaAuthFetcherIOSNSURLSessionBridgeTest::SetUp() {
-  // TODO(crbug.com/1102903): __NSCFURLSessionConfiguration does not exist on
-  // iOS 14.
-  if (@available(iOS 14, *)) {
-    return;
-  }
-
   std::vector<base::Feature> enabled_features;
   std::vector<base::Feature> disabled_features;
   enabled_features.push_back(kUseNSURLSessionForGaiaSigninRequests);
@@ -210,30 +209,26 @@ void GaiaAuthFetcherIOSNSURLSessionBridgeTest::SetUp() {
   browser_state_ = TestChromeBrowserState::Builder().Build();
   ns_url_session_bridge_.reset(new TestGaiaAuthFetcherIOSNSURLSessionBridge(
       delegate_.get(), browser_state_.get(), this));
-  http_cookie_storage_mock_ = OCMStrictClassMock([NSHTTPCookieStorage class]);
-  url_session_configuration_mock_ =
-      OCMStrictClassMock(NSClassFromString(@"__NSCFURLSessionConfiguration"));
-  OCMStub([url_session_configuration_mock_ HTTPCookieStorage])
-      .andReturn(http_cookie_storage_mock_);
+  url_session_configuration_ =
+      NSURLSessionConfiguration.ephemeralSessionConfiguration;
+  url_session_configuration_.HTTPShouldSetCookies = YES;
+
   url_session_mock_ = OCMStrictClassMock([NSURLSession class]);
   OCMStub([url_session_mock_ configuration])
-      .andReturn(url_session_configuration_mock_);
-  url_session_data_task_mock_ =
-      OCMStrictClassMock([NSURLSessionDataTask class]);
+      .andReturn(url_session_configuration_);
+  url_session_data_task_ = [[NSURLSession sharedSession]
+        dataTaskWithURL:net::NSURLWithGURL(GetFetchGURL())
+      completionHandler:^(NSData* data, NSURLResponse* response,
+                          NSError* error) {
+        // Asynchronously returns from FetchURL() call after
+        // NSURLSessionDataTask:resume.
+        std::move(quit_closure_).Run();
+      }];
   completion_handler_ = nil;
 }
 
 void GaiaAuthFetcherIOSNSURLSessionBridgeTest::TearDown() {
-  // TODO(crbug.com/1102903): __NSCFURLSessionConfiguration does not exist on
-  // iOS 14.
-  if (@available(iOS 14, *)) {
-    return;
-  }
-
-  ASSERT_OCMOCK_VERIFY((id)http_cookie_storage_mock_);
   ASSERT_OCMOCK_VERIFY((id)url_session_mock_);
-  ASSERT_OCMOCK_VERIFY((id)url_session_data_task_mock_);
-  ASSERT_OCMOCK_VERIFY((id)url_session_configuration_mock_);
 }
 
 NSURLSession* GaiaAuthFetcherIOSNSURLSessionBridgeTest::CreateNSURLSession(
@@ -247,7 +242,7 @@ NSURLSession* GaiaAuthFetcherIOSNSURLSessionBridgeTest::CreateNSURLSession(
   OCMExpect([url_session_mock_
                 dataTaskWithRequest:ns_url_session_bridge_->GetNSURLRequest()
                   completionHandler:completion_handler])
-      .andReturn(url_session_data_task_mock_);
+      .andReturn(url_session_data_task_);
   return url_session_mock_;
 }
 
@@ -257,7 +252,6 @@ GaiaAuthFetcherIOSNSURLSessionBridgeTest::GetCookiesInCookieJar() {
   base::RunLoop run_loop;
   network::mojom::CookieManager* cookie_manager =
       browser_state_->GetCookieManager();
-  std::vector<net::CanonicalCookie> all_cookies;
   cookie_manager->GetAllCookies(base::BindOnce(base::BindLambdaForTesting(
       [&run_loop,
        &cookies_out](const std::vector<net::CanonicalCookie>& cookies) {
@@ -375,12 +369,9 @@ GaiaAuthFetcherIOSNSURLSessionBridgeTest::GetHeaderFieldsWithCookies(
 }
 
 bool GaiaAuthFetcherIOSNSURLSessionBridgeTest::FetchURL(const GURL& url) {
-  DCHECK(url_session_data_task_mock_);
+  DCHECK(url_session_data_task_);
   __block base::RunLoop run_loop;
-  __block base::OnceClosure quit_closure = run_loop.QuitClosure();
-  OCMExpect([url_session_data_task_mock_ resume]).andDo(^(NSInvocation*) {
-    std::move(quit_closure).Run();
-  });
+  quit_closure_ = run_loop.QuitClosure();
   ns_url_session_bridge_->Fetch(url, "", "", false);
   run_loop.Run();
   return true;
@@ -398,20 +389,12 @@ bool GaiaAuthFetcherIOSNSURLSessionBridgeTest::FetchURL(const GURL& url) {
 #endif
 TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest,
        MAYBE_FetchWithEmptyCookieStore) {
-  // TODO(crbug.com/1102903): __NSCFURLSessionConfiguration does not exist on
-  // iOS 14.
-  if (@available(iOS 14, *)) {
-    return;
-  }
-
   // TODO(crbug.com/1106030): expected_cookies_set is failing on iOS12.
   if (!base::ios::IsRunningOnIOS13OrLater()) {
     return;
   }
 
-  OCMExpect([http_cookie_storage_mock_
-      storeCookies:@[]
-           forTask:url_session_data_task_mock_]);
+  ASSERT_FALSE(url_session_configuration_.HTTPCookieStorage.cookies.count);
   ASSERT_TRUE(FetchURL(GetFetchGURL()));
   ASSERT_TRUE(completion_handler_);
 
@@ -436,12 +419,6 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest,
 #define MAYBE_FetchWithCookieStore DISABLED_FetchWithCookieStore
 #endif
 TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, MAYBE_FetchWithCookieStore) {
-  // TODO(crbug.com/1102903): __NSCFURLSessionConfiguration does not exist on
-  // iOS 14.
-  if (@available(iOS 14, *)) {
-    return;
-  }
-
   // TODO(crbug.com/1106030): expected_cookies_set is failing on iOS12.
   if (!base::ios::IsRunningOnIOS13OrLater()) {
     return;
@@ -450,10 +427,9 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, MAYBE_FetchWithCookieStore) {
   NSArray* cookies_to_send = @[ GetCookie1() ];
   ASSERT_TRUE(SetCookiesInCookieManager(cookies_to_send));
 
-  OCMExpect([http_cookie_storage_mock_
-      storeCookies:cookies_to_send
-           forTask:url_session_data_task_mock_]);
   ASSERT_TRUE(FetchURL(GetFetchGURL()));
+  ASSERT_NSEQ(url_session_configuration_.HTTPCookieStorage.cookies,
+              cookies_to_send);
   ASSERT_TRUE(completion_handler_);
 
   NSHTTPURLResponse* http_url_reponse =
@@ -476,21 +452,13 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, MAYBE_FetchWithCookieStore) {
 #define MAYBE_FetchWithRedirect DISABLED_FetchWithRedirect
 #endif
 TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, MAYBE_FetchWithRedirect) {
-  // TODO(crbug.com/1102903): __NSCFURLSessionConfiguration does not exist on
-  // iOS 14.
-  if (@available(iOS 14, *)) {
-    return;
-  }
-
   // TODO(crbug.com/1106030): expected_cookies_set is failing on iOS12.
   if (!base::ios::IsRunningOnIOS13OrLater()) {
     return;
   }
 
-  OCMExpect([http_cookie_storage_mock_
-      storeCookies:@[]
-           forTask:url_session_data_task_mock_]);
   ASSERT_TRUE(FetchURL(GetFetchGURL()));
+  ASSERT_FALSE(url_session_configuration_.HTTPCookieStorage.cookies.count);
   ASSERT_TRUE(completion_handler_);
 
   NSURLRequest* redirected_url_request =
@@ -503,7 +471,7 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, MAYBE_FetchWithRedirect) {
   NSHTTPURLResponse* redirected_url_response =
       CreateHTTPURLResponse(301, @[ GetCookie1() ]);
   [url_session_delegate_ URLSession:url_session_mock_
-                               task:url_session_data_task_mock_
+                               task:url_session_data_task_
          willPerformHTTPRedirection:redirected_url_response
                          newRequest:redirected_url_request
                   completionHandler:completion_handler];
@@ -522,19 +490,10 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, MAYBE_FetchWithRedirect) {
 
 // Tests to cancel the request.
 TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithCancel) {
-  // TODO(crbug.com/1102903): __NSCFURLSessionConfiguration does not exist on
-  // iOS 14.
-  if (@available(iOS 14, *)) {
-    return;
-  }
-
-  OCMExpect([http_cookie_storage_mock_
-      storeCookies:@[]
-           forTask:url_session_data_task_mock_]);
   ASSERT_TRUE(FetchURL(GetFetchGURL()));
+  ASSERT_FALSE(url_session_configuration_.HTTPCookieStorage.cookies.count);
   ASSERT_TRUE(completion_handler_);
 
-  OCMExpect([url_session_data_task_mock_ cancel]);
   ns_url_session_bridge_->Cancel();
   EXPECT_TRUE(delegate_->GetFetchCompleteCalled());
   EXPECT_EQ(delegate_->GetURL(), GetFetchGURL());
@@ -545,16 +504,8 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithCancel) {
 
 // Tests a request with error.
 TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithError) {
-  // TODO(crbug.com/1102903): __NSCFURLSessionConfiguration does not exist on
-  // iOS 14.
-  if (@available(iOS 14, *)) {
-    return;
-  }
-
-  OCMExpect([http_cookie_storage_mock_
-      storeCookies:@[]
-           forTask:url_session_data_task_mock_]);
   ASSERT_TRUE(FetchURL(GetFetchGURL()));
+  ASSERT_FALSE(url_session_configuration_.HTTPCookieStorage.cookies.count);
   ASSERT_TRUE(completion_handler_);
 
   NSHTTPURLResponse* http_url_reponse =

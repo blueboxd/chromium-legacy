@@ -18,7 +18,7 @@
 namespace ash {
 
 class CurrentInteractionSubscriber;
-class SanityCheckSubscriber;
+class LibassistantContractChecker;
 
 // A response issued when an Assistant interaction is started.
 // Used both for text and voice interactions.  To build a response, simply
@@ -55,7 +55,7 @@ class InteractionResponse {
   DISALLOW_COPY_AND_ASSIGN(InteractionResponse);
 };
 
-// Dummy implementation of the Assistant service.
+// Fake implementation of the Assistant service.
 // It behaves as if the Assistant service is up-and-running,
 // and will inform the |AssistantInteractionSubscriber| instances when
 // interactions start/stop.
@@ -117,7 +117,7 @@ class TestAssistantService : public chromeos::assistant::Assistant {
       const std::string& query = std::string());
   void SendInteractionResponse();
 
-  std::unique_ptr<SanityCheckSubscriber> sanity_check_subscriber_;
+  std::unique_ptr<LibassistantContractChecker> libassistant_contract_checker_;
   std::unique_ptr<CurrentInteractionSubscriber> current_interaction_subscriber_;
   std::unique_ptr<InteractionResponse> interaction_response_;
 

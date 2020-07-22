@@ -150,6 +150,7 @@ struct CookieAndLineWithAccessResult {
 
 struct CookieAccessResult {
   CookieEffectiveSameSite effective_same_site;
+  CookieAccessSemantics access_semantics;
   CookieInclusionStatus status;
 };
 
@@ -180,8 +181,8 @@ enum CookieChangeCause {
 struct CookieChangeInfo {
   // The cookie that changed, in its post-change state.
   CanonicalCookie cookie;
-  // Access semantics of the cookie at the time of the change.
-  CookieAccessSemantics access_semantics;
+  // Access results at the time of the change.
+  CookieAccessResult access_result;
   CookieChangeCause cause;
 };
 

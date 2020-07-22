@@ -6,7 +6,6 @@ static_library("public") {
   sources = [
     "ack_handle.cc",
     "ack_handle.h",
-    "ack_handler.cc",
     "ack_handler.h",
     "identity_provider.cc",
     "identity_provider.h",

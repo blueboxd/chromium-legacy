@@ -156,6 +156,11 @@ void WebApp::SetUserDisplayMode(DisplayMode user_display_mode) {
   }
 }
 
+void WebApp::SetDisplayModeOverride(
+    std::vector<DisplayMode> display_mode_override) {
+  display_mode_override_ = std::move(display_mode_override);
+}
+
 void WebApp::SetUserPageOrdinal(syncer::StringOrdinal page_ordinal) {
   user_page_ordinal_ = std::move(page_ordinal);
 }
@@ -263,7 +268,11 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
       << "  background_color: " << ColorToString(app.background_color_)
       << std::endl
       << "  display_mode: " << display_mode << std::endl
-      << "  user_display_mode: " << user_display_mode << std::endl
+      << "  display_override: " << app.display_mode_override_.size()
+      << std::endl;
+  for (const DisplayMode& mode : app.display_mode_override_)
+    out << "    " << blink::DisplayModeToString(mode) << std::endl;
+  out << "  user_display_mode: " << user_display_mode << std::endl
       << "  user_page_ordinal: " << app.user_page_ordinal_.ToDebugString()
       << std::endl
       << "  user_launch_ordinal_: " << app.user_launch_ordinal_.ToDebugString()
@@ -315,24 +324,24 @@ bool operator==(const WebApp& app1, const WebApp& app2) {
                   app1.description_, app1.scope_, app1.theme_color_,
                   app1.background_color_, app1.icon_infos_,
                   app1.downloaded_icon_sizes_, app1.is_generated_icon_,
-                  app1.display_mode_, app1.user_display_mode_,
-                  app1.user_page_ordinal_, app1.user_launch_ordinal_,
-                  app1.chromeos_data_, app1.is_locally_installed_,
-                  app1.is_in_sync_install_, app1.file_handlers_,
-                  app1.additional_search_terms_, app1.protocol_handlers_,
-                  app1.sync_fallback_data_, app1.last_launch_time_,
-                  app1.install_time_) ==
+                  app1.display_mode_, app1.display_mode_override_,
+                  app1.user_display_mode_, app1.user_page_ordinal_,
+                  app1.user_launch_ordinal_, app1.chromeos_data_,
+                  app1.is_locally_installed_, app1.is_in_sync_install_,
+                  app1.file_handlers_, app1.additional_search_terms_,
+                  app1.protocol_handlers_, app1.sync_fallback_data_,
+                  app1.last_launch_time_, app1.install_time_) ==
          std::tie(app2.app_id_, app2.sources_, app2.name_, app2.launch_url_,
                   app2.description_, app2.scope_, app2.theme_color_,
                   app2.background_color_, app2.icon_infos_,
                   app2.downloaded_icon_sizes_, app2.is_generated_icon_,
-                  app2.display_mode_, app2.user_display_mode_,
-                  app2.user_page_ordinal_, app2.user_launch_ordinal_,
-                  app2.chromeos_data_, app2.is_locally_installed_,
-                  app2.is_in_sync_install_, app2.file_handlers_,
-                  app2.additional_search_terms_, app2.protocol_handlers_,
-                  app2.sync_fallback_data_, app2.last_launch_time_,
-                  app2.install_time_);
+                  app2.display_mode_, app2.display_mode_override_,
+                  app2.user_display_mode_, app2.user_page_ordinal_,
+                  app2.user_launch_ordinal_, app2.chromeos_data_,
+                  app2.is_locally_installed_, app2.is_in_sync_install_,
+                  app2.file_handlers_, app2.additional_search_terms_,
+                  app2.protocol_handlers_, app2.sync_fallback_data_,
+                  app2.last_launch_time_, app2.install_time_);
 }
 
 bool operator!=(const WebApp& app1, const WebApp& app2) {

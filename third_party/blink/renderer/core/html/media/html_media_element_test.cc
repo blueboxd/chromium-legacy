@@ -369,7 +369,9 @@ TEST_P(HTMLMediaElementTest, AutoplayInitiated_DocumentActivation_Low_Gesture) {
   ScopedMediaEngagementBypassAutoplayPoliciesForTest scoped_feature(true);
   Media()->GetDocument().GetSettings()->SetAutoplayPolicy(
       AutoplayPolicy::Type::kDocumentUserActivationRequired);
-  LocalFrame::NotifyUserActivation(Media()->GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      Media()->GetDocument().GetFrame(),
+      mojom::UserActivationNotificationType::kTest);
 
   Media()->Play();
 
@@ -386,7 +388,9 @@ TEST_P(HTMLMediaElementTest,
   Media()->GetDocument().GetSettings()->SetAutoplayPolicy(
       AutoplayPolicy::Type::kDocumentUserActivationRequired);
   SimulateHighMediaEngagement();
-  LocalFrame::NotifyUserActivation(Media()->GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      Media()->GetDocument().GetFrame(),
+      mojom::UserActivationNotificationType::kTest);
 
   Media()->Play();
 
@@ -416,7 +420,9 @@ TEST_P(HTMLMediaElementTest, AutoplayInitiated_GestureRequired_Gesture) {
   // - MEI doesn't matter as it's not used by the policy.
   Media()->GetDocument().GetSettings()->SetAutoplayPolicy(
       AutoplayPolicy::Type::kUserGestureRequired);
-  LocalFrame::NotifyUserActivation(Media()->GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      Media()->GetDocument().GetFrame(),
+      mojom::UserActivationNotificationType::kTest);
 
   Media()->Play();
 
@@ -430,7 +436,9 @@ TEST_P(HTMLMediaElementTest, AutoplayInitiated_NoGestureRequired_Gesture) {
   // - MEI doesn't matter as it's not used by the policy.
   Media()->GetDocument().GetSettings()->SetAutoplayPolicy(
       AutoplayPolicy::Type::kNoUserGestureRequired);
-  LocalFrame::NotifyUserActivation(Media()->GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      Media()->GetDocument().GetFrame(),
+      mojom::UserActivationNotificationType::kTest);
 
   Media()->Play();
 

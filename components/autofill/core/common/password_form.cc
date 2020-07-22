@@ -49,11 +49,9 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetString("url", form.url.possibly_invalid_spec());
   target->SetString("action", form.action.possibly_invalid_spec());
   target->SetString("submit_element", form.submit_element);
-  target->SetBoolean("has_renderer_ids", form.has_renderer_ids);
   target->SetString("username_element", form.username_element);
   target->SetInteger("username_element_renderer_id",
                      form.username_element_renderer_id.value());
-  target->SetBoolean("username_marked_by_site", form.username_marked_by_site);
   target->SetString("username_value", form.username_value);
   target->SetString("password_element", form.password_element);
   target->SetString("password_value", form.password_value);
@@ -63,8 +61,6 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetInteger("password_element_renderer_id",
                      form.password_element_renderer_id.value());
   target->SetString("new_password_value", form.new_password_value);
-  target->SetBoolean("new_password_marked_by_site",
-                     form.new_password_marked_by_site);
   target->SetString("confirmation_password_element",
                     form.confirmation_password_element);
   target->SetInteger("confirmation_password_element_renderer_id",
@@ -129,18 +125,15 @@ bool PasswordForm::IsPossibleChangePasswordFormWithoutUsername() const {
 }
 
 bool PasswordForm::HasUsernameElement() const {
-  return has_renderer_ids ? !username_element_renderer_id.is_null()
-                          : !username_element.empty();
+  return !username_element_renderer_id.is_null();
 }
 
 bool PasswordForm::HasPasswordElement() const {
-  return has_renderer_ids ? !password_element_renderer_id.is_null()
-                          : !password_element.empty();
+  return !password_element_renderer_id.is_null();
 }
 
 bool PasswordForm::HasNewPasswordElement() const {
-  return has_renderer_ids ? !new_password_element_renderer_id.is_null()
-                          : !new_password_element.empty();
+  return !new_password_element_renderer_id.is_null();
 }
 
 bool PasswordForm::IsFederatedCredential() const {
@@ -164,10 +157,8 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
   return scheme == form.scheme && signon_realm == form.signon_realm &&
          url == form.url && action == form.action &&
          submit_element == form.submit_element &&
-         has_renderer_ids == form.has_renderer_ids &&
          username_element == form.username_element &&
          username_element_renderer_id == form.username_element_renderer_id &&
-         username_marked_by_site == form.username_marked_by_site &&
          username_value == form.username_value &&
          all_possible_usernames == form.all_possible_usernames &&
          all_possible_passwords == form.all_possible_passwords &&
@@ -178,7 +169,6 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          new_password_element == form.new_password_element &&
          confirmation_password_element_renderer_id ==
              form.confirmation_password_element_renderer_id &&
-         new_password_marked_by_site == form.new_password_marked_by_site &&
          confirmation_password_element == form.confirmation_password_element &&
          confirmation_password_element_renderer_id ==
              form.confirmation_password_element_renderer_id &&

@@ -123,6 +123,11 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
           switches::kPlatformDisallowsChromeOSDirectVideoDecoder);
 #endif
 
+#if defined(OS_ANDROID)
+  gpu_preferences.disable_oopr_debug_crash_dump =
+      command_line->HasSwitch(switches::kDisableOoprDebugCrashDump);
+#endif
+
   // Some of these preferences are set or adjusted in
   // GpuDataManagerImplPrivate::AppendGpuCommandLine.
   return gpu_preferences;

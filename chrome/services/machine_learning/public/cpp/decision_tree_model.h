@@ -10,10 +10,22 @@
 
 #include "base/containers/flat_map.h"
 #include "chrome/services/machine_learning/public/mojom/decision_tree.mojom.h"
-#include "components/optimization_guide/prediction_model.h"
-#include "components/optimization_guide/proto/models.pb.h"
+
+namespace optimization_guide {
+namespace proto {
+
+class PredictionModel;
+
+}  // namespace proto
+}  // namespace optimization_guide
 
 namespace machine_learning {
+
+namespace decision_tree {
+
+class PredictionModel;
+
+}  // namespace decision_tree
 
 // Wrapper around a DecisionTree proto for validation and evaluation.
 // Actual work is done by |decision_tree::PredictionModel|.
@@ -47,8 +59,8 @@ class DecisionTreeModel {
   bool IsValid() const;
 
  private:
-  // PredictionModel held by the Service.
-  std::unique_ptr<optimization_guide::PredictionModel> prediction_model_;
+  // PredictionModel owned by the Service.
+  std::unique_ptr<decision_tree::PredictionModel> prediction_model_;
 };
 
 }  // namespace machine_learning

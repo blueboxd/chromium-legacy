@@ -53,7 +53,6 @@ void NearbyShareDeviceDataUpdater::ProcessRequestQueue() {
 }
 
 void NearbyShareDeviceDataUpdater::FinishAttempt(
-    bool success,
     const base::Optional<nearbyshare::proto::UpdateDeviceResponse>& response) {
   DCHECK(is_request_in_progress_);
   DCHECK(!pending_requests_.empty());
@@ -61,7 +60,7 @@ void NearbyShareDeviceDataUpdater::FinishAttempt(
   Request current_request = std::move(pending_requests_.front());
   pending_requests_.pop();
 
-  std::move(current_request.callback).Run(success, response);
+  std::move(current_request.callback).Run(response);
 
   is_request_in_progress_ = false;
   ProcessRequestQueue();

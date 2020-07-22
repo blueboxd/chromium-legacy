@@ -7,7 +7,6 @@ package org.chromium.components.browser_ui.widget;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
@@ -16,8 +15,7 @@ import androidx.annotation.Nullable;
 import java.util.List;
 
 /**
- * Manages a group of exclusive RadioButtons, automatically inserting a margin in between the rows
- * to prevent them from squishing together.
+ * Manages a group of exclusive RadioButtons.
  *
  * -------------------------------------------------
  * | O | MESSAGE #1                                |
@@ -27,16 +25,12 @@ import java.util.List;
 public final class RadioButtonLayout extends RadioGroup {
     public static final int INVALID_INDEX = -1;
 
-    private final int mMarginBetweenRows;
-
     public RadioButtonLayout(Context context) {
         this(context, null);
     }
 
     public RadioButtonLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mMarginBetweenRows = context.getResources().getDimensionPixelSize(
-                R.dimen.default_vertical_margin_between_items);
     }
 
     /**
@@ -56,8 +50,6 @@ public final class RadioButtonLayout extends RadioGroup {
 
             addView(button, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         }
-
-        updateMargins();
     }
 
     /**
@@ -74,16 +66,6 @@ public final class RadioButtonLayout extends RadioGroup {
         for (int i = 0; i < childCount; i++) {
             RadioButton child = (RadioButton) getChildAt(i);
             child.setChecked(i == childIndex);
-        }
-    }
-
-    /** Sets margins between each of the radio buttons. */
-    private void updateMargins() {
-        int childCount = getChildCount();
-        for (int i = 0; i < childCount; i++) {
-            View child = getChildAt(i);
-            int margin = (i < childCount - 1) ? mMarginBetweenRows : 0;
-            ((MarginLayoutParams) child.getLayoutParams()).bottomMargin = margin;
         }
     }
 }

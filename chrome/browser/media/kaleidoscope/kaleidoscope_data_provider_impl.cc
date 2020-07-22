@@ -43,6 +43,18 @@ constexpr char kChromeMediaRecommendationsOAuth2Scope[] =
 constexpr base::TimeDelta kProviderHighWatchTimeMin =
     base::TimeDelta::FromMinutes(30);
 
+base::Optional<media_feeds::mojom::MediaFeedItemType> GetFeedItemTypeForTab(
+    media::mojom::KaleidoscopeTab tab) {
+  switch (tab) {
+    case media::mojom::KaleidoscopeTab::kForYou:
+      return base::nullopt;
+    case media::mojom::KaleidoscopeTab::kMovies:
+      return media_feeds::mojom::MediaFeedItemType::kMovie;
+    case media::mojom::KaleidoscopeTab::kTVShows:
+      return media_feeds::mojom::MediaFeedItemType::kTVSeries;
+  }
+}
+
 }  // namespace
 
 KaleidoscopeDataProviderImpl::KaleidoscopeDataProviderImpl(
@@ -98,38 +110,44 @@ void KaleidoscopeDataProviderImpl::GetHighWatchTimeOrigins(
 }
 
 void KaleidoscopeDataProviderImpl::GetTopMediaFeeds(
+    media::mojom::KaleidoscopeTab tab,
     GetTopMediaFeedsCallback callback) {
   GetMediaHistoryService()->GetMediaFeeds(
       media_history::MediaHistoryKeyedService::GetMediaFeedsRequest::
           CreateTopFeedsForDisplay(
               kMediaFeedsLoadLimit, kMediaFeedsFetchedItemsMin,
               // Require Safe Search checking if the integration is enabled.
-              base::FeatureList::IsEnabled(media::kMediaFeedsSafeSearch)),
+              base::FeatureList::IsEnabled(media::kMediaFeedsSafeSearch),
+              GetFeedItemTypeForTab(tab)),
       std::move(callback));
 }
 
 void KaleidoscopeDataProviderImpl::GetMediaFeedContents(
     int64_t feed_id,
+    media::mojom::KaleidoscopeTab tab,
     GetMediaFeedContentsCallback callback) {
   GetMediaHistoryService()->GetMediaFeedItems(
       media_history::MediaHistoryKeyedService::GetMediaFeedItemsRequest::
           CreateItemsForFeed(
               feed_id, kMediaFeedsItemsMaxCount,
               // Require Safe Search checking if the integration is enabled.
-              base::FeatureList::IsEnabled(media::kMediaFeedsSafeSearch)),
+              base::FeatureList::IsEnabled(media::kMediaFeedsSafeSearch),
+              GetFeedItemTypeForTab(tab)),
       base::BindOnce(&KaleidoscopeDataProviderImpl::OnGotMediaFeedContents,
                      weak_ptr_factory.GetWeakPtr(), std::move(callback),
                      feed_id));
 }
 
 void KaleidoscopeDataProviderImpl::GetContinueWatchingMediaFeedItems(
+    media::mojom::KaleidoscopeTab tab,
     GetContinueWatchingMediaFeedItemsCallback callback) {
   GetMediaHistoryService()->GetMediaFeedItems(
       media_history::MediaHistoryKeyedService::GetMediaFeedItemsRequest::
           CreateItemsForContinueWatching(
               kMediaFeedsItemsMaxCount,
               // Require Safe Search checking if the integration is enabled.
-              base::FeatureList::IsEnabled(media::kMediaFeedsSafeSearch)),
+              base::FeatureList::IsEnabled(media::kMediaFeedsSafeSearch),
+              GetFeedItemTypeForTab(tab)),
       base::BindOnce(
           &KaleidoscopeDataProviderImpl::OnGotContinueWatchingMediaFeedItems,
           weak_ptr_factory.GetWeakPtr(), std::move(callback)));

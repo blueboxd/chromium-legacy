@@ -491,10 +491,9 @@ class ServiceWithPrompt : public Service {
   }
 
   void ExpectRequestUserConsent() {
-    EXPECT_CALL(*mock_handler_, RequestUserConsent(_, _, _, _))
+    EXPECT_CALL(*mock_handler_, RequestUserConsent(_, _))
         .WillOnce(
-            Invoke([=](RenderFrameHost*, const Origin& origin,
-                       const std::string&, CompletionCallback on_complete) {
+            Invoke([=](const std::string&, CompletionCallback on_complete) {
               on_complete_callback_ = std::move(on_complete);
             }));
 

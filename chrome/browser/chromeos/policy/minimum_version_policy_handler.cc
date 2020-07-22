@@ -102,9 +102,9 @@ void ResetRelaunchNotification() {
 
 }  // namespace
 
-const char MinimumVersionPolicyHandler::kChromeVersion[] = "chrome_version";
+const char MinimumVersionPolicyHandler::kChromeOsVersion[] = "chromeos_version";
 const char MinimumVersionPolicyHandler::kWarningPeriod[] = "warning_period";
-const char MinimumVersionPolicyHandler::KEolWarningPeriod[] =
+const char MinimumVersionPolicyHandler::kEolWarningPeriod[] =
     "aue_warning_period";
 
 MinimumVersionRequirement::MinimumVersionRequirement(
@@ -118,16 +118,16 @@ MinimumVersionRequirement::MinimumVersionRequirement(
 std::unique_ptr<MinimumVersionRequirement>
 MinimumVersionRequirement::CreateInstanceIfValid(
     const base::DictionaryValue* dict) {
-  const std::string* version = dict->FindStringPath(kChromeVersion);
+  const std::string* version = dict->FindStringKey(kChromeOsVersion);
   if (!version)
     return nullptr;
   base::Version minimum_version(*version);
   if (!minimum_version.IsValid())
     return nullptr;
-  auto warning = dict->FindIntPath(kWarningPeriod);
+  auto warning = dict->FindIntKey(kWarningPeriod);
   base::TimeDelta warning_time =
       base::TimeDelta::FromDays(warning.has_value() ? warning.value() : 0);
-  auto eol_warning = dict->FindIntPath(KEolWarningPeriod);
+  auto eol_warning = dict->FindIntKey(kEolWarningPeriod);
   base::TimeDelta eol_warning_time = base::TimeDelta::FromDays(
       eol_warning.has_value() ? eol_warning.value() : 0);
   return std::make_unique<MinimumVersionRequirement>(
@@ -153,7 +153,7 @@ MinimumVersionPolicyHandler::MinimumVersionPolicyHandler(
       cros_settings_(cros_settings),
       clock_(base::DefaultClock::GetInstance()) {
   policy_subscription_ = cros_settings_->AddSettingsObserver(
-      chromeos::kMinimumChromeVersionEnforced,
+      chromeos::kDeviceMinimumVersion,
       base::Bind(&MinimumVersionPolicyHandler::OnPolicyChanged,
                  weak_factory_.GetWeakPtr()));
 
@@ -177,7 +177,10 @@ void MinimumVersionPolicyHandler::RemoveObserver(Observer* observer) {
 
 bool MinimumVersionPolicyHandler::CurrentVersionSatisfies(
     const MinimumVersionRequirement& requirement) const {
-  return delegate_->GetCurrentVersion().CompareTo(requirement.version()) >= 0;
+  base::Version platform_version(delegate_->GetCurrentVersion());
+  if (platform_version.IsValid())
+    return delegate_->GetCurrentVersion().CompareTo(requirement.version()) >= 0;
+  return true;
 }
 
 //  static
@@ -217,8 +220,7 @@ void MinimumVersionPolicyHandler::OnPolicyChanged() {
 
   const base::ListValue* entries;
   std::vector<std::unique_ptr<MinimumVersionRequirement>> configs;
-  if (!cros_settings_->GetList(chromeos::kMinimumChromeVersionEnforced,
-                               &entries) ||
+  if (!cros_settings_->GetList(chromeos::kDeviceMinimumVersion, &entries) ||
       !entries->GetSize()) {
     // Reset state and hide update required screen if policy is not set or set
     // to empty list.
@@ -263,8 +265,8 @@ void MinimumVersionPolicyHandler::OnPolicyChanged() {
     }
   } else {
     // Update is not required as the requirements of all of the configs in the
-    // policy are satisfied by the current chrome version. We could also reach
-    // here at the time of login if the device was rebooted to apply the
+    // policy are satisfied by the current Chrome OS version. We could also
+    // reach here at the time of login if the device was rebooted to apply the
     // downloaded update, in which case it is needed to reset the local state.
     HandleUpdateNotRequired();
   }

@@ -186,6 +186,12 @@ class WebAppDatabaseTest : public WebAppTest {
         DisplayMode::kStandalone, DisplayMode::kFullscreen};
     app->SetDisplayMode(display_modes[(suffix >> 4) & 3]);
 
+    std::vector<DisplayMode> display_mode_override;
+    display_mode_override.push_back(display_modes[suffix & 3]);
+    display_mode_override.push_back(display_modes[(suffix + 1) & 3]);
+    display_mode_override.push_back(display_modes[(suffix + 2) & 3]);
+    app->SetDisplayModeOverride(display_mode_override);
+
     WebApplicationIconInfo icon;
     icon.url = GURL(base_url + "/icon" + base::NumberToString(suffix));
     const SquareSizePx size = 256;
@@ -409,6 +415,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
 
   // Let optional fields be empty:
   EXPECT_EQ(app->display_mode(), DisplayMode::kUndefined);
+  EXPECT_TRUE(app->display_mode_override().empty());
   EXPECT_TRUE(app->description().empty());
   EXPECT_TRUE(app->scope().is_empty());
   EXPECT_FALSE(app->theme_color().has_value());
@@ -460,6 +467,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
 
   // No optional fields.
   EXPECT_EQ(app_copy->display_mode(), DisplayMode::kUndefined);
+  EXPECT_TRUE(app_copy->display_mode_override().empty());
   EXPECT_TRUE(app_copy->description().empty());
   EXPECT_TRUE(app_copy->scope().is_empty());
   EXPECT_FALSE(app_copy->theme_color().has_value());

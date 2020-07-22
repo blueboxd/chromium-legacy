@@ -264,6 +264,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_PREFS_SECTION_ACCOUNT" desc="Title for the group of account-related entries in Settings. [CHAR-LIMIT=32]">
         Account
       </message>
+      <message name="IDS_PREFS_SECTION_ACCOUNT_AND_GOOGLE_SERVICES" desc="Title for the group of account-related entries and google services in Settings. [CHAR-LIMIT=32]">
+        You and Google
+      </message>
       <message name="IDS_SIGN_IN_TO_CHROME" desc="Title for the button to sign in to Chrome using one's Google account. [CHAR-LIMIT=27]">
         Sign in to Chrome
       </message>
@@ -2760,6 +2763,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_LOCATION_BAR_PREVIEW_LITE_PAGE_STATUS" desc="An indication in the location bar that the page the user is viewing has been modified in order to speed up the page load or decrease the amount of data used to load the page. [CHAR-LIMIT=10]">
         Lite
       </message>
+      <message name="IDS_LOCATION_BAR_PAINT_PREVIEW_PAGE_STATUS" desc="An indication in the location bar that the page the user is viewing is a paint preview of the original page. [CHAR-LIMIT=10]" translateable="false">
+        Preview
+      </message>
 
       <!-- Voice search -->
       <message name="IDS_VOICE_SEARCH_ERROR" desc="Toast when the voice search activity couldn't be started. [CHAR-LIMIT=40]">
@@ -3846,6 +3852,14 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_PAINT_PREVIEW_DEMO_PLAYBACK_FAILURE" desc="Toast message displayed when there is a failure in playing back a paint preview for the demo. Used in paint preview demo mode." translateable="false">
         Paint Preview playback failed.
+      </message>
+
+      <!-- Paint Preview Startup Experiment -->
+      <message name="IDS_PAINT_PREVIEW_STARTUP_UPGRADE_SNACKBAR_MESSAGE" desc="Message displayed on a snackbar when a paint preview is shown on startup, telling the user that this is a preview of the page" translateable="false">
+        This is a preview
+      </message>
+      <message name="IDS_PAINT_PREVIEW_STARTUP_UPGRADE_SNACKBAR_ACTION" desc="Text displayed on the action button of snackbar, promting user to switch to the live page and exist paint preivew." translateable="false">
+        View live page
       </message>
 
       <!-- Default Browser Promo Strings-->

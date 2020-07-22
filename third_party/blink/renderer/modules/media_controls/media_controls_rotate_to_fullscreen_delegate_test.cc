@@ -220,7 +220,8 @@ void MediaControlsRotateToFullscreenDelegateTest::InitScreenAndVideo(
 }
 
 void MediaControlsRotateToFullscreenDelegateTest::PlayVideo() {
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   GetVideo().Play();
   test::RunPendingTasks();
 }
@@ -304,7 +305,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   EXPECT_FALSE(IsObservingVisibility());
 
   // Should start observing visibility when played.
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   GetVideo().Play();
   test::RunPendingTasks();
   EXPECT_TRUE(IsObservingVisibility());
@@ -322,7 +324,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   EXPECT_FALSE(ObservedVisibility());
 
   // Should resume observing visibility when playback resumes.
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   GetVideo().Play();
   test::RunPendingTasks();
   EXPECT_TRUE(IsObservingVisibility());
@@ -624,7 +627,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
 
   // Simulate the webpage requesting fullscreen on some other element than the
   // video (in this case document.body).
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*GetDocument().body());
   test::RunPendingTasks();
   EXPECT_TRUE(Fullscreen::IsFullscreenElement(*GetDocument().body()));
@@ -653,7 +657,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   EXPECT_EQ(SimpleOrientation::kLandscape, ComputeVideoOrientation());
 
   // Start in fullscreen.
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   GetMediaControls().EnterFullscreen();
   // n.b. omit to call Fullscreen::From(GetDocument()).DidEnterFullscreen() so
   // that MediaControlsOrientationLockDelegate doesn't trigger, which avoids
@@ -682,7 +687,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   EXPECT_EQ(SimpleOrientation::kPortrait, ComputeVideoOrientation());
 
   // Start in fullscreen.
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   GetMediaControls().EnterFullscreen();
   // n.b. omit to call Fullscreen::From(GetDocument()).DidEnterFullscreen() so
   // that MediaControlsOrientationLockDelegate doesn't trigger, which avoids
@@ -712,7 +718,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
 
   // Simulate the webpage requesting fullscreen on some other element than the
   // video (in this case document.body).
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*GetDocument().body());
   test::RunPendingTasks();
   EXPECT_TRUE(Fullscreen::IsFullscreenElement(*GetDocument().body()));

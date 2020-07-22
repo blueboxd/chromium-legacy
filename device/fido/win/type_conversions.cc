@@ -275,9 +275,10 @@ uint32_t ToWinAttestationConveyancePreference(
       return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT;
     case AttestationConveyancePreference::kDirect:
       return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT;
-    case AttestationConveyancePreference::kEnterprise:
+    case AttestationConveyancePreference::kEnterpriseIfRPListedOnAuthenticator:
+    case AttestationConveyancePreference::kEnterpriseApprovedByBrowser:
       // Windows does not support enterprise attestation.
-      return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT;
+      return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_NONE;
   }
   NOTREACHED();
   return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_NONE;

@@ -146,6 +146,14 @@ void FillLiveDetails(const media_feeds::mojom::LiveDetailsPtr& live_details,
         live_details->end_time->ToDeltaSinceWindowsEpoch().InSeconds());
 }
 
+void AssignStatement(sql::Statement* statement,
+                     sql::Database* db,
+                     const sql::StatementID& id,
+                     const std::vector<std::string>& sql) {
+  statement->Assign(
+      db->GetCachedStatement(id, base::JoinString(sql, " ").c_str()));
+}
+
 }  // namespace
 
 const char MediaHistoryFeedItemsTable::kTableName[] = "mediaFeedItem";
@@ -212,6 +220,14 @@ sql::InitStatus MediaHistoryFeedItemsTable::CreateTableIfNonExistent() {
         "CREATE INDEX IF NOT EXISTS "
         "mediaFeedItem_continue_watching_index ON "
         "mediaFeedItem (action_status, play_next_candidate, "
+        "safe_search_result)");
+  }
+
+  if (success) {
+    success = DB()->Execute(
+        "CREATE INDEX IF NOT EXISTS "
+        "mediaFeedItem_continue_watching_with_type_index ON "
+        "mediaFeedItem (action_status, play_next_candidate, type, "
         "safe_search_result)");
   }
 
@@ -462,58 +478,91 @@ MediaHistoryFeedItemsTable::GetItems(
     if (request.fetched_items_should_be_safe)
       sql.push_back("AND safe_search_result = ?");
 
+    if (request.filter_by_type.has_value())
+      sql.push_back("AND type = ?");
+
     sql.push_back("ORDER BY clicked ASC, shown_count ASC LIMIT ?");
 
-    if (request.fetched_items_should_be_safe) {
-      statement.Assign(DB()->GetCachedStatement(
-          SQL_FROM_HERE, base::JoinString(sql, " ").c_str()));
-
-      statement.BindInt64(
-          2, static_cast<int>(media_feeds::mojom::SafeSearchResult::kSafe));
-      statement.BindInt64(3, *request.limit);
+    // For each different query combination we should have an assign statement
+    // call that will generate a unique SQL_FROM_HERE value.
+    if (request.fetched_items_should_be_safe && request.filter_by_type) {
+      AssignStatement(&statement, DB(), SQL_FROM_HERE, sql);
+    } else if (request.fetched_items_should_be_safe) {
+      AssignStatement(&statement, DB(), SQL_FROM_HERE, sql);
+    } else if (request.filter_by_type) {
+      AssignStatement(&statement, DB(), SQL_FROM_HERE, sql);
     } else {
-      statement.Assign(DB()->GetCachedStatement(
-          SQL_FROM_HERE, base::JoinString(sql, " ").c_str()));
-
-      statement.BindInt64(2, *request.limit);
+      AssignStatement(&statement, DB(), SQL_FROM_HERE, sql);
     }
 
-    // Bind common parameters.
-    statement.BindInt64(0, *request.feed_id);
+    // Now bind all the parameters to the query.
+    int bind_index = 0;
+    statement.BindInt64(bind_index++, *request.feed_id);
     statement.BindInt64(
-        1, static_cast<int>(
-               media_feeds::mojom::MediaFeedItemActionStatus::kActive));
+        bind_index++,
+        static_cast<int>(
+            media_feeds::mojom::MediaFeedItemActionStatus::kActive));
+
+    if (request.fetched_items_should_be_safe) {
+      statement.BindInt64(
+          bind_index++,
+          static_cast<int>(media_feeds::mojom::SafeSearchResult::kSafe));
+    }
+
+    if (request.filter_by_type.has_value()) {
+      statement.BindInt64(bind_index++,
+                          static_cast<int>(*request.filter_by_type));
+    }
+
+    statement.BindInt64(bind_index++, *request.limit);
   } else if (request.type ==
              MediaHistoryKeyedService::GetMediaFeedItemsRequest::Type::
                  kContinueWatching) {
     // kContinueWatching should return items across all feeds that either have
     // an active action status or a play next candidate. Ordered by most recent
     // first.
-    sql.push_back("WHERE action_status = ? OR play_next_candidate IS NOT NULL");
+    sql.push_back(
+        "WHERE (action_status = ? OR play_next_candidate IS NOT NULL)");
 
     if (request.fetched_items_should_be_safe)
       sql.push_back("AND safe_search_result = ?");
 
+    if (request.filter_by_type.has_value())
+      sql.push_back("AND type = ?");
+
     sql.push_back("ORDER BY id DESC LIMIT ?");
 
-    if (request.fetched_items_should_be_safe) {
-      statement.Assign(DB()->GetCachedStatement(
-          SQL_FROM_HERE, base::JoinString(sql, " ").c_str()));
-
-      statement.BindInt64(
-          1, static_cast<int>(media_feeds::mojom::SafeSearchResult::kSafe));
-      statement.BindInt64(2, *request.limit);
+    // For each different query combination we should have an assign statement
+    // call that will generate a unique SQL_FROM_HERE value.
+    if (request.fetched_items_should_be_safe && request.filter_by_type) {
+      AssignStatement(&statement, DB(), SQL_FROM_HERE, sql);
+    } else if (request.fetched_items_should_be_safe) {
+      AssignStatement(&statement, DB(), SQL_FROM_HERE, sql);
+    } else if (request.filter_by_type) {
+      AssignStatement(&statement, DB(), SQL_FROM_HERE, sql);
     } else {
-      statement.Assign(DB()->GetCachedStatement(
-          SQL_FROM_HERE, base::JoinString(sql, " ").c_str()));
-
-      statement.BindInt64(1, *request.limit);
+      AssignStatement(&statement, DB(), SQL_FROM_HERE, sql);
     }
 
-    // Bind common parameters.
+    // Now bind all the parameters to the query.
+    int bind_index = 0;
     statement.BindInt64(
-        0, static_cast<int>(
-               media_feeds::mojom::MediaFeedItemActionStatus::kActive));
+        bind_index++,
+        static_cast<int>(
+            media_feeds::mojom::MediaFeedItemActionStatus::kActive));
+
+    if (request.fetched_items_should_be_safe) {
+      statement.BindInt64(
+          bind_index++,
+          static_cast<int>(media_feeds::mojom::SafeSearchResult::kSafe));
+    }
+
+    if (request.filter_by_type.has_value()) {
+      statement.BindInt64(bind_index++,
+                          static_cast<int>(*request.filter_by_type));
+    }
+
+    statement.BindInt64(bind_index++, *request.limit);
   }
 
   DCHECK(statement.is_valid());

@@ -25,9 +25,10 @@
 // the number of UpdateDevice RPC calls.
 class NearbyShareDeviceDataUpdater {
  public:
+  // If the request is unsuccessful, |response| is base::nullopt.
   using ResultCallback = base::OnceCallback<void(
-      bool,
-      const base::Optional<nearbyshare::proto::UpdateDeviceResponse>&)>;
+      const base::Optional<nearbyshare::proto::UpdateDeviceResponse>&
+          response)>;
 
   struct Request {
     Request(base::Optional<std::string> device_name,
@@ -79,8 +80,9 @@ class NearbyShareDeviceDataUpdater {
  protected:
   void ProcessRequestQueue();
   virtual void HandleNextRequest() = 0;
+
+  // If the request is unsuccessful, |response| is base::nullopt.
   void FinishAttempt(
-      bool success,
       const base::Optional<nearbyshare::proto::UpdateDeviceResponse>& response);
 
   std::string device_id_;

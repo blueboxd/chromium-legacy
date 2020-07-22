@@ -563,8 +563,8 @@ void CookieStoreManager::OnCookieChange(const net::CookieChangeInfo& change) {
            subscriptions.head();
        node != subscriptions.end(); node = node->next()) {
     const CookieChangeSubscription* subscription = node->value();
-    if (subscription->ShouldObserveChangeTo(change.cookie,
-                                            change.access_semantics)) {
+    if (subscription->ShouldObserveChangeTo(
+            change.cookie, change.access_result.access_semantics)) {
       interested_registration_ids.insert(
           subscription->service_worker_registration_id());
     }

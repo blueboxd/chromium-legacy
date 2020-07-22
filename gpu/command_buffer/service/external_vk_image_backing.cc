@@ -1044,8 +1044,7 @@ void ExternalVkImageBacking::EndAccessInternal(
     is_write_in_progress_ = false;
   }
 
-  // synchronization is not needed if it is not the last gl access.
-  if (need_synchronization() && reads_in_progress_ == 0) {
+  if (need_synchronization()) {
     DCHECK(!is_write_in_progress_);
     DCHECK(external_semaphore);
     if (readonly) {
@@ -1055,6 +1054,8 @@ void ExternalVkImageBacking::EndAccessInternal(
       DCHECK(read_semaphores_.empty());
       write_semaphore_ = std::move(external_semaphore);
     }
+  } else {
+    DCHECK(!external_semaphore);
   }
 }
 

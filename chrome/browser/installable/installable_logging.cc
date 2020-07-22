@@ -59,6 +59,9 @@ static const char kNoUrlForServiceWorker[] =
     "manifest";
 static const char kPreferRelatedApplications[] =
     "Manifest specifies prefer_related_applications: true";
+static const char kPreferRelatedApplicationsSupportedOnlyBetaStable[] =
+    "prefer_related_applications is only supported on Chrome Beta and Stable "
+    "channels on Android.";
 
 static const char kNotInMainFrameId[] = "not-in-main-frame";
 static const char kNotFromSecureOriginId[] = "not-from-secure-origin";
@@ -88,6 +91,8 @@ static const char kNotOfflineCapableId[] = "not-offline-capable";
 static const char kNoUrlForServiceWorkerId[] = "no-url-for-service-worker";
 static const char kPreferRelatedApplicationsId[] =
     "prefer-related-applications";
+static const char kPreferRelatedApplicationsSupportedOnlyBetaStableId[] =
+    "prefer-related-applications-only-beta-stable";
 
 const std::string& GetMessagePrefix() {
   static base::NoDestructor<std::string> message_prefix(
@@ -185,6 +190,9 @@ std::string GetErrorMessage(InstallableStatusCode code) {
       break;
     case PREFER_RELATED_APPLICATIONS:
       message = kPreferRelatedApplications;
+      break;
+    case PREFER_RELATED_APPLICATIONS_SUPPORTED_ONLY_BETA_STABLE:
+      message = kPreferRelatedApplicationsSupportedOnlyBetaStable;
       break;
   }
 
@@ -284,6 +292,9 @@ content::InstallabilityError GetInstallabilityError(
       break;
     case PREFER_RELATED_APPLICATIONS:
       error_id = kPreferRelatedApplicationsId;
+      break;
+    case PREFER_RELATED_APPLICATIONS_SUPPORTED_ONLY_BETA_STABLE:
+      error_id = kPreferRelatedApplicationsSupportedOnlyBetaStableId;
       break;
   }
   error.error_id = error_id;

@@ -42,8 +42,11 @@ class HidChooserContextTest : public testing::Test {
 
   HidChooserContext* GetContext() {
     auto* context = HidChooserContextFactory::GetForProfile(&profile_);
-    context->AddObserver(&mock_permission_observer_);
-    context->AddDeviceObserver(&mock_device_observer_);
+    if (!observers_added_) {
+      context->AddObserver(&mock_permission_observer_);
+      context->AddDeviceObserver(&mock_device_observer_);
+      observers_added_ = true;
+    }
     return context;
   }
 
@@ -62,6 +65,14 @@ class HidChooserContextTest : public testing::Test {
               run_loop.Quit();
             }));
     run_loop.Run();
+  }
+
+  void TearDown() override {
+    if (observers_added_) {
+      auto* context = HidChooserContextFactory::GetForProfile(&profile_);
+      context->RemoveObserver(&mock_permission_observer_);
+      context->RemoveDeviceObserver(&mock_device_observer_);
+    }
   }
 
   device::mojom::HidDeviceInfoPtr ConnectEphemeralDevice() {
@@ -91,6 +102,7 @@ class HidChooserContextTest : public testing::Test {
   TestingProfile profile_;
   permissions::MockPermissionObserver mock_permission_observer_;
   MockHidDeviceObserver mock_device_observer_;
+  bool observers_added_ = false;
 };
 
 }  // namespace

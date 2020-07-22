@@ -31,47 +31,46 @@ namespace chromeos {
 namespace assistant {
 
 ////////////////////////////////////////////////////////////////////////////////
-// DummyAuthProvider
+// FakeAuthProvider
 ////////////////////////////////////////////////////////////////////////////////
 
-std::string PlatformApiImpl::DummyAuthProvider::GetAuthClientId() {
+std::string PlatformApiImpl::FakeAuthProvider::GetAuthClientId() {
   return "kFakeClientId";
 }
 
 std::vector<std::string>
-PlatformApiImpl::DummyAuthProvider::GetClientCertificateChain() {
+PlatformApiImpl::FakeAuthProvider::GetClientCertificateChain() {
   return {};
 }
 
-void PlatformApiImpl::DummyAuthProvider::CreateCredentialAttestationJwt(
+void PlatformApiImpl::FakeAuthProvider::CreateCredentialAttestationJwt(
     const std::string& authorization_code,
     const std::vector<std::pair<std::string, std::string>>& claims,
     CredentialCallback attestation_callback) {
   attestation_callback(Error::SUCCESS, "", "");
 }
 
-void PlatformApiImpl::DummyAuthProvider::CreateRefreshAssertionJwt(
+void PlatformApiImpl::FakeAuthProvider::CreateRefreshAssertionJwt(
     const std::string& key_identifier,
     const std::vector<std::pair<std::string, std::string>>& claims,
     AssertionCallback assertion_callback) {
   assertion_callback(Error::SUCCESS, "");
 }
 
-void PlatformApiImpl::DummyAuthProvider::CreateDeviceAttestationJwt(
+void PlatformApiImpl::FakeAuthProvider::CreateDeviceAttestationJwt(
     const std::vector<std::pair<std::string, std::string>>& claims,
     AssertionCallback attestation_callback) {
   attestation_callback(Error::SUCCESS, "");
 }
 
-std::string
-PlatformApiImpl::DummyAuthProvider::GetAttestationCertFingerprint() {
+std::string PlatformApiImpl::FakeAuthProvider::GetAttestationCertFingerprint() {
   return "kFakeAttestationCertFingerprint";
 }
 
-void PlatformApiImpl::DummyAuthProvider::RemoveCredentialKey(
+void PlatformApiImpl::FakeAuthProvider::RemoveCredentialKey(
     const std::string& key_identifier) {}
 
-void PlatformApiImpl::DummyAuthProvider::Reset() {}
+void PlatformApiImpl::FakeAuthProvider::Reset() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformApiImpl

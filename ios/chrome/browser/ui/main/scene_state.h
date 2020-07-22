@@ -31,6 +31,17 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
   SceneActivationLevelForegroundActive
 };
 
+// Scene agents are objects owned by a scene state and providing some
+// scene-scoped function. They can be driven by SceneStateObserver events.
+@protocol SceneAgent <NSObject>
+
+@required
+// Sets the associated scene state. Called once and only once. Consider using
+// this method to add the agent as an observer.
+- (void)setSceneState:(SceneState*)scene;
+
+@end
+
 @protocol SceneStateObserver <NSObject>
 
 @optional
@@ -110,6 +121,9 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 // Removes the observer. It's safe to call this at any time, including from
 // SceneStateObserver callbacks.
 - (void)removeObserver:(id<SceneStateObserver>)observer;
+
+// Adds a new agent. Agents are owned by the scene state.
+- (void)addAgent:(id<SceneAgent>)agent;
 
 @end
 

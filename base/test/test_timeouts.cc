@@ -85,10 +85,14 @@ bool TestTimeouts::initialized_ = false;
 
 // The timeout values should increase in the order they appear in this block.
 // static
-auto TestTimeouts::tiny_timeout_ = base::TimeDelta::FromMilliseconds(100);
-auto TestTimeouts::action_timeout_ = base::TimeDelta::FromSeconds(10);
-auto TestTimeouts::action_max_timeout_ = base::TimeDelta::FromSeconds(30);
-auto TestTimeouts::test_launcher_timeout_ = base::TimeDelta::FromSeconds(45);
+base::TimeDelta TestTimeouts::tiny_timeout_ =
+    base::TimeDelta::FromMilliseconds(100);
+base::TimeDelta TestTimeouts::action_timeout_ =
+    base::TimeDelta::FromSeconds(10);
+base::TimeDelta TestTimeouts::action_max_timeout_ =
+    base::TimeDelta::FromSeconds(30);
+base::TimeDelta TestTimeouts::test_launcher_timeout_ =
+    base::TimeDelta::FromSeconds(45);
 
 // static
 void TestTimeouts::Initialize() {

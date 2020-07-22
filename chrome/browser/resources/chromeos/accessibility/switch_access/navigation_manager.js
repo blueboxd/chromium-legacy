@@ -306,12 +306,14 @@ class NavigationManager {
         });
 
     // The status tray fires a SHOW event when it opens.
-    this.desktop_.addEventListener(
-        chrome.automation.EventType.SHOW, this.onModalDialog_.bind(this),
-        false);
-    this.desktop_.addEventListener(
-        chrome.automation.EventType.MENU_START, this.onModalDialog_.bind(this),
-        false);
+    new EventHandler(
+        this.desktop_,
+        [
+          chrome.automation.EventType.MENU_START,
+          chrome.automation.EventType.SHOW
+        ],
+        this.onModalDialog_.bind(this))
+        .start();
   }
 
   /**

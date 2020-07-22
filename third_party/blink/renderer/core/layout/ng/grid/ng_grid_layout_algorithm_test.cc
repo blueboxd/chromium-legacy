@@ -253,7 +253,7 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmRanges) {
     #grid1 {
       display: grid;
       grid-template-columns: repeat(2, 100px 100px 200px 200px);
-      grid-template-rows: repeat(20, 100px);
+      grid-template-rows: repeat(1000, 100px);
     }
     </style>
     <div id="grid1">
@@ -282,30 +282,15 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmRanges) {
   NGGridTrackCollectionBase::RangeRepeatIterator row_iterator(
       &algorithm.RowTrackCollection(), 0u);
   EXPECT_EQ(1u, row_iterator.RangeTrackStart());
-  EXPECT_EQ(20u, row_iterator.RangeTrackEnd());
-  EXPECT_EQ(20u, row_iterator.RepeatCount());
+  EXPECT_EQ(1000u, row_iterator.RangeTrackEnd());
+  EXPECT_EQ(1000u, row_iterator.RepeatCount());
   EXPECT_FALSE(row_iterator.MoveToNextRange());
 
   NGGridTrackCollectionBase::RangeRepeatIterator column_iterator(
       &algorithm.ColumnTrackCollection(), 0u);
   EXPECT_EQ(1u, column_iterator.RangeTrackStart());
-  EXPECT_EQ(2u, column_iterator.RangeTrackEnd());
-  EXPECT_EQ(2u, column_iterator.RepeatCount());
-  EXPECT_TRUE(column_iterator.MoveToNextRange());
-
-  EXPECT_EQ(3u, column_iterator.RangeTrackStart());
-  EXPECT_EQ(4u, column_iterator.RangeTrackEnd());
-  EXPECT_EQ(2u, column_iterator.RepeatCount());
-  EXPECT_TRUE(column_iterator.MoveToNextRange());
-
-  EXPECT_EQ(5u, column_iterator.RangeTrackStart());
-  EXPECT_EQ(6u, column_iterator.RangeTrackEnd());
-  EXPECT_EQ(2u, column_iterator.RepeatCount());
-  EXPECT_TRUE(column_iterator.MoveToNextRange());
-
-  EXPECT_EQ(7u, column_iterator.RangeTrackStart());
   EXPECT_EQ(8u, column_iterator.RangeTrackEnd());
-  EXPECT_EQ(2u, column_iterator.RepeatCount());
+  EXPECT_EQ(8u, column_iterator.RepeatCount());
   EXPECT_FALSE(column_iterator.MoveToNextRange());
 }
 

@@ -78,6 +78,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorMakeCredentialResponse
     android_client_data_ext_ = data;
   }
 
+  // enterprise_attestation_returned is true if the authenticator indicated that
+  // it returned an enterprise attestation. Note: U2F authenticators can
+  // support enterprise/individual attestation but cannot indicate when they
+  // have done so, so this will always be false in the U2F case.
+  bool enterprise_attestation_returned = false;
+
  private:
   AttestationObject attestation_object_;
 

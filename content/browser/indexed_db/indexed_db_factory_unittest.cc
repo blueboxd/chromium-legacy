@@ -693,8 +693,7 @@ class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
       : IndexedDBCallbacks(nullptr,
                            url::Origin(),
                            mojo::NullAssociatedRemote(),
-                           base::SequencedTaskRunnerHandle::Get()),
-        error_called_(false) {}
+                           base::SequencedTaskRunnerHandle::Get()) {}
   void OnError(const IndexedDBDatabaseError& error) override {
     error_called_ = true;
     EXPECT_EQ(blink::mojom::IDBException::kQuotaError, error.code());
@@ -703,7 +702,7 @@ class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
 
  private:
   ~LookingForQuotaErrorMockCallbacks() override = default;
-  bool error_called_;
+  bool error_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LookingForQuotaErrorMockCallbacks);
 };
@@ -757,7 +756,7 @@ TEST_F(IndexedDBFactoryTest, NotifyQuotaOnDatabaseError) {
 
 class ErrorCallbacks : public MockIndexedDBCallbacks {
  public:
-  ErrorCallbacks() : MockIndexedDBCallbacks(false), saw_error_(false) {}
+  ErrorCallbacks() : MockIndexedDBCallbacks(false) {}
 
   void OnError(const IndexedDBDatabaseError& error) override {
     saw_error_ = true;
@@ -766,7 +765,7 @@ class ErrorCallbacks : public MockIndexedDBCallbacks {
 
  private:
   ~ErrorCallbacks() override = default;
-  bool saw_error_;
+  bool saw_error_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ErrorCallbacks);
 };

@@ -113,6 +113,9 @@ std::vector<uint8_t> AsCTAPStyleCBORBytes(
     map.emplace(kAndroidClientDataExtOutputKey,
                 cbor::Value(*response.android_client_data_ext()));
   }
+  if (response.enterprise_attestation_returned) {
+    map.emplace(4, true);
+  }
   auto encoded_bytes = cbor::Writer::Write(cbor::Value(std::move(map)));
   DCHECK(encoded_bytes);
   return std::move(*encoded_bytes);

@@ -10,12 +10,15 @@
 
 namespace syncer {
 
-TopicInvalidationMap::TopicInvalidationMap() {}
+TopicInvalidationMap::TopicInvalidationMap() = default;
 
 TopicInvalidationMap::TopicInvalidationMap(const TopicInvalidationMap& other) =
     default;
 
-TopicInvalidationMap::~TopicInvalidationMap() {}
+TopicInvalidationMap& TopicInvalidationMap::operator=(
+    const TopicInvalidationMap& other) = default;
+
+TopicInvalidationMap::~TopicInvalidationMap() = default;
 
 TopicSet TopicInvalidationMap::GetTopics() const {
   TopicSet ret;
@@ -66,15 +69,16 @@ const SingleObjectInvalidationSet& TopicInvalidationMap::ForTopic(
 
 void TopicInvalidationMap::GetAllInvalidations(
     std::vector<syncer::Invalidation>* out) const {
-  for (auto it = map_.begin(); it != map_.end(); ++it) {
-    out->insert(out->begin(), it->second.begin(), it->second.end());
+  for (const auto& topic_to_invalidations : map_) {
+    out->insert(out->begin(), topic_to_invalidations.second.begin(),
+                topic_to_invalidations.second.end());
   }
 }
 
 void TopicInvalidationMap::AcknowledgeAll() const {
-  for (auto it1 = map_.begin(); it1 != map_.end(); ++it1) {
-    for (auto it2 = it1->second.begin(); it2 != it1->second.end(); ++it2) {
-      it2->Acknowledge();
+  for (const auto& topic_to_invalidations : map_) {
+    for (const Invalidation& invalidation : topic_to_invalidations.second) {
+      invalidation.Acknowledge();
     }
   }
 }
@@ -85,9 +89,9 @@ bool TopicInvalidationMap::operator==(const TopicInvalidationMap& other) const {
 
 std::unique_ptr<base::ListValue> TopicInvalidationMap::ToValue() const {
   std::unique_ptr<base::ListValue> value(new base::ListValue());
-  for (auto it1 = map_.begin(); it1 != map_.end(); ++it1) {
-    for (auto it2 = it1->second.begin(); it2 != it1->second.end(); ++it2) {
-      value->Append(it2->ToValue());
+  for (const auto& topic_to_invalidations : map_) {
+    for (const Invalidation& invalidation : topic_to_invalidations.second) {
+      value->Append(invalidation.ToValue());
     }
   }
   return value;

@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "net/base/net_export.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_access_result.h"
 
 class GURL;
 
@@ -41,15 +42,15 @@ enum class CookieChangeCause {
 struct NET_EXPORT CookieChangeInfo {
   CookieChangeInfo();
   CookieChangeInfo(const CanonicalCookie& cookie,
-                   CookieAccessSemantics access_semantics,
+                   CookieAccessResult access_result,
                    CookieChangeCause cause);
   ~CookieChangeInfo();
 
   // The cookie that changed.
   CanonicalCookie cookie;
 
-  // The access semantics of the cookie at the time of the change.
-  CookieAccessSemantics access_semantics = CookieAccessSemantics::UNKNOWN;
+  // The access result of the cookie at the time of the change.
+  CookieAccessResult access_result;
 
   // The reason for the change.
   CookieChangeCause cause = CookieChangeCause::EXPLICIT;

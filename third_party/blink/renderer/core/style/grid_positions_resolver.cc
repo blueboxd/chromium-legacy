@@ -262,9 +262,10 @@ size_t GridPositionsResolver::ExplicitGridColumnCount(
     const ComputedStyle& grid_container_style,
     size_t auto_repeat_tracks_count) {
   return std::min<size_t>(
-      std::max(grid_container_style.GridTemplateColumns().size() +
-                   auto_repeat_tracks_count,
-               grid_container_style.NamedGridAreaColumnCount()),
+      std::max(
+          grid_container_style.GridTemplateColumns().LegacyTrackList().size() +
+              auto_repeat_tracks_count,
+          grid_container_style.NamedGridAreaColumnCount()),
       kGridMaxTracks);
 }
 
@@ -272,9 +273,10 @@ size_t GridPositionsResolver::ExplicitGridRowCount(
     const ComputedStyle& grid_container_style,
     size_t auto_repeat_tracks_count) {
   return std::min<size_t>(
-      std::max(grid_container_style.GridTemplateRows().size() +
-                   auto_repeat_tracks_count,
-               grid_container_style.NamedGridAreaRowCount()),
+      std::max(
+          grid_container_style.GridTemplateRows().LegacyTrackList().size() +
+              auto_repeat_tracks_count,
+          grid_container_style.NamedGridAreaRowCount()),
       kGridMaxTracks);
 }
 

@@ -45,6 +45,10 @@ class HidChooserContext : public permissions::ChooserContextBase,
     virtual void OnDeviceAdded(const device::mojom::HidDeviceInfo&);
     virtual void OnDeviceRemoved(const device::mojom::HidDeviceInfo&);
     virtual void OnHidManagerConnectionError();
+
+    // Called when the HidChooserContext is shutting down. Observers must remove
+    // themselves before returning.
+    virtual void OnHidChooserContextShutdown() = 0;
   };
 
   // permissions::ChooserContextBase implementation:

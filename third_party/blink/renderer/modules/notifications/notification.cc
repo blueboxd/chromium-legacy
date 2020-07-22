@@ -249,8 +249,11 @@ void Notification::OnShow() {
 void Notification::OnClick(OnClickCallback completed_closure) {
   ExecutionContext* context = GetExecutionContext();
   auto* window = DynamicTo<LocalDOMWindow>(context);
-  if (window && window->GetFrame())
-    LocalFrame::NotifyUserActivation(window->GetFrame());
+  if (window && window->GetFrame()) {
+    LocalFrame::NotifyUserActivation(
+        window->GetFrame(),
+        mojom::blink::UserActivationNotificationType::kInteraction);
+  }
   ScopedWindowFocusAllowedIndicator window_focus_allowed(GetExecutionContext());
   DispatchEvent(*Event::Create(event_type_names::kClick));
 

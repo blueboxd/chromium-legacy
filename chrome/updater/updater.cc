@@ -29,7 +29,6 @@
 #if defined(OS_MACOSX)
 #include "chrome/updater/app/server/mac/server.h"
 #include "chrome/updater/mac/setup/app_install.h"
-#include "chrome/updater/mac/setup/app_swap.h"
 #endif
 
 // Instructions For Windows.
@@ -105,13 +104,6 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
 
   if (command_line->HasSwitch(kInstallSwitch))
     return MakeAppInstall()->Run();
-
-#if defined(OS_MACOSX)
-  if (command_line->HasSwitch(kPromoteCandidateSwitch))
-    return MakeAppPromoteCandidate()->Run();
-  if (command_line->HasSwitch(kUninstallCandidateSwitch))
-    return MakeAppUninstallCandidate()->Run();
-#endif  // OS_MACOSX
 
   if (command_line->HasSwitch(kUninstallSwitch))
     return MakeAppUninstall()->Run();

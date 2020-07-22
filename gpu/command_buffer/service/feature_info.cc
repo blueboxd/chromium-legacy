@@ -1131,6 +1131,11 @@ void FeatureInfo::InitializeFeatures() {
     validators_.g_l_state.AddValue(GL_TEXTURE_BINDING_EXTERNAL_OES);
   }
 
+  if (gfx::HasExtension(extensions, "GL_EXT_YUV_target")) {
+    validators_.texture_fbo_target.AddValue(GL_TEXTURE_EXTERNAL_OES);
+    feature_flags_.ext_yuv_target = true;
+  }
+
   // ANGLE only exposes this extension when it has native support of the
   // GL_ETC1_RGB8 format.
   if (gfx::HasExtension(extensions, "GL_OES_compressed_ETC1_RGB8_texture")) {
@@ -1198,6 +1203,7 @@ void FeatureInfo::InitializeFeatures() {
     // textures via glFramebufferTexture2D, and copy destinations via
     // glCopyPixels.
     validators_.texture_bind_target.AddValue(GL_TEXTURE_RECTANGLE_ARB);
+    validators_.texture_fbo_target.AddValue(GL_TEXTURE_RECTANGLE_ARB);
     validators_.texture_target.AddValue(GL_TEXTURE_RECTANGLE_ARB);
     validators_.get_tex_param_target.AddValue(GL_TEXTURE_RECTANGLE_ARB);
     validators_.g_l_state.AddValue(GL_TEXTURE_BINDING_RECTANGLE_ARB);

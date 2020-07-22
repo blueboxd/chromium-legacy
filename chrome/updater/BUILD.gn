@@ -54,6 +54,7 @@ if (is_win || is_mac) {
       "policy_manager.h",
       "registration_data.cc",
       "registration_data.h",
+      "service_scope.h",
       "unzipper.cc",
       "unzipper.h",
       "update_service.cc",

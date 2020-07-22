@@ -109,19 +109,9 @@ struct PasswordForm {
   // The name of the submit button used. Optional; only used in scoring
   // of PasswordForm results from the database to make matches as tight as
   // possible.
-  //
-  // When parsing an HTML form, this must always be set.
   base::string16 submit_element;
 
-  // True if renderer ids for username and password fields are present. Only set
-  // on form parsing, and not persisted.
-  // TODO(https://crbug.com/831123): Remove this field when old parsing is
-  // removed and filling by renderer ids is by default.
-  bool has_renderer_ids = false;
-
-  // The name of the username input element. Optional (improves scoring).
-  //
-  // When parsing an HTML form, this must always be set.
+  // The name of the username input element.
   base::string16 username_element;
 
   // The renderer id of the username input element. It is set during the new
@@ -133,12 +123,6 @@ struct PasswordForm {
   // form parsing and not persisted.
   bool username_may_use_prefilled_placeholder = false;
 
-  // Whether the |username_element| has an autocomplete=username attribute. This
-  // is only used in parsed HTML forms.
-  bool username_marked_by_site = false;
-
-  // The username. Optional.
-  //
   // When parsing an HTML form, this is typically empty unless the site
   // has implemented some form of autofill.
   base::string16 username_value;
@@ -198,10 +182,6 @@ struct PasswordForm {
   // The new password. Optional, and not persisted.
   base::string16 new_password_value;
 
-  // Whether the |new_password_element| has an autocomplete=new-password
-  // attribute. This is only used in parsed HTML forms.
-  bool new_password_marked_by_site = false;
-
   // When the login was last used by the user to login to the site. Defaults to
   // |date_created|, except for passwords that were migrated from the now
   // deprecated |preferred| flag. Their default is set when migrating the login
@@ -256,10 +236,6 @@ struct PasswordForm {
 
   // The URL of this credential's icon, such as the user's avatar, to display
   // in the UI.
-  // TODO(msramek): This field was previously named |avatar_url|. It is still
-  // named this way in the password store backends (e.g. the avatar_url column
-  // in the SQL DB of LoginDatabase) and for the purposes of syncing
-  // (i.e in PasswordSpecificsData). Rename these occurrences.
   GURL icon_url;
 
   // The origin of identity provider used for federated login.

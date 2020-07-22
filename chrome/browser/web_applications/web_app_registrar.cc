@@ -117,6 +117,13 @@ DisplayMode WebAppRegistrar::GetAppUserDisplayMode(const AppId& app_id) const {
   return web_app ? web_app->user_display_mode() : DisplayMode::kUndefined;
 }
 
+std::vector<DisplayMode> WebAppRegistrar::GetAppDisplayModeOverride(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->display_mode_override()
+                 : std::vector<DisplayMode>();
+}
+
 base::Time WebAppRegistrar::GetAppLastLaunchTime(const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
   return web_app ? web_app->last_launch_time() : base::Time();

@@ -104,6 +104,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, ShouldPromptForAttestationWin) {
   ::device::test::ValueCallbackReceiver<bool> cb;
   ChromeAuthenticatorRequestDelegate delegate(main_rfh());
   delegate.ShouldReturnAttestation(kRelyingPartyID, &authenticator,
+                                   /*is_enterprise_attestation=*/false,
                                    cb.callback());
   cb.WaitForCallback();
   EXPECT_EQ(cb.value(), true);

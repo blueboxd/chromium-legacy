@@ -119,6 +119,7 @@ class KioskLaunchController : public KioskProfileLoader::Delegate,
   void OnNetworkConfigFinished() override;
   void OnNetworkStateChanged(bool online) override;
   KioskAppManagerBase::App GetAppData() override;
+  bool IsNetworkRequired() override;
 
   // KioskAppLauncher::Delegate:
   void InitializeNetwork() override;
@@ -149,7 +150,7 @@ class KioskLaunchController : public KioskProfileLoader::Delegate,
   void MaybeShowNetworkConfigureUI();
   // Shows the network configuration dialog.
   void ShowNetworkConfigureUI();
-  void CloseNetworkConfigureScreenIfTimedout();
+  void CloseNetworkConfigureScreenIfOnline();
 
   void HandleWebAppInstallFailed();
 
@@ -173,6 +174,8 @@ class KioskLaunchController : public KioskProfileLoader::Delegate,
   // Whether app should be launched as soon as it is ready.
   bool launch_on_install_ = false;
   bool network_wait_timedout_ = false;
+  // Whether the network is required for the installation.
+  bool network_required_ = false;
 
   // Used to login into kiosk user profile.
   std::unique_ptr<KioskProfileLoader> kiosk_profile_loader_;

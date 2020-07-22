@@ -69,6 +69,7 @@ java_library("components_signin_junit_tests") {
     "//base:base_junit_test_support",
     "//testing/android/junit:junit_test_support",
     "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_deps:robolectric_all_java",
     "//third_party/android_sdk:android_test_base_java",
     "//third_party/android_support_test_runner:rules_java",
@@ -88,6 +89,7 @@ android_library("signin_javatests") {
     "//base:base_java_test_support",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_test_monitor_java",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
@@ -104,6 +106,7 @@ android_library("signin_java_test_support") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/junit",
   ]

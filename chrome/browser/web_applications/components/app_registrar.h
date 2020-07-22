@@ -97,6 +97,8 @@ class AppRegistrar {
 
   virtual DisplayMode GetAppDisplayMode(const AppId& app_id) const = 0;
   virtual DisplayMode GetAppUserDisplayMode(const AppId& app_id) const = 0;
+  virtual std::vector<DisplayMode> GetAppDisplayModeOverride(
+      const AppId& app_id) const = 0;
 
   virtual base::Time GetAppLastLaunchTime(const AppId& app_id) const = 0;
   virtual base::Time GetAppInstallTime(const AppId& app_id) const = 0;

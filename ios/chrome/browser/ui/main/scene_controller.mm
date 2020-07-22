@@ -18,7 +18,6 @@
 #import "ios/chrome/app/application_delegate/url_opener_params.h"
 #import "ios/chrome/app/application_delegate/user_activity_handler.h"
 #include "ios/chrome/app/application_mode.h"
-#import "ios/chrome/app/blocking_scene_commands.h"
 #import "ios/chrome/app/chrome_overlay_window.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #import "ios/chrome/app/main_controller_guts.h"
@@ -48,7 +47,6 @@
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
-#import "ios/chrome/browser/ui/blocking_overlay/blocking_overlay_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -61,6 +59,7 @@
 #include "ios/chrome/browser/ui/history/history_coordinator.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
+#import "ios/chrome/browser/ui/main/ui_blocker_scene_agent.h"
 #import "ios/chrome/browser/ui/scoped_ui_blocker/scoped_ui_blocker.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
@@ -74,7 +73,6 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/window_activities/window_activity_helpers.h"
-#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
@@ -195,10 +193,6 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 // time it is accessed.
 @property(nonatomic, strong) SigninCoordinator* signinCoordinator;
 
-// The view controller that blocks all interactions with the scene.
-@property(nonatomic, strong)
-    BlockingOverlayViewController* blockingOverlayViewController;
-
 @end
 
 @implementation SceneController {
@@ -227,6 +221,9 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
     _webStateListForwardingObserver =
         std::make_unique<WebStateListObserverBridge>(self);
+
+    // Add agents.
+    [_sceneState addAgent:[[UIBlockerSceneAgent alloc] init]];
   }
   return self;
 }
@@ -333,7 +330,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
 - (void)handleExternalIntents {
   if (self.mainController.isPresentingFirstRunUI ||
-      self.blockingOverlayViewController) {
+      self.sceneState.presentingModalOverlay) {
     return;
   }
   if (IsSceneStartupSupported()) {
@@ -418,59 +415,6 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   }
 }
 
-- (void)sceneStateWillShowModalOverlay:(SceneState*)sceneState {
-  [self displayBlockingOverlay];
-}
-
-- (void)sceneStateWillHideModalOverlay:(SceneState*)sceneState {
-  if (!self.blockingOverlayViewController) {
-    return;
-  }
-
-  [self.blockingOverlayViewController.view removeFromSuperview];
-  self.blockingOverlayViewController = nil;
-
-  // When the scene has displayed the blocking overlay and isn't in foreground
-  // when it exits it, the cached app switcher snapshot will have the overlay on
-  // it, and therefore needs updating.
-  if (sceneState.activationLevel < SceneActivationLevelForegroundInactive) {
-    if (@available(iOS 13, *)) {
-      if (IsMultiwindowSupported()) {
-        DCHECK(sceneState.scene.session);
-        [[UIApplication sharedApplication]
-            requestSceneSessionRefresh:sceneState.scene.session];
-      }
-    }
-  }
-
-  if (sceneState.activationLevel >= SceneActivationLevelForegroundActive) {
-    [self handleExternalIntents];
-  }
-}
-
-// TODO(crbug.com/1072408): factor out into a new class.
-- (void)displayBlockingOverlay {
-  if (self.blockingOverlayViewController) {
-    // The overlay is already displayed, nothing to do.
-    return;
-  }
-
-  // Make the window visible. This is because in safe mode it's not visible yet.
-  if (self.sceneState.window.hidden) {
-    [self.sceneState.window makeKeyAndVisible];
-  }
-
-  self.blockingOverlayViewController =
-      [[BlockingOverlayViewController alloc] init];
-  self.blockingOverlayViewController.blockingSceneCommandHandler =
-      HandlerForProtocol(self.sceneState.appState.appCommandDispatcher,
-                         BlockingSceneCommands);
-  UIView* overlayView = self.blockingOverlayViewController.view;
-  [self.sceneState.window addSubview:overlayView];
-  overlayView.translatesAutoresizingMaskIntoConstraints = NO;
-  AddSameConstraints(self.sceneState.window, overlayView);
-}
-
 - (void)presentSignInAccountsViewControllerIfNecessary {
   ChromeBrowserState* browserState = self.currentInterface.browserState;
   DCHECK(browserState);
@@ -512,7 +456,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   BOOL sceneIsActive =
       self.sceneState.activationLevel >= SceneActivationLevelForegroundActive;
   if (self.mainController.isPresentingFirstRunUI ||
-      self.blockingOverlayViewController) {
+      self.sceneState.presentingModalOverlay) {
     sceneIsActive = NO;
   }
   [UserActivityHandler continueUserActivity:userActivity
@@ -2015,7 +1959,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   BOOL active =
       _sceneState.activationLevel >= SceneActivationLevelForegroundActive;
   if (self.mainController.isPresentingFirstRunUI ||
-      self.blockingOverlayViewController) {
+      self.sceneState.presentingModalOverlay) {
     active = NO;
   }
 

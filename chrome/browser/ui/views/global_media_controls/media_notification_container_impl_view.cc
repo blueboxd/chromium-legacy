@@ -16,11 +16,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/canvas_painter.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/slide_out_controller.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -59,14 +59,11 @@ class MediaNotificationContainerImplView::DismissButton
   explicit DismissButton(views::ButtonListener* listener)
       : views::ImageButton(listener) {
     views::ConfigureVectorImageButton(this);
+    views::InstallFixedSizeCircleHighlightPathGenerator(
+        this, kDismissButtonBackgroundRadius);
   }
 
   ~DismissButton() override = default;
-
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return std::make_unique<views::CircleInkDropMask>(
-        size(), GetLocalBounds().CenterPoint(), kDismissButtonBackgroundRadius);
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DismissButton);

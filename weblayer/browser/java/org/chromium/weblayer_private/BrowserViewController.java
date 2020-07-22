@@ -57,6 +57,7 @@ public final class BrowserViewController
     private final ModalDialogManager mModalDialogManager;
 
     private int mTopControlsMinHeight;
+    private boolean mPinToContentTop;
 
     private TabImpl mTab;
 
@@ -210,6 +211,11 @@ public final class BrowserViewController
         updateActiveTabScrollBehavior();
     }
 
+    public void setPinTopControlsToContentTop(boolean pinToContentTop) {
+        mPinToContentTop = pinToContentTop;
+        updateActiveTabScrollBehavior();
+    }
+
     public void setBottomView(View view) {
         mBottomControlsContainerView.setView(view);
     }
@@ -303,6 +309,7 @@ public final class BrowserViewController
     private void updateActiveTabScrollBehavior() {
         if (mTab != null) {
             mTab.setTopControlsMinHeight(mTopControlsMinHeight);
+            mTab.setPinTopControlsToContentTop(mPinToContentTop);
         }
     }
 

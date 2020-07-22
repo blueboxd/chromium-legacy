@@ -5,8 +5,8 @@
 
 def _GenerateTestCommand(input_api, output_api, file_name, affected_list):
     if not input_api.AffectedFiles(
-            file_filter=
-            lambda x: input_api.FilterSourceFile(x, white_list=affected_list)):
+            file_filter=lambda x: input_api.FilterSourceFile(
+                x, files_to_check=affected_list)):
         return None
 
     if input_api.is_committing:

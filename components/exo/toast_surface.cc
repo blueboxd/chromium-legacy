@@ -16,12 +16,12 @@ namespace exo {
 
 ToastSurface::ToastSurface(ToastSurfaceManager* manager,
                            Surface* surface,
-                           double default_device_scale_factor)
+                           bool default_scale_cancellation)
     : ClientControlledShellSurface(surface,
                                    false /* can_minimize */,
-                                   ash::kShellWindowId_OverlayContainer),
+                                   ash::kShellWindowId_OverlayContainer,
+                                   default_scale_cancellation),
       manager_(manager) {
-  SetScale(default_device_scale_factor);
   SetActivatable(false);
   DisableMovement();
   host_window()->SetName("ExoToastSurface");

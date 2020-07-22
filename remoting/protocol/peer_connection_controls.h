@@ -20,6 +20,12 @@ class PeerConnectionControls {
   // no preference.
   virtual void SetPreferredBitrates(base::Optional<int> min_bitrate_bps,
                                     base::Optional<int> max_bitrate_bps) = 0;
+
+  // Performs an ICE restart. This causes the host to initiate a new SDP
+  // offer/answer exchange, and restarts the ICE gathering/connection sequence.
+  // This can be used to re-establish a connection, or change SDP parameters,
+  // without needing to re-authenticate the user.
+  virtual void RequestIceRestart() = 0;
 };
 
 }  // namespace protocol

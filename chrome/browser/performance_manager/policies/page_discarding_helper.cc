@@ -64,7 +64,7 @@ PageDiscardingHelper::PageDiscardingHelper()
 PageDiscardingHelper::~PageDiscardingHelper() = default;
 
 void PageDiscardingHelper::UrgentlyDiscardAPage(
-    features::UrgentDiscardingParams::DiscardStrategy discard_strategy,
+    features::DiscardStrategy discard_strategy,
     base::OnceCallback<void(bool)> post_discard_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -93,11 +93,9 @@ void PageDiscardingHelper::UrgentlyDiscardAPage(
     return;
   }
 
-  if (discard_strategy ==
-      features::UrgentDiscardingParams::DiscardStrategy::LRU) {
+  if (discard_strategy == features::DiscardStrategy::LRU) {
     discard_candidate = oldest_bg_discardable_page_node;
-  } else if (discard_strategy ==
-             features::UrgentDiscardingParams::DiscardStrategy::BIGGEST_RSS) {
+  } else if (discard_strategy == features::DiscardStrategy::BIGGEST_RSS) {
     // List all the processes associated with these page nodes.
     base::flat_set<const ProcessNode*> process_nodes;
     for (const auto& iter : discardable_pages) {
@@ -301,7 +299,7 @@ base::Value PageDiscardingHelper::DescribePageNodeData(
 }
 
 void PageDiscardingHelper::PostDiscardAttemptCallback(
-    features::UrgentDiscardingParams::DiscardStrategy discard_strategy,
+    features::DiscardStrategy discard_strategy,
     base::OnceCallback<void(bool)> post_discard_cb,
     bool success) {
   if (!success) {

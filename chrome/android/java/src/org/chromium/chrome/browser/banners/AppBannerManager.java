@@ -141,6 +141,12 @@ public class AppBannerManager {
         sIsSupported = state;
     }
 
+    /** Sets the app-banner-showing logic to ignore the Chrome channel. */
+    @VisibleForTesting
+    public static void ignoreChromeChannelForTesting() {
+        AppBannerManagerJni.get().ignoreChromeChannelForTesting();
+    }
+
     /** Returns whether the native AppBannerManager is working. */
     @VisibleForTesting
     public boolean isRunningForTesting() {
@@ -177,6 +183,7 @@ public class AppBannerManager {
         boolean onAppDetailsRetrieved(long nativeAppBannerManagerAndroid, AppBannerManager caller,
                 AppData data, String title, String packageName, String imageUrl);
         // Testing methods.
+        void ignoreChromeChannelForTesting();
         boolean isRunningForTesting(long nativeAppBannerManagerAndroid, AppBannerManager caller);
         void setDaysAfterDismissAndIgnoreToTrigger(int dismissDays, int ignoreDays);
         void setTimeDeltaForTesting(int days);

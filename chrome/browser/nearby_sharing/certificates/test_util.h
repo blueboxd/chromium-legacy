@@ -36,7 +36,9 @@ const std::vector<uint8_t>& GetNearbyShareTestEncryptedMetadata();
 const std::vector<uint8_t>& GetNearbyShareTestPayloadToSign();
 const std::vector<uint8_t>& GetNearbyShareTestSampleSignature();
 
-NearbySharePrivateCertificate GetNearbyShareTestPrivateCertificate();
+NearbySharePrivateCertificate GetNearbyShareTestPrivateCertificate(
+    NearbyShareVisibility visibility);
+
 const nearbyshare::proto::PublicCertificate&
 GetNearbyShareTestPublicCertificate();
 

@@ -46,7 +46,8 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
  public:
   ClientControlledShellSurface(Surface* surface,
                                bool can_minimize,
-                               int container);
+                               int container,
+                               bool default_scale_cancellation);
   ~ClientControlledShellSurface() override;
 
   using GeometryChangedCallback =
@@ -265,6 +266,13 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   // |pending_scale_|.
   double scale() const { return scale_; }
 
+  // Used to scale incoming coordinates from the client to DP.
+  float GetClientToDpScale() const;
+
+ protected:
+  // Overridden from ShellSurfaceBase:
+  float GetScale() const override;
+
  private:
   class ScopedSetBoundsLocally;
   class ScopedLockedToRoot;
@@ -273,12 +281,12 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   void SetWidgetBounds(const gfx::Rect& bounds) override;
   gfx::Rect GetShadowBounds() const override;
   void InitializeWindowState(ash::WindowState* window_state) override;
-  float GetScale() const override;
   base::Optional<gfx::Rect> GetWidgetBounds() const override;
   gfx::Point GetSurfaceOrigin() const override;
   bool OnPreWidgetCommit() override;
   void OnPostWidgetCommit() override;
   void OnSurfaceDestroying(Surface* surface) override;
+  void OnContentSizeChanged(Surface* surface) override;
 
   // Update frame status. This may create (or destroy) a wide frame
   // that spans the full work area width if the surface didn't cover
@@ -311,7 +319,9 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   int pending_top_inset_height_ = 0;
 
   double scale_ = 1.0;
-  double pending_scale_ = 1.0;
+  // The pending scale is initialized to 0.0 to indicate that the scale is not
+  // yet initialized.
+  double pending_scale_ = 0.0;
 
   uint32_t frame_visible_button_mask_ = 0;
   uint32_t frame_enabled_button_mask_ = 0;
@@ -372,6 +382,11 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   // True if the window state has changed during the commit.
   bool state_changed_ = false;
+
+  // When false, the client handles all display scale changes, so the
+  // buffer should be re-scaled to undo any scaling added by exo so that the
+  // 1:1 correspondence between the pixels is maintained.
+  bool use_default_scale_cancellation_ = false;
 
   // Client controlled specific accelerator target.
   std::unique_ptr<ClientControlledAcceleratorTarget> accelerator_target_;

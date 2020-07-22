@@ -9,7 +9,7 @@
 
 namespace ash {
 
-// Dummy implementation of the Assistant client.
+// Fake implementation of the Assistant client.
 class TestAssistantClient : public AssistantClient {
  public:
   TestAssistantClient();

@@ -454,6 +454,11 @@ bool Animation::PreCommit(
       } else {
         CancelIncompatibleAnimationsOnCompositor();
       }
+      DCHECK_EQ(kRunning, CalculateAnimationPlayState());
+      TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
+          "blink.animations,devtools.timeline,benchmark,rail", "Animation",
+          this, "data",
+          inspector_animation_compositor_event::Data(failure_reasons));
     }
   }
 

@@ -54,8 +54,11 @@ WebScriptExecutor::WebScriptExecutor(
     : sources_(sources), world_id_(world_id), user_gesture_(user_gesture) {}
 
 Vector<v8::Local<v8::Value>> WebScriptExecutor::Execute(LocalFrame* frame) {
-  if (user_gesture_)
-    LocalFrame::NotifyUserActivation(frame);
+  if (user_gesture_) {
+    // TODO(mustaq): Need to make sure this is safe. https://crbug.com/1082273
+    LocalFrame::NotifyUserActivation(
+        frame, mojom::blink::UserActivationNotificationType::kWebScriptExec);
+  }
 
   Vector<v8::Local<v8::Value>> results;
   for (const auto& source : sources_) {

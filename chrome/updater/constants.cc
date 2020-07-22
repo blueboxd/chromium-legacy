@@ -28,11 +28,6 @@ const char kSingleProcessSwitch[] = "single-process";
 const char kAppIdSwitch[] = "appid";
 const char kWakeSwitch[] = "wake";
 
-#if defined(OS_MACOSX)
-const char kPromoteCandidateSwitch[] = "promote-candidate";
-const char kUninstallCandidateSwitch[] = "uninstall-candidate";
-#endif  // OS_MACOSX
-
 #if defined(OS_WIN)
 const char kInstallFromOutDir[] = "install-from-out-dir";
 #endif  // OS_WIN

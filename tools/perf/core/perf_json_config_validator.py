@@ -23,7 +23,7 @@ _DEFAULT_VALID_PERF_POOLS = {
 _VALID_PERF_POOLS = {
     'android-builder-perf': {'chrome.tests'},
     'android_arm64-builder-perf': {'chrome.tests'},
-    'chromeos-kevin-perf-fyi': {'luci.chrome.cros-dut'},
+    'chromeos-kevin-perf-fyi': {'chrome.tests'},
 }
 
 

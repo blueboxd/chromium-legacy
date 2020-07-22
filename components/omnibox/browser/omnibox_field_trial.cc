@@ -842,7 +842,7 @@ bool OmniboxFieldTrial::ShouldElideToRegistrableDomain() {
 }
 
 int OmniboxFieldTrial::UnelideURLOnHoverThresholdMs() {
-  const int kDefaultThresholdMs = 150;
+  const int kDefaultThresholdMs = 250;
   int threshold = base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
       kOmniboxUIUnelideURLOnHoverThresholdMsParam, kDefaultThresholdMs);

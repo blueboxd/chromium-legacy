@@ -42,6 +42,9 @@ class AppLaunchSplashScreenView {
 
     // Returns the data needed to be displayed on the splash screen.
     virtual KioskAppManagerBase::App GetAppData() = 0;
+
+    // Tells whether the network connection is required for app launch.
+    virtual bool IsNetworkRequired() = 0;
   };
 
   enum AppLaunchState {
@@ -133,8 +136,6 @@ class AppLaunchSplashScreenHandler
 
   // Whether network configure UI is being shown.
   bool network_config_shown_ = false;
-  // Whether the network is required in order to proceed with app launch.
-  bool network_required_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchSplashScreenHandler);
 };

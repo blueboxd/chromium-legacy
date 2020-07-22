@@ -384,16 +384,16 @@ const char kDeviceExternalPrintServersAllowlist[] =
 // functionality.
 const char kTPMFirmwareUpdateSettings[] = "cros.tpm_firmware_update_settings";
 
-// A list of entries in JSON form representing the minimum version of Chrome
+// A list of entries in JSON form representing the minimum version of Chrome OS
 // along with warning times required to allow user sign in or stay in session.
 // If the list is empty no restrictions will be applied.
-const char kMinimumChromeVersionEnforced[] = "cros.min_version_enforced.chrome";
+const char kDeviceMinimumVersion[] = "cros.device.min_version";
 
 // String shown on the update required dialog on the the login screen containing
 // return instructions from the device administrator. It is shown when update
 // is required but the device has reached auto update expiration.
-const char kMinimumChromeVersionAueMessage[] =
-    "cros.min_version_aue_message.chrome";
+const char kDeviceMinimumVersionAueMessage[] =
+    "cros.device.min_version_aue_message";
 
 // String indicating what name should be advertised for casting to.
 // If the string is empty or blank the system name will be used.

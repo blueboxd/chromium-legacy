@@ -32,18 +32,19 @@ for more details about the presubmit API built into gcl.
 """
 
 # Make sure binding templates are considered as source files.
-WHITE_LIST = (r'.+\.tmpl$', )
+FILES_TO_CHECK = (r'.+\.tmpl$', )
 
 # Changes to v8/ do not change generated code or tests, so exclude from
 # _RunBindingsTests
-BLACK_LIST = (r'.*\bv8[\\\/].*', )
+FILES_TO_SKIP = (r'.*\bv8[\\\/].*', )
 
 
 def _RunBindingsTests(input_api, output_api):
     # Skip if nothing to do
     source_filter = lambda x: input_api.FilterSourceFile(
-        x, white_list=input_api.DEFAULT_WHITE_LIST + WHITE_LIST,
-        black_list=input_api.DEFAULT_BLACK_LIST + BLACK_LIST)
+        x,
+        files_to_check=input_api.DEFAULT_FILES_TO_CHECK + FILES_TO_CHECK,
+        files_to_skip=input_api.DEFAULT_FILES_TO_SKIP + FILES_TO_SKIP)
     if not input_api.AffectedFiles(file_filter=source_filter):
         return []
 

@@ -216,6 +216,7 @@ void FtlSignalingPlayground::FetchSecret(
 void FtlSignalingPlayground::SetUpSignaling() {
   signal_strategy_ = std::make_unique<FtlSignalStrategy>(
       std::make_unique<OAuthTokenGetterProxy>(token_getter_->GetWeakPtr()),
+      url_loader_factory_owner_->GetURLLoaderFactory(),
       std::make_unique<test::TestDeviceIdProvider>(storage_.get()));
   signal_strategy_->AddListener(this);
 

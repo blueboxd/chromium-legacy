@@ -952,7 +952,7 @@ static void ConvertGridLineNamesList(
   }
 }
 
-Vector<GridTrackSize> StyleBuilderConverter::ConvertGridTrackSizeList(
+GridTrackList StyleBuilderConverter::ConvertGridTrackSizeList(
     StyleResolverState& state,
     const CSSValue& value) {
   Vector<GridTrackSize> track_sizes;
@@ -962,12 +962,17 @@ Vector<GridTrackSize> StyleBuilderConverter::ConvertGridTrackSizeList(
     DCHECK(!curr_value->IsGridIntegerRepeatValue());
     track_sizes.push_back(ConvertGridTrackSize(state, *curr_value));
   }
-  return track_sizes;
+
+  GridTrackList track_list(track_sizes);
+  if (RuntimeEnabledFeatures::LayoutNGGridEnabled()) {
+    track_list.NGTrackList().AddRepeater(track_sizes, 1);
+  }
+  return track_list;
 }
 
 void StyleBuilderConverter::ConvertGridTrackList(
     const CSSValue& value,
-    Vector<GridTrackSize>& track_sizes,
+    GridTrackList& track_sizes,
     NamedGridLinesMap& named_grid_lines,
     OrderedNamedGridLines& ordered_named_grid_lines,
     Vector<GridTrackSize>& auto_repeat_track_sizes,
@@ -988,14 +993,15 @@ void StyleBuilderConverter::ConvertGridTrackList(
                                named_grid_lines, ordered_named_grid_lines);
     } else {
       ++current_named_grid_line;
-      track_sizes.push_back(ConvertGridTrackSize(state, curr_value));
+      track_sizes.LegacyTrackList().push_back(
+          ConvertGridTrackSize(state, curr_value));
     }
   };
 
   for (auto curr_value : To<CSSValueList>(value)) {
     if (auto* grid_auto_repeat_value =
             DynamicTo<cssvalue::CSSGridAutoRepeatValue>(curr_value.Get())) {
-      DCHECK(auto_repeat_track_sizes.IsEmpty());
+      Vector<GridTrackSize> repeated_track_sizes;
       size_t auto_repeat_index = 0;
       CSSValueID auto_repeat_id = grid_auto_repeat_value->AutoRepeatID();
       DCHECK(auto_repeat_id == CSSValueID::kAutoFill ||
@@ -1011,9 +1017,16 @@ void StyleBuilderConverter::ConvertGridTrackList(
           continue;
         }
         ++auto_repeat_index;
-        auto_repeat_track_sizes.push_back(
+        repeated_track_sizes.push_back(
             ConvertGridTrackSize(state, *auto_repeat_value));
       }
+      if (RuntimeEnabledFeatures::LayoutNGGridEnabled()) {
+        track_sizes.NGTrackList().AddAutoRepeater(
+            repeated_track_sizes,
+            static_cast<NGGridTrackRepeater::RepeatType>(auto_repeat_type));
+      }
+      DCHECK(auto_repeat_track_sizes.IsEmpty());
+      auto_repeat_track_sizes = std::move(repeated_track_sizes);
       auto_repeat_insertion_point = current_named_grid_line++;
       continue;
     }
@@ -1025,15 +1038,30 @@ void StyleBuilderConverter::ConvertGridTrackList(
         for (auto curr_value : *repeated_values)
           convert_line_name_or_track_size(*curr_value);
       }
+      if (RuntimeEnabledFeatures::LayoutNGGridEnabled()) {
+        Vector<GridTrackSize> repeater_sizes;
+        for (auto curr_value : *repeated_values) {
+          if (!curr_value->IsGridLineNamesValue()) {
+            repeater_sizes.push_back(ConvertGridTrackSize(state, *curr_value));
+          }
+        }
+        track_sizes.NGTrackList().AddRepeater(repeater_sizes, repetitions);
+      }
       continue;
     }
 
     convert_line_name_or_track_size(*curr_value);
+    if (RuntimeEnabledFeatures::LayoutNGGridEnabled() &&
+        !curr_value->IsGridLineNamesValue()) {
+      track_sizes.NGTrackList().AddRepeater(
+          {ConvertGridTrackSize(state, *curr_value)}, 1);
+    }
   }
 
   // The parser should have rejected any <track-list> without any <track-size>
   // as this is not conformant to the syntax.
-  DCHECK(!track_sizes.IsEmpty() || !auto_repeat_track_sizes.IsEmpty());
+  DCHECK(!track_sizes.LegacyTrackList().IsEmpty() ||
+         !auto_repeat_track_sizes.IsEmpty());
 }
 
 void StyleBuilderConverter::CreateImplicitNamedGridLinesFromGridArea(

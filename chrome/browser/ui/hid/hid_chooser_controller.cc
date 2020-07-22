@@ -182,6 +182,10 @@ void HidChooserController::OnHidManagerConnectionError() {
   observer_.RemoveAll();
 }
 
+void HidChooserController::OnHidChooserContextShutdown() {
+  observer_.RemoveAll();
+}
+
 void HidChooserController::OnGotDevices(
     std::vector<device::mojom::HidDeviceInfoPtr> devices) {
   for (auto& device : devices) {

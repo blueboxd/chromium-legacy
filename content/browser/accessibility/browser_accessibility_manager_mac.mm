@@ -536,10 +536,12 @@ BrowserAccessibilityManagerMac::GetUserInfoForValueChangedNotification(
     }];
   }
   if (!inserted_text.empty()) {
-    // TODO(nektar): Figure out if this is a paste operation instead of typing.
-    // Changes to Blink would be required.
+    // TODO(nektar): Figure out if this is a paste, insertion or typing.
+    // Changes to Blink would be required. A heuristic is currently used.
+    auto edit_type = inserted_text.length() > 1 ? @(AXTextEditTypeInsert)
+                                                : @(AXTextEditTypeTyping);
     [changes addObject:@{
-      NSAccessibilityTextEditType : @(AXTextEditTypeTyping),
+      NSAccessibilityTextEditType : edit_type,
       NSAccessibilityTextChangeValueLength : @(inserted_text.length()),
       NSAccessibilityTextChangeValue : base::SysUTF16ToNSString(inserted_text)
     }];

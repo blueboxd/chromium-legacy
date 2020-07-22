@@ -97,16 +97,6 @@ void ExpectActive() {
                                                   CopyServiceLaunchdName()));
 }
 
-void PromoteCandidate() {
-  const base::FilePath path = GetExecutablePath();
-  ASSERT_FALSE(path.empty());
-  base::CommandLine command_line(path);
-  command_line.AppendSwitch(kPromoteCandidateSwitch);
-  int exit_code = -1;
-  ASSERT_TRUE(Run(command_line, &exit_code));
-  EXPECT_EQ(0, exit_code);
-}
-
 void Uninstall() {
   const base::FilePath path = GetExecutablePath();
   ASSERT_FALSE(path.empty());

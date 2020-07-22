@@ -67,7 +67,7 @@ bool MakeTestFile(const FilePath& from_path, FilePath* to_path) {
 
   result = CopyFile(from_path, temp_file);
   if (!result) {
-    DeleteFile(temp_file, false);
+    base::DeleteFile(temp_file);
     return false;
   }
 

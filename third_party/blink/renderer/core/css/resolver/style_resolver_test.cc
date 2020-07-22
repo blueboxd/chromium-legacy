@@ -630,4 +630,28 @@ TEST_F(StyleResolverTest, ApplyInheritedOnlyCustomPropertyChange) {
   EXPECT_EQ("20px", ComputedValue("width", *StyleForId("child2")));
 }
 
+TEST_F(StyleResolverTest, CssRulesForElementIncludedRules) {
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* body = GetDocument().body();
+  ASSERT_TRUE(body);
+
+  // Don't crash when only getting one type of rule.
+  auto& resolver = GetDocument().GetStyleResolver();
+  resolver.CssRulesForElement(body, StyleResolver::kUACSSRules);
+  resolver.CssRulesForElement(body, StyleResolver::kUserCSSRules);
+  resolver.CssRulesForElement(body, StyleResolver::kAuthorCSSRules);
+}
+
+TEST_F(StyleResolverTest, NestedPseudoElement) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      div::before { content: "Hello"; display: list-item; }
+      div::before::marker { color: green; }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+  // Don't crash when calculating style for nested pseudo elements.
+}
+
 }  // namespace blink

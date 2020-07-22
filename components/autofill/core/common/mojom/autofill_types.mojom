@@ -217,7 +217,6 @@ struct PasswordFormFillData {
   bool uses_account_store;
   array<PasswordAndMetadata> additional_logins;
   bool wait_for_username;
-  bool has_renderer_ids;
 };
 
 // autofill::PasswordFormGenerationData
@@ -285,7 +284,6 @@ struct PasswordForm {
   string affiliated_web_realm;
   mojo_base.mojom.String16 submit_element;
   mojo_base.mojom.String16 username_element;
-  bool username_marked_by_site;
   mojo_base.mojom.String16 username_value;
   array<ValueElementPair> all_possible_usernames;
   array<ValueElementPair> all_possible_passwords;
@@ -294,7 +292,6 @@ struct PasswordForm {
   mojo_base.mojom.String16 password_value;
   mojo_base.mojom.String16 new_password_element;
   mojo_base.mojom.String16 new_password_value;
-  bool new_password_marked_by_site;
   mojo_base.mojom.String16 confirmation_password_element;
   mojo_base.mojom.Time date_created;
   mojo_base.mojom.Time date_synced;

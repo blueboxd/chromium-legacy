@@ -26,32 +26,18 @@ class KeyboardNode extends NodeWrapper {
 
   /** @override */
   asRootNode() {
-    if (!this.isGroup()) {
-      return null;
-    }
+    return null;
+  }
 
-    const node = this.automationNode;
-    if (!node) {
-      throw SwitchAccess.error(
-          SAConstants.ErrorType.MISSING_BASE_NODE,
-          'Keyboard nodes must have an automation node.',
-          true /* shouldRecover */);
-    }
-
-    const root = new RootNodeWrapper(node);
-    KeyboardNode.findAndSetChildren(root);
-    return root;
+  /** @override */
+  isGroup() {
+    return false;
   }
 
   /** @override */
   performAction(action) {
     if (action !== SwitchAccessMenuAction.SELECT) {
       return SAConstants.ActionResponse.NO_ACTION_TAKEN;
-    }
-
-    if (this.isGroup()) {
-      NavigationManager.enterGroup();
-      return SAConstants.ActionResponse.CLOSE_MENU;
     }
 
     const keyLocation = this.location;
@@ -66,26 +52,6 @@ class KeyboardNode extends NodeWrapper {
         center.x, center.y, SAConstants.VK_KEY_PRESS_DURATION_MS);
 
     return SAConstants.ActionResponse.CLOSE_MENU;
-  }
-
-  // ================= Static methods =================
-
-  /**
-   * Helper function to connect tree elements, given the root node.
-   * @param {!RootNodeWrapper} root
-   */
-  static findAndSetChildren(root) {
-    const childConstructor = (node) => new KeyboardNode(node, root);
-
-    /** @type {!Array<!AutomationNode>} */
-    const interestingChildren = RootNodeWrapper.getInterestingChildren(root);
-    let children = interestingChildren.map(childConstructor);
-    if (interestingChildren.length > SAConstants.KEYBOARD_MAX_ROW_LENGTH) {
-      children = GroupNode.separateByRow(children);
-    }
-
-    children.push(new BackButtonNode(root));
-    root.children = children;
   }
 }
 
@@ -134,23 +100,15 @@ class KeyboardRootNode extends RootNodeWrapper {
     KeyboardRootNode.loadKeyboard_();
     AutoScanManager.setInKeyboard(true);
 
-    const keyboardObject = KeyboardRootNode.getKeyboardObject();
-    if (!keyboardObject) {
+    const keyboard = KeyboardRootNode.getKeyboardObject();
+    if (!keyboard) {
       throw SwitchAccess.error(
           SAConstants.ErrorType.MISSING_KEYBOARD,
           'Could not find keyboard in the automation tree',
           true /* shouldRecover */);
     }
-    const keyboard =
-        new AutomationTreeWalker(keyboardObject, constants.Dir.FORWARD, {
-          visit: (node) => SwitchAccessPredicate.isGroup(node, null),
-          root: (node) => node === keyboardObject
-        })
-            .next()
-            .node;
-
     const root = new KeyboardRootNode(keyboard);
-    KeyboardNode.findAndSetChildren(root);
+    KeyboardRootNode.findAndSetChildren_(root);
     return root;
   }
 
@@ -169,9 +127,10 @@ class KeyboardRootNode extends RootNodeWrapper {
     KeyboardRootNode.isVisible_ =
         SwitchAccessPredicate.isVisible(keyboardObject);
 
-    keyboardObject.addEventListener(
-        chrome.automation.EventType.ARIA_ATTRIBUTE_CHANGED,
-        KeyboardRootNode.checkVisibilityChanged_, false /* capture */);
+    new EventHandler(
+        keyboardObject, chrome.automation.EventType.ARIA_ATTRIBUTE_CHANGED,
+        KeyboardRootNode.checkVisibilityChanged_, {exactMatch: true})
+        .start();
   }
 
   // ================= Private static methods =================
@@ -201,6 +160,23 @@ class KeyboardRootNode extends RootNodeWrapper {
     } else {
       NavigationManager.exitKeyboard();
     }
+  }
+
+  /**
+   * Helper function to connect tree elements, given the root node.
+   * @param {!KeyboardRootNode} root
+   * @private
+   */
+  static findAndSetChildren_(root) {
+    const childConstructor = (node) => new KeyboardNode(node, root);
+    const interestingChildren =
+        root.automationNode.findAll({role: chrome.automation.RoleType.BUTTON});
+    /** @type {!Array<!SAChildNode>} */
+    const children =
+        GroupNode.separateByRow(interestingChildren.map(childConstructor));
+
+    children.push(new BackButtonNode(root));
+    root.children = children;
   }
 
   /**

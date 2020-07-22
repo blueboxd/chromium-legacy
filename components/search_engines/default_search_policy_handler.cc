@@ -70,7 +70,8 @@ void SetBooleanInPref(const PolicyMap& policies,
 }  // namespace
 
 // List of policy types to preference names, for policies affecting the default
-// search provider.
+// search provider. Please update ApplyPolicySettings() when add or remove
+// items.
 const PolicyToPreferenceMapEntry kDefaultSearchPolicyDataMap[] = {
     {key::kDefaultSearchProviderEnabled, prefs::kDefaultSearchProviderEnabled,
      base::Value::Type::BOOLEAN},
@@ -164,35 +165,43 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     return;
 
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  for (size_t i = 0; i < base::size(kDefaultSearchPolicyDataMap); ++i) {
-    const char* policy_name = kDefaultSearchPolicyDataMap[i].policy_name;
-    // kDefaultSearchProviderEnabled has already been handled.
-    if (policy_name == key::kDefaultSearchProviderEnabled)
-      continue;
 
-    switch (kDefaultSearchPolicyDataMap[i].value_type) {
-      case base::Value::Type::STRING:
-        SetStringInPref(policies,
-                        policy_name,
-                        kDefaultSearchPolicyDataMap[i].preference_path,
-                        dict.get());
-        break;
-      case base::Value::Type::LIST:
-        SetListInPref(policies,
-                      policy_name,
-                      kDefaultSearchPolicyDataMap[i].preference_path,
-                      dict.get());
-        break;
-      case base::Value::Type::BOOLEAN:
-        SetBooleanInPref(policies, policy_name,
-                         kDefaultSearchPolicyDataMap[i].preference_path,
-                         dict.get());
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
+  // Set pref values for policies affecting the default
+  // search provider, which are listed in kDefaultSearchPolicyDataMap.
+  // Set or remove pref accordingly when kDefaultSearchPolicyDataMap has a
+  // change, then revise the number in the check below to be correct.
+  SetBooleanInPref(policies, key::kDefaultSearchProviderEnabled,
+                   prefs::kDefaultSearchProviderEnabled, dict.get());
+  SetStringInPref(policies, key::kDefaultSearchProviderName,
+                  DefaultSearchManager::kShortName, dict.get());
+  SetStringInPref(policies, key::kDefaultSearchProviderKeyword,
+                  DefaultSearchManager::kKeyword, dict.get());
+  SetStringInPref(policies, key::kDefaultSearchProviderSearchURL,
+                  DefaultSearchManager::kURL, dict.get());
+  SetStringInPref(policies, key::kDefaultSearchProviderSuggestURL,
+                  DefaultSearchManager::kSuggestionsURL, dict.get());
+  SetStringInPref(policies, key::kDefaultSearchProviderIconURL,
+                  DefaultSearchManager::kFaviconURL, dict.get());
+  SetListInPref(policies, key::kDefaultSearchProviderEncodings,
+                DefaultSearchManager::kInputEncodings, dict.get());
+  SetListInPref(policies, key::kDefaultSearchProviderAlternateURLs,
+                DefaultSearchManager::kAlternateURLs, dict.get());
+  SetStringInPref(policies, key::kDefaultSearchProviderImageURL,
+                  DefaultSearchManager::kImageURL, dict.get());
+  SetStringInPref(policies, key::kDefaultSearchProviderNewTabURL,
+                  DefaultSearchManager::kNewTabURL, dict.get());
+  SetStringInPref(policies, key::kDefaultSearchProviderSearchURLPostParams,
+                  DefaultSearchManager::kSearchURLPostParams, dict.get());
+  SetStringInPref(policies, key::kDefaultSearchProviderSuggestURLPostParams,
+                  DefaultSearchManager::kSuggestionsURLPostParams, dict.get());
+  SetStringInPref(policies, key::kDefaultSearchProviderImageURLPostParams,
+                  DefaultSearchManager::kImageURLPostParams, dict.get());
+  SetBooleanInPref(
+      policies, key::kDefaultSearchProviderContextMenuAccessAllowed,
+      prefs::kDefaultSearchProviderContextMenuAccessAllowed, dict.get());
+
+  size_t policyCount = 14;
+  CHECK_EQ(policyCount, base::size(kDefaultSearchPolicyDataMap));
 
   // Set the fields which are not specified by the policy to default values.
   dict->SetString(DefaultSearchManager::kID,

@@ -37,7 +37,10 @@ android_resources("java_resources") {
 android_library("manager_java") {
   sources = [ "java/src/org/chromium/components/browser_ui/bottomsheet/ManagedBottomSheetController.java" ]
 
-  deps = [ ":java" ]
+  deps = [
+    ":java",
+    "//ui/android:ui_full_java",
+  ]
 }
 
 android_library_factory("factory_java") {
@@ -46,5 +49,8 @@ android_library_factory("factory_java") {
   deps = [
     ":java",
     ":manager_java",
+    "//base:base_java",
+    "//ui/android:ui_full_java",
+    "//ui/android:ui_utils_java",
   ]
 }

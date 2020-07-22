@@ -810,9 +810,6 @@ string16 GetPlatformSpecificIdentifier(const FormFieldData& field) {
 // |significant_fields| .
 void SetFields(const SignificantFields& significant_fields,
                PasswordForm* password_form) {
-#if !defined(OS_IOS)
-  password_form->has_renderer_ids = true;
-#endif
   if (significant_fields.username) {
     password_form->username_element =
         GetPlatformSpecificIdentifier(*significant_fields.username);

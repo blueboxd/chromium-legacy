@@ -1979,17 +1979,17 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingBlocklistWildcard) {
       IsNativeMessagingHostAllowed(browser()->profile(), "other.host.name"));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingWhitelist) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingAllowlist) {
   base::ListValue blacklist;
   blacklist.AppendString("*");
-  base::ListValue whitelist;
-  whitelist.AppendString("host.name");
+  base::ListValue allowlist;
+  allowlist.AppendString("host.name");
   PolicyMap policies;
   policies.Set(key::kNativeMessagingBlocklist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, blacklist.Clone(),
                nullptr);
-  policies.Set(key::kNativeMessagingWhitelist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, whitelist.Clone(),
+  policies.Set(key::kNativeMessagingAllowlist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, allowlist.Clone(),
                nullptr);
   UpdateProviderPolicy(policies);
 

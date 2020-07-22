@@ -97,7 +97,7 @@ void It2MeHost::Connect(
     std::unique_ptr<RegisterSupportHostRequest> register_request,
     std::unique_ptr<LogToServer> log_to_server,
     base::WeakPtr<It2MeHost::Observer> observer,
-    std::unique_ptr<SignalStrategy> signal_strategy,
+    CreateSignalStrategyCallback create_signal_strategy,
     const std::string& username,
     const protocol::IceConfig& ice_config) {
   DCHECK(host_context->ui_task_runner()->BelongsToCurrentThread());
@@ -105,7 +105,6 @@ void It2MeHost::Connect(
   host_context_ = std::move(host_context);
   observer_ = std::move(observer);
   confirmation_dialog_factory_ = std::move(dialog_factory);
-  signal_strategy_ = std::move(signal_strategy);
   log_to_server_ = std::move(log_to_server);
 
   OnPolicyUpdate(std::move(policies));
@@ -120,7 +119,8 @@ void It2MeHost::Connect(
   host_context_->network_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&It2MeHost::ConnectOnNetworkThread, this, username,
-                     ice_config, std::move(register_request)));
+                     ice_config, std::move(register_request),
+                     std::move(create_signal_strategy)));
 }
 
 void It2MeHost::Disconnect() {
@@ -132,11 +132,15 @@ void It2MeHost::Disconnect() {
 void It2MeHost::ConnectOnNetworkThread(
     const std::string& username,
     const protocol::IceConfig& ice_config,
-    std::unique_ptr<RegisterSupportHostRequest> register_request) {
+    std::unique_ptr<RegisterSupportHostRequest> register_request,
+    CreateSignalStrategyCallback create_signal_strategy) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
   DCHECK_EQ(kDisconnected, state_);
 
   SetState(kStarting, ErrorCode::OK);
+
+  signal_strategy_ = std::move(create_signal_strategy).Run(host_context_.get());
+  DCHECK(signal_strategy_);
 
   // Check the host domain policy.
   if (!required_host_domain_list_.empty()) {

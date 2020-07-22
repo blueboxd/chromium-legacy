@@ -19,7 +19,7 @@ class InputMethodSurface : public ClientControlledShellSurface {
  public:
   InputMethodSurface(InputMethodSurfaceManager* manager,
                      Surface* surface,
-                     double default_device_scale_factor);
+                     bool default_scale_cancellation);
   ~InputMethodSurface() override;
 
   static exo::InputMethodSurface* GetInputMethodSurface();
@@ -37,7 +37,6 @@ class InputMethodSurface : public ClientControlledShellSurface {
   bool added_to_manager_ = false;
   // The bounds of this surface in DIP.
   gfx::Rect input_method_bounds_;
-  double default_device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodSurface);
 };

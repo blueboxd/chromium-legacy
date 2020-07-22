@@ -882,7 +882,9 @@ RasterDecoderImpl::RasterDecoderImpl(
                                            memory_tracker),
       gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
           TRACE_DISABLED_BY_DEFAULT("gpu.decoder"))),
-      font_manager_(base::MakeRefCounted<ServiceFontManager>(this)),
+      font_manager_(base::MakeRefCounted<ServiceFontManager>(
+          this,
+          gpu_preferences_.disable_oopr_debug_crash_dump)),
       is_privileged_(is_privileged) {
   DCHECK(shared_context_state_);
   shared_context_state_->AddContextLostObserver(this);
@@ -2975,7 +2977,8 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
       &impl, paint_cache_.get(), font_manager_->strike_client(),
       shared_context_state_->scratch_deserialization_buffer(), is_privileged_,
       paint_op_shared_image_provider_.get());
-  options.crash_dump_on_failure = true;
+  options.crash_dump_on_failure =
+      !gpu_preferences_.disable_oopr_debug_crash_dump;
 
   size_t paint_buffer_size = raster_shm_size;
   gl::ScopedProgressReporter report_progress(

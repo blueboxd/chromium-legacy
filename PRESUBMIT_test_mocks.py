@@ -60,6 +60,8 @@ class MockInputApi(object):
   attribute as the list of changed files.
   """
 
+  DEFAULT_FILES_TO_SKIP = ()
+  # TODO(https://crbug.com/1098562): Remove once no longer used)
   DEFAULT_BLACK_LIST = ()
 
   def __init__(self):
@@ -92,25 +94,30 @@ class MockInputApi(object):
   def AffectedSourceFiles(self, file_filter=None):
     return self.AffectedFiles(file_filter=file_filter)
 
-  def FilterSourceFile(self, file, white_list=(), black_list=()):
+  def FilterSourceFile(self, file,
+                       files_to_check=(), files_to_skip=(),
+                       # TODO(https://crbug.com/1098562): Remove once no longer used
+                       white_list=(), black_list=()):
+    files_to_check = files_to_check or white_list
+    files_to_skip = files_to_skip or black_list
     local_path = file.LocalPath()
-    found_in_white_list = not white_list
-    if white_list:
-      if type(white_list) is str:
-        raise TypeError('white_list should be an iterable of strings')
-      for pattern in white_list:
+    found_in_files_to_check = not files_to_check
+    if files_to_check:
+      if type(files_to_check) is str:
+        raise TypeError('files_to_check should be an iterable of strings')
+      for pattern in files_to_check:
         compiled_pattern = re.compile(pattern)
         if compiled_pattern.search(local_path):
-          found_in_white_list = True
+          found_in_files_to_check = True
           break
-    if black_list:
-      if type(black_list) is str:
-        raise TypeError('black_list should be an iterable of strings')
-      for pattern in black_list:
+    if files_to_skip:
+      if type(files_to_skip) is str:
+        raise TypeError('files_to_skip should be an iterable of strings')
+      for pattern in files_to_skip:
         compiled_pattern = re.compile(pattern)
         if compiled_pattern.search(local_path):
           return False
-    return found_in_white_list
+    return found_in_files_to_check
 
   def LocalPaths(self):
     return [file.LocalPath() for file in self.files]

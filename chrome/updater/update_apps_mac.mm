@@ -8,6 +8,7 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/mac/control_service_out_of_process.h"
 #include "chrome/updater/mac/update_service_out_of_process.h"
+#include "chrome/updater/service_scope.h"
 #include "chrome/updater/update_service_in_process.h"
 
 namespace updater {
@@ -20,18 +21,18 @@ scoped_refptr<UpdateService> CreateUpdateService(
 
   return cmdline->HasSwitch(kSystemSwitch)
              ? base::MakeRefCounted<UpdateServiceOutOfProcess>(
-                   UpdateService::Scope::kSystem)
+                   ServiceScope::kSystem)
              : base::MakeRefCounted<UpdateServiceOutOfProcess>(
-                   UpdateService::Scope::kUser);
+                   ServiceScope::kUser);
 }
 
 scoped_refptr<ControlService> CreateControlService() {
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   return cmdline->HasSwitch(kSystemSwitch)
              ? base::MakeRefCounted<ControlServiceOutOfProcess>(
-                   UpdateService::Scope::kSystem)
+                   ServiceScope::kSystem)
              : base::MakeRefCounted<ControlServiceOutOfProcess>(
-                   UpdateService::Scope::kUser);
+                   ServiceScope::kUser);
 }
 
 }  // namespace updater

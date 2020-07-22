@@ -181,16 +181,6 @@ void ExternalVkImageSkiaRepresentation::EndAccess(bool readonly) {
   DCHECK_NE(access_mode_, kNone);
   DCHECK(backing_impl()->need_synchronization() || !end_access_semaphore_);
 
-  if (backing_impl()->need_synchronization() && end_access_semaphore_) {
-    // We're done with the semaphore, enqueue deferred cleanup.
-    // Reusing this VkSemaphore causes vulkan device lost with NVIDIA GPU for
-    // page content/test/data/gpu/pixel_canvas_low_latency_webgl_draw_image.html
-    // So we have to take the VkSemaphore from it and not reuse it.
-    // TODO(penghuang): reuse VkSemaphore. https://crbug.com/1107558
-    fence_helper()->EnqueueSemaphoreCleanupForSubmittedWork(
-        end_access_semaphore_.TakeVkSemaphore());
-  }
-
   backing_impl()->EndAccess(readonly, std::move(end_access_semaphore_),
                             false /* is_gl */);
 

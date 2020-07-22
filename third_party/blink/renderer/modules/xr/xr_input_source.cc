@@ -303,7 +303,8 @@ void XRInputSource::OnSelect() {
   }
 
   LocalFrame* frame = session_->xr()->GetFrame();
-  LocalFrame::NotifyUserActivation(frame);
+  LocalFrame::NotifyUserActivation(
+      frame, mojom::blink::UserActivationNotificationType::kInteraction);
 
   // If SelectStart caused the session to end, we shouldn't try to fire the
   // select event.
@@ -376,7 +377,8 @@ void XRInputSource::OnSqueeze() {
   }
 
   LocalFrame* frame = session_->xr()->GetFrame();
-  LocalFrame::NotifyUserActivation(frame);
+  LocalFrame::NotifyUserActivation(
+      frame, mojom::blink::UserActivationNotificationType::kInteraction);
 
   // If SelectStart caused the session to end, we shouldn't try to fire the
   // select event.

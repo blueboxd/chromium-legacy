@@ -26,6 +26,7 @@ using google_apis::AboutResourceCallback;
 using google_apis::AuthStatusCallback;
 using google_apis::CancelCallback;
 using google_apis::CancelCallbackOnce;
+using google_apis::CancelCallbackRepeating;
 using google_apis::ChangeList;
 using google_apis::ChangeListCallback;
 using google_apis::DownloadActionCallback;
@@ -160,7 +161,8 @@ BatchRequestConfigurator::~BatchRequestConfigurator() {
     cancel_callback_.Run();
 }
 
-google_apis::CancelCallback BatchRequestConfigurator::MultipartUploadNewFile(
+google_apis::CancelCallbackRepeating
+BatchRequestConfigurator::MultipartUploadNewFile(
     const std::string& content_type,
     int64_t content_length,
     const std::string& parent_resource_id,
@@ -315,7 +317,7 @@ CancelCallbackOnce DriveAPIService::GetAllFileList(
   return sender_->StartRequestWithAuthRetry(std::move(request));
 }
 
-CancelCallback DriveAPIService::GetFileListInDirectory(
+CancelCallbackOnce DriveAPIService::GetFileListInDirectory(
     const std::string& directory_resource_id,
     const FileListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -361,7 +363,7 @@ CancelCallback DriveAPIService::Search(
       kFileListFields, callback);
 }
 
-CancelCallback DriveAPIService::SearchByTitle(
+CancelCallbackOnce DriveAPIService::SearchByTitle(
     const std::string& title,
     const std::string& directory_resource_id,
     const FileListCallback& callback) {
@@ -419,7 +421,7 @@ CancelCallback DriveAPIService::GetChangeListByToken(
   return sender_->StartRequestWithAuthRetry(std::move(request));
 }
 
-CancelCallback DriveAPIService::GetRemainingChangeList(
+CancelCallbackOnce DriveAPIService::GetRemainingChangeList(
     const GURL& next_link,
     ChangeListCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -450,7 +452,7 @@ CancelCallback DriveAPIService::GetRemainingTeamDriveList(
   return sender_->StartRequestWithAuthRetry(std::move(request));
 }
 
-CancelCallback DriveAPIService::GetRemainingFileList(
+CancelCallbackOnce DriveAPIService::GetRemainingFileList(
     const GURL& next_link,
     const FileListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -546,7 +548,7 @@ CancelCallback DriveAPIService::TrashResource(
   return sender_->StartRequestWithAuthRetry(std::move(request));
 }
 
-CancelCallback DriveAPIService::AddNewDirectory(
+CancelCallbackOnce DriveAPIService::AddNewDirectory(
     const std::string& parent_resource_id,
     const std::string& directory_title,
     const AddNewDirectoryOptions& options,
@@ -637,7 +639,7 @@ CancelCallback DriveAPIService::AddResourceToDirectory(
   return sender_->StartRequestWithAuthRetry(std::move(request));
 }
 
-CancelCallback DriveAPIService::RemoveResourceFromDirectory(
+CancelCallbackOnce DriveAPIService::RemoveResourceFromDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
     const EntryActionCallback& callback) {
@@ -723,7 +725,7 @@ CancelCallback DriveAPIService::GetUploadStatus(const GURL& upload_url,
           sender_.get(), upload_url, content_length, std::move(callback)));
 }
 
-CancelCallback DriveAPIService::MultipartUploadNewFile(
+CancelCallbackRepeating DriveAPIService::MultipartUploadNewFile(
     const std::string& content_type,
     int64_t content_length,
     const std::string& parent_resource_id,
@@ -746,7 +748,7 @@ CancelCallback DriveAPIService::MultipartUploadNewFile(
               progress_callback)));
 }
 
-CancelCallback DriveAPIService::MultipartUploadExistingFile(
+CancelCallbackRepeating DriveAPIService::MultipartUploadExistingFile(
     const std::string& content_type,
     int64_t content_length,
     const std::string& resource_id,

@@ -42,10 +42,6 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
   ~SkiaOutputDeviceGL() override;
 
-  bool supports_alpha() {
-    return supports_alpha_;
-  }
-
   // SkiaOutputDevice implementation:
   bool Reshape(const gfx::Size& size,
                float device_scale_factor,

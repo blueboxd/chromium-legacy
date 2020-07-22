@@ -38,13 +38,13 @@ class DummyDriveService : public DriveServiceInterface {
   google_apis::CancelCallbackOnce GetAllFileList(
       const std::string& team_drive_id,
       const google_apis::FileListCallback& callback) override;
-  google_apis::CancelCallback GetFileListInDirectory(
+  google_apis::CancelCallbackOnce GetFileListInDirectory(
       const std::string& directory_resource_id,
       const google_apis::FileListCallback& callback) override;
   google_apis::CancelCallback Search(
       const std::string& search_query,
       const google_apis::FileListCallback& callback) override;
-  google_apis::CancelCallback SearchByTitle(
+  google_apis::CancelCallbackOnce SearchByTitle(
       const std::string& title,
       const std::string& directory_resource_id,
       const google_apis::FileListCallback& callback) override;
@@ -55,13 +55,13 @@ class DummyDriveService : public DriveServiceInterface {
       const std::string& team_drive_id,
       const std::string& start_page_token,
       google_apis::ChangeListCallback callback) override;
-  google_apis::CancelCallback GetRemainingChangeList(
+  google_apis::CancelCallbackOnce GetRemainingChangeList(
       const GURL& next_link,
       google_apis::ChangeListCallback callback) override;
   google_apis::CancelCallback GetRemainingTeamDriveList(
       const std::string& page_token,
       google_apis::TeamDriveListCallback callback) override;
-  google_apis::CancelCallback GetRemainingFileList(
+  google_apis::CancelCallbackOnce GetRemainingFileList(
       const GURL& next_link,
       const google_apis::FileListCallback& callback) override;
   google_apis::CancelCallback GetFileResource(
@@ -103,11 +103,11 @@ class DummyDriveService : public DriveServiceInterface {
       const std::string& parent_resource_id,
       const std::string& resource_id,
       const google_apis::EntryActionCallback& callback) override;
-  google_apis::CancelCallback RemoveResourceFromDirectory(
+  google_apis::CancelCallbackOnce RemoveResourceFromDirectory(
       const std::string& parent_resource_id,
       const std::string& resource_id,
       const google_apis::EntryActionCallback& callback) override;
-  google_apis::CancelCallback AddNewDirectory(
+  google_apis::CancelCallbackOnce AddNewDirectory(
       const std::string& parent_resource_id,
       const std::string& directory_title,
       const AddNewDirectoryOptions& options,

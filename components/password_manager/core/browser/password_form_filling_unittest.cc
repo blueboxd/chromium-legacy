@@ -546,7 +546,6 @@ TEST(PasswordFormFillDataTest, RendererIDs) {
   form_data.unique_renderer_id = FormRendererId(42);
   form_data.is_form_tag = true;
   form_on_page.form_data = form_data;
-  form_on_page.has_renderer_ids = true;
   form_on_page.username_element_renderer_id = FieldRendererId(123);
   form_on_page.password_element_renderer_id = FieldRendererId(456);
 
@@ -554,7 +553,6 @@ TEST(PasswordFormFillDataTest, RendererIDs) {
       CreatePasswordFormFillData(form_on_page, {}, preferred_match, true);
 
   EXPECT_EQ(form_data.unique_renderer_id, result.form_renderer_id);
-  EXPECT_EQ(form_on_page.has_renderer_ids, result.has_renderer_ids);
   EXPECT_EQ(form_on_page.username_element_renderer_id,
             result.username_field.unique_renderer_id);
   EXPECT_EQ(form_on_page.password_element_renderer_id,
@@ -568,7 +566,6 @@ TEST(PasswordFormFillDataTest, NoPasswordElement) {
   // Create the current form on the page.
   PasswordForm form_on_page;
   form_on_page.url = GURL("https://foo.com/");
-  form_on_page.has_renderer_ids = true;
   form_on_page.username_element_renderer_id = FieldRendererId(123);
   // Set no password element.
   form_on_page.password_element_renderer_id = FieldRendererId();
@@ -588,7 +585,6 @@ TEST(PasswordFormFillDataTest, NoPasswordElement) {
       form_on_page, {} /* matches */, preferred_match, true);
 
   // Check that nor username nor password fields are set.
-  EXPECT_EQ(true, result.has_renderer_ids);
   EXPECT_TRUE(result.username_field.unique_renderer_id.is_null());
   EXPECT_TRUE(result.password_field.unique_renderer_id.is_null());
 }

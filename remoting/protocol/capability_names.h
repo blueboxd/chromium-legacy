@@ -22,6 +22,10 @@ constexpr char kFileTransferCapability[] = "fileTransfer";
 constexpr char kLockWorkstationAction[] = "lockWorkstationAction";
 constexpr char kSendAttentionSequenceAction[] = "sendAttentionSequenceAction";
 
+// Host supports ICE restart request from control message. Only used for WebRTC
+// clients.
+constexpr char kWebrtcIceRestartAction[] = "webrtcIceRestartAction";
+
 }  // namespace protocol
 }  // namespace remoting
 

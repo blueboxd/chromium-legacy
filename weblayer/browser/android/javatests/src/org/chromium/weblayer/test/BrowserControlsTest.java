@@ -278,6 +278,46 @@ public class BrowserControlsTest {
         });
     }
 
+    // Disabled on L bots due to unexplained flakes. See crbug.com/1035894.
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    @Test
+    @SmallTest
+    public void testPinTopControlsToContentTop() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.getActivity();
+        View topContents = activity.getTopContentsContainer();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> activity.getBrowser().setTopView(topContents, 0, /*pinToContentTop=*/true));
+
+        // Scroll down past the top-controls, which should collapse the top-controls and change the
+        // page height.
+        EventUtils.simulateDragFromCenterOfView(
+                activity.getWindow().getDecorView(), 0, -2 * mTopViewHeight);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(
+                    getVisiblePageHeight(), Matchers.greaterThan(mPageHeightWithTopView));
+            Criteria.checkThat(activity.getTopContentsContainer().getVisibility(),
+                    Matchers.is(View.INVISIBLE));
+        });
+
+        // Scroll part of the way up again, which should not show the top controls.
+        int scrolledPageHeight = getVisiblePageHeight();
+        EventUtils.simulateDragFromCenterOfView(
+                activity.getWindow().getDecorView(), 0, mTopViewHeight);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(getVisiblePageHeight(), Matchers.is(scrolledPageHeight));
+        });
+
+        // Scroll to the top to show the top controls.
+        EventUtils.simulateDragFromCenterOfView(
+                activity.getWindow().getDecorView(), 0, 2 * mTopViewHeight);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(getVisiblePageHeight(), Matchers.is(mPageHeightWithTopView));
+            Criteria.checkThat(
+                    activity.getTopContentsContainer().getVisibility(), Matchers.is(View.VISIBLE));
+            Criteria.checkThat(topContents.getTranslationY(), Matchers.is(0.f));
+        });
+    }
+
     /**
      * Makes sure that the top controls are shown when a js dialog is shown.
      *

@@ -2006,8 +2006,9 @@ TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedsSortByWatchtimePercentile) {
   {
     // Check the media feed fetched items for display works.
     auto feeds = GetMediaFeedsSync(
-        service(), MediaHistoryKeyedService::GetMediaFeedsRequest::
-                       CreateTopFeedsForDisplay(kNumberOfFeeds, 1, false));
+        service(),
+        MediaHistoryKeyedService::GetMediaFeedsRequest::
+            CreateTopFeedsForDisplay(kNumberOfFeeds, 1, false, base::nullopt));
 
     if (IsReadOnly()) {
       EXPECT_TRUE(feeds.empty());
@@ -2042,14 +2043,47 @@ TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedsSortByWatchtimePercentile) {
   {
     // Check the media feed fetched items for display works for safe search.
     auto feeds = GetMediaFeedsSync(
-        service(), MediaHistoryKeyedService::GetMediaFeedsRequest::
-                       CreateTopFeedsForDisplay(kNumberOfFeeds, 1, true));
+        service(),
+        MediaHistoryKeyedService::GetMediaFeedsRequest::
+            CreateTopFeedsForDisplay(kNumberOfFeeds, 1, true, base::nullopt));
 
     if (IsReadOnly()) {
       EXPECT_TRUE(feeds.empty());
     } else {
       ASSERT_EQ(1u, feeds.size());
       EXPECT_EQ(1, feeds[0]->id);
+    }
+  }
+
+  {
+    // Check the media feed fetched items for display works with a content type
+    // filter for web video content.
+    auto feeds = GetMediaFeedsSync(
+        service(), MediaHistoryKeyedService::GetMediaFeedsRequest::
+                       CreateTopFeedsForDisplay(
+                           kNumberOfFeeds, 1, false,
+                           media_feeds::mojom::MediaFeedItemType::kVideo));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(feeds.empty());
+    } else {
+      ASSERT_EQ(54u, feeds.size());
+    }
+  }
+
+  {
+    // Check the media feed fetched items for display works with a content type
+    // filter for movies.
+    auto feeds = GetMediaFeedsSync(
+        service(), MediaHistoryKeyedService::GetMediaFeedsRequest::
+                       CreateTopFeedsForDisplay(
+                           kNumberOfFeeds, 1, false,
+                           media_feeds::mojom::MediaFeedItemType::kMovie));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(feeds.empty());
+    } else {
+      ASSERT_EQ(1u, feeds.size());
     }
   }
 }
@@ -2762,7 +2796,7 @@ TEST_P(MediaHistoryStoreFeedsTest, GetContinueWatching) {
   {
     auto items = GetItemsForMediaFeedSync(
         service(), MediaHistoryKeyedService::GetMediaFeedItemsRequest::
-                       CreateItemsForContinueWatching(5, false));
+                       CreateItemsForContinueWatching(5, false, base::nullopt));
 
     if (IsReadOnly()) {
       EXPECT_TRUE(items.empty());
@@ -2778,7 +2812,7 @@ TEST_P(MediaHistoryStoreFeedsTest, GetContinueWatching) {
   {
     auto items = GetItemsForMediaFeedSync(
         service(), MediaHistoryKeyedService::GetMediaFeedItemsRequest::
-                       CreateItemsForContinueWatching(5, true));
+                       CreateItemsForContinueWatching(5, true, base::nullopt));
 
     if (IsReadOnly()) {
       EXPECT_TRUE(items.empty());
@@ -2793,7 +2827,7 @@ TEST_P(MediaHistoryStoreFeedsTest, GetContinueWatching) {
   {
     auto items = GetItemsForMediaFeedSync(
         service(), MediaHistoryKeyedService::GetMediaFeedItemsRequest::
-                       CreateItemsForContinueWatching(1, false));
+                       CreateItemsForContinueWatching(1, false, base::nullopt));
 
     if (IsReadOnly()) {
       EXPECT_TRUE(items.empty());
@@ -2802,6 +2836,43 @@ TEST_P(MediaHistoryStoreFeedsTest, GetContinueWatching) {
       // item.
       ASSERT_EQ(1u, items.size());
       EXPECT_EQ(2, items[0]->id);
+    }
+  }
+
+  {
+    auto items = GetItemsForMediaFeedSync(
+        service(),
+        MediaHistoryKeyedService::GetMediaFeedItemsRequest::
+            CreateItemsForContinueWatching(
+                5, false, media_feeds::mojom::MediaFeedItemType::kMovie));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(items.empty());
+    } else {
+      // We should only return the second item because we are limiting to
+      // Movies.
+      ASSERT_EQ(1u, items.size());
+      EXPECT_EQ(1, items[0]->id);
+      EXPECT_EQ(media_feeds::mojom::MediaFeedItemType::kMovie, items[0]->type);
+    }
+  }
+
+  {
+    auto items = GetItemsForMediaFeedSync(
+        service(),
+        MediaHistoryKeyedService::GetMediaFeedItemsRequest::
+            CreateItemsForContinueWatching(
+                5, false, media_feeds::mojom::MediaFeedItemType::kTVSeries));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(items.empty());
+    } else {
+      // We should only return the second item because we are limiting to TV
+      // series.
+      ASSERT_EQ(1u, items.size());
+      EXPECT_EQ(2, items[0]->id);
+      EXPECT_EQ(media_feeds::mojom::MediaFeedItemType::kTVSeries,
+                items[0]->type);
     }
   }
 }
@@ -2826,7 +2897,7 @@ TEST_P(MediaHistoryStoreFeedsTest, GetItemsForFeed) {
     auto items = GetItemsForMediaFeedSync(
         service(),
         MediaHistoryKeyedService::GetMediaFeedItemsRequest::CreateItemsForFeed(
-            1, 5, false));
+            1, 5, false, base::nullopt));
 
     if (IsReadOnly()) {
       EXPECT_TRUE(items.empty());
@@ -2842,7 +2913,7 @@ TEST_P(MediaHistoryStoreFeedsTest, GetItemsForFeed) {
     auto items = GetItemsForMediaFeedSync(
         service(),
         MediaHistoryKeyedService::GetMediaFeedItemsRequest::CreateItemsForFeed(
-            1, 5, true));
+            1, 5, true, base::nullopt));
 
     // Do not return anything since all the feed items are "unsafe".
     EXPECT_TRUE(items.empty());
@@ -2852,9 +2923,37 @@ TEST_P(MediaHistoryStoreFeedsTest, GetItemsForFeed) {
     auto items = GetItemsForMediaFeedSync(
         service(),
         MediaHistoryKeyedService::GetMediaFeedItemsRequest::CreateItemsForFeed(
-            1, 0, false));
+            1, 0, false, base::nullopt));
 
     // Do not return anything since the limit is 0.
+    EXPECT_TRUE(items.empty());
+  }
+
+  {
+    auto items = GetItemsForMediaFeedSync(
+        service(),
+        MediaHistoryKeyedService::GetMediaFeedItemsRequest::CreateItemsForFeed(
+            1, 5, false, media_feeds::mojom::MediaFeedItemType::kTVSeries));
+
+    if (IsReadOnly()) {
+      EXPECT_TRUE(items.empty());
+    } else {
+      // We should have the third item because the others have continue
+      // watching details are have been removed and it is also a TV series.
+      ASSERT_EQ(1u, items.size());
+      EXPECT_EQ(3, items[0]->id);
+      EXPECT_EQ(media_feeds::mojom::MediaFeedItemType::kTVSeries,
+                items[0]->type);
+    }
+  }
+
+  {
+    auto items = GetItemsForMediaFeedSync(
+        service(),
+        MediaHistoryKeyedService::GetMediaFeedItemsRequest::CreateItemsForFeed(
+            1, 5, false, media_feeds::mojom::MediaFeedItemType::kMovie));
+
+    // Do not return anything since we don't have any movies.
     EXPECT_TRUE(items.empty());
   }
 }

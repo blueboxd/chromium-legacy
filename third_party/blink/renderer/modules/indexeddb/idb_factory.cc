@@ -108,7 +108,6 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
     promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kUnknownError,
         "The databases() promise was rejected."));
-    promise_resolver_.Clear();
   }
 
   void SuccessNamesAndVersionsList(
@@ -132,7 +131,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
         ExecutionContext::From(promise_resolver_->GetScriptState()),
         &async_task_id_, "success");
     promise_resolver_->Resolve(name_and_version_list);
-    promise_resolver_.Clear();
+    // Note: Resolve may cause |this| to be deleted.
   }
 
   void SuccessStringList(const Vector<String>&) override { NOTREACHED(); }

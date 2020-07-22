@@ -6,6 +6,8 @@
 
 #include <base/logging.h>
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
 
 struct udev {
   // empty
@@ -14,23 +16,64 @@ struct udev {
 struct udev_device {
   const std::string name_;
   const std::string syspath_;
+  const std::string subsystem_;
   std::map<std::string, std::string> sysattrs_;
   std::map<std::string, std::string> properties_;
 
   udev_device(std::string name,
               std::string syspath,
+              std::string subsystem,
               std::map<std::string, std::string> sysattrs,
               std::map<std::string, std::string> properties)
       : name_(std::move(name)),
         syspath_(std::move(syspath)),
+        subsystem_(std::move(subsystem)),
         sysattrs_(std::move(sysattrs)),
         properties_(std::move(properties)) {}
 
   DISALLOW_COPY_AND_ASSIGN(udev_device);
 };
 
+struct udev_list_entry {
+  explicit udev_list_entry(std::string name) : name_(std::move(name)) {}
+  udev_list_entry(const udev_list_entry& other) = delete;
+  udev_list_entry& operator=(const udev_list_entry& other) = delete;
+
+  const std::string name_;
+  udev_list_entry* next_ = nullptr;
+};
+
 struct udev_enumerate {
-  // empty
+  explicit udev_enumerate(
+      const std::vector<std::unique_ptr<udev_device>>& devices) {
+    for (const auto& device : devices) {
+      auto entry = std::make_unique<udev_list_entry>(device->syspath_);
+      if (!entries_.empty()) {
+        entries_.back()->next_ = entry.get();
+      }
+      entries_.push_back(std::move(entry));
+    }
+  }
+
+  udev_enumerate(const udev_enumerate& other) = delete;
+  udev_enumerate& operator=(const udev_enumerate& other) = delete;
+
+  std::vector<std::unique_ptr<udev_list_entry>> entries_;
+};
+
+struct udev_monitor {
+  udev_monitor() {
+    bool res = base::CreatePipe(&read_fd_, &write_fd_, true);
+    DCHECK(res);
+  }
+
+  udev_monitor(const udev_monitor& other) = delete;
+  udev_monitor& operator=(const udev_monitor& other) = delete;
+
+  // |read_fd_| will be returned by udev_monitor_get_fd() and will be signaled
+  // by writing to |write_fd_| to indicate that an event is available.
+  base::ScopedFD read_fd_;
+  base::ScopedFD write_fd_;
 };
 
 namespace testing {
@@ -50,11 +93,12 @@ FakeUdevLoader::~FakeUdevLoader() {
 udev_device* FakeUdevLoader::AddFakeDevice(
     std::string name,
     std::string syspath,
+    std::string subsystem,
     std::map<std::string, std::string> sysattrs,
     std::map<std::string, std::string> properties) {
-  devices_.emplace_back(new udev_device(std::move(name), std::move(syspath),
-                                        std::move(sysattrs),
-                                        std::move(properties)));
+  devices_.emplace_back(
+      new udev_device(std::move(name), std::move(syspath), std::move(subsystem),
+                      std::move(sysattrs), std::move(properties)));
   return devices_.back().get();
 }
 
@@ -107,7 +151,7 @@ const char* FakeUdevLoader::udev_device_get_property_value(
 
 const char* FakeUdevLoader::udev_device_get_subsystem(
     udev_device* udev_device) {
-  return nullptr;
+  return udev_device->subsystem_.c_str();
 }
 
 const char* FakeUdevLoader::udev_device_get_sysattr_value(
@@ -159,11 +203,14 @@ int FakeUdevLoader::udev_enumerate_add_match_subsystem(
 
 udev_list_entry* FakeUdevLoader::udev_enumerate_get_list_entry(
     udev_enumerate* udev_enumerate) {
-  return nullptr;
+  if (udev_enumerate->entries_.empty()) {
+    return nullptr;
+  }
+  return udev_enumerate->entries_.front().get();
 }
 
 udev_enumerate* FakeUdevLoader::udev_enumerate_new(udev* udev) {
-  return new udev_enumerate;
+  return new udev_enumerate(devices_);
 }
 
 int FakeUdevLoader::udev_enumerate_scan_devices(
@@ -177,12 +224,12 @@ void FakeUdevLoader::udev_enumerate_unref(udev_enumerate* udev_enumerate) {
 
 udev_list_entry* FakeUdevLoader::udev_list_entry_get_next(
     udev_list_entry* list_entry) {
-  return nullptr;
+  return list_entry->next_;
 }
 
 const char* FakeUdevLoader::udev_list_entry_get_name(
     udev_list_entry* list_entry) {
-  return nullptr;
+  return list_entry->name_.c_str();
 }
 
 int FakeUdevLoader::udev_monitor_enable_receiving(udev_monitor* udev_monitor) {
@@ -197,12 +244,12 @@ int FakeUdevLoader::udev_monitor_filter_add_match_subsystem_devtype(
 }
 
 int FakeUdevLoader::udev_monitor_get_fd(udev_monitor* udev_monitor) {
-  return -1;
+  return udev_monitor->read_fd_.get();
 }
 
 udev_monitor* FakeUdevLoader::udev_monitor_new_from_netlink(udev* udev,
                                                             const char* name) {
-  return nullptr;
+  return new udev_monitor;
 }
 
 udev_device* FakeUdevLoader::udev_monitor_receive_device(
@@ -210,7 +257,9 @@ udev_device* FakeUdevLoader::udev_monitor_receive_device(
   return nullptr;
 }
 
-void FakeUdevLoader::udev_monitor_unref(udev_monitor* udev_monitor) {}
+void FakeUdevLoader::udev_monitor_unref(udev_monitor* udev_monitor) {
+  delete udev_monitor;
+}
 
 udev* FakeUdevLoader::udev_new() {
   return new udev;

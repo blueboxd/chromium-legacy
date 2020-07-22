@@ -1127,6 +1127,75 @@ const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
 #endif  // defined(OS_ANDROID)
 };
 
+const FeatureEntry::FeatureVariation kMaxZeroSuggestMatchesVariations[] = {
+    {
+        "5",
+        (FeatureEntry::FeatureParam[]){{"MaxZeroSuggestMatches", "5"}},
+        1,
+        nullptr,
+    },
+    {
+        "6",
+        (FeatureEntry::FeatureParam[]){{"MaxZeroSuggestMatches", "6"}},
+        1,
+        nullptr,
+    },
+    {
+        "7",
+        (FeatureEntry::FeatureParam[]){{"MaxZeroSuggestMatches", "7"}},
+        1,
+        nullptr,
+    },
+    {
+        "8",
+        (FeatureEntry::FeatureParam[]){{"MaxZeroSuggestMatches", "8"}},
+        1,
+        nullptr,
+    },
+    {
+        "9",
+        (FeatureEntry::FeatureParam[]){{"MaxZeroSuggestMatches", "9"}},
+        1,
+        nullptr,
+    },
+    {
+        "10",
+        (FeatureEntry::FeatureParam[]){{"MaxZeroSuggestMatches", "10"}},
+        1,
+        nullptr,
+    },
+    {
+        "11",
+        (FeatureEntry::FeatureParam[]){{"MaxZeroSuggestMatches", "11"}},
+        1,
+        nullptr,
+    },
+    {
+        "12",
+        (FeatureEntry::FeatureParam[]){{"MaxZeroSuggestMatches", "12"}},
+        1,
+        nullptr,
+    },
+    {
+        "13",
+        (FeatureEntry::FeatureParam[]){{"MaxZeroSuggestMatches", "13"}},
+        1,
+        nullptr,
+    },
+    {
+        "14",
+        (FeatureEntry::FeatureParam[]){{"MaxZeroSuggestMatches", "14"}},
+        1,
+        nullptr,
+    },
+    {
+        "15",
+        (FeatureEntry::FeatureParam[]){{"MaxZeroSuggestMatches", "15"}},
+        1,
+        nullptr,
+    },
+};
+
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "3"}};
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches4[] = {
@@ -2041,6 +2110,23 @@ const FeatureEntry::Choice kEnableExperimentalCookieFeaturesChoices[] = {
     {flags_ui::kGenericExperimentChoiceEnabled,
      switches::kEnableExperimentalCookieFeatures, ""},
 };
+
+#if defined(OS_CHROMEOS)
+const FeatureEntry::Choice kFrameThrottleFpsChoices[] = {
+    {flag_descriptions::kFrameThrottleFpsDefault, "", ""},
+    {flag_descriptions::kFrameThrottleFps5, ash::switches::kFrameThrottleFps,
+     "5"},
+    {flag_descriptions::kFrameThrottleFps10, ash::switches::kFrameThrottleFps,
+     "10"},
+    {flag_descriptions::kFrameThrottleFps15, ash::switches::kFrameThrottleFps,
+     "15"},
+    {flag_descriptions::kFrameThrottleFps20, ash::switches::kFrameThrottleFps,
+     "20"},
+    {flag_descriptions::kFrameThrottleFps25, ash::switches::kFrameThrottleFps,
+     "25"},
+    {flag_descriptions::kFrameThrottleFps30, ash::switches::kFrameThrottleFps,
+     "30"}};
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
 // The variations of --password-change-support.
@@ -3700,6 +3786,14 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(
          omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction)},
+
+    {"omnibox-max-zero-suggest-matches",
+     flag_descriptions::kOmniboxMaxZeroSuggestMatchesName,
+     flag_descriptions::kOmniboxMaxZeroSuggestMatchesDescription,
+     kOsDesktop | kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kMaxZeroSuggestMatches,
+                                    kMaxZeroSuggestMatchesVariations,
+                                    "OmniboxBundledExperimentV1")},
 
     {"omnibox-ui-max-autocomplete-matches",
      flag_descriptions::kOmniboxUIMaxAutocompleteMatchesName,
@@ -5986,7 +6080,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"mixed-forms-interstitial", flag_descriptions::kMixedFormsInterstitialName,
      flag_descriptions::kMixedFormsInterstitialDescription, kOsAll,
      FEATURE_VALUE_TYPE(
-         security_interstitials::kInsecureFormSubmissionInterstitial)}
+         security_interstitials::kInsecureFormSubmissionInterstitial)},
+
+#if defined(OS_CHROMEOS)
+    {"frame-throttle-fps", flag_descriptions::kFrameThrottleFpsName,
+     flag_descriptions::kFrameThrottleFpsDescription, kOsCrOS,
+     MULTI_VALUE_TYPE(kFrameThrottleFpsChoices)}
+#endif  // defined(OS_CHROMEOS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

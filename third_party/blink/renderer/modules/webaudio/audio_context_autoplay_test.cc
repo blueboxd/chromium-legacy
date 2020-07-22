@@ -241,7 +241,8 @@ TEST_P(AudioContextAutoplayTest, AutoplayMetrics_CallResumeNoGesture_Main) {
 
 // Creates an AudioContext with a user gesture inside a x-origin child frame.
 TEST_P(AudioContextAutoplayTest, AutoplayMetrics_CreateGesture_Child) {
-  LocalFrame::NotifyUserActivation(ChildDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      ChildDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
 
   AudioContext* audio_context = AudioContext::Create(
       ChildDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
@@ -267,7 +268,8 @@ TEST_P(AudioContextAutoplayTest, AutoplayMetrics_CreateGesture_Child) {
 
 // Creates an AudioContext with a user gesture inside a main frame.
 TEST_P(AudioContextAutoplayTest, AutoplayMetrics_CreateGesture_Main) {
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
 
   AudioContext* audio_context = AudioContext::Create(
       GetDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
@@ -296,7 +298,8 @@ TEST_P(AudioContextAutoplayTest, AutoplayMetrics_CallResumeGesture_Child) {
   AudioContext* audio_context = AudioContext::Create(
       ChildDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
 
-  LocalFrame::NotifyUserActivation(ChildDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      ChildDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
 
   audio_context->resumeContext(GetScriptStateFrom(ChildDocument()),
                                ASSERT_NO_EXCEPTION);
@@ -329,7 +332,8 @@ TEST_P(AudioContextAutoplayTest, AutoplayMetrics_CallResumeGesture_Main) {
   AudioContext* audio_context = AudioContext::Create(
       GetDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
 
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
 
   audio_context->resumeContext(GetScriptStateFrom(GetDocument()),
                                ASSERT_NO_EXCEPTION);
@@ -406,7 +410,8 @@ TEST_P(AudioContextAutoplayTest, AutoplayMetrics_NodeStartGesture_Child) {
   AudioContext* audio_context = AudioContext::Create(
       ChildDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
 
-  LocalFrame::NotifyUserActivation(ChildDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      ChildDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   audio_context->NotifySourceNodeStart();
   RecordAutoplayStatus(audio_context);
 
@@ -434,7 +439,8 @@ TEST_P(AudioContextAutoplayTest, AutoplayMetrics_NodeStartGesture_Main) {
   AudioContext* audio_context = AudioContext::Create(
       GetDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
 
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   audio_context->NotifySourceNodeStart();
   RecordAutoplayStatus(audio_context);
 
@@ -463,7 +469,8 @@ TEST_P(AudioContextAutoplayTest,
       ChildDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
   audio_context->NotifySourceNodeStart();
 
-  LocalFrame::NotifyUserActivation(ChildDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      ChildDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   audio_context->resumeContext(GetScriptStateFrom(ChildDocument()),
                                ASSERT_NO_EXCEPTION);
   RejectPendingResolvers(audio_context);
@@ -497,7 +504,8 @@ TEST_P(AudioContextAutoplayTest,
       GetDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
   audio_context->NotifySourceNodeStart();
 
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   audio_context->resumeContext(GetScriptStateFrom(GetDocument()),
                                ASSERT_NO_EXCEPTION);
   RejectPendingResolvers(audio_context);
@@ -527,7 +535,8 @@ TEST_P(AudioContextAutoplayTest,
   AudioContext* audio_context = AudioContext::Create(
       ChildDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
 
-  LocalFrame::NotifyUserActivation(ChildDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      ChildDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   audio_context->NotifySourceNodeStart();
   audio_context->resumeContext(GetScriptStateFrom(ChildDocument()),
                                ASSERT_NO_EXCEPTION);
@@ -561,7 +570,8 @@ TEST_P(AudioContextAutoplayTest,
   AudioContext* audio_context = AudioContext::Create(
       GetDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
 
-  LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      GetDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
   audio_context->NotifySourceNodeStart();
   audio_context->resumeContext(GetScriptStateFrom(GetDocument()),
                                ASSERT_NO_EXCEPTION);
@@ -587,7 +597,8 @@ TEST_P(AudioContextAutoplayTest,
 // document previous received a user gesture.
 TEST_P(AudioContextAutoplayTest,
        AutoplayMetrics_DocumentReceivedGesture_Child) {
-  LocalFrame::NotifyUserActivation(ChildDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      ChildDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
 
   AudioContext* audio_context = AudioContext::Create(
       ChildDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);
@@ -623,7 +634,8 @@ TEST_P(AudioContextAutoplayTest,
 // document previous received a user gesture.
 TEST_P(AudioContextAutoplayTest,
        AutoplayMetrics_DocumentReceivedGesture_Main) {
-  LocalFrame::NotifyUserActivation(ChildDocument().GetFrame());
+  LocalFrame::NotifyUserActivation(
+      ChildDocument().GetFrame(), mojom::UserActivationNotificationType::kTest);
 
   AudioContext* audio_context = AudioContext::Create(
       GetDocument(), AudioContextOptions::Create(), ASSERT_NO_EXCEPTION);

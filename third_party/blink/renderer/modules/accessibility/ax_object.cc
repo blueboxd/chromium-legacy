@@ -3633,7 +3633,9 @@ bool AXObject::OnNativeClickAction() {
   if (!document)
     return false;
 
-  LocalFrame::NotifyUserActivation(document->GetFrame());
+  LocalFrame::NotifyUserActivation(
+      document->GetFrame(),
+      mojom::blink::UserActivationNotificationType::kInteraction);
 
   Element* element = GetElement();
   if (!element && GetNode())

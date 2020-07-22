@@ -50,8 +50,27 @@ class VIEWS_EXPORT HighlightPathGenerator {
   virtual base::Optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect);
   base::Optional<gfx::RRectF> GetRoundRect(const View* view);
 
+  void set_use_contents_bounds(bool use_contents_bounds) {
+    use_contents_bounds_ = use_contents_bounds;
+  }
+
+  void set_use_mirrored_rect(bool use_mirrored_rect) {
+    use_mirrored_rect_ = use_mirrored_rect;
+  }
+
  private:
   const gfx::Insets insets_;
+
+  // When set uses the view's content bounds instead of its local bounds.
+  // TODO(http://crbug.com/1056490): Investigate removing this and seeing if all
+  // ink drops / focus rings should use the content bounds.
+  bool use_contents_bounds_ = false;
+
+  // When set uses the mirror rect in RTL. This should not be needed for focus
+  // rings paths as they handle RTL themselves.
+  // TODO(http://crbug.com/1056490): Investigate moving FocusRing RTL to this
+  // class and removing this bool.
+  bool use_mirrored_rect_ = false;
 };
 
 // Sets a highlight path that is empty. This is used for ink drops that want to

@@ -211,7 +211,8 @@ WebInputEventResult GestureManager::HandleGestureTap(
   Node* tapped_node = current_hit_test.InnerNode();
   Element* tapped_element = current_hit_test.InnerElement();
   LocalFrame::NotifyUserActivation(
-      tapped_node ? tapped_node->GetDocument().GetFrame() : nullptr);
+      tapped_node ? tapped_node->GetDocument().GetFrame() : nullptr,
+      mojom::blink::UserActivationNotificationType::kInteraction);
 
   mouse_event_manager_->SetClickElement(tapped_element);
 
@@ -367,7 +368,8 @@ WebInputEventResult GestureManager::HandleGestureLongPress(
   }
 
   LocalFrame::NotifyUserActivation(
-      inner_node ? inner_node->GetDocument().GetFrame() : nullptr);
+      inner_node ? inner_node->GetDocument().GetFrame() : nullptr,
+      mojom::blink::UserActivationNotificationType::kInteraction);
   return SendContextMenuEventForGesture(targeted_event);
 }
 

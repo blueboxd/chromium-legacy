@@ -13,7 +13,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #import "chrome/updater/app/server/mac/service_protocol.h"
 #import "chrome/updater/mac/xpc_service_names.h"
-#include "chrome/updater/update_service.h"
+#include "chrome/updater/service_scope.h"
 
 // Interface to communicate with the XPC Control Service.
 @interface CRUControlServiceOutOfProcessImpl : NSObject <CRUControlling>
@@ -77,14 +77,13 @@
 
 namespace updater {
 
-ControlServiceOutOfProcess::ControlServiceOutOfProcess(
-    UpdateService::Scope scope)
+ControlServiceOutOfProcess::ControlServiceOutOfProcess(ServiceScope scope)
     : callback_runner_(base::SequencedTaskRunnerHandle::Get()) {
   switch (scope) {
-    case UpdateService::Scope::kSystem:
+    case ServiceScope::kSystem:
       client_.reset([[CRUControlServiceOutOfProcessImpl alloc] initPrivileged]);
       break;
-    case UpdateService::Scope::kUser:
+    case ServiceScope::kUser:
       client_.reset([[CRUControlServiceOutOfProcessImpl alloc] init]);
       break;
   }

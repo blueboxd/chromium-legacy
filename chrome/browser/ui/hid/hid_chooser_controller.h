@@ -59,6 +59,7 @@ class HidChooserController : public ChooserController,
   void OnDeviceRemoved(
       const device::mojom::HidDeviceInfo& device_info) override;
   void OnHidManagerConnectionError() override;
+  void OnHidChooserContextShutdown() override;
 
  private:
   void OnGotDevices(std::vector<device::mojom::HidDeviceInfoPtr> devices);

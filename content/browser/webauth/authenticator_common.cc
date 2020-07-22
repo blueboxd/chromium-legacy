@@ -905,17 +905,18 @@ void AuthenticatorCommon::MakeCredential(
         client_data::kCreateType, caller_origin_, options->challenge);
   }
 
-  // Compute the effective attestation conveyance preference and set
-  // |attestation_requested_| for showing the attestation consent prompt later.
-  ::device::AttestationConveyancePreference attestation = options->attestation;
-  if (attestation == ::device::AttestationConveyancePreference::kEnterprise &&
-      !request_delegate_->ShouldPermitIndividualAttestation(
-          relying_party_id_)) {
-    attestation = ::device::AttestationConveyancePreference::kDirect;
+  // Compute the effective attestation conveyance preference.
+  device::AttestationConveyancePreference attestation = options->attestation;
+  // Enterprise attestation should not have been approved by this point.
+  DCHECK(attestation !=
+         device::AttestationConveyancePreference::kEnterpriseApprovedByBrowser);
+  if (attestation == device::AttestationConveyancePreference::
+                         kEnterpriseIfRPListedOnAuthenticator &&
+      request_delegate_->ShouldPermitIndividualAttestation(relying_party_id_)) {
+    attestation =
+        device::AttestationConveyancePreference::kEnterpriseApprovedByBrowser;
   }
   ctap_make_credential_request_->attestation_preference = attestation;
-  attestation_requested_ =
-      attestation != ::device::AttestationConveyancePreference::kNone;
 
   StartMakeCredentialRequest(/*allow_skipping_pin_touch=*/true);
 }
@@ -1240,6 +1241,8 @@ void AuthenticatorCommon::OnRegisterResponse(
           transport_used &&
           *transport_used == device::FidoTransportProtocol::kInternal;
 
+      const auto attestation =
+          ctap_make_credential_request_->attestation_preference;
       base::Optional<AttestationErasureOption> attestation_erasure;
       const bool origin_is_crypto_token_extension =
           WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
@@ -1252,7 +1255,9 @@ void AuthenticatorCommon::OnRegisterResponse(
               relying_party_id_)) {
         attestation_erasure =
             AttestationErasureOption::kEraseAttestationAndAaguid;
-      } else if (origin_is_crypto_token_extension && attestation_requested_) {
+      } else if (origin_is_crypto_token_extension &&
+                 attestation !=
+                     device::AttestationConveyancePreference::kNone) {
         // Cryptotoken requests may bypass the attestation prompt because the
         // extension implements its own. Invoking the attestation prompt code
         // here would not work anyway, because the WebContents associated with
@@ -1262,12 +1267,26 @@ void AuthenticatorCommon::OnRegisterResponse(
         // Note that for AttestationConveyancePreference::kNone, attestation
         // erasure is still performed as usual.
         attestation_erasure = AttestationErasureOption::kIncludeAttestation;
-      } else if (attestation_requested_) {
+      } else if (attestation == device::AttestationConveyancePreference::
+                                    kEnterpriseApprovedByBrowser) {
+        // If enterprise attestation was approved by policy then it can be
+        // returned immediately.
+        attestation_erasure = AttestationErasureOption::kIncludeAttestation;
+      } else if (attestation == device::AttestationConveyancePreference::
+                                    kEnterpriseIfRPListedOnAuthenticator &&
+                 !response_data->enterprise_attestation_returned) {
+        // If enterprise attestation was requested, not approved by policy, and
+        // not approved by the authenticator, then any attestation is stripped.
+        attestation_erasure =
+            AttestationErasureOption::kEraseAttestationAndAaguid;
+      } else if (attestation !=
+                 device::AttestationConveyancePreference::kNone) {
         UMA_HISTOGRAM_ENUMERATION("WebAuthentication.AttestationPromptResult",
                                   AttestationPromptResult::kQueried);
         awaiting_attestation_response_ = true;
         request_delegate_->ShouldReturnAttestation(
             relying_party_id_, authenticator,
+            response_data->enterprise_attestation_returned,
             base::BindOnce(
                 &AuthenticatorCommon::OnRegisterResponseAttestationDecided,
                 weak_factory_.GetWeakPtr(), std::move(*response_data),
@@ -1310,8 +1329,6 @@ void AuthenticatorCommon::OnRegisterResponseAttestationDecided(
     // occurred while the permissions prompt was pending.
     return;
   }
-
-  DCHECK(attestation_requested_);
 
   AttestationErasureOption attestation_erasure;
   if (!attestation_permitted) {
@@ -1581,7 +1598,6 @@ void AuthenticatorCommon::Cleanup() {
   app_id_.reset();
   caller_origin_ = url::Origin();
   relying_party_id_.clear();
-  attestation_requested_ = false;
   empty_allow_list_ = false;
   error_awaiting_user_acknowledgement_ =
       blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;

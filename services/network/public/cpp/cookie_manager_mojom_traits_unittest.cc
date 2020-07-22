@@ -99,7 +99,8 @@ TEST(CookieManagerTraitsTest, Rountrips_CookieAccessResult) {
           net::CookieInclusionStatus::
               EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
           net::CookieInclusionStatus::
-              WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT));
+              WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT),
+      net::CookieAccessSemantics::LEGACY);
   net::CookieAccessResult copied;
 
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::CookieAccessResult>(
@@ -300,9 +301,12 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieChangeInfo) {
       /* secure = */ false, /* http_only = */ false,
       net::CookieSameSite::UNSPECIFIED, net::COOKIE_PRIORITY_LOW);
 
-  net::CookieChangeInfo original(original_cookie,
-                                 net::CookieAccessSemantics::LEGACY,
-                                 net::CookieChangeCause::EXPLICIT);
+  net::CookieChangeInfo original(
+      original_cookie,
+      net::CookieAccessResult(net::CookieEffectiveSameSite::UNDEFINED,
+                              net::CookieInclusionStatus(),
+                              net::CookieAccessSemantics::LEGACY),
+      net::CookieChangeCause::EXPLICIT);
 
   net::CookieChangeInfo copied;
 
@@ -320,7 +324,8 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieChangeInfo) {
   EXPECT_EQ(original.cookie.IsHttpOnly(), copied.cookie.IsHttpOnly());
   EXPECT_EQ(original.cookie.SameSite(), copied.cookie.SameSite());
   EXPECT_EQ(original.cookie.Priority(), copied.cookie.Priority());
-  EXPECT_EQ(original.access_semantics, copied.access_semantics);
+  EXPECT_EQ(original.access_result.access_semantics,
+            copied.access_result.access_semantics);
   EXPECT_EQ(original.cause, copied.cause);
 }
 

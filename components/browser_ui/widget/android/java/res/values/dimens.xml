@@ -33,9 +33,6 @@
     <dimen name="radio_button_with_description_and_aux_button_aux_button_length"
         tools:ignore="UnusedResources">61dp</dimen>
 
-    <!-- RadioButton(WithDescription)Layout dimensions -->
-    <dimen name="default_vertical_margin_between_items">8dp</dimen>
-
     <dimen name="list_menu_width">180dp</dimen>
 
     <!-- Custom Menu dimensions -->

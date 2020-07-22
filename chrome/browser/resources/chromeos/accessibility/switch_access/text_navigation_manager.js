@@ -24,8 +24,10 @@ class TextNavigationManager {
     /** @private {boolean} */
     this.currentlySelecting_ = false;
 
-    /** @private {function(chrome.automation.AutomationEvent): undefined} */
-    this.selectionListener_ = this.onNavChange_.bind(this);
+    /** @private {!EventHandler} */
+    this.selectionListener_ = new EventHandler(
+        [], chrome.automation.EventType.TEXT_SELECTION_CHANGED,
+        this.onNavChange_.bind(this));
 
     /**
      * Keeps track of when there's a selection in the current node.
@@ -284,13 +286,10 @@ class TextNavigationManager {
     }
 
     if (addListener) {
-      this.selectionStartObject_.addEventListener(
-          chrome.automation.EventType.TEXT_SELECTION_CHANGED,
-          this.selectionListener_, false /** Don't use capture.*/);
+      this.selectionListener_.setNodes(this.selectionStartObject_);
+      this.selectionListener_.start();
     } else {
-      this.selectionStartObject_.removeEventListener(
-          chrome.automation.EventType.TEXT_SELECTION_CHANGED,
-          this.selectionListener_, false /** Don't use capture.*/);
+      this.selectionListener_.stop();
     }
   }
 

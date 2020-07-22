@@ -22,6 +22,9 @@ class SurfaceObserver {
   // Called on each commit.
   virtual void OnCommit(Surface* surface) {}
 
+  // Called when the content size changes.
+  virtual void OnContentSizeChanged(Surface* surface) {}
+
  protected:
   virtual ~SurfaceObserver() {}
 };

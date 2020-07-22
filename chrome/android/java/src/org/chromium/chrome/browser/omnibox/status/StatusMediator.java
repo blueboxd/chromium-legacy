@@ -75,6 +75,7 @@ class StatusMediator implements IncognitoStateProvider.IncognitoStateObserver {
     private boolean mFirstSuggestionIsSearchQuery;
     private boolean mVerboseStatusSpaceAvailable;
     private boolean mPageIsPreview;
+    private boolean mPageIsPaintPreview;
     private boolean mPageIsOffline;
     private boolean mShowStatusIconWhenUrlFocused;
     private boolean mIsSecurityButtonShown;
@@ -174,6 +175,17 @@ class StatusMediator implements IncognitoStateProvider.IncognitoStateObserver {
     void setPageIsPreview(boolean pageIsPreview) {
         if (mPageIsPreview != pageIsPreview) {
             mPageIsPreview = pageIsPreview;
+            updateStatusVisibility();
+            updateColorTheme();
+        }
+    }
+
+    /**
+     * Specify whether displayed page is a preview page.
+     */
+    void setPageIsPaintPreview(boolean pageIsPaintPreview) {
+        if (mPageIsPaintPreview != pageIsPaintPreview) {
+            mPageIsPaintPreview = pageIsPaintPreview;
             updateStatusVisibility();
             updateColorTheme();
         }
@@ -376,7 +388,9 @@ class StatusMediator implements IncognitoStateProvider.IncognitoStateObserver {
     private void updateStatusVisibility() {
         int statusText = 0;
 
-        if (mPageIsPreview) {
+        if (mPageIsPaintPreview) {
+            statusText = R.string.location_bar_paint_preview_page_status;
+        } else if (mPageIsPreview) {
             statusText = R.string.location_bar_preview_lite_page_status;
         } else if (mPageIsOffline) {
             statusText = R.string.location_bar_verbose_status_offline;
@@ -406,7 +420,7 @@ class StatusMediator implements IncognitoStateProvider.IncognitoStateObserver {
 
         @ColorRes
         int textColor = 0;
-        if (mPageIsPreview) {
+        if (mPageIsPreview || mPageIsPaintPreview) {
             textColor = mDarkTheme ? R.color.locationbar_status_preview_color
                                    : R.color.locationbar_status_preview_color_light;
         } else if (mPageIsOffline) {
@@ -437,7 +451,7 @@ class StatusMediator implements IncognitoStateProvider.IncognitoStateObserver {
      */
     private boolean shouldShowVerboseStatusText() {
         return (mPageIsPreview && mPageSecurityLevel != ConnectionSecurityLevel.DANGEROUS)
-                || mPageIsOffline;
+                || mPageIsOffline || mPageIsPaintPreview;
     }
 
     /**

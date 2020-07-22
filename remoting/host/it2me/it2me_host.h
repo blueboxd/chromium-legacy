@@ -58,6 +58,10 @@ enum It2MeHostState {
 class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
                   public HostStatusObserver {
  public:
+  using CreateSignalStrategyCallback =
+      base::OnceCallback<std::unique_ptr<SignalStrategy>(
+          ChromotingHostContext*)>;
+
   class Observer {
    public:
     virtual void OnClientAuthenticated(const std::string& client_username) = 0;
@@ -97,7 +101,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
       std::unique_ptr<RegisterSupportHostRequest> register_request,
       std::unique_ptr<LogToServer> log_to_server,
       base::WeakPtr<It2MeHost::Observer> observer,
-      std::unique_ptr<SignalStrategy> signal_strategy,
+      CreateSignalStrategyCallback create_signal_strategy,
       const std::string& username,
       const protocol::IceConfig& ice_config);
 
@@ -149,7 +153,8 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   void ConnectOnNetworkThread(
       const std::string& username,
       const protocol::IceConfig& ice_config,
-      std::unique_ptr<RegisterSupportHostRequest> register_request);
+      std::unique_ptr<RegisterSupportHostRequest> register_request,
+      CreateSignalStrategyCallback create_signal_strategy);
 
   // Called when the support host registration completes.
   void OnReceivedSupportID(const std::string& support_id,

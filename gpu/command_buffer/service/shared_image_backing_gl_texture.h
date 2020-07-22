@@ -5,7 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_BACKING_GL_TEXTURE_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_BACKING_GL_TEXTURE_H_
 
-#include "gpu/command_buffer/service/shared_image_backing.h"
+#include "gpu/command_buffer/service/shared_image_backing_gl_common.h"
 
 namespace gpu {
 

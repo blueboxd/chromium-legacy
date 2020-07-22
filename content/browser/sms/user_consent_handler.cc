@@ -15,8 +15,6 @@ namespace content {
 NoopUserConsentHandler::~NoopUserConsentHandler() = default;
 
 void NoopUserConsentHandler::RequestUserConsent(
-    RenderFrameHost* frame_host,
-    const url::Origin& origin,
     const std::string& one_time_code,
     CompletionCallback on_complete) {
   std::move(on_complete).Run(SmsStatus::kSuccess);
@@ -29,16 +27,17 @@ bool NoopUserConsentHandler::is_async() const {
   return false;
 }
 
-PromptBasedUserConsentHandler::PromptBasedUserConsentHandler() = default;
+PromptBasedUserConsentHandler::PromptBasedUserConsentHandler(
+    RenderFrameHost* frame_host,
+    const url::Origin& origin)
+    : frame_host_{frame_host}, origin_{origin} {}
 PromptBasedUserConsentHandler::~PromptBasedUserConsentHandler() = default;
 
 void PromptBasedUserConsentHandler::RequestUserConsent(
-    RenderFrameHost* frame_host,
-    const url::Origin& origin,
     const std::string& one_time_code,
     CompletionCallback on_complete) {
   WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(frame_host);
+      content::WebContents::FromRenderFrameHost(frame_host_);
   if (!web_contents->GetDelegate()) {
     std::move(on_complete).Run(SmsStatus::kCancelled);
     return;
@@ -47,7 +46,7 @@ void PromptBasedUserConsentHandler::RequestUserConsent(
   on_complete_ = std::move(on_complete);
   is_prompt_open_ = true;
   web_contents->GetDelegate()->CreateSmsPrompt(
-      frame_host, origin, one_time_code,
+      frame_host_, origin_, one_time_code,
       base::BindOnce(&PromptBasedUserConsentHandler::OnConfirm,
                      weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&PromptBasedUserConsentHandler::OnCancel,

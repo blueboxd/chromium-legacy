@@ -128,4 +128,7 @@ message WebAppProto {
       downloaded_shortcuts_menu_icons_sizes = 20;
 
   optional uint32 background_color = 21;
+
+  // A list of display modes specified in app manifest.
+  repeated DisplayMode display_mode_override = 22;
 }

@@ -4418,6 +4418,16 @@
     ]
   },
 
+  "NativeMessagingAllowlist": {
+    "os": ["win", "linux", "mac"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "NativeMessagingAllowlist": ["native.messaging.host.name"]},
+        "prefs": { "native_messaging.whitelist": {} }
+      }
+    ]
+  },
+
   "NativeMessagingUserLevelHosts": {
     "os": ["win", "linux", "mac"],
     "policy_pref_mapping_test": [
@@ -5722,28 +5732,38 @@
     "note": "This policy is deprecated in M82 and doesn't map to a pref value anymore."
   },
 
-  "MinimumChromeVersionEnforced": {
+  "DeviceMinimumVersion": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": {
-          "MinimumChromeVersionEnforced": [
-            {"chrome_version" : "82","warning_period" : 0, "aue_warning_period" : 14}
+          "DeviceMinimumVersion": [
+            {"chromeos_version" : "13121.0.0", "warning_period" : 0, "aue_warning_period" : 14}
           ]
         },
-        "prefs": { "cros.min_version_enforced.chrome": {} }
+        "prefs": {
+          "cros.device.min_version": {
+            "value": [
+              {"chromeos_version" : "13121.0.0", "warning_period" : 0, "aue_warning_period" : 14}
+            ]
+          }
+        }
       }
     ]
   },
 
-  "MinimumChromeVersionAueMessage": {
+  "DeviceMinimumVersionAueMessage": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": {
-          "MinimumChromeVersionAueMessage": "Please return your device."
+          "DeviceMinimumVersionAueMessage": "Please return your device."
         },
-        "prefs": { "cros.min_version_aue_message.chrome": {} }
+        "prefs": {
+          "cros.device.min_version_aue_message": {
+            "value": "Please return this device."
+          }
+        }
       }
     ]
   },

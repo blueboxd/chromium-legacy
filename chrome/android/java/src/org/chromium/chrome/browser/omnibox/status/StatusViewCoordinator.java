@@ -208,6 +208,7 @@ public class StatusViewCoordinator implements View.OnClickListener, UrlTextChang
         mMediator.setPageSecurityLevel(mToolbarDataProvider.getSecurityLevel());
         mMediator.setPageIsOffline(mToolbarDataProvider.isOfflinePage());
         mMediator.setPageIsPreview(mToolbarDataProvider.isPreview());
+        mMediator.setPageIsPaintPreview(mToolbarDataProvider.isPaintPreview());
     }
 
     @Override

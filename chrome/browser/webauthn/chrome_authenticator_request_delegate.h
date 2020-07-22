@@ -76,6 +76,7 @@ class ChromeAuthenticatorRequestDelegate
   void ShouldReturnAttestation(
       const std::string& relying_party_id,
       const device::FidoAuthenticator* authenticator,
+      bool is_enterprise_attestation,
       base::OnceCallback<void(bool)> callback) override;
   bool SupportsResidentKeys() override;
   bool ShouldPermitCableExtension(const url::Origin& origin) override;

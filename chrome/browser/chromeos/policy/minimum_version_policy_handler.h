@@ -32,16 +32,21 @@ class UpdateRequiredNotification;
 
 namespace policy {
 
-// This class observes the device setting |kMinimumChromeVersionEnforced|, and
-// checks if respective requirement is met.
+// This class observes the device setting |kDeviceMinimumVersion|, and
+// checks if respective requirement is met. If an update is not required, all
+// running timers are reset. If an update is required, it calculates the
+// deadline using the warning period in the policy and restarts the timer. It
+// also calls UpdateRequiredNotification to show in-session notifications if an
+// update is required but it cannot be downloaded due to network limitations or
+// Auto Update Expiration.
 class MinimumVersionPolicyHandler
     : public BuildStateObserver,
       public chromeos::NetworkStateHandlerObserver,
       public chromeos::UpdateEngineClient::Observer {
  public:
-  static const char kChromeVersion[];
+  static const char kChromeOsVersion[];
   static const char kWarningPeriod[];
-  static const char KEolWarningPeriod[];
+  static const char kEolWarningPeriod[];
 
   class Observer {
    public:
@@ -83,7 +88,7 @@ class MinimumVersionPolicyHandler
     // Hides update required screen and shows the login screen.
     virtual void HideUpdateRequiredScreenIfShown() = 0;
 
-    virtual const base::Version& GetCurrentVersion() const = 0;
+    virtual base::Version GetCurrentVersion() const = 0;
   };
 
   class MinimumVersionRequirement {
@@ -201,7 +206,7 @@ class MinimumVersionPolicyHandler
   // Starts the timer to expire when |deadline| is reached.
   void StartDeadlineTimer(base::Time deadline);
 
-  // Starts observing the BuildState for any updates in Chrome and resets the
+  // Starts observing the BuildState for any updates in Chrome OS and resets the
   // state if new version satisfies the minimum version requirement.
   void StartObservingUpdate();
 

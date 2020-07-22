@@ -131,7 +131,7 @@ void NearbyShareDeviceDataUpdaterImpl::OnRpcSuccess(
   nearbyshare::proto::UpdateDeviceResponse response_copy(response);
   client_.reset();
   RecordResultMetrics(UpdaterResultCode::kSuccess);
-  FinishAttempt(/*success=*/true, response_copy);
+  FinishAttempt(response_copy);
 }
 
 void NearbyShareDeviceDataUpdaterImpl::OnRpcFailure(
@@ -139,11 +139,11 @@ void NearbyShareDeviceDataUpdaterImpl::OnRpcFailure(
   timer_.Stop();
   client_.reset();
   RecordResultMetrics(RequestErrorToUpdaterResultCode(error));
-  FinishAttempt(/*success=*/false, /*response=*/base::nullopt);
+  FinishAttempt(/*response=*/base::nullopt);
 }
 
 void NearbyShareDeviceDataUpdaterImpl::OnTimeout() {
   client_.reset();
   RecordResultMetrics(UpdaterResultCode::kTimeout);
-  FinishAttempt(/*success=*/false, /*response=*/base::nullopt);
+  FinishAttempt(/*response=*/base::nullopt);
 }

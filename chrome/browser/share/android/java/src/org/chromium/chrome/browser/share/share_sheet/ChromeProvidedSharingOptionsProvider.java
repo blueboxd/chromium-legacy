@@ -149,8 +149,7 @@ class ChromeProvidedSharingOptionsProvider {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_QRCODE)) {
             mOrderedFirstPartyOptions.add(createQrCodeFirstPartyOption());
         }
-        if (UserPrefs.get(Profile.fromWebContents(mTabProvider.get().getWebContents()))
-                        .getBoolean(Pref.PRINTING_ENABLED)) {
+        if (UserPrefs.get(Profile.getLastUsedRegularProfile()).getBoolean(Pref.PRINTING_ENABLED)) {
             mOrderedFirstPartyOptions.add(createPrintingFirstPartyOption());
         }
     }

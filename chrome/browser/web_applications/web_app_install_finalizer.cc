@@ -428,6 +428,8 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
   web_app->SetName(base::UTF16ToUTF8(web_app_info.title));
 
   web_app->SetDisplayMode(web_app_info.display_mode);
+  web_app->SetDisplayModeOverride(web_app_info.display_override);
+
   web_app->SetDescription(base::UTF16ToUTF8(web_app_info.description));
   web_app->SetScope(web_app_info.scope);
   if (web_app_info.theme_color) {

@@ -708,6 +708,7 @@ crbug.com/1080397 [ chromeos-board-kevin ] conformance/textures/image_bitmap_fro
 crbug.com/1080397 [ chromeos-board-kevin ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
 crbug.com/1080397 [ chromeos-board-kevin ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
 crbug.com/1080397 [ chromeos-board-kevin ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
+crbug.com/1108368 [ chromeos-board-kevin ] conformance/misc/shader-precision-format.html [ Failure ]
 
 ########################
 # SwiftShader failures #

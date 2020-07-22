@@ -1401,6 +1401,7 @@ void HostProcess::InitializeSignaling() {
   auto ftl_signal_strategy = std::make_unique<FtlSignalStrategy>(
       std::make_unique<OAuthTokenGetterProxy>(
           oauth_token_getter_->GetWeakPtr()),
+      context_->url_loader_factory(),
       std::make_unique<FtlHostDeviceIdProvider>(host_id_));
   ftl_signaling_connector_ = std::make_unique<FtlSignalingConnector>(
       ftl_signal_strategy.get(),

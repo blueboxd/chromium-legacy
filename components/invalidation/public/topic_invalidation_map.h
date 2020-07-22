@@ -26,6 +26,7 @@ class INVALIDATION_EXPORT TopicInvalidationMap {
  public:
   TopicInvalidationMap();
   TopicInvalidationMap(const TopicInvalidationMap& other);
+  TopicInvalidationMap& operator=(const TopicInvalidationMap& other);
   ~TopicInvalidationMap();
 
   // Returns set of Topics for which at least one invalidation is present.
@@ -64,7 +65,8 @@ class INVALIDATION_EXPORT TopicInvalidationMap {
   std::unique_ptr<base::ListValue> ToValue() const;
 
  private:
-  TopicInvalidationMap(const std::map<Topic, SingleObjectInvalidationSet>& map);
+  explicit TopicInvalidationMap(
+      const std::map<Topic, SingleObjectInvalidationSet>& map);
 
   std::map<Topic, SingleObjectInvalidationSet> map_;
 };

@@ -15,14 +15,14 @@
 namespace password_manager {
 
 namespace {
-// Synchronously deletes passwords directoy.
+// Synchronously deletes passwords directory.
 void DeletePasswordsDirectorySync() {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   base::FilePath downloads_directory;
   if (GetPasswordsDirectory(&downloads_directory)) {
     // It is assumed that deleting the directory always succeeds.
-    DeleteFile(downloads_directory, /*recursive=*/true);
+    base::DeletePathRecursively(downloads_directory);
   }
 }
 }  // namespace

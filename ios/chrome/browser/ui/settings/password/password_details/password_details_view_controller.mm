@@ -5,6 +5,10 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_view_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_handler.h"
@@ -12,6 +16,10 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
+#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -21,15 +29,20 @@
 
 namespace {
 
+// Padding used between the image and the text labels.
+const CGFloat kWarningIconSize = 20;
+
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierPassword = kSectionIdentifierEnumZero,
-  // TODO:(crbug.com/1075494) - Add password compromised section.
+  SectionIdentifierCompromisedInfo
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeWebsite = kItemTypeEnumZero,
   ItemTypeUsername,
   ItemTypePassword,
+  ItemTypeChangePasswordButton,
+  ItemTypeChangePasswordRecommendation,
 };
 
 }  // namespace
@@ -73,6 +86,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self reconfigureCellsForItems:
             [self.tableViewModel
                 itemsInSectionWithIdentifier:SectionIdentifierPassword]];
+  [self reconfigureCellsForItems:
+            [self.tableViewModel
+                itemsInSectionWithIdentifier:SectionIdentifierCompromisedInfo]];
 }
 
 - (void)loadModel {
@@ -90,6 +106,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   [model addItem:[self passwordItem]
       toSectionWithIdentifier:SectionIdentifierPassword];
+
+  if (self.password.isCompromised) {
+    [model addSectionWithIdentifier:SectionIdentifierCompromisedInfo];
+
+    [model addItem:[self changePasswordItem]
+        toSectionWithIdentifier:SectionIdentifierCompromisedInfo];
+
+    [model addItem:[self changePasswordRecommendationItem]
+        toSectionWithIdentifier:SectionIdentifierCompromisedInfo];
+  }
 }
 
 #pragma mark - Items
@@ -130,15 +156,56 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return item;
 }
 
+- (TableViewTextItem*)changePasswordItem {
+  TableViewTextItem* item =
+      [[TableViewTextItem alloc] initWithType:ItemTypeChangePasswordButton];
+  item.text = l10n_util::GetNSString(IDS_IOS_CHANGE_COMPROMISED_PASSWORD);
+  item.textColor = self.tableView.editing ? UIColor.cr_secondaryLabelColor
+                                          : [UIColor colorNamed:kBlueColor];
+  item.accessibilityTraits = UIAccessibilityTraitButton;
+  return item;
+}
+
+- (SettingsImageDetailTextItem*)changePasswordRecommendationItem {
+  SettingsImageDetailTextItem* item = [[SettingsImageDetailTextItem alloc]
+      initWithType:ItemTypeChangePasswordRecommendation];
+  item.detailText =
+      l10n_util::GetNSString(IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION);
+  item.image = [self getCompromisedIcon];
+  return item;
+}
+
 #pragma mark - UITableViewDelegate
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
-  if (self.tableView.editing) {
-    UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
-    TableViewTextEditCell* textFieldCell =
-        base::mac::ObjCCastStrict<TableViewTextEditCell>(cell);
-    [textFieldCell.textField becomeFirstResponder];
+  TableViewModel* model = self.tableViewModel;
+  NSInteger itemType = [model itemTypeForIndexPath:indexPath];
+  switch (itemType) {
+    case ItemTypeWebsite:
+    case ItemTypeUsername:
+    case ItemTypeChangePasswordRecommendation:
+      break;
+    case ItemTypePassword: {
+      if (self.tableView.editing) {
+        UITableViewCell* cell =
+            [self.tableView cellForRowAtIndexPath:indexPath];
+        TableViewTextEditCell* textFieldCell =
+            base::mac::ObjCCastStrict<TableViewTextEditCell>(cell);
+        [textFieldCell.textField becomeFirstResponder];
+      }
+      break;
+    }
+    case ItemTypeChangePasswordButton:
+      if (!self.tableView.editing) {
+        DCHECK(self.commandsDispatcher);
+        GURL URL(base::SysNSStringToUTF8(self.password.website));
+        DCHECK(URL.is_valid());
+        OpenNewTabCommand* command =
+            [OpenNewTabCommand commandWithURLFromChrome:URL];
+        [self.commandsDispatcher closeSettingsUIAndOpenURL:command];
+      }
+      break;
   }
 }
 
@@ -163,10 +230,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // TODO:(crbug.com/1075494) - Add action to Show/Hide password when user tap
   // eye icon.
-  TableViewTextEditCell* textFieldCell =
-      base::mac::ObjCCastStrict<TableViewTextEditCell>(cell);
-  textFieldCell.textField.delegate = self;
-  return textFieldCell;
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
+  switch (itemType) {
+    case ItemTypePassword: {
+      TableViewTextEditCell* textFieldCell =
+          base::mac::ObjCCastStrict<TableViewTextEditCell>(cell);
+      textFieldCell.textField.delegate = self;
+      return textFieldCell;
+    }
+    case ItemTypeWebsite:
+    case ItemTypeUsername:
+    case ItemTypeChangePasswordButton:
+    case ItemTypeChangePasswordRecommendation:
+      break;
+  }
+  return cell;
 }
 
 - (BOOL)tableView:(UITableView*)tableView
@@ -199,6 +277,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (BOOL)shouldHideToolbar {
   return !self.editing;
+}
+
+// Applies tint colour and resizes image.
+- (UIImage*)getCompromisedIcon {
+  UIImage* image = [UIImage imageNamed:@"settings_unsafe_state"];
+  UIImage* newImage =
+      [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  UIGraphicsBeginImageContextWithOptions(
+      CGSizeMake(kWarningIconSize, kWarningIconSize), NO, 0.0);
+  [UIColor.cr_secondaryLabelColor set];
+  [newImage drawInRect:CGRectMake(0, 0, kWarningIconSize, kWarningIconSize)];
+  newImage = UIGraphicsGetImageFromCurrentImageContext();
+  UIGraphicsEndImageContext();
+  return newImage;
 }
 
 @end

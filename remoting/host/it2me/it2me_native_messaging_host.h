@@ -115,12 +115,6 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
   std::unique_ptr<SignalStrategy> CreateDelegatedSignalStrategy(
       const base::DictionaryValue* message);
 
-  // Creates a FtlSignalStrategy from the values stored in |message| along
-  // with |user_name|.  Returns nullptr on failure.
-  std::unique_ptr<SignalStrategy> CreateFtlSignalStrategy(
-      const std::string& user_name,
-      const std::string& access_token);
-
   // Extracts OAuth access token from the message passed from the client.
   std::string ExtractAccessToken(const base::DictionaryValue* message);
 

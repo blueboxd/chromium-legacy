@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.share.share_sheet;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.ArgumentMatchers.anyString;
 
 import android.app.Activity;
@@ -30,10 +29,8 @@ import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.profiles.ProfileJni;
 import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetPropertyModelBuilder.ContentType;
-import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
@@ -66,10 +63,10 @@ public class ChromeProvidedSharingOptionsProviderTest {
     public JniMocker mJniMocker = new JniMocker();
 
     @Mock
-    private Profile.Natives mProfileNatives;
-    @Mock
     private UserPrefs.Natives mUserPrefsNatives;
 
+    @Mock
+    private Profile mProfile;
     @Mock
     private PrefService mPrefService;
 
@@ -84,10 +81,9 @@ public class ChromeProvidedSharingOptionsProviderTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mJniMocker.mock(ProfileJni.TEST_HOOKS, mProfileNatives);
         mJniMocker.mock(UserPrefsJni.TEST_HOOKS, mUserPrefsNatives);
-        Mockito.when(mProfileNatives.fromWebContents(anyObject())).thenReturn(null);
-        Mockito.when(mUserPrefsNatives.get(anyObject())).thenReturn(mPrefService);
+        Profile.setLastUsedProfileForTesting(mProfile);
+        Mockito.when(mUserPrefsNatives.get(mProfile)).thenReturn(mPrefService);
         mActivity = mActivityTestRule.getActivity();
     }
 
@@ -274,9 +270,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
         Mockito.when(mPrefService.getBoolean(anyString())).thenReturn(printingEnabled);
 
         mChromeProvidedSharingOptionsProvider = new ChromeProvidedSharingOptionsProvider(mActivity,
-                /*activityTabProvider=*/
-                ()
-                        -> new MockTab(0, false),
+                /*activityTabProvider=*/null,
                 /*bottomSheetController=*/null,
                 new ShareSheetBottomSheetContent(mActivity, mShareSheetCoordinator),
                 new ShareParams.Builder(null, "", "").build(),

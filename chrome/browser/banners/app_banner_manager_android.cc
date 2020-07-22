@@ -24,9 +24,11 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/installable/installable_metrics.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
+#include "components/version_info/channel.h"
 #include "content/public/browser/manifest_icon_downloader.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/url_util.h"
@@ -39,6 +41,9 @@ using base::android::JavaParamRef;
 namespace {
 
 constexpr char kPlatformPlay[] = "play";
+
+// Whether to ignore the Chrome channel in QueryNativeApp() for testing.
+bool gIgnoreChromeChannelForTesting = false;
 
 // Returns a pointer to the InstallableAmbientBadgeInfoBar if it is currently
 // showing. Otherwise returns nullptr.
@@ -375,6 +380,16 @@ InstallableStatusCode AppBannerManagerAndroid::QueryNativeApp(
   if (id.empty())
     return NO_ID_SPECIFIED;
 
+  // AppBannerManager#fetchAppDetails() only works on Beta and Stable because
+  // the called Google Play API uses an old way of checking whether the Chrome
+  // app is first party. See http://b/147780265
+  version_info::Channel channel = chrome::GetChannel();
+  if (!gIgnoreChromeChannelForTesting &&
+      !(channel == version_info::Channel::BETA ||
+        channel == version_info::Channel::STABLE)) {
+    return PREFER_RELATED_APPLICATIONS_SUPPORTED_ONLY_BETA_STABLE;
+  }
+
   banners::TrackDisplayEvent(DISPLAY_EVENT_NATIVE_APP_BANNER_REQUESTED);
 
   std::string id_from_app_url = ExtractQueryValueForName(url, "id");
@@ -513,6 +528,11 @@ JNI_AppBannerManager_GetJavaBannerManagerForWebContents(
       content::WebContents::FromJavaWebContents(java_web_contents));
   return manager ? manager->GetJavaBannerManager()
                  : base::android::ScopedJavaLocalRef<jobject>();
+}
+
+// static
+void JNI_AppBannerManager_IgnoreChromeChannelForTesting(JNIEnv*) {
+  gIgnoreChromeChannelForTesting = true;
 }
 
 // static

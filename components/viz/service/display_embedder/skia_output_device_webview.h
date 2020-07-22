@@ -33,8 +33,6 @@ class SkiaOutputDeviceWebView : public SkiaOutputDevice {
   SkiaOutputDeviceWebView& operator=(const SkiaOutputDeviceWebView&) = delete;
   ~SkiaOutputDeviceWebView() override;
 
-  bool supports_alpha() const { return supports_alpha_; }
-
   // SkiaOutputDevice implementation:
   bool Reshape(const gfx::Size& size,
                float device_scale_factor,

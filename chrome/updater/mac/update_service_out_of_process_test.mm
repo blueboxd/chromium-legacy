@@ -29,6 +29,7 @@
 #import "chrome/updater/app/server/mac/update_service_wrappers.h"
 #include "chrome/updater/mac/scoped_xpc_service_mock.h"
 #import "chrome/updater/mac/xpc_service_names.h"
+#include "chrome/updater/service_scope.h"
 #include "chrome/updater/unittest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -293,7 +294,7 @@ void MacUpdateServiceOutOfProcessTest::SetUp() {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([this]() {
         service_ = base::MakeRefCounted<UpdateServiceOutOfProcess>(
-            UpdateService::Scope::kUser);
+            ServiceScope::kUser);
       }));
 }
 

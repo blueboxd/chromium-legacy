@@ -81,8 +81,13 @@ void LabelButton::SetImage(ButtonState for_state, const gfx::ImageSkia& image) {
 
 void LabelButton::SetImageModel(ButtonState for_state,
                                 const ui::ImageModel& image_model) {
+  if (button_state_image_models_[for_state] == image_model)
+    return;
+
   button_state_image_models_[for_state] = image_model;
-  UpdateImage();
+
+  if (GetVisualState() == for_state)
+    UpdateImage();
 }
 
 const base::string16& LabelButton::GetText() const {

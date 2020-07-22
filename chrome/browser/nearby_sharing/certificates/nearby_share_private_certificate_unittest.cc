@@ -71,7 +71,7 @@ TEST(NearbySharePrivateCertificateTest, EncryptMetadataKey) {
 
 TEST(NearbySharePrivateCertificateTest, EncryptMetadataKey_FixedData) {
   NearbySharePrivateCertificate private_certificate =
-      GetNearbyShareTestPrivateCertificate();
+      GetNearbyShareTestPrivateCertificate(NearbyShareVisibility::kAllContacts);
   base::Optional<NearbyShareEncryptedMetadataKey> encrypted_metadata_key =
       private_certificate.EncryptMetadataKey();
   EXPECT_EQ(GetNearbyShareTestEncryptedMetadataKey().encrypted_key(),
@@ -83,7 +83,7 @@ TEST(NearbySharePrivateCertificateTest, EncryptMetadataKey_FixedData) {
 TEST(NearbySharePrivateCertificateTest,
      EncryptMetadataKey_SaltsExhaustedFailure) {
   NearbySharePrivateCertificate private_certificate =
-      GetNearbyShareTestPrivateCertificate();
+      GetNearbyShareTestPrivateCertificate(NearbyShareVisibility::kAllContacts);
   for (size_t i = 0; i < kNearbyShareMaxNumMetadataEncryptionKeySalts; ++i) {
     EXPECT_TRUE(private_certificate.EncryptMetadataKey());
   }
@@ -93,7 +93,7 @@ TEST(NearbySharePrivateCertificateTest,
 TEST(NearbySharePrivateCertificateTest,
      EncryptMetadataKey_TooManySaltGenerationRetriesFailure) {
   NearbySharePrivateCertificate private_certificate =
-      GetNearbyShareTestPrivateCertificate();
+      GetNearbyShareTestPrivateCertificate(NearbyShareVisibility::kAllContacts);
   EXPECT_TRUE(private_certificate.EncryptMetadataKey());
   while (private_certificate.next_salts_for_testing().size() <
          kNearbyShareMaxNumMetadataEncryptionKeySaltGenerationRetries) {
@@ -104,7 +104,7 @@ TEST(NearbySharePrivateCertificateTest,
 
 TEST(NearbySharePrivateCertificateTest, PublicCertificateConversion) {
   NearbySharePrivateCertificate private_certificate =
-      GetNearbyShareTestPrivateCertificate();
+      GetNearbyShareTestPrivateCertificate(NearbyShareVisibility::kAllContacts);
   private_certificate.offset_for_testing() = GetNearbyShareTestValidityOffset();
   base::Optional<nearbyshare::proto::PublicCertificate> public_certificate =
       private_certificate.ToPublicCertificate();
@@ -115,7 +115,7 @@ TEST(NearbySharePrivateCertificateTest, PublicCertificateConversion) {
 
 TEST(NearbySharePrivateCertificateTest, EncryptDecryptRoundtrip) {
   NearbySharePrivateCertificate private_certificate =
-      GetNearbyShareTestPrivateCertificate();
+      GetNearbyShareTestPrivateCertificate(NearbyShareVisibility::kAllContacts);
 
   base::Optional<NearbyShareDecryptedPublicCertificate>
       decrypted_public_certificate =
@@ -130,7 +130,7 @@ TEST(NearbySharePrivateCertificateTest, EncryptDecryptRoundtrip) {
 
 TEST(NearbySharePrivateCertificateTest, SignVerifyRoundtrip) {
   NearbySharePrivateCertificate private_certificate =
-      GetNearbyShareTestPrivateCertificate();
+      GetNearbyShareTestPrivateCertificate(NearbyShareVisibility::kAllContacts);
   base::Optional<std::vector<uint8_t>> signature =
       private_certificate.Sign(GetNearbyShareTestPayloadToSign());
   ASSERT_TRUE(signature);

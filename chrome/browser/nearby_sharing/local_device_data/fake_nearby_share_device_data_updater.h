@@ -23,9 +23,8 @@ class FakeNearbyShareDeviceDataUpdater : public NearbyShareDeviceDataUpdater {
   ~FakeNearbyShareDeviceDataUpdater() override;
 
   // Advances the request queue and invokes request callback with the input
-  // parameters |success| and |response|.
+  // parameter |response|.
   void RunNextRequest(
-      bool success,
       const base::Optional<nearbyshare::proto::UpdateDeviceResponse>& response);
 
   const std::string& device_id() const { return device_id_; }

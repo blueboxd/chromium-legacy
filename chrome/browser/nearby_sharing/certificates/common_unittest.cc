@@ -10,7 +10,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(NearbyShareCertificatesCommonTest, ValidityPeriod_PrivateCertificate) {
-  NearbySharePrivateCertificate cert = GetNearbyShareTestPrivateCertificate();
+  NearbySharePrivateCertificate cert =
+      GetNearbyShareTestPrivateCertificate(NearbyShareVisibility::kAllContacts);
   const bool use_public_certificate_tolerance = false;
 
   // Set time before validity period.

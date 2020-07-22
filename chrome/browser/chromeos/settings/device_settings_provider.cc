@@ -84,6 +84,8 @@ const char* const kKnownSettings[] = {
     kDeviceLoginScreenInputMethods,
     kDeviceLoginScreenLocales,
     kDeviceLoginScreenSystemInfoEnforced,
+    kDeviceMinimumVersion,
+    kDeviceMinimumVersionAueMessage,
     kDeviceShowNumericKeyboardForPassword,
     kDeviceOffHours,
     kDeviceOwner,
@@ -106,8 +108,6 @@ const char* const kKnownSettings[] = {
     kHeartbeatFrequency,
     kLoginAuthenticationBehavior,
     kLoginVideoCaptureAllowedUrls,
-    kMinimumChromeVersionEnforced,
-    kMinimumChromeVersionAueMessage,
     kPluginVmAllowed,
     kPluginVmLicenseKey,
     kPolicyMissingMitigationMode,
@@ -785,21 +785,20 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                                        policy.tpm_firmware_update_settings())));
   }
 
-  if (policy.has_minimum_chrome_version_enforced()) {
-    const em::StringPolicyProto& container(
-        policy.minimum_chrome_version_enforced());
+  if (policy.has_device_minimum_version()) {
+    const em::StringPolicyProto& container(policy.device_minimum_version());
     if (container.has_value()) {
-      SetJsonDeviceSetting(kMinimumChromeVersionEnforced,
-                           policy::key::kMinimumChromeVersionEnforced,
+      SetJsonDeviceSetting(kDeviceMinimumVersion,
+                           policy::key::kDeviceMinimumVersion,
                            container.value(), new_values_cache);
     }
   }
 
-  if (policy.has_minimum_chrome_version_aue_message()) {
+  if (policy.has_device_minimum_version_aue_message()) {
     const em::StringPolicyProto& container(
-        policy.minimum_chrome_version_aue_message());
+        policy.device_minimum_version_aue_message());
     if (container.has_value()) {
-      new_values_cache->SetValue(kMinimumChromeVersionAueMessage,
+      new_values_cache->SetValue(kDeviceMinimumVersionAueMessage,
                                  base::Value(container.value()));
     }
   }

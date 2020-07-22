@@ -37,8 +37,7 @@ PasswordFormFillData MaybeClearPasswordValues(
   // credentials from |additional_logins| could be used for filling on load. So
   // in case of filling on load nor |password_field| nor |additional_logins|
   // can't be cleared
-  bool is_fallback =
-      data.has_renderer_ids && data.password_field.unique_renderer_id.is_null();
+  bool is_fallback = data.password_field.unique_renderer_id.is_null();
   if (!data.wait_for_username && !is_fallback)
     return data;
   PasswordFormFillData result(data);

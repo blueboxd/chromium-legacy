@@ -7,6 +7,9 @@
 #include <utility>
 
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/ash_switches.h"
+#include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "ui/aura/client/aura_constants.h"
@@ -41,7 +44,16 @@ void CollectBrowserFrameSinkIds(const std::vector<aura::Window*>& windows,
 
 FrameThrottlingController::FrameThrottlingController(
     ui::ContextFactory* context_factory)
-    : context_factory_(context_factory) {}
+    : context_factory_(context_factory) {
+  const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
+  if (cl->HasSwitch(switches::kFrameThrottleFps)) {
+    int value;
+    if (base::StringToInt(cl->GetSwitchValueASCII(switches::kFrameThrottleFps),
+                          &value)) {
+      fps_ = value;
+    }
+  }
+}
 
 FrameThrottlingController::~FrameThrottlingController() {
   EndThrottling();

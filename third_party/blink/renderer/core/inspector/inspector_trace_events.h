@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
+#include "third_party/blink/renderer/core/animation/compositor_animations.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/core_probe_sink.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
@@ -484,6 +485,11 @@ std::unique_ptr<TracedValue> Data(const Animation&);
 
 namespace inspector_animation_state_event {
 std::unique_ptr<TracedValue> Data(const Animation&);
+}
+
+namespace inspector_animation_compositor_event {
+std::unique_ptr<TracedValue> Data(
+    blink::CompositorAnimations::FailureReasons failure_reasons);
 }
 
 namespace inspector_hit_test_event {

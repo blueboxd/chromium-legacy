@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_issue_with_form.h"
 #import "ios/chrome/browser/ui/settings/password/password_issues_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/password_issues_mediator.h"
@@ -18,7 +19,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface PasswordIssuesCoordinator () <PasswordIssuesPresenter> {
+@interface PasswordIssuesCoordinator () <PasswordDetailsCoordinatorDelegate,
+                                         PasswordIssuesPresenter> {
   // Password check manager to power mediator.
   IOSChromePasswordCheckManager* _manager;
 }
@@ -28,6 +30,9 @@
 
 // Main mediator for this coordinator.
 @property(nonatomic, strong) PasswordIssuesMediator* mediator;
+
+// Coordinator for password details.
+@property(nonatomic, strong) PasswordDetailsCoordinator* passwordDetails;
 
 @end
 
@@ -71,6 +76,10 @@
 - (void)stop {
   self.mediator = nil;
   self.viewController = nil;
+
+  [self.passwordDetails stop];
+  self.passwordDetails.delegate = nil;
+  self.passwordDetails = nil;
 }
 
 #pragma mark - PasswordIssuesPresenter
@@ -83,12 +92,29 @@
   autofill::PasswordForm form =
       base::mac::ObjCCastStrict<PasswordIssueWithForm>(password).form;
 
-  PasswordDetailsCoordinator* passwordDetails =
-      [[PasswordDetailsCoordinator alloc]
-          initWithBaseNavigationController:self.baseNavigationController
-                                  password:form];
-  // TODO:(crbug.com/1075494) - Add self as delegate for coordinator.
-  [passwordDetails start];
+  DCHECK(!self.passwordDetails);
+  self.passwordDetails = [[PasswordDetailsCoordinator alloc]
+      initWithBaseNavigationController:self.baseNavigationController
+                              password:form
+                  passwordCheckManager:_manager
+                            dispatcher:self.dispatcher];
+  self.passwordDetails.delegate = self;
+  [self.passwordDetails start];
+}
+
+#pragma mark - PasswordDetailsCoordinatorDelegate
+
+- (void)passwordDetailsCoordinatorDidRemove:
+    (PasswordDetailsCoordinator*)coordinator {
+  DCHECK_EQ(self.passwordDetails, coordinator);
+  [self.passwordDetails stop];
+  self.passwordDetails.delegate = nil;
+  self.passwordDetails = nil;
+}
+
+- (void)passwordDetailsCoordinator:(PasswordDetailsCoordinator*)coordinator
+                    deletePassword:(const autofill::PasswordForm&)password {
+  // TODO:(crbug.com/1075494) - Delete password.
 }
 
 @end

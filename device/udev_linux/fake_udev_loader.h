@@ -22,6 +22,7 @@ class FakeUdevLoader : public device::UdevLoader {
 
   udev_device* AddFakeDevice(std::string name,
                              std::string syspath,
+                             std::string subsystem,
                              std::map<std::string, std::string> sysattrs,
                              std::map<std::string, std::string> properties);
 

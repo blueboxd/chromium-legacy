@@ -626,6 +626,24 @@ void WebrtcTransport::SetPreferredBitrates(
   }
 }
 
+void WebrtcTransport::RequestIceRestart() {
+  if (transport_context_->role() != TransportRole::SERVER) {
+    NOTIMPLEMENTED()
+        << "ICE restart only implemented for TransportRole::SERVER";
+    return;
+  }
+
+  if (!connected_) {
+    LOG(WARNING) << "Not connected, ignoring ICE restart request.";
+    return;
+  }
+
+  VLOG(0) << "Restarting ICE due to client request.";
+  connected_ = false;
+  want_ice_restart_ = true;
+  RequestNegotiation();
+}
+
 // static
 void WebrtcTransport::SetDataChannelPollingIntervalForTests(
     base::TimeDelta new_polling_interval) {

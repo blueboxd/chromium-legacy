@@ -344,7 +344,8 @@ void MediaSession::DidReceiveAction(
   if (!GetExecutionContext())
     return;
   LocalFrame::NotifyUserActivation(
-      To<LocalDOMWindow>(GetExecutionContext())->GetFrame());
+      To<LocalDOMWindow>(GetExecutionContext())->GetFrame(),
+      mojom::blink::UserActivationNotificationType::kInteraction);
 
   auto& name = MojomActionToActionName(action);
 

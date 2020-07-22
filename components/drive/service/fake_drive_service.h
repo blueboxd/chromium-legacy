@@ -138,7 +138,7 @@ class FakeDriveService : public DriveServiceInterface {
   google_apis::CancelCallbackOnce GetAllFileList(
       const std::string& team_drive_id,
       const google_apis::FileListCallback& callback) override;
-  google_apis::CancelCallback GetFileListInDirectory(
+  google_apis::CancelCallbackOnce GetFileListInDirectory(
       const std::string& directory_resource_id,
       const google_apis::FileListCallback& callback) override;
   // See the comment for EntryMatchWidthQuery() in .cc file for details about
@@ -146,7 +146,7 @@ class FakeDriveService : public DriveServiceInterface {
   google_apis::CancelCallback Search(
       const std::string& search_query,
       const google_apis::FileListCallback& callback) override;
-  google_apis::CancelCallback SearchByTitle(
+  google_apis::CancelCallbackOnce SearchByTitle(
       const std::string& title,
       const std::string& directory_resource_id,
       const google_apis::FileListCallback& callback) override;
@@ -157,13 +157,13 @@ class FakeDriveService : public DriveServiceInterface {
       const std::string& team_drive_id,
       const std::string& start_page_token,
       google_apis::ChangeListCallback callback) override;
-  google_apis::CancelCallback GetRemainingChangeList(
+  google_apis::CancelCallbackOnce GetRemainingChangeList(
       const GURL& next_link,
       google_apis::ChangeListCallback callback) override;
   google_apis::CancelCallback GetRemainingTeamDriveList(
       const std::string& page_token,
       google_apis::TeamDriveListCallback callback) override;
-  google_apis::CancelCallback GetRemainingFileList(
+  google_apis::CancelCallbackOnce GetRemainingFileList(
       const GURL& next_link,
       const google_apis::FileListCallback& callback) override;
   google_apis::CancelCallback GetFileResource(
@@ -205,11 +205,11 @@ class FakeDriveService : public DriveServiceInterface {
       const std::string& parent_resource_id,
       const std::string& resource_id,
       const google_apis::EntryActionCallback& callback) override;
-  google_apis::CancelCallback RemoveResourceFromDirectory(
+  google_apis::CancelCallbackOnce RemoveResourceFromDirectory(
       const std::string& parent_resource_id,
       const std::string& resource_id,
       const google_apis::EntryActionCallback& callback) override;
-  google_apis::CancelCallback AddNewDirectory(
+  google_apis::CancelCallbackOnce AddNewDirectory(
       const std::string& parent_resource_id,
       const std::string& directory_title,
       const AddNewDirectoryOptions& options,
@@ -289,7 +289,7 @@ class FakeDriveService : public DriveServiceInterface {
 
   // Adds a new directory with the given |resource_id|.
   // |callback| must not be null.
-  google_apis::CancelCallback AddNewDirectoryWithResourceId(
+  google_apis::CancelCallbackOnce AddNewDirectoryWithResourceId(
       const std::string& resource_id,
       const std::string& parent_resource_id,
       const std::string& directory_title,

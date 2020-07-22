@@ -1791,10 +1791,13 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   handlers->AddHandler(std::make_unique<DiskCacheDirPolicyHandler>());
 
-  handlers->AddHandler(
+  handlers->AddHandler(std::make_unique<policy::SimpleDeprecatingPolicyHandler>(
       std::make_unique<extensions::NativeMessagingHostListPolicyHandler>(
           key::kNativeMessagingWhitelist,
-          extensions::pref_names::kNativeMessagingAllowlist, false));
+          extensions::pref_names::kNativeMessagingAllowlist, false),
+      std::make_unique<extensions::NativeMessagingHostListPolicyHandler>(
+          key::kNativeMessagingAllowlist,
+          extensions::pref_names::kNativeMessagingAllowlist, false)));
   handlers->AddHandler(std::make_unique<policy::SimpleDeprecatingPolicyHandler>(
       std::make_unique<extensions::NativeMessagingHostListPolicyHandler>(
           key::kNativeMessagingBlacklist,

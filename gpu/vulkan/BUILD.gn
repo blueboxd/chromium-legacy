@@ -107,6 +107,7 @@ if (enable_vulkan) {
     defines = [ "IS_VULKAN_IMPL" ]
 
     deps = [
+      ":buildflags",
       "//base",
       "//base/util/type_safety",
       "//components/crash/core/common:crash_key",

@@ -543,6 +543,10 @@ class Internals final : public ScriptWrappable {
   // document time in seconds
   double monotonicTimeToZeroBasedDocumentTime(double, ExceptionState&);
 
+  // Translate an event's DOMHighResTimeStamp in seconds into a monotonic time
+  // in milliseconds.
+  int64_t zeroBasedDocumentTimeToMonotonicTime(double dom_event_time);
+
   // Returns the current time ticks (in microseconds).
   int64_t currentTimeTicks();
 

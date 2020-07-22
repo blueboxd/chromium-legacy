@@ -293,14 +293,23 @@ void ClientSession::ControlPeerConnection(
   }
   base::Optional<int> min_bitrate_bps;
   base::Optional<int> max_bitrate_bps;
+  bool set_preferred_bitrates = false;
   if (parameters.has_preferred_min_bitrate_bps()) {
     min_bitrate_bps = parameters.preferred_min_bitrate_bps();
+    set_preferred_bitrates = true;
   }
   if (parameters.has_preferred_max_bitrate_bps()) {
     max_bitrate_bps = parameters.preferred_max_bitrate_bps();
+    set_preferred_bitrates = true;
   }
-  connection_->peer_connection_controls()->SetPreferredBitrates(
-      min_bitrate_bps, max_bitrate_bps);
+  if (set_preferred_bitrates) {
+    connection_->peer_connection_controls()->SetPreferredBitrates(
+        min_bitrate_bps, max_bitrate_bps);
+  }
+
+  if (parameters.request_ice_restart()) {
+    connection_->peer_connection_controls()->RequestIceRestart();
+  }
 }
 
 void ClientSession::OnConnectionAuthenticating() {

@@ -1199,6 +1199,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       initWithBaseNavigationController:self.navigationController
                   passwordCheckManager:_passwordCheck.get()];
   _passwordIssuesCoordinator.delegate = self;
+  _passwordIssuesCoordinator.dispatcher = self.dispatcher;
   [_passwordIssuesCoordinator start];
 }
 

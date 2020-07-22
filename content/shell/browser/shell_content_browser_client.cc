@@ -291,6 +291,9 @@ void ShellContentBrowserClient::OverrideWebkitPrefs(
   } else {
     prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
   }
+
+  if (override_web_preferences_callback_)
+    override_web_preferences_callback_.Run(prefs);
 }
 
 base::FilePath ShellContentBrowserClient::GetFontLookupTableCacheDir() {

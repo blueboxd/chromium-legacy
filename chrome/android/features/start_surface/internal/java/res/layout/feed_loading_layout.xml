@@ -8,29 +8,10 @@
     android:orientation="vertical">
 
     <LinearLayout
+        android:id="@+id/feed_placeholder_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:minHeight="@dimen/snippets_article_header_height"
-        android:orientation="horizontal"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp">
-
-        <TextView
-            android:id="@+id/header_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:paddingStart="6dp"
-            android:textAlignment="viewStart"
-            android:textAppearance="@style/TextAppearance.TextMediumThick.Primary" />
-
-        <TextView
-            android:id="@+id/header_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.TextMedium.Blue" />
-    </LinearLayout>
+        android:orientation="vertical"/>
 
     <LinearLayout
         android:id="@+id/placeholders_layout"

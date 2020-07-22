@@ -212,9 +212,10 @@ const std::vector<uint8_t>& GetNearbyShareTestSampleSignature() {
   return *signature;
 }
 
-NearbySharePrivateCertificate GetNearbyShareTestPrivateCertificate() {
+NearbySharePrivateCertificate GetNearbyShareTestPrivateCertificate(
+    NearbyShareVisibility visibility) {
   NearbySharePrivateCertificate cert(
-      NearbyShareVisibility::kAllContacts, GetNearbyShareTestNotBefore(),
+      visibility, GetNearbyShareTestNotBefore(),
       GetNearbyShareTestNotBefore() + kNearbyShareCertificateValidityPeriod,
       GetNearbyShareTestP256KeyPair(), GetNearbyShareTestSecretKey(),
       GetNearbyShareTestMetadataEncryptionKey(),

@@ -153,7 +153,8 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
   void OnCookieChange(const net::CookieChangeInfo& change) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (!change.cookie
-             .IncludeForRequestURL(url_, options_, change.access_semantics)
+             .IncludeForRequestURL(url_, options_,
+                                   change.access_result.access_semantics)
              .status.IsInclude()) {
       return;
     }

@@ -700,7 +700,7 @@ void GLES2Implementation::FramebufferTexture2D(GLenum target,
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glFramebufferTexture2D("
                      << GLES2Util::GetStringFramebufferTarget(target) << ", "
                      << GLES2Util::GetStringAttachment(attachment) << ", "
-                     << GLES2Util::GetStringTextureTarget(textarget) << ", "
+                     << GLES2Util::GetStringTextureFboTarget(textarget) << ", "
                      << texture << ", " << level << ")");
   helper_->FramebufferTexture2D(target, attachment, textarget, texture, level);
   CheckGLError();

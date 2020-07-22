@@ -28,12 +28,8 @@ const base::subtle::Atomic32 kMagicValue = 42;
 // Helper for memory accesses that can potentially corrupt memory or cause a
 // crash during a native run.
 #if defined(ADDRESS_SANITIZER)
-#if defined(OS_IOS)
-// EXPECT_DEATH is not supported on IOS.
-#define HARMFUL_ACCESS(action,error_regexp) do { action; } while (0)
-#else
-#define HARMFUL_ACCESS(action,error_regexp) EXPECT_DEATH(action,error_regexp)
-#endif  // !OS_IOS
+#define HARMFUL_ACCESS(action, error_regexp) \
+  EXPECT_DEATH_IF_SUPPORTED(action, error_regexp)
 #elif BUILDFLAG(IS_HWASAN)
 #define HARMFUL_ACCESS(action, error_regexp) \
   EXPECT_DEATH(action, "tag-mismatch")
@@ -105,18 +101,6 @@ TEST(ToolsSanityTest, MemoryLeak) {
   leak[4] = 1;  // Make sure the allocated memory is used.
 }
 
-#if (defined(ADDRESS_SANITIZER) && defined(OS_IOS))
-// Because iOS doesn't support death tests, each of the following tests will
-// crash the whole program under Asan.
-#define MAYBE_AccessesToNewMemory DISABLED_AccessesToNewMemory
-#define MAYBE_AccessesToMallocMemory DISABLED_AccessesToMallocMemory
-#define MAYBE_AccessesToStack DISABLED_AccessesToStack
-#else
-#define MAYBE_AccessesToNewMemory AccessesToNewMemory
-#define MAYBE_AccessesToMallocMemory AccessesToMallocMemory
-#define MAYBE_AccessesToStack AccessesToStack
-#endif  // (defined(ADDRESS_SANITIZER) && defined(OS_IOS))
-
 // The following tests pass with Clang r170392, but not r172454, which
 // makes AddressSanitizer detect errors in them. We disable these tests under
 // AddressSanitizer until we fully switch to Clang r172454. After that the
@@ -132,7 +116,7 @@ TEST(ToolsSanityTest, MemoryLeak) {
 #define MAYBE_SingleElementDeletedWithBraces SingleElementDeletedWithBraces
 #endif  // defined(ADDRESS_SANITIZER)
 
-TEST(ToolsSanityTest, MAYBE_AccessesToNewMemory) {
+TEST(ToolsSanityTest, AccessesToNewMemory) {
   char* foo = new char[16];
   MakeSomeErrors(foo, 16);
   delete [] foo;
@@ -140,7 +124,7 @@ TEST(ToolsSanityTest, MAYBE_AccessesToNewMemory) {
   HARMFUL_ACCESS(foo[5] = 0, "heap-use-after-free");
 }
 
-TEST(ToolsSanityTest, MAYBE_AccessesToMallocMemory) {
+TEST(ToolsSanityTest, AccessesToMallocMemory) {
   char* foo = reinterpret_cast<char*>(malloc(16));
   MakeSomeErrors(foo, 16);
   free(foo);
@@ -148,7 +132,7 @@ TEST(ToolsSanityTest, MAYBE_AccessesToMallocMemory) {
   HARMFUL_ACCESS(foo[5] = 0, "heap-use-after-free");
 }
 
-TEST(ToolsSanityTest, MAYBE_AccessesToStack) {
+TEST(ToolsSanityTest, AccessesToStack) {
   char foo[16];
 
   ReadUninitializedValue(foo);

@@ -101,6 +101,8 @@ extern const char kForceUpdateRemoteUrl[];
 
 extern const char kSysInfoFilePath[];
 
+extern const char kEnableChromeAudioManagerAndroid[];
+
 }  // namespace switches
 
 namespace chromecast {

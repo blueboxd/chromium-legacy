@@ -447,7 +447,6 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   }
 
   void UpdateRendererIDs() {
-    fill_data_.has_renderer_ids = true;
     if (!username_element_.IsNull()) {
       fill_data_.username_field.unique_renderer_id = autofill::FieldRendererId(
           username_element_.UniqueRendererFormControlId());

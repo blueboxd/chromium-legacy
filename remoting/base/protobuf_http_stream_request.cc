@@ -46,8 +46,11 @@ void ProtobufHttpStreamRequest::OnStreamClosed(
   DCHECK(stream_closed_callback_);
   DCHECK(invalidator_);
 
+  // Move |invalidator_| out of |this| as the callback can potentially delete
+  // |this|.
+  auto invalidator = std::move(invalidator_);
   std::move(stream_closed_callback_).Run(status);
-  std::move(invalidator_).Run();
+  std::move(invalidator).Run();
 }
 
 void ProtobufHttpStreamRequest::OnAuthFailed(const ProtobufHttpStatus& status) {

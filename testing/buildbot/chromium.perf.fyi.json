@@ -181,7 +181,7 @@
               "device_type": "kevin",
               "gpu": null,
               "os": "ChromeOS",
-              "pool": "luci.chrome.cros-dut"
+              "pool": "chrome.tests"
             }
           ],
           "expiration": 7200,

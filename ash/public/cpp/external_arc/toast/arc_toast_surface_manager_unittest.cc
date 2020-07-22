@@ -51,7 +51,8 @@ TEST_F(ArcToastSurfaceManagerTest, AddRemoveSurface) {
   ArcToastSurfaceManager manager;
   EXPECT_TRUE(manager.toast_surfaces_.empty());
   exo::Surface surface;
-  exo::ToastSurface toast_surface(nullptr, &surface, 1.0);
+  exo::ToastSurface toast_surface(nullptr, &surface,
+                                  /*default_scale_cancellation=*/false);
   manager.AddSurface(&toast_surface);
   EXPECT_EQ(1U, manager.toast_surfaces_.size());
   manager.RemoveSurface(&toast_surface);
@@ -64,7 +65,8 @@ TEST_F(ArcToastSurfaceManagerTest, HideNewToastOnLockScreen) {
   ChangeLockState(true);
 
   exo::Surface surface;
-  exo::ToastSurface toast_surface(&manager, &surface, 1.0);
+  exo::ToastSurface toast_surface(&manager, &surface,
+                                  /*default_scale_cancellation=*/false);
   surface.Commit();
 
   // Confirm that it's not visible on lock screen.
@@ -79,7 +81,8 @@ TEST_F(ArcToastSurfaceManagerTest, HideNewToastOnLockScreen) {
 TEST_F(ArcToastSurfaceManagerTest, HideExistingToastOnLockScreen) {
   ArcToastSurfaceManager manager;
   exo::Surface surface;
-  exo::ToastSurface toast_surface(&manager, &surface, 1.0);
+  exo::ToastSurface toast_surface(&manager, &surface,
+                                  /*default_scale_cancellation=*/false);
   surface.Commit();
 
   EXPECT_TRUE(toast_surface.GetWidget()->IsVisible());
@@ -98,7 +101,8 @@ TEST_F(ArcToastSurfaceManagerTest, HideExistingToastOnLockScreen) {
 TEST_F(ArcToastSurfaceManagerTest, HideNewToastWhenLockedBeforeCommit) {
   ArcToastSurfaceManager manager;
   exo::Surface surface;
-  exo::ToastSurface toast_surface(&manager, &surface, 1.0);
+  exo::ToastSurface toast_surface(&manager, &surface,
+                                  /*default_scale_cancellation=*/false);
 
   // Simulate device lock just before commit.
   ChangeLockState(true);

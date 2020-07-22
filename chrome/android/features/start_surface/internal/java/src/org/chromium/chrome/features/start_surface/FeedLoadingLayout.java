@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.features.start_surface;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -12,10 +13,14 @@ import android.graphics.drawable.LayerDrawable;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.components.browser_ui.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
@@ -50,7 +55,7 @@ public class FeedLoadingLayout extends LinearLayout {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        // TODO (crbug.com/1079443): Inflate article suggestions section header here.
+        setHeader();
         setPlaceholders();
         mLayoutInflationCompleteMs = SystemClock.elapsedRealtime();
     }
@@ -59,6 +64,29 @@ public class FeedLoadingLayout extends LinearLayout {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         setPlaceholders();
+    }
+
+    /**
+     * Set the header blank for the placeholder.The header blank should be consistent with the
+     * sectionHeaderView of {@link ExploreSurfaceCoordinator.FeedSurfaceCreator#}
+     */
+    @SuppressLint("InflateParams")
+    private void setHeader() {
+        LayoutInflater inflater = LayoutInflater.from(mContext);
+        View header;
+        // This flag is checked directly with ChromeFeatureList#isEnabled() in other places. Using
+        // CachedFeatureFlags#isEnabled here is deliberate for a pre-native check. This
+        // inconsistency is fine because the check here is for the Feed header blank size, the
+        // mismatch is bearable and only once for every change.
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)) {
+            header = inflater.inflate(
+                    R.layout.new_tab_page_snippets_expandable_header_with_menu, null, false);
+            header.findViewById(R.id.header_menu).setVisibility(INVISIBLE);
+        } else {
+            header = inflater.inflate(R.layout.ss_feed_header, null, false);
+        }
+        LinearLayout headerView = findViewById(R.id.feed_placeholder_header);
+        headerView.addView(header);
     }
 
     private void setPlaceholders() {

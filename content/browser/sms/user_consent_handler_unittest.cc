@@ -87,9 +87,8 @@ TEST_F(PromptBasedUserConsentHandlerTest, PromptsUser) {
 
   ExpectCreateSmsPrompt(main_rfh(), origin, "12345");
   CompletionCallback callback;
-  PromptBasedUserConsentHandler consent_handler;
-  consent_handler.RequestUserConsent(main_rfh(), origin, "12345",
-                                     std::move(callback));
+  PromptBasedUserConsentHandler consent_handler{main_rfh(), origin};
+  consent_handler.RequestUserConsent("12345", std::move(callback));
 }
 
 TEST_F(PromptBasedUserConsentHandlerTest, ConfirmInvokedCallback) {
@@ -99,13 +98,12 @@ TEST_F(PromptBasedUserConsentHandlerTest, ConfirmInvokedCallback) {
       web_contents()->GetMainFrame()->GetLastCommittedOrigin();
 
   ExpectCreateSmsPrompt(main_rfh(), origin, "12345");
-  PromptBasedUserConsentHandler consent_handler;
+  PromptBasedUserConsentHandler consent_handler{main_rfh(), origin};
   EXPECT_FALSE(consent_handler.is_active());
   bool succeed;
   auto callback = base::BindLambdaForTesting(
       [&](SmsStatus status) { succeed = (status == SmsStatus::kSuccess); });
-  consent_handler.RequestUserConsent(main_rfh(), origin, "12345",
-                                     std::move(callback));
+  consent_handler.RequestUserConsent("12345", std::move(callback));
   EXPECT_TRUE(consent_handler.is_active());
   ConfirmPrompt();
   EXPECT_FALSE(consent_handler.is_active());
@@ -119,13 +117,12 @@ TEST_F(PromptBasedUserConsentHandlerTest, CancelingInvokedCallback) {
       web_contents()->GetMainFrame()->GetLastCommittedOrigin();
 
   ExpectCreateSmsPrompt(main_rfh(), origin, "12345");
-  PromptBasedUserConsentHandler consent_handler;
+  PromptBasedUserConsentHandler consent_handler{main_rfh(), origin};
   EXPECT_FALSE(consent_handler.is_active());
   bool cancelled;
   auto callback = base::BindLambdaForTesting(
       [&](SmsStatus status) { cancelled = (status == SmsStatus::kCancelled); });
-  consent_handler.RequestUserConsent(main_rfh(), origin, "12345",
-                                     std::move(callback));
+  consent_handler.RequestUserConsent("12345", std::move(callback));
   EXPECT_TRUE(consent_handler.is_active());
   DismissPrompt();
   EXPECT_FALSE(consent_handler.is_active());
@@ -144,12 +141,11 @@ TEST_F(PromptBasedUserConsentHandlerTest, CancelsWhenNoDelegate) {
 
   ExpectNoSmsPrompt();
 
-  PromptBasedUserConsentHandler consent_handler;
+  PromptBasedUserConsentHandler consent_handler{main_rfh(), origin};
   bool cancelled;
   auto callback = base::BindLambdaForTesting(
       [&](SmsStatus status) { cancelled = (status == SmsStatus::kCancelled); });
-  consent_handler.RequestUserConsent(main_rfh(), origin, "12345",
-                                     std::move(callback));
+  consent_handler.RequestUserConsent("12345", std::move(callback));
   EXPECT_TRUE(cancelled);
 }
 

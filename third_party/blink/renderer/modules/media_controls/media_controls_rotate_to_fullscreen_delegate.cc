@@ -234,7 +234,9 @@ void MediaControlsRotateToFullscreenDelegate::OnScreenOrientationChange() {
       *static_cast<MediaControlsImpl*>(video_element_->GetMediaControls());
 
   {
-    LocalFrame::NotifyUserActivation(video_element_->GetDocument().GetFrame());
+    LocalFrame::NotifyUserActivation(
+        video_element_->GetDocument().GetFrame(),
+        mojom::blink::UserActivationNotificationType::kInteraction);
 
     bool should_be_fullscreen =
         current_screen_orientation_ == video_orientation;

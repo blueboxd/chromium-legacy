@@ -99,6 +99,7 @@ class WebrtcTransport : public Transport,
   // PeerConnectionControls implementations.
   void SetPreferredBitrates(base::Optional<int> min_bitrate_bps,
                             base::Optional<int> max_bitrate_bps) override;
+  void RequestIceRestart() override;
 
   void Close(ErrorCode error);
 

@@ -56,15 +56,6 @@ extern const char kCrashHandlerSwitch[];
 // Installs the updater.
 extern const char kInstallSwitch[];
 
-#if defined(OS_MACOSX)
-// Swaps the current version of the updater with the newly installed one.
-// Performs clean-up.
-extern const char kPromoteCandidateSwitch[];
-
-// TODO(crbug 1072061): this switch should not be shipped.
-extern const char kUninstallCandidateSwitch[];
-#endif  // OS_MACOSX
-
 #if defined(OS_WIN)
 // A debug switch to indicate that --install is running from the `out` directory
 // of the build. When this switch is present, the setup picks up the run time

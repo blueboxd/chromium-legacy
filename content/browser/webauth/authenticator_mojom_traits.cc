@@ -261,7 +261,11 @@ EnumTraits<blink::mojom::AttestationConveyancePreference,
       return blink::mojom::AttestationConveyancePreference::INDIRECT;
     case ::device::AttestationConveyancePreference::kDirect:
       return blink::mojom::AttestationConveyancePreference::DIRECT;
-    case ::device::AttestationConveyancePreference::kEnterprise:
+    case ::device::AttestationConveyancePreference::
+        kEnterpriseIfRPListedOnAuthenticator:
+      return blink::mojom::AttestationConveyancePreference::ENTERPRISE;
+    case ::device::AttestationConveyancePreference::
+        kEnterpriseApprovedByBrowser:
       return blink::mojom::AttestationConveyancePreference::ENTERPRISE;
   }
   NOTREACHED();
@@ -284,7 +288,8 @@ bool EnumTraits<blink::mojom::AttestationConveyancePreference,
       *output = ::device::AttestationConveyancePreference::kDirect;
       return true;
     case blink::mojom::AttestationConveyancePreference::ENTERPRISE:
-      *output = ::device::AttestationConveyancePreference::kEnterprise;
+      *output = ::device::AttestationConveyancePreference::
+          kEnterpriseIfRPListedOnAuthenticator;
       return true;
   }
   NOTREACHED();

@@ -271,8 +271,6 @@ class CacheStorageManagerTest : public testing::Test {
         blob_storage_context_(nullptr),
         observers_(
             base::MakeRefCounted<CacheStorageContextImpl::ObserverList>()),
-        callback_bool_(false),
-        callback_error_(CacheStorageError::kSuccess),
         origin1_(url::Origin::Create(GURL("http://example1.com"))),
         origin2_(url::Origin::Create(GURL("http://example2.com"))) {}
 
@@ -821,8 +819,8 @@ class CacheStorageManagerTest : public testing::Test {
   scoped_refptr<CacheStorageManager> cache_manager_;
 
   CacheStorageCacheHandle callback_cache_handle_;
-  int callback_bool_;
-  CacheStorageError callback_error_;
+  int callback_bool_ = false;
+  CacheStorageError callback_error_ = CacheStorageError::kSuccess;
   blink::mojom::FetchAPIResponsePtr callback_cache_handle_response_;
   std::vector<std::string> cache_names_;
 
@@ -2432,7 +2430,7 @@ TEST_P(CacheStorageManagerTestP, SlowPutCompletesWithoutExternalRef) {
 
 class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
  protected:
-  CacheStorageQuotaClientTest() {}
+  CacheStorageQuotaClientTest() = default;
 
   void SetUp() override {
     CacheStorageManagerTest::SetUp();

@@ -1065,7 +1065,6 @@ bool StyleResolver::PseudoStyleForElementInternal(
       MatchUserRules(collector);
       MatchAuthorRules(state.GetElement(), collector);
     }
-    collector.FinishAddingAuthorRulesForTreeScope();
 
     if (tracker_)
       AddMatchedRulesToTracker(collector);
@@ -1281,9 +1280,13 @@ void StyleResolver::CollectPseudoRulesForElement(
 
   if (rules_to_include & kUACSSRules)
     MatchUARules(element, collector);
+  else
+    collector.FinishAddingUARules();
 
   if (rules_to_include & kUserCSSRules)
     MatchUserRules(collector);
+  else
+    collector.FinishAddingUserRules();
 
   if (rules_to_include & kAuthorCSSRules) {
     collector.SetSameOriginOnly(!(rules_to_include & kCrossOriginCSSRules));

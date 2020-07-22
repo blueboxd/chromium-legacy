@@ -17,10 +17,12 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/oauth_token_getter.h"
+#include "remoting/base/protobuf_http_status.h"
 #include "remoting/signaling/ftl_device_id_provider.h"
 #include "remoting/signaling/ftl_messaging_client.h"
 #include "remoting/signaling/ftl_registration_manager.h"
 #include "remoting/signaling/signaling_address.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 
@@ -86,6 +88,8 @@ class FtlSignalStrategy::Core {
   // Returns true if the status is handled.
   void HandleGrpcStatusError(const base::Location& location,
                              const grpc::Status& status);
+  void HandleProtobufHttpStatusError(const base::Location& location,
+                                     const ProtobufHttpStatus& status);
 
   void OnStanza(const SignalingAddress& sender_address,
                 std::unique_ptr<jingle_xmpp::XmlElement> stanza);
@@ -116,7 +120,6 @@ FtlSignalStrategy::Core::Core(
     std::unique_ptr<OAuthTokenGetter> oauth_token_getter,
     std::unique_ptr<RegistrationManager> registration_manager,
     std::unique_ptr<MessagingClient> messaging_client) {
-  DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(oauth_token_getter);
   DCHECK(registration_manager);
   DCHECK(messaging_client);
@@ -440,6 +443,29 @@ void FtlSignalStrategy::Core::HandleGrpcStatusError(
   Disconnect();
 }
 
+void FtlSignalStrategy::Core::HandleProtobufHttpStatusError(
+    const base::Location& location,
+    const ProtobufHttpStatus& status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!status.ok());
+  // We don't map HTTP_UNAUTHORIZED to AUTHENTICATION_FAILED here, as it will
+  // permanently terminate the host, which is not desirable since it might
+  // happen when the FTL registration becomes invalid while the robot account
+  // itself is still intact.
+  // AUTHENTICATION_FAILED is only reported if the OAuthTokenGetter fails to
+  // fetch the token.
+  error_ = Error::NETWORK_ERROR;
+  LOG(ERROR) << "Received server error. Error code: "
+             << static_cast<int>(status.error_code())
+             << ", message: " << status.error_message()
+             << ", location: " << location.ToString();
+  if (status.error_code() == ProtobufHttpStatus::Code::UNAUTHENTICATED ||
+      status.error_code() == ProtobufHttpStatus::Code::PERMISSION_DENIED) {
+    oauth_token_getter_->InvalidateCache();
+  }
+  Disconnect();
+}
+
 void FtlSignalStrategy::Core::OnStanza(
     const SignalingAddress& sender_address,
     std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
@@ -473,6 +499,7 @@ void FtlSignalStrategy::Core::OnStanza(
 
 FtlSignalStrategy::FtlSignalStrategy(
     std::unique_ptr<OAuthTokenGetter> oauth_token_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<FtlDeviceIdProvider> device_id_provider) {
   // TODO(yuweih): Just make FtlMessagingClient own FtlRegistrationManager and
   // call SignInGaia() transparently.

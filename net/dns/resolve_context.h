@@ -203,6 +203,7 @@ class NET_EXPORT_PRIVATE ResolveContext : public base::CheckedObserver {
                        bool is_doh_server,
                        base::TimeDelta rtt,
                        int rv,
+                       base::TimeDelta base_timeout,
                        const DnsSession* session);
   std::string GetQueryTypeForUma(size_t server_index,
                                  bool is_doh_server,

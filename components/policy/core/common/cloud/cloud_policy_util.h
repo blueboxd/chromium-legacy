@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_UTIL_H_
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_UTIL_H_
 
+#include <memory>
 #include <string>
 
 #include "components/policy/policy_export.h"
@@ -37,6 +38,11 @@ POLICY_EXPORT enterprise_management::Channel ConvertToProtoChannel(
 // Returns the name of the device. This is equivalent to GetMachineName on
 // non-CrOS platforms and returns the serial number of the device on CrOS.
 POLICY_EXPORT std::string GetDeviceName();
+
+// Returns the browser device identifier for non-CrOS platforms. It includes
+// several identifiers we collect from the device.
+POLICY_EXPORT std::unique_ptr<enterprise_management::BrowserDeviceIdentifier>
+GetBrowserDeviceIdentifier();
 
 }  // namespace policy
 

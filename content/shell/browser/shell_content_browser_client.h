@@ -173,6 +173,11 @@ class ShellContentBrowserClient : public ContentBrowserClient {
         create_throttles_for_navigation_callback;
   }
 
+  void set_override_web_preferences_callback(
+      base::RepeatingCallback<void(WebPreferences*)> callback) {
+    override_web_preferences_callback_ = std::move(callback);
+  }
+
  protected:
   // Call this if CreateBrowserMainParts() is overridden in a subclass.
   void set_browser_main_parts(ShellBrowserMainParts* parts) {
@@ -212,6 +217,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   base::RepeatingCallback<std::vector<std::unique_ptr<NavigationThrottle>>(
       NavigationHandle*)>
       create_throttles_for_navigation_callback_;
+  base::RepeatingCallback<void(WebPreferences*)>
+      override_web_preferences_callback_;
 
   // Owned by content::BrowserMainLoop.
   ShellBrowserMainParts* shell_browser_main_parts_ = nullptr;

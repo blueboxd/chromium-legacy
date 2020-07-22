@@ -3337,7 +3337,6 @@ test("unit_tests") {
     "../browser/performance_manager/observers/isolation_context_metrics_unittest.cc",
     "../browser/performance_manager/observers/metrics_collector_unittest.cc",
     "../browser/performance_manager/policies/dynamic_tcmalloc_policy_chromeos_unittest.cc",
-    "../browser/performance_manager/policies/high_pmf_memory_pressure_policy_unittest.cc",
     "../browser/performance_manager/policies/working_set_trimmer_policy_chromeos_unittest.cc",
     "../browser/performance_manager/policies/working_set_trimmer_policy_unittest.cc",
     "../browser/performance_manager/test_support/page_aggregator.cc",
@@ -4142,7 +4141,9 @@ test("unit_tests") {
       "../browser/performance_manager/persistence/site_data/unittest_utils.cc",
       "../browser/performance_manager/persistence/site_data/unittest_utils.h",
 
-      # Urgent discarding from performance_manager isn't supported on Android.
+      # Urgent discarding from performance_manager and the High-PMF discard
+      # policy aren't supported on Android.
+      "../browser/performance_manager/policies/high_pmf_discard_policy_unittest.cc",
       "../browser/performance_manager/policies/page_discarding_helper_unittest.cc",
       "../browser/performance_manager/policies/urgent_page_discarding_policy_unittest.cc",
 

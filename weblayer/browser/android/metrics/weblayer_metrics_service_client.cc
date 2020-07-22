@@ -20,6 +20,7 @@
 #include "content/public/browser/browser_context.h"
 #include "google_apis/google_api_keys.h"
 #include "weblayer/browser/android/metrics/weblayer_metrics_service_accessor.h"
+#include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/java/jni/MetricsServiceClient_jni.h"
 #include "weblayer/browser/system_network_context_manager.h"
 #include "weblayer/browser/tab_impl.h"
@@ -124,6 +125,14 @@ int32_t WebLayerMetricsServiceClient::GetProduct() {
   return metrics::ChromeUserMetricsExtension::ANDROID_WEBLAYER;
 }
 
+bool WebLayerMetricsServiceClient::IsUkmAllowedForAllProfiles() {
+  for (auto* profile : ProfileImpl::GetAllProfiles()) {
+    if (!profile->GetBooleanSetting(SettingType::UKM_ENABLED))
+      return false;
+  }
+  return true;
+}
+
 std::string WebLayerMetricsServiceClient::GetUploadSigningKey() {
   std::string decoded_key;
   base::Base64Decode(google_apis::GetMetricsKey(), &decoded_key);
@@ -164,8 +173,7 @@ bool WebLayerMetricsServiceClient::EnablePersistentHistograms() {
 }
 
 bool WebLayerMetricsServiceClient::IsOffTheRecordSessionActive() {
-  auto profiles = ProfileImpl::GetAllProfiles();
-  for (auto* profile : profiles) {
+  for (auto* profile : ProfileImpl::GetAllProfiles()) {
     if (profile->GetBrowserContext()->IsOffTheRecord())
       return true;
   }

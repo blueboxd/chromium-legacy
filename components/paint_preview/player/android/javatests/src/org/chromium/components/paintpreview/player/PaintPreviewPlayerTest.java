@@ -6,7 +6,9 @@ package org.chromium.components.paintpreview.player;
 
 import android.graphics.Rect;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.UiDevice;
+import android.support.test.uiautomator.UiObject2;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -29,6 +31,8 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
 import org.chromium.url.GURL;
+
+import java.util.List;
 
 /**
  * Instrumentation tests for the Paint Preview player.
@@ -56,6 +60,7 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
     private PlayerManager mPlayerManager;
     private TestLinkClickHandler mLinkClickHandler;
     private CallbackHelper mRefreshedCallback;
+    private boolean mInitializationFailed;
 
     /**
      * LinkClickHandler implementation for caching the last URL that was clicked.
@@ -163,6 +168,37 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         compositorErrorCallback.waitForFirst();
     }
 
+    /**
+     * Tests that scaling works and doesn't crash.
+     */
+    @Test
+    @MediumTest
+    public void scaleSmokeTest() throws Exception {
+        initPlayerManager();
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+
+        // Query all FrameLayout objects as the PlayerFrameView isn't recognized.
+        List<UiObject2> objects = device.findObjects(By.clazz("android.widget.FrameLayout"));
+
+        int viewAxHashCode = mPlayerManager.getView().createAccessibilityNodeInfo().hashCode();
+        boolean didPinch = false;
+        for (UiObject2 object : objects) {
+            // To ensure we only apply the gesture to the right FrameLayout we compare the hash
+            // codes of the underlying accessibility nodes which are equivalent for the same
+            // view. Hence we can avoid the lack of direct access to View objects from UiAutomator.
+            if (object.hashCode() != viewAxHashCode) continue;
+
+            // Just zoom in and out. The goal here is to just exercise the zoom pathway and ensure
+            // it doesn't smoke when driven by gestures. There are more comprehensive tests for this
+            // in PlayerFrameMediatorTest and PlayerFrameScaleController.
+            object.pinchOpen(0.3f);
+            object.pinchClose(0.2f);
+            object.pinchClose(0.1f);
+            didPinch = true;
+        }
+        Assert.assertTrue("Failed to pinch player view.", didPinch);
+    }
+
     private int statusBarHeight() {
         Rect visibleContentRect = new Rect();
         getActivity().getWindow().getDecorView().getWindowVisibleDisplayFrame(visibleContentRect);
@@ -207,6 +243,8 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         mLinkClickHandler = new TestLinkClickHandler();
         mRefreshedCallback = new CallbackHelper();
         CallbackHelper viewReady = new CallbackHelper();
+        mInitializationFailed = false;
+
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             PaintPreviewTestService service =
                     new PaintPreviewTestService(mTempFolder.getRoot().getPath());
@@ -216,10 +254,11 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
                     new String[] {TEST_IN_VIEWPORT_LINK_URL, TEST_OUT_OF_VIEWPORT_LINK_URL}));
             mPlayerManager = new PlayerManager(new GURL(TEST_URL), getActivity(), service,
                     TEST_DIRECTORY_KEY, mLinkClickHandler,
-                    () -> { mRefreshedCallback.notifyCalled(); },
-                    () -> { viewReady.notifyCalled(); }, null,
-                    0xffffffff, () -> { Assert.fail("Compositor initialization failed."); },
-                    false);
+                    ()
+                            -> { mRefreshedCallback.notifyCalled(); },
+                    ()
+                            -> { viewReady.notifyCalled(); },
+                    null, 0xffffffff, () -> { mInitializationFailed = true; }, false);
             mPlayerManager.setCompressOnClose(false);
             getActivity().setContentView(mPlayerManager.getView());
         });
@@ -233,7 +272,11 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         try {
             viewReady.waitForFirst();
         } catch (Exception e) {
-            Assert.fail("View ready was not called.");
+            if (mInitializationFailed) {
+                Assert.fail("Compositor intialization failed.");
+            } else {
+                Assert.fail("View ready was not called.");
+            }
         }
 
         // Assert that the player view is added to the player host view.

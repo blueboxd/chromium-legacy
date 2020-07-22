@@ -48,6 +48,8 @@ void ReportGenerator::CreateBasicRequest(
   basic_request->set_os_user_name(GetOSUserName());
   basic_request->set_serial_number(GetSerialNumber());
   basic_request->set_allocated_os_report(GetOSReport().release());
+  basic_request->set_allocated_browser_device_identifier(
+      policy::GetBrowserDeviceIdentifier().release());
 #endif
 
   browser_report_generator_.Generate(base::BindOnce(

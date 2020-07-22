@@ -27,7 +27,6 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
-#include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/service/context_url.h"
 #include "gpu/ipc/service/display_context.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
@@ -41,11 +40,11 @@ class ColorSpace;
 }
 
 namespace gl {
-class GLApi;
 class GLSurface;
 }
 
 namespace gpu {
+class SharedImageRepresentationFactory;
 class SyncPointClientState;
 }
 
@@ -58,10 +57,7 @@ class PlatformWindowSurface;
 namespace viz {
 
 class DawnContextProvider;
-class DirectContextProvider;
-class GLRendererCopier;
 class ImageContextImpl;
-class TextureDeleter;
 class VulkanContextProvider;
 
 namespace copy_output {
@@ -74,8 +70,6 @@ class SkiaOutputSurfaceImplOnGpu
     : public gpu::ImageTransportSurfaceDelegate,
       public gpu::SharedContextState::ContextLostObserver {
  public:
-  class ScopedUseContextProvider;
-
   using DidSwapBufferCompleteCallback =
       base::RepeatingCallback<void(gpu::SwapBuffersCompleteParams,
                                    const gfx::Size& pixel_size)>;
@@ -167,7 +161,6 @@ class SkiaOutputSurfaceImplOnGpu
   void EndAccessImages(const base::flat_set<ImageContextImpl*>& image_contexts);
 
   sk_sp<GrContextThreadSafeProxy> GetGrContextThreadSafeProxy();
-  const gl::GLVersionInfo* gl_version_info() const { return gl_version_info_; }
   size_t max_resource_cache_bytes() const { return max_resource_cache_bytes_; }
   void ReleaseImageContexts(
       std::vector<std::unique_ptr<ExternalUseClient::ImageContext>>
@@ -244,10 +237,6 @@ class SkiaOutputSurfaceImplOnGpu
       OutputSurfaceFrame* frame = nullptr);
 
   GrContext* gr_context() { return context_state_->gr_context(); }
-  gpu::DecoderContext* decoder();
-
-  void ScheduleDelayedWork();
-  void PerformDelayedWork();
 
   bool is_using_vulkan() const {
     return !!vulkan_context_provider_ &&
@@ -296,16 +285,12 @@ class SkiaOutputSurfaceImplOnGpu
   VulkanContextProvider* const vulkan_context_provider_;
   DawnContextProvider* const dawn_context_provider_;
   const RendererSettings renderer_settings_;
-  // This is only used to lazily create DirectContextProviderDelegate for
-  // readback using GLRendererCopier.
-  // TODO(samans): Remove |sequence_id| once readback always uses Skia.
-  const gpu::SequenceId sequence_id_;
+
   // Should only be run on the client thread with PostTaskToClientThread().
   DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
   BufferPresentedCallback buffer_presented_callback_;
   ContextLostCallback context_lost_callback_;
   GpuVSyncCallback gpu_vsync_callback_;
-  bool use_gl_renderer_copier_ = false;
 
 #if defined(USE_OZONE)
   // This should outlive gl_surface_ and vulkan_surface_.
@@ -317,7 +302,6 @@ class SkiaOutputSurfaceImplOnGpu
   gfx::ColorSpace color_space_;
   scoped_refptr<gl::GLSurface> gl_surface_;
   scoped_refptr<gpu::SharedContextState> context_state_;
-  const gl::GLVersionInfo* gl_version_info_ = nullptr;
   size_t max_resource_cache_bytes_ = 0u;
 
   std::unique_ptr<DisplayContext> display_context_;
@@ -350,20 +334,8 @@ class SkiaOutputSurfaceImplOnGpu
 
   base::flat_map<RenderPassId, OffscreenSurface> offscreen_surfaces_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> context_current_task_runner_;
-  scoped_refptr<DirectContextProvider> context_provider_;
-  std::unique_ptr<TextureDeleter> texture_deleter_;
-  std::unique_ptr<GLRendererCopier> copier_;
-
-  bool delayed_work_pending_ = false;
-
-  gl::GLApi* api_ = nullptr;
-  bool supports_alpha_ = false;
-
   // Micro-optimization to get to issuing GPU SwapBuffers as soon as possible.
   std::vector<sk_sp<SkDeferredDisplayList>> destroy_after_swap_;
-
-  const gpu::ContextUrl copier_active_url_;
 
   int num_readbacks_pending_ = 0;
   bool readback_poll_pending_ = false;

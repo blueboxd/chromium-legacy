@@ -38,10 +38,13 @@ class KaleidoscopeDataProviderImpl
   ~KaleidoscopeDataProviderImpl() override;
 
   // media::mojom::KaleidoscopeDataProvider implementation.
-  void GetTopMediaFeeds(GetTopMediaFeedsCallback callback) override;
+  void GetTopMediaFeeds(media::mojom::KaleidoscopeTab tab,
+                        GetTopMediaFeedsCallback callback) override;
   void GetMediaFeedContents(int64_t feed_id,
+                            media::mojom::KaleidoscopeTab tab,
                             GetMediaFeedContentsCallback callback) override;
   void GetContinueWatchingMediaFeedItems(
+      media::mojom::KaleidoscopeTab tab,
       GetContinueWatchingMediaFeedItemsCallback callback) override;
   void GetCredentials(GetCredentialsCallback cb) override;
   void GetHighWatchTimeOrigins(GetHighWatchTimeOriginsCallback cb) override;

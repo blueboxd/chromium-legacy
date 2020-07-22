@@ -7,13 +7,25 @@
 #include "weblayer/browser/android/metrics/weblayer_metrics_service_client.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/public/navigation_controller.h"
-#include "weblayer/public/profile.h"
 #include "weblayer/public/tab.h"
 #include "weblayer/shell/android/browsertests_apk/metrics_test_helper.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/weblayer_browser_test.h"
 
 namespace weblayer {
+
+namespace {
+
+ProfileImpl* GetProfileByName(const std::string& name) {
+  for (auto* profile : ProfileImpl::GetAllProfiles()) {
+    if (profile->name() == name)
+      return profile;
+  }
+
+  return nullptr;
+}
+
+}  // namespace
 
 class UkmBrowserTest : public WebLayerBrowserTest {
  public:
@@ -79,6 +91,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusIncognitoCheck) {
 
   // Creating another regular profile mustn't enable UKM.
   CreateProfile("foo");
+  GetProfileByName("foo")->SetBooleanSetting(SettingType::UKM_ENABLED, true);
   EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
   // Note WebLayer can only have one incognito profile so we can't test creating
@@ -104,6 +117,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, IncognitoPlusRegularCheck) {
   EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
   CreateProfile("foo");
+  GetProfileByName("foo")->SetBooleanSetting(SettingType::UKM_ENABLED, true);
   EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
   DestroyProfile(std::string());

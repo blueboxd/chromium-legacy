@@ -49,7 +49,7 @@ void CreateAndBindTransactionPlaceholder(
 
 class LevelDBLock {
  public:
-  LevelDBLock() : env_(nullptr), lock_(nullptr) {}
+  LevelDBLock() = default;
   LevelDBLock(leveldb::Env* env, leveldb::FileLock* lock)
       : env_(env), lock_(lock) {}
   ~LevelDBLock() {
@@ -58,8 +58,8 @@ class LevelDBLock {
   }
 
  private:
-  leveldb::Env* env_;
-  leveldb::FileLock* lock_;
+  leveldb::Env* env_ = nullptr;
+  leveldb::FileLock* lock_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBLock);
 };
@@ -228,7 +228,7 @@ class ForceCloseDBCallbacks : public IndexedDBCallbacks {
   IndexedDBConnection* connection() { return connection_.get(); }
 
  protected:
-  ~ForceCloseDBCallbacks() override {}
+  ~ForceCloseDBCallbacks() override = default;
 
  private:
   scoped_refptr<IndexedDBContextImpl> idb_context_;

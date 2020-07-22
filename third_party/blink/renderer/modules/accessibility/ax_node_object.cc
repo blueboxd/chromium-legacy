@@ -3676,14 +3676,16 @@ bool AXNodeObject::OnNativeFocusAction() {
 
 bool AXNodeObject::OnNativeIncrementAction() {
   LocalFrame* frame = GetDocument() ? GetDocument()->GetFrame() : nullptr;
-  LocalFrame::NotifyUserActivation(frame);
+  LocalFrame::NotifyUserActivation(
+      frame, mojom::blink::UserActivationNotificationType::kInteraction);
   AlterSliderOrSpinButtonValue(true);
   return true;
 }
 
 bool AXNodeObject::OnNativeDecrementAction() {
   LocalFrame* frame = GetDocument() ? GetDocument()->GetFrame() : nullptr;
-  LocalFrame::NotifyUserActivation(frame);
+  LocalFrame::NotifyUserActivation(
+      frame, mojom::blink::UserActivationNotificationType::kInteraction);
   AlterSliderOrSpinButtonValue(false);
   return true;
 }

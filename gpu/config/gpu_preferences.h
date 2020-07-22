@@ -266,6 +266,9 @@ struct GPU_EXPORT GpuPreferences {
   bool platform_disallows_chromeos_direct_video_decoder = false;
 #endif
 
+  // Disables oppr debug crash dumps.
+  bool disable_oopr_debug_crash_dump = false;
+
   // Please update gpu_preferences_unittest.cc when making additions or
   // changes to this struct.
 };

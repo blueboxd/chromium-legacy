@@ -1300,7 +1300,7 @@ TEST_P(RestrictedCookieManagerTest, ChangeNotificationIncludesAccessSemantics) {
 
   ASSERT_THAT(listener.observed_changes(), testing::SizeIs(1));
   EXPECT_EQ(net::CookieAccessSemantics::LEGACY,
-            listener.observed_changes()[0].access_semantics);
+            listener.observed_changes()[0].access_result.access_semantics);
 }
 
 TEST_P(RestrictedCookieManagerTest, NoChangeNotificationForNonlegacyCookie) {
@@ -1367,7 +1367,7 @@ TEST_P(RestrictedCookieManagerTest, NoChangeNotificationForNonlegacyCookie) {
   EXPECT_EQ("samesite_none_cookie",
             listener.observed_changes()[0].cookie.Name());
   EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
-            listener.observed_changes()[0].access_semantics);
+            listener.observed_changes()[0].access_result.access_semantics);
 }
 
 INSTANTIATE_TEST_SUITE_P(

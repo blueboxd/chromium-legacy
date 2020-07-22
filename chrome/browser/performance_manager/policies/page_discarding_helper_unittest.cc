@@ -192,8 +192,7 @@ TEST_F(PageDiscardingHelperTest, TestCannotDiscardPageWithFormInteractions) {
 
 class ParameterizedPageDiscardingHelperTest
     : public PageDiscardingHelperTest,
-      public ::testing::WithParamInterface<
-          features::UrgentDiscardingParams::DiscardStrategy> {
+      public ::testing::WithParamInterface<features::DiscardStrategy> {
  public:
   ParameterizedPageDiscardingHelperTest() = default;
   ~ParameterizedPageDiscardingHelperTest() override = default;
@@ -261,8 +260,7 @@ TEST_P(ParameterizedPageDiscardingHelperTest,
   process_node()->set_resident_set_kb(1024);
   process_node2->set_resident_set_kb(2048);
 
-  if (GetParam() ==
-      features::UrgentDiscardingParams::DiscardStrategy::BIGGEST_RSS) {
+  if (GetParam() == features::DiscardStrategy::BIGGEST_RSS) {
     // |page_node2| should be discarded despite being the most recently visible
     // page as it has a bigger footprint.
     EXPECT_CALL(*discarder(), DiscardPageNodeImpl(page_node2.get()))
@@ -301,8 +299,7 @@ TEST_P(ParameterizedPageDiscardingHelperTest,
 
   // Pretends that the first discardable page hasn't been discarded
   // successfully, the other one should be discarded in this case.
-  if (GetParam() ==
-      features::UrgentDiscardingParams::DiscardStrategy::BIGGEST_RSS) {
+  if (GetParam() == features::DiscardStrategy::BIGGEST_RSS) {
     ::testing::InSequence in_sequence;
     // The first candidate is the tab with the biggest RSS.
     EXPECT_CALL(*discarder(), DiscardPageNodeImpl(page_node2.get()))
@@ -382,9 +379,8 @@ TEST_P(ParameterizedPageDiscardingHelperTest,
 INSTANTIATE_TEST_CASE_P(
     PageDiscardingHelperWithParamTest,
     ParameterizedPageDiscardingHelperTest,
-    ::testing::Values(
-        features::UrgentDiscardingParams::DiscardStrategy::LRU,
-        features::UrgentDiscardingParams::DiscardStrategy::BIGGEST_RSS));
+    ::testing::Values(features::DiscardStrategy::LRU,
+                      features::DiscardStrategy::BIGGEST_RSS));
 
 }  // namespace policies
 }  // namespace performance_manager

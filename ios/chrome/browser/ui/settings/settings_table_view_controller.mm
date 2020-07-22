@@ -403,10 +403,8 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   // Basics section
   [model addSectionWithIdentifier:SectionIdentifierBasics];
   // Show managed UI if default search engine is managed by policy.
-  // TODO(crbug.com/1103663): support the UI when default search engine is
-  // enabled by policy.
   if (base::FeatureList::IsEnabled(kEnableIOSManagedSettingsUI) &&
-      [self isDefaultSearchEngineDisabledByPolicy]) {
+      [self isDefaultSearchEngineManagedByPolicy]) {
     [model addItem:[self managedSearchEngineItem]
         toSectionWithIdentifier:SectionIdentifierBasics];
   } else {
@@ -541,8 +539,21 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   managedDefaultSearchEngineItem.text =
       l10n_util::GetNSString(IDS_IOS_SEARCH_ENGINE_SETTING_TITLE);
   managedDefaultSearchEngineItem.iconImageName = kSettingsSearchEngineImageName;
-  managedDefaultSearchEngineItem.statusText =
-      l10n_util::GetNSString(IDS_IOS_SEARCH_ENGINE_SETTING_DISABLED_STATUS);
+
+  const base::DictionaryValue* dict = _browserState->GetPrefs()->GetDictionary(
+      DefaultSearchManager::kDefaultSearchProviderDataPrefName);
+  if (dict->FindBoolPath(DefaultSearchManager::kDisabledByPolicy)) {
+    // Default search engine is disabled by policy.
+    managedDefaultSearchEngineItem.statusText =
+        l10n_util::GetNSString(IDS_IOS_SEARCH_ENGINE_SETTING_DISABLED_STATUS);
+  } else {
+    // Default search engine is enabled and set by policy.
+    const std::string* status =
+        dict->FindStringPath(DefaultSearchManager::kShortName);
+    managedDefaultSearchEngineItem.statusText =
+        base::SysUTF8ToNSString(*status);
+  }
+
   managedDefaultSearchEngineItem.accessibilityIdentifier =
       kSettingsManagedSearchEngineCellId;
   return managedDefaultSearchEngineItem;
@@ -1163,14 +1174,15 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   [self reconfigureCellsForItems:@[ googleServicesItem ]];
 }
 
-// Check if the default search engine is disabled by policy.
-- (BOOL)isDefaultSearchEngineDisabledByPolicy {
+// Check if the default search engine is managed by policy.
+- (BOOL)isDefaultSearchEngineManagedByPolicy {
   const base::DictionaryValue* dict = _browserState->GetPrefs()->GetDictionary(
       DefaultSearchManager::kDefaultSearchProviderDataPrefName);
-  base::Optional<bool> disabledByPolicy =
-      dict->FindBoolPath(DefaultSearchManager::kDisabledByPolicy);
-  if (disabledByPolicy) {
-    return YES;
+
+  if (dict) {
+    if (dict->FindBoolPath(DefaultSearchManager::kDisabledByPolicy) ||
+        dict->FindBoolPath(prefs::kDefaultSearchProviderEnabled))
+      return YES;
   }
   return NO;
 }

@@ -14,6 +14,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sample_vector.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
@@ -216,9 +217,10 @@ void ResolveContext::RecordRtt(size_t server_index,
   if (!IsCurrentSession(session))
     return;
 
-  RecordRttForUma(server_index, is_doh_server, rtt, rv, session);
-
   ServerStats* stats = GetServerStats(server_index, is_doh_server);
+
+  base::TimeDelta base_timeout = NextTimeoutHelper(stats, 0 /* num_backoffs */);
+  RecordRttForUma(server_index, is_doh_server, rtt, rv, base_timeout, session);
 
   // RTT values shouldn't be less than 0, but it shouldn't cause a crash if
   // they are anyway, so clip to 0. See https://crbug.com/753568.
@@ -383,6 +385,7 @@ void ResolveContext::RecordRttForUma(size_t server_index,
                                      bool is_doh_server,
                                      base::TimeDelta rtt,
                                      int rv,
+                                     base::TimeDelta base_timeout,
                                      const DnsSession* session) {
   DCHECK(IsCurrentSession(session));
 
@@ -396,6 +399,20 @@ void ResolveContext::RecordRttForUma(size_t server_index,
         base::StringPrintf("Net.DNS.DnsTransaction.%s.%s.SuccessTime",
                            query_type.c_str(), provider_id.c_str()),
         rtt);
+    if (query_type == "SecureValidated") {
+      DCHECK(is_doh_server);
+
+      // Only for SecureValidated requests, record the ratio between successful
+      // RTT and the base timeout for the server. Note that RTT could be much
+      // longer than the timeout as previous attempts are often allowed to
+      // continue in parallel with new attempts made by the transaction. Scale
+      // the ratio up by 10 for sub-integer granularity.
+      // TODO(crbug.com/1105138): Remove after determining good timeout logic.
+      int timeout_ratio = 10 * rtt / base_timeout;
+      UMA_HISTOGRAM_COUNTS_1000(
+          "Net.DNS.DnsTransaction.SecureValidated.SuccessTimeoutRatio",
+          timeout_ratio);
+    }
   } else {
     base::UmaHistogramMediumTimes(
         base::StringPrintf("Net.DNS.DnsTransaction.%s.%s.FailureTime",

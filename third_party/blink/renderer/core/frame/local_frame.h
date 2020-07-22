@@ -241,8 +241,12 @@ class CORE_EXPORT LocalFrame final
 
   // Activates the user activation states of the |LocalFrame| (provided it's
   // non-null) and all its ancestors.
-  static void NotifyUserActivation(LocalFrame*,
-                                   bool need_browser_verification = false);
+  //
+  // The |notification_type| parameter is used for histograms only.
+  static void NotifyUserActivation(
+      LocalFrame*,
+      mojom::blink::UserActivationNotificationType notification_type,
+      bool need_browser_verification = false);
 
   // Returns the transient user activation state of the |LocalFrame|, provided
   // it is non-null.  Otherwise returns |false|.
@@ -620,6 +624,7 @@ class CORE_EXPORT LocalFrame final
                          GetStringForRangeCallback callback) final;
 #endif
   void InstallCoopAccessMonitor(
+      network::mojom::blink::CoopAccessReportType report_type,
       const base::UnguessableToken& accessed_window,
       mojo::PendingRemote<
           network::mojom::blink::CrossOriginOpenerPolicyReporter> reporter)
@@ -672,7 +677,11 @@ class CORE_EXPORT LocalFrame final
   const base::UnguessableToken& GetAgentClusterId() const override;
 
   // Activates the user activation states of this frame and all its ancestors.
-  void NotifyUserActivation(bool need_browser_verification);
+  //
+  // The |notification_type| parameter is used for histograms only.
+  void NotifyUserActivation(
+      mojom::blink::UserActivationNotificationType notification_type,
+      bool need_browser_verification);
 
   // Consumes and returns the transient user activation state this frame, after
   // updating all other frames in the frame tree.

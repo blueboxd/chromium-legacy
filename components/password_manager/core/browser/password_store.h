@@ -38,7 +38,7 @@ class PrefService;
 namespace autofill {
 struct FormData;
 struct PasswordForm;
-}
+}  // namespace autofill
 
 namespace syncer {
 class ModelTypeControllerDelegate;
@@ -537,6 +537,18 @@ class PasswordStore : protected PasswordStoreSync,
   // |plain_text_password| stored in the credential database.
   virtual std::vector<std::unique_ptr<autofill::PasswordForm>>
   FillMatchingLoginsByPassword(const base::string16& plain_text_password) = 0;
+
+  // Overwrites |forms| with all stored non-blacklisted credentials. Returns
+  // true on success.
+  virtual bool FillAutofillableLogins(
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
+      WARN_UNUSED_RESULT = 0;
+
+  // Overwrites |forms| with all stored blacklisted credentials. Returns true on
+  // success.
+  virtual bool FillBlacklistLogins(
+      std::vector<std::unique_ptr<autofill::PasswordForm>>* forms)
+      WARN_UNUSED_RESULT = 0;
 
   // Synchronous implementation for manipulating with statistics.
   virtual void AddSiteStatsImpl(const InteractionsStats& stats) = 0;

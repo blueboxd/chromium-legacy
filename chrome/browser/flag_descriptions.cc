@@ -1583,6 +1583,12 @@ const char kOmniboxUIElideToRegistrableDomainDescription[] =
     "#omnibox-ui-hide-steady-state-url-path-query-and-ref-on-interaction is "
     "enabled.";
 
+const char kOmniboxMaxZeroSuggestMatchesName[] =
+    "Omnibox Max Zero Suggest Matches";
+const char kOmniboxMaxZeroSuggestMatchesDescription[] =
+    "Changes the maximum number of autocomplete matches displayed when zero "
+    "suggest is active (i.e. displaying suggestions without input).";
+
 const char kOmniboxUIMaxAutocompleteMatchesName[] =
     "Omnibox UI Max Autocomplete Matches";
 const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
@@ -3845,6 +3851,17 @@ const char kFilesTransferDetailsDescription[] =
 const char kFilesZipNoNaClName[] = "New ZIP handling in Files App";
 const char kFilesZipNoNaClDescription[] =
     "Enable new ZIP archive handling in Files App which does not rely on NaCl.";
+
+const char kFrameThrottleFpsName[] = "Set frame throttling fps.";
+const char kFrameThrottleFpsDescription[] =
+    "Set the throttle fps for compositor frame submission.";
+const char kFrameThrottleFpsDefault[] = "Default";
+const char kFrameThrottleFps5[] = "5 fps";
+const char kFrameThrottleFps10[] = "10 fps";
+const char kFrameThrottleFps15[] = "15 fps";
+const char kFrameThrottleFps20[] = "20 fps";
+const char kFrameThrottleFps25[] = "25 fps";
+const char kFrameThrottleFps30[] = "30 fps";
 
 const char kFsNosymfollowName[] =
     "Prevent symlink traversal on user-supplied filesystems.";

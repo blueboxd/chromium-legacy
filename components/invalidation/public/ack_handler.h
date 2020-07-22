@@ -20,8 +20,8 @@ class AckHandle;
 // but this interface is very useful for testing and implementation hiding.
 class INVALIDATION_EXPORT AckHandler {
  public:
-  AckHandler();
-  virtual ~AckHandler() = 0;
+  AckHandler() = default;
+  virtual ~AckHandler() = default;
 
   // Record the local acknowledgement of an invalidation identified by |handle|.
   virtual void Acknowledge(const Topic& topic, const AckHandle& handle) = 0;

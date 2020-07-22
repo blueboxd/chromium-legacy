@@ -607,8 +607,8 @@ void CookieStoreIOS::RunCallbacksForCookies(
     DCHECK_EQ(name, cookie.Name());
     // TODO(crbug.com/978172): Support CookieAccessSemantics values on iOS and
     // use it to check IncludeForRequestURL before notifying?
-    callbacks->Notify(net::CookieChangeInfo(
-        cookie, net::CookieAccessSemantics::UNKNOWN, cause));
+    callbacks->Notify(
+        net::CookieChangeInfo(cookie, net::CookieAccessResult(), cause));
   }
 }
 

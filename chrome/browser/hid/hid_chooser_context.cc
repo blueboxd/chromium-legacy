@@ -60,7 +60,15 @@ HidChooserContext::HidChooserContext(Profile* profile)
                          HostContentSettingsMapFactory::GetForProfile(profile)),
       is_incognito_(profile->IsOffTheRecord()) {}
 
-HidChooserContext::~HidChooserContext() = default;
+HidChooserContext::~HidChooserContext() {
+  // Notify observers that the chooser context is about to be destroyed.
+  // Observers must remove themselves from the observer lists.
+  for (auto& observer : device_observer_list_) {
+    observer.OnHidChooserContextShutdown();
+    DCHECK(!device_observer_list_.HasObserver(&observer));
+  }
+  DCHECK(!permission_observer_list_.might_have_observers());
+}
 
 base::string16 HidChooserContext::GetObjectDisplayName(
     const base::Value& object) {

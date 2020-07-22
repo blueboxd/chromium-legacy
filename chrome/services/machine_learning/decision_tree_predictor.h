@@ -8,10 +8,11 @@
 #include <memory>
 #include <string>
 
-#include "chrome/services/machine_learning/public/cpp/decision_tree_model.h"
 #include "chrome/services/machine_learning/public/mojom/decision_tree.mojom.h"
 
 namespace machine_learning {
+
+class DecisionTreeModel;
 
 // Holds a decision tree model instance and provides the interface for model
 // prediction. This class takes care of the deserialization and validation

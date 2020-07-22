@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
@@ -369,7 +370,21 @@ gfx::Vector2dF BrowserControlsOffsetManager::ScrollBy(
        pending_delta.y() < 0))
     return pending_delta;
 
-  accumulated_scroll_delta_ += pending_delta.y();
+  // Scroll the page up before expanding the browser controls if
+  // ShouldPinTopControlsToContentTop() returns true.
+  float viewport_offset_y = client_->ViewportScrollOffset().y();
+  if (client_->ShouldPinTopControlsToContentTop() && pending_delta.y() < 0 &&
+      viewport_offset_y > 0) {
+    // Reset the baseline so the controls will immediately begin to scroll
+    // once we're at the top.
+    ResetBaseline();
+    // Only scroll the controls by the amount remaining after the page contents
+    // have been scrolled to the top.
+    accumulated_scroll_delta_ =
+        std::min(0.f, pending_delta.y() + viewport_offset_y);
+  } else {
+    accumulated_scroll_delta_ += pending_delta.y();
+  }
 
   // We want to base our calculations on top or bottom controls. After consuming
   // the scroll delta, we will calculate a shown ratio for the controls. The

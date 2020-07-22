@@ -9,7 +9,7 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.util.Size;
 
-import javax.annotation.Nonnull;
+import androidx.annotation.NonNull;
 
 /**
  * Given a viewport {@link Rect} and a matrix of {@link Bitmap} tiles, this class draws the bitmaps
@@ -23,7 +23,7 @@ class PlayerFrameBitmapPainter {
     private Rect mDrawBitmapDst = new Rect();
     private Runnable mInvalidateCallback;
 
-    PlayerFrameBitmapPainter(@Nonnull Runnable invalidateCallback) {
+    PlayerFrameBitmapPainter(@NonNull Runnable invalidateCallback) {
         mInvalidateCallback = invalidateCallback;
     }
 

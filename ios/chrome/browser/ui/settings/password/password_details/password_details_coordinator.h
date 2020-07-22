@@ -7,6 +7,8 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
+@protocol ApplicationCommands;
+class IOSChromePasswordCheckManager;
 @protocol PasswordDetailsCoordinatorDelegate;
 
 namespace autofill {
@@ -16,10 +18,12 @@ struct PasswordForm;
 // This coordinator presents a password details for the user.
 @interface PasswordDetailsCoordinator : ChromeCoordinator
 
-- (instancetype)initWithBaseNavigationController:
-                    (UINavigationController*)navigationController
-                                        password:(const autofill::PasswordForm&)
-                                                     password
+- (instancetype)
+    initWithBaseNavigationController:
+        (UINavigationController*)navigationController
+                            password:(const autofill::PasswordForm&)password
+                passwordCheckManager:(IOSChromePasswordCheckManager*)manager
+                          dispatcher:(id<ApplicationCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController

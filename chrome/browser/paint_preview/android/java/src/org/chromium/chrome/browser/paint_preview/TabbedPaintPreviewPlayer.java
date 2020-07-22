@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.paint_preview;
 
+import android.content.res.Resources;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -15,6 +16,9 @@ import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabService
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabViewProvider;
+import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManagerProvider;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.paintpreview.player.PlayerManager;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -28,6 +32,8 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
     public static final Class<TabbedPaintPreviewPlayer> USER_DATA_KEY =
             TabbedPaintPreviewPlayer.class;
 
+    private static final int SNACKBAR_DURATION_MS = 5 * 1000;
+
     private Tab mTab;
     private PaintPreviewTabService mPaintPreviewTabService;
     private PlayerManager mPlayerManager;
@@ -35,6 +41,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
     private Boolean mInitializing;
     private boolean mHasUserInteraction;
     private EmptyTabObserver mTabObserver;
+    private long mLastShownSnackBarTime;
 
     public static TabbedPaintPreviewPlayer get(Tab tab) {
         if (tab.getUserDataHost().getUserData(USER_DATA_KEY) == null) {
@@ -49,11 +56,19 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
         mTabObserver = new EmptyTabObserver() {
             @Override
             public void didFirstVisuallyNonEmptyPaint(Tab tab) {
-                if (mTab.getTabViewManager().isShowing(TabbedPaintPreviewPlayer.this)
-                        && !mHasUserInteraction) {
-                    removePaintPreview();
+                if (!mTab.getTabViewManager().isShowing(TabbedPaintPreviewPlayer.this)) {
+                    return;
                 }
+
+                if (!mHasUserInteraction) {
+                    removePaintPreview();
+                    return;
+                }
+
+                showSnackbar();
             }
+
+
         };
         mTab.addObserver(mTabObserver);
     }
@@ -84,6 +99,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
                 () -> mHasUserInteraction = true,
                 ChromeColors.getPrimaryBackgroundColor(mTab.getContext().getResources(), false),
                 this::removePaintPreview, /*ignoreInitialScrollOffset=*/false);
+        mPlayerManager.setUserFrustrationCallback(this::showSnackbar);
         mOnDismissed = onDismissed;
         mTab.getTabViewManager().addTabViewProvider(this);
         return true;
@@ -104,7 +120,33 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
         RecordUserAction.record("PaintPreview.TabbedPlayer.Removed");
     }
 
-    public boolean isShowing() {
+    private void showSnackbar() {
+        if (mTab == null || mTab.getWindowAndroid() == null) return;
+
+        // If the Snackbar is already being displayed, return.
+        if (System.currentTimeMillis() - mLastShownSnackBarTime < SNACKBAR_DURATION_MS) return;
+
+        Resources resources = mTab.getContext().getResources();
+        Snackbar snackbar = Snackbar.make(
+                resources.getString(R.string.paint_preview_startup_upgrade_snackbar_message),
+                new SnackbarManager.SnackbarController() {
+                    @Override
+                    public void onAction(Object actionData) {
+                        removePaintPreview();
+                    }
+
+                    @Override
+                    public void onDismissNoAction(Object actionData) {}
+                },
+                Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_PAINT_PREVIEW_UPGRADE_NOTIFICATION);
+        snackbar.setAction(
+                resources.getString(R.string.paint_preview_startup_upgrade_snackbar_action), null);
+        snackbar.setDuration(SNACKBAR_DURATION_MS);
+        SnackbarManagerProvider.from(mTab.getWindowAndroid()).showSnackbar(snackbar);
+        mLastShownSnackBarTime = System.currentTimeMillis();
+    }
+
+    public boolean isShowingAndNeedsBadge() {
         return mTab.getTabViewManager().isShowing(this);
     }
 

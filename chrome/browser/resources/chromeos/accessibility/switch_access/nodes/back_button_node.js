@@ -169,7 +169,13 @@ class BackButtonNode extends SAChildNode {
    */
   static saveAutomationNode_(automationNode) {
     BackButtonNode.automationNode_ = automationNode;
-    BackButtonNode.automationNode_.addEventListener(
-        chrome.automation.EventType.CLICKED, BackButtonNode.onClick_, false);
+
+    if (BackButtonNode.clickHandler_) {
+      BackButtonNode.clickHandler_.setNodes(automationNode);
+    } else {
+      BackButtonNode.clickHandler_ = new EventHandler(
+          automationNode, chrome.automation.EventType.CLICKED,
+          BackButtonNode.onClick_);
+    }
   }
 }

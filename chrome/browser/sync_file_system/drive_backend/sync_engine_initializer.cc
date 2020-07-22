@@ -65,7 +65,7 @@ SyncEngineInitializer::SyncEngineInitializer(
 
 SyncEngineInitializer::~SyncEngineInitializer() {
   if (!cancel_callback_.is_null())
-    cancel_callback_.Run();
+    std::move(cancel_callback_).Run();
 }
 
 void SyncEngineInitializer::RunPreflight(std::unique_ptr<SyncTaskToken> token) {
@@ -122,7 +122,7 @@ void SyncEngineInitializer::DidGetAboutResource(
     std::unique_ptr<SyncTaskToken> token,
     google_apis::DriveApiErrorCode error,
     std::unique_ptr<google_apis::AboutResource> about_resource) {
-  cancel_callback_.Reset();
+  std::move(cancel_callback_).Reset();
 
   SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
@@ -161,7 +161,7 @@ void SyncEngineInitializer::DidFindSyncRoot(
     std::unique_ptr<SyncTaskToken> token,
     google_apis::DriveApiErrorCode error,
     std::unique_ptr<google_apis::FileList> file_list) {
-  cancel_callback_.Reset();
+  std::move(cancel_callback_).Reset();
 
   SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
@@ -241,7 +241,7 @@ void SyncEngineInitializer::DidCreateSyncRoot(
     google_apis::DriveApiErrorCode error,
     std::unique_ptr<google_apis::FileResource> entry) {
   DCHECK(!sync_root_folder_);
-  cancel_callback_.Reset();
+  std::move(cancel_callback_).Reset();
 
   SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
@@ -270,7 +270,7 @@ void SyncEngineInitializer::DetachSyncRoot(
 void SyncEngineInitializer::DidDetachSyncRoot(
     std::unique_ptr<SyncTaskToken> token,
     google_apis::DriveApiErrorCode error) {
-  cancel_callback_.Reset();
+  std::move(cancel_callback_).Reset();
 
   SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
@@ -299,7 +299,7 @@ void SyncEngineInitializer::DidListAppRootFolders(
     std::unique_ptr<SyncTaskToken> token,
     google_apis::DriveApiErrorCode error,
     std::unique_ptr<google_apis::FileList> file_list) {
-  cancel_callback_.Reset();
+  std::move(cancel_callback_).Reset();
 
   SyncStatusCode status = DriveApiErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {

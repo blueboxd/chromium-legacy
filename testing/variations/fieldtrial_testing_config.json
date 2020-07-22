@@ -393,6 +393,21 @@
             ]
         }
     ],
+    "AndroidPartnerCustomizationPhenotype": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AndroidPartnerCustomizationPhenotype"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidPictureInPictureAPI": [
         {
             "platforms": [
@@ -1354,6 +1369,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "CertDualVerificationTrial"
+                    ]
+                }
+            ]
+        }
+    ],
+    "CertVerifierBuiltin": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CertVerifierBuiltin"
                     ]
                 }
             ]

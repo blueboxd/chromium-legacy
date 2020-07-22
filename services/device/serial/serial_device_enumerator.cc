@@ -23,7 +23,7 @@ namespace device {
 std::unique_ptr<SerialDeviceEnumerator> SerialDeviceEnumerator::Create(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
 #if defined(OS_LINUX)
-  return std::make_unique<SerialDeviceEnumeratorLinux>();
+  return SerialDeviceEnumeratorLinux::Create();
 #elif defined(OS_MACOSX)
   return std::make_unique<SerialDeviceEnumeratorMac>();
 #elif defined(OS_WIN)

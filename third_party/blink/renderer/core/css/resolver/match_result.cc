@@ -63,11 +63,13 @@ void MatchResult::AddMatchedProperties(
 }
 
 void MatchResult::FinishAddingUARules() {
+  DCHECK_EQ(current_origin_, CascadeOrigin::kUserAgent);
   current_origin_ = CascadeOrigin::kUser;
   ua_range_end_ = matched_properties_.size();
 }
 
 void MatchResult::FinishAddingUserRules() {
+  DCHECK_EQ(current_origin_, CascadeOrigin::kUser);
   current_origin_ = CascadeOrigin::kAuthor;
   // Don't add empty ranges.
   if (user_range_ends_.IsEmpty() &&
@@ -81,6 +83,7 @@ void MatchResult::FinishAddingUserRules() {
 }
 
 void MatchResult::FinishAddingAuthorRulesForTreeScope() {
+  DCHECK_EQ(current_origin_, CascadeOrigin::kAuthor);
   // Don't add empty ranges.
   if (author_range_ends_.IsEmpty() && user_range_ends_.IsEmpty() &&
       ua_range_end_ == matched_properties_.size())

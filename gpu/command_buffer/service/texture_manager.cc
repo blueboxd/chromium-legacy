@@ -2008,8 +2008,16 @@ void Texture::DumpLevelMemory(base::trace_event::ProcessMemoryDump* pmd,
 }
 
 bool Texture::CanRenderTo(const FeatureInfo* feature_info, GLint level) const {
-  if (target_ == GL_TEXTURE_EXTERNAL_OES || target_ == 0)
+  if (target_ == 0)
     return false;
+  if (target_ == GL_TEXTURE_EXTERNAL_OES) {
+    if (level != 0 || !feature_info->feature_flags().oes_egl_image_external ||
+        !feature_info->feature_flags().ext_yuv_target)
+      return false;
+    auto format = face_infos_[0].level_infos[0].internal_format;
+    return format == GL_RGB_YCBCR_420V_CHROMIUM ||
+           format == GL_RGB_YCRCB_420_CHROMIUM;
+  }
   DCHECK_LT(0u, face_infos_.size());
   // In GLES2, cube completeness is not required for framebuffer completeness.
   // However, it is required if command buffer is implemented on top of

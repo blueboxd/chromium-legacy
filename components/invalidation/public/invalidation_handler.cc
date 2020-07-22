@@ -6,11 +6,8 @@
 
 namespace syncer {
 
-InvalidationHandler::InvalidationHandler() {
-}
-
-InvalidationHandler::~InvalidationHandler() {
-}
+void InvalidationHandler::OnInvalidatorClientIdChange(
+    const std::string& client_id) {}
 
 bool InvalidationHandler::IsPublicTopic(const Topic& topic) const {
   return false;

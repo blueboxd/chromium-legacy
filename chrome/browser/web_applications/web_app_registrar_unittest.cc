@@ -320,12 +320,16 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
   const base::Optional<SkColor> theme_color = 0xAABBCCDD;
   const auto display_mode = DisplayMode::kMinimalUi;
   const auto user_display_mode = DisplayMode::kStandalone;
+  std::vector<DisplayMode> display_mode_override;
 
   EXPECT_EQ(std::string(), registrar().GetAppShortName(app_id));
   EXPECT_EQ(GURL(), registrar().GetAppLaunchURL(app_id));
 
   auto web_app = std::make_unique<WebApp>(app_id);
   WebApp* web_app_ptr = web_app.get();
+
+  display_mode_override.push_back(DisplayMode::kMinimalUi);
+  display_mode_override.push_back(DisplayMode::kStandalone);
 
   web_app->AddSource(Source::kSync);
   web_app->SetName(name);
@@ -334,6 +338,7 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
   web_app->SetLaunchUrl(launch_url);
   web_app->SetDisplayMode(display_mode);
   web_app->SetUserDisplayMode(user_display_mode);
+  web_app->SetDisplayModeOverride(display_mode_override);
   web_app->SetIsLocallyInstalled(/*is_locally_installed*/ false);
 
   RegisterApp(std::move(web_app));
@@ -344,6 +349,14 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
   EXPECT_EQ(launch_url, registrar().GetAppLaunchURL(app_id));
   EXPECT_EQ(DisplayMode::kStandalone,
             registrar().GetAppUserDisplayMode(app_id));
+
+  {
+    std::vector<DisplayMode> app_display_mode_override =
+        registrar().GetAppDisplayModeOverride(app_id);
+    ASSERT_EQ(2u, app_display_mode_override.size());
+    EXPECT_EQ(DisplayMode::kMinimalUi, app_display_mode_override[0]);
+    EXPECT_EQ(DisplayMode::kStandalone, app_display_mode_override[1]);
+  }
 
   {
     EXPECT_FALSE(registrar().IsLocallyInstalled(app_id));
@@ -363,6 +376,11 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
     sync_bridge().SetAppUserDisplayMode(app_id, DisplayMode::kStandalone);
     EXPECT_EQ(DisplayMode::kStandalone, web_app_ptr->user_display_mode());
     EXPECT_EQ(DisplayMode::kMinimalUi, web_app_ptr->display_mode());
+
+    ASSERT_EQ(2u, web_app_ptr->display_mode_override().size());
+    EXPECT_EQ(DisplayMode::kMinimalUi, web_app_ptr->display_mode_override()[0]);
+    EXPECT_EQ(DisplayMode::kStandalone,
+              web_app_ptr->display_mode_override()[1]);
   }
 }
 

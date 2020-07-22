@@ -7916,6 +7916,20 @@ std::string GLES2Util::GetStringTextureDepthRenderableInternalFormat(
                                            base::size(string_table), value);
 }
 
+std::string GLES2Util::GetStringTextureFboTarget(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_TEXTURE_2D, "GL_TEXTURE_2D"},
+      {GL_TEXTURE_CUBE_MAP_POSITIVE_X, "GL_TEXTURE_CUBE_MAP_POSITIVE_X"},
+      {GL_TEXTURE_CUBE_MAP_NEGATIVE_X, "GL_TEXTURE_CUBE_MAP_NEGATIVE_X"},
+      {GL_TEXTURE_CUBE_MAP_POSITIVE_Y, "GL_TEXTURE_CUBE_MAP_POSITIVE_Y"},
+      {GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, "GL_TEXTURE_CUBE_MAP_NEGATIVE_Y"},
+      {GL_TEXTURE_CUBE_MAP_POSITIVE_Z, "GL_TEXTURE_CUBE_MAP_POSITIVE_Z"},
+      {GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, "GL_TEXTURE_CUBE_MAP_NEGATIVE_Z"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           base::size(string_table), value);
+}
+
 std::string GLES2Util::GetStringTextureFormat(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_ALPHA, "GL_ALPHA"},

@@ -207,6 +207,14 @@ class Runner():
         )
 
       return 0 if tr.launch() else 1
+    except test_runner.DeviceError as e:
+      sys.stderr.write(traceback.format_exc())
+      summary['step_text'] = '%s%s' % (e.__class__.__name__,
+                                       ': %s' % e.args[0] if e.args else '')
+
+      # Swarming infra marks device status unavailable for any device related
+      # issue using this return code.
+      return 3
     except test_runner.TestRunnerError as e:
       sys.stderr.write(traceback.format_exc())
       summary['step_text'] = '%s%s' % (e.__class__.__name__,

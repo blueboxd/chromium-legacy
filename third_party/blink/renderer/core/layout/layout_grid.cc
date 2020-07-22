@@ -178,10 +178,10 @@ void LayoutGrid::StyleDidChange(StyleDifference diff,
 }
 
 bool LayoutGrid::ExplicitGridDidResize(const ComputedStyle& old_style) const {
-  return old_style.GridTemplateColumns().size() !=
-             StyleRef().GridTemplateColumns().size() ||
-         old_style.GridTemplateRows().size() !=
-             StyleRef().GridTemplateRows().size() ||
+  return old_style.GridTemplateColumns().LegacyTrackList().size() !=
+             StyleRef().GridTemplateColumns().LegacyTrackList().size() ||
+         old_style.GridTemplateRows().LegacyTrackList().size() !=
+             StyleRef().GridTemplateRows().LegacyTrackList().size() ||
          old_style.NamedGridAreaColumnCount() !=
              StyleRef().NamedGridAreaColumnCount() ||
          old_style.NamedGridAreaRowCount() !=
@@ -706,8 +706,8 @@ size_t LayoutGrid::ComputeAutoRepeatTracksCount(
   // account when computing the total track size.
   LayoutUnit tracks_size = auto_repeat_tracks_size;
   const Vector<GridTrackSize>& track_sizes =
-      is_row_axis ? StyleRef().GridTemplateColumns()
-                  : StyleRef().GridTemplateRows();
+      is_row_axis ? StyleRef().GridTemplateColumns().LegacyTrackList()
+                  : StyleRef().GridTemplateRows().LegacyTrackList();
 
   for (const auto& track : track_sizes) {
     bool has_definite_max_track_breadth =

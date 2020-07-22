@@ -105,6 +105,14 @@ ReadCTAPMakeCredentialResponse(FidoTransportProtocol transport_used,
                         std::make_unique<OpaqueAttestationStatement>(
                             format, it->second.Clone())));
 
+  it = decoded_map.find(CBOR(4));
+  if (it != decoded_map.end()) {
+    if (!it->second.is_bool()) {
+      return base::nullopt;
+    }
+    response.enterprise_attestation_returned = it->second.GetBool();
+  }
+
   if (base::FeatureList::IsEnabled(kWebAuthPhoneSupport)) {
     it = decoded_map.find(CBOR(kAndroidClientDataExtOutputKey));
     if (it != decoded_map.end() && it->second.is_bytestring()) {
@@ -386,6 +394,14 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
         return base::nullopt;
       }
       options.default_cred_protect = static_cast<CredProtect>(value);
+    }
+
+    option_map_it = option_map.find(CBOR(kEnterpriseAttestationKey));
+    if (option_map_it != option_map.end()) {
+      if (!option_map_it->second.is_bool()) {
+        return base::nullopt;
+      }
+      options.enterprise_attestation = option_map_it->second.GetBool();
     }
 
     response.options = std::move(options);

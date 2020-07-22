@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifier;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
+import org.chromium.chrome.browser.paint_preview.TabbedPaintPreviewPlayer;
 import org.chromium.chrome.browser.previews.Previews;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -334,6 +335,11 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
     }
 
     @Override
+    public boolean isPaintPreview() {
+        return hasTab() && TabbedPaintPreviewPlayer.get(mTab).isShowingAndNeedsBadge();
+    }
+
+    @Override
     public int getSecurityLevel() {
         Tab tab = getTab();
         return getSecurityLevel(tab, isOfflinePage(), TrustedCdn.getPublisherUrl(tab));
@@ -353,7 +359,8 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
 
     @Override
     public int getSecurityIconResource(boolean isTablet) {
-        return getSecurityIconResource(getSecurityLevel(), !isTablet, isOfflinePage(), isPreview());
+        return getSecurityIconResource(
+                getSecurityLevel(), !isTablet, isOfflinePage(), isPreview(), isPaintPreview());
     }
 
     @VisibleForTesting
@@ -382,8 +389,12 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
 
     @VisibleForTesting
     @DrawableRes
-    int getSecurityIconResource(
-            int securityLevel, boolean isSmallDevice, boolean isOfflinePage, boolean isPreview) {
+    int getSecurityIconResource(int securityLevel, boolean isSmallDevice, boolean isOfflinePage,
+            boolean isPreview, boolean isPaintPreview) {
+        // Paint Preview appears on top of WebContents and shows a visual representation of the page
+        // that has been previously stored locally.
+        if (isPaintPreview) return R.drawable.omnibox_info;
+
         // Checking for a preview first because one possible preview type is showing an offline page
         // on a slow connection. In this case, the previews UI takes precedence.
         if (isPreview) {

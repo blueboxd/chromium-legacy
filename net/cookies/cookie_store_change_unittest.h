@@ -691,16 +691,20 @@ TYPED_TEST_P(CookieStoreChangeGlobalTest, ChangeIncludesCookieAccessSemantics) {
 
   EXPECT_EQ("domain1.test", cookie_changes[0].cookie.Domain());
   EXPECT_TRUE(this->IsExpectedAccessSemantics(
-      CookieAccessSemantics::LEGACY, cookie_changes[0].access_semantics));
+      CookieAccessSemantics::LEGACY,
+      cookie_changes[0].access_result.access_semantics));
   EXPECT_EQ("domain2.test", cookie_changes[1].cookie.Domain());
   EXPECT_TRUE(this->IsExpectedAccessSemantics(
-      CookieAccessSemantics::NONLEGACY, cookie_changes[1].access_semantics));
+      CookieAccessSemantics::NONLEGACY,
+      cookie_changes[1].access_result.access_semantics));
   EXPECT_EQ("domain3.test", cookie_changes[2].cookie.Domain());
   EXPECT_TRUE(this->IsExpectedAccessSemantics(
-      CookieAccessSemantics::UNKNOWN, cookie_changes[2].access_semantics));
+      CookieAccessSemantics::UNKNOWN,
+      cookie_changes[2].access_result.access_semantics));
   EXPECT_EQ("domain4.test", cookie_changes[3].cookie.Domain());
   EXPECT_TRUE(this->IsExpectedAccessSemantics(
-      CookieAccessSemantics::UNKNOWN, cookie_changes[3].access_semantics));
+      CookieAccessSemantics::UNKNOWN,
+      cookie_changes[3].access_result.access_semantics));
 }
 
 TYPED_TEST_P(CookieStoreChangeUrlTest, NoCookie) {
@@ -1715,7 +1719,8 @@ TYPED_TEST_P(CookieStoreChangeUrlTest, ChangeIncludesCookieAccessSemantics) {
 
   EXPECT_EQ("domain1.test", cookie_changes[0].cookie.Domain());
   EXPECT_TRUE(this->IsExpectedAccessSemantics(
-      CookieAccessSemantics::LEGACY, cookie_changes[0].access_semantics));
+      CookieAccessSemantics::LEGACY,
+      cookie_changes[0].access_result.access_semantics));
 }
 
 TYPED_TEST_P(CookieStoreChangeNamedTest, NoCookie) {
@@ -2849,7 +2854,8 @@ TYPED_TEST_P(CookieStoreChangeNamedTest, ChangeIncludesCookieAccessSemantics) {
   EXPECT_EQ("domain1.test", cookie_changes[0].cookie.Domain());
   EXPECT_EQ("cookie", cookie_changes[0].cookie.Name());
   EXPECT_TRUE(this->IsExpectedAccessSemantics(
-      CookieAccessSemantics::LEGACY, cookie_changes[0].access_semantics));
+      CookieAccessSemantics::LEGACY,
+      cookie_changes[0].access_result.access_semantics));
 }
 
 REGISTER_TYPED_TEST_SUITE_P(CookieStoreChangeGlobalTest,

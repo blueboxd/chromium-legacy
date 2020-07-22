@@ -16,7 +16,6 @@ namespace blink {
 class CORE_EXPORT NGGridTrackCollectionBase {
  public:
   static constexpr wtf_size_t kInvalidRangeIndex = kNotFound;
-  static constexpr wtf_size_t kMaxRangeIndex = kNotFound - 1;
 
   class CORE_EXPORT RangeRepeatIterator {
    public:
@@ -69,78 +68,6 @@ class CORE_EXPORT NGGridTrackCollectionBase {
   virtual wtf_size_t RangeCount() const = 0;
 };
 
-// Stores tracks related data by compressing repeated tracks into a single node.
-struct NGGridTrackRepeater {
-  NGGridTrackRepeater(wtf_size_t repeat_index,
-                      wtf_size_t repeat_size,
-                      wtf_size_t repeat_count,
-                      AutoRepeatType repeat_type);
-  String ToString() const;
-  bool operator==(const NGGridTrackRepeater& rhs) const;
-
-  // |NGGridTrackList| will store the sizes for each track in this repeater
-  // consecutively in a single vector for all repeaters; this index specifies
-  // the position of the first track size that belongs to this repeater.
-  wtf_size_t repeat_index;
-  // Amount of tracks to be repeated.
-  wtf_size_t repeat_size;
-  // Amount of times the group of tracks are repeated.
-  wtf_size_t repeat_count;
-  // Type of repetition.
-  AutoRepeatType repeat_type;
-};
-
-class CORE_EXPORT NGGridTrackList {
- public:
-  NGGridTrackList();
-  // Returns the repeat count of the repeater at |index|, or |auto_value|
-  // if the repeater is auto.
-  wtf_size_t RepeatCount(wtf_size_t index, wtf_size_t auto_value) const;
-  // Returns the number of tracks in the repeater at |index|.
-  wtf_size_t RepeatSize(wtf_size_t index) const;
-  // Returns the repeat type of the repeater at |index|.
-  AutoRepeatType RepeatType(wtf_size_t index) const;
-  // Returns the size of the |n|-th specified track of the repeater at |index|.
-  const GridTrackSize& RepeatTrackSize(wtf_size_t index, wtf_size_t n) const;
-  // Returns the count of repeaters.
-  wtf_size_t RepeaterCount() const;
-  // Returns the total count of all the tracks in this list.
-  wtf_size_t TotalTrackCount() const;
-
-  // Adds a non-auto repeater.
-  bool AddRepeater(const Vector<GridTrackSize>& repeater_track_sizes,
-                   wtf_size_t repeat_count);
-  // Adds an auto repeater.
-  bool AddAutoRepeater(const Vector<GridTrackSize>& repeater_track_sizes,
-                       AutoRepeatType repeat_type);
-  // Returns true if this list contains an auto repeater.
-  bool HasAutoRepeater();
-
-  // Clears all data.
-  void Clear();
-
-  String ToString() const;
-
- private:
-  bool AddRepeater(const Vector<GridTrackSize>& repeater_track_sizes,
-                   AutoRepeatType repeat_type,
-                   wtf_size_t repeat_count);
-  // Returns the amount of tracks available before overflow.
-  wtf_size_t AvailableTrackCount() const;
-
-  Vector<NGGridTrackRepeater> repeaters_;
-
-  // Stores the track sizes of every repeater added to this list; tracks from
-  // the same repeater group are stored consecutively.
-  Vector<GridTrackSize> repeater_track_sizes_;
-
-  // The index of the automatic repeater, if there is one; |kInvalidRangeIndex|
-  // otherwise.
-  wtf_size_t auto_repeater_index_;
-  // Total count of tracks.
-  wtf_size_t total_track_count_;
-};
-
 class CORE_EXPORT NGGridBlockTrackCollection
     : public NGGridTrackCollectionBase {
  public:
@@ -154,8 +81,8 @@ class CORE_EXPORT NGGridBlockTrackCollection
   };
 
   // Sets the specified, implicit tracks, along with a given auto repeat value.
-  void SetSpecifiedTracks(const NGGridTrackList& explicit_tracks,
-                          const NGGridTrackList& implicit_tracks,
+  void SetSpecifiedTracks(const NGGridTrackList* explicit_tracks,
+                          const NGGridTrackList* implicit_tracks,
                           wtf_size_t auto_repeat_count);
   // Ensures that after FinalizeRanges is called, a range will start at the
   // |track_number|, and a range will end at |track_number| + |span_length|
@@ -191,8 +118,8 @@ class CORE_EXPORT NGGridBlockTrackCollection
   wtf_size_t auto_repeat_count_ = 0;
 
   // Stores the specified and implicit tracks specified by SetSpecifiedTracks.
-  NGGridTrackList explicit_tracks_;
-  NGGridTrackList implicit_tracks_;
+  const NGGridTrackList* explicit_tracks_;
+  const NGGridTrackList* implicit_tracks_;
 
   // Starting and ending tracks mark where ranges will start and end.
   // Once the ranges have been built in FinalizeRanges, these are cleared.

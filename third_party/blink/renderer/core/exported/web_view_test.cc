@@ -2545,7 +2545,8 @@ TEST_F(WebViewTest, FullscreenNoResetScroll) {
   // Enter fullscreen.
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   Element* element = frame->GetDocument()->documentElement();
-  LocalFrame::NotifyUserActivation(frame);
+  LocalFrame::NotifyUserActivation(
+      frame, mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*element);
   web_view_impl->MainFrameWidget()->DidEnterFullscreen();
   UpdateAllLifecyclePhases();
@@ -2574,7 +2575,8 @@ TEST_F(WebViewTest, FullscreenBackgroundColor) {
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   Element* element = frame->GetDocument()->getElementById("fullscreenElement");
   ASSERT_TRUE(element);
-  LocalFrame::NotifyUserActivation(frame);
+  LocalFrame::NotifyUserActivation(
+      frame, mojom::UserActivationNotificationType::kTest);
   Fullscreen::RequestFullscreen(*element);
   web_view_impl->MainFrameWidget()->DidEnterFullscreen();
   UpdateAllLifecyclePhases();

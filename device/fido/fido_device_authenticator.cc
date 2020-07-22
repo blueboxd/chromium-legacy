@@ -783,6 +783,16 @@ bool FidoDeviceAuthenticator::SupportsHMACSecretExtension() const {
          base::Contains(*get_info_response->extensions, kExtensionHmacSecret);
 }
 
+bool FidoDeviceAuthenticator::SupportsEnterpriseAttestation() const {
+  DCHECK(device_->SupportedProtocolIsInitialized());
+  if (device_->supported_protocol() == ProtocolVersion::kU2f) {
+    // U2F devices always "support" enterprise attestation because it turns into
+    // a bit in the makeCredential command that is ignored if not supported.
+    return true;
+  }
+  return options_ && options_->enterprise_attestation;
+}
+
 const base::Optional<AuthenticatorSupportedOptions>&
 FidoDeviceAuthenticator::Options() const {
   return options_;

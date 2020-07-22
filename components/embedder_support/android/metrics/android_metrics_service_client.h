@@ -107,8 +107,10 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   std::unique_ptr<const base::FieldTrial::EntropyProvider>
   CreateLowEntropyProvider();
 
-  // Enables or disables URL-Keyed Metrics. This is disabled by default.
-  void EnableUkm(bool enable);
+  // Updates the state of whether UKM is enabled or not by calling back into
+  // IsUkmAllowedForAllProfiles(). If |must_purge| is true then currently
+  // collected data will be purged.
+  void UpdateUkm(bool must_purge);
 
   // Updates the state of the UKM service if it's running. This should be called
   // when a BrowserContext is created or destroyed which would change the value
@@ -248,7 +250,6 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   bool app_consent_ = false;
   bool is_in_sample_ = false;
   bool fast_startup_for_testing_ = false;
-  bool ukm_enabled_ = false;
 
   // When non-zero, this overrides the default value in
   // GetStandardUploadInterval().

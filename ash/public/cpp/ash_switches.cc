@@ -127,6 +127,9 @@ const char kEnableDimShelf[] = "enable-dim-shelf";
 // screen off) is used even if the device is in laptop mode.
 const char kForceTabletPowerButton[] = "force-tablet-power-button";
 
+// Sets the throttle fps for compositor frame submission.
+const char kFrameThrottleFps[] = "frame-throttle-fps";
+
 // Whether this device has an internal stylus.
 const char kHasInternalStylus[] = "has-internal-stylus";
 

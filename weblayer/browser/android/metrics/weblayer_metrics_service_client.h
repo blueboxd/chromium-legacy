@@ -39,6 +39,7 @@ class WebLayerMetricsServiceClient
 
   // metrics::MetricsServiceClient
   int32_t GetProduct() override;
+  bool IsUkmAllowedForAllProfiles() override;
   std::string GetUploadSigningKey() override;
 
   // metrics::AndroidMetricsServiceClient:

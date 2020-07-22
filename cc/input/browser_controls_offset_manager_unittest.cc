@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <memory>
 
 #include "base/time/time.h"
@@ -30,7 +31,8 @@ class MockBrowserControlsOffsetManagerClient
       : host_impl_(&task_runner_provider_, &task_graph_runner_),
         redraw_needed_(false),
         update_draw_properties_needed_(false),
-        browser_controls_params_({top_controls_height, 0, 0, 0, false, false}),
+        browser_controls_params_(
+            {top_controls_height, 0, 0, 0, false, false, false}),
         bottom_controls_shown_ratio_(1.f),
         top_controls_shown_ratio_(1.f),
         browser_controls_show_threshold_(browser_controls_show_threshold),
@@ -64,6 +66,14 @@ class MockBrowserControlsOffsetManagerClient
 
   float TopControlsMinHeight() const override {
     return browser_controls_params_.top_controls_min_height;
+  }
+
+  bool ShouldPinTopControlsToContentTop() const override {
+    return browser_controls_params_.pin_top_controls_to_content_top;
+  }
+
+  gfx::ScrollOffset ViewportScrollOffset() const override {
+    return viewport_scroll_offset_;
   }
 
   void SetCurrentBrowserControlsShownRatio(float top_ratio,
@@ -110,6 +120,15 @@ class MockBrowserControlsOffsetManagerClient
         params.animate_browser_controls_height_changes);
   }
 
+  void SetViewportScrollOffset(float x, float y) {
+    viewport_scroll_offset_ = gfx::ScrollOffset(x, y);
+  }
+
+  void ScrollVerticallyBy(float dy) {
+    gfx::Vector2dF viewport_scroll_delta = manager()->ScrollBy({0.f, dy});
+    viewport_scroll_offset_.Add(gfx::ScrollOffset(viewport_scroll_delta));
+  }
+
  private:
   FakeImplTaskRunnerProvider task_runner_provider_;
   TestTaskGraphRunner task_graph_runner_;
@@ -125,6 +144,7 @@ class MockBrowserControlsOffsetManagerClient
   float top_controls_shown_ratio_;
   float browser_controls_show_threshold_;
   float browser_controls_hide_threshold_;
+  gfx::ScrollOffset viewport_scroll_offset_;
 };
 
 TEST(BrowserControlsOffsetManagerTest, EnsureScrollThresholdApplied) {
@@ -1141,6 +1161,45 @@ TEST(BrowserControlsOffsetManagerTest,
   client.SetBrowserControlsParams({120, 20, 0, 0, true, false});
   // This shouldn't override the bottom controls shown ratio.
   EXPECT_FLOAT_EQ(1.f, client.CurrentBottomControlsShownRatio());
+}
+
+TEST(BrowserControlsOffsetManagerTest, PinTopControlsToContentTop) {
+  MockBrowserControlsOffsetManagerClient client(0.f, 0.5f, 0.5f);
+  client.SetBrowserControlsParams({/*top_controls_height=*/100.f, 0, 0, 0,
+                                   false, false,
+                                   /*pin_top_controls_to_content_top=*/true});
+  BrowserControlsOffsetManager* manager = client.manager();
+
+  // Scroll down to hide the controls entirely.
+  manager->ScrollBegin();
+  client.ScrollVerticallyBy(150.f);
+  EXPECT_FLOAT_EQ(-100.f, manager->ControlsTopOffset());
+  EXPECT_FLOAT_EQ(50.f, client.ViewportScrollOffset().y());
+  manager->ScrollEnd();
+
+  manager->ScrollBegin();
+
+  // Scroll back up a bit and ensure the controls don't move until we're at
+  // the top.
+  client.ScrollVerticallyBy(-20.f);
+  EXPECT_FLOAT_EQ(-100.f, manager->ControlsTopOffset());
+  EXPECT_FLOAT_EQ(30.f, client.ViewportScrollOffset().y());
+
+  client.ScrollVerticallyBy(-10.f);
+  EXPECT_FLOAT_EQ(-100.f, manager->ControlsTopOffset());
+  EXPECT_FLOAT_EQ(20.f, client.ViewportScrollOffset().y());
+
+  // After scrolling past the top, the top controls should start showing.
+  client.ScrollVerticallyBy(-30.f);
+  EXPECT_FLOAT_EQ(-90.f, manager->ControlsTopOffset());
+  EXPECT_FLOAT_EQ(0.f, client.ViewportScrollOffset().y());
+
+  client.ScrollVerticallyBy(-50.f);
+  EXPECT_FLOAT_EQ(-40.f, manager->ControlsTopOffset());
+  // The final offset is greater than gtest's epsilon.
+  EXPECT_GT(0.0001f, client.ViewportScrollOffset().y());
+
+  manager->ScrollEnd();
 }
 
 }  // namespace

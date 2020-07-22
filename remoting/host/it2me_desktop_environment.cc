@@ -14,6 +14,7 @@
 #include "remoting/host/host_window.h"
 #include "remoting/host/host_window_proxy.h"
 #include "remoting/host/input_monitor/local_input_monitor.h"
+#include "remoting/protocol/capability_names.h"
 
 #if defined(OS_POSIX)
 #include <sys/types.h>
@@ -81,6 +82,10 @@ It2MeDesktopEnvironment::It2MeDesktopEnvironment(
         caller_task_runner, ui_task_runner, std::move(disconnect_window_)));
     disconnect_window_->Start(client_session_control);
   }
+}
+
+std::string It2MeDesktopEnvironment::GetCapabilities() const {
+  return protocol::kWebrtcIceRestartAction;
 }
 
 It2MeDesktopEnvironmentFactory::It2MeDesktopEnvironmentFactory(

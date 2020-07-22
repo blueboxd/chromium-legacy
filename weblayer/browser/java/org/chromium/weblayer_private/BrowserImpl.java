@@ -199,6 +199,7 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
 
         getViewController().setTopView(ObjectWrapper.unwrap(viewWrapper, View.class));
         getViewController().setTopControlsMinHeight(minHeight);
+        getViewController().setPinTopControlsToContentTop(pinToContentTop);
     }
 
     @Override

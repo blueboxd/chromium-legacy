@@ -14,6 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
+#include "chrome/updater/service_scope.h"
 #include "chrome/updater/update_service.h"
 
 @class CRUUpdateServiceOutOfProcessImpl;
@@ -31,7 +32,7 @@ namespace updater {
 // All functions and callbacks must be called on the same sequence.
 class UpdateServiceOutOfProcess : public UpdateService {
  public:
-  explicit UpdateServiceOutOfProcess(UpdateService::Scope scope);
+  explicit UpdateServiceOutOfProcess(ServiceScope scope);
 
   // Overrides for UpdateService.
   void RegisterApp(

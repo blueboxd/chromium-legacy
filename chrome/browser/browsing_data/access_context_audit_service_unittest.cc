@@ -178,10 +178,10 @@ TEST_F(AccessContextAuditServiceTest, CookieRecords) {
   // Check that informing the service of non-deletion changes to the cookies
   // via the CookieChangeInterface is a no-op.
   service()->OnCookieChange(
-      net::CookieChangeInfo(*test_cookie, net::CookieAccessSemantics::UNKNOWN,
+      net::CookieChangeInfo(*test_cookie, net::CookieAccessResult(),
                             net::CookieChangeCause::OVERWRITE));
   service()->OnCookieChange(net::CookieChangeInfo(
-      *test_non_persistent_cookie, net::CookieAccessSemantics::UNKNOWN,
+      *test_non_persistent_cookie, net::CookieAccessResult(),
       net::CookieChangeCause::OVERWRITE));
 
   service()->GetAllAccessRecords(
@@ -218,10 +218,10 @@ TEST_F(AccessContextAuditServiceTest, CookieRecords) {
   // Inform the service the cookies have been deleted and check they are no
   // longer returned.
   service()->OnCookieChange(
-      net::CookieChangeInfo(*test_cookie, net::CookieAccessSemantics::UNKNOWN,
+      net::CookieChangeInfo(*test_cookie, net::CookieAccessResult(),
                             net::CookieChangeCause::EXPLICIT));
   service()->OnCookieChange(net::CookieChangeInfo(
-      *test_non_persistent_cookie, net::CookieAccessSemantics::UNKNOWN,
+      *test_non_persistent_cookie, net::CookieAccessResult(),
       net::CookieChangeCause::EXPLICIT));
   ClearReturnedRecords();
   service()->GetAllAccessRecords(

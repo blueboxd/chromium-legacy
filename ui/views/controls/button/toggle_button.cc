@@ -19,7 +19,6 @@
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -328,10 +327,6 @@ std::unique_ptr<InkDrop> ToggleButton::CreateInkDrop() {
   ink_drop->SetAutoHighlightMode(
       InkDropImpl::AutoHighlightMode::HIDE_ON_RIPPLE);
   return std::move(ink_drop);
-}
-
-std::unique_ptr<InkDropMask> ToggleButton::CreateInkDropMask() const {
-  return nullptr;
 }
 
 std::unique_ptr<InkDropRipple> ToggleButton::CreateInkDropRipple() const {

@@ -213,6 +213,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     frameDidBecomeAvailable:(web::WebFrame*)web_frame {
   DCHECK_EQ(_webState, webState);
   DCHECK(web_frame);
+  if (!web_frame->CanCallJavaScriptFunction())
+    return;
   UniqueIDTabHelper* uniqueIDTabHelper =
       UniqueIDTabHelper::FromWebState(_webState);
   uint32_t nextAvailableRendererID =

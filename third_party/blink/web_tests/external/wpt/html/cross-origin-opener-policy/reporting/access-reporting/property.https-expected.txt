@@ -1,41 +1,41 @@
 This is a testharness.js-based test.
-FAIL cross-origin > w => w.blur() assert_not_equals: Report not received got disallowed value "timeout"
-FAIL cross-origin > w => w.close() assert_not_equals: Report not received got disallowed value "timeout"
-FAIL cross-origin > w => w.closed assert_not_equals: Report not received got disallowed value "timeout"
-FAIL cross-origin > w => w.focus() assert_not_equals: Report not received got disallowed value "timeout"
-FAIL cross-origin > w => w.frames assert_not_equals: Report not received got disallowed value "timeout"
+PASS cross-origin > w => w.blur()
+PASS cross-origin > w => w.close()
+PASS cross-origin > w => w.closed
+PASS cross-origin > w => w.focus()
+PASS cross-origin > w => w.frames
 FAIL cross-origin > w => w[0] assert_not_equals: Report not received got disallowed value "timeout"
 FAIL cross-origin > w => w[0] = "" assert_not_equals: Report not received got disallowed value "timeout"
-FAIL cross-origin > w => w.length assert_not_equals: Report not received got disallowed value "timeout"
+PASS cross-origin > w => w.length
 FAIL cross-origin > w => w.location assert_not_equals: Report not received got disallowed value "timeout"
 FAIL cross-origin > w => w.location = "#" assert_not_equals: Report not received got disallowed value "timeout"
 FAIL cross-origin > w => w["test"] assert_not_equals: Report not received got disallowed value "timeout"
 FAIL cross-origin > w => w["test"] = "" assert_not_equals: Report not received got disallowed value "timeout"
-FAIL cross-origin > w => w.opener assert_not_equals: Report not received got disallowed value "timeout"
+PASS cross-origin > w => w.opener
 FAIL cross-origin > w => w.opener = "" assert_not_equals: Report not received got disallowed value "timeout"
-FAIL cross-origin > w => w.postMessage("") assert_not_equals: Report not received got disallowed value "timeout"
-FAIL cross-origin > w => w.postMessage("", "") assert_not_equals: Report not received got disallowed value "timeout"
-FAIL cross-origin > w => w.self assert_not_equals: Report not received got disallowed value "timeout"
-FAIL cross-origin > w => w.top assert_not_equals: Report not received got disallowed value "timeout"
-FAIL cross-origin > w => w.window assert_not_equals: Report not received got disallowed value "timeout"
+PASS cross-origin > w => w.postMessage("")
+PASS cross-origin > w => w.postMessage("", "")
+PASS cross-origin > w => w.self
+PASS cross-origin > w => w.top
+PASS cross-origin > w => w.window
 FAIL same-site > w => w.blur() assert_not_equals: Report not received got disallowed value "timeout"
 FAIL same-site > w => w.close() assert_not_equals: Report not received got disallowed value "timeout"
-FAIL same-site > w => w.closed assert_not_equals: Report not received got disallowed value "timeout"
+PASS same-site > w => w.closed
 FAIL same-site > w => w.focus() assert_not_equals: Report not received got disallowed value "timeout"
-FAIL same-site > w => w.frames assert_not_equals: Report not received got disallowed value "timeout"
+PASS same-site > w => w.frames
 FAIL same-site > w => w[0] assert_not_equals: Report not received got disallowed value "timeout"
 FAIL same-site > w => w[0] = "" assert_not_equals: Report not received got disallowed value "timeout"
-FAIL same-site > w => w.length assert_not_equals: Report not received got disallowed value "timeout"
+PASS same-site > w => w.length
 FAIL same-site > w => w.location assert_not_equals: Report not received got disallowed value "timeout"
 FAIL same-site > w => w.location = "#" assert_not_equals: Report not received got disallowed value "timeout"
 FAIL same-site > w => w["test"] assert_not_equals: Report not received got disallowed value "timeout"
 FAIL same-site > w => w["test"] = "" assert_not_equals: Report not received got disallowed value "timeout"
-FAIL same-site > w => w.opener assert_not_equals: Report not received got disallowed value "timeout"
+PASS same-site > w => w.opener
 FAIL same-site > w => w.opener = "" assert_not_equals: Report not received got disallowed value "timeout"
 FAIL same-site > w => w.postMessage("") assert_not_equals: Report not received got disallowed value "timeout"
 FAIL same-site > w => w.postMessage("", "") assert_not_equals: Report not received got disallowed value "timeout"
-FAIL same-site > w => w.self assert_not_equals: Report not received got disallowed value "timeout"
-FAIL same-site > w => w.top assert_not_equals: Report not received got disallowed value "timeout"
+PASS same-site > w => w.self
+PASS same-site > w => w.top
 FAIL same-site > w => w.window assert_not_equals: Report not received got disallowed value "timeout"
 Harness: the test ran to completion.
 

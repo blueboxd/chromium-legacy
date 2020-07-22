@@ -101,6 +101,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   base::string16 GetDisplayName() const override;
   ProtocolVersion SupportedProtocol() const override;
   bool SupportsHMACSecretExtension() const override;
+  bool SupportsEnterpriseAttestation() const override;
   const base::Optional<AuthenticatorSupportedOptions>& Options() const override;
   base::Optional<FidoTransportProtocol> AuthenticatorTransport() const override;
   bool IsInPairingMode() const override;

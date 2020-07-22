@@ -304,11 +304,15 @@ void It2MeHostTest::StartHost(bool enable_dialogs, bool enable_notifications) {
   auto log_to_server = std::make_unique<XmppLogToServer>(
       ServerLogEntry::IT2ME, fake_signal_strategy.get(), "fake_bot_jid",
       host_context_->network_task_runner());
+  auto create_signal_strategy = base::BindOnce(
+      [](std::unique_ptr<SignalStrategy> signal_strategy,
+         ChromotingHostContext* unused_context) { return signal_strategy; },
+      std::move(fake_signal_strategy));
   it2me_host_->Connect(
       host_context_->Copy(), policies_->CreateDeepCopy(),
       std::move(dialog_factory), std::move(register_host_request),
       std::move(log_to_server), weak_factory_.GetWeakPtr(),
-      std::move(fake_signal_strategy), kTestUserName, ice_config);
+      std::move(create_signal_strategy), kTestUserName, ice_config);
 
   base::RunLoop run_loop;
   state_change_callback_ =

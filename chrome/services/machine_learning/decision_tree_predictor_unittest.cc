@@ -61,14 +61,8 @@ TEST_F(DecisionTreePredictorTest, InvalidPredictorFromModelSpec) {
 }
 
 TEST_F(DecisionTreePredictorTest, ModelPrediction) {
-  mojom::DecisionTreePredictionResult g_result;
-  double g_score;
-  auto callback = base::BindLambdaForTesting(
-      [&g_result, &g_score](mojom::DecisionTreePredictionResult result,
-                            double score) -> void {
-        g_result = result;
-        g_score = score;
-      });
+  mojom::DecisionTreePredictionResult result;
+  double score;
 
   auto model = std::make_unique<DecisionTreeModel>(
       testing::GetModelProtoForPredictionResult(
@@ -76,10 +70,17 @@ TEST_F(DecisionTreePredictorTest, ModelPrediction) {
   std::unique_ptr<mojom::DecisionTreePredictor> predictor =
       std::make_unique<DecisionTreePredictor>(std::move(model));
 
-  predictor->Predict({}, std::move(callback));
+  predictor->Predict(
+      {}, base::BindOnce(
+              [](mojom::DecisionTreePredictionResult* p_result, double* p_score,
+                 mojom::DecisionTreePredictionResult result, double score) {
+                *p_result = result;
+                *p_score = score;
+              },
+              &result, &score));
 
-  EXPECT_EQ(mojom::DecisionTreePredictionResult::kTrue, g_result);
-  EXPECT_GT(g_score, testing::kModelThreshold);
+  EXPECT_EQ(mojom::DecisionTreePredictionResult::kTrue, result);
+  EXPECT_GT(score, testing::kModelThreshold);
 }
 
 }  // namespace machine_learning

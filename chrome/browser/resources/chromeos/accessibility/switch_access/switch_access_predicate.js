@@ -123,6 +123,10 @@ const SwitchAccessPredicate = {
       return false;
     }
 
+    if (node.role === chrome.automation.RoleType.KEYBOARD) {
+      return true;
+    }
+
     let interestingBranchesCount =
         SwitchAccessPredicate.isActionable(node) ? 1 : 0;
     let child = node.firstChild;

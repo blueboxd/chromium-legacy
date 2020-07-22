@@ -149,6 +149,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   // SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
+  void OnContentSizeChanged(Surface*) override {}
 
   // CaptureClientObserver:
   void OnCaptureChanged(aura::Window* lost_capture,

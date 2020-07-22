@@ -40,6 +40,7 @@
 #include "remoting/signaling/remoting_log_to_server.h"
 #include "remoting/signaling/server_log_entry.h"
 #include "remoting/signaling/xmpp_log_to_server.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_WIN)
 #include "base/command_line.h"
@@ -251,7 +252,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
   bool terminate_upon_input = false;
   message->GetBoolean("terminateUponInput", &terminate_upon_input);
 
-  std::unique_ptr<SignalStrategy> signal_strategy;
+  It2MeHost::CreateSignalStrategyCallback create_signal_strategy;
   std::unique_ptr<RegisterSupportHostRequest> register_host_request;
   std::unique_ptr<LogToServer> log_to_server;
   if (use_signaling_proxy) {
@@ -259,24 +260,41 @@ void It2MeNativeMessagingHost::ProcessConnect(
       // Allow unauthenticated users for the delegated signal strategy case.
       username = kAnonymousUserName;
     }
-    signal_strategy = CreateDelegatedSignalStrategy(message.get());
-    register_host_request =
-        std::make_unique<XmppRegisterSupportHostRequest>(kRemotingBotJid);
-    log_to_server = std::make_unique<XmppLogToServer>(
-        ServerLogEntry::IT2ME, signal_strategy.get(), kRemotingBotJid,
-        host_context_->network_task_runner());
+    auto signal_strategy = CreateDelegatedSignalStrategy(message.get());
+    if (signal_strategy) {
+      register_host_request =
+          std::make_unique<XmppRegisterSupportHostRequest>(kRemotingBotJid);
+      log_to_server = std::make_unique<XmppLogToServer>(
+          ServerLogEntry::IT2ME, signal_strategy.get(), kRemotingBotJid,
+          host_context_->network_task_runner());
+      create_signal_strategy = base::BindOnce(
+          [](std::unique_ptr<SignalStrategy> signal_strategy,
+             ChromotingHostContext* unused_context) { return signal_strategy; },
+          std::move(signal_strategy));
+    }
   } else {
-    std::string access_token = ExtractAccessToken(message.get());
-    signal_strategy = CreateFtlSignalStrategy(username, access_token);
-    register_host_request =
-        std::make_unique<RemotingRegisterSupportHostRequest>(
-            std::make_unique<PassthroughOAuthTokenGetter>(username,
-                                                          access_token));
-    log_to_server = std::make_unique<RemotingLogToServer>(
-        ServerLogEntry::IT2ME,
-        std::make_unique<PassthroughOAuthTokenGetter>(username, access_token));
+    if (!username.empty()) {
+      std::string access_token = ExtractAccessToken(message.get());
+      create_signal_strategy = base::BindOnce(
+          [](const std::string& username, const std::string& access_token,
+             ChromotingHostContext* host_context)
+              -> std::unique_ptr<SignalStrategy> {
+            return std::make_unique<FtlSignalStrategy>(
+                std::make_unique<PassthroughOAuthTokenGetter>(username,
+                                                              access_token),
+                host_context->url_loader_factory(),
+                std::make_unique<FtlClientUuidDeviceIdProvider>());
+          },
+          username, access_token);
+
+      log_to_server = std::make_unique<RemotingLogToServer>(
+          ServerLogEntry::IT2ME, std::make_unique<PassthroughOAuthTokenGetter>(
+                                     username, access_token));
+    } else {
+      LOG(ERROR) << "'userName' not found in request.";
+    }
   }
-  if (!signal_strategy) {
+  if (!create_signal_strategy) {
     SendErrorAndExit(std::move(response), ErrorCode::INCOMPATIBLE_PROTOCOL);
     return;
   }
@@ -310,7 +328,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
                        std::make_unique<It2MeConfirmationDialogFactory>(),
                        std::move(register_host_request),
                        std::move(log_to_server), weak_ptr_,
-                       std::move(signal_strategy), username, ice_config);
+                       std::move(create_signal_strategy), username, ice_config);
 
   SendMessageToClient(std::move(response));
 }
@@ -559,20 +577,6 @@ It2MeNativeMessagingHost::CreateDelegatedSignalStrategy(
   incoming_message_callback_ =
       delegating_signal_strategy->GetIncomingMessageCallback();
   return delegating_signal_strategy;
-}
-
-std::unique_ptr<SignalStrategy>
-It2MeNativeMessagingHost::CreateFtlSignalStrategy(
-    const std::string& username,
-    const std::string& access_token) {
-  if (username.empty()) {
-    LOG(ERROR) << "'userName' not found in request.";
-    return nullptr;
-  }
-
-  return std::make_unique<FtlSignalStrategy>(
-      std::make_unique<PassthroughOAuthTokenGetter>(username, access_token),
-      std::make_unique<FtlClientUuidDeviceIdProvider>());
 }
 
 std::string It2MeNativeMessagingHost::ExtractAccessToken(

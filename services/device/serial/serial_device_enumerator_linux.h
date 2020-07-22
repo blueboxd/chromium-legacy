@@ -19,7 +19,10 @@ namespace device {
 class SerialDeviceEnumeratorLinux : public SerialDeviceEnumerator,
                                     public UdevWatcher::Observer {
  public:
-  SerialDeviceEnumeratorLinux();
+  static std::unique_ptr<SerialDeviceEnumeratorLinux> Create();
+
+  explicit SerialDeviceEnumeratorLinux(
+      const base::FilePath& tty_driver_info_path);
   ~SerialDeviceEnumeratorLinux() override;
 
   // UdevWatcher::Observer
@@ -31,6 +34,7 @@ class SerialDeviceEnumeratorLinux : public SerialDeviceEnumerator,
   void CreatePort(ScopedUdevDevicePtr device, const std::string& syspath);
 
   std::unique_ptr<UdevWatcher> watcher_;
+  const base::FilePath tty_driver_info_path_;
   std::map<std::string, base::UnguessableToken> paths_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialDeviceEnumeratorLinux);

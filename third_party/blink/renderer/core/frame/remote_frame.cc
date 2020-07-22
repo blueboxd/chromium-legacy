@@ -526,7 +526,8 @@ void RemoteFrame::UpdateUserActivationState(
     mojom::blink::UserActivationUpdateType update_type) {
   switch (update_type) {
     case mojom::blink::UserActivationUpdateType::kNotifyActivation:
-      NotifyUserActivationInLocalTree();
+      NotifyUserActivationInLocalTree(
+          mojom::blink::UserActivationNotificationType::kNone);
       break;
     case mojom::blink::UserActivationUpdateType::kConsumeTransientActivation:
       ConsumeTransientUserActivationInLocalTree();

@@ -43,9 +43,14 @@ enum class AttestationConveyancePreference : uint8_t {
   kNone,
   kIndirect,
   kDirect,
-  // Non-standard value for individual attestation that we hope to end up in
-  // the standard eventually.
-  kEnterprise,
+  // The value "enterprise" from WebAuthn is split into these two values. The
+  // first indicates that the site requested enterprise attestation and we can
+  // pass that onto the authenticator in case the RP ID is hardcoded into the
+  // authenticator to allow that. The second indicates that we, the browser,
+  // have authenticated the request (e.g. by enterprise policy) and it's
+  // permitted without further checks.
+  kEnterpriseIfRPListedOnAuthenticator,
+  kEnterpriseApprovedByBrowser,
 };
 
 }  // namespace device

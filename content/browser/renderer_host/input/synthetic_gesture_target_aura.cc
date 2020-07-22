@@ -134,7 +134,7 @@ void SyntheticGestureTargetAura::DispatchWebGestureEventToPlatform(
           : ui::EventMomentumPhase::END;
   ui::ScrollEvent scroll_event(event_type, web_gesture.PositionInWidget(),
                                web_gesture.PositionInWidget(),
-                               ui::EventTimeForNow(), flags,
+                               web_gesture.TimeStamp(), flags,
                                web_gesture.data.fling_start.velocity_x,
                                web_gesture.data.fling_start.velocity_y, 0, 0, 2,
                                momentum_phase, ui::ScrollEventPhase::kNone);
@@ -157,8 +157,8 @@ void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
   }
   ui::MouseEvent mouse_event(event_type, web_mouse_event.PositionInWidget(),
                              web_mouse_event.PositionInWidget(),
-                             ui::EventTimeForNow(), flags, changed_button_flags,
-                             pointer_details);
+                             web_mouse_event.TimeStamp(), flags,
+                             changed_button_flags, pointer_details);
 
   aura::Window* window = GetWindow();
   mouse_event.ConvertLocationToTarget(window, window->GetRootWindow());

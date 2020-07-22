@@ -62,6 +62,8 @@ class TestAppRegistrar : public AppRegistrar {
   base::Optional<GURL> GetAppScopeInternal(const AppId& app_id) const override;
   DisplayMode GetAppDisplayMode(const AppId& app_id) const override;
   DisplayMode GetAppUserDisplayMode(const AppId& app_id) const override;
+  std::vector<DisplayMode> GetAppDisplayModeOverride(
+      const AppId& app_id) const override;
   base::Time GetAppLastLaunchTime(const web_app::AppId& app_id) const override;
   base::Time GetAppInstallTime(const web_app::AppId& app_id) const override;
   std::vector<WebApplicationIconInfo> GetAppIconInfos(

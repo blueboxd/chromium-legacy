@@ -8,10 +8,12 @@
 #include <stdint.h>
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list_types.h"
+#include "base/time/time.h"
 #include "base/util/timer/wall_clock_timer.h"
-#include "chrome/browser/enterprise/reporting/notification/extension_request_observer_factory.h"
-#include "chrome/browser/upgrade_detector/build_state_observer.h"
 #include "components/enterprise/browser/reporting/report_generator.h"
 #include "components/enterprise/browser/reporting/report_uploader.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -22,17 +24,58 @@ class CloudPolicyClient;
 
 namespace enterprise_reporting {
 
+class ReportingDelegateFactoryDesktop;
+
 // Schedules report generation and upload every 24 hours and upon browser update
 // for desktop Chrome while cloud reporting is enabled via administrative
 // policy. If either of these triggers fires while a report is being generated,
 // processing is deferred until the existing processing completes.
-class ReportScheduler : public BuildStateObserver {
+class ReportScheduler {
  public:
+  // The trigger leading to report generation. Values are bitmasks in the
+  // |pending_triggers_| bitfield.
+  enum ReportTrigger : uint32_t {
+    kTriggerNone = 0,              // No trigger.
+    kTriggerTimer = 1U << 0,       // The periodic timer expired.
+    kTriggerUpdate = 1U << 1,      // An update was detected.
+    kTriggerNewVersion = 1U << 2,  // A new version is running.
+  };
+
+  using ReportTriggerCallback = base::RepeatingCallback<void(ReportTrigger)>;
+
+  class Delegate {
+   public:
+    Delegate();
+    Delegate(const Delegate&) = delete;
+    Delegate& operator=(const Delegate&) = delete;
+
+    virtual ~Delegate();
+
+    void SetReportTriggerCallback(ReportTriggerCallback callback);
+
+    virtual PrefService* GetLocalState() = 0;
+    virtual void StartWatchingUpdatesIfNeeded(
+        base::Time last_upload,
+        base::TimeDelta upload_interval) = 0;
+    virtual void StopWatchingUpdates() = 0;
+    virtual void SaveLastUploadVersion() = 0;
+
+   protected:
+    ReportTriggerCallback trigger_report_callback_;
+  };
+
   ReportScheduler(policy::CloudPolicyClient* client,
                   std::unique_ptr<ReportGenerator> report_generator,
-                  Profile* profile = nullptr);
+                  ReportingDelegateFactoryDesktop* delegate_factory);
 
-  ~ReportScheduler() override;
+  ReportScheduler(policy::CloudPolicyClient* client,
+                  std::unique_ptr<ReportGenerator> report_generator,
+                  std::unique_ptr<ReportScheduler::Delegate> delegate);
+
+  ~ReportScheduler();
+
+  // Returns true if cloud reporting is enabled.
+  bool IsReportingEnabled() const;
 
   // Returns true if next report has been scheduled. The report will be
   // scheduled only if the previous report is uploaded successfully and the
@@ -43,19 +86,7 @@ class ReportScheduler : public BuildStateObserver {
 
   void OnDMTokenUpdated();
 
-  // BuildStateObserver:
-  void OnUpdate(const BuildState* build_state) override;
-
  private:
-  // The trigger leading to report generation. Values are bitmasks in the
-  // |pending_triggers_| bitfield.
-  enum ReportTrigger : uint32_t {
-    kTriggerNone = 0,              // No trigger.
-    kTriggerTimer = 1U << 0,       // The periodic timer expired.
-    kTriggerUpdate = 1U << 1,      // An update was detected.
-    kTriggerNewVersion = 1U << 2,  // A new version is running.
-  };
-
   // Observes CloudReportingEnabled policy.
   void RegisterPrefObserver();
 
@@ -91,6 +122,8 @@ class ReportScheduler : public BuildStateObserver {
   // Records that |trigger| was responsible for an upload attempt.
   static void RecordUploadTrigger(ReportTrigger trigger);
 
+  std::unique_ptr<Delegate> delegate_;
+
   // Policy value watcher
   PrefChangeRegistrar pref_change_registrar_;
 
@@ -102,8 +135,6 @@ class ReportScheduler : public BuildStateObserver {
 
   std::unique_ptr<ReportGenerator> report_generator_;
 
-  ExtensionRequestObserverFactory extension_request_observer_factory_;
-
   // The trigger responsible for initiating active report generation.
   ReportTrigger active_trigger_ = kTriggerNone;
 
@@ -111,6 +142,8 @@ class ReportScheduler : public BuildStateObserver {
   // of ReportTrigger values). They will be handled following completion of the
   // in-process report.
   uint32_t pending_triggers_ = 0;
+
+  base::WeakPtrFactory<ReportScheduler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ReportScheduler);
 };

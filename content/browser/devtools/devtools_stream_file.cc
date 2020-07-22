@@ -63,7 +63,7 @@ bool DevToolsStreamFile::InitOnFileSequenceIfNeeded() {
     LOG(ERROR) << "Failed to open temporary file: " << temp_path.value() << ", "
                << base::File::ErrorToString(file_.error_details());
     had_errors_ = true;
-    DeleteFile(temp_path, false);
+    base::DeleteFile(temp_path);
     return false;
   }
   return true;

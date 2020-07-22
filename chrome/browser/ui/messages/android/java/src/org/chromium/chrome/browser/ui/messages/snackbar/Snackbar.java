@@ -88,6 +88,7 @@ public class Snackbar {
     public static final int UMA_TWA_PRIVACY_DISCLOSURE_V2 = 33;
     public static final int UMA_HOMEPAGE_PROMO_CHANGED_UNDO = 34;
     public static final int UMA_CONDITIONAL_TAB_STRIP_DISMISS_UNDO = 35;
+    public static final int UMA_PAINT_PREVIEW_UPGRADE_NOTIFICATION = 36;
 
     private SnackbarController mController;
     private CharSequence mText;

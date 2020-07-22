@@ -345,9 +345,11 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                                            float bottom_ratio) override;
   float CurrentTopControlsShownRatio() const override;
   float CurrentBottomControlsShownRatio() const override;
+  gfx::ScrollOffset ViewportScrollOffset() const override;
   void DidChangeBrowserControlsPosition() override;
   void DidObserveScrollDelay(base::TimeDelta scroll_delay,
                              base::TimeTicks scroll_timestamp);
+  bool ShouldPinTopControlsToContentTop() const override;
   bool HaveRootScrollNode() const override;
   void SetNeedsCommit() override;
 

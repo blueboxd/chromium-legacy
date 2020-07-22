@@ -1449,6 +1449,13 @@ std::unique_ptr<TracedValue> inspector_animation_state_event::Data(
   return value;
 }
 
+std::unique_ptr<TracedValue> inspector_animation_compositor_event::Data(
+    CompositorAnimations::FailureReasons failure_reasons) {
+  auto value = std::make_unique<TracedValue>();
+  value->SetInteger("compositeFailed", failure_reasons);
+  return value;
+}
+
 std::unique_ptr<TracedValue> inspector_hit_test_event::EndData(
     const HitTestRequest& request,
     const HitTestLocation& location,

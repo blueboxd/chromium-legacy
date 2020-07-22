@@ -59,8 +59,8 @@ TEST_F(ArcInputMethodSurfaceManagerTest, AddRemoveSurface) {
   ArcInputMethodSurfaceManager manager;
   EXPECT_EQ(nullptr, manager.GetSurface());
   auto surface = std::make_unique<exo::Surface>();
-  auto input_method_surface =
-      std::make_unique<exo::InputMethodSurface>(nullptr, surface.get(), 1.0);
+  auto input_method_surface = std::make_unique<exo::InputMethodSurface>(
+      nullptr, surface.get(), /*default_scale_cancellation=*/false);
   manager.AddSurface(input_method_surface.get());
   EXPECT_EQ(input_method_surface.get(), manager.GetSurface());
   manager.RemoveSurface(input_method_surface.get());
@@ -71,8 +71,8 @@ TEST_F(ArcInputMethodSurfaceManagerTest, Observer) {
   ArcInputMethodSurfaceManager manager;
   EXPECT_EQ(nullptr, manager.GetSurface());
   auto surface = std::make_unique<exo::Surface>();
-  auto input_method_surface =
-      std::make_unique<exo::InputMethodSurface>(&manager, surface.get(), 1.0);
+  auto input_method_surface = std::make_unique<exo::InputMethodSurface>(
+      &manager, surface.get(), /*default_scale_cancellation=*/false);
   surface->SetViewport(gfx::Size(500, 500));
   surface->Commit();
 

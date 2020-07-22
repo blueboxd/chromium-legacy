@@ -22,9 +22,7 @@ class CONTENT_EXPORT UserConsentHandler {
 
   // Ask for the user consent. Once the process is complete it invokes
   // |on_complete| callback with the appropriate status.
-  virtual void RequestUserConsent(RenderFrameHost* frame_host,
-                                  const url::Origin& origin,
-                                  const std::string& one_time_code,
+  virtual void RequestUserConsent(const std::string& one_time_code,
                                   CompletionCallback on_complete) = 0;
 
   // Returns true if it is still processing an inflight request.
@@ -38,9 +36,7 @@ class CONTENT_EXPORT UserConsentHandler {
 class CONTENT_EXPORT NoopUserConsentHandler : public UserConsentHandler {
  public:
   ~NoopUserConsentHandler() override;
-  void RequestUserConsent(RenderFrameHost* frame_host,
-                          const url::Origin& origin,
-                          const std::string& one_time_code,
+  void RequestUserConsent(const std::string& one_time_code,
                           CompletionCallback on_complete) override;
   bool is_active() const override;
   bool is_async() const override;
@@ -48,11 +44,10 @@ class CONTENT_EXPORT NoopUserConsentHandler : public UserConsentHandler {
 
 class CONTENT_EXPORT PromptBasedUserConsentHandler : public UserConsentHandler {
  public:
-  PromptBasedUserConsentHandler();
+  PromptBasedUserConsentHandler(RenderFrameHost* frame_host,
+                                const url::Origin& origin);
   ~PromptBasedUserConsentHandler() override;
-  void RequestUserConsent(RenderFrameHost* frame_host,
-                          const url::Origin& origin,
-                          const std::string& one_time_code,
+  void RequestUserConsent(const std::string& one_time_code,
                           CompletionCallback on_complete) override;
   bool is_active() const override;
   bool is_async() const override;
@@ -61,6 +56,8 @@ class CONTENT_EXPORT PromptBasedUserConsentHandler : public UserConsentHandler {
   void OnCancel();
 
  private:
+  RenderFrameHost* frame_host_;
+  const url::Origin origin_;
   bool is_prompt_open_{false};
   CompletionCallback on_complete_;
 

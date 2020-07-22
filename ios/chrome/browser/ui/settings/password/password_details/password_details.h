@@ -27,6 +27,9 @@ struct PasswordForm;
 // Associated password.
 @property(nonatomic, strong) NSString* password;
 
+// Whether password is compromised or not.
+@property(nonatomic, assign, getter=isCompromised) BOOL compromised;
+
 - (instancetype)initWithPasswordForm:(const autofill::PasswordForm&)form
     NS_DESIGNATED_INITIALIZER;
 

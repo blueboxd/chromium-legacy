@@ -1067,14 +1067,22 @@ if (enable_java_templates) {
         _rebased_baseline = rebase_path(baseline, root_build_dir)
 
         args += [
-          "--baseline=$_rebased_baseline",
+          "--manifest-path=@FileArg($_rebased_build_config:deps_info:lint_android_manifest)",
+
+          # Lint requires all source and all resource files to be passed in the
+          # same invocation for checks like UnusedResources.
           "--java-sources=@FileArg($_rebased_build_config:deps_info:lint_java_sources)",
           "--srcjars=@FileArg($_rebased_build_config:deps_info:lint_srcjars)",
-          "--srcjars=@FileArg($_rebased_build_config:deps_info:lint_srcjars)",
-          "--classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)",
-          "--manifest-path=@FileArg($_rebased_build_config:deps_info:lint_android_manifest)",
           "--resource-sources=@FileArg($_rebased_build_config:deps_info:lint_resource_sources)",
           "--resource-zips=@FileArg($_rebased_build_config:deps_info:lint_resource_zips)",
+
+          # Baseline allows us to turn on lint warnings without fixing all the
+          # pre-existing issues. This stops the flood of new issues while the
+          # existing ones are being fixed.
+          "--baseline=$_rebased_baseline",
+
+          # The full classpath is required for annotation checks like @IntDef.
+          "--classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)",
         ]
       }
 
@@ -3089,7 +3097,7 @@ if (enable_java_templates) {
           filter_exclude(
               [ get_label_info(":$target_name", "label_no_toolchain") ],
               [
-                "//components*",
+                "//components/cronet*",
 
                 # This is due to the "special group" bypass.
                 "*_bundle_module__java__header",

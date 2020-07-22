@@ -74,7 +74,9 @@ class MediaControlDisplayCutoutFullscreenButtonElementTest
 
   void SimulateEnterFullscreen() {
     {
-      LocalFrame::NotifyUserActivation(GetDocument().GetFrame());
+      LocalFrame::NotifyUserActivation(
+          GetDocument().GetFrame(),
+          mojom::UserActivationNotificationType::kTest);
       Fullscreen::RequestFullscreen(*video_);
     }
 

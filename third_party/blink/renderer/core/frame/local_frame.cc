@@ -1963,10 +1963,12 @@ mojom::blink::ReportingServiceProxy* LocalFrame::GetReportingService() {
 }
 
 // static
-void LocalFrame::NotifyUserActivation(LocalFrame* frame,
-                                      bool need_browser_verification) {
+void LocalFrame::NotifyUserActivation(
+    LocalFrame* frame,
+    mojom::blink::UserActivationNotificationType notification_type,
+    bool need_browser_verification) {
   if (frame)
-    frame->NotifyUserActivation(need_browser_verification);
+    frame->NotifyUserActivation(notification_type, need_browser_verification);
 }
 
 // static
@@ -1981,7 +1983,9 @@ bool LocalFrame::ConsumeTransientUserActivation(
   return frame ? frame->ConsumeTransientUserActivation(update_source) : false;
 }
 
-void LocalFrame::NotifyUserActivation(bool need_browser_verification) {
+void LocalFrame::NotifyUserActivation(
+    mojom::blink::UserActivationNotificationType notification_type,
+    bool need_browser_verification) {
   mojom::blink::UserActivationUpdateType update_type =
       need_browser_verification
           ? mojom::blink::UserActivationUpdateType::
@@ -1990,7 +1994,7 @@ void LocalFrame::NotifyUserActivation(bool need_browser_verification) {
 
   GetLocalFrameHostRemote().UpdateUserActivationState(update_type);
   Client()->NotifyUserActivation();
-  NotifyUserActivationInLocalTree();
+  NotifyUserActivationInLocalTree(notification_type);
 }
 
 bool LocalFrame::ConsumeTransientUserActivation(
@@ -2382,6 +2386,7 @@ void LocalFrame::GetStringForRange(const gfx::Range& range,
 #endif
 
 void LocalFrame::InstallCoopAccessMonitor(
+    network::mojom::blink::CoopAccessReportType report_type,
     const base::UnguessableToken& accessed_window,
     mojo::PendingRemote<network::mojom::blink::CrossOriginOpenerPolicyReporter>
         reporter) {
@@ -2390,7 +2395,7 @@ void LocalFrame::InstallCoopAccessMonitor(
   if (!accessed_frame)
     return;
 
-  accessed_frame->DomWindow()->InstallCoopAccessMonitor(this,
+  accessed_frame->DomWindow()->InstallCoopAccessMonitor(report_type, this,
                                                         std::move(reporter));
 }
 
@@ -2482,7 +2487,8 @@ void LocalFrame::SetFrameOwnerProperties(
 }
 
 void LocalFrame::NotifyUserActivation() {
-  NotifyUserActivation(false);
+  NotifyUserActivation(
+      mojom::blink::UserActivationNotificationType::kVoiceSearch, false);
 }
 
 void LocalFrame::RegisterVirtualKeyboardOverlayChangedObserver(

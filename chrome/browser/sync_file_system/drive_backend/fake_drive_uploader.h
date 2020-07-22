@@ -26,7 +26,7 @@ class FakeDriveServiceWrapper : public drive::FakeDriveService {
   ~FakeDriveServiceWrapper() override;
 
   // DriveServiceInterface overrides.
-  google_apis::CancelCallback AddNewDirectory(
+  google_apis::CancelCallbackOnce AddNewDirectory(
       const std::string& parent_resource_id,
       const std::string& directory_name,
       const drive::AddNewDirectoryOptions& options,

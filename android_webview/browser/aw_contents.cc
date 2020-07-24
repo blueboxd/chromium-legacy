@@ -353,6 +353,7 @@ AwContents::~AwContents() {
   }
   browser_view_renderer_.SetCurrentCompositorFrameConsumer(nullptr);
   AwContentsLifecycleNotifier::GetInstance().OnWebViewDestroyed(this);
+  WebContentsObserver::Observe(nullptr);
   AwBrowserProcess::GetInstance()->visibility_metrics_logger()->RemoveClient(
       this);
 }
@@ -1481,6 +1482,17 @@ void AwContents::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   // If this request was blocked in any way, broadcast an error.
   net::Error error_code = navigation_handle->GetNetErrorCode();
+
+  bool navigation_successful_and_scheme_http_or_https =
+      ((error_code == net::OK) &&
+       navigation_handle->GetURL().SchemeIsHTTPOrHTTPS());
+  if (navigation_successful_and_scheme_http_or_https != scheme_http_or_https_) {
+    scheme_http_or_https_ = navigation_successful_and_scheme_http_or_https;
+    AwBrowserProcess::GetInstance()
+        ->visibility_metrics_logger()
+        ->ClientVisibilityChanged(this);
+  }
+
   if (!net::IsRequestBlockedError(error_code) &&
       error_code != net::ERR_ABORTED) {
     return;
@@ -1536,7 +1548,7 @@ VisibilityMetricsLogger::VisibilityInfo AwContents::GetVisibilityInfo() {
   return VisibilityMetricsLogger::VisibilityInfo{
       browser_view_renderer_.attached_to_window(),
       browser_view_renderer_.view_visible(),
-      browser_view_renderer_.window_visible()};
+      browser_view_renderer_.window_visible(), scheme_http_or_https_};
 }
 
 void AwContents::RendererUnresponsive(

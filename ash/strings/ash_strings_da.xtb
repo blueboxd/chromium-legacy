@@ -8,7 +8,7 @@
 <translation id="1036672894875463507">Jeg er din Google-assistent, og jeg er klar til at hjælpe dig i løbet af dagen.
 Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> blev tilføjet</translation>
-<translation id="1056775291175587022">Der er ingen netværk</translation>
+<translation id="1056775291175587022">Ingen netværk</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="108486256082349153">Mobil: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">Jeg keder mig</translation>
@@ -276,7 +276,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="4028481283645788203">Der kræves en adgangskode som ekstra sikkerhed</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Du deler din skærm</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Deaktiveret for én app}one{Deaktiveret for # app}other{Deaktiveret for # apps}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Fra for én app}one{Fra for # app}other{Fra for # apps}}</translation>
 <translation id="4072264167173457037">Middel signal</translation>
 <translation id="4112140312785995938">Spol tilbage</translation>
 <translation id="4129129681837227511">Du kan se notifikationer på din låseskærm ved at låse skærmen op og ændre indstillingen</translation>
@@ -301,7 +301,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="4356930093361201197">tilstanden Høj kontrast</translation>
 <translation id="4368583494516669646">Hej <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Cast-indstillinger</translation>
-<translation id="4378551569595875038">Opretter forbindelse...</translation>
+<translation id="4378551569595875038">Tilslutter...</translation>
 <translation id="4379531060876907730">Dette er dine styluspenværktøjer</translation>
 <translation id="4389184120735010762">Du trykkede på tastaturgenvejen for det fastgjorte lupvindue. Vil du aktivere indstillingen?</translation>
 <translation id="4421231901400348175">Skærmdeling med <ph name="HELPER_NAME" /> via Fjernsupport.</translation>
@@ -469,7 +469,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6501401484702599040">Caster skærmen til <ph name="RECEIVER_NAME" /></translation>
 <translation id="652139407789908527">Din skærm vil være tom i længere tid end normalt (i op til et minut) under denne opdatering. Undlad at trykke på afbryderknappen, mens opdateringen er i gang.</translation>
 <translation id="6521655319214113338">Indtastning via håndskrift</translation>
-<translation id="6528179044667508675">Vil ikke forstyrres</translation>
+<translation id="6528179044667508675">Forstyr ikke</translation>
 <translation id="6537270692134705506">Tag screenshot</translation>
 <translation id="6537924328260219877">Signalstyrke <ph name="SIGNAL_STRENGTH" />, telefonbatteri <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Caster til <ph name="RECEIVER_NAME" /></translation>
@@ -522,7 +522,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7088960765736518739">Kontaktadgang</translation>
 <translation id="7098389117866926363">USB-C-enhed (porten bagpå i venstre side)</translation>
 <translation id="7131634465328662194">Du logges automatisk ud.</translation>
-<translation id="7143207342074048698">Opretter forbindelse</translation>
+<translation id="7143207342074048698">Tilslutter</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS" /> sekunder.</translation>
 <translation id="7188494361780961876">Menuen blev flyttet til øverste venstre hjørne af skærmen.</translation>
@@ -599,7 +599,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="8061464966246066292">Høj kontrast</translation>
 <translation id="8098591350844501178">Stop skærmcast til <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">Aktiveret, alle apps</translation>
+<translation id="8113423164597455979">Til, alle apps</translation>
 <translation id="8131740175452115882">Bekræft</translation>
 <translation id="8132793192354020517">Forbundet til <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialiserer...</translation>
@@ -640,7 +640,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> har <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> understøtter ikke <ph name="SPECIFIED_RESOLUTION" />. Opløsningen blev ændret til <ph name="FALLBACK_RESOLUTION" />. Klik på Bekræft for at gemme ændringerne. De tidligere indstillinger gendannes om <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="8513108775083588393">Roter automatisk</translation>
+<translation id="8513108775083588393">Autoroter</translation>
 <translation id="8517041960877371778">Din <ph name="DEVICE_TYPE" /> kan muligvis ikke oplades, mens den er tændt.</translation>
 <translation id="8563862697512465947">Indstillinger for notifikationer</translation>
 <translation id="857201607579416096">Menuen blev flyttet til nederste højre hjørne af skærmen.</translation>
@@ -673,7 +673,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8843682306134542540">Slå Lås rotation til eller fra. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Søg+Esc</translation>
 <translation id="8870509716567206129">Appen understøtter ikke opdelt skærm.</translation>
-<translation id="8874184842967597500">Ikke tilsluttet</translation>
+<translation id="8874184842967597500">Ikke forbundet</translation>
 <translation id="8877788021141246043">Opret en påmindelse</translation>
 <translation id="8878886163241303700">Udvider skærm</translation>
 <translation id="890616557918890486">Skift kilde</translation>
@@ -697,7 +697,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="9080132581049224423">Stryg opad for at gå til startsiden</translation>
 <translation id="9080206825613744995">Mikrofonen er i brug.</translation>
 <translation id="9084606467167974638">Skift menuposition</translation>
-<translation id="9089416786594320554">Indtastningsmetoder</translation>
+<translation id="9089416786594320554">Inputmetoder</translation>
 <translation id="9091626656156419976">Skærmen <ph name="DISPLAY_NAME" /> blev fjernet</translation>
 <translation id="9151726767154816831">Genstart, og udfør en powerwash for at opdatere</translation>
 <translation id="9168436347345867845">Gør det senere</translation>

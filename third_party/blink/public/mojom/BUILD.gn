@@ -290,6 +290,60 @@ mojom("mojom_platform") {
     {
       types = [
         {
+          mojom = "blink.mojom.ParsedFeaturePolicyDeclaration"
+          cpp = "::blink::ParsedFeaturePolicyDeclaration"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/feature_policy/feature_policy_forward.h" ]
+      traits_private_headers = [ "//third_party/blink/common/feature_policy/feature_policy_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.FramePolicy"
+          cpp = "::blink::FramePolicy"
+        },
+      ]
+      traits_headers =
+          [ "//third_party/blink/common/frame/frame_policy_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.MediaDeviceType"
+          cpp = "::blink::MediaDeviceType"
+        },
+        {
+          mojom = "blink.mojom.MediaDeviceInfo"
+          cpp = "::blink::WebMediaDeviceInfo"
+        },
+        {
+          mojom = "blink.mojom.FacingMode"
+          cpp = "::media::VideoFacingMode"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/mediastream/media_devices_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.MediaStreamDevice"
+          cpp = "::blink::MediaStreamDevice"
+        },
+        {
+          mojom = "blink.mojom.StreamControls"
+          cpp = "::blink::StreamControls"
+        },
+        {
+          mojom = "blink.mojom.TrackControls"
+          cpp = "::blink::TrackControls"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/mediastream/media_stream_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
           mojom = "blink.mojom.ScreenInfo"
           cpp = "::blink::ScreenInfo"
         },
@@ -316,6 +370,18 @@ mojom("mojom_platform") {
       ]
       traits_headers = [ "//third_party/blink/public/common/widget/device_emulation_params_mojom_traits.h" ]
     },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.URLLoaderFactoryBundle"
+          cpp = "::std::unique_ptr<::blink::PendingURLLoaderFactoryBundle>"
+          nullable_is_same_type = true
+          move_only = true
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/loader/url_loader_factory_bundle_mojom_traits.h" ]
+      traits_public_deps = [ "//url/mojom:mojom_traits" ]
+    },
   ]
   cpp_typemaps = [
     {
@@ -339,6 +405,32 @@ mojom("mojom_platform") {
       ]
       traits_headers =
           [ "//third_party/blink/renderer/platform/mojo/drag_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.FetchAPIRequestBody"
+          cpp = "::blink::ResourceRequestBody"
+          nullable_is_same_type = true
+          move_only = true
+        },
+      ]
+      traits_headers = [
+        "//third_party/blink/renderer/platform/loader/fetch/resource_request.h",
+      ]
+      traits_private_headers = [ "//third_party/blink/renderer/platform/loader/fetch/fetch_api_request_body_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.FetchAPIRequestHeaders"
+          cpp =
+              "::WTF::HashMap<::WTF::String, WTF::String, WTF::CaseFoldingHash>"
+          move_only = true
+        },
+      ]
+      traits_headers = [ "//third_party/blink/renderer/platform/mojo/fetch_api_request_headers_mojom_traits.h" ]
+      traits_public_deps = [ "//third_party/blink/renderer/platform/wtf" ]
     },
   ]
   cpp_typemaps += shared_cpp_typemaps
@@ -404,6 +496,19 @@ mojom("android_mojo_bindings") {
     sources += [ "unhandled_tap_notifier/unhandled_tap_notifier.mojom" ]
     public_deps += [ "//ui/gfx/geometry/mojom" ]
   }
+
+  blink_cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "blink.mojom.SerializedBlob"
+          cpp = "::scoped_refptr<::blink::BlobDataHandle>"
+          nullable_is_same_type = true
+        },
+      ]
+      traits_headers = [ "//third_party/blink/renderer/platform/blob/serialized_blob_mojom_traits.h" ]
+    },
+  ]
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"
@@ -502,6 +607,55 @@ mojom("mojom_core") {
     ]
   }
 
+  shared_cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "blink.mojom.MessagePortDescriptor"
+          cpp = "::blink::MessagePortDescriptor"
+          move_only = true
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/messaging/message_port_descriptor_mojom_traits.h" ]
+    },
+  ]
+
+  cpp_typemaps = shared_cpp_typemaps
+
+  blink_cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "blink.mojom.CloneableMessage"
+          cpp = "::blink::BlinkCloneableMessage"
+          move_only = true
+        },
+      ]
+      traits_headers = [ "//third_party/blink/renderer/core/messaging/blink_cloneable_message_mojom_traits.h" ]
+      traits_public_deps = [ "//third_party/blink/public/common" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.TransferableMessage"
+          cpp = "::blink::BlinkTransferableMessage"
+          move_only = true
+        },
+        {
+          mojom = "blink.mojom.SerializedArrayBufferContents"
+          cpp = "::blink::ArrayBufferContents"
+          move_only = true
+        },
+      ]
+      traits_headers = [ "//third_party/blink/renderer/core/messaging/blink_transferable_message_mojom_traits.h" ]
+      traits_public_deps = [
+        "//third_party/blink/public/common",
+        "//third_party/blink/renderer/platform/wtf",
+      ]
+    },
+  ]
+  blink_cpp_typemaps += shared_cpp_typemaps
+
   overridden_deps_blink = [
     ":android_mojo_bindings",
     ":mojom_platform",
@@ -562,6 +716,26 @@ mojom("web_bluetooth_mojo_bindings") {
   sources = [ "bluetooth/web_bluetooth.mojom" ]
 
   public_deps = [ "//device/bluetooth/public/mojom" ]
+
+  blink_cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "blink.mojom.WebBluetoothDeviceId"
+          cpp = "::WTF::String"
+        },
+        {
+          mojom = "bluetooth.mojom.UUID"
+          cpp = "::WTF::String"
+          nullable_is_same_type = true
+        },
+      ]
+      traits_headers = [
+        "//third_party/blink/renderer/platform/mojo/bluetooth_mojom_traits.h",
+      ]
+      traits_public_deps = [ "//device/bluetooth" ]
+    },
+  ]
 
   # The chromium variant must be linked with content and use the same export
   # settings in component build because of the WebBluetoothDeviceId typemap

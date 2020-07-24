@@ -47,7 +47,7 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
  public:
   METADATA_HEADER(Slider);
 
-  explicit Slider(SliderListener* listener);
+  explicit Slider(SliderListener* listener = nullptr);
   ~Slider() override;
 
   float GetValue() const;

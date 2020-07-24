@@ -342,7 +342,7 @@ struct ViewState {
   const bool pref_height_fixed;
 
   // The preferred size, only set during the preferred size pass
-  // (SizeCalculationType::PREFERRED).
+  // (SizeCalculationType::kPreferred).
   gfx::Size pref_size;
 
   // The width/height. This is one of possible three values:
@@ -588,17 +588,17 @@ void ColumnSet::ResetColumnXCoordinates() {
 
 void ColumnSet::CalculateSize(SizeCalculationType type) {
 #if DCHECK_IS_ON()
-  // SizeCalculationType::MINIMUM must be preceeded by a request for
-  // SizeCalculationType::PREFERRED.
-  DCHECK(type == SizeCalculationType::PREFERRED ||
-         last_calculation_type_ == PREFERRED);
+  // SizeCalculationType::kMinimum must be preceded by a request for
+  // SizeCalculationType::kPreferred.
+  DCHECK(type == SizeCalculationType::kPreferred ||
+         last_calculation_type_ == SizeCalculationType::kPreferred);
   last_calculation_type_ = type;
 #endif
   // Reset the size and remaining sizes.
   for (auto* view_state : view_states_) {
     if (!view_state->pref_width_fixed || !view_state->pref_height_fixed) {
       gfx::Size size;
-      if (type == SizeCalculationType::MINIMUM && CanUseMinimum(*view_state)) {
+      if (type == SizeCalculationType::kMinimum && CanUseMinimum(*view_state)) {
         // If the min size is bigger than the preferred, use the preferred.
         // This relies on MINIMUM being calculated immediately after PREFERRED,
         // which the rest of this code relies on as well.
@@ -676,7 +676,7 @@ void ColumnSet::ResizeUsingMin(int total_delta) {
     preferred_column_sizes[i] = columns_[i]->Size();
 
   // Recalculate the sizes using the min.
-  CalculateSize(ColumnSet::SizeCalculationType::MINIMUM);
+  CalculateSize(ColumnSet::SizeCalculationType::kMinimum);
 
   // Build up the set of columns that can be shrunk in |resize_data|, this
   // iteration also resets the size of the column back to the preferred size.
@@ -963,7 +963,7 @@ void GridLayout::SizeRowsAndColumns(bool layout,
   // preferred heights are derived from their width, as such we need to
   // calculate the size of the columns first.
   for (const auto& column_set : column_sets_) {
-    column_set->CalculateSize(ColumnSet::SizeCalculationType::PREFERRED);
+    column_set->CalculateSize(ColumnSet::SizeCalculationType::kPreferred);
     pref->set_width(std::max(pref->width(), column_set->LayoutWidth()));
   }
   const gfx::Insets& insets = host_->GetInsets();

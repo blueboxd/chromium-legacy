@@ -81,6 +81,8 @@ component("gamepad") {
     "raw_input_gamepad_device_win.h",
     "udev_gamepad_linux.cc",
     "udev_gamepad_linux.h",
+    "wgi_data_fetcher_win.cc",
+    "wgi_data_fetcher_win.h",
     "xbox_controller_mac.h",
     "xbox_controller_mac.mm",
     "xbox_data_fetcher_mac.cc",

@@ -102,7 +102,10 @@ Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> ConvertAccepts(
       }
 
       mimeTypes.push_back(type);
-      extensions.AppendVector(a.second);
+      if (a.second.IsUSVString())
+        extensions.push_back(a.second.GetAsUSVString());
+      else
+        extensions.AppendVector(a.second.GetAsUSVStringSequence());
     }
     result.emplace_back(
         blink::mojom::blink::ChooseFileSystemEntryAcceptsOption::New(

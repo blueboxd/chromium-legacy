@@ -48,10 +48,6 @@ class _PatchServletDelegate(RenderServlet.Delegate):
   def CreateHostFileSystemProvider(self, object_store_creator, **optargs):
     return HostFileSystemProvider.ForLocal(object_store_creator, **optargs)
 
-  def CreateGithubFileSystemProvider(self, object_store_creator):
-    return GithubFileSystemProvider.ForEmpty()
-
-
 class PatchServletTest(unittest.TestCase):
   def setUp(self):
     ConfigureFakeFetchers()

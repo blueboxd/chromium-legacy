@@ -52,6 +52,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Password which is shown on the screen.
 @property(nonatomic, strong) PasswordDetails* password;
 
+// Whether the password is shown in plain text form or in masked form.
+@property(nonatomic, assign, getter=isPasswordShown) BOOL passwordShown;
+
+// The text item related to the password value.
+@property(nonatomic, strong) TableViewTextEditItem* passwordTextItem;
+
 @end
 
 @implementation PasswordDetailsViewController
@@ -62,8 +68,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super viewDidLoad];
   self.tableView.accessibilityIdentifier = kPasswordDetailsViewControllerId;
   self.tableView.allowsSelectionDuringEditing = YES;
-
-  [self loadModel];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -74,6 +78,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - ChromeTableViewController
 
 - (void)editButtonPressed {
+  // TODO:(crbug.com/1075494) - Request reauth if user clicked edit and password
+  // was not shown.
   [super editButtonPressed];
 
   if (!self.tableView.editing) {
@@ -104,7 +110,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:[self usernameItem]
       toSectionWithIdentifier:SectionIdentifierPassword];
 
-  [model addItem:[self passwordItem]
+  self.passwordTextItem = [self passwordItem];
+  [model addItem:self.passwordTextItem
       toSectionWithIdentifier:SectionIdentifierPassword];
 
   if (self.password.isCompromised) {
@@ -146,13 +153,23 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[TableViewTextEditItem alloc] initWithType:ItemTypePassword];
   item.textFieldName =
       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
-  item.textFieldValue = kMaskedPassword;
+  item.textFieldValue = [self isPasswordShown] || self.tableView.editing
+                            ? self.password.password
+                            : kMaskedPassword;
   item.textFieldEnabled = self.tableView.editing;
   item.hideIcon = !self.tableView.editing;
   item.autoCapitalizationType = UITextAutocapitalizationTypeNone;
   item.keyboardType = UIKeyboardTypeURL;
   item.returnKeyType = UIReturnKeyDone;
-  // TODO:(crbug.com/1075494) - Add eye icon to view password.
+
+  // During editing password is exposed so eye icon shouldn't be shown.
+  if (!self.tableView.editing) {
+    NSString* image = [self isPasswordShown] ? @"infobar_hide_password_icon"
+                                             : @"infobar_reveal_password_icon";
+    item.identifyingIcon = [[UIImage imageNamed:image]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    item.identifyingIconEnabled = YES;
+  }
   return item;
 }
 
@@ -236,6 +253,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
       TableViewTextEditCell* textFieldCell =
           base::mac::ObjCCastStrict<TableViewTextEditCell>(cell);
       textFieldCell.textField.delegate = self;
+      [textFieldCell.identifyingIconButton
+                 addTarget:self
+                    action:@selector(didTapShowHideButton:)
+          forControlEvents:UIControlEventTouchUpInside];
       return textFieldCell;
     }
     case ItemTypeWebsite:
@@ -291,6 +312,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
   newImage = UIGraphicsGetImageFromCurrentImageContext();
   UIGraphicsEndImageContext();
   return newImage;
+}
+
+#pragma mark - Actions
+
+// Called when the user tapped on the show/hide button near password.
+- (void)didTapShowHideButton:(UIButton*)buttonView {
+  // TODO:(crbug.com/1075494) - Request reauth before revealing the password.
+  self.passwordShown = !self.passwordShown;
+  self.passwordTextItem.textFieldValue =
+      [self isPasswordShown] ? self.password.password : kMaskedPassword;
+  NSString* image = self.isPasswordShown ? @"infobar_hide_password_icon"
+                                         : @"infobar_reveal_password_icon";
+  self.passwordTextItem.identifyingIcon = [[UIImage imageNamed:image]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+
+  [self reconfigureCellsForItems:@[ self.passwordTextItem ]];
 }
 
 @end

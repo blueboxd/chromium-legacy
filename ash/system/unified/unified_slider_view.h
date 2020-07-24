@@ -26,7 +26,7 @@ class UnifiedSliderListener : public views::ButtonListener,
 // Custom slider for the system menu to use different color scheme.
 class SystemSlider : public views::Slider {
  public:
-  explicit SystemSlider(views::SliderListener* listener);
+  explicit SystemSlider(views::SliderListener* listener = nullptr);
 
  private:
   SkColor GetThumbColor() const override;

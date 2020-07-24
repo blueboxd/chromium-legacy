@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> – <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Brauzer varaqlarini barcha qurilmalaringizda ko‘rish uchun sinxronizatsiyani yoqing.</translation>
 <translation id="1687475363370981210">Hammasi o‘qildi</translation>
+<translation id="1689333818294560261">Nik</translation>
 <translation id="1690731385917361335">Xatcho‘plar yo‘q</translation>
 <translation id="1692118695553449118">Sinxronlash yoniq</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ta xatcho‘p tanlandi</translation>
@@ -125,7 +126,7 @@
 Saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzata olmaydi.</translation>
 <translation id="2379896346847637748">Yangi oynada ochish</translation>
 <translation id="2381405137052800939">Asosiy</translation>
-<translation id="2386793615875593361">1 ta xatcho‘p tanlandi</translation>
+<translation id="2386793615875593361">1 ta belgilandi</translation>
 <translation id="2421004566762153674">Tashqi cookie fayllarni bloklash</translation>
 <translation id="2421044535038393232">Tahrirlashda davom etish</translation>
 <translation id="2435457462613246316">Parolni ko‘rsatish</translation>
@@ -185,6 +186,7 @@ Saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzat
 <translation id="3153862085237805241">Bildirgini saqlash</translation>
 <translation id="3157684681743766797">Hammasini belgilash…</translation>
 <translation id="3161291298470460782">Bu hisobingizdan chiqarib, sinxronizatsiyani faolsizlantiradi va bu qurilmadagi barcha Chrome maʼlumotlaringizni tozalab tashlaydi. Google hisobingizga sinxronlangan maʼlumotlaringiz joyida qoladi.</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3175081911749765310">Veb-xizmatlar</translation>
 <translation id="3178650076442119961">Bugun onlayn edi</translation>
 <translation id="3181954750937456830">Saytlarni xavfsiz kezish (sizni va qurilmangizni xavfli saytlardan himoya qiladi)</translation>
@@ -206,6 +208,7 @@ Inkognito rejimida cookie fayllaringiz yopiq boʻladi va saytlar reklamalarni si
 <translation id="3335947283844343239">Yopilgan ichki oynani qayta ochish</translation>
 <translation id="3371831930909698441">Tarjima mavjud. Parametrlar ekranning quyi qismiga yaqinroq joyda</translation>
 <translation id="3393920035788932672">Qalqib chiquvchi oynalarga ruxsat</translation>
+<translation id="3425644765244388016">Karta nomi</translation>
 <translation id="3443810440409579745">Varaq qabul qilindi.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> daq</translation>
 <translation id="3448016392200048164">Split View</translation>
@@ -240,6 +243,7 @@ Inkognito rejimida cookie fayllaringiz yopiq boʻladi va saytlar reklamalarni si
 <translation id="3783017676699494206">Tasvirni saqlash</translation>
 <translation id="3789841737615482174">O‘rnatish</translation>
 <translation id="3803696231112616155">Bu saytda tarjima taklif qilinsin</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Hech qanday parol oshkor qilinmagan}=1{{COUNT} ta parol oshkor boʻlgan}other{{COUNT} ta parol oshkor boʻlgan}}</translation>
 <translation id="385051799172605136">Orqaga</translation>
 <translation id="3892144330757387737">Brauzer tarixi shu yerda chiqadi</translation>
 <translation id="3897092660631435901">Menyu</translation>
@@ -529,6 +533,7 @@ Saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzat
 <translation id="7189598951263744875">Ulashish…</translation>
 <translation id="7192050974311852563">Yozib olishni boshlash</translation>
 <translation id="7203585745079012652">Qidiruv natijalari o‘qilsin</translation>
+<translation id="721597782417389033">Karta nomi yaroqsiz</translation>
 <translation id="7265758999917665941">Bu saytda hech qachon</translation>
 <translation id="7272437679830969316">Shaxsingiz tasdiqlanmadi. Paroldan nusxa olinmadi.</translation>
 <translation id="7291368939935408496">Parollar tayyorlanmoqda...</translation>

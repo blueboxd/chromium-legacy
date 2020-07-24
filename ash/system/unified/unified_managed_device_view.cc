@@ -47,6 +47,7 @@ UnifiedManagedDeviceView::UnifiedManagedDeviceView(
   label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kTextColorSecondary,
       AshColorProvider::AshColorMode::kDark));
+  label_->SetID(VIEW_ID_TRAY_ENTERPRISE_LABEL);
   AddChildView(label_);
 
   SetID(VIEW_ID_TRAY_ENTERPRISE);

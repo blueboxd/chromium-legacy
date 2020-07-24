@@ -129,6 +129,9 @@ class MODULES_EXPORT ImageCapture final
   void ResolveWithPhotoSettings(ScriptPromiseResolver*);
   void ResolveWithPhotoCapabilities(ScriptPromiseResolver*);
 
+  // Returns true if page is visible. Otherwise returns false.
+  bool IsPageVisible();
+
   Member<MediaStreamTrack> stream_track_;
   std::unique_ptr<ImageCaptureFrameGrabber> frame_grabber_;
   HeapMojoRemote<media::mojom::blink::ImageCapture,

@@ -170,7 +170,7 @@
 <translation id="2311237334957139798">Chuyển về độ chi tiết trước đó</translation>
 <translation id="2314393392395134769">Không phải chỉ số dưới</translation>
 <translation id="2318372665160196757">Chính</translation>
-<translation id="2329324941084714723">Bảng điều khiển tab</translation>
+<translation id="2329324941084714723">Bảng điều khiển thẻ</translation>
 <translation id="2347456970887948350">Liên kết</translation>
 <translation id="2381733276052567791">Bật hoặc tắt giọng nói</translation>
 <translation id="2390264819538553347">Để chuyển tới trang tiếp theo, nhấn enter; để quay lại trang trước, nhấn phím xóa lùi.</translation>
@@ -252,7 +252,7 @@
 <translation id="2943596527105977722">Màu vàng nghệ đậm</translation>
 <translation id="2964026537669811554">Nhóm tiêu đề</translation>
 <translation id="2968634799764242930">Màu xanh biển</translation>
-<translation id="296951647852255825">{COUNT,plural, =1{dấu tab}other{# dấu tab}}</translation>
+<translation id="296951647852255825">{COUNT,plural, =1{thẻ}other{# thẻ}}</translation>
 <translation id="2972205263822847197">Mẹo sử dụng công cụ</translation>
 <translation id="297825089465017871">Vuốt sang trái bằng hai ngón tay</translation>
 <translation id="2998131015536248178">Ký tự trước</translation>
@@ -296,7 +296,7 @@
 <translation id="3208346789712025453">Không có tùy chọn kiểm soát nào tiếp theo</translation>
 <translation id="321072937702597574">Màu phong lan</translation>
 <translation id="3218691001991391708">dán <ph name="TEXT" />.</translation>
-<translation id="3223701887221307104"><ph name="NAME" />, tab</translation>
+<translation id="3223701887221307104"><ph name="NAME" />, thẻ</translation>
 <translation id="3223779237381380437">Không gạch ngang</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3232388865800379423">Nút bật lên</translation>
@@ -544,7 +544,7 @@
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Kết thúc</translation>
 <translation id="5302089807023311274">Tham chiếu danh mục</translation>
-<translation id="5304943142864553931"><ph name="TITLE" />, tab</translation>
+<translation id="5304943142864553931"><ph name="TITLE" />, thẻ</translation>
 <translation id="5308380583665731573">Kết nối</translation>
 <translation id="5310788376443009632">đã xóa:</translation>
 <translation id="5320727453979144100">Đã bật chế độ cố định</translation>
@@ -619,7 +619,7 @@
 <translation id="5842625257683688671">Không có đồ họa nào tiếp theo</translation>
 <translation id="5847883414085148048">Lời đề tặng</translation>
 <translation id="5850707923114094062">Xoay về phía sau</translation>
-<translation id="5851548754964597211">Danh sách tab</translation>
+<translation id="5851548754964597211">Danh sách thẻ</translation>
 <translation id="5866042630553435010">Đã kiểm tra một phần</translation>
 <translation id="5867591286054666064">Trong hướng dẫn này, hãy nhấn phím bất kỳ để nghe tên phím.</translation>
 <translation id="5869546221129391014">Lưới</translation>
@@ -719,7 +719,7 @@
 <translation id="6710213216561001401">Trước đó</translation>
 <translation id="6714813999819678458">Tiêu đề cấp 2 trước</translation>
 <translation id="6730312624811567147">Sử dụng tổ hợp phím Tìm kiếm Mũi tên trái hoặc phải để thay thế phím Home hoặc End, Tìm kiếm Control Mũi tên trái hoặc Mũi tên phải để thay thế phím Control Home hoặc End, Tìm kiếm Mũi tên lên hoặc xuống để thay thế phím Page Up hoặc Down</translation>
-<translation id="6736510033526053669">tab đã được tạo</translation>
+<translation id="6736510033526053669">thẻ đã được tạo</translation>
 <translation id="675895815784134693">pgbar</translation>
 <translation id="67862343314499040">Tím vi-ô-lét</translation>
 <translation id="6786800275320335305">Bài viết</translation>
@@ -781,7 +781,7 @@
 <translation id="7229749224609077523">Chọn bảng chữ nổi 6 chấm:</translation>
 <translation id="72393384879519786">Tiêu đề</translation>
 <translation id="7240858705033280249">Chuyển tới phần Thông tin chi tiết</translation>
-<translation id="7241683698754534149">Mở mô tả dài trong tab mới</translation>
+<translation id="7241683698754534149">Mở mô tả dài trong thẻ mới</translation>
 <translation id="7244947685630430863">Không có đồ họa nào trước đó</translation>
 <translation id="7248671827512403053">Ứng dụng</translation>
 <translation id="725969808843520477">Nút radio tiếp theo</translation>
@@ -813,7 +813,7 @@
 <translation id="7439060726180460871">Thư mục</translation>
 <translation id="744163271241493234">pwded</translation>
 <translation id="7484805699335881122">Thay đổi cao độ khi nói các loại thành phần và văn bản được trích dẫn, bị xóa, được in đậm, nằm trong ngoặc đơn hoặc viết hoa.</translation>
-<translation id="7491962110804786152">tab</translation>
+<translation id="7491962110804786152">thẻ</translation>
 <translation id="7505149250476994901">Nói "hoa" sau chữ cái</translation>
 <translation id="7518543783849163354">Để ChromeVox tạm thời ngừng nói, nhấn phím Control.</translation>
 <translation id="7533226154149229506">Màu vàng nghệ nhạt</translation>
@@ -887,7 +887,7 @@
 <translation id="8049189770492311300">Bộ tính giờ</translation>
 <translation id="8058636807889143711">Không có biểu thức toán học nào tiếp theo</translation>
 <translation id="8066678206530322333">Biểu ngữ</translation>
-<translation id="8076492880354921740">Tab</translation>
+<translation id="8076492880354921740">Thẻ</translation>
 <translation id="8083115023881784332">Hiện bạn chưa đặt tiêu điểm nào trên ChromeVox. Hãy nhấn tổ hợp phím Alt+Shift+L để chuyển đến trình chạy.</translation>
 <translation id="8091452896542422286">Dấu cách</translation>
 <translation id="8096975275316362544">Màu kem bạc hà</translation>
@@ -1001,7 +1001,7 @@
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9133928141873682933">Màu kaki</translation>
 <translation id="9149560530563164529">sctn</translation>
-<translation id="9150735707954472829">Tab</translation>
+<translation id="9150735707954472829">Thẻ</translation>
 <translation id="9151249085738989067">Tự động chuyển giọng nói ChromeVox theo ngôn ngữ</translation>
 <translation id="9153606228985488238">Cao độ <ph name="PERCENT" /> phần trăm</translation>
 <translation id="9160096769946561184">Đi tới cuối cột hiện tại</translation>

@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//chromeos/assistant/assistant.gni")
+import("//chromeos/services/cfm/public/buildflags/buildflags.gni")
 import("//testing/test.gni")
 
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
@@ -20,7 +21,6 @@ source_set("unit_tests") {
   deps = [
     "//chromeos/services/assistant:tests",
     "//chromeos/services/cellular_setup:unit_tests",
-    "//chromeos/services/cfm/public/cpp:unit_tests",
     "//chromeos/services/cros_healthd/public/cpp:unit_tests",
     "//chromeos/services/device_sync:unit_tests",
     "//chromeos/services/ime:services_unittests",
@@ -30,4 +30,7 @@ source_set("unit_tests") {
     "//chromeos/services/network_config:unit_tests",
     "//chromeos/services/secure_channel:unit_tests",
   ]
+  if (is_cfm) {
+    deps += [ "//chromeos/services/cfm/public/cpp:unit_tests" ]
+  }
 }

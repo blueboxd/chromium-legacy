@@ -34,8 +34,13 @@
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/dbus/system_proxy/system_proxy_client.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
+#include "chromeos/services/cfm/public/buildflags/buildflags.h"  // PLATFORM_CFM
 #include "chromeos/tpm/install_attributes.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
+
+#if BUILDFLAG(PLATFORM_CFM)
+#include "chromeos/dbus/cfm/cfm_hotline_client.h"
+#endif
 
 namespace {
 
@@ -97,6 +102,9 @@ void InitializeDBus() {
 void InitializeFeatureListDependentDBus() {
   dbus::Bus* bus = DBusThreadManager::Get()->GetSystemBus();
   InitializeDBusClient<bluez::BluezDBusManager>(bus);
+#if BUILDFLAG(PLATFORM_CFM)
+  InitializeDBusClient<CfmHotlineClient>(bus);
+#endif
   InitializeDBusClient<WilcoDtcSupportdClient>(bus);
 }
 
@@ -104,6 +112,9 @@ void ShutdownDBus() {
   // Feature list-dependent D-Bus clients are shut down first because we try to
   // shut down in reverse order of initialization (in case of dependencies).
   WilcoDtcSupportdClient::Shutdown();
+#if BUILDFLAG(PLATFORM_CFM)
+  CfmHotlineClient::Shutdown();
+#endif
   bluez::BluezDBusManager::Shutdown();
 
   // Other D-Bus clients are shut down, also in reverse order of initialization.

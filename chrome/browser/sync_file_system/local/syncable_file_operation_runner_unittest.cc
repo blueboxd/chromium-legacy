@@ -202,7 +202,9 @@ TEST_F(SyncableFileOperationRunnerTest, SimpleQueue) {
   EXPECT_EQ(1, callback_count_);
 }
 
-TEST_F(SyncableFileOperationRunnerTest, WriteToParentAndChild) {
+// Disabled because the implementation doesn't actually give the ordering
+// guarantees this test expects. https://crbug.com/1092668
+TEST_F(SyncableFileOperationRunnerTest, DISABLED_WriteToParentAndChild) {
   // First create the kDir directory and kChild in the dir.
   EXPECT_EQ(File::FILE_OK, file_system_.CreateDirectory(URL(kDir)));
   EXPECT_EQ(File::FILE_OK, file_system_.CreateFile(URL(kChild)));

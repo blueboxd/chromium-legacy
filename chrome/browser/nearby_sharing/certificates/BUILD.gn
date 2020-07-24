@@ -10,6 +10,8 @@ source_set("certificates") {
     "constants.h",
     "nearby_share_certificate_manager.cc",
     "nearby_share_certificate_manager.h",
+    "nearby_share_certificate_manager_impl.cc",
+    "nearby_share_certificate_manager_impl.h",
     "nearby_share_decrypted_public_certificate.cc",
     "nearby_share_decrypted_public_certificate.h",
     "nearby_share_encrypted_metadata_key.cc",
@@ -32,6 +34,8 @@ source_set("test_support") {
   testonly = true
 
   sources = [
+    "fake_nearby_share_certificate_manager.cc",
+    "fake_nearby_share_certificate_manager.h",
     "test_util.cc",
     "test_util.h",
   ]

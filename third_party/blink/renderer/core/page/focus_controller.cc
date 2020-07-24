@@ -1352,7 +1352,12 @@ void FocusController::RegisterFocusChangedObserver(
 }
 
 void FocusController::NotifyFocusChangedObservers() const {
-  for (const auto& it : focus_changed_observers_)
+  // Since this eventually dispatches an event to the page, the page could add
+  // new observer, which would invalidate our iterators; so iterate over a copy
+  // of the observer list.
+  HeapHashSet<WeakMember<FocusChangedObserver>> observers =
+      focus_changed_observers_;
+  for (const auto& it : observers)
     it->FocusedFrameChanged();
 }
 

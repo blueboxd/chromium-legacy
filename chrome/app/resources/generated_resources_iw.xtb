@@ -2740,7 +2740,7 @@
 <translation id="4377363674125277448">הייתה בעיה באישור השרת.</translation>
 <translation id="4378154925671717803">טלפון</translation>
 <translation id="4378373042927530923">לא הופעל</translation>
-<translation id="4378551569595875038">מתחבר...</translation>
+<translation id="4378551569595875038">התחברות...</translation>
 <translation id="4378556263712303865">דרישה למכשיר</translation>
 <translation id="4379281552162875326">להסיר את "<ph name="APP_NAME" />"?</translation>
 <translation id="4380648069038809855">התבצע מעבר למסך מלא</translation>
@@ -4440,7 +4440,6 @@
 <translation id="6545864417968258051">‏סריקת Bluetooth</translation>
 <translation id="6545867563032584178">‏המיקרופון מושבת בהעדפות המערכת של Mac</translation>
 <translation id="6547354035488017500">‏עליך לפנות ‎512 MB לפחות משטח האחסון במכשיר, אחרת הוא יפסיק להגיב. כדי לפנות שטח אחסון, מחק קבצים מאחסון המכשיר.</translation>
-<translation id="6549639163247690448">‏כדי להיכנס אל <ph name="DOMAIN" /> עליך להתחבר עכשיו לרשת Wi-Fi ולהוריד עדכון. הורדת העדכון תתבצע באופן אוטומטי בחיבור הבא לאינטרנט.</translation>
 <translation id="6550675742724504774">אפשרויות</translation>
 <translation id="6551508934388063976">‏הפקודה לא זמינה. הקש על Control-N לפתיחת חלון חדש.</translation>
 <translation id="6551612971599078809">‏נעשה שימוש בחיבור USB באתר</translation>
@@ -5786,7 +5785,6 @@
 <translation id="8213577208796878755">מכשיר זמין נוסף אחד.</translation>
 <translation id="8214489666383623925">פתח קובץ...</translation>
 <translation id="8214962590150211830">הסרת משתמש זה</translation>
-<translation id="8215295261562449873">‏אני רוצה לגבות את האפליקציות והקבצים בתיקייה 'הורדות' לפני השדרוג של Linux.</translation>
 <translation id="8217399928341212914">המשך לחסום הורדות אוטומטיות של קבצים מרובים</translation>
 <translation id="8218847192766059983">הוספת שפות או שינוי סדר הרשימה. <ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">הבחירה שלך היא בדרך כלל לחסום התראות. כדי לאפשר לאתר הזה להציג התראות יש ללחוץ כאן.</translation>

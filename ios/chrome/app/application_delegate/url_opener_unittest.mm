@@ -263,15 +263,7 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsNil) {
 
 // Tests that -handleApplication set startup parameters as expected with no
 // source application.
-// TODO(crbug.com/1102032): Fails on device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_VerifyLaunchOptionsWithNoSourceApplication \
-  VerifyLaunchOptionsWithNoSourceApplication
-#else
-#define MAYBE_VerifyLaunchOptionsWithNoSourceApplication \
-  DISABLED_VerifyLaunchOptionsWithNoSourceApplication
-#endif
-TEST_F(URLOpenerTest, MAYBE_VerifyLaunchOptionsWithNoSourceApplication) {
+TEST_F(URLOpenerTest, VerifyLaunchOptionsWithNoSourceApplication) {
   // Setup.
   NSURL* url = [NSURL URLWithString:@"chromium://www.google.com"];
   NSDictionary* launchOptions = @{
@@ -297,10 +289,7 @@ TEST_F(URLOpenerTest, MAYBE_VerifyLaunchOptionsWithNoSourceApplication) {
         EXPECT_EQ(p.callerApp, CALLER_APP_NOT_AVAILABLE);
         return YES;
       }]];
-#if DCHECK_IS_ON()
-  // This function is called in a DCHECK.
   [[[connectionInformationMock expect] andReturn:params] startupParameters];
-#endif
 
   id appStateMock = [OCMockObject mockForClass:[AppState class]];
   [[appStateMock expect] launchFromURLHandled:NO];

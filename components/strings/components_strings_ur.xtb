@@ -452,6 +452,7 @@
 <translation id="2824775600643448204">پتہ اور تلاش بار</translation>
 <translation id="2826760142808435982">کنکشن کو <ph name="CIPHER" /> کا استعمال کر کے مرموز کیا گیا ہے اور اس کی توثیق کی گئی ہے اور یہ کلید کے تبادلہ کے طریقہ کار کے بطور <ph name="KX" /> کا استعمال کرتا ہے۔</translation>
 <translation id="2835170189407361413">فارم صاف کریں</translation>
+<translation id="2839501879576190149">آگے جعلی سائٹ</translation>
 <translation id="2847118875340931228">پوشیدگی ونڈو کھولیں</translation>
 <translation id="2850739647070081192">Invite ‎(Envelope‎)‎</translation>
 <translation id="2856444702002559011">حملہ آور <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> سے آپ کی معلومات (مثلاً، پاس ورڈز، پیغامات یا کریڈٹ کارڈز) چوری کرنے کی کوشش کر سکتے ہیں۔ <ph name="BEGIN_LEARN_MORE_LINK" />مزید جانیں<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -496,7 +497,6 @@
 <translation id="3005723025932146533">محفوظ کردہ کاپی دکھائیں</translation>
 <translation id="3008447029300691911">‏<ph name="CREDIT_CARD" /> کیلئے CVC درج کریں۔ آپ کے توثیق کرنے کے بعد، اس سائٹ کے ساتھ آپ کے کارڈ کی تفصیلات کا اشتراک کیا جائے گا۔</translation>
 <translation id="3010559122411665027">فہرست کا اندراج "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3013266782169695070">‏‫<ph name="APP_NAME" /> پروڈکٹ کے تجربے کو بہتر بنانے کے لیے ڈائیگناسٹکس ڈیٹا جمع کرتی ہے۔ مزید معلومات کے لیے <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> دیکھیں۔</translation>
 <translation id="301521992641321250">خود کار طور پر مسدود ہو گيا</translation>
 <translation id="3016780570757425217">اپنا مقام جانیں</translation>
 <translation id="3023071826883856138">You4 ‎(Envelope‎)‎</translation>
@@ -813,6 +813,7 @@
 <translation id="42981349822642051">پھیلائیں</translation>
 <translation id="4300675098767811073">دائیں طرف متعدد سوراخ</translation>
 <translation id="4302965934281694568">Chou3 ‎(Envelope‎)‎</translation>
+<translation id="4305666528087210886">آپ کی فائل تک رسائی نہیں ہو سکی</translation>
 <translation id="4305817255990598646">سوئچ کریں</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">مسدود کریں (ڈیفالٹ)</translation>
@@ -831,6 +832,7 @@
 <translation id="4358461427845829800">ادائیگیوں کے طریقوں کا نظم کریں...</translation>
 <translation id="4359160567981085931">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chrome مدد کر سکتا ہے۔ اپنا پاس ورڈ تبدیل کرنے اور Google کو یہ مطلع کرنے کے لیے کہ آپ کا اکاؤنٹ خطرے میں ہو سکتا ہے، 'اکاؤنٹ کا تحفظ کریں' پر کلک کریں۔</translation>
 <translation id="4367563149485757821">Number-12 ‎(Envelope‎)‎</translation>
+<translation id="4367839622597707614">{1,plural, =0{‏کسی سائٹ یا ایپ میں ڈیٹا کی خلاف ورزی نے <ph name="ORIGIN" /> کیلئے آپ کے محفوظ پاس ورڈ کو ظاہر کر دیا۔ Chrome آپ کے پاس ورڈ کو <ph name="ORIGIN" /> پر ابھی تبدیل کرنے کی تجویز کرتا ہے۔}=1{‏سائٹ یا ایپ میں ڈیٹا کی خلاف ورزی نے <ph name="ORIGIN" /> اور دیگر ایک سائٹ کیلئے آپ کے محفوظ پاس ورڈ کو ظاہر کر دیا۔ Chrome آپ کے محفوظ کردہ پاس ورڈز کو ابھی چیک کرنے کی تجویز کرتا ہے۔}other{‏سائٹ یا ایپ میں ڈیٹا کی خلاف ورزی نے <ph name="ORIGIN" /> اور دیگر <ph name="SITES_COUNT" /> سائٹس کیلئے آپ کے محفوظ پاس ورڈ کو ظاہر کر دیا۔ Chrome آپ کے محفوظ کردہ پاس ورڈز کو ابھی چیک کرنے کی تجویز کرتا ہے۔}}</translation>
 <translation id="437058704415269440">اکاؤنٹ بیلنس</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">متوقع <ph name="VALUE_TYPE" /> قدر۔</translation>
@@ -1302,6 +1304,7 @@
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">آگے ممکنہ چارجز لیے جا سکتے ہيں۔</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 دیگر تجویز}other{# دیگر تجاویز}}</translation>
+<translation id="6387645831795005740">‏بعض اوقات حملہ آور URL میں چھوٹی، مشکل سے نظر آنے والی تبدیلیاں کرکے سائٹس کی نقل کرتے ہیں۔</translation>
 <translation id="6389470377220713856">کارڈ پر نام</translation>
 <translation id="6390200185239044127">‏نصف Z-فولڈ</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1515,6 +1518,7 @@
 <translation id="7372973238305370288">تلاش کا نتیجہ</translation>
 <translation id="7374733840632556089">‏آپ کے آلہ پر آپ یا کسی اور کے ذریعہ انسٹال کردہ سرٹیفکیٹ کی وجہ سے یہ مسئلہ پیش آتا ہے۔ اس سرٹیفکیٹ کو نیٹ ورکس مانیٹر کرنے اور منقطع کرنے کے استعمال کے لیے جانا جاتا ہے، اور یہ Chrome کی طرف سے قابل اعتماد نہیں ہے۔ جبکہ مانیٹرنگ کے لئے کچھ جائز صورتیں موجود ہیں، جیسے اسکول یا کمپنی کے نیٹ ورک پر، Chrome یقینی بنانا چاہتا ہے کہ آپ ہونے والی چیزوں سے وافق ہیں، چاہے آپ اسے روک نہیں سکتے۔ مانیٹرنگ کسی بھی براؤزر یا ایپلیکیشن میں ہو سکتی ہے جسے ویب تک رسائی حاصل ہے۔</translation>
 <translation id="7375818412732305729">فائل منسلک کی جاتی ہے</translation>
+<translation id="7376551888419889433">‏جب سیکیورٹی ایونٹس پر Chrome انٹرپرائز کنیکٹرز پرچم لگاتا ہے تو اس ایونٹ سے متعلقہ ڈیٹا آپ کے منتظم کو بھیجا جاتا ہے۔ اس میں Chrome میں آپ کے ذریعے ملاحظہ کیے جانے والے صفحات کے URLs، فائل کے نام یا میٹا ڈیٹا اور وہ صارف نام جس کا استعمال آپ اپنے آلہ اور Chrome میں سائن ان کرنے کے لیے استعمال کرتے ہیں، شامل ہو سکتے ہیں۔</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">میڈیا کنٹرولز</translation>
 <translation id="7378627244592794276">نہیں</translation>
@@ -1911,6 +1915,7 @@
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">آپ نے <ph name="DOMAIN" /> تک پہنچنے کی کوشش کی لیکن سرور نے ایک غلط سرٹیفکیٹ پیش کیا۔</translation>
 <translation id="9050666287014529139">پاس فریز</translation>
+<translation id="9062620674789239642">ممکن ہے اسے منتقل، ترمیم یا حذف کر دیا گیا ہو۔</translation>
 <translation id="9065203028668620118">تبدیل کریں</translation>
 <translation id="9065745800631924235">سرگزشت سے <ph name="TEXT" /> کی تلاش</translation>
 <translation id="9069693763241529744">ایک ایکسٹینشن کے ذریعے مسدود کردہ</translation>

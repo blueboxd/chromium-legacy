@@ -87,14 +87,8 @@ source_set("shell_encryption") {
   ]
   public_deps = [
     ":serialization_proto",
-    "//third_party/abseil-cpp/absl/base",
-    "//third_party/abseil-cpp/absl/base:core_headers",
-    "//third_party/abseil-cpp/absl/memory",
-    "//third_party/abseil-cpp/absl/numeric:int128",
-    "//third_party/abseil-cpp/absl/status:status",
-    "//third_party/abseil-cpp/absl/strings",
-    "//third_party/abseil-cpp/absl/synchronization",
-    "//third_party/abseil-cpp/absl/types:optional",
+    "//base:base",
+    "//third_party/abseil-cpp:absl",
     "//third_party/boringssl:boringssl",
     "//third_party/protobuf:protobuf_lite",
   ]

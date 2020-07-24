@@ -104,7 +104,7 @@ class PanelItem extends HTMLElement {
               }
 
               .xf-panel-label-text {
-                  color: rgb(32, 33, 36);
+                  color: var(--google-grey-900);
                   max-width: 216px;
                   text-overflow: ellipsis;
                   overflow: hidden;
@@ -112,18 +112,18 @@ class PanelItem extends HTMLElement {
               }
 
               .xf-panel-secondary-text {
-                  color: rgb(95, 99, 104);
+                  color: var(--google-grey-700);
               }
 
-              .xf-padder-4 {
+              :host(:not([detailed-panel])) .xf-padder-4 {
                   width: 4px;
               }
 
-              .xf-padder-16 {
+              :host(:not([detailed-panel])) .xf-padder-16 {
                   width: 16px;
               }
 
-              .xf-grow-padder {
+              :host(:not([detailed-panel])) .xf-grow-padder {
                   flex-grow: 16;
                   width: 24px;
               }
@@ -132,7 +132,7 @@ class PanelItem extends HTMLElement {
                   padding: 16px;
               }
 
-              iron-icon {
+              :host(:not([detailed-summary])) iron-icon {
                   height: 36px;
                   padding: 16px;
                   width: 36px;
@@ -148,13 +148,86 @@ class PanelItem extends HTMLElement {
               }
 
               :host([panel-type='0']) .xf-panel-item {
-                height: var(--progress-height);
-                padding-top: var(--progress-padding-top);
-                padding-bottom: var(--progress-padding-bottom);
+                  height: var(--progress-height);
+                  padding-top: var(--progress-padding-top);
+                  padding-bottom: var(--progress-padding-bottom);
               }
 
-              :not(:host([panel-type='0'])) .xf-panel-item {
-                height: 68px;
+              :host(:not([panel-type='0'])) .xf-panel-item {
+                  height: 68px;
+              }
+
+              :host([detailed-panel]) .xf-panel-item {
+                  height: 68px;
+                  width: 400px;
+              }
+
+              :host([detailed-panel]:not([detailed-summary])) .xf-panel-text {
+                  margin-inline-end: 24px;
+                  margin-inline-start: 24px;
+              }
+
+              :host([detailed-panel][panel-type='2']) .xf-panel-secondary-text {
+                  color: var(--google-green-600);
+              }
+
+              :host([detailed-panel]:not([detailed-summary])) xf-button {
+                  margin-inline-end: 12px;
+                  margin-inline-start: auto;
+              }
+
+              :host([detailed-panel]:not([detailed-summary])) #indicator {
+                  display: none;
+              }
+
+              :host([detailed-summary][data-category='collapsed'])
+              .xf-panel-item {
+                  width: 236px;
+              }
+
+              :host([detailed-summary]) .xf-panel-text {
+                  align-items: center;
+                  display: flex;
+                  height: 48px;
+                  max-width: unset;
+                  width: 100%;
+              }
+
+              :host([detailed-summary]) #indicator {
+                  margin-inline-start: 22px;
+                  padding: 0;
+              }
+
+              :host([detailed-summary][data-category='collapsed']) #indicator {
+                  margin-inline-end: 20px;
+                  width: 28px;
+              }
+
+              :host([detailed-summary][data-category='expanded']) #indicator {
+                  margin-inline-end: 18px;
+                  width: 32px;
+              }
+
+              :host([detailed-summary]) #primary-action {
+                  align-items: center;
+                  display: flex;
+                  height: 48px;
+                  justify-content: center;
+                  margin-inline-end: 10px;
+                  margin-inline-start: auto;
+                  width: 48px;
+              }
+
+              :host([detailed-panel]) .xf-padder-4 {
+                  display: none;
+              }
+
+              :host([detailed-panel]) .xf-padder-16 {
+                  display: none;
+              }
+
+              :host([detailed-panel]) .xf-grow-padder {
+                  display: none;
               }
             </style>
             <div class='xf-panel-item'>
@@ -195,6 +268,10 @@ class PanelItem extends HTMLElement {
    * @private
    */
   setPanelType(type) {
+    if (util.isTransferDetailsEnabled()) {
+      this.setAttribute('detailed-panel', 'detailed-panel');
+    }
+
     if (this.panelType_ === type) {
       return;
     }
@@ -594,6 +671,13 @@ class PanelItem extends HTMLElement {
    */
   get secondaryButton() {
     return this.shadowRoot.querySelector('#secondary-action');
+  }
+
+  /**
+   * Getter for the panel text div.
+   */
+  get textDiv() {
+    return this.shadowRoot.querySelector('.xf-panel-text');
   }
 
   /**

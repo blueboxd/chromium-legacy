@@ -387,6 +387,10 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
                                              launch_commands):
       attempts_results.append(result['test_results']['attempts'])
 
+    # Deletes simulator used in the tests after tests end.
+    if iossim_util.is_device_with_udid_simulator(self.udid):
+      iossim_util.delete_simulator_by_udid(self.udid)
+
     # Gets passed tests
     self.logs['passed tests'] = []
     for shard_attempts in attempts_results:

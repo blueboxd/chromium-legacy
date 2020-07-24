@@ -22,7 +22,6 @@
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
-#include "content/renderer/loader/frame_request_blocker.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
@@ -35,6 +34,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/platform/web_code_cache_loader.h"
+#include "third_party/blink/public/platform/web_frame_request_blocker.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 
 namespace content {
@@ -561,7 +561,7 @@ void WebWorkerFetchContextImpl::set_ancestor_frame_id(int id) {
 }
 
 void WebWorkerFetchContextImpl::set_frame_request_blocker(
-    scoped_refptr<FrameRequestBlocker> frame_request_blocker) {
+    scoped_refptr<blink::WebFrameRequestBlocker> frame_request_blocker) {
   frame_request_blocker_ = frame_request_blocker;
 }
 

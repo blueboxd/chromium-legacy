@@ -399,6 +399,10 @@ interface NetworkService {
   // https://docs.google.com/document/d/1TNnya6B8pyomDK2F1R9CL3dY10OAmqWlnCxsWyOBDVQ/edit#heading=h.z52drgpfgulz.
   SetTrustTokenKeyCommitments(string raw_commitments) => ();
 
+  // Clears the SCT auditing cache.
+  [EnableIf=is_ct_supported]
+  ClearSCTAuditingCache();
+
   // Calls base::debug::DumpWithoutCrashing for the network process.
   // TODO(http://crbug.com/934317): Remove this once done debugging renderer
   // hangs.

@@ -290,8 +290,7 @@ TEST_F(NativeFileSystemManagerImplTest,
       storage::AsyncFileTestHelper::kDontCheckSize));
 }
 
-TEST_F(NativeFileSystemManagerImplTest,
-       FileWriterCloseAllowedToCompleteOnDestruct) {
+TEST_F(NativeFileSystemManagerImplTest, FileWriterCloseAbortsOnDestruct) {
   auto test_file_url = file_system_context_->CreateCrackedFileSystemURL(
       kTestOrigin, storage::kFileSystemTypeTest,
       base::FilePath::FromUTF8Unsafe("test"));
@@ -319,11 +318,14 @@ TEST_F(NativeFileSystemManagerImplTest,
   writer_remote.reset();
   base::RunLoop().RunUntilIdle();
 
+  // Since the writer was destroyed before close completed, the swap file should
+  // have been destroyed and the target file should have been left untouched.
   ASSERT_FALSE(storage::AsyncFileTestHelper::FileExists(
       file_system_context_.get(), test_swap_url,
       storage::AsyncFileTestHelper::kDontCheckSize));
-  ASSERT_TRUE(storage::AsyncFileTestHelper::FileExists(
-      file_system_context_.get(), test_file_url, 3));
+  ASSERT_FALSE(storage::AsyncFileTestHelper::FileExists(
+      file_system_context_.get(), test_file_url,
+      storage::AsyncFileTestHelper::kDontCheckSize));
 }
 
 TEST_F(NativeFileSystemManagerImplTest, SerializeHandle_SandboxedFile) {

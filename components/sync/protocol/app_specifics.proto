@@ -25,7 +25,7 @@ message AppNotificationSettings {
   // The value for this field will start out false and will be set
   // to true when the user accepts receiving notifications for the
   // first time and then it will always remain true.
-  optional bool initial_setup_done = 1;
+  optional bool initial_setup_done = 1 [deprecated = true];
 
   // Whether or not the user has disabled notifications.
   optional bool disabled = 2;

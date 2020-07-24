@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_ACCOUNT_STORAGE_ACCOUNT_PASSWORD_STORE_FACTORY_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_ACCOUNT_STORAGE_ACCOUNT_PASSWORD_STORE_FACTORY_H_
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/refcounted_browser_context_keyed_service_factory.h"
@@ -39,6 +40,14 @@ class AccountPasswordStoreFactory
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
   bool ServiceIsNULLWhileTesting() const override;
+  void BrowserContextShutdown(content::BrowserContext* context) override;
+
+  // If the feature flag kEnablePasswordsAccountStorage is disabled, then this
+  // factory will always return nullptr, and any files related to the
+  // account-scoped store should be deleted from disk. This set keeps track of
+  // the contexts (aka profiles) for which the files were already deleted, so
+  // that the (potentially expensive) disk operations don't get run repeatedly.
+  base::flat_set<content::BrowserContext*> account_store_deleted_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountPasswordStoreFactory);
 };

@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_data_fetcher_manager.h"
+#include "device/gamepad/public/cpp/gamepad_features.h"
 
 #if defined(OS_ANDROID)
 #include "device/gamepad/gamepad_platform_data_fetcher_android.h"
@@ -22,6 +23,7 @@
 #include "device/gamepad/gamepad_platform_data_fetcher_win.h"
 #include "device/gamepad/nintendo_data_fetcher.h"
 #include "device/gamepad/raw_input_data_fetcher_win.h"
+#include "device/gamepad/wgi_data_fetcher_win.h"
 #elif defined(OS_MACOSX)
 #include "device/gamepad/game_controller_data_fetcher_mac.h"
 #include "device/gamepad/gamepad_platform_data_fetcher_mac.h"
@@ -44,6 +46,10 @@ void AddGamepadPlatformDataFetchers(GamepadDataFetcherManager* manager) {
   manager->AddFactory(new GamepadPlatformDataFetcherWin::Factory());
   manager->AddFactory(new NintendoDataFetcher::Factory());
   manager->AddFactory(new RawInputDataFetcher::Factory());
+  if (base::FeatureList::IsEnabled(
+          features::kEnableWindowsGamingInputDataFetcher)) {
+    manager->AddFactory(new WgiDataFetcherWin::Factory());
+  }
 
 #elif defined(OS_MACOSX)
 

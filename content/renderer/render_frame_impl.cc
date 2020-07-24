@@ -980,6 +980,9 @@ void FillMiscNavigationParams(
 
   navigation_params->is_browser_initiated = commit_params.is_browser_initiated;
 
+  navigation_params->is_cross_browsing_context_group_navigation =
+      commit_params.is_cross_browsing_instance;
+
 #if defined(OS_ANDROID)
   // Only android webview uses this.
   navigation_params->grant_load_local_resources =
@@ -1966,7 +1969,7 @@ void RenderFrameImpl::Initialize() {
     enabled_bindings_ |= BINDINGS_POLICY_DOM_AUTOMATION;
   if (command_line.HasSwitch(switches::kStatsCollectionController))
     enabled_bindings_ |= BINDINGS_POLICY_STATS_COLLECTION;
-  frame_request_blocker_ = base::MakeRefCounted<FrameRequestBlocker>();
+  frame_request_blocker_ = blink::WebFrameRequestBlocker::Create();
 
   // Bind this frame and the message router. This must be called after |frame_|
   // is set since binding requires a per-frame task runner.

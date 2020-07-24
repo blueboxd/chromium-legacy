@@ -162,5 +162,44 @@ TEST_F(SkiaGoldPixelDiffTest, SobelMatching) {
   EXPECT_TRUE(ret);
 }
 
+TEST_F(SkiaGoldPixelDiffTest, DefaultCorpus) {
+  SkBitmap bitmap;
+  SkImageInfo info =
+      SkImageInfo::Make(10, 10, SkColorType::kBGRA_8888_SkColorType,
+                        SkAlphaType::kPremul_SkAlphaType);
+  bitmap.allocPixels(info, 10 * 4);
+
+  MockSkiaGoldPixelDiff mock_pixel;
+  EXPECT_CALL(mock_pixel, LaunchProcess(_)).Times(AnyNumber());
+  EXPECT_CALL(
+      mock_pixel,
+      LaunchProcess(AllOf(Property(
+          &base::CommandLine::GetCommandLineString,
+          HasSubstr(FILE_PATH_LITERAL("source_type:gtest-pixeltests"))))))
+      .Times(1);
+  mock_pixel.Init("Prefix");
+  bool ret = mock_pixel.CompareScreenshot("test", bitmap);
+  EXPECT_TRUE(ret);
+}
+
+TEST_F(SkiaGoldPixelDiffTest, ExplicitCorpus) {
+  SkBitmap bitmap;
+  SkImageInfo info =
+      SkImageInfo::Make(10, 10, SkColorType::kBGRA_8888_SkColorType,
+                        SkAlphaType::kPremul_SkAlphaType);
+  bitmap.allocPixels(info, 10 * 4);
+
+  MockSkiaGoldPixelDiff mock_pixel;
+  EXPECT_CALL(mock_pixel, LaunchProcess(_)).Times(AnyNumber());
+  EXPECT_CALL(mock_pixel,
+              LaunchProcess(AllOf(Property(
+                  &base::CommandLine::GetCommandLineString,
+                  HasSubstr(FILE_PATH_LITERAL("source_type:corpus"))))))
+      .Times(1);
+  mock_pixel.Init("Prefix", "corpus");
+  bool ret = mock_pixel.CompareScreenshot("test", bitmap);
+  EXPECT_TRUE(ret);
+}
+
 }  // namespace test
 }  // namespace ui

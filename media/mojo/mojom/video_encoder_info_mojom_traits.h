@@ -6,7 +6,7 @@
 #define MEDIA_MOJO_MOJOM_VIDEO_ENCODER_INFO_MOJOM_TRAITS_H_
 
 #include "base/containers/span.h"
-#include "media/mojo/mojom/video_encoder_info.mojom.h"
+#include "media/mojo/mojom/video_encoder_info.mojom-shared.h"
 #include "media/video/video_encoder_info.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 

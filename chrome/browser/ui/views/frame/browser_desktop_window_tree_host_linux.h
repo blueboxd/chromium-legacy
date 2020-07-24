@@ -8,8 +8,11 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host.h"
 
-#if defined(USE_X11)
+#if defined(USE_DBUS_MENU)
 #include "chrome/browser/ui/views/frame/global_menu_bar_x11.h"  // nogncheck
+#endif
+
+#if defined(USE_X11)
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"  // nogncheck
 #else
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"  // nogncheck
@@ -63,7 +66,7 @@ class BrowserDesktopWindowTreeHostLinux
   BrowserView* browser_view_ = nullptr;
   BrowserFrame* browser_frame_ = nullptr;
 
-#if defined(USE_X11)
+#if defined(USE_DBUS_MENU)
   // Each browser frame maintains its own menu bar object because the lower
   // level dbus protocol associates a xid to a menu bar; we can't map multiple
   // xids to the same menu bar.

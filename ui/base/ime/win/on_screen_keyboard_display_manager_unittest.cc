@@ -93,6 +93,8 @@ class MockInputPane
     return S_OK;
   }
 
+  bool CallbacksValid() const { return show_handler_ && hide_handler_; }
+
  private:
   ~MockInputPane() override = default;
 
@@ -219,6 +221,38 @@ TEST_F(OnScreenKeyboardTest, InputPaneDebounceTimerTest) {
   // Additional 300ms for debounce timer.
   WaitForEventsWithTimeDelay(400);
   keyboard_display_manager->RemoveObserver(observer.get());
+}
+
+TEST_F(OnScreenKeyboardTest, InputPaneDestruction) {
+  // InputPane is supported only on RS1 and later.
+  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
+    return;
+  std::unique_ptr<OnScreenKeyboardDisplayManagerInputPane>
+      keyboard_display_manager = CreateInputPane();
+
+  std::unique_ptr<MockInputMethodKeyboardControllerObserver> observer =
+      std::make_unique<MockInputMethodKeyboardControllerObserver>();
+
+  Microsoft::WRL::ComPtr<MockInputPane> input_pane =
+      Microsoft::WRL::Make<MockInputPane>();
+  keyboard_display_manager->SetInputPaneForTesting(input_pane);
+
+  EXPECT_CALL(*observer, OnKeyboardVisible(testing::_)).Times(1);
+  keyboard_display_manager->AddObserver(observer.get());
+  keyboard_display_manager->DisplayVirtualKeyboard();
+  // Additional 300ms for debounce timer.
+  WaitForEventsWithTimeDelay(400);
+  EXPECT_TRUE(input_pane->CallbacksValid());
+
+  testing::Mock::VerifyAndClearExpectations(observer.get());
+  EXPECT_CALL(*observer, OnKeyboardHidden()).Times(1);
+  keyboard_display_manager->DismissVirtualKeyboard();
+  // Additional 300ms for debounce timer.
+  WaitForEventsWithTimeDelay(400);
+  keyboard_display_manager->RemoveObserver(observer.get());
+  keyboard_display_manager = nullptr;
+  WaitForEventsWithTimeDelay(400);
+  EXPECT_FALSE(input_pane->CallbacksValid());
 }
 
 }  // namespace ui

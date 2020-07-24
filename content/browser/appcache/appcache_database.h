@@ -39,7 +39,7 @@ FORWARD_DECLARE_TEST(AppCacheDatabaseTest, GroupRecords);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, GroupAccessAndEvictionTimes);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, LazyOpen);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, ExperimentalFlags);
-FORWARD_DECLARE_TEST(AppCacheDatabaseTest, OnlineWhiteListRecords);
+FORWARD_DECLARE_TEST(AppCacheDatabaseTest, OnlineSafeListRecords);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, ReCreate);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, DeletableResponseIds);
 FORWARD_DECLARE_TEST(AppCacheDatabaseTest, OriginUsage);
@@ -116,8 +116,8 @@ class CONTENT_EXPORT AppCacheDatabase {
 
   using NamespaceRecordVector = std::vector<NamespaceRecord>;
 
-  struct OnlineWhiteListRecord {
-    OnlineWhiteListRecord() : cache_id(0) {}
+  struct OnlineSafeListRecord {
+    OnlineSafeListRecord() : cache_id(0) {}
 
     int64_t cache_id;
     GURL namespace_url;
@@ -195,12 +195,12 @@ class CONTENT_EXPORT AppCacheDatabase {
   bool InsertNamespace(const NamespaceRecord* record);
   bool DeleteNamespacesForCache(int64_t cache_id);
 
-  bool FindOnlineWhiteListForCache(int64_t cache_id,
-                                   std::vector<OnlineWhiteListRecord>* records);
-  bool InsertOnlineWhiteList(const OnlineWhiteListRecord* record);
-  bool InsertOnlineWhiteListRecords(
-      const std::vector<OnlineWhiteListRecord>& records);
-  bool DeleteOnlineWhiteListForCache(int64_t cache_id);
+  bool FindOnlineSafeListForCache(int64_t cache_id,
+                                  std::vector<OnlineSafeListRecord>* records);
+  bool InsertOnlineSafeList(const OnlineSafeListRecord* record);
+  bool InsertOnlineSafeListRecords(
+      const std::vector<OnlineSafeListRecord>& records);
+  bool DeleteOnlineSafeListForCache(int64_t cache_id);
 
   bool GetDeletableResponseIds(std::vector<int64_t>* response_ids,
                                int64_t max_rowid,
@@ -238,8 +238,8 @@ class CONTENT_EXPORT AppCacheDatabase {
       NamespaceRecordVector* fallbacks);
   void ReadNamespaceRecord(
       const sql::Statement* statement, NamespaceRecord* record);
-  void ReadOnlineWhiteListRecord(
-      const sql::Statement& statement, OnlineWhiteListRecord* record);
+  void ReadOnlineSafeListRecord(const sql::Statement& statement,
+                                OnlineSafeListRecord* record);
 
   // Database creation
   bool LazyOpen(bool create_if_needed);
@@ -278,7 +278,7 @@ class CONTENT_EXPORT AppCacheDatabase {
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, LazyOpen);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, ExperimentalFlags);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest,
-                           OnlineWhiteListRecords);
+                           OnlineSafeListRecords);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, ReCreate);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, DeletableResponseIds);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheDatabaseTest, OriginUsage);

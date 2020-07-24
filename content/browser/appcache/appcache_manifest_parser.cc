@@ -316,10 +316,10 @@ bool ParseManifest(const GURL& manifest_url,
 
   DCHECK(manifest.explicit_urls.empty());
   DCHECK(manifest.fallback_namespaces.empty());
-  DCHECK(manifest.online_whitelist_namespaces.empty());
+  DCHECK(manifest.online_safelist_namespaces.empty());
   DCHECK_EQ(manifest.parser_version, -1);
   DCHECK_EQ(manifest.scope, "");
-  DCHECK(!manifest.online_whitelist_all);
+  DCHECK(!manifest.online_safelist_all);
   DCHECK(!manifest.did_ignore_intercept_namespaces);
   DCHECK(!manifest.did_ignore_fallback_namespaces);
 
@@ -427,7 +427,7 @@ bool ParseManifest(const GURL& manifest_url,
 
     static constexpr base::StringPiece kOnlineSafelistWildcard("*");
     if (mode == Mode::kOnlineSafelist && line == kOnlineSafelistWildcard) {
-      manifest.online_whitelist_all = true;
+      manifest.online_safelist_all = true;
       continue;
     }
 
@@ -484,7 +484,7 @@ bool ParseManifest(const GURL& manifest_url,
         continue;
       }
 
-      manifest.online_whitelist_namespaces.emplace_back(
+      manifest.online_safelist_namespaces.emplace_back(
           AppCacheNamespace(APPCACHE_NETWORK_NAMESPACE, namespace_url, GURL()));
       continue;
     }

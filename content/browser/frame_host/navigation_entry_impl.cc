@@ -832,7 +832,8 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
           std::vector<std::string>() /* force_enabled_origin_trials */,
           false /* origin_isolation_restricted */,
           std::vector<
-              network::mojom::WebClientHintsType>() /* enabled_client_hints */);
+              network::mojom::WebClientHintsType>() /* enabled_client_hints */,
+          false /* is_cross_browsing_instance */);
 #if defined(OS_ANDROID)
   if (NavigationControllerImpl::ValidateDataURLAsString(GetDataURLAsString())) {
     commit_params->data_url_as_string = GetDataURLAsString()->data();

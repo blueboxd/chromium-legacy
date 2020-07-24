@@ -1983,6 +1983,7 @@ jumbo_source_set("browser") {
     "web_package/web_bundle_url_loader_factory.h",
     "web_package/web_bundle_utils.cc",
     "web_package/web_bundle_utils.h",
+    "webauth/is_uvpaa.cc",
     "webauth/webauth_request_security_checker.cc",
     "webauth/webauth_request_security_checker.h",
     "webrtc/webrtc_internals.cc",

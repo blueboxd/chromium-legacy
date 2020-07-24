@@ -34,15 +34,14 @@ void ShowProgressBarAction::InternalProcessAction(
     delegate_->SetProgressVisible(!proto_.show_progress_bar().hide());
   }
   if (proto_.show_progress_bar().has_step_progress_bar_configuration()) {
-    if (proto_.show_progress_bar()
-            .step_progress_bar_configuration()
-            .step_icons()
-            .size() < 2) {
+    const auto& configuration =
+        proto_.show_progress_bar().step_progress_bar_configuration();
+    if (!configuration.step_icons().empty() &&
+        configuration.step_icons().size() < 2) {
       EndAction(std::move(callback), INVALID_ACTION);
       return;
     }
-    delegate_->SetStepProgressBarConfiguration(
-        proto_.show_progress_bar().step_progress_bar_configuration());
+    delegate_->SetStepProgressBarConfiguration(configuration);
   }
 
   switch (proto_.show_progress_bar().progress_indicator_case()) {

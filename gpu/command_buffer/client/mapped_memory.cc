@@ -62,7 +62,8 @@ MappedMemoryManager::~MappedMemoryManager() {
 
 void* MappedMemoryManager::Alloc(unsigned int size,
                                  int32_t* shm_id,
-                                 unsigned int* shm_offset) {
+                                 unsigned int* shm_offset,
+                                 TransferBufferAllocationOption option) {
   DCHECK(shm_id);
   DCHECK(shm_offset);
   if (size <= allocated_memory_) {
@@ -113,7 +114,7 @@ void* MappedMemoryManager::Alloc(unsigned int size,
 
   int32_t id = -1;
   scoped_refptr<gpu::Buffer> shm =
-      cmd_buf->CreateTransferBuffer(safe_chunk_size, &id);
+      cmd_buf->CreateTransferBuffer(safe_chunk_size, &id, option);
   if (id  < 0)
     return nullptr;
   DCHECK(shm.get());

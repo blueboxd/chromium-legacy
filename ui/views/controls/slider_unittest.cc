@@ -25,6 +25,7 @@
 #include "ui/views/test/slider_test_api.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_utils.h"
@@ -169,7 +170,7 @@ class SliderTest : public views::ViewsTestBase {
   // The maximum y value within the bounds of the slider.
   int max_y_ = 0;
   // The widget container for the slider being tested.
-  views::Widget* widget_ = nullptr;
+  views::UniqueWidgetPtr widget_;
   // An event generator.
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
@@ -179,10 +180,9 @@ class SliderTest : public views::ViewsTestBase {
 void SliderTest::SetUp() {
   views::ViewsTestBase::SetUp();
 
-  slider_ = new Slider(nullptr);
-  View* view = slider_;
-  gfx::Size size = view->GetPreferredSize();
-  view->SetSize(size);
+  auto slider = std::make_unique<Slider>();
+  gfx::Size size = slider->GetPreferredSize();
+  slider->SetSize(size);
   max_x_ = size.width() - 1;
   max_y_ = size.height() - 1;
   default_locale_ = base::i18n::GetConfiguredLocale();
@@ -191,19 +191,17 @@ void SliderTest::SetUp() {
       CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS));
   init_params.bounds = gfx::Rect(size);
 
-  widget_ = new views::Widget();
+  widget_ = std::make_unique<Widget>();
   widget_->Init(std::move(init_params));
-  widget_->SetContentsView(slider_);
+  slider_ = widget_->SetContentsView(std::move(slider));
   widget_->Show();
 
   event_generator_ =
-      std::make_unique<ui::test::EventGenerator>(GetRootWindow(widget_));
+      std::make_unique<ui::test::EventGenerator>(GetRootWindow(widget_.get()));
 }
 
 void SliderTest::TearDown() {
-  if (widget_ && !widget_->IsClosed())
-    widget_->Close();
-
+  widget_.reset();
   base::i18n::SetICUDefaultLocale(default_locale_);
 
   views::ViewsTestBase::TearDown();

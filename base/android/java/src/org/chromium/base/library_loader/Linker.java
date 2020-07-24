@@ -256,9 +256,9 @@ public abstract class Linker {
     public final void disableSharedRelros() {
         if (DEBUG) Log.i(TAG, "disableSharedRelros() called");
         synchronized (sLock) {
+            mInBrowserProcess = false;
             ensureInitializedLocked();
             assert mState == State.INITIALIZED; // Not after the library has been loaded.
-            mInBrowserProcess = false;
             mWaitForSharedRelros = false;
         }
     }
@@ -358,10 +358,11 @@ public abstract class Linker {
     public final void initServiceProcess(long baseLoadAddress) {
         if (DEBUG) Log.i(TAG, "initServiceProcess(0x%x) called", baseLoadAddress);
         synchronized (sLock) {
+            mInBrowserProcess = false;
+
             ensureInitializedLocked();
             assert mState == State.INITIALIZED;
 
-            mInBrowserProcess = false;
             mWaitForSharedRelros = true;
             mBaseLoadAddress = baseLoadAddress;
         }

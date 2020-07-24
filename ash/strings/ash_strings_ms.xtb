@@ -8,7 +8,7 @@
 <translation id="1036672894875463507">Saya Google Assistant anda. Saya sedia membantu anda sepanjang hari anda!
 Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> ditambahkan</translation>
-<translation id="1056775291175587022">Tiada rangkaian</translation>
+<translation id="1056775291175587022">0 rangkaian</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="108486256082349153">Selular: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">Saya bosan</translation>
@@ -277,7 +277,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4028481283645788203">Kata laluan diperlukan untuk meningkatkan keselamatan</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Anda berkongsi skrin anda</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Matikan untuk satu apl}other{Matikan untuk # apl}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Mati, satu apl}other{Mati, # apl}}</translation>
 <translation id="4072264167173457037">Isyarat sederhana</translation>
 <translation id="4112140312785995938">Cari Ke Belakang</translation>
 <translation id="4129129681837227511">Untuk melihat pemberitahuan pada skrin kunci anda, buka kunci untuk menukar tetapan</translation>
@@ -599,7 +599,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8054466585765276473">Mengira tempoh bateri.</translation>
 <translation id="8061464966246066292">Kontras tinggi</translation>
 <translation id="8098591350844501178">Berhenti menghantar skrin ke <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">Dihidupkan, semua apl</translation>
+<translation id="8113423164597455979">Hidup, semua</translation>
 <translation id="8131740175452115882">Sahkan</translation>
 <translation id="8132793192354020517">Disambungkan ke <ph name="NAME" /></translation>
 <translation id="813913629614996137">Memulakan...</translation>

@@ -69,12 +69,10 @@ PasswordModelTypeController::PasswordModelTypeController(
               base::Unretained(this))) {
   identity_manager_->AddObserver(this);
 
-  if (!base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage)) {
-    DCHECK(!account_password_store_for_cleanup);
-    // TODO(crbug.com/1079297): Delete the database file (if it exists); see
-    // password_store_factory_util.h.
-  } else {
-    DCHECK(account_password_store_for_cleanup);
+  DCHECK_EQ(
+      !!base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage),
+      !!account_password_store_for_cleanup);
+  if (base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage)) {
     // Note: Right now, we're still in the middle of SyncService initialization,
     // so we can't check IsOptedInForAccountStorage() yet (SyncService might not
     // have determined the syncing account yet). Post a task do to it after the

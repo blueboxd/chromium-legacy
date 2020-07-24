@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" />から<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">お使いのどのデバイスでも同じブックマークを使用するには、同期を有効にします。</translation>
 <translation id="1687475363370981210">すべて既読にする</translation>
+<translation id="1689333818294560261">ニックネーム</translation>
 <translation id="1690731385917361335">アイテムなし</translation>
 <translation id="1692118695553449118">同期は有効です</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />件選択しました</translation>
@@ -185,6 +186,7 @@
 <translation id="3153862085237805241">カードを保存</translation>
 <translation id="3157684681743766797">すべてマーク...</translation>
 <translation id="3161291298470460782">この操作を行うと、ログアウトして同期がオフになり、このデバイスから Chrome のデータがすべて削除されます。同期データは Google アカウントに残ります。</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3175081911749765310">ウェブサービス</translation>
 <translation id="3178650076442119961">最終同期: 今日</translation>
 <translation id="3181954750937456830">セーフ ブラウジング（危険なサイトからユーザーとデバイスを保護します）</translation>
@@ -206,6 +208,7 @@
 <translation id="3335947283844343239">閉じたタブを開く</translation>
 <translation id="3371831930909698441">翻訳が利用可能です。画面の下の方にオプションがあります。</translation>
 <translation id="3393920035788932672">ポップアップ許可済み</translation>
+<translation id="3425644765244388016">カードのニックネーム</translation>
 <translation id="3443810440409579745">タブが共有されました。</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />分</translation>
 <translation id="3448016392200048164">分割表示</translation>
@@ -240,6 +243,7 @@
 <translation id="3783017676699494206">画像を保存</translation>
 <translation id="3789841737615482174">インストール</translation>
 <translation id="3803696231112616155">このサイトを翻訳するか尋ねる</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{漏洩した可能性のあるパスワードはありません}=1{漏洩した可能性のあるパスワードが {COUNT} 個あります}other{漏洩した可能性のあるパスワードが {COUNT} 個あります}}</translation>
 <translation id="385051799172605136">戻る</translation>
 <translation id="3892144330757387737">履歴はここに表示されます</translation>
 <translation id="3897092660631435901">メニュー</translation>
@@ -529,6 +533,7 @@
 <translation id="7189598951263744875">共有...</translation>
 <translation id="7192050974311852563">ログ記録を開始</translation>
 <translation id="7203585745079012652">回答を音声で聞く</translation>
+<translation id="721597782417389033">無効なカード ニックネーム</translation>
 <translation id="7265758999917665941">このサイトでは保存しない</translation>
 <translation id="7272437679830969316">ユーザー認証に失敗しました。パスワードはコピーされませんでした。</translation>
 <translation id="7291368939935408496">パスワードの準備中...</translation>

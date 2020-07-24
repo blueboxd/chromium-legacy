@@ -1469,6 +1469,10 @@ def main(argv):
           base_module_build_config['deps_info']['interface_jar_path'])
       jetified_full_jar_classpath.add(
           base_module_build_config['deps_info']['jetified_jar_path'])
+      # Turbine now compiles headers against only the direct classpath, so the
+      # base module's interface jar must be on the direct interface classpath.
+      javac_interface_classpath.add(
+          base_module_build_config['deps_info']['interface_jar_path'])
 
     for dep in direct_group_deps:
       if 'extra_classpath_jars' in dep:

@@ -57,18 +57,31 @@ class CircularProgress extends HTMLElement {
                         height: 36px;
                         width: 36px;
                     }
+
+                    :host-context([detailed-panel][data-category='expanded'])
+                    .progress {
+                        height: 32px;
+                        width: 32px;
+                     }
+
+                    :host-context([detailed-panel][data-category='collapsed'])
+                    .progress {
+                        height: 28px;
+                        width: 28px;
+                    }
+
                     .bottom {
-                        stroke: rgb(210, 227, 252);
+                        stroke: var(--google-blue-100);
                         fill: none;
                     }
                     .top {
-                        stroke: rgb(26, 115, 232);
+                        stroke: var(--google-blue-600);
                         stroke-linecap: round;
                         fill: none;
                     }
                     text {
                         font: bold 14px Roboto;
-                        fill: rgb(26, 115, 232);
+                        fill: var(--google-blue-600);
                     }
                 </style>
                 <div class='progress'>

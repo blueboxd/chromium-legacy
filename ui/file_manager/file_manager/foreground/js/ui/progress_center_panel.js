@@ -408,6 +408,94 @@ class ProgressCenterPanel {
     return '';
   }
 
+
+  /**
+   * Generate primary text string for display on the feedback panel.
+   * It is used for TransferDetails mode.
+   * @param {!ProgressCenterItem} item Item we're generating a message for.
+   * @param {Object} info Cached information to use for formatting.
+   * @return {string} String formatted based on the item state.
+   */
+  generatePrimaryString_(item, info) {
+    switch (item.state) {
+      case 'progressing':
+      case 'completed':
+        if (item.itemCount === 1) {
+          if (item.type === ProgressItemType.COPY) {
+            return strf(
+                'COPY_FILE_NAME_LONG', info['source'], info['destination']);
+          } else if (item.type === ProgressItemType.MOVE) {
+            return strf(
+                'MOVE_FILE_NAME_LONG', info['source'], info['destination']);
+          } else {
+            return item.message;
+          }
+        } else {
+          if (item.type === ProgressItemType.COPY) {
+            return strf(
+                'COPY_ITEMS_REMAINING_LONG', info['source'],
+                info['destination']);
+          } else if (item.type === ProgressItemType.MOVE) {
+            return strf(
+                'MOVE_ITEMS_REMAINING_LONG', info['source'],
+                info['destination']);
+          } else {
+            return item.message;
+          }
+        }
+        break;
+      case 'error':
+        return item.message;
+      case 'canceled':
+        return '';
+      default:
+        assertNotReached();
+        break;
+    }
+    return '';
+  }
+
+  /**
+   * Generates remaining time message with formatted time.
+   *
+   * The time format in hour and minute and the durations more
+   * than 24 hours also formatted in hour.
+   *
+   * As ICU syntax is not implemented in web ui yet (crbug/481718), the i18n
+   * of time part is handled using Intl methods.
+   *
+   * @param {!ProgressCenterItem} item Item we're generating a message for.
+   * @return {!string} Remaining time message.
+   */
+  generateRemainingTimeMessage(item) {
+    const seconds = item.remainingTime;
+    if (seconds == 0 && item.state == 'progressing') {
+      return str('PENDING_LABEL');
+    }
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    const hourFormatter = new Intl.NumberFormat(
+        navigator.language, {style: 'unit', unit: 'hour', unitDisplay: 'long'});
+    const minuteFormatter = new Intl.NumberFormat(
+        navigator.language,
+        {style: 'unit', unit: 'minute', unitDisplay: 'short'});
+
+    if (hours > 0 && minutes > 0) {
+      return strf(
+          'TIME_REMAINING_ESTIMATE_2', hourFormatter.format(hours),
+          minuteFormatter.format(minutes));
+    } else if (hours > 0) {
+      return strf('TIME_REMAINING_ESTIMATE', hourFormatter.format(hours));
+    } else if (minutes > 0) {
+      return strf('TIME_REMAINING_ESTIMATE', minuteFormatter.format(minutes));
+    } else {
+      // Round up to 1 min for short period of remaining time.
+      return strf('TIME_REMAINING_ESTIMATE', minuteFormatter.format(1));
+    }
+  }
+
   /**
    * Process item updates for feedback panels.
    * @param {!ProgressCenterItem} item Item being updated.
@@ -437,14 +525,22 @@ class ProgressCenterPanel {
           'count': item.itemCount,
         };
       }
-      const primaryText = this.generateSourceString_(item, panelItem.userData);
+
+      let primaryText, secondaryText;
+      if (util.isTransferDetailsEnabled()) {
+        primaryText = this.generatePrimaryString_(item, panelItem.userData);
+        panelItem.secondaryText = this.generateRemainingTimeMessage(item);
+      } else {
+        primaryText = this.generateSourceString_(item, panelItem.userData);
+        if (item.destinationMessage) {
+          panelItem.secondaryText =
+              strf('TO_FOLDER_NAME', item.destinationMessage);
+        }
+      }
       panelItem.primaryText = primaryText;
       panelItem.setAttribute('data-progress-id', item.id);
-      if (item.destinationMessage) {
-        panelItem.secondaryText =
-            strf('TO_FOLDER_NAME', item.destinationMessage);
-      }
-      // On progress panels, make the cancel button aria-lable more useful.
+
+      // On progress panels, make the cancel button aria-label more useful.
       const cancelLabel = strf('CANCEL_ACTIVITY_LABEL', primaryText);
       panelItem.closeButtonAriaLabel = cancelLabel;
       panelItem.signalCallback = (signal) => {
@@ -465,10 +561,13 @@ class ProgressCenterPanel {
               item.type === 'format') {
             const donePanelItem = this.feedbackHost_.addPanelItem(item.id);
             donePanelItem.panelType = donePanelItem.panelTypeDone;
-            donePanelItem.primaryText =
-                this.generateSourceString_(item, panelItem.userData);
-            donePanelItem.secondaryText =
-                this.generateDestinationString_(item, panelItem.userData);
+            donePanelItem.primaryText = primaryText;
+            if (util.isTransferDetailsEnabled()) {
+              donePanelItem.secondaryText = str('COMPLETE_LABEL');
+            } else {
+              donePanelItem.secondaryText =
+                  this.generateDestinationString_(item, panelItem.userData);
+            }
             donePanelItem.signalCallback = (signal) => {
               if (signal === 'dismiss') {
                 this.feedbackHost_.removePanelItem(donePanelItem);

@@ -444,6 +444,7 @@
 <translation id="2824775600643448204">アドレス検索バー</translation>
 <translation id="2826760142808435982">接続は <ph name="CIPHER" /> を使用して暗号化および認証されており、<ph name="KX" /> が鍵交換メカニズムとして使用されています。</translation>
 <translation id="2835170189407361413">フォームをクリア</translation>
+<translation id="2839501879576190149">偽のサイトにアクセスしようとしています</translation>
 <translation id="2847118875340931228">シークレット ウィンドウを開く</translation>
 <translation id="2850739647070081192">Invite（封筒）</translation>
 <translation id="2856444702002559011"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では、悪意のあるユーザーによって、パスワード、メッセージ、クレジット カードなどの情報が盗まれる可能性があります。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -488,7 +489,6 @@
 <translation id="3005723025932146533">保存済みのコピーを表示</translation>
 <translation id="3008447029300691911"><ph name="CREDIT_CARD" /> の CVC を入力します。確認を行うと、カードの詳細がこのサイトと共有されます。</translation>
 <translation id="3010559122411665027">リスト エントリ「<ph name="ENTRY_INDEX" />」: <ph name="ERROR" /></translation>
-<translation id="3013266782169695070"><ph name="APP_NAME" /> ではサービスを改善するため、診断データを収集します。詳しくは、<ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> をご覧ください。</translation>
 <translation id="301521992641321250">自動ブロックされました</translation>
 <translation id="3016780570757425217">ユーザーの現在地の認識</translation>
 <translation id="3023071826883856138">洋4（封筒）</translation>
@@ -799,6 +799,7 @@
 <translation id="42981349822642051">展開</translation>
 <translation id="4300675098767811073">多穴パンチ（右）</translation>
 <translation id="4302965934281694568">長3（封筒）</translation>
+<translation id="4305666528087210886">ファイルにアクセスできませんでした</translation>
 <translation id="4305817255990598646">切り替え</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">ブロック（デフォルト）</translation>
@@ -817,6 +818,7 @@
 <translation id="4358461427845829800">お支払い方法を管理...</translation>
 <translation id="4359160567981085931">偽のサイトでパスワードを入力しました。Chrome を使って不正利用への対策ができます。パスワードを変更し、Google にアカウントの状況を通知するには、[アカウントを保護] をクリックしてください。</translation>
 <translation id="4367563149485757821">Number-12（封筒）</translation>
+<translation id="4367839622597707614">{1,plural, =0{サイトまたはアプリでのデータ侵害により、<ph name="ORIGIN" /> の保存済みパスワードが漏洩しました。<ph name="ORIGIN" /> のパスワードを今すぐ変更することをおすすめします。}=1{サイトまたはアプリでのデータ侵害により、<ph name="ORIGIN" /> とその他 1 サイトの保存済みパスワードが漏洩しました。保存したパスワードをすぐに確認することをおすすめします。}other{サイトまたはアプリでのデータ侵害により、<ph name="ORIGIN" /> とその他 <ph name="SITES_COUNT" /> サイトの保存済みパスワードが漏洩しました。保存したパスワードをすぐに確認することをおすすめします。}}</translation>
 <translation id="437058704415269440">アカウント残高</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948"><ph name="VALUE_TYPE" /> 値が想定されます。</translation>
@@ -1287,6 +1289,7 @@
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">続行すると料金が請求される可能性があります。</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{他 1 件の候補}other{他 # 件の候補}}</translation>
+<translation id="6387645831795005740">不正なユーザーが URL のごく一部を一目ではわからないように改変してサイトを偽装する場合があります。</translation>
 <translation id="6389470377220713856">カード名義人（半角英文字）</translation>
 <translation id="6390200185239044127">2 つ折り直角 Z 折り</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1500,6 +1503,7 @@
 <translation id="7372973238305370288">検索結果</translation>
 <translation id="7374733840632556089">この問題は、あなたまたは他のユーザーがデバイスにインストールした証明書が原因で発生します。該当の証明書は、ネットワークの監視と傍受に使われることが確認されており、Chrome では信頼されていません。学校や会社のネットワークなどで合法的に監視されているケースもありますが、ユーザーが監視を止められないとしても監視の事実を把握できるように、Chrome ではこのメッセージを表示しています。監視の対象は、ブラウザ、またはウェブにアクセスするアプリケーションです。</translation>
 <translation id="7375818412732305729">ファイルが添付された</translation>
+<translation id="7376551888419889433">セキュリティ イベントが Chrome Enterprise Connectors によって報告されると、そのイベントに関するデータが管理者に送信されます。送信されるデータには、Chrome でアクセスしたページの URL、ファイルの名前やメタデータ、デバイスと Chrome へのログインに使用したユーザー名が含まれる可能性があります。</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">メディアの操作</translation>
 <translation id="7378627244592794276">いいえ</translation>
@@ -1897,6 +1901,7 @@
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーから無効な証明書が提示されました。</translation>
 <translation id="9050666287014529139">パスフレーズ</translation>
+<translation id="9062620674789239642">移動、編集、削除された可能性があります。</translation>
 <translation id="9065203028668620118">編集</translation>
 <translation id="9065745800631924235"><ph name="TEXT" /> を履歴から検索</translation>
 <translation id="9069693763241529744">拡張機能によってブロック</translation>

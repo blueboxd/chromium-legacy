@@ -487,14 +487,15 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, AcceptsOptions) {
       EvalJs(shell(),
              "self.showOpenFilePicker({types: ["
              "  {description: 'foo', accept: {'text/custom': ['txt', 'Js']}},"
-             "  {accept: {'image/jpeg': []}}"
+             "  {accept: {'image/jpeg': []}},"
+             "  {accept: {'image/svg+xml': 'svg'}},"
              "]})");
   EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
       << result.error;
 
   ASSERT_TRUE(dialog_params.file_types);
   EXPECT_TRUE(dialog_params.file_types->include_all_files);
-  ASSERT_EQ(2u, dialog_params.file_types->extensions.size());
+  ASSERT_EQ(3u, dialog_params.file_types->extensions.size());
   ASSERT_EQ(2u, dialog_params.file_types->extensions[0].size());
   EXPECT_EQ(FILE_PATH_LITERAL("txt"),
             dialog_params.file_types->extensions[0][0]);
@@ -504,8 +505,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, AcceptsOptions) {
                              FILE_PATH_LITERAL("jpg")));
   EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[1],
                              FILE_PATH_LITERAL("jpeg")));
+  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[2],
+                             FILE_PATH_LITERAL("svg")));
 
-  ASSERT_EQ(2u,
+  ASSERT_EQ(3u,
             dialog_params.file_types->extension_description_overrides.size());
   EXPECT_EQ(base::ASCIIToUTF16("foo"),
             dialog_params.file_types->extension_description_overrides[0]);

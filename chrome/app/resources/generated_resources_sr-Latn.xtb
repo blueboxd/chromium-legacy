@@ -4440,7 +4440,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="6545864417968258051">Bluetooth skeniranje</translation>
 <translation id="6545867563032584178">Mikrofon je isključen u podešavanjima Mac sistema</translation>
 <translation id="6547354035488017500">Oslobodite bar 512 MB prostora ili će uređaj prestati da se odaziva. Da biste oslobodili prostor, izbrišite datoteke iz memorijskog prostora uređaja.</translation>
-<translation id="6549639163247690448"><ph name="DOMAIN" /> zahteva da se odmah povežete na Wi-Fi i da preuzmete ažuriranje. Ažuriranje će se automatski preuzeti kada se povežete na internet.</translation>
 <translation id="6550675742724504774">Opcije</translation>
 <translation id="6551508934388063976">Komanda nije dostupna. Pritisnite control-N da biste otvorili novi prozor.</translation>
 <translation id="6551612971599078809">Sajt koristi USB</translation>
@@ -5785,7 +5784,6 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="8213577208796878755">Dostupan je još jedan uređaj.</translation>
 <translation id="8214489666383623925">Otvori datoteku...</translation>
 <translation id="8214962590150211830">Ukloni ovu osobu</translation>
-<translation id="8215295261562449873">Napravi rezervne kopije mojih aplikacija i datoteka u direktorijumu Preuzimanja pre nadogradnje Linux-a.</translation>
 <translation id="8217399928341212914">Nastavi da blokiraš automatska preuzimanja više datoteka</translation>
 <translation id="8218847192766059983">Dodajte jezike ili promenite redosled stavki na listi. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">Obično blokirate obaveštenja. Da biste dozvolili ovom sajtu da vas obaveštava, kliknite ovde.</translation>

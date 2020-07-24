@@ -291,6 +291,63 @@ bool ReadSaltOnDisk(const base::FilePath& salt_path, std::string* out_salt) {
   return true;
 }
 
+ArcSupportHost::Error GetCloudProvisionFlowError(
+    base::Optional<mojom::CloudProvisionFlowError> cloud_provision_flow_error) {
+  DCHECK(cloud_provision_flow_error);
+
+  switch (cloud_provision_flow_error.value()) {
+    case mojom::CloudProvisionFlowError::ERROR_ENROLLMENT_TOKEN_INVALID:
+      return ArcSupportHost::Error::
+          SIGN_IN_CLOUD_PROVISION_FLOW_ENROLLMENT_TOKEN_INVALID;
+
+    case mojom::CloudProvisionFlowError::ERROR_DEVICE_QUOTA_EXCEEDED:
+      return ArcSupportHost::Error::
+          SIGN_IN_CLOUD_PROVISION_FLOW_DOMAIN_JOIN_FAIL_ERROR;
+
+    case mojom::CloudProvisionFlowError::ERROR_NETWORK_UNAVAILABLE:
+      return ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_NETWORK_ERROR;
+
+    case mojom::CloudProvisionFlowError::ERROR_USER_CANCEL:
+      return ArcSupportHost::Error::
+          SIGN_IN_CLOUD_PROVISION_FLOW_INTERRUPTED_ERROR;
+
+    case mojom::CloudProvisionFlowError::ERROR_NO_ACCOUNT_IN_WORK_PROFILE:
+      return ArcSupportHost::Error::
+          SIGN_IN_CLOUD_PROVISION_FLOW_ACCOUNT_MISSING_ERROR;
+
+    case mojom::CloudProvisionFlowError::ERROR_ACCOUNT_NOT_READY:
+    case mojom::CloudProvisionFlowError::ERROR_ACCOUNT_NOT_WHITELISTED:
+    case mojom::CloudProvisionFlowError::ERROR_DPC_SUPPORT:
+    case mojom::CloudProvisionFlowError::ERROR_ENTERPRISE_INVALID:
+      return ArcSupportHost::Error::
+          SIGN_IN_CLOUD_PROVISION_FLOW_PERMANENT_ERROR;
+
+    case mojom::CloudProvisionFlowError::ERROR_ACCOUNT_OTHER:
+    case mojom::CloudProvisionFlowError::ERROR_ADD_ACCOUNT_FAILED:
+    case mojom::CloudProvisionFlowError::ERROR_CHECKIN_FAILED:
+    case mojom::CloudProvisionFlowError::ERROR_INVALID_POLICY_STATE:
+    case mojom::CloudProvisionFlowError::ERROR_INVALID_SETUP_ACTION:
+    case mojom::CloudProvisionFlowError::ERROR_JSON:
+    case mojom::CloudProvisionFlowError::ERROR_MANAGED_PROVISIONING_FAILED:
+    case mojom::CloudProvisionFlowError::
+        ERROR_OAUTH_TOKEN_AUTHENTICATOR_EXCEPTION:
+    case mojom::CloudProvisionFlowError::ERROR_OAUTH_TOKEN_IO_EXCEPTION:
+    case mojom::CloudProvisionFlowError::
+        ERROR_OAUTH_TOKEN_OPERATION_CANCELED_EXCEPTION:
+    case mojom::CloudProvisionFlowError::ERROR_OAUTH_TOKEN:
+    case mojom::CloudProvisionFlowError::ERROR_OTHER:
+    case mojom::CloudProvisionFlowError::ERROR_QUARANTINE:
+    case mojom::CloudProvisionFlowError::ERROR_REMOVE_ACCOUNT_FAILED:
+    case mojom::CloudProvisionFlowError::ERROR_REQUEST_ANDROID_ID_FAILED:
+    case mojom::CloudProvisionFlowError::ERROR_SERVER_TRANSIENT_ERROR:
+    case mojom::CloudProvisionFlowError::ERROR_SERVER:
+    case mojom::CloudProvisionFlowError::ERROR_TIMEOUT:
+    default:
+      return ArcSupportHost::Error::
+          SIGN_IN_CLOUD_PROVISION_FLOW_TRANSIENT_ERROR;
+  }
+}
+
 ArcSessionManager::ExpansionResult ExpandPropertyFilesAndReadSaltInternal(
     const base::FilePath& source_path,
     const base::FilePath& dest_path,
@@ -521,6 +578,8 @@ void ArcSessionManager::OnProvisioningFinished(
   if (scoped_opt_in_tracker_ && !provisioning_successful)
     scoped_opt_in_tracker_->TrackError();
 
+  base::Optional<mojom::CloudProvisionFlowError> cloud_provision_flow_error;
+
   if (result == ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR) {
     // TODO(poromov): Consider ARC PublicSession offline mode.
     // Currently ARC session will be exited below, while the main user session
@@ -546,9 +605,11 @@ void ArcSessionManager::OnProvisioningFinished(
     UpdateProvisioningResultUMA(result, profile_);
     if (provisioning_error &&
         provisioning_error->is_cloud_provision_flow_error()) {
-      mojom::CloudProvisionFlowError cloud_provision_flow_error =
+      cloud_provision_flow_error =
           provisioning_error->get_cloud_provision_flow_error();
-      UpdateCloudProvisionFlowErrorUMA(cloud_provision_flow_error, profile_);
+
+      UpdateCloudProvisionFlowErrorUMA(cloud_provision_flow_error.value(),
+                                       profile_);
     }
     if (!provisioning_successful)
       UpdateOptInCancelUMA(OptInCancelReason::CLOUD_PROVISION_FLOW_FAIL);
@@ -610,9 +671,11 @@ void ArcSessionManager::OnProvisioningFinished(
       break;
     case ProvisioningResult::CLOUD_PROVISION_FLOW_FAILED:
     case ProvisioningResult::CLOUD_PROVISION_FLOW_TIMEOUT:
-    case ProvisioningResult::CLOUD_PROVISION_FLOW_ERROR:
     case ProvisioningResult::CLOUD_PROVISION_FLOW_INTERNAL_ERROR:
       error = ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR;
+      break;
+    case ProvisioningResult::CLOUD_PROVISION_FLOW_ERROR:
+      error = GetCloudProvisionFlowError(cloud_provision_flow_error);
       break;
     case ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR:
       error = ArcSupportHost::Error::SERVER_COMMUNICATION_ERROR;

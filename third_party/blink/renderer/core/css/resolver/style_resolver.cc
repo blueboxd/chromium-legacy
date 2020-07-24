@@ -1495,8 +1495,7 @@ void StyleResolver::MaybeAddToMatchedPropertiesCache(
     const CacheSuccess& cache_success,
     const MatchResult& match_result) {
   state.LoadPendingResources();
-  if (!state.IsAnimatingCustomProperties() &&
-      !cache_success.cached_matched_properties && cache_success.key.IsValid() &&
+  if (!cache_success.cached_matched_properties && cache_success.key.IsValid() &&
       MatchedPropertiesCache::IsCacheable(state)) {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   matched_property_cache_added, 1);
@@ -1520,18 +1519,6 @@ void StyleResolver::CalculateAnimationUpdate(StyleResolverState& state) {
                                            animating_element, *state.Style());
 
   state.SetIsAnimationInterpolationMapReady();
-
-  if (state.IsAnimatingCustomProperties()) {
-    return;
-  }
-  if (!state.AnimationUpdate()
-           .ActiveInterpolationsForCustomAnimations()
-           .IsEmpty() ||
-      !state.AnimationUpdate()
-           .ActiveInterpolationsForCustomTransitions()
-           .IsEmpty()) {
-    state.SetIsAnimatingCustomProperties(true);
-  }
 }
 
 bool StyleResolver::CanReuseBaseComputedStyle(const StyleResolverState& state) {

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <set>
+#include <vector>
 
 #include "base/macros.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
@@ -18,6 +19,8 @@ class ModelTypeStore;
 }  // namespace syncer
 
 namespace web_app {
+
+class WebAppProto;
 
 // Requires base::MessageLoop message_loop_ in test fixture. Reason:
 // InMemoryStore needs a SequencedTaskRunner.
@@ -36,6 +39,7 @@ class TestWebAppDatabaseFactory : public AbstractWebAppDatabaseFactory {
 
   std::set<AppId> ReadAllAppIds() const;
 
+  void WriteProtos(const std::vector<std::unique_ptr<WebAppProto>>& protos);
   void WriteRegistry(const Registry& registry);
 
  private:

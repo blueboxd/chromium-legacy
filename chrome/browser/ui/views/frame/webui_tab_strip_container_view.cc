@@ -443,7 +443,7 @@ WebUITabStripContainerView::WebUITabStripContainerView(
           std::make_unique<DragToOpenHandler>(this, drag_handle)),
       iph_controller_(std::make_unique<IPHController>(browser_)) {
   TRACE_EVENT0("ui", "WebUITabStripContainerView.Init");
-  DCHECK(UseTouchableTabStrip());
+  DCHECK(UseTouchableTabStrip(browser_));
   animation_.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
 
   SetVisible(false);
@@ -490,8 +490,9 @@ WebUITabStripContainerView::~WebUITabStripContainerView() {
 }
 
 // static
-bool WebUITabStripContainerView::UseTouchableTabStrip() {
-  return base::FeatureList::IsEnabled(features::kWebUITabStrip) &&
+bool WebUITabStripContainerView::UseTouchableTabStrip(const Browser* browser) {
+  return browser->is_type_normal() &&
+         base::FeatureList::IsEnabled(features::kWebUITabStrip) &&
          ui::TouchUiController::Get()->touch_ui();
 }
 

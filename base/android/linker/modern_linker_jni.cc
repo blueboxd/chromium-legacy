@@ -116,6 +116,7 @@ ScopedAnonymousMmap ScopedAnonymousMmap::ReserveAtAddress(void* address,
 
   if (actual_address && actual_address != address) {
     LOG_ERROR("Failed to obtain fixed address for load");
+    munmap(actual_address, size);
     return {};
   }
 

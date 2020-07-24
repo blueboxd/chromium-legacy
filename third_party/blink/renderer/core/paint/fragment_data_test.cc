@@ -16,7 +16,6 @@ TEST_F(FragmentDataTest, SelectionVisualRect) {
   FragmentData fragment;
 
   // Default SelectionVisualRect should not create RareData.
-  fragment.SetVisualRect(IntRect(10, 20, 30, 400));
   fragment.SetSelectionVisualRect(IntRect());
   EXPECT_FALSE(HasRareData(fragment));
   EXPECT_EQ(IntRect(), fragment.SelectionVisualRect());

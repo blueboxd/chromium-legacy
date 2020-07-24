@@ -96,12 +96,12 @@ class MockActionHandler : public ActionHandler {
 };
 
 class MockCrxStateChangeReceiver
-    : public base::RefCounted<MockCrxStateChangeReceiver> {
+    : public base::RefCountedThreadSafe<MockCrxStateChangeReceiver> {
  public:
   MOCK_METHOD(void, Receive, (CrxUpdateItem));
 
  private:
-  friend class base::RefCounted<MockCrxStateChangeReceiver>;
+  friend class base::RefCountedThreadSafe<MockCrxStateChangeReceiver>;
 
   ~MockCrxStateChangeReceiver() = default;
 };

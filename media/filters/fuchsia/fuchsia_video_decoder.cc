@@ -646,8 +646,8 @@ void FuchsiaVideoDecoder::SendInputPacket(
   fuchsia::media::Packet media_packet;
   media_packet.mutable_header()->set_buffer_lifetime_ordinal(
       input_buffer_lifetime_ordinal_);
-  media_packet.mutable_header()->set_packet_index(packet.index());
-  media_packet.set_buffer_index(packet.index());
+  media_packet.mutable_header()->set_packet_index(packet.buffer_index());
+  media_packet.set_buffer_index(packet.buffer_index());
   media_packet.set_timestamp_ish(packet.timestamp().InNanoseconds());
   media_packet.set_stream_lifetime_ordinal(stream_lifetime_ordinal_);
   media_packet.set_start_offset(packet.offset());
@@ -657,10 +657,10 @@ void FuchsiaVideoDecoder::SendInputPacket(
 
   active_stream_ = true;
 
-  DCHECK(in_flight_input_packets_.find(packet.index()) ==
+  DCHECK(in_flight_input_packets_.find(packet.buffer_index()) ==
          in_flight_input_packets_.end());
   in_flight_input_packets_.insert_or_assign(
-      packet.index(), InputDecoderPacket{std::move(packet)});
+      packet.buffer_index(), InputDecoderPacket{std::move(packet)});
 }
 
 void FuchsiaVideoDecoder::ProcessEndOfStream() {

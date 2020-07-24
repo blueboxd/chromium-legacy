@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/version_updater/version_updater.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 
 namespace base {
 class TickClock;
@@ -54,7 +55,9 @@ class WizardContext;
 // has network connectivity - if the current network is not online (e.g. behind
 // a protal), it will request an ErrorScreen to be shown. Update check will be
 // delayed until the Internet connectivity is established.
-class UpdateScreen : public BaseScreen, public VersionUpdater::Delegate {
+class UpdateScreen : public BaseScreen,
+                     public VersionUpdater::Delegate,
+                     public PowerManagerClient::Observer {
  public:
   using Result = VersionUpdater::Result;
 
@@ -92,6 +95,9 @@ class UpdateScreen : public BaseScreen, public VersionUpdater::Delegate {
   void UpdateInfoChanged(
       const VersionUpdater::UpdateInfo& update_info) override;
   void FinishExitUpdate(VersionUpdater::Result result) override;
+
+  // PowerManagerClient::Observer:
+  void PowerChanged(const power_manager::PowerSupplyProperties& proto) override;
 
   void set_exit_callback_for_testing(ScreenExitCallback exit_callback) {
     exit_callback_ = exit_callback;
@@ -134,6 +140,10 @@ class UpdateScreen : public BaseScreen, public VersionUpdater::Delegate {
   // screen gets hidden.
   void OnErrorScreenHidden();
 
+  // Updates visibility of the low battery warning message during the update
+  // stages. Called when power or update status changes.
+  void UpdateBatteryWarningVisibility();
+
   UpdateView* view_;
   ErrorScreen* error_screen_;
   ScreenExitCallback exit_callback_;
@@ -150,6 +160,9 @@ class UpdateScreen : public BaseScreen, public VersionUpdater::Delegate {
 
   // True if already checked that update is critical.
   bool is_critical_checked_ = false;
+
+  // Caches the result of HasCriticalUpdate function.
+  base::Optional<bool> has_critical_update_;
 
   // True if the update progress should be hidden even if update_info suggests
   // the opposite.

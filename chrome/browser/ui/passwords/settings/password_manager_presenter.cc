@@ -321,48 +321,28 @@ const autofill::PasswordForm* PasswordManagerPresenter::GetPasswordException(
   return TryGetPasswordForm(exception_map_, index);
 }
 
-void PasswordManagerPresenter::ChangeSavedPassword(
+bool PasswordManagerPresenter::ChangeSavedPassword(
     const std::string& sort_key,
-    const base::string16& new_username,
-    const base::Optional<base::string16>& new_password) {
+    base::string16 new_password) {
   // Find the equivalence class that needs to be updated.
   auto it = password_map_.find(sort_key);
   if (it == password_map_.end())
-    return;
+    return false;
+
+  // Make sure new_password is not empty.
+  if (new_password.empty()) {
+    DLOG(ERROR) << "The password is empty.";
+    return false;
+  }
 
   const FormVector& old_forms = it->second;
 
-  // If a password was provided, make sure it is not empty.
-  if (new_password && new_password->empty()) {
-    DLOG(ERROR) << "The password is empty.";
-    return;
-  }
+  DCHECK(!old_forms.empty());
+  const base::string16& username = old_forms[0]->username_value;
+  EditSavedPasswords(password_view_->GetProfile(), old_forms, username,
+                     std::move(new_password));
 
-  const std::string& signon_realm = old_forms[0]->signon_realm;
-  const base::string16& old_username = old_forms[0]->username_value;
-
-  // TODO(crbug.com/377410): Clean up this check for duplicates because a
-  // very similar one is in password_store_utils in EditSavedPasswords already.
-
-  // In case the username
-  // changed, make sure that there exists no other credential with the same
-  // signon_realm and username.
-  const bool username_changed = old_username != new_username;
-  if (username_changed) {
-    for (const auto& sort_key_passwords_pair : password_map_) {
-      for (const auto& password : sort_key_passwords_pair.second) {
-        if (password->signon_realm == signon_realm &&
-            password->username_value == new_username) {
-          DLOG(ERROR) << "A credential with the same signon_realm and username "
-                         "already exists.";
-          return;
-        }
-      }
-    }
-  }
-
-  EditSavedPasswords(password_view_->GetProfile(), old_forms, new_username,
-                     new_password);
+  return true;
 }
 
 void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {

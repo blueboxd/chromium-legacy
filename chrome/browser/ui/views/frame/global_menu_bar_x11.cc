@@ -206,11 +206,11 @@ struct GlobalMenuBarX11::HistoryItem {
 };
 
 GlobalMenuBarX11::GlobalMenuBarX11(BrowserView* browser_view,
-                                   aura::WindowTreeHost* host)
+                                   uint32_t browser_frame_xid)
     : browser_(browser_view->browser()),
       profile_(browser_->profile()),
       browser_view_(browser_view),
-      window_(static_cast<x11::Window>(host->GetAcceleratedWidget())),
+      browser_frame_xid_(browser_frame_xid),
       tab_restore_service_(nullptr),
       last_command_id_(kFirstUnreservedCommandId - 1) {
   GlobalMenuBarRegistrarX11::GetInstance()->OnMenuBarCreated(this);
@@ -285,8 +285,7 @@ void GlobalMenuBarX11::Initialize(DbusMenu::InitializedCallback callback) {
 }
 
 std::string GlobalMenuBarX11::GetPath() const {
-  return base::StringPrintf("/com/canonical/menu/%X",
-                            static_cast<uint32_t>(window_));
+  return base::StringPrintf("/com/canonical/menu/%X", browser_frame_xid_);
 }
 
 ui::SimpleMenuModel* GlobalMenuBarX11::BuildStaticMenu(

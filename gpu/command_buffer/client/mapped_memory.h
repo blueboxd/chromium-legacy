@@ -16,6 +16,7 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "gpu/command_buffer/client/fenced_allocator.h"
 #include "gpu/command_buffer/common/buffer.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
@@ -150,9 +151,17 @@ class GPU_EXPORT MappedMemoryManager {
   //   size: size of memory to allocate.
   //   shm_id: pointer to variable to receive the shared memory id.
   //   shm_offset: pointer to variable to receive the shared memory offset.
+  //   option: defaults to kLoseContextOnOOM, but may be kReturnNullOnOOM.
+  //           Passing kReturnNullOnOOM will gracefully fail and return nullptr
+  //           on OOM instead of losing the context. Callers should be careful
+  //           to check error conditions.
   // Returns:
   //   pointer to allocated block of memory. nullptr if failure.
-  void* Alloc(uint32_t size, int32_t* shm_id, uint32_t* shm_offset);
+  void* Alloc(uint32_t size,
+              int32_t* shm_id,
+              uint32_t* shm_offset,
+              TransferBufferAllocationOption option =
+                  TransferBufferAllocationOption::kLoseContextOnOOM);
 
   // Frees a block of memory.
   //

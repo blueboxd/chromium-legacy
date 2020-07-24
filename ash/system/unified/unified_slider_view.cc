@@ -28,11 +28,10 @@ using AshColorMode = AshColorProvider::AshColorMode;
 
 namespace {
 
-views::Slider* CreateSlider(UnifiedSliderListener* listener, bool readonly) {
-  if (readonly)
-    return new ReadOnlySlider();
-
-  return new SystemSlider(listener);
+std::unique_ptr<views::Slider> CreateSlider(UnifiedSliderListener* listener,
+                                            bool readonly) {
+  return readonly ? std::make_unique<ReadOnlySlider>()
+                  : std::make_unique<SystemSlider>(listener);
 }
 
 }  // namespace
@@ -53,7 +52,7 @@ SkColor SystemSlider::GetTroughColor() const {
   return AshColorProvider::Get()->GetDisabledColor(GetThumbColor());
 }
 
-ReadOnlySlider::ReadOnlySlider() : SystemSlider(nullptr) {}
+ReadOnlySlider::ReadOnlySlider() : SystemSlider() {}
 
 bool ReadOnlySlider::OnMousePressed(const ui::MouseEvent& event) {
   return false;
@@ -180,14 +179,14 @@ UnifiedSliderView::UnifiedSliderView(UnifiedSliderListener* listener,
                                      const gfx::VectorIcon& icon,
                                      int accessible_name_id,
                                      bool readonly)
-    : button_(new UnifiedSliderButton(listener, icon, accessible_name_id)),
-      slider_(CreateSlider(listener, readonly)) {
+    : button_(AddChildView(
+          std::make_unique<UnifiedSliderButton>(listener,
+                                                icon,
+                                                accessible_name_id))),
+      slider_(AddChildView(CreateSlider(listener, readonly))) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal, kUnifiedSliderRowPadding,
       kUnifiedSliderViewSpacing));
-
-  AddChildView(button_);
-  AddChildView(slider_);
 
   // Prevent an accessibility event while initiallizing this view. Typically
   // the first update of the slider value is conducted by the caller function

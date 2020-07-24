@@ -59,10 +59,6 @@ struct CORE_EXPORT MatchedProperties {
     // not used at all for the UA origin. Hence, it is not possible to compare
     // tree_orders from two different origins.
     //
-    // Note also that the tree_order will start at ~0u and then decrease.
-    // This is because we currently store the matched properties in reverse
-    // order.
-    //
     // https://drafts.csswg.org/css-scoping/#shadow-cascading
     uint16_t tree_order;
   };
@@ -76,28 +72,6 @@ WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::MatchedProperties)
 namespace blink {
 
 using MatchedPropertiesVector = HeapVector<MatchedProperties, 64>;
-
-// MatchedPropertiesRange is used to represent a subset of the matched
-// properties from a given origin, for instance UA rules, author rules, or a
-// shadow tree scope.  This is needed because rules from different origins are
-// applied in the opposite order for !important rules, yet in the same order as
-// for normal rules within the same origin.
-
-class MatchedPropertiesRange {
- public:
-  MatchedPropertiesRange(MatchedPropertiesVector::const_iterator begin,
-                         MatchedPropertiesVector::const_iterator end)
-      : begin_(begin), end_(end) {}
-
-  MatchedPropertiesVector::const_iterator begin() const { return begin_; }
-  MatchedPropertiesVector::const_iterator end() const { return end_; }
-
-  bool IsEmpty() const { return begin() == end(); }
-
- private:
-  MatchedPropertiesVector::const_iterator begin_;
-  MatchedPropertiesVector::const_iterator end_;
-};
 
 class MatchedExpansionsIterator {
   STACK_ALLOCATED();
@@ -172,34 +146,6 @@ class CORE_EXPORT MatchResult {
 
   MatchedExpansionsRange Expansions(const Document&, CascadeFilter) const;
 
-  MatchedPropertiesRange AllRules() const {
-    return MatchedPropertiesRange(matched_properties_.begin(),
-                                  matched_properties_.end());
-  }
-  MatchedPropertiesRange UaRules() const {
-    MatchedPropertiesVector::const_iterator begin = matched_properties_.begin();
-    MatchedPropertiesVector::const_iterator end =
-        matched_properties_.begin() + ua_range_end_;
-    return MatchedPropertiesRange(begin, end);
-  }
-  MatchedPropertiesRange UserRules() const {
-    MatchedPropertiesVector::const_iterator begin =
-        matched_properties_.begin() + ua_range_end_;
-    MatchedPropertiesVector::const_iterator end =
-        matched_properties_.begin() + (user_range_ends_.IsEmpty()
-                                           ? ua_range_end_
-                                           : user_range_ends_.back());
-    return MatchedPropertiesRange(begin, end);
-  }
-  MatchedPropertiesRange AuthorRules() const {
-    MatchedPropertiesVector::const_iterator begin =
-        matched_properties_.begin() + (user_range_ends_.IsEmpty()
-                                           ? ua_range_end_
-                                           : user_range_ends_.back());
-    MatchedPropertiesVector::const_iterator end = matched_properties_.end();
-    return MatchedPropertiesRange(begin, end);
-  }
-
   const MatchedPropertiesVector& GetMatchedProperties() const {
     return matched_properties_;
   }
@@ -210,9 +156,6 @@ class CORE_EXPORT MatchResult {
 
  private:
   MatchedPropertiesVector matched_properties_;
-  Vector<unsigned, 16> user_range_ends_;
-  Vector<unsigned, 16> author_range_ends_;
-  unsigned ua_range_end_ = 0;
   bool is_cacheable_ = true;
   CascadeOrigin current_origin_ = CascadeOrigin::kUserAgent;
   uint16_t current_tree_order_ = 0;

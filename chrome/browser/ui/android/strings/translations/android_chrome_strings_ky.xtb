@@ -669,7 +669,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6342069812937806050">Жаңы эле</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 жана дагы <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 жана дагы <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="6364438453358674297">Сунуш таржымалдан алынып салынсынбы?</translation>
-<translation id="6366047038980456022"><ph name="APP_NAME" /> колдонмосунун акылдуу функциялары жана ылдамдыгы сизге онлайн режиминде коопсуз иштеп, түзүп, изилдөөгө мүмкүнчүлүк бере алат</translation>
+<translation id="6366047038980456022"><ph name="APP_NAME" /> – Интернетте коопсуз иштөөгө мүмкүнчүлүк берген бир катар пайдалуу функциялары бар ыкчам серепчи</translation>
 <translation id="6369229450655021117">Бул жерден Интернетте издеп, достор менен бөлүшүп, ачылган барактарды көрөсүз</translation>
 <translation id="6378173571450987352">Кошумча маалымат: Сарпталган трафик боюнча иргелди</translation>
 <translation id="6379829913050047669"><ph name="APP_NAME" /> Chrome'до ачылат. Улантуу менен, <ph name="BEGIN_LINK1" />Google'дун Тейлөө шарттарына<ph name="END_LINK1" /> жана <ph name="BEGIN_LINK2" />Google Chrome менен Chrome OS'тун Кошумча Тейлөө шарттарына<ph name="END_LINK2" /> макулдугуңузду билдиресиз.</translation>
@@ -752,7 +752,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6955535239952325894">Бул жөндөө көзөмөлдөнгөн серепчилерде өчүрүлгөн</translation>
 <translation id="6963766334940102469">Кыстармаларды жок кылуу</translation>
 <translation id="6979737339423435258">Бардыгы</translation>
-<translation id="6981982820502123353">Атайын мүмкүнчүлүктөр</translation>
+<translation id="6981982820502123353">Атайын мүмкүн-төр</translation>
 <translation id="6989267951144302301">Жүктөлүп алынган жок</translation>
 <translation id="6990079615885386641">Колдонмону Google Play Store'дон алыңыз: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Сырсөзүңүздү кимдир-бирөө билип алса, эскертүү жөнөтүлсүн</translation>

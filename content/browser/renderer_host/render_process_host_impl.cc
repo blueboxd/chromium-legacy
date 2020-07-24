@@ -537,8 +537,7 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
       return;
 
     spare_render_process_host_ = RenderProcessHostImpl::CreateRenderProcessHost(
-        browser_context, nullptr /* storage_partition_impl */,
-        nullptr /* site_instance */);
+        browser_context, nullptr /* site_instance */);
     spare_render_process_host_->AddObserver(this);
     spare_render_process_host_->Init();
 
@@ -1498,17 +1497,16 @@ int RenderProcessHost::GetCurrentRenderProcessCountForTesting() {
 // static
 RenderProcessHost* RenderProcessHostImpl::CreateRenderProcessHost(
     BrowserContext* browser_context,
-    StoragePartitionImpl* storage_partition_impl,
     SiteInstanceImpl* site_instance) {
   if (g_render_process_host_factory_) {
     return g_render_process_host_factory_->CreateRenderProcessHost(
         browser_context, site_instance);
   }
 
-  if (!storage_partition_impl) {
-    storage_partition_impl = static_cast<StoragePartitionImpl*>(
-        BrowserContext::GetStoragePartition(browser_context, site_instance));
-  }
+  StoragePartitionImpl* storage_partition_impl =
+      static_cast<StoragePartitionImpl*>(
+          BrowserContext::GetStoragePartition(browser_context, site_instance));
+
   // If we've made a StoragePartition for guests (e.g., for the <webview> tag),
   // stash the Site URL on it. This way, when we start a service worker inside
   // this storage partition, we can create the appropriate SiteInstance for
@@ -4458,7 +4456,7 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
     // creating one here with GetStoragePartition() can run into cross-thread
     // issues as TestBrowserContext initialization is done on the main thread.
     render_process_host =
-        CreateRenderProcessHost(browser_context, nullptr, site_instance);
+        CreateRenderProcessHost(browser_context, site_instance);
   }
 
   // It is important to call PrepareForFutureRequests *after* potentially

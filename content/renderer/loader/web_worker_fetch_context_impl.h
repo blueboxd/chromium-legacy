@@ -34,13 +34,16 @@
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "url/gurl.h"
 
+namespace blink {
+class WebFrameRequestBlocker;
+}  // namespace blink
+
 namespace IPC {
 class Message;
 }  // namespace IPC
 
 namespace content {
 
-class FrameRequestBlocker;
 class ResourceDispatcher;
 class ServiceWorkerProviderContext;
 class ThreadSafeSender;
@@ -162,7 +165,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // each property, for example, site_for_cookies and top_frame_origin.
   void set_ancestor_frame_id(int id);
   void set_frame_request_blocker(
-      scoped_refptr<FrameRequestBlocker> frame_request_blocker);
+      scoped_refptr<blink::WebFrameRequestBlocker> frame_request_blocker);
   void set_site_for_cookies(const net::SiteForCookies& site_for_cookies);
   void set_top_frame_origin(const blink::WebSecurityOrigin& top_frame_origin);
 
@@ -339,7 +342,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   // Set to non-null if the ancestor frame has an associated RequestBlocker,
   // which blocks requests from this worker too when the ancestor frame is
   // blocked.
-  scoped_refptr<FrameRequestBlocker> frame_request_blocker_;
+  scoped_refptr<blink::WebFrameRequestBlocker> frame_request_blocker_;
   net::SiteForCookies site_for_cookies_;
   base::Optional<url::Origin> top_frame_origin_;
 

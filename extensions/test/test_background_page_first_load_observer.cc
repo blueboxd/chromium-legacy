@@ -37,6 +37,14 @@ void TestBackgroundPageFirstLoadObserver::OnBackgroundHostCreated(
   }
 }
 
+void TestBackgroundPageFirstLoadObserver::OnExtensionHostDestroyed(
+    ExtensionHost* host) {
+  if (host->extension_id() == extension_id_) {
+    extension_host_observer_.Remove(host);
+    extension_host_ = nullptr;
+  }
+}
+
 void TestBackgroundPageFirstLoadObserver::OnExtensionHostDidStopFirstLoad(
     const ExtensionHost* host) {
   run_loop_.Quit();

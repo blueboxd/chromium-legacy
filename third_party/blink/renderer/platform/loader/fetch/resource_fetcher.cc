@@ -1339,6 +1339,10 @@ static bool IsDownloadOrStreamRequest(const ResourceRequest& request) {
 
 Resource* ResourceFetcher::MatchPreload(const FetchParameters& params,
                                         ResourceType type) {
+  // TODO(crbug.com/1099975): PreloadKey should be modified to also take into
+  // account the DOMWrapperWorld corresponding to the resource. This is because
+  // we probably don't want to share preloaded resources across different
+  // DOMWrapperWorlds to ensure predicatable behavior for preloads.
   auto it = preloads_.find(PreloadKey(params.Url(), type));
   if (it == preloads_.end())
     return nullptr;

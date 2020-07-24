@@ -4417,7 +4417,6 @@
 <translation id="6545864417968258051">藍牙掃描</translation>
 <translation id="6545867563032584178">已關閉 Mac 系統偏好設定中的麥克風</translation>
 <translation id="6547354035488017500">請釋出至少 512 MB 的空間，否則裝置會無回應。如要釋出空間，請刪除裝置儲存空間內的檔案。</translation>
-<translation id="6549639163247690448"><ph name="DOMAIN" /> 要求你立即連線到 Wi-Fi 下載更新。當你連上網際網路時，系統會自動下載更新。</translation>
 <translation id="6550675742724504774">選項</translation>
 <translation id="6551508934388063976">無法使用指令。按下 Ctrl + N 鍵可開啟新視窗。</translation>
 <translation id="6551612971599078809">網站正在使用 USB 裝置</translation>
@@ -5754,7 +5753,6 @@
 <translation id="8213577208796878755">有一個可用裝置。</translation>
 <translation id="8214489666383623925">開啟檔案...</translation>
 <translation id="8214962590150211830">移除這個使用者</translation>
-<translation id="8215295261562449873">先將我的應用程式和檔案備份至「下載內容」資料夾再升級 Linux。</translation>
 <translation id="8217399928341212914">繼續禁止自動下載多個檔案</translation>
 <translation id="8218847192766059983">新增語言或重新排列清單。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">你通常會封鎖通知。如要允許這個網站傳送通知給你，請按這裡。</translation>

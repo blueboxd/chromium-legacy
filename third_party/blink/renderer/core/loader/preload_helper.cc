@@ -317,6 +317,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
       GetFetchImportanceAttributeValue(params.importance));
 
   ResourceLoaderOptions options;
+  options.world = document.GetExecutionContext()->GetCurrentWorld();
   options.initiator_info.name = fetch_initiator_type_names::kLink;
   options.parser_disposition = parser_disposition;
   FetchParameters link_fetch_params(std::move(resource_request), options);

@@ -52,8 +52,10 @@ void CommandBufferDirect::SetGetBuffer(int32_t transfer_buffer_id) {
   service_.SetGetBuffer(transfer_buffer_id);
 }
 
-scoped_refptr<Buffer> CommandBufferDirect::CreateTransferBuffer(uint32_t size,
-                                                                int32_t* id) {
+scoped_refptr<Buffer> CommandBufferDirect::CreateTransferBuffer(
+    uint32_t size,
+    int32_t* id,
+    TransferBufferAllocationOption option) {
   return service_.CreateTransferBuffer(size, id);
 }
 

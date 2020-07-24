@@ -812,10 +812,10 @@ class AppCacheStorageImplTest : public testing::Test {
     fallback_namespace_record.origin = url::Origin::Create(kManifestUrl);
     EXPECT_TRUE(database()->InsertNamespace(&fallback_namespace_record));
 
-    AppCacheDatabase::OnlineWhiteListRecord online_whitelist_record;
-    online_whitelist_record.cache_id = 1;
-    online_whitelist_record.namespace_url = kOnlineNamespace;
-    EXPECT_TRUE(database()->InsertOnlineWhiteList(&online_whitelist_record));
+    AppCacheDatabase::OnlineSafeListRecord online_safelist_record;
+    online_safelist_record.cache_id = 1;
+    online_safelist_record.namespace_url = kOnlineNamespace;
+    EXPECT_TRUE(database()->InsertOnlineSafeList(&online_safelist_record));
 
     // Conduct the test.
     storage()->MakeGroupObsolete(group_.get(), delegate(), 0);
@@ -843,9 +843,9 @@ class AppCacheStorageImplTest : public testing::Test {
     database()->FindNamespacesForCache(1, &intercept_records,
                                        &fallback_records);
     EXPECT_TRUE(fallback_records.empty());
-    std::vector<AppCacheDatabase::OnlineWhiteListRecord> whitelist_records;
-    database()->FindOnlineWhiteListForCache(1, &whitelist_records);
-    EXPECT_TRUE(whitelist_records.empty());
+    std::vector<AppCacheDatabase::OnlineSafeListRecord> safelist_records;
+    database()->FindOnlineSafeListForCache(1, &safelist_records);
+    EXPECT_TRUE(safelist_records.empty());
 
     // Verify quota bookkeeping
     EXPECT_TRUE(storage()->usage_map_.empty());
@@ -1053,9 +1053,9 @@ class AppCacheStorageImplTest : public testing::Test {
     std::vector<AppCacheDatabase::EntryRecord> entries;
     std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
     std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
-    std::vector<AppCacheDatabase::OnlineWhiteListRecord> whitelists;
+    std::vector<AppCacheDatabase::OnlineSafeListRecord> safelists;
     cache_->ToDatabaseRecords(group_.get(), &cache_record, &entries,
-                              &intercepts, &fallbacks, &whitelists);
+                              &intercepts, &fallbacks, &safelists);
 
     for (const auto& entry : entries) {
       // MakeCacheAndGroup has inserted the default entry record already.
@@ -1064,7 +1064,7 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     EXPECT_TRUE(database()->InsertNamespaceRecords(fallbacks));
-    EXPECT_TRUE(database()->InsertOnlineWhiteListRecords(whitelists));
+    EXPECT_TRUE(database()->InsertOnlineSafeListRecords(safelists));
     if (drop_from_working_set) {
       EXPECT_TRUE(cache_->HasOneRef());
       cache_ = nullptr;
@@ -1115,9 +1115,9 @@ class AppCacheStorageImplTest : public testing::Test {
     std::vector<AppCacheDatabase::EntryRecord> entries;
     std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
     std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
-    std::vector<AppCacheDatabase::OnlineWhiteListRecord> whitelists;
+    std::vector<AppCacheDatabase::OnlineSafeListRecord> safelists;
     cache_->ToDatabaseRecords(group_.get(), &cache_record, &entries,
-                              &intercepts, &fallbacks, &whitelists);
+                              &intercepts, &fallbacks, &safelists);
 
     for (const auto& entry : entries) {
       // MakeCacheAndGroup has inserted the default entry record already.
@@ -1129,7 +1129,7 @@ class AppCacheStorageImplTest : public testing::Test {
     group_ = nullptr;
 
     EXPECT_TRUE(database()->InsertNamespaceRecords(fallbacks));
-    EXPECT_TRUE(database()->InsertOnlineWhiteListRecords(whitelists));
+    EXPECT_TRUE(database()->InsertOnlineSafeListRecords(safelists));
 
     // Conduct the test. Although the test url is in both fallback namespace
     // urls, it will match neither of them because its group does not have a
@@ -1183,9 +1183,9 @@ class AppCacheStorageImplTest : public testing::Test {
     std::vector<AppCacheDatabase::EntryRecord> entries;
     std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
     std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
-    std::vector<AppCacheDatabase::OnlineWhiteListRecord> whitelists;
+    std::vector<AppCacheDatabase::OnlineSafeListRecord> safelists;
     cache_->ToDatabaseRecords(group_.get(), &cache_record, &entries,
-                              &intercepts, &fallbacks, &whitelists);
+                              &intercepts, &fallbacks, &safelists);
 
     for (const auto& entry : entries) {
       // MakeCacheAndGroup has inserted  the default entry record already
@@ -1194,7 +1194,7 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     EXPECT_TRUE(database()->InsertNamespaceRecords(intercepts));
-    EXPECT_TRUE(database()->InsertOnlineWhiteListRecords(whitelists));
+    EXPECT_TRUE(database()->InsertOnlineSafeListRecords(safelists));
     if (drop_from_working_set) {
       EXPECT_TRUE(cache_->HasOneRef());
       cache_ = nullptr;
@@ -1391,9 +1391,9 @@ class AppCacheStorageImplTest : public testing::Test {
     cache_->AddEntry(kEntryUrl2, AppCacheEntry(AppCacheEntry::FALLBACK, 2));
     cache_->fallback_namespaces_.emplace_back(APPCACHE_FALLBACK_NAMESPACE,
                                               kFallbackNamespace, kEntryUrl2);
-    cache_->online_whitelist_namespaces_.emplace_back(
-        APPCACHE_NETWORK_NAMESPACE, kOnlineNamespace, GURL());
-    cache_->online_whitelist_namespaces_.emplace_back(
+    cache_->online_safelist_namespaces_.emplace_back(APPCACHE_NETWORK_NAMESPACE,
+                                                     kOnlineNamespace, GURL());
+    cache_->online_safelist_namespaces_.emplace_back(
         APPCACHE_NETWORK_NAMESPACE, kOnlineNamespaceWithinFallback, GURL());
 
     AppCacheDatabase::EntryRecord entry_record;
@@ -1402,19 +1402,19 @@ class AppCacheStorageImplTest : public testing::Test {
     entry_record.flags = AppCacheEntry::EXPLICIT | AppCacheEntry::FOREIGN;
     entry_record.response_id = 1;
     EXPECT_TRUE(database()->InsertEntry(&entry_record));
-    AppCacheDatabase::OnlineWhiteListRecord whitelist_record;
-    whitelist_record.cache_id = 1;
-    whitelist_record.namespace_url = kOnlineNamespace;
-    EXPECT_TRUE(database()->InsertOnlineWhiteList(&whitelist_record));
+    AppCacheDatabase::OnlineSafeListRecord safelist_record;
+    safelist_record.cache_id = 1;
+    safelist_record.namespace_url = kOnlineNamespace;
+    EXPECT_TRUE(database()->InsertOnlineSafeList(&safelist_record));
     AppCacheDatabase::NamespaceRecord fallback_namespace_record;
     fallback_namespace_record.cache_id = 1;
     fallback_namespace_record.namespace_.target_url = kEntryUrl2;
     fallback_namespace_record.namespace_.namespace_url = kFallbackNamespace;
     fallback_namespace_record.origin = url::Origin::Create(kManifestUrl);
     EXPECT_TRUE(database()->InsertNamespace(&fallback_namespace_record));
-    whitelist_record.cache_id = 1;
-    whitelist_record.namespace_url = kOnlineNamespaceWithinFallback;
-    EXPECT_TRUE(database()->InsertOnlineWhiteList(&whitelist_record));
+    safelist_record.cache_id = 1;
+    safelist_record.namespace_url = kOnlineNamespaceWithinFallback;
+    EXPECT_TRUE(database()->InsertOnlineSafeList(&safelist_record));
     if (drop_from_working_set) {
       cache_ = nullptr;
       group_ = nullptr;

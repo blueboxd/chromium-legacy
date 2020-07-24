@@ -217,13 +217,6 @@ views::ImageView* TrayPopupUtils::CreateMainImageView() {
   return image;
 }
 
-views::Slider* TrayPopupUtils::CreateSlider(views::SliderListener* listener) {
-  views::Slider* slider = new views::Slider(listener);
-  slider->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(0, kTrayPopupSliderHorizontalPadding)));
-  return slider;
-}
-
 views::ToggleButton* TrayPopupUtils::CreateToggleButton(
     views::ButtonListener* listener,
     int accessible_name_id) {
@@ -291,7 +284,7 @@ views::Separator* TrayPopupUtils::CreateVerticalSeparator() {
   separator->SetPreferredHeight(24);
   separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kSeparatorColor,
-      AshColorProvider::AshColorMode::kLight));
+      AshColorProvider::AshColorMode::kDark));
   return separator;
 }
 

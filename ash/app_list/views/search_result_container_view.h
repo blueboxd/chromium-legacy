@@ -83,7 +83,7 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
 
   // Returns the first result in the container view. Returns nullptr if it does
   // not exist.
-  virtual SearchResultBaseView* GetFirstResultView();
+  SearchResultBaseView* GetFirstResultView();
 
   // Called from SearchResultPageView OnShown/OnHidden
   void SetShown(bool shown);

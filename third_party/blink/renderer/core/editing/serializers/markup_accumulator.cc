@@ -545,7 +545,8 @@ std::pair<Node*, Element*> MarkupAccumulator::GetAuxiliaryDOMTree(
   ShadowRoot* shadow_root = element.GetShadowRoot();
   if (!shadow_root || include_shadow_roots_ != kIncludeShadowRoots)
     return std::pair<Node*, Element*>();
-  DCHECK(RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled());
+  DCHECK(RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled(
+      element.GetExecutionContext()));
   AtomicString shadowroot_type;
   switch (shadow_root->GetType()) {
     case ShadowRootType::V0:

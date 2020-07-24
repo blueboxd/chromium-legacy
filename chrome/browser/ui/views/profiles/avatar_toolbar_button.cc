@@ -96,10 +96,30 @@ void AvatarToolbarButton::UpdateIcon() {
 
   gfx::Image gaia_account_image = delegate_->GetGaiaAccountImage();
   for (auto state : kButtonStates)
-    SetImage(state, GetAvatarIcon(state, gaia_account_image));
+    SetImageModel(state, GetAvatarIcon(state, gaia_account_image));
   delegate_->ShowIdentityAnimation(gaia_account_image);
 
   SetInsets();
+}
+
+void AvatarToolbarButton::Layout() {
+  ToolbarButton::Layout();
+
+  // TODO(crbug.com/1094566): this is a hack to avoid mismatch between avatar
+  // bitmap scaling and DIP->canvas pixel scaling in fractional DIP scaling
+  // modes (125%, 133%, etc.) that can cause the right-hand or bottom pixel row
+  // of the avatar image to be sliced off at certain specific browser sizes and
+  // configurations.
+  //
+  // In order to solve this, we increase the width and height of the image by 1
+  // after layout, so the rest of the layout is before. Since the profile image
+  // uses transparency, visually this does not cause any change in cases where
+  // the bug doesn't manifest.
+  image()->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
+  image()->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
+  gfx::Size image_size = image()->GetImage().size();
+  image_size.Enlarge(1, 1);
+  image()->SetSize(image_size);
 }
 
 void AvatarToolbarButton::UpdateText() {
@@ -246,7 +266,7 @@ base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
   return base::string16();
 }
 
-gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
+ui::ImageModel AvatarToolbarButton::GetAvatarIcon(
     ButtonState state,
     const gfx::Image& gaia_account_image) const {
   const int icon_size = ui::TouchUiController::Get()->touch_ui()
@@ -256,24 +276,24 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
 
   switch (delegate_->GetState()) {
     case State::kIncognitoProfile:
-      return gfx::CreateVectorIcon(kIncognitoIcon, icon_size, icon_color);
+      return ui::ImageModel::FromVectorIcon(kIncognitoIcon, icon_color,
+                                            icon_size);
     case State::kGuestSession:
-      return profiles::GetGuestAvatar(icon_size);
+      return ui::ImageModel::FromImageSkia(profiles::GetGuestAvatar(icon_size));
     case State::kGenericProfile:
-      return gfx::CreateVectorIcon(kUserAccountAvatarIcon, icon_size,
-                                   icon_color);
+      return ui::ImageModel::FromVectorIcon(kUserAccountAvatarIcon, icon_color,
+                                            icon_size);
     case State::kAnimatedUserIdentity:
     case State::kPasswordsOnlySyncError:
     case State::kSyncError:
     case State::kSyncPaused:
     case State::kNormal:
-      return profiles::GetSizedAvatarIcon(
-                 delegate_->GetProfileAvatarImage(gaia_account_image), true,
-                 icon_size, icon_size, profiles::SHAPE_CIRCLE)
-          .AsImageSkia();
+      return ui::ImageModel::FromImage(profiles::GetSizedAvatarIcon(
+          delegate_->GetProfileAvatarImage(gaia_account_image), true, icon_size,
+          icon_size, profiles::SHAPE_CIRCLE));
   }
   NOTREACHED();
-  return gfx::ImageSkia();
+  return ui::ImageModel();
 }
 
 void AvatarToolbarButton::SetInsets() {

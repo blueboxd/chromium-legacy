@@ -65,8 +65,6 @@ QRCodeGeneratorBubbleController::qrcode_generator_bubble_view() const {
 
 void QRCodeGeneratorBubbleController::OnBubbleClosed() {
   qrcode_generator_bubble_ = nullptr;
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  browser->window()->UpdatePageActionIcon(PageActionIconType::kQRCodeGenerator);
 }
 
 QRCodeGeneratorBubbleController::QRCodeGeneratorBubbleController() = default;

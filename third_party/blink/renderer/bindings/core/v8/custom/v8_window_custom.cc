@@ -69,6 +69,7 @@ static void LocationAttributeGet(const CallbackInfo& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
   DOMWindow* window = V8Window::ToImpl(holder);
+  window->ReportCoopAccess(isolate, "location");
   Location* location = window->location();
   DCHECK(location);
 

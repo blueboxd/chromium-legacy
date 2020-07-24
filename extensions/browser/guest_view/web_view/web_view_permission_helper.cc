@@ -214,7 +214,9 @@ bool WebViewPermissionHelper::CheckMediaAccessPermission(
   return web_view_guest()
       ->embedder_web_contents()
       ->GetDelegate()
-      ->CheckMediaAccessPermission(render_frame_host, security_origin, type);
+      ->CheckMediaAccessPermission(
+          web_view_guest()->web_contents()->GetOuterWebContentsFrame(),
+          security_origin, type);
 }
 
 void WebViewPermissionHelper::OnMediaPermissionResponse(

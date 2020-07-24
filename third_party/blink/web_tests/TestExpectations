@@ -266,6 +266,7 @@ crbug.com/1007229 external/wpt/intersection-observer/same-origin-grand-child-ifr
 # not implemented yet
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/block-aspect-ratio-020.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-008.tentative.html [ Failure ]
+crbug.com/936084 external/wpt/css/css-sizing/max-content-input-001.html [ Failure ]
 
 # Incorrect blending with foreignObject and svg descendants.
 crbug.com/1102803 external/wpt/svg/extensibility/foreignObject/isolation-with-svg.html [ Failure ]
@@ -1396,8 +1397,6 @@ crbug.com/929098 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/ren
 # ====== Style team owned tests to here ======
 
 # ====== Form Controls Refresh (chrome://flags/#form-controls-refresh) failures from here ======
-
-crbug.com/1057518 fast/forms/month/month-picker-appearance-step.html [ Skip ]
 
 # ======
 # From this point until the end of the Form Controls Refresh section, these are
@@ -2687,12 +2686,24 @@ crbug.com/1018465 external/wpt/css/css-pseudo/active-selection-056.html [ Failur
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-ui/appearance-button-002.tentative.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-ui/appearance-button-002.tentative.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-ui/appearance-button-002.tentative.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-sizing/range-percent-intrinsic-size-2a.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-sizing/range-percent-intrinsic-size-2a.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-sizing/range-percent-intrinsic-size-2a.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-ui/webkit-appearance-button-002.tentative.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-ui/webkit-appearance-button-002.tentative.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-ui/webkit-appearance-button-002.tentative.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-sizing/range-percent-intrinsic-size-2.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-sizing/range-percent-intrinsic-size-2.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-sizing/range-percent-intrinsic-size-2.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/active-selection-057.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/active-selection-057.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/active-selection-057.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-tables/min-max-size-table-content-box.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-tables/min-max-size-table-content-box.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-tables/min-max-size-table-content-box.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-sizing/max-content-input-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-sizing/max-content-input-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-sizing/max-content-input-001.html [ Failure ]
 crbug.com/626703 [ Linux ] virtual/system-color-compute/external/wpt/css/css-color/t425-hsla-basic-a.xht [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-color/t422-rgba-a0.6-a.xht [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-color/t32-opacity-basic-0.6-a.xht [ Failure ]
@@ -5295,11 +5306,11 @@ crbug.com/1047480 [ Fuchsia ] virtual/gpu-rasterization/images/drag-image-descen
 crbug.com/817167 http/tests/devtools/oopif/oopif-cookies-refresh.js [ Failure Timeout Pass ]
 
 # Disable temporarily on Win7, will remove them when they are not flaky.
-crbug.com/1047176 crbug.com/1100783 [ Win7 ] fast/forms/suggestion-picker/date-suggestion-picker-mouse-operations.html [ Pass Failure Timeout ]
+crbug.com/1047176 [ Win7 ] fast/forms/suggestion-picker/date-suggestion-picker-mouse-operations.html [ Pass Failure Timeout ]
 crbug.com/1047176 [ Win7 ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-mouse-operations.html [ Pass Failure Timeout ]
 crbug.com/1047176 [ Win7 ] fast/forms/suggestion-picker/month-suggestion-picker-mouse-operations.html [ Pass Failure Timeout ]
 crbug.com/1047176 [ Win7 ] fast/forms/suggestion-picker/time-suggestion-picker-mouse-operations.html [ Pass Failure Timeout ]
-crbug.com/1047176 crbug.com/1100783 [ Win7 ] fast/forms/suggestion-picker/week-suggestion-picker-mouse-operations.html [ Pass Failure Timeout ]
+crbug.com/1047176 [ Win7 ] fast/forms/suggestion-picker/week-suggestion-picker-mouse-operations.html [ Pass Failure Timeout ]
 
 # Sheriff 2018-03-02
 crbug.com/818076 http/tests/devtools/oopif/oopif-elements-navigate-in.js [ Failure Pass ]
@@ -6395,8 +6406,7 @@ crbug.com/1048149 [ Mac ] fast/forms/calendar-picker/month-picker-appearance-ste
 crbug.com/1048149 [ Mac ] fast/forms/color/color-picker-appearance-zoom125.html [ Pass Crash ]
 crbug.com/1048149 [ Mac ] fast/forms/color/color-picker-top-left-selection-position-after-reopen.html [ Pass Crash ]
 crbug.com/1048149 [ Mac ] fast/forms/color/color-picker-zoom150-bottom-edge-no-nan.html [ Pass Crash ]
-# This used to be [ Pass Crash ], but as of crbug.com/1050039 it started flaking as well.
-crbug.com/1048149 crbug.com/1050121 [ Mac ] fast/forms/month/month-picker-appearance-zoom150.html [ Pass Failure Crash Failure ]
+crbug.com/1048149 crbug.com/1050121 [ Mac ] fast/forms/month/month-picker-appearance-zoom150.html [ Pass Crash ]
 
 # Upcoming DevTools change
 crbug.com/1006759 http/tests/devtools/profiler/cpu-profiler-save-load.js [ Pass Failure Timeout ]
@@ -6431,7 +6441,6 @@ crbug.com/1054577 [ Mac ] external/wpt/storage-access-api/requestStorageAccess.s
 # Sheriff 2020-02-07
 
 crbug.com/1050039 [ Mac ] fast/events/onbeforeunload-focused-iframe.html [ Pass Failure ]
-crbug.com/1050039 [ Mac ] fast/forms/calendar-picker/calendar-picker-type-change-onchange.html [ Pass Failure ]
 crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-01.html [ Pass Failure ]
 crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-02.html [ Pass Failure ]
 crbug.com/1050039 [ Mac ] virtual/omt-worker-fetch/fast/workers/worker-onerror-03.html [ Pass Failure ]
@@ -6794,12 +6803,9 @@ crbug.com/1101699 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnectio
 crbug.com/1083302 media/controls/volumechange-muted-attribute.html [ Pass Failure ]
 
 # Sheriff 2020-07-10
-crbug.com/1104118 [ Win ] fast/forms/color/color-suggestion-picker-appearance-value-attribute.html [ Pass Failure ]
-crbug.com/1104134 [ Mac10.14 ] virtual/controls-refresh-hc/fast/forms/color-scheme/range/range-pressed-state.html [ Pass Failure ]
+crbug.com/1104135 [ Mac10.14 ] virtual/controls-refresh-hc/fast/forms/color-scheme/range/range-pressed-state.html [ Pass Failure ]
 
 crbug.com/1102167 external/wpt/fetch/redirect-navigate/preserve-fragment.html [ Timeout Pass ]
-
-crbug.com/1104186 [ Win ] fast/forms/color-scheme/suggestion-picker/time-suggestion-picker-appearance.html [ Pass Failure ]
 
 # Sheriff 2020-07-13
 
@@ -6850,7 +6856,18 @@ crbug.com/1107634 [ Mac10.10 ] virtual/text-antialias/selection/select-ligature-
 crbug.com/1107634 [ Mac10.10 ] virtual/text-antialias/selection/select-ligature-vertical-2.html [ Pass Failure ]
 crbug.com/1107634 [ Mac10.10 ] virtual/text-antialias/selection/select-ligature-vertical-3.html [ Pass Failure ]
 
+# Temporarily disable tests to allow a fix in devtools frontend
+crbug.com/1105172 http/tests/devtools/sources/debugger/source-frame-breakpoint-decorations.js [ Pass Timeout Failure ]
+crbug.com/1105172 http/tests/devtools/sources/debugger-breakpoints/use-possible-breakpoints-to-resolve-breakpoint.js [ Pass Timeout Failure ]
+
 # Sheriff 2020-07-22
 crbug.com/1107722 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-script-id.js [ Pass Failure ]
 crbug.com/1107722 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-event-causes.js [ Pass Failure ]
 crbug.com/1107923 [ Mac10.15 ] inspector-protocol/debugger/wasm-streaming-url.js [ Pass Timeout Failure ]
+# Failing on Webkit Linux Leak
+crbug.com/1046784 [ Linux ] http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Pass Failure ]
+crbug.com/1046784 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-event-causes.js [ Pass Failure ]
+
+# Sheriff 2020-07-23
+crbug.com/1108728 [ Mac ] external/wpt/html/cross-origin-opener-policy/reporting/access-reporting/opener-accessed_openee-coop-ro.https.html [ Failure ]
+crbug.com/1108786 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-gc-event.js [ Pass Failure ]

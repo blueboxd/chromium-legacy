@@ -75,7 +75,7 @@
       await videoTrack.applyConstraints(constraints);
       returnToTest("applyConstraints-success");
     } catch (error) {
-      returnToTest("applyConstraints-failure");
+      returnToTest(`applyConstraints-failure-${error.name}`);
     }
   }
 
@@ -90,6 +90,10 @@
   function getPanTiltZoomPermission() {
     returnToTest(panTiltZoomPermissionStatus.state);
   }
+
+  document.addEventListener('visibilitychange', () => {
+    document.title = document.visibilityState;
+  });
   </script>
 </head>
 <body>

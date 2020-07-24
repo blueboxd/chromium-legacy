@@ -43,6 +43,7 @@ source_set("tabs_internal") {
   deps = [
     ":tabs",
     "//base",
+    "//components/favicon/core",
     "//components/favicon/ios",
     "//components/history/core/browser",
     "//components/history/ios/browser",

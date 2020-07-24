@@ -101,8 +101,11 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
                                 int32_t start,
                                 int32_t end) override;
   void SetGetBuffer(int32_t shm_id) override;
-  scoped_refptr<gpu::Buffer> CreateTransferBuffer(uint32_t size,
-                                                  int32_t* id) override;
+  scoped_refptr<gpu::Buffer> CreateTransferBuffer(
+      uint32_t size,
+      int32_t* id,
+      TransferBufferAllocationOption option =
+          TransferBufferAllocationOption::kLoseContextOnOOM) override;
   void DestroyTransferBuffer(int32_t id) override;
 
   // gpu::GpuControl implementation:

@@ -90,6 +90,11 @@
 #define GOOGLE_API_KEY_SHARING DUMMY_API_TOKEN
 #endif
 
+// API key for the Speech On-Device API (SODA).
+#if !defined(GOOGLE_API_KEY_SODA)
+#define GOOGLE_API_KEY_SODA DUMMY_API_TOKEN
+#endif
+
 // These are used as shortcuts for developers and users providing
 // OAuth credentials via preprocessor defines or environment
 // variables.  If set, they will be used to replace any of the client
@@ -136,6 +141,10 @@ class APIKeyCache {
 
     api_key_sharing_ = CalculateKeyValue(
         GOOGLE_API_KEY_SHARING, STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_SHARING),
+        nullptr, std::string(), environment.get(), command_line, gaia_config);
+
+    api_key_soda_ = CalculateKeyValue(
+        GOOGLE_API_KEY_SODA, STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_SODA),
         nullptr, std::string(), environment.get(), command_line, gaia_config);
 
     metrics_key_ = CalculateKeyValue(
@@ -203,6 +212,7 @@ class APIKeyCache {
   std::string api_key_non_stable() const { return api_key_non_stable_; }
   std::string api_key_remoting() const { return api_key_remoting_; }
   std::string api_key_sharing() const { return api_key_sharing_; }
+  std::string api_key_soda() const { return api_key_soda_; }
 
   std::string metrics_key() const { return metrics_key_; }
 
@@ -313,6 +323,7 @@ class APIKeyCache {
   std::string api_key_non_stable_;
   std::string api_key_remoting_;
   std::string api_key_sharing_;
+  std::string api_key_soda_;
   std::string metrics_key_;
   std::string client_ids_[CLIENT_NUM_ITEMS];
   std::string client_secrets_[CLIENT_NUM_ITEMS];
@@ -339,6 +350,10 @@ std::string GetRemotingAPIKey() {
 
 std::string GetSharingAPIKey() {
   return g_api_key_cache.Get().api_key_sharing();
+}
+
+std::string GetSodaAPIKey() {
+  return g_api_key_cache.Get().api_key_soda();
 }
 
 #if defined(OS_IOS)

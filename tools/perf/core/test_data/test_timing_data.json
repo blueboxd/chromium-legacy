@@ -232,18 +232,6 @@
         "name": "blink_perf.canvas/toBlob_duration.html"
     },
     {
-        "duration": "2.2370332838383837",
-        "name": "blink_perf.canvas/toBlob_duration_jpeg.html"
-    },
-    {
-        "duration": "2.3555758969696967",
-        "name": "blink_perf.canvas/transferFromImageBitmap.html"
-    },
-    {
-        "duration": "3.6314959929292923",
-        "name": "blink_perf.canvas/upload-canvas-2d-to-texture.html"
-    },
-    {
         "duration": "8.077196209090912",
         "name": "blink_perf.canvas/upload-video-to-sub-texture.html"
     },

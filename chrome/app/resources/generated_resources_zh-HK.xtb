@@ -4441,7 +4441,6 @@
 <translation id="6545864417968258051">藍牙掃瞄</translation>
 <translation id="6545867563032584178">已關閉 Mac 系統偏好設定中的麥克風</translation>
 <translation id="6547354035488017500">請釋出最少 512 MB 的儲存空間，否則裝置將沒有回應。如要釋出空間，請刪除裝置儲存空間內的檔案。</translation>
-<translation id="6549639163247690448"><ph name="DOMAIN" /> 要求您立即連接 Wi-Fi 並下載更新，系統將在您連接互聯網時自動下載更新。</translation>
 <translation id="6550675742724504774">選項</translation>
 <translation id="6551508934388063976">無法使用指令。按下 Ctrl + N 鍵可開啟新視窗。</translation>
 <translation id="6551612971599078809">網站正在使用 USB 裝置</translation>
@@ -4917,7 +4916,7 @@
 <translation id="713888829801648570">很抱歉，您目前處於離線狀態，因此無法驗證密碼。</translation>
 <translation id="7140928199327930795">沒有其他可用裝置。</translation>
 <translation id="7141105143012495934">系統無法擷取您帳戶的詳細資料，導致登入失敗。請與您的管理員聯絡或再試一次。</translation>
-<translation id="7143207342074048698">連線中</translation>
+<translation id="7143207342074048698">正在連接</translation>
 <translation id="7144878232160441200">重試</translation>
 <translation id="714876143603641390">LAN 連接性</translation>
 <translation id="7149893636342594995">最近 24 小時</translation>
@@ -5785,7 +5784,6 @@
 <translation id="8213577208796878755">有一部可用裝置。</translation>
 <translation id="8214489666383623925">開啟檔案…</translation>
 <translation id="8214962590150211830">移除這個使用者</translation>
-<translation id="8215295261562449873">在升級 Linux 前備份應用程式和檔案至「下載檔案」資料夾。</translation>
 <translation id="8217399928341212914">繼續禁止自動下載多個檔案</translation>
 <translation id="8218847192766059983">新增語言或重新排列清單。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">您通常會封鎖通知。如要允許此網站向您傳送通知，請按這裡。</translation>

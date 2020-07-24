@@ -218,8 +218,8 @@ suite(destination_settings_test.suiteName, function() {
    *     destinations in the dropdown.
    */
   function assertDropdownItems(expectedDestinations) {
-    const options = destinationSettings.$$('#destinationSelect')
-                        .shadowRoot.querySelectorAll('option:not([hidden])');
+    const options =
+        destinationSettings.$$('#destinationSelect').getVisibleItemsForTest();
     assertEquals(expectedDestinations.length + 1, options.length);
     expectedDestinations.forEach((expectedValue, index) => {
       assertEquals(expectedValue, options[index].value);

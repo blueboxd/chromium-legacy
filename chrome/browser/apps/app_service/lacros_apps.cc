@@ -6,11 +6,14 @@
 
 #include <utility>
 
+#include "ash/public/cpp/app_menu_constants.h"
 #include "base/bind.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/chromeos/crosapi/lacros_manager.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/common/constants.h"
@@ -112,8 +115,16 @@ void LacrosApps::GetMenuModel(const std::string& app_id,
                               apps::mojom::MenuType menu_type,
                               int64_t display_id,
                               GetMenuModelCallback callback) {
-  // No menu items.
-  std::move(callback).Run(apps::mojom::MenuItems::New());
+  apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
+
+  // TODO(crbug.com/1108462): "New Window" menu should be hidden if
+  // incognito only mode is enforced by user's profile pref.
+  AddCommandItem((menu_type == apps::mojom::MenuType::kAppList)
+                     ? ash::APP_CONTEXT_MENU_NEW_WINDOW
+                     : ash::MENU_NEW_WINDOW,
+                 IDS_APP_LIST_NEW_WINDOW, &menu_items);
+
+  std::move(callback).Run(std::move(menu_items));
 }
 
 void LacrosApps::OnLoadComplete(bool success) {

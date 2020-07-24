@@ -1448,13 +1448,13 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
       base_function_pattern, base_function_pattern))
 
   def FilterFile(affected_file):
-    black_list = (_EXCLUDED_PATHS +
-                  _TEST_CODE_EXCLUDED_PATHS +
-                  input_api.DEFAULT_BLACK_LIST)
+    files_to_skip = (_EXCLUDED_PATHS +
+                     _TEST_CODE_EXCLUDED_PATHS +
+                     input_api.DEFAULT_FILES_TO_SKIP)
     return input_api.FilterSourceFile(
       affected_file,
-      white_list=file_inclusion_pattern,
-      black_list=black_list)
+      files_to_check=file_inclusion_pattern,
+      files_to_skip=files_to_skip)
 
   problems = []
   for f in input_api.AffectedSourceFiles(FilterFile):
@@ -1489,9 +1489,9 @@ def _CheckNoProductionCodeUsingTestOnlyFunctionsJava(input_api, output_api):
   problems = []
   sources = lambda x: input_api.FilterSourceFile(
     x,
-    black_list=(('(?i).*test', r'.*\/junit\/')
-                + input_api.DEFAULT_BLACK_LIST),
-    white_list=[r'.*\.java$']
+    files_to_skip=(('(?i).*test', r'.*\/junit\/')
+                   + input_api.DEFAULT_FILES_TO_SKIP),
+    files_to_check=[r'.*\.java$']
   )
   for f in input_api.AffectedFiles(include_deletes=False, file_filter=sources):
     local_path = f.LocalPath()
@@ -1865,9 +1865,9 @@ def _CheckNoBannedFunctions(input_api, output_api):
   warnings = []
   errors = []
 
-  def IsBlacklisted(affected_file, blacklist):
+  def IsExcludedFile(affected_file, excluded_paths):
     local_path = affected_file.LocalPath()
-    for item in blacklist:
+    for item in excluded_paths:
       if input_api.re.match(item, local_path):
         return True
     return False
@@ -1920,7 +1920,7 @@ def _CheckNoBannedFunctions(input_api, output_api):
   for f in input_api.AffectedFiles(file_filter=file_filter):
     for line_num, line in f.ChangedContents():
       for func_name, message, error, excluded_paths in _BANNED_CPP_FUNCTIONS:
-        if IsBlacklisted(f, excluded_paths):
+        if IsExcludedFile(f, excluded_paths):
           continue
         CheckForMatch(f, line_num, line, func_name, message, error)
 
@@ -2244,10 +2244,10 @@ def _CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api):
     """
     return input_api.FilterSourceFile(
       affected_file,
-      white_list=[r'^(android_webview|base|content|net)[\\/].*'],
-      black_list=(_EXCLUDED_PATHS +
-                  _TEST_CODE_EXCLUDED_PATHS +
-                  input_api.DEFAULT_BLACK_LIST))
+      files_to_check=[r'^(android_webview|base|content|net)[\\/].*'],
+      files_to_skip=(_EXCLUDED_PATHS +
+                     _TEST_CODE_EXCLUDED_PATHS +
+                     input_api.DEFAULT_FILES_TO_SKIP))
 
   base_pattern = ('"[^"]*(google|googleapis|googlezip|googledrive|appspot)'
                   '\.(com|net)[^"]*"')
@@ -2275,12 +2275,12 @@ def _CheckChromeOsSyncedPrefRegistration(input_api, output_api):
     """Includes directories known to be Chrome OS only."""
     return input_api.FilterSourceFile(
       affected_file,
-      white_list=('^ash/',
-                  '^chromeos/',  # Top-level src/chromeos.
-                  '/chromeos/',  # Any path component.
-                  '^components/arc',
-                  '^components/exo'),
-      black_list=(input_api.DEFAULT_BLACK_LIST))
+      files_to_check=('^ash/',
+                      '^chromeos/',  # Top-level src/chromeos.
+                      '/chromeos/',  # Any path component.
+                      '^components/arc',
+                      '^components/exo'),
+      files_to_skip=(input_api.DEFAULT_FILES_TO_SKIP))
 
   prefs = []
   priority_prefs = []
@@ -2316,10 +2316,10 @@ def _CheckNoAbbreviationInPngFileName(input_api, output_api):
   files for documentation.
   """
   errors = []
-  white_list = [r'.*_[a-z]_.*\.png$|.*_[a-z]\.png$']
-  black_list = [r'^native_client_sdk[\\/]']
+  files_to_check = [r'.*_[a-z]_.*\.png$|.*_[a-z]\.png$']
+  files_to_skip = [r'^native_client_sdk[\\/]']
   file_filter = lambda f: input_api.FilterSourceFile(
-      f, white_list=white_list, black_list=black_list)
+      f, files_to_check=files_to_check, files_to_skip=files_to_skip)
   for f in input_api.AffectedFiles(include_deletes=False,
                                    file_filter=file_filter):
     errors.append('    %s' % f.LocalPath())
@@ -2485,55 +2485,56 @@ def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
 # TODO: add unit tests.
 def _CheckSpamLogging(input_api, output_api):
   file_inclusion_pattern = [r'.+%s' % _IMPLEMENTATION_EXTENSIONS]
-  black_list = (_EXCLUDED_PATHS +
-                _TEST_CODE_EXCLUDED_PATHS +
-                input_api.DEFAULT_BLACK_LIST +
-                (r"^base[\\/]logging\.h$",
-                 r"^base[\\/]logging\.cc$",
-                 r"^base[\\/]task[\\/]thread_pool[\\/]task_tracker\.cc$",
-                 r"^chrome[\\/]app[\\/]chrome_main_delegate\.cc$",
-                 r"^chrome[\\/]browser[\\/]chrome_browser_main\.cc$",
-                 r"^chrome[\\/]browser[\\/]ui[\\/]startup[\\/]"
-                     r"startup_browser_creator\.cc$",
-                 r"^chrome[\\/]browser[\\/]browser_switcher[\\/]bho[\\/].*",
-                 r"^chrome[\\/]browser[\\/]diagnostics[\\/]" +
-                     r"diagnostics_writer\.cc$",
-                 r"^chrome[\\/]chrome_cleaner[\\/].*",
-                 r"^chrome[\\/]chrome_elf[\\/]dll_hash[\\/]dll_hash_main\.cc$",
-                 r"^chrome[\\/]installer[\\/]setup[\\/].*",
-                 r"^chromecast[\\/]",
-                 r"^cloud_print[\\/]",
-                 r"^components[\\/]browser_watcher[\\/]"
-                     r"dump_stability_report_main_win.cc$",
-                 r"^components[\\/]media_control[\\/]renderer[\\/]"
-                     r"media_playback_options\.cc$",
-                 r"^components[\\/]zucchini[\\/].*",
-                 # TODO(peter): Remove this exception. https://crbug.com/534537
-                 r"^content[\\/]browser[\\/]notifications[\\/]"
-                     r"notification_event_dispatcher_impl\.cc$",
-                 r"^content[\\/]common[\\/]gpu[\\/]client[\\/]"
-                     r"gl_helper_benchmark\.cc$",
-                 r"^courgette[\\/]courgette_minimal_tool\.cc$",
-                 r"^courgette[\\/]courgette_tool\.cc$",
-                 r"^extensions[\\/]renderer[\\/]logging_native_handler\.cc$",
-                 r"^fuchsia[\\/]engine[\\/]browser[\\/]frame_impl.cc$",
-                 r"^fuchsia[\\/]engine[\\/]context_provider_main.cc$",
-                 r"^headless[\\/]app[\\/]headless_shell\.cc$",
-                 r"^ipc[\\/]ipc_logging\.cc$",
-                 r"^native_client_sdk[\\/]",
-                 r"^remoting[\\/]base[\\/]logging\.h$",
-                 r"^remoting[\\/]host[\\/].*",
-                 r"^sandbox[\\/]linux[\\/].*",
-                 r"^storage[\\/]browser[\\/]file_system[\\/]" +
-                     r"dump_file_system.cc$",
-                 r"^tools[\\/]",
-                 r"^ui[\\/]base[\\/]resource[\\/]data_pack.cc$",
-                 r"^ui[\\/]aura[\\/]bench[\\/]bench_main\.cc$",
-                 r"^ui[\\/]ozone[\\/]platform[\\/]cast[\\/]",
-                 r"^ui[\\/]base[\\/]x[\\/]xwmstartupcheck[\\/]"
-                     r"xwmstartupcheck\.cc$"))
+  files_to_skip = (_EXCLUDED_PATHS +
+                   _TEST_CODE_EXCLUDED_PATHS +
+                   input_api.DEFAULT_FILES_TO_SKIP +
+                   (r"^base[\\/]logging\.h$",
+                    r"^base[\\/]logging\.cc$",
+                    r"^base[\\/]task[\\/]thread_pool[\\/]task_tracker\.cc$",
+                    r"^chrome[\\/]app[\\/]chrome_main_delegate\.cc$",
+                    r"^chrome[\\/]browser[\\/]chrome_browser_main\.cc$",
+                    r"^chrome[\\/]browser[\\/]ui[\\/]startup[\\/]"
+                        r"startup_browser_creator\.cc$",
+                    r"^chrome[\\/]browser[\\/]browser_switcher[\\/]bho[\\/].*",
+                    r"^chrome[\\/]browser[\\/]diagnostics[\\/]" +
+                        r"diagnostics_writer\.cc$",
+                    r"^chrome[\\/]chrome_cleaner[\\/].*",
+                    r"^chrome[\\/]chrome_elf[\\/]dll_hash[\\/]" +
+                        r"dll_hash_main\.cc$",
+                    r"^chrome[\\/]installer[\\/]setup[\\/].*",
+                    r"^chromecast[\\/]",
+                    r"^cloud_print[\\/]",
+                    r"^components[\\/]browser_watcher[\\/]"
+                        r"dump_stability_report_main_win.cc$",
+                    r"^components[\\/]media_control[\\/]renderer[\\/]"
+                        r"media_playback_options\.cc$",
+                    r"^components[\\/]zucchini[\\/].*",
+                    # TODO(peter): Remove exception. https://crbug.com/534537
+                    r"^content[\\/]browser[\\/]notifications[\\/]"
+                        r"notification_event_dispatcher_impl\.cc$",
+                    r"^content[\\/]common[\\/]gpu[\\/]client[\\/]"
+                        r"gl_helper_benchmark\.cc$",
+                    r"^courgette[\\/]courgette_minimal_tool\.cc$",
+                    r"^courgette[\\/]courgette_tool\.cc$",
+                    r"^extensions[\\/]renderer[\\/]logging_native_handler\.cc$",
+                    r"^fuchsia[\\/]engine[\\/]browser[\\/]frame_impl.cc$",
+                    r"^fuchsia[\\/]engine[\\/]context_provider_main.cc$",
+                    r"^headless[\\/]app[\\/]headless_shell\.cc$",
+                    r"^ipc[\\/]ipc_logging\.cc$",
+                    r"^native_client_sdk[\\/]",
+                    r"^remoting[\\/]base[\\/]logging\.h$",
+                    r"^remoting[\\/]host[\\/].*",
+                    r"^sandbox[\\/]linux[\\/].*",
+                    r"^storage[\\/]browser[\\/]file_system[\\/]" +
+                        r"dump_file_system.cc$",
+                    r"^tools[\\/]",
+                    r"^ui[\\/]base[\\/]resource[\\/]data_pack.cc$",
+                    r"^ui[\\/]aura[\\/]bench[\\/]bench_main\.cc$",
+                    r"^ui[\\/]ozone[\\/]platform[\\/]cast[\\/]",
+                    r"^ui[\\/]base[\\/]x[\\/]xwmstartupcheck[\\/]"
+                        r"xwmstartupcheck\.cc$"))
   source_file_filter = lambda x: input_api.FilterSourceFile(
-      x, white_list=file_inclusion_pattern, black_list=black_list)
+      x, files_to_check=file_inclusion_pattern, files_to_skip=files_to_skip)
 
   log_info = set([])
   printf = set([])
@@ -2635,9 +2636,9 @@ def _CheckUniquePtr(input_api, output_api):
   file_inclusion_pattern = [r'.+%s' % _IMPLEMENTATION_EXTENSIONS]
   sources = lambda affected_file: input_api.FilterSourceFile(
       affected_file,
-      black_list=(_EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS +
-                  input_api.DEFAULT_BLACK_LIST),
-      white_list=file_inclusion_pattern)
+      files_to_skip=(_EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS +
+                     input_api.DEFAULT_FILES_TO_SKIP),
+      files_to_check=file_inclusion_pattern)
 
   # Pattern to capture a single "<...>" block of template arguments. It can
   # handle linearly nested blocks, such as "<std::vector<std::set<T>>>", but
@@ -2855,7 +2856,7 @@ def _CheckJavaStyle(input_api, output_api):
 
   return checkstyle.RunCheckstyle(
       input_api, output_api, 'tools/android/checkstyle/chromium-style-5.0.xml',
-      black_list=_EXCLUDED_PATHS + input_api.DEFAULT_BLACK_LIST)
+      files_to_skip=_EXCLUDED_PATHS + input_api.DEFAULT_FILES_TO_SKIP)
 
 
 def _CheckPythonDevilInit(input_api, output_api):
@@ -2869,10 +2870,10 @@ def _CheckPythonDevilInit(input_api, output_api):
 
   sources = lambda affected_file: input_api.FilterSourceFile(
       affected_file,
-      black_list=(_EXCLUDED_PATHS + input_api.DEFAULT_BLACK_LIST +
-                  (r'^build[\\/]android[\\/]devil_chromium\.py',
-                   r'^third_party[\\/].*',)),
-      white_list=[r'.*\.py$'])
+      files_to_skip=(_EXCLUDED_PATHS + input_api.DEFAULT_FILES_TO_SKIP +
+                     (r'^build[\\/]android[\\/]devil_chromium\.py',
+                      r'^third_party[\\/].*',)),
+      files_to_check=[r'.*\.py$'])
 
   for f in input_api.AffectedSourceFiles(sources):
     for line_num, line in f.ChangedContents():
@@ -3305,16 +3306,16 @@ def _CheckAndroidDebuggableBuild(input_api, output_api):
 
   sources = lambda affected_file: input_api.FilterSourceFile(
       affected_file,
-      black_list=(_EXCLUDED_PATHS +
-                  _TEST_CODE_EXCLUDED_PATHS +
-                  input_api.DEFAULT_BLACK_LIST +
-                  (r"^android_webview[\\/]support_library[\\/]"
-                      "boundary_interfaces[\\/]",
-                   r"^chrome[\\/]android[\\/]webapk[\\/].*",
-                   r'^third_party[\\/].*',
-                   r"tools[\\/]android[\\/]customtabs_benchmark[\\/].*",
-                   r"webview[\\/]chromium[\\/]License.*",)),
-      white_list=[r'.*\.java$'])
+      files_to_skip=(_EXCLUDED_PATHS +
+                     _TEST_CODE_EXCLUDED_PATHS +
+                     input_api.DEFAULT_FILES_TO_SKIP +
+                     (r"^android_webview[\\/]support_library[\\/]"
+                         "boundary_interfaces[\\/]",
+                      r"^chrome[\\/]android[\\/]webapk[\\/].*",
+                      r'^third_party[\\/].*',
+                      r"tools[\\/]android[\\/]customtabs_benchmark[\\/].*",
+                      r"webview[\\/]chromium[\\/]License.*",)),
+      files_to_check=[r'.*\.java$'])
 
   for f in input_api.AffectedSourceFiles(sources):
     for line_num, line in f.ChangedContents():
@@ -3344,12 +3345,12 @@ def _CheckAndroidToastUsage(input_api, output_api):
 
   sources = lambda affected_file: input_api.FilterSourceFile(
       affected_file,
-      black_list=(_EXCLUDED_PATHS +
-                  _TEST_CODE_EXCLUDED_PATHS +
-                  input_api.DEFAULT_BLACK_LIST +
-                  (r'^chromecast[\\/].*',
-                   r'^remoting[\\/].*')),
-      white_list=[r'.*\.java$'])
+      files_to_skip=(_EXCLUDED_PATHS +
+                     _TEST_CODE_EXCLUDED_PATHS +
+                     input_api.DEFAULT_FILES_TO_SKIP +
+                     (r'^chromecast[\\/].*',
+                      r'^remoting[\\/].*')),
+      files_to_check=[r'.*\.java$'])
 
   for f in input_api.AffectedSourceFiles(sources):
     for line_num, line in f.ChangedContents():
@@ -3400,8 +3401,9 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
   rough_log_decl_pattern = input_api.re.compile(r'\bString TAG\s*=')
 
   REF_MSG = ('See docs/android_logging.md for more info.')
-  sources = lambda x: input_api.FilterSourceFile(x, white_list=[r'.*\.java$'],
-      black_list=cr_log_check_excluded_paths)
+  sources = lambda x: input_api.FilterSourceFile(x,
+      files_to_check=[r'.*\.java$'],
+      files_to_skip=cr_log_check_excluded_paths)
 
   tag_decl_errors = []
   tag_length_errors = []
@@ -3485,7 +3487,7 @@ def _CheckAndroidTestJUnitFrameworkImport(input_api, output_api):
       r'^import junit\.framework\..*;',
       input_api.re.MULTILINE)
   sources = lambda x: input_api.FilterSourceFile(
-      x, white_list=[r'.*\.java$'], black_list=None)
+      x, files_to_check=[r'.*\.java$'], files_to_skip=None)
   errors = []
   for f in input_api.AffectedFiles(file_filter=sources):
     for line_num, line in f.ChangedContents():
@@ -3509,7 +3511,7 @@ def _CheckAndroidTestJUnitInheritance(input_api, output_api):
   class_declaration_pattern = input_api.re.compile(r'^public class \w*Test ')
 
   sources = lambda x: input_api.FilterSourceFile(
-      x, white_list=[r'.*Test\.java$'], black_list=None)
+      x, files_to_check=[r'.*Test\.java$'], files_to_skip=None)
   errors = []
   for f in input_api.AffectedFiles(file_filter=sources):
     if not f.OldContents():
@@ -3538,7 +3540,7 @@ def _CheckAndroidTestAnnotationUsage(input_api, output_api):
       r'^import android\.test\.suitebuilder\.annotation\..*;',
       input_api.re.MULTILINE)
   sources = lambda x: input_api.FilterSourceFile(
-      x, white_list=[r'.*\.java$'], black_list=None)
+      x, files_to_check=[r'.*\.java$'], files_to_skip=None)
   errors = []
   for f in input_api.AffectedFiles(file_filter=sources):
     for line_num, line in f.ChangedContents():
@@ -3587,12 +3589,12 @@ def _CheckAndroidWebkitImports(input_api, output_api):
 
   sources = lambda affected_file: input_api.FilterSourceFile(
       affected_file,
-      black_list=(_EXCLUDED_PATHS +
-                  _TEST_CODE_EXCLUDED_PATHS +
-                  input_api.DEFAULT_BLACK_LIST +
-                  (r'^android_webview[\\/]glue[\\/].*',
-                   r'^weblayer[\\/].*',)),
-      white_list=[r'.*\.java$'])
+      files_to_skip=(_EXCLUDED_PATHS +
+                     _TEST_CODE_EXCLUDED_PATHS +
+                     input_api.DEFAULT_FILES_TO_SKIP +
+                     (r'^android_webview[\\/]glue[\\/].*',
+                      r'^weblayer[\\/].*',)),
+      files_to_check=[r'.*\.java$'])
 
   for f in input_api.AffectedSourceFiles(sources):
     for line_num, line in f.ChangedContents():
@@ -3784,12 +3786,13 @@ def _CheckSingletonInHeaders(input_api, output_api):
   """Checks to make sure no header files have |Singleton<|."""
   def FileFilter(affected_file):
     # It's ok for base/memory/singleton.h to have |Singleton<|.
-    black_list = (_EXCLUDED_PATHS +
-                  input_api.DEFAULT_BLACK_LIST +
-                  (r"^base[\\/]memory[\\/]singleton\.h$",
-                   r"^net[\\/]quic[\\/]platform[\\/]impl[\\/]"
-                       r"quic_singleton_impl\.h$"))
-    return input_api.FilterSourceFile(affected_file, black_list=black_list)
+    files_to_skip = (_EXCLUDED_PATHS +
+                     input_api.DEFAULT_FILES_TO_SKIP +
+                     (r"^base[\\/]memory[\\/]singleton\.h$",
+                      r"^net[\\/]quic[\\/]platform[\\/]impl[\\/]"
+                          r"quic_singleton_impl\.h$"))
+    return input_api.FilterSourceFile(affected_file,
+        files_to_skip=files_to_skip)
 
   pattern = input_api.re.compile(r'(?<!class\sbase::)Singleton\s*<')
   files = []
@@ -3847,16 +3850,16 @@ def _CheckNoDeprecatedCss(input_api, output_api):
       needs to be consumed by WebKit. """
   results = []
   file_inclusion_pattern = [r".+\.css$"]
-  black_list = (_EXCLUDED_PATHS +
-                _TEST_CODE_EXCLUDED_PATHS +
-                input_api.DEFAULT_BLACK_LIST +
-                (r"^chrome/common/extensions/docs",
-                 r"^chrome/docs",
-                 r"^components/dom_distiller/core/css/distilledpage_ios.css",
-                 r"^components/neterror/resources/neterror.css",
-                 r"^native_client_sdk"))
+  files_to_skip = (_EXCLUDED_PATHS +
+                   _TEST_CODE_EXCLUDED_PATHS +
+                   input_api.DEFAULT_FILES_TO_SKIP +
+                   (r"^chrome/common/extensions/docs",
+                    r"^chrome/docs",
+                    r"^components/dom_distiller/core/css/distilledpage_ios.css",
+                    r"^components/neterror/resources/neterror.css",
+                    r"^native_client_sdk"))
   file_filter = lambda f: input_api.FilterSourceFile(
-      f, white_list=file_inclusion_pattern, black_list=black_list)
+      f, files_to_check=file_inclusion_pattern, files_to_skip=files_to_skip)
   for fpath in input_api.AffectedFiles(file_filter=file_filter):
     for line_num, line in fpath.ChangedContents():
       for (deprecated_value, value) in _DEPRECATED_CSS:
@@ -4082,7 +4085,7 @@ def _CheckNewHeaderWithoutGnChange(input_api, output_api):
 
   def headers(f):
     return input_api.FilterSourceFile(
-      f, white_list=(r'.+%s' % _HEADER_EXTENSIONS, ))
+      f, files_to_check=(r'.+%s' % _HEADER_EXTENSIONS, ))
 
   new_headers = []
   for f in input_api.AffectedSourceFiles(headers):
@@ -4091,7 +4094,7 @@ def _CheckNewHeaderWithoutGnChange(input_api, output_api):
     new_headers.append(f.LocalPath())
 
   def gn_files(f):
-    return input_api.FilterSourceFile(f, white_list=(r'.+\.gn', ))
+    return input_api.FilterSourceFile(f, files_to_check=(r'.+\.gn', ))
 
   all_gn_changed_contents = ''
   for f in input_api.AffectedSourceFiles(gn_files):
@@ -4243,13 +4246,13 @@ def _CheckFuzzTargets(input_api, output_api):
 
   def FilterFile(affected_file):
     """Ignore libFuzzer source code."""
-    white_list = r'.*fuzz.*\.(h|hpp|hcc|cc|cpp|cxx)$'
-    black_list = r"^third_party[\\/]libFuzzer"
+    files_to_check = r'.*fuzz.*\.(h|hpp|hcc|cc|cpp|cxx)$'
+    files_to_skip = r"^third_party[\\/]libFuzzer"
 
     return input_api.FilterSourceFile(
         affected_file,
-        white_list=[white_list],
-        black_list=[black_list])
+        files_to_check=[files_to_check],
+        files_to_skip=[files_to_skip])
 
   files_with_missing_header = []
   for f in input_api.AffectedSourceFiles(FilterFile):
@@ -4291,9 +4294,9 @@ def _CheckNewImagesWarning(input_api, output_api):
   errors = []
   filter_lambda = lambda x: input_api.FilterSourceFile(
     x,
-    black_list=(('(?i).*test', r'.*\/junit\/')
-                + input_api.DEFAULT_BLACK_LIST),
-    white_list=[r'.*\/(drawable|mipmap)' ]
+    files_to_skip=(('(?i).*test', r'.*\/junit\/')
+                   + input_api.DEFAULT_FILES_TO_SKIP),
+    files_to_check=[r'.*\/(drawable|mipmap)' ]
   )
   for f in input_api.AffectedFiles(
       include_deletes=False, file_filter=filter_lambda):
@@ -4353,7 +4356,7 @@ def _CheckAccessibilityRelnotesField(input_api, output_api):
   their commit message."""
   def FileFilter(affected_file):
     paths = _ACCESSIBILITY_PATHS
-    return input_api.FilterSourceFile(affected_file, white_list=paths)
+    return input_api.FilterSourceFile(affected_file, files_to_check=paths)
 
   # Only consider changes affecting accessibility paths.
   if not any(input_api.AffectedFiles(file_filter=FileFilter)):
@@ -4468,7 +4471,7 @@ def _CommonChecks(input_api, output_api):
         # run the tests if they still exist.
         results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
             input_api, output_api, full_path,
-            whitelist=[r'^PRESUBMIT_test\.py$']))
+            files_to_check=[r'^PRESUBMIT_test\.py$']))
   return results
 
 
@@ -4797,7 +4800,7 @@ def _CheckForWindowsLineEndings(input_api, output_api):
 
   problems = []
   source_file_filter = lambda f: input_api.FilterSourceFile(
-      f, white_list=file_inclusion_pattern, black_list=None)
+      f, files_to_check=file_inclusion_pattern, files_to_skip=None)
   for f in input_api.AffectedSourceFiles(source_file_filter):
     include_file = False
     for _, line in f.ChangedContents():

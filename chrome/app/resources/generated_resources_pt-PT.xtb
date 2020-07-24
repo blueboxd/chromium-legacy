@@ -4443,7 +4443,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6545864417968258051">Procura de Bluetooth</translation>
 <translation id="6545867563032584178">O microfone está desligado nas Preferências do Sistema no Mac</translation>
 <translation id="6547354035488017500">Liberte, pelo menos, 512 MB de espaço ou o seu dispositivo deixa de responder. Para libertar espaço, elimine ficheiros do armazenamento do dispositivo.</translation>
-<translation id="6549639163247690448">O domínio <ph name="DOMAIN" /> exige que estabeleça ligação a uma rede Wi-Fi agora e transfira uma atualização. A atualização será transferida automaticamente quando estabelecer ligação à Internet.</translation>
 <translation id="6550675742724504774">Opções</translation>
 <translation id="6551508934388063976">Comando indisponível. Prima control-N para abrir uma nova janela.</translation>
 <translation id="6551612971599078809">O site está a utilizar um dispositivo USB</translation>
@@ -5787,7 +5786,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8213577208796878755">Mais um dispositivo disponível.</translation>
 <translation id="8214489666383623925">Abrir ficheiro...</translation>
 <translation id="8214962590150211830">Remover esta pessoa</translation>
-<translation id="8215295261562449873">Fazer uma cópia de segurança das minhas aplicações e ficheiros para a pasta Transferências antes de atualizar o Linux.</translation>
 <translation id="8217399928341212914">Continuar a bloquear transferências automáticas de vários ficheiros</translation>
 <translation id="8218847192766059983">Adicione idiomas ou reordene a lista. <ph name="BEGIN_LINK" />Saber mais<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">Normalmente, bloqueia as notificações. Para permitir que este site lhe apresente notificações, clique aqui.</translation>
@@ -6017,7 +6015,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8509646642152301857">Falha na transferência do dicionário de verificação ortográfica.</translation>
 <translation id="8512476990829870887">Terminar Processo</translation>
 <translation id="851263357009351303">Permitir sempre que o site <ph name="HOST" /> mostre imagens</translation>
-<translation id="8513108775083588393">Rotação automática</translation>
+<translation id="8513108775083588393">Rotação auto.</translation>
 <translation id="8514746246728959655">Experimente uma chave de segurança diferente</translation>
 <translation id="8521475323816527629">Aceder rapidamente às suas aplicações</translation>
 <translation id="8523493869875972733">Manter alterações</translation>

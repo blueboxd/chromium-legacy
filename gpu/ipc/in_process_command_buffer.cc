@@ -1021,7 +1021,8 @@ void InProcessCommandBuffer::SetGetBufferOnGpuThread(
 
 scoped_refptr<Buffer> InProcessCommandBuffer::CreateTransferBuffer(
     uint32_t size,
-    int32_t* id) {
+    int32_t* id,
+    TransferBufferAllocationOption option) {
   scoped_refptr<Buffer> buffer = MakeMemoryBuffer(size);
   *id = GetNextBufferId();
   ScheduleGpuTask(

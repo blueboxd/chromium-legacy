@@ -3317,11 +3317,6 @@ double Internals::monotonicTimeToZeroBasedDocumentTime(
       .InSecondsF();
 }
 
-int64_t Internals::zeroBasedDocumentTimeToMonotonicTime(double dom_event_time) {
-  return document_->Loader()->GetTiming().ZeroBasedDocumentTimeToMonotonicTime(
-      dom_event_time);
-}
-
 int64_t Internals::currentTimeTicks() {
   return base::TimeTicks::Now().since_origin().InMicroseconds();
 }

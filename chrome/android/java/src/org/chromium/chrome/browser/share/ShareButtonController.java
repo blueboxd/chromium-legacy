@@ -24,6 +24,9 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogManagerObserver;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Handles displaying share button on toolbar depending on several conditions (e.g.,device width,
@@ -52,6 +55,9 @@ public class ShareButtonController implements ButtonDataProvider, ConfigurationC
     private final ObservableSupplier<Boolean> mBottomToolbarVisibilitySupplier;
     private OnClickListener mOnClickListener;
 
+    private ModalDialogManager mModalDialogManager;
+    private ModalDialogManagerObserver mModalDialogManagerObserver;
+
     private Integer mMinimumWidthDp;
     private int mScreenWidthDp;
 
@@ -68,11 +74,13 @@ public class ShareButtonController implements ButtonDataProvider, ConfigurationC
      * the bottom toolbar.
      * @param activityLifecycleDispatcher Dispatcher for activity lifecycle events, e.g.
      * configuration changes.
+     * @param modalDialogManager dispatcher for modal lifecycles events
      */
     public ShareButtonController(Context context, ActivityTabProvider tabProvider,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier, ShareUtils shareUtils,
             ObservableSupplier<Boolean> bottomToolbarVisibilitySupplier,
-            ActivityLifecycleDispatcher activityLifecycleDispatcher) {
+            ActivityLifecycleDispatcher activityLifecycleDispatcher,
+            ModalDialogManager modalDialogManager) {
         mContext = context;
         mBottomToolbarVisibilitySupplier = bottomToolbarVisibilitySupplier;
         mBottomToolbarVisibilityObserver = (bottomToolbarIsVisible)
@@ -98,9 +106,25 @@ public class ShareButtonController implements ButtonDataProvider, ConfigurationC
             shareDelegate.share(tab, /*shareDirectly=*/false);
         });
 
+        mModalDialogManagerObserver = new ModalDialogManagerObserver() {
+            @Override
+            public void onDialogShown(PropertyModel model) {
+                mButtonData.isEnabled = false;
+                notifyObservers(mButtonData.canShow);
+            }
+
+            @Override
+            public void onDialogHidden(PropertyModel model) {
+                mButtonData.isEnabled = true;
+                notifyObservers(mButtonData.canShow);
+            }
+        };
+        mModalDialogManager = modalDialogManager;
+        mModalDialogManager.addObserver(mModalDialogManagerObserver);
+
         mButtonData = new ButtonData(false,
                 AppCompatResources.getDrawable(mContext, R.drawable.ic_toolbar_share_offset_24dp),
-                mOnClickListener, R.string.share, true, null);
+                mOnClickListener, R.string.share, true, null, true);
 
         mScreenWidthDp = mContext.getResources().getConfiguration().screenWidthDp;
     }
@@ -124,6 +148,11 @@ public class ShareButtonController implements ButtonDataProvider, ConfigurationC
         if (mBottomToolbarVisibilityObserver != null) {
             mBottomToolbarVisibilitySupplier.removeObserver(mBottomToolbarVisibilityObserver);
             mBottomToolbarVisibilityObserver = null;
+        }
+        if (mModalDialogManagerObserver != null && mModalDialogManager != null) {
+            mModalDialogManager.removeObserver(mModalDialogManagerObserver);
+            mModalDialogManagerObserver = null;
+            mModalDialogManager = null;
         }
     }
 

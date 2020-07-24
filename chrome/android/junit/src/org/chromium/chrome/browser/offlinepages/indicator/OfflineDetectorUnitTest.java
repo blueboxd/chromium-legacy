@@ -11,6 +11,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.offlinepages.indicator.OfflineDetector.STATUS_INDICATOR_WAIT_ON_OFFLINE_DURATION_MS;
+import static org.chromium.chrome.browser.offlinepages.indicator.OfflineDetector.STATUS_INDICATOR_WAIT_ON_SWITCH_ONLINE_TO_OFFLINE_DEFAULT_DURATION_MS;
 import static org.chromium.chrome.browser.offlinepages.indicator.OfflineDetector.setMockElapsedTimeSupplier;
 
 import android.os.Handler;
@@ -85,9 +86,9 @@ public class OfflineDetectorUnitTest {
         assertFalse("Notification received immediately after connection changed to offline",
                 mLastNotificationReceivedIsOffline);
         final ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
-        verify(mHandler).postDelayed(
-                captor.capture(), eq(STATUS_INDICATOR_WAIT_ON_OFFLINE_DURATION_MS));
-        advanceTimeByMs(STATUS_INDICATOR_WAIT_ON_OFFLINE_DURATION_MS);
+        verify(mHandler).postDelayed(captor.capture(),
+                eq(STATUS_INDICATOR_WAIT_ON_SWITCH_ONLINE_TO_OFFLINE_DEFAULT_DURATION_MS));
+        advanceTimeByMs(STATUS_INDICATOR_WAIT_ON_SWITCH_ONLINE_TO_OFFLINE_DEFAULT_DURATION_MS);
         captor.getValue().run();
 
         assertEquals("Notification count not updated after connection changed to offline", 1,
@@ -233,9 +234,9 @@ public class OfflineDetectorUnitTest {
 
         // Report the connection as offline and then app as backgrounded.
         changeConnectionState(true);
-        verify(mHandler).postDelayed(
-                captor.capture(), eq(STATUS_INDICATOR_WAIT_ON_OFFLINE_DURATION_MS));
-        advanceTimeByMs(STATUS_INDICATOR_WAIT_ON_OFFLINE_DURATION_MS);
+        verify(mHandler).postDelayed(captor.capture(),
+                eq(STATUS_INDICATOR_WAIT_ON_SWITCH_ONLINE_TO_OFFLINE_DEFAULT_DURATION_MS));
+        advanceTimeByMs(STATUS_INDICATOR_WAIT_ON_SWITCH_ONLINE_TO_OFFLINE_DEFAULT_DURATION_MS);
         captor.getValue().run();
         assertEquals("Notification not received even though connection is now offline", 1,
                 mNotificationReceivedByObserver);
@@ -282,9 +283,10 @@ public class OfflineDetectorUnitTest {
         assertFalse("Notification received immediately after connection changed to offline.",
                 mLastNotificationReceivedIsOffline);
         final ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
-        verify(mHandler).postDelayed(
-                captor.capture(), eq(STATUS_INDICATOR_WAIT_ON_OFFLINE_DURATION_MS));
-        advanceTimeByMs(STATUS_INDICATOR_WAIT_ON_OFFLINE_DURATION_MS - 1000L);
+        verify(mHandler).postDelayed(captor.capture(),
+                eq(STATUS_INDICATOR_WAIT_ON_SWITCH_ONLINE_TO_OFFLINE_DEFAULT_DURATION_MS));
+        advanceTimeByMs(
+                STATUS_INDICATOR_WAIT_ON_SWITCH_ONLINE_TO_OFFLINE_DEFAULT_DURATION_MS - 1000L);
 
         assertEquals("Notification received soon after connection changed to offline", 0,
                 mNotificationReceivedByObserver);
@@ -306,6 +308,101 @@ public class OfflineDetectorUnitTest {
         assertEquals("Extra notification received even though connection is still online", 0,
                 mNotificationReceivedByObserver);
         assertFalse("Connection is reported as offline when it's online",
+                mLastNotificationReceivedIsOffline);
+    }
+
+    /**
+     * Waits |STATUS_INDICATOR_WAIT_ON_SWITCH_ONLINE_TO_OFFLINE_DEFAULT_DURATION_MS| before
+     * reporting the device as offline if the app has been on an online connection before.
+     */
+    @Test
+    public void testCallbackNotInvokedOfflineInForeground() {
+        changeApplicationStateToBackground(false);
+        // Change to online.
+        changeConnectionState(false);
+        assertEquals(0, mNotificationReceivedByObserver);
+        assertFalse(mLastNotificationReceivedIsOffline);
+
+        assertEquals("Notification received immediately after connection changed to online", 0,
+                mNotificationReceivedByObserver);
+        assertFalse("Notification received immediately after connection changed to online.",
+                mLastNotificationReceivedIsOffline);
+        final ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
+
+        // Advance time by a long duration (10 minutes).
+        advanceTimeByMs(10 * 60 * 1000);
+
+        // The offline state should not be notified after
+        // |STATUS_INDICATOR_WAIT_ON_SWITCH_ONLINE_TO_OFFLINE_DEFAULT_DURATION_MS| since the device
+        // has been in the foreground for a long time.
+        changeConnectionState(true);
+
+        verify(mHandler).postDelayed(captor.capture(),
+                eq(STATUS_INDICATOR_WAIT_ON_SWITCH_ONLINE_TO_OFFLINE_DEFAULT_DURATION_MS));
+
+        assertEquals("Extra notification received even though device just changed to offline", 0,
+                mNotificationReceivedByObserver);
+        assertFalse("Extra notification received even though device just changed to offline",
+                mLastNotificationReceivedIsOffline);
+
+        // Advance time after which the offline state should be notified.
+        advanceTimeByMs(STATUS_INDICATOR_WAIT_ON_SWITCH_ONLINE_TO_OFFLINE_DEFAULT_DURATION_MS
+                - STATUS_INDICATOR_WAIT_ON_OFFLINE_DURATION_MS);
+        captor.getValue().run();
+        assertEquals("Expected notification when app has been offline for long", 1,
+                mNotificationReceivedByObserver);
+        assertTrue("Expected notification when app has been offline for long",
+                mLastNotificationReceivedIsOffline);
+    }
+
+    /**
+     * Waits |STATUS_INDICATOR_WAIT_ON_SWITCH_ONLINE_TO_OFFLINE_DEFAULT_DURATION_MS| before
+     * reporting the device as offline if the app has been on an online connection before. If the
+     * device is reported as online in the meantime, then the posted task is cancelled and the
+     * callback is not invoked.
+     */
+    @Test
+    public void testCallbackNotInvokedOfflineInForegroundCancelled() {
+        changeApplicationStateToBackground(false);
+        // Change to online.
+        changeConnectionState(false);
+        assertEquals(0, mNotificationReceivedByObserver);
+        assertFalse(mLastNotificationReceivedIsOffline);
+
+        assertEquals("Notification received immediately after connection changed to online", 0,
+                mNotificationReceivedByObserver);
+        assertFalse("Notification received immediately after connection changed to online.",
+                mLastNotificationReceivedIsOffline);
+        final ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
+
+        // Advance time by a long duration (10 minutes).
+        advanceTimeByMs(10 * 60 * 1000);
+
+        // The offline state should not be notified after
+        // |STATUS_INDICATOR_WAIT_ON_SWITCH_ONLINE_TO_OFFLINE_DEFAULT_DURATION_MS| since the device
+        // has been in the foreground for a long time.
+        changeConnectionState(true);
+
+        verify(mHandler).postDelayed(captor.capture(),
+                eq(STATUS_INDICATOR_WAIT_ON_SWITCH_ONLINE_TO_OFFLINE_DEFAULT_DURATION_MS));
+
+        assertEquals("Extra notification received even though device just changed to offline", 0,
+                mNotificationReceivedByObserver);
+        assertFalse("Extra notification received even though device just changed to offline",
+                mLastNotificationReceivedIsOffline);
+
+        // Change to online before
+        // |STATUS_INDICATOR_WAIT_ON_SWITCH_ONLINE_TO_OFFLINE_DEFAULT_DURATION_MS| duration is over.
+        // This should cancel the callbacks.
+        changeConnectionState(false);
+
+        // Advance time after which the offline state should be notified.
+        advanceTimeByMs(STATUS_INDICATOR_WAIT_ON_SWITCH_ONLINE_TO_OFFLINE_DEFAULT_DURATION_MS
+                - STATUS_INDICATOR_WAIT_ON_OFFLINE_DURATION_MS);
+        captor.getValue().run();
+        assertEquals("Extra notification received even though device is now online", 0,
+                mNotificationReceivedByObserver);
+        assertFalse("Extra notification received even though device is now online",
                 mLastNotificationReceivedIsOffline);
     }
 

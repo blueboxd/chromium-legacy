@@ -38,9 +38,8 @@ namespace blink {
 ArrayBufferContents::ArrayBufferContents(void* data,
                                          size_t length,
                                          DataDeleter deleter) {
-  if (!data) {
-    return;
-  }
+  DCHECK(data || length == 0);
+
   backing_store_ =
       v8::ArrayBuffer::NewBackingStore(data, length, deleter, nullptr);
 }

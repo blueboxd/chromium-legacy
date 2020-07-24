@@ -24,7 +24,11 @@ const uint16_t kIdSessionEndUnclean = 6008U;
 }  // namespace
 
 // Ensure the fetcher retrieves events.
-TEST(SystemSessionAnalyzerTest, FetchEvents) {
+// Due to https://crbug.com/1053451 which is caused by a Windows "bug" tracked
+// by https://crbug.com/1053451 this cannot be made reliable. Running
+// browser_tests can and does generate so much event logging (DCOM events) that
+// none of the looked for events remain.
+TEST(SystemSessionAnalyzerTest, DISABLED_FetchEvents) {
   SystemSessionAnalyzer analyzer(0);
   std::vector<SystemSessionAnalyzer::EventInfo> events;
   ASSERT_TRUE(analyzer.FetchEvents(1U, &events));
@@ -39,7 +43,8 @@ TEST(SystemSessionAnalyzerTest, ValidateEvents) {
   auto is_session_unclean = analyzer.IsSessionUnclean(base::Time::Now());
   // If the system event log rate is high enough then there may not be enough
   // events to make a clean/unclean determination. Check for this situation and
-  // don't treat it as a failure. See https://crbug.com/968440 for details.
+  // don't treat it as a failure. See https://crbug.com/968440 and
+  // https://crbug.com/1053451 for details.
   if (is_session_unclean == SystemSessionAnalyzer::INSUFFICIENT_DATA) {
     // This warning can be ignored, but it does mean that our clean/unclean
     // check did not give an answer.

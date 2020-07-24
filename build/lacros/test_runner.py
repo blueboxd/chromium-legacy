@@ -3,15 +3,44 @@
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""This script facilitates running tests for lacros.
+"""This script facilitates running tests for lacros on Linux.
 
-TODO(crbug.com/1104318): Document an overview and example usages.
+  In order to run lacros tests on Linux, please first follow bit.ly/3juQVNJ
+  to setup build directory with the lacros-chrome-on-linux build configuration,
+  and corresponding test targets are built successfully.
+
+  * Example usages:
+
+  ./build/lacros/test_runner.py test out/lacros/url_unittests
+  ./build/lacros/test_runner.py test out/lacros/browser_tests
+
+  The commands above run url_unittests and browser_tests respecitively, and more
+  specifically, url_unitests is executed directly while browser_tests is
+  executed with the latest version of prebuilt ash-chrome, and the behavior is
+  controlled by |_TARGETS_REQUIRE_ASH_CHROME|, and it's worth noting that the
+  list is maintained manually, so if you see something is wrong, please upload a
+  CL to fix it.
+
+  ./build/lacros/test_runner.py test out/lacros/browser_tests \\
+      --gtest_filter=BrowserTest.Title
+
+  The above command only runs 'BrowserTest.Title', and any argument accepted by
+  the underlying test binary can be specified in the command.
+
+  ./build/lacros/test_runner.py test out/lacros/browser_tests \\
+    --ash-chrome-version=86.0.4187.0
+
+  The above command runs tests with a given version of ash-chrome, which is
+  useful to reproduce test failures, and a list of prebuilt versions can be
+  found at: {link}. TODO(crbug.com/1035562): replace version with real scheme
+  and {link} with real link once ash-chrome is built and uploaded continuously.
 """
 
 import argparse
 import os
 import logging
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -214,11 +243,41 @@ def _RunTestWithAshChrome(args, forward_args):
     shutil.rmtree(tmp_ash_data_dir_name, ignore_errors=True)
 
 
+def _RunTestDirectly(args, forward_args):
+  """Runs tests by invoking the test command directly.
+
+  args (dict): Args for this script.
+  forward_args (dict): Args to be forwarded to the test command.
+  """
+  try:
+    p = None
+    p = subprocess.Popen([args.command] + forward_args)
+    return p.wait()
+  finally:
+    if p and p.poll() is None:
+      p.terminate()
+      time.sleep(0.5)
+      p.kill()
+
+
+def _HandleSignal(sig, _):
+  """Handles received signals to make sure spawned test process are killed.
+
+  sig (int): An integer representing the received signal, for example SIGTERM.
+  """
+  logging.warning('Received signal: %d, killing spawned processes', sig)
+
+  # Don't do any cleanup here, instead, leave it to the finally blocks.
+  # Assumption is based on https://docs.python.org/3/library/sys.html#sys.exit:
+  # cleanup actions specified by finally clauses of try statements are honored.
+
+  # https://tldp.org/LDP/abs/html/exitcodes.html:
+  # Exit code 128+n -> Fatal error signal "n".
+  sys.exit(128 + sig)
+
+
 def _RunTest(args, forward_args):
   """Runs tests with given args.
-
-  TODO(crbug.com/1035562): Trap signals to make sure that spawned test process
-  and ash-chrome process are always cleaned up correctly.
 
   args (dict): Args for this script.
   forward_args (dict): Args to be forwarded to the test command.
@@ -238,12 +297,15 @@ def _RunTest(args, forward_args):
   # automated CI/CQ builders would always work correctly.
   if (os.path.basename(args.command) not in _TARGETS_REQUIRE_ASH_CHROME
       and not args.ash_chrome_version):
-    return subprocess.call([args.command] + forward_args)
+    return _RunTestDirectly(args, forward_args)
 
   return _RunTestWithAshChrome(args, forward_args)
 
 
 def Main():
+  for sig in (signal.SIGTERM, signal.SIGINT):
+    signal.signal(sig, _HandleSignal)
+
   logging.basicConfig(level=logging.INFO)
   arg_parser = argparse.ArgumentParser()
   arg_parser.usage = __doc__

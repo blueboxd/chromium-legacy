@@ -49,7 +49,7 @@ message SearchEngineSpecifics {
   // DEPRECATED: Whether to autogenerate a keyword for the search engine or not.
   // Do not write to this field in the future.  We preserve this for now so we
   // can read the field in order to migrate existing data that sets this bit.
-  optional bool autogenerate_keyword = 12;
+  optional bool autogenerate_keyword = 12 [deprecated = true];
   // ID 13 reserved - previously used by |logo_id|, now deprecated.
   // Obsolete field. This used to represent whether or not this search engine
   // entry was created automatically by an administrator via group policy. This

@@ -146,9 +146,6 @@ class TestContainer : public TestContainerDelegateHarness,
     DCHECK_LT(index, search_result_views_.size());
     return search_result_views_[index].get();
   }
-  SearchResultBaseView* GetFirstResultView() override {
-    return GetResultViewAt(0);
-  }
 
  private:
   int DoUpdate() override { return search_result_views_.size(); }

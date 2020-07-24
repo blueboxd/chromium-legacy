@@ -24,6 +24,7 @@ import("//printing/buildflags/buildflags.gni")
 import("//rlz/buildflags/buildflags.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//ui/base/ui_features.gni")
+import("//ui/ozone/ozone.gni")
 import("//ui/views/features.gni")
 
 # Reset sources_assignment_filter for the BUILD.gn file to prevent
@@ -1814,6 +1815,10 @@ static_library("ui") {
       "ash/chrome_shell_delegate.h",
       "ash/clipboard_util.cc",
       "ash/clipboard_util.h",
+      "ash/holding_space/holding_space_keyed_service.cc",
+      "ash/holding_space/holding_space_keyed_service.h",
+      "ash/holding_space/holding_space_keyed_service_factory.cc",
+      "ash/holding_space/holding_space_keyed_service_factory.h",
       "ash/image_downloader_impl.cc",
       "ash/image_downloader_impl.h",
       "ash/ime_controller_client.cc",
@@ -2793,6 +2798,8 @@ static_library("ui") {
       "cocoa/fullscreen/fullscreen_toolbar_controller.mm",
       "cocoa/fullscreen/fullscreen_toolbar_mouse_tracker.h",
       "cocoa/fullscreen/fullscreen_toolbar_mouse_tracker.mm",
+      "cocoa/fullscreen/menu_reveal_monitor.h",
+      "cocoa/fullscreen/menu_reveal_monitor.mm",
       "cocoa/handoff_active_url_observer.cc",
       "cocoa/handoff_active_url_observer.h",
       "cocoa/handoff_active_url_observer_bridge.h",
@@ -3063,12 +3070,19 @@ static_library("ui") {
       ]
     }
 
-    if (use_x11) {
+    if (use_dbus && (use_x11 || ozone_platform_x11)) {
       sources += [
         "views/frame/global_menu_bar_registrar_x11.cc",
         "views/frame/global_menu_bar_registrar_x11.h",
         "views/frame/global_menu_bar_x11.cc",
         "views/frame/global_menu_bar_x11.h",
+      ]
+      defines += [ "USE_DBUS_MENU" ]
+      deps += [ "//ui/gfx/x" ]
+    }
+
+    if (use_x11) {
+      sources += [
         "views/frame/native_browser_frame_factory_aurax11.cc",
         "views/javascript_app_modal_dialog_views_x11.cc",
         "views/javascript_app_modal_dialog_views_x11.h",
@@ -3076,7 +3090,6 @@ static_library("ui") {
         "views/javascript_app_modal_event_blocker_x11.h",
       ]
       deps += [
-        "//components/dbus/menu",
         "//ui/events/devices",
         "//ui/events/devices/x11",
         "//ui/events/platform/x11",

@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -126,10 +127,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // Set a delegate that we will pass AuthStatusConsumer events to.
-  void set_login_status_consumer(AuthStatusConsumer* consumer) {
-    auth_status_consumer_ = consumer;
-  }
+  // Add/remove a delegate that we will pass AuthStatusConsumer events to.
+  void AddLoginStatusConsumer(AuthStatusConsumer* consumer);
+  void RemoveLoginStatusConsumer(const AuthStatusConsumer* consumer);
 
   // Returns value of LoginPerformer::auth_mode() (cached if performer is
   // destroyed).
@@ -339,9 +339,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Used to execute login operations.
   std::unique_ptr<LoginPerformer> login_performer_;
 
-  // Delegate to forward all authentication status events to.
+  // Delegates to forward all authentication status events to.
   // Tests can use this to receive authentication status events.
-  AuthStatusConsumer* auth_status_consumer_ = nullptr;
+  base::ObserverList<AuthStatusConsumer> auth_status_consumers_;
 
   // AccountId of the last login attempt.
   AccountId last_login_attempt_account_id_ = EmptyAccountId();

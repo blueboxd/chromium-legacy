@@ -844,6 +844,10 @@ interface NetworkContextClient {
   // Notification that a trust anchor was used for the given user.
   [EnableIf=is_chromeos]
   OnTrustAnchorUsed();
+
+  // Notification that a report was enqueued in the SCT auditing cache.
+  [EnableIf=is_ct_supported]
+  OnSCTReportReady(string cache_key);
 };
 
 // Represents a distinct context for making network requests, with its own
@@ -1410,4 +1414,8 @@ interface NetworkContext {
   // Gets the OriginPolicyManager associated with this network context.
   GetOriginPolicyManager(
       pending_receiver<OriginPolicyManager> origin_policy_manager);
+
+  // Set whether SCT auditing is enabled for this NetworkContext.
+  [EnableIf=is_ct_supported]
+  SetSCTAuditingEnabled(bool enabled);
 };

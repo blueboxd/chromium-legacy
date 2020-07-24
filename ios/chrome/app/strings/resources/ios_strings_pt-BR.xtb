@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> para <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Para ver seus favoritos em todos os seus dispositivos, ative a sincronização.</translation>
 <translation id="1687475363370981210">Marcar todas as entradas como lidas</translation>
+<translation id="1689333818294560261">Apelido</translation>
 <translation id="1690731385917361335">Nenhum item</translation>
 <translation id="1692118695553449118">A sincronização está ativada</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selecionados</translation>
@@ -185,6 +186,7 @@ Eles também não podem usar cookies para ver sua atividade de navegação em di
 <translation id="3153862085237805241">Salvar cartão</translation>
 <translation id="3157684681743766797">Marcar tudo...</translation>
 <translation id="3161291298470460782">Essa ação desconectará sua conta, desativará a sincronização e apagará todos os dados do Chrome neste dispositivo. Os dados sincronizados permanecerão na sua Conta do Google.</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3175081911749765310">Serviços da Web</translation>
 <translation id="3178650076442119961">Ativado hoje</translation>
 <translation id="3181954750937456830">Navegação segura: protege você e seu dispositivo de sites perigosos</translation>
@@ -206,6 +208,7 @@ Na navegação anônima, os sites não podem usar cookies para ver suas atividad
 <translation id="3335947283844343239">Reabrir guia fechada</translation>
 <translation id="3371831930909698441">Tradução disponível. Opções disponíveis perto da parte inferior da tela.</translation>
 <translation id="3393920035788932672">Pop-ups permitidos</translation>
+<translation id="3425644765244388016">Apelido do cartão</translation>
 <translation id="3443810440409579745">Guia recebida.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> minutos</translation>
 <translation id="3448016392200048164">Visualização dividida</translation>
@@ -240,6 +243,7 @@ Na navegação anônima, os sites não podem usar cookies para ver suas atividad
 <translation id="3783017676699494206">Salvar imagem</translation>
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="3803696231112616155">Oferecer a opção de traduzir esse site</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Nenhuma senha comprometida}=1{{COUNT} senha comprometida}one{{COUNT} senha comprometida}other{{COUNT} senhas comprometidas}}</translation>
 <translation id="385051799172605136">Voltar</translation>
 <translation id="3892144330757387737">Você verá seu histórico aqui</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -529,6 +533,7 @@ No entanto, eles não podem usar cookies para ver sua atividade de navegação e
 <translation id="7189598951263744875">Compartilhar...</translation>
 <translation id="7192050974311852563">Iniciar registro</translation>
 <translation id="7203585745079012652">Falar as respostas</translation>
+<translation id="721597782417389033">Apelido do cartão inválido</translation>
 <translation id="7265758999917665941">Nunca para este site</translation>
 <translation id="7272437679830969316">Não é possível verificar sua identidade. Senha não copiada.</translation>
 <translation id="7291368939935408496">Preparando senhas…</translation>

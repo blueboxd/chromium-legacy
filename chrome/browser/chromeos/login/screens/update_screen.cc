@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/wizard_context.h"
 #include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/network/network_state.h"
 
 namespace chromeos {
@@ -43,6 +44,9 @@ constexpr const base::TimeDelta kDelayErrorMessage =
 
 constexpr const base::TimeDelta kShowDelay =
     base::TimeDelta::FromMicroseconds(400);
+
+// When battery percent is lower and DISCHARGING warn user about it.
+const double kInsufficientBatteryPercent = 50;
 
 void RecordDownloadingTime(base::TimeDelta duration) {
   base::UmaHistogramLongTimes("OOBE.UpdateScreen.UpdateDownloadingTime",
@@ -105,11 +109,15 @@ UpdateScreen::UpdateScreen(UpdateView* view,
           std::make_unique<ErrorScreensHistogramHelper>("Update")),
       version_updater_(std::make_unique<VersionUpdater>(this)),
       tick_clock_(base::DefaultTickClock::GetInstance()) {
+  if (chromeos::features::IsBetterUpdateEnabled())
+    PowerManagerClient::Get()->AddObserver(this);
   if (view_)
     view_->Bind(this);
 }
 
 UpdateScreen::~UpdateScreen() {
+  if (chromeos::features::IsBetterUpdateEnabled())
+    PowerManagerClient::Get()->RemoveObserver(this);
   if (view_)
     view_->Unbind();
 }
@@ -145,6 +153,8 @@ bool UpdateScreen::MaybeSkip(WizardContext* context) {
 }
 
 void UpdateScreen::ShowImpl() {
+  if (chromeos::features::IsBetterUpdateEnabled())
+    PowerManagerClient::Get()->RequestStatusUpdate();
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (view_) {
     view_->SetCancelUpdateShortcutEnabled(true);
@@ -355,6 +365,8 @@ void UpdateScreen::UpdateInfoChanged(
     default:
       NOTREACHED();
   }
+  if (chromeos::features::IsBetterUpdateEnabled())
+    UpdateBatteryWarningVisibility();
   if (need_refresh_view)
     RefreshView(update_info);
 }
@@ -368,6 +380,25 @@ void UpdateScreen::FinishExitUpdate(Result result) {
   }
   show_timer_.Stop();
   exit_callback_.Run(result);
+}
+
+void UpdateScreen::PowerChanged(
+    const power_manager::PowerSupplyProperties& proto) {
+  UpdateBatteryWarningVisibility();
+}
+
+void UpdateScreen::UpdateBatteryWarningVisibility() {
+  if (!view_)
+    return;
+  const base::Optional<power_manager::PowerSupplyProperties>& proto =
+      PowerManagerClient::Get()->GetLastStatus();
+  if (!proto.has_value())
+    return;
+  view_->ShowLowBatteryWarningMessage(
+      is_critical_checked_ && HasCriticalUpdate() &&
+      proto->battery_state() ==
+          power_manager::PowerSupplyProperties_BatteryState_DISCHARGING &&
+      proto->battery_percent() < kInsufficientBatteryPercent);
 }
 
 void UpdateScreen::RefreshView(const VersionUpdater::UpdateInfo& update_info) {
@@ -386,6 +417,9 @@ void UpdateScreen::RefreshView(const VersionUpdater::UpdateInfo& update_info) {
 bool UpdateScreen::HasCriticalUpdate() {
   if (ignore_update_deadlines_)
     return true;
+  if (has_critical_update_.has_value())
+    return has_critical_update_.value();
+  has_critical_update_ = true;
 
   std::string deadline;
   // Checking for update flag file causes us to do blocking IO on UI thread.
@@ -394,6 +428,7 @@ bool UpdateScreen::HasCriticalUpdate() {
   base::FilePath update_deadline_file_path(kUpdateDeadlineFile);
   if (!base::ReadFileToString(update_deadline_file_path, &deadline) ||
       deadline.empty()) {
+    has_critical_update_ = false;
     return false;
   }
 

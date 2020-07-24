@@ -7,4 +7,6 @@ tbarzic@chromium.org
 antrim@chromium.org
 rsorokin@chromium.org
 
+per-file *security_token*=emaxx@chromium.org
+
 # COMPONENT: UI>Shell>OOBE

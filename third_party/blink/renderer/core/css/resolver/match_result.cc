@@ -33,6 +33,7 @@
 #include <memory>
 #include <type_traits>
 
+#include "base/numerics/clamped_math.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -65,37 +66,16 @@ void MatchResult::AddMatchedProperties(
 void MatchResult::FinishAddingUARules() {
   DCHECK_EQ(current_origin_, CascadeOrigin::kUserAgent);
   current_origin_ = CascadeOrigin::kUser;
-  ua_range_end_ = matched_properties_.size();
 }
 
 void MatchResult::FinishAddingUserRules() {
   DCHECK_EQ(current_origin_, CascadeOrigin::kUser);
   current_origin_ = CascadeOrigin::kAuthor;
-  // Don't add empty ranges.
-  if (user_range_ends_.IsEmpty() &&
-      ua_range_end_ == matched_properties_.size())
-    return;
-  if (!user_range_ends_.IsEmpty() &&
-      user_range_ends_.back() == matched_properties_.size())
-    return;
-  user_range_ends_.push_back(matched_properties_.size());
-  current_tree_order_ = clampTo<uint16_t>(user_range_ends_.size());
 }
 
 void MatchResult::FinishAddingAuthorRulesForTreeScope() {
   DCHECK_EQ(current_origin_, CascadeOrigin::kAuthor);
-  // Don't add empty ranges.
-  if (author_range_ends_.IsEmpty() && user_range_ends_.IsEmpty() &&
-      ua_range_end_ == matched_properties_.size())
-    return;
-  if (author_range_ends_.IsEmpty() && !user_range_ends_.IsEmpty() &&
-      user_range_ends_.back() == matched_properties_.size())
-    return;
-  if (!author_range_ends_.IsEmpty() &&
-      author_range_ends_.back() == matched_properties_.size())
-    return;
-  author_range_ends_.push_back(matched_properties_.size());
-  current_tree_order_ = clampTo<uint16_t>(author_range_ends_.size());
+  current_tree_order_ = base::ClampAdd(current_tree_order_, 1);
 }
 
 MatchedExpansionsRange MatchResult::Expansions(const Document& document,
@@ -109,9 +89,6 @@ MatchedExpansionsRange MatchResult::Expansions(const Document& document,
 
 void MatchResult::Reset() {
   matched_properties_.clear();
-  user_range_ends_.clear();
-  author_range_ends_.clear();
-  ua_range_end_ = 0;
   is_cacheable_ = true;
   current_origin_ = CascadeOrigin::kUserAgent;
   current_tree_order_ = 0;

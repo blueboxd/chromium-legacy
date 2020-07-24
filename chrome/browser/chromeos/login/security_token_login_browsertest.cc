@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/containers/span.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/certificate_provider/test_certificate_provider_extension.h"
 #include "chrome/browser/chromeos/certificate_provider/test_certificate_provider_extension_login_screen_mixin.h"
+#include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -32,6 +34,7 @@
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/challenge_response/known_user_pref_utils.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/fake_user_manager.h"
@@ -43,6 +46,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
+using ash::LoginScreenTestApi;
+
 namespace chromeos {
 
 namespace {
@@ -50,6 +55,11 @@ namespace {
 // The PIN code that the test certificate provider extension is configured to
 // expect.
 constexpr char kCorrectPin[] = "17093";
+
+// UI golden strings in the en-US locale:
+constexpr char kChallengeResponseLoginLabel[] = "Sign in with smart card";
+constexpr char kChallengeResponseErrorLabel[] =
+    "Couldn’t recognize your smart card. Try again.";
 
 constexpr char kChallengeData[] = "challenge";
 
@@ -109,6 +119,38 @@ class ChallengeResponseFakeCryptohomeClient : public FakeCryptohomeClient {
   AccountId challenge_response_account_id_;
 };
 
+// Helper that allows to wait until the authentication failure is reported.
+class AuthFailureWaiter final : public AuthStatusConsumer {
+ public:
+  AuthFailureWaiter() {
+    ExistingUserController::current_controller()->AddLoginStatusConsumer(this);
+  }
+
+  AuthFailureWaiter(const AuthFailureWaiter&) = delete;
+  AuthFailureWaiter& operator=(const AuthFailureWaiter&) = delete;
+
+  ~AuthFailureWaiter() override {
+    ExistingUserController::current_controller()->RemoveLoginStatusConsumer(
+        this);
+  }
+
+  AuthFailure::FailureReason Wait() {
+    run_loop_.Run();
+    return failure_reason_;
+  }
+
+  // AuthStatusConsumer:
+  void OnAuthFailure(const AuthFailure& error) override {
+    failure_reason_ = error.reason();
+    run_loop_.Quit();
+  }
+  void OnAuthSuccess(const UserContext& user_context) override {}
+
+ private:
+  base::RunLoop run_loop_;
+  AuthFailure::FailureReason failure_reason_ = AuthFailure::NONE;
+};
+
 }  // namespace
 
 // Tests the challenge-response based login (e.g., using a smart card) for an
@@ -147,8 +189,7 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
 
   void SetUpOnMainThread() override {
     MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-    cert_provider_extension_mixin_.test_certificate_provider_extension()
-        ->set_require_pin(kCorrectPin);
+    test_certificate_provider_extension()->set_require_pin(kCorrectPin);
     WaitForLoginScreenWidgetShown();
   }
 
@@ -158,6 +199,19 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
 
   AccountId GetChallengeResponseAccountId() const {
     return login_manager_mixin_.users()[0].account_id;
+  }
+
+  TestCertificateProviderExtension* test_certificate_provider_extension() {
+    return cert_provider_extension_mixin_.test_certificate_provider_extension();
+  }
+
+  void StartLoginAndWaitForPinDialog() {
+    base::RunLoop pin_dialog_waiting_run_loop;
+    LoginScreenTestApi::SetPinRequestWidgetShownCallback(
+        pin_dialog_waiting_run_loop.QuitClosure());
+    LoginScreenTestApi::ClickChallengeResponseButton(
+        GetChallengeResponseAccountId());
+    pin_dialog_waiting_run_loop.Run();
   }
 
   void WaitForActiveSession() { login_manager_mixin_.WaitForActiveSession(); }
@@ -175,7 +229,7 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
     challenge_response_key.set_public_key_spki_der(
         TestCertificateProviderExtension::GetCertificateSpki());
     challenge_response_key.set_extension_id(
-        TestCertificateProviderExtensionLoginScreenMixin::GetExtensionId());
+        TestCertificateProviderExtension::extension_id());
 
     base::Value challenge_response_keys_value =
         SerializeChallengeResponseKeysForKnownUser({challenge_response_key});
@@ -186,8 +240,7 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
 
   void WaitForLoginScreenWidgetShown() {
     base::RunLoop run_loop;
-    ash::LoginScreenTestApi::AddOnLockScreenShownCallback(
-        run_loop.QuitClosure());
+    LoginScreenTestApi::AddOnLockScreenShownCallback(run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -202,33 +255,69 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
                                      /*load_extension_immediately=*/true};
 };
 
+// Tests the successful challenge-response login flow, including entering the
+// correct PIN.
 IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, Basic) {
   // The user pod is displayed with the challenge-response "start" button
   // instead of the password input field.
-  EXPECT_TRUE(
-      ash::LoginScreenTestApi::FocusUser(GetChallengeResponseAccountId()));
-  EXPECT_FALSE(ash::LoginScreenTestApi::IsPasswordFieldShown(
+  EXPECT_TRUE(LoginScreenTestApi::FocusUser(GetChallengeResponseAccountId()));
+  EXPECT_FALSE(LoginScreenTestApi::IsPasswordFieldShown(
       GetChallengeResponseAccountId()));
+  EXPECT_EQ(LoginScreenTestApi::GetChallengeResponseLabel(
+                GetChallengeResponseAccountId()),
+            base::UTF8ToUTF16(kChallengeResponseLoginLabel));
 
-  // The challenge-response "start" button is clicked.
-  base::RunLoop pin_dialog_waiting_run_loop;
-  ash::LoginScreenTestApi::SetPinRequestWidgetShownCallback(
-      pin_dialog_waiting_run_loop.QuitClosure());
-  ash::LoginScreenTestApi::ClickChallengeResponseButton(
-      GetChallengeResponseAccountId());
-
-  // The MountEx request is sent to cryptohome, and in turn cryptohome makes a
-  // challenge request. The certificate provider extension receives this request
-  // and requests the PIN dialog.
-  pin_dialog_waiting_run_loop.Run();
+  // The challenge-response "start" button is clicked. The MountEx request is
+  // sent to cryptohome, and in turn cryptohome makes a challenge request. The
+  // certificate provider extension receives this request and requests the PIN
+  // dialog.
+  StartLoginAndWaitForPinDialog();
 
   // The PIN is entered.
-  ash::LoginScreenTestApi::SubmitPinRequestWidget(kCorrectPin);
+  LoginScreenTestApi::SubmitPinRequestWidget(kCorrectPin);
 
   // The PIN is received by the certificate provider extension, which replies to
   // the challenge request. cryptohome receives this response and completes the
   // MountEx request. The user session begins.
   WaitForActiveSession();
+}
+
+// Test the login failure scenario when the PIN dialog gets canceled.
+IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, PinCancel) {
+  StartLoginAndWaitForPinDialog();
+
+  // The PIN dialog is canceled. The login attempt is aborted.
+  AuthFailureWaiter auth_failure_waiter;
+  LoginScreenTestApi::CancelPinRequestWidget();
+  EXPECT_EQ(auth_failure_waiter.Wait(),
+            AuthFailure::COULD_NOT_MOUNT_CRYPTOHOME);
+
+  // No error is shown, and a new login attempt is allowed.
+  EXPECT_TRUE(LoginScreenTestApi::IsChallengeResponseButtonClickable(
+      GetChallengeResponseAccountId()));
+  EXPECT_EQ(LoginScreenTestApi::GetChallengeResponseLabel(
+                GetChallengeResponseAccountId()),
+            base::UTF8ToUTF16(kChallengeResponseLoginLabel));
+}
+
+// Test the login failure scenario when the extension fails to sign the
+// challenge.
+IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, SigningFailure) {
+  test_certificate_provider_extension()->set_should_fail_sign_digest_requests(
+      true);
+
+  AuthFailureWaiter auth_failure_waiter;
+  LoginScreenTestApi::ClickChallengeResponseButton(
+      GetChallengeResponseAccountId());
+  EXPECT_EQ(auth_failure_waiter.Wait(),
+            AuthFailure::COULD_NOT_MOUNT_CRYPTOHOME);
+
+  // An error is shown.
+  EXPECT_TRUE(LoginScreenTestApi::IsChallengeResponseButtonClickable(
+      GetChallengeResponseAccountId()));
+  EXPECT_EQ(LoginScreenTestApi::GetChallengeResponseLabel(
+                GetChallengeResponseAccountId()),
+            base::UTF8ToUTF16(kChallengeResponseErrorLabel));
 }
 
 }  // namespace chromeos

@@ -28,6 +28,17 @@
         optional GPUSize64 dataByteOffset = 0,
         optional GPUSize64 byteSize);
 
+    [RaisesException] void writeTexture(
+        GPUTextureCopyView destination,
+        [AllowShared] ArrayBufferView data,
+        GPUTextureDataLayout dataLayout,
+        GPUExtent3D size);
+    [RaisesException] void writeTexture(
+        GPUTextureCopyView destination,
+        ArrayBuffer data,
+        GPUTextureDataLayout dataLayout,
+        GPUExtent3D size);
+
     [RaisesException] void copyImageBitmapToTexture(
         GPUImageBitmapCopyView source,
         GPUTextureCopyView destination,

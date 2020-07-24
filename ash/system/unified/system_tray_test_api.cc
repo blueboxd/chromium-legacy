@@ -97,6 +97,11 @@ base::string16 SystemTrayTestApi::GetBubbleViewTooltip(int view_id) {
   return view ? view->GetTooltipText(gfx::Point()) : base::string16();
 }
 
+base::string16 SystemTrayTestApi::GetBubbleViewText(int view_id) {
+  views::View* view = GetBubbleView(view_id);
+  return view ? static_cast<views::Label*>(view)->GetText() : base::string16();
+}
+
 bool SystemTrayTestApi::Is24HourClock() {
   base::HourClockType type =
       GetTray()->time_view_->time_view()->GetHourTypeForTesting();

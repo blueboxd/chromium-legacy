@@ -11,11 +11,11 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/dbus/cfm/fake_cfm_hotline_client.h"
+#include "chromeos/services/cfm/public/features/features.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-
-#include "chromeos/dbus/cfm/fake_cfm_hotline_client.h"
 
 namespace chromeos {
 
@@ -31,8 +31,9 @@ class CfmHotlineClientImpl : public CfmHotlineClient {
   ~CfmHotlineClientImpl() override = default;
 
   void Init(dbus::Bus* const bus) {
-    dbus_proxy_ = bus->GetObjectProxy(
-        cfm::broker::kServiceName, dbus::ObjectPath(cfm::broker::kServicePath));
+    dbus_proxy_ =
+        bus->GetObjectProxy(::cfm::broker::kServiceName,
+                            dbus::ObjectPath(::cfm::broker::kServicePath));
   }
 
   void WaitForServiceToBeAvailable(
@@ -44,8 +45,8 @@ class CfmHotlineClientImpl : public CfmHotlineClient {
   void BootstrapMojoConnection(
       base::ScopedFD fd,
       BootstrapMojoConnectionCallback result_callback) override {
-    dbus::MethodCall method_call(cfm::broker::kServiceInterfaceName,
-                                 cfm::broker::kBootstrapMojoConnectionMethod);
+    dbus::MethodCall method_call(::cfm::broker::kServiceInterfaceName,
+                                 ::cfm::broker::kBootstrapMojoConnectionMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendBool(/*is_outgoing_invitation=*/true);
     writer.AppendFileDescriptor(fd.get());
@@ -85,7 +86,9 @@ CfmHotlineClient::~CfmHotlineClient() {
 // static
 void CfmHotlineClient::Initialize(dbus::Bus* bus) {
   DCHECK(bus);
-  (new CfmHotlineClientImpl())->Init(bus);
+  if (base::FeatureList::IsEnabled(chromeos::cfm::features::kCfmMojoServices)) {
+    (new CfmHotlineClientImpl())->Init(bus);
+  }
 }
 
 // static
@@ -95,12 +98,19 @@ void CfmHotlineClient::InitializeFake() {
 
 // static
 void CfmHotlineClient::Shutdown() {
-  DCHECK(g_instance);
-  delete g_instance;
+  if (g_instance) {
+    delete g_instance;
+  }
+}
+
+// static
+bool CfmHotlineClient::IsInitialized() {
+  return g_instance;
 }
 
 // static
 CfmHotlineClient* CfmHotlineClient::Get() {
+  CHECK(IsInitialized());
   return g_instance;
 }
 

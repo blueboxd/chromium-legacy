@@ -56,7 +56,6 @@ public class AwMinidumpUploaderDelegate implements MinidumpUploaderDelegate {
         mSamplingDelegate = samplingDelegate;
     }
 
-    @VisibleForTesting
     public AwMinidumpUploaderDelegate() {
         this(new SamplingDelegate() {
             private Random mRandom = new Random();

@@ -7,11 +7,13 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "gpu/command_buffer/client/gpu_control_client.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_test_sink.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
@@ -37,6 +39,22 @@ class TestGpuChannelHost : public GpuChannelHost {
   ~TestGpuChannelHost() override {}
 
   IPC::TestSink* sink_;
+};
+
+class MockGpuControlClient : public GpuControlClient {
+ public:
+  MockGpuControlClient() = default;
+  virtual ~MockGpuControlClient() = default;
+
+  MOCK_METHOD0(OnGpuControlLostContext, void());
+  MOCK_METHOD0(OnGpuControlLostContextMaybeReentrant, void());
+  MOCK_METHOD2(OnGpuControlErrorMessage, void(const char*, int32_t));
+  MOCK_METHOD1(OnGpuControlSwapBuffersCompleted,
+               void(const SwapBuffersCompleteParams&));
+  MOCK_METHOD1(OnGpuSwitched, void(gl::GpuPreference));
+  MOCK_METHOD2(OnSwapBufferPresented,
+               void(uint64_t, const gfx::PresentationFeedback&));
+  MOCK_METHOD1(OnGpuControlReturnData, void(base::span<const uint8_t>));
 };
 
 class CommandBufferProxyImplTest : public testing::Test {
@@ -184,4 +202,52 @@ TEST_F(CommandBufferProxyImplTest,
   EXPECT_EQ(deferred_messages[1].message.type(),
             GpuCommandBufferMsg_DestroyTransferBuffer::ID);
 }
+
+TEST_F(CommandBufferProxyImplTest, CreateTransferBufferOOM) {
+  auto gpu_control_client = std::unique_ptr<MockGpuControlClient>(
+      new testing::StrictMock<MockGpuControlClient>());
+
+  auto proxy = CreateAndInitializeProxy();
+  proxy->SetGpuControlClient(gpu_control_client.get());
+
+  // This is called once when the CommandBufferProxyImpl is destroyed.
+  EXPECT_CALL(*gpu_control_client, OnGpuControlLostContext())
+      .Times(1)
+      .RetiresOnSaturation();
+
+  // Passing kReturnNullOnOOM should not cause the context to be lost
+  EXPECT_CALL(*gpu_control_client, OnGpuControlLostContextMaybeReentrant())
+      .Times(0);
+
+  int32_t id = -1;
+  scoped_refptr<gpu::Buffer> transfer_buffer_oom = proxy->CreateTransferBuffer(
+      std::numeric_limits<uint32_t>::max(), &id,
+      TransferBufferAllocationOption::kReturnNullOnOOM);
+  if (transfer_buffer_oom) {
+    // In this test, there's no guarantee allocating UINT32_MAX will definitely
+    // fail, but it is likely to OOM. If it didn't fail, return immediately.
+    // TODO(enga): Consider manually injecting an allocation failure to test this
+    // better.
+    return;
+  }
+
+  EXPECT_EQ(id, -1);
+
+  // Make a smaller buffer which should work.
+  scoped_refptr<gpu::Buffer> transfer_buffer =
+      proxy->CreateTransferBuffer(16, &id);
+
+  EXPECT_NE(transfer_buffer, nullptr);
+  EXPECT_NE(id, -1);
+
+  // Now, allocating with kLoseContextOnOOM should cause the context to be lost.
+  EXPECT_CALL(*gpu_control_client, OnGpuControlLostContextMaybeReentrant())
+      .Times(1)
+      .RetiresOnSaturation();
+
+  transfer_buffer_oom = proxy->CreateTransferBuffer(
+      std::numeric_limits<uint32_t>::max(), &id,
+      TransferBufferAllocationOption::kLoseContextOnOOM);
+}
+
 }  // namespace gpu

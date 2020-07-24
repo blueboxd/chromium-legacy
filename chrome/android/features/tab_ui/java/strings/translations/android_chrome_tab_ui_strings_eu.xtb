@@ -7,7 +7,7 @@
 <translation id="1657719826150349398">Eraman fitxa behera</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> fitxa}other{<ph name="TABS_COUNT_MANY" /> fitxa}}</translation>
 <translation id="2569352796411618312">Iradokizuna: fitxetako <ph name="NUMBER_OF_TABS" /> ez dira erabili azkenaldian. Itxi nahi dituzu?</translation>
-<translation id="257674075312929031">Taldea</translation>
+<translation id="257674075312929031">Taldekatu</translation>
 <translation id="2613747923081026172">Sortu talde bat</translation>
 <translation id="2671423594960767771">Partekatu taldea</translation>
 <translation id="2977480621796371840">Kendu taldetik</translation>
@@ -20,13 +20,13 @@
 <translation id="5073204694187207510">Ezkutatu pantaila osoko sareta</translation>
 <translation id="5082793167783849073">Egin talde bat orriak azkar alderatzeko. Hasteko, eduki sakatuta esteka bat.</translation>
 <translation id="5533021382642990449">Erakutsi geroago</translation>
-<translation id="5580090775658607195">Taldekatu dira <ph name="TAB_COUNT" /> fitxa</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> fitxa taldekatu dira</translation>
 <translation id="58326064309361797">Fitxak taldekatzeko, arrasta itzazu</translation>
 <translation id="6040143037577758943">Itxi</translation>
 <translation id="6193448654517602979">Hautatu fitxak</translation>
 <translation id="6510648526783655549">Itxi fitxen zinta</translation>
 <translation id="6562820390860419811">Eraman fitxa ezkerrera</translation>
-<translation id="6615455863669487791">Erakuts iezadazu</translation>
+<translation id="6615455863669487791">Erakutsi</translation>
 <translation id="6840760312327750441">Fitxak taldekatzeko, eduki fitxa bat sakatuta eta, ondoren, arrasta ezazu beste batera.</translation>
 <translation id="7151209024774799310">Kendu fitxak taldetik</translation>
 <translation id="7559245342362162951">Erakutsi taldearen fitxak pantaila osoko saretan</translation>

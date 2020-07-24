@@ -23,9 +23,8 @@ QueryTilesInternalsUIMessageHandler::QueryTilesInternalsUIMessageHandler(
   DCHECK(tile_service_);
 }
 
-QueryTilesInternalsUIMessageHandler::~QueryTilesInternalsUIMessageHandler() {
-  tile_service_->GetLogger()->RemoveObserver(this);
-}
+QueryTilesInternalsUIMessageHandler::~QueryTilesInternalsUIMessageHandler() =
+    default;
 
 void QueryTilesInternalsUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -47,7 +46,10 @@ void QueryTilesInternalsUIMessageHandler::RegisterMessages() {
       base::Bind(&QueryTilesInternalsUIMessageHandler::HandleGetTileData,
                  weak_ptr_factory_.GetWeakPtr()));
 
-  tile_service_->GetLogger()->AddObserver(this);
+  web_ui()->RegisterMessageCallback(
+      "setServerUrl",
+      base::Bind(&QueryTilesInternalsUIMessageHandler::HandleSetServerUrl,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void QueryTilesInternalsUIMessageHandler::HandleGetTileData(
@@ -82,17 +84,27 @@ void QueryTilesInternalsUIMessageHandler::HandlePurgeDb(
   tile_service_->PurgeDb();
 }
 
+void QueryTilesInternalsUIMessageHandler::HandleSetServerUrl(
+    const base::ListValue* args) {
+  AllowJavascript();
+  DCHECK_EQ(args->GetList().size(), 1u) << "Missing argument server URL.";
+  tile_service_->SetServerUrl(args->GetList()[0].GetString());
+}
+
 void QueryTilesInternalsUIMessageHandler::OnServiceStatusChanged(
     const base::Value& status) {
-  if (!IsJavascriptAllowed())
-    return;
-
   FireWebUIListener("service-status-changed", status);
 }
 
 void QueryTilesInternalsUIMessageHandler::OnTileDataAvailable(
     const base::Value& data) {
-  if (!IsJavascriptAllowed())
-    return;
   FireWebUIListener("tile-data-available", data);
+}
+
+void QueryTilesInternalsUIMessageHandler::OnJavascriptAllowed() {
+  logger_observer_.Add(tile_service_->GetLogger());
+}
+
+void QueryTilesInternalsUIMessageHandler::OnJavascriptDisallowed() {
+  logger_observer_.RemoveAll();
 }

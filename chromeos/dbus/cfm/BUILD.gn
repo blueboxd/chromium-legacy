@@ -2,15 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chromeos/services/cfm/public/buildflags/buildflags.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
+assert(is_cfm, "Non-CfM builds cannot depend on this library")
 
 component("cfm") {
   defines = [ "IS_CFM_HOTLINE_CLIENT_IMPL" ]
   public_deps = [
     "//chromeos/dbus:common",
     "//chromeos/dbus:dbus",
+    "//chromeos/services/cfm/public/buildflags",
+    "//chromeos/services/cfm/public/features",
   ]
   deps = [
     "//base",

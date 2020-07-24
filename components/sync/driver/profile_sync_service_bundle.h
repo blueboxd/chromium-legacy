@@ -63,10 +63,10 @@ class ProfileSyncServiceBundle {
 
  private:
   sync_preferences::TestingPrefServiceSyncable pref_service_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   signin::IdentityTestEnvironment identity_test_env_;
   testing::NiceMock<SyncApiComponentFactoryMock> component_factory_;
   std::unique_ptr<invalidation::ProfileIdentityProvider> identity_provider_;
-  network::TestURLLoaderFactory test_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceBundle);
 };

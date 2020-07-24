@@ -863,9 +863,9 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     // clang-format off
     @DisableIf.Build(hardware_is = "bullhead", message = "crbug.com/1081657")
+    @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1108459")
     @CommandLineFlags.Add({BASE_PARAMS + "/omniboxonly" +
         "/hide_switch_when_no_incognito_tabs/true/omnibox_scroll_mode/top"})
-    @DisabledTest(message = "https://crbug.com/1108459")
     public void testScroll_Top() {
         // clang-format on
         // TODO(crbug.com/1082664): Make it work with NoReturn.
@@ -890,9 +890,9 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     // clang-format off
     @DisableIf.Build(sdk_is_less_than = P, message = "crbug.com/1083174")
+    @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1108459")
     @CommandLineFlags.Add({BASE_PARAMS + "/omniboxonly" +
         "/hide_switch_when_no_incognito_tabs/true/omnibox_scroll_mode/quick"})
-    @DisabledTest(message = "https://crbug.com/1108459")
     public void testScroll_Quick() {
         // clang-format on
         // TODO(crbug.com/1082664): Make it work with NoReturn.

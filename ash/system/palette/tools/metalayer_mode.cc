@@ -220,7 +220,7 @@ void MetalayerMode::UpdateView() {
   highlight_view_->SetEnabled(selectable());
 
   TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL,
-                           false /* use_unified_theme */);
+                           true /* use_unified_theme */);
   style.set_color_style(highlight_view_->GetEnabled()
                             ? TrayPopupItemStyle::ColorStyle::ACTIVE
                             : TrayPopupItemStyle::ColorStyle::DISABLED);

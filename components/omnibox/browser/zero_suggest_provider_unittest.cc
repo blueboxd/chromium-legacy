@@ -459,7 +459,12 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
 
   base::RunLoop().RunUntilIdle();
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
   EXPECT_EQ(4U, provider_->matches().size());  // 3 results + verbatim
+#else
+  EXPECT_EQ(3U, provider_->matches().size());  // 3 results, no verbatim match
+#endif
+
   EXPECT_EQ(json_response,
             prefs->GetString(omnibox::kZeroSuggestCachedResults));
 }
@@ -486,10 +491,17 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
   provider_->Start(input, false);
 
   // Expect that matches get populated synchronously out of the cache.
-  ASSERT_EQ(4U, provider_->matches().size());
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  ASSERT_EQ(4U, provider_->matches().size());  // 3 results + verbatim
   EXPECT_EQ(base::ASCIIToUTF16("search1"), provider_->matches()[1].contents);
   EXPECT_EQ(base::ASCIIToUTF16("search2"), provider_->matches()[2].contents);
   EXPECT_EQ(base::ASCIIToUTF16("search3"), provider_->matches()[3].contents);
+#else
+  ASSERT_EQ(3U, provider_->matches().size());  // 3 results, no verbatim match
+  EXPECT_EQ(base::ASCIIToUTF16("search1"), provider_->matches()[0].contents);
+  EXPECT_EQ(base::ASCIIToUTF16("search2"), provider_->matches()[1].contents);
+  EXPECT_EQ(base::ASCIIToUTF16("search3"), provider_->matches()[2].contents);
+#endif
 
   GURL suggest_url = GetSuggestURL(metrics::OmniboxEventProto::OTHER);
   EXPECT_TRUE(test_loader_factory()->IsPending(suggest_url.spec()));
@@ -500,11 +512,18 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
 
   base::RunLoop().RunUntilIdle();
 
-  // Expect the same 4 results after the response has been handled.
-  ASSERT_EQ(4U, provider_->matches().size());
+  // Expect the same results after the response has been handled.
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  ASSERT_EQ(4U, provider_->matches().size());  // 3 results + verbatim
   EXPECT_EQ(base::ASCIIToUTF16("search1"), provider_->matches()[1].contents);
   EXPECT_EQ(base::ASCIIToUTF16("search2"), provider_->matches()[2].contents);
   EXPECT_EQ(base::ASCIIToUTF16("search3"), provider_->matches()[3].contents);
+#else
+  ASSERT_EQ(3U, provider_->matches().size());  // 3 results, no verbatim match
+  EXPECT_EQ(base::ASCIIToUTF16("search1"), provider_->matches()[0].contents);
+  EXPECT_EQ(base::ASCIIToUTF16("search2"), provider_->matches()[1].contents);
+  EXPECT_EQ(base::ASCIIToUTF16("search3"), provider_->matches()[2].contents);
+#endif
 
   // Expect the new results have been stored.
   EXPECT_EQ(json_response2,
@@ -533,10 +552,17 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
   provider_->Start(input, false);
 
   // Expect that matches get populated synchronously out of the cache.
-  ASSERT_EQ(4U, provider_->matches().size());
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  ASSERT_EQ(4U, provider_->matches().size());  // 3 results + verbatim
   EXPECT_EQ(base::ASCIIToUTF16("search1"), provider_->matches()[1].contents);
   EXPECT_EQ(base::ASCIIToUTF16("search2"), provider_->matches()[2].contents);
   EXPECT_EQ(base::ASCIIToUTF16("search3"), provider_->matches()[3].contents);
+#else
+  ASSERT_EQ(3U, provider_->matches().size());  // 3 results, no verbatim match
+  EXPECT_EQ(base::ASCIIToUTF16("search1"), provider_->matches()[0].contents);
+  EXPECT_EQ(base::ASCIIToUTF16("search2"), provider_->matches()[1].contents);
+  EXPECT_EQ(base::ASCIIToUTF16("search3"), provider_->matches()[2].contents);
+#endif
 
   GURL suggest_url = GetSuggestURL(metrics::OmniboxEventProto::OTHER);
   EXPECT_TRUE(test_loader_factory()->IsPending(suggest_url.spec()));

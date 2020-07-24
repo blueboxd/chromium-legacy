@@ -15,11 +15,13 @@
 #include "base/values.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/common/extension_id.h"
 #include "net/cert/x509_certificate.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 
 namespace base {
+class FilePath;
 class Value;
 }
 
@@ -39,12 +41,15 @@ class BrowserContext;
 class TestCertificateProviderExtension final
     : public content::NotificationObserver {
  public:
+  static extensions::ExtensionId extension_id();
+  static base::FilePath GetExtensionSourcePath();
+  static base::FilePath GetExtensionPemPath();
   // Returns the certificate provided by the extension.
   static scoped_refptr<net::X509Certificate> GetCertificate();
   static std::string GetCertificateSpki();
 
-  TestCertificateProviderExtension(content::BrowserContext* browser_context,
-                                   const std::string& extension_id);
+  explicit TestCertificateProviderExtension(
+      content::BrowserContext* browser_context);
   ~TestCertificateProviderExtension() override;
 
   int certificate_request_count() const { return certificate_request_count_; }
@@ -83,7 +88,6 @@ class TestCertificateProviderExtension final
                               ReplyToJsCallback callback);
 
   content::BrowserContext* const browser_context_;
-  const std::string extension_id_;
   const scoped_refptr<net::X509Certificate> certificate_;
   const bssl::UniquePtr<EVP_PKEY> private_key_;
   int certificate_request_count_ = 0;

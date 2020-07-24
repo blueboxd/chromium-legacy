@@ -90,7 +90,7 @@ class WEBVIEW_EXPORT WebDialogView : public ClientView,
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
-  bool CanClose() override;
+  views::CloseRequestResult OnWindowCloseRequested() override;
 
   // WidgetDelegate:
   bool OnCloseRequested(Widget::ClosedReason close_reason) override;

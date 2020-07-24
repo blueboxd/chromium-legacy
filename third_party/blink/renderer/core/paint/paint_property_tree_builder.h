@@ -146,7 +146,7 @@ struct PaintPropertyTreeBuilderContext {
 
 #if DCHECK_IS_ON()
   // When DCHECK_IS_ON() we create PaintPropertyTreeBuilderContext even if not
-  // needed. See FindPaintOffsetAndVisualRectNeedingUpdate.h.
+  // needed. See find_paint_offset_needing_update.h.
   bool is_actually_needed = true;
 #endif
 

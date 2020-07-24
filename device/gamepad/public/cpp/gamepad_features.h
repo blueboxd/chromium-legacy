@@ -10,6 +10,7 @@
 namespace features {
 
 extern const base::Feature kEnableGamepadButtonAxisEvents;
+extern const base::Feature kEnableWindowsGamingInputDataFetcher;
 extern const base::Feature kGamepadPollingInterval;
 extern const char kGamepadPollingIntervalParamKey[];
 

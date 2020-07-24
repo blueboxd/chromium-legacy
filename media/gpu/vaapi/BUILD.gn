@@ -315,3 +315,15 @@ group("vaapi_fuzzers") {
   public_deps =
       [ "//media/gpu/vaapi/fuzzers/jpeg_decoder:vaapi_jpeg_decoder_fuzzertest" ]
 }
+
+executable("decode_test") {
+  testonly = true
+  sources = [ "test/decode.cc" ]
+  deps = [
+    ":libva_stubs",
+    "//base",
+    "//media",
+    "//media:test_support",
+    "//ui/gfx/geometry",
+  ]
+}

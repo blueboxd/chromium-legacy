@@ -2,10 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chromeos/services/cfm/public/buildflags/buildflags.gni")
+
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
+assert(is_cfm, "Non-CfM builds cannot depend on this library")
 
 source_set("cpp") {
   sources = [
+    "appid_util.cc",
+    "appid_util.h",
     "service_connection.cc",
     "service_connection.h",
   ]
@@ -13,6 +18,10 @@ source_set("cpp") {
     "//base",
     "//chromeos/dbus/cfm",
     "//chromeos/services/cfm/public/mojom",
+  ]
+  public_deps = [
+    "//chromeos/services/cfm/public/buildflags",
+    "//chromeos/services/cfm/public/features",
   ]
 }
 
@@ -33,7 +42,10 @@ source_set("test_support") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "service_connection_unittest.cc" ]
+  sources = [
+    "appid_util_unittest.cc",
+    "service_connection_unittest.cc",
+  ]
   deps = [
     ":cpp",
     ":test_support",

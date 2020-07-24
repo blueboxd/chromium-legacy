@@ -15,6 +15,7 @@
 namespace views {
 
 class ClientView;
+enum class CloseRequestResult;
 
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView
@@ -167,9 +168,8 @@ class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
   // Replaces the current |overlay_view_| (if any) with the specified one.
   void SetOverlayView(View* view);
 
-  // Returns true if the ClientView determines that the containing window can be
-  // closed, false otherwise.
-  bool CanClose();
+  // Returned value signals whether the ClientView can be closed.
+  CloseRequestResult OnWindowCloseRequested();
 
   // Called by the containing Window when it is closed.
   void WindowClosing();

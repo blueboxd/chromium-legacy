@@ -352,6 +352,7 @@ public class AssistantStepProgressBar {
 
         assert icons.size() >= 2;
         mNumberOfSteps = icons.size();
+        mCurrentStep = -1;
 
         mIcons = new IconViewHolder[mNumberOfSteps];
         mLines = new LineViewHolder[mNumberOfSteps - 1];
@@ -395,11 +396,11 @@ public class AssistantStepProgressBar {
                 mIcons[i].setEnabled(i < step);
             }
 
-            if (i == step && step == mCurrentStep + 1) {
+            if (i == step && step == mCurrentStep + 1 && mCurrentStep != -1) {
                 // In case we advance to a new step, start the enable animation on the current
                 // icon. If not for the first step, start the pulsating animation with a delay such
                 // that it only starts after the other animations have run.
-                mIcons[i].startPulsingAnimation(/* delayed= */ mCurrentStep != -1);
+                mIcons[i].startPulsingAnimation(/* delayed= */ true);
             } else {
                 mIcons[i].setPulsingAnimationEnabled(i == step);
             }

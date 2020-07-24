@@ -55,8 +55,6 @@ class PlatformBundle(object):
         extension_samples_fs = self._host_fs_at_master
         # TODO(kalman): Re-enable the apps samples, see http://crbug.com/344097.
         app_samples_fs = EmptyDirFileSystem()
-        #app_samples_fs = github_file_system_provider.Create(
-        #    'GoogleChrome', 'chrome-app-samples')
       self._platform_data[platform].samples_model = SamplesModel(
           extension_samples_fs,
           app_samples_fs,

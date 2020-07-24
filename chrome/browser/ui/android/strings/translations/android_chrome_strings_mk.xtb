@@ -669,7 +669,7 @@
 <translation id="6342069812937806050">Пред малку</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />… и уште <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" />… и уште <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />… и уште <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="6364438453358674297">Да се отстрани предлогот од историјата?</translation>
-<translation id="6366047038980456022"><ph name="APP_NAME" /> е доволно паметен и доволно брз за да ви овозможи безбедно да работите, создавате и истражувате онлајн</translation>
+<translation id="6366047038980456022"><ph name="APP_NAME" /> има доволно знаење и брзина за да ви овозможи безбедно да работите, создавате и истражувате онлајн</translation>
 <translation id="6369229450655021117">Оттука, може да пребарувате на интернет, споделувате со пријателите и да ги гледате отворените страници</translation>
 <translation id="6378173571450987352">Детали: подредени по количината на податоци што се користат</translation>
 <translation id="6379829913050047669"><ph name="APP_NAME" /> ќе се отвори во Chrome. Ако продолжите, се согласувате со <ph name="BEGIN_LINK1" />Условите за користење на Google<ph name="END_LINK1" />и <ph name="BEGIN_LINK2" />Дополнителните услови за користење на Google Chrome и Chrome OS<ph name="END_LINK2" />.</translation>
@@ -955,7 +955,7 @@
 <translation id="8555836665334561807">Преку Wi-Fi</translation>
 <translation id="8558485628462305855">За да прегледувате содржини во проширена реалност, ажурирајте го ARCore</translation>
 <translation id="8559990750235505898">Понудувај превод на страниците на други јазици</translation>
-<translation id="8561196567344536112">1. Одете во „Поставки“\n2. Допрете ја „Апликацијата на прелистувачот“\n3. Изберете <ph name="APP_NAME" /></translation>
+<translation id="8561196567344536112">1. Одете во „Поставки“\n2. Допрете на „Прелистувач“\n3. Изберете <ph name="APP_NAME" /></translation>
 <translation id="8562452229998620586">Зачуваните лозинки ќе се појават тука.</translation>
 <translation id="8569404424186215731">од <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Изминатите 4 седмици</translation>

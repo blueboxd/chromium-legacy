@@ -285,6 +285,11 @@ void CastRenderer::OnGetMultiroomInfo(
     cast_cdm_context_ = nullptr;
   }
 
+  if (pending_volume_.has_value()) {
+    pipeline_->SetVolume(pending_volume_.value());
+    pending_volume_.reset();
+  }
+
   client_ = client;
 
   if (video_stream && video_mode_switcher_) {
@@ -341,11 +346,13 @@ void CastRenderer::SetLatencyHint(
 
 void CastRenderer::Flush(base::OnceClosure flush_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(pipeline_);
   pipeline_->Flush(std::move(flush_cb));
 }
 
 void CastRenderer::StartPlayingFrom(base::TimeDelta time) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(pipeline_);
 
   eos_[STREAM_AUDIO] = !pipeline_->HasAudio();
   eos_[STREAM_VIDEO] = !pipeline_->HasVideo();
@@ -359,11 +366,19 @@ void CastRenderer::SetPlaybackRate(double playback_rate) {
 
 void CastRenderer::SetVolume(float volume) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  // If pipeline is not initialized, cache the volume and delay the volume set
+  // until media pipeline is setup.
+  if (!pipeline_) {
+    pending_volume_ = volume;
+    return;
+  }
+
   pipeline_->SetVolume(volume);
 }
 
 base::TimeDelta CastRenderer::GetMediaTime() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(pipeline_);
   return pipeline_->GetMediaTime();
 }
 

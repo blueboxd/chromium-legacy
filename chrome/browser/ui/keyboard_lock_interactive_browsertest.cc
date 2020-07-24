@@ -259,8 +259,16 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockInteractiveBrowserTest,
   ASSERT_EQ(initial_browser_count + 1, GetBrowserCount());
 }
 
+// https://crbug.com/1108391 Flakey on ChromeOS.
+#if defined(OS_CHROMEOS)
+#define MAYBE_SubsequentLockCallSupersedesPreviousCall \
+  DISABLED_SubsequentLockCallSupersedesPreviousCall
+#else
+#define MAYBE_SubsequentLockCallSupersedesPreviousCall \
+  SubsequentLockCallSupersedesPreviousCall
+#endif
 IN_PROC_BROWSER_TEST_F(KeyboardLockInteractiveBrowserTest,
-                       SubsequentLockCallSupersedesPreviousCall) {
+                       MAYBE_SubsequentLockCallSupersedesPreviousCall) {
   ASSERT_NO_FATAL_FAILURE(StartFullscreenLockPage());
   ASSERT_TRUE(DisablePreventDefaultOnTestPage());
 

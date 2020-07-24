@@ -30,8 +30,11 @@ class MockClientCommandBufferImpl : public MockClientCommandBuffer {
         context_lost_(false) {}
   ~MockClientCommandBufferImpl() override = default;
 
-  scoped_refptr<gpu::Buffer> CreateTransferBuffer(uint32_t size,
-                                                  int32_t* id) override {
+  scoped_refptr<gpu::Buffer> CreateTransferBuffer(
+      uint32_t size,
+      int32_t* id,
+      TransferBufferAllocationOption option =
+          TransferBufferAllocationOption::kLoseContextOnOOM) override {
     if (context_lost_) {
       *id = -1;
       return nullptr;

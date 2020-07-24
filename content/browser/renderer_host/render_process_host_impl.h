@@ -168,13 +168,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Special depth used when there are no PriorityClients.
   static const unsigned int kMaxFrameDepthForPriority;
 
-  // Create a new RenderProcessHost.  If |storage_partition_impl| is null, the
-  // default partition from the browser_context is used, using |site_instance|
-  // (for which a null value is legal). |site_instance| is not used if
-  // |storage_partition_impl| is not null.
+  // Create a new RenderProcessHost. The storage partition for the process
+  // is retrieved from |browser_context| based on information in
+  // |site_instance|. The default storage partition is selected if
+  // |site_instance| is null.
   static RenderProcessHost* CreateRenderProcessHost(
       BrowserContext* browser_context,
-      StoragePartitionImpl* storage_partition_impl,
       SiteInstanceImpl* site_instance);
 
   // Returns whether the process-per-site model is in use (globally or just for

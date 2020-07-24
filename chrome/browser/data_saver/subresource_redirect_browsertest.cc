@@ -882,6 +882,124 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   VerifyImageCompressionPageInfoState(true);
 }
 
+// This test verifies images restricted via CSP img-src directive will not be
+// redirected.
+IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(
+                           NoTriggerOnContentSecurityPolicyRestrictedImgSrc)) {
+  EnableDataSaver(true);
+  CreateUkmRecorder();
+  GURL url = HttpsURLWithPath("/load_image/image_csp_img_src.html");
+  SetUpPublicImageURLPaths(url, {"/load_image/image.png"});
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  content::FetchHistogramsFromChildProcesses();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", 0);
+
+  EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+
+  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
+            https_url().port());
+
+  VerifyIneligibleOtherImageUkm(1);
+  VerifyCompressibleImageUkm(0);
+  VerifyIneligibleImageHintsUnavailableUkm(0);
+  VerifyIneligibleMissingInImageHintsUkm(0);
+  VerifyImageCompressionPageInfoState(true);
+}
+
+// This test verifies images restricted via CSP img-src directive will not be
+// redirected.
+IN_PROC_BROWSER_TEST_F(
+    SubresourceRedirectBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(
+        NoTriggerOnContentSecurityPolicyRestrictedDefaultSrc)) {
+  EnableDataSaver(true);
+  CreateUkmRecorder();
+  GURL url = HttpsURLWithPath("/load_image/image_csp_default_src.html");
+  SetUpPublicImageURLPaths(url, {"/load_image/image.png"});
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  content::FetchHistogramsFromChildProcesses();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", 0);
+
+  EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+
+  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
+            https_url().port());
+
+  VerifyIneligibleOtherImageUkm(1);
+  VerifyCompressibleImageUkm(0);
+  VerifyIneligibleImageHintsUnavailableUkm(0);
+  VerifyIneligibleMissingInImageHintsUkm(0);
+  VerifyImageCompressionPageInfoState(true);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SubresourceRedirectBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(
+        ImageRedirectedOnContentSecurityPolicyImgNotRestricted)) {
+  EnableDataSaver(true);
+  CreateUkmRecorder();
+
+  GURL url = HttpsURLWithPath("/load_image/image_csp_img_allowed.html");
+  SetUpPublicImageURLPaths(url, {"/load_image/image.png"});
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  RetryForHistogramUntilCountReached(
+      histogram_tester(), "SubresourceRedirect.CompressionAttempt.ResponseCode",
+      2);
+
+  histogram_tester()->ExpectBucketCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", net::HTTP_OK, 1);
+
+  histogram_tester()->ExpectBucketCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode",
+      net::HTTP_TEMPORARY_REDIRECT, 1);
+
+  EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+  EXPECT_EQ(request_url().port(), compression_url().port());
+  VerifyCompressibleImageUkm(1);
+  VerifyIneligibleImageHintsUnavailableUkm(0);
+  VerifyIneligibleMissingInImageHintsUkm(0);
+  VerifyIneligibleOtherImageUkm(0);
+  VerifyImageCompressionPageInfoState(true);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SubresourceRedirectBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(
+        TestOnlyImageWithoutCrossOriginAttributeIsRedirected)) {
+  EnableDataSaver(true);
+  CreateUkmRecorder();
+  GURL url = HttpsURLWithPath("/load_image/image_crossorigin_attribute.html");
+  SetUpPublicImageURLPaths(url, {"/load_image/image.png?nocrossorgin"});
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  RetryForHistogramUntilCountReached(
+      histogram_tester(), "SubresourceRedirect.CompressionAttempt.ResponseCode",
+      2);
+
+  histogram_tester()->ExpectBucketCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", net::HTTP_OK, 1);
+
+  EXPECT_TRUE(RunScriptExtractBool("checkAllImagesLoaded()"));
+  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
+            https_url().port());
+
+  VerifyCompressibleImageUkm(1);
+  VerifyIneligibleImageHintsUnavailableUkm(0);
+  VerifyIneligibleMissingInImageHintsUkm(0);
+  VerifyIneligibleOtherImageUkm(3);
+  VerifyImageCompressionPageInfoState(true);
+}
+
 // This test verifies that no image redirect happens when empty hints is sent.
 IN_PROC_BROWSER_TEST_F(
     SubresourceRedirectBrowserTest,

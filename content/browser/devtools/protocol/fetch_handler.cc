@@ -249,7 +249,7 @@ void FetchHandler::ContinueRequest(
     const String& requestId,
     Maybe<String> url,
     Maybe<String> method,
-    Maybe<String> postData,
+    Maybe<protocol::Binary> postData,
     Maybe<Array<Fetch::HeaderEntry>> headers,
     std::unique_ptr<ContinueRequestCallback> callback) {
   if (!interceptor_) {

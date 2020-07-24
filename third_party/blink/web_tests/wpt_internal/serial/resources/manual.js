@@ -1,4 +1,11 @@
 let manualTestPort = null;
+
+navigator.serial.addEventListener('disconnect', (e) => {
+  if (e.port === manualTestPort) {
+    manualTestPort = null;
+  }
+})
+
 async function getPortForManualTest() {
   if (manualTestPort) {
     return manualTestPort;

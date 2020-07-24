@@ -353,6 +353,10 @@ extern const char kReloadSadTabDescription[];
 extern const char kSafeBrowsingAvailableName[];
 extern const char kSafeBrowsingAvailableDescription[];
 
+// Title and description for the flag to enable real-time Safe Browsing lookups.
+extern const char kSafeBrowsingRealTimeLookupName[];
+extern const char kSafeBrowsingRealTimeLookupDescription[];
+
 // Title and description for the flag to enable safety check on iOS.
 extern const char kSafetyCheckIOSName[];
 extern const char kSafetyCheckIOSDescription[];

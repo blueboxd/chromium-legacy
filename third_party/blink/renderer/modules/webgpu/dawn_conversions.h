@@ -23,6 +23,7 @@ class DoubleSequenceOrGPUColorDict;
 class GPUColorDict;
 class GPUProgrammableStageDescriptor;
 class GPUTextureCopyView;
+class GPUTextureDataLayout;
 class UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict;
 class UnsignedLongEnforceRangeSequenceOrGPUOrigin3DDict;
 
@@ -48,6 +49,7 @@ WGPUOrigin3D AsDawnType(
     const UnsignedLongEnforceRangeSequenceOrGPUOrigin3DDict*);
 WGPUTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view,
                                GPUDevice* device);
+WGPUTextureDataLayout AsDawnType(const GPUTextureDataLayout* webgpu_layout);
 using OwnedProgrammableStageDescriptor =
     std::tuple<WGPUProgrammableStageDescriptor, std::unique_ptr<char[]>>;
 OwnedProgrammableStageDescriptor AsDawnType(

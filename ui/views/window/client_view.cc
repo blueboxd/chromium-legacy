@@ -28,8 +28,8 @@ int ClientView::NonClientHitTest(const gfx::Point& point) {
   return bounds().Contains(point) ? HTCLIENT : HTNOWHERE;
 }
 
-bool ClientView::CanClose() {
-  return true;
+CloseRequestResult ClientView::OnWindowCloseRequested() {
+  return CloseRequestResult::kCanClose;
 }
 
 void ClientView::WidgetClosing() {}

@@ -23,10 +23,10 @@ const base::Feature kContextualNudges{"ContextualNudges",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDisplayAlignAssist{"DisplayAlignAssist",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDisplayIdentification{"DisplayIdentification",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDockedMagnifier{"DockedMagnifier",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
@@ -130,6 +130,9 @@ const base::Feature kNotificationsInContextMenu{
 const base::Feature kMaintainShelfStateWhenEnteringOverview{
     "MaintainShelfStateWhenEnteringOverview",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kTemporaryHoldingSpace{"TemporaryHoldingSpace",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAllowAmbientEQEnabled() {
   return base::FeatureList::IsEnabled(kAllowAmbientEQ);
@@ -275,6 +278,10 @@ bool IsNotificationsInContextMenuEnabled() {
 
 bool IsMaintainShelfStateWhenEnteringOverviewEnabled() {
   return base::FeatureList::IsEnabled(kMaintainShelfStateWhenEnteringOverview);
+}
+
+bool IsTemporaryHoldingSpaceEnabled() {
+  return base::FeatureList::IsEnabled(kTemporaryHoldingSpace);
 }
 
 namespace {

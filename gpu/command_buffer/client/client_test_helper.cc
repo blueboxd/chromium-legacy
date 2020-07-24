@@ -139,7 +139,8 @@ void MockClientCommandBuffer::SetGetBuffer(int transfer_buffer_id) {
 
 scoped_refptr<gpu::Buffer> MockClientCommandBuffer::CreateTransferBuffer(
     uint32_t size,
-    int32_t* id) {
+    int32_t* id,
+    TransferBufferAllocationOption option) {
   return CreateTransferBufferHelper(size, id);
 }
 

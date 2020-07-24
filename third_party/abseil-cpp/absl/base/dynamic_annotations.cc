@@ -18,14 +18,14 @@
 #include "absl/base/dynamic_annotations.h"
 
 // Compiler-based ThreadSanitizer defines
-// ABSL_DYNAMIC_ANNOTATIONS_EXTERNAL_IMPL = 1
+// DYNAMIC_ANNOTATIONS_EXTERNAL_IMPL = 1
 // and provides its own definitions of the functions.
 
-#ifndef ABSL_DYNAMIC_ANNOTATIONS_EXTERNAL_IMPL
-# define ABSL_DYNAMIC_ANNOTATIONS_EXTERNAL_IMPL 0
+#ifndef DYNAMIC_ANNOTATIONS_EXTERNAL_IMPL
+# define DYNAMIC_ANNOTATIONS_EXTERNAL_IMPL 0
 #endif
 
-#if ABSL_DYNAMIC_ANNOTATIONS_EXTERNAL_IMPL == 0 && !defined(__native_client__)
+#if DYNAMIC_ANNOTATIONS_EXTERNAL_IMPL == 0 && !defined(__native_client__)
 
 extern "C" {
 
@@ -69,4 +69,4 @@ double AbslValgrindSlowdown(void) {
 }
 
 }  // extern "C"
-#endif  // ABSL_DYNAMIC_ANNOTATIONS_EXTERNAL_IMPL == 0
+#endif  // DYNAMIC_ANNOTATIONS_EXTERNAL_IMPL == 0

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/messaging/blink_cloneable_message_mojom_traits.h"
 
 #include "mojo/public/cpp/base/big_buffer_mojom_traits.h"
+#include "third_party/blink/public/mojom/messaging/cloneable_message.mojom-blink.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 
 namespace mojo {

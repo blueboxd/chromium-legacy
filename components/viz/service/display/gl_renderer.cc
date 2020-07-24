@@ -628,8 +628,10 @@ static SkColorType GlFormatToSkFormat(GrGLenum format) {
       return kRGBA_8888_SkColorType;
     case GL_BGRA_EXT:
       return kBGRA_8888_SkColorType;
+    case GL_RGB10_A2_EXT:
+      return kRGBA_1010102_SkColorType;
     default:
-      NOTREACHED();
+      NOTREACHED() << std::hex << std::showbase << format;
       return kN32_SkColorType;
   }
 }
@@ -642,6 +644,8 @@ static GrGLenum SkFormatToGlFormat(SkColorType format) {
       return GL_RGBA8_OES;
     case kBGRA_8888_SkColorType:
       return GL_BGRA8_EXT;
+    case kRGBA_1010102_SkColorType:
+      return GL_RGB10_A2_EXT;
     default:
       NOTREACHED();
       return GL_RGBA8_OES;
@@ -864,8 +868,9 @@ GLenum GLRenderer::GetFramebufferCopyTextureFormat() {
          (output_surface_->context_provider()
               ->ContextCapabilities()
               .texture_format_bgra8888 &&
-          format == GL_BGRA_EXT))
-      << format;
+          format == GL_BGRA_EXT) ||
+         format == GL_RGB10_A2_EXT)
+      << std::hex << std::showbase << format;
   return format;
 }
 
@@ -939,7 +944,8 @@ uint32_t GLRenderer::GetBackdropTexture(const gfx::Rect& window_rect,
     // CopyTexImage2D requires inernalformat channels to be a subset of
     // the channels of the source texture internalformat.
     DCHECK(*internal_format == GL_RGB || *internal_format == GL_RGBA ||
-           *internal_format == GL_BGRA_EXT);
+           *internal_format == GL_BGRA_EXT ||
+           *internal_format == GL_RGB10_A2_EXT);
     if (*internal_format == GL_BGRA_EXT)
       *internal_format = GL_RGBA;
     gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, *internal_format, window_rect.x(),

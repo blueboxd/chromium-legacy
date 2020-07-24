@@ -71,7 +71,8 @@ constexpr OzonePlatform::PlatformProperties kX11PlatformProperties{
     // events. See GLSurfaceGLX and https://crbug.com/326995.
     .message_pump_type_for_gpu = base::MessagePumpType::UI,
     .supports_vulkan_swap_chain = true,
-    .platform_shows_drag_image = false};
+    .platform_shows_drag_image = false,
+    .supports_global_application_menus = true};
 
 // Singleton OzonePlatform implementation for X11 platform.
 class OzonePlatformX11 : public OzonePlatform,

@@ -535,6 +535,10 @@ coming in.  It's also useful to keep obsolete histogram descriptions in
 histogram to answer a particular question, they can learn if there was a
 histogram at some point that did so even if it isn't active now.
 
+*Exception:* It is ok to delete the metadata for any histogram that has never
+been recorded to. For example, it's fine to correct a typo where the histogram
+name in the metadata does not match the name in the Chromium source code.
+
 ### Histogram Suffixes
 
 It is sometimes useful to record several closely related metrics, which measure

@@ -165,22 +165,6 @@ void BrowserFrame::OnBrowserViewInitViewsComplete() {
   browser_frame_view_->OnBrowserViewInitViewsComplete();
 }
 
-bool BrowserFrame::ShouldUseTheme() const {
-  // Browser windows are always themed (including popups).
-  if (!web_app::AppBrowserController::IsForWebAppBrowser(
-          browser_view_->browser())) {
-    return true;
-  }
-
-  // The system GTK theme should always be respected if the user has opted to
-  // use it.
-  if (IsUsingGtkTheme(browser_view_->browser()->profile()))
-    return true;
-
-  // Hosted apps on non-GTK use default colors.
-  return false;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, views::Widget overrides:
 

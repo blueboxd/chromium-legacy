@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//chromeos/services/cfm/public/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//printing/buildflags/buildflags.gni")
@@ -169,6 +170,7 @@ source_set("chromeos") {
     "//chromeos/login/session",
     "//chromeos/network",
     "//chromeos/services/assistant/public/cpp",
+    "//chromeos/services/cfm/public/buildflags",
     "//chromeos/services/cros_healthd/public/cpp",
     "//chromeos/services/cros_healthd/public/mojom",
     "//chromeos/services/device_sync",
@@ -353,6 +355,9 @@ source_set("chromeos") {
     "//ui/wm/public",
     "//url",
   ]
+  if (is_cfm) {
+    deps += [ "//chromeos/dbus/cfm" ]
+  }
   data_deps = [ ":dbus_service_files" ]
 
   allow_circular_includes_from = [

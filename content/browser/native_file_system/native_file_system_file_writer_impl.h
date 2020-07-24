@@ -85,14 +85,16 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   // perform cleanup even if the writer was deleted before they were invoked.
   static void DoAfterWriteCheck(
       base::WeakPtr<NativeFileSystemFileWriterImpl> file_writer,
-      const base::FilePath& swap_path,
+      scoped_refptr<NativeFileSystemManagerImpl> manager,
+      const storage::FileSystemURL& swap_url,
       NativeFileSystemFileWriterImpl::CloseCallback callback,
       base::File::Error hash_result,
       const std::string& hash,
       int64_t size);
   static void DidAfterWriteCheck(
       base::WeakPtr<NativeFileSystemFileWriterImpl> file_writer,
-      const base::FilePath& swap_path,
+      scoped_refptr<NativeFileSystemManagerImpl> manager,
+      const storage::FileSystemURL& swap_url,
       NativeFileSystemFileWriterImpl::CloseCallback callback,
       NativeFileSystemPermissionContext::AfterWriteCheckResult result);
   void DidPassAfterWriteCheck(CloseCallback callback);
@@ -106,8 +108,7 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   // except temporary file systems.
   // TOOD(crbug.com/1103076): Extend this check to non-native paths.
   bool RequireSecurityChecks() const {
-    return url().type() == storage::kFileSystemTypeNativeLocal ||
-           url().type() == storage::kFileSystemTypeNativeForPlatformApp;
+    return url().type() != storage::kFileSystemTypeTemporary;
   }
 
   void ComputeHashForSwapFile(HashCallback callback);

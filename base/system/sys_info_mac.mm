@@ -4,8 +4,6 @@
 
 #include "base/system/sys_info.h"
 
-#include <ApplicationServices/ApplicationServices.h>
-#include <CoreServices/CoreServices.h>
 #import <Foundation/Foundation.h>
 #include <mach/mach_host.h>
 #include <mach/mach_init.h>

@@ -42,6 +42,14 @@ std::unique_ptr<LoginDatabase> CreateLoginDatabaseForProfileStorage(
 std::unique_ptr<LoginDatabase> CreateLoginDatabaseForAccountStorage(
     const base::FilePath& profile_path);
 
+// Deletes any files associated with the acccount-scoped LoginDatabase. Do *not*
+// call this while a LoginDatabase instance is using these files!
+void DeleteLoginDatabaseForAccountStorageFiles(
+    const base::FilePath& profile_path);
+
+base::FilePath GetLoginDatabaseForAccountStoragePathForTesting(
+    const base::FilePath& profile_path);
+
 }  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_STORE_FACTORY_UTIL_H_

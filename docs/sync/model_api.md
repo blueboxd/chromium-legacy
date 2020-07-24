@@ -230,7 +230,7 @@ void WriteLocalChange(std::string key, ModelData data) {
     change_processor()->Put(key, ModelToEntityData(data),
                             batch->GetMetadataChangeList());
   }
-  batch->WriteData(key, specifics->SerializeAsString());
+  batch->WriteData(key, data.specifics->SerializeAsString());
   store_->CommitWriteBatch(std::move(batch), base::Bind(...));
 }
 ```

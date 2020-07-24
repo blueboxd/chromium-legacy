@@ -2062,7 +2062,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
   chromeos::ExistingUserController* controller =
       chromeos::ExistingUserController::current_controller();
   ASSERT_TRUE(controller);
-  controller->set_login_status_consumer(&login_status_consumer);
+  controller->AddLoginStatusConsumer(&login_status_consumer);
 
   // Manually select a different keyboard layout and click the enter button to
   // start the session.
@@ -2073,7 +2073,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
   // Spin the loop until the login observer fires. Then, unregister the
   // observer.
   login_wait_run_loop.Run();
-  controller->set_login_status_consumer(NULL);
+  controller->RemoveLoginStatusConsumer(&login_status_consumer);
 
   // Verify that the Terms of Service screen is being shown.
   chromeos::WizardController* wizard_controller =
@@ -2649,9 +2649,9 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
   chromeos::ExistingUserController* controller =
       chromeos::ExistingUserController::current_controller();
   ASSERT_TRUE(controller);
-  controller->set_login_status_consumer(&login_status_consumer);
+  controller->AddLoginStatusConsumer(&login_status_consumer);
   login_wait_run_loop.Run();
-  controller->set_login_status_consumer(NULL);
+  controller->RemoveLoginStatusConsumer(&login_status_consumer);
 
   // Verify that the Terms of Service screen is being shown.
   chromeos::WizardController* wizard_controller =
@@ -2765,9 +2765,9 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, DeclineTermsOfService) {
   chromeos::ExistingUserController* controller =
       chromeos::ExistingUserController::current_controller();
   ASSERT_TRUE(controller);
-  controller->set_login_status_consumer(&login_status_consumer);
+  controller->AddLoginStatusConsumer(&login_status_consumer);
   login_wait_run_loop.Run();
-  controller->set_login_status_consumer(NULL);
+  controller->RemoveLoginStatusConsumer(&login_status_consumer);
 
   // Verify that the Terms of Service screen is being shown.
   chromeos::WizardController* wizard_controller =

@@ -311,8 +311,7 @@ void DrawPixmap(x11::Connection* connection,
   std::vector<uint8_t> vec(row_bytes * height);
   SkPixmap pixmap(image_info, vec.data(), row_bytes);
   skia_pixmap.readPixels(pixmap, src_x, src_y);
-
-  connection->PutImage({
+  x11::PutImageRequest put_image_request{
       .format = x11::ImageFormat::ZPixmap,
       .drawable = drawable,
       .gc = gc,
@@ -323,7 +322,8 @@ void DrawPixmap(x11::Connection* connection,
       .left_pad = 0,
       .depth = visual_info->format->depth,
       .data = base::RefCountedBytes::TakeVector(&vec),
-  });
+  };
+  connection->PutImage(put_image_request);
 }
 
 bool IsXInput2Available() {

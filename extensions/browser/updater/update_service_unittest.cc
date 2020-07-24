@@ -137,7 +137,6 @@ class FakeUpdateClient : public update_client::UpdateClient {
   }
 
  protected:
-  friend class base::RefCounted<FakeUpdateClient>;
   ~FakeUpdateClient() override = default;
 
   std::vector<base::Optional<update_client::CrxComponent>> data_;

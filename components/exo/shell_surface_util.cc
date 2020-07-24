@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/window_properties.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "components/exo/permission.h"
@@ -22,6 +21,10 @@
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/public/cpp/window_properties.h"
+#endif  // defined(OS_CHROMEOS)
 
 DEFINE_UI_CLASS_PROPERTY_TYPE(exo::Permission*)
 
@@ -107,11 +110,13 @@ const std::string* GetShellStartupId(aura::Window* window) {
 }
 
 void SetShellUseImmersiveForFullscreen(aura::Window* window, bool value) {
+#if defined(OS_CHROMEOS)
   window->SetProperty(ash::kImmersiveImpliedByFullscreen, value);
 
   // Ensure the shelf is fully hidden in plain fullscreen, but shown
   // (auto-hides based on mouse movement) when in immersive fullscreen.
   window->SetProperty(ash::kHideShelfWhenFullscreenKey, !value);
+#endif  // defined(OS_CHROMEOS)
 }
 
 void SetShellClientAccessibilityId(aura::Window* window,

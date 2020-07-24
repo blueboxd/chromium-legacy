@@ -81,6 +81,9 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(SkFilterQuality filter_quality) {
     Write(static_cast<uint8_t>(filter_quality));
   }
+  void Write(SkBlendMode blend_mode) {
+    Write(static_cast<uint8_t>(blend_mode));
+  }
   void Write(bool data) { Write(static_cast<uint8_t>(data)); }
 
   // Aligns the memory to the given alignment.

@@ -4492,8 +4492,8 @@ class AppCacheUpdateJobTest : public testing::Test,
                           MockHttpServer::GetMockUrl("files/fallback1"),
                           MockHttpServer::GetMockUrl("files/fallback1a")));
 
-    EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
-    EXPECT_TRUE(cache->online_whitelist_all_);
+    EXPECT_TRUE(cache->online_safelist_namespaces_.empty());
+    EXPECT_TRUE(cache->online_safelist_all_);
 
     EXPECT_TRUE(cache->update_time_ > base::Time());
   }
@@ -4529,8 +4529,8 @@ class AppCacheUpdateJobTest : public testing::Test,
                           MockHttpServer::GetMockUrl("files/fallback1"),
                           MockHttpServer::GetMockUrl("files/fallback1a")));
 
-    EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
-    EXPECT_TRUE(cache->online_whitelist_all_);
+    EXPECT_TRUE(cache->online_safelist_namespaces_.empty());
+    EXPECT_TRUE(cache->online_safelist_all_);
 
     EXPECT_TRUE(cache->update_time_ > base::Time());
   }
@@ -4580,8 +4580,8 @@ class AppCacheUpdateJobTest : public testing::Test,
                           MockHttpServer::GetMockUrl("bar/fallback2"),
                           MockHttpServer::GetMockUrl("files/fallback2a")));
 
-    EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
-    EXPECT_TRUE(cache->online_whitelist_all_);
+    EXPECT_TRUE(cache->online_safelist_namespaces_.empty());
+    EXPECT_TRUE(cache->online_safelist_all_);
 
     EXPECT_TRUE(cache->update_time_ > base::Time());
   }
@@ -4621,8 +4621,8 @@ class AppCacheUpdateJobTest : public testing::Test,
                           MockHttpServer::GetMockUrl("files/fallback1"),
                           MockHttpServer::GetMockUrl("files/fallback1a")));
 
-    EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
-    EXPECT_TRUE(cache->online_whitelist_all_);
+    EXPECT_TRUE(cache->online_safelist_namespaces_.empty());
+    EXPECT_TRUE(cache->online_safelist_all_);
 
     EXPECT_TRUE(cache->update_time_ > base::Time());
   }
@@ -4649,12 +4649,12 @@ class AppCacheUpdateJobTest : public testing::Test,
                           MockHttpServer::GetMockUrl("files/fallback1"),
                           MockHttpServer::GetMockUrl("files/explicit1")));
 
-    EXPECT_EQ(expected, cache->online_whitelist_namespaces_.size());
-    EXPECT_TRUE(cache->online_whitelist_namespaces_[0] ==
+    EXPECT_EQ(expected, cache->online_safelist_namespaces_.size());
+    EXPECT_TRUE(cache->online_safelist_namespaces_[0] ==
                 AppCacheNamespace(APPCACHE_NETWORK_NAMESPACE,
                                   MockHttpServer::GetMockUrl("files/online1"),
                                   GURL()));
-    EXPECT_FALSE(cache->online_whitelist_all_);
+    EXPECT_FALSE(cache->online_safelist_all_);
 
     EXPECT_TRUE(cache->update_time_ > base::Time());
   }
@@ -4671,8 +4671,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     EXPECT_EQ(AppCacheEntry::MANIFEST, entry->types());
 
     EXPECT_TRUE(cache->fallback_namespaces_.empty());
-    EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
-    EXPECT_FALSE(cache->online_whitelist_all_);
+    EXPECT_TRUE(cache->online_safelist_namespaces_.empty());
+    EXPECT_FALSE(cache->online_safelist_all_);
 
     EXPECT_TRUE(cache->update_time_ > base::Time());
   }
@@ -4690,8 +4690,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     EXPECT_TRUE(entry->has_response_id());
 
     EXPECT_TRUE(cache->fallback_namespaces_.empty());
-    EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
-    EXPECT_FALSE(cache->online_whitelist_all_);
+    EXPECT_TRUE(cache->online_safelist_namespaces_.empty());
+    EXPECT_FALSE(cache->online_safelist_all_);
 
     EXPECT_TRUE(cache->update_time_ > base::Time());
   }
@@ -4714,8 +4714,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     EXPECT_TRUE(entry->has_response_id());
 
     EXPECT_TRUE(cache->fallback_namespaces_.empty());
-    EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
-    EXPECT_FALSE(cache->online_whitelist_all_);
+    EXPECT_TRUE(cache->online_safelist_namespaces_.empty());
+    EXPECT_FALSE(cache->online_safelist_all_);
 
     EXPECT_TRUE(cache->update_time_ > base::Time());
   }
@@ -4852,8 +4852,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     EXPECT_EQ(expected_size, cache->entries().size());
 
     // Verify basic cache details.
-    EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
-    EXPECT_FALSE(cache->online_whitelist_all_);
+    EXPECT_TRUE(cache->online_safelist_namespaces_.empty());
+    EXPECT_FALSE(cache->online_safelist_all_);
     EXPECT_TRUE(cache->update_time_ > base::Time());
 
     // Verify manifest.

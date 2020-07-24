@@ -176,9 +176,8 @@ struct SameSizeAsLayoutObject : ImageResourceObserver, DisplayItemClient {
   void* pointers[4];
   Member<void*> members[1];
   // The following fields are in FragmentData.
-  IntRect visual_rect_;
   PhysicalOffset paint_offset_;
-  PhysicalOffset offset_to_2d_translation_root_;
+  PhysicalRect visual_rect_in_2d_translation_root_;
   std::unique_ptr<int> rare_data_;
 };
 
@@ -1643,16 +1642,6 @@ String LayoutObject::DebugName() const {
 
 DOMNodeId LayoutObject::OwnerNodeId() const {
   return GetNode() ? DOMNodeIds::IdForNode(GetNode()) : kInvalidDOMNodeId;
-}
-
-IntRect LayoutObject::FragmentsVisualRectBoundingBox() const {
-  if (!fragment_.NextFragment())
-    return fragment_.VisualRect();
-  IntRect visual_rect;
-  for (auto* fragment = &fragment_; fragment;
-       fragment = fragment->NextFragment())
-    visual_rect.Unite(fragment->VisualRect());
-  return visual_rect;
 }
 
 bool LayoutObject::IsPaintInvalidationContainer() const {
@@ -3993,13 +3982,15 @@ bool LayoutObject::IsRelayoutBoundary() const {
   return ObjectIsRelayoutBoundary(this);
 }
 
-inline void LayoutObject::SetNeedsPaintOffsetAndVisualRectUpdate() {
+inline void LayoutObject::SetShouldCheckGeometryForPaintInvalidation() {
   DCHECK(ShouldCheckForPaintInvalidation());
-  bitfields_.SetNeedsPaintOffsetAndVisualRectUpdate(true);
+  bitfields_.SetShouldCheckGeometryForPaintInvalidation(true);
   for (auto* ancestor = ParentCrossingFrames();
-       ancestor && !ancestor->DescendantNeedsPaintOffsetAndVisualRectUpdate();
+       ancestor &&
+       !ancestor->DescendantShouldCheckGeometryForPaintInvalidation();
        ancestor = ancestor->ParentCrossingFrames()) {
-    ancestor->bitfields_.SetDescendantNeedsPaintOffsetAndVisualRectUpdate(true);
+    ancestor->bitfields_.SetDescendantShouldCheckGeometryForPaintInvalidation(
+        true);
   }
 }
 
@@ -4013,7 +4004,7 @@ void LayoutObject::SetShouldInvalidateSelection() {
 void LayoutObject::SetShouldDoFullPaintInvalidation(
     PaintInvalidationReason reason) {
   SetShouldDoFullPaintInvalidationWithoutGeometryChange(reason);
-  SetNeedsPaintOffsetAndVisualRectUpdate();
+  SetShouldCheckGeometryForPaintInvalidation();
 }
 
 static PaintInvalidationReason DocumentLifecycleBasedPaintInvalidationReason(
@@ -4054,7 +4045,7 @@ void LayoutObject::SetShouldDoFullPaintInvalidationWithoutGeometryChange(
 
 void LayoutObject::SetShouldCheckForPaintInvalidation() {
   SetShouldCheckForPaintInvalidationWithoutGeometryChange();
-  SetNeedsPaintOffsetAndVisualRectUpdate();
+  SetShouldCheckGeometryForPaintInvalidation();
 }
 
 void LayoutObject::SetShouldCheckForPaintInvalidationWithoutGeometryChange() {
@@ -4117,8 +4108,8 @@ void LayoutObject::ClearPaintInvalidationFlags() {
   bitfields_.SetSubtreeShouldCheckForPaintInvalidation(false);
   bitfields_.SetSubtreeShouldDoFullPaintInvalidation(false);
   bitfields_.SetMayNeedPaintInvalidationAnimatedBackgroundImage(false);
-  bitfields_.SetNeedsPaintOffsetAndVisualRectUpdate(false);
-  bitfields_.SetDescendantNeedsPaintOffsetAndVisualRectUpdate(false);
+  bitfields_.SetShouldCheckGeometryForPaintInvalidation(false);
+  bitfields_.SetDescendantShouldCheckGeometryForPaintInvalidation(false);
   bitfields_.SetShouldInvalidateSelection(false);
 }
 
@@ -4126,8 +4117,8 @@ void LayoutObject::ClearPaintInvalidationFlags() {
 bool LayoutObject::PaintInvalidationStateIsDirty() const {
   return BackgroundNeedsFullPaintInvalidation() ||
          ShouldCheckForPaintInvalidation() || ShouldInvalidateSelection() ||
-         NeedsPaintOffsetAndVisualRectUpdate() ||
-         DescendantNeedsPaintOffsetAndVisualRectUpdate() ||
+         ShouldCheckGeometryForPaintInvalidation() ||
+         DescendantShouldCheckGeometryForPaintInvalidation() ||
          ShouldDoFullPaintInvalidation() ||
          SubtreeShouldDoFullPaintInvalidation() ||
          MayNeedPaintInvalidationAnimatedBackgroundImage() ||

@@ -31,8 +31,9 @@ BrowserSkiaGoldPixelDiff::BrowserSkiaGoldPixelDiff() = default;
 BrowserSkiaGoldPixelDiff::~BrowserSkiaGoldPixelDiff() = default;
 
 void BrowserSkiaGoldPixelDiff::Init(views::Widget* widget,
-                                    const std::string& screenshot_prefix) {
-  SkiaGoldPixelDiff::Init(screenshot_prefix);
+                                    const std::string& screenshot_prefix,
+                                    const std::string& corpus) {
+  SkiaGoldPixelDiff::Init(screenshot_prefix, corpus);
   DCHECK(widget);
   widget_ = widget;
 }

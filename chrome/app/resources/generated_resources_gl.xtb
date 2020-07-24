@@ -715,7 +715,7 @@
 <translation id="1850508293116537636">Xirar á &amp;dereita</translation>
 <translation id="1852141627593563189">Buscar software daniño</translation>
 <translation id="1852799913675865625">Produciuse un erro mentres se tentaba ler o ficheiro: <ph name="ERROR_TEXT" />.</translation>
-<translation id="1853692000353488670">Pestana nova de incógnito</translation>
+<translation id="1853692000353488670">Nova pestana de incógnito</translation>
 <translation id="1854180393107901205">Deter emisión</translation>
 <translation id="1856715684130786728">Engadir localización...</translation>
 <translation id="1858585891038687145">Confía neste certificado para identificar fabricantes de software</translation>
@@ -4441,7 +4441,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6545864417968258051">Busca de dispositivos Bluetooth</translation>
 <translation id="6545867563032584178">O micrófono está desactivado nas preferencias do sistema de Mac</translation>
 <translation id="6547354035488017500">Libera polo menos 512 MB de espazo para que o dispositivo non se bloquee. Para liberar espazo, elimina ficheiros do almacenamento do dispositivo.</translation>
-<translation id="6549639163247690448"><ph name="DOMAIN" /> require que te conectes agora á wifi e descargues unha actualización. A actualización descargarase automaticamente cando te conectes a Internet.</translation>
 <translation id="6550675742724504774">Opcións</translation>
 <translation id="6551508934388063976">Comando non dispoñible. Preme control-N para abrir unha ventá nova.</translation>
 <translation id="6551612971599078809">O sitio está utilizando un USB</translation>
@@ -5785,7 +5784,6 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8213577208796878755">Noutro dispositivo dispoñible.</translation>
 <translation id="8214489666383623925">Abrir ficheiro...</translation>
 <translation id="8214962590150211830">Eliminar esta persoa</translation>
-<translation id="8215295261562449873">Antes de actualizar Linux, facer unha copia de seguranza das miñas aplicacións e ficheiros no cartafol Descargas.</translation>
 <translation id="8217399928341212914">Continuar bloqueando as descargas automáticas de varios ficheiros</translation>
 <translation id="8218847192766059983">Engade idiomas ou reordena a lista. <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">Adoitas bloquear as notificacións. Para permitir que este sitio che envíe notificacións, fai clic aquí.</translation>

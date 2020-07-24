@@ -18,10 +18,10 @@ namespace content {
 class BrowserContext;
 }
 
-// Allows to wait until the WebContents of an extension's ExtensionHost sees its
-// first DidStopLoading().
 namespace extensions {
 
+// Allows to wait until the WebContents of an extension's ExtensionHost sees its
+// first DidStopLoading().
 class TestBackgroundPageFirstLoadObserver : public ProcessManagerObserver,
                                             public ExtensionHostObserver {
  public:
@@ -36,6 +36,7 @@ class TestBackgroundPageFirstLoadObserver : public ProcessManagerObserver,
   void OnBackgroundHostCreated(ExtensionHost* host) override;
 
   // ExtensionHostObserver:
+  void OnExtensionHostDestroyed(ExtensionHost* host) override;
   void OnExtensionHostDidStopFirstLoad(const ExtensionHost* host) override;
 
   void OnObtainedExtensionHost();

@@ -50,6 +50,9 @@ class TileFetcher {
   TileFetcher(const TileFetcher& other) = delete;
   TileFetcher& operator=(const TileFetcher& other) = delete;
 
+  // Sets the server URL.
+  virtual void SetServerUrl(const GURL& url) = 0;
+
  protected:
   TileFetcher();
 };

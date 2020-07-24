@@ -10,26 +10,31 @@
 const COMPROMISE_TIME = 158322960000;
 
 var availableTests = [
-  function changeSavedPassword() {
-    var numCalls = 0;
-    var callback = function(savedPasswordsList) {
-      numCalls++;
-      if (numCalls == 1) {
-        chrome.passwordsPrivate.changeSavedPassword(0, 'new_user');
-      } else if (numCalls == 2) {
-        chrome.test.assertEq('new_user', savedPasswordsList[0].username);
-        chrome.passwordsPrivate.changeSavedPassword(
-            0, 'another_user', 'new_pass');
-      } else if (numCalls == 3) {
-        chrome.test.assertEq('another_user', savedPasswordsList[0].username);
-        chrome.test.succeed();
-      } else {
-        chrome.test.fail();
-      }
-    };
+  function changeSavedPasswordSucceeds() {
+    chrome.passwordsPrivate.changeSavedPassword(0, 'new_pass', () => {
+      chrome.test.assertNoLastError();
+      chrome.test.succeed();
+    });
+  },
 
-    chrome.passwordsPrivate.onSavedPasswordsListChanged.addListener(callback);
-    chrome.passwordsPrivate.getSavedPasswordList(callback);
+  function changeSavedPasswordFails() {
+    chrome.passwordsPrivate.changeSavedPassword(-1, 'new_pass', () => {
+      chrome.test.assertLastError(
+          'Could not change the password. Either the password is empty, ' +
+          'the user is not authenticated or no matching password could be ' +
+          'found.');
+      chrome.test.succeed();
+    });
+  },
+
+  function changeSavedPasswordWithEmptyPasswordFails() {
+    chrome.passwordsPrivate.changeSavedPassword(0, '', () => {
+      chrome.test.assertLastError(
+          'Could not change the password. Either the password is empty, ' +
+          'the user is not authenticated or no matching password could be ' +
+          'found.');
+      chrome.test.succeed();
+    });
   },
 
   function removeAndUndoRemoveSavedPassword() {

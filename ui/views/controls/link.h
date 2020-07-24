@@ -35,7 +35,7 @@ class VIEWS_EXPORT Link : public Label {
   using ClickedCallback =
       base::RepeatingCallback<void(Link* source, int event_flags)>;
 
-  explicit Link(const base::string16& title,
+  explicit Link(const base::string16& title = base::string16(),
                 int text_context = style::CONTEXT_LABEL,
                 int text_style = style::STYLE_LINK);
   ~Link() override;

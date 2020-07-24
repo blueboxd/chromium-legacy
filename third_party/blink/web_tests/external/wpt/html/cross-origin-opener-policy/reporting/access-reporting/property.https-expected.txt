@@ -7,8 +7,8 @@ PASS cross-origin > w => w.frames
 FAIL cross-origin > w => w[0] assert_not_equals: Report not received got disallowed value "timeout"
 FAIL cross-origin > w => w[0] = "" assert_not_equals: Report not received got disallowed value "timeout"
 PASS cross-origin > w => w.length
-FAIL cross-origin > w => w.location assert_not_equals: Report not received got disallowed value "timeout"
-FAIL cross-origin > w => w.location = "#" assert_not_equals: Report not received got disallowed value "timeout"
+PASS cross-origin > w => w.location
+PASS cross-origin > w => w.location = "#"
 FAIL cross-origin > w => w["test"] assert_not_equals: Report not received got disallowed value "timeout"
 FAIL cross-origin > w => w["test"] = "" assert_not_equals: Report not received got disallowed value "timeout"
 PASS cross-origin > w => w.opener
@@ -26,8 +26,8 @@ PASS same-site > w => w.frames
 FAIL same-site > w => w[0] assert_not_equals: Report not received got disallowed value "timeout"
 FAIL same-site > w => w[0] = "" assert_not_equals: Report not received got disallowed value "timeout"
 PASS same-site > w => w.length
-FAIL same-site > w => w.location assert_not_equals: Report not received got disallowed value "timeout"
-FAIL same-site > w => w.location = "#" assert_not_equals: Report not received got disallowed value "timeout"
+PASS same-site > w => w.location
+PASS same-site > w => w.location = "#"
 FAIL same-site > w => w["test"] assert_not_equals: Report not received got disallowed value "timeout"
 FAIL same-site > w => w["test"] = "" assert_not_equals: Report not received got disallowed value "timeout"
 PASS same-site > w => w.opener

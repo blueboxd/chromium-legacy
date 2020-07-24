@@ -56,12 +56,21 @@ class SCTAuditingCacheTest : public testing::Test {
         network_service_.get(),
         network_context_remote_.BindNewPipeAndPassReceiver(),
         mojom::NetworkContextParams::New());
+
+    // A NetworkContextClient is needed for embedder notifications to work.
+    mojo::PendingRemote<network::mojom::NetworkContextClient>
+        network_context_client_remote;
+    network_context_client_ =
+        std::make_unique<network::TestNetworkContextClient>(
+            network_context_client_remote.InitWithNewPipeAndPassReceiver());
+    network_context_->SetClient(std::move(network_context_client_remote));
   }
 
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::IO};
   std::unique_ptr<NetworkService> network_service_;
   std::unique_ptr<NetworkContext> network_context_;
+  std::unique_ptr<network::mojom::NetworkContextClient> network_context_client_;
 
   scoped_refptr<net::X509Certificate> chain_;
 

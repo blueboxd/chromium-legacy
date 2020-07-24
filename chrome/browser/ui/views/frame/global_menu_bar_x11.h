@@ -26,8 +26,6 @@
 #include "components/sessions/core/tab_restore_service_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/gfx/x/x11.h"
-#include "ui/gfx/x/x11_types.h"
 
 namespace ui {
 class Accelerator;
@@ -38,10 +36,12 @@ class BrowserView;
 struct GlobalMenuBarCommand;
 class Profile;
 
-// Controls the Mac style menu bar on Unity.
+// Controls the Mac style menu bar on Linux desktop environments.
 //
-// Unity has an Apple-like menu bar at the top of the screen that changes
-// depending on the active window.
+// Unity had a MacOS-like menu bar at the top of the screen that changed
+// depending on the active window.  Unity has been discontinued but the menu
+// survived and is usually referred to as DBus AppMenu.  There is support for it
+// in KDE Plasma in form of a widget that can be inserted into a panel.
 class GlobalMenuBarX11 : public AvatarMenuObserver,
                          public BrowserListObserver,
                          public CommandObserver,
@@ -49,7 +49,7 @@ class GlobalMenuBarX11 : public AvatarMenuObserver,
                          public sessions::TabRestoreServiceObserver,
                          public ui::SimpleMenuModel::Delegate {
  public:
-  GlobalMenuBarX11(BrowserView* browser_view, aura::WindowTreeHost* host);
+  GlobalMenuBarX11(BrowserView* browser_view, uint32_t browser_frame_xid);
   ~GlobalMenuBarX11() override;
 
   void Initialize(DbusMenu::InitializedCallback callback);
@@ -57,7 +57,7 @@ class GlobalMenuBarX11 : public AvatarMenuObserver,
   // Creates the object path for DbusemenuServer which is attached to |window|.
   std::string GetPath() const;
 
-  x11::Window window() const { return window_; }
+  uint32_t browser_frame_xid() const { return browser_frame_xid_; }
 
  private:
   struct HistoryItem;
@@ -130,7 +130,12 @@ class GlobalMenuBarX11 : public AvatarMenuObserver,
   Browser* const browser_;
   Profile* profile_;
   BrowserView* browser_view_;
-  x11::Window window_;
+  // XID of the browser's frame window that owns this menu.  Deliberately stored
+  // as plain int (and not as x11::Window) because it is never used for any
+  // calls to the X server, but it is always used for building string paths and
+  // messages, for which it is converted to int (see GetPath() and calls to our
+  // browser_frame_xid() in GlobalMenuBarRegistrarX11).
+  const uint32_t browser_frame_xid_;
 
   // Has Initialize() been called?
   bool initialized_ = false;

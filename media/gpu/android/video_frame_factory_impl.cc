@@ -200,8 +200,21 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnFrameInfoReady(
   // nothing. But in this case call comes from RunAfterPendingVideoFrames and we
   // just want to ask for the same image spec as before to order callback after
   // all RequestImage, so skip updating image_spec_ in this case.
-  if (output_buffer_renderer)
+  if (output_buffer_renderer) {
     image_spec_.coded_size = frame_info.coded_size;
+  } else {
+    // It is possible that we come here from RunAfterPendingVideoFrames before
+    // CreateVideoFrame was called. In this case we don't have coded_size, but
+    // it also means that there was no `image_provider_->RequestImage` calls so
+    // we can just run callback instantly.
+    if (image_spec_.coded_size.IsEmpty()) {
+      std::move(image_ready_cb)
+          .Run(nullptr, FrameInfoHelper::FrameInfo(),
+               SharedImageVideoProvider::ImageRecord());
+      return;
+    }
+  }
+  DCHECK(!image_spec_.coded_size.IsEmpty());
 
   auto cb = base::BindOnce(std::move(image_ready_cb),
                            std::move(output_buffer_renderer), frame_info);

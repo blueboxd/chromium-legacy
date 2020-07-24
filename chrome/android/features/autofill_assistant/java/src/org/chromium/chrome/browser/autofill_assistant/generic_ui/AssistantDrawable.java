@@ -187,6 +187,10 @@ public abstract class AssistantDrawable {
                     return R.drawable.ic_directions_car_black_24dp;
                 case AssistantDrawableIcon.GROCERY:
                     return R.drawable.ic_grocery_black_24dp;
+                case AssistantDrawableIcon.VISIBILITY_ON:
+                    return R.drawable.ic_visibility_black;
+                case AssistantDrawableIcon.VISIBILITY_OFF:
+                    return R.drawable.ic_visibility_off_black;
             }
 
             return INVALID_ICON_ID;

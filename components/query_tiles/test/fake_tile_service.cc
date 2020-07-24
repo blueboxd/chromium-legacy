@@ -101,6 +101,8 @@ void FakeTileService::CancelTask() {}
 
 void FakeTileService::PurgeDb() {}
 
+void FakeTileService::SetServerUrl(const std::string& url) {}
+
 Logger* FakeTileService::GetLogger() {
   return nullptr;
 }

@@ -941,7 +941,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           std::vector<std::string>() /* force_enabled_origin_trials */,
           false /* origin_isolation_restricted */,
           std::vector<
-              network::mojom::WebClientHintsType>() /* enabled_client_hints */);
+              network::mojom::WebClientHintsType>() /* enabled_client_hints */,
+          false /* is_cross_browsing_instance */);
 
   // CreateRendererInitiated() should only be triggered when the navigation is
   // initiated by a frame in the same process.
@@ -1033,6 +1034,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
           std::vector<
               network::mojom::WebClientHintsType>() /* enabled_client_hints
                                                      */
+          ,
+          false /* is_cross_browsing_instance */
       );
   mojom::BeginNavigationParamsPtr begin_params =
       mojom::BeginNavigationParams::New();
@@ -3222,6 +3225,12 @@ void NavigationRequest::CommitNavigation() {
       // |web_bundle_handle_| not to pass it to |render_frame_host_|.
       web_bundle_handle_.reset();
     }
+  }
+
+  if (!IsSameDocument() && !render_frame_host_->GetParent()) {
+    commit_params_->is_cross_browsing_instance =
+        !render_frame_host_->GetSiteInstance()->IsRelatedSiteInstance(
+            GetStartingSiteInstance());
   }
 
   auto common_params = common_params_->Clone();

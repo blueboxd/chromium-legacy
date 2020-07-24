@@ -260,4 +260,8 @@ void TriggerHapticFeedbackForNotification(UINotificationFeedbackType type);
 // more than 99 tabs open.
 NSString* TextForTabCount(long count);
 
+// Adds |item| to the global Edit Menu configuration (UIMenuController). No-op
+// if a UIMenuItem with the same selector as |item| has already been registered.
+void RegisterEditMenuItem(UIMenuItem* item);
+
 #endif  // IOS_CHROME_BROWSER_UI_UTIL_UIKIT_UI_UTIL_H_

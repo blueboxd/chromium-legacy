@@ -22,9 +22,6 @@
 
 namespace {
 
-// Extension ID of the test certificate provider extension.
-constexpr char kTestCertProviderExtensionId[] =
-    "ecmhnokcdiianioonpgakiooenfnonid";
 // Path to the update manifest XML file of the test certificate provider
 // extension.
 constexpr char kTestCertProviderExtensionUpdateManifestPath[] =
@@ -36,11 +33,6 @@ Profile* GetProfile() {
 
 }  // namespace
 
-// static
-std::string TestCertificateProviderExtensionLoginScreenMixin::GetExtensionId() {
-  return kTestCertProviderExtensionId;
-}
-
 TestCertificateProviderExtensionLoginScreenMixin::
     TestCertificateProviderExtensionLoginScreenMixin(
         InProcessBrowserTestMixinHost* host,
@@ -49,7 +41,7 @@ TestCertificateProviderExtensionLoginScreenMixin::
     : InProcessBrowserTestMixin(host),
       device_state_mixin_(device_state_mixin),
       load_extension_immediately_(load_extension_immediately),
-      feature_allowlist_(kTestCertProviderExtensionId) {
+      feature_allowlist_(TestCertificateProviderExtension::extension_id()) {
   base::FilePath test_data_dir;
   base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
   embedded_test_server_.ServeFilesFromDirectory(test_data_dir);
@@ -65,8 +57,7 @@ TestCertificateProviderExtensionLoginScreenMixin::
 
 void TestCertificateProviderExtensionLoginScreenMixin::SetUpOnMainThread() {
   test_certificate_provider_extension_ =
-      std::make_unique<TestCertificateProviderExtension>(GetProfile(),
-                                                         GetExtensionId());
+      std::make_unique<TestCertificateProviderExtension>(GetProfile());
   ASSERT_TRUE(embedded_test_server_.Start());
   if (load_extension_immediately_) {
     AddExtensionForForceInstallation();
@@ -83,7 +74,10 @@ void TestCertificateProviderExtensionLoginScreenMixin::
   const GURL update_manifest_url = embedded_test_server_.GetURL(
       kTestCertProviderExtensionUpdateManifestPath);
   const std::string policy_item_value = base::ReplaceStringPlaceholders(
-      "$1;$2", {GetExtensionId(), update_manifest_url.spec()}, nullptr);
+      "$1;$2",
+      {TestCertificateProviderExtension::extension_id(),
+       update_manifest_url.spec()},
+      nullptr);
   device_state_mixin_->RequestDevicePolicyUpdate()
       ->policy_payload()
       ->mutable_device_login_screen_extensions()
@@ -93,6 +87,6 @@ void TestCertificateProviderExtensionLoginScreenMixin::
 void TestCertificateProviderExtensionLoginScreenMixin::
     WaitUntilExtensionLoaded() {
   extensions::TestBackgroundPageFirstLoadObserver bg_page_first_load_observer(
-      GetProfile(), GetExtensionId());
+      GetProfile(), TestCertificateProviderExtension::extension_id());
   bg_page_first_load_observer.Wait();
 }

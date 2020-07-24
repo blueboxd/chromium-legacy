@@ -352,8 +352,8 @@ TEST_F(PasswordsPrivateDelegateImplTest, ChangeSavedPassword) {
 
   int sample_form_id = delegate.GetPasswordIdGeneratorForTesting().GenerateId(
       password_manager::CreateSortKey(sample_form));
-  delegate.ChangeSavedPassword(sample_form_id, base::ASCIIToUTF16("new_user"),
-                               base::ASCIIToUTF16("new_pass"));
+  EXPECT_TRUE(delegate.ChangeSavedPassword(sample_form_id,
+                                           base::ASCIIToUTF16("new_pass")));
 
   // Spin the loop to allow PasswordStore tasks posted when changing the
   // password to be completed.
@@ -365,8 +365,6 @@ TEST_F(PasswordsPrivateDelegateImplTest, ChangeSavedPassword) {
       [&](const PasswordsPrivateDelegate::UiEntries& password_list) {
         got_passwords = true;
         ASSERT_EQ(1u, password_list.size());
-        EXPECT_EQ(base::ASCIIToUTF16("new_user"),
-                  base::UTF8ToUTF16(password_list[0].username));
       }));
   EXPECT_TRUE(got_passwords);
 }

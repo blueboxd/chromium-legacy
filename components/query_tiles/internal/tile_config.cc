@@ -81,8 +81,12 @@ const GURL BuildGetQueryTileURL(const GURL& base_url, const char* path) {
 
 // static
 GURL TileConfig::GetQueryTilesServerUrl() {
-  std::string base_url = base::GetFieldTrialParamValueByFeature(
-      features::kQueryTiles, kBaseURLKey);
+  return GetQueryTilesServerUrl(base::GetFieldTrialParamValueByFeature(
+      features::kQueryTiles, kBaseURLKey));
+}
+
+// static
+GURL TileConfig::GetQueryTilesServerUrl(const std::string& base_url) {
   GURL server_url = base_url.empty() ? GURL(kDefaultBaseURL) : GURL(base_url);
   return BuildGetQueryTileURL(server_url, kDefaultGetQueryTilePath);
 }

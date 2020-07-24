@@ -82,6 +82,11 @@ enum CommandBufferNamespace : int8_t {
   NUM_COMMAND_BUFFER_NAMESPACES
 };
 
+enum class TransferBufferAllocationOption : int8_t {
+  kLoseContextOnOOM,
+  kReturnNullOnOOM,
+};
+
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_CONSTANTS_H_

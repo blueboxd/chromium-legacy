@@ -117,6 +117,7 @@ class FocusCycler;
 class FrameThrottlingController;
 class HighContrastController;
 class HighlighterController;
+class HoldingSpaceController;
 class HomeScreenController;
 class ImeControllerImpl;
 class ImmersiveContext;
@@ -670,6 +671,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<DisplaySpeakerController> display_speaker_controller_;
   std::unique_ptr<DragDropController> drag_drop_controller_;
   std::unique_ptr<FocusCycler> focus_cycler_;
+  std::unique_ptr<HoldingSpaceController> holding_space_controller_;
   std::unique_ptr<HomeScreenController> home_screen_controller_;
   std::unique_ptr<ImeControllerImpl> ime_controller_;
   std::unique_ptr<ImmersiveContext> immersive_context_;

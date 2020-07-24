@@ -688,6 +688,9 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                        ReauthCallsUpdateCredentials) {
   ASSERT_EQ(0ul, identity_manager()->GetAccountsWithRefreshTokens().size());
 
+  std::string email = "foo@gmail.com";
+  signin::SetPrimaryAccount(identity_manager(), email);
+
   InlineLoginHandlerImpl handler;
   // See Source enum in components/signin/public/base/signin_metrics.h for
   // possible values of access_point=, reason=.
@@ -697,8 +700,8 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   // do need the RunUntilIdle() at the end.
   InlineSigninHelper* helper = new InlineSigninHelper(
       handler.GetWeakPtr(), test_shared_loader_factory(), profile(),
-      Profile::CreateStatus::CREATE_STATUS_INITIALIZED, url, "foo@gmail.com",
-      "gaiaid-12345", "password", "auth_code",
+      Profile::CreateStatus::CREATE_STATUS_INITIALIZED, url, email,
+      signin::GetTestGaiaIdForEmail(email), "password", "auth_code",
       /*signin_scoped_device_id=*/std::string(),
       /*confirm_untrusted_signin=*/false,
       /*is_force_sign_in_with_usermanager=*/false);

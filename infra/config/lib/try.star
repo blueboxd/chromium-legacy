@@ -23,6 +23,9 @@ load('./builders.star', 'builders')
 load('./args.star', 'args')
 
 
+INFRA_CONFIG_LOCATION_REGEXP = 'infra/config/.+'
+
+
 defaults = args.defaults(
     extends=builders.defaults,
     add_to_list_view = False,
@@ -165,17 +168,23 @@ def tryjob(
     experiment_percentage=None,
     location_regexp=None,
     location_regexp_exclude=None,
-    cancel_stale=None):
+    cancel_stale=None,
+    run_on_infra_config_changes=False):
   """Specifies the details of a tryjob verifier.
 
   See https://chromium.googlesource.com/infra/luci/luci-go/+/refs/heads/master/lucicfg/doc/README.md#luci.cq_tryjob_verifier
-  for details on the arguments. The cq_group parameter supports a module-level
-  default that defaults to None.
+  for details on the most of the arguments.
+
+  Arguments:
+    run_on_infra_changes - A bool indicating whether the try job should be run
+      for changes against //infra/config.
 
   Returns:
     A struct that can be passed to the `tryjob` argument of `try_.builder` to
     enable the builder for CQ.
   """
+  if not run_on_infra_config_changes:
+    location_regexp_exclude = [INFRA_CONFIG_LOCATION_REGEXP] + (location_regexp_exclude or [])
   return struct(
       disable_reuse = disable_reuse,
       experiment_percentage = experiment_percentage,

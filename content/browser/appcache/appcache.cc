@@ -54,7 +54,7 @@ std::string AppCache::GetManifestScope(const GURL& manifest_url,
 AppCache::AppCache(AppCacheStorage* storage, int64_t cache_id)
     : cache_id_(cache_id),
       owning_group_(nullptr),
-      online_whitelist_all_(false),
+      online_safelist_all_(false),
       is_complete_(false),
       cache_size_(0),
       padding_size_(0),
@@ -153,8 +153,8 @@ void AppCache::InitializeWithManifest(AppCacheManifest* manifest) {
   manifest_scope_ = manifest->scope;
   intercept_namespaces_.swap(manifest->intercept_namespaces);
   fallback_namespaces_.swap(manifest->fallback_namespaces);
-  online_whitelist_namespaces_.swap(manifest->online_whitelist_namespaces);
-  online_whitelist_all_ = manifest->online_whitelist_all;
+  online_safelist_namespaces_.swap(manifest->online_safelist_namespaces);
+  online_safelist_all_ = manifest->online_safelist_all;
   token_expires_ = manifest->token_expires;
 
   // Sort the namespaces by url string length, longest to shortest,
@@ -170,11 +170,11 @@ void AppCache::InitializeWithDatabaseRecords(
     const std::vector<AppCacheDatabase::EntryRecord>& entries,
     const std::vector<AppCacheDatabase::NamespaceRecord>& intercepts,
     const std::vector<AppCacheDatabase::NamespaceRecord>& fallbacks,
-    const std::vector<AppCacheDatabase::OnlineWhiteListRecord>& whitelists) {
+    const std::vector<AppCacheDatabase::OnlineSafeListRecord>& safelists) {
   DCHECK_EQ(cache_id_, cache_record.cache_id);
   manifest_parser_version_ = cache_record.manifest_parser_version;
   manifest_scope_ = cache_record.manifest_scope;
-  online_whitelist_all_ = cache_record.online_wildcard;
+  online_safelist_all_ = cache_record.online_wildcard;
   update_time_ = cache_record.update_time;
   token_expires_ = cache_record.token_expires;
 
@@ -198,9 +198,9 @@ void AppCache::InitializeWithDatabaseRecords(
   std::sort(fallback_namespaces_.begin(), fallback_namespaces_.end(),
             SortNamespacesByLength);
 
-  for (const auto& record : whitelists) {
-    online_whitelist_namespaces_.emplace_back(APPCACHE_NETWORK_NAMESPACE,
-                                              record.namespace_url, GURL());
+  for (const auto& record : safelists) {
+    online_safelist_namespaces_.emplace_back(APPCACHE_NETWORK_NAMESPACE,
+                                             record.namespace_url, GURL());
   }
 }
 
@@ -210,13 +210,13 @@ void AppCache::ToDatabaseRecords(
     std::vector<AppCacheDatabase::EntryRecord>* entries,
     std::vector<AppCacheDatabase::NamespaceRecord>* intercepts,
     std::vector<AppCacheDatabase::NamespaceRecord>* fallbacks,
-    std::vector<AppCacheDatabase::OnlineWhiteListRecord>* whitelists) {
-  DCHECK(group && cache_record && entries && fallbacks && whitelists);
-  DCHECK(entries->empty() && fallbacks->empty() && whitelists->empty());
+    std::vector<AppCacheDatabase::OnlineSafeListRecord>* safelists) {
+  DCHECK(group && cache_record && entries && fallbacks && safelists);
+  DCHECK(entries->empty() && fallbacks->empty() && safelists->empty());
 
   cache_record->cache_id = cache_id_;
   cache_record->group_id = group->group_id();
-  cache_record->online_wildcard = online_whitelist_all_;
+  cache_record->online_wildcard = online_safelist_all_;
   cache_record->update_time = update_time_;
   cache_record->cache_size = cache_size_;
   cache_record->padding_size = padding_size_;
@@ -254,9 +254,9 @@ void AppCache::ToDatabaseRecords(
   }
 
   for (const AppCacheNamespace& online_namespace :
-       online_whitelist_namespaces_) {
-    whitelists->push_back(AppCacheDatabase::OnlineWhiteListRecord());
-    AppCacheDatabase::OnlineWhiteListRecord& record = whitelists->back();
+       online_safelist_namespaces_) {
+    safelists->push_back(AppCacheDatabase::OnlineSafeListRecord());
+    AppCacheDatabase::OnlineSafeListRecord& record = safelists->back();
     record.cache_id = cache_id_;
     record.namespace_url = online_namespace.namespace_url;
   }
@@ -308,7 +308,7 @@ bool AppCache::FindResponseForRequest(const GURL& url,
     return true;
   }
 
-  *found_network_namespace = online_whitelist_all_;
+  *found_network_namespace = online_safelist_all_;
   return *found_network_namespace;
 }
 

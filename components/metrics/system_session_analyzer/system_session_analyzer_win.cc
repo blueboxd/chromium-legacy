@@ -119,6 +119,11 @@ SystemSessionAnalyzer::Status SystemSessionAnalyzer::IsSessionUnclean(
     // code so that a truncated system log doesn't cause failures.
     if (GetExtendedFailureStatus() == ExtendedStatus::EVENT_COUNT_MISMATCH)
       return INSUFFICIENT_DATA;
+    // Similarly, zero events in the error log is a special-case with its own
+    // error code so that a severely truncated system log doesn't cause
+    // failures.
+    if (GetExtendedFailureStatus() == ExtendedStatus::RETRIEVE_EVENTS_FAILURE)
+      return INSUFFICIENT_DATA;
     return INITIALIZE_FAILED;
   }
 

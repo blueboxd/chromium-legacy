@@ -114,9 +114,10 @@ are treated in different ways during painting:
     concept.
 
 *   Visual rect: the bounding box of all pixels that will be painted by a
-    [display item client](../../platform/graphics/paint/README.md#display-items).
+    for a [display item](../../platform/graphics/paint/README.md#display-items)
     It's in the space of the containing transform property node (see [Building
-    paint property trees](#building-paint-property-trees)).
+    paint property trees](#building-paint-property-trees)). It's calculated
+    during paint for each display item.
 
 *   Isolation nodes/boundary: In certain situations, it is possible to put in
     place a barrier that isolates a subtree from being affected by its

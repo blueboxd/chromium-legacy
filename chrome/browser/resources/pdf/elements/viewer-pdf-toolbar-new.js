@@ -98,6 +98,9 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
 
     /** @private {boolean} */
     this.loading_ = true;
+
+    /** @private {?number} */
+    this.zoomTimeout_ = null;
   }
 
   /**
@@ -128,7 +131,7 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
   /** @private */
   viewportZoomChanged_() {
     const zoom = Math.round(this.viewportZoom * 100);
-    this.shadowRoot.querySelector('#zoom-controls input').value = `${zoom}%`;
+    this.getZoomInput_().value = `${zoom}%`;
   }
 
   // <if expr="chromeos">
@@ -182,6 +185,52 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
   /** @private */
   onFitToButtonClick_() {
     this.fitToggle();
+  }
+
+  /**
+   * @return {!HTMLInputElement}
+   * @private
+   */
+  getZoomInput_() {
+    return /** @type {!HTMLInputElement} */ (
+        this.shadowRoot.querySelector('#zoom-controls input'));
+  }
+
+  /** @private */
+  onZoomInput_() {
+    if (this.zoomTimeout_) {
+      clearTimeout(this.zoomTimeout_);
+    }
+    this.zoomTimeout_ = setTimeout(() => this.sendZoomChanged_(), 250);
+  }
+
+  /**
+   * @return {boolean} Whether the zoom-changed event was sent.
+   * @private
+   */
+  sendZoomChanged_() {
+    this.zoomTimeout_ = null;
+    const value = Number.parseInt(this.getZoomInput_().value, 10);
+    if (Number.isNaN(value)) {
+      return false;
+    }
+    this.dispatchEvent(new CustomEvent('zoom-changed', {detail: value}));
+    return true;
+  }
+
+  /** @private */
+  onZoomInputBlur_() {
+    if (this.zoomTimeout_) {
+      clearTimeout(this.zoomTimeout_);
+    }
+
+    if (this.sendZoomChanged_()) {
+      return;
+    }
+
+    const zoom = Math.round(this.viewportZoom * 100);
+    const zoomString = `${zoom}%`;
+    this.getZoomInput_().value = zoomString;
   }
 
   /** @private */

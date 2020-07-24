@@ -4295,7 +4295,7 @@ Unknown properties are collapsed to zero. -->
   <int value="21" label="User navigation to a different domain in BROWSE mode"/>
   <int value="22" label="User clicked back button"/>
   <int value="23" label="User clicked back button during onboarding"/>
-  <int value="24" label="User navigatioin in RUNNING state"/>
+  <int value="24" label="User navigation in RUNNING state"/>
   <int value="25" label="The UI was closed unexpectedly"/>
 </enum>
 
@@ -28530,6 +28530,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3350" label="ResourceTiming"/>
   <int value="3351" label="V8PointerEvent_AzimuthAngle_AttributeGetter"/>
   <int value="3352" label="V8PointerEvent_AltitudeAngle_AttributeGetter"/>
+  <int value="3353"
+      label="CrossBrowsingContextGroupMainFrameNulledNonEmptyNameAccessed"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -31077,7 +31079,8 @@ Called by update_feature_policy_enum.py.-->
 <enum name="GamepadSource">
   <summary>
     Gamepad data fetcher, defined as GamepadSource in
-    device/gamepad/gamepad_pad_state_provider.h.
+    device/gamepad/gamepad_pad_state_provider.h. Note that the labeling is off
+    for data recorded prior to 73.0.3683.10. See https://crbug.com/984786
   </summary>
   <int value="0" label="GAMEPAD_SOURCE_NONE"/>
   <int value="1" label="GAMEPAD_SOURCE_ANDROID"/>
@@ -31087,13 +31090,15 @@ Called by update_feature_policy_enum.py.-->
   <int value="5" label="GAMEPAD_SOURCE_MAC_GC"/>
   <int value="6" label="GAMEPAD_SOURCE_MAC_HID"/>
   <int value="7" label="GAMEPAD_SOURCE_MAC_XBOX"/>
-  <int value="8" label="GAMEPAD_SOURCE_OCULUS"/>
-  <int value="9" label="GAMEPAD_SOURCE_OPENVR"/>
-  <int value="10" label="GAMEPAD_SOURCE_TEST"/>
-  <int value="11" label="GAMEPAD_SOURCE_WIN_XINPUT"/>
-  <int value="12" label="GAMEPAD_SOURCE_WIN_RAW"/>
-  <int value="13" label="GAMEPAD_SOURCE_WIN_MR"/>
-  <int value="14" label="GAMEPAD_SOURCE_OPENXR"/>
+  <int value="8" label="GAMEPAD_SOURCE_NINTENDO"/>
+  <int value="9" label="GAMEPAD_SOURCE_OCULUS"/>
+  <int value="10" label="GAMEPAD_SOURCE_OPENVR"/>
+  <int value="11" label="GAMEPAD_SOURCE_TEST"/>
+  <int value="12" label="GAMEPAD_SOURCE_WIN_XINPUT"/>
+  <int value="13" label="GAMEPAD_SOURCE_WIN_RAW"/>
+  <int value="14" label="GAMEPAD_SOURCE_WIN_MR"/>
+  <int value="15" label="GAMEPAD_SOURCE_OPENXR"/>
+  <int value="16" label="GAMEPAD_SOURCE_WIN_WGI"/>
 </enum>
 
 <enum name="GamepadVendorProduct">
@@ -37047,6 +37052,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="Authorized when Chrome is in use"/>
 </enum>
 
+<enum name="IOSMenuAction">
+  <int value="0" label="Copy"/>
+</enum>
+
 <enum name="IOSNTPImpression">
   <int value="0" label="Local suggestions"/>
   <int value="1" label="Remote suggestions"/>
@@ -40069,6 +40078,7 @@ from previous Chrome versions.
   <int value="-1736075054" label="EnableFullscreenAppList:enabled"/>
   <int value="-1735643253" label="enable-display-list-2d-canvas"/>
   <int value="-1734885284" label="enable-navigation-predictor"/>
+  <int value="-1734666001" label="SafeBrowsingEnhancedProtection:enabled"/>
   <int value="-1734254845" label="ash-enable-night-light"/>
   <int value="-1732888954" label="UseButtonTranslateBubbleUI:enabled"/>
   <int value="-1732561795" label="ConsistentOmniboxGeolocation:enabled"/>
@@ -40283,6 +40293,7 @@ from previous Chrome versions.
   <int value="-1497338981" label="disable-accelerated-overflow-scroll"/>
   <int value="-1492934655" label="TabSwitcherOnReturn:enabled"/>
   <int value="-1492589689" label="ContentSuggestionsCategories:enabled"/>
+  <int value="-1492211482" label="EnableWindowsGamingInputDataFetcher:enabled"/>
   <int value="-1491417046" label="enable-fullscreen-toolbar-reveal"/>
   <int value="-1491304576" label="ProgressBarThrottle:disabled"/>
   <int value="-1490298774" label="enable-captive-portal-bypass-proxy-option"/>
@@ -41481,6 +41492,7 @@ from previous Chrome versions.
   <int value="-234231190" label="SharingDeviceRegistration:enabled"/>
   <int value="-231967261" label="AutofillUpdatedCardUnmaskPromptUi:disabled"/>
   <int value="-231922000" label="enable-renderer-mojo-channel"/>
+  <int value="-231642350" label="EnableWindowsGamingInputDataFetcher:disabled"/>
   <int value="-231426350" label="AutofillEnableToolbarStatusChip:enabled"/>
   <int value="-230824955" label="NTPMostLikelyFaviconsFromServer:enabled"/>
   <int value="-225505731" label="CCTModule:enabled"/>
@@ -41611,6 +41623,7 @@ from previous Chrome versions.
   <int value="-86243376" label="LayoutNG:enabled"/>
   <int value="-85706353" label="VirtualDesksGestures:enabled"/>
   <int value="-82530769" label="WebXRPlaneDetection:enabled"/>
+  <int value="-82266557" label="SafeBrowsingSecuritySectionUIAndroid:disabled"/>
   <int value="-80501013" label="AutofillOffNoServerData:enabled"/>
   <int value="-80353187" label="disable-display-color-calibration"/>
   <int value="-79327236" label="ModeSpecificPowerButton:enabled"/>
@@ -42025,6 +42038,7 @@ from previous Chrome versions.
   <int value="373177941" label="DockedMagnifier:enabled"/>
   <int value="373193557" label="LongPressBackNewDesign:enabled"/>
   <int value="373275338" label="AndroidPartnerCustomizationPhenotype:disabled"/>
+  <int value="373578344" label="SafeBrowsingSecuritySectionUIAndroid:enabled"/>
   <int value="375485858" label="EnableZeroStateMixedTypesRanker:disabled"/>
   <int value="375785554" label="UserActivationV2:disabled"/>
   <int value="375934458" label="PortalsCrossOrigin:enabled"/>
@@ -42881,6 +42895,7 @@ from previous Chrome versions.
   <int value="1302421166" label="NativeNotifications:disabled"/>
   <int value="1303260487" label="UsageStats:enabled"/>
   <int value="1304636193" label="ArcEnableUnifiedAudioFocus:enabled"/>
+  <int value="1305792241" label="SafeBrowsingEnhancedProtection:disabled"/>
   <int value="1307003774" label="AutofillEnableCompanyName:disabled"/>
   <int value="1308537004" label="force-pnacl-subzero"/>
   <int value="1311860720" label="ChromeHomeNtpRedesign:disabled"/>
@@ -73969,6 +73984,11 @@ Called by update_scheduler_enums.py.-->
   <int value="0" label="Same-origin redirect"/>
   <int value="1" label="Same-domain (but cross-origin) redirect"/>
   <int value="2" label="Cross-domain redirect"/>
+</enum>
+
+<enum name="WebViewOpenWebVisibility">
+  <int value="0" label="OpenWebContentVisible"/>
+  <int value="1" label="OpenWebContentNotVisible"/>
 </enum>
 
 <enum name="WebViewUrlScheme">

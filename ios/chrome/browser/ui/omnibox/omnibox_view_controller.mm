@@ -121,17 +121,15 @@ const CGFloat kClearButtonSize = 28.0f;
   [super viewDidLoad];
 
   // Add Paste and Go option to the editing menu
-  UIMenuController* menu = [UIMenuController sharedMenuController];
-  UIMenuItem* searchCopiedImage = [[UIMenuItem alloc]
+  RegisterEditMenuItem([[UIMenuItem alloc]
       initWithTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_IMAGE)
-             action:@selector(searchCopiedImage:)];
-  UIMenuItem* visitCopiedLink = [[UIMenuItem alloc]
+             action:@selector(searchCopiedImage:)]);
+  RegisterEditMenuItem([[UIMenuItem alloc]
       initWithTitle:l10n_util::GetNSString(IDS_IOS_VISIT_COPIED_LINK)
-             action:@selector(visitCopiedLink:)];
-  UIMenuItem* searchCopiedText = [[UIMenuItem alloc]
+             action:@selector(visitCopiedLink:)]);
+  RegisterEditMenuItem([[UIMenuItem alloc]
       initWithTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_TEXT)
-             action:@selector(searchCopiedText:)];
-  [menu setMenuItems:@[ searchCopiedImage, visitCopiedLink, searchCopiedText ]];
+             action:@selector(searchCopiedText:)]);
 
   self.textField.placeholderTextColor = [self placeholderAndClearButtonColor];
   self.textField.placeholder = l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);

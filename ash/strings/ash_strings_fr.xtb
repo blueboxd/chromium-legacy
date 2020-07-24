@@ -111,7 +111,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="2222338659135520253">Connexion requise</translation>
 <translation id="225680501294068881">Recherche d'appareils…</translation>
 <translation id="2268130516524549846">Bluetooth désactivé</translation>
-<translation id="2268813581635650749">Déconnecter tous les utilisateurs</translation>
+<translation id="2268813581635650749">Déconnecter les util.</translation>
 <translation id="2277103315734023688">Avance rapide</translation>
 <translation id="2292698582925480719">Échelle d'affichage</translation>
 <translation id="229397294990920565">Désactivation des données mobiles…</translation>
@@ -153,7 +153,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="2704781753052663061">Rejoindre d'autres réseaux Wi-Fi</translation>
 <translation id="2705001408393684014"><ph name="STATE_TEXT" /> Déplacez le curseur vers la droite pour activer le son.</translation>
 <translation id="2706462751667573066">Haut</translation>
-<translation id="2718395828230677721">Éclairage nocturne</translation>
+<translation id="2718395828230677721">Écl. nocturne</translation>
 <translation id="2727977024730340865">L'appareil est branché à un chargeur de faible puissance. Il se peut que la charge ne soit pas fiable.</translation>
 <translation id="2792498699870441125">Alt + Recherche</translation>
 <translation id="2819276065543622893">Vous allez être déconnecté maintenant.</translation>
@@ -276,7 +276,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="4028481283645788203">Veuillez saisir le mot de passe pour renforcer la sécurité</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Vous partagez votre écran</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Notifications désactivées pour une application}one{Notifications désactivées pour # application}other{Notifications désactivées pour # applications}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Notif. désactivées pour une appli}one{Notif. désactivées pour # appli}other{Notif. désactivées pour # applis}}</translation>
 <translation id="4072264167173457037">Signal de moyenne intensité</translation>
 <translation id="4112140312785995938">Retour rapide</translation>
 <translation id="4129129681837227511">Pour afficher les notifications sur l'écran de verrouillage, déverrouillez votre appareil afin de modifier ce paramètre</translation>
@@ -400,7 +400,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="5691772641933328258">Empreinte digitale non reconnue</translation>
 <translation id="5710450975648804523">Mode "Ne pas déranger" activé</translation>
 <translation id="573413375004481890">Cet appareil ne peut pas prendre en charge tous vos écrans. L'un d'eux a été déconnecté</translation>
-<translation id="574392208103952083">Moyenne</translation>
+<translation id="574392208103952083">Moyen</translation>
 <translation id="5744083938413354016">Déplacement tactile</translation>
 <translation id="5745612484876805746">La fonctionnalité Éclairage nocturne est activée automatiquement au coucher du soleil</translation>
 <translation id="5750765938512549687">Bluetooth désactivé</translation>
@@ -421,7 +421,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="5958529069007801266">Utilis. supervisé</translation>
 <translation id="5977415296283489383">Casque</translation>
 <translation id="5978382165065462689">Partager le contrôle de votre écran via l'assistance à distance</translation>
-<translation id="5980301590375426705">Fermer la session Invité</translation>
+<translation id="5980301590375426705">Fermer sess. Invité</translation>
 <translation id="598882571027504733">Pour télécharger la mise à jour, redémarrez votre Chromebook avec le clavier branché.</translation>
 <translation id="5992218262414051481">Le mode Contraste élevé est activé. Appuyez de nouveau sur Ctrl+Recherche+H pour le désactiver.</translation>
 <translation id="6018164090099858612">Sortie du mode Miroir…</translation>
@@ -521,7 +521,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="7088960765736518739">Switch Access</translation>
 <translation id="7098389117866926363">Appareil USB de type C (port situé sur l'arrière de l'appareil, à gauche)</translation>
 <translation id="7131634465328662194">Vous allez être déconnecté automatiquement.</translation>
-<translation id="7143207342074048698">Connexion en cours</translation>
+<translation id="7143207342074048698">Connexion</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Rétablissement de la résolution précédente dans <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">Le menu a été déplacé dans l'angle supérieur gauche de l'écran.</translation>
@@ -598,7 +598,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="8054466585765276473">Calcul de l'autonomie de la batterie en cours…</translation>
 <translation id="8061464966246066292">Contraste élevé</translation>
 <translation id="8098591350844501178">Arrêter de diffuser l'écran sur "<ph name="RECEIVER_NAME" />"</translation>
-<translation id="8113423164597455979">Activées, toutes applications</translation>
+<translation id="8113423164597455979">Activées, toutes applis</translation>
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8132793192354020517">Connecté à <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialisation…</translation>
@@ -639,7 +639,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> a <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Appuyez sur Alt+Rechercher ou Maj pour annuler.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> n'est pas compatible avec la résolution <ph name="SPECIFIED_RESOLUTION" />. La résolution <ph name="FALLBACK_RESOLUTION" /> sera utilisée à la place. Cliquez sur "Confirmer" pour conserver les modifications. Les paramètres précédents seront restaurés dans <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="8513108775083588393">Rotation automatique</translation>
+<translation id="8513108775083588393">Rotation auto</translation>
 <translation id="8517041960877371778">Il est possible que votre appareil <ph name="DEVICE_TYPE" /> ne se recharge pas lorsqu'il est allumé.</translation>
 <translation id="8563862697512465947">Paramètres de notification</translation>
 <translation id="857201607579416096">Le menu a été déplacé dans l'angle inférieur droit de l'écran.</translation>

@@ -2736,15 +2736,6 @@ if (enable_java_templates) {
 
     _java_target = "${_template_name}__java"
 
-    # Included special group to bypass looking for __java__build_config file
-    # for base module. Build config for base_module does not include the __java
-    # (eg. monochrome_public_bundle__base_bundle_module__build_config)
-    # and thus, this workaround skips looking for one.
-    if (defined(invoker.base_module_target)) {
-      group("${_template_name}__group") {
-        deps = [ "${invoker.base_module_target}__java" ]
-      }
-    }
     java_library_impl(_java_target) {
       forward_variables_from(invoker,
                              [
@@ -2781,10 +2772,6 @@ if (enable_java_templates) {
         type = "android_app_bundle_module"
         res_size_info_path = _res_size_info_path
         is_base_module = _is_base_module
-
-        if (!is_base_module && defined(invoker.base_module_target)) {
-          deps += [ ":${_template_name}__group" ]
-        }
       } else {
         type = "android_apk"
       }
@@ -3315,10 +3302,13 @@ if (enable_java_templates) {
             _static_library_apk_path,
           ]
         }
+        if (!defined(data)) {
+          data = []
+        }
         if (_proguard_enabled && !_incremental_apk) {
           # Required by logcat command.
           data_deps += [ "//build/android/stacktrace:java_deobfuscate" ]
-          data = [ "$_final_apk_path.mapping" ]
+          data += [ "$_final_apk_path.mapping" ]
           args += [
             "--proguard-mapping-path",
             rebase_path("$_final_apk_path.mapping", root_build_dir),

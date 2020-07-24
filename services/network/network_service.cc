@@ -751,6 +751,12 @@ void NetworkService::SetTrustTokenKeyCommitments(
   std::move(done).Run();
 }
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
+void NetworkService::ClearSCTAuditingCache() {
+  sct_auditing_cache_->ClearCache();
+}
+#endif
+
 #if defined(OS_ANDROID)
 void NetworkService::DumpWithoutCrashing(base::Time dump_request_time) {
   static base::debug::CrashKeyString* time_key =

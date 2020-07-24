@@ -25,8 +25,6 @@ class Label;
 class LabelButton;
 class Painter;
 class Separator;
-class Slider;
-class SliderListener;
 class ToggleButton;
 }  // namespace views
 
@@ -104,10 +102,6 @@ class TrayPopupUtils {
   //
   // TODO(bruthig): Update all system menu rows to use this.
   static views::ImageView* CreateMainImageView();
-
-  // Returns a slider configured for proper layout within a TriView container
-  // with a FillLayout.
-  static views::Slider* CreateSlider(views::SliderListener* listener);
 
   // Returns a ToggleButton that has been configured for system menu layout.
   static views::ToggleButton* CreateToggleButton(

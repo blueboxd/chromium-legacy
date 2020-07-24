@@ -105,7 +105,7 @@ message NigoriSpecifics {
     // Proto enums should begin with an 'unknown' value for switch statements,
     // unknown fields, etc.
     UNKNOWN = 0;
-    // Gaia-based encryption passphrase. Deprecated.
+    // Gaia-based encryption passphrase. Legacy.
     IMPLICIT_PASSPHRASE = 1;
     // Keystore key encryption passphrase. Uses |keystore_bootstrap| to
     // decrypt |encryption_keybag|.

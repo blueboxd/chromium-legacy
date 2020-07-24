@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.sync.settings;
 
 import android.accounts.Account;
-import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PorterDuff;
@@ -338,31 +336,6 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
     }
 
     // SignOutDialogListener implementation:
-
-    /**
-     * This class must be public and static. Otherwise an exception will be thrown when Android
-     * recreates the fragment (e.g. after a configuration change).
-     */
-    public static class ClearDataProgressDialog extends DialogFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            // Don't allow the dialog to be recreated by Android, since it wouldn't ever be
-            // dismissed after recreation.
-            if (savedInstanceState != null) dismiss();
-        }
-
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            setCancelable(false);
-            ProgressDialog dialog = new ProgressDialog(getActivity());
-            dialog.setTitle(getString(R.string.wiping_profile_data_title));
-            dialog.setMessage(getString(R.string.wiping_profile_data_message));
-            dialog.setIndeterminate(true);
-            return dialog;
-        }
-    }
-
     @Override
     public void onSignOutClicked(boolean forceWipeUserData) {
         // In case the user reached this fragment without being signed in, we guard the sign out so

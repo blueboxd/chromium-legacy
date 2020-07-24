@@ -10,42 +10,51 @@
   <template>
     <style include="oobe-dialog-host"></style>
     <link rel="stylesheet" href="oobe_update.css">
-    <checking-downloading-update id="checking-downloading-update"
-        aria-label$="[[i18nDynamic(locale, 'updateScreenAccessibleTitle')]]"
-        hidden="[[requiresPermissionForCellular]]"
-        checking-for-update="[[checkingForUpdate]]"
-        cancel-allowed="[[cancelAllowed]]"
-        update-completed="[[updateCompleted]]"
-        progress-value="[[progressValue]]"
-        has-estimate="[[estimatedTimeLeftShown]]"
-        estimated-time-left="[[estimatedTimeLeft]]"
-        default-progress-message="[[progressMessage]]"
-        checking-for-updates-key="checkingForUpdatesMsg"
-        cancel-hint-key="[[cancelHint]]"
-        downloading-updates-key="installingUpdateDesc">
-    </checking-downloading-update>
-    <oobe-dialog hidden="[[!requiresPermissionForCellular]]" tabindex="0"
-        subtitle-key="updateOverCellularPromptMessage"
-        aria-live="polite" has-buttons footer-shrinkable
-        id="cellular-permission-dialog">
-      <hd-iron-icon slot="oobe-icon"
-          icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
-      </hd-iron-icon>
-      <h1 slot="title">
-        [[i18nRecursive(locale, 'updateOverCellularPromptTitle',
-                        'productName')]]
-      </h1>
-      <div slot="footer" class="flex layout vertical center-justified center">
-        <img class="update-illustration oobe-illustration"
-            srcset="images/1x/updating_1x.svg 1x,
-                    images/2x/updating_2x.svg 2x">
-      </div>
-      <div slot="bottom-buttons" class="layout horizontal justified">
-        <oobe-back-button id="cellular-permission-back" inverse
-            on-click="onBackClicked_"></oobe-back-button>
-        <oobe-next-button id="cellular-permission-next" inverse
-            on-tap="onNextClicked_"></oobe-next-button>
-      </div>
-    </oobe-dialog>
+    <div hidden="[[betterUpdateScreenFeatureEnabled_]]">
+      <checking-downloading-update id="checking-downloading-update"
+          aria-label$="[[i18nDynamic(locale, 'updateScreenAccessibleTitle')]]"
+          hidden="[[requiresPermissionForCellular]]"
+          checking-for-update="[[checkingForUpdate]]"
+          cancel-allowed="[[cancelAllowed]]"
+          update-completed="[[updateCompleted]]"
+          progress-value="[[progressValue]]"
+          has-estimate="[[estimatedTimeLeftShown]]"
+          estimated-time-left="[[estimatedTimeLeft]]"
+          default-progress-message="[[progressMessage]]"
+          checking-for-updates-key="checkingForUpdatesMsg"
+          cancel-hint-key="[[cancelHint]]"
+          downloading-updates-key="installingUpdateDesc">
+      </checking-downloading-update>
+      <oobe-dialog hidden="[[!requiresPermissionForCellular]]" tabindex="0"
+          subtitle-key="updateOverCellularPromptMessage"
+          aria-live="polite" has-buttons footer-shrinkable
+          id="cellular-permission-dialog">
+        <hd-iron-icon slot="oobe-icon"
+            icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
+        </hd-iron-icon>
+        <h1 slot="title">
+          [[i18nRecursive(locale, 'updateOverCellularPromptTitle',
+                          'productName')]]
+        </h1>
+        <div slot="footer" class="flex layout vertical center-justified center">
+          <img class="update-illustration oobe-illustration"
+              srcset="images/1x/updating_1x.svg 1x,
+                      images/2x/updating_2x.svg 2x">
+        </div>
+        <div slot="bottom-buttons" class="layout horizontal justified">
+          <oobe-back-button id="cellular-permission-back" inverse
+              on-click="onBackClicked_"></oobe-back-button>
+          <oobe-next-button id="cellular-permission-next" inverse
+              on-tap="onNextClicked_"></oobe-next-button>
+        </div>
+      </oobe-dialog>
+    </div>
+    <div hidden="[[!betterUpdateScreenFeatureEnabled_]]">
+      <oobe-dialog>
+        <div hidden="[[!showLowBatteryWarning]]" id="battery-warning"
+            slot="footer">
+        </div>
+      </oobe-dialog>
+    </div>
   </template>
 </dom-module>

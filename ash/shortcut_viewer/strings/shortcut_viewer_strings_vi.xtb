@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
-<translation id="1036550831858290950">Lưu tab hiện tại làm dấu trang</translation>
+<translation id="1036550831858290950">Lưu thẻ hiện tại làm dấu trang</translation>
 <translation id="104962181688258143">Mở ứng dụng Tệp</translation>
 <translation id="1122869341872663659">Hiển thị <ph name="N" /> kết quả tìm kiếm cho <ph name="QUERY" /></translation>
-<translation id="1195667586424773550">Kéo liên kết vào thanh địa chỉ của tab</translation>
+<translation id="1195667586424773550">Kéo liên kết vào thanh địa chỉ của thẻ</translation>
 <translation id="1204450209689312104">Mở cửa sổ mới ở chế độ ẩn danh</translation>
 <translation id="1251638888133819822">Bật hoặc tắt tính năng phóng to toàn bộ màn hình</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
@@ -25,15 +25,15 @@
 <translation id="1733525068429116555">Thêm www. và .com vào nội dung mà bạn nhập trên thanh địa chỉ rồi mở trang</translation>
 <translation id="1872219238824176091">Xóa không gian làm việc hiện tại</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, rồi đến <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> hoặc <ph name="LEFT" /></translation>
-<translation id="1996162290124031907">Chuyển sang tab tiếp theo</translation>
-<translation id="2010818616644390445">Chuyển đến tab cuối cùng trong cửa sổ</translation>
+<translation id="1996162290124031907">Chuyển sang thẻ tiếp theo</translation>
+<translation id="2010818616644390445">Chuyển đến thẻ cuối cùng trong cửa sổ</translation>
 <translation id="2040706009561734834">Mở/đóng trình chạy</translation>
 <translation id="2088054208777350526">Tìm kiếm phím tắt</translation>
 <translation id="2125211348069077981"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="E" /> hoặc <ph name="F" /></translation>
 <translation id="2145908266289632567">Chỉnh sửa văn bản</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 đến =</translation>
 <translation id="2181097965834437145">Hiển thị hoặc ẩn thanh dấu trang</translation>
-<translation id="2185166372312820725">Quay về tab trước</translation>
+<translation id="2185166372312820725">Quay về thẻ trước</translation>
 <translation id="2194790690264064655">Nhấn <ph name="CTRL" /> rồi nhấp vào một liên kết</translation>
 <translation id="2246352309084894470">Mở/đóng trình chạy toàn màn hình</translation>
 <translation id="2354531887393764880">dấu chấm</translation>
@@ -71,14 +71,14 @@
 <translation id="3407560819924487926">Hiển thị trình quản lý tác vụ</translation>
 <translation id="3422679037938588196">Quay lại kết quả phù hợp trước đó cho tìm kiếm của bạn</translation>
 <translation id="353037708190149633">Lưu tất cả các trang đang mở trong cửa sổ hiện tại của bạn làm dấu trang trong một thư mục mới</translation>
-<translation id="355103131818127604">Mở liên kết trong tab mới trên nền</translation>
+<translation id="355103131818127604">Mở liên kết trong thẻ mới trên nền</translation>
 <translation id="3622741593887335780">Phóng to (khi gắn đế HOẶC bật tính năng phóng to toàn màn hình)</translation>
 <translation id="3649256019230929621">Thu nhỏ cửa sổ</translation>
-<translation id="3655154169297074232">Tab và cửa sổ</translation>
+<translation id="3655154169297074232">Thẻ và cửa sổ</translation>
 <translation id="3668361878347172356">Làm lại thao tác bạn thực hiện gần đây nhất</translation>
 <translation id="3710784500737332588">Mở Trung tâm trợ giúp</translation>
-<translation id="3720939646656082033">Mở liên kết trong một tab mới và chuyển sang tab mới đó</translation>
-<translation id="3725795051337497754">Đóng tab hiện tại</translation>
+<translation id="3720939646656082033">Mở liên kết trong một thẻ mới và chuyển sang thẻ mới đó</translation>
+<translation id="3725795051337497754">Đóng thẻ hiện tại</translation>
 <translation id="3751033133896282964">Hoàn tác thao tác bạn thực hiện gần đây nhất</translation>
 <translation id="3792178297143798024">Mở mục đã đánh dấu trên giá</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 đến 8</translation>
@@ -88,7 +88,7 @@
 <translation id="3994783594793697310">Đặt lại mức thu phóng màn hình</translation>
 <translation id="4026843240379844265">Di chuyển cửa sổ đang hoạt động giữa các màn hình</translation>
 <translation id="4035482366624727273">Chọn mọi nội dung trên trang</translation>
-<translation id="4060703249685950734">Mở lại cửa sổ hoặc tab mà bạn đã đóng gần đây nhất</translation>
+<translation id="4060703249685950734">Mở lại cửa sổ hoặc thẻ mà bạn đã đóng gần đây nhất</translation>
 <translation id="4090342722461256974">Nhấn và giữ <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> rồi nhấn vào <ph name="TAB" /> cho đến khi chuyển đến cửa sổ mà bạn muốn mở, sau đó thả tổ hợp phím ra.</translation>
 <translation id="4092538597492297615">Sao chép nội dung đã chọn vào khay nhớ tạm</translation>
 <translation id="4101772068965291327">Mở trang chủ</translation>
@@ -118,13 +118,13 @@
 <translation id="526651782186312376">Chọn văn bản ở đầu dòng</translation>
 <translation id="5316716239522500219">Phản chiếu màn hình</translation>
 <translation id="539072479502328326">Bật hoặc tắt tính năng phóng to ở vị trí cố định</translation>
-<translation id="5541719484267030947">Trong khi kéo tab, hãy nhấn <ph name="ESC" /></translation>
+<translation id="5541719484267030947">Trong khi kéo thẻ, hãy nhấn <ph name="ESC" /></translation>
 <translation id="5554139136362089836">Tìm kiếm trên trang hiện tại</translation>
 <translation id="5563050856984839829">Nhấn <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> và nhấp vào một liên kết</translation>
-<translation id="561814908794220892">Mở trang web trong tab mới</translation>
+<translation id="561814908794220892">Mở trang web trong thẻ mới</translation>
 <translation id="5620219513321115856">Di chuyển cửa sổ đang hoạt động sang không gian làm việc ở bên phải</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> hoặc <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /></translation>
-<translation id="5757111373163288447">Mở liên kết trong tab</translation>
+<translation id="5757111373163288447">Mở liên kết trong thẻ</translation>
 <translation id="5757474750054631686">Giảm ánh sáng bàn phím (chỉ dành cho bàn phím có đèn nền)</translation>
 <translation id="587531134027443617">Xóa từ đứng trước</translation>
 <translation id="5899919361772749550">Hiển thị hoặc ẩn bảng điều khiển Công cụ dành cho nhà phát triển</translation>
@@ -144,7 +144,7 @@
 <translation id="6395172954772765143">Chọn văn bản ở cuối dòng</translation>
 <translation id="6425378783626925378">Nhấp vào các biểu tượng từ 1 đến 8 trên giá</translation>
 <translation id="6435207348963613811">Đánh dấu mục đứng trước trên giá</translation>
-<translation id="6445033640292336367">Đưa tab về vị trí ban đầu</translation>
+<translation id="6445033640292336367">Đưa thẻ về vị trí ban đầu</translation>
 <translation id="6474744297082284761">Thu nhỏ (khi gắn đế HOẶC bật phóng to toàn màn hình)</translation>
 <translation id="649811797655257835">Chọn tệp, rồi nhấn phím <ph name="SPACE" /></translation>
 <translation id="6556040137485212400">Mở cửa sổ chưa sử dụng trong thời gian dài nhất</translation>
@@ -177,7 +177,7 @@
 <translation id="7724603315864178912">Cắt</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, rồi đến <ph name="SPACE" /> hoặc <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Mở một tệp trong trình duyệt</translation>
-<translation id="7952165122793773711">Chuyển đến các tab từ 1 đến 8</translation>
+<translation id="7952165122793773711">Chuyển đến các thẻ từ 1 đến 8</translation>
 <translation id="8026334261755873520">Xóa dữ liệu duyệt web</translation>
 <translation id="8130528849632411619">Chuyển tới đầu tài liệu</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> hoặc <ph name="E" /></translation>
@@ -186,12 +186,12 @@
 <translation id="8241665785394195545">dấu ngoặc vuông phải</translation>
 <translation id="8264941229485248811">Hiển thị hoặc ẩn trình kiểm tra Công cụ dành cho nhà phát triển</translation>
 <translation id="836869401750819675">Mở trang Tệp đã tải xuống</translation>
-<translation id="8388247778047144397">Kéo liên kết vào một vùng trống trên thanh tab</translation>
+<translation id="8388247778047144397">Kéo liên kết vào một vùng trống trên thanh thẻ</translation>
 <translation id="8389638407792712197">Mở cửa sổ mới</translation>
 <translation id="8429696719963529183">Sử dụng các phím F (F1 tới F12)</translation>
 <translation id="8537650670971624753">Thoát khỏi chế độ tìm kiếm</translation>
-<translation id="85690795166292698">Mở liên kết trong một tab mới</translation>
-<translation id="8609384513243082612">Mở tab mới</translation>
+<translation id="85690795166292698">Mở liên kết trong một thẻ mới</translation>
+<translation id="8609384513243082612">Mở thẻ mới</translation>
 <translation id="8644639153978066712">Hiển thị các tệp bị ẩn trong ứng dụng Tệp</translation>
 <translation id="8717459106217102612">Chọn chữ cái hoặc từ đứng trước</translation>
 <translation id="8727232706774971183">Xem thông báo</translation>

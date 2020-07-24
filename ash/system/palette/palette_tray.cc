@@ -26,6 +26,7 @@
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/tray/tray_utils.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -59,13 +60,10 @@ constexpr int kTrayIconCrossAxisInset = 0;
 // Width of the palette itself (dp).
 constexpr int kPaletteWidth = 332;
 
-// Padding at the top/bottom of the palette (dp).
-constexpr int kPalettePaddingOnTop = 4;
-constexpr int kPalettePaddingOnBottom = 2;
-
 // Margins between the title view and the edges around it (dp).
-constexpr int kPaddingBetweenTitleAndLeftEdge = 12;
+constexpr int kPaddingBetweenTitleAndLeftEdge = 16;
 constexpr int kPaddingBetweenTitleAndSeparator = 3;
+constexpr int kPaddingBetweenBottomAndLastTrayItem = 8;
 
 // Returns true if the |palette_tray| is on an internal display or on every
 // display if requested from the command line.
@@ -100,8 +98,8 @@ class TitleView : public views::View, public views::ButtonListener {
         new views::Label(l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_TITLE));
     title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     AddChildView(title_label);
-    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::TITLE,
-                             false /* use_unified_theme */);
+    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SMALL_TITLE,
+                             true /* use_unified_theme */);
     style.SetupLabel(title_label);
     layout_ptr->SetFlexForView(title_label, 1);
     help_button_ = new SystemMenuButton(this, kSystemMenuHelpIcon,
@@ -478,6 +476,9 @@ void PaletteTray::ShowBubble(bool show_by_click) {
   init_params.preferred_width = kPaletteWidth;
   init_params.close_on_deactivate = true;
   init_params.show_by_click = show_by_click;
+  init_params.translucent = true;
+  init_params.has_shadow = false;
+  init_params.corner_radius = kTrayItemCornerRadius;
 
   // TODO(tdanderson): Refactor into common row layout code.
   // TODO(tdanderson|jdufault): Add material design ripple effects to the menu
@@ -486,30 +487,40 @@ void PaletteTray::ShowBubble(bool show_by_click) {
   // Create and customize bubble view.
   TrayBubbleView* bubble_view = new TrayBubbleView(init_params);
   bubble_view->set_anchor_view_insets(GetBubbleAnchorInsets());
-  bubble_view->set_margins(
-      gfx::Insets(kPalettePaddingOnTop, 0, kPalettePaddingOnBottom, 0));
+  bubble_view->set_margins(GetSecondaryBubbleInsets());
+  bubble_view->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(0, 0, kPaddingBetweenBottomAndLastTrayItem, 0)));
+
+  auto setup_layered_view = [](views::View* view) {
+    view->SetPaintToLayer();
+    view->layer()->SetFillsBoundsOpaquely(false);
+  };
 
   // Add title.
-  auto* title_view = new TitleView(this);
+  auto* title_view =
+      bubble_view->AddChildView(std::make_unique<TitleView>(this));
+  setup_layered_view(title_view);
   title_view->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(0, kPaddingBetweenTitleAndLeftEdge, 0, 0)));
-  bubble_view->AddChildView(title_view);
 
   // Add horizontal separator between the title and tools.
-  auto* separator = new views::Separator();
+  auto* separator =
+      bubble_view->AddChildView(std::make_unique<views::Separator>());
+  setup_layered_view(separator);
   separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kSeparatorColor,
-      AshColorProvider::AshColorMode::kLight));
+      AshColorProvider::AshColorMode::kDark));
   separator->SetBorder(views::CreateEmptyBorder(gfx::Insets(
       kPaddingBetweenTitleAndSeparator, 0, kMenuSeparatorVerticalPadding, 0)));
-  bubble_view->AddChildView(separator);
 
   // Add palette tools.
   // TODO(tdanderson|jdufault): Use SystemMenuButton to get the material design
   // ripples.
   std::vector<PaletteToolView> views = palette_tool_manager_->CreateViews();
-  for (const PaletteToolView& view : views)
+  for (const PaletteToolView& view : views) {
     bubble_view->AddChildView(view.view);
+    setup_layered_view(view.view);
+  }
 
   // Show the bubble.
   bubble_ = std::make_unique<TrayBubbleWrapper>(this, bubble_view,

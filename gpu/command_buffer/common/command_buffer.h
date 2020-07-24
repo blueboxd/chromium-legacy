@@ -110,8 +110,15 @@ class GPU_EXPORT CommandBuffer {
 
   // Create a transfer buffer of the given size. Returns its ID or -1 on
   // error.
-  virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(uint32_t size,
-                                                          int32_t* id) = 0;
+  // The |option| argument defaults to kLoseContextOnOOM, but may be
+  // kReturnNullOnOOM. Passing kReturnNullOnOOM will gracefully fail and return
+  // nullptr on OOM instead of losing the context. Callers should be careful
+  // to check error conditions.
+  virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(
+      uint32_t size,
+      int32_t* id,
+      TransferBufferAllocationOption option =
+          TransferBufferAllocationOption::kLoseContextOnOOM) = 0;
 
   // Destroy a transfer buffer. The ID must be positive.
   // An ordering barrier must be placed after any commands that use the buffer

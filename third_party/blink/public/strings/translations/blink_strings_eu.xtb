@@ -83,7 +83,7 @@
 <translation id="3685101356851116974">Etiketatu gabeko irudia</translation>
 <translation id="3706100364254443312">aldatu</translation>
 <translation id="3732799496749320381">hh</translation>
-<translation id="3754210790023674521">Irten pantaila txikiko modutik</translation>
+<translation id="3754210790023674521">Irten pantaila txiki gainjarriko modutik</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3808586225841795776">hitza</translation>
 <translation id="3822383571486410024">Luzatu testua <ph name="MIN_CHARACTERS" /> karaktere izan ditzan gutxienez (<ph name="CURRENT_LENGTH" /> karaktere erabiltzen ari zara).</translation>
@@ -111,7 +111,7 @@
 <translation id="4664250907885839816">"<ph name="ATSIGN" />" ikurraren ondoren ezin da "<ph name="INVALIDCHARACTER" />" ikurra ezarri.</translation>
 <translation id="4668956016107839909">gehigarria</translation>
 <translation id="4698212723196775569">kodea</translation>
-<translation id="4718048029184481307">Pantaila txikian erreproduzitzen</translation>
+<translation id="4718048029184481307">Pantaila txiki gainjarrian erreproduzitzen</translation>
 <translation id="4742539557769756338">azala</translation>
 <translation id="4748357248530471599">aldatu moztutako pantailatik pantaila osora</translation>
 <translation id="4757246831282535685">fitxen panela</translation>
@@ -170,7 +170,7 @@
 <translation id="6213469881011901533">glosarioa</translation>
 <translation id="6281588256137006900">Ikusgaitasuna</translation>
 <translation id="6281763101136022427">urla</translation>
-<translation id="6310801910862476708">Irten pantaila txikiko modutik</translation>
+<translation id="6310801910862476708">Irten pantaila txiki gainjarriko modutik</translation>
 <translation id="6398862346408813489">Erakutsi hilabetearen hautapenaren panela</translation>
 <translation id="6404546809543547843">audioaren erreprodukzio-denboraren arrastatze-kontrola</translation>
 <translation id="6443871981718447451">erakutsi azpitituluen menua</translation>
@@ -224,7 +224,7 @@
 <translation id="7681220483256441252">indizea</translation>
 <translation id="7740050170769002709">HTML edukia</translation>
 <translation id="7745230546936012372">Irudiei falta zaizkien azalpenak lortzeko, ireki laster-menua.</translation>
-<translation id="7750228210027921155">Pantaila txikia</translation>
+<translation id="7750228210027921155">Pantaila txiki gainjarria</translation>
 <translation id="775297008183122718">Idatzitakoak ez du balio</translation>
 <translation id="7789962463072032349">pausatu</translation>
 <translation id="7802800022689234070">zabaltze-triangelua</translation>
@@ -277,13 +277,13 @@
 <translation id="901834265349196618">helbide elektronikoa</translation>
 <translation id="9048119486235211610">nabigazioa</translation>
 <translation id="9062295712474918030">dokumentua</translation>
-<translation id="9093215626363556771">irten pantaila txikiko modutik</translation>
+<translation id="9093215626363556771">irten pantaila txiki gainjarriko modutik</translation>
 <translation id="9108370397979208512">matematika</translation>
 <translation id="9132465097189459683">Beste batzuk…</translation>
 <translation id="9138385573473225930">alerta</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" />(e)etik aurrera</translation>
-<translation id="916607977885256133">Pantaila txikia</translation>
+<translation id="916607977885256133">Pantaila txiki gainjarria</translation>
 <translation id="9168329111483466115">oin-oharra</translation>
-<translation id="954003015749068518">sartu pantaila txikiko moduan</translation>
+<translation id="954003015749068518">sartu pantaila txiki gainjarriko moduan</translation>
 <translation id="966787709310836684">menua</translation>
 </translationbundle>

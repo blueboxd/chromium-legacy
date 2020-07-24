@@ -62,6 +62,8 @@ class NativeWidgetPrivate;
 class RootView;
 }  // namespace internal
 
+enum class CloseRequestResult { kCanClose, kCannotClose };
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget class
 //

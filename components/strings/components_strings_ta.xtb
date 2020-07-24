@@ -493,7 +493,6 @@
 <translation id="3005723025932146533">சேமித்த நகலைக் காட்டு</translation>
 <translation id="3008447029300691911"><ph name="CREDIT_CARD" /> இன் CVC எண்ணை உள்ளிடவும். உறுதிசெய்த பின்னர், உங்கள் கார்டு விவரங்கள் இந்தத் தளத்திற்குப் பகிரப்படும்.</translation>
 <translation id="3010559122411665027">பட்டியல் உள்ளீடு "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3013266782169695070">தயாரிப்பு அனுபவத்தை மேம்படுத்துவதற்காக <ph name="APP_NAME" /> பகுப்பாய்வுத் தரவைச் சேகரிக்கும். கூடுதல் தகவல்களைத் தெரிந்துகொள்ள <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> என்ற தளத்திற்குச் செல்லவும்.</translation>
 <translation id="301521992641321250">தானாகத் தடுக்கப்பட்டது</translation>
 <translation id="3016780570757425217">உங்கள் இருப்பிடத்தை அறியும்</translation>
 <translation id="3023071826883856138">You4 (என்வலப்)</translation>
@@ -1541,7 +1540,7 @@
 <translation id="7451311239929941790">இந்தச் சிக்கல் குறித்து <ph name="BEGIN_LINK" />மேலும் அறிக<ph name="END_LINK" />.</translation>
 <translation id="7455133967321480974">முழுமையான இயல்புநிலையைப் பயன்படுத்து (தடு)</translation>
 <translation id="7460618730930299168">திரையிலுள்ள உள்ளடக்கமும் நீங்கள் தேர்ந்தெடுத்த உள்ளடக்கமும் மாறுபடுகின்றன. தொடரவா?</translation>
-<translation id="7473891865547856676">வேண்டாம் நன்றி</translation>
+<translation id="7473891865547856676">வேண்டாம்</translation>
 <translation id="7481312909269577407">அடுத்த பக்கம்</translation>
 <translation id="7485870689360869515">தரவு எதுவும் இல்லை.</translation>
 <translation id="7488762544858401571">திருத்தியது</translation>
@@ -1638,7 +1637,7 @@
 <translation id="7798389633136518089">கிளவுட் ஆதாரம் மூலம் அமைக்கப்படாததால் கொள்கை புறக்கணிக்கப்பட்டது.</translation>
 <translation id="7800304661137206267">செய்தி அங்கீகரிப்பிற்காக, <ph name="KX" /> ஐ விசைப் பரிமாற்ற செயல்முறையாகக் கொண்டு, <ph name="MAC" /> உடன் <ph name="CIPHER" /> ஐப் பயன்படுத்தி இணைப்பானது என்க்ரிப்ட் செய்யப்பட்டது.</translation>
 <translation id="7802523362929240268">தளமானது சட்டப்பூர்வமானது</translation>
-<translation id="780301667611848630">தேவையில்லை</translation>
+<translation id="780301667611848630">வேண்டாம்</translation>
 <translation id="7805768142964895445">நிலை</translation>
 <translation id="7806344367022510803">Chromeமில் தேடல் இன்ஜின் அமைப்புகளை மாற்றவும்</translation>
 <translation id="7812922009395017822">Mir</translation>

@@ -52,7 +52,7 @@
 <translation id="1054153489933238809">मूल &amp;चित्र को नए टैब में खोलें</translation>
 <translation id="1055806300943943258">ब्लूटूथ और USB डिवाइस खोजे जा रहे हैं...</translation>
 <translation id="1056466516655540509"><ph name="MINUTES" /> मिनट पहले अपडेट किया गया</translation>
-<translation id="1056775291175587022">कोई नेटवर्क नहीं</translation>
+<translation id="1056775291175587022">नेटवर्क नहीं है</translation>
 <translation id="1056898198331236512">चेतावनी</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1060292118287751956">स्क्रीन अपडेट होने की दर तय की जाती है</translation>
@@ -235,7 +235,7 @@
 <translation id="1274997165432133392">कुकी और साइट का अन्य डेटा</translation>
 <translation id="1275718070701477396">चयनित</translation>
 <translation id="1276994519141842946"><ph name="APP_NAME" /> अनइंस्टॉल नहीं हो सका</translation>
-<translation id="127946606521051357">आस-पास मौजूद डिवाइस डेटा शेयर कर रहा है</translation>
+<translation id="127946606521051357">आस-पास मौजूद कोई डिवाइस, डेटा शेयर कर रहा है</translation>
 <translation id="1280820357415527819">मोबाइल नेटवर्क खोजे जा रहे हैं</translation>
 <translation id="1280965841156951489">फ़ाइलों में बदलाव करें</translation>
 <translation id="1285320974508926690">कभी भी इस साइट का अनुवाद न करें</translation>
@@ -1915,7 +1915,7 @@
 <translation id="3364986687961713424">आपके एडमिन से: <ph name="ADMIN_MESSAGE" /></translation>
 <translation id="3365598184818502391">Ctrl या फिर Alt का इस्तेमाल करें</translation>
 <translation id="3367047597842238025">अपनी पसंद के हिसाब से अपना <ph name="DEVICE_TYPE" /> सेट अप करें और उन सभी अनोखी क्षमताओं का पता लगाएं जिन तक आप आसानी से पहुंच सकते हैं .</translation>
-<translation id="3368922792935385530">कनेक्टेड</translation>
+<translation id="3368922792935385530">कनेक्ट है</translation>
 <translation id="3369067987974711168">इस पोर्ट की और कार्रवाइयां दिखाएं</translation>
 <translation id="3369624026883419694">होस्ट को परिष्कृत कर रहा है...</translation>
 <translation id="3370260763947406229">शब्दों में सुधार (ऑटो करेक्ट)</translation>
@@ -2741,7 +2741,7 @@
 <translation id="4377363674125277448">सर्वर के प्रमाणपत्र में कोई समस्या थी.</translation>
 <translation id="4378154925671717803">फ़ोन</translation>
 <translation id="4378373042927530923">चल नहीं पाया</translation>
-<translation id="4378551569595875038">कनेक्ट हो रहा है...</translation>
+<translation id="4378551569595875038">कनेक्टिंग...</translation>
 <translation id="4378556263712303865">डिवाइस मांग</translation>
 <translation id="4379281552162875326">क्या आप "<ph name="APP_NAME" />" अनइंस्टॉल करना चाहते हैं?</translation>
 <translation id="4380648069038809855">फ़ुल-स्क्रीन किया गया</translation>
@@ -2822,7 +2822,7 @@
 <translation id="4477015793815781985">Ctrl, Alt या ⌘ को शामिल करें</translation>
 <translation id="4478664379124702289">लिंक को इस रूप में सेव करें...</translation>
 <translation id="4479424953165245642">कियोस्क ऐप्स  प्रबंधित करें</translation>
-<translation id="4479639480957787382">इथरनेट</translation>
+<translation id="4479639480957787382">ईथरनेट</translation>
 <translation id="4479877282574735775">वर्चुअल मशीन कॉन्फ़िगर हो रही है. इसमें कुछ मिनट लग सकते हैं.</translation>
 <translation id="4480590691557335796">Chrome आपके कंप्यूटर पर नुकसान पहुंचाने वाला सॉफ़्टवेयर ढूंढ सकता है और उसे हटा सकता है</translation>
 <translation id="4481530544597605423">अयुग्मित किए गए डिवाइस</translation>
@@ -3154,7 +3154,7 @@
 <translation id="4912643508233590958">इस्तेमाल नहीं किए जा रहे प्रोसेसर को जगाना</translation>
 <translation id="4916542008280060967">क्या आप साइट को <ph name="FILE_NAME" /> में बदलाव करने देना चाहते हैं?</translation>
 <translation id="491691592645955587">किसी सुरक्षित ब्राउज़र पर जाएं</translation>
-<translation id="4917385247580444890">सशक्त</translation>
+<translation id="4917385247580444890">मज़बूत</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> "<ph name="EXTENSION_NAME" />" एक्‍सटेंशन से संचार करना चाहता है</translation>
 <translation id="4918086044614829423">स्वीकार करें</translation>
 <translation id="4918221908152712722"><ph name="APP_NAME" /> इंस्टॉल करें (डाउनलोड करने की ज़रूरत नहीं है)</translation>
@@ -3745,7 +3745,7 @@
 <translation id="5659833766619490117">इस पेज का अनुवाद नहीं किया जा सका</translation>
 <translation id="5662513737565158057">Linux ऐप्लिकेशन के काम करने का तरीका बदलें.</translation>
 <translation id="5667546120811588575">Google Play सेट अप किया जा रहा है...</translation>
-<translation id="5669267381087807207">सक्रिय कर रहा है</translation>
+<translation id="5669267381087807207">चालू हो रहा है</translation>
 <translation id="5669691691057771421">नया पिन डालें</translation>
 <translation id="5671641761787789573">इमेज ब्लॉक की गईं</translation>
 <translation id="5671658447180261823"><ph name="SUGGESTION_NAME" /> का सुझाव हटाएं</translation>
@@ -3941,7 +3941,7 @@
   सार्वजनिक घातांक (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> बिट):
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="5916084858004523819">निषिद्ध</translation>
-<translation id="5916664084637901428">चालू</translation>
+<translation id="5916664084637901428">चालू है</translation>
 <translation id="59174027418879706">चालू किया गया</translation>
 <translation id="5920543303088087579">इस नेटवर्क से कनेक्ट करने की सुविधा आपके व्यवस्थापक ने अक्षम कर दी है</translation>
 <translation id="5920835625712313205">Chrome OS सिस्‍टम इमेज राइटर</translation>
@@ -4304,7 +4304,7 @@
 <translation id="6362853299801475928">किसी समस्या की &amp;रिपोर्ट करें...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">परिवार और मित्रों को जोड़ें</translation>
-<translation id="6367985768157257101">क्या आप आस-पास शेयर करने की सुविधा से चीज़ें पाना चाहते हैं?</translation>
+<translation id="6367985768157257101">क्या आप 'आस-पास शेयर करना' सुविधा की मदद से चीज़ें पाना चाहते हैं?</translation>
 <translation id="636850387210749493">एंटरप्राइज़ नामांकन</translation>
 <translation id="6370021412472292592">मेनिफ़ेस्‍ट लोड नहीं किया जा सका.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4441,7 +4441,6 @@
 <translation id="6545864417968258051">ब्लूटूथ स्कैन करना</translation>
 <translation id="6545867563032584178">Mac सिस्टम प्राथमिकताओं में माइक्रोफ़ोन बंद किया गया है</translation>
 <translation id="6547354035488017500">डिवाइस की मेमोरी से कम से कम 512 एमबी जगह खाली करें. ऐसा न करने पर आपका डिवाइस काम नहीं करेगा. जगह खाली करने के लिए, डिवाइस की मेमोरी से फ़ाइलें मिटाएं.</translation>
-<translation id="6549639163247690448"><ph name="DOMAIN" /> के लिए ज़रूरी है कि आप अभी वाई-फ़ाई से कनेक्ट करें और अपडेट डाउनलोड करें. जब आप इंटरनेट से कनेक्ट होंगे, तब अपडेट अपने-आप इंस्टॉल हो जाएगा.</translation>
 <translation id="6550675742724504774">विकल्प</translation>
 <translation id="6551508934388063976">निर्देश मौजूद नहीं है. नई विंडों खोलने के लिए control-N दबाएं.</translation>
 <translation id="6551612971599078809">साइट 'यूएसबी' का इस्तेमाल कर रही है</translation>
@@ -4917,7 +4916,7 @@
 <translation id="713888829801648570">क्षमा करें, आपका पासवर्ड सत्‍यापित नहीं किया जा सका क्‍योंकि आप ऑफ़लाइन हैं.</translation>
 <translation id="7140928199327930795">कोई अन्य उपलब्ध डिवाइस नहीं हैं.</translation>
 <translation id="7141105143012495934">साइन इन नहीं हो पाया क्योंकि आपके खाते की जानकारी फिर से नहीं पाई जा सकी. कृपया अपने एडमिन से संपर्क करें या फिर से कोशिश करें.</translation>
-<translation id="7143207342074048698">कनेक्‍ट हो रहा है</translation>
+<translation id="7143207342074048698">कनेक्‍टिंग</translation>
 <translation id="7144878232160441200">फिर से प्रयास करें</translation>
 <translation id="714876143603641390">LAN कनेक्टिविटी</translation>
 <translation id="7149893636342594995">पिछले 24 घंटे</translation>
@@ -5785,7 +5784,6 @@
 <translation id="8213577208796878755">एक अन्य उपलब्ध डिवाइस.</translation>
 <translation id="8214489666383623925">फ़ाइल खोलें...</translation>
 <translation id="8214962590150211830">इस व्यक्ति को निकालें</translation>
-<translation id="8215295261562449873">Linux को बेहतर बनाने से पहले, डाउनलोड फ़ोल्डर में मेरे ऐप्लिकेशन और फ़ाइलों का बैक अप लें.</translation>
 <translation id="8217399928341212914">कई फ़ाइलों के अपने आप डाउनलोड होने को ब्लॉक करना जारी रखें</translation>
 <translation id="8218847192766059983">भाषाएं जोड़ें या सूची का क्रम बदलें. <ph name="BEGIN_LINK" />ज़्यादा जानें<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">आम तौर पर, आप सूचनाओंं पर रोक लगाते हैं. यह साइट आपको सूचना दिखा सके, इसके लिए यहां क्लिक करें.</translation>
@@ -6015,7 +6013,7 @@
 <translation id="8509646642152301857">वर्तनी जाँच शब्दकोश डाउनलोड नहीं हो सका.</translation>
 <translation id="8512476990829870887">प्रक्रिया खत्म करें</translation>
 <translation id="851263357009351303"><ph name="HOST" /> को हमेशा चित्र दिखाने की अनुमति दें</translation>
-<translation id="8513108775083588393">स्क्रीन का अपने आप दिशा बदलना (ऑटो-रोटेट)</translation>
+<translation id="8513108775083588393">ऑटो-रोटेट</translation>
 <translation id="8514746246728959655">कोई दूसरी सुरक्षा कुंजी आज़माकर देखें</translation>
 <translation id="8521475323816527629">अपने ऐप्लिकेशन तक तेज़ी से पहुंचें</translation>
 <translation id="8523493869875972733">बदलावों को बनाए रखें</translation>
@@ -6614,7 +6612,7 @@
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">'पासफ़्रेज़' दर्ज करें</translation>
 <translation id="939736085109172342">नया फ़ोल्डर</translation>
-<translation id="941070664607309480">आपको दिखाई दे, इसके लिए क्लिक करें. ऐसा करने से आपके साथ डेटा शेयर किया जा सकेगा</translation>
+<translation id="941070664607309480">आपका डिवाइस दिख जाए, इसके लिए क्लिक करें. ऐसा करने से आपके साथ डेटा शेयर किया जा सकेगा</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> एक Chrome टैब और ऑडियो शेयर कर रहा है.</translation>
 <translation id="945522503751344254">सुझाव भेजें</translation>
 <translation id="947329552760389097">&amp;एलिमेंट जाँचें</translation>

@@ -2065,61 +2065,6 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="        return new MinidumpUploadJobImpl(new AwMinidumpUploaderDelegate());"
-        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="android_webview/nonembedded/java/src/org/chromium/android_webview/services/AwMinidumpUploadJobService.java"
-            line="20"
-            column="16"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        return new MinidumpUploadJobImpl(new AwMinidumpUploaderDelegate());"
-        errorLine2="                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="android_webview/nonembedded/java/src/org/chromium/android_webview/services/AwMinidumpUploadJobService.java"
-            line="20"
-            column="42"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                    VariationsSeedHolder.getInstance().updateSeed(fetchInfo.seedInfo,"
-        errorLine2="                                         ~~~~~~~~~~~">
-        <location
-            file="android_webview/nonembedded/java/src/org/chromium/android_webview/services/AwVariationsSeedFetcher.java"
-            line="194"
-            column="42"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                    VariationsSeedHolder.getInstance().updateSeed(fetchInfo.seedInfo,"
-        errorLine2="                                                       ~~~~~~~~~~">
-        <location
-            file="android_webview/nonembedded/java/src/org/chromium/android_webview/services/AwVariationsSeedFetcher.java"
-            line="194"
-            column="56"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                    VariationsSeedHolder.getInstance().updateSeed(fetchInfo.seedInfo,"
-        errorLine2="                                                       ~~~~~~~~~~">
-        <location
-            file="android_webview/nonembedded/java/src/org/chromium/android_webview/services/AwVariationsSeedFetcher.java"
-            line="194"
-            column="56"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
         errorLine1="        leftMargin += mScrollManager.getScrollX();"
         errorLine2="                                     ~~~~~~~~~~">
         <location
@@ -3457,17 +3402,6 @@
             file="chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java"
             line="184"
             column="25"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        return new MinidumpUploadJobImpl(new ChromeMinidumpUploaderDelegate(this, permissions));"
-        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/crash/ChromeMinidumpUploadJobService.java"
-            line="21"
-            column="16"/>
     </issue>
 
     <issue
@@ -6713,39 +6647,6 @@
             file="chrome/android/java/src/org/chromium/chrome/browser/omaha/UpdateStatusProvider.java"
             line="423"
             column="45"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            VariationsSeedHolder.getInstance().writeSeedIfNewer(newSeedFile, oldSeedDate);"
-        errorLine2="                                 ~~~~~~~~~~~">
-        <location
-            file="android_webview/nonembedded/java/src/org/chromium/android_webview/services/VariationsSeedServer.java"
-            line="34"
-            column="34"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            VariationsSeedHolder.getInstance().writeSeedIfNewer(newSeedFile, oldSeedDate);"
-        errorLine2="                                               ~~~~~~~~~~~~~~~~">
-        <location
-            file="android_webview/nonembedded/java/src/org/chromium/android_webview/services/VariationsSeedServer.java"
-            line="34"
-            column="48"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            VariationsSeedHolder.getInstance().writeSeedIfNewer(newSeedFile, oldSeedDate);"
-        errorLine2="                                               ~~~~~~~~~~~~~~~~">
-        <location
-            file="android_webview/nonembedded/java/src/org/chromium/android_webview/services/VariationsSeedServer.java"
-            line="34"
-            column="48"/>
     </issue>
 
     <issue

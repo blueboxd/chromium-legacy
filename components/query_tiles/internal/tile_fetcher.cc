@@ -148,6 +148,8 @@ class TileFetcherImpl : public TileFetcher {
     url_loader_.reset();
   }
 
+  void SetServerUrl(const GURL& url) override { url_ = url; }
+
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Simple URL loader to fetch proto from network.

@@ -96,6 +96,10 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
 
     // If true, the platform shows and updates the drag image.
     bool platform_shows_drag_image = true;
+
+    // Linux only, but see a TODO in BrowserDesktopWindowTreeHostLinux.
+    // Determines whether the platform supports the global application menu.
+    bool supports_global_application_menus = false;
   };
 
   // Properties available in the host process after initialization.

@@ -5836,7 +5836,6 @@ IN_PROC_BROWSER_TEST_P(
   RenderProcessHost* process_for_b =
       RenderProcessHostImpl::CreateRenderProcessHost(
           web_contents->GetBrowserContext(),
-          nullptr /* storage_partition_impl */,
           placeholder_b_site_instance.get());
   RenderProcessHostImpl::RegisterSoleProcessHostForSite(
       process_for_b, placeholder_b_site_instance.get());

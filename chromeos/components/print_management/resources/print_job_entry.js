@@ -318,7 +318,7 @@ Polymer({
     // |jsDate|'s date, display the 12hour time of the current date.
     if (isToday(jsDate)) {
       return jsDate.toLocaleTimeString(/*locales=*/undefined,
-        {hour12: true, hour: 'numeric', minute: 'numeric'});
+          {hour: 'numeric', minute: 'numeric'});
     }
     // Remove the day of the week from the date.
     return jsDate.toLocaleDateString(/*locales=*/undefined,

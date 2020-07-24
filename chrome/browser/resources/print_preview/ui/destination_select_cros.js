@@ -144,7 +144,11 @@ Polymer({
   },
 
   focus() {
-    this.$$('#dropdown').focus();
+    if (this.printerStatusFlagEnabled_) {
+      this.$$('#dropdown').$$('#destination-dropdown').focus();
+      return;
+    }
+    this.$$('.md-select').focus();
   },
 
   /** Sets the select to the current value of |destination|. */
@@ -408,4 +412,15 @@ Polymer({
     return this.destination &&
         this.destination.origin === DestinationOrigin.CROS;
   },
+
+  /**
+   * Return the options currently visible to the user for testing purposes.
+   * @return {!Array<!Element>}
+   */
+  getVisibleItemsForTest: function() {
+    return this.printerStatusFlagEnabled_ ?
+        this.$$('#dropdown')
+            .shadowRoot.querySelectorAll('.list-item:not([hidden])') :
+        this.shadowRoot.querySelectorAll('option:not([hidden])');
+  }
 });

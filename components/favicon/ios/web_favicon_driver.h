@@ -17,6 +17,8 @@ class WebState;
 
 namespace favicon {
 
+class CoreFaviconService;
+
 // WebFaviconDriver is an implementation of FaviconDriver that listen to
 // WebState events to start download of favicons and to get informed when the
 // favicon download has completed.
@@ -27,7 +29,7 @@ class WebFaviconDriver : public web::WebStateObserver,
   ~WebFaviconDriver() override;
 
   static void CreateForWebState(web::WebState* web_state,
-                                FaviconService* favicon_service);
+                                CoreFaviconService* favicon_service);
 
   // FaviconDriver implementation.
   gfx::Image GetFavicon() const override;
@@ -54,7 +56,8 @@ class WebFaviconDriver : public web::WebStateObserver,
  private:
   friend class web::WebStateUserData<WebFaviconDriver>;
 
-  WebFaviconDriver(web::WebState* web_state, FaviconService* favicon_service);
+  WebFaviconDriver(web::WebState* web_state,
+                   CoreFaviconService* favicon_service);
 
   // web::WebStateObserver implementation.
   void DidFinishNavigation(web::WebState* web_state,

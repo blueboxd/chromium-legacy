@@ -72,6 +72,7 @@
 <translation id="1674504678466460478">Von <ph name="SOURCE_LANGUAGE" /> auf <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Aktivieren Sie die Synchronisierung, um Ihre Lesezeichen auf allen Ihren Geräten zu sehen.</translation>
 <translation id="1687475363370981210">Alle als gelesen markieren</translation>
+<translation id="1689333818294560261">Alias</translation>
 <translation id="1690731385917361335">Keine Elemente</translation>
 <translation id="1692118695553449118">Synchronisierung ist aktiviert</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ausgewählt</translation>
@@ -185,6 +186,7 @@ Websites können Cookies nicht verwenden, um Ihre Browseraktivitäten auf andere
 <translation id="3153862085237805241">Karte speichern</translation>
 <translation id="3157684681743766797">Alle markieren…</translation>
 <translation id="3161291298470460782">Hierdurch werden Sie abgemeldet, die Synchronisierung wird deaktiviert und alle Chrome-Daten werden von diesem Gerät gelöscht. Ihre synchronisierten Daten verbleiben jedoch in Ihrem Google-Konto.</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3175081911749765310">Webdienste</translation>
 <translation id="3178650076442119961">Heute aktiv</translation>
 <translation id="3181954750937456830">Safe Browsing (mich und mein Gerät vor schädlichen Websites schützen)</translation>
@@ -206,6 +208,7 @@ Wenn der Inkognitomodus aktiviert ist, können Websites Cookies nicht verwenden,
 <translation id="3335947283844343239">Geschlossenen Tab wieder öffnen</translation>
 <translation id="3371831930909698441">Übersetzer ist verfügbar. Optionen sind unten auf dem Bildschirm verfügbar.</translation>
 <translation id="3393920035788932672">Pop-ups erlaubt</translation>
+<translation id="3425644765244388016">Kartenalias</translation>
 <translation id="3443810440409579745">Tab erhalten.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Geteilte Ansicht</translation>
@@ -240,6 +243,7 @@ Wenn der Inkognitomodus aktiviert ist, können Websites Cookies nicht verwenden,
 <translation id="3783017676699494206">Bild speichern</translation>
 <translation id="3789841737615482174">Installieren</translation>
 <translation id="3803696231112616155">Übersetzung für diese Seite anbieten</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Keine Passwörter gehackt}=1{{COUNT} Passwort gehackt}other{{COUNT} Passwörter gehackt}}</translation>
 <translation id="385051799172605136">Zurück</translation>
 <translation id="3892144330757387737">Hier wird Ihr Verlauf angezeigt</translation>
 <translation id="3897092660631435901">Menü</translation>
@@ -529,6 +533,7 @@ Websites können Cookies nicht verwenden, um Ihre Browseraktivitäten auf andere
 <translation id="7189598951263744875">Teilen...</translation>
 <translation id="7192050974311852563">Protokollierung starten</translation>
 <translation id="7203585745079012652">Gesprochene Antworten</translation>
+<translation id="721597782417389033">Ungültiger Kartenalias</translation>
 <translation id="7265758999917665941">Für diese Website niemals</translation>
 <translation id="7272437679830969316">Ihre Identität konnte nicht bestätigt werden. Das Passwort wurde nicht kopiert.</translation>
 <translation id="7291368939935408496">Passwörter werden zum Exportieren vorbereitet…</translation>

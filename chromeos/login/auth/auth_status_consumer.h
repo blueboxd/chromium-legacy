@@ -10,6 +10,7 @@
 #include "base/component_export.h"
 #include "base/logging.h"
 #include "base/notreached.h"
+#include "base/observer_list_types.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/net_errors.h"
@@ -128,9 +129,10 @@ enum SuccessReason {
 // An interface that defines the callbacks for objects that the
 // Authenticator class will call to report the success/failure of
 // authentication for Chromium OS.
-class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) AuthStatusConsumer {
+class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) AuthStatusConsumer
+    : public base::CheckedObserver {
  public:
-  virtual ~AuthStatusConsumer() {}
+  ~AuthStatusConsumer() override = default;
   // The current login attempt has ended in failure, with error |error|.
   virtual void OnAuthFailure(const AuthFailure& error) = 0;
 

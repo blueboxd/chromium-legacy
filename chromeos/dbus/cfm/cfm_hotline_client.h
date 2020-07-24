@@ -38,6 +38,9 @@ class COMPONENT_EXPORT(CFM_HOTLINE_CLIENT) CfmHotlineClient {
   // Destroys the global instance.
   static void Shutdown();
 
+  // Checks if initialization was performed
+  static bool IsInitialized();
+
   // Returns the global instance which may be null if not initialized.
   static CfmHotlineClient* Get();
 

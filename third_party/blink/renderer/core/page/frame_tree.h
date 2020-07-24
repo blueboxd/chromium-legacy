@@ -47,6 +47,10 @@ class CORE_EXPORT FrameTree final {
     // Kicks-off propagation of name changes to other renderers.
     kReplicate,
   };
+
+  // TODO(shuuran): remove this once we have gathered the data
+  void CrossBrowsingContextGroupSetNulledName();
+
   void SetName(const AtomicString&, ReplicationPolicy = kDoNotReplicate);
 
   // TODO(andypaicu): remove this once we have gathered the data
@@ -101,6 +105,9 @@ class CORE_EXPORT FrameTree final {
 
   // TODO(andypaicu): remove this once we have gathered the data
   bool experimental_set_nulled_name_;
+
+  // TODO(shuuran): remove this once we have gathered the data
+  bool cross_browsing_context_group_set_nulled_name_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTree);
 };

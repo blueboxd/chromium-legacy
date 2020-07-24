@@ -291,6 +291,9 @@ bool VulkanDeviceQueue::InitializeForWebView(
   vk_queue_index_ = vk_queue_index;
   enabled_extensions_ = std::move(enabled_extensions);
 
+  vma::CreateAllocator(vk_physical_device_, vk_device_, vk_instance_,
+                       &vma_allocator_);
+
   cleanup_helper_ = std::make_unique<VulkanFenceHelper>(this);
   return true;
 }

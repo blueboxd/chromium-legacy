@@ -1942,6 +1942,17 @@ ci.fyi_windows_builder(
 )
 
 ci.fyi_windows_builder(
+    name = 'Win10 Tests x64 1909',
+    console_view_entry = ci.console_view_entry(
+        category = 'win10|1909',
+    ),
+    goma_backend = None,
+    main_console_view = None,
+    os = os.WINDOWS_10,
+    triggered_by = ['ci/Win x64 Builder'],
+)
+
+ci.fyi_windows_builder(
     name = 'Win 10 Fast Ring',
     console_view_entry = ci.console_view_entry(
         category = 'win10',

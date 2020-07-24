@@ -81,7 +81,7 @@ void SearchResultContainerView::ListItemsChanged(size_t /*start*/,
 }
 
 SearchResultBaseView* SearchResultContainerView::GetFirstResultView() {
-  return nullptr;
+  return num_results_ <= 0 ? nullptr : GetResultViewAt(0);
 }
 
 void SearchResultContainerView::SetShown(bool shown) {

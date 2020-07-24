@@ -105,8 +105,6 @@ base::CancelableTaskTracker::TaskId FaviconServiceImpl::GetFavicon(
     favicon_base::FaviconResultsCallback callback,
     base::CancelableTaskTracker* tracker) {
   TRACE_EVENT0("browser", "FaviconServiceImpl::GetFavicon");
-  std::vector<GURL> icon_urls;
-  icon_urls.push_back(icon_url);
   return history_service_->GetFavicon(
       icon_url, icon_type, GetPixelSizesForFaviconScales(desired_size_in_dip),
       std::move(callback), tracker);

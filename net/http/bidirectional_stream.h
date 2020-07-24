@@ -225,8 +225,6 @@ class NET_EXPORT BidirectionalStream : public BidirectionalStreamImpl::Delegate,
   // Helper method to notify delegate if there is an error.
   void NotifyFailed(int error);
 
-  void UpdateHistograms();
-
   // BidirectionalStreamRequestInfo used when requesting the stream.
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info_;
   const NetLogWithSource net_log_;

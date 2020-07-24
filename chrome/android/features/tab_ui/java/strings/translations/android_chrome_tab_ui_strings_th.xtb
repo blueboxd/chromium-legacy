@@ -7,7 +7,7 @@
 <translation id="1657719826150349398">ย้ายแท็บลงล่าง</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> แท็บ}other{<ph name="TABS_COUNT_MANY" /> แท็บ}}</translation>
 <translation id="2569352796411618312">คำแนะนำ: คุณไม่ได้ใช้แท็บ <ph name="NUMBER_OF_TABS" /> แท็บมาระยะหนึ่งแล้ว ปิดแท็บเหล่านั้นไหม</translation>
-<translation id="257674075312929031">กลุ่ม</translation>
+<translation id="257674075312929031">จัดกลุ่ม</translation>
 <translation id="2613747923081026172">สร้างกลุ่ม</translation>
 <translation id="2671423594960767771">แชร์กลุ่ม</translation>
 <translation id="2977480621796371840">นำออกจากกลุ่ม</translation>

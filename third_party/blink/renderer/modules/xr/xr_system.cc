@@ -732,7 +732,11 @@ XRSystem::XRSystem(LocalFrame& frame, int64_t ukm_source_id)
 
 void XRSystem::FocusedFrameChanged() {
   // Tell all sessions that focus changed.
-  for (const auto& session : sessions_) {
+  // Since this eventually dispatches an event to the page, the page could
+  // create a new session which would invalidate our iterators; so iterate over
+  // a copy of the session map.
+  HeapHashSet<WeakMember<XRSession>> processing_sessions = sessions_;
+  for (const auto& session : processing_sessions) {
     session->OnFocusChanged();
   }
 

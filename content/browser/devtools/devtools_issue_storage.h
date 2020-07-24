@@ -5,8 +5,7 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_ISSUE_STORAGE_H_
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_ISSUE_STORAGE_H_
 
-#include <deque>
-
+#include "base/containers/circular_deque.h"
 #include "base/unguessable_token.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -49,7 +48,7 @@ class DevToolsIssueStorage
 
   using FrameAssociatedIssue =
       std::pair<int, std::unique_ptr<protocol::Audits::InspectorIssue>>;
-  std::deque<FrameAssociatedIssue> issues_;
+  base::circular_deque<FrameAssociatedIssue> issues_;
 };
 
 }  // namespace content

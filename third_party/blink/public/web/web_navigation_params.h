@@ -398,6 +398,9 @@ struct BLINK_EXPORT WebNavigationParams {
   // List of client hints enabled for top-level frame. These still need to be
   // checked against feature policy before use.
   WebVector<network::mojom::WebClientHintsType> enabled_client_hints;
+
+  // Whether the navigation is cross browsing context group (browsing instance).
+  bool is_cross_browsing_context_group_navigation = false;
 };
 
 }  // namespace blink

@@ -476,7 +476,7 @@ TEST_F(ButtonTest, AsButton) {
   Label label;
   EXPECT_FALSE(Button::AsButton(&label));
 
-  Link link(text);
+  Link link;
   EXPECT_FALSE(Button::AsButton(&link));
 
   Textfield textfield;

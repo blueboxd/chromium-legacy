@@ -432,6 +432,7 @@ class AwContents : public FindHelper::Listener,
   std::unique_ptr<js_injection::JsCommunicationHost> js_communication_host_;
 
   bool view_tree_force_dark_state_ = false;
+  bool scheme_http_or_https_ = false;
 
   // GURL is supplied by the content layer as requesting frame.
   // Callback is supplied by the content layer, and is invoked with the result

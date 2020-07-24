@@ -153,7 +153,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="2704781753052663061">Połącz z innymi sieciami Wi-Fi</translation>
 <translation id="2705001408393684014">Przełącz stan mikrofonu. <ph name="STATE_TEXT" /></translation>
 <translation id="2706462751667573066">W górę</translation>
-<translation id="2718395828230677721">Podświetlenie nocne</translation>
+<translation id="2718395828230677721">Podświetlenie</translation>
 <translation id="2727977024730340865">Podłączono ładowarkę o małej mocy. Ładowanie baterii może być nieprawidłowe.</translation>
 <translation id="2792498699870441125">Alt+Szukaj</translation>
 <translation id="2819276065543622893">Zostaniesz teraz wylogowany.</translation>
@@ -276,7 +276,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="4028481283645788203">Dla większego bezpieczeństwa musisz podać hasło</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Udostępniasz ekran</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Wyłączono w przypadku jednej aplikacji}few{Wyłączono w przypadku # aplikacji}many{Wyłączono w przypadku # aplikacji}other{Wyłączono w przypadku # aplikacji}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Wyłączono (1 aplikacja)}few{Wyłączono (# aplikacje)}many{Wyłączono (# aplikacji)}other{Wyłączono (# aplikacji)}}</translation>
 <translation id="4072264167173457037">średni sygnał</translation>
 <translation id="4112140312785995938">Przewiń do tyłu</translation>
 <translation id="4129129681837227511">Aby wyświetlać powiadomienia na ekranie blokady, odblokuj ekran i zmień ustawienie</translation>
@@ -330,7 +330,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="4705716602320768426">Zgłoś opinię</translation>
 <translation id="4710243778082831592">Ustawienia IME</translation>
 <translation id="4731797938093519117">Dostęp rodzica</translation>
-<translation id="4734965478015604180">Orientacja pozioma</translation>
+<translation id="4734965478015604180">Poziomo</translation>
 <translation id="4774338217796918551">Możesz wrócić jutro o <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Hasło dla <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Asystent Google jest niedostępny w sesji demonstracyjnej.</translation>
@@ -344,7 +344,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="4872237917498892622">Alt+Szukaj lub Shift</translation>
 <translation id="4890187583552566966">Asystenta Google wyłączył administrator.</translation>
 <translation id="4895488851634969361">Bateria jest pełna.</translation>
-<translation id="490375751687810070">Orientacja pionowa</translation>
+<translation id="490375751687810070">Pionowo</translation>
 <translation id="4905614135390995787">Zmieniliśmy skrót, który włącza i wyłącza tryb wysokiego kontrastu. Użyj <ph name="NEW_SHORTCUT" /> zamiast <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="490788395437447240">Bateria: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">Silny</translation>
@@ -598,7 +598,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="8054466585765276473">Obliczanie czasu pracy na baterii.</translation>
 <translation id="8061464966246066292">Wysoki kontrast</translation>
 <translation id="8098591350844501178">Zakończ przesyłanie ekranu do: <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">Włączono w przypadku wszystkich aplikacji</translation>
+<translation id="8113423164597455979">Włączono (wszystkie aplikacje)</translation>
 <translation id="8131740175452115882">Potwierdź</translation>
 <translation id="8132793192354020517">Połączono z <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicjuję…</translation>

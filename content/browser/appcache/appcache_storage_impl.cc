@@ -68,13 +68,12 @@ bool DeleteGroupAndRelatedRecords(
   if (database->FindCacheForGroup(group_id, &cache_record)) {
     database->FindResponseIdsForCacheAsVector(cache_record.cache_id,
                                               deletable_response_ids);
-    success =
-        database->DeleteGroup(group_id) &&
-        database->DeleteCache(cache_record.cache_id) &&
-        database->DeleteEntriesForCache(cache_record.cache_id) &&
-        database->DeleteNamespacesForCache(cache_record.cache_id) &&
-        database->DeleteOnlineWhiteListForCache(cache_record.cache_id) &&
-        database->InsertDeletableResponseIds(*deletable_response_ids);
+    success = database->DeleteGroup(group_id) &&
+              database->DeleteCache(cache_record.cache_id) &&
+              database->DeleteEntriesForCache(cache_record.cache_id) &&
+              database->DeleteNamespacesForCache(cache_record.cache_id) &&
+              database->DeleteOnlineSafeListForCache(cache_record.cache_id) &&
+              database->InsertDeletableResponseIds(*deletable_response_ids);
   } else {
     NOTREACHED() << "A existing group without a cache is unexpected";
     success = database->DeleteGroup(group_id);
@@ -415,18 +414,17 @@ class AppCacheStorageImpl::StoreOrLoadTask : public DatabaseTask {
       intercept_namespace_records_;
   std::vector<AppCacheDatabase::NamespaceRecord>
       fallback_namespace_records_;
-  std::vector<AppCacheDatabase::OnlineWhiteListRecord>
-      online_whitelist_records_;
+  std::vector<AppCacheDatabase::OnlineSafeListRecord> online_safelist_records_;
 };
 
 bool AppCacheStorageImpl::StoreOrLoadTask::FindRelatedCacheRecords(
     int64_t cache_id) {
   return database_->FindEntriesForCache(cache_id, &entry_records_) &&
-         database_->FindNamespacesForCache(
-             cache_id, &intercept_namespace_records_,
-             &fallback_namespace_records_) &&
-         database_->FindOnlineWhiteListForCache(
-             cache_id, &online_whitelist_records_);
+         database_->FindNamespacesForCache(cache_id,
+                                           &intercept_namespace_records_,
+                                           &fallback_namespace_records_) &&
+         database_->FindOnlineSafeListForCache(cache_id,
+                                               &online_safelist_records_);
 }
 
 void AppCacheStorageImpl::StoreOrLoadTask::CreateCacheAndGroupFromRecords(
@@ -449,10 +447,8 @@ void AppCacheStorageImpl::StoreOrLoadTask::CreateCacheAndGroupFromRecords(
 
   *cache = base::MakeRefCounted<AppCache>(storage_, cache_record_.cache_id);
   cache->get()->InitializeWithDatabaseRecords(
-      cache_record_, entry_records_,
-      intercept_namespace_records_,
-      fallback_namespace_records_,
-      online_whitelist_records_);
+      cache_record_, entry_records_, intercept_namespace_records_,
+      fallback_namespace_records_, online_safelist_records_);
   cache->get()->set_complete(true);
 
   *group = storage_->working_set_.GetGroup(group_record_.manifest_url);
@@ -663,11 +659,8 @@ AppCacheStorageImpl::StoreGroupAndCacheTask::StoreGroupAndCacheTask(
   group_record_.first_evictable_error_time =
       group->first_evictable_error_time();
   newest_cache->ToDatabaseRecords(
-      group,
-      &cache_record_, &entry_records_,
-      &intercept_namespace_records_,
-      &fallback_namespace_records_,
-      &online_whitelist_records_);
+      group, &cache_record_, &entry_records_, &intercept_namespace_records_,
+      &fallback_namespace_records_, &online_safelist_records_);
 }
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::GetQuotaThenSchedule() {
@@ -751,21 +744,19 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
           database_->DeleteCache(cache.cache_id) &&
           database_->DeleteEntriesForCache(cache.cache_id) &&
           database_->DeleteNamespacesForCache(cache.cache_id) &&
-          database_->DeleteOnlineWhiteListForCache(cache.cache_id) &&
+          database_->DeleteOnlineSafeListForCache(cache.cache_id) &&
           database_->InsertDeletableResponseIds(newly_deletable_response_ids_);
-          // TODO(michaeln): store group_id too with deletable ids
+      // TODO(michaeln): store group_id too with deletable ids
     } else {
       NOTREACHED() << "A existing group without a cache is unexpected";
     }
   }
 
-  success_ =
-      success_ &&
-      database_->InsertCache(&cache_record_) &&
-      database_->InsertEntryRecords(entry_records_) &&
-      database_->InsertNamespaceRecords(intercept_namespace_records_) &&
-      database_->InsertNamespaceRecords(fallback_namespace_records_) &&
-      database_->InsertOnlineWhiteListRecords(online_whitelist_records_);
+  success_ = success_ && database_->InsertCache(&cache_record_) &&
+             database_->InsertEntryRecords(entry_records_) &&
+             database_->InsertNamespaceRecords(intercept_namespace_records_) &&
+             database_->InsertNamespaceRecords(fallback_namespace_records_) &&
+             database_->InsertOnlineSafeListRecords(online_safelist_records_);
 
   if (!success_)
     return;
@@ -873,21 +864,20 @@ class NetworkNamespaceHelper {
   }
 
   bool IsInNetworkNamespace(const GURL& url, int64_t cache_id) {
-    std::pair<WhiteListMap::iterator, bool> result = namespaces_map_.insert(
-        WhiteListMap::value_type(cache_id, std::vector<AppCacheNamespace>()));
+    std::pair<SafeListMap::iterator, bool> result = namespaces_map_.insert(
+        SafeListMap::value_type(cache_id, std::vector<AppCacheNamespace>()));
     if (result.second)
-      GetOnlineWhiteListForCache(cache_id, &result.first->second);
+      GetOnlineSafeListForCache(cache_id, &result.first->second);
     return AppCache::FindNamespace(result.first->second, url) != nullptr;
   }
 
  private:
-  void GetOnlineWhiteListForCache(int64_t cache_id,
-                                  std::vector<AppCacheNamespace>* namespaces) {
+  void GetOnlineSafeListForCache(int64_t cache_id,
+                                 std::vector<AppCacheNamespace>* namespaces) {
     DCHECK(namespaces && namespaces->empty());
-    using WhiteListVector =
-        std::vector<AppCacheDatabase::OnlineWhiteListRecord>;
-    WhiteListVector records;
-    if (!database_->FindOnlineWhiteListForCache(cache_id, &records))
+    using SafeListVector = std::vector<AppCacheDatabase::OnlineSafeListRecord>;
+    SafeListVector records;
+    if (!database_->FindOnlineSafeListForCache(cache_id, &records))
       return;
 
     for (const auto& record : records) {
@@ -897,8 +887,8 @@ class NetworkNamespaceHelper {
   }
 
   // Key is cache id
-  using WhiteListMap = std::map<int64_t, std::vector<AppCacheNamespace>>;
-  WhiteListMap namespaces_map_;
+  using SafeListMap = std::map<int64_t, std::vector<AppCacheNamespace>>;
+  SafeListMap namespaces_map_;
   AppCacheDatabase* const database_;
 };
 

@@ -99,6 +99,7 @@ constexpr CGFloat kVerticalDistance = 24;
   textView.scrollEnabled = NO;
   textView.editable = NO;
   textView.delegate = self;
+  textView.backgroundColor = [UIColor clearColor];
   textView.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
   textView.adjustsFontForContentSizeCategory = YES;
   textView.translatesAutoresizingMaskIntoConstraints = NO;

@@ -74,6 +74,7 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_profile_attributes_updater_factory.h"
+#include "chrome/browser/ssl/sct_reporting_service_factory.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
@@ -335,6 +336,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::AdvancedProtectionStatusManagerFactory::GetInstance();
 #endif
+  SCTReportingServiceFactory::GetInstance();
 #if defined(OS_ANDROID)
   SearchPermissionsService::Factory::GetInstance();
 #endif

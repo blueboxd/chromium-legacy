@@ -40,10 +40,11 @@ _NON_BRANCHED_TESTERS = (
     # the branches
     'mac-osxbeta-rel',
 
-    # This tester is triggered by 'Win x64 Builder', but it is an FYI builder
+    # These testers are triggered by 'Win x64 Builder', but it is an FYI builder
     # and not mirrored by any branched try builders, so we do not need to run it
-    # on the branches
+    # on the branches (crbug/990885)
     'Win10 Tests x64 1803',
+    'Win10 Tests x64 1909',
 
     # These Android testers are triggered by 'Android arm Builder (dbg)', but we
     # don't have sufficient capacity of devices with older Android versions, so

@@ -6,6 +6,7 @@ module network.mojom;
 
 import "url/mojom/url.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
+import "services/network/public/mojom/source_location.mojom";
 
 enum CoopAccessReportType {
   kReportAccessFrom, // The reports are sent to the 'accessing window'.
@@ -32,7 +33,9 @@ interface CrossOriginOpenerPolicyReporter {
   // When two browsing contexts from different virtual browsing context groups
   // tries to access each other, a report it sent.
   // - |property| is the name of the access property (postMessage, open, ...).
-  QueueAccessReport(CoopAccessReportType report_type, string property);
+  // - |source_location| represents the line of code that triggered the access.
+  QueueAccessReport(CoopAccessReportType report_type, string property,
+                    SourceLocation source_location);
 
   // Connects a new pipe to this instance.
   Clone(pending_receiver<CrossOriginOpenerPolicyReporter> receiver);

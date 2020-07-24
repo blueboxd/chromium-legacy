@@ -2506,8 +2506,9 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 
 // Verifies that css image resources shared across document do not cause a
 // crash, and are only counted once per context. https://crbug.com/979459.
+// TODO(crbug.com/1108534): Disabled due to flakiness.
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       MemoryCacheResources_RecordedOncePerContext) {
+                       DISABLED_MemoryCacheResources_RecordedOncePerContext) {
   embedded_test_server()->ServeFilesFromSourceDirectory("chrome/test/data");
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());

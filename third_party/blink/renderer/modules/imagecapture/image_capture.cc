@@ -633,6 +633,11 @@ void ImageCapture::SetMediaTrackConstraints(
 
   settings->has_pan = constraints->hasPan() && constraints->pan().IsDouble();
   if (settings->has_pan) {
+    if (!IsPageVisible()) {
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSecurityError, "the page is not visible"));
+      return;
+    }
     const auto pan = constraints->pan().GetAsDouble();
     if (pan < capabilities_->pan()->min() ||
         pan > capabilities_->pan()->max()) {
@@ -646,6 +651,11 @@ void ImageCapture::SetMediaTrackConstraints(
 
   settings->has_tilt = constraints->hasTilt() && constraints->tilt().IsDouble();
   if (settings->has_tilt) {
+    if (!IsPageVisible()) {
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSecurityError, "the page is not visible"));
+      return;
+    }
     const auto tilt = constraints->tilt().GetAsDouble();
     if (tilt < capabilities_->tilt()->min() ||
         tilt > capabilities_->tilt()->max()) {
@@ -659,6 +669,11 @@ void ImageCapture::SetMediaTrackConstraints(
 
   settings->has_zoom = constraints->hasZoom() && constraints->zoom().IsDouble();
   if (settings->has_zoom) {
+    if (!IsPageVisible()) {
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSecurityError, "the page is not visible"));
+      return;
+    }
     const auto zoom = constraints->zoom().GetAsDouble();
     if (zoom < capabilities_->zoom()->min() ||
         zoom > capabilities_->zoom()->max()) {
@@ -1137,6 +1152,12 @@ void ImageCapture::ResolveWithPhotoCapabilities(
     ScriptPromiseResolver* resolver) {
   DCHECK(resolver);
   resolver->Resolve(photo_capabilities_);
+}
+
+bool ImageCapture::IsPageVisible() {
+  LocalFrame* frame = GetFrame();
+  Document* doc = frame ? frame->GetDocument() : nullptr;
+  return doc ? doc->IsPageVisible() : false;
 }
 
 void ImageCapture::Trace(Visitor* visitor) const {

@@ -38,35 +38,13 @@ void ExtractManifestIcons(
 // static
 void ContentFaviconDriver::CreateForWebContents(
     content::WebContents* web_contents,
-    FaviconService* favicon_service) {
+    CoreFaviconService* favicon_service) {
   if (FromWebContents(web_contents))
     return;
 
   web_contents->SetUserData(UserDataKey(),
                             base::WrapUnique(new ContentFaviconDriver(
                                 web_contents, favicon_service)));
-}
-
-void ContentFaviconDriver::SaveFaviconEvenIfInIncognito() {
-  content::NavigationEntry* entry =
-      web_contents()->GetController().GetLastCommittedEntry();
-  if (!entry)
-    return;
-
-  // Make sure the page is in history, otherwise adding the favicon does
-  // nothing.
-  GURL page_url = entry->GetURL();
-  favicon_service()->AddPageNoVisitForBookmark(page_url, entry->GetTitle());
-
-  const content::FaviconStatus& favicon_status = entry->GetFavicon();
-  if (!favicon_service() || !favicon_status.valid ||
-      favicon_status.url.is_empty() || favicon_status.image.IsEmpty()) {
-    return;
-  }
-
-  favicon_service()->SetFavicons({page_url}, favicon_status.url,
-                                 favicon_base::IconType::kFavicon,
-                                 favicon_status.image);
 }
 
 gfx::Image ContentFaviconDriver::GetFavicon() const {
@@ -97,7 +75,7 @@ GURL ContentFaviconDriver::GetActiveURL() {
 }
 
 ContentFaviconDriver::ContentFaviconDriver(content::WebContents* web_contents,
-                                           FaviconService* favicon_service)
+                                           CoreFaviconService* favicon_service)
     : content::WebContentsObserver(web_contents),
       FaviconDriverImpl(favicon_service),
       document_on_load_completed_(false) {}

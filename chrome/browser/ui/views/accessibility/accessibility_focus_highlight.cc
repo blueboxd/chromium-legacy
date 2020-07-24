@@ -28,26 +28,25 @@ namespace {
 
 // The number of pixels of padding between the outer edge of the focused
 // element's bounding box and the inner edge of the inner focus ring.
-constexpr int kPaddingDIPs = 8;
+constexpr int kPadding = 8;
 
 // The size of the border radius of the innermost focus highlight ring.
-constexpr int kBorderRadiusDIPs = 4;
+constexpr int kBorderRadius = 4;
 
-// The stroke width, in DIPs, of the innermost focus ring, and each line drawn
+// The stroke width, in , of the innermost focus ring, and each line drawn
 // as part of the focus ring gradient effect.
-constexpr int kStrokeWidthDIPs = 2;
+constexpr int kStrokeWidth = 2;
 
-// The thickness, in DIPs, of the outer focus ring gradient.
-constexpr int kGradientWidthDIPs = 9;
+// The thickness, in px, of the outer focus ring gradient.
+constexpr int kGradientWidth = 9;
 
 // The padding between the bounds of the layer and the bounds of the
-// drawn focus ring, in DIPs. If it's zero the focus ring might be
-// clipped.
-constexpr int kLayerPaddingDIPs = 2;
+// drawn focus ring, in px. If it's zero the focus ring might be clipped.
+constexpr int kLayerPadding = 2;
 
-// Total DIPs between the edge of the node and the edge of the layer.
-constexpr int kTotalLayerPaddingDIPs =
-    kPaddingDIPs + kStrokeWidthDIPs + kGradientWidthDIPs + kLayerPaddingDIPs;
+// Total px between the edge of the node and the edge of the layer.
+constexpr int kTotalLayerPadding =
+    kPadding + kStrokeWidth + kGradientWidth + kLayerPadding;
 
 // The amount of time it should take for the highlight to fade in.
 constexpr int kFadeInTimeMilliseconds = 100;
@@ -80,9 +79,7 @@ bool AccessibilityFocusHighlight::use_default_color_for_testing_ = false;
 
 AccessibilityFocusHighlight::AccessibilityFocusHighlight(
     BrowserView* browser_view)
-    : browser_view_(browser_view),
-      device_scale_factor_(
-          browser_view_->GetWidget()->GetLayer()->device_scale_factor()) {
+    : browser_view_(browser_view) {
   DCHECK(browser_view);
 
   // Listen for preference changes.
@@ -165,7 +162,7 @@ void AccessibilityFocusHighlight::CreateOrUpdateLayer(gfx::Rect node_bounds) {
   // Outset the bounds of the layer by the total width of the focus highlight,
   // plus the extra padding to ensure the highlight isn't clipped.
   gfx::Rect layer_bounds = node_bounds;
-  int padding = kTotalLayerPaddingDIPs * device_scale_factor_;
+  int padding = kTotalLayerPadding;
   layer_bounds.Inset(-padding, -padding);
 
   layer_->SetBounds(layer_bounds);
@@ -237,8 +234,7 @@ void AccessibilityFocusHighlight::Observe(
   if (!browser_view_->IsActive() && !skip_activation_check_for_testing_)
     return;
 
-  // Get the bounds of the focused node from the web page. Initially it's
-  // given to us in screen DIPs.
+  // Get the bounds of the focused node from the web page.
   content::FocusedNodeDetails* node_details =
       content::Details<content::FocusedNodeDetails>(details).ptr();
   gfx::Rect node_bounds = node_details->node_bounds_in_screen;
@@ -269,35 +265,29 @@ void AccessibilityFocusHighlight::OnPaintLayer(
   original_flags.setAntiAlias(true);
   original_flags.setStyle(cc::PaintFlags::kStroke_Style);
   original_flags.setColor(highlight_color);
+  original_flags.setStrokeWidth(kStrokeWidth);
 
   gfx::RectF bounds(node_bounds_);
 
   // Apply padding
-  int padding = kPaddingDIPs * device_scale_factor_;
-  bounds.Inset(-padding, -padding);
-
-  int stroke_width = kStrokeWidthDIPs * device_scale_factor_;
-  original_flags.setStrokeWidth(stroke_width);
-
-  int border_radius = kBorderRadiusDIPs * device_scale_factor_;
+  bounds.Inset(-kPadding, -kPadding);
 
   // Draw gradient first, so other lines will be drawn over the top.
-  // Create a gradient effect by drawing the path outline multiple
-  // times with increasing insets from 0 to kGradientWidthDIPs, and
-  // with increasing transparency.
-  int gradient_border_radius = border_radius;
-  int gradient_width = kGradientWidthDIPs * device_scale_factor_;
   gfx::RectF gradient_bounds(bounds);
-  gradient_bounds.Inset(-stroke_width, -stroke_width);
-  gradient_border_radius += stroke_width;
+  int gradient_border_radius = kBorderRadius;
+  gradient_bounds.Inset(-kStrokeWidth, -kStrokeWidth);
+  gradient_border_radius += kStrokeWidth;
   cc::PaintFlags gradient_flags(original_flags);
   gradient_flags.setStrokeWidth(1);
   int original_alpha = std::min(SkColorGetA(highlight_color), 192u);
 
-  for (int remaining = gradient_width; remaining > 0; remaining -= 1) {
+  // Create a gradient effect by drawing the path outline multiple
+  // times with increasing insets from 0 to kGradientWidth, and
+  // with increasing transparency.
+  for (int remaining = kGradientWidth; remaining > 0; remaining -= 1) {
     // Decrease alpha as distance remaining decreases.
     int alpha = (original_alpha * remaining * remaining) /
-                (gradient_width * gradient_width);
+                (kGradientWidth * kGradientWidth);
     gradient_flags.setAlpha(alpha);
 
     recorder.canvas()->DrawRoundRect(gradient_bounds, gradient_border_radius,
@@ -313,8 +303,8 @@ void AccessibilityFocusHighlight::OnPaintLayer(
 
   // Resize bounds and border radius around inner ring
   gfx::RectF white_ring_bounds(bounds);
-  white_ring_bounds.Inset(-(stroke_width / 2), -(stroke_width / 2));
-  int white_ring_border_radius = border_radius + (stroke_width / 2);
+  white_ring_bounds.Inset(-(kStrokeWidth / 2), -(kStrokeWidth / 2));
+  int white_ring_border_radius = kBorderRadius + (kStrokeWidth / 2);
 
   cc::PaintFlags white_ring_flags(original_flags);
   white_ring_flags.setColor(SK_ColorWHITE);
@@ -323,15 +313,7 @@ void AccessibilityFocusHighlight::OnPaintLayer(
                                    white_ring_flags);
 
   // Finally, draw the inner ring
-  recorder.canvas()->DrawRoundRect(bounds, border_radius, original_flags);
-}
-
-void AccessibilityFocusHighlight::OnDeviceScaleFactorChanged(
-    float old_device_scale_factor,
-    float new_device_scale_factor) {
-  // The layer will automatically be invalildated, we don't need to do it
-  // explicitly.
-  device_scale_factor_ = new_device_scale_factor;
+  recorder.canvas()->DrawRoundRect(bounds, kBorderRadius, original_flags);
 }
 
 void AccessibilityFocusHighlight::OnAnimationStep(base::TimeTicks timestamp) {

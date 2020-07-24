@@ -1414,7 +1414,7 @@ void HostProcess::InitializeSignaling() {
 
   heartbeat_sender_ = std::make_unique<HeartbeatSender>(
       this, host_id_, ftl_signal_strategy.get(), oauth_token_getter_.get(),
-      is_googler);
+      context_->url_loader_factory(), is_googler);
   signal_strategy_ = std::move(ftl_signal_strategy);
 }
 

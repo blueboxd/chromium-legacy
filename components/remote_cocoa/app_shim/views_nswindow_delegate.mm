@@ -128,7 +128,7 @@
 
 - (BOOL)windowShouldClose:(id)sender {
   bool canWindowClose = true;
-  _parent->host()->GetCanWindowClose(&canWindowClose);
+  _parent->host()->OnWindowCloseRequested(&canWindowClose);
   return canWindowClose;
 }
 

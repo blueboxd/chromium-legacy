@@ -891,8 +891,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PDFPluginNotKeyboardFocusable) {
     const select_tag = document.getElementsByTagName('print-preview-app')[0]
                            .$['sidebar']
                            .$['destinationSettings']
-                           .$['destinationSelect']
-                           .$$('select');
+                           .$['destinationSelect'];
     select_tag.addEventListener('focus', () => {
       window.domAutomationController.send(true);
     });

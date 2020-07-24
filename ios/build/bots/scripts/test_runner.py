@@ -881,6 +881,8 @@ class SimulatorTestRunner(TestRunner):
     self.kill_simulators()
     LOGGER.debug('Wiping simulator.')
     self.wipe_simulator()
+    LOGGER.debug('Deleting simulator.')
+    self.deleteSimulator(self.udid)
     if os.path.exists(self.homedir):
       shutil.rmtree(self.homedir, ignore_errors=True)
       self.homedir = ''

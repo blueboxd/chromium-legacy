@@ -6,6 +6,9 @@ import("//build/config/android/rules.gni")
 
 android_library("java") {
   sources = [
+    "android/java/src/org/chromium/chrome/browser/tabmodel/AsyncTabCreationParams.java",
+    "android/java/src/org/chromium/chrome/browser/tabmodel/AsyncTabCreator.java",
+    "android/java/src/org/chromium/chrome/browser/tabmodel/AsyncTabParams.java",
     "android/java/src/org/chromium/chrome/browser/tabmodel/EmptyTabModel.java",
     "android/java/src/org/chromium/chrome/browser/tabmodel/EmptyTabModelFilter.java",
     "android/java/src/org/chromium/chrome/browser/tabmodel/EmptyTabModelSelectorObserver.java",

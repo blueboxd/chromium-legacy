@@ -714,3 +714,18 @@ NSString* TextForTabCount(long count) {
     return @":)";
   return [NSString stringWithFormat:@"%ld", count];
 }
+
+void RegisterEditMenuItem(UIMenuItem* item) {
+  UIMenuController* menu = [UIMenuController sharedMenuController];
+  NSArray<UIMenuItem*>* items = [menu menuItems];
+
+  for (UIMenuItem* existingItem in items) {
+    if ([existingItem action] == [item action]) {
+      return;
+    }
+  }
+
+  items = items ? [items arrayByAddingObject:item] : @[ item ];
+
+  [menu setMenuItems:items];
+}

@@ -38,24 +38,28 @@ class WebUITabStripContainerViewTest : public TestWithBrowserView {
 };
 
 TEST_F(WebUITabStripContainerViewTest, TabStripStartsClosed) {
-  EXPECT_TRUE(WebUITabStripContainerView::UseTouchableTabStrip());
+  EXPECT_TRUE(WebUITabStripContainerView::UseTouchableTabStrip(
+      browser_view()->browser()));
   ASSERT_NE(nullptr, browser_view()->webui_tab_strip());
   EXPECT_FALSE(browser_view()->webui_tab_strip()->GetVisible());
 }
 
 TEST_F(WebUITabStripContainerViewTest, TouchModeTransition) {
-  EXPECT_TRUE(WebUITabStripContainerView::UseTouchableTabStrip());
+  EXPECT_TRUE(WebUITabStripContainerView::UseTouchableTabStrip(
+      browser_view()->browser()));
   EXPECT_NE(nullptr, browser_view()->webui_tab_strip());
   EXPECT_FALSE(browser_view()->IsTabStripVisible());
 
   ui::TouchUiController::TouchUiScoperForTesting disable_touch_mode(false);
   browser_view()->Layout();
-  EXPECT_FALSE(WebUITabStripContainerView::UseTouchableTabStrip());
+  EXPECT_FALSE(WebUITabStripContainerView::UseTouchableTabStrip(
+      browser_view()->browser()));
   EXPECT_TRUE(browser_view()->IsTabStripVisible());
 
   ui::TouchUiController::TouchUiScoperForTesting reenable_touch_mode(true);
   browser_view()->Layout();
-  EXPECT_TRUE(WebUITabStripContainerView::UseTouchableTabStrip());
+  EXPECT_TRUE(WebUITabStripContainerView::UseTouchableTabStrip(
+      browser_view()->browser()));
   EXPECT_FALSE(browser_view()->IsTabStripVisible());
   ASSERT_NE(nullptr, browser_view()->webui_tab_strip());
 }
@@ -141,8 +145,10 @@ class WebUITabStripDevToolsTest : public WebUITabStripContainerViewTest {
   ~WebUITabStripDevToolsTest() override = default;
 };
 
-// Regression test for crbug.com/1010247.
+// Regression test for crbug.com/1010247, crbug.com/1090208.
 TEST_F(WebUITabStripDevToolsTest, DevToolsWindowHasNoTabStrip) {
+  EXPECT_FALSE(WebUITabStripContainerView::UseTouchableTabStrip(
+      browser_view()->browser()));
   EXPECT_EQ(nullptr, browser_view()->webui_tab_strip());
 
   ui::TouchUiController::TouchUiScoperForTesting disable_touch_mode(false);

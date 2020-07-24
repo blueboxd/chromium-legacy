@@ -496,7 +496,7 @@ class BrowserView : public BrowserWindow,
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
   // views::ClientView:
-  bool CanClose() override;
+  views::CloseRequestResult OnWindowCloseRequested() override;
   int NonClientHitTest(const gfx::Point& point) override;
   gfx::Size GetMinimumSize() const override;
 

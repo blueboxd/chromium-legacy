@@ -111,7 +111,7 @@ Alustamiseks võite proovida neid toiminguid.</translation>
 <translation id="2222338659135520253">Nõutav on sisselogimine</translation>
 <translation id="225680501294068881">Seadmete skannimine ...</translation>
 <translation id="2268130516524549846">Bluetooth on keelatud</translation>
-<translation id="2268813581635650749">Logi kõik kasutajad välja</translation>
+<translation id="2268813581635650749">Logi kõik välja</translation>
 <translation id="2277103315734023688">Keri edasi</translation>
 <translation id="2292698582925480719">Ekraani skaala</translation>
 <translation id="229397294990920565">Mobiilne andmeside lülitatakse välja …</translation>
@@ -277,7 +277,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4028481283645788203">Turvalisuse suurendamiseks on vaja parooli</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Jagate oma ekraanikuva</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Rakenduse puhul välja lülitatud}other{# rakenduse puhul välja lülitatud}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Rak. puhul väljas}other{# rak. puhul väljas}}</translation>
 <translation id="4072264167173457037">Keskmine signaal</translation>
 <translation id="4112140312785995938">Keri tagasi</translation>
 <translation id="4129129681837227511">Lukustuskuval märguannete nägemiseks avage ekraan ja muutke seadet</translation>
@@ -422,7 +422,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="5958529069007801266">Valvatav kasutaja</translation>
 <translation id="5977415296283489383">Kõrvaklapid</translation>
 <translation id="5978382165065462689">Ekraani juhtimise jagamine kaugabi kaudu.</translation>
-<translation id="5980301590375426705">Välju külastajaseansist</translation>
+<translation id="5980301590375426705">Välju kül. seansist</translation>
 <translation id="598882571027504733">Värskenduse hankimiseks taaskäivitage Chromebook koos ühendatud klaviatuuriga.</translation>
 <translation id="5992218262414051481">Suure kontrastsusega režiim on lubatud. Vajutage selle väljalülitamiseks uuesti klahvikombinatsiooni Ctrl + otsinguklahv + H.</translation>
 <translation id="6018164090099858612">Peeglirežiimist väljumine</translation>
@@ -599,7 +599,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="8054466585765276473">Aku tööaja arvutamine.</translation>
 <translation id="8061464966246066292">Kõrge kontrast</translation>
 <translation id="8098591350844501178">Peata ekraani ülekandmine vastuvõtjasse <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">Sisse lülitatud, kõik rakendused</translation>
+<translation id="8113423164597455979">Sees, kõik rak.</translation>
 <translation id="8131740175452115882">Kinnita</translation>
 <translation id="8132793192354020517">Ühendus <ph name="NAME" />iga</translation>
 <translation id="813913629614996137">Lähtestamine …</translation>
@@ -640,7 +640,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" />: <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Tühistamiseks vajutage klahvikombinatsiooni Alt + Otsing või tõstuklahvi.</translation>
 <translation id="8492573885090281069">Seade <ph name="DISPLAY_NAME" /> ei toeta eraldusvõimet <ph name="SPECIFIED_RESOLUTION" />. Eraldusvõimeks määrati <ph name="FALLBACK_RESOLUTION" />. Muudatuste säilitamiseks klõpsake nupul Kinnita. Eelmised seaded taastatakse <ph name="TIMEOUT_SECONDS" /> pärast.</translation>
-<translation id="8513108775083588393">Automaatne pööramine</translation>
+<translation id="8513108775083588393">Aut. pööramine</translation>
 <translation id="8517041960877371778">Kui seade <ph name="DEVICE_TYPE" /> on sisse lülitatud, ei pruugita seda laadida.</translation>
 <translation id="8563862697512465947">Teatiste seaded</translation>
 <translation id="857201607579416096">Menüü teisaldati ekraanikuva paremasse alanurka.</translation>

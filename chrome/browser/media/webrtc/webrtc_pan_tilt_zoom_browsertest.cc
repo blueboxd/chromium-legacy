@@ -11,6 +11,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "media/base/media_switches.h"
 
 namespace {
 
@@ -562,4 +563,79 @@ IN_PROC_BROWSER_TEST_F(WebRtcPanTiltZoomCameraDevicesBrowserTest,
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       tab->GetMainFrame(), "getPanTiltZoomPermission();", &pan_tilt_zoom));
   EXPECT_EQ(pan_tilt_zoom, "granted");
+}
+
+class WebRtcPanTiltZoomFakeCameraDevicesBrowserTest : public WebRtcTestBase {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    DetectErrorsInJavaScript();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WebRtcPanTiltZoomFakeCameraDevicesBrowserTest,
+                       TestPageVisible) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  content::WebContents* tab = OpenTestPageInNewTab(kMainHtmlPage);
+
+  // Access PTZ camera.
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab->GetMainFrame(),
+      "runGetUserMedia({ video: { pan: true, tilt: true, zoom: true } });",
+      &result));
+  EXPECT_EQ(result, "runGetUserMedia-success");
+
+  // Hide page.
+  tab->WasHidden();
+  base::string16 expected_title = base::ASCIIToUTF16("hidden");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(tab, expected_title).WaitAndGetTitle());
+
+  // Pan can't be set when page is hidden.
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab->GetMainFrame(), "applyConstraints({ advanced: [{ pan: 102 }] });",
+      &result));
+  EXPECT_EQ(result, "applyConstraints-failure-SecurityError");
+
+  // Tilt can't be set when page is hidden.
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab->GetMainFrame(), "applyConstraints({ advanced: [{ tilt: 102 }] });",
+      &result));
+  EXPECT_EQ(result, "applyConstraints-failure-SecurityError");
+
+  // Zoom can't be set when page is hidden.
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab->GetMainFrame(), "applyConstraints({ advanced: [{ zoom: 102 }] });",
+      &result));
+  EXPECT_EQ(result, "applyConstraints-failure-SecurityError");
+
+  // Show page.
+  tab->WasShown();
+  expected_title = base::ASCIIToUTF16("visible");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(tab, expected_title).WaitAndGetTitle());
+
+  // Pan can be set when page is shown again.
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab->GetMainFrame(), "applyConstraints({ advanced: [{ pan: 102 }] });",
+      &result));
+  EXPECT_EQ(result, "applyConstraints-success");
+
+  // Tilt can be set when page is shown again.
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab->GetMainFrame(), "applyConstraints({ advanced: [{ tilt: 102 }] });",
+      &result));
+  EXPECT_EQ(result, "applyConstraints-success");
+
+  // Zoom can be set when page is shown again.
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      tab->GetMainFrame(), "applyConstraints({ advanced: [{ zoom: 102 }] });",
+      &result));
+  EXPECT_EQ(result, "applyConstraints-success");
 }

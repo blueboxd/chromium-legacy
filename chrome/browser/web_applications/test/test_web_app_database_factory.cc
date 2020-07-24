@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database.h"
@@ -53,22 +54,26 @@ Registry TestWebAppDatabaseFactory::ReadRegistry() const {
 std::set<AppId> TestWebAppDatabaseFactory::ReadAllAppIds() const {
   std::set<AppId> app_ids;
 
-  auto registry = ReadRegistry();
-  for (auto& kv : registry)
+  Registry registry = ReadRegistry();
+  for (Registry::value_type& kv : registry)
     app_ids.insert(kv.first);
 
   return app_ids;
 }
 
-void TestWebAppDatabaseFactory::WriteRegistry(const Registry& registry) {
+void TestWebAppDatabaseFactory::WriteProtos(
+    const std::vector<std::unique_ptr<WebAppProto>>& protos) {
   base::RunLoop run_loop;
 
-  auto write_batch = store_->CreateWriteBatch();
+  std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch =
+      store_->CreateWriteBatch();
 
-  for (auto& kv : registry) {
-    const WebApp* app = kv.second.get();
-    auto proto = WebAppDatabase::CreateWebAppProto(*app);
-    write_batch->WriteData(app->app_id(), proto->SerializeAsString());
+  for (const std::unique_ptr<WebAppProto>& proto : protos) {
+    GURL launch_url(proto->sync_data().launch_url());
+    DCHECK(!launch_url.is_empty());
+    DCHECK(launch_url.is_valid());
+    AppId app_id = GenerateAppIdFromURL(launch_url);
+    write_batch->WriteData(app_id, proto->SerializeAsString());
   }
 
   store_->CommitWriteBatch(
@@ -80,6 +85,18 @@ void TestWebAppDatabaseFactory::WriteRegistry(const Registry& registry) {
           })));
 
   run_loop.Run();
+}
+
+void TestWebAppDatabaseFactory::WriteRegistry(const Registry& registry) {
+  std::vector<std::unique_ptr<WebAppProto>> protos;
+  for (const Registry::value_type& kv : registry) {
+    const WebApp* app = kv.second.get();
+    std::unique_ptr<WebAppProto> proto =
+        WebAppDatabase::CreateWebAppProto(*app);
+    protos.push_back(std::move(proto));
+  }
+
+  WriteProtos(protos);
 }
 
 }  // namespace web_app

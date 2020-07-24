@@ -45,9 +45,6 @@ class NearbyShareContactManager {
   void Stop();
   bool is_running() { return is_running_; }
 
-  // Clears all contact-related data.
-  virtual void ClearAllData() = 0;
-
   // Makes RPC calls to check if the user's contact list has changed since the
   // last call to the server. If it changed or if |only_download_if_changed| is
   // false, the contact list is downloaded from the server. The list of allowed

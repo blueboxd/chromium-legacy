@@ -284,30 +284,6 @@ TEST_P(PrePaintTreeWalkTest, ClipChangeRepaintsDescendants) {
   EXPECT_TRUE(paint_layer->SelfNeedsRepaint());
 }
 
-TEST_P(PrePaintTreeWalkTest, VisualRectClipForceSubtree) {
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      #parent { height: 75px; position: relative; width: 100px; }
-    </style>
-    <div id='parent' style='height: 100px;'>
-      <div id='child' style='overflow: hidden; width: 100%; height: 100%;
-          position: relative'>
-        <div>
-          <div id='grandchild' style='width: 50px; height: 200px; '>
-          </div>
-        </div>
-      </div>
-    </div>
-  )HTML");
-
-  auto* grandchild = GetLayoutObjectByElementId("grandchild");
-
-  GetDocument().getElementById("parent")->removeAttribute("style");
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_EQ(200, grandchild->FirstFragment().VisualRect().Height());
-}
-
 TEST_P(PrePaintTreeWalkTest, ClipChangeHasRadius) {
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -435,43 +411,6 @@ TEST_P(PrePaintTreeWalkTest, EffectiveTouchActionStyleUpdate) {
   EXPECT_FALSE(ancestor.DescendantEffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(touchaction.DescendantEffectiveAllowedTouchActionChanged());
   EXPECT_FALSE(descendant.DescendantEffectiveAllowedTouchActionChanged());
-}
-
-TEST_P(PrePaintTreeWalkTest, ClipChangesDoNotCauseVisualRectUpdates) {
-  SetBodyInnerHTML(R"HTML(
-    <style> #parent { width: 100px; height: 100px; overflow: hidden; } </style>
-    <div id='parent'>
-      <div id='child' style='width: 100px; height: 200px;'>
-      </div>
-    </div>
-  )HTML");
-
-  GetDocument().getElementById("parent")->setAttribute(html_names::kStyleAttr,
-                                                       "border-radius: 5px");
-
-  UpdateAllLifecyclePhasesForTest();
-  auto& parent = *GetLayoutObjectByElementId("parent");
-  auto& child = *GetLayoutObjectByElementId("child");
-
-  // Cause the child to go down the prepaint path but without on its own
-  // requiring a tree builder context.
-  child.SetShouldCheckForPaintInvalidationWithoutGeometryChange();
-
-  EXPECT_EQ(100, parent.FirstFragment().VisualRect().Width());
-  EXPECT_EQ(100, parent.FirstFragment().VisualRect().Height());
-  EXPECT_EQ(100, child.FirstFragment().VisualRect().Width());
-  EXPECT_EQ(200, child.FirstFragment().VisualRect().Height());
-
-  // Cause the child clip to change without changing paint property tree
-  // topology.
-  GetDocument().getElementById("parent")->setAttribute(html_names::kStyleAttr,
-                                                       "border-radius: 6px");
-
-  UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(100, parent.FirstFragment().VisualRect().Width());
-  EXPECT_EQ(100, parent.FirstFragment().VisualRect().Height());
-  EXPECT_EQ(100, child.FirstFragment().VisualRect().Width());
-  EXPECT_EQ(200, child.FirstFragment().VisualRect().Height());
 }
 
 }  // namespace blink

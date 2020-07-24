@@ -824,6 +824,12 @@ const char kEnableTranslateSubFramesName[] = "Translate sub frames";
 const char kEnableTranslateSubFramesDescription[] =
     "Enable the translation of sub frames (as well as the main frame)";
 
+const char kEnableWindowsGamingInputDataFetcherName[] =
+    "Enable Windows.Gaming.Input";
+const char kEnableWindowsGamingInputDataFetcherDescription[] =
+    "Enable Windows.Gaming.Input by default to provide game controller "
+    "support on Windows 10 desktop.";
+
 const char kCorsForContentScriptsName[] = "CORS for content scripts";
 const char kCorsForContentScriptsDescription[] =
     "Prevent content scripts of Chrome Extensions from bypassing CORS. "
@@ -2928,6 +2934,20 @@ const char kReportFeedUserActionsName[] =
 const char kReportFeedUserActionsDescription[] =
     "Enable the report of click actions on cards in Chrome's Feed on Android."
     " Also enable the feed header menu to manage the feed.";
+
+const char kSafeBrowsingEnhancedProtectionAndroidName[] =
+    "Safe Browsing Enhanced Protection on Android";
+const char kSafeBrowsingEnhancedProtectionAndroidDescription[] =
+    "A new Safe Browsing mode for faster, proactive protection against "
+    "dangerous websites, downloads, and extensions. To enable enhanced "
+    "protection from the settings page, please enable "
+    "safe-browsing-security-section-ui-android and this flag together.";
+
+const char kSafeBrowsingSecuritySectionUiAndroidName[] =
+    "Security Section on Android";
+const char kSafeBrowsingSecuritySectionUiAndroidDescription[] =
+    "Add a settings page for configuring security settings. The new security "
+    "page is under Settings > Privacy and security";
 
 const char kSafeBrowsingUseLocalBlacklistsV2Name[] =
     "Use local Safe Browsing blacklists";

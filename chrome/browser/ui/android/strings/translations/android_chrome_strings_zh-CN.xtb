@@ -577,6 +577,7 @@
 <translation id="5659593005791499971">电子邮件</translation>
 <translation id="5665379678064389456">在<ph name="APP_NAME" />中创建活动</translation>
 <translation id="5668404140385795438">覆盖网站的请求，以防止放大</translation>
+<translation id="5683547024293500885">Chrome 无法检查是否有更新</translation>
 <translation id="5686790454216892815">文件名过长</translation>
 <translation id="5694049548840660018">轻松访问主页</translation>
 <translation id="569536719314091526">通过“更多选项”按钮将此页面翻译成任何语言</translation>
@@ -589,6 +590,7 @@
 <translation id="5732819098735351888">一旦有 Wi-Fi 可用即开始下载。</translation>
 <translation id="5748802427693696783">已切换到标准标签页</translation>
 <translation id="5749068826913805084">Chrome 需要具备存储空间使用权限，才能下载文件。</translation>
+<translation id="5749237766298580851">已关闭 <ph name="SEPARATOR" /> 不推荐</translation>
 <translation id="5754350196967618083">无法刷新“探索”</translation>
 <translation id="5763382633136178763">隐身标签页</translation>
 <translation id="5763514718066511291">点按即可复制该应用的网址</translation>
@@ -996,6 +998,7 @@
 <translation id="8970887620466824814">出了点问题。</translation>
 <translation id="8972098258593396643">是否下载到默认文件夹？</translation>
 <translation id="8988028529677883095">使用手机作为安全密钥</translation>
+<translation id="8990209962746788689">无法创建二维码</translation>
 <translation id="8993760627012879038">在无痕模式下打开新标签页</translation>
 <translation id="8998729206196772491">您正要登录由 <ph name="MANAGED_DOMAIN" /> 管理的帐号，并要授权其管理员控制您的 Chrome 数据。您的数据将与此帐号永久关联。退出 Chrome 后，您的数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>
 <translation id="9028914725102941583">开启同步功能以跨设备分享内容</translation>

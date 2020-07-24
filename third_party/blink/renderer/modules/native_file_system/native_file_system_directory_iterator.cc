@@ -68,6 +68,10 @@ ScriptPromise NativeFileSystemDirectoryIterator::next(
   return ScriptPromise::Cast(script_state, V8IteratorResultDone(script_state));
 }
 
+bool NativeFileSystemDirectoryIterator::HasPendingActivity() const {
+  return pending_next_;
+}
+
 void NativeFileSystemDirectoryIterator::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);

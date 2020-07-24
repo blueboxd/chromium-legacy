@@ -12,6 +12,8 @@
 #include "chrome/grit/platform_locale_settings.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/favicon/core/fallback_url_util.h"
+#include "components/favicon/core/favicon_service.h"
+#include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -162,6 +164,37 @@ gfx::Image GetDefaultFavicon() {
   int resource_id = is_dark ? IDR_DEFAULT_FAVICON_DARK : IDR_DEFAULT_FAVICON;
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);
+}
+
+void SaveFaviconEvenIfInIncognito(content::WebContents* contents) {
+  content::NavigationEntry* entry =
+      contents->GetController().GetLastCommittedEntry();
+  if (!entry)
+    return;
+
+  Profile* original_profile =
+      Profile::FromBrowserContext(contents->GetBrowserContext())
+          ->GetOriginalProfile();
+  favicon::FaviconService* favicon_service =
+      FaviconServiceFactory::GetForProfile(original_profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
+  if (!favicon_service)
+    return;
+
+  // Make sure the page is in history, otherwise adding the favicon does
+  // nothing.
+  GURL page_url = entry->GetURL();
+  favicon_service->AddPageNoVisitForBookmark(page_url, entry->GetTitle());
+
+  const content::FaviconStatus& favicon_status = entry->GetFavicon();
+  if (!favicon_status.valid || favicon_status.url.is_empty() ||
+      favicon_status.image.IsEmpty()) {
+    return;
+  }
+
+  favicon_service->SetFavicons({page_url}, favicon_status.url,
+                               favicon_base::IconType::kFavicon,
+                               favicon_status.image);
 }
 
 }  // namespace favicon

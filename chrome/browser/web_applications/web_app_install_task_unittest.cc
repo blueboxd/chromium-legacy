@@ -863,6 +863,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_Success) {
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->app_url = url;
   web_app_info->open_as_window = true;
+  web_app_info->title = base::ASCIIToUTF16("App Name");
 
   base::RunLoop run_loop;
 
@@ -890,6 +891,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->app_url = GURL("https://example.com/path");
   web_app_info->open_as_window = false;
+  web_app_info->title = base::ASCIIToUTF16("App Name");
 
   // Add square yellow icon.
   AddGeneratedIcon(&web_app_info->icon_bitmaps_any, icon_size::k256,
@@ -1312,6 +1314,8 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
     auto manifest = std::make_unique<blink::Manifest>();
     manifest->start_url = start_url;
     manifest->theme_color = theme_color;
+    manifest->name =
+        base::NullableString16(base::ASCIIToUTF16("Manifest Name"));
 
     // Add shortcuts to manifest.
     blink::Manifest::ShortcutItem shortcut_item;
@@ -1377,13 +1381,15 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
       GURL icon_src) {
     InstallResult result;
     const AppId app_id = GenerateAppIdFromURL(url);
+
     auto web_app_info = std::make_unique<WebApplicationInfo>();
-    WebApplicationShortcutsMenuItemInfo shortcut_item;
-    WebApplicationShortcutsMenuItemInfo::Icon icon;
     web_app_info->app_url = url;
     web_app_info->open_as_window = true;
     web_app_info->theme_color = theme_color;
+    web_app_info->title = base::ASCIIToUTF16("App Name");
 
+    WebApplicationShortcutsMenuItemInfo shortcut_item;
+    WebApplicationShortcutsMenuItemInfo::Icon icon;
     shortcut_item.name = base::UTF8ToUTF16(shortcut_name);
     shortcut_item.url = shortcut_url;
 

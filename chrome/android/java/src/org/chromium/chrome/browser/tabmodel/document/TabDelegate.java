@@ -27,8 +27,9 @@ import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tabmodel.AsyncTabCreationParams;
+import org.chromium.chrome.browser.tabmodel.AsyncTabCreator;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
-import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
@@ -36,7 +37,7 @@ import org.chromium.ui.base.PageTransition;
 /**
  * Asynchronously creates Tabs by creating/starting up Activities.
  */
-public class TabDelegate extends TabCreator {
+public class TabDelegate extends AsyncTabCreator {
     private final boolean mIsIncognito;
 
     /**
@@ -92,14 +93,7 @@ public class TabDelegate extends TabCreator {
         return true;
     }
 
-    /**
-     * Creates a tab in the "other" window in multi-window mode. This will only work if
-     * {@link MultiWindowUtils#isOpenInOtherWindowSupported} is true for the given activity.
-     *
-     * @param loadUrlParams Parameters specifying the URL to load and other navigation details.
-     * @param activity      The current {@link Activity}
-     * @param parentId      The ID of the parent tab, or {@link Tab#INVALID_TAB_ID}.
-     */
+    @Override
     public void createTabInOtherWindow(
             LoadUrlParams loadUrlParams, Activity activity, int parentId) {
         Intent intent = createNewTabIntent(
@@ -128,12 +122,7 @@ public class TabDelegate extends TabCreator {
         return null;
     }
 
-    /**
-     * Creates a Tab to host the given WebContents asynchronously.
-     * @param asyncParams     Parameters to create the Tab with, including the URL.
-     * @param type            Information about how the tab was launched.
-     * @param parentId        ID of the parent tab, if it exists.
-     */
+    @Override
     public void createNewTab(
             AsyncTabCreationParams asyncParams, @TabLaunchType int type, int parentId) {
         assert asyncParams != null;
@@ -160,7 +149,7 @@ public class TabDelegate extends TabCreator {
         return intent;
     }
 
-    protected final void addAsyncTabExtras(AsyncTabCreationParams asyncParams, int parentId,
+    private void addAsyncTabExtras(AsyncTabCreationParams asyncParams, int parentId,
             boolean isChromeUI, int assignedTabId, Intent intent) {
         ComponentName componentName = asyncParams.getComponentName();
         if (componentName == null) {
@@ -195,10 +184,7 @@ public class TabDelegate extends TabCreator {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     }
 
-    /**
-     * Passes the supplied web app launch intent to the IntentHandler.
-     * @param intent Web app launch intent.
-     */
+    @Override
     public void createNewStandaloneFrame(Intent intent) {
         assert intent != null;
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK

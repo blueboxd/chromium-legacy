@@ -41,16 +41,6 @@ const base::FilePath::CharType kValidationCacheFileName[] =
 
 const bool kValidationCacheEnabledByDefault = true;
 
-// Keep the cache bounded to an arbitrary size.  If it's too small, useful
-// entries could be evicted when multiple .nexes are loaded at once.  On the
-// other hand, entries are not always claimed (and hence removed), so the size
-// of the cache will likely saturate at its maximum size.
-// Entries may not be claimed for two main reasons. 1) the NaCl process could
-// be killed while it is loading.  2) the trusted NaCl plugin opens files using
-// the code path but doesn't resolve them.
-// TODO(ncbray) don't cache files that the plugin will not resolve.
-const int kFilePathCacheSize = 100;
-
 const base::FilePath::StringType NaClIrtName() {
   base::FilePath::StringType irt_name(FILE_PATH_LITERAL("nacl_irt_"));
 
@@ -152,15 +142,7 @@ base::File OpenNaClReadExecImpl(const base::FilePath& file_path,
   return file;
 }
 
-NaClBrowser::NaClBrowser()
-    : irt_filepath_(),
-      irt_state_(NaClResourceUninitialized),
-      validation_cache_file_path_(),
-      validation_cache_is_enabled_(false),
-      validation_cache_is_modified_(false),
-      validation_cache_state_(NaClResourceUninitialized),
-      path_cache_(kFilePathCacheSize),
-      has_failed_(false) {
+NaClBrowser::NaClBrowser() {
 #if !defined(OS_ANDROID)
       validation_cache_is_enabled_ =
           CheckEnvVar("NACL_VALIDATION_CACHE",
@@ -326,7 +308,7 @@ void NaClBrowser::SetProcessGdbDebugStubPort(int process_id, int port) {
 
 // static
 void NaClBrowser::SetGdbDebugStubPortListenerForTest(
-    base::Callback<void(int)> listener) {
+    base::RepeatingCallback<void(int)> listener) {
   GetInstanceInternal()->debug_stub_port_listener_ = listener;
 }
 

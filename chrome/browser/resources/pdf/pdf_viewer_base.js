@@ -604,6 +604,14 @@ export class PDFViewerBaseElement extends PolymerElement {
     PDFMetrics.recordZoomAction(/*isZoomIn=*/ true);
   }
 
+  /**
+   * @param {!CustomEvent<number>} e
+   * @protected
+   */
+  onZoomChanged(e) {
+    this.viewport_.setZoom(e.detail / 100);
+  }
+
   /** @protected */
   onZoomOut() {
     this.viewport_.zoomOut();

@@ -603,6 +603,7 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
   void RequestFocus() override { arrow_button_->RequestFocus(); }
 
   views::Button* GetButtonForTesting() { return arrow_button_; }
+  views::Label* GetLabelForTesting() { return label_; }
 
  private:
   gfx::ImageSkia GetImageForIcon() const {
@@ -784,6 +785,10 @@ views::View* LoginAuthUserView::TestApi::disabled_auth_message() const {
 
 views::Button* LoginAuthUserView::TestApi::challenge_response_button() {
   return view_->challenge_response_view_->GetButtonForTesting();
+}
+
+views::Label* LoginAuthUserView::TestApi::challenge_response_label() {
+  return view_->challenge_response_view_->GetLabelForTesting();
 }
 
 bool LoginAuthUserView::TestApi::HasAuthMethod(AuthMethods auth_method) const {

@@ -374,7 +374,7 @@ export class NativeLayerStub extends TestBrowserProxy {
       }
     }
 
-    return Promise.resolve(this.printerStatusMap_.get(printerId));
+    return Promise.resolve(this.printerStatusMap_.get(printerId) || {});
   }
 
   /**

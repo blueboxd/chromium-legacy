@@ -45,6 +45,7 @@ class MockUpdateView : public UpdateView {
   MOCK_METHOD(void, SetProgress, (int value));
   MOCK_METHOD(void, SetRequiresPermissionForCellular, (bool value));
   MOCK_METHOD(void, SetCancelUpdateShortcutEnabled, (bool value));
+  MOCK_METHOD(void, ShowLowBatteryWarningMessage, (bool value));
 
  private:
   UpdateScreen* screen_ = nullptr;

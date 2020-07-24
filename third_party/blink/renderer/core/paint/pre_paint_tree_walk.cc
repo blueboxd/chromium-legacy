@@ -88,7 +88,6 @@ NGPrePaintInfo SetupFragmentData(const NGFragmentChildIterator& iterator,
         // FragmentData objects, and reset the visual rect. The visual rect will
         // be set and expanded, as we visit each individual fragment.
         fragment_data->ClearNextFragment();
-        fragment_data->SetVisualRect(IntRect());
       }
       fragment_data->SetLogicalTopInFlowThread(consumed_block_size);
     } else {
@@ -369,8 +368,7 @@ bool PrePaintTreeWalk::NeedsTreeBuilderContextUpdate(
 
   return frame_view.GetLayoutView() &&
          (ObjectRequiresTreeBuilderContext(*frame_view.GetLayoutView()) ||
-          ContextRequiresTreeBuilderContext(context,
-                                            *frame_view.GetLayoutView()));
+          ContextRequiresTreeBuilderContext(context));
 }
 
 bool PrePaintTreeWalk::ObjectRequiresPrePaint(const LayoutObject& object) {
@@ -388,43 +386,36 @@ bool PrePaintTreeWalk::ContextRequiresPrePaint(
 bool PrePaintTreeWalk::ObjectRequiresTreeBuilderContext(
     const LayoutObject& object) {
   return object.NeedsPaintPropertyUpdate() ||
+         object.ShouldCheckGeometryForPaintInvalidation() ||
          (!object.PrePaintBlockedByDisplayLock(
               DisplayLockLifecycleTarget::kChildren) &&
           (object.DescendantNeedsPaintPropertyUpdate() ||
-           object.DescendantNeedsPaintOffsetAndVisualRectUpdate()));
+           object.DescendantShouldCheckGeometryForPaintInvalidation()));
 }
 
 bool PrePaintTreeWalk::ContextRequiresTreeBuilderContext(
-    const PrePaintTreeWalkContext& context,
-    const LayoutObject& object) {
-  return (context.tree_builder_context &&
-          context.tree_builder_context->force_subtree_update_reasons) ||
-         context.paint_invalidator_context.NeedsVisualRectUpdate(object);
+    const PrePaintTreeWalkContext& context) {
+  return context.tree_builder_context &&
+         context.tree_builder_context->force_subtree_update_reasons;
 }
 
+#if DCHECK_IS_ON()
 void PrePaintTreeWalk::CheckTreeBuilderContextState(
     const LayoutObject& object,
     const PrePaintTreeWalkContext& parent_context) {
   if (parent_context.tree_builder_context ||
       (!ObjectRequiresTreeBuilderContext(object) &&
-       !ContextRequiresTreeBuilderContext(parent_context, object))) {
+       !ContextRequiresTreeBuilderContext(parent_context))) {
     return;
   }
 
-  CHECK(!object.NeedsPaintPropertyUpdate());
-  CHECK(!object.DescendantNeedsPaintPropertyUpdate());
-  CHECK(!object.DescendantNeedsPaintOffsetAndVisualRectUpdate());
-  if (parent_context.paint_invalidator_context.NeedsVisualRectUpdate(object)) {
-    // Note that if paint_invalidator_context's NeedsVisualRectUpdate(object) is
-    // true, we definitely want to CHECK. However, we would also like to know
-    // the value of object.NeedsPaintOffsetAndVisualRectUpdate(), hence one of
-    // the two CHECKs below will definitely trigger, and depending on which one
-    // does we will know the value.
-    CHECK(object.NeedsPaintOffsetAndVisualRectUpdate());
-    CHECK(!object.NeedsPaintOffsetAndVisualRectUpdate());
-  }
-  CHECK(false) << "Unknown reason.";
+  DCHECK(!object.NeedsPaintPropertyUpdate());
+  DCHECK(!object.DescendantNeedsPaintPropertyUpdate());
+  DCHECK(!object.DescendantShouldCheckGeometryForPaintInvalidation());
+  DCHECK(!object.ShouldCheckGeometryForPaintInvalidation());
+  NOTREACHED() << "Unknown reason.";
 }
+#endif
 
 static LayoutBoxModelObject* ContainerForPaintInvalidation(
     const PaintLayer* painting_layer) {
@@ -785,11 +776,12 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object,
   };
 
   bool needs_tree_builder_context_update =
-      ContextRequiresTreeBuilderContext(parent_context(), object) ||
+      ContextRequiresTreeBuilderContext(parent_context()) ||
       ObjectRequiresTreeBuilderContext(object);
 
-  // The following is for debugging crbug.com/974639.
+#if DCHECK_IS_ON()
   CheckTreeBuilderContextState(object, parent_context());
+#endif
 
   // Early out from the tree walk if possible.
   if (!needs_tree_builder_context_update && !ObjectRequiresPrePaint(object) &&
@@ -828,9 +820,8 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object,
   // If we need a subtree walk due to context flags, we need to store that
   // information on the display lock, since subsequent walks might not set the
   // same bits on the context.
-  if (child_walk_blocked &&
-      (ContextRequiresTreeBuilderContext(context(), object) ||
-       ContextRequiresPrePaint(context()))) {
+  if (child_walk_blocked && (ContextRequiresTreeBuilderContext(context()) ||
+                             ContextRequiresPrePaint(context()))) {
     // Note that effective allowed touch action changed is special in that
     // it requires us to specifically recalculate this value on each subtree
     // element. Other flags simply need a subtree walk. Some consideration

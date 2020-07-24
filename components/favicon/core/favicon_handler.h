@@ -27,7 +27,7 @@ class SkBitmap;
 
 namespace favicon {
 
-class FaviconService;
+class CoreFaviconService;
 
 // FaviconHandler works with FaviconDriver to fetch the specific type of
 // favicon.
@@ -128,7 +128,7 @@ class FaviconHandler {
   };
 
   // |service| and |delegate| must not be nullptr and must outlive this class.
-  FaviconHandler(FaviconService* service,
+  FaviconHandler(CoreFaviconService* service,
                  Delegate* delegate,
                  FaviconDriverObserver::NotificationIconType handler_type);
   ~FaviconHandler();
@@ -152,7 +152,7 @@ class FaviconHandler {
   const std::vector<GURL> GetIconURLs() const;
 
   // Returns whether the handler is waiting for a download to complete or for
-  // data from the FaviconService. Reserved for testing.
+  // data from the CoreFaviconService. Reserved for testing.
   bool HasPendingTasksForTest();
 
   // Get the maximal icon size in pixels for a handler of type |handler_type|.
@@ -293,7 +293,7 @@ class FaviconHandler {
   // triggered in FetchFavicon().
   base::CancelableTaskTracker cancelable_task_tracker_for_page_url_;
 
-  // Used for various FaviconService methods triggered while processing
+  // Used for various CoreFaviconService methods triggered while processing
   // candidates.
   base::CancelableTaskTracker cancelable_task_tracker_for_candidates_;
 
@@ -305,7 +305,7 @@ class FaviconHandler {
   // The last page URL reported via FetchFavicon().
   GURL last_page_url_;
 
-  // Whether we got data back for the initial request to the FaviconService.
+  // Whether we got data back for the initial request to the CoreFaviconService.
   bool got_favicon_from_history_;
 
   // Whether the history data returned in
@@ -359,9 +359,9 @@ class FaviconHandler {
   GURL notification_icon_url_;
   favicon_base::IconType notification_icon_type_;
 
-  // The FaviconService which implements favicon operations. May be null during
-  // testing.
-  FaviconService* service_;
+  // The CoreFaviconService which implements favicon operations. May be null
+  // during testing.
+  CoreFaviconService* service_;
 
   // This handler's delegate.
   Delegate* delegate_;

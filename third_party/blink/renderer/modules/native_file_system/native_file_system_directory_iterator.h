@@ -8,6 +8,7 @@
 #include "base/files/file.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_directory_handle.mojom-blink.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
@@ -22,6 +23,7 @@ class ScriptState;
 
 class NativeFileSystemDirectoryIterator final
     : public ScriptWrappable,
+      public ActiveScriptWrappable<NativeFileSystemDirectoryIterator>,
       public ExecutionContextClient,
       public mojom::blink::NativeFileSystemDirectoryEntriesListener {
   DEFINE_WRAPPERTYPEINFO();
@@ -36,6 +38,9 @@ class NativeFileSystemDirectoryIterator final
                                     ExecutionContext* execution_context);
 
   ScriptPromise next(ScriptState*);
+
+  // ScriptWrappable:
+  bool HasPendingActivity() const final;
 
   void Trace(Visitor*) const override;
 

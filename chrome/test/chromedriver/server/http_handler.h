@@ -64,13 +64,14 @@ struct CommandMapping {
 extern const char kCreateWebSocketPath[];
 extern const char kSendCommandFromWebSocket[];
 
-typedef base::Callback<void(std::unique_ptr<net::HttpServerResponseInfo>)>
+typedef base::RepeatingCallback<void(
+    std::unique_ptr<net::HttpServerResponseInfo>)>
     HttpResponseSenderFunc;
 
 class HttpHandler {
  public:
   explicit HttpHandler(const std::string& url_base);
-  HttpHandler(const base::Closure& quit_func,
+  HttpHandler(const base::RepeatingClosure& quit_func,
               const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
               const std::string& url_base,
               int adb_port);
@@ -119,7 +120,7 @@ class HttpHandler {
       const std::string& session_id);
 
   base::ThreadChecker thread_checker_;
-  base::Closure quit_func_;
+  base::RepeatingClosure quit_func_;
   std::string url_base_;
   bool received_shutdown_;
   scoped_refptr<URLRequestContextGetter> context_getter_;

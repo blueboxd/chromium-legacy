@@ -13,6 +13,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcuts_menu_builder.h"
+#include "chrome/browser/chromeos/crosapi/lacros_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
@@ -134,9 +135,11 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
     case ash::MENU_NEW_WINDOW:
       if (app_type_ == apps::mojom::AppType::kCrostini) {
         ShelfContextMenu::ExecuteCommand(ash::MENU_OPEN_NEW, event_flags);
-        return;
+      } else if (app_type_ == apps::mojom::AppType::kLacros) {
+        LacrosManager::Get()->NewWindow();
+      } else {
+        ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/false);
       }
-      ash::NewWindowDelegate::GetInstance()->NewWindow(/*incognito=*/false);
       break;
 
     case ash::MENU_NEW_INCOGNITO_WINDOW:

@@ -609,12 +609,9 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     // https://www.w3.org/TR/css-flexbox-1/#algo-main-item
     // Blink's FlexibleBoxAlgorithm expects it to be content + scrollbar widths,
     // but no padding or border.
-    // The ClampNegativeToZero is needed for the last canvas element in
-    // flexbox-flex-basis-content-001a.html. It's possibly only needed because
-    // we don't properly account for borders+padding when multiplying by the
-    // aspect ratio.
+    DCHECK_GE(flex_base_border_box, main_axis_border_padding);
     LayoutUnit flex_base_content_size =
-        (flex_base_border_box - main_axis_border_padding).ClampNegativeToZero();
+        flex_base_border_box - main_axis_border_padding;
 
     const Length& min = is_horizontal_flow_ ? child.Style().MinWidth()
                                             : child.Style().MinHeight();

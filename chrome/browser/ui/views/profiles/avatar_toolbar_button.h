@@ -59,6 +59,7 @@ class AvatarToolbarButton : public ToolbarButton,
   void OnBlur() override;
   void OnThemeChanged() override;
   void UpdateIcon() override;
+  void Layout() override;
 
   // ToolbarIconContainerView::Observer:
   void OnHighlightChanged() override;
@@ -74,7 +75,7 @@ class AvatarToolbarButton : public ToolbarButton,
                            HighlightMeetsMinimumContrast);
 
   base::string16 GetAvatarTooltipText() const;
-  gfx::ImageSkia GetAvatarIcon(ButtonState state,
+  ui::ImageModel GetAvatarIcon(ButtonState state,
                                const gfx::Image& profile_identity_image) const;
 
   void SetInsets();

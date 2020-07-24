@@ -162,4 +162,12 @@ Polymer({
         this.i18n('noLongerSupportedFragment') :
         this.destination.connectionStatusText;
   },
+
+  /**
+   * Return the options currently visible to the user for testing purposes.
+   * @return {!NodeList<!Element>}
+   */
+  getVisibleItemsForTest: function() {
+    return this.shadowRoot.querySelectorAll('option:not([hidden])');
+  }
 });

@@ -271,16 +271,16 @@ bool RemoveQuarantineAttribute(const FilePath& file_path) {
 
 namespace {
 
-// Returns the running system's Darwin major version. Don't call this, it's
-// an implementation detail and its result is meant to be cached by
-// MacOSXMinorVersion.
+// Returns the running system's Darwin major version. Don't call this, it's an
+// implementation detail and its result is meant to be cached by
+// MacOSVersionInternal().
 int DarwinMajorVersionInternal() {
-  // base::OperatingSystemVersionNumbers calls Gestalt, which is a
-  // higher-level operation than is needed. It might perform unnecessary
-  // operations. On 10.6, it was observed to be able to spawn threads (see
-  // http://crbug.com/53200). It might also read files or perform other
-  // blocking operations. Actually, nobody really knows for sure just what
-  // Gestalt might do, or what it might be taught to do in the future.
+  // base::OperatingSystemVersionNumbers() at one time called Gestalt(), which
+  // was observed to be able to spawn threads (see https://crbug.com/53200).
+  // Nowadays that function calls -[NSProcessInfo operatingSystemVersion], whose
+  // current implementation does things like hit the file system, which is
+  // possibly a blocking operation. Either way, it's overkill for what needs to
+  // be done here.
   //
   // uname, on the other hand, is implemented as a simple series of sysctl
   // system calls to obtain the relevant data from the kernel. The data is
@@ -316,33 +316,38 @@ int DarwinMajorVersionInternal() {
   return darwin_major_version;
 }
 
-// Returns the running system's Mac OS X minor version. This is the |y| value
-// in 10.y or 10.y.z. Don't call this, it's an implementation detail and the
-// result is meant to be cached by MacOSXMinorVersion.
-int MacOSXMinorVersionInternal() {
+// The implementation of MacOSVersion() as defined in the header. Don't call
+// this, it's an implementation detail and the result is meant to be cached by
+// MacOSVersion().
+int MacOSVersionInternal() {
   int darwin_major_version = DarwinMajorVersionInternal();
 
-  // The Darwin major version is always 4 greater than the Mac OS X minor
-  // version for Darwin versions beginning with 6, corresponding to Mac OS X
-  // 10.2. Since this correspondence may change in the future, warn when
-  // encountering a version higher than anything seen before. Older Darwin
-  // versions, or versions that can't be determined, result in immediate death.
+  // Darwin major versions 6 through 19 corresponded to macOS versions 10.2
+  // through 10.15.
   CHECK(darwin_major_version >= 6);
-  int mac_os_x_minor_version = darwin_major_version - 4;
-  DLOG_IF(WARNING, darwin_major_version > 19)
-      << "Assuming Darwin " << base::NumberToString(darwin_major_version)
-      << " is macOS 10." << base::NumberToString(mac_os_x_minor_version);
+  if (darwin_major_version <= 19)
+    return 1000 + darwin_major_version - 4;
 
-  return mac_os_x_minor_version;
+  // Darwin major version 20 corresponds to macOS version 11.0. Assume a
+  // correspondence between Darwin's major version numbers and macOS major
+  // version numbers.
+  int macos_major_version = darwin_major_version - 9;
+  DLOG_IF(WARNING, darwin_major_version > 20)
+      << "Assuming Darwin " << base::NumberToString(darwin_major_version)
+      << " is macOS " << base::NumberToString(macos_major_version);
+
+  return macos_major_version * 100;
 }
 
 }  // namespace
 
 namespace internal {
-int MacOSXMinorVersion() {
-  static int mac_os_x_minor_version = MacOSXMinorVersionInternal();
-  return mac_os_x_minor_version;
+
+int MacOSVersion() {
+  static int macos_version = MacOSVersionInternal();
+  return macos_version;
 }
+
 }  // namespace internal
 
 std::string GetModelIdentifier() {

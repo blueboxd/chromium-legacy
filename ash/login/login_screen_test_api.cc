@@ -332,6 +332,48 @@ void LoginScreenTestApi::SubmitPassword(const AccountId& account_id,
 }
 
 // static
+base::string16 LoginScreenTestApi::GetChallengeResponseLabel(
+    const AccountId& account_id) {
+  if (GetFocusedUser() != account_id) {
+    ADD_FAILURE() << "The user " << account_id.Serialize() << " is not focused";
+    return base::string16();
+  }
+  LoginBigUserView* big_user_view = GetBigUserView(account_id);
+  if (!big_user_view) {
+    ADD_FAILURE() << "Could not find user " << account_id.Serialize();
+    return base::string16();
+  }
+  LoginAuthUserView::TestApi auth_test(big_user_view->auth_user());
+  if (!auth_test.challenge_response_label()->IsDrawn()) {
+    ADD_FAILURE() << "Challenge-response label is not drawn for user "
+                  << account_id.Serialize();
+    return base::string16();
+  }
+  return auth_test.challenge_response_label()->GetText();
+}
+
+// static
+bool LoginScreenTestApi::IsChallengeResponseButtonClickable(
+    const AccountId& account_id) {
+  if (GetFocusedUser() != account_id) {
+    ADD_FAILURE() << "The user " << account_id.Serialize() << " is not focused";
+    return false;
+  }
+  LoginBigUserView* big_user_view = GetBigUserView(account_id);
+  if (!big_user_view) {
+    ADD_FAILURE() << "Could not find user " << account_id.Serialize();
+    return false;
+  }
+  LoginAuthUserView::TestApi auth_test(big_user_view->auth_user());
+  if (!auth_test.challenge_response_button()->IsDrawn()) {
+    ADD_FAILURE() << "Challenge-response button is not drawn for user "
+                  << account_id.Serialize();
+    return false;
+  }
+  return auth_test.challenge_response_button()->GetEnabled();
+}
+
+// static
 void LoginScreenTestApi::ClickChallengeResponseButton(
     const AccountId& account_id) {
   if (!FocusUser(account_id))
@@ -676,6 +718,18 @@ void LoginScreenTestApi::SubmitPinRequestWidget(const std::string& pin) {
   }
   event_generator->MoveMouseTo(
       pin_test.submit_button()->GetBoundsInScreen().CenterPoint());
+  event_generator->ClickLeftButton();
+}
+
+// static
+void LoginScreenTestApi::CancelPinRequestWidget() {
+  if (!PinRequestWidget::Get())
+    FAIL() << "No PIN request widget is shown";
+  auto event_generator = MakeAshEventGenerator();
+  PinRequestWidget::TestApi pin_widget_test(PinRequestWidget::Get());
+  PinRequestView::TestApi pin_view_test(pin_widget_test.pin_request_view());
+  event_generator->MoveMouseTo(
+      pin_view_test.back_button()->GetBoundsInScreen().CenterPoint());
   event_generator->ClickLeftButton();
 }
 

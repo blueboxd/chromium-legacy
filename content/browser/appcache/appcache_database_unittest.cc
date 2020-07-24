@@ -671,7 +671,7 @@ TEST_F(AppCacheDatabaseTest, NamespaceRecords) {
   ASSERT_TRUE(expecter.SawExpectedErrors());
 }
 
-TEST_F(AppCacheDatabaseTest, OnlineWhiteListRecords) {
+TEST_F(AppCacheDatabaseTest, OnlineSafeListRecords) {
   const base::FilePath kEmptyPath;
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
@@ -680,22 +680,22 @@ TEST_F(AppCacheDatabaseTest, OnlineWhiteListRecords) {
   const GURL kFooNameSpace2("http://foo/namespace2");
   const GURL kBarNameSpace1("http://bar/namespace1");
 
-  const AppCacheDatabase::OnlineWhiteListRecord kZeroRecord;
-  AppCacheDatabase::OnlineWhiteListRecord record;
-  std::vector<AppCacheDatabase::OnlineWhiteListRecord> records;
+  const AppCacheDatabase::OnlineSafeListRecord kZeroRecord;
+  AppCacheDatabase::OnlineSafeListRecord record;
+  std::vector<AppCacheDatabase::OnlineSafeListRecord> records;
 
   // Behavior with an empty table
-  EXPECT_TRUE(db.FindOnlineWhiteListForCache(1, &records));
+  EXPECT_TRUE(db.FindOnlineSafeListForCache(1, &records));
   EXPECT_TRUE(records.empty());
-  EXPECT_TRUE(db.DeleteOnlineWhiteListForCache(1));
+  EXPECT_TRUE(db.DeleteOnlineSafeListForCache(1));
 
   record.cache_id = 1;
   record.namespace_url = kFooNameSpace1;
-  EXPECT_TRUE(db.InsertOnlineWhiteList(&record));
+  EXPECT_TRUE(db.InsertOnlineSafeList(&record));
   record.namespace_url = kFooNameSpace2;
-  EXPECT_TRUE(db.InsertOnlineWhiteList(&record));
+  EXPECT_TRUE(db.InsertOnlineSafeList(&record));
   records.clear();
-  EXPECT_TRUE(db.FindOnlineWhiteListForCache(1, &records));
+  EXPECT_TRUE(db.FindOnlineSafeListForCache(1, &records));
   EXPECT_EQ(2U, records.size());
   EXPECT_EQ(1, records[0].cache_id);
   EXPECT_EQ(kFooNameSpace1, records[0].namespace_url);
@@ -704,14 +704,14 @@ TEST_F(AppCacheDatabaseTest, OnlineWhiteListRecords) {
 
   record.cache_id = 2;
   record.namespace_url = kBarNameSpace1;
-  EXPECT_TRUE(db.InsertOnlineWhiteList(&record));
+  EXPECT_TRUE(db.InsertOnlineSafeList(&record));
   records.clear();
-  EXPECT_TRUE(db.FindOnlineWhiteListForCache(2, &records));
+  EXPECT_TRUE(db.FindOnlineSafeListForCache(2, &records));
   EXPECT_EQ(1U, records.size());
 
-  EXPECT_TRUE(db.DeleteOnlineWhiteListForCache(1));
+  EXPECT_TRUE(db.DeleteOnlineSafeListForCache(1));
   records.clear();
-  EXPECT_TRUE(db.FindOnlineWhiteListForCache(1, &records));
+  EXPECT_TRUE(db.FindOnlineSafeListForCache(1, &records));
   EXPECT_TRUE(records.empty());
 }
 

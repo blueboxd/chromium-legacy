@@ -9,7 +9,7 @@
 <translation id="2569352796411618312">Bildirgi: <ph name="NUMBER_OF_TABS" /> ta varaq oxirgi vaqtlarda ishlatilmayapti. Ular yopilsinmi?</translation>
 <translation id="257674075312929031">Guruh</translation>
 <translation id="2613747923081026172">Guruh yaratish</translation>
-<translation id="2671423594960767771">Guruh havolasi</translation>
+<translation id="2671423594960767771">Guruhni ulashish</translation>
 <translation id="2977480621796371840">Guruhdan chiqarish</translation>
 <translation id="3328308545011660196">Taklif: <ph name="NUMBER_OF_TABS" /> ta varaq aloqador. Ular guruhlansinmi?</translation>
 <translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> ta aloqador varaq bor. Ular guruhlansinmi?</translation>
@@ -21,13 +21,13 @@
 <translation id="5082793167783849073">Sahifalarni guruhlab, tezkor solishtiring. Boshlash uchun havolani uzoq bosib turing.</translation>
 <translation id="5533021382642990449">Keyinroq koʻrsatish</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> ta varaq guruhlandi</translation>
-<translation id="58326064309361797">Guruhlash uchun varaqlarni tortib tashlang</translation>
+<translation id="58326064309361797">Varaqlarni guruhlash uchun bir-birining ustiga torting</translation>
 <translation id="6040143037577758943">Yopish</translation>
-<translation id="6193448654517602979">Varaqlarni belgilang</translation>
+<translation id="6193448654517602979">Varaqlarni tanlang</translation>
 <translation id="6510648526783655549">Varaqlar panelini yopish</translation>
 <translation id="6562820390860419811">Varaqni chapga siljitish</translation>
 <translation id="6615455863669487791">Ko‘rsatish</translation>
-<translation id="6840760312327750441">Varaqlarni guruhlash uchun varaqni bosib turing. Keyin esa tortib, boshqa varaq ustiga tashlang.</translation>
+<translation id="6840760312327750441">Varaqlarni guruhlash uchun: bitta varaqni bosib ushlang, keyin uni boshqa varaqning ustiga tortib tashlang.</translation>
 <translation id="7151209024774799310">Varaqlarni guruhdan olib tashlash</translation>
 <translation id="7559245342362162951">Guruh varaqlarini butun ekranga jadval shaklida chiqarish</translation>
 <translation id="7792771145871471484">Batafsil.</translation>

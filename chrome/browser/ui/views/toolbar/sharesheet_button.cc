@@ -22,11 +22,12 @@ SharesheetButton::SharesheetButton(Browser* browser)
 SharesheetButton::~SharesheetButton() = default;
 
 void SharesheetButton::UpdateIcon() {
-  SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(vector_icons::kHelpIcon, GetIconSize(),
-                            GetThemeProvider()->GetColor(
-                                ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)));
+  SetImageModel(views::Button::STATE_NORMAL,
+                ui::ImageModel::FromVectorIcon(
+                    vector_icons::kHelpIcon,
+                    GetThemeProvider()->GetColor(
+                        ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON),
+                    GetIconSize()));
 }
 
 void SharesheetButton::ButtonPressed(views::Button* sender,

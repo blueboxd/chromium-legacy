@@ -215,6 +215,7 @@ class ScrimMediator implements View.OnClickListener, ScrimCoordinator.TouchEvent
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
+        if (mIsHidingOrHidden) return false;
         if (!mModel.getAllSetProperties().contains(ScrimProperties.GESTURE_DETECTOR)) return false;
 
         // Make sure the first event that goes through the filter is an ACTION_DOWN, even in the

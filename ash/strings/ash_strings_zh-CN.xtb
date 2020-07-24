@@ -8,7 +8,7 @@
 <translation id="1036672894875463507">我是你的 Google 助理，可以帮你处理日常生活大小事！
 要开始体验，你不妨试一下这些功能。</translation>
 <translation id="1037492556044956303">已添加<ph name="DEVICE_NAME" /></translation>
-<translation id="1056775291175587022">找不到任何网络</translation>
+<translation id="1056775291175587022">没有网络</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />：<ph name="RESOLUTION" /></translation>
 <translation id="108486256082349153">移动网络设备：<ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">我好无聊</translation>
@@ -146,7 +146,7 @@
 <translation id="2582112259361606227">重启以进行更新</translation>
 <translation id="2595239820337756193">5 公里是多少英里</translation>
 <translation id="2617342710774726426">SIM 卡已被锁定</translation>
-<translation id="2621713457727696555">已受到安全保护</translation>
+<translation id="2621713457727696555">受保护</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2658778018866295321">点击并拖动</translation>
 <translation id="2700493154570097719">设置键盘</translation>
@@ -206,7 +206,7 @@
 <translation id="3236488194889173876">没有可用的移动网络</translation>
 <translation id="3249513730522716925">窗口“<ph name="WINDOW_TITLE" />”已由桌面 <ph name="ACTIVE_DESK" /> 移至桌面 <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">你能做些什么？</translation>
-<translation id="3290356915286466215">未受到安全保护</translation>
+<translation id="3290356915286466215">无保护</translation>
 <translation id="3294437725009624529">访客</translation>
 <translation id="3308453408813785101">日后“<ph name="USER_EMAIL_ADDRESS" />”仍能登录。</translation>
 <translation id="3321628682574733415">家长访问代码不正确</translation>
@@ -276,7 +276,7 @@
 <translation id="4028481283645788203">需要输入密码以增强安全性</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">您正在共享屏幕</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{针对 1 个应用关闭}other{针对 # 个应用关闭}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{对 1 个应用关闭}other{对 # 个应用关闭}}</translation>
 <translation id="4072264167173457037">信号中等</translation>
 <translation id="4112140312785995938">快退</translation>
 <translation id="4129129681837227511">要想在锁定屏幕上看到通知，请解锁设备以更改设置</translation>

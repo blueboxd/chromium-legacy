@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
+#include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -65,7 +66,8 @@ class MockWebRtcAudioTrack : public webrtc::AudioTrackInterface {
   ObserverSet observers_;
 };
 
-class MockWebRtcVideoTrackSource : public webrtc::VideoTrackSourceInterface {
+class MockWebRtcVideoTrackSource
+    : public rtc::RefCountedObject<webrtc::VideoTrackSourceInterface> {
  public:
   static scoped_refptr<MockWebRtcVideoTrackSource> Create(
       bool supports_encoded_output);
@@ -91,7 +93,8 @@ class MockWebRtcVideoTrackSource : public webrtc::VideoTrackSourceInterface {
   bool supports_encoded_output_;
 };
 
-class MockWebRtcVideoTrack : public webrtc::VideoTrackInterface {
+class MockWebRtcVideoTrack
+    : public rtc::RefCountedObject<webrtc::VideoTrackInterface> {
  public:
   static scoped_refptr<MockWebRtcVideoTrack> Create(
       const std::string& id,

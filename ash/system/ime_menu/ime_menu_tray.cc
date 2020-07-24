@@ -23,6 +23,7 @@
 #include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -131,7 +132,7 @@ class ImeTitleView : public views::View, public views::ButtonListener {
             0, 0, kMenuSeparatorWidth, 0,
             AshColorProvider::Get()->GetContentLayerColor(
                 AshColorProvider::ContentLayerType::kSeparatorColor,
-                AshColorProvider::AshColorMode::kLight)),
+                AshColorProvider::AshColorMode::kDark)),
         gfx::Insets(kMenuSeparatorVerticalPadding - kMenuSeparatorWidth, 0)));
     auto box_layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal);
@@ -142,8 +143,8 @@ class ImeTitleView : public views::View, public views::ButtonListener {
     title_label->SetBorder(
         views::CreateEmptyBorder(0, kMenuEdgeEffectivePadding, 1, 0));
     title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::TITLE,
-                             false /* use_unified_theme */);
+    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SMALL_TITLE,
+                             true /* use_unified_theme */);
     style.SetupLabel(title_label);
 
     AddChildView(title_label);
@@ -237,7 +238,7 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
             kMenuSeparatorWidth, 0, 0, 0,
             AshColorProvider::Get()->GetContentLayerColor(
                 AshColorProvider::ContentLayerType::kSeparatorColor,
-                AshColorProvider::AshColorMode::kLight)),
+                AshColorProvider::AshColorMode::kDark)),
         gfx::Insets(kMenuSeparatorVerticalPadding - kMenuSeparatorWidth,
                     kMenuExtraMarginFromLeftEdge)));
 
@@ -304,8 +305,8 @@ class ImeMenuListView : public ImeListView {
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
-  ImeMenuListView(std::unique_ptr<Delegate> delegate)
-      : ImeListView(delegate.get(), false /* use_unified_theme */) {
+  explicit ImeMenuListView(std::unique_ptr<Delegate> delegate)
+      : ImeListView(delegate.get(), true /* use_unified_theme */) {
     set_should_focus_ime_after_selection_with_keyboard(true);
     delegate_ = std::move(delegate);
   }
@@ -364,24 +365,37 @@ void ImeMenuTray::ShowImeMenuBubbleInternal(bool show_by_click) {
   init_params.shelf_alignment = shelf()->alignment();
   init_params.preferred_width = kTrayMenuWidth;
   init_params.close_on_deactivate = true;
+  init_params.has_shadow = false;
+  init_params.translucent = true;
+  init_params.corner_radius = kTrayItemCornerRadius;
   init_params.show_by_click = show_by_click;
+
+  auto setup_layered_view = [](views::View* view) {
+    view->SetPaintToLayer();
+    view->layer()->SetFillsBoundsOpaquely(false);
+  };
 
   TrayBubbleView* bubble_view = new TrayBubbleView(init_params);
   bubble_view->set_anchor_view_insets(GetBubbleAnchorInsets());
+  bubble_view->set_margins(GetSecondaryBubbleInsets());
 
   // Add a title item with a separator on the top of the IME menu.
   bool show_bottom_buttons = ShouldShowBottomButtons();
-  bubble_view->AddChildView(new ImeTitleView(!show_bottom_buttons));
+  setup_layered_view(bubble_view->AddChildView(
+      std::make_unique<ImeTitleView>(!show_bottom_buttons)));
 
   // Adds IME list to the bubble.
-  ime_list_view_ = new ImeMenuListView();
+  ime_list_view_ =
+      bubble_view->AddChildView(std::make_unique<ImeMenuListView>());
   ime_list_view_->Init(ShouldShowKeyboardToggle(),
                        ImeListView::SHOW_SINGLE_IME);
-  bubble_view->AddChildView(ime_list_view_);
+  setup_layered_view(ime_list_view_);
 
   if (show_bottom_buttons) {
-    bubble_view->AddChildView(new ImeButtonsView(
-        this, is_emoji_enabled_, is_handwriting_enabled_, is_voice_enabled_));
+    setup_layered_view(
+        bubble_view->AddChildView(std::make_unique<ImeButtonsView>(
+            this, is_emoji_enabled_, is_handwriting_enabled_,
+            is_voice_enabled_)));
   }
 
   bubble_ = std::make_unique<TrayBubbleWrapper>(this, bubble_view,

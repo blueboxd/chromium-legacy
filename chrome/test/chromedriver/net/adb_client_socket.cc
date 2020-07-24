@@ -79,8 +79,8 @@ class AdbTransportSocket : public AdbClientSocket {
       return;
     SendCommand(base::StringPrintf(kHostTransportCommand, serial_.c_str()),
                 false, true,
-                base::Bind(&AdbTransportSocket::SendLocalAbstract,
-                           base::Unretained(this)));
+                base::BindRepeating(&AdbTransportSocket::SendLocalAbstract,
+                                    base::Unretained(this)));
   }
 
   void SendLocalAbstract(int result, const std::string& response) {
@@ -88,8 +88,8 @@ class AdbTransportSocket : public AdbClientSocket {
       return;
     SendCommand(base::StringPrintf(kLocalAbstractCommand, socket_name_.c_str()),
                 false, true,
-                base::Bind(&AdbTransportSocket::OnSocketAvailable,
-                           base::Unretained(this)));
+                base::BindRepeating(&AdbTransportSocket::OnSocketAvailable,
+                                    base::Unretained(this)));
   }
 
   void OnSocketAvailable(int result, const std::string& response) {
@@ -145,8 +145,8 @@ class HttpOverAdbSocket {
                const std::string& socket_name) {
     AdbClientSocket::TransportQuery(
         port, serial, socket_name,
-        base::Bind(&HttpOverAdbSocket::OnSocketAvailable,
-                   base::Unretained(this)));
+        base::BindRepeating(&HttpOverAdbSocket::OnSocketAvailable,
+                            base::Unretained(this)));
   }
 
   void OnSocketAvailable(int result,
@@ -287,9 +287,9 @@ class AdbQuerySocket : AdbClientSocket {
     // doesn't include a length at the beginning of the data stream.
     bool has_length =
         !base::StartsWith(query, "shell:", base::CompareCase::SENSITIVE);
-    SendCommand(
-        query, has_output, has_length,
-        base::Bind(&AdbQuerySocket::OnResponse, base::Unretained(this)));
+    SendCommand(query, has_output, has_length,
+                base::BindRepeating(&AdbQuerySocket::OnResponse,
+                                    base::Unretained(this)));
   }
 
   void OnResponse(int result, const std::string& response) {
@@ -347,17 +347,18 @@ class AdbSendFileSocket : AdbClientSocket {
   void SendTransport(int result) {
     if (!CheckNetResultOrDie(result))
       return;
-    SendCommand(
-        base::StringPrintf(kHostTransportCommand, serial_.c_str()), false, true,
-        base::Bind(&AdbSendFileSocket::SendSync, base::Unretained(this)));
+    SendCommand(base::StringPrintf(kHostTransportCommand, serial_.c_str()),
+                false, true,
+                base::BindRepeating(&AdbSendFileSocket::SendSync,
+                                    base::Unretained(this)));
   }
 
   void SendSync(int result, const std::string& response) {
     if (!CheckNetResultOrDie(result))
       return;
-    SendCommand(
-        kSyncCommand, false, true,
-        base::Bind(&AdbSendFileSocket::SendSend, base::Unretained(this)));
+    SendCommand(kSyncCommand, false, true,
+                base::BindRepeating(&AdbSendFileSocket::SendSend,
+                                    base::Unretained(this)));
   }
 
   void SendSend(int result, const std::string& response) {
@@ -541,7 +542,7 @@ void AdbClientSocket::ReadResponse(const CommandCallback& response_callback,
       base::MakeRefCounted<net::GrowableIOBuffer>();
   socket_buffer->SetCapacity(kBufferSize);
   if (has_output) {
-    const ParserCallback& parse_output_callback = base::Bind(
+    const ParserCallback& parse_output_callback = base::BindRepeating(
         &AdbClientSocket::ParseOutput, has_length, response_callback);
     int socket_result = socket_->Read(
         socket_buffer.get(), kBufferSize,

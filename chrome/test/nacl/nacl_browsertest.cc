@@ -320,8 +320,8 @@ class NaClBrowserTestPnaclDebug : public NaClBrowserTestPnacl {
     base::Process test_script;
     std::unique_ptr<base::Environment> env(base::Environment::Create());
     nacl::NaClBrowser::SetGdbDebugStubPortListenerForTest(
-        base::Bind(&NaClBrowserTestPnaclDebug::StartTestScript,
-                   base::Unretained(this), &test_script));
+        base::BindRepeating(&NaClBrowserTestPnaclDebug::StartTestScript,
+                            base::Unretained(this), &test_script));
     // Turn on debug stub logging.
     env->SetVar("NACLVERBOSITY", "1");
     RunLoadTest(test_url);

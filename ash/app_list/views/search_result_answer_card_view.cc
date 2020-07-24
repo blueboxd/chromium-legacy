@@ -365,10 +365,6 @@ bool SearchResultAnswerCardView::OnKeyPressed(const ui::KeyEvent& event) {
   return SearchResultContainerView::OnKeyPressed(event);
 }
 
-SearchResultBaseView* SearchResultAnswerCardView::GetFirstResultView() {
-  return num_results() <= 0 ? nullptr : search_answer_container_view_;
-}
-
 SearchResultBaseView* SearchResultAnswerCardView::GetResultViewAt(
     size_t index) {
   DCHECK_EQ(index, 0u);

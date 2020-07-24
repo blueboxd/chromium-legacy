@@ -6,7 +6,13 @@
 # Usage:
 # Make edits to *.java and *.pgcfg
 # Then run: ./build.sh | less
+
+
+# Finds any version of dexdump available
+dexdumps=( ../../android_sdk/public/build-tools/*/dexdump )
+DEXDUMP=${dexdumps[0]}
+
 rm -f *.class
 javac *.java && \
 java -jar ../lib/r8.jar *.class --output . --lib ../../jdk/current --no-minification --pg-conf playground.pgcfg && \
-../../android_sdk/public/build-tools/29.0.2/dexdump -d classes.dex > dexdump.txt
+$DEXDUMP -d classes.dex > dexdump.txt

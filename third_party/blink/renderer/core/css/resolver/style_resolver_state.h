@@ -126,13 +126,6 @@ class CORE_EXPORT StyleResolverState {
     is_animation_interpolation_map_ready_ = true;
   }
 
-  bool IsAnimatingCustomProperties() const {
-    return is_animating_custom_properties_;
-  }
-  void SetIsAnimatingCustomProperties(bool value) {
-    is_animating_custom_properties_ = value;
-  }
-
   Element* GetAnimatingElement() const;
 
   void SetParentStyle(scoped_refptr<const ComputedStyle>);
@@ -268,7 +261,6 @@ class CORE_EXPORT StyleResolverState {
 
   CSSAnimationUpdate animation_update_;
   bool is_animation_interpolation_map_ready_ = false;
-  bool is_animating_custom_properties_ = false;
   bool has_dir_auto_attribute_ = false;
   PseudoElementStyleRequest::RequestType pseudo_request_type_;
 

@@ -7,8 +7,6 @@ from blob_reference_store import BlobReferenceStore
 from appengine_wrappers import blobstore
 from appengine_wrappers import files
 
-BLOBSTORE_GITHUB = 'BlobstoreGithub'
-
 # TODO(kalman): Re-write this class.
 #   - It uses BlobReader which is a synchronous method. We should be creating
 #     multiple async fetches, one for each partition, then exposing a Future

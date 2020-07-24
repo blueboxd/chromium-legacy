@@ -9,13 +9,10 @@
 //  * An arbitrary identifier key e.g. "cr-extensions-examples".
 //  * What URL the rule should be invoked with, given by "serveFrom", e.g.
 //    "extensions/examples".
-//  * An object describing where the content originates, either "chromium",
-//    "github", or "gcs".
+//  * An object describing where the content originates, either "chromium" or
+//  * "gcs".
 //  * "chromium" must provide a "dir" value specifying which chromium directory
 //     to look in, e.g. "extensions/samples".
-//  * "github" must provide "owner" and "repo" values specifying the owner of
-//    the GitHub repository, and the repository name, e.g. "GoogleChrome" and
-//    "chrome-app-samples" respectively.
 //
 // In the chromium example, when the user navigates to
 //

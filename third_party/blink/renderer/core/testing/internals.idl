@@ -366,11 +366,6 @@
     boolean setScrollbarVisibilityInScrollableArea(Node node, boolean visible);
 
     [RaisesException] double monotonicTimeToZeroBasedDocumentTime(double platformTime);
-
-    // Translate an event's DOMHighResTimeStamp in seconds into a monotonic time
-    // in milliseconds.
-    long long zeroBasedDocumentTimeToMonotonicTime(double domHighResTimeStamp);
-
     long long currentTimeTicks();
 
     DOMString getScrollAnimationState(Node node);

@@ -66,9 +66,6 @@ class InstanceServlet(object):
     def CreateHostFileSystemProvider(self, object_store_creator, **optargs):
       return HostFileSystemProvider(object_store_creator, **optargs)
 
-    def CreateGithubFileSystemProvider(self, object_store_creator):
-      return GithubFileSystemProvider(object_store_creator)
-
   @staticmethod
   def GetConstructor(delegate_for_test=None):
     render_servlet_delegate = InstanceServletRenderServletDelegate(

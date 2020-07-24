@@ -358,9 +358,6 @@ GLuint SharedImageBackingGLImage::GetGLServiceId() const {
 }
 
 scoped_refptr<gfx::NativePixmap> SharedImageBackingGLImage::GetNativePixmap() {
-  if (IsPassthrough())
-    return nullptr;
-
   return image_->GetNativePixmap();
 }
 

@@ -23,6 +23,7 @@
 #include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_proto_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
@@ -386,6 +387,68 @@ TEST_F(WebAppDatabaseTest, OpenDatabaseAndReadRegistry) {
 
   controller().Init();
   EXPECT_TRUE(IsRegistryEqual(mutable_registrar().registry(), registry));
+}
+
+TEST_F(WebAppDatabaseTest, BackwardCompatibility_WebAppWithOnlyRequiredFields) {
+  const GURL launch_url{"https://example.com/"};
+  const AppId app_id = GenerateAppIdFromURL(launch_url);
+  const std::string name = "App Name";
+  const auto user_display_mode = DisplayMode::kBrowser;
+  const bool is_locally_installed = true;
+
+  std::vector<std::unique_ptr<WebAppProto>> protos;
+
+  // Create a proto with |required| only fields.
+  // Do not add new fields in this test: any new fields should be |optional|.
+  auto proto = std::make_unique<WebAppProto>();
+  {
+    sync_pb::WebAppSpecifics sync_proto;
+    sync_proto.set_launch_url(launch_url.spec());
+    sync_proto.set_user_display_mode(
+        ToWebAppSpecificsUserDisplayMode(user_display_mode));
+    *(proto->mutable_sync_data()) = std::move(sync_proto);
+  }
+
+  proto->set_name(name);
+  proto->set_is_locally_installed(is_locally_installed);
+
+  proto->mutable_sources()->set_system(false);
+  proto->mutable_sources()->set_policy(false);
+  proto->mutable_sources()->set_web_app_store(false);
+  proto->mutable_sources()->set_sync(true);
+  proto->mutable_sources()->set_default_(false);
+
+  if (IsChromeOs()) {
+    proto->mutable_chromeos_data()->set_show_in_launcher(false);
+    proto->mutable_chromeos_data()->set_show_in_search(false);
+    proto->mutable_chromeos_data()->set_show_in_management(false);
+    proto->mutable_chromeos_data()->set_is_disabled(true);
+  }
+
+  protos.push_back(std::move(proto));
+  database_factory().WriteProtos(protos);
+
+  // Read the registry: the proto parsing may fail while reading the proto
+  // above.
+  controller().Init();
+
+  const WebApp* app = registrar().GetAppById(app_id);
+  EXPECT_EQ(app_id, app->app_id());
+  EXPECT_EQ(launch_url, app->launch_url());
+  EXPECT_EQ(name, app->name());
+  EXPECT_EQ(user_display_mode, app->user_display_mode());
+  EXPECT_EQ(is_locally_installed, app->is_locally_installed());
+  EXPECT_TRUE(app->IsSynced());
+  EXPECT_FALSE(app->IsDefaultApp());
+
+  if (IsChromeOs()) {
+    EXPECT_FALSE(app->chromeos_data()->show_in_launcher);
+    EXPECT_FALSE(app->chromeos_data()->show_in_search);
+    EXPECT_FALSE(app->chromeos_data()->show_in_management);
+    EXPECT_TRUE(app->chromeos_data()->is_disabled);
+  } else {
+    EXPECT_FALSE(app->chromeos_data().has_value());
+  }
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {

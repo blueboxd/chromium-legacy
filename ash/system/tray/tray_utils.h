@@ -21,8 +21,12 @@ void SetupLabelForTray(views::Label* label);
 // Gets the current tray icon color for the given session state.
 SkColor TrayIconColor(session_manager::SessionState session_state);
 
-// Returns the insets above the shelf for positioning the tray bubble.
+// Returns the insets above the shelf for positioning the quick settings bubble.
 gfx::Insets GetTrayBubbleInsets();
+
+// Returns the separation above the shelf for positioning secondary tray
+// bubbles. (Palette Tray, IME Tray).
+gfx::Insets GetSecondaryBubbleInsets();
 
 }  // namespace ash
 

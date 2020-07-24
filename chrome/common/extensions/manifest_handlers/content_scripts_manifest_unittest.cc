@@ -7,11 +7,13 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "chrome/common/webui_url_constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
@@ -100,6 +102,45 @@ TEST_F(ContentScriptsManifestTest, FailLoadingNonUTF8Scripts) {
       "Could not load file 'bad_encoding.js' for content script. "
       "It isn't UTF-8 encoded.",
       error.c_str());
+}
+
+TEST_F(ContentScriptsManifestTest, MatchDataURLs_FeatureEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      extensions_features::kContentScriptsOnDataUrls);
+
+  scoped_refptr<const Extension> extension =
+      LoadAndExpectSuccess("content_script_match_data_urls.json");
+  ASSERT_TRUE(extension);
+  const UserScriptList& user_scripts =
+      ContentScriptsInfo::GetContentScripts(extension.get());
+  ASSERT_EQ(3u, user_scripts.size());
+
+  // The first script specifies `"match_data_urls": true`.
+  EXPECT_TRUE(user_scripts[0]->match_data_urls());
+  // The second specifies `"match_data_urls": false`.
+  EXPECT_FALSE(user_scripts[1]->match_data_urls());
+  // The third doesn't specify a value for "match_data_urls"; it should
+  // default to false.
+  EXPECT_FALSE(user_scripts[2]->match_data_urls());
+}
+
+TEST_F(ContentScriptsManifestTest, MatchDataURLs_FeatureDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      extensions_features::kContentScriptsOnDataUrls);
+
+  scoped_refptr<const Extension> extension =
+      LoadAndExpectSuccess("content_script_match_data_urls.json");
+  ASSERT_TRUE(extension);
+  const UserScriptList& user_scripts =
+      ContentScriptsInfo::GetContentScripts(extension.get());
+  ASSERT_EQ(3u, user_scripts.size());
+
+  // Without the feature enabled, match_data_urls should always be false.
+  EXPECT_FALSE(user_scripts[0]->match_data_urls());
+  EXPECT_FALSE(user_scripts[1]->match_data_urls());
+  EXPECT_FALSE(user_scripts[2]->match_data_urls());
 }
 
 }  // namespace extensions

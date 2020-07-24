@@ -167,8 +167,28 @@ std::ostream& operator<<(std::ostream& os, ArcSupportHost::Error error) {
       return os << "SIGN_IN_BAD_AUTHENTICATION_ERROR";
     case ArcSupportHost::Error::SIGN_IN_GMS_NOT_AVAILABLE_ERROR:
       return os << "SIGN_IN_GMS_NOT_AVAILABLE_ERROR";
+    case ArcSupportHost::Error::
+        SIGN_IN_CLOUD_PROVISION_FLOW_ACCOUNT_MISSING_ERROR:
+      return os << "SIGN_IN_CLOUD_PROVISION_FLOW_ACCOUNT_MISSING_ERROR";
+    case ArcSupportHost::Error::
+        SIGN_IN_CLOUD_PROVISION_FLOW_DEVICE_QUOTA_EXCEEDED:
+      return os << "SIGN_IN_CLOUD_PROVISION_FLOW_DEVICE_QUOTA_EXCEEDED";
+    case ArcSupportHost::Error::
+        SIGN_IN_CLOUD_PROVISION_FLOW_DOMAIN_JOIN_FAIL_ERROR:
+      return os << "SIGN_IN_CLOUD_PROVISION_FLOW_DOMAIN_JOIN_FAIL_ERROR";
+    case ArcSupportHost::Error::
+        SIGN_IN_CLOUD_PROVISION_FLOW_ENROLLMENT_TOKEN_INVALID:
+      return os << "SIGN_IN_CLOUD_PROVISION_FLOW_ENROLLMENT_TOKEN_INVALID";
     case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR:
       return os << "SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR";
+    case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_INTERRUPTED_ERROR:
+      return os << "SIGN_IN_CLOUD_PROVISION_FLOW_INTERRUPTED_ERROR";
+    case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_NETWORK_ERROR:
+      return os << "SIGN_IN_CLOUD_PROVISION_FLOW_NETWORK_ERROR";
+    case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_PERMANENT_ERROR:
+      return os << "SIGN_IN_CLOUD_PROVISION_FLOW_PERMANENT_ERROR";
+    case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_TRANSIENT_ERROR:
+      return os << "SIGN_IN_CLOUD_PROVISION_FLOW_TRANSIENT_ERROR";
     case ArcSupportHost::Error::SIGN_IN_UNKNOWN_ERROR:
       return os << "SIGN_IN_UNKNOWN_ERROR";
     case ArcSupportHost::Error::SERVER_COMMUNICATION_ERROR:
@@ -332,7 +352,20 @@ void ArcSupportHost::ShowError(Error error, bool should_show_send_feedback) {
     case Error::SIGN_IN_GMS_NOT_AVAILABLE_ERROR:
       message_id = IDS_ARC_SIGN_IN_GMS_NOT_AVAILABLE_ERROR;
       break;
-    case Error::SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR:
+    // TODO(b/62613791) Show separate message for each error
+    case ArcSupportHost::Error::
+        SIGN_IN_CLOUD_PROVISION_FLOW_ACCOUNT_MISSING_ERROR:
+    case ArcSupportHost::Error::
+        SIGN_IN_CLOUD_PROVISION_FLOW_DEVICE_QUOTA_EXCEEDED:
+    case ArcSupportHost::Error::
+        SIGN_IN_CLOUD_PROVISION_FLOW_DOMAIN_JOIN_FAIL_ERROR:
+    case ArcSupportHost::Error::
+        SIGN_IN_CLOUD_PROVISION_FLOW_ENROLLMENT_TOKEN_INVALID:
+    case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR:
+    case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_INTERRUPTED_ERROR:
+    case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_NETWORK_ERROR:
+    case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_PERMANENT_ERROR:
+    case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_TRANSIENT_ERROR:
       message_id = IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR;
       break;
     case Error::SIGN_IN_UNKNOWN_ERROR:

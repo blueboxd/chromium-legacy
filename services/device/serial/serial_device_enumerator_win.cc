@@ -74,6 +74,17 @@ base::FilePath FixUpPortName(base::StringPiece port_name) {
   return base::FilePath::FromUTF8Unsafe(port_name);
 }
 
+// Searches for the COM port in the device's friendly name and returns the
+// appropriate device path or nullopt if the input did not contain a valid
+// name.
+base::Optional<base::FilePath> GetPath(const std::string& friendly_name) {
+  std::string com_port;
+  if (!RE2::PartialMatch(friendly_name, ".* \\((COM[0-9]+)\\)", &com_port))
+    return base::nullopt;
+
+  return FixUpPortName(com_port);
+}
+
 // Searches for the display name in the device's friendly name, assigns its
 // value to display_name, and returns whether the operation was successful.
 bool GetDisplayName(const std::string friendly_name,
@@ -165,16 +176,6 @@ SerialDeviceEnumeratorWin::SerialDeviceEnumeratorWin(
 }
 
 SerialDeviceEnumeratorWin::~SerialDeviceEnumeratorWin() = default;
-
-// static
-base::Optional<base::FilePath> SerialDeviceEnumeratorWin::GetPath(
-    const std::string& friendly_name) {
-  std::string com_port;
-  if (!RE2::PartialMatch(friendly_name, ".* \\((COM[0-9]+)\\)", &com_port))
-    return base::nullopt;
-
-  return FixUpPortName(com_port);
-}
 
 void SerialDeviceEnumeratorWin::OnPathAdded(const std::wstring& device_path) {
   base::win::ScopedDevInfo dev_info(

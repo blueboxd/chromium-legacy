@@ -52,7 +52,7 @@
 <translation id="1054153489933238809">Жаңа қойындыда түпнұсқалық &amp;кескінді ашу</translation>
 <translation id="1055806300943943258">Bluetooth және USB құрылғылары ізделуде…</translation>
 <translation id="1056466516655540509"><ph name="MINUTES" /> минут бұрын жаңартылды</translation>
-<translation id="1056775291175587022">Бірде-бір желі табылмады</translation>
+<translation id="1056775291175587022">Желі табылмады</translation>
 <translation id="1056898198331236512">Ескерту</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1060292118287751956">Экранның жаңару жиілігін анықтайды.</translation>
@@ -1215,7 +1215,7 @@
 <translation id="247949520305900375">Аудиомен бөлісу</translation>
 <translation id="248003956660572823">Құпия сөздер сақталмаған</translation>
 <translation id="2480868415629598489">Көшіріліп қойылатын деректерді жаңарту</translation>
-<translation id="2482878487686419369">Хабарламалар</translation>
+<translation id="2482878487686419369">Хабарландырулар</translation>
 <translation id="2484959914739448251">Барлық синхрондалған құрылғылардан және Google есептік жазбасынан браузерді пайдалану деректерін өшіру үшін, <ph name="BEGIN_LINK" />құпия фразаны енгізіңіз<ph name="END_LINK" />.</translation>
 <translation id="2485005079599453134">Құпия сөз осы құрылғыда сақталды</translation>
 <translation id="2485422356828889247">Жою</translation>
@@ -3743,7 +3743,7 @@
 <translation id="5659833766619490117">Бет аударылмады</translation>
 <translation id="5662513737565158057">Linux қолданбаларының жұмыс істеу жолын өзгертіңіз.</translation>
 <translation id="5667546120811588575">Google Play орнатылуда...</translation>
-<translation id="5669267381087807207">Белсендіру</translation>
+<translation id="5669267381087807207">Белсендірілуде</translation>
 <translation id="5669691691057771421">Жаңа PIN кодын енгізіңіз</translation>
 <translation id="5671641761787789573">Кескіндер бөгелді</translation>
 <translation id="5671658447180261823"><ph name="SUGGESTION_NAME" /> ұсынысын өшіру</translation>
@@ -3939,7 +3939,7 @@
   Ортақ көрсеткіш (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> бит):
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="5916084858004523819">Тыйым салынды</translation>
-<translation id="5916664084637901428">Қосу</translation>
+<translation id="5916664084637901428">Қосулы</translation>
 <translation id="59174027418879706">Қосылған</translation>
 <translation id="5920543303088087579">Әкімшіңіз бұл желіге қосылу мүмкіндігін өшіріп қойған</translation>
 <translation id="5920835625712313205">Chrome OС жүйесінің кескін жазу құралы</translation>
@@ -4302,7 +4302,7 @@
 <translation id="6362853299801475928">&amp;Мәселе туралы хабарлау…</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Отбасы мен достарды қосу</translation>
-<translation id="6367985768157257101">Nearby Share арқылы қабылдау керек пе?</translation>
+<translation id="6367985768157257101">Nearby Share сұрауын қабылдау керек пе?</translation>
 <translation id="636850387210749493">Кәсіпорынды тіркеу</translation>
 <translation id="6370021412472292592">Манифестті жүктеу мүмкін болмады.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
@@ -4439,7 +4439,6 @@
 <translation id="6545864417968258051">Bluetooth құрылғыларын іздеу</translation>
 <translation id="6545867563032584178">Микрофон Mac жүйесінің параметрлерінде өшірілген.</translation>
 <translation id="6547354035488017500">Кемінде 512 MБ орын босатпасаңыз, құрылғы жауап бермейтін болады. Бұл үшін файлдарды құрылғының жадынан жойыңыз.</translation>
-<translation id="6549639163247690448"><ph name="DOMAIN" /> ережесі бойынша Wi-Fi желісіне қосылып, жаңартылған нұсқаны жүктеп алу қажет. Интернетке қосылғаннан кейін, жаңартылған нұсқа автоматты түрде жүктеп алынады.</translation>
 <translation id="6550675742724504774">Опциялар</translation>
 <translation id="6551508934388063976">Пәрмен қолжетімсіз. Жаңа терезе ашу үшін Ctrl+N тіркесімін басыңыз.</translation>
 <translation id="6551612971599078809">Сайт USB құрылғысын пайдалануда</translation>
@@ -5783,7 +5782,6 @@
 <translation id="8213577208796878755">Басқа бір қолжетімді құрылғы.</translation>
 <translation id="8214489666383623925">Файлды ашу…</translation>
 <translation id="8214962590150211830">Бұл тұлғаны өшіру</translation>
-<translation id="8215295261562449873">Linux жүйесінің жаңа нұсқасын орнатпас бұрын, "Жүктеп алынғандар" қалтасында қолданбалар мен файлдардың сақтық көшірмесін жасаңыз.</translation>
 <translation id="8217399928341212914">Бірнеше файлды автоматты жүктеуге салынған тыйымды сақтау</translation>
 <translation id="8218847192766059983">Тілдерді енгізіңіз немесе тізімнің ретін өзгертіңіз. <ph name="BEGIN_LINK" />Толығырақ<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">Әдетте хабарландыруларға тыйым саласыз. Осы сайттың сізге хабарландыру жіберуіне рұқсат ету үшін осы жерді басыңыз.</translation>

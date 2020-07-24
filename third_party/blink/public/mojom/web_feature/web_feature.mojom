@@ -2685,8 +2685,7 @@ enum WebFeature {
   kResourceTiming = 3350,
   kV8PointerEvent_AzimuthAngle_AttributeGetter = 3351,
   kV8PointerEvent_AltitudeAngle_AttributeGetter = 3352,
-
-
+  kCrossBrowsingContextGroupMainFrameNulledNonEmptyNameAccessed = 3353,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

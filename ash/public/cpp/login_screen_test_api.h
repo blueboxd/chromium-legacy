@@ -44,6 +44,8 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static void SubmitPassword(const AccountId& account_id,
                              const std::string& password,
                              bool check_if_submittable);
+  static base::string16 GetChallengeResponseLabel(const AccountId& account_id);
+  static bool IsChallengeResponseButtonClickable(const AccountId& account_id);
   static void ClickChallengeResponseButton(const AccountId& account_id);
   static int64_t GetUiUpdateCount();
   static bool LaunchApp(const std::string& app_id);
@@ -83,6 +85,7 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static void SetPinRequestWidgetShownCallback(
       base::RepeatingClosure on_pin_request_widget_shown);
   static void SubmitPinRequestWidget(const std::string& pin);
+  static void CancelPinRequestWidget();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(LoginScreenTestApi);

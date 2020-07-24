@@ -79,7 +79,7 @@ CSSValue* ConsumeFontFaceSrcURI(CSSParserTokenRange& range,
     return nullptr;
   CSSFontFaceSrcValue* uri_value(CSSFontFaceSrcValue::Create(
       url, context.CompleteURL(url), context.GetReferrer(),
-      context.ShouldCheckContentSecurityPolicy(),
+      context.JavascriptWorld(),
       context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse,
       context.IsAdRelated()));
 
@@ -100,14 +100,12 @@ CSSValue* ConsumeFontFaceSrcURI(CSSParserTokenRange& range,
 CSSValue* ConsumeFontFaceSrcLocal(CSSParserTokenRange& range,
                                   const CSSParserContext& context) {
   CSSParserTokenRange args = css_parsing_utils::ConsumeFunction(range);
-  network::mojom::CSPDisposition should_check_content_security_policy =
-      context.ShouldCheckContentSecurityPolicy();
   if (args.Peek().GetType() == kStringToken) {
     const CSSParserToken& arg = args.ConsumeIncludingWhitespace();
     if (!args.AtEnd())
       return nullptr;
     return CSSFontFaceSrcValue::CreateLocal(
-        arg.Value().ToString(), should_check_content_security_policy,
+        arg.Value().ToString(), context.JavascriptWorld(),
         context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse,
         context.IsAdRelated());
   }
@@ -116,7 +114,7 @@ CSSValue* ConsumeFontFaceSrcLocal(CSSParserTokenRange& range,
     if (!args.AtEnd())
       return nullptr;
     return CSSFontFaceSrcValue::CreateLocal(
-        family_name, should_check_content_security_policy,
+        family_name, context.JavascriptWorld(),
         context.IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse,
         context.IsAdRelated());
   }

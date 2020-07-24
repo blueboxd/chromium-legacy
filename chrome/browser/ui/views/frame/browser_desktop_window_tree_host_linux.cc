@@ -14,7 +14,22 @@
 #include "chrome/browser/ui/views/frame/desktop_browser_frame_aura_linux.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/extensions/x11_extension.h"
+
+namespace {
+
+bool CreateGlobalMenuBar() {
+#if defined(USE_OZONE)
+  return ui::OzonePlatform::GetInstance()
+      ->GetPlatformProperties()
+      .supports_global_application_menus;
+#else
+  return true;
+#endif
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopWindowTreeHostLinux, public:
@@ -76,17 +91,19 @@ void BrowserDesktopWindowTreeHostLinux::Init(
     const views::Widget::InitParams& params) {
   DesktopWindowTreeHostLinuxImpl::Init(std::move(params));
 
-#if defined(USE_X11)
-  // We have now created our backing X11 window. We now need to (possibly)
-  // alert Unity that there's a menu bar attached to it.
-  if (!features::IsUsingOzonePlatform())
-    global_menu_bar_x11_ =
-        std::make_unique<GlobalMenuBarX11>(browser_view_, this);
+#if defined(USE_DBUS_MENU)
+  // We have now created our backing X11 window.  We now need to (possibly)
+  // alert the desktop environment that there's a menu bar attached to it.
+
+  if (CreateGlobalMenuBar()) {
+    global_menu_bar_x11_ = std::make_unique<GlobalMenuBarX11>(
+        browser_view_, GetAcceleratedWidget());
+  }
 #endif
 }
 
 void BrowserDesktopWindowTreeHostLinux::CloseNow() {
-#if defined(USE_X11)
+#if defined(USE_DBUS_MENU)
   global_menu_bar_x11_.reset();
 #endif
   DesktopWindowTreeHostLinuxImpl::CloseNow();

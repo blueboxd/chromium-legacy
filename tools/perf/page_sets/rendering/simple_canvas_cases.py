@@ -32,6 +32,11 @@ class SimpleCanvasPage(rendering_story.RenderingStory):
       action_runner.Wait(10)
 
 
+class Canvas2dToTexture(SimpleCanvasPage):
+  BASE_NAME = 'canvas2d_to_texture.html'
+  URL = 'file://../simple_canvas/canvas2d_to_texture.html'
+
+
 class CanvasToCanvasDrawPage(SimpleCanvasPage):
   BASE_NAME = 'canvas_to_canvas_draw'
   URL = 'file://../simple_canvas/canvas_to_canvas_draw.html'
@@ -72,6 +77,11 @@ class GetImageData(SimpleCanvasPage):
   URL = 'file://../simple_canvas/get_image_data.html'
 
 
+class GpuBoundShader(SimpleCanvasPage):
+  BASE_NAME = 'gpu_bound_shader.html'
+  URL = 'file://../simple_canvas/gpu_bound_shader.html'
+
+
 class HWAcceleratedCanvasToSWCanvas(SimpleCanvasPage):
   BASE_NAME = 'hw_accelerated_canvas_to_sw_canvas.html'
   URL = 'file://../simple_canvas/hw_accelerated_canvas_to_sw_canvas.html'
@@ -95,3 +105,18 @@ class StaticCanvasToHWAcceleratedCanvas(SimpleCanvasPage):
 class StaticWebglToHWAcceleratedCanvas(SimpleCanvasPage):
   BASE_NAME = 'static_webgl_to_hw_accelerated_canvas.html'
   URL = 'file://../simple_canvas/static_webgl_to_hw_accelerated_canvas.html'
+
+
+class SheetsRender(SimpleCanvasPage):
+  BASE_NAME = 'sheets_render.html'
+  URL = 'file://../simple_canvas/sheets_render.html'
+
+
+class ToBlobDurationJpeg(SimpleCanvasPage):
+  BASE_NAME = 'toBlob_duration_jpeg.html'
+  URL = 'file://../simple_canvas/toBlob_duration_jpeg.html'
+
+
+class TransferFromImageBitmap(SimpleCanvasPage):
+  BASE_NAME = 'transfer_from_imageBitmap.html'
+  URL = 'file://../simple_canvas/transfer_from_imageBitmap.html'

@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/native_library.h"
+#include "gpu/vulkan/init/gr_vk_memory_allocator_impl.h"
 #include "gpu/vulkan/init/vulkan_factory.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
@@ -173,7 +174,7 @@ bool AwVulkanContextProvider::Initialize(AwDrawFn_InitVkParams* params) {
       .fVkExtensions = &vk_extensions,
       .fDeviceFeatures = params->device_features,
       .fDeviceFeatures2 = params->device_features_2,
-      .fMemoryAllocator = nullptr,
+      .fMemoryAllocator = gpu::CreateGrVkMemoryAllocator(device_queue_.get()),
       .fGetProc = get_proc,
       .fOwnsInstanceAndDevice = false,
   };

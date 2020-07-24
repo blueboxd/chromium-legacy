@@ -236,52 +236,12 @@
         "name": "blink_perf.canvas/drawimage_RAF.html?RAF"
     },
     {
-        "duration": "6.0",
-        "name": "blink_perf.canvas/gpu-bound-shader.html"
-    },
-    {
-        "duration": "10.0",
-        "name": "blink_perf.canvas/gpu-bound-shader_RAF.html?RAF"
-    },
-    {
-        "duration": "34.0",
-        "name": "blink_perf.canvas/sheets-render.html"
-    },
-    {
-        "duration": "10.0",
-        "name": "blink_perf.canvas/sheets-render_RAF.html?RAF"
-    },
-    {
         "duration": "10.0",
         "name": "blink_perf.canvas/toBlob_duration.html"
     },
     {
         "duration": "10.0",
         "name": "blink_perf.canvas/toBlob_duration_RAF.html?RAF"
-    },
-    {
-        "duration": "8.0",
-        "name": "blink_perf.canvas/toBlob_duration_jpeg.html"
-    },
-    {
-        "duration": "8.0",
-        "name": "blink_perf.canvas/toBlob_duration_jpeg_RAF.html?RAF"
-    },
-    {
-        "duration": "26.0",
-        "name": "blink_perf.canvas/transferFromImageBitmap.html"
-    },
-    {
-        "duration": "34.0",
-        "name": "blink_perf.canvas/transferFromImageBitmap_RAF.html?RAF"
-    },
-    {
-        "duration": "8.0",
-        "name": "blink_perf.canvas/upload-canvas-2d-to-texture.html"
-    },
-    {
-        "duration": "12.0",
-        "name": "blink_perf.canvas/upload-canvas-2d-to-texture_RAF.html?RAF"
     },
     {
         "duration": "18.0",

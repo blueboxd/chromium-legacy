@@ -2577,6 +2577,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         mOptionalButton.setImageDrawable(buttonData.drawable);
         mOptionalButton.setContentDescription(
                 getContext().getResources().getString(buttonData.contentDescriptionResId));
+        mOptionalButton.setEnabled(buttonData.isEnabled);
 
         mOptionalButtonUsesTint = buttonData.supportsTinting;
         if (mOptionalButtonUsesTint) {

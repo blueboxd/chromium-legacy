@@ -95,6 +95,10 @@ void TrayPopupItemStyle::SetupLabel(views::Label* label) const {
                                                gfx::Font::NORMAL,
                                                gfx::Font::Weight::MEDIUM));
       break;
+    case FontStyle::SMALL_TITLE:
+      label->SetFontList(base_font_list.Derive(1, gfx::Font::NORMAL,
+                                               gfx::Font::Weight::MEDIUM));
+      break;
     case FontStyle::SUB_HEADER:
       label->SetFontList(base_font_list.Derive(4, gfx::Font::NORMAL,
                                                gfx::Font::Weight::MEDIUM));

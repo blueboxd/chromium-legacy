@@ -23,7 +23,7 @@ WPR_RECORD_REPLAY_TEST_DIRECTORIES = [
 
 
 def _is_file_of_interest(f):
-  """Filter all wprgo archive file through."""
+  """Filters all wprgo archive file through."""
   return f.endswith('.wprgo')
 
 

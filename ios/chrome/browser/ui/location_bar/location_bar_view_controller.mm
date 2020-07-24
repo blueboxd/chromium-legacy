@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/orchestrator/location_bar_offset_provider.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -449,17 +450,15 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
     [self.locationBarSteadyView becomeFirstResponder];
 
     UIMenuController* menu = [UIMenuController sharedMenuController];
-    UIMenuItem* searchCopiedImage = [[UIMenuItem alloc]
+    RegisterEditMenuItem([[UIMenuItem alloc]
         initWithTitle:l10n_util::GetNSString((IDS_IOS_SEARCH_COPIED_IMAGE))
-               action:@selector(searchCopiedImage:)];
-    UIMenuItem* visitCopiedLink = [[UIMenuItem alloc]
+               action:@selector(searchCopiedImage:)]);
+    RegisterEditMenuItem([[UIMenuItem alloc]
         initWithTitle:l10n_util::GetNSString(IDS_IOS_VISIT_COPIED_LINK)
-               action:@selector(visitCopiedLink:)];
-    UIMenuItem* searchCopiedText = [[UIMenuItem alloc]
+               action:@selector(visitCopiedLink:)]);
+    RegisterEditMenuItem([[UIMenuItem alloc]
         initWithTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_TEXT)
-               action:@selector(searchCopiedText:)];
-    [menu
-        setMenuItems:@[ searchCopiedImage, visitCopiedLink, searchCopiedText ]];
+               action:@selector(searchCopiedText:)]);
 
     [menu setTargetRect:self.locationBarSteadyView.frame inView:self.view];
     [menu setMenuVisible:YES animated:YES];
@@ -513,8 +512,7 @@ const double kFullscreenProgressBadgeViewThreshold = 0.85;
 }
 
 - (void)visitCopiedLink:(id)sender {
-  RecordAction(
-      UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedImage"));
+  RecordAction(UserMetricsAction("Mobile.OmniboxContextMenu.VisitCopiedLink"));
   [self pasteAndGo:sender];
 }
 

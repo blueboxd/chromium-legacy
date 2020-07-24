@@ -434,7 +434,7 @@
 <translation id="4565377596337484307">पासवर्ड छिपाएं</translation>
 <translation id="4572422548854449519">प्रबंधित खाते में साइन इन करें</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# मिनट पहले}one{# मिनट पहले}other{# मिनट पहले}}</translation>
-<translation id="4587589328781138893">साइटें</translation>
+<translation id="4587589328781138893">Sites</translation>
 <translation id="4594952190837476234">यह पेज <ph name="CREATION_TIME" /> का है और यह ऑनलाइन वर्शन से अलग हो सकता है.</translation>
 <translation id="4605958867780575332">आइटम निकाला गया: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> को खोलें</translation>
@@ -723,7 +723,7 @@
 <translation id="6671495933530132209">चित्र की कॉपी बनाएं</translation>
 <translation id="6676840375528380067">इस डिवाइस से अपना Chrome डेटा हटाएं?</translation>
 <translation id="6689172468748959065">प्रोफ़ाइल फ़ोटो</translation>
-<translation id="6691888250440401212">1. <ph name="APP_NAME" />\n2 चुनें. “डिफ़ॉल्ट के तौर पर सेट करें” पर टैप करें</translation>
+<translation id="6691888250440401212">1. <ph name="APP_NAME" /> चुनें\n2. “डिफ़ॉल्ट के तौर पर सेट करें” पर टैप करें</translation>
 <translation id="6697492270171225480">जब कोई पेज मिल नहीं पा रहा हो तो मिलते-जुलते पेज के सुझाव दिखाएं</translation>
 <translation id="6698801883190606802">सिंक किया गया डेटा प्रबंधित करें</translation>
 <translation id="6699370405921460408">Google के सर्वर उन पेज को ऑप्टिमाइज़ करेंगे जिन पर आप जाते हैं.</translation>

@@ -73,10 +73,14 @@ class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
   enum class WaitMode {
     // Don't wait, and return immediately.
     kNone,
+    // Wait until the force-installation pref is updated.
+    kPrefSet,
     // Wait until the extension is loaded.
     kLoad,
     // Wait until the extension's background page is ready.
     kBackgroundPageReady,
+    // Wait until the extension's background page is loaded for the first time.
+    kBackgroundPageFirstLoad,
   };
 
   explicit ExtensionForceInstallMixin(InProcessBrowserTestMixinHost* host);

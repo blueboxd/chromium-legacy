@@ -128,7 +128,7 @@ ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEvent(
   // normal input field (not a password field).
   // Note: We need to send the key event to ibus even if the |context_| is not
   // enabled, so that ibus can have a chance to enable the |context_|.
-  if (!IsNonPasswordInputFieldFocused() || !GetEngine()) {
+  if (IsPasswordOrNoneInputFieldFocused() || !GetEngine()) {
     if (event->type() == ET_KEY_PRESSED) {
       if (ExecuteCharacterComposer(*event)) {
         // Treating as PostIME event if character composer handles key event and
@@ -202,7 +202,7 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
 
   NotifyTextInputCaretBoundsChanged(client);
 
-  if (!IsNonPasswordInputFieldFocused())
+  if (IsPasswordOrNoneInputFieldFocused())
     return;
 
   // The current text input type should not be NONE if |context_| is focused.
@@ -269,7 +269,7 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
 }
 
 void InputMethodChromeOS::CancelComposition(const TextInputClient* client) {
-  if (IsNonPasswordInputFieldFocused() && IsTextInputClientFocused(client))
+  if (!IsPasswordOrNoneInputFieldFocused() && IsTextInputClientFocused(client))
     ResetContext();
 }
 
@@ -392,7 +392,7 @@ void InputMethodChromeOS::ConfirmCompositionText(bool reset_engine,
 }
 
 void InputMethodChromeOS::ResetContext(bool reset_engine) {
-  if (!IsNonPasswordInputFieldFocused() || !GetTextInputClient())
+  if (IsPasswordOrNoneInputFieldFocused() || !GetTextInputClient())
     return;
 
   pending_composition_ = CompositionText();
@@ -415,7 +415,7 @@ void InputMethodChromeOS::UpdateContextFocusState() {
   chromeos::IMECandidateWindowHandlerInterface* candidate_window =
       ui::IMEBridge::Get()->GetCandidateWindowHandler();
   if (candidate_window)
-    candidate_window->FocusStateChanged(IsNonPasswordInputFieldFocused());
+    candidate_window->FocusStateChanged(!IsPasswordOrNoneInputFieldFocused());
 
   // Propagate focus event to assistive window handler.
   chromeos::IMEAssistiveWindowHandlerInterface* assistive_window =
@@ -774,9 +774,9 @@ void InputMethodChromeOS::ExtractCompositionText(
   }
 }
 
-bool InputMethodChromeOS::IsNonPasswordInputFieldFocused() {
+bool InputMethodChromeOS::IsPasswordOrNoneInputFieldFocused() {
   TextInputType type = GetTextInputType();
-  return (type != TEXT_INPUT_TYPE_NONE) && (type != TEXT_INPUT_TYPE_PASSWORD);
+  return type == TEXT_INPUT_TYPE_NONE || type == TEXT_INPUT_TYPE_PASSWORD;
 }
 
 bool InputMethodChromeOS::IsInputFieldFocused() {

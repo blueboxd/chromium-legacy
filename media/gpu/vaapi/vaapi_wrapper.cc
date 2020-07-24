@@ -285,9 +285,9 @@ bool IsVAProfileSupported(VAProfile va_profile) {
                       }) != kMediaToVAProfileMap.end();
 }
 
-bool IsBlackListedDriver(const std::string& va_vendor_string,
-                         VaapiWrapper::CodecMode mode,
-                         VAProfile va_profile) {
+bool IsBlockedDriver(const std::string& va_vendor_string,
+                     VaapiWrapper::CodecMode mode,
+                     VAProfile va_profile) {
   if (!IsModeEncoding(mode))
     return false;
 
@@ -304,7 +304,7 @@ bool IsBlackListedDriver(const std::string& va_vendor_string,
   }
 
   // TODO(b/158655609): Several Gen 9.5 GPU devices suffer from a GPU hang when
-  // VP8 encoding in some power saving states. Blacklist them temporarily.
+  // VP8 encoding in some power saving states. Block them temporarily.
   if (IsGen95Gpu() && va_profile == VAProfileVP8Version0_3)
     return true;
 
@@ -772,7 +772,7 @@ void VASupportedProfiles::FillSupportedProfileInfos(base::Lock* va_lock,
     std::vector<ProfileInfo> supported_profile_infos;
 
     for (const auto& va_profile : va_profiles) {
-      if (IsBlackListedDriver(va_vendor_string, mode, va_profile))
+      if (IsBlockedDriver(va_vendor_string, mode, va_profile))
         continue;
 
       if ((mode != VaapiWrapper::kVideoProcess) &&

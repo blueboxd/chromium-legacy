@@ -62,12 +62,13 @@ ResponseAction PasswordsPrivateChangeSavedPasswordFunction::Run() {
       api::passwords_private::ChangeSavedPassword::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters);
 
-  GetDelegate(browser_context())
-      ->ChangeSavedPassword(
-          parameters->id, base::UTF8ToUTF16(parameters->new_username),
-          parameters->new_password ? base::make_optional(base::UTF8ToUTF16(
-                                         *parameters->new_password))
-                                   : base::nullopt);
+  if (!GetDelegate(browser_context())
+           ->ChangeSavedPassword(parameters->id,
+                                 base::UTF8ToUTF16(parameters->new_password))) {
+    return RespondNow(Error(
+        "Could not change the password. Either the password is empty, the user "
+        "is not authenticated or no matching password could be found."));
+  }
 
   return RespondNow(NoArguments());
 }

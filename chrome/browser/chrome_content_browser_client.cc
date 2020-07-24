@@ -132,6 +132,8 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
+#include "chrome/browser/ssl/sct_reporting_service.h"
+#include "chrome/browser/ssl/sct_reporting_service_factory.h"
 #include "chrome/browser/ssl/ssl_client_auth_metrics.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
@@ -2782,6 +2784,17 @@ void ChromeContentBrowserClient::OnTrustAnchorUsed(
   }
 }
 #endif
+
+void ChromeContentBrowserClient::OnSCTReportReady(
+    content::BrowserContext* browser_context,
+    const std::string& cache_key) {
+  auto* sct_reporting_service =
+      SCTReportingServiceFactory::GetInstance()->GetForBrowserContext(
+          browser_context);
+  if (sct_reporting_service) {
+    sct_reporting_service->OnSCTReportReady(cache_key);
+  }
+}
 
 scoped_refptr<network::SharedURLLoaderFactory>
 ChromeContentBrowserClient::GetSystemSharedURLLoaderFactory() {

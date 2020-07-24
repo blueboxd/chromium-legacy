@@ -4,21 +4,13 @@
 
 #include "services/device/serial/serial_io_handler_win.h"
 
-#define INITGUID
-#include <devpkey.h>
-#include <setupapi.h>
 #include <windows.h>
 
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
-#include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
 #include "base/task/current_thread.h"
-#include "device/base/device_info_query_win.h"
-#include "device/base/device_monitor_win.h"
-#include "services/device/serial/serial_device_enumerator_win.h"
 
 namespace device {
 
@@ -153,83 +145,6 @@ scoped_refptr<SerialIoHandler> SerialIoHandler::Create(
   return new SerialIoHandlerWin(port, std::move(ui_thread_task_runner));
 }
 
-class SerialIoHandlerWin::UiThreadHelper final
-    : public DeviceMonitorWin::Observer {
- public:
-  UiThreadHelper(
-      base::WeakPtr<SerialIoHandlerWin> io_handler,
-      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
-      : device_observer_(this),
-        io_handler_(io_handler),
-        io_thread_task_runner_(io_thread_task_runner) {}
-
-  ~UiThreadHelper() { DCHECK_CALLED_ON_VALID_THREAD(thread_checker_); }
-
-  static void Start(UiThreadHelper* self) {
-    DETACH_FROM_THREAD(self->thread_checker_);
-    DeviceMonitorWin* device_monitor = DeviceMonitorWin::GetForAllInterfaces();
-    if (device_monitor)
-      self->device_observer_.Add(device_monitor);
-  }
-
- private:
-  // DeviceMonitorWin::Observer
-  void OnDeviceRemoved(const GUID& class_guid,
-                       const std::wstring& device_path) override {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    io_thread_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&SerialIoHandlerWin::OnDeviceRemoved,
-                                  io_handler_, device_path));
-  }
-
-  THREAD_CHECKER(thread_checker_);
-  ScopedObserver<DeviceMonitorWin, DeviceMonitorWin::Observer> device_observer_;
-
-  // This weak pointer is only valid when checked on this task runner.
-  base::WeakPtr<SerialIoHandlerWin> io_handler_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(UiThreadHelper);
-};
-
-void SerialIoHandlerWin::OnDeviceRemoved(const std::wstring& device_path) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  DeviceInfoQueryWin device_info_query;
-  if (!device_info_query.device_info_list_valid()) {
-    DVPLOG(1) << "Failed to create a device information set";
-    return;
-  }
-
-  // This will add the device so we can query driver info.
-  if (!device_info_query.AddDevice(device_path)) {
-    DVPLOG(1) << "Failed to get device interface data for " << device_path;
-    return;
-  }
-
-  if (!device_info_query.GetDeviceInfo()) {
-    DVPLOG(1) << "Failed to get device info for " << device_path;
-    return;
-  }
-
-  std::string friendly_name;
-  if (!device_info_query.GetDeviceStringProperty(DEVPKEY_Device_FriendlyName,
-                                                 &friendly_name)) {
-    DVPLOG(1) << "Failed to get device service property";
-    return;
-  }
-
-  base::Optional<base::FilePath> path =
-      SerialDeviceEnumeratorWin::GetPath(friendly_name);
-  if (!path) {
-    DVPLOG(1) << "Failed to get device path from \"" << friendly_name << "\".";
-    return;
-  }
-
-  if (port() == *path)
-    CancelRead(mojom::SerialReceiveError::DEVICE_LOST);
-}
-
 bool SerialIoHandlerWin::PostOpen() {
   DCHECK(!read_context_);
   DCHECK(!write_context_);
@@ -239,13 +154,6 @@ bool SerialIoHandlerWin::PostOpen() {
 
   read_context_.reset(new base::MessagePumpForIO::IOContext());
   write_context_.reset(new base::MessagePumpForIO::IOContext());
-
-  scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner =
-      base::ThreadTaskRunnerHandle::Get();
-  helper_ =
-      new UiThreadHelper(weak_factory_.GetWeakPtr(), io_thread_task_runner);
-  ui_thread_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&UiThreadHelper::Start, helper_));
 
   COMMTIMEOUTS timeouts = {0};
   timeouts.ReadIntervalTimeout = 1;
@@ -266,12 +174,11 @@ void SerialIoHandlerWin::ReadImpl() {
   if (!IsReadPending())
     return;
 
-  BOOL ok = ::ReadFile(file().GetPlatformFile(), pending_read_buffer(),
-                       pending_read_buffer_len(), nullptr,
-                       &read_context_->overlapped);
-  if (!ok && GetLastError() != ERROR_IO_PENDING) {
-    VPLOG(1) << "Read failed";
-    QueueReadCompleted(0, mojom::SerialReceiveError::SYSTEM_ERROR);
+  if (!ReadFile(file().GetPlatformFile(), pending_read_buffer(),
+                pending_read_buffer_len(), nullptr,
+                &read_context_->overlapped) &&
+      GetLastError() != ERROR_IO_PENDING) {
+    OnIOCompleted(read_context_.get(), 0, GetLastError());
   }
 }
 
@@ -280,12 +187,11 @@ void SerialIoHandlerWin::WriteImpl() {
   DCHECK(pending_write_buffer());
   DCHECK(file().IsValid());
 
-  BOOL ok = ::WriteFile(file().GetPlatformFile(), pending_write_buffer(),
-                        pending_write_buffer_len(), NULL,
-                        &write_context_->overlapped);
-  if (!ok && GetLastError() != ERROR_IO_PENDING) {
-    VPLOG(1) << "Write failed";
-    QueueWriteCompleted(0, mojom::SerialSendError::SYSTEM_ERROR);
+  if (!WriteFile(file().GetPlatformFile(), pending_write_buffer(),
+                 pending_write_buffer_len(), nullptr,
+                 &write_context_->overlapped) &&
+      GetLastError() != ERROR_IO_PENDING) {
+    OnIOCompleted(write_context_.get(), 0, GetLastError());
   }
 }
 
@@ -356,9 +262,7 @@ SerialIoHandlerWin::SerialIoHandlerWin(
     : SerialIoHandler(port, std::move(ui_thread_task_runner)),
       base::MessagePumpForIO::IOHandler(FROM_HERE) {}
 
-SerialIoHandlerWin::~SerialIoHandlerWin() {
-  ui_thread_task_runner()->DeleteSoon(FROM_HERE, helper_);
-}
+SerialIoHandlerWin::~SerialIoHandlerWin() = default;
 
 void SerialIoHandlerWin::OnIOCompleted(
     base::MessagePumpForIO::IOContext* context,
@@ -370,6 +274,9 @@ void SerialIoHandlerWin::OnIOCompleted(
       ReadCompleted(bytes_transferred, read_cancel_reason());
     } else if (error == ERROR_SUCCESS || error == ERROR_OPERATION_ABORTED) {
       ReadCompleted(bytes_transferred, mojom::SerialReceiveError::NONE);
+    } else if (error == ERROR_ACCESS_DENIED || error == ERROR_BAD_COMMAND ||
+               error == ERROR_DEVICE_REMOVED) {
+      ReadCompleted(0, mojom::SerialReceiveError::DEVICE_LOST);
     } else {
       VLOG(1) << "Read failed: " << logging::SystemErrorCodeToString(error);
       ReadCompleted(0, mojom::SerialReceiveError::SYSTEM_ERROR);
@@ -380,6 +287,8 @@ void SerialIoHandlerWin::OnIOCompleted(
       WriteCompleted(0, write_cancel_reason());
     } else if (error == ERROR_SUCCESS || error == ERROR_OPERATION_ABORTED) {
       WriteCompleted(bytes_transferred, mojom::SerialSendError::NONE);
+    } else if (error == ERROR_GEN_FAILURE) {
+      WriteCompleted(0, mojom::SerialSendError::DISCONNECTED);
     } else {
       VLOG(1) << "Write failed: " << logging::SystemErrorCodeToString(error);
       WriteCompleted(0, mojom::SerialSendError::SYSTEM_ERROR);
@@ -405,7 +314,6 @@ void SerialIoHandlerWin::ClearPendingError() {
   DWORD errors;
   if (!ClearCommError(file().GetPlatformFile(), &errors, nullptr)) {
     VPLOG(1) << "Failed to clear communication error";
-    ReadCompleted(0, mojom::SerialReceiveError::SYSTEM_ERROR);
     return;
   }
 

@@ -95,7 +95,7 @@ void StreamProcessorHelper::Process(IoPacket input) {
   fuchsia::media::Packet packet;
   packet.mutable_header()->set_buffer_lifetime_ordinal(
       input_buffer_lifetime_ordinal_);
-  packet.mutable_header()->set_packet_index(input.index());
+  packet.mutable_header()->set_packet_index(input.buffer_index());
   packet.set_buffer_index(packet.header().packet_index());
   packet.set_timestamp_ish(input.timestamp().InNanoseconds());
   packet.set_stream_lifetime_ordinal(stream_lifetime_ordinal_);
@@ -110,8 +110,8 @@ void StreamProcessorHelper::Process(IoPacket input) {
                                         fidl::Clone(input.format()));
   }
 
-  DCHECK(input_packets_.find(input.index()) == input_packets_.end());
-  input_packets_.insert_or_assign(input.index(), std::move(input));
+  DCHECK(input_packets_.find(input.buffer_index()) == input_packets_.end());
+  input_packets_.insert_or_assign(input.buffer_index(), std::move(input));
   processor_->QueueInputPacket(std::move(packet));
 }
 

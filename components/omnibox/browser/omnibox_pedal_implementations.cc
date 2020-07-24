@@ -82,7 +82,7 @@ class OmniboxPedalUpdateCreditCard : public OmniboxPedal {
                 IDS_OMNIBOX_PEDAL_UPDATE_CREDIT_CARD_HINT,
                 IDS_OMNIBOX_PEDAL_UPDATE_CREDIT_CARD_HINT_SHORT,
                 IDS_OMNIBOX_PEDAL_UPDATE_CREDIT_CARD_SUGGESTION_CONTENTS),
-            GURL("chrome://settings/autofill")) {}
+            GURL("chrome://settings/payments")) {}
 };
 
 // =============================================================================
@@ -122,22 +122,15 @@ class OmniboxPedalTranslate : public OmniboxPedal {
 
 // =============================================================================
 
-OmniboxPedalUpdateChrome::OmniboxPedalUpdateChrome()
-    : OmniboxPedal(
-          LabelStrings(IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT,
-                       IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT_SHORT,
-                       IDS_OMNIBOX_PEDAL_UPDATE_CHROME_SUGGESTION_CONTENTS),
-          // Fake URL to distinguish matches.
-          GURL("chrome://update/pedals")) {}
-
-void OmniboxPedalUpdateChrome::Execute(ExecutionContext& context) const {
-  context.client_.OpenUpdateChromeDialog();
-}
-
-bool OmniboxPedalUpdateChrome::IsReadyToTrigger(
-    const AutocompleteProviderClient& client) const {
-  return client.IsBrowserUpdateAvailable();
-}
+class OmniboxPedalUpdateChrome : public OmniboxPedal {
+ public:
+  OmniboxPedalUpdateChrome()
+      : OmniboxPedal(
+            LabelStrings(IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT,
+                         IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT_SHORT,
+                         IDS_OMNIBOX_PEDAL_UPDATE_CHROME_SUGGESTION_CONTENTS),
+            GURL("chrome://settings/help")) {}
+};
 
 // =============================================================================
 

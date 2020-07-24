@@ -25,8 +25,6 @@ class TestCertificateProviderExtension;
 class TestCertificateProviderExtensionLoginScreenMixin final
     : public InProcessBrowserTestMixin {
  public:
-  static std::string GetExtensionId();
-
   // If |load_extension_immediately| is false,
   // |AddExtensionForForceInstallation()| needs to be called by the test.
   // Otherwise, the extension will be installed during setup.

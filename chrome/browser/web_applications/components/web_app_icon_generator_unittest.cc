@@ -354,17 +354,6 @@ TEST_F(WebAppIconGeneratorTest, IconsResizedWhenOnlyAGigantorOneIsProvided) {
   TestIconGeneration(icon_size::k512, 0, 3);
 }
 
-TEST_F(WebAppIconGeneratorTest, GenerateIconLetterFromUrl) {
-  // ASCII:
-  EXPECT_EQ('E', GenerateIconLetterFromUrl(GURL("http://example.com")));
-  // Cyrillic capital letter ZHE for something like https://zhuk.rf:
-  EXPECT_EQ(0x0416,
-            GenerateIconLetterFromUrl(GURL("https://xn--f1ai0a.xn--p1ai/")));
-  // Arabic:
-  EXPECT_EQ(0x0645,
-            GenerateIconLetterFromUrl(GURL("http://xn--mgbh0fb.example/")));
-}
-
 TEST_F(WebAppIconGeneratorTest, GenerateIconLetterFromAppName) {
   // ASCII Encoding
   EXPECT_EQ('T',

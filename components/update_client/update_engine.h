@@ -37,7 +37,7 @@ struct UpdateContext;
 // Handles updates for a group of components. Updates for different groups
 // are run concurrently but within the same group of components, updates are
 // applied one at a time.
-class UpdateEngine : public base::RefCounted<UpdateEngine> {
+class UpdateEngine : public base::RefCountedThreadSafe<UpdateEngine> {
  public:
   using Callback = base::OnceCallback<void(Error error)>;
   using NotifyObserversCallback =
@@ -70,7 +70,7 @@ class UpdateEngine : public base::RefCounted<UpdateEngine> {
                          Callback update_callback);
 
  private:
-  friend class base::RefCounted<UpdateEngine>;
+  friend class base::RefCountedThreadSafe<UpdateEngine>;
   ~UpdateEngine();
 
   using UpdateContexts = std::map<std::string, scoped_refptr<UpdateContext>>;
@@ -120,7 +120,7 @@ class UpdateEngine : public base::RefCounted<UpdateEngine> {
 };
 
 // Describes a group of components which are installed or updated together.
-struct UpdateContext : public base::RefCounted<UpdateContext> {
+struct UpdateContext : public base::RefCountedThreadSafe<UpdateContext> {
   UpdateContext(
       scoped_refptr<Configurator> config,
       bool is_foreground,
@@ -201,7 +201,7 @@ struct UpdateContext : public base::RefCounted<UpdateContext> {
   PersistedData* persisted_data = nullptr;
 
  private:
-  friend class base::RefCounted<UpdateContext>;
+  friend class base::RefCountedThreadSafe<UpdateContext>;
   ~UpdateContext();
 };
 

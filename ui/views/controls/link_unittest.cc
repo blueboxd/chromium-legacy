@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
@@ -50,8 +50,6 @@ TEST_F(LinkTest, Metadata) {
   test::TestViewMetadata(link());
 }
 
-// Disabled on MACOSX until ui::test::EventGenerator is functional.
-#if !defined(OS_MACOSX)
 TEST_F(LinkTest, TestLinkClick) {
   bool link_clicked = false;
   link()->set_callback(
@@ -59,9 +57,11 @@ TEST_F(LinkTest, TestLinkClick) {
                              int event_flags) { *link_clicked = true; },
                           &link_clicked));
   link()->SizeToPreferredSize();
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
-  generator.MoveMouseTo(link()->GetBoundsInScreen().CenterPoint());
-  generator.ClickLeftButton();
+  gfx::Point point = link()->bounds().CenterPoint();
+  ui::MouseEvent release(ui::ET_MOUSE_RELEASED, point, point,
+                         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                         ui::EF_LEFT_MOUSE_BUTTON);
+  link()->OnMouseReleased(release);
   EXPECT_TRUE(link_clicked);
 }
 
@@ -72,10 +72,11 @@ TEST_F(LinkTest, TestLinkTap) {
                              int event_flags) { *link_clicked = true; },
                           &link_clicked));
   link()->SizeToPreferredSize();
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
-  generator.GestureTapAt(link()->GetBoundsInScreen().CenterPoint());
+  gfx::Point point = link()->bounds().CenterPoint();
+  ui::GestureEvent tap_event(point.x(), point.y(), 0, ui::EventTimeForNow(),
+                             ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  link()->OnGestureEvent(&tap_event);
   EXPECT_TRUE(link_clicked);
 }
-#endif
 
 }  // namespace views

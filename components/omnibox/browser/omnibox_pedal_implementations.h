@@ -20,14 +20,6 @@ class OmniboxPedalClearBrowsingData : public OmniboxPedal {
 #endif
 };
 
-class OmniboxPedalUpdateChrome : public OmniboxPedal {
- public:
-  OmniboxPedalUpdateChrome();
-  void Execute(ExecutionContext& context) const override;
-  bool IsReadyToTrigger(
-      const AutocompleteProviderClient& client) const override;
-};
-
 // Returns the full set of encapsulated OmniboxPedal implementations.
 std::unordered_map<OmniboxPedalId, std::unique_ptr<OmniboxPedal>>
 GetPedalImplementations();

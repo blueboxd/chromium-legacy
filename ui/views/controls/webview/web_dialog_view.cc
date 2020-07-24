@@ -140,12 +140,12 @@ void WebDialogView::ViewHierarchyChanged(
     InitDialog();
 }
 
-bool WebDialogView::CanClose() {
+views::CloseRequestResult WebDialogView::OnWindowCloseRequested() {
   // Don't close UI if |delegate_| does not allow users to close it by
   // clicking on "x" button or pressing Escape shortcut key on hosting
   // dialog.
   if (!delegate_->CanCloseDialog() && !close_contents_called_)
-    return false;
+    return views::CloseRequestResult::kCannotClose;
 
   // If CloseContents() is called before CanClose(), which is called by
   // RenderViewHostImpl::ClosePageIgnoringUnloadEvents, it indicates
@@ -154,7 +154,7 @@ bool WebDialogView::CanClose() {
       close_contents_called_) {
     is_attempting_close_dialog_ = false;
     before_unload_fired_ = false;
-    return true;
+    return views::CloseRequestResult::kCanClose;
   }
 
   if (!is_attempting_close_dialog_) {
@@ -162,7 +162,7 @@ bool WebDialogView::CanClose() {
     is_attempting_close_dialog_ = true;
     web_view_->web_contents()->DispatchBeforeUnload(false /* auto_cancel */);
   }
-  return false;
+  return views::CloseRequestResult::kCannotClose;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

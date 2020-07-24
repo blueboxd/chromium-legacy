@@ -36,6 +36,7 @@ enum ViewID {
   VIEW_ID_STICKY_HEADER,
   // System tray menu item for "device is managed by example.com".
   VIEW_ID_TRAY_ENTERPRISE,
+  VIEW_ID_TRAY_ENTERPRISE_LABEL,
   // System tray up-arrow icon that shows an update is available.
   VIEW_ID_TRAY_UPDATE_ICON,
   // System tray menu item label for updates (e.g. "Restart to update").

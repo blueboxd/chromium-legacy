@@ -92,8 +92,10 @@ class AssistantHeaderViewBinder
         } else if (AssistantHeaderModel.PROGRESS == propertyKey) {
             view.mProgressBar.setProgress(model.get(AssistantHeaderModel.PROGRESS));
         } else if (AssistantHeaderModel.PROGRESS_ACTIVE_STEP == propertyKey) {
-            view.mStepProgressBar.setActiveStep(
-                    model.get(AssistantHeaderModel.PROGRESS_ACTIVE_STEP));
+            int activeStep = model.get(AssistantHeaderModel.PROGRESS_ACTIVE_STEP);
+            if (activeStep >= 0) {
+                view.mStepProgressBar.setActiveStep(activeStep);
+            }
         } else if (AssistantHeaderModel.PROGRESS_BAR_ERROR == propertyKey) {
             view.mStepProgressBar.setError(model.get(AssistantHeaderModel.PROGRESS_BAR_ERROR));
         } else if (AssistantHeaderModel.PROGRESS_VISIBLE == propertyKey
@@ -102,7 +104,6 @@ class AssistantHeaderViewBinder
                     model.get(AssistantHeaderModel.USE_STEP_PROGRESS_BAR));
         } else if (AssistantHeaderModel.STEP_PROGRESS_BAR_ICONS == propertyKey) {
             view.mStepProgressBar.setSteps(model.get(AssistantHeaderModel.STEP_PROGRESS_BAR_ICONS));
-            view.mStepProgressBar.setError(model.get(AssistantHeaderModel.PROGRESS_BAR_ERROR));
             view.mStepProgressBar.disableAnimations(
                     model.get(AssistantHeaderModel.DISABLE_ANIMATIONS_FOR_TESTING));
         } else if (AssistantHeaderModel.SPIN_POODLE == propertyKey) {

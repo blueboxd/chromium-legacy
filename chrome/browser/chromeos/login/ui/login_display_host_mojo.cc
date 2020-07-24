@@ -572,7 +572,7 @@ void LoginDisplayHostMojo::CreateExistingUserController() {
   login_display_->set_delegate(existing_user_controller_.get());
 
   // We need auth attempt results to notify views-based login screen.
-  existing_user_controller_->set_login_status_consumer(this);
+  existing_user_controller_->AddLoginStatusConsumer(this);
 }
 
 }  // namespace chromeos

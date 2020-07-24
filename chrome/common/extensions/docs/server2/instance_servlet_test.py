@@ -20,9 +20,6 @@ class _TestDelegate(InstanceServlet.Delegate):
   def CreateBranchUtility(self, object_store_creator):
     return TestBranchUtility.CreateWithCannedData()
 
-  def CreateGithubFileSystemProvider(self, object_store_creator):
-    return GithubFileSystemProvider.ForEmpty()
-
 class InstanceServletTest(unittest.TestCase):
   '''Tests that if the file systems underlying the docserver's data fail,
   the instance servlet still returns 404s or 301s with a best-effort.

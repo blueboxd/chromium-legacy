@@ -122,7 +122,8 @@ try_.chromium_android_builder(
     goma_jobs = goma.jobs.J300,
     ssd = True,
     use_java_coverage = True,
-    tryjob = try_.job(),
+    # TODO(https://crbug.com/1108842) Re-enable once network outage is over
+    # tryjob = try_.job(),
 )
 
 try_.chromium_android_builder(
@@ -342,6 +343,7 @@ try_.chromium_linux_builder(
     },
     tryjob = try_.job(
         disable_reuse = True,
+        run_on_infra_config_changes = True,
     ),
 )
 
@@ -470,14 +472,16 @@ try_.chromium_mac_builder(
     name = 'mac-rel',
     goma_jobs = goma.jobs.J150,
     os = os.MAC_10_13,
-    tryjob = try_.job(),
+    # TODO(https://crbug.com/1108842) Re-enable once network outage is over
+    # tryjob = try_.job(),
 )
 
 try_.chromium_mac_builder(
     name = 'mac_chromium_compile_dbg_ng',
     goma_jobs = goma.jobs.J150,
     os = os.MAC_10_13,
-    tryjob = try_.job(),
+    # TODO(https://crbug.com/1108842) Re-enable once network outage is over
+    # tryjob = try_.job(),
 )
 
 
@@ -539,6 +543,17 @@ try_.chromium_win_builder(
     tryjob = try_.job(cancel_stale = False),
 )
 
+try_.chromium_win_builder(
+    name = 'win7-rel',
+    execution_timeout = 4 * time.hour + 30 * time.minute,
+    goma_jobs = goma.jobs.J300,
+    ssd = True,
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/sandbox/win/.+',
+        ],
+    ),
+)
 
 try_.gpu_chromium_android_builder(
     name = 'android_optional_gpu_tests_rel',

@@ -10,13 +10,17 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/check.h"
+#include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
 #include "base/optional.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -25,15 +29,19 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/crx_file/id_util.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
 #include "extensions/browser/extension_creator.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/test/test_background_page_first_load_observer.h"
 #include "extensions/test/test_background_page_ready_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,6 +51,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #endif
 
@@ -63,6 +72,78 @@ constexpr char kUpdateManifestTemplate[] =
            <updatecheck codebase='$2' version='$3' />
          </app>
        </gupdate>)";
+
+// Implements waiting until the given extension appears in the
+// force-installation pref.
+class ForceInstallPrefObserver final {
+ public:
+  ForceInstallPrefObserver(Profile* profile,
+                           const extensions::ExtensionId& extension_id);
+  ForceInstallPrefObserver(const ForceInstallPrefObserver&) = delete;
+  ForceInstallPrefObserver& operator=(const ForceInstallPrefObserver&) = delete;
+  ~ForceInstallPrefObserver();
+
+  void Wait();
+
+ private:
+  void OnPrefChanged();
+  bool IsForceInstallPrefSet() const;
+
+  PrefService* const pref_service_;
+  const std::string pref_name_;
+  const extensions::ExtensionId extension_id_;
+  PrefChangeRegistrar pref_change_registrar_;
+  base::RunLoop run_loop_;
+  base::WeakPtrFactory<ForceInstallPrefObserver> weak_ptr_factory_{this};
+};
+
+std::string GetForceInstallPrefName(Profile* profile) {
+#if defined(OS_CHROMEOS)
+  if (chromeos::ProfileHelper::IsSigninProfile(profile))
+    return extensions::pref_names::kLoginScreenExtensions;
+#endif  // OS_CHROMEOS
+  return extensions::pref_names::kInstallForceList;
+}
+
+ForceInstallPrefObserver::ForceInstallPrefObserver(
+    Profile* profile,
+    const extensions::ExtensionId& extension_id)
+    : pref_service_(profile->GetPrefs()),
+      pref_name_(GetForceInstallPrefName(profile)),
+      extension_id_(extension_id) {
+  pref_change_registrar_.Init(pref_service_);
+  pref_change_registrar_.Add(
+      pref_name_, base::BindRepeating(&ForceInstallPrefObserver::OnPrefChanged,
+                                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+ForceInstallPrefObserver::~ForceInstallPrefObserver() = default;
+
+void ForceInstallPrefObserver::Wait() {
+  if (IsForceInstallPrefSet())
+    return;
+  run_loop_.Run();
+}
+
+void ForceInstallPrefObserver::OnPrefChanged() {
+  if (IsForceInstallPrefSet())
+    run_loop_.Quit();
+}
+
+bool ForceInstallPrefObserver::IsForceInstallPrefSet() const {
+  const PrefService::Preference* const pref =
+      pref_service_->FindPreference(pref_name_);
+  if (!pref || !pref->IsManaged()) {
+    // Note that we intentionally ignore the pref if it's set but isn't managed,
+    // mimicking the real behavior of the Extensions system that only respects
+    // trusted (policy-set) values. Normally there's no "untrusted" value in
+    // these prefs, but in theory this is an attack that the Extensions system
+    // protects against, and there might be tests that simulate this scenario.
+    return false;
+  }
+  DCHECK_EQ(pref->GetType(), base::Value::Type::DICTIONARY);
+  return pref->GetValue()->FindKey(extension_id_) != nullptr;
+}
 
 // Implements waiting for the mixin's specified event.
 class ForceInstallWaiter final {
@@ -86,9 +167,12 @@ class ForceInstallWaiter final {
   const ExtensionForceInstallMixin::WaitMode wait_mode_;
   const extensions::ExtensionId extension_id_;
   Profile* const profile_;
+  std::unique_ptr<ForceInstallPrefObserver> force_install_pref_observer_;
   std::unique_ptr<extensions::TestExtensionRegistryObserver> registry_observer_;
   std::unique_ptr<extensions::ExtensionBackgroundPageReadyObserver>
       background_page_ready_observer_;
+  std::unique_ptr<extensions::TestBackgroundPageFirstLoadObserver>
+      background_page_first_load_observer_;
 };
 
 ForceInstallWaiter::ForceInstallWaiter(
@@ -101,15 +185,24 @@ ForceInstallWaiter::ForceInstallWaiter(
   switch (wait_mode_) {
     case ExtensionForceInstallMixin::WaitMode::kNone:
       break;
+    case ExtensionForceInstallMixin::WaitMode::kPrefSet:
+      force_install_pref_observer_ =
+          std::make_unique<ForceInstallPrefObserver>(profile_, extension_id_);
+      break;
     case ExtensionForceInstallMixin::WaitMode::kLoad:
       registry_observer_ =
           std::make_unique<extensions::TestExtensionRegistryObserver>(
-              extensions::ExtensionRegistry::Get(profile_), extension_id);
+              extensions::ExtensionRegistry::Get(profile_), extension_id_);
       break;
     case ExtensionForceInstallMixin::WaitMode::kBackgroundPageReady:
       background_page_ready_observer_ =
           std::make_unique<extensions::ExtensionBackgroundPageReadyObserver>(
-              profile_, extension_id);
+              profile_, extension_id_);
+      break;
+    case ExtensionForceInstallMixin::WaitMode::kBackgroundPageFirstLoad:
+      background_page_first_load_observer_ =
+          std::make_unique<extensions::TestBackgroundPageFirstLoadObserver>(
+              profile_, extension_id_);
       break;
   }
 }
@@ -128,14 +221,24 @@ void ForceInstallWaiter::WaitImpl(bool* success) {
       // No waiting needed.
       *success = true;
       break;
+    case ExtensionForceInstallMixin::WaitMode::kPrefSet:
+      // Wait and assert that the waiting run loop didn't time out.
+      ASSERT_NO_FATAL_FAILURE(force_install_pref_observer_->Wait());
+      *success = true;
+      break;
     case ExtensionForceInstallMixin::WaitMode::kLoad:
       *success = registry_observer_->WaitForExtensionLoaded() != nullptr;
       break;
-    case ExtensionForceInstallMixin::WaitMode::kBackgroundPageReady: {
+    case ExtensionForceInstallMixin::WaitMode::kBackgroundPageReady:
+      // Wait and assert that the waiting run loop didn't time out.
       ASSERT_NO_FATAL_FAILURE(background_page_ready_observer_->Wait());
       *success = true;
       break;
-    }
+    case ExtensionForceInstallMixin::WaitMode::kBackgroundPageFirstLoad:
+      // Wait and assert that the waiting run loop didn't time out.
+      ASSERT_NO_FATAL_FAILURE(background_page_first_load_observer_->Wait());
+      *success = true;
+      break;
   }
 }
 

@@ -1374,21 +1374,6 @@
             ]
         }
     ],
-    "CertVerifierBuiltin": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "CertVerifierBuiltin"
-                    ]
-                }
-            ]
-        }
-    ],
     "ChromeCleanupDistribution": [
         {
             "platforms": [
@@ -2262,25 +2247,6 @@
                     "name": "Enabled",
                     "disable_features": [
                         "UseGles2ForOopR"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DisableLatencyRecoveryDesktop": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "DisabledImplDisabledMain",
-                    "disable_features": [
-                        "ImplLatencyRecovery",
-                        "MainLatencyRecovery"
                     ]
                 }
             ]
@@ -3683,6 +3649,24 @@
             ]
         }
     ],
+    "IntensiveWakeUpThrottling": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IntensiveWakeUpThrottling"
+                    ]
+                }
+            ]
+        }
+    ],
     "IntentBlockExternalFormRedirectsNoGesture": [
         {
             "platforms": [
@@ -4597,17 +4581,27 @@
             ]
         }
     ],
-    "OmniboxAssistantVoiceSearch": [
+    "OmniboxAssistantVoiceSearchAndroid": [
         {
             "platforms": [
                 "android"
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "EnabledDefault",
                     "params": {
                         "colorful_mic": "false",
-                        "min_agsa_version": "10.98"
+                        "min_agsa_version": "11.7"
+                    },
+                    "enable_features": [
+                        "OmniboxAssistantVoiceSearch"
+                    ]
+                },
+                {
+                    "name": "EnabledColorfulMic",
+                    "params": {
+                        "colorful_mic": "true",
+                        "min_agsa_version": "11.7"
                     },
                     "enable_features": [
                         "OmniboxAssistantVoiceSearch"
@@ -5350,21 +5344,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PreloadMetadataLazyLoad"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PreventMessagePumpHangs": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "PreventMessagePumpHangs",
-                    "enable_features": [
-                        "PreventMessagePumpHangs"
                     ]
                 }
             ]

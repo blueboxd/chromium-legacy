@@ -2711,11 +2711,6 @@
 
       如果將這項政策設為 False 或不設定，系統會停用整合桌面，且使用者無法啟用這項功能。</translation>
 <translation id="5255162913209987122">建議使用</translation>
-<translation id="527237119693897329">讓你指定不應載入的內建訊息傳遞主機。
-
-          如果黑名單的值指定為 '*'，表示將所有內建訊息傳遞主機列入黑名單 (許可清單中明確列出者除外)。
-
-          如果未設定這項政策，<ph name="PRODUCT_NAME" /> 將會載入所有已安裝的內建訊息傳遞主機。</translation>
 <translation id="5272684451155669299">如果設為 true，使用者就可以使用 Chrome 裝置上的硬體，從遠端透過 <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> (使用 <ph name="CHALLENGE_USER_KEY_FUNCTION" />) 向隱私權 CA 證明身分。
 
           如果設為 false 或未設定，API 呼叫作業將會失敗，並傳回錯誤代碼。</translation>

@@ -45,33 +45,9 @@ struct CORE_EXPORT PaintInvalidatorContext {
                 ->directly_composited_container_for_stacked_contents),
         painting_layer(ParentContext()->painting_layer) {}
 
-  // Maps a rect in the object's local coordinates in flipped blocks direction
-  // to a visual rect in the local transform space. This is for non-SVG objects
-  // to map any local rect, and SVG child derived from non-SVG layout objects to
-  // map local rect of caret, selection, etc.
-  IntRect MapLocalRectToVisualRect(const LayoutObject&,
-                                   const PhysicalRect&) const;
-
-  // Maps a rect in the SVG child object's local coordinates to a visual rect
-  // in the local transform space.
-  IntRect MapLocalRectToVisualRectForSVGChild(const LayoutObject&,
-                                              const FloatRect&) const;
-
-  bool NeedsVisualRectUpdate(const LayoutObject& object) const {
-#if DCHECK_IS_ON()
-    if (force_visual_rect_update_for_checking_)
-      return true;
-#endif
-    // If an ancestor needed a visual rect update and any subtree flag was set,
-    // then we require that the subtree also needs a visual rect update.
-    return object.NeedsPaintOffsetAndVisualRectUpdate() ||
-           (subtree_flags & PaintInvalidatorContext::kSubtreeVisualRectUpdate);
-  }
-
   bool NeedsSubtreeWalk() const {
     return subtree_flags &
-           (kSubtreeInvalidationChecking | kSubtreeVisualRectUpdate |
-            kSubtreeFullInvalidation |
+           (kSubtreeInvalidationChecking | kSubtreeFullInvalidation |
             kSubtreeFullInvalidationForStackedContents);
   }
 
@@ -88,9 +64,8 @@ struct CORE_EXPORT PaintInvalidatorContext {
   // When adding new subtree flags, ensure |NeedsSubtreeWalk| is updated.
   enum SubtreeFlag {
     kSubtreeInvalidationChecking = 1 << 0,
-    kSubtreeVisualRectUpdate = 1 << 1,
-    kSubtreeFullInvalidation = 1 << 2,
-    kSubtreeFullInvalidationForStackedContents = 1 << 3,
+    kSubtreeFullInvalidation = 1 << 1,
+    kSubtreeFullInvalidationForStackedContents = 1 << 2,
 
     // When this flag is set, no paint or raster invalidation will be issued
     // for the subtree.
@@ -101,10 +76,6 @@ struct CORE_EXPORT PaintInvalidatorContext {
     // don't need any invalidation. They are used as "painting subroutines"
     // for one or more other locations in SVG.
     kSubtreeNoInvalidation = 1 << 6,
-
-    // Don't skip invalidating because the previous and current visual
-    // rects were empty.
-    kInvalidateEmptyVisualRect = 1 << 7,
   };
   unsigned subtree_flags = 0;
 
@@ -124,9 +95,8 @@ struct CORE_EXPORT PaintInvalidatorContext {
 
   PaintLayer* painting_layer = nullptr;
 
-  // The previous PaintOffset and OffsetTo2DTranslationRoot of FragmentData.
+  // The previous PaintOffset of FragmentData.
   PhysicalOffset old_paint_offset;
-  PhysicalOffset old_offset_to_2d_translation_root;
 
   const FragmentData* fragment_data;
 
@@ -135,12 +105,6 @@ struct CORE_EXPORT PaintInvalidatorContext {
 
   const PaintPropertyTreeBuilderFragmentContext* tree_builder_context_ =
       nullptr;
-
-#if DCHECK_IS_ON()
-  bool tree_builder_context_actually_needed_ = false;
-  friend class FindVisualRectNeedingUpdateScopeBase;
-  mutable bool force_visual_rect_update_for_checking_ = false;
-#endif
 };
 
 class PaintInvalidator {
@@ -170,12 +134,9 @@ class PaintInvalidator {
   ALWAYS_INLINE void UpdateDirectlyCompositedContainer(const LayoutObject&,
                                                        PaintInvalidatorContext&,
                                                        bool is_ng_painting);
-  ALWAYS_INLINE void UpdateEmptyVisualRectFlag(const LayoutObject&,
-                                               PaintInvalidatorContext&);
-  ALWAYS_INLINE void UpdateVisualRect(const LayoutObject&,
-                                      const NGPrePaintInfo*,
-                                      FragmentData&,
-                                      PaintInvalidatorContext&);
+  ALWAYS_INLINE void UpdateForPaintOffsetChange(const LayoutObject&,
+                                                FragmentData&,
+                                                PaintInvalidatorContext&);
 
   Vector<const LayoutObject*> pending_delayed_paint_invalidations_;
 };

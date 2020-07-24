@@ -327,7 +327,7 @@ TEST_F(ObjectPaintInvalidatorTest, Selection) {
   ASSERT_EQ(1u, invalidations->size());
   EXPECT_EQ(IntRect(8, 8, 100, 100), (*invalidations)[0].rect);
   EXPECT_EQ(PaintInvalidationReason::kSelection, (*invalidations)[0].reason);
-  EXPECT_EQ(IntRect(), target->SelectionVisualRect());
+  EXPECT_TRUE(target->SelectionVisualRect().IsEmpty());
   GetDocument().View()->SetTracksRasterInvalidations(false);
 }
 

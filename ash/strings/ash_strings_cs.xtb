@@ -276,7 +276,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="4028481283645788203">Pro lepší zabezpečení je vyžadováno heslo</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Sdílíte svou obrazovku</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Vypnuto pro aplikaci}few{Vypnuto pro # aplikace}many{Vypnuto pro # aplikace}other{Vypnuto pro # aplikací}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Vyp., 1 apl.}few{Vyp., # apl.}many{Vyp., # apl.}other{Vyp., # apl.}}</translation>
 <translation id="4072264167173457037">Střední signál</translation>
 <translation id="4112140312785995938">Přetočit dozadu</translation>
 <translation id="4129129681837227511">Chcete-li zobrazovat oznámení na obrazovce uzamčení, odemkněte zařízení a změňte příslušné nastavení.</translation>
@@ -393,7 +393,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="5600837773213129531">Hlasovou odezvu vypnete stisknutím kláves Ctrl + Alt + Z.</translation>
 <translation id="5625955975703555628">LTE+</translation>
 <translation id="5648021990716966815">Konektor mikrofonu</translation>
-<translation id="5669267381087807207">Probíhá aktivace</translation>
+<translation id="5669267381087807207">Aktivování</translation>
 <translation id="5673434351075758678">Po synchronizaci nastavení se oznámení změní z jazyka <ph name="FROM_LOCALE" /> na jazyk <ph name="TO_LOCALE" />.</translation>
 <translation id="5682642926269496722">Asistent Google pro aktuální uživatelský účet není k dispozici.</translation>
 <translation id="5689633613396158040">Noční režim usnadňuje sledování obrazovky nebo čtení při tlumeném osvětlení. Klepnutím můžete změnit čas zapínání nočního režimu, případně ho úplně vypnout.</translation>
@@ -562,7 +562,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="7649070708921625228">Nápověda</translation>
 <translation id="7654687942625752712">Hlasovou odezvu vypnete podržením obou tlačítek hlasitosti po dobu pěti sekund.</translation>
 <translation id="7658239707568436148">Zrušit</translation>
-<translation id="7705524343798198388">Síť VPN</translation>
+<translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 oznámení}few{# oznámení}many{# oznámení}other{# oznámení}}</translation>
 <translation id="7724603315864178912">Vyjmout</translation>
 <translation id="7749443890790263709">Byl dosažen maximální počet ploch.</translation>
@@ -598,7 +598,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="8054466585765276473">Výpočet doby výdrže baterie.</translation>
 <translation id="8061464966246066292">Vysoký kontrast</translation>
 <translation id="8098591350844501178">Ukončit odesílání obrazovky do přijímače <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">Zapnuto, všechny aplikace</translation>
+<translation id="8113423164597455979">Zap., všechny</translation>
 <translation id="8131740175452115882">Potvrdit</translation>
 <translation id="8132793192354020517">Připojeno k síti <ph name="NAME" /></translation>
 <translation id="813913629614996137">Probíhá inicializace...</translation>
@@ -639,7 +639,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="8473301994082929012">Organizace <ph name="ORGANIZATION_NAME" /> <ph name="FEATURE_STATE" /> funkci <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Vypnete jej stisknutím kombinace kláves Alt + Hledat nebo klávesy Shift.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> rozlišení <ph name="SPECIFIED_RESOLUTION" /> nepodporuje. Rozlišení bylo změněno na <ph name="FALLBACK_RESOLUTION" />. Chcete-li změny ponechat, potvrďte je. Předchozí nastavení bude obnoveno za <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="8513108775083588393">Automatické otáčení</translation>
+<translation id="8513108775083588393">Autom. otáčení</translation>
 <translation id="8517041960877371778">Je možné, že když bude zařízení <ph name="DEVICE_TYPE" /> zapnuté, nebude se nabíjet.</translation>
 <translation id="8563862697512465947">Nastavení oznámení</translation>
 <translation id="857201607579416096">Nabídka byla přesunuta do pravého dolního rohu obrazovky.</translation>
@@ -696,7 +696,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="9080132581049224423">Přejetím nahoru se vrátíte na plochu</translation>
 <translation id="9080206825613744995">Mikrofon je používán.</translation>
 <translation id="9084606467167974638">Přepnout pozici nabídky</translation>
-<translation id="9089416786594320554">Metody zadávání dat</translation>
+<translation id="9089416786594320554">Metody zadávání</translation>
 <translation id="9091626656156419976">Obrazovka <ph name="DISPLAY_NAME" /> byla odebrána</translation>
 <translation id="9151726767154816831">Chcete-li zařízení aktualizovat, restartujte je a resetujte pomocí funkce Powerwash</translation>
 <translation id="9168436347345867845">Později</translation>

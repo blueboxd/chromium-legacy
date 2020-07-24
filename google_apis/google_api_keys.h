@@ -80,6 +80,9 @@ std::string GetRemotingAPIKey();
 // Retrieves the Sharing API Key.
 std::string GetSharingAPIKey();
 
+// Retrieves the Speech On-Device API (SODA) API Key.
+std::string GetSodaAPIKey();
+
 #if defined(OS_IOS)
 // Sets the API key. This should be called as early as possible before this
 // API key is even accessed.

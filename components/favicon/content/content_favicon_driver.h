@@ -18,6 +18,8 @@
 
 namespace favicon {
 
+class CoreFaviconService;
+
 // ContentFaviconDriver is an implementation of FaviconDriver that listens to
 // WebContents events to start download of favicons and to get informed when the
 // favicon download has completed.
@@ -29,17 +31,13 @@ class ContentFaviconDriver
   ~ContentFaviconDriver() override;
 
   static void CreateForWebContents(content::WebContents* web_contents,
-                                   FaviconService* favicon_service);
+                                   CoreFaviconService* favicon_service);
 
   // Returns the current tab's favicon URLs. If this is empty,
   // DidUpdateFaviconURL has not yet been called for the current navigation.
   std::vector<blink::mojom::FaviconURL> favicon_urls() const {
     return favicon_urls_.value_or(std::vector<blink::mojom::FaviconURL>());
   }
-
-  // Saves the favicon for the last committed navigation entry to the thumbnail
-  // database.
-  void SaveFaviconEvenIfInIncognito();
 
   // FaviconDriver implementation.
   gfx::Image GetFavicon() const override;
@@ -48,7 +46,7 @@ class ContentFaviconDriver
 
  protected:
   ContentFaviconDriver(content::WebContents* web_contents,
-                       FaviconService* favicon_service);
+                       CoreFaviconService* favicon_service);
 
  private:
   friend class content::WebContentsUserData<ContentFaviconDriver>;

@@ -41,6 +41,18 @@ function initialize() {
     browserProxy.purgeDb();
   };
 
+  $('prototype-server').onclick = function() {
+    $('base-url').value =
+        'https://staging-gsaprototype-pa.sandbox.googleapis.com';
+  };
+
+  $('prod-server').onclick = function() {
+    $('base-url').value = 'https://chromeupboarding-pa.googleapis.com';
+  };
+
+  $('set-url').onclick = function() {
+    browserProxy.setServerUrl($('base-url').value);
+  };
   // Kick off requests for the current system state.
   browserProxy.getServiceStatus().then(onServiceStatusChanged);
   browserProxy.getTileData().then(onTileDataAvailable);

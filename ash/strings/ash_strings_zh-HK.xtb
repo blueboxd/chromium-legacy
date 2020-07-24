@@ -276,7 +276,7 @@
 <translation id="4028481283645788203">為安全起見，請輸入密碼</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">您正在分享螢幕畫面</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{已在 1 個應用程式上停止通知}other{已在 # 個應用程式上停止通知}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{在 1 個應用程式上停止}other{在 # 個應用程式上停止}}</translation>
 <translation id="4072264167173457037">訊號中等</translation>
 <translation id="4112140312785995938">向後回轉</translation>
 <translation id="4129129681837227511">如要在上鎖畫面上查看通知，請將裝置解鎖並變更相關設定</translation>
@@ -521,7 +521,7 @@
 <translation id="7088960765736518739">按鈕控制</translation>
 <translation id="7098389117866926363">USB-C 裝置 (後方左側連接埠)</translation>
 <translation id="7131634465328662194">您將會自動登出。</translation>
-<translation id="7143207342074048698">連線中</translation>
+<translation id="7143207342074048698">正在連接</translation>
 <translation id="7165278925115064263">Alt + Shift + K 鍵</translation>
 <translation id="7168224885072002358">系統將在 <ph name="TIMEOUT_SECONDS" /> 秒後還原成原來的解像度</translation>
 <translation id="7188494361780961876">已經將選單移去螢幕左上角。</translation>

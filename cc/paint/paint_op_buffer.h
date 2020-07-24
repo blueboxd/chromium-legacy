@@ -49,6 +49,7 @@ class CC_PAINT_EXPORT ThreadsafeMatrix : public SkMatrix {
   explicit ThreadsafeMatrix(const SkMatrix& matrix) : SkMatrix(matrix) {
     (void)getType();
   }
+  ThreadsafeMatrix() { (void)getType(); }
 };
 
 class CC_PAINT_EXPORT ThreadsafePath : public SkPath {
@@ -418,6 +419,9 @@ class CC_PAINT_EXPORT ClipRectOp final : public PaintOp {
   SkRect rect;
   SkClipOp op;
   bool antialias;
+
+ private:
+  ClipRectOp() : PaintOp(kType) {}
 };
 
 class CC_PAINT_EXPORT ClipRRectOp final : public PaintOp {
@@ -436,6 +440,9 @@ class CC_PAINT_EXPORT ClipRRectOp final : public PaintOp {
   SkRRect rrect;
   SkClipOp op;
   bool antialias;
+
+ private:
+  ClipRRectOp() : PaintOp(kType) {}
 };
 
 class CC_PAINT_EXPORT ConcatOp final : public PaintOp {
@@ -450,6 +457,9 @@ class CC_PAINT_EXPORT ConcatOp final : public PaintOp {
   HAS_SERIALIZATION_FUNCTIONS();
 
   ThreadsafeMatrix matrix;
+
+ private:
+  ConcatOp() : PaintOp(kType) {}
 };
 
 class CC_PAINT_EXPORT CustomDataOp final : public PaintOp {
@@ -465,6 +475,9 @@ class CC_PAINT_EXPORT CustomDataOp final : public PaintOp {
 
   // Stores user defined id as a placeholder op.
   uint32_t id;
+
+ private:
+  CustomDataOp() : PaintOp(kType) {}
 };
 
 class CC_PAINT_EXPORT DrawColorOp final : public PaintOp {
@@ -482,6 +495,9 @@ class CC_PAINT_EXPORT DrawColorOp final : public PaintOp {
 
   SkColor color;
   SkBlendMode mode;
+
+ private:
+  DrawColorOp() : PaintOp(kType) {}
 };
 
 class CC_PAINT_EXPORT DrawDRRectOp final : public PaintOpWithFlags {
@@ -829,6 +845,9 @@ class CC_PAINT_EXPORT RotateOp final : public PaintOp {
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkScalar degrees;
+
+ private:
+  RotateOp() : PaintOp(kType) {}
 };
 
 class CC_PAINT_EXPORT SaveOp final : public PaintOp {
@@ -883,6 +902,9 @@ class CC_PAINT_EXPORT SaveLayerAlphaOp final : public PaintOp {
 
   SkRect bounds;
   uint8_t alpha;
+
+ private:
+  SaveLayerAlphaOp() : PaintOp(kType) {}
 };
 
 class CC_PAINT_EXPORT ScaleOp final : public PaintOp {
@@ -922,6 +944,9 @@ class CC_PAINT_EXPORT SetMatrixOp final : public PaintOp {
   HAS_SERIALIZATION_FUNCTIONS();
 
   ThreadsafeMatrix matrix;
+
+ private:
+  SetMatrixOp() : PaintOp(kType) {}
 };
 
 class CC_PAINT_EXPORT SetNodeIdOp final : public PaintOp {
@@ -936,6 +961,9 @@ class CC_PAINT_EXPORT SetNodeIdOp final : public PaintOp {
   HAS_SERIALIZATION_FUNCTIONS();
 
   int node_id;
+
+ private:
+  SetNodeIdOp() : PaintOp(kType) {}
 };
 
 class CC_PAINT_EXPORT TranslateOp final : public PaintOp {
@@ -951,6 +979,9 @@ class CC_PAINT_EXPORT TranslateOp final : public PaintOp {
 
   SkScalar dx;
   SkScalar dy;
+
+ private:
+  TranslateOp() : PaintOp(kType) {}
 };
 
 #undef HAS_SERIALIZATION_FUNCTIONS

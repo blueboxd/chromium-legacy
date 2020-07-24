@@ -1,0 +1,4 @@
+include_rules = [
+  "+chromeos/services/cfm/public/buildflags",
+  "+chromeos/services/cfm/public/features",
+]

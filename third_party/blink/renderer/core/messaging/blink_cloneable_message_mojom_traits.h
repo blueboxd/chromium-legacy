@@ -9,7 +9,7 @@
 #include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
-#include "third_party/blink/public/mojom/messaging/cloneable_message.mojom-blink.h"
+#include "third_party/blink/public/mojom/messaging/cloneable_message.mojom-shared.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -20,7 +20,7 @@
 namespace mojo {
 
 template <>
-struct CORE_EXPORT StructTraits<blink::mojom::blink::CloneableMessage::DataView,
+struct CORE_EXPORT StructTraits<blink::mojom::CloneableMessageDataView,
                                 blink::BlinkCloneableMessage> {
   static mojo_base::BigBuffer encoded_message(
       blink::BlinkCloneableMessage& input) {
@@ -65,7 +65,7 @@ struct CORE_EXPORT StructTraits<blink::mojom::blink::CloneableMessage::DataView,
     return std::move(input.message->NativeFileSystemTokens());
   }
 
-  static bool Read(blink::mojom::blink::CloneableMessage::DataView,
+  static bool Read(blink::mojom::CloneableMessageDataView,
                    blink::BlinkCloneableMessage* out);
 };
 

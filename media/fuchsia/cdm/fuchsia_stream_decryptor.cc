@@ -305,7 +305,7 @@ void FuchsiaClearStreamDecryptor::OnOutputPacket(
     output_data_.resize(pos + packet.size());
 
     bool read_success = output_reader_->Read(
-        packet.index(), packet.offset(),
+        packet.buffer_index(), packet.offset(),
         base::make_span(output_data_.data() + pos, packet.size()));
 
     if (!read_success) {
@@ -333,7 +333,7 @@ void FuchsiaClearStreamDecryptor::OnOutputPacket(
 
   // Copy data received in the last packet
   bool read_success = output_reader_->Read(
-      packet.index(), packet.offset(),
+      packet.buffer_index(), packet.offset(),
       base::make_span(clear_buffer->writable_data() + output_data_.size(),
                       packet.size()));
 

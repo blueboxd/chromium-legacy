@@ -57,8 +57,6 @@ void DesktopMediaPickerViewsTestApi::PressMouseOnSourceAtIndex(
     // within a larger view would be breakage-prone; just ask the TableView to
     // to select.
     GetTableView()->Select(index);
-    if (double_click)
-      picker_->dialog_->GetSelectedController()->AcceptSource();
   }
 }
 

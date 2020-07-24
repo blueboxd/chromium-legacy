@@ -504,6 +504,52 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
   EXPECT_EQ(embedder_rect, guest_rect);
 }
 
+// This test verifies that Content-Security-Policy's frame-ancestors 'none'
+// directive is effective on a PDF response.
+// Regression test for https://crbug.com/1107535.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
+                       CSPFrameAncestorsCanBlockEmbedding) {
+  WebContents* web_contents = GetActiveWebContents();
+  auto console_delegate = std::make_unique<content::ConsoleObserverDelegate>(
+      web_contents,
+      "*because an ancestor violates the following Content Security Policy "
+      "directive: \"frame-ancestors 'none'*");
+  web_contents->SetDelegate(console_delegate.get());
+
+  GURL main_url(embedded_test_server()->GetURL(
+      "/pdf/frame-test-csp-frame-ancestors-none.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  console_delegate->Wait();
+
+  // Didn't launch a PPAPI process.
+  EXPECT_EQ(0, CountPDFProcesses());
+}
+
+// This test verifies that Content-Security-Policy's frame-ancestors directive
+// overrides an X-Frame-Options header on a PDF response.
+// Regression test for https://crbug.com/1107535.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
+                       CSPFrameAncestorsOverridesXFrameOptions) {
+  GURL main_url(
+      embedded_test_server()->GetURL("/pdf/frame-test-csp-and-xfo.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  auto* embedder_web_contents = GetActiveWebContents();
+  ASSERT_TRUE(embedder_web_contents);
+
+  // Verify the pdf has loaded.
+  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  ASSERT_TRUE(guest_web_contents);
+  EXPECT_NE(embedder_web_contents, guest_web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(guest_web_contents));
+
+  // Verify the extension was loaded.
+  const GURL extension_url(
+      "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html");
+  EXPECT_EQ(extension_url, guest_web_contents->GetURL());
+  EXPECT_EQ(main_url, embedder_web_contents->GetURL());
+}
+
 class PDFExtensionLoadTest : public PDFExtensionTest,
                              public testing::WithParamInterface<int> {
  public:

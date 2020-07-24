@@ -1017,8 +1017,8 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
   // attempt.
   ChromeUserManager::Get()->ResetUserFlow(last_login_attempt_account_id_);
 
-  if (auth_status_consumer_)
-    auth_status_consumer_->OnAuthFailure(failure);
+  for (auto& auth_status_consumer : auth_status_consumers_)
+    auth_status_consumer.OnAuthFailure(failure);
 
   ClearActiveDirectoryState();
   ClearRecordedNames();
@@ -1167,11 +1167,10 @@ void ExistingUserController::OnProfilePrepared(Profile* profile,
   user_manager::known_user::SetIsEnterpriseManaged(user_context.GetAccountId(),
                                                    is_enterprise_managed);
 
-  // Inform |auth_status_consumer_| about successful login.
+  // Inform |auth_status_consumers_| about successful login.
   // TODO(nkostylev): Pass UserContext back crbug.com/424550
-  if (auth_status_consumer_) {
-    auth_status_consumer_->OnAuthSuccess(user_context);
-  }
+  for (auto& auth_status_consumer : auth_status_consumers_)
+    auth_status_consumer.OnAuthSuccess(user_context);
 }
 
 void ExistingUserController::OnOffTheRecordAuthSuccess() {
@@ -1183,8 +1182,8 @@ void ExistingUserController::OnOffTheRecordAuthSuccess() {
 
   UserSessionManager::GetInstance()->CompleteGuestSessionLogin(guest_mode_url_);
 
-  if (auth_status_consumer_)
-    auth_status_consumer_->OnOffTheRecordAuthSuccess();
+  for (auto& auth_status_consumer : auth_status_consumers_)
+    auth_status_consumer.OnOffTheRecordAuthSuccess();
 }
 
 void ExistingUserController::OnPasswordChangeDetected(
@@ -1201,8 +1200,8 @@ void ExistingUserController::OnPasswordChangeDetected(
     return;
   }
 
-  if (auth_status_consumer_)
-    auth_status_consumer_->OnPasswordChangeDetected(user_context);
+  for (auto& auth_status_consumer : auth_status_consumers_)
+    auth_status_consumer.OnPasswordChangeDetected(user_context);
 
   ShowPasswordChangedDialog(user_context);
 }
@@ -1356,8 +1355,8 @@ void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
 
   GetLoginDisplay()->ShowWhitelistCheckFailedError();
 
-  if (auth_status_consumer_) {
-    auth_status_consumer_->OnAuthFailure(
+  for (auto& auth_status_consumer : auth_status_consumers_) {
+    auth_status_consumer.OnAuthFailure(
         AuthFailure(AuthFailure::WHITELIST_CHECK_FAILED));
   }
 
@@ -1394,6 +1393,16 @@ void ExistingUserController::DeviceSettingsChanged() {
     UpdateLoginDisplay(users);
     ConfigureAutoLogin();
   }
+}
+
+void ExistingUserController::AddLoginStatusConsumer(
+    AuthStatusConsumer* consumer) {
+  auth_status_consumers_.AddObserver(consumer);
+}
+
+void ExistingUserController::RemoveLoginStatusConsumer(
+    const AuthStatusConsumer* consumer) {
+  auth_status_consumers_.RemoveObserver(consumer);
 }
 
 LoginPerformer::AuthorizationMode ExistingUserController::auth_mode() const {

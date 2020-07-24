@@ -172,8 +172,8 @@ void NonClientView::SetOverlayView(View* view) {
     AddChildView(overlay_view_);
 }
 
-bool NonClientView::CanClose() {
-  return client_view_->CanClose();
+CloseRequestResult NonClientView::OnWindowCloseRequested() {
+  return client_view_->OnWindowCloseRequested();
 }
 
 void NonClientView::WindowClosing() {

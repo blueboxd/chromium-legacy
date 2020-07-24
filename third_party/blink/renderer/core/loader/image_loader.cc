@@ -118,6 +118,42 @@ bool CanReuseFromListOfAvailableImages(
   return true;
 }
 
+// Returns whether subresource redirect can be attempted for the image fetch.
+// Redirect to other origins could be disabled due to CSP or CORS restrictions.
+bool ShouldEnableSubresourceRedirect(HTMLImageElement* image_element,
+                                     const KURL& url) {
+  // Allow redirection only when DataSaver is enabled and subresource redirect
+  // feature is enabled which allows redirecting to better optimized versions.
+  if (!base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect) ||
+      !GetNetworkStateNotifier().SaveDataEnabled()) {
+    return false;
+  }
+  // Enable subresource redirect only for <img> elements created by parser.
+  // Images created from javascript, fetched via XHR/Fetch API should not be
+  // subresource redirected due to the additional CORB/CORS handling needed for
+  // them.
+  if (!image_element || !image_element->ElementCreatedByParser()) {
+    return false;
+  }
+  // Create a cross origin URL by appending a string to the original host. This
+  // is used to find whether CSP is restricting image fetches from other
+  // origins.
+  KURL cross_origin_url = url;
+  cross_origin_url.SetHost(url.Host() + "crossorigin.com");
+  auto* content_security_policy =
+      image_element->GetExecutionContext()->GetContentSecurityPolicy();
+  if (content_security_policy &&
+      !content_security_policy->AllowImageFromSource(
+          cross_origin_url, cross_origin_url, RedirectStatus::kNoRedirect,
+          ReportingDisposition::kSuppressReporting)) {
+    return false;
+  }
+  // Allow subresource redirect only when cross-origin attribute is not set,
+  // which indicates CORS validation is not triggered for the image.
+  return (GetCrossOriginAttributeValue(image_element->FastGetAttribute(
+              html_names::kCrossoriginAttr)) == kCrossOriginAttributeNotSet);
+}
+
 }  // namespace
 
 class ImageLoader::Task {
@@ -555,21 +591,11 @@ void ImageLoader::DoUpdateFromElement(
       params.SetLazyImageNonBlocking();
     }
 
-    // Enable subresource redirect for <img> elements created by parser when
-    // data saver is on. Images created from javascript, fetched via XHR/Fetch
-    // API should not be subresource redirected due to the additional CORB/CORS
-    // handling needed for them.
-    // TODO(rajendrant): Disable subresource redirect when CORS,
-    // content-security-policy does not allow cross-origin accesses.
-    if (auto* html_image = DynamicTo<HTMLImageElement>(GetElement())) {
-      if (base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect) &&
-          html_image->ElementCreatedByParser() &&
-          GetNetworkStateNotifier().SaveDataEnabled()) {
-        auto& resource_request = params.MutableResourceRequest();
-        resource_request.SetPreviewsState(
-            resource_request.GetPreviewsState() |
-            WebURLRequest::kSubresourceRedirectOn);
-      }
+    if (ShouldEnableSubresourceRedirect(
+            DynamicTo<HTMLImageElement>(GetElement()), params.Url())) {
+      auto& resource_request = params.MutableResourceRequest();
+      resource_request.SetPreviewsState(resource_request.GetPreviewsState() |
+                                        WebURLRequest::kSubresourceRedirectOn);
     }
 
     new_image_content = ImageResourceContent::Fetch(params, document.Fetcher());

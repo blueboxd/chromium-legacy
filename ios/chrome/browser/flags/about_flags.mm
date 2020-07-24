@@ -578,6 +578,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"safe-browsing-available", flag_descriptions::kSafeBrowsingAvailableName,
      flag_descriptions::kSafeBrowsingAvailableDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(safe_browsing::kSafeBrowsingAvailableOnIOS)},
+    {"safe-browsing-real-time",
+     flag_descriptions::kSafeBrowsingRealTimeLookupName,
+     flag_descriptions::kSafeBrowsingRealTimeLookupDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(safe_browsing::kRealTimeUrlLookupEnabled)},
     {"qr-code-generation", flag_descriptions::kQRCodeGenerationName,
      flag_descriptions::kQRCodeGenerationDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kQRCodeGeneration)},
@@ -714,9 +719,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
       base::SysUTF8ToNSString(policy::key::kAutofillCreditCardEnabled),
       base::SysUTF8ToNSString(policy::key::kChromeVariations),
       base::SysUTF8ToNSString(policy::key::kDefaultPopupsSetting),
-      base::SysUTF8ToNSString(policy::key::kDefaultSearchProviderEnabled),
-      base::SysUTF8ToNSString(policy::key::kDefaultSearchProviderSearchURL),
-      base::SysUTF8ToNSString(policy::key::kDefaultSearchProviderKeyword),
       base::SysUTF8ToNSString(policy::key::kPasswordManagerEnabled)
     ];
 
@@ -732,13 +734,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
 
       // 2 = Do not allow any site to show popups
       base::SysUTF8ToNSString(policy::key::kDefaultPopupsSetting) : @2,
-
-      base::SysUTF8ToNSString(policy::key::kDefaultSearchProviderEnabled) :
-          @YES,
-      base::SysUTF8ToNSString(policy::key::kDefaultSearchProviderSearchURL) :
-          @"http://www.google.com/?q={searchTerms}",
-      base::SysUTF8ToNSString(policy::key::kDefaultSearchProviderKeyword) :
-          @"google",
 
       base::SysUTF8ToNSString(policy::key::kPasswordManagerEnabled) : @NO,
     };

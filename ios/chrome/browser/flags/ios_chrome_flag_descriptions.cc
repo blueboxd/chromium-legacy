@@ -407,6 +407,11 @@ const char kSafeBrowsingAvailableDescription[] =
     "When enabled, navigation URLs are compared to Safe Browsing blocklists, "
     "subject to an opt-out preference.";
 
+const char kSafeBrowsingRealTimeLookupName[] = "Enable real-time Safe Browsing";
+const char kSafeBrowsingRealTimeLookupDescription[] =
+    "When enabled, navigation URLs are checked using real-time queries to Safe "
+    "Browsing servers, subject to an opt-in preference.";
+
 const char kSafetyCheckIOSName[] = "Enable safety check on iOS";
 const char kSafetyCheckIOSDescription[] =
     "When enabled, the iOS version of safety check is available in Chrome "

@@ -30,6 +30,16 @@ namespace nacl {
 static const int kGdbDebugStubPortUnknown = -1;
 static const int kGdbDebugStubPortUnused = 0;
 
+// Keep the cache bounded to an arbitrary size.  If it's too small, useful
+// entries could be evicted when multiple .nexes are loaded at once.  On the
+// other hand, entries are not always claimed (and hence removed), so the size
+// of the cache will likely saturate at its maximum size.
+// Entries may not be claimed for two main reasons. 1) the NaCl process could
+// be killed while it is loading.  2) the trusted NaCl plugin opens files using
+// the code path but doesn't resolve them.
+// TODO(ncbray) don't cache files that the plugin will not resolve.
+static const int kFilePathCacheSize = 100;
+
 // Open an immutable executable file that can be mmapped (or a read-only file).
 // This function should only be called on a thread that can perform file IO.
 base::File OpenNaClReadExecImpl(const base::FilePath& file_path,
@@ -75,7 +85,7 @@ class NaClBrowser {
   // currently-unused TCP port to the debug stub server, instead of a fixed
   // one.
   static void SetGdbDebugStubPortListenerForTest(
-      base::Callback<void(int)> listener);
+      base::RepeatingCallback<void(int)> listener);
   static void ClearGdbDebugStubPortListenerForTest();
 
   enum ValidationCacheStatus {
@@ -182,24 +192,24 @@ class NaClBrowser {
 
   base::File irt_file_;
   base::FilePath irt_filepath_;
-  NaClResourceState irt_state_;
+  NaClResourceState irt_state_ = NaClResourceUninitialized;
   NaClValidationCache validation_cache_;
   NaClValidationCache off_the_record_validation_cache_;
   base::FilePath validation_cache_file_path_;
-  bool validation_cache_is_enabled_;
-  bool validation_cache_is_modified_;
-  NaClResourceState validation_cache_state_;
-  base::Callback<void(int)> debug_stub_port_listener_;
+  bool validation_cache_is_enabled_ = false;
+  bool validation_cache_is_modified_ = false;
+  NaClResourceState validation_cache_state_ = NaClResourceUninitialized;
+  base::RepeatingCallback<void(int)> debug_stub_port_listener_;
 
   // Map from process id to debug stub port if any.
   typedef std::map<int, int> GdbDebugStubPortMap;
   GdbDebugStubPortMap gdb_debug_stub_port_map_;
 
   typedef base::HashingMRUCache<std::string, base::FilePath> PathCacheType;
-  PathCacheType path_cache_;
+  PathCacheType path_cache_{kFilePathCacheSize};
 
   // True if it is no longer possible to launch NaCl processes.
-  bool has_failed_;
+  bool has_failed_ = false;
 
   // A list of pending tasks to start NaCl processes.
   std::vector<base::OnceClosure> waiting_;

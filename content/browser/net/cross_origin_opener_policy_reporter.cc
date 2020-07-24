@@ -13,22 +13,26 @@
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/source_location.mojom.h"
 #include "url/origin.h"
 
 namespace content {
 
 namespace {
 
+constexpr char kColumnNumber[] = "colno";
 constexpr char kDispositionEnforce[] = "enforce";
 constexpr char kDispositionReporting[] = "reporting";
 constexpr char kDisposition[] = "disposition";
 constexpr char kDocumentURI[] = "document-uri";
 constexpr char kEffectivePolicy[] = "effective-policy";
+constexpr char kLineNumber[] = "lineno";
 constexpr char kNavigationURI[] = "navigation-uri";
 constexpr char kProperty[] = "property";
 constexpr char kSameOriginAllowPopups[] = "same-origin-allow-popups";
 constexpr char kSameOriginPlusCoep[] = "same-origin-plus-coep";
 constexpr char kSameOrigin[] = "same-origin";
+constexpr char kSourceFile[] = "source-file";
 constexpr char kUnsafeNone[] = "unsafe-none";
 constexpr char kViolationTypeFromDocument[] = "navigation-from-document";
 constexpr char kViolationTypeToDocument[] = "navigation-to-document";
@@ -178,7 +182,8 @@ void CrossOriginOpenerPolicyReporter::QueueOpenerBreakageReport(
 
 void CrossOriginOpenerPolicyReporter::QueueAccessReport(
     network::mojom::CoopAccessReportType report_type,
-    const std::string& property) {
+    const std::string& property,
+    network::mojom::SourceLocationPtr source_location) {
   // Cross-Origin-Opener-Policy-Report-Only is not required to provide
   // endpoints.
   if (!coop_.report_only_reporting_endpoint)
@@ -196,9 +201,12 @@ void CrossOriginOpenerPolicyReporter::QueueAccessReport(
                      ToString(coop_.report_only_value));
   body.SetStringPath(kProperty, property);
   // TODO(arthursonzogni): Fill "blocked-window-url".
-  // TODO(arthursonzogni): Fill "source-file".
-  // TODO(arthursonzogni): Fill "line-no".
-  // TODO(arthursonzogni): Fill "col-no".
+  if (source_location->url != "" &&
+      report_type == network::mojom::CoopAccessReportType::kReportAccessFrom) {
+    body.SetStringPath(kSourceFile, source_location->url);
+    body.SetIntPath(kLineNumber, source_location->line);
+    body.SetIntPath(kColumnNumber, source_location->column);
+  }
   storage_partition_->GetNetworkContext()->QueueReport(
       "coop", endpoint, context_url_, base::nullopt, std::move(body));
 }

@@ -461,6 +461,9 @@ extern const char kEnableNetworkServiceInProcessDescription[];
 extern const char kEnableTranslateSubFramesName[];
 extern const char kEnableTranslateSubFramesDescription[];
 
+extern const char kEnableWindowsGamingInputDataFetcherName[];
+extern const char kEnableWindowsGamingInputDataFetcherDescription[];
+
 extern const char kCorsForContentScriptsName[];
 extern const char kCorsForContentScriptsDescription[];
 extern const char kForceEmptyCorbAndCorsAllowlistName[];
@@ -1686,6 +1689,12 @@ extern const char kRelatedSearchesDescription[];
 
 extern const char kReportFeedUserActionsName[];
 extern const char kReportFeedUserActionsDescription[];
+
+extern const char kSafeBrowsingEnhancedProtectionAndroidName[];
+extern const char kSafeBrowsingEnhancedProtectionAndroidDescription[];
+
+extern const char kSafeBrowsingSecuritySectionUiAndroidName[];
+extern const char kSafeBrowsingSecuritySectionUiAndroidDescription[];
 
 extern const char kSafeBrowsingUseLocalBlacklistsV2Name[];
 extern const char kSafeBrowsingUseLocalBlacklistsV2Description[];

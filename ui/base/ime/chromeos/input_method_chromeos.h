@@ -135,8 +135,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
   // Called from the engine when it completes processing.
   void ProcessKeyEventDone(ui::KeyEvent* event, bool is_handled);
 
-  // Returns whether an non-password input field is focused.
-  bool IsNonPasswordInputFieldFocused();
+  bool IsPasswordOrNoneInputFieldFocused();
 
   // Returns true if an text input field is focused.
   bool IsInputFieldFocused();

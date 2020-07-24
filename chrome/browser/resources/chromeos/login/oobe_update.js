@@ -28,9 +28,22 @@ Polymer({
     'setUpdateProgress',
     'setRequiresPermissionForCellular',
     'setCancelUpdateShortcutEnabled',
+    'showLowBatteryWarningMessage',
   ],
 
   properties: {
+    /**
+     * Shows better update screen instead of the old one. True when
+     * kBetterUpdateScreen feature flag is enabled.
+     */
+    betterUpdateScreenFeatureEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('betterUpdateScreenFeatureEnabled');
+      },
+      readOnly: true,
+    },
+
     /**
      * Shows "Checking for update ..." section and hides "Updating..." section.
      */
@@ -101,6 +114,14 @@ Polymer({
     cancelHint: {
       type: String,
       value: 'cancelUpdateHint',
+    },
+
+    /**
+     * Shows battery warning message during Downloading stage.
+     */
+    showLowBatteryWarning: {
+      type: Boolean,
+      value: false,
     },
   },
 
@@ -194,6 +215,14 @@ Polymer({
    */
   showUpdateCurtain(visible) {
     this.checkingForUpdate = visible;
+  },
+
+  /**
+   * Shows or hides battery warning message.
+   * @param {boolean} visible Is message visible?
+   */
+  showLowBatteryWarningMessage(visible) {
+    this.showLowBatteryWarning = visible;
   },
 
 });

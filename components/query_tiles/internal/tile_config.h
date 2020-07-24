@@ -52,6 +52,9 @@ class TileConfig {
   // Gets the URL for the Query Tiles server.
   static GURL GetQueryTilesServerUrl();
 
+  // Gets the URL for the Query Tiles server, given the server address.
+  static GURL GetQueryTilesServerUrl(const std::string& base_url);
+
   // Gets whether running the background task requires unmeter network
   // condition.
   static bool GetIsUnMeteredNetworkRequired();

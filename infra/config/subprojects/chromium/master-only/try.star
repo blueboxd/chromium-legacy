@@ -701,13 +701,6 @@ try_.chromium_win_builder(
 )
 
 try_.chromium_win_builder(
-    name = 'win7-rel',
-    execution_timeout = 4 * time.hour + 30 * time.minute,
-    goma_jobs = goma.jobs.J300,
-    ssd = True,
-)
-
-try_.chromium_win_builder(
     name = 'win_archive',
 )
 

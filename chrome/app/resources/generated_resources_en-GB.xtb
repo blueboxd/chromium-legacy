@@ -4442,7 +4442,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6545864417968258051">Bluetooth scanning</translation>
 <translation id="6545867563032584178">Microphone is turned off in Mac System Preferences</translation>
 <translation id="6547354035488017500">Free up at least 512 MB of space or your device will become unresponsive. To free up space, delete files from device storage.</translation>
-<translation id="6549639163247690448"><ph name="DOMAIN" /> requires you to connect to Wi-Fi now and download an update. The update will download automatically when you connect to the Internet.</translation>
 <translation id="6550675742724504774">Options</translation>
 <translation id="6551508934388063976">Command unavailable. Press control-N to open a new window.</translation>
 <translation id="6551612971599078809">Site is using USB</translation>
@@ -4918,7 +4917,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="713888829801648570">Sorry, your password could not be verified because you are offline.</translation>
 <translation id="7140928199327930795">No other available devices.</translation>
 <translation id="7141105143012495934">Sign-in failed because your account details could not be retrieved. Please contact your administrator or try again.</translation>
-<translation id="7143207342074048698">Connecting ...</translation>
+<translation id="7143207342074048698">Connecting</translation>
 <translation id="7144878232160441200">Retry</translation>
 <translation id="714876143603641390">LAN connectivity</translation>
 <translation id="7149893636342594995">Last 24 Hours</translation>
@@ -5787,7 +5786,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8213577208796878755">One other available device.</translation>
 <translation id="8214489666383623925">Open File...</translation>
 <translation id="8214962590150211830">Remove This Person</translation>
-<translation id="8215295261562449873">Back up my apps and files to the downloads folder before upgrading Linux.</translation>
 <translation id="8217399928341212914">Continue blocking automatic downloads of multiple files</translation>
 <translation id="8218847192766059983">Add languages or reorder list. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="8221491193165283816">You usually block notifications. To let this site notify you, click here.</translation>

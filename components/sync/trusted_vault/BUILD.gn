@@ -4,6 +4,8 @@
 
 static_library("trusted_vault") {
   sources = [
+    "securebox.cc",
+    "securebox.h",
     "standalone_trusted_vault_backend.cc",
     "standalone_trusted_vault_backend.h",
     "standalone_trusted_vault_client.cc",
@@ -17,5 +19,7 @@ static_library("trusted_vault") {
     "//components/os_crypt",
     "//components/signin/public/identity_manager",
     "//components/sync/protocol",
+    "//crypto",
+    "//third_party/boringssl",
   ]
 }

@@ -122,6 +122,13 @@ scoped_refptr<PasswordStore> AccountPasswordStoreFactory::GetForProfile(
     ServiceAccessType access_type) {
   if (!base::FeatureList::IsEnabled(
           password_manager::features::kEnablePasswordsAccountStorage)) {
+    if (!GetInstance()->account_store_deleted_.contains(profile)) {
+      // TODO(crbug.com/1108738): Remove this logic once
+      // kEnablePasswordsAccountStorage is launched.
+      GetInstance()->account_store_deleted_.insert(profile);
+      password_manager::DeleteLoginDatabaseForAccountStorageFiles(
+          profile->GetPath());
+    }
     return nullptr;
   }
   // |profile| gets always redirected to a non-Incognito profile below, so
@@ -147,7 +154,10 @@ AccountPasswordStoreFactory::AccountPasswordStoreFactory()
   DependsOn(WebDataServiceFactory::GetInstance());
 }
 
-AccountPasswordStoreFactory::~AccountPasswordStoreFactory() = default;
+AccountPasswordStoreFactory::~AccountPasswordStoreFactory() {
+  // All entries should have been removed in BrowserContextShutdown().
+  DCHECK(account_store_deleted_.empty());
+}
 
 scoped_refptr<RefcountedKeyedService>
 AccountPasswordStoreFactory::BuildServiceInstanceFor(
@@ -197,4 +207,10 @@ content::BrowserContext* AccountPasswordStoreFactory::GetBrowserContextToUse(
 
 bool AccountPasswordStoreFactory::ServiceIsNULLWhileTesting() const {
   return true;
+}
+
+void AccountPasswordStoreFactory::BrowserContextShutdown(
+    content::BrowserContext* context) {
+  account_store_deleted_.erase(context);
+  RefcountedBrowserContextKeyedServiceFactory::BrowserContextShutdown(context);
 }

@@ -63,10 +63,6 @@
   ],
 
   'linux_component': [
-    # https://crbug.com/937268
-    'swiftshader/libGLESv2.so',
-    'swiftshader_vertex_routine_fuzzer',
-
     # https://crbug.com/954056
     'nacl_test_data/nonsfi/irt_exception_test_pnacl_newlib_x32_nonsfi.nexe',
     'nacl_test_data/nonsfi/irt_manifest_file_pnacl_newlib_x32_nonsfi.nexe',

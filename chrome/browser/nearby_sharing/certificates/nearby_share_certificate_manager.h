@@ -45,13 +45,10 @@ class NearbyShareCertificateManager {
   void Stop();
   bool is_running() { return is_running_; }
 
-  // Clears all certificate-related data.
-  virtual void ClearAllData() = 0;
-
   // Returns the currently valid private certificate with |visibility|.
   // TODO(crbug.com/1106369): Use common visibility enum.
   virtual NearbySharePrivateCertificate GetValidPrivateCertificate(
-      NearbyShareVisibility visibility) const = 0;
+      NearbyShareVisibility visibility) = 0;
 
   // Returns in |callback| the public certificate that is able to be decrypted
   // using |encrypted_metadata_key| and |salt|, and returns base::nullopt if no
@@ -59,7 +56,7 @@ class NearbyShareCertificateManager {
   virtual void GetDecryptedPublicCertificate(
       base::span<const uint8_t> encrypted_metadata_key,
       base::span<const uint8_t> salt,
-      CertDecryptedCallback callback) const = 0;
+      CertDecryptedCallback callback) = 0;
 
   // Makes an RPC call to the Nearby server to retrieve all public certificates
   // available to the local device. These are also downloaded periodically.

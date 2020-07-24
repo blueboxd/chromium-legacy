@@ -80,6 +80,16 @@ class AppPositionReorderingTest : public extensions::ExtensionBrowserTest {
       delete;
 
  protected:
+  void SetUpOnMainThread() override {
+    ExtensionBrowserTest::SetUpOnMainThread();
+    AppListClientImpl* client = AppListClientImpl::GetInstance();
+    ASSERT_TRUE(client);
+    client->UpdateProfile();
+
+    // Ensure async callbacks are run.
+    base::RunLoop().RunUntilIdle();
+  }
+
   ash::AppListTestApi app_list_test_api_;
 };
 // Tests that an Oem app and its folder are created with valid positions after
@@ -114,51 +124,56 @@ IN_PROC_BROWSER_TEST_F(OemAppPositionTest, ValidOemAppPosition) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppPositionReorderingTest,
-                       PRE_ReorderAppPositionInFolder) {
-  AppListClientImpl* client = AppListClientImpl::GetInstance();
-  ASSERT_TRUE(client);
-  client->UpdateProfile();
-
-  // Ensure async callbacks are run.
-  base::RunLoop().RunUntilIdle();
-
+                       PRE_ReorderAppPositionInTopLevelAppList) {
   const std::string app1_id =
       LoadExtension(test_data_dir_.AppendASCII("app1"))->id();
   ASSERT_FALSE(app1_id.empty());
   const std::string app2_id =
       LoadExtension(test_data_dir_.AppendASCII("app2"))->id();
   ASSERT_FALSE(app2_id.empty());
-  const std::string app4_id =
+  // App3 is the same app as app1 in |test_data_dir_|. Take app4 as the third
+  // app in this test.
+  const std::string app3_id =
       LoadExtension(test_data_dir_.AppendASCII("app4"))->id();
-  ASSERT_FALSE(app4_id.empty());
+  ASSERT_FALSE(app3_id.empty());
 
   // Create the app list view and show the apps grid.
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST_FULLSCREEN, {});
 
-  // Create a folder with app1, app2 and app4 in order.
-  const std::string folder_id =
-      app_list_test_api_.CreateFolderWithApps({app1_id, app2_id, app4_id});
+  std::vector<std::string> top_level_id_list =
+      app_list_test_api_.GetTopLevelViewIdList();
+  size_t top_level_id_list_size = top_level_id_list.size();
 
-  std::vector<std::string> original_id_list{app1_id, app2_id, app4_id};
-  ASSERT_EQ(app_list_test_api_.GetAppIdsInFolder(folder_id), original_id_list);
+  // This test ignores the default apps and we don't test the exact
+  // |top_level_id_list| size here.
+  ASSERT_GE(top_level_id_list_size, 3u);
 
-  // Change an app position in the folder.
-  app_list_test_api_.MoveItemToPosition(app1_id, 2);
+  ASSERT_EQ(top_level_id_list[top_level_id_list_size - 3], app1_id);
+  ASSERT_EQ(top_level_id_list[top_level_id_list_size - 2], app2_id);
+  ASSERT_EQ(top_level_id_list[top_level_id_list_size - 1], app3_id);
 
-  std::vector<std::string> reordered_id_list{app2_id, app4_id, app1_id};
-  EXPECT_EQ(app_list_test_api_.GetAppIdsInFolder(folder_id), reordered_id_list);
+  // After the move operation, app3 should be at index 0 and app1 should be at
+  // index 1. App2 stays at the last position in the item list.
+  app_list_test_api_.MoveItemToPosition(app1_id, 0);
+  app_list_test_api_.MoveItemToPosition(app3_id, 0);
+
+  std::vector<std::string> reordered_top_level_id_list =
+      app_list_test_api_.GetTopLevelViewIdList();
+
+  EXPECT_EQ(top_level_id_list_size, reordered_top_level_id_list.size());
+  EXPECT_EQ(reordered_top_level_id_list[0], app3_id);
+  EXPECT_EQ(reordered_top_level_id_list[1], app1_id);
+  EXPECT_EQ(reordered_top_level_id_list.back(), app2_id);
 }
 
-// Tests if the app position changed in a folder persist after the system
-// restart.
-IN_PROC_BROWSER_TEST_F(AppPositionReorderingTest, ReorderAppPositionInFolder) {
-  AppListClientImpl* client = AppListClientImpl::GetInstance();
-  ASSERT_TRUE(client);
-  client->UpdateProfile();
-
-  // Ensure async callbacks are run.
-  base::RunLoop().RunUntilIdle();
+// Tests if the app position changed in the top level persist after the system
+// restarts.
+IN_PROC_BROWSER_TEST_F(AppPositionReorderingTest,
+                       ReorderAppPositionInTopLevelAppList) {
+  // Create the app list view and show the apps grid.
+  ash::AcceleratorController::Get()->PerformActionIfEnabled(
+      ash::TOGGLE_APP_LIST_FULLSCREEN, {});
 
   const std::string app1_id =
       GetExtensionByPath(extension_registry()->enabled_extensions(),
@@ -168,7 +183,67 @@ IN_PROC_BROWSER_TEST_F(AppPositionReorderingTest, ReorderAppPositionInFolder) {
       GetExtensionByPath(extension_registry()->enabled_extensions(),
                          test_data_dir_.AppendASCII("app2"))
           ->id();
-  const std::string app4_id =
+  const std::string app3_id =
+      GetExtensionByPath(extension_registry()->enabled_extensions(),
+                         test_data_dir_.AppendASCII("app4"))
+          ->id();
+
+  std::vector<std::string> reordered_top_level_id_list =
+      app_list_test_api_.GetTopLevelViewIdList();
+
+  // This test ignores the default apps and we don't test the exact
+  // |reordered_top_level_id_list| size here.
+  ASSERT_GE(reordered_top_level_id_list.size(), 3u);
+
+  EXPECT_EQ(reordered_top_level_id_list[0], app3_id);
+  EXPECT_EQ(reordered_top_level_id_list[1], app1_id);
+  EXPECT_EQ(reordered_top_level_id_list.back(), app2_id);
+}
+
+IN_PROC_BROWSER_TEST_F(AppPositionReorderingTest,
+                       PRE_ReorderAppPositionInFolder) {
+  const std::string app1_id =
+      LoadExtension(test_data_dir_.AppendASCII("app1"))->id();
+  ASSERT_FALSE(app1_id.empty());
+  const std::string app2_id =
+      LoadExtension(test_data_dir_.AppendASCII("app2"))->id();
+  ASSERT_FALSE(app2_id.empty());
+  // App3 is the same app as app1 in |test_data_dir_|. Take app4 as the third
+  // app in this test.
+  const std::string app3_id =
+      LoadExtension(test_data_dir_.AppendASCII("app4"))->id();
+  ASSERT_FALSE(app3_id.empty());
+
+  // Create the app list view and show the apps grid.
+  ash::AcceleratorController::Get()->PerformActionIfEnabled(
+      ash::TOGGLE_APP_LIST_FULLSCREEN, {});
+
+  // Create a folder with app1, app2 and app3 in order.
+  const std::string folder_id =
+      app_list_test_api_.CreateFolderWithApps({app1_id, app2_id, app3_id});
+
+  std::vector<std::string> original_id_list{app1_id, app2_id, app3_id};
+  ASSERT_EQ(app_list_test_api_.GetAppIdsInFolder(folder_id), original_id_list);
+
+  // Change an app position in the folder.
+  app_list_test_api_.MoveItemToPosition(app1_id, 2);
+
+  std::vector<std::string> reordered_id_list{app2_id, app3_id, app1_id};
+  EXPECT_EQ(app_list_test_api_.GetAppIdsInFolder(folder_id), reordered_id_list);
+}
+
+// Tests if the app position changed in a folder persist after the system
+// restarts.
+IN_PROC_BROWSER_TEST_F(AppPositionReorderingTest, ReorderAppPositionInFolder) {
+  const std::string app1_id =
+      GetExtensionByPath(extension_registry()->enabled_extensions(),
+                         test_data_dir_.AppendASCII("app1"))
+          ->id();
+  const std::string app2_id =
+      GetExtensionByPath(extension_registry()->enabled_extensions(),
+                         test_data_dir_.AppendASCII("app2"))
+          ->id();
+  const std::string app3_id =
       GetExtensionByPath(extension_registry()->enabled_extensions(),
                          test_data_dir_.AppendASCII("app4"))
           ->id();
@@ -177,8 +252,8 @@ IN_PROC_BROWSER_TEST_F(AppPositionReorderingTest, ReorderAppPositionInFolder) {
   // Check if the three apps are still in the same folder.
   ASSERT_FALSE(folder_id.empty());
   ASSERT_EQ(app_list_test_api_.GetFolderId(app2_id), folder_id);
-  ASSERT_EQ(app_list_test_api_.GetFolderId(app4_id), folder_id);
+  ASSERT_EQ(app_list_test_api_.GetFolderId(app3_id), folder_id);
 
-  std::vector<std::string> reordered_id_list{app2_id, app4_id, app1_id};
+  std::vector<std::string> reordered_id_list{app2_id, app3_id, app1_id};
   EXPECT_EQ(app_list_test_api_.GetAppIdsInFolder(folder_id), reordered_id_list);
 }

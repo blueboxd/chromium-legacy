@@ -77,6 +77,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -1206,6 +1207,9 @@ void Shell::Init(
     display_alignment_controller_ =
         std::make_unique<DisplayAlignmentController>();
   }
+
+  if (features::IsTemporaryHoldingSpaceEnabled())
+    holding_space_controller_ = std::make_unique<HoldingSpaceController>();
 
   for (auto& observer : shell_observers_)
     observer.OnShellInitialized();

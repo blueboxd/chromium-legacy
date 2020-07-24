@@ -1015,9 +1015,9 @@ Node* Node::cloneNode(bool deep, ExceptionState& exception_state) const {
   // true, and the clone shadows flag set if this is a DocumentFragment whose
   // host is an HTML template element.
   auto* fragment = DynamicTo<DocumentFragment>(this);
-  bool clone_shadows_flag =
-      fragment && fragment->IsTemplateContent() &&
-      RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled();
+  bool clone_shadows_flag = fragment && fragment->IsTemplateContent() &&
+                            RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled(
+                                GetExecutionContext());
   return Clone(GetDocument(),
                deep ? (clone_shadows_flag ? CloneChildrenFlag::kCloneWithShadows
                                           : CloneChildrenFlag::kClone)

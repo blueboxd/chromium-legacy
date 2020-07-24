@@ -678,6 +678,9 @@ class Generator(generator.Generator):
     Args:
       kind: {Kind} The kind of the parameter (corresponds to its C++ type).
       parameter_name: {string} The name of the mojom parameter to be logged.
+        Internal use: If |parameter_name| is an empty string this method uses
+          TracedValue::AppendT instead of TracedValue::SetT (thus populates
+          array values).
       cpp_parameter_name: {string} The actual C++ variable name corresponding to
         the mojom parameter |parameter_name|.
       value: {string} The C++ TracedValue* variable name to be logged into.
@@ -685,34 +688,84 @@ class Generator(generator.Generator):
     Yields:
       {string} C++ lines of code that trace |parameter_name| into |value|.
     """
-    value_name_cppname = (value, parameter_name, cpp_parameter_name)
+
+    def _AddSingleValue(trace_type, parameter_value):
+      """Choose the appropriate way to add a piece of information to
+      TracedValue |value|. If there is no |parameter_name| use the array methods
+      TracedValue::AppendT.
+
+      Args:
+        trace_type: {string} Which method to use. Can have the following values:
+          'Integer', 'Double', 'Boolean', 'String'. Corresponds to the T in
+          TracedValue::SetT or TracedValue::AppendT. If |parameter_name| there
+          are additional possible values: 'IntegerWithCopiedName',
+          'DoubleWithCopiedName', 'BooleanWithCopiedName',
+          'StringWithCopiedName'.
+        parameter_value: {string} This will be used verbatim as the second
+          parameter of TracedValue::SetT, resp. TracedValue::AppendT. To pass a
+          string literal use '"my string literal"'.
+
+      Args from the surrounding method:
+        parameter_name: {string} |if parameter_name| use SetT, otherwise use
+          AppendT.
+        value: {string} The TracedValue variable to be traced in.
+      """
+      if parameter_name:
+        return '%s->Set%s("%s", %s);' % (value, trace_type, parameter_name,
+                                         parameter_value)
+      else:
+        return '%s->Append%s(%s);' % (value, trace_type, parameter_value)
+
+    def _WrapIfNullable(inner_lines):
+      """Check if kind is nullable if so yield code to check whether it has
+      value.
+
+      Args:
+        inner_lines: {function} Function taking single argument and returning
+          iterable. If kind is nullable, yield from this method with
+          |cpp_parameter_name+'.value()'| otherwise yield with the parameter
+          |cpp_parameter_name|.
+
+      Args from the surrounding method:
+        kind
+        cpp_parameter_name
+        _AddSingleValue
+      """
+      if mojom.IsNullableKind(kind):
+        yield 'if (%s.has_value()) {' % cpp_parameter_name
+        for line in inner_lines(cpp_parameter_name + '.value()'):
+          yield '  ' + line
+        yield '} else {'
+        yield '  ' + _AddSingleValue('String', '"base::nullopt"')
+        yield '}'
+      else:
+        # |yield from| is introduced in Python3.3.
+        for line in inner_lines(cpp_parameter_name):
+          yield line
+
     # TODO(crbug.com/1103623): Support more involved types.
     if mojom.IsEnumKind(kind):
       if self._IsTypemappedKind(kind) or IsNativeOnlyKind(kind):
-        yield '%s->SetInteger("%s", static_cast<int>(%s));' % value_name_cppname
+        yield _AddSingleValue('Integer',
+                              'static_cast<int>(%s)' % cpp_parameter_name)
       else:
-        yield '%s->SetString("%s", base::trace_event::ValueToString(%s));'\
-            % value_name_cppname
+        yield _AddSingleValue(
+            'String',
+            'base::trace_event::ValueToString(%s)' % cpp_parameter_name)
       return
     if mojom.IsStringKind(kind):
       if self.for_blink:
         # WTF::String is nullable on its own.
-        yield '%s->SetString("%s", %s.Utf8());' % value_name_cppname
+        yield _AddSingleValue('String', '%s.Utf8()' % cpp_parameter_name)
         return
-      if mojom.IsNullableKind(kind):
-        # base::Optional<std::string>
-        yield 'if (%s.has_value()) {' % cpp_parameter_name
-        yield '  %s->SetString("%s", %s.value());' % value_name_cppname
-        yield '} else {'
-        yield '  %s->SetString("%s", "base::nullopt");' % (value,
-                                                           parameter_name)
-        yield '}'
-        return
-      else:
-        yield '%s->SetString("%s", %s);' % value_name_cppname
-        return
+      # The type might be base::Optional<std::string> or std::string.
+      for line in _WrapIfNullable(lambda cpp_parameter_name: [
+          _AddSingleValue('String', cpp_parameter_name)
+      ]):
+        yield line
+      return
     if kind == mojom.BOOL:
-      yield '%s->SetBoolean("%s", %s);' % value_name_cppname
+      yield _AddSingleValue('Boolean', cpp_parameter_name)
       return
     # TODO(crbug.com/1103623): Make TracedValue support int64_t, then move to
     # mojom.IsIntegralKind.
@@ -720,25 +773,69 @@ class Generator(generator.Generator):
         mojom.INT8, mojom.UINT8, mojom.INT16, mojom.UINT16, mojom.INT32
     ]:
       # Parameter is representable as 32bit int.
-      yield '%s->SetInteger("%s", %s);' % value_name_cppname
+      yield _AddSingleValue('Integer', cpp_parameter_name)
       return
     if kind in [mojom.UINT32, mojom.INT64, mojom.UINT64]:
-      yield '%s->SetString("%s", std::to_string(%s));' % value_name_cppname
+      yield _AddSingleValue('String', 'std::to_string(%s)' % cpp_parameter_name)
       return
     if mojom.IsFloatKind(kind) or mojom.IsDoubleKind(kind):
-      yield '%s->SetDouble("%s", %s);' % value_name_cppname
+      yield _AddSingleValue('Double', cpp_parameter_name)
       return
     if (mojom.IsStructKind(kind) and not self._IsTypemappedKind(kind)
         and not IsNativeOnlyKind(kind)):
       yield 'if (%s.is_null()) {' % cpp_parameter_name
-      yield '  %s->SetString("%s", "nullptr");' % (value, parameter_name)
+      yield '  ' + _AddSingleValue('String', '"nullptr"')
       yield '} else {'
-      yield '  %s->ToTracedValue(%s, "%s");' % (cpp_parameter_name, value,
-                                                parameter_name)
+      if parameter_name:
+        yield '  %s->ToTracedValue(%s, "%s");' % (cpp_parameter_name, value,
+                                                  parameter_name)
+      else:
+        yield '  %s->ToTracedValue(%s);' % (cpp_parameter_name, value)
       yield '}'
       return
-    yield '%s->SetString("%s", "<value of type %s>");' % (
-        value, parameter_name, self._GetCppWrapperParamType(kind))
+
+    def _TraceArray(iterator_name, container_name, loop_body):
+      """Generate the C++ for-loop to trace the container |container_name|.
+
+      Args:
+        iterator_name: {string} The iterator variable name to be used.
+        container_name: {string} The name of the variable holding the container.
+        loop_body: {iterable} Lines of C++ code that traces individual elements.
+
+      Args from the surrounding method:
+        parameter_name
+        value
+      """
+      if parameter_name:
+        yield '%s->BeginArray("%s");' % (value, parameter_name)
+      else:
+        yield '%s->BeginArray();' % value
+      yield 'for (const auto& %s : %s) {' % (iterator_name, container_name)
+      # TODO(crbug.com/1103623): Remove the following hack once all types are
+      # supported.
+      yield '  // Get rid of -Wunused-variable for unsupported types.'
+      yield '  std::ignore = %s;' % iterator_name
+      for line in loop_body:
+        yield '  ' + line
+      yield '}'
+      yield '%s->EndArray();' % value
+
+    if mojom.IsArrayKind(kind):
+      iterator_name = 'item'
+      loop_body = self._WriteInputParamForTracing(
+          kind=kind.kind,
+          parameter_name='',
+          cpp_parameter_name=iterator_name,
+          value=value)
+      # Array might be a nullable kind.
+      for line in _WrapIfNullable(lambda cpp_parameter_name: _TraceArray(
+          iterator_name=iterator_name,
+          container_name=cpp_parameter_name,
+          loop_body=loop_body)):
+        yield line
+      return
+    yield _AddSingleValue(
+        'String', ' "<value of type %s>"' % self._GetCppWrapperParamType(kind))
 
   def _GetCppWrapperType(self,
                          kind,

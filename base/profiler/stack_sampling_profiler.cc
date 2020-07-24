@@ -746,10 +746,10 @@ bool StackSamplingProfiler::IsSupported() {
     (defined(OS_MACOSX) && defined(ARCH_CPU_X86_64) && !defined(OS_IOS)) || \
     (defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE))
 #if defined(OS_MACOSX)
-  // TODO(https://crbug.com/1098119): Fix unwinding on OS X 10.16. The OS
-  // has moved all system libraries into the dyld shared cache and this
-  // seems to break the sampling profiler.
-  if (base::mac::IsOSLaterThan10_15_DontCallThis())
+  // TODO(https://crbug.com/1098119): Fix unwinding on macOS 11. The OS has
+  // moved all system libraries into the dyld shared cache and this seems to
+  // break the sampling profiler.
+  if (base::mac::IsAtLeastOS11())
     return false;
 #endif
 #if defined(OS_WIN)

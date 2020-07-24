@@ -43,7 +43,12 @@ class BrowserSkiaGoldPixelDiff : public ui::test::SkiaGoldPixelDiff {
   //   test class name as the prefix. The name will be
   //   |screenshot_prefix| + "_" + |screenshot_name|.'
   //   E.g. 'ToolbarTest_BackButtonHover'.
-  void Init(views::Widget* widget, const std::string& screenshot_prefix);
+  // corpus The corpus (i.e. result group) that will be used to store the
+  //   result in Gold. If omitted, will default to the generic corpus for
+  //   results from gtest-based tests.
+  void Init(views::Widget* widget,
+            const std::string& screenshot_prefix,
+            const std::string& corpus = std::string());
 
   // Take a screenshot, upload to Skia Gold and compare with the remote
   // golden image. Returns true if the screenshot is the same as the golden

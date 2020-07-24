@@ -27,7 +27,8 @@ using content::BrowserThread;
 class StringTraceEndpoint
     : public content::TracingController::TraceDataEndpoint {
  public:
-  StringTraceEndpoint(std::string* result, const base::Closure& callback)
+  StringTraceEndpoint(std::string* result,
+                      const base::RepeatingClosure& callback)
       : result_(result), completion_callback_(callback) {}
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
@@ -46,7 +47,7 @@ class StringTraceEndpoint
   ~StringTraceEndpoint() override {}
 
   std::string* result_;
-  base::Closure completion_callback_;
+  base::RepeatingClosure completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(StringTraceEndpoint);
 };
@@ -73,8 +74,9 @@ class InProcessTraceController {
     if (!content::TracingController::GetInstance()->StopTracing(
             new StringTraceEndpoint(
                 json_trace_output,
-                base::Bind(&InProcessTraceController::OnTracingComplete,
-                           base::Unretained(this))),
+                base::BindRepeating(
+                    &InProcessTraceController::OnTracingComplete,
+                    base::Unretained(this))),
             tracing::mojom::kChromeTraceEventLabel)) {
       return false;
     }

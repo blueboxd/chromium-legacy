@@ -44,6 +44,7 @@ class UpdateView {
   virtual void SetProgress(int value) = 0;
   virtual void SetRequiresPermissionForCellular(bool value) = 0;
   virtual void SetCancelUpdateShortcutEnabled(bool value) = 0;
+  virtual void ShowLowBatteryWarningMessage(bool value) = 0;
 };
 
 class UpdateScreenHandler : public UpdateView, public BaseScreenHandler {
@@ -67,10 +68,12 @@ class UpdateScreenHandler : public UpdateView, public BaseScreenHandler {
   void SetProgress(int value) override;
   void SetRequiresPermissionForCellular(bool value) override;
   void SetCancelUpdateShortcutEnabled(bool value) override;
+  void ShowLowBatteryWarningMessage(bool value) override;
 
   // BaseScreenHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
+  void GetAdditionalParameters(base::DictionaryValue* dict) override;
   void Initialize() override;
 
   UpdateScreen* screen_ = nullptr;

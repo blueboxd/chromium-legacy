@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
@@ -28,8 +29,10 @@
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "content/public/test/browser_test.h"
@@ -59,6 +62,8 @@ const test::UIPath kCellularPermissionNext = {"oobe-update",
                                               "cellular-permission-next"};
 const test::UIPath kCellularPermissionBack = {"oobe-update",
                                               "cellular-permission-back"};
+const test::UIPath kLowBatteryWarningMessage = {"oobe-update",
+                                                "battery-warning"};
 const test::UIPath kErrorMessage = {"error-message"};
 
 // UMA names for better test reading.
@@ -166,6 +171,23 @@ class UpdateScreenTest : public OobeBaseTest {
   base::OnceClosure screen_result_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateScreenTest);
+};
+
+class BetterUpdateScreenTest : public UpdateScreenTest {
+ public:
+  BetterUpdateScreenTest() {
+    feature_list_.InitWithFeatures({chromeos::features::kBetterUpdateScreen},
+                                   {});
+  }
+  ~BetterUpdateScreenTest() override = default;
+
+ protected:
+  chromeos::FakePowerManagerClient* power_manager_client() {
+    return chromeos::FakePowerManagerClient::Get();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 void UpdateScreenTest::CheckPathVisiblity(
@@ -727,6 +749,139 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, UpdateOverCellularRejected) {
   histogram_tester_.ExpectTotalCount(kTimeDownload, 0);
   histogram_tester_.ExpectTotalCount(kTimeVerify, 0);
   histogram_tester_.ExpectTotalCount(kTimeFinalize, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest, TestInitialLowBatteryStatus) {
+  update_screen_->set_ignore_update_deadlines_for_testing(true);
+  // Set low battery and discharging status before oobe-update screen is shown.
+  power_manager::PowerSupplyProperties props;
+  props.set_battery_percent(49);
+  props.set_battery_state(
+      power_manager::PowerSupplyProperties_BatteryState_DISCHARGING);
+  power_manager_client()->UpdatePowerProperties(props);
+
+  ShowUpdateScreen();
+  EXPECT_TRUE(power_manager_client()->HasObserver(update_screen_));
+  test::OobeJS().ExpectHiddenPath(kLowBatteryWarningMessage);
+
+  update_engine::StatusResult status;
+  status.set_current_operation(update_engine::Operation::DOWNLOADING);
+  status.set_new_version("latest and greatest");
+  status.set_new_size(1'000'000'000);
+  status.set_progress(0.0);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
+
+  // Warning message is shown while not charging and battery is low.
+  test::OobeJS().ExpectVisiblePath(kLowBatteryWarningMessage);
+}
+
+IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest,
+                       TestBatteryWarningDuringUpdateStages) {
+  update_screen_->set_ignore_update_deadlines_for_testing(true);
+  ShowUpdateScreen();
+  EXPECT_TRUE(power_manager_client()->HasObserver(update_screen_));
+
+  power_manager::PowerSupplyProperties props;
+  props.set_battery_percent(49);
+  props.set_battery_state(
+      power_manager::PowerSupplyProperties_BatteryState_DISCHARGING);
+  power_manager_client()->UpdatePowerProperties(props);
+
+  test::OobeJS().ExpectHiddenPath(kLowBatteryWarningMessage);
+
+  update_engine::StatusResult status;
+  // Warning message is hidden before DOWNLOADING stage.
+  status.set_current_operation(update_engine::Operation::CHECKING_FOR_UPDATE);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
+
+  test::OobeJS().ExpectHiddenPath(kLowBatteryWarningMessage);
+
+  status.set_current_operation(update_engine::Operation::UPDATE_AVAILABLE);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
+
+  test::OobeJS().ExpectHiddenPath(kLowBatteryWarningMessage);
+
+  status.set_current_operation(update_engine::Operation::DOWNLOADING);
+  status.set_new_version("latest and greatest");
+  status.set_new_size(1'000'000'000);
+  status.set_progress(0.0);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
+
+  test::OobeJS().ExpectVisiblePath(kLowBatteryWarningMessage);
+
+  // Warning message remains on the screen during next update stages, iff the
+  // battery is low and discharging.
+  status.set_current_operation(update_engine::Operation::VERIFYING);
+  status.set_progress(1.0);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
+
+  test::OobeJS().ExpectVisiblePath(kLowBatteryWarningMessage);
+
+  status.set_current_operation(update_engine::Operation::FINALIZING);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
+
+  test::OobeJS().ExpectVisiblePath(kLowBatteryWarningMessage);
+
+  status.set_current_operation(update_engine::Operation::UPDATED_NEED_REBOOT);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
+
+  // UpdateStatusChanged(status) calls RebootAfterUpdate().
+  EXPECT_EQ(update_engine_client()->reboot_after_update_call_count(), 1);
+  test::OobeJS().ExpectVisiblePath(kLowBatteryWarningMessage);
+}
+
+IN_PROC_BROWSER_TEST_F(BetterUpdateScreenTest,
+                       TestBatteryWarningOnDifferentBatteryStatus) {
+  update_screen_->set_ignore_update_deadlines_for_testing(true);
+  ShowUpdateScreen();
+  EXPECT_TRUE(power_manager_client()->HasObserver(update_screen_));
+
+  update_engine::StatusResult status;
+  status.set_current_operation(update_engine::Operation::DOWNLOADING);
+  status.set_new_version("latest and greatest");
+  status.set_new_size(1'000'000'000);
+  status.set_progress(0.0);
+  update_engine_client()->set_default_status(status);
+  update_engine_client()->NotifyObserversThatStatusChanged(status);
+
+  power_manager::PowerSupplyProperties props;
+
+  // Warning message is hidden while not charging, but enough battery.
+  props.set_battery_percent(100);
+  props.set_battery_state(
+      power_manager::PowerSupplyProperties_BatteryState_FULL);
+  power_manager_client()->UpdatePowerProperties(props);
+
+  test::OobeJS().ExpectVisible("oobe-update");
+  test::OobeJS().ExpectHiddenPath(kLowBatteryWarningMessage);
+
+  props.set_battery_percent(85);
+  props.set_battery_state(
+      power_manager::PowerSupplyProperties_BatteryState_DISCHARGING);
+  power_manager_client()->UpdatePowerProperties(props);
+
+  test::OobeJS().ExpectHiddenPath(kLowBatteryWarningMessage);
+
+  // Warning message is shown while not charging and battery is low.
+  props.set_battery_percent(48);
+  power_manager_client()->UpdatePowerProperties(props);
+
+  test::OobeJS().ExpectVisiblePath(kLowBatteryWarningMessage);
+
+  // Warning message is hidden while charging.
+  props.set_battery_percent(49);
+  props.set_battery_state(
+      power_manager::PowerSupplyProperties_BatteryState_CHARGING);
+  power_manager_client()->UpdatePowerProperties(props);
+
+  test::OobeJS().ExpectHiddenPath(kLowBatteryWarningMessage);
 }
 
 }  // namespace chromeos

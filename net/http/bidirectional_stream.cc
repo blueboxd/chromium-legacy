@@ -119,7 +119,6 @@ BidirectionalStream::BidirectionalStream(
 }
 
 BidirectionalStream::~BidirectionalStream() {
-  UpdateHistograms();
   if (net_log_.IsCapturing()) {
     net_log_.EndEvent(NetLogEventType::BIDIRECTIONAL_STREAM_ALIVE);
   }
@@ -429,50 +428,6 @@ void BidirectionalStream::OnQuicBroken() {}
 
 void BidirectionalStream::NotifyFailed(int error) {
   delegate_->OnFailed(error);
-}
-
-void BidirectionalStream::UpdateHistograms() {
-  // If the request failed before response is started, treat the metrics as
-  // bogus and skip logging.
-  if (load_timing_info_.request_start.is_null() ||
-      load_timing_info_.receive_headers_end.is_null() ||
-      read_end_time_.is_null() || load_timing_info_.send_start.is_null() ||
-      load_timing_info_.send_end.is_null()) {
-    return;
-  }
-  if (GetProtocol() == kProtoHTTP2) {
-    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.TimeToReadStart.HTTP2",
-                        load_timing_info_.receive_headers_end -
-                            load_timing_info_.request_start);
-    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.TimeToReadEnd.HTTP2",
-                        read_end_time_ - load_timing_info_.request_start);
-    UMA_HISTOGRAM_TIMES(
-        "Net.BidirectionalStream.TimeToSendStart.HTTP2",
-        load_timing_info_.send_start - load_timing_info_.request_start);
-    UMA_HISTOGRAM_TIMES(
-        "Net.BidirectionalStream.TimeToSendEnd.HTTP2",
-        load_timing_info_.send_end - load_timing_info_.request_start);
-    UMA_HISTOGRAM_COUNTS_1M("Net.BidirectionalStream.ReceivedBytes.HTTP2",
-                            stream_impl_->GetTotalReceivedBytes());
-    UMA_HISTOGRAM_COUNTS_1M("Net.BidirectionalStream.SentBytes.HTTP2",
-                            stream_impl_->GetTotalSentBytes());
-  } else if (GetProtocol() == kProtoQUIC) {
-    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.TimeToReadStart.QUIC",
-                        load_timing_info_.receive_headers_end -
-                            load_timing_info_.request_start);
-    UMA_HISTOGRAM_TIMES("Net.BidirectionalStream.TimeToReadEnd.QUIC",
-                        read_end_time_ - load_timing_info_.request_start);
-    UMA_HISTOGRAM_TIMES(
-        "Net.BidirectionalStream.TimeToSendStart.QUIC",
-        load_timing_info_.send_start - load_timing_info_.request_start);
-    UMA_HISTOGRAM_TIMES(
-        "Net.BidirectionalStream.TimeToSendEnd.QUIC",
-        load_timing_info_.send_end - load_timing_info_.request_start);
-    UMA_HISTOGRAM_COUNTS_1M("Net.BidirectionalStream.ReceivedBytes.QUIC",
-                            stream_impl_->GetTotalReceivedBytes());
-    UMA_HISTOGRAM_COUNTS_1M("Net.BidirectionalStream.SentBytes.QUIC",
-                            stream_impl_->GetTotalSentBytes());
-  }
 }
 
 }  // namespace net

@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
@@ -898,7 +899,8 @@ void HTMLTreeBuilder::ProcessTemplateStartTag(AtomicHTMLToken* token) {
 
   DeclarativeShadowRootType declarative_shadow_root_type(
       DeclarativeShadowRootType::kNone);
-  if (RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled()) {
+  if (RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled(
+          tree_.CurrentNode()->GetExecutionContext())) {
     if (Attribute* type_attribute =
             token->GetAttributeItem(html_names::kShadowrootAttr)) {
       String shadow_mode = type_attribute->Value();
@@ -944,7 +946,8 @@ bool HTMLTreeBuilder::ProcessTemplateEndTag(AtomicHTMLToken* token) {
   tree_.ActiveFormattingElements()->ClearToLastMarker();
   template_insertion_modes_.pop_back();
   ResetInsertionModeAppropriately();
-  if (RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled() &&
+  if (RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled(
+          shadow_host_stack_item->GetNode()->GetExecutionContext()) &&
       template_stack_item) {
     DCHECK(template_stack_item->IsElementNode());
     HTMLTemplateElement* template_element =

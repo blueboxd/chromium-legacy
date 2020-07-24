@@ -31,9 +31,6 @@ class DesktopMediaListView
   // Called by DesktopMediaSourceView when selection has changed.
   void OnSelectionChanged();
 
-  // Called by DesktopMediaSourceView when a source has been double-clicked.
-  void OnDoubleClick();
-
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;

@@ -64,7 +64,7 @@ class AccessibilityFocusHighlight : public ui::LayerDelegate,
   // ui::LayerDelegate overrides:
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
-                                  float new_device_scale_factor) override;
+                                  float new_device_scale_factor) override {}
 
   // CompositorAnimationObserver overrides:
   void OnAnimationStep(base::TimeTicks timestamp) override;
@@ -90,9 +90,6 @@ class AccessibilityFocusHighlight : public ui::LayerDelegate,
 
   // The most recent time the layer was updated because focus moved.
   base::TimeTicks focus_last_changed_time_;
-
-  // The current scale factor between DIPs and pixels.
-  float device_scale_factor_;
 
   // The default color used for the highlight.
   static SkColor default_color_;

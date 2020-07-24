@@ -45,6 +45,12 @@ export class QueryTilesInternalsBrowserProxy {
    * is fetched.
    */
   getTileData() {}
+
+  /**
+   * Set the base URL of query tile server.
+   * @param {string} url of the server.
+   */
+  setServerUrl(url) {}
 }
 
 /**
@@ -69,6 +75,11 @@ export class QueryTilesInternalsBrowserProxyImpl {
   /** @override */
   getTileData() {
     return sendWithPromise('getTileData');
+  }
+
+  /** @override */
+  setServerUrl(url) {
+    chrome.send('setServerUrl', [url]);
   }
 }
 

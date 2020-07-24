@@ -3,4 +3,6 @@ include_rules = [
   "+components/signin/public",
   "+components/sync/driver",
   "+components/sync/protocol",
+  "+crypto",
+  "+third_party/boringssl",
 ]

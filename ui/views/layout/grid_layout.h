@@ -392,9 +392,9 @@ class VIEWS_EXPORT ColumnSet {
   // NOTE: this doesn't include the insets.
   void ResetColumnXCoordinates();
 
-  enum SizeCalculationType {
-    PREFERRED,
-    MINIMUM,
+  enum class SizeCalculationType {
+    kPreferred,
+    kMinimum,
   };
 
   // Calculate the preferred width of each view in this column set, as well
@@ -432,7 +432,7 @@ class VIEWS_EXPORT ColumnSet {
   std::vector<Column*> master_columns_;
 
 #if DCHECK_IS_ON()
-  SizeCalculationType last_calculation_type_ = SizeCalculationType::PREFERRED;
+  SizeCalculationType last_calculation_type_ = SizeCalculationType::kPreferred;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ColumnSet);

@@ -45,6 +45,9 @@ const CGFloat kButtonCornerRadius = 8.0;
   [super configureCell:tableCell withStyler:styler];
   TableViewIllustratedCell* cell =
       base::mac::ObjCCastStrict<TableViewIllustratedCell>(tableCell);
+  if ([self.accessibilityIdentifier length]) {
+    cell.accessibilityIdentifier = self.accessibilityIdentifier;
+  }
   [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
   if (self.image) {
     cell.illustratedImageView.image = self.image;

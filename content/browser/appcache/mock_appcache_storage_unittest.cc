@@ -589,7 +589,7 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseExclusions) {
   const int64_t kResponseId = 1;
 
   AppCacheManifest manifest;
-  manifest.online_whitelist_namespaces.push_back(AppCacheNamespace(
+  manifest.online_safelist_namespaces.push_back(AppCacheNamespace(
       APPCACHE_NETWORK_NAMESPACE, kOnlineNamespaceUrl, GURL()));
   auto cache = base::MakeRefCounted<AppCache>(service.storage(), kCacheId);
   cache->InitializeWithManifest(&manifest);

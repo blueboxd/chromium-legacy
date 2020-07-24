@@ -122,15 +122,6 @@ class ContentProviders(object):
       file_system = ChrootFileSystem(self._host_file_system,
 
                                      chromium_config['dir'])
-    # TODO(rockot): Remove this in a future patch. It should not be needed once
-    # the new content_providers.json is committed.
-    elif 'gitiles' in config:
-      chromium_config = config['gitiles']
-      if 'dir' not in chromium_config:
-        logging.error('%s: "chromium" must have a "dir" property' % name)
-        return None
-      file_system = ChrootFileSystem(self._host_file_system,
-                                     chromium_config['dir'])
     elif 'gcs' in config:
       gcs_config = config['gcs']
       if 'bucket' not in gcs_config:

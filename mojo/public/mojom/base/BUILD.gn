@@ -456,5 +456,24 @@ mojom_component("base") {
       ]
       traits_public_deps = [ "//mojo/public/cpp/base" ]
     },
+    {
+      types = [
+        {
+          mojom = "mojo_base.mojom.BigString16"
+          cpp = "::WTF::String"
+          nullable_is_same_type = true
+          force_serialize = true
+        },
+        {
+          mojom = "mojo_base.mojom.String16"
+          cpp = "::WTF::String"
+          nullable_is_same_type = true
+          force_serialize = true
+        },
+      ]
+      traits_headers = [
+        "//third_party/blink/renderer/platform/mojo/string16_mojom_traits.h",
+      ]
+    },
   ]
 }

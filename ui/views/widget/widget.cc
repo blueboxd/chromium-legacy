@@ -580,7 +580,8 @@ void Widget::CloseWithReason(ClosedReason closed_reason) {
   if (block_close_) {
     return;
   }
-  if (non_client_view_ && !non_client_view_->CanClose())
+  if (non_client_view_ && non_client_view_->OnWindowCloseRequested() ==
+                              CloseRequestResult::kCannotClose)
     return;
 
   // This is the last chance to cancel closing.

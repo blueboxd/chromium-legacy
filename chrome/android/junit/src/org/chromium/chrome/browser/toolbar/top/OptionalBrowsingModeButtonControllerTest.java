@@ -62,9 +62,9 @@ public class OptionalBrowsingModeButtonControllerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        mButtonData1 = new ButtonData(true, null, null, 0, false, null);
-        mButtonData2 = new ButtonData(true, null, null, 0, false, null);
-        mButtonData3 = new ButtonData(true, null, null, 0, false, null);
+        mButtonData1 = new ButtonData(true, null, null, 0, false, null, true);
+        mButtonData2 = new ButtonData(true, null, null, 0, false, null, true);
+        mButtonData3 = new ButtonData(true, null, null, 0, false, null, true);
         doReturn(mButtonData1).when(mButtonDataProvider1).get(mTab);
         doReturn(mButtonData2).when(mButtonDataProvider2).get(mTab);
         doReturn(mButtonData3).when(mButtonDataProvider3).get(mTab);
@@ -144,7 +144,7 @@ public class OptionalBrowsingModeButtonControllerTest {
         mButtonController.updateButtonVisibility();
         verify(mToolbarLayout, times(1)).updateOptionalButton(mButtonData1);
 
-        ButtonData newButtonData = new ButtonData(true, null, null, 0, false, null);
+        ButtonData newButtonData = new ButtonData(true, null, null, 0, false, null, true);
         doReturn(newButtonData).when(mButtonDataProvider1).get(mTab);
         mButtonController.buttonDataProviderChanged(mButtonDataProvider1, true);
         verify(mToolbarLayout, times(1)).updateOptionalButton(newButtonData);
@@ -159,7 +159,7 @@ public class OptionalBrowsingModeButtonControllerTest {
         mButtonController.updateButtonVisibility();
         verify(mToolbarLayout, times(1)).updateOptionalButton(mButtonData1);
 
-        ButtonData newButtonData = new ButtonData(true, null, null, 0, false, null);
+        ButtonData newButtonData = new ButtonData(true, null, null, 0, false, null, true);
         mButtonController.buttonDataProviderChanged(mButtonDataProvider2, true);
         verify(mToolbarLayout, times(0)).updateOptionalButton(newButtonData);
 
@@ -196,5 +196,12 @@ public class OptionalBrowsingModeButtonControllerTest {
         verify(mButtonDataProvider1, times(1)).removeObserver(mObserverCaptor1.getValue());
         verify(mButtonDataProvider2, times(1)).removeObserver(mObserverCaptor2.getValue());
         verify(mButtonDataProvider3, times(1)).removeObserver(mObserverCaptor3.getValue());
+    }
+
+    @Test
+    public void updateOptionalButtonIsOnEnabled() {
+        mButtonData1.isEnabled = false;
+        mButtonController.updateButtonVisibility();
+        verify(mToolbarLayout, times(1)).updateOptionalButton(mButtonData1);
     }
 }

@@ -18,6 +18,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/host_id.h"
 #include "extensions/common/manifest_constants.h"
@@ -124,6 +125,22 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
       return nullptr;
     }
     result->set_match_about_blank(match_about_blank->GetBool());
+  }
+
+  // match data urls
+  if (base::FeatureList::IsEnabled(
+          extensions_features::kContentScriptsOnDataUrls)) {
+    const base::Value* match_data_urls =
+        content_script.FindKey(keys::kMatchDataUrls);
+    if (match_data_urls) {
+      if (!match_data_urls->is_bool()) {
+        *error = ErrorUtils::FormatErrorMessageUTF16(
+            errors::kInvalidMatchDataUrls,
+            base::NumberToString(definition_index));
+        return nullptr;
+      }
+      result->set_match_data_urls(match_data_urls->GetBool());
+    }
   }
 
   // matches (required)

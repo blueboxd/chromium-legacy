@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_origin_3d_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_programmable_stage_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_texture_copy_view.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_texture_data_layout.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture.h"
@@ -771,6 +772,17 @@ WGPUTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view,
   }
 
   return dawn_view;
+}
+
+WGPUTextureDataLayout AsDawnType(const GPUTextureDataLayout* webgpu_layout) {
+  DCHECK(webgpu_layout);
+
+  WGPUTextureDataLayout dawn_layout = {};
+  dawn_layout.offset = webgpu_layout->offset();
+  dawn_layout.bytesPerRow = webgpu_layout->bytesPerRow();
+  dawn_layout.rowsPerImage = webgpu_layout->rowsPerImage();
+
+  return dawn_layout;
 }
 
 OwnedProgrammableStageDescriptor AsDawnType(

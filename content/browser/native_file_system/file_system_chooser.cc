@@ -147,6 +147,14 @@ void FileSystemChooser::CreateAndShow(
   listener->dialog_ = ui::SelectFileDialog::Create(
       listener,
       GetContentClient()->browser()->CreateSelectFilePolicy(web_contents));
+
+  // In content_shell --run-web-tests, there might be no dialog available. In
+  // that case just abort.
+  if (!listener->dialog_) {
+    listener->FileSelectionCanceled(nullptr);
+    return;
+  }
+
   // TODO(https://crbug.com/878581): Better/more specific options to pass to
   //     SelectFile.
 

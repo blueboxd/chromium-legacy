@@ -7,6 +7,7 @@
 #include "base/notreached.h"
 #include "base/optional.h"
 #include "media/base/video_bitrate_allocation.h"
+#include "media/mojo/mojom/video_encode_accelerator.mojom.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 
 namespace mojo {
@@ -28,35 +29,35 @@ bool StructTraits<media::mojom::VideoEncodeAcceleratorSupportedProfileDataView,
 }
 
 // static
-media::mojom::VideoEncodeAccelerator::Error
-EnumTraits<media::mojom::VideoEncodeAccelerator::Error,
+media::mojom::VideoEncodeAccelerator_Error
+EnumTraits<media::mojom::VideoEncodeAccelerator_Error,
            media::VideoEncodeAccelerator::Error>::
     ToMojom(media::VideoEncodeAccelerator::Error error) {
   switch (error) {
     case media::VideoEncodeAccelerator::kIllegalStateError:
-      return media::mojom::VideoEncodeAccelerator::Error::ILLEGAL_STATE;
+      return media::mojom::VideoEncodeAccelerator_Error::ILLEGAL_STATE;
     case media::VideoEncodeAccelerator::kInvalidArgumentError:
-      return media::mojom::VideoEncodeAccelerator::Error::INVALID_ARGUMENT;
+      return media::mojom::VideoEncodeAccelerator_Error::INVALID_ARGUMENT;
     case media::VideoEncodeAccelerator::kPlatformFailureError:
-      return media::mojom::VideoEncodeAccelerator::Error::PLATFORM_FAILURE;
+      return media::mojom::VideoEncodeAccelerator_Error::PLATFORM_FAILURE;
   }
   NOTREACHED();
-  return media::mojom::VideoEncodeAccelerator::Error::INVALID_ARGUMENT;
+  return media::mojom::VideoEncodeAccelerator_Error::INVALID_ARGUMENT;
 }
 
 // static
-bool EnumTraits<media::mojom::VideoEncodeAccelerator::Error,
+bool EnumTraits<media::mojom::VideoEncodeAccelerator_Error,
                 media::VideoEncodeAccelerator::Error>::
-    FromMojom(media::mojom::VideoEncodeAccelerator::Error error,
+    FromMojom(media::mojom::VideoEncodeAccelerator_Error error,
               media::VideoEncodeAccelerator::Error* out) {
   switch (error) {
-    case media::mojom::VideoEncodeAccelerator::Error::ILLEGAL_STATE:
+    case media::mojom::VideoEncodeAccelerator_Error::ILLEGAL_STATE:
       *out = media::VideoEncodeAccelerator::kIllegalStateError;
       return true;
-    case media::mojom::VideoEncodeAccelerator::Error::INVALID_ARGUMENT:
+    case media::mojom::VideoEncodeAccelerator_Error::INVALID_ARGUMENT:
       *out = media::VideoEncodeAccelerator::kInvalidArgumentError;
       return true;
-    case media::mojom::VideoEncodeAccelerator::Error::PLATFORM_FAILURE:
+    case media::mojom::VideoEncodeAccelerator_Error::PLATFORM_FAILURE:
       *out = media::VideoEncodeAccelerator::kPlatformFailureError;
       return true;
   }
@@ -161,30 +162,30 @@ bool StructTraits<media::mojom::Vp9MetadataDataView, media::Vp9Metadata>::Read(
 }
 
 // static
-media::mojom::VideoEncodeAcceleratorConfig::StorageType
-EnumTraits<media::mojom::VideoEncodeAcceleratorConfig::StorageType,
+media::mojom::VideoEncodeAcceleratorConfig_StorageType
+EnumTraits<media::mojom::VideoEncodeAcceleratorConfig_StorageType,
            media::VideoEncodeAccelerator::Config::StorageType>::
     ToMojom(media::VideoEncodeAccelerator::Config::StorageType input) {
   switch (input) {
     case media::VideoEncodeAccelerator::Config::StorageType::kDmabuf:
-      return media::mojom::VideoEncodeAcceleratorConfig::StorageType::kDmabuf;
+      return media::mojom::VideoEncodeAcceleratorConfig_StorageType::kDmabuf;
     case media::VideoEncodeAccelerator::Config::StorageType::kShmem:
-      return media::mojom::VideoEncodeAcceleratorConfig::StorageType::kShmem;
+      return media::mojom::VideoEncodeAcceleratorConfig_StorageType::kShmem;
   }
   NOTREACHED();
-  return media::mojom::VideoEncodeAcceleratorConfig::StorageType::kShmem;
+  return media::mojom::VideoEncodeAcceleratorConfig_StorageType::kShmem;
 }
 
 // static
-bool EnumTraits<media::mojom::VideoEncodeAcceleratorConfig::StorageType,
+bool EnumTraits<media::mojom::VideoEncodeAcceleratorConfig_StorageType,
                 media::VideoEncodeAccelerator::Config::StorageType>::
-    FromMojom(media::mojom::VideoEncodeAcceleratorConfig::StorageType input,
+    FromMojom(media::mojom::VideoEncodeAcceleratorConfig_StorageType input,
               media::VideoEncodeAccelerator::Config::StorageType* output) {
   switch (input) {
-    case media::mojom::VideoEncodeAcceleratorConfig::StorageType::kShmem:
+    case media::mojom::VideoEncodeAcceleratorConfig_StorageType::kShmem:
       *output = media::VideoEncodeAccelerator::Config::StorageType::kShmem;
       return true;
-    case media::mojom::VideoEncodeAcceleratorConfig::StorageType::kDmabuf:
+    case media::mojom::VideoEncodeAcceleratorConfig_StorageType::kDmabuf:
       *output = media::VideoEncodeAccelerator::Config::StorageType::kDmabuf;
       return true;
   }
@@ -193,29 +194,29 @@ bool EnumTraits<media::mojom::VideoEncodeAcceleratorConfig::StorageType,
 }
 
 // static
-media::mojom::VideoEncodeAcceleratorConfig::ContentType
-EnumTraits<media::mojom::VideoEncodeAcceleratorConfig::ContentType,
+media::mojom::VideoEncodeAcceleratorConfig_ContentType
+EnumTraits<media::mojom::VideoEncodeAcceleratorConfig_ContentType,
            media::VideoEncodeAccelerator::Config::ContentType>::
     ToMojom(media::VideoEncodeAccelerator::Config::ContentType input) {
   switch (input) {
     case media::VideoEncodeAccelerator::Config::ContentType::kDisplay:
-      return media::mojom::VideoEncodeAcceleratorConfig::ContentType::kDisplay;
+      return media::mojom::VideoEncodeAcceleratorConfig_ContentType::kDisplay;
     case media::VideoEncodeAccelerator::Config::ContentType::kCamera:
-      return media::mojom::VideoEncodeAcceleratorConfig::ContentType::kCamera;
+      return media::mojom::VideoEncodeAcceleratorConfig_ContentType::kCamera;
   }
   NOTREACHED();
-  return media::mojom::VideoEncodeAcceleratorConfig::ContentType::kCamera;
+  return media::mojom::VideoEncodeAcceleratorConfig_ContentType::kCamera;
 }
 // static
-bool EnumTraits<media::mojom::VideoEncodeAcceleratorConfig::ContentType,
+bool EnumTraits<media::mojom::VideoEncodeAcceleratorConfig_ContentType,
                 media::VideoEncodeAccelerator::Config::ContentType>::
-    FromMojom(media::mojom::VideoEncodeAcceleratorConfig::ContentType input,
+    FromMojom(media::mojom::VideoEncodeAcceleratorConfig_ContentType input,
               media::VideoEncodeAccelerator::Config::ContentType* output) {
   switch (input) {
-    case media::mojom::VideoEncodeAcceleratorConfig::ContentType::kCamera:
+    case media::mojom::VideoEncodeAcceleratorConfig_ContentType::kCamera:
       *output = media::VideoEncodeAccelerator::Config::ContentType::kCamera;
       return true;
-    case media::mojom::VideoEncodeAcceleratorConfig::ContentType::kDisplay:
+    case media::mojom::VideoEncodeAcceleratorConfig_ContentType::kDisplay:
       *output = media::VideoEncodeAccelerator::Config::ContentType::kDisplay;
       return true;
   }

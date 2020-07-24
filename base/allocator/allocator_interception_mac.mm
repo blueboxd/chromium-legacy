@@ -216,7 +216,7 @@ bool CanGetContextForCFAllocator() {
 #if defined(OS_IOS)
   return !base::ios::IsRunningOnOrLater(14, 0, 0);
 #else
-  return !base::mac::IsOSLaterThan10_15_DontCallThis();
+  return !base::mac::IsOSLaterThan11_DontCallThis();
 #endif
 }
 

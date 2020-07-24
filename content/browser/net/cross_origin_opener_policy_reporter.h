@@ -12,6 +12,7 @@
 #include "content/public/browser/global_routing_id.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/cross_origin_opener_policy.mojom.h"
+#include "services/network/public/mojom/source_location.mojom-forward.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -45,8 +46,10 @@ class CONTENT_EXPORT CrossOriginOpenerPolicyReporter final
   void QueueOpenerBreakageReport(const GURL& other_url,
                                  bool is_reported_from_document,
                                  bool is_report_only) final;
-  void QueueAccessReport(network::mojom::CoopAccessReportType report_type,
-                         const std::string& property) final;
+  void QueueAccessReport(
+      network::mojom::CoopAccessReportType report_type,
+      const std::string& property,
+      network::mojom::SourceLocationPtr source_location) final;
 
   // Returns the "previous" URL that is safe to expose.
   // Reference, "Next document URL for reporting" section:

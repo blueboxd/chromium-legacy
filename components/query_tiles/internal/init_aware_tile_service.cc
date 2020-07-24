@@ -104,6 +104,15 @@ void InitAwareTileService::PurgeDb() {
   }
 }
 
+void InitAwareTileService::SetServerUrl(const std::string& base_url) {
+  if (IsReady()) {
+    tile_service_->SetServerUrl(base_url);
+  } else if (!IsFailed()) {
+    MaybeCacheApiCall(base::BindOnce(&InitAwareTileService::SetServerUrl,
+                                     weak_ptr_factory_.GetWeakPtr(), base_url));
+  }
+}
+
 Logger* InitAwareTileService::GetLogger() {
   return tile_service_->GetLogger();
 }

@@ -108,8 +108,8 @@ public class StartSurfaceToolbarMediatorUnitTest {
                         .with(StartSurfaceToolbarProperties.MENU_IS_VISIBLE, true)
                         .with(StartSurfaceToolbarProperties.IS_VISIBLE, true)
                         .build();
-        mButtonData = new ButtonData(false, mDrawable, mOnClickListener, 0, false, null);
-        mDisabledButtonData = new ButtonData(false, null, null, 0, false, null);
+        mButtonData = new ButtonData(false, mDrawable, mOnClickListener, 0, false, null, true);
+        mDisabledButtonData = new ButtonData(false, null, null, 0, false, null, true);
         doReturn(mButtonData)
                 .when(mIdentityDiscController)
                 .getForStartSurface(OverviewModeState.SHOWN_HOMEPAGE);

@@ -2323,6 +2323,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "enable-windows-gaming-input-data-fetcher",
+    "owners": [ "qiaye@microsoft.com" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "enable-winrt-geolocation-implementation",
     "owners": [ "pelavall@microsoft.com" ],
     "expiry_milestone": 86
@@ -3721,6 +3726,29 @@
     "name": "safe-browsing-available",
     "owners": [ "//ios/chrome/browser/safe_browsing/OWNERS" ],
     "expiry_milestone": 85
+  },
+  {
+    "name": "safe-browsing-enhanced-protection-android",
+    "owners": [
+      "vakh",
+      "xinghuilu",
+      "chrome-safebrowsing-core@google.com"
+    ],
+    "expiry_milestone": 88
+  },
+  {
+    "name": "safe-browsing-real-time",
+    "owners": [ "//ios/chrome/browser/safe_browsing/OWNERS" ],
+    "expiry_milestone": 88
+  },
+  {
+    "name": "safe-browsing-security-section-ui-android",
+    "owners": [
+      "vakh",
+      "xinghuilu",
+      "chrome-safebrowsing-core@google.com"
+    ],
+    "expiry_milestone": 88
   },
   {
     "name": "safety-check-android",

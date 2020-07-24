@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chromeos/services/cfm/public/buildflags/buildflags.gni")
 import("//testing/test.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("use_real_dbus_clients.gni")
@@ -188,7 +189,6 @@ source_set("unit_tests") {
     "//chromeos/dbus/audio",
     "//chromeos/dbus/authpolicy",
     "//chromeos/dbus/biod:test_support",
-    "//chromeos/dbus/cfm:unit_tests",
     "//chromeos/dbus/cryptohome",
     "//chromeos/dbus/cryptohome:attestation_proto",
     "//chromeos/dbus/dlcservice:test_support",
@@ -206,6 +206,9 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/icu",
   ]
+  if (is_cfm) {
+    deps += [ "//chromeos/dbus/cfm:unit_tests" ]
+  }
   sources = [
     "audio/cras_audio_client_unittest.cc",
     "authpolicy/fake_authpolicy_client_unittest.cc",

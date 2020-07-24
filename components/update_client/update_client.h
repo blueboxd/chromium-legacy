@@ -323,7 +323,7 @@ using Callback = base::OnceCallback<void(Error error)>;
 // instance of this class is created, the reference to it must be released
 // only after the thread pools of the browser process have been destroyed and
 // the browser process has gone single-threaded.
-class UpdateClient : public base::RefCounted<UpdateClient> {
+class UpdateClient : public base::RefCountedThreadSafe<UpdateClient> {
  public:
   using CrxDataCallback =
       base::OnceCallback<std::vector<base::Optional<CrxComponent>>(
@@ -452,7 +452,7 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
   virtual void Stop() = 0;
 
  protected:
-  friend class base::RefCounted<UpdateClient>;
+  friend class base::RefCountedThreadSafe<UpdateClient>;
 
   virtual ~UpdateClient() = default;
 };

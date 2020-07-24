@@ -22,7 +22,6 @@
 #include "third_party/blink/renderer/core/page/link_highlight.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
-#include "third_party/blink/renderer/core/paint/find_paint_offset_and_visual_rect_needing_update.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -32,88 +31,11 @@
 
 namespace blink {
 
-IntRect PaintInvalidatorContext::MapLocalRectToVisualRect(
-    const LayoutObject& object,
-    const PhysicalRect& local_rect) const {
-  DCHECK(NeedsVisualRectUpdate(object));
-
-  if (local_rect.IsEmpty())
-    return IntRect();
-
-  DCHECK(!object.IsSVGChild() ||
-         // This function applies to SVG children derived from non-SVG layout
-         // objects, for carets, selections, etc.
-         object.IsBoxModelObject() || object.IsText());
-
-  // Unite visual rect with clip path bounding rect.
-  // It is because the clip path display items are owned by the layout object
-  // who has the clip path, and uses its visual rect as bounding rect too.
-  // Usually it is done at layout object level and included as a part of
-  // local visual overflow, but clip-path can be a reference to SVG, and we
-  // have to wait until pre-paint to ensure clean layout.
-  PhysicalRect rect = local_rect;
-  if (base::Optional<FloatRect> clip_path_bounding_box =
-          ClipPathClipper::LocalClipPathBoundingBox(object))
-    rect.Unite(PhysicalRect(EnclosingIntRect(*clip_path_bounding_box)));
-
-  rect.Move(fragment_data->PaintOffset());
-
-  // Use EnclosingIntRect to ensure the final visual rect will cover the rect
-  // in source coordinates no matter if the painting will snap to pixels.
-  return EnclosingIntRect(rect);
-}
-
-IntRect PaintInvalidatorContext::MapLocalRectToVisualRectForSVGChild(
-    const LayoutObject& object,
-    const FloatRect& local_rect) const {
-  DCHECK(object.IsSVGChild());
-  DCHECK(NeedsVisualRectUpdate(object));
-
-  if (local_rect.IsEmpty())
-    return IntRect();
-
-  // Visual rects are in the space of their local transform node. For SVG, the
-  // input rect is in local SVG coordinates in which paint offset doesn't apply.
-  // We also don't need to adjust for clip path here because SVG the local
-  // visual rect has already been adjusted by clip path.
-  return EnclosingIntRect(local_rect);
-}
-
 const PaintInvalidatorContext*
 PaintInvalidatorContext::ParentContextAccessor::ParentContext() const {
   return tree_walk_ ? &tree_walk_->ContextAt(parent_context_index_)
                            .paint_invalidator_context
                     : nullptr;
-}
-
-IntRect PaintInvalidator::ComputeVisualRect(
-    const LayoutObject& object,
-    const NGPrePaintInfo* pre_paint_info,
-    const PaintInvalidatorContext& context) {
-  if (object.IsSVGChild()) {
-    return context.MapLocalRectToVisualRectForSVGChild(
-        object, SVGLayoutSupport::LocalVisualRect(object));
-  }
-
-  PhysicalRect rect;
-  if (pre_paint_info) {
-    const NGFragmentChildIterator& iterator = pre_paint_info->iterator;
-    DCHECK(iterator->BoxFragment() || iterator->FragmentItem());
-    if (object.StyleRef().Visibility() == EVisibility::kVisible) {
-      if (const auto* box_fragment = iterator->BoxFragment())
-        rect = box_fragment->InkOverflow();
-      else
-        rect = iterator->FragmentItem()->InkOverflow();
-      // The paint offset of text and non-atomic inlines are special; they are
-      // set to the paint offset of their container. Add the offset to the
-      // fragment now, to set the correct visual rectangle.
-      if (!object.IsBox())
-        rect.Move(iterator->Link().offset);
-    }
-  } else {
-    rect = object.LocalVisualRect();
-  }
-  return context.MapLocalRectToVisualRect(object, rect);
 }
 
 void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
@@ -204,12 +126,11 @@ void PaintInvalidator::UpdateDirectlyCompositedContainer(
     // descending into a different invalidation container. (For instance if
     // our parents were moved, the entire container will just move.)
     if (object != context.directly_composited_container_for_stacked_contents) {
-      // However, we need to keep kSubtreeVisualRectUpdate and
-      // kSubtreeFullInvalidationForStackedContents flags if the current
-      // object isn't the paint invalidation container of stacked contents.
+      // However, we need to keep kSubtreeFullInvalidationForStackedContents
+      // if the current object isn't the direct composited container of stacked
+      // contents.
       context.subtree_flags &=
-          (PaintInvalidatorContext::kSubtreeVisualRectUpdate |
-           PaintInvalidatorContext::kSubtreeFullInvalidationForStackedContents);
+          PaintInvalidatorContext::kSubtreeFullInvalidationForStackedContents;
     } else {
       context.subtree_flags = 0;
     }
@@ -220,43 +141,37 @@ void PaintInvalidator::UpdateDirectlyCompositedContainer(
   DCHECK(context.painting_layer == object.PaintingLayer());
 }
 
-void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
-                                        const NGPrePaintInfo* pre_paint_info,
-                                        FragmentData& fragment_data,
-                                        PaintInvalidatorContext& context) {
-  if (!context.NeedsVisualRectUpdate(object))
-    return;
-
+void PaintInvalidator::UpdateForPaintOffsetChange(
+    const LayoutObject& object,
+    FragmentData& fragment_data,
+    PaintInvalidatorContext& context) {
   DCHECK(context.tree_builder_context_);
-  DCHECK(!pre_paint_info || &fragment_data == &pre_paint_info->fragment_data);
+  DCHECK_EQ(context.tree_builder_context_->current.paint_offset,
+            fragment_data.PaintOffset());
 
-  IntRect old_visual_rect = fragment_data.VisualRect();
-  IntRect new_visual_rect = ComputeVisualRect(object, pre_paint_info, context);
-  if (pre_paint_info && !object.IsBox()) {
-    DCHECK(object.IsInline());
-    // Text and non-atomic inlines share the same FragmentData object per block
-    // fragment, and their FragmentData objects are reset when visiting their
-    // first fragment. So just add to the visual rectangle.
-    // TODO(crbug.com/1043787): Fix this. The way we use FragmentData for
-    // non-atomic inlines is not ideal for how LayoutNG works.
-    new_visual_rect.Unite(fragment_data.VisualRect());
-  } else {
-    DCHECK_EQ(context.tree_builder_context_->current.paint_offset,
-              fragment_data.PaintOffset());
+  // LayoutShiftTracker doesn't track SVG children. Also the visual rect
+  // calculation below works for non-SVG-child objects only.
+  if (!object.IsSVGChild()) {
+    PhysicalRect new_visual_rect = object.LocalVisualRect();
+    new_visual_rect.Move(fragment_data.PaintOffset());
+    // Adjust old_visual_rect so that LayoutShiftTracker can see the change of
+    // offset caused by change of transforms below the 2d translation root.
+    PhysicalRect old_visual_rect =
+        fragment_data.VisualRectIn2DTranslationRoot();
+    old_visual_rect.Move(
+        -context.tree_builder_context_->current.offset_to_2d_translation_root);
+    object.GetFrameView()->GetLayoutShiftTracker().NotifyObjectPrePaint(
+        object,
+        PropertyTreeStateOrAlias(
+            *context.tree_builder_context_->current.transform,
+            *context.tree_builder_context_->current.clip,
+            *context.tree_builder_context_->current_effect),
+        old_visual_rect, PhysicalRect(new_visual_rect));
+
+    new_visual_rect.Move(
+        context.tree_builder_context_->current.offset_to_2d_translation_root);
+    fragment_data.SetVisualRectIn2DTranslationRoot(new_visual_rect);
   }
-  fragment_data.SetVisualRect(new_visual_rect);
-  fragment_data.SetOffsetTo2DTranslationRoot(
-      context.tree_builder_context_->current.offset_to_2d_translation_root);
-
-  object.GetFrameView()->GetLayoutShiftTracker().NotifyObjectPrePaint(
-      object,
-      PropertyTreeStateOrAlias(
-          *context.tree_builder_context_->current.transform,
-          *context.tree_builder_context_->current.clip,
-          *context.tree_builder_context_->current_effect),
-      old_visual_rect, new_visual_rect,
-      FloatSize(context.old_offset_to_2d_translation_root -
-                fragment_data.OffsetTo2DTranslationRoot()));
 
   // For performance, we ignore subpixel movement of composited layers for paint
   // invalidation. This will result in imperfect pixel-snapped painting.
@@ -265,28 +180,6 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
           .directly_composited_container_paint_offset_subpixel_delta ==
       fragment_data.PaintOffset() - context.old_paint_offset)
     context.old_paint_offset = fragment_data.PaintOffset();
-}
-
-void PaintInvalidator::UpdateEmptyVisualRectFlag(
-    const LayoutObject& object,
-    PaintInvalidatorContext& context) {
-  bool is_directly_composited_container =
-      object == context.directly_composited_container;
-
-  // Content under transforms needs to invalidate, even if visual
-  // rects before and after update were the same. This is because
-  // we don't know whether this transform will end up composited in
-  // CAP, so such transforms are painted even if not visible
-  // due to ancestor clips. This does not apply in SPv1 mode when
-  // crossing directly composited container boundaries.
-  if (is_directly_composited_container) {
-    // Remove the flag when crossing paint invalidation container boundaries.
-    context.subtree_flags &=
-        ~PaintInvalidatorContext::kInvalidateEmptyVisualRect;
-  } else if (object.StyleRef().HasTransform()) {
-    context.subtree_flags |=
-        PaintInvalidatorContext::kInvalidateEmptyVisualRect;
-  }
 }
 
 bool PaintInvalidator::InvalidatePaint(
@@ -309,7 +202,6 @@ bool PaintInvalidator::InvalidatePaint(
   UpdatePaintingLayer(object, context, /* is_ng_painting */ !!pre_paint_info);
   UpdateDirectlyCompositedContainer(object, context,
                                     /* is_ng_painting */ !!pre_paint_info);
-  UpdateEmptyVisualRectFlag(object, context);
 
   if (!object.ShouldCheckForPaintInvalidation() && !context.NeedsSubtreeWalk())
     return false;
@@ -326,29 +218,19 @@ bool PaintInvalidator::InvalidatePaint(
 
   if (pre_paint_info) {
     FragmentData& fragment_data = pre_paint_info->fragment_data;
-    if (!object.IsBox()) {
-      context.old_offset_to_2d_translation_root = PhysicalOffset();
-    } else {
-      context.old_offset_to_2d_translation_root =
-          fragment_data.OffsetTo2DTranslationRoot();
-    }
     context.fragment_data = &fragment_data;
 
-#if DCHECK_IS_ON()
-    context.tree_builder_context_actually_needed_ =
-        tree_builder_context && tree_builder_context->is_actually_needed;
-#endif
     if (tree_builder_context) {
       DCHECK_EQ(tree_builder_context->fragments.size(), 1u);
       context.tree_builder_context_ = &tree_builder_context->fragments[0];
       context.old_paint_offset =
           context.tree_builder_context_->old_paint_offset;
+      UpdateForPaintOffsetChange(object, fragment_data, context);
     } else {
       context.tree_builder_context_ = nullptr;
       context.old_paint_offset = fragment_data.PaintOffset();
     }
 
-    UpdateVisualRect(object, pre_paint_info, fragment_data, context);
     object.InvalidatePaint(context);
   } else {
     unsigned tree_builder_index = 0;
@@ -356,32 +238,20 @@ bool PaintInvalidator::InvalidatePaint(
     for (auto* fragment_data = &object.GetMutableForPainting().FirstFragment();
          fragment_data;
          fragment_data = fragment_data->NextFragment(), tree_builder_index++) {
-      context.old_offset_to_2d_translation_root =
-          fragment_data->OffsetTo2DTranslationRoot();
       context.fragment_data = fragment_data;
 
       DCHECK(!tree_builder_context ||
              tree_builder_index < tree_builder_context->fragments.size());
 
-      {
-#if DCHECK_IS_ON()
-        context.tree_builder_context_actually_needed_ =
-            tree_builder_context && tree_builder_context->is_actually_needed;
-        FindObjectVisualRectNeedingUpdateScope finder(object, *fragment_data,
-                                                      context);
-#endif
-        if (tree_builder_context) {
-          context.tree_builder_context_ =
-              &tree_builder_context->fragments[tree_builder_index];
-          context.old_paint_offset =
-              context.tree_builder_context_->old_paint_offset;
-        } else {
-          context.tree_builder_context_ = nullptr;
-          context.old_paint_offset = fragment_data->PaintOffset();
-        }
-
-        UpdateVisualRect(object, /* pre_paint_info */ nullptr, *fragment_data,
-                         context);
+      if (tree_builder_context) {
+        context.tree_builder_context_ =
+            &tree_builder_context->fragments[tree_builder_index];
+        context.old_paint_offset =
+            context.tree_builder_context_->old_paint_offset;
+        UpdateForPaintOffsetChange(object, *fragment_data, context);
+      } else {
+        context.tree_builder_context_ = nullptr;
+        context.old_paint_offset = fragment_data->PaintOffset();
       }
 
       object.InvalidatePaint(context);
@@ -407,20 +277,10 @@ bool PaintInvalidator::InvalidatePaint(
         PaintInvalidatorContext::kSubtreeInvalidationChecking;
   }
 
-  if (context.subtree_flags && context.NeedsVisualRectUpdate(object)) {
-    // If any subtree flag is set, we also need to pass needsVisualRectUpdate
-    // requirement to the subtree.
-    // TODO(vmpstr): Investigate why this is true. Specifically, when crossing
-    // an isolation boundary, is it safe to clear this subtree requirement.
-    context.subtree_flags |= PaintInvalidatorContext::kSubtreeVisualRectUpdate;
-  }
-
-  if (context.NeedsVisualRectUpdate(object) &&
-      object.ContainsInlineWithOutlineAndContinuation()) {
-    // Force subtree visual rect update and invalidation checking to ensure
-    // invalidation of focus rings when continuation's geometry changes.
+  if (UNLIKELY(object.ContainsInlineWithOutlineAndContinuation())) {
+    // Force subtree invalidation checking to ensure invalidation of focus rings
+    // when continuation's geometry changes.
     context.subtree_flags |=
-        PaintInvalidatorContext::kSubtreeVisualRectUpdate |
         PaintInvalidatorContext::kSubtreeInvalidationChecking;
   }
 

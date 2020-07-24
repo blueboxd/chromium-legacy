@@ -76,6 +76,11 @@ class OnScreenKeyboardDisplayManagerInputPane::VirtualKeyboardInputPane
 
   ~VirtualKeyboardInputPane() {
     DCHECK(!main_task_runner_->BelongsToCurrentThread());
+    if (input_pane_) {
+      // Remove the callbacks that were registered.
+      input_pane_->remove_Showing(show_event_token_);
+      input_pane_->remove_Hiding(hide_event_token_);
+    }
   }
 
   bool EnsureInputPanePointersInBackgroundThread(HWND hwnd) {
@@ -101,8 +106,10 @@ class OnScreenKeyboardDisplayManagerInputPane::VirtualKeyboardInputPane
     if (FAILED(hr))
       return false;
 
-    if (FAILED(input_pane_.As(&input_pane2_)))
+    if (FAILED(input_pane_.As(&input_pane2_))) {
+      input_pane_.Reset();
       return false;
+    }
 
     AddCallbacksOnInputPaneShownOrHiddenInBackgroundThread();
     return true;
@@ -135,6 +142,11 @@ class OnScreenKeyboardDisplayManagerInputPane::VirtualKeyboardInputPane
       ABI::Windows::UI::ViewManagement::IInputPane* pane,
       ABI::Windows::UI::ViewManagement::IInputPaneVisibilityEventArgs* args) {
     DCHECK(!main_task_runner_->BelongsToCurrentThread());
+    // Due to timing this could be called by the OS even when input_pane_
+    // is null, so just bail out to avoid crashes.
+    if (!input_pane_)
+      return S_OK;
+
     ABI::Windows::Foundation::Rect rect;
     input_pane_->get_OccludedRect(&rect);
     gfx::Rect dip_rect(rect.X, rect.Y, rect.Width, rect.Height);
@@ -154,6 +166,11 @@ class OnScreenKeyboardDisplayManagerInputPane::VirtualKeyboardInputPane
       ABI::Windows::UI::ViewManagement::IInputPane* pane,
       ABI::Windows::UI::ViewManagement::IInputPaneVisibilityEventArgs* args) {
     DCHECK(!main_task_runner_->BelongsToCurrentThread());
+    // Due to timing this could be called by the OS even when input_pane_
+    // is null, so just bail out to avoid crashes.
+    if (!input_pane_)
+      return S_OK;
+
     TRACE_EVENT0("vk",
                  "OnScreenKeyboardDisplayManagerInputPane::"
                  "VirtualKeyboardInputPane::OnInputPaneHidden");

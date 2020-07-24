@@ -367,7 +367,7 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
   content::BrowserContext* browser_context =
       web_ui()->GetWebContents()->GetBrowserContext();
 
-  if (!email_address_.empty()) {
+  if (!email_address_.empty() && entry->IsAuthenticated()) {
     // In order to support the upgrade case where we have a local hash but no
     // password token, the user must perform a full online reauth.
     RecordAuthenticatedLaunchUserEvent(

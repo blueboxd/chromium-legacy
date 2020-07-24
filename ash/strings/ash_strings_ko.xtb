@@ -146,7 +146,7 @@
 <translation id="2582112259361606227">업데이트하려면 다시 시작</translation>
 <translation id="2595239820337756193">5km를 마일로 변환</translation>
 <translation id="2617342710774726426">SIM 카드가 잠겨 있습니다.</translation>
-<translation id="2621713457727696555">잠김</translation>
+<translation id="2621713457727696555">보안</translation>
 <translation id="2653659639078652383">제출</translation>
 <translation id="2658778018866295321">클릭하여 드래그</translation>
 <translation id="2700493154570097719">키보드 설정</translation>
@@ -206,7 +206,7 @@
 <translation id="3236488194889173876">사용할 수 있는 모바일 네트워크 없음</translation>
 <translation id="3249513730522716925"><ph name="WINDOW_TITLE" /> 창이 <ph name="ACTIVE_DESK" /> 데스크에서 <ph name="TARGET_DESK" /> 데스크로 이동했습니다.</translation>
 <translation id="3255483164551725916">무엇을 할 수 있어?</translation>
-<translation id="3290356915286466215">잠기지 않음</translation>
+<translation id="3290356915286466215">비보안</translation>
 <translation id="3294437725009624529">게스트</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" />님은 나중에도 로그인할 수 있습니다.</translation>
 <translation id="3321628682574733415">잘못된 부모 코드</translation>
@@ -347,7 +347,7 @@
 <translation id="490375751687810070">세로</translation>
 <translation id="4905614135390995787">고대비 모드 전환 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>
 <translation id="490788395437447240">배터리 <ph name="BATTERY_PERCENTAGE" />%</translation>
-<translation id="4917385247580444890">강력</translation>
+<translation id="4917385247580444890">강함</translation>
 <translation id="4918086044614829423">수락</translation>
 <translation id="4924411785043111640">다시 시작 및 재설정</translation>
 <translation id="495046168593986294">위로 스크롤</translation>

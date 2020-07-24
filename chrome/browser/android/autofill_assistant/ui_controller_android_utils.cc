@@ -51,6 +51,10 @@ DrawableIcon MapDrawableIcon(DrawableProto::Icon icon) {
       return DrawableIcon::CAR;
     case DrawableProto::GROCERY:
       return DrawableIcon::GROCERY;
+    case DrawableProto::VISIBILITY_ON:
+      return DrawableIcon::VISIBILITY_ON;
+    case DrawableProto::VISIBILITY_OFF:
+      return DrawableIcon::VISIBILITY_OFF;
   }
 }
 

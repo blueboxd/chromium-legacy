@@ -174,6 +174,10 @@ class UserScript {
   bool match_about_blank() const { return match_about_blank_; }
   void set_match_about_blank(bool val) { match_about_blank_ = val; }
 
+  // Whether to match data:-scheme URLs.
+  bool match_data_urls() const { return match_data_urls_; }
+  void set_match_data_urls(bool val) { match_data_urls_ = val; }
+
   // The globs, if any, that determine which pages this script runs against.
   // These are only used with "standalone" Greasemonkey-like user scripts.
   const std::vector<std::string>& globs() const { return globs_; }
@@ -231,9 +235,9 @@ class UserScript {
   bool MatchesURL(const GURL& url) const;
 
   // Returns true if the script should be applied to the given
-  // |effective_document_url| (calculated by the caller based on
-  // match_about_blank()| while also taking into account whether the document's
-  // frame |is_subframe| and what the |top_level_origin| is.
+  // |effective_document_url|. It is the caller's responsibility to calculate
+  // |effective_document_url| based on match_about_blank() and
+  // match_data_urls().
   bool MatchesDocument(const GURL& effective_document_url,
                        bool is_subframe) const;
 
@@ -325,6 +329,10 @@ class UserScript {
   // Whether the user script should run in about:blank and about:srcdoc as well.
   // Defaults to false.
   bool match_about_blank_;
+
+  // Whether the user script should run in data:-scheme frames.
+  // Defaults to false.
+  bool match_data_urls_;
 
   // True if the script should be injected into an incognito tab.
   bool incognito_enabled_;

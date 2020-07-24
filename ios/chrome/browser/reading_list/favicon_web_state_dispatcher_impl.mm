@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/reading_list/favicon_web_state_dispatcher_impl.h"
 
+#include "components/favicon/core/favicon_service.h"
 #include "components/favicon/ios/web_favicon_driver.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"

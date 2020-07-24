@@ -105,6 +105,15 @@ class CC_PAINT_EXPORT PaintOpReader {
     }
     *quality = static_cast<SkFilterQuality>(value);
   }
+  void Read(SkBlendMode* blend_mode) {
+    uint8_t value = 0u;
+    Read(&value);
+    if (value > static_cast<uint8_t>(SkBlendMode::kLastMode)) {
+      SetInvalid();
+      return;
+    }
+    *blend_mode = static_cast<SkBlendMode>(value);
+  }
   void Read(bool* data) {
     uint8_t value = 0u;
     Read(&value);

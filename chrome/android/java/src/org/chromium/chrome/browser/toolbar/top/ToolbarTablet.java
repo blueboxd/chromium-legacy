@@ -582,6 +582,7 @@ public class ToolbarTablet extends ToolbarLayout
         mOptionalButton.setContentDescription(
                 getContext().getResources().getString(buttonData.contentDescriptionResId));
         mOptionalButton.setVisibility(View.VISIBLE);
+        mOptionalButton.setEnabled(buttonData.isEnabled);
     }
 
     @Override

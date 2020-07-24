@@ -277,7 +277,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4028481283645788203">Se requiere la contraseña por razones de seguridad</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Estás compartiendo tu pantalla</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Desactivadas para una app}other{Desactivadas para # apps}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{No para 1 app}other{No para # apps}}</translation>
 <translation id="4072264167173457037">Señal media</translation>
 <translation id="4112140312785995938">Buscar más atrás</translation>
 <translation id="4129129681837227511">Para ver notificaciones en la pantalla bloqueada, desbloquéala para cambiar la configuración</translation>
@@ -422,7 +422,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5958529069007801266">Usuario supervisado</translation>
 <translation id="5977415296283489383">Auriculares</translation>
 <translation id="5978382165065462689">Se está compartiendo el control de la pantalla mediante la Asistencia remota.</translation>
-<translation id="5980301590375426705">Cerrar sesión de invitado</translation>
+<translation id="5980301590375426705">Cerrar como invitado</translation>
 <translation id="598882571027504733">Para obtener la actualización, reinicia tu Chromebook con el teclado conectado.</translation>
 <translation id="5992218262414051481">Se habilitó el modo de contraste alto. Presiona Ctrl+Buscar+H de nuevo para desactivarlo.</translation>
 <translation id="6018164090099858612">Saliendo del modo de espejo</translation>
@@ -599,7 +599,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8054466585765276473">Calculando duración de la batería...</translation>
 <translation id="8061464966246066292">Contraste alto</translation>
 <translation id="8098591350844501178">Detener la transmisión de la pantalla a <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">Activadas para todas las apps</translation>
+<translation id="8113423164597455979">Sí, para todas</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicializando…</translation>

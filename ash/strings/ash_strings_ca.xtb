@@ -44,7 +44,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="1346748346194534595">Dreta</translation>
 <translation id="1351937230027495976">Replega el menú</translation>
 <translation id="1383876407941801731">Cerca</translation>
-<translation id="1391102559483454063">Activat</translation>
+<translation id="1391102559483454063">Activada</translation>
 <translation id="1419738280318246476">Desbloqueja el dispositiu per dur a terme l'acció que indica la notificació</translation>
 <translation id="1420408895951708260">Activa o desactiva la funció Llum nocturna. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">Sí</translation>
@@ -111,7 +111,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="2222338659135520253">Cal iniciar la sessió</translation>
 <translation id="225680501294068881">S'estan cercant dispositius...</translation>
 <translation id="2268130516524549846">S'ha desactivat el Bluetooth</translation>
-<translation id="2268813581635650749">Tanca la sessió de tots els usuaris</translation>
+<translation id="2268813581635650749">Tanca les sessions</translation>
 <translation id="2277103315734023688">Avança</translation>
 <translation id="2292698582925480719">Escala de visualització</translation>
 <translation id="229397294990920565">S'estan desactivant les dades mòbils...</translation>
@@ -146,7 +146,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="2582112259361606227">Reinicia per actualitzar</translation>
 <translation id="2595239820337756193">5 km en milles</translation>
 <translation id="2617342710774726426">La targeta SIM està bloquejada</translation>
-<translation id="2621713457727696555">Protegida</translation>
+<translation id="2621713457727696555">Segura</translation>
 <translation id="2653659639078652383">Envia</translation>
 <translation id="2658778018866295321">Fes clic i arrossega</translation>
 <translation id="2700493154570097719">Defineix el teu teclat</translation>
@@ -206,7 +206,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="3236488194889173876">No hi ha cap xarxa mòbil disponible</translation>
 <translation id="3249513730522716925">La finestra <ph name="WINDOW_TITLE" /> ha passat de l'escriptori <ph name="ACTIVE_DESK" /> a l'escriptori <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Què pots fer?</translation>
-<translation id="3290356915286466215">No protegida</translation>
+<translation id="3290356915286466215">No segura</translation>
 <translation id="3294437725009624529">Convidat</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> pot iniciar la sessió més tard.</translation>
 <translation id="3321628682574733415">Codi parental incorrecte</translation>
@@ -276,7 +276,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="4028481283645788203">Cal introduir la contrasenya per disposar de més seguretat</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Estàs compartint la pantalla</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Desactivades en una aplicació}other{Desactivades en # aplicacions}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{No en una app}other{No en # apps}}</translation>
 <translation id="4072264167173457037">Senyal mitjà</translation>
 <translation id="4112140312785995938">Retrocedeix</translation>
 <translation id="4129129681837227511">Per veure notificacions a la pantalla de bloqueig, desbloqueja el dispositiu per canviar aquesta opció</translation>
@@ -301,7 +301,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="4356930093361201197">Mode d'alt contrast</translation>
 <translation id="4368583494516669646">Bona nit, <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Configuració d'emissió</translation>
-<translation id="4378551569595875038">S'està connectant...</translation>
+<translation id="4378551569595875038">Connectant...</translation>
 <translation id="4379531060876907730">Aquestes són les eines del llapis òptic</translation>
 <translation id="4389184120735010762">Has premut la tecla de drecera de la lupa acoblada. Vols activar-la?</translation>
 <translation id="4421231901400348175">Es comparteix el control de la pantalla amb <ph name="HELPER_NAME" /> mitjançant l'Assistència remota.</translation>
@@ -367,7 +367,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="5283198616748585639">Afegeix 1 minut</translation>
 <translation id="528468243742722775">Finalitza</translation>
 <translation id="5286194356314741248">S'està cercant</translation>
-<translation id="5297704307811127955">Desactivat</translation>
+<translation id="5297704307811127955">Desactivada</translation>
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="5313326810920013265">Configuració del Bluetooth</translation>
 <translation id="5331975486040154427">Dispositiu USB-C (port posterior esquerre)</translation>
@@ -393,14 +393,14 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="5600837773213129531">Prem Ctrl+Alt+Z per desactivar els avisos de veu.</translation>
 <translation id="5625955975703555628">LTE+</translation>
 <translation id="5648021990716966815">Connector per al micròfon</translation>
-<translation id="5669267381087807207">S'està activant</translation>
+<translation id="5669267381087807207">Activant</translation>
 <translation id="5673434351075758678">Després de sincronitzar la configuració, canvia <ph name="FROM_LOCALE" /> per <ph name="TO_LOCALE" />.</translation>
 <translation id="5682642926269496722">L'Assistent de Google no està disponible per al compte d'usuari actual.</translation>
 <translation id="5689633613396158040">Amb la funció Llum nocturna, és més fàcil mirar la pantalla i llegir-hi amb poca llum. Toca per canviar l'hora en què s'activa o per desactivar-la completament.</translation>
 <translation id="5691772641933328258">L'empremta digital no s'ha reconegut</translation>
 <translation id="5710450975648804523">Mode No molestis activat</translation>
 <translation id="573413375004481890">Com que aquest dispositiu no ha pogut admetre totes les pantalles, se n'ha desconnectat una</translation>
-<translation id="574392208103952083">Mitjà</translation>
+<translation id="574392208103952083">Mitja</translation>
 <translation id="5744083938413354016">Tocar i arrossegar</translation>
 <translation id="5745612484876805746">La funció Llum nocturna s'activa automàticament al vespre</translation>
 <translation id="5750765938512549687">El Bluetooth està desactivat</translation>
@@ -421,7 +421,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="5958529069007801266">Usuari supervisat</translation>
 <translation id="5977415296283489383">Auricular</translation>
 <translation id="5978382165065462689">Es comparteix el control de la pantalla mitjançant l'Assistència remota.</translation>
-<translation id="5980301590375426705">Surt de la sessió de convidat</translation>
+<translation id="5980301590375426705">Tanca com a convidat</translation>
 <translation id="598882571027504733">Per obtenir l'actualització, reinicia Chromebook amb el teclat connectat.</translation>
 <translation id="5992218262414051481">El mode d'alt contrast està activat. Torna a prémer Ctrl+Cerca+H per desactivar-lo.</translation>
 <translation id="6018164090099858612">S'està sortint del mode de projecció</translation>
@@ -521,7 +521,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="7088960765736518739">Accés amb interruptors</translation>
 <translation id="7098389117866926363">Dispositiu USB-C (port posterior esquerre)</translation>
 <translation id="7131634465328662194">La sessió es tancarà automàticament.</translation>
-<translation id="7143207342074048698">S'està connectant</translation>
+<translation id="7143207342074048698">Connectant</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Es revertirà a la resolució anterior d'aquí a <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">El menú s'ha mogut a l'extrem superior esquerre de la pantalla.</translation>
@@ -598,7 +598,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="8054466585765276473">S'està calculant el temps de la bateria.</translation>
 <translation id="8061464966246066292">Contrast alt</translation>
 <translation id="8098591350844501178">Deixa d'emetre la pantalla a <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">Activades en totes les aplicacions</translation>
+<translation id="8113423164597455979">Sí, en totes</translation>
 <translation id="8131740175452115882">Confirma</translation>
 <translation id="8132793192354020517">Connectat a <ph name="NAME" /></translation>
 <translation id="813913629614996137">S'està inicialitzant…</translation>
@@ -639,7 +639,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> té la funció <ph name="FEATURE_NAME" /> <ph name="FEATURE_STATE" />.</translation>
 <translation id="8477270416194247200">Prem Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> no admet la resolució <ph name="SPECIFIED_RESOLUTION" />. La resolució ha canviat a <ph name="FALLBACK_RESOLUTION" />. Fes clic a Confirma per conservar els canvis. La configuració anterior es restaurarà d'aquí a <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="8513108775083588393">Rotació automàtica</translation>
+<translation id="8513108775083588393">Rotació autom.</translation>
 <translation id="8517041960877371778">És possible que el dispositiu <ph name="DEVICE_TYPE" /> no es carregui mentre està encès.</translation>
 <translation id="8563862697512465947">Configuració de notificació</translation>
 <translation id="857201607579416096">El menú s'ha mogut a l'extrem inferior dret de la pantalla.</translation>
@@ -696,7 +696,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="9080132581049224423">Llisca cap amunt per anar a la pàgina d'inici</translation>
 <translation id="9080206825613744995">S'està fent servir el micròfon.</translation>
 <translation id="9084606467167974638">Commuta la posició del menú</translation>
-<translation id="9089416786594320554">Mètodes d'introducció</translation>
+<translation id="9089416786594320554">Mètodes d'entrada</translation>
 <translation id="9091626656156419976">S'ha suprimit la pantalla <ph name="DISPLAY_NAME" /></translation>
 <translation id="9151726767154816831">Reinicieu i feu un Powerwash per actualitzar.</translation>
 <translation id="9168436347345867845">Fes-ho més tard</translation>

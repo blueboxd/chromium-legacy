@@ -627,7 +627,8 @@ bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
   // Normal windows that have a WebUI-based tab strip do not need a browser
   // frame as no tab strip is drawn on top of the browser frame.
-  if (WebUITabStripContainerView::UseTouchableTabStrip() &&
+  if (WebUITabStripContainerView::UseTouchableTabStrip(
+          browser_view()->browser()) &&
       browser_view()->IsTabStripSupported()) {
     return false;
   }

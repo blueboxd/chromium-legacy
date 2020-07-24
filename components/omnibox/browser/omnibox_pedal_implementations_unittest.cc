@@ -24,26 +24,6 @@ class OmniboxPedalImplementationsTest : public testing::Test {
   std::unique_ptr<TestOmniboxEditController> omnibox_edit_controller_;
 };
 
-TEST_F(OmniboxPedalImplementationsTest, ClientReadiesPedalUpdateChrome) {
-  MockAutocompleteProviderClient client;
-  const OmniboxPedalUpdateChrome pedal;
-  EXPECT_EQ(false, pedal.IsReadyToTrigger(client));
-  client.set_browser_update_available(true);
-  EXPECT_EQ(true, pedal.IsReadyToTrigger(client));
-}
-
-TEST_F(OmniboxPedalImplementationsTest, ProviderFiltersPedalUpdateChrome) {
-  MockAutocompleteProviderClient client;
-  OmniboxPedalProvider provider(client);
-  const base::string16 trigger = base::ASCIIToUTF16("update chrome");
-  const OmniboxPedal* pedal = provider.FindPedalMatch(trigger);
-  EXPECT_EQ(pedal, nullptr) << "Pedal not filtered by condition.";
-  client.set_browser_update_available(true);
-  pedal = provider.FindPedalMatch(trigger);
-  EXPECT_NE(pedal, nullptr) << "Pedal not discovered though condition is met.";
-  EXPECT_TRUE(pedal->IsTriggerMatch(provider.Tokenize(trigger)));
-}
-
 TEST_F(OmniboxPedalImplementationsTest, PedalClearBrowsingDataExecutes) {
   MockAutocompleteProviderClient client;
   base::TimeTicks match_selection_timestamp;

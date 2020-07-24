@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -128,6 +129,16 @@
 - (void)focusOmnibox {
   if (![self.textField isFirstResponder]) {
     base::RecordAction(base::UserMetricsAction("MobileOmniboxFocused"));
+
+    // In multiwindow context, -becomeFirstRepsonder is not enough to get the
+    // keyboard input. The window will not automatically become key. Make it key
+    // manually. UITextField does this under the hood when tapped from
+    // -[UITextInteractionAssistant(UITextInteractionAssistant_Internal)
+    // setFirstResponderIfNecessaryActivatingSelection:]
+    if (IsMultiwindowSupported()) {
+      [self.textField.window makeKeyAndVisible];
+    }
+
     [self.textField becomeFirstResponder];
   }
 }

@@ -15,9 +15,8 @@ import sys
 
 WHITELIST = [ r'.+_test.py$' ]
 # The integration tests are selectively run from the PRESUBMIT in
-# chrome/common/extensions. Github filesystem support is currently
-# disabled.
-BLACKLIST = [ r'integration_test.py$', r'.*github.*_test.py$' ]
+# chrome/common/extensions.
+BLACKLIST = [ r'integration_test.py$' ]
 
 def _BuildServer(input_api):
   try:

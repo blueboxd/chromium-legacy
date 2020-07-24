@@ -17,7 +17,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "components/favicon/core/favicon_service.h"
+#include "components/favicon/core/core_favicon_service.h"
 #include "components/favicon/core/features.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/favicon_base/select_favicon_frames.h"
@@ -152,7 +152,7 @@ FaviconHandler::FaviconCandidate::FromFaviconURL(
 ////////////////////////////////////////////////////////////////////////////////
 
 FaviconHandler::FaviconHandler(
-    FaviconService* service,
+    CoreFaviconService* service,
     Delegate* delegate,
     FaviconDriverObserver::NotificationIconType handler_type)
     : handler_type_(handler_type),

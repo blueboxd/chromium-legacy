@@ -81,7 +81,7 @@ DevToolsURLLoaderInterceptor::Modifications::Modifications(
 DevToolsURLLoaderInterceptor::Modifications::Modifications(
     protocol::Maybe<std::string> modified_url,
     protocol::Maybe<std::string> modified_method,
-    protocol::Maybe<std::string> modified_post_data,
+    protocol::Maybe<protocol::Binary> modified_post_data,
     std::unique_ptr<HeadersVector> modified_headers)
     : modified_url(std::move(modified_url)),
       modified_method(std::move(modified_method)),
@@ -95,7 +95,7 @@ DevToolsURLLoaderInterceptor::Modifications::Modifications(
     size_t body_offset,
     protocol::Maybe<std::string> modified_url,
     protocol::Maybe<std::string> modified_method,
-    protocol::Maybe<std::string> modified_post_data,
+    protocol::Maybe<protocol::Binary> modified_post_data,
     std::unique_ptr<HeadersVector> modified_headers,
     std::unique_ptr<AuthChallengeResponse> auth_challenge_response)
     : error_reason(std::move(error_reason)),
@@ -961,9 +961,9 @@ void InterceptionJob::ApplyModificationsToRequest(
     request->method = modifications->modified_method.fromJust();
 
   if (modifications->modified_post_data.isJust()) {
-    const std::string& post_data = modifications->modified_post_data.fromJust();
+    const auto& post_data = modifications->modified_post_data.fromJust();
     request->request_body = network::ResourceRequestBody::CreateFromBytes(
-        post_data.data(), post_data.size());
+        reinterpret_cast<const char*>(post_data.data()), post_data.size());
   }
 
   if (modifications->modified_headers) {

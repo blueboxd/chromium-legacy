@@ -509,7 +509,7 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
 <translation id="1865417998205858223">Quyền khóa</translation>
 <translation id="186719019195685253">Tác vụ sẽ thực hiện khi đạt độ trễ không hoạt động trong khi chạy bằng nguồn AC</translation>
 <translation id="187819629719252111">Cho phép truy cập các tệp cục bộ trên máy bằng cách cho phép <ph name="PRODUCT_NAME" /> hiển thị các hộp thoại chọn tệp. Nếu bạn bật cài đặt này, người dùng có thể mở các hộp thoại chọn tệp như bình thường. Nếu bạn tắt cài đặt này, bất cứ khi nào người dùng thực hiện tác vụ kích hoạt hộp thoại chọn tệp (như nhập dấu trang, tải lên tệp, lưu liên kết, v.v..), một thông báo sẽ được hiển thị thay vào đó và người dùng được coi như đã nhấp Hủy trên hộp thoại chọn tệp. Nếu không thiết lập cài đặt này, người dùng có thể mở hộp thoại chọn tệp như bình thường.</translation>
-<translation id="1885782360784839335">Cho phép hiển thị nội dung quảng cáo dưới dạng toàn bộ tab</translation>
+<translation id="1885782360784839335">Cho phép hiển thị nội dung quảng cáo dưới dạng toàn bộ thẻ</translation>
 <translation id="1888871729456797026">Mã thông báo đăng ký của chính sách đám mây trên màn hình</translation>
 <translation id="1894790493260633497">Bật chế độ in đồ họa nền theo mặc định</translation>
 <translation id="1897365952389968758">Cho phép tất cả các trang web chạy JavaScript</translation>
@@ -685,17 +685,17 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
 
       Nếu bạn bật cài đặt này, mọi trang xác thực cổng cố định (tức là tất cả các trang web bắt đầu từ trang đăng nhập cổng cố định cho đến khi <ph name="PRODUCT_NAME" /> phát hiện kết nối Internet thành công) sẽ hiển thị trong một cửa sổ riêng biệt bỏ qua tất cả các cài đặt và các hạn chế của chính sách đối với người dùng hiện tại.
 
-      Nếu bạn tắt cài đặt này hoặc không thiết lập cài đặt, thì mọi trang xác thực cổng cố định sẽ hiển thị trong tab trình duyệt mới (thông thường), sử dụng cài đặt proxy của người dùng hiện tại.</translation>
+      Nếu bạn tắt cài đặt này hoặc không thiết lập cài đặt, thì mọi trang xác thực cổng cố định sẽ hiển thị trong thẻ trình duyệt mới (thông thường), sử dụng cài đặt proxy của người dùng hiện tại.</translation>
 <translation id="2145735238144543545">Chứng chỉ ứng dụng bắt buộc</translation>
 <translation id="214901426630414675">Hạn chế chế độ in hai mặt</translation>
 <translation id="2149330464730004005">Bật chế độ in màu</translation>
 <translation id="2149957154942061013">Chỉ dành cho nội bộ</translation>
 <translation id="2151831603578119302">Bật phím tắt của tính năng hỗ trợ tiếp cận</translation>
-<translation id="2156132677421487971">Định cấu hình các chính sách cho <ph name="PRODUCT_NAME" />, một tính năng cho phép người dùng gửi nội dung của các tab, trang web hoặc màn hình từ trình duyệt đến màn hình và hệ thống âm thanh từ xa.</translation>
+<translation id="2156132677421487971">Định cấu hình các chính sách cho <ph name="PRODUCT_NAME" />, một tính năng cho phép người dùng gửi nội dung của các thẻ, trang web hoặc màn hình từ trình duyệt đến màn hình và hệ thống âm thanh từ xa.</translation>
 <translation id="2156755242840687300">Máy chủ máy in bên ngoài được bật</translation>
-<translation id="2160336427036785721">Định cấu hình dung lượng bộ nhớ mà một phiên bản <ph name="PRODUCT_NAME" /> có thể sử dụng trước khi các tab bắt đầu bị đóng (nghĩa là dung lượng bộ nhớ mà tab sử dụng sẽ được giải phóng và tab sẽ phải tải lại khi chuyển đổi) để tiết kiệm bộ nhớ.
+<translation id="2160336427036785721">Định cấu hình dung lượng bộ nhớ mà một phiên bản <ph name="PRODUCT_NAME" /> có thể sử dụng trước khi các thẻ bắt đầu bị đóng (nghĩa là dung lượng bộ nhớ mà thẻ sử dụng sẽ được giải phóng và thẻ sẽ phải tải lại khi chuyển đổi) để tiết kiệm bộ nhớ.
 
-      Nếu bạn đặt chính sách này, thì trình duyệt sẽ bắt đầu đóng các tab để tiết kiệm bộ nhớ sau khi vượt quá giới hạn. Tuy nhiên, không thể đảm bảo rằng trình duyệt sẽ luôn chạy trong mức giới hạn. Mọi giá trị xấp xỉ 1024 sẽ được làm tròn thành 1024.
+      Nếu bạn đặt chính sách này, thì trình duyệt sẽ bắt đầu đóng các thẻ để tiết kiệm bộ nhớ sau khi vượt quá giới hạn. Tuy nhiên, không thể đảm bảo rằng trình duyệt sẽ luôn chạy trong mức giới hạn. Mọi giá trị xấp xỉ 1024 sẽ được làm tròn thành 1024.
 
       Nếu bạn không đặt chính sách này, thì trình duyệt sẽ chỉ bắt đầu tìm cách tiết kiệm bộ nhớ sau khi phát hiện thấy rằng dung lượng bộ nhớ thực trên máy ở mức thấp.</translation>
 <translation id="2164922809922345834">Bật tính năng che kín cửa sổ gốc trong <ph name="PRODUCT_NAME" />.
@@ -902,7 +902,7 @@ Khi bạn đặt chính sách này, người dùng sẽ không thể ghi đè gi
 Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền riêng tư sẽ tắt lúc ban đầu nhưng người dùng vẫn có thể kiểm soát.</translation>
 <translation id="2418507228189425036">Tắt lưu lịch sử trình duyệt trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cài đặt này.
 
-      Nếu cài đặt này được bật thì lịch sử duyệt web sẽ không được lưu. Cài đặt này cũng sẽ tắt đồng bộ hóa tab.
+      Nếu cài đặt này được bật thì lịch sử duyệt web sẽ không được lưu. Cài đặt này cũng sẽ tắt đồng bộ hóa thẻ.
 
       Nếu cài đặt này bị tắt hoặc không được đặt thì lịch sử duyệt web sẽ được lưu.</translation>
 <translation id="2423038190900972331">Kiểm soát cách <ph name="PRODUCT_NAME" /> kiểm tra dữ liệu được tải lên, tải xuống, dán từ khay nhớ tạm hoặc kéo và thả xem có vi phạm quy tắc bảo vệ dữ liệu nhạy cảm hay không.
@@ -1018,7 +1018,7 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
       Nếu cài đặt này được bật hoặc không được định cấu hình, người dùng có thể in.
 
       Nếu cài đặt này bị tắt, người dùng không thể in từ <ph name="PRODUCT_NAME" />. In bị tắt trong menu cờ lê, tiện ích, ứng dụng JavaScript, v.v.  <ph name="PRODUCT_NAME" /> trong khi in. Để biết ví dụ, ứng dụng Flash nhất định có tùy chọn in trong menu ngữ cảnh, không chịu sự điều chỉnh của chính sách này.</translation>
-<translation id="2517466659416174529">Cho phép đóng băng các tab chạy trong nền</translation>
+<translation id="2517466659416174529">Cho phép đóng băng các thẻ chạy trong nền</translation>
 <translation id="2518231489509538392">Cho phép phát âm thanh</translation>
 <translation id="2521581787935130926">Hiển thị lối tắt ứng dụng trong thanh dấu trang</translation>
 <translation id="2522304491589804974">Định cấu hình danh sách cho phép cài đặt tiện ích</translation>
@@ -1156,7 +1156,7 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
 <translation id="2707873794476722903">Tính năng Duyệt web an toàn đang hoạt động ở chế độ chuẩn.</translation>
 <translation id="2710534340210290498">Nếu bạn đặt chính sách này thành false, người dùng sẽ không thể khóa màn hình (chỉ có thể đăng xuất khỏi phiên người dùng). Nếu bạn không đặt tùy chọn cài đặt này hoặc đặt thành true, người dùng đã xác thực bằng mật khẩu có thể khóa màn hình.</translation>
 <translation id="2731627323327011390">Tắt sử dụng chứng chỉ <ph name="PRODUCT_OS_NAME" /> đối với ứng dụng ARC</translation>
-<translation id="2742843273354638707">Ẩn ứng dụng Cửa hàng Chrome trực tuyến và liên kết chân trang khỏi Trang tab mới và trình chạy ứng dụng <ph name="PRODUCT_OS_NAME" />.
+<translation id="2742843273354638707">Ẩn ứng dụng Cửa hàng Chrome trực tuyến và liên kết chân trang khỏi Trang thẻ mới và trình chạy ứng dụng <ph name="PRODUCT_OS_NAME" />.
 
 Khi chính sách này được đặt thành true, các biểu tượng sẽ bị ẩn. 
 
@@ -2098,7 +2098,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Chính sách này chỉ ảnh hưởng đến người dùng xác thực bằng cách sử dụng SAML.</translation>
 <translation id="4105989332710272578">Tắt buộc thực thi Tính minh bạch của chứng chỉ cho danh sách URL</translation>
-<translation id="4121350739760194865">Chặn các quảng cáo ứng dụng xuất hiện trên trang tab mới</translation>
+<translation id="4121350739760194865">Chặn các quảng cáo ứng dụng xuất hiện trên trang thẻ mới</translation>
 <translation id="412697421478384751">Cho phép người dùng đặt mã PIN yếu cho mã PIN màn hình khóa.</translation>
 <translation id="4138655880188755661">Giới hạn thời gian</translation>
 <translation id="4144164749344898721">Chính sách này kiểm soát nhiều tùy chọn cài đặt cho chiến lược quản lý nguồn khi người dùng ở chế độ không sử dụng.
@@ -2320,7 +2320,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Không thiết lập chính sách này sẽ cho phép người dùng chọn có hiển thị nút trang chủ hay không.</translation>
 <translation id="4483649828988077221">Tắt tính năng tự động cập nhật</translation>
-<translation id="4485425108474077672">Định cấu hình URL trang Tab mới</translation>
+<translation id="4485425108474077672">Định cấu hình URL trang Thẻ mới</translation>
 <translation id="4492287494009043413">Tắt tính năng chụp ảnh chụp màn hình</translation>
 <translation id="4494132853995232608">Wilco DTC</translation>
 <translation id="449423975179525290">Định cấu hình chính sách liên quan đến <ph name="PLUGIN_VM_NAME" />.</translation>
@@ -2361,7 +2361,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Nếu đặt chính sách này thành False, tính năng phát hiện chia sẻ sẽ không dùng giao thức <ph name="NETBIOS_PROTOCOL" /> để phát hiện các mục chia sẻ trên mạng.
       Nếu không đặt chính sách này, chế độ mặc định sẽ là tắt đối với người dùng do doanh nghiệp quản lý và bật đối với người dùng không được quản lý.</translation>
 <translation id="4555850956567117258">Cho phép chứng thực từ xa cho người dùng</translation>
-<translation id="4557134566541205630">URL trang tab mới của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
+<translation id="4557134566541205630">URL trang thẻ mới của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="4558314937689062156">Kiểm soát những máy in trong <ph name="DEVICE_PRINTERS_POLICY" /> mà người dùng được phép sử dụng.
 
       Chỉ định chính sách truy cập dùng cho cấu hình máy in số lượng lớn. Nếu bạn chọn <ph name="PRINTERS_ALLOW_ALL" />, thì tất cả máy in sẽ hiển thị. Nếu bạn chọn <ph name="PRINTERS_BLACKLIST" />, thì <ph name="DEVICE_NATIVE_PRINTERS_BLACKLIST" /> sẽ được dùng để hạn chế truy cập vào những máy in đã chỉ định. Nếu bạn chọn <ph name="PRINTERS_WHITELIST" />, thì <ph name="DEVICE_NATIVE_PRINTERS_WHITELIST" /> sẽ chỉ chỉ định những máy in có thể chọn được.
@@ -2420,11 +2420,11 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="4665897631924472251">Cài đặt quản lý tiện ích</translation>
 <translation id="4668325077104657568">Cài đặt hình ảnh mặc định</translation>
 <translation id="4670865688564083639">Tối thiểu:</translation>
-<translation id="4671708336564240458">Cho phép bạn thiết lập có chặn trang web có trải nghiệm lạm dụng mở cửa sổ hoặc tab mới hay không.
+<translation id="4671708336564240458">Cho phép bạn thiết lập có chặn trang web có trải nghiệm lạm dụng mở cửa sổ hoặc thẻ mới hay không.
 
-      Nếu bạn đặt chính sách này thành True, các trang web có trải nghiệm lạm dụng sẽ bị chặn mở cửa sổ hoặc tab mới.
+      Nếu bạn đặt chính sách này thành True, các trang web có trải nghiệm lạm dụng sẽ bị chặn mở cửa sổ hoặc thẻ mới.
       Tuy nhiên, hành vi này sẽ không kích hoạt nếu bạn đặt chính sách SafeBrowsingEnabled thành False.
-      Nếu bạn đặt chính sách này thành False, các trang web có trải nghiệm lạm dụng sẽ được phép mở cửa sổ hoặc tab mới.
+      Nếu bạn đặt chính sách này thành False, các trang web có trải nghiệm lạm dụng sẽ được phép mở cửa sổ hoặc thẻ mới.
       Nếu bạn không đặt chính sách này, thì tùy chọn True sẽ được sử dụng.</translation>
 <translation id="467236746355332046">Các tính năng được hỗ trợ:</translation>
 <translation id="4674167212832291997">Tùy chỉnh danh sách các mẫu URL sẽ luôn được <ph name="PRODUCT_FRAME_NAME" /> hiển thị.
@@ -2437,8 +2437,8 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="4680936297850947973">Không còn dùng trong M68. Hãy sử dụng tùy chọn DefaultPopupsSetting để thay thế.
 
       Để biết thông tin giải thích đầy đủ, hãy truy cập vào https://www.chromestatus.com/features/5675755719622656.
-      Nếu bạn đã bật chính sách này, thì các trang web sẽ được phép chuyển tới và mở các cửa sổ/tab mới cùng một lúc.
-      Nếu bạn đã tắt hoặc chưa đặt chính sách này, các trang web sẽ không được phép chuyển tới và mở cửa sổ/tab mới cùng một lúc.</translation>
+      Nếu bạn đã bật chính sách này, thì các trang web sẽ được phép chuyển tới và mở các cửa sổ/thẻ mới cùng một lúc.
+      Nếu bạn đã tắt hoặc chưa đặt chính sách này, các trang web sẽ không được phép chuyển tới và mở cửa sổ/thẻ mới cùng một lúc.</translation>
 <translation id="4680961954980851756">Bật Tự động điền</translation>
 <translation id="4693779768620889402">Đích dựa trên tiện ích</translation>
 <translation id="4699592681017489215">Chính sách này định cấu hình một công tắc cục bộ có thể dùng để tắt các tùy chọn kiểm tra chặn hệ thống tên miền (DNS). Các tùy chọn kiểm tra dùng để khám phá xem trình duyệt có ở sau một proxy chuyển hướng các tên máy chủ không xác định không.
@@ -2640,9 +2640,9 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="5056708224511062314">Đã tắt kính lúp màn hình</translation>
 <translation id="5058573563327660283">Lựa chọn chiến lược dùng để giải phóng dung lượng đĩa trong khi dọn sạch tự động (không dùng nữa)</translation>
 <translation id="5067143124345820993">Danh sách trắng những người dùng được phép đăng nhập</translation>
-<translation id="5073609397321802133">Nếu bạn đặt chính sách này thành false, thì trang Tab mới sẽ không cho phép người dùng tùy chỉnh nền. Các nền tùy chỉnh hiện có sẽ bị xóa vĩnh viễn ngay cả khi sau này, bạn đặt chính sách này thành true.
+<translation id="5073609397321802133">Nếu bạn đặt chính sách này thành false, thì trang Thẻ mới sẽ không cho phép người dùng tùy chỉnh nền. Các nền tùy chỉnh hiện có sẽ bị xóa vĩnh viễn ngay cả khi sau này, bạn đặt chính sách này thành true.
 
-      Nếu bạn không đặt hoặc đặt chính sách này thành true, thì người dùng có thể tùy chỉnh nền trên trang Tab mới.</translation>
+      Nếu bạn không đặt hoặc đặt chính sách này thành true, thì người dùng có thể tùy chỉnh nền trên trang Thẻ mới.</translation>
 <translation id="5075190314377370852">Nếu bạn đặt chính sách này thành True, thì <ph name="PRODUCT_NAME" /> sẽ luôn kiểm tra trạng thái thu hồi của các chứng chỉ máy chủ đã xác thực thành công, được ký theo chứng chỉ CA đã cài đặt trên máy. Nếu <ph name="PRODUCT_NAME" /> không lấy được thông tin về trạng thái thu hồi, thì <ph name="PRODUCT_NAME" /> sẽ coi những chứng chỉ này là đã thu hồi (không hợp lệ).
 
       Nếu bạn đặt chính sách này thành False hoặc không đặt chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ sử dụng tùy chọn kiểm tra trạng thái thu hồi trực tuyến hiện có.</translation>
@@ -2682,11 +2682,11 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
           Nếu bạn không đặt chính sách này, thì nội dung hỗn hợp có thể chặn sẽ bị chặn và nội dung hỗn hợp có thể tùy ý chặn sẽ được nâng cấp. Tuy nhiên, người dùng sẽ được phép đặt các trường hợp ngoại lệ để hiển thị nội dung trên các trang web cụ thể.
 
           Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="510196893779239086">Chính sách này kiểm soát việc có đóng hoàn toàn Chrome hay không khi tab cuối cùng chuyển sang một trình duyệt khác.
+<translation id="510196893779239086">Chính sách này kiểm soát việc có đóng hoàn toàn Chrome hay không khi thẻ cuối cùng chuyển sang một trình duyệt khác.
 
-      Nếu bạn không đặt hoặc đặt chính sách này thành true, thì Chrome sẽ vẫn mở ít nhất một tab sau khi chuyển sang một trình duyệt thay thế.
+      Nếu bạn không đặt hoặc đặt chính sách này thành true, thì Chrome sẽ vẫn mở ít nhất một thẻ sau khi chuyển sang một trình duyệt thay thế.
 
-      Khi bạn đặt chính sách này thành false, thì Chrome sẽ đóng tab sau khi chuyển sang trình duyệt thay thế, ngay cả khi đó là tab cuối cùng. Điều này sẽ khiến cho Chrome thoát hoàn toàn.</translation>
+      Khi bạn đặt chính sách này thành false, thì Chrome sẽ đóng thẻ sau khi chuyển sang trình duyệt thay thế, ngay cả khi đó là thẻ cuối cùng. Điều này sẽ khiến cho Chrome thoát hoàn toàn.</translation>
 <translation id="5102203758995933166">Cho phép áp dụng tùy chọn đẩy cấu hình mạng cho thiết bị <ph name="PRODUCT_OS_NAME" /> đối với từng người dùng. Cấu hình mạng là một chuỗi có định dạng JSON như được xác định trong định dạng Cấu hình mạng mở.</translation>
 <translation id="5105313908130842249">Độ trễ khóa màn hình khi chạy trên nguồn pin</translation>
 <translation id="5108031557082757679">Đã tắt máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
@@ -2802,11 +2802,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Nếu bạn không đặt hoặc đặt chính sách này thành False, thì Màn hình hợp nhất sẽ tắt và người dùng không thể bật tính năng đó.</translation>
 <translation id="5255162913209987122">Có thể được đề xuất</translation>
-<translation id="527237119693897329">Cho phép bạn chỉ định máy chủ nhắn tin gốc nào không được tải.
-
-          Giá trị danh sách cấm '*' nghĩa là tất cả máy chủ nhắn tin gốc được đưa vào danh sách cấm trừ khi chúng được liệt kê rõ ràng trong danh sách cho phép.
-
-          Nếu chính sách này chưa được thiết lập <ph name="PRODUCT_NAME" /> sẽ tải tất cả máy chủ nhắn tin gốc đã cài đặt.</translation>
 <translation id="5272684451155669299">Nếu true, người dùng có thể sử dụng phần cứng trên thiết bị Chrome để chứng thực từ xa danh tính của thiết bị với CA bảo mật qua <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> bằng <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Nếu cài đặt được đặt thành false hoặc chưa được đặt, cuộc gọi tới API sẽ không thực hiện được với mã lỗi.</translation>
@@ -3766,7 +3761,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Nếu bạn đặt chính sách này thành False, thì thanh địa chỉ sẽ hiển thị URL mặc định.
       Nếu bạn không đặt chính sách này, thì thanh địa chỉ sẽ hiển thị URL mặc định. Đồng thời, người dùng sẽ có thể chuyển đổi giữa chế độ hiển thị URL mặc định và đầy đủ bằng tùy chọn trình đơn ngữ cảnh.
       </translation>
-<translation id="6672070613706645316">Cho phép người dùng tùy chỉnh nền trên trang Tab mới</translation>
+<translation id="6672070613706645316">Cho phép người dùng tùy chỉnh nền trên trang Thẻ mới</translation>
 <translation id="6672630473862787247">Bật quy trình xác thực môi trường xung quanh trong các phiên khách, phiên thông thường và phiên ẩn danh.</translation>
 <translation id="6685903773201985073">Bật quy trình xác thực môi trường xung quanh trong các phiên khách và phiên thông thường.</translation>
 <translation id="6689792153960219308">Báo cáo trạng thái phần cứng</translation>
@@ -3818,7 +3813,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Nếu bạn không đặt chính sách này, thì chế độ tương phản cao sẽ tắt trên màn hình đăng nhập. Người dùng có thể bật chế độ tương phản cao bất cứ lúc nào. Trạng thái của chế độ này trên màn hình đăng nhập sẽ giữ nguyên đối với mọi người dùng.
 
           Lưu ý: <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> (nếu đã được chỉ định) sẽ ghi đè chính sách này.</translation>
-<translation id="6833988859168635883">Trang Khởi động, Trang chủ và trang Tab mới</translation>
+<translation id="6833988859168635883">Trang Khởi động, Trang chủ và trang Thẻ mới</translation>
 <translation id="6835883744948188639">Nên hiển thị lời nhắc định kỳ cho người dùng cho biết cần chạy lại</translation>
 <translation id="683688607121170501">Tùy chọn cài đặt này cho phép người dùng chuyển đổi giữa các Tài khoản Google trong vùng nội dung của cửa sổ trình duyệt và trong các ứng dụng Android sau khi họ đăng nhập vào thiết bị <ph name="PRODUCT_OS_NAME" />.
 
@@ -3850,7 +3845,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       được lượng tử hóa và tốc độ cập nhật bị giới hạn vì lý do bảo mật. Để có dữ liệu chính xác trong thời gian thực,
       hãy sử dụng các công cụ như Telemetry.</translation>
 <translation id="68798513449385583">Trì hoãn tệp tải xuống cho đến khi biết kết quả quét</translation>
-<translation id="6894178810167845842">URL trang Tab mới</translation>
+<translation id="6894178810167845842">URL trang Thẻ mới</translation>
 <translation id="6899705656741990703">Cài đặt tự động phát hiện proxy</translation>
 <translation id="6902561336084511004">Cung cấp cấu hình của các máy chủ máy in hiện có.
 
@@ -4206,9 +4201,9 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="7329968046053403405">Chỉ định loại tài khoản của các tài khoản được ứng dụng xác thực Android có hỗ trợ xác thực <ph name="HTTP_NEGOTIATE" /> (ví dụ: xác thực Kerberos) cung cấp. Thông tin này có sẵn từ nhà cung cấp ứng dụng xác thực. Để biết thêm chi tiết, hãy xem https://goo.gl/hajyfN.
 
           Nếu không có cài đặt nào được cung cấp thì xác thực <ph name="HTTP_NEGOTIATE" /> sẽ bị vô hiệu hóa trên Android.</translation>
-<translation id="7331962793961469250">Khi được đặt thành True, kết quả thăng hạng của các ứng dụng trong Cửa hàng Chrome trực tuyến sẽ không xuất hiện trên trang tab mới.
+<translation id="7331962793961469250">Khi được đặt thành True, kết quả thăng hạng của các ứng dụng trong Cửa hàng Chrome trực tuyến sẽ không xuất hiện trên trang thẻ mới.
 
-      Nếu đặt tùy chọn này thành False hoặc không đặt, các kết quả thăng hạng của các ứng dụng trong Cửa hàng Chrome trực tuyến sẽ xuất hiện trên trang tab mới.</translation>
+      Nếu đặt tùy chọn này thành False hoặc không đặt, các kết quả thăng hạng của các ứng dụng trong Cửa hàng Chrome trực tuyến sẽ xuất hiện trên trang thẻ mới.</translation>
 <translation id="7332963785317884918">Chính sách này không còn được sử dụng. <ph name="PRODUCT_OS_NAME" /> sẽ luôn sử dụng chiến lược dọn sạch 'RemoveLRU'.
 
       Kiểm soát hoạt động dọn sạch tự động trên các thiết bị <ph name="PRODUCT_OS_NAME" />. Tính năng dọn sạch tự động được kích hoạt khi dung lượng đĩa trống đạt tới mức tới hạn để khôi phục một số dung lượng đĩa.
@@ -4475,7 +4470,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="7750991880413385988">Mở trang Thẻ mới</translation>
 <translation id="7754704193130578113">Hỏi vị trí lưu từng tệp trước khi tải xuống</translation>
 <translation id="7758378441185523981">Bật quy trình Xác thực môi trường xung quanh cho các loại hồ sơ.</translation>
-<translation id="7763614521440615342">Hiển thị các đề xuất nội dung trên trang Tab mới</translation>
+<translation id="7763614521440615342">Hiển thị các đề xuất nội dung trên trang Thẻ mới</translation>
 <translation id="7765879851993224640">Cho phép sử dụng tính năng Đăng nhập bằng Smart Lock.</translation>
 <translation id="7774768074957326919">Sử dụng cài đặt proxy hệ thống</translation>
 <translation id="777734450201217641">Bật phím tắt của tính năng hỗ trợ tiếp cận trên màn hình đăng nhập.
@@ -4553,7 +4548,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Chính sách doanh nghiệp này bị tắt theo mặc định.</translation>
 <translation id="7902040092815978832">Hiển thị bàn phím số để nhập mật khẩu</translation>
 <translation id="7912255076272890813">Định cấu hình loại ứng dụng/tiện ích được cho phép</translation>
-<translation id="7922358664346625612">Tiếp tục mở tab cuối cùng trong Chrome.</translation>
+<translation id="7922358664346625612">Tiếp tục mở thẻ cuối cùng trong Chrome.</translation>
 <translation id="793134539373873765">Chỉ định có sử dụng p2p cho các phần tải dữ liệu cập nhật OS không. Nếu được đặt thành True, các thiết bị sẽ chia sẻ và cố gắng sử dụng các phần tải dữ liệu cập nhật trên LAN, có thể làm giảm nghẽn và mức sử dụng băng thông Internet. Nếu phần tải dữ liệu cập nhật không khả dụng trên LAN, thiết bị sẽ quay lại tải xuống từ máy chủ cập nhật. Nếu được đặt thành False hay không được định cấu hình, p2p sẽ không được sử dụng.</translation>
 <translation id="7933141401888114454">Cho phép tạo người dùng được giám sát</translation>
 <translation id="793473937901685727">Đặt mức độ khả dụng của chứng chỉ cho ứng dụng ARC</translation>
@@ -4561,9 +4556,9 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="7937766917976512374">Cho phép hoặc từ chối quay video</translation>
 <translation id="7941975817681987555">Không dự đoán tác vụ mạng trên kết nối mạng bất kỳ</translation>
 <translation id="7951605113561734721">Chỉ định chứng chỉ ứng dụng cần được đăng ký bằng giao thức quản lý thiết bị cho toàn thiết bị.</translation>
-<translation id="7952007677054834789">Định cấu hình các trang sẽ tải khi khởi động, trang chủ mặc định và trang tab mới mặc định trong <ph name="PRODUCT_NAME" />, đồng thời không cho phép người dùng thay đổi các tùy chọn đó.
+<translation id="7952007677054834789">Định cấu hình các trang sẽ tải khi khởi động, trang chủ mặc định và trang thẻ mới mặc định trong <ph name="PRODUCT_NAME" />, đồng thời không cho phép người dùng thay đổi các tùy chọn đó.
 
-      Các tùy chọn cài đặt trang chủ của người dùng chỉ bị khóa hoàn toàn nếu bạn chọn trang chủ là trang tab mới, hoặc đặt trang chủ là một URL và chỉ định một URL trang chủ. Nếu bạn không chỉ định URL trang chủ, thì người dùng vẫn có thể đặt trang chủ là trang tab mới bằng cách chỉ định 'chrome://newtab'.
+      Các tùy chọn cài đặt trang chủ của người dùng chỉ bị khóa hoàn toàn nếu bạn chọn trang chủ là trang thẻ mới, hoặc đặt trang chủ là một URL và chỉ định một URL trang chủ. Nếu bạn không chỉ định URL trang chủ, thì người dùng vẫn có thể đặt trang chủ là trang thẻ mới bằng cách chỉ định 'chrome://newtab'.
 
       Chính sách 'Các URL sẽ mở khi khởi động' sẽ bị bỏ qua trừ khi bạn chọn mục 'Mở danh sách các URL' trong 'Hành động khi khởi động'.</translation>
 <translation id="7952958573604504839">Chính sách này không còn dùng trong M48 nữa mà thay vào đó là <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" />, và đã bị xóa trong M54.
@@ -4922,7 +4917,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu bạn không đặt chính sách này, thì giá trị mặc định là 3 sẽ được sử dụng
 
       Nếu bạn đặt chính sách này, thì các ảnh chụp nhanh cũ sẽ bị xóa khi cần để đảm bảo tuân thủ giới hạn. Nếu bạn đặt chính sách này thành 0, thì Chrome sẽ không tạo ảnh chụp nhanh</translation>
-<translation id="8451988835943702790">Sử dụng trang Tab mới làm trang chủ</translation>
+<translation id="8451988835943702790">Sử dụng trang Thẻ mới làm trang chủ</translation>
 <translation id="8455529558077979314">Cài đặt màn hình bảo vệ quyền riêng tư</translation>
 <translation id="8459216513698220096">Chỉ định có xử lý hay không và cách xử lý chính sách người dùng từ GPO (Đối tượng chính sách nhóm) máy tính.
 
@@ -5017,7 +5012,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8544465954173828789">Cho phép đồng bộ hóa Tin nhắn SMS từ điện thoại sang Chromebook.</translation>
 <translation id="8548832052135586762">Đặt chế độ in thành chỉ in màu, chỉ in đen trắng hoặc không có hạn chế về chế độ in màu. Khi bạn không đặt chính sách, thì sẽ không có hạn chế nào.</translation>
 <translation id="8549772397068118889">Cảnh báo khi truy cập vào các trang web nằm ngoài gói nội dung</translation>
-<translation id="8566842294717252664">Ẩn cửa hàng trực tuyến khỏi trang tab mới và trình chạy ứng dụng</translation>
+<translation id="8566842294717252664">Ẩn cửa hàng trực tuyến khỏi trang thẻ mới và trình chạy ứng dụng</translation>
 <translation id="8569734380847633643">
           Nếu bạn đặt chính sách này thành false, thì <ph name="PRODUCT_OS_NAME" /> sẽ tắt Wi-Fi và người dùng không thể bật lại.
           Nếu bạn đặt chính sách này thành true hoặc không đặt, thì người dùng có thể tùy ý bật hoặc tắt Wi-Fi.</translation>
@@ -5045,11 +5040,11 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
           Khi bạn không đặt chính sách này, khoảng thời gian mặc định sẽ được sử dụng.
 
           Bạn phải chỉ định giá trị của chính sách bằng mili giây.</translation>
-<translation id="8606263947930257189">Kiểm soát việc <ph name="PRODUCT_NAME" /> có thể đóng băng các tab chạy trong nền trong tối thiểu 5 phút hay không.
+<translation id="8606263947930257189">Kiểm soát việc <ph name="PRODUCT_NAME" /> có thể đóng băng các thẻ chạy trong nền trong tối thiểu 5 phút hay không.
 
-      Nếu bạn đặt chính sách này thành true, thì các tab chạy trong nền trong tối thiểu 5 phút có thể bị đóng băng. Việc đóng băng tab sẽ giúp giảm mức sử dụng CPU, pin và bộ nhớ. <ph name="PRODUCT_NAME" /> sử dụng kỹ thuật "tự nghiệm học" để tránh đóng băng các tab hữu ích chạy trong nền (ví dụ: hiển thị thông báo, phát âm thanh, phát video trực tuyến). Các nhà phát triển web cũng có thể chọn không đóng băng trang web của mình (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).
+      Nếu bạn đặt chính sách này thành true, thì các thẻ chạy trong nền trong tối thiểu 5 phút có thể bị đóng băng. Việc đóng băng thẻ sẽ giúp giảm mức sử dụng CPU, pin và bộ nhớ. <ph name="PRODUCT_NAME" /> sử dụng kỹ thuật "tự nghiệm học" để tránh đóng băng các thẻ hữu ích chạy trong nền (ví dụ: hiển thị thông báo, phát âm thanh, phát video trực tuyến). Các nhà phát triển web cũng có thể chọn không đóng băng trang web của mình (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).
 
-      Nếu bạn đặt chính sách thành false thì sẽ không có tab nào bị đóng băng.</translation>
+      Nếu bạn đặt chính sách thành false thì sẽ không có thẻ nào bị đóng băng.</translation>
 <translation id="8615400197788843468">Bật tính năng hạn chế đăng nhập của <ph name="PRODUCT_NAME" /> trong G Suite và ngăn người dùng thay đổi tùy chọn cài đặt này.
 
       Nếu bạn xác định tùy chọn cài đặt này, thì người dùng chỉ có thể truy cập Google

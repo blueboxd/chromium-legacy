@@ -12,6 +12,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/unexpire_flags.h"
+#include "chrome/browser/unexpire_flags_gen.h"
+#include "chrome/common/chrome_version.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -145,10 +147,9 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
           SINGLE_VALUE_TYPE(kExpiredFlagSwitchName)},
          {kFlagWithOptionSelectorName, "name-3", "description-3", -1,
           SINGLE_VALUE_TYPE(kFlagWithOptionSelectorSwitchName)}});
-    flags::testing::SetFlagExpiredPredicate(
-        base::BindLambdaForTesting([&](const std::string& name) -> bool {
-          return expiration_enabled_ && name == kExpiredFlagName;
-        }));
+
+    flags::testing::SetFlagExpiration(kExpiredFlagName,
+                                      CHROME_VERSION_MAJOR - 1);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -156,8 +157,6 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
   }
 
  protected:
-  void set_expiration_enabled(bool enabled) { expiration_enabled_ = enabled; }
-
   bool has_initial_command_line() const { return GetParam(); }
 
   std::string GetInitialCommandLine() const {
@@ -305,7 +304,20 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, DISABLED_OriginFlagEnabled) {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kSwitchName));
 }
 
-// Crashes on Win.  http://crbug.com/1025213
+class AboutFlagsUnexpiredBrowserTest : public AboutFlagsBrowserTest {
+ public:
+  AboutFlagsUnexpiredBrowserTest() {
+    const base::Feature* unexpire =
+        flags::GetUnexpireFeatureForMilestone(CHROME_VERSION_MAJOR - 1);
+    feature_list_.InitWithFeatures({*unexpire}, {});
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         AboutFlagsUnexpiredBrowserTest,
+                         ::testing::Values(true));
+
+// Crashes on Win.  http://crbug.com/1108357
 #if defined(OS_WIN)
 #define MAYBE_ExpiryHidesFlag DISABLED_ExpiryHidesFlag
 #else
@@ -317,18 +329,18 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, MAYBE_ExpiryHidesFlag) {
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(IsFlagPresent(contents, kFlagName));
   EXPECT_FALSE(IsFlagPresent(contents, kExpiredFlagName));
+}
 
-  set_expiration_enabled(false);
-
+IN_PROC_BROWSER_TEST_P(AboutFlagsUnexpiredBrowserTest, MAYBE_ExpiryHidesFlag) {
   NavigateToFlagsPage();
-  contents = browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(IsFlagPresent(contents, kFlagName));
   EXPECT_TRUE(IsFlagPresent(contents, kExpiredFlagName));
 }
 
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_ExpiredFlagDoesntApply) {
-  set_expiration_enabled(false);
   NavigateToFlagsPage();
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -340,7 +352,6 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_ExpiredFlagDoesntApply) {
 
 // Flaky everywhere: https://crbug.com/1024028
 IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, DISABLED_ExpiredFlagDoesntApply) {
-  set_expiration_enabled(true);
   NavigateToFlagsPage();
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();

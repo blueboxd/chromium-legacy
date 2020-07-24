@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" />ৰ পৰা <ph name="TARGET_LANGUAGE" />লৈ</translation>
 <translation id="168715261339224929">আপোনাৰ বুকমাৰ্কসমূহ নিজৰ সকলো ডিভাইচতে পাবলৈ ছিংক অন কৰক।</translation>
 <translation id="1687475363370981210">সকলো পঢ়া হ‘ল বুলি চিহ্নিত কৰক</translation>
+<translation id="1689333818294560261">উপনাম</translation>
 <translation id="1690731385917361335">কোনো বস্তু নাই</translation>
 <translation id="1692118695553449118">ছিংক অন হৈ আছে</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> বাছনি কৰা হ’ল</translation>
@@ -185,6 +186,7 @@
 <translation id="3153862085237805241">কাৰ্ড ছেভ কৰক</translation>
 <translation id="3157684681743766797">সকলো চিহ্নিত কৰক…</translation>
 <translation id="3161291298470460782">এই কাৰ্যই আপোনাক ছাইন আউট কৰাব, ছিংক অফ কৰিব আৰু আপোনাৰ ডিভাইচটোৰ পৰা সকলো Chrome ডেটা মচিব। আপোনাৰ ছিংক কৰা ডেটা আপোনাৰ Google একাউণ্টত থাকিব।</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3175081911749765310">ৱেব সেৱা</translation>
 <translation id="3178650076442119961">আজি সক্ৰিয় হৈছে</translation>
 <translation id="3181954750937456830">সুৰক্ষিত ব্ৰাউজিং (আপোনাৰ ডিভাইচটোক বিপজ্জনক ছাইটৰ পৰা সুৰক্ষা প্ৰদান কৰে)</translation>
@@ -206,6 +208,7 @@
 <translation id="3335947283844343239">বন্ধ কৰা টেব পুনৰ খোলক</translation>
 <translation id="3371831930909698441">অনুবাদ কৰিব পাৰি। স্ক্ৰীণৰ একেবাৰে তলৰ অংশৰ কাষত থকা বিকল্পসমূহ।</translation>
 <translation id="3393920035788932672">পপ-আপসমূহ অনুমতি দিয়া হৈছে</translation>
+<translation id="3425644765244388016">কার্ডৰ উপনাম</translation>
 <translation id="3443810440409579745">টেব পাইছে।</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> মিনিট</translation>
 <translation id="3448016392200048164">স্প্লিট ভিউ ম’ড</translation>
@@ -240,6 +243,7 @@
 <translation id="3783017676699494206">ছবি ছেভ কৰক</translation>
 <translation id="3789841737615482174">ইনষ্টল কৰক</translation>
 <translation id="3803696231112616155">এই ছাইটটো অনুবাদ কৰাৰ প্ৰস্তাৱ দিয়ক</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{কোনো পাছৱৰ্ড হেক হোৱা নাই}=1{{COUNT} টা পাছৱৰ্ড হেক হৈছে}one{{COUNT} টা পাছৱৰ্ড হেক হৈছে}other{{COUNT} টা পাছৱৰ্ড হেক হৈছে}}</translation>
 <translation id="385051799172605136">উভতি যাওক</translation>
 <translation id="3892144330757387737">ইয়াত আপুনি নিজৰ ইতিহাস বিচাৰি পাব</translation>
 <translation id="3897092660631435901">মেনু</translation>
@@ -528,6 +532,7 @@
 <translation id="7189598951263744875">শ্বেয়াৰ কৰক...</translation>
 <translation id="7192050974311852563">ল’গ কৰা প্ৰক্ৰিয়া আৰম্ভ কৰক</translation>
 <translation id="7203585745079012652">সঁহাৰিটো কৈ দিয়ক</translation>
+<translation id="721597782417389033">কার্ডৰ উপনাম অমান্য</translation>
 <translation id="7265758999917665941">এই ছাইটটোৰ বাবে কেতিয়াও নহয়</translation>
 <translation id="7272437679830969316">আপোনাৰ পৰিচয় সত্যাপন কৰিব পৰা নগ’ল। পাছৱৰ্ড প্ৰতিলিপি কৰা নহ’ল।</translation>
 <translation id="7291368939935408496">পাছৱর্ড সাজু কৰি থকা হৈছে...</translation>

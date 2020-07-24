@@ -96,7 +96,7 @@ class DevToolsURLLoaderInterceptor {
                   scoped_refptr<base::RefCountedMemory> response_body);
     Modifications(protocol::Maybe<std::string> modified_url,
                   protocol::Maybe<std::string> modified_method,
-                  protocol::Maybe<std::string> modified_post_data,
+                  protocol::Maybe<protocol::Binary> modified_post_data,
                   std::unique_ptr<HeadersVector> modified_headers);
     Modifications(
         base::Optional<net::Error> error_reason,
@@ -105,7 +105,7 @@ class DevToolsURLLoaderInterceptor {
         size_t body_offset,
         protocol::Maybe<std::string> modified_url,
         protocol::Maybe<std::string> modified_method,
-        protocol::Maybe<std::string> modified_post_data,
+        protocol::Maybe<protocol::Binary> modified_post_data,
         std::unique_ptr<HeadersVector> modified_headers,
         std::unique_ptr<AuthChallengeResponse> auth_challenge_response);
     ~Modifications();
@@ -122,7 +122,7 @@ class DevToolsURLLoaderInterceptor {
     // Optionally modify before sending to network.
     protocol::Maybe<std::string> modified_url;
     protocol::Maybe<std::string> modified_method;
-    protocol::Maybe<std::string> modified_post_data;
+    protocol::Maybe<protocol::Binary> modified_post_data;
     std::unique_ptr<HeadersVector> modified_headers;
     // AuthChallengeResponse is mutually exclusive with the above.
     std::unique_ptr<AuthChallengeResponse> auth_challenge_response;

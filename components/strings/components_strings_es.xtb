@@ -450,6 +450,7 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="2824775600643448204">Barra de direcciones y de búsqueda </translation>
 <translation id="2826760142808435982">La conexión se ha encriptado y autenticado con <ph name="CIPHER" />, y utiliza <ph name="KX" /> como el mecanismo de intercambio clave.</translation>
 <translation id="2835170189407361413">Eliminar formulario</translation>
+<translation id="2839501879576190149">Sitio web falso</translation>
 <translation id="2847118875340931228">Abrir una ventana de incógnito</translation>
 <translation id="2850739647070081192">Invite (sobre)</translation>
 <translation id="2856444702002559011">Es posible que los atacantes estén intentando robar tu información de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (por ejemplo, contraseñas, mensajes o tarjetas de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -494,7 +495,6 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="3005723025932146533">Mostrar copia guardada</translation>
 <translation id="3008447029300691911">Introduce el código CVC de la tarjeta <ph name="CREDIT_CARD" />. Cuando la confirmes, su información se compartirá con este sitio web.</translation>
 <translation id="3010559122411665027">Entrada de lista "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
-<translation id="3013266782169695070"><ph name="APP_NAME" /> recoge datos de diagnóstico para mejorar la experiencia de los usuarios con el producto. Visita <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> para consultar más información.</translation>
 <translation id="301521992641321250">Bloqueado automáticamente</translation>
 <translation id="3016780570757425217">Conocer tu ubicación</translation>
 <translation id="3023071826883856138">You4 (sobre)</translation>
@@ -810,6 +810,7 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="42981349822642051">Mostrar</translation>
 <translation id="4300675098767811073">Perforado múltiple en la parte derecha</translation>
 <translation id="4302965934281694568">Chou3 (sobre)</translation>
+<translation id="4305666528087210886">No se ha podido acceder al archivo</translation>
 <translation id="4305817255990598646">Cambiar</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Bloquear (predeterminado)</translation>
@@ -828,6 +829,7 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="4358461427845829800">Gestiona tus métodos de pago...</translation>
 <translation id="4359160567981085931">Acabas de introducir tu contraseña en un sitio web engañoso. Chrome puede ayudarte. Para cambiar tu contraseña y notificar a Google de que tu cuenta podría estar en peligro, haz clic en Proteger cuenta.</translation>
 <translation id="4367563149485757821">Number-12 (sobre)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Se ha producido una quiebra de seguridad de datos en un sitio web o una aplicación y tu contraseña de <ph name="ORIGIN" /> ha quedado expuesta. Chrome recomienda que cambies tu contraseña de <ph name="ORIGIN" /> ahora.}=1{Se ha producido una quiebra de seguridad de datos en un sitio web o una aplicación y tu contraseña de <ph name="ORIGIN" /> y otro sitio web han quedado expuestas. Chrome te recomienda que revises ahora tus contraseñas guardadas.}other{Se ha producido una quiebra de seguridad de datos en un sitio web o una aplicación y tu contraseña de <ph name="ORIGIN" /> y <ph name="SITES_COUNT" /> otros sitios web han quedado expuestas. Chrome te recomienda que revises ahora tus contraseñas guardadas.}}</translation>
 <translation id="437058704415269440">Saldo de cuenta</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Se esperaba un valor <ph name="VALUE_TYPE" />.</translation>
@@ -1298,6 +1300,7 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Es posible que se cobren cargos en el futuro.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{Una sugerencia más}other{# sugerencias más}}</translation>
+<translation id="6387645831795005740">Los atacantes suelen imitar los sitios web haciendo pequeños cambios en la URL que son difíciles de ver.</translation>
 <translation id="6389470377220713856">Nombre de la tarjeta</translation>
 <translation id="6390200185239044127">Plegado al medio en Z</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1511,6 +1514,7 @@ Más información:
 <translation id="7372973238305370288">resultado de búsqueda</translation>
 <translation id="7374733840632556089">Este problema se debe a un certificado que tú u otra persona habéis instalado en el dispositivo. Chrome no confía en este certificado porque hay constancia de que se utiliza para interceptar y vigilar redes. En algunos casos, dicha vigilancia es legítima (por ejemplo, en las redes de centros educativos o empresas), pero Chrome quiere asegurarse de que estás al corriente de ello, aunque no puedas evitarlo. La vigilancia puede afectar a todos los navegadores y las aplicaciones que accedan a Internet.</translation>
 <translation id="7375818412732305729">Se ha adjuntado un archivo</translation>
+<translation id="7376551888419889433">Cuando Chrome Enterprise Connectors detecte actividades relacionadas con la seguridad, tu administrador recibirá los datos pertinentes. Entre estos datos se pueden encontrar las URL de las páginas que visitas en Chrome, los nombres o metadatos de los archivos, y el nombre de usuario que utilizas para iniciar sesión en tu dispositivo y en Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Controles multimedia</translation>
 <translation id="7378627244592794276">No</translation>
@@ -1907,6 +1911,7 @@ Más información:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" />: <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Has intentado acceder a <ph name="DOMAIN" />, pero el servidor ha presentado un certificado no válido.</translation>
 <translation id="9050666287014529139">Frase de contraseña</translation>
+<translation id="9062620674789239642">Es posible que se haya movido, editado o eliminado.</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9065745800631924235">Búsqueda de <ph name="TEXT" /> en el historial</translation>
 <translation id="9069693763241529744">Bloqueado por una extensión</translation>

@@ -101,7 +101,8 @@ public class PasswordCheckViewTest {
         pollUiThread(() -> Criteria.checkThat(getCredentials().getChildCount(), is(2)));
         // Has a change passwords button.
         assertNotNull(getCredentialChangeButtonAt(1));
-        assertThat(getCredentialChangeButtonAt(1).getVisibility(), is(View.VISIBLE));
+        // TODO(crbug.com/1092444): Ensure the button is visible as soon as it does something!
+        assertThat(getCredentialChangeButtonAt(1).getVisibility(), is(View.GONE));
         assertThat(getCredentialChangeButtonAt(1).getText(),
                 is(getString(R.string.password_check_credential_row_change_button_caption)));
 

@@ -1957,12 +1957,16 @@ void NetworkHandler::ContinueInterceptedRequest(
     }
   }
 
+  Maybe<protocol::Binary> post_data_bytes;
+  if (post_data.isJust())
+    post_data_bytes = protocol::Binary::fromString(post_data.fromJust());
+
   auto modifications =
       std::make_unique<DevToolsURLLoaderInterceptor::Modifications>(
           std::move(error), std::move(response_headers),
           std::move(response_body), body_offset, std::move(url),
-          std::move(method), std::move(post_data), std::move(override_headers),
-          std::move(override_auth));
+          std::move(method), std::move(post_data_bytes),
+          std::move(override_headers), std::move(override_auth));
 
   if (!url_loader_interceptor_)
     return;

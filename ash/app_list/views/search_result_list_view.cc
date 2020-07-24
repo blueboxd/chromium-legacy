@@ -184,11 +184,6 @@ SearchResultView* SearchResultListView::GetResultViewAt(size_t index) {
   return search_result_views_[index];
 }
 
-SearchResultBaseView* SearchResultListView::GetFirstResultView() {
-  DCHECK(!results_container_->children().empty());
-  return num_results() <= 0 ? nullptr : search_result_views_[0];
-}
-
 int SearchResultListView::DoUpdate() {
   if (!GetWidget() || !GetWidget()->IsVisible()) {
     for (size_t i = 0; i < results_container_->children().size(); ++i) {

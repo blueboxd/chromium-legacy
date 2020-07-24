@@ -106,17 +106,6 @@ class _FakeViewvcServer(_FakeFetcher):
     except IOError:
       return None
 
-
-class _FakeGithubStat(_FakeFetcher):
-  def fetch(self, url):
-    return '{ "sha": 0 }'
-
-
-class _FakeGithubZip(_FakeFetcher):
-  def fetch(self, url):
-    return _ReadTestData('github_file_system', 'apps_samples.zip', mode='rb')
-
-
 class _FakeRietveldAPI(_FakeFetcher):
   def __init__(self):
     self._base_pattern = re.compile(r'.*/(api/.*)')
@@ -144,8 +133,6 @@ def ConfigureFakeFetchers():
     url_constants.OMAHA_PROXY_URL: _FakeOmahaProxy(),
     '%s/.*' % url_constants.SVN_URL: _FakeSubversionServer(),
     '%s/.*' % url_constants.VIEWVC_URL: _FakeViewvcServer(),
-    '%s/.*/commits/.*' % url_constants.GITHUB_REPOS: _FakeGithubStat(),
-    '%s/.*/zipball' % url_constants.GITHUB_REPOS: _FakeGithubZip(),
     '%s/api/.*' % url_constants.CODEREVIEW_SERVER: _FakeRietveldAPI(),
     '%s/tarball/.*' % url_constants.CODEREVIEW_SERVER: _FakeRietveldTarball(),
   })

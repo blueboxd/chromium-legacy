@@ -732,7 +732,6 @@ TEST_P(VisualRectMappingTest,
   PhysicalRect rect = normal_flow_visual_rect;
   EXPECT_TRUE(normal_flow->MapToVisualRectInAncestorSpace(scroller, rect));
   EXPECT_EQ(PhysicalRect(0, 0, 2000, 2000), rect);
-  EXPECT_EQ(EnclosingIntRect(rect), normal_flow->FirstFragment().VisualRect());
 
   auto* stacking_context =
       To<LayoutBlock>(GetLayoutObjectByElementId("stacking-context"));
@@ -839,7 +838,6 @@ TEST_P(VisualRectMappingTest, FloatUnderInline) {
   } else {
     EXPECT_EQ(PhysicalRect(66, 55, 33, 44), rect);
   }
-  EXPECT_EQ(EnclosingIntRect(rect), target->FirstFragment().VisualRect());
 
   rect = target_visual_rect;
 
@@ -876,7 +874,6 @@ TEST_P(VisualRectMappingTest, FloatUnderInlineVerticalRL) {
   } else {
     EXPECT_EQ(PhysicalRect(66 + 600 - 33, 55, 33, 44), rect);
   }
-  EXPECT_EQ(EnclosingIntRect(rect), target->FirstFragment().VisualRect());
 
   // An inline object's coordinate space is its containing block's coordinate
   // space shifted by the inline's relative offset. |target|'s left is 100 from
@@ -910,7 +907,6 @@ TEST_P(VisualRectMappingTest, InlineBlock) {
   auto rect = target_visual_rect;
   EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(&GetLayoutView(), rect));
   EXPECT_EQ(PhysicalRect(266, 155, 33, 44), rect);
-  EXPECT_EQ(EnclosingIntRect(rect), target->FirstFragment().VisualRect());
 
   rect = target_visual_rect;
   if (RuntimeEnabledFeatures::LayoutNGEnabled())
@@ -940,7 +936,6 @@ TEST_P(VisualRectMappingTest, InlineBlockVerticalRL) {
   auto rect = target_visual_rect;
   EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(&GetLayoutView(), rect));
   EXPECT_EQ(PhysicalRect(66 + 600 - 200 - 33, 155, 33, 44), rect);
-  EXPECT_EQ(EnclosingIntRect(rect), target->FirstFragment().VisualRect());
 
   // An inline object's coordinate space is its containing block's coordinate
   // space shifted by the inline's relative offset. |target|'s left is -33 from
@@ -972,7 +967,6 @@ TEST_P(VisualRectMappingTest, AbsoluteUnderRelativeInline) {
   auto rect = target_visual_rect;
   EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(&GetLayoutView(), rect));
   EXPECT_EQ(PhysicalRect(66 + 200 + 100, 55 + 100 + 50, 33, 44), rect);
-  EXPECT_EQ(EnclosingIntRect(rect), target->FirstFragment().VisualRect());
 
   rect = target_visual_rect;
   if (RuntimeEnabledFeatures::LayoutNGEnabled())
@@ -1002,7 +996,6 @@ TEST_P(VisualRectMappingTest, AbsoluteUnderRelativeInlineVerticalRL) {
   auto rect = target_visual_rect;
   EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(&GetLayoutView(), rect));
   EXPECT_EQ(PhysicalRect(66 + 600 - 200 + 100, 55 + 100 + 50, 33, 44), rect);
-  EXPECT_EQ(EnclosingIntRect(rect), target->FirstFragment().VisualRect());
 
   // An inline object's coordinate space is its containing block's coordinate
   // space shifted by the inline's relative offset. |target|'s left is 100 from

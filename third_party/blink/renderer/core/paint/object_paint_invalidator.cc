@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
-#include "third_party/blink/renderer/core/paint/find_paint_offset_and_visual_rect_needing_update.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -171,12 +170,8 @@ ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
       object_.StyleRef().Visibility() != EVisibility::kVisible)
     return PaintInvalidationReason::kNone;
 
-  if (!object_.ShouldCheckForPaintInvalidation() &&
-      (!context_.subtree_flags ||
-       context_.subtree_flags ==
-           PaintInvalidatorContext::kSubtreeVisualRectUpdate)) {
-    // No paint invalidation flag, or just kSubtreeVisualRectUpdate (which has
-    // been handled in PaintInvalidator). No paint invalidation is needed.
+  if (!object_.ShouldCheckForPaintInvalidation() && !context_.subtree_flags) {
+    // No paint invalidation flag. No paint invalidation is needed.
     return PaintInvalidationReason::kNone;
   }
 
@@ -220,17 +215,11 @@ PaintInvalidationReason ObjectPaintInvalidatorWithContext::InvalidateSelection(
 
   IntRect old_selection_rect = object_.SelectionVisualRect();
   IntRect new_selection_rect;
-#if DCHECK_IS_ON()
-  FindVisualRectNeedingUpdateScope finder(object_, context_, old_selection_rect,
-                                          new_selection_rect);
-#endif
-  if (context_.NeedsVisualRectUpdate(object_)) {
-    new_selection_rect = context_.MapLocalRectToVisualRect(
-        object_, object_.LocalSelectionVisualRect());
-  } else {
-    new_selection_rect = old_selection_rect;
+  PhysicalRect selection_rect = object_.LocalSelectionVisualRect();
+  if (!selection_rect.IsEmpty()) {
+    selection_rect.Move(context_.fragment_data->PaintOffset());
+    new_selection_rect = EnclosingIntRect(selection_rect);
   }
-
   object_.GetMutableForPainting().SetSelectionVisualRect(new_selection_rect);
 
   if (full_invalidation)
@@ -259,9 +248,8 @@ ObjectPaintInvalidatorWithContext::InvalidatePartialRect(
   if (local_rect.IsEmpty())
     return reason;
 
-  auto visual_rect = context_.MapLocalRectToVisualRect(object_, local_rect);
-  if (visual_rect.IsEmpty())
-    return reason;
+  local_rect.Move(context_.fragment_data->PaintOffset());
+  auto visual_rect = EnclosingIntRect(local_rect);
 
   object_.GetMutableForPainting().SetPartialInvalidationVisualRect(
       UnionRect(object_.PartialInvalidationVisualRect(), visual_rect));

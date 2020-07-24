@@ -590,8 +590,11 @@ class LocalDeviceInstrumentationTestRun(
       wpr_archive_path = os.path.join(host_paths.DIR_SOURCE_ROOT,
                                       wpr_archive_relative_path)
       if not os.path.isdir(wpr_archive_path):
-        raise RuntimeError('WPRArchiveDirectory annotation should point'
-                           'to a directory only.')
+        raise RuntimeError('WPRArchiveDirectory annotation should point '
+                           'to a directory only. '
+                           '{0} exist: {1}'.format(
+                               wpr_archive_path,
+                               os.path.exists(wpr_archive_path)))
 
       archive_path = os.path.join(wpr_archive_path,
                                   self._GetUniqueTestName(test) + '.wprgo')

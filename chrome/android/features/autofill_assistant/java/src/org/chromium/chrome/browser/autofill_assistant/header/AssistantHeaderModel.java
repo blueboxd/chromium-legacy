@@ -108,6 +108,9 @@ public class AssistantHeaderModel extends PropertyModel {
     @CalledByNative
     private void setStepProgressBarIcons(List<AssistantDrawable> icons) {
         set(STEP_PROGRESS_BAR_ICONS, icons);
+        // Reset progress bar entries.
+        set(PROGRESS_ACTIVE_STEP, -1);
+        set(PROGRESS_BAR_ERROR, false);
     }
 
     @CalledByNative

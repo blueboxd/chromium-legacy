@@ -26,6 +26,7 @@
 #include "content/browser/webauth/webauth_request_security_checker.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/is_uvpaa.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -453,24 +454,14 @@ bool IsUserVerifyingPlatformAuthenticatorAvailableImpl(
 #if defined(OS_MACOSX)
   const base::Optional<device::fido::mac::AuthenticatorConfig> config =
       delegate->GetTouchIdAuthenticatorConfig();
-  if (!config) {
-    return false;
-  }
-  return device::fido::mac::TouchIdAuthenticator::IsAvailable(*config);
+  return config && IsUVPlatformAuthenticatorAvailable(*config);
 #elif defined(OS_WIN)
-  if (browser_context->IsOffTheRecord()) {
-    return false;
-  }
-  return base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) &&
-         device::WinWebAuthnApiAuthenticator::
-             IsUserVerifyingPlatformAuthenticatorAvailable(
-                 discovery_factory->win_webauthn_api());
+  return !browser_context->IsOffTheRecord() &&
+         IsUVPlatformAuthenticatorAvailable(
+             discovery_factory->win_webauthn_api());
 #elif defined(OS_CHROMEOS)
-  if (browser_context->IsOffTheRecord()) {
-    return false;
-  }
-  return base::FeatureList::IsEnabled(
-      device::kWebAuthCrosPlatformAuthenticator);
+  return !browser_context->IsOffTheRecord() &&
+         IsUVPlatformAuthenticatorAvailable();
 #else
   return false;
 #endif

@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "media/mojo/mojom/video_encode_accelerator_mojom_traits.h"
-#include "media/mojo/mojom/video_encoder_info_mojom_traits.h"
 
+#include "media/mojo/mojom/video_encode_accelerator.mojom.h"
+#include "media/mojo/mojom/video_encoder_info_mojom_traits.h"
 #include "media/video/video_encode_accelerator.h"
 #include "media/video/video_encoder_info.h"
 #include "mojo/public/cpp/test_support/test_utils.h"

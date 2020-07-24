@@ -339,7 +339,7 @@ scoped_refptr<X11Cursor> XCursorLoader::CreateCursor(
   std::vector<uint8_t> vec(size);
   memcpy(vec.data(), bitmap.getPixels(), size);
   auto* connection = x11::Connection::Get();
-  connection->PutImage({
+  x11::PutImageRequest put_image_request{
       .format = x11::ImageFormat::ZPixmap,
       .drawable = static_cast<x11::Pixmap>(pixmap),
       .gc = static_cast<x11::GraphicsContext>(gc),
@@ -347,7 +347,8 @@ scoped_refptr<X11Cursor> XCursorLoader::CreateCursor(
       .height = height,
       .depth = 32,
       .data = base::RefCountedBytes::TakeVector(&vec),
-  });
+  };
+  connection->PutImage(put_image_request);
 
   x11::Render::Picture pic = connection_->GenerateId<x11::Render::Picture>();
   connection_->render().CreatePicture({pic, pixmap, pict_format_});

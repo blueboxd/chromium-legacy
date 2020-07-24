@@ -359,7 +359,8 @@ void CommandBufferProxyImpl::SetGetBuffer(int32_t shm_id) {
 
 scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
     uint32_t size,
-    int32_t* id) {
+    int32_t* id,
+    TransferBufferAllocationOption option) {
   CheckLock();
   base::AutoLock lock(last_state_lock_);
   *id = -1;
@@ -371,7 +372,8 @@ scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
   std::tie(shared_memory_region, shared_memory_mapping) =
       AllocateAndMapSharedMemory(size);
   if (!shared_memory_mapping.IsValid()) {
-    if (last_state_.error == gpu::error::kNoError)
+    if (last_state_.error == gpu::error::kNoError &&
+        option != TransferBufferAllocationOption::kReturnNullOnOOM)
       OnClientError(gpu::error::kOutOfBounds);
     return nullptr;
   }

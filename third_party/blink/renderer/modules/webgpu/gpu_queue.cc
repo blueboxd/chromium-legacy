@@ -272,6 +272,49 @@ void GPUQueue::WriteBufferImpl(GPUBuffer* buffer,
                               data_ptr, static_cast<size_t>(write_byte_size));
 }
 
+void GPUQueue::writeTexture(
+    GPUTextureCopyView* destination,
+    const MaybeShared<DOMArrayBufferView>& data,
+    GPUTextureDataLayout* data_layout,
+    UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& write_size,
+    ExceptionState& exception_state) {
+  WriteTextureImpl(destination, data->BaseAddressMaybeShared(),
+                   data->byteLengthAsSizeT(), data_layout, write_size,
+                   exception_state);
+}
+
+void GPUQueue::writeTexture(
+    GPUTextureCopyView* destination,
+    const DOMArrayBufferBase* data,
+    GPUTextureDataLayout* data_layout,
+    UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& write_size,
+    ExceptionState& exception_state) {
+  WriteTextureImpl(destination, data->DataMaybeShared(),
+                   data->ByteLengthAsSizeT(), data_layout, write_size,
+                   exception_state);
+}
+
+void GPUQueue::WriteTextureImpl(
+    GPUTextureCopyView* destination,
+    const void* data,
+    size_t data_size,
+    GPUTextureDataLayout* data_layout,
+    UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict& write_size,
+    ExceptionState& exception_state) {
+  if (!ValidateCopySize(write_size, exception_state) ||
+      !ValidateTextureCopyView(destination, exception_state)) {
+    return;
+  }
+
+  WGPUTextureCopyView dawn_destination = AsDawnType(destination, device_);
+  WGPUTextureDataLayout dawn_data_layout = AsDawnType(data_layout);
+  WGPUExtent3D dawn_write_size = AsDawnType(&write_size);
+
+  GetProcs().queueWriteTexture(GetHandle(), &dawn_destination, data, data_size,
+                               &dawn_data_layout, &dawn_write_size);
+  return;
+}
+
 // TODO(shaobo.yan@intel.com): Implement this function
 void GPUQueue::copyImageBitmapToTexture(
     GPUImageBitmapCopyView* source,

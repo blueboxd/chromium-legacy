@@ -15,20 +15,20 @@
 <translation id="4133493477912226187">似乎有 <ph name="NUMBER_OF_TABS" /> 個相關的分頁。要唔要將佢哋分組？</translation>
 <translation id="4212246570487010370">繼續瀏覽</translation>
 <translation id="4450893287417543264">不要再顯示</translation>
-<translation id="4648718555153979859">您的分頁都集中在這裡顯示</translation>
+<translation id="4648718555153979859">您的分頁在這裡分組顯示</translation>
 <translation id="5007392906805964215">查看</translation>
 <translation id="5073204694187207510">隱藏全螢幕網格</translation>
 <translation id="5082793167783849073">建立群組以快速比較多個頁面。輕觸並按住連結即可開始建立。</translation>
 <translation id="5533021382642990449">稍後再顯示</translation>
 <translation id="5580090775658607195">已將 <ph name="TAB_COUNT" /> 個分頁加入群組</translation>
-<translation id="58326064309361797">拖曳分頁即可進行分組</translation>
+<translation id="58326064309361797">拖曳分頁來分組</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="6193448654517602979">選取分頁</translation>
 <translation id="6510648526783655549">關閉分頁列</translation>
 <translation id="6562820390860419811">將分頁左移</translation>
 <translation id="6615455863669487791">顯示</translation>
 <translation id="6840760312327750441">如要將分頁加入群組，請輕觸並按住分頁，然後將它拖曳到其他分頁上。</translation>
-<translation id="7151209024774799310">從群組中移除標籤</translation>
+<translation id="7151209024774799310">從群組中移除分頁</translation>
 <translation id="7559245342362162951">用全螢幕網格顯示群組嘅分頁</translation>
 <translation id="7792771145871471484">睇下建議。</translation>
 <translation id="7838146321400849846">{TABS_COUNT,plural, =1{將 <ph name="TABS_COUNT_ONE" /> 個揀咗嘅分頁分組}other{將 <ph name="TABS_COUNT_MANY" /> 個揀咗嘅分頁分組}}</translation>

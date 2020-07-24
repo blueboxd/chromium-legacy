@@ -60,7 +60,8 @@ const char kGroupsTable[] = "Groups";
 const char kCachesTable[] = "Caches";
 const char kEntriesTable[] = "Entries";
 const char kNamespacesTable[] = "Namespaces";
-const char kOnlineWhiteListsTable[] = "OnlineWhiteLists";
+// TODO(crbug.com/1108479): Update table name, add migration.
+const char kOnlineSafeListsTable[] = "OnlineWhiteLists";
 const char kDeletableResponseIdsTable[] = "DeletableResponseIds";
 
 struct TableInfo {
@@ -117,7 +118,7 @@ const TableInfo kTables[] = {
      " token_expires INTEGER)"},
 
     // The |is_pattern| field is obsolete.
-    {kOnlineWhiteListsTable,
+    {kOnlineSafeListsTable,
      "(cache_id INTEGER,"
      " namespace_url TEXT,"
      " is_pattern INTEGER CHECK(is_pattern IN (0, 1)))"},
@@ -126,60 +127,30 @@ const TableInfo kTables[] = {
 };
 
 const IndexInfo kIndexes[] = {
-  { "GroupsOriginIndex",
-    kGroupsTable,
-    "(origin)",
-    false },
+    {"GroupsOriginIndex", kGroupsTable, "(origin)", false},
 
-  { "GroupsManifestIndex",
-    kGroupsTable,
-    "(manifest_url)",
-    true },
+    {"GroupsManifestIndex", kGroupsTable, "(manifest_url)", true},
 
-  { "CachesGroupIndex",
-    kCachesTable,
-    "(group_id)",
-    false },
+    {"CachesGroupIndex", kCachesTable, "(group_id)", false},
 
-  { "EntriesCacheIndex",
-    kEntriesTable,
-    "(cache_id)",
-    false },
+    {"EntriesCacheIndex", kEntriesTable, "(cache_id)", false},
 
-  { "EntriesCacheAndUrlIndex",
-    kEntriesTable,
-    "(cache_id, url)",
-    true },
+    {"EntriesCacheAndUrlIndex", kEntriesTable, "(cache_id, url)", true},
 
-  { "EntriesResponseIdIndex",
-    kEntriesTable,
-    "(response_id)",
-    true },
+    {"EntriesResponseIdIndex", kEntriesTable, "(response_id)", true},
 
-  { "NamespacesCacheIndex",
-    kNamespacesTable,
-    "(cache_id)",
-    false },
+    {"NamespacesCacheIndex", kNamespacesTable, "(cache_id)", false},
 
-  { "NamespacesOriginIndex",
-    kNamespacesTable,
-    "(origin)",
-    false },
+    {"NamespacesOriginIndex", kNamespacesTable, "(origin)", false},
 
-  { "NamespacesCacheAndUrlIndex",
-    kNamespacesTable,
-    "(cache_id, namespace_url)",
-    true },
+    {"NamespacesCacheAndUrlIndex", kNamespacesTable,
+     "(cache_id, namespace_url)", true},
 
-  { "OnlineWhiteListCacheIndex",
-    kOnlineWhiteListsTable,
-    "(cache_id)",
-    false },
+    // TODO(crbug.com/1108479): Update table name, add migration.
+    {"OnlineWhiteListCacheIndex", kOnlineSafeListsTable, "(cache_id)", false},
 
-  { "DeletableResponsesIdIndex",
-    kDeletableResponseIdsTable,
-    "(response_id)",
-    true },
+    {"DeletableResponsesIdIndex", kDeletableResponseIdsTable, "(response_id)",
+     true},
 };
 
 bool CreateTable(sql::Database* db, const TableInfo& info) {
@@ -852,13 +823,14 @@ bool AppCacheDatabase::DeleteNamespacesForCache(int64_t cache_id) {
   return statement.Run();
 }
 
-bool AppCacheDatabase::FindOnlineWhiteListForCache(
+bool AppCacheDatabase::FindOnlineSafeListForCache(
     int64_t cache_id,
-    std::vector<OnlineWhiteListRecord>* records) {
+    std::vector<OnlineSafeListRecord>* records) {
   DCHECK(records && records->empty());
   if (!LazyOpen(kDontCreate))
     return false;
 
+  // TODO(crbug.com/1108479): Update table name.
   static const char kSql[] =
       "SELECT cache_id, namespace_url, is_pattern FROM OnlineWhiteLists"
       "  WHERE cache_id = ?";
@@ -867,18 +839,19 @@ bool AppCacheDatabase::FindOnlineWhiteListForCache(
   statement.BindInt64(0, cache_id);
 
   while (statement.Step()) {
-    records->push_back(OnlineWhiteListRecord());
-    this->ReadOnlineWhiteListRecord(statement, &records->back());
+    records->push_back(OnlineSafeListRecord());
+    this->ReadOnlineSafeListRecord(statement, &records->back());
     DCHECK(records->back().cache_id == cache_id);
   }
   return statement.Succeeded();
 }
 
-bool AppCacheDatabase::InsertOnlineWhiteList(
-    const OnlineWhiteListRecord* record) {
+bool AppCacheDatabase::InsertOnlineSafeList(
+    const OnlineSafeListRecord* record) {
   if (!LazyOpen(kCreateIfNeeded))
     return false;
 
+  // TODO(crbug.com/1108479): Update table name.
   static const char kSql[] =
       "INSERT INTO OnlineWhiteLists (cache_id, namespace_url, is_pattern)"
       "  VALUES (?, ?, ?)";
@@ -891,24 +864,25 @@ bool AppCacheDatabase::InsertOnlineWhiteList(
   return statement.Run();
 }
 
-bool AppCacheDatabase::InsertOnlineWhiteListRecords(
-    const std::vector<OnlineWhiteListRecord>& records) {
+bool AppCacheDatabase::InsertOnlineSafeListRecords(
+    const std::vector<OnlineSafeListRecord>& records) {
   if (records.empty())
     return true;
   sql::Transaction transaction(db_.get());
   if (!transaction.Begin())
     return false;
   for (const auto& record : records) {
-    if (!InsertOnlineWhiteList(&record))
+    if (!InsertOnlineSafeList(&record))
       return false;
   }
   return transaction.Commit();
 }
 
-bool AppCacheDatabase::DeleteOnlineWhiteListForCache(int64_t cache_id) {
+bool AppCacheDatabase::DeleteOnlineSafeListForCache(int64_t cache_id) {
   if (!LazyOpen(kDontCreate))
     return false;
 
+  // TODO(crbug.com/1108479): Update table name.
   static const char kSql[] = "DELETE FROM OnlineWhiteLists WHERE cache_id = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -1094,13 +1068,13 @@ void AppCacheDatabase::ReadNamespaceRecord(
   record->namespace_.target_url = GURL(statement->ColumnString(4));
   DCHECK(record->namespace_.type == APPCACHE_FALLBACK_NAMESPACE ||
          record->namespace_.type == APPCACHE_INTERCEPT_NAMESPACE);
-  // The APPCACHE_NETWORK_NAMESPACE are stored as OnlineWhiteListRecords.
+  // The APPCACHE_NETWORK_NAMESPACE are stored as OnlineSafeListRecords.
   record->token_expires =
       base::Time::FromInternalValue(statement->ColumnInt64(5));
 }
 
-void AppCacheDatabase::ReadOnlineWhiteListRecord(
-    const sql::Statement& statement, OnlineWhiteListRecord* record) {
+void AppCacheDatabase::ReadOnlineSafeListRecord(const sql::Statement& statement,
+                                                OnlineSafeListRecord* record) {
   record->cache_id = statement.ColumnInt64(0);
   record->namespace_url = GURL(statement.ColumnString(1));
 }

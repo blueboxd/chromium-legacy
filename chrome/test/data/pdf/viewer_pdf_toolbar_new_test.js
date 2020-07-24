@@ -125,6 +125,27 @@ const tests = [
     toolbar.addEventListener('rotate-left', e => chrome.test.succeed());
     rotateButton.click();
   },
+
+  function testZoomField() {
+    const toolbar = createToolbar();
+    toolbar.viewportZoom = .8;
+    const zoomField = toolbar.shadowRoot.querySelector('#zoom-controls input');
+    chrome.test.assertEq('80%', zoomField.value);
+
+    // Value is set based on viewport zoom.
+    toolbar.viewportZoom = .533;
+    chrome.test.assertEq('53%', zoomField.value);
+
+    // Setting a new value sends the value in a zoom-changed event.
+    let sentValue = -1;
+    toolbar.addEventListener('zoom-changed', e => {
+      sentValue = e.detail;
+      chrome.test.assertEq(110, sentValue);
+      chrome.test.succeed();
+    });
+    zoomField.value = '110%';
+    zoomField.dispatchEvent(new CustomEvent('input'));
+  }
 ];
 
 chrome.test.runTests(tests);

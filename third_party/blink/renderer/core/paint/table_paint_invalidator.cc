@@ -23,10 +23,6 @@ void TablePaintInvalidator::InvalidatePaint() {
   if (table_.HasColElements()) {
     for (LayoutTableCol* col = table_.FirstColumn(); col;
          col = col->NextColumn()) {
-      // LayoutTableCol uses the table's LocalVisualRect(). Should check column
-      // for paint invalidation in case that the table's visual rect changed.
-      if (table_.NeedsPaintOffsetAndVisualRectUpdate())
-        col->SetShouldCheckForPaintInvalidation();
       // This ensures that the BackgroundNeedsFullPaintInvalidation flag is
       // up-to-date.
       col->EnsureIsReadyForPaintInvalidation();

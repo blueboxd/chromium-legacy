@@ -53,8 +53,8 @@ void PnaclHeaderTest::StartServer() {
   // that watches for the .pexe fetch also.
   base::FilePath test_data_dir;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&PnaclHeaderTest::WatchForPexeFetch, base::Unretained(this)));
+  embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+      &PnaclHeaderTest::WatchForPexeFetch, base::Unretained(this)));
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
   ASSERT_TRUE(embedded_test_server()->Start());
 }

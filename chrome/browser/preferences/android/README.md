@@ -10,12 +10,12 @@ and/or write small amounts of data from Java to a persistent key-value store.
 supports reading and writing simple key-value pairs to a file that is saved
 across app sessions.
 
-## PrefServiceBridge
+## PrefService
 
-[`PrefServiceBridge`][2] is a JNI bridge providing access to the native Chrome
-[PrefService][3] instance associated with the active user profile. This
-interface can be used to read and write prefs once they're registered through
-the `PrefRegistry` and added to the [`@Pref` enum][4].
+[`PrefService`][2] is a JNI bridge providing access to a native Chrome
+[PrefService][3] instance associated. This interface can be used to read and
+write prefs once they're registered through the `PrefRegistry` and exposed to
+Java by way of a `java_cpp_strings` build target such as [this one][4].
 
 ## FAQ
 
@@ -33,26 +33,24 @@ should be stored in PrefService. If the answer to all of the above questions is
 No, then SharedPreferences should be preferred.
 
 **What if the PrefService type I need to access is not supported by
-PrefServiceBridge (i.e. double, Time, etc.)?**
+PrefService (i.e. double, Time, etc.)?**
 
-If a base value type is supported by PrefService, then PrefServiceBridge should
+If a base value type is supported by PrefService, then PrefService should
 be extended to support it once it's needed.
 
 **How do I access a PrefService pref associated with local state rather than
 browser profile?**
 
 Most Chrome for Android preferences should be associated with a specific
-profile. If your preference should instead be associated with [local state][6]
+profile. If your preference should instead be associated with [local state][5]
 (for example, if it is related to the First Run Experience), then you should not
-use PrefServiceBridge and should instead create your own feature-specific JNI
-bridge to access the correct PrefService instance (see
-[`first_run_utils.cc`][7]).
+use PrefService and should instead create your own feature-specific JNI
+bridge to access the correct PrefService instance (see [`first_run_utils.cc`][6]).
 
 [0]: https://source.chromium.org/chromium/chromium/src/+/master:chrome/browser/preferences/android/java/src/org/chromium/chrome/browser/preferences/SharedPreferencesManager.java
 [1]: https://developer.android.com/reference/android/content/SharedPreferences
-[2]: https://source.chromium.org/chromium/chromium/src/+/master:chrome/browser/preferences/android/java/src/org/chromium/chrome/browser/preferences/PrefServiceBridge.java
+[2]: https://source.chromium.org/chromium/chromium/src/+/master:components/prefs/android/java/src/org/chromium/components/prefs/PrefService.java
 [3]: https://chromium.googlesource.com/chromium/src/+/master/services/preferences/README.md
-[4]: https://source.chromium.org/chromium/chromium/src/+/master:chrome/browser/android/preferences/prefs.h
-[5]: https://source.chromium.org/chromium/chromium/src/+/master:chrome/browser/preferences/OWNERS
-[6]: https://www.chromium.org/developers/design-documents/preferences#TOC-Introduction
-[7]: https://source.chromium.org/chromium/chromium/src/+/master:chrome/browser/first_run/android/first_run_utils.cc
+[4]: https://source.chromium.org/chromium/chromium/src/+/master:chrome/browser/preferences/BUILD.gn;drc=4ae1b7be67cd9b470ebcc90f2747a9f31f155b00;l=28
+[5]: https://www.chromium.org/developers/design-documents/preferences#TOC-Introduction
+[6]: https://source.chromium.org/chromium/chromium/src/+/master:chrome/browser/first_run/android/first_run_utils.cc

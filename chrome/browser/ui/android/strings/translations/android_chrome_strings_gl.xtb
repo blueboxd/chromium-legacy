@@ -100,7 +100,7 @@
 <translation id="1810845389119482123">Non se completou a configuración de sincronización inicial</translation>
 <translation id="1821253160463689938">Utiliza cookies para lembrar as túas preferencias, mesmo se non visitas esas páxinas</translation>
 <translation id="1829244130665387512">Buscar na páxina</translation>
-<translation id="1853692000353488670">Pestana nova de incógnito</translation>
+<translation id="1853692000353488670">Nova pestana de incógnito</translation>
 <translation id="1856325424225101786">Queres restablecer o modo básico?</translation>
 <translation id="1868024384445905608">Chrome agora descarga os ficheiros máis rápido</translation>
 <translation id="1883903952484604915">Os meus ficheiros</translation>
@@ -309,7 +309,7 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="3435738964857648380">Seguranza</translation>
 <translation id="3443221991560634068">Volver cargar a páxina actual</translation>
 <translation id="3478363558367712427">Podes escoller o motor de busca</translation>
-<translation id="3492207499832628349">Pestana nova de incógnito</translation>
+<translation id="3492207499832628349">Nova pestana de incógnito</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /> acerca do contido suxerido</translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3507132249039706973">A protección estándar está activada</translation>
@@ -357,7 +357,7 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="3892148308691398805">Copiar texto</translation>
 <translation id="3894427358181296146">Engadir cartafol</translation>
 <translation id="3895926599014793903">Forzar a activación do zoom</translation>
-<translation id="3909763690984331376">Comprobación de seguranza <ph name="BEGIN_NEW" />Nova<ph name="END_NEW" /></translation>
+<translation id="3909763690984331376">Comprobación de seguranza <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="3912508018559818924">Buscando o mellor contido da Web…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Combinar os meus datos</translation>

@@ -200,7 +200,8 @@ void SkiaGoldPixelDiff::InitSkiaGold() {
   ASSERT_EQ(exit_code, 0);
 }
 
-void SkiaGoldPixelDiff::Init(const std::string& screenshot_prefix) {
+void SkiaGoldPixelDiff::Init(const std::string& screenshot_prefix,
+                             const std::string& corpus) {
   auto* cmd_line = base::CommandLine::ForCurrentProcess();
   ASSERT_TRUE(cmd_line->HasSwitch(kBuildRevisionKey))
       << "Missing switch " << kBuildRevisionKey;
@@ -223,6 +224,7 @@ void SkiaGoldPixelDiff::Init(const std::string& screenshot_prefix) {
   }
   initialized_ = true;
   prefix_ = screenshot_prefix;
+  corpus_ = corpus.length() ? corpus : "gtest-pixeltests";
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::CreateNewTempDirectory(FILE_PATH_LITERAL("SkiaGoldTemp"),
                                &working_dir_);
@@ -244,7 +246,7 @@ bool SkiaGoldPixelDiff::UploadToSkiaGoldServer(
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::CommandLine cmd(GetAbsoluteSrcRelativePath(kSkiaGoldCtl));
   cmd.AppendSwitchASCII("test-name", remote_golden_image_name);
-  cmd.AppendSwitchASCII("add-test-key", "source_type:gtest-pixeltests");
+  cmd.AppendSwitchASCII("add-test-key", "source_type:" + corpus_);
   cmd.AppendSwitchPath("png-file", local_file_path);
   cmd.AppendSwitchPath("work-dir", working_dir_);
 

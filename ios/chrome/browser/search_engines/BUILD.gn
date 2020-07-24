@@ -83,6 +83,7 @@ source_set("unit_tests") {
     ":search_engines",
     "//base:base",
     "//base/test:test_support",
+    "//components/favicon/core",
     "//components/favicon/ios",
     "//components/search_engines",
     "//ios/chrome/browser/browser_state",

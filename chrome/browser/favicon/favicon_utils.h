@@ -37,6 +37,10 @@ gfx::Image TabFaviconFromWebContents(content::WebContents* contents);
 // into account if necessary.
 gfx::Image GetDefaultFavicon();
 
+// Saves the favicon for the last committed navigation entry to the favicon
+// database.
+void SaveFaviconEvenIfInIncognito(content::WebContents* contents);
+
 }  // namespace favicon
 
 #endif  // CHROME_BROWSER_FAVICON_FAVICON_UTILS_H_

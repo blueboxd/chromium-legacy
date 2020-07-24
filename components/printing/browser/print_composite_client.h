@@ -114,7 +114,8 @@ class PrintCompositeClient
       mojom::PrintCompositor::Status status,
       base::ReadOnlySharedMemoryRegion region);
 
-  void OnDidPrintFrameContent(content::RenderFrameHost* render_frame_host,
+  void OnDidPrintFrameContent(int render_process_id,
+                              int render_frame_id,
                               int document_cookie,
                               mojom::DidPrintContentParamsPtr params);
 

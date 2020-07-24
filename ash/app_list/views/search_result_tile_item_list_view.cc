@@ -122,11 +122,6 @@ SearchResultTileItemView* SearchResultTileItemListView::GetResultViewAt(
   return tile_views_[index];
 }
 
-SearchResultBaseView* SearchResultTileItemListView::GetFirstResultView() {
-  DCHECK(!tile_views_.empty());
-  return num_results() <= 0 ? nullptr : tile_views_[0];
-}
-
 int SearchResultTileItemListView::DoUpdate() {
   if (!GetWidget() || !GetWidget()->IsVisible() || !GetWidget()->IsActive()) {
     for (size_t i = 0; i < max_search_result_tiles_; ++i) {

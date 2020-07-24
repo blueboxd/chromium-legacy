@@ -271,8 +271,8 @@ gfx::ImageSkia BrowserNonClientFrameView::GetFrameImage(
   const int frame_image_id = ShouldPaintAsActive(active_state)
                                  ? IDR_THEME_FRAME
                                  : IDR_THEME_FRAME_INACTIVE;
-  return frame_->ShouldUseTheme() && (tp->HasCustomImage(frame_image_id) ||
-                                      tp->HasCustomImage(IDR_THEME_FRAME))
+  return (tp->HasCustomImage(frame_image_id) ||
+          tp->HasCustomImage(IDR_THEME_FRAME))
              ? *tp->GetImageSkiaNamed(frame_image_id)
              : gfx::ImageSkia();
 }

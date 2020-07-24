@@ -105,6 +105,7 @@ const char kLinkedAppIconURL[] = "url";
 const char kLinkedAppIconSize[] = "size";
 const char kManifestVersion[] = "manifest_version";
 const char kMatchAboutBlank[] = "match_about_blank";
+const char kMatchDataUrls[] = "match_data_urls";
 const char kMatches[] = "matches";
 const char kMinimumChromeVersion[] = "minimum_chrome_version";
 const char kMinimumVersion[] = "minimum_version";
@@ -568,6 +569,8 @@ const char kInvalidMatch[] =
     "Invalid value for 'content_scripts[*].matches[*]': *";
 const char kInvalidMatchAboutBlank[] =
     "Invalid value for 'content_scripts[*].match_about_blank'.";
+const char kInvalidMatchDataUrls[] =
+    "Invalid value for 'content_scripts[*].match_data_urls'.";
 const char kInvalidMatchCount[] =
     "Invalid value for 'content_scripts[*].matches'. There must be at least "
     "one match specified.";

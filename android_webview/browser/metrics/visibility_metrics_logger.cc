@@ -16,24 +16,50 @@ using content::BrowserThread;
 
 namespace android_webview {
 
+// Have bypassed the usual macros here because they do not support a
+// means to increment counters by more than 1 per call.
+base::HistogramBase*
+VisibilityMetricsLogger::CreateHistogramForDurationTracking(const char* name,
+                                                            int max_value) {
+  return base::Histogram::FactoryGet(
+      name, 1, max_value + 1, max_value + 2,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+}
+
 base::HistogramBase* VisibilityMetricsLogger::GetGlobalVisibilityHistogram() {
   static NoDestructor<base::HistogramBase*> histogram(
-      base::Histogram::FactoryGet(
-          "Android.WebView.Visibility.Global", 1,
-          static_cast<int>(VisibilityMetricsLogger::Visibility::kMaxValue) + 1,
-          static_cast<int>(VisibilityMetricsLogger::Visibility::kMaxValue) + 2,
-          base::HistogramBase::kUmaTargetedHistogramFlag));
+      CreateHistogramForDurationTracking(
+          "Android.WebView.Visibility.Global",
+          static_cast<int>(VisibilityMetricsLogger::Visibility::kMaxValue)));
   return *histogram;
 }
 
 base::HistogramBase*
 VisibilityMetricsLogger::GetPerWebViewVisibilityHistogram() {
   static NoDestructor<base::HistogramBase*> histogram(
-      base::Histogram::FactoryGet(
-          "Android.WebView.Visibility.PerWebView", 1,
-          static_cast<int>(VisibilityMetricsLogger::Visibility::kMaxValue) + 1,
-          static_cast<int>(VisibilityMetricsLogger::Visibility::kMaxValue) + 2,
-          base::HistogramBase::kUmaTargetedHistogramFlag));
+      CreateHistogramForDurationTracking(
+          "Android.WebView.Visibility.PerWebView",
+          static_cast<int>(VisibilityMetricsLogger::Visibility::kMaxValue)));
+  return *histogram;
+}
+
+base::HistogramBase*
+VisibilityMetricsLogger::GetGlobalOpenWebVisibilityHistogram() {
+  static NoDestructor<base::HistogramBase*> histogram(
+      CreateHistogramForDurationTracking(
+          "Android.WebView.WebViewOpenWebVisible.Global",
+          static_cast<int>(
+              VisibilityMetricsLogger::WebViewOpenWebVisibility::kMaxValue)));
+  return *histogram;
+}
+
+base::HistogramBase*
+VisibilityMetricsLogger::GetPerWebViewOpenWebVisibilityHistogram() {
+  static NoDestructor<base::HistogramBase*> histogram(
+      CreateHistogramForDurationTracking(
+          "Android.WebView.WebViewOpenWebVisible.PerWebView",
+          static_cast<int>(
+              VisibilityMetricsLogger::WebViewOpenWebVisibility::kMaxValue)));
   return *histogram;
 }
 
@@ -76,13 +102,26 @@ void VisibilityMetricsLogger::ClientVisibilityChanged(Client* client) {
 void VisibilityMetricsLogger::UpdateDurations(base::TimeTicks update_time) {
   base::TimeDelta delta = update_time - last_update_time_;
   if (visible_client_count_ > 0) {
-    any_webview_visible_duration_ += delta;
+    visible_duration_tracker_.any_webview_tracked_duration_ += delta;
   } else {
-    no_webview_visible_duration_ += delta;
+    visible_duration_tracker_.no_webview_tracked_duration_ += delta;
   }
-  total_webview_visible_duration_ += delta * visible_client_count_;
-  total_webview_hidden_duration_ +=
+
+  if (visible_webcontent_client_count_ > 0) {
+    webcontent_visible_tracker_.any_webview_tracked_duration_ += delta;
+  } else {
+    webcontent_visible_tracker_.no_webview_tracked_duration_ += delta;
+  }
+
+  visible_duration_tracker_.per_webview_duration_ +=
+      delta * visible_client_count_;
+  visible_duration_tracker_.per_webview_untracked_duration_ +=
       delta * (client_visibility_.size() - visible_client_count_);
+
+  webcontent_visible_tracker_.per_webview_duration_ +=
+      delta * visible_webcontent_client_count_;
+  webcontent_visible_tracker_.per_webview_untracked_duration_ +=
+      delta * (client_visibility_.size() - visible_webcontent_client_count_);
 
   last_update_time_ = update_time;
 }
@@ -91,46 +130,65 @@ bool VisibilityMetricsLogger::IsVisible(const VisibilityInfo& info) {
   return info.view_attached && info.view_visible && info.window_visible;
 }
 
+bool VisibilityMetricsLogger::IsDisplayingOpenWebContent(
+    const VisibilityInfo& info) {
+  return info.scheme_http_or_https;
+}
+
 void VisibilityMetricsLogger::ProcessClientUpdate(Client* client,
                                                   const VisibilityInfo& info) {
   VisibilityInfo curr_info = client_visibility_[client];
   bool was_visible = IsVisible(curr_info);
   bool is_visible = IsVisible(info);
+  bool was_visible_web =
+      IsVisible(curr_info) && IsDisplayingOpenWebContent(curr_info);
+  bool is_visible_web = IsVisible(info) && IsDisplayingOpenWebContent(info);
   client_visibility_[client] = info;
-
   DCHECK(!was_visible || visible_client_count_ > 0);
+
   if (!was_visible && is_visible) {
     ++visible_client_count_;
   } else if (was_visible && !is_visible) {
     --visible_client_count_;
   }
+
+  if (!was_visible_web && is_visible_web) {
+    ++visible_webcontent_client_count_;
+  } else if (was_visible_web && !is_visible_web) {
+    --visible_webcontent_client_count_;
+  }
 }
 
 void VisibilityMetricsLogger::RecordMetrics() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   UpdateDurations(base::TimeTicks::Now());
+  RecordVisibilityMetrics();
+  RecordOpenWebDisplayMetrics();
+}
 
+void VisibilityMetricsLogger::RecordVisibilityMetrics() {
   int32_t any_webview_visible_seconds;
   int32_t no_webview_visible_seconds;
   int32_t total_webview_visible_seconds;
-  int32_t total_webview_hidden_seconds;
+  int32_t total_no_webview_visible_seconds;
 
-  any_webview_visible_seconds = any_webview_visible_duration_.InSeconds();
-  any_webview_visible_duration_ -=
+  any_webview_visible_seconds =
+      visible_duration_tracker_.any_webview_tracked_duration_.InSeconds();
+  visible_duration_tracker_.any_webview_tracked_duration_ -=
       base::TimeDelta::FromSeconds(any_webview_visible_seconds);
-
-  no_webview_visible_seconds = no_webview_visible_duration_.InSeconds();
-  no_webview_visible_duration_ -=
+  no_webview_visible_seconds =
+      visible_duration_tracker_.no_webview_tracked_duration_.InSeconds();
+  visible_duration_tracker_.no_webview_tracked_duration_ -=
       base::TimeDelta::FromSeconds(no_webview_visible_seconds);
 
-  total_webview_visible_seconds = total_webview_visible_duration_.InSeconds();
-  total_webview_visible_duration_ -=
+  total_webview_visible_seconds =
+      visible_duration_tracker_.per_webview_duration_.InSeconds();
+  visible_duration_tracker_.per_webview_duration_ -=
       base::TimeDelta::FromSeconds(total_webview_visible_seconds);
-
-  total_webview_hidden_seconds = total_webview_hidden_duration_.InSeconds();
-  total_webview_hidden_duration_ -=
-      base::TimeDelta::FromSeconds(total_webview_hidden_seconds);
+  total_no_webview_visible_seconds =
+      visible_duration_tracker_.per_webview_untracked_duration_.InSeconds();
+  visible_duration_tracker_.per_webview_untracked_duration_ -=
+      base::TimeDelta::FromSeconds(total_no_webview_visible_seconds);
 
   if (any_webview_visible_seconds) {
     GetGlobalVisibilityHistogram()->AddCount(
@@ -145,10 +203,57 @@ void VisibilityMetricsLogger::RecordMetrics() {
     GetPerWebViewVisibilityHistogram()->AddCount(
         static_cast<int>(Visibility::kVisible), total_webview_visible_seconds);
   }
-  if (total_webview_hidden_seconds) {
+  if (total_no_webview_visible_seconds) {
     GetPerWebViewVisibilityHistogram()->AddCount(
         static_cast<int>(Visibility::kNotVisible),
-        total_webview_hidden_seconds);
+        total_no_webview_visible_seconds);
+  }
+}
+
+void VisibilityMetricsLogger::RecordOpenWebDisplayMetrics() {
+  int32_t any_webcontent_visible_seconds;
+  int32_t no_webcontent_visible_seconds;
+  int32_t total_webcontent_isible_seconds;
+  int32_t total_not_webcontent_or_not_visible_seconds;
+
+  any_webcontent_visible_seconds =
+      webcontent_visible_tracker_.any_webview_tracked_duration_.InSeconds();
+  webcontent_visible_tracker_.any_webview_tracked_duration_ -=
+      base::TimeDelta::FromSeconds(any_webcontent_visible_seconds);
+  no_webcontent_visible_seconds =
+      webcontent_visible_tracker_.no_webview_tracked_duration_.InSeconds();
+  webcontent_visible_tracker_.no_webview_tracked_duration_ -=
+      base::TimeDelta::FromSeconds(no_webcontent_visible_seconds);
+
+  total_webcontent_isible_seconds =
+      webcontent_visible_tracker_.per_webview_duration_.InSeconds();
+  webcontent_visible_tracker_.per_webview_duration_ -=
+      base::TimeDelta::FromSeconds(total_webcontent_isible_seconds);
+  total_not_webcontent_or_not_visible_seconds =
+      webcontent_visible_tracker_.per_webview_untracked_duration_.InSeconds();
+  webcontent_visible_tracker_.per_webview_untracked_duration_ -=
+      base::TimeDelta::FromSeconds(total_not_webcontent_or_not_visible_seconds);
+
+  if (any_webcontent_visible_seconds) {
+    GetGlobalOpenWebVisibilityHistogram()->AddCount(
+        static_cast<int>(WebViewOpenWebVisibility::kDisplayOpenWebContent),
+        any_webcontent_visible_seconds);
+  }
+  if (no_webcontent_visible_seconds) {
+    GetGlobalOpenWebVisibilityHistogram()->AddCount(
+        static_cast<int>(WebViewOpenWebVisibility::kNotDisplayOpenWebContent),
+        no_webcontent_visible_seconds);
+  }
+
+  if (total_webcontent_isible_seconds) {
+    GetPerWebViewOpenWebVisibilityHistogram()->AddCount(
+        static_cast<int>(WebViewOpenWebVisibility::kDisplayOpenWebContent),
+        total_webcontent_isible_seconds);
+  }
+  if (total_not_webcontent_or_not_visible_seconds) {
+    GetPerWebViewOpenWebVisibilityHistogram()->AddCount(
+        static_cast<int>(WebViewOpenWebVisibility::kNotDisplayOpenWebContent),
+        total_not_webcontent_or_not_visible_seconds);
   }
 }
 

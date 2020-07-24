@@ -13,10 +13,11 @@
 
 class AdbClientSocket {
  public:
-  typedef base::Callback<void(int, const std::string&)> CommandCallback;
-  typedef base::Callback<void(int result,
-                              net::StreamSocket*)> SocketCallback;
-  typedef base::Callback<void(const std::string&)> ParserCallback;
+  typedef base::RepeatingCallback<void(int, const std::string&)>
+      CommandCallback;
+  typedef base::RepeatingCallback<void(int result, net::StreamSocket*)>
+      SocketCallback;
+  typedef base::RepeatingCallback<void(const std::string&)> ParserCallback;
 
   static void AdbQuery(int port,
                        const std::string& query,

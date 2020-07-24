@@ -88,6 +88,7 @@ blink_core_sources("paint") {
     "file_upload_control_painter.h",
     "filter_effect_builder.cc",
     "filter_effect_builder.h",
+    "find_paint_offset_needing_update.h",
     "find_properties_needing_update.h",
     "first_meaningful_paint_detector.cc",
     "first_meaningful_paint_detector.h",

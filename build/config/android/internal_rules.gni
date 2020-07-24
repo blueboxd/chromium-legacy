@@ -3091,19 +3091,7 @@ if (enable_java_templates) {
         ]
       }
 
-      # Temporarily allow a list of directories to bypass turbine direct deps.
-      # TODO(crbug.com/1082904): Remove every entry in this allowlist.
-      _allow_transitive_interfaces =
-          filter_exclude(
-              [ get_label_info(":$target_name", "label_no_toolchain") ],
-              [
-                "//components/cronet*",
-
-                # This is due to the "special group" bypass.
-                "*_bundle_module__java__header",
-              ]) == []
-
-      if (invoker.use_turbine && !_allow_transitive_interfaces) {
+      if (invoker.use_turbine) {
         # Prefer direct deps for turbine as much as possible.
         args += [ "--classpath=@FileArg($_rebased_build_config:javac:interface_classpath)" ]
       } else {
@@ -3540,6 +3528,14 @@ if (enable_java_templates) {
         _java_impl_deps += [ "${invoker.apk_under_test}__java__impl" ]
       }
 
+      # These deps cannot be passed via invoker.deps since bundle_module targets
+      # have bundle_module.build_config without the __java suffix, so they are
+      # special and cannot be passed as regular deps to write_build_config.
+      if (defined(invoker.base_module_target)) {
+        _java_header_deps += [ "${invoker.base_module_target}__java__header" ]
+        _java_impl_deps += [ "${invoker.base_module_target}__java__impl" ]
+      }
+
       _extra_java_deps = []
       _jacoco_instrument =
           use_jacoco_coverage && _chromium_code && _java_files != [] &&
@@ -3647,6 +3643,8 @@ if (enable_java_templates) {
         jetified_jar_path = _jetified_jar_path
       }
 
+      # Specifically avoid passing in invoker.base_module_target as one of the
+      # possible_config_deps.
       possible_config_deps = []
       if (defined(_extra_java_deps)) {
         possible_config_deps = _extra_java_deps

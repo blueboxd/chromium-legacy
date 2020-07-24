@@ -77,6 +77,12 @@ void TileServiceImpl::PurgeDb() {
   scheduler_->OnDbPurged(status);
 }
 
+void TileServiceImpl::SetServerUrl(const std::string& base_url) {
+  if (base_url.empty())
+    return;
+  tile_fetcher_->SetServerUrl(TileConfig::GetQueryTilesServerUrl(base_url));
+}
+
 void TileServiceImpl::OnFetchFinished(
     bool is_from_reduced_mode,
     BackgroundTaskFinishedCallback task_finished_callback,

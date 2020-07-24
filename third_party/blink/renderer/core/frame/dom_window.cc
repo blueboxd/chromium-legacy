@@ -473,10 +473,18 @@ void DOMWindow::ReportCoopAccess(v8::Isolate* isolate,
       continue;
     }
 
-    // TODO(arthursonzogni): Capture and send the SourceLocation.
     // TODO(arthursonzogni): Send the blocked-window-url.
 
-    it->reporter->QueueAccessReport(it->report_type, property_name);
+    auto location = SourceLocation::Capture(
+        ExecutionContext::From(isolate->GetCurrentContext()));
+    // TODO(arthursonzogni): Once implemented, use the SourceLocation typemape
+    // https://chromium-review.googlesource.com/c/chromium/src/+/2041657
+    auto source_location = network::mojom::blink::SourceLocation::New(
+        location->Url() ? location->Url() : "", location->LineNumber(),
+        location->ColumnNumber());
+
+    it->reporter->QueueAccessReport(it->report_type, property_name,
+                                    std::move(source_location));
 
     // TODO(arthursonzogni): In the access-from-coop case, dispatch a
     // reportingObserver event.

@@ -34,8 +34,11 @@ class GPU_EXPORT CommandBufferDirect : public CommandBuffer,
                                                int32_t start,
                                                int32_t end) override;
   void SetGetBuffer(int32_t transfer_buffer_id) override;
-  scoped_refptr<Buffer> CreateTransferBuffer(uint32_t size,
-                                             int32_t* id) override;
+  scoped_refptr<Buffer> CreateTransferBuffer(
+      uint32_t size,
+      int32_t* id,
+      TransferBufferAllocationOption option =
+          TransferBufferAllocationOption::kLoseContextOnOOM) override;
   void DestroyTransferBuffer(int32_t id) override;
 
   // CommandBufferServiceClient implementation:

@@ -90,6 +90,16 @@
       'Linux FYI GPU TSAN Release',
     ],
   },
+  'blink_platform_unittests': {
+    'modifications': {
+      # TODO(crbug.com/1108121): Remove this filter
+      'android-nougat-arm64-rel': {
+        'args': [
+          '--gtest_filter=-HarfBuzzShaperTest.ShapeHorizontalWithoutSubpixelPositionWithKerningIsRounded',
+        ],
+      },
+    },
+  },
   'blink_web_tests': {
     'remove_from': [
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
@@ -743,6 +753,14 @@
       'android-asan',  # https://crbug.com/964562
       'android-code-coverage-native', # https://crbug.com/1018780
     ],
+    'modifications': {
+      # Use "--replace-system-package" according to crbug.com/931947#c1
+      'android-nougat-arm64-rel': {
+        'args': [
+          '--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk'
+        ]
+      }
+    },
   },
   'chrome_public_test_vr_apk-vega': {
     'modifications': {
@@ -894,6 +912,15 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_m.content_browsertests.filter',
           '-v', # TODO(crbug.com/1093602) Remove once the issue is resolved
+        ],
+      },
+      'android-nougat-arm64-rel': {
+        'swarming': {
+          'shards': 16,
+        },
+        # TODO(crbug.com/1108055): Remove this filter
+        'args': [
+          '--gtest_filter=-BackgroundTracingManagerBrowserTest.PerfettoSystemBackgroundScenario*',
         ],
       },
       'android-pie-x86-rel': {
@@ -1100,55 +1127,63 @@
       # Can't run on MSAN because gl_tests uses the hardware driver,
       # which isn't instrumented.
       'Linux MSan Tests',
+      # TODO(crbug.com/1108842): Undo the change once ATL capacity is
+      # online.
+      'Linux ASan LSan Tests (1)',
+      'Linux CFI',
+      'Linux TSan Tests',
     ],
     'modifications': {
       # TODO(kbr): figure out a better way to specify blocks of
       # arguments like this for tests on multiple machines.
-      'Linux ASan LSan Tests (1)': {
-        'args': [
-          '--use-gpu-in-tests',
-          '--no-xvfb',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '10de:1cb3',
-              'os': 'Ubuntu',
-              'pool': 'chromium.tests.gpu',
-            },
-          ],
-        },
-      },
-      'Linux CFI': {
-        'args': [
-          '--use-gpu-in-tests',
-          '--no-xvfb',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '10de:1cb3',
-              'os': 'Ubuntu',
-              'pool': 'chromium.tests.gpu',
-            },
-          ],
-        },
-      },
-      'Linux TSan Tests': {
-        'args': [
-          '--use-gpu-in-tests',
-          '--no-xvfb',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '10de:1cb3',
-              'os': 'Ubuntu',
-              'pool': 'chromium.tests.gpu',
-            },
-          ],
-        },
-      },
+
+      # TODO(crbug.com/1108842): Add GPU back once ATL capacity is
+      # online.
+      #'Linux ASan LSan Tests (1)': {
+      #  'args': [
+      #    '--use-gpu-in-tests',
+      #    '--no-xvfb',
+      #  ],
+      #  'swarming': {
+      #    'dimension_sets': [
+      #      {
+      #        'gpu': '10de:1cb3',
+      #        'os': 'Ubuntu',
+      #        'pool': 'chromium.tests.gpu',
+      #      },
+      #    ],
+      #  },
+      #},
+      #'Linux CFI': {
+      #  'args': [
+      #    '--use-gpu-in-tests',
+      #    '--no-xvfb',
+      #  ],
+      #  'swarming': {
+      #    'dimension_sets': [
+      #      {
+      #        'gpu': '10de:1cb3',
+      #        'os': 'Ubuntu',
+      #        'pool': 'chromium.tests.gpu',
+      #      },
+      #    ],
+      #  },
+      #},
+      #'Linux TSan Tests': {
+      #  'args': [
+      #    '--use-gpu-in-tests',
+      #    '--no-xvfb',
+      #  ],
+      #  'swarming': {
+      #    'dimension_sets': [
+      #      {
+      #        'gpu': '10de:1cb3',
+      #        'os': 'Ubuntu',
+      #        'pool': 'chromium.tests.gpu',
+      #      },
+      #    ],
+      #  },
+      #},
     },
   },
   'gl_tests_validating': {
@@ -1158,55 +1193,63 @@
       # Can't run on MSAN because gl_tests uses the hardware driver,
       # which isn't instrumented.
       'Linux MSan Tests',
+      # TODO(crbug.com/1108842): Undo the change once ATL capacity is
+      # online.
+      'Linux ASan LSan Tests (1)',
+      'Linux CFI',
+      'Linux TSan Tests',
     ],
     'modifications': {
       # TODO(kbr): figure out a better way to specify blocks of
       # arguments like this for tests on multiple machines.
-      'Linux ASan LSan Tests (1)': {
-        'args': [
-          '--use-gpu-in-tests',
-          '--no-xvfb',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '10de:1cb3',
-              'os': 'Ubuntu',
-              'pool': 'chromium.tests.gpu',
-            },
-          ],
-        },
-      },
-      'Linux CFI': {
-        'args': [
-          '--use-gpu-in-tests',
-          '--no-xvfb',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '10de:1cb3',
-              'os': 'Ubuntu',
-              'pool': 'chromium.tests.gpu',
-            },
-          ],
-        },
-      },
-      'Linux TSan Tests': {
-        'args': [
-          '--use-gpu-in-tests',
-          '--no-xvfb',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '10de:1cb3',
-              'os': 'Ubuntu',
-              'pool': 'chromium.tests.gpu',
-            },
-          ],
-        },
-      },
+
+      # TODO(crbug.com/1108842): Add GPU back once ATL capacity is
+      # online.
+      #'Linux ASan LSan Tests (1)': {
+      #  'args': [
+      #    '--use-gpu-in-tests',
+      #    '--no-xvfb',
+      #  ],
+      #  'swarming': {
+      #    'dimension_sets': [
+      #      {
+      #        'gpu': '10de:1cb3',
+      #        'os': 'Ubuntu',
+      #        'pool': 'chromium.tests.gpu',
+      #      },
+      #    ],
+      #  },
+      #},
+      #'Linux CFI': {
+      #  'args': [
+      #    '--use-gpu-in-tests',
+      #    '--no-xvfb',
+      #  ],
+      #  'swarming': {
+      #    'dimension_sets': [
+      #      {
+      #        'gpu': '10de:1cb3',
+      #        'os': 'Ubuntu',
+      #        'pool': 'chromium.tests.gpu',
+      #      },
+      #    ],
+      #  },
+      #},
+      #'Linux TSan Tests': {
+      #  'args': [
+      #    '--use-gpu-in-tests',
+      #    '--no-xvfb',
+      #  ],
+      #  'swarming': {
+      #    'dimension_sets': [
+      #      {
+      #        'gpu': '10de:1cb3',
+      #        'os': 'Ubuntu',
+      #        'pool': 'chromium.tests.gpu',
+      #      },
+      #    ],
+      #  },
+      #},
       'android-marshmallow-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.gl_tests.filter',
@@ -1561,6 +1604,13 @@
           '--replace-system-package=com.google.ar.core,//third_party/arcore-android-sdk/test-apks/arcore/arcore_current.apk'
         ]
       },
+      'android-nougat-arm64-rel': {
+        'args': [
+          # ArCore is not installed as a system app on N, so we can install it
+          # normally instead of replacing the system version.
+          '--additional-apk=//third_party/arcore-android-sdk/test-apks/arcore/arcore_current.apk'
+        ],
+      },
       'android-pie-arm64-dbg': {
         'args': [
           '--replace-system-package=com.google.ar.core,//third_party/arcore-android-sdk/test-apks/arcore/arcore_current.apk'
@@ -1801,6 +1851,7 @@
       # Don't run on trybots; waterfall is enough.
       'android-lollipop-arm-rel',
       'android-marshmallow-arm64-rel',
+      'android-nougat-arm64-rel',
       'android-pie-arm64-rel',
       # No capacity for tablet testers.
       'Lollipop Tablet Tester',
@@ -1848,6 +1899,7 @@
       # Don't run on trybots; waterfall is enough.
       'android-lollipop-arm-rel',
       'android-marshmallow-arm64-rel',
+      'android-nougat-arm64-rel',
       'android-pie-arm64-rel',
       # No capacity for tablet testers.
       'Lollipop Tablet Tester',
@@ -1861,6 +1913,7 @@
       # Don't run on trybots; waterfall is enough.
       'android-lollipop-arm-rel',
       'android-marshmallow-arm64-rel',
+      'android-nougat-arm64-rel',
       'android-pie-arm64-rel',
       # No capacity for tablet testers.
       'Lollipop Tablet Tester',
@@ -1878,6 +1931,12 @@
           'shards': 10,
         },
       },
+      'android-nougat-arm64-rel': {
+        # TODO(crbug.com/1108055): Remove this filter
+        'args': [
+          '--gtest_filter=-BackgroundTracingManagerBrowserTest.PerfettoSystemBackgroundScenario*',
+        ],
+      },
       'android-pie-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_p.content_browsertests.filter',
@@ -1894,6 +1953,7 @@
       # Don't run on trybots; waterfall is enough.
       'android-lollipop-arm-rel',
       'android-marshmallow-arm64-rel',
+      'android-nougat-arm64-rel',
       'android-pie-arm64-rel',
       # No capacity for tablet testers.
       'Lollipop Tablet Tester',
@@ -1993,6 +2053,7 @@
   },
   'perfetto_unittests': {
     'remove_from': [
+      # TODO(crbug.com/931138): Fix permission issue when creating tmp files
       'android-arm64-proguard-rel',
       'android-asan',
       'android-code-coverage',
@@ -2000,6 +2061,7 @@
       'android-lollipop-arm-rel',
       'android-marshmallow-arm64-rel',
       'android-marshmallow-x86-rel',
+      'android-nougat-arm64-rel',
       'android-pie-arm64-rel',
       'android-pie-x86-rel',
       'Android CFI',
@@ -2180,6 +2242,14 @@
         },
       },
     },
+    'modifications': {
+      'android-nougat-arm64-rel': {
+        # TODO(crbug.com/1108055): Remove this filter
+        'args': [
+          '--gtest_filter=-SystemPerfettoTest.*',
+        ],
+      }
+    }
   },
   'skia_renderer_gl_blink_web_tests': {
     'modifications': {
@@ -2353,6 +2423,7 @@
       # There's no need to run telemetry_perf_unittests on both lollipop and
       # marshmallow on the CQ. https://crbug.com/1026487.
       'android-marshmallow-arm64-rel',
+      'android-nougat-arm64-rel', # crbug.com/1108124
       'android-pie-arm64-rel',
       # crbug.com/936540
       'Mac10.10 Tests',

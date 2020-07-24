@@ -164,9 +164,10 @@ TEST_F(DesktopMediaPickerViewsTest, SelectMediaSourceViewOnSingleClick) {
   }
 }
 
-TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnDoubleClick) {
+// Regression test for https://crbug.com/1102153
+TEST_F(DesktopMediaPickerViewsTest, DoneCallbackNotCalledOnDoubleClick) {
   const DesktopMediaID kFakeId(DesktopMediaID::TYPE_WEB_CONTENTS, 222);
-  EXPECT_CALL(*this, OnPickerDone(kFakeId));
+  EXPECT_CALL(*this, OnPickerDone(kFakeId)).Times(0);
 
   media_lists_[DesktopMediaID::TYPE_WEB_CONTENTS]->AddSourceByFullMediaID(
       kFakeId);
@@ -177,9 +178,10 @@ TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnDoubleClick) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnDoubleTap) {
+// Regression test for https://crbug.com/1102153
+TEST_F(DesktopMediaPickerViewsTest, DoneCallbackNotCalledOnDoubleTap) {
   const DesktopMediaID kFakeId(DesktopMediaID::TYPE_SCREEN, 222);
-  EXPECT_CALL(*this, OnPickerDone(kFakeId));
+  EXPECT_CALL(*this, OnPickerDone(kFakeId)).Times(0);
 
   test_api_.SelectTabForSourceType(DesktopMediaID::TYPE_SCREEN);
   test_api_.GetAudioShareCheckbox()->SetChecked(false);
@@ -244,6 +246,8 @@ TEST_F(DesktopMediaPickerViewsTest, OkButtonDisabledWhenNoSelection) {
     test_api_.SelectTabForSourceType(source_type);
     media_lists_[source_type]->AddSourceByFullMediaID(
         DesktopMediaID(source_type, 111));
+    EXPECT_FALSE(
+        GetPickerDialogView()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
 
     test_api_.FocusSourceAtIndex(0);
     EXPECT_TRUE(

@@ -380,8 +380,10 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     }
   }
 #endif
-
   if (reason == HandlerSigninReason::UNLOCK) {
+    DCHECK(!identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
+                .IsEmpty());
+
     identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
         gaia_id_, email_, result.refresh_token,
         result.is_under_advanced_protection,
@@ -396,11 +398,9 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
           base::BindOnce(&InlineLoginHandlerImpl::CloseTab, handler_));
     }
 
-    if (identity_manager->HasPrimaryAccount()) {
-      identity_manager->GetAccountsCookieMutator()->AddAccountToCookie(
-          identity_manager->GetPrimaryAccountId(),
-          gaia::GaiaSource::kPrimaryAccountManager, {});
-    }
+    identity_manager->GetAccountsCookieMutator()->AddAccountToCookie(
+        identity_manager->GetPrimaryAccountId(),
+        gaia::GaiaSource::kPrimaryAccountManager, {});
 
     signin_metrics::LogSigninReason(
         GetSigninReasonFromHandlerSigninReason(reason));

@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
+import("//chromeos/services/cfm/public/buildflags/buildflags.gni")
 import("//components/nacl/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
@@ -1015,6 +1016,7 @@ static_library("extensions") {
       "//chromeos/login/login_state",
       "//chromeos/network",
       "//chromeos/services/assistant/public/cpp",
+      "//chromeos/services/cfm/public/buildflags",
       "//chromeos/services/ime/public/mojom",
       "//chromeos/services/machine_learning/public/cpp",
       "//chromeos/services/machine_learning/public/mojom",
@@ -1042,6 +1044,12 @@ static_library("extensions") {
     ]
     if (enable_nacl) {
       deps += [ "//chrome/browser/resources/chromeos/zip_archiver" ]
+    }
+    if (is_cfm) {
+      deps += [
+        "//chromeos/services/cfm/public/cpp",
+        "//chromeos/services/cfm/public/mojom",
+      ]
     }
   } else {
     assert(!is_chromeos)

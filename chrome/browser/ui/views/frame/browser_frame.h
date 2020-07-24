@@ -111,9 +111,6 @@ class BrowserFrame : public views::Widget, public views::ContextMenuController {
   // Called when BrowserView creates all it's child views.
   void OnBrowserViewInitViewsComplete();
 
-  // Returns whether this window should be themed with the user's theme or not.
-  bool ShouldUseTheme() const;
-
   // views::Widget:
   views::internal::RootView* CreateRootView() override;
   std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView()

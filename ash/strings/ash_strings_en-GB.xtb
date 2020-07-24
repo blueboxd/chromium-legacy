@@ -521,7 +521,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="7088960765736518739">Switch access</translation>
 <translation id="7098389117866926363">USB-C device (left port in the back)</translation>
 <translation id="7131634465328662194">You will automatically be signed out.</translation>
-<translation id="7143207342074048698">Connecting ...</translation>
+<translation id="7143207342074048698">Connecting</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Reverting to old resolution in <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">Menu moved to the top-left corner of the screen.</translation>
@@ -603,7 +603,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="8132793192354020517">Connected to <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialising...</translation>
 <translation id="8142441511840089262">Double click</translation>
-<translation id="8142699993796781067">Private networks</translation>
+<translation id="8142699993796781067">Private network</translation>
 <translation id="8152092012181020186">Press Ctrl + W to close.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> This setting is managed by your administrator.</translation>
 <translation id="8167567890448493835">Using <ph name="LOCALE_NAME" /></translation>

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/system_tray_client.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/public/cpp/system_tray_test_api.h"
@@ -40,10 +41,17 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientEnterpriseTest, TrayEnterprise) {
   EXPECT_TRUE(test_api->IsBubbleViewVisible(ash::VIEW_ID_TRAY_ENTERPRISE,
                                             true /* open_tray */));
 
-  // The tooltip shows the domain.
-  EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
-                                       base::UTF8ToUTF16("example.com")),
-            test_api->GetBubbleViewTooltip(ash::VIEW_ID_TRAY_ENTERPRISE));
+  if (ash::features::IsManagedDeviceUIRedesignEnabled()) {
+    // The text shows the domain.
+    EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
+                                         base::UTF8ToUTF16("example.com")),
+              test_api->GetBubbleViewText(ash::VIEW_ID_TRAY_ENTERPRISE_LABEL));
+  } else {
+    // The tooltip shows the domain.
+    EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
+                                         base::UTF8ToUTF16("example.com")),
+              test_api->GetBubbleViewTooltip(ash::VIEW_ID_TRAY_ENTERPRISE));
+  }
 
   // Clicking the item opens the management page.
   test_api->ClickBubbleView(ash::VIEW_ID_TRAY_ENTERPRISE);

@@ -638,6 +638,13 @@
   'nougat': {
     'swarming': {
       'dimensions': {
+        'device_os': 'NJH47F',
+      },
+    },
+  },
+  'nougat_generic': {
+    'swarming': {
+      'dimensions': {
         'device_os': 'N',
       },
     },
@@ -682,6 +689,15 @@
       'dimensions': {
         'device_os': 'PQ3A.190801.002',
         'device_os_flavor': 'google',
+      },
+    },
+  },
+  'sailfish': {
+    # Pixel 1
+    'swarming': {
+      'dimensions': {
+        'device_type': 'sailfish',
+        'os': 'Android',
       },
     },
   },
@@ -742,6 +758,13 @@
     'swarming': {
       'dimensions': {
         'os': 'Windows-10-17134',
+      },
+    },
+  },
+  'win10-1909': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Windows-10-18363',
       },
     },
   },

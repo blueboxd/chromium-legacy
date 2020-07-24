@@ -34,6 +34,8 @@ extern const base::Feature kAssistPersonalInfo;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAvatarToolbarButton;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kBetterUpdateScreen;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kBluetoothAggressiveAppearanceFilter;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kBluetoothFixA2dpPacketSize;
@@ -220,6 +222,7 @@ extern const base::Feature kImeMozcProto;
 
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAmbientModeEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAssistantEnabled();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsBetterUpdateEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsDeepLinkingEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsEduCoexistenceEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsImeSandboxEnabled();

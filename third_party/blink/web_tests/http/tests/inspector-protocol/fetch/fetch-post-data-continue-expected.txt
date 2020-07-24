@@ -1,0 +1,3 @@
+Test post data interception
+binary string
+

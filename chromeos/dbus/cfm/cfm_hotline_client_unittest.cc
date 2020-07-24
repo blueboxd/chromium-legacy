@@ -16,7 +16,9 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "chromeos/services/cfm/public/features/features.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"
 #include "dbus/object_path.h"
@@ -32,7 +34,10 @@ namespace chromeos {
 
 class CfmHotlineClientTest : public testing::Test {
  public:
-  CfmHotlineClientTest() = default;
+  CfmHotlineClientTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        chromeos::cfm::features::kCfmMojoServices);
+  }
   ~CfmHotlineClientTest() override = default;
 
   void SetUp() override {
@@ -44,12 +49,12 @@ class CfmHotlineClientTest : public testing::Test {
         dbus::Bus::Options());
 
     mock_proxy_ = base::MakeRefCounted<dbus::MockObjectProxy>(
-        mock_bus_.get(), cfm::broker::kServiceName,
-        dbus::ObjectPath(cfm::broker::kServicePath));
+        mock_bus_.get(), ::cfm::broker::kServiceName,
+        dbus::ObjectPath(::cfm::broker::kServicePath));
 
     EXPECT_CALL(*mock_bus_.get(),
-                GetObjectProxy(cfm::broker::kServiceName,
-                               dbus::ObjectPath(cfm::broker::kServicePath)))
+                GetObjectProxy(::cfm::broker::kServiceName,
+                               dbus::ObjectPath(::cfm::broker::kServicePath)))
         .WillOnce(Return(mock_proxy_.get()));
 
     CfmHotlineClient::Initialize(mock_bus_.get());
@@ -89,6 +94,7 @@ class CfmHotlineClientTest : public testing::Test {
   base::File test_file_;
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::deque<std::unique_ptr<dbus::Response>> used_responses_;
 };
 

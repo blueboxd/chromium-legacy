@@ -249,4 +249,74 @@ public class AutofillAssistantProgressBarIntegrationTest {
                     .check(matches(allOf(isEnabled(), hasTintColor(R.color.modern_blue_600))));
         }
     }
+
+    @Test
+    @MediumTest
+    public void updatingIconsRestoresActiveState() {
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowProgressBar(
+                                 ShowProgressBarProto.newBuilder().setStepProgressBarConfiguration(
+                                         StepProgressBarConfiguration.newBuilder()
+                                                 .setUseStepProgressBar(true)))
+                         .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowProgressBar(ShowProgressBarProto.newBuilder().setActiveStep(1))
+                         .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
+                                 Choice.newBuilder().setChip(
+                                         ChipProto.newBuilder().setText("Update"))))
+                         .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowProgressBar(
+                                 ShowProgressBarProto.newBuilder().setStepProgressBarConfiguration(
+                                         StepProgressBarConfiguration.newBuilder()
+                                                 .setUseStepProgressBar(true)
+                                                 .addStepIcons(DrawableProto.newBuilder().setIcon(
+                                                         Icon.PROGRESSBAR_DEFAULT_INITIAL_STEP))
+                                                 .addStepIcons(DrawableProto.newBuilder().setIcon(
+                                                         Icon.PROGRESSBAR_DEFAULT_DATA_COLLECTION))
+                                                 .addStepIcons(DrawableProto.newBuilder().setIcon(
+                                                         Icon.PROGRESSBAR_DEFAULT_PAYMENT))
+                                                 .addStepIcons(DrawableProto.newBuilder().setIcon(
+                                                         Icon.PROGRESSBAR_DEFAULT_FINAL_STEP))))
+                         .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder().setMessage("Updated").addChoices(
+                                 Choice.newBuilder().setChip(ChipProto.newBuilder())))
+                         .build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+        runScript(script);
+
+        waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
+        onView(allOf(isDescendantOfA(withTagValue(is(String.format(Locale.getDefault(),
+                             AssistantTagsForTesting.PROGRESSBAR_ICON_TAG, 0)))),
+                       withClassName(is(ChromeImageView.class.getName()))))
+                .check(matches(allOf(isEnabled(), hasTintColor(R.color.modern_blue_600))));
+        onView(allOf(isDescendantOfA(withTagValue(is(String.format(Locale.getDefault(),
+                             AssistantTagsForTesting.PROGRESSBAR_ICON_TAG, 1)))),
+                       withClassName(is(ChromeImageView.class.getName()))))
+                .check(matches(
+                        allOf(not(isEnabled()), hasTintColor(R.color.modern_grey_800_alpha_38))));
+
+        onView(withText("Update")).perform(click());
+        waitUntilViewMatchesCondition(withText("Updated"), isCompletelyDisplayed());
+        onView(allOf(isDescendantOfA(withTagValue(is(String.format(Locale.getDefault(),
+                             AssistantTagsForTesting.PROGRESSBAR_ICON_TAG, 0)))),
+                       withClassName(is(ChromeImageView.class.getName()))))
+                .check(matches(allOf(isEnabled(), hasTintColor(R.color.modern_blue_600))));
+        onView(allOf(isDescendantOfA(withTagValue(is(String.format(Locale.getDefault(),
+                             AssistantTagsForTesting.PROGRESSBAR_ICON_TAG, 1)))),
+                       withClassName(is(ChromeImageView.class.getName()))))
+                .check(matches(
+                        allOf(not(isEnabled()), hasTintColor(R.color.modern_grey_800_alpha_38))));
+    }
 }

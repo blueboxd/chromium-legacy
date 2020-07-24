@@ -1069,6 +1069,16 @@ var PrintPreviewDestinationSelectTestCrOS = class extends PrintPreviewTest {
   get suiteName() {
     return destination_select_test_cros.suiteName;
   }
+
+  /** @override */
+  get featureList() {
+    const kPrinterStatus = ['chromeos::features::kPrinterStatus'];
+    const featureList = super.featureList;
+    featureList.disabled = featureList.disabled ?
+        featureList.disabled.concat(kPrinterStatus) :
+        kPrinterStatus;
+    return featureList;
+  }
 };
 
 TEST_F('PrintPreviewDestinationSelectTestCrOS', 'UpdateStatus', function() {
@@ -1121,6 +1131,10 @@ TEST_F(
 
 TEST_F('PrintPreviewPrinterStatusTestCros', 'HiddenStatusText', function() {
   this.runMochaTest(printer_status_test_cros.TestNames.HiddenStatusText);
+});
+
+TEST_F('PrintPreviewPrinterStatusTestCros', 'ChangeIcon', function() {
+  this.runMochaTest(printer_status_test_cros.TestNames.ChangeIcon);
 });
 
 // eslint-disable-next-line no-var

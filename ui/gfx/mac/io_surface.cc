@@ -4,6 +4,8 @@
 
 #include "ui/gfx/mac/io_surface.h"
 
+#include <Availability.h>
+#include <CoreGraphics/CoreGraphics.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -16,6 +18,19 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/icc_profile.h"
+
+#if defined(__MAC_11_0) && __MAC_OS_X_VERSION_MAX_ALLOWED >= __MAC_10_16
+// https://crbug.com/1108561: This is supposed to be deprecated (but available)
+// through 10.15.4, but the macOS 11.0 20A5323l SDK from Xcode 12b3 12A8169g
+// doesn’t declare it at all when the SDK version is 10.16 or later, which of
+// course it always is. It’s a bug in the SDK. Work around it with the
+// declaration that’s hidden.
+//
+// TODO(https://crbug.com/1108627): remove this workaround if and when the SDK
+// bug is fixed.
+CG_EXTERN const CFStringRef kCGColorSpaceITUR_2020_PQ_EOTF
+CG_AVAILABLE_BUT_DEPRECATED(10.14.6, 10.15.4, 12.6, 13.4);
+#endif
 
 namespace gfx {
 

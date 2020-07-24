@@ -577,17 +577,19 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, LazyBackgroundPage) {
   extensions::ProcessManager::SetEventPageSuspendingTimeForTesting(1);
 
   // Load the test extension.
-  base::FilePath test_data_dir;
-  base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+  TestCertificateProviderExtension test_certificate_provider_extension(
+      profile());
+  extensions::TestBackgroundPageFirstLoadObserver
+      test_background_page_first_load_observer(
+          profile(), TestCertificateProviderExtension::extension_id());
   const extensions::Extension* const extension =
-      LoadExtension(test_data_dir.AppendASCII("extensions")
+      LoadExtension(base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
+                        .AppendASCII("extensions")
                         .AppendASCII("test_certificate_provider")
                         .AppendASCII("extension"));
   ASSERT_TRUE(extension);
-  TestCertificateProviderExtension test_certificate_provider_extension(
-      profile(), extension->id());
-  extensions::TestBackgroundPageFirstLoadObserver(profile(), extension->id())
-      .Wait();
+  EXPECT_EQ(extension->id(), TestCertificateProviderExtension::extension_id());
+  test_background_page_first_load_observer.Wait();
 
   // Navigate to the page that requests the client authentication. Use the
   // incognito profile in order to force re-authentication in the later request

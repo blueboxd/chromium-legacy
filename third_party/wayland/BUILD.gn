@@ -21,6 +21,7 @@ if (!use_system_libwayland) {
     sources = [
       "src/src/wayland-util.c",
       "src/src/wayland-util.h",
+      "src/src/wayland-private.h",
     ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
@@ -34,8 +35,9 @@ if (!use_system_libwayland) {
       "src/src/connection.c",
       "src/src/wayland-os.c",
       "src/src/wayland-os.h",
-      "src/src/wayland-private.h",
     ]
+
+    deps = [ ":wayland_util" ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [

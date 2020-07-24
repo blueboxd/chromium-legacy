@@ -37,7 +37,8 @@ SkiaOutputDeviceWebView::SkiaOutputDeviceWebView(
   DCHECK(context_state_->context());
 
   // Get alpha bits from the default frame buffer.
-  glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+  glBindFramebufferEXT(GL_FRAMEBUFFER,
+                       gl_surface_->GetBackingFramebufferObject());
   context_state_->gr_context()->resetContext(kRenderTarget_GrGLBackendState);
   GLint alpha_bits = 0;
   glGetIntegerv(GL_ALPHA_BITS, &alpha_bits);

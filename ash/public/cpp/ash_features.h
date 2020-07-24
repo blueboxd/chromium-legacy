@@ -167,6 +167,11 @@ ASH_PUBLIC_EXPORT extern const base::Feature kNotificationsInContextMenu;
 ASH_PUBLIC_EXPORT extern const base::Feature
     kMaintainShelfStateWhenEnteringOverview;
 
+// Enables the experimental productivity feature that aims to reduce context
+// switching by enabling users to collect content and transfer or access it
+// later.
+ASH_PUBLIC_EXPORT extern const base::Feature kTemporaryHoldingSpace;
+
 ASH_PUBLIC_EXPORT bool IsAllowAmbientEQEnabled();
 
 ASH_PUBLIC_EXPORT bool IsAltTabLimitedToActiveDesk();
@@ -230,6 +235,8 @@ ASH_PUBLIC_EXPORT bool IsAppScalingEnabled();
 ASH_PUBLIC_EXPORT bool IsNotificationsInContextMenuEnabled();
 
 ASH_PUBLIC_EXPORT bool IsMaintainShelfStateWhenEnteringOverviewEnabled();
+
+ASH_PUBLIC_EXPORT bool IsTemporaryHoldingSpaceEnabled();
 
 // These two functions are supposed to be temporary functions to set or get
 // whether "WebUITabStrip" feature is enabled from Chrome.

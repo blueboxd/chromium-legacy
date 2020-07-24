@@ -309,7 +309,6 @@ SerialIoHandlerPosix::~SerialIoHandlerPosix() = default;
 
 void SerialIoHandlerPosix::AttemptRead(bool within_read) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   if (pending_read_buffer()) {
     int bytes_read =
         HANDLE_EINTR(read(file().GetPlatformFile(), pending_read_buffer(),
@@ -321,12 +320,15 @@ void SerialIoHandlerPosix::AttemptRead(bool within_read) {
       } else if (errno == ENXIO) {
         RunReadCompleted(within_read, 0,
                          mojom::SerialReceiveError::DEVICE_LOST);
+        StopWatchingFileRead();
       } else {
+        VPLOG(1) << "Read failed";
         RunReadCompleted(within_read, 0,
                          mojom::SerialReceiveError::SYSTEM_ERROR);
       }
     } else if (bytes_read == 0) {
       RunReadCompleted(within_read, 0, mojom::SerialReceiveError::DEVICE_LOST);
+      StopWatchingFileRead();
     } else {
       bool break_detected = false;
       bool parity_error_detected = false;
@@ -368,13 +370,18 @@ void SerialIoHandlerPosix::RunReadCompleted(bool within_read,
 
 void SerialIoHandlerPosix::OnFileCanWriteWithoutBlocking() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   if (pending_write_buffer()) {
     int bytes_written =
         HANDLE_EINTR(write(file().GetPlatformFile(), pending_write_buffer(),
                            pending_write_buffer_len()));
     if (bytes_written < 0) {
-      WriteCompleted(0, mojom::SerialSendError::SYSTEM_ERROR);
+      if (errno == ENXIO) {
+        WriteCompleted(0, mojom::SerialSendError::DISCONNECTED);
+        StopWatchingFileWrite();
+      } else {
+        VPLOG(1) << "Write failed";
+        WriteCompleted(0, mojom::SerialSendError::SYSTEM_ERROR);
+      }
     } else {
       WriteCompleted(bytes_written, mojom::SerialSendError::NONE);
     }

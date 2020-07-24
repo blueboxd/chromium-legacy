@@ -517,8 +517,7 @@ static void WritePaintProperties(WTF::TextStream& ts,
     WriteIndent(ts, indent);
     if (has_fragments)
       ts << " " << fragment_index << ":";
-    ts << " paint_offset=(" << fragment->PaintOffset().ToString()
-       << ") visual_rect=(" << fragment->VisualRect().ToString() << ")";
+    ts << " paint_offset=(" << fragment->PaintOffset().ToString() << ")";
     if (fragment->HasLocalBorderBoxProperties()) {
       // To know where they point into the paint property tree, you can dump
       // the tree using ShowAllPropertyTrees(frame_view).

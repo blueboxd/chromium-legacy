@@ -18,6 +18,8 @@ public class ButtonData {
     public View.OnClickListener onClickListener;
     public int contentDescriptionResId;
     public boolean supportsTinting;
+    // This controls the enabled state of the button. Disabled buttons are also not clickable.
+    public boolean isEnabled;
     /**
      * Builder used to show IPH on the button as it's shown. This should include at a minimum the
      * feature name, content string, and accessibility text, but not the anchor view.
@@ -26,12 +28,13 @@ public class ButtonData {
 
     public ButtonData(boolean canShow, Drawable drawable, View.OnClickListener onClickListener,
             int contentDescriptionResId, boolean supportsTinting,
-            IPHCommandBuilder iphCommandBuilder) {
+            IPHCommandBuilder iphCommandBuilder, boolean isEnabled) {
         this.canShow = canShow;
         this.drawable = drawable;
         this.onClickListener = onClickListener;
         this.contentDescriptionResId = contentDescriptionResId;
         this.supportsTinting = supportsTinting;
         this.iphCommandBuilder = iphCommandBuilder;
+        this.isEnabled = isEnabled;
     }
 }

@@ -90,16 +90,6 @@ base::TimeDelta DocumentLoadTiming::MonotonicTimeToPseudoWallTime(
   return monotonic_time + reference_wall_time_ - reference_monotonic_time_;
 }
 
-int64_t DocumentLoadTiming::ZeroBasedDocumentTimeToMonotonicTime(
-    double dom_event_time) const {
-  if (reference_monotonic_time_.is_null())
-    return 0;
-  base::TimeTicks monotonic_time =
-      reference_monotonic_time_ +
-      base::TimeDelta::FromMillisecondsD(dom_event_time);
-  return monotonic_time.since_origin().InMilliseconds();
-}
-
 void DocumentLoadTiming::MarkNavigationStart() {
   // Allow the embedder to override navigationStart before we record it if
   // they have a more accurate timestamp.

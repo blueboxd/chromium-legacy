@@ -2241,11 +2241,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   void SetSubtreeShouldCheckForPaintInvalidation();
 
-  bool NeedsPaintOffsetAndVisualRectUpdate() const {
-    return bitfields_.NeedsPaintOffsetAndVisualRectUpdate();
+  bool ShouldCheckGeometryForPaintInvalidation() const {
+    return bitfields_.ShouldCheckGeometryForPaintInvalidation();
   }
-  bool DescendantNeedsPaintOffsetAndVisualRectUpdate() const {
-    return bitfields_.DescendantNeedsPaintOffsetAndVisualRectUpdate();
+  bool DescendantShouldCheckGeometryForPaintInvalidation() const {
+    return bitfields_.DescendantShouldCheckGeometryForPaintInvalidation();
   }
 
   bool MayNeedPaintInvalidationAnimatedBackgroundImage() const {
@@ -2303,9 +2303,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // in the absence of multicol/pagination).
   // See ../paint/README.md for more on fragments.
   const FragmentData& FirstFragment() const { return fragment_; }
-
-  // Returns the bounding box of the visual rects of all fragments.
-  IntRect FragmentsVisualRectBoundingBox() const;
 
   enum OverflowRecalcType {
     kOnlyVisualOverflowRecalc,
@@ -2365,7 +2362,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       // entire containing block chain.
       DCHECK_EQ(layout_object_.GetDocument().Lifecycle().GetState(),
                 DocumentLifecycle::kInPrePaint);
-      layout_object_.bitfields_.SetNeedsPaintOffsetAndVisualRectUpdate(true);
+      layout_object_.bitfields_.SetShouldCheckGeometryForPaintInvalidation(
+          true);
       layout_object_.bitfields_.SetShouldCheckForPaintInvalidation(true);
     }
     void SetShouldDoFullPaintInvalidation(PaintInvalidationReason reason) {
@@ -2387,12 +2385,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     }
     void MarkEffectiveAllowedTouchActionChanged() {
       layout_object_.MarkEffectiveAllowedTouchActionChanged();
-    }
-
-    // The following setters store the current values as calculated during the
-    // pre-paint tree walk. TODO(wangxianzhu): Add check of lifecycle states.
-    void SetVisualRect(const IntRect& r) {
-      layout_object_.fragment_.SetVisualRect(r);
     }
 
     void SetSelectionVisualRect(const IntRect& r) {
@@ -2863,7 +2855,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   inline void MarkContainerChainForOverflowRecalcIfNeeded(
       bool mark_container_chain_layout_overflow_recalc);
 
-  inline void SetNeedsPaintOffsetAndVisualRectUpdate();
+  inline void SetShouldCheckGeometryForPaintInvalidation();
 
   inline void InvalidateContainerIntrinsicLogicalWidths();
 
@@ -2974,8 +2966,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           subtree_should_do_full_paint_invalidation_(false),
           may_need_paint_invalidation_animated_background_image_(false),
           should_invalidate_selection_(false),
-          needs_paint_offset_and_visual_rect_update_(true),
-          descendant_needs_paint_offset_and_visual_rect_update_(true),
+          should_check_geometry_for_paint_invalidation_(true),
+          descendant_should_check_geometry_for_paint_invalidation_(true),
           needs_paint_property_update_(true),
           descendant_needs_paint_property_update_(true),
           floating_(false),
@@ -3121,14 +3113,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                          MayNeedPaintInvalidationAnimatedBackgroundImage);
     ADD_BOOLEAN_BITFIELD(should_invalidate_selection_,
                          ShouldInvalidateSelection);
-    // Whether the paint offset and visual rect need to be updated for this
-    // object.
-    ADD_BOOLEAN_BITFIELD(needs_paint_offset_and_visual_rect_update_,
-                         NeedsPaintOffsetAndVisualRectUpdate);
-    // Whether the paint offset and visual rect need to be updated for the
-    // descendants of this object.
-    ADD_BOOLEAN_BITFIELD(descendant_needs_paint_offset_and_visual_rect_update_,
-                         DescendantNeedsPaintOffsetAndVisualRectUpdate);
+    ADD_BOOLEAN_BITFIELD(should_check_geometry_for_paint_invalidation_,
+                         ShouldCheckGeometryForPaintInvalidation);
+    ADD_BOOLEAN_BITFIELD(
+        descendant_should_check_geometry_for_paint_invalidation_,
+        DescendantShouldCheckGeometryForPaintInvalidation);
     // Whether the paint properties need to be updated. For more details, see
     // LayoutObject::NeedsPaintPropertyUpdate().
     ADD_BOOLEAN_BITFIELD(needs_paint_property_update_,

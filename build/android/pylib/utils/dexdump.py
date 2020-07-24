@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import os
+import re
 import shutil
 import tempfile
 from xml.etree import ElementTree
@@ -37,7 +38,16 @@ def Dump(apk_path):
     cmd_helper.RunCmd(['unzip', apk_path, 'classes.dex'], cwd=dexfile_dir)
     dexfile = os.path.join(dexfile_dir, 'classes.dex')
     output_xml = cmd_helper.GetCmdOutput([DEXDUMP_PATH, '-l', 'xml', dexfile])
-    return _ParseRootNode(ElementTree.fromstring(output_xml))
+    # Dexdump doesn't escape its XML output very well; decode it as utf-8 with
+    # invalid sequences replaced, then remove forbidden characters and
+    # re-encode it (as etree expects a byte string as input so it can figure
+    # out the encoding itself from the XML declaration)
+    BAD_XML_CHARS = re.compile(
+        u'[\x00-\x08\x0b-\x0c\x0e-\x1f\x7f-\x84\x86-\x9f' +
+        u'\ud800-\udfff\ufdd0-\ufddf\ufffe-\uffff]')
+    decoded_xml = output_xml.decode('utf-8', 'replace')
+    clean_xml = BAD_XML_CHARS.sub(u'\ufffd', decoded_xml)
+    return _ParseRootNode(ElementTree.fromstring(clean_xml.encode('utf-8')))
   finally:
     shutil.rmtree(dexfile_dir)
 

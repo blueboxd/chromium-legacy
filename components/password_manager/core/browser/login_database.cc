@@ -1669,12 +1669,17 @@ bool LoginDatabase::IsEmpty() {
   return s.Step() && s.ColumnInt(0) == 0;
 }
 
+// static
+void LoginDatabase::DeleteDatabaseFile(const base::FilePath& db_path) {
+  sql::Database::Delete(db_path);
+}
+
 bool LoginDatabase::DeleteAndRecreateDatabaseFile() {
   TRACE_EVENT0("passwords", "LoginDatabase::DeleteAndRecreateDatabaseFile");
   DCHECK(db_.is_open());
   meta_table_.Reset();
   db_.Close();
-  sql::Database::Delete(db_path_);
+  DeleteDatabaseFile(db_path_);
   return Init();
 }
 

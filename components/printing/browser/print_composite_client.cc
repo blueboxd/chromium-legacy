@@ -118,7 +118,8 @@ void PrintCompositeClient::RenderFrameDeleted(
 }
 
 void PrintCompositeClient::OnDidPrintFrameContent(
-    content::RenderFrameHost* render_frame_host,
+    int render_process_id,
+    int render_frame_id,
     int document_cookie,
     mojom::DidPrintContentParamsPtr params) {
   auto* outer_contents = web_contents()->GetOuterWebContents();
@@ -131,12 +132,17 @@ void PrintCompositeClient::OnDidPrintFrameContent(
     // contents nested in multiple layers.
     auto* outer_client = PrintCompositeClient::FromWebContents(outer_contents);
     DCHECK(outer_client);
-    outer_client->OnDidPrintFrameContent(render_frame_host, document_cookie,
-                                         std::move(params));
+    outer_client->OnDidPrintFrameContent(render_process_id, render_frame_id,
+                                         document_cookie, std::move(params));
     return;
   }
 
   if (document_cookie_ != document_cookie)
+    return;
+
+  auto* render_frame_host =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  if (!render_frame_host)
     return;
 
   // Content in |params| is sent from untrusted source; only minimal processing
@@ -182,11 +188,14 @@ void PrintCompositeClient::PrintCrossProcessSubframe(
   }
 
   // Send the request to the destination frame.
+  int render_process_id = subframe_host->GetProcess()->GetID();
+  int render_frame_id = subframe_host->GetRoutingID();
   GetPrintRenderFrame(subframe_host)
       ->PrintFrameContent(
           std::move(params),
           base::BindOnce(&PrintCompositeClient::OnDidPrintFrameContent,
-                         weak_ptr_factory_.GetWeakPtr(), subframe_host));
+                         weak_ptr_factory_.GetWeakPtr(), render_process_id,
+                         render_frame_id));
   pending_subframes_.insert(subframe_host);
 }
 

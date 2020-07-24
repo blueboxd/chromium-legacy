@@ -120,6 +120,7 @@ namespace blink {
 class WebComputedAXTree;
 class WebContentDecryptionModule;
 class WebElement;
+class WebFrameRequestBlocker;
 class WebLocalFrame;
 class WebMediaStreamDeviceObserver;
 class WebSecurityOrigin;
@@ -155,7 +156,6 @@ namespace content {
 class BlinkInterfaceRegistryImpl;
 class CompositorDependencies;
 class DocumentState;
-class FrameRequestBlocker;
 class MediaPermissionDispatcher;
 class NavigationClient;
 class PepperPluginInstanceImpl;
@@ -1457,7 +1457,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // another.
   scoped_refptr<ChildURLLoaderFactoryBundle> pending_loader_factories_;
 
-  scoped_refptr<FrameRequestBlocker> frame_request_blocker_;
+  scoped_refptr<blink::WebFrameRequestBlocker> frame_request_blocker_;
 
   // AndroidOverlay routing token from the browser, if we have one yet.
   base::Optional<base::UnguessableToken> overlay_routing_token_;

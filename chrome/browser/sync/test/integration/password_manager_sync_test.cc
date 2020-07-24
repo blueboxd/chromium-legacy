@@ -5,10 +5,12 @@
 #include <memory>
 #include <string>
 
+#include "base/files/file_path_watcher.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
@@ -25,6 +27,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/password_store_factory_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/driver/profile_sync_service.h"
@@ -34,6 +37,7 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
+#include "content/public/test/test_launcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -62,6 +66,41 @@ MATCHER_P3(MatchesLoginAndRealm, username, password, signon_realm, "") {
 void GetNewTab(Browser* browser, content::WebContents** web_contents) {
   PasswordManagerBrowserTestBase::GetNewTab(browser, web_contents);
 }
+
+// Helper class that waits until a given path does not exist on the filesystem
+// anymore.
+class PathDeletionWaiter {
+ public:
+  explicit PathDeletionWaiter(const base::FilePath& path) : path_(path) {}
+
+  // Blocks until the path passed into the constructor does not exist anymore.
+  // Returns true if the path was deleted (or didn't exist in the first place),
+  // or false if some error occurred.
+  bool WaitForPathToBeDeleted() {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+
+    if (!base::PathExists(path_)) {
+      return true;
+    }
+    watcher_.Watch(path_, /*recursive=*/true,
+                   base::BindRepeating(&PathDeletionWaiter::PathChanged,
+                                       base::Unretained(this)));
+    run_loop_.Run();
+    return !base::PathExists(path_);
+  }
+
+ private:
+  void PathChanged(const base::FilePath& path, bool error) {
+    if (error || !base::PathExists(path_)) {
+      run_loop_.Quit();
+    }
+  }
+
+  const base::FilePath path_;
+  base::FilePathWatcher watcher_;
+  base::RunLoop run_loop_;
+};
+
 #endif  // !defined(OS_CHROMEOS)
 
 // This test fixture is similar to SingleClientPasswordsSyncTest, but it also
@@ -712,6 +751,66 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest, ClearAccountStoreOnStartup) {
   // still be there.
   ASSERT_THAT(GetAllLoginsFromProfilePasswordStore(),
               ElementsAre(MatchesLogin("localuser", "localpass")));
+}
+
+// A variant of PasswordManagerSyncTest where the account storage feature flag
+// is enabled in PRE_ tests, but not in regular tests. This allows testing the
+// behavior when the feature flag gets turned off.
+class PasswordManagerTurnAccountStorageOffSyncTest
+    : public PasswordManagerSyncTest {
+ public:
+  PasswordManagerTurnAccountStorageOffSyncTest() {
+    // kEnablePasswordsAccountStorage is enabled iff this is a PRE_ test.
+    if (content::IsPreTest()) {
+      feature_list_.InitAndEnableFeature(
+          password_manager::features::kEnablePasswordsAccountStorage);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          password_manager::features::kEnablePasswordsAccountStorage);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerTurnAccountStorageOffSyncTest,
+                       PRE_DeletesAccountStoreWhenFeatureTurnedOff) {
+  ASSERT_TRUE(base::FeatureList::IsEnabled(
+      password_manager::features::kEnablePasswordsAccountStorage));
+
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Set up the password account storage, and add a credential just so that it's
+  // not empty.
+  AddCredentialToFakeServer(CreateTestPasswordForm("user", "pass"));
+  SetupSyncTransportWithPasswordAccountStorage();
+  ASSERT_THAT(GetAllLoginsFromAccountPasswordStore(),
+              ElementsAre(MatchesLogin("user", "pass")));
+
+  // Make sure that the account store actually exists on disk at the expected
+  // path.
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_TRUE(base::PathExists(
+        password_manager::GetLoginDatabaseForAccountStoragePathForTesting(
+            GetProfile(0)->GetPath())));
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerTurnAccountStorageOffSyncTest,
+                       DeletesAccountStoreWhenFeatureTurnedOff) {
+  ASSERT_FALSE(base::FeatureList::IsEnabled(
+      password_manager::features::kEnablePasswordsAccountStorage));
+
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Since the feature flag is now disabled, the account-scoped store should get
+  // deleted soon after browser startup.
+  PathDeletionWaiter waiter(
+      password_manager::GetLoginDatabaseForAccountStoragePathForTesting(
+          GetProfile(0)->GetPath()));
+  EXPECT_TRUE(waiter.WaitForPathToBeDeleted());
 }
 
 #endif  // !defined(OS_CHROMEOS)

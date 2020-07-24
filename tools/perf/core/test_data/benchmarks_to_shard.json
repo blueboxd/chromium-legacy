@@ -58,10 +58,7 @@
       "repeated-getImageData-cpu.html",
       "repeated-getImageData-gpu.html",
       "toBlob_duration.html",
-      "toBlob_duration_jpeg.html",
       "toBlob-small-canvas-in-worker.html",
-      "transferFromImageBitmap.html",
-      "upload-canvas-2d-to-texture.html",
       "upload-video-to-sub-texture.html",
       "upload-video-to-texture.html",
       "upload-webgl-to-texture.html"

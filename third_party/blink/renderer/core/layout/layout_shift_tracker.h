@@ -17,12 +17,12 @@
 
 namespace blink {
 
-class IntRect;
 class LayoutObject;
 class LocalFrameView;
 class PropertyTreeStateOrAlias;
 class TracedValue;
 class WebInputEvent;
+struct PhysicalRect;
 
 // Tracks "layout shifts" from layout objects changing their visual location
 // between animation frames. See https://github.com/WICG/layout-instability.
@@ -31,22 +31,24 @@ class CORE_EXPORT LayoutShiftTracker final
  public:
   explicit LayoutShiftTracker(LocalFrameView*);
   ~LayoutShiftTracker() = default;
-  // |paint_offset_diff| is an additional amount by which the paint offset
-  // shifted that is not tracked in visual rects. Visual rects are in the
-  // local transform space of the LayoutObject. Any time the transform space is
-  // changed, the offset of that rect to the "origin" is reset. This offset
-  // is also known as the paint offset.
-  // In cases where we can communicate paint offset diffs across transform
-  // space change boundaries, |paint_offset_diff| is how to do it. In
-  // particular, many transform spaces are artificial and are used as an
-  // implementation detail of compositing to make it easier to isolate state for
-  // composited layers. We can easily pass the paint offset diff across such
-  // boundaries.
+  // |old_visual_rect| and |new_visual_rect| are in the local transform space:
+  // |property_tree_state.Transform()|. As we don't save the old property tree
+  // state, the caller should adjust |old_rect| as if the difference between the
+  // old and the new local and ancestor transforms [1] caused the difference
+  // between the locations of |old_visual_rect| and |new_visual_rect|, so that
+  // we can calculate the shift caused by the changed transforms, in addition to
+  // the shift in the local transform space, by comparing locations of
+  // |old_visual_rect| and |new_visual_rect|.
+  //
+  // [1] We may stop at a certain ancestor transform and ignore changes of all
+  // higher transforms. This is how we ignore scrolls in layout shift tracking.
+  // We also can't accumulate offsets across non-2d-translation transforms.
+  // See PaintPropertyTreeBuilderFragmentContext::
+  //    ContainingBlockContext::offset_to_2d_translation_root.
   void NotifyObjectPrePaint(const LayoutObject& object,
                             const PropertyTreeStateOrAlias& property_tree_state,
-                            const IntRect& old_visual_rect,
-                            const IntRect& new_visual_rect,
-                            const FloatSize& paint_offset_delta);
+                            const PhysicalRect& old_visual_rect,
+                            const PhysicalRect& new_visual_rect);
   void NotifyPrePaintFinished();
   void NotifyInput(const WebInputEvent&);
   void NotifyScroll(mojom::blink::ScrollType, ScrollOffset delta);
@@ -66,7 +68,6 @@ class CORE_EXPORT LayoutShiftTracker final
   // rebuilt by Node::ReattachLayoutTree.
   class ReattachHook : public GarbageCollected<ReattachHook> {
    public:
-    ReattachHook() : scope_(nullptr) {}
     void Trace(Visitor*) const;
 
     class Scope {
@@ -83,16 +84,15 @@ class CORE_EXPORT LayoutShiftTracker final
     static void NotifyAttach(const Node&);
 
    private:
-    Scope* scope_;
-    HeapHashMap<Member<const Node>, IntRect> visual_rects_;
+    Scope* scope_ = nullptr;
+    HeapHashMap<Member<const Node>, PhysicalRect> visual_rects_;
   };
 
  private:
   void ObjectShifted(const LayoutObject&,
                      const PropertyTreeStateOrAlias&,
                      FloatRect old_rect,
-                     FloatRect new_rect,
-                     const FloatSize& paint_offset_delta);
+                     FloatRect new_rect);
   void ReportShift(double score_delta, double weighted_score_delta);
   void TimerFired(TimerBase*) {}
   std::unique_ptr<TracedValue> PerFrameTraceData(double score_delta,

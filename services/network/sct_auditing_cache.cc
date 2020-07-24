@@ -84,8 +84,7 @@ void SCTAuditingCache::MaybeEnqueueReport(
   if (base::RandDouble() > sampling_rate)
     return;
 
-  // TODO(crbug.com/1082860): Notify the NetworkContextClient with the cache
-  // key.
+  context->client()->OnSCTReportReady(net::HashValue(cache_key).ToString());
 }
 
 SCTAuditReport* SCTAuditingCache::GetPendingReport(
@@ -95,8 +94,7 @@ SCTAuditReport* SCTAuditingCache::GetPendingReport(
 }
 
 void SCTAuditingCache::ClearCache() {
-  NOTIMPLEMENTED();
-  return;
+  cache_.Clear();
 }
 
 }  // namespace network

@@ -23,6 +23,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/components/camera_app_ui/camera_app_helper.mojom.h"
 #include "chromeos/components/camera_app_ui/camera_app_helper_impl.h"
+#include "chromeos/services/cfm/public/buildflags/buildflags.h"
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
 #include "chromeos/services/tts/public/mojom/tts_service.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -46,7 +47,14 @@
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #endif
+
+#if BUILDFLAG(PLATFORM_CFM)
+#include "chromeos/services/cfm/public/cpp/appid_util.h"
+#include "chromeos/services/cfm/public/cpp/service_connection.h"
+#include "chromeos/services/cfm/public/features/features.h"
+#include "chromeos/services/cfm/public/mojom/cfm_service_manager.mojom.h"
 #endif
+#endif  // definied(OS_CHROMEOS)
 
 namespace extensions {
 
@@ -196,6 +204,20 @@ void PopulateChromeFrameBindersForExtension(
         base::BindRepeating(&BindHandwritingRecognizerRequestor));
   }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
+#if BUILDFLAG(PLATFORM_CFM)
+  if (base::FeatureList::IsEnabled(chromeos::cfm::features::kCfmMojoServices) &&
+      chromeos::cfm::IsChromeboxForMeetingsAppId(extension->id())) {
+    binder_map->Add<chromeos::cfm::mojom::CfmServiceContext>(
+        base::BindRepeating(
+            [](content::RenderFrameHost* frame_host,
+               mojo::PendingReceiver<chromeos::cfm::mojom::CfmServiceContext>
+                   receiver) {
+              chromeos::cfm::ServiceConnection::GetInstance()
+                  ->BindServiceContext(std::move(receiver));
+            }));
+  }
+#endif  // BUILDFLAG(PLATFORM_CFM)
 
   if (extension->permissions_data()->HasAPIPermission(
           APIPermission::kMediaPerceptionPrivate)) {

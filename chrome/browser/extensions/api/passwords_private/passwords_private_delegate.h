@@ -56,14 +56,11 @@ class PasswordsPrivateDelegate : public KeyedService {
       base::OnceCallback<void(const ExceptionEntries&)>;
   virtual void GetPasswordExceptionsList(ExceptionEntriesCallback callback) = 0;
 
-  // Changes the username and password corresponding to |id|.
+  // Changes the password corresponding to |id|.
   // |id|: The id for the password entry being updated.
-  // |new_username|: The new username.
   // |new_password|: The new password.
-  virtual void ChangeSavedPassword(
-      int id,
-      base::string16 new_username,
-      base::Optional<base::string16> new_password) = 0;
+  // Returns whether the change succeeded.
+  virtual bool ChangeSavedPassword(int id, base::string16 new_password) = 0;
 
   // Removes the saved password entries corresponding to the |ids| generated for
   // each entry of the password list. Any invalid id will be ignored.

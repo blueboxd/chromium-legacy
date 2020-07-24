@@ -9,6 +9,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/cocoa/fullscreen/menu_reveal_monitor.h"
 #include "chrome/browser/ui/cocoa/scoped_menu_bar_lock.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
@@ -20,56 +21,6 @@
 namespace {
 const CGFloat kMenuBarLockPadding = 50;
 }
-
-// MenuRevealMonitor tracks visibility of the menu bar associated with |window|,
-// and calls |handler| when it changes. In fullscreen, when the mouse pointer
-// moves to or away from the top of the screen, |handler| will be called several
-// times with a number between zero and one indicating how much of the menu bar
-// is visible.
-@interface MenuRevealMonitor : NSObject
-- (instancetype)initWithWindow:(NSWindow*)window
-                 changeHandler:(void (^)(double))handler
-    NS_DESIGNATED_INITIALIZER;
-- (instancetype)init NS_UNAVAILABLE;
-@end
-
-@implementation MenuRevealMonitor {
-  base::mac::ScopedBlock<void (^)(double)> _change_handler;
-  base::scoped_nsobject<NSTitlebarAccessoryViewController> _accVC;
-}
-
-- (instancetype)initWithWindow:(NSWindow*)window
-                 changeHandler:(void (^)(double))handler {
-  if ((self = [super init])) {
-    _change_handler.reset([handler copy]);
-    _accVC.reset([[NSTitlebarAccessoryViewController alloc] init]);
-    auto* accVC = _accVC.get();
-    accVC.view = [[[NSView alloc] initWithFrame:NSZeroRect] autorelease];
-    [accVC addObserver:self
-            forKeyPath:@"revealAmount"
-               options:NSKeyValueObservingOptionNew
-               context:nil];
-    [window addTitlebarAccessoryViewController:accVC];
-  }
-  return self;
-}
-
-- (void)dealloc {
-  [_accVC removeObserver:self forKeyPath:@"revealAmount"];
-  [_accVC removeFromParentViewController];
-  [super dealloc];
-}
-
-- (void)observeValueForKeyPath:(NSString*)keyPath
-                      ofObject:(id)object
-                        change:(NSDictionary<NSKeyValueChangeKey, id>*)change
-                       context:(void*)context {
-  double revealAmount =
-      base::mac::ObjCCastStrict<NSNumber>(change[NSKeyValueChangeNewKey])
-          .doubleValue;
-  _change_handler.get()(revealAmount);
-}
-@end
 
 // ImmersiveToolbarOverlayView performs two functions. First, it hitTests to its
 // superview (BridgedContentView) to block mouse events from hitting siblings

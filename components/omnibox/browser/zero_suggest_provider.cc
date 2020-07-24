@@ -560,13 +560,16 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   if (num_results == 0)
     return;
 
-  // Do not add the default text match if we're on the NTP to prevent
-  // chrome-native://newtab or chrome://newtab from showing up on the list of
-  // suggestions.
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  // Android needs the verbatim match on non-NTP surfaces to properly present
+  // the Search Ready Omnibox URL edit widget. Desktop specifically does NOT
+  // want to show verbatim matches in remotely-fetched ZeroSuggest anymore.
+  // iOS we are keeping the same as Android for now. No strong reason to change.
   if (!IsNTPPage(current_page_classification_) &&
       current_text_match_.destination_url.is_valid()) {
     matches_.push_back(current_text_match_);
   }
+#endif
 
   for (MatchMap::const_iterator it(map.begin()); it != map.end(); ++it)
     matches_.push_back(it->second);

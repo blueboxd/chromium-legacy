@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" />થી<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">તમારા બધા ઉપકરણો પર તમારા બુકમાર્ક મેળવવા માટે, સિંક કરવાનું ચાલુ કરો.</translation>
 <translation id="1687475363370981210">તમામને વાંચેલ તરીકે ચિહ્નિત કરો</translation>
+<translation id="1689333818294560261">ઉપનામ</translation>
 <translation id="1690731385917361335">કોઈ આઇટમ નથી</translation>
 <translation id="1692118695553449118">સમન્વયન ચાલુ છે</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> પસંદ કર્યાં</translation>
@@ -185,6 +186,7 @@
 <translation id="3153862085237805241">કાર્ડ સાચવો</translation>
 <translation id="3157684681743766797">તમામને આ રીતે ચિહ્નિત કરો…</translation>
 <translation id="3161291298470460782">આમ કરવાથી તમને સાઇન આઉટ કરવામાં આવશે, સિંક કરવાનું બંધ થશે અને આ ડિવાઇસમાંથી બધો Chrome ડેટા સાફ કરવામાં આવશે. તમારો સિંક કરેલો ડેટા તમારા Google એકાઉન્ટમાં રહેશે.</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3175081911749765310">વેબ સેવાઓ</translation>
 <translation id="3178650076442119961">આજે સક્રિય છે</translation>
 <translation id="3181954750937456830">Safe Browsing (તમારું અને તમારા ડિવાઇસનું જોખમી સાઇટથી રક્ષણ કરે છે)</translation>
@@ -206,6 +208,7 @@
 <translation id="3335947283844343239">બંધ કરેલું ટૅબ ફરીથી ખોલો</translation>
 <translation id="3371831930909698441">અનુવાદ ઉપલબ્ધ છે. વિકલ્પો સ્ક્રીનની નીચેની બાજુએ ઉપલબ્ધ રહે છે.</translation>
 <translation id="3393920035788932672">પૉપ-અપ્સ મંજૂર છે</translation>
+<translation id="3425644765244388016">કાર્ડનું ઉપનામ</translation>
 <translation id="3443810440409579745">ટૅબ પ્રાપ્ત થયું.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> મિનિટ</translation>
 <translation id="3448016392200048164">વિભાજિત દૃશ્ય</translation>
@@ -240,6 +243,7 @@
 <translation id="3783017676699494206">ફોટા સાચવો</translation>
 <translation id="3789841737615482174">ઇન્સ્ટોલ કરો</translation>
 <translation id="3803696231112616155">આ સાઇટનો અનુવાદ કરવાનું કહો</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{કોઈપણ પાસવર્ડ સાથે ચેડાં થયા નથી}=1{{COUNT} પાસવર્ડ સાથે ચેડાં થયા છે}one{{COUNT} પાસવર્ડ સાથે ચેડાં થયા છે}other{{COUNT} પાસવર્ડ સાથે ચેડાં થયા છે}}</translation>
 <translation id="385051799172605136">પાછળ</translation>
 <translation id="3892144330757387737">તમને તમારો ઇતિહાસ અહીં મળશે</translation>
 <translation id="3897092660631435901">મેનૂ</translation>
@@ -249,7 +253,7 @@
 <translation id="3929457972718048006">સરનામાં</translation>
 <translation id="3943492037546055397">પાસવર્ડ</translation>
 <translation id="3967822245660637423">ડાઉનલોડ પૂર્ણ</translation>
-<translation id="3989635538409502728">સાઇન આઉટ કરો</translation>
+<translation id="3989635538409502728">સાઇન આઉટ</translation>
 <translation id="399419089947468503">પાસવર્ડ સિંક કરવામાં ભૂલ આવી</translation>
 <translation id="3995521777587992544">પેજ લોડ પ્રોગ્રેસ બાર, <ph name="EMAIL" /> લોડ થયો.</translation>
 <translation id="4002066346123236978">શીર્ષક</translation>
@@ -529,6 +533,7 @@
 <translation id="7189598951263744875">શેર કરો...</translation>
 <translation id="7192050974311852563">લૉગિંગ શરૂ કરો</translation>
 <translation id="7203585745079012652">જવાબો પાછા બોલો</translation>
+<translation id="721597782417389033">કાર્ડનું અમાન્ય ઉપનામ</translation>
 <translation id="7265758999917665941">આ સાઇટ માટે ક્યારેય નહીં</translation>
 <translation id="7272437679830969316">તમારી ઓળખની ચકાસણી કરી શકાતી નથી. પાસવર્ડ કૉપિ કરેલો નથી.</translation>
 <translation id="7291368939935408496">પાસવર્ડ તૈયાર કરી રહ્યાં છીએ…</translation>

@@ -51,7 +51,7 @@ class StreamProcessorHelper {
     IoPacket(IoPacket&&);
     IoPacket& operator=(IoPacket&&);
 
-    size_t index() const { return index_; }
+    size_t buffer_index() const { return index_; }
     size_t offset() const { return offset_; }
     size_t size() const { return size_; }
     base::TimeDelta timestamp() const { return timestamp_; }

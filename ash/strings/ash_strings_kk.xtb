@@ -8,7 +8,7 @@
 <translation id="1036672894875463507">Мен Google Assistant-пін, сізге күні бойы көмекке дайынмын!
 Пайдалана бастау үшін кейбір функцияларды қолданып көрсеңіз болады.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> қосылды</translation>
-<translation id="1056775291175587022">Бірде-бір желі табылмады</translation>
+<translation id="1056775291175587022">Желі табылмады</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="108486256082349153">Ұялы құрылғының MAC мекенжайы: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">Ішім пысты</translation>
@@ -44,7 +44,7 @@
 <translation id="1346748346194534595">Оңға</translation>
 <translation id="1351937230027495976">Мәзірді жию</translation>
 <translation id="1383876407941801731">Іздеу</translation>
-<translation id="1391102559483454063">Қосу</translation>
+<translation id="1391102559483454063">Қосулы</translation>
 <translation id="1419738280318246476">Хабарландыруда ұсынылған әрекетті орындау үшін құрылғының құлпын ашыңыз</translation>
 <translation id="1420408895951708260">"Түнгі жарық" функциясын қосу/өшіру. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">Иә</translation>
@@ -135,7 +135,7 @@
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" Bluetooth құрылғысы жұптау рұқсатын сұрайды. Қабылдаудан бұрын бұл кіру кілті аталмыш құрылғыда көрсетілетінін растаңыз: <ph name="PASSKEY" /></translation>
 <translation id="2435457462613246316">Құпия сөзді көрсету</translation>
 <translation id="2473177541599297363">Ажыратымдылықты растаңыз</translation>
-<translation id="2482878487686419369">Хабарламалар</translation>
+<translation id="2482878487686419369">Хабарландырулар</translation>
 <translation id="2484513351006226581">Пернетақтаны ауыстыру үшін <ph name="KEYBOARD_SHORTCUT" /> пернелерін басыңыз.</translation>
 <translation id="2501920221385095727">Жабысқақ пернелер</translation>
 <translation id="2509468283778169019">CAPS LOCK қосулы</translation>
@@ -175,7 +175,7 @@
 <translation id="2996462380875591307">Бекітілген ұлғайтқыш қосылды. Оны өшіру үшін Ctrl+Search+D пернелер тіркесімін қайта басыңыз.</translation>
 <translation id="3000461861112256445">Моно аудио</translation>
 <translation id="3009178788565917040">Шығыс</translation>
-<translation id="3033545621352269033">Қосу</translation>
+<translation id="3033545621352269033">Қосулы</translation>
 <translation id="3051128274746680507">Бақыланатын пайдаланушы профиліңіз жақында өшіріледі. Толығырақ ақпарат алу үшін есептік жазбаға кіріңіз.</translation>
 <translation id="3055162170959710888">Бүгін бұл құрылғыны <ph name="USED_TIME" /> рет пайдаландыңыз</translation>
 <translation id="3076778413190775903">Күй жолағы, уақыты: <ph name="TIME" />,
@@ -276,7 +276,7 @@
 <translation id="4028481283645788203">Қауіпсіздікті күшейту үшін құпия сөзді енгізу қажет.</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Экранды бөлісудесіз</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Қолданба үшін өшірулі}other{# қолданба үшін өшірулі}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Өшірулі}other{# үшін өшірулі}}</translation>
 <translation id="4072264167173457037">Орташа сигнал</translation>
 <translation id="4112140312785995938">Артқа</translation>
 <translation id="4129129681837227511">Құлып экранында хабарландыруларды көру және параметрді өзгерту үшін құлыпты ашыңыз.</translation>
@@ -284,7 +284,7 @@
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> құрылғысын <ph name="DOMAIN" /> басқарады.</translation>
 <translation id="4181841719683918333">Тілдер</translation>
 <translation id="4195877955194704651">Автоматты басу түймесі</translation>
-<translation id="4197790712631116042">Өшіру</translation>
+<translation id="4197790712631116042">Өшірулі</translation>
 <translation id="4215497585250573029">VPN параметрлері</translation>
 <translation id="4217571870635786043">Мәтінді дауыспен енгізу</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -315,7 +315,7 @@
 <translation id="4513946894732546136">Пікір жіберу</translation>
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" Bluetooth құрылғысы жұптасуға рұқсат сұрайды.</translation>
 <translation id="453661520163887813">Зарядтау аяқталғанға дейін <ph name="TIME" /> қалды</translation>
-<translation id="4560576029703263363">Қосу</translation>
+<translation id="4560576029703263363">Қосулы</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Құпия сөзді жасыру</translation>
 <translation id="4570957409596482333">Select-to-Speak түймесі</translation>
@@ -367,7 +367,7 @@
 <translation id="5283198616748585639">1 мин қосу</translation>
 <translation id="528468243742722775">Соңы</translation>
 <translation id="5286194356314741248">Ізделуде</translation>
-<translation id="5297704307811127955">Өшіру</translation>
+<translation id="5297704307811127955">Өшірулі</translation>
 <translation id="5302048478445481009">Тіл</translation>
 <translation id="5313326810920013265">Bluetooth параметрлері</translation>
 <translation id="5331975486040154427">USB-C құрылғысы (сол жақ артқы порты)</translation>
@@ -384,7 +384,7 @@
 <translation id="5496819745535887422">Әкімші құрылғыны алдыңғы нұсқаға қайтаруда. Құрылғы қайта қосылған кезде, барлық деректер жойылады.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Сеанстан шығу</translation>
-<translation id="5537725057119320332">Тарату</translation>
+<translation id="5537725057119320332">Cast</translation>
 <translation id="5548285847212963613">"<ph name="EXTENSION_NAME" />" кеңейтімі осы желіге қосылуға көмектесуі мүмкін.</translation>
 <translation id="554893713779400387">Дауыстап оқуды қосу/өшіру</translation>
 <translation id="556042886152191864">Түйме</translation>
@@ -393,7 +393,7 @@
 <translation id="5600837773213129531">Айтылған пікірді өшіру үшін Ctrl + Alt + Z пернелерін басыңыз.</translation>
 <translation id="5625955975703555628">LTE+</translation>
 <translation id="5648021990716966815">Микрофон ұяшығы</translation>
-<translation id="5669267381087807207">Белсендіру</translation>
+<translation id="5669267381087807207">Белсендірілуде</translation>
 <translation id="5673434351075758678">Параметрлер синхрондалғаннан кейін, "<ph name="FROM_LOCALE" />" тілі "<ph name="TO_LOCALE" />" тіліне өзгертілді.</translation>
 <translation id="5682642926269496722">Қазіргі пайдаланушының есептік жазбасы үшін Google Assistant қолжетімді емес.</translation>
 <translation id="5689633613396158040">Түнгі жарық режимін қосып қойсаңыз, айнала күңгірттеніп тұрғанда, экран жарығы көзіңізді ауыртпайды. Түнгі жарық қосылатын уақытты өзгерту немесе оны толықтай өшіру үшін түртіңіз.</translation>
@@ -413,7 +413,7 @@
 <translation id="5895138241574237353">Қайта іске қосу</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
-<translation id="5916664084637901428">Қосу</translation>
+<translation id="5916664084637901428">Қосулы</translation>
 <translation id="5920710855273935292">Микрофон дыбысы өшірулі.</translation>
 <translation id="5947494881799873997">Қайтару</translation>
 <translation id="595202126637698455">Өнімділікті бақылау қосылған</translation>
@@ -598,7 +598,7 @@
 <translation id="8054466585765276473">Батарея уақытын есептеу.</translation>
 <translation id="8061464966246066292">Жоғары контраст</translation>
 <translation id="8098591350844501178">Экран мазмұнын <ph name="RECEIVER_NAME" /> құрылғысына трансляциялауды тоқтату</translation>
-<translation id="8113423164597455979">Қосулы, барлық қолданбалар</translation>
+<translation id="8113423164597455979">Қосулы</translation>
 <translation id="8131740175452115882">Растау</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> желісіне қосылған</translation>
 <translation id="813913629614996137">Дайындауда…</translation>
@@ -616,7 +616,7 @@
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, сигнал күші: <ph name="SIGNAL_STRENGTH" />, телефонның батарея заряды: <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409">Enter пернесін басып, <ph name="USER_EMAIL_ADDRESS" /> үшін құрылғының құлпын ашыңыз.</translation>
 <translation id="8261506727792406068">Жою</translation>
-<translation id="828708037801473432">Өшіру</translation>
+<translation id="828708037801473432">Өшірулі</translation>
 <translation id="8297006494302853456">Әлсіз</translation>
 <translation id="8308637677604853869">Алдыңғы мәзір</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>

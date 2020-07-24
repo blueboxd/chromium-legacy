@@ -245,7 +245,9 @@ DocumentLoader::DocumentLoader(
           CopyInitiatorOriginTrials(params_->initiator_origin_trial_features)),
       force_enabled_origin_trials_(
           CopyForceEnabledOriginTrials(params_->force_enabled_origin_trials)),
-      origin_isolation_restricted_(params_->origin_isolation_restricted) {
+      origin_isolation_restricted_(params_->origin_isolation_restricted),
+      is_cross_browsing_context_group_navigation_(
+          params_->is_cross_browsing_context_group_navigation) {
   DCHECK(frame_);
 
   // TODO(nasko): How should this work with OOPIF?
@@ -1777,6 +1779,18 @@ void DocumentLoader::CommitNavigation() {
     // actually clean the name here.
     // frame_->tree().setName(g_null_atom);
     frame_->Tree().ExperimentalSetNulledName();
+  }
+
+  bool should_clear_cross_browsing_context_group_window_name =
+      previous_window && frame_->IsMainFrame() && !frame_->Loader().Opener() &&
+      is_cross_browsing_context_group_navigation_;
+  if (should_clear_cross_browsing_context_group_window_name) {
+    // TODO(shuuran): CrossBrowsingContextGroupSetNulledName will just
+    // record the fact that the name would be nulled and if the name is accessed
+    // after we will fire a UseCounter. If we decide to move forward with
+    // this change, we'd actually clean the name here.
+    // frame_->tree().setName(g_null_atom);
+    frame_->Tree().CrossBrowsingContextGroupSetNulledName();
   }
 
   if (loading_mhtml_archive_ && archive_ &&

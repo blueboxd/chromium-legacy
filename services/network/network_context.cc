@@ -1163,6 +1163,10 @@ void NetworkContext::MaybeEnqueueSCTReport(
       this, host_port_pair, validated_certificate_chain,
       signed_certificate_timestamps);
 }
+
+void NetworkContext::SetSCTAuditingEnabled(bool enabled) {
+  is_sct_auditing_enabled_ = enabled;
+}
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 void NetworkContext::CreateUDPSocket(

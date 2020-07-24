@@ -8,7 +8,7 @@
 <translation id="1036672894875463507">Eu sou a assistente do Google e estou aqui para ajudar no seu dia.
 Veja o que você pode fazer para começar.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> adicionado</translation>
-<translation id="1056775291175587022">Nenhuma rede encontrada</translation>
+<translation id="1056775291175587022">Nenhuma rede</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="108486256082349153">Celular: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">Que tédio</translation>
@@ -276,7 +276,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="4028481283645788203">A senha é necessária para aumentar a segurança</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Você está compartilhando sua tela</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Desativadas para um app}one{Desativadas para # app}other{Desativadas para # apps}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Desat p/ um app}one{Desat p/ # app}other{Desat p/ # apps}}</translation>
 <translation id="4072264167173457037">Sinal médio</translation>
 <translation id="4112140312785995938">Retroceder</translation>
 <translation id="4129129681837227511">Para ver as notificações na sua tela de bloqueio, desbloqueie a tela e altere a configuração</translation>
@@ -421,7 +421,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="5958529069007801266">Usuário supervisionado</translation>
 <translation id="5977415296283489383">Fone de ouvido</translation>
 <translation id="5978382165065462689">Compartilhando o controle de sua tela por meio da Assistência remota.</translation>
-<translation id="5980301590375426705">Sair da sessão de visitante</translation>
+<translation id="5980301590375426705">Sair sessão visit.</translation>
 <translation id="598882571027504733">Para receber a atualização, reinicie seu Chromebook com o teclado conectado.</translation>
 <translation id="5992218262414051481">Modo de alto contraste ativado. Pressione Ctrl+Pesquisa+H novamente para desativá-lo.</translation>
 <translation id="6018164090099858612">Saindo do modo espelhado</translation>
@@ -599,12 +599,12 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8054466585765276473">Calculando duração da bateria.</translation>
 <translation id="8061464966246066292">Alto contraste</translation>
 <translation id="8098591350844501178">Parar de transmitir tela para <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">Ativadas em todos os apps</translation>
+<translation id="8113423164597455979">Ativ. nos apps</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8132793192354020517">Conectado à <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicializando…</translation>
 <translation id="8142441511840089262">Clicar duas vezes</translation>
-<translation id="8142699993796781067">Rede privada</translation>
+<translation id="8142699993796781067">Rede particular</translation>
 <translation id="8152092012181020186">Pressione Ctrl + W para fechar.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Essas configurações são gerenciadas pelo administrador.</translation>
 <translation id="8167567890448493835">Usando <ph name="LOCALE_NAME" /></translation>
@@ -640,7 +640,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> <ph name="FEATURE_STATE" /> o recurso <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Pressione Alt+Pesquisar ou Shift para cancelar.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> não é compatível com <ph name="SPECIFIED_RESOLUTION" />. A resolução foi modificada para <ph name="FALLBACK_RESOLUTION" />. Clique em "Confirmar" para manter as mudanças. As configurações anteriores serão restauradas em <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="8513108775083588393">Girar automaticamente</translation>
+<translation id="8513108775083588393">Girar automat.</translation>
 <translation id="8517041960877371778">Seu <ph name="DEVICE_TYPE" /> pode não ser carregado enquanto estiver ligado.</translation>
 <translation id="8563862697512465947">Configurações de notificação</translation>
 <translation id="857201607579416096">O menu foi movido para o canto inferior direito da tela.</translation>

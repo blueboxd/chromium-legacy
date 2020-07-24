@@ -307,7 +307,7 @@
 // Disables warnings for a single read operation.  This can be used to avoid
 // warnings when it is known that the read is not actually involved in a race,
 // but the compiler cannot confirm that.
-#define ABSL_TS_UNCHECKED_READ(x) absl::base_internal::absl_ts_unchecked_read(x)
+#define ABSL_TS_UNCHECKED_READ(x) absl::base_internal::ts_unchecked_read(x)
 
 namespace absl {
 ABSL_NAMESPACE_BEGIN
@@ -317,12 +317,12 @@ namespace base_internal {
 // reference.
 // Do not used this function directly, use ABSL_TS_UNCHECKED_READ instead.
 template <typename T>
-inline const T& absl_ts_unchecked_read(const T& v) ABSL_NO_THREAD_SAFETY_ANALYSIS {
+inline const T& ts_unchecked_read(const T& v) ABSL_NO_THREAD_SAFETY_ANALYSIS {
   return v;
 }
 
 template <typename T>
-inline T& absl_ts_unchecked_read(T& v) ABSL_NO_THREAD_SAFETY_ANALYSIS {
+inline T& ts_unchecked_read(T& v) ABSL_NO_THREAD_SAFETY_ANALYSIS {
   return v;
 }
 

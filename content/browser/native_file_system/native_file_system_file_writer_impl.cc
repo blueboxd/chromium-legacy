@@ -16,6 +16,7 @@
 #include "crypto/secure_hash.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/file_system/file_stream_reader.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
@@ -26,47 +27,106 @@ using storage::BlobDataHandle;
 using storage::FileSystemOperation;
 using storage::FileSystemOperationRunner;
 
+namespace content {
+
 namespace {
 
 // For after write checks we need the hash and size of the file. That data is
-// calculated on a worker thread, and this struct is used to pass it back.
-struct HashResult {
-  base::File::Error status;
-  // SHA256 hash of the file contents, an empty string if some error occurred.
-  std::string hash;
-  // Can be -1 to indicate an error calculating the hash and/or size.
-  int64_t file_size = -1;
-};
-
-HashResult ReadAndComputeSHA256ChecksumAndSize(const base::FilePath& path) {
-  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-
-  if (!file.IsValid())
-    return {file.error_details(), std::string(), -1};
-
-  std::unique_ptr<crypto::SecureHash> hash =
-      crypto::SecureHash::Create(crypto::SecureHash::SHA256);
-  std::vector<char> buffer(8 * 1024);
-  int bytes_read = file.ReadAtCurrentPos(buffer.data(), buffer.size());
-
-  while (bytes_read > 0) {
-    hash->Update(buffer.data(), bytes_read);
-    bytes_read = file.ReadAtCurrentPos(buffer.data(), buffer.size());
+// calculated on the IO thread by this class.
+// This class is ref-counted to make it easier to integrate with the
+// FileStreamReader API where methods either return synchronously or invoke
+// their callback asynchronously.
+class HashCalculator : public base::RefCounted<HashCalculator> {
+ public:
+  // Must be called on the FileSystemContext's IO runner.
+  static void CreateAndStart(
+      scoped_refptr<storage::FileSystemContext> context,
+      NativeFileSystemFileWriterImpl::HashCallback callback,
+      const storage::FileSystemURL& swap_url,
+      storage::FileSystemOperationRunner*) {
+    auto calculator = base::MakeRefCounted<HashCalculator>(std::move(context),
+                                                           std::move(callback));
+    calculator->Start(swap_url);
   }
 
-  // If bytes_read is -ve, it means there were issues reading from disk.
-  if (bytes_read < 0)
-    return {file.error_details(), std::string(), -1};
+  HashCalculator(scoped_refptr<storage::FileSystemContext> context,
+                 NativeFileSystemFileWriterImpl::HashCallback callback)
+      : context_(std::move(context)), callback_(std::move(callback)) {
+    DCHECK(context_);
+  }
 
-  std::string hash_str(hash->GetHashLength(), 0);
-  hash->Finish(base::data(hash_str), hash_str.size());
+ private:
+  friend class base::RefCounted<HashCalculator>;
+  ~HashCalculator() = default;
 
-  return {file.error_details(), hash_str, file.GetLength()};
+  void Start(const storage::FileSystemURL& swap_url) {
+    reader_ = context_->CreateFileStreamReader(
+        swap_url, 0, storage::kMaximumLength, base::Time());
+    int64_t length =
+        reader_->GetLength(base::BindOnce(&HashCalculator::GotLength, this));
+    if (length == net::ERR_IO_PENDING)
+      return;
+    GotLength(length);
+  }
+
+  void GotLength(int64_t length) {
+    if (length < 0) {
+      std::move(callback_).Run(storage::NetErrorToFileError(length),
+                               std::string(), -1);
+      return;
+    }
+
+    file_size_ = length;
+    ReadMore();
+  }
+
+  void ReadMore() {
+    DCHECK_GE(file_size_, 0);
+    int read_result =
+        reader_->Read(buffer_.get(), buffer_->size(),
+                      base::BindOnce(&HashCalculator::DidRead, this));
+    if (read_result == net::ERR_IO_PENDING)
+      return;
+    DidRead(read_result);
+  }
+
+  void DidRead(int bytes_read) {
+    DCHECK_GE(file_size_, 0);
+    if (bytes_read < 0) {
+      std::move(callback_).Run(storage::NetErrorToFileError(bytes_read),
+                               std::string(), -1);
+      return;
+    }
+    if (bytes_read == 0) {
+      std::string hash_str(hash_->GetHashLength(), 0);
+      hash_->Finish(base::data(hash_str), hash_str.size());
+      std::move(callback_).Run(base::File::FILE_OK, hash_str, file_size_);
+      return;
+    }
+
+    hash_->Update(buffer_->data(), bytes_read);
+    ReadMore();
+  }
+
+  const scoped_refptr<storage::FileSystemContext> context_;
+  NativeFileSystemFileWriterImpl::HashCallback callback_;
+
+  const scoped_refptr<net::IOBufferWithSize> buffer_{
+      base::MakeRefCounted<net::IOBufferWithSize>(8 * 1024)};
+
+  const std::unique_ptr<crypto::SecureHash> hash_{
+      crypto::SecureHash::Create(crypto::SecureHash::SHA256)};
+
+  std::unique_ptr<storage::FileStreamReader> reader_;
+  int64_t file_size_ = -1;
+};
+
+void RemoveSwapFile(const storage::FileSystemURL& swap_url,
+                    storage::FileSystemOperationRunner* runner) {
+  runner->Remove(swap_url, /*recursive=*/false, base::DoNothing());
 }
 
 }  // namespace
-
-namespace content {
 
 struct NativeFileSystemFileWriterImpl::WriteState {
   WriteCallback callback;
@@ -300,13 +360,15 @@ void NativeFileSystemFileWriterImpl::CloseImpl(CloseCallback callback) {
 
   ComputeHashForSwapFile(base::BindOnce(
       &NativeFileSystemFileWriterImpl::DoAfterWriteCheck,
-      weak_factory_.GetWeakPtr(), swap_url().path(), std::move(callback)));
+      weak_factory_.GetWeakPtr(), base::WrapRefCounted(manager()), swap_url(),
+      std::move(callback)));
 }
 
 // static
 void NativeFileSystemFileWriterImpl::DoAfterWriteCheck(
     base::WeakPtr<NativeFileSystemFileWriterImpl> file_writer,
-    const base::FilePath& swap_path,
+    scoped_refptr<NativeFileSystemManagerImpl> manager,
+    const storage::FileSystemURL& swap_url,
     NativeFileSystemFileWriterImpl::CloseCallback callback,
     base::File::Error hash_result,
     const std::string& hash,
@@ -314,9 +376,8 @@ void NativeFileSystemFileWriterImpl::DoAfterWriteCheck(
   if (!file_writer || hash_result != base::File::FILE_OK) {
     // If writer was deleted, or calculating the hash failed try deleting the
     // swap file and invoke the callback.
-    base::ThreadPool::PostTask(
-        FROM_HERE, {base::MayBlock()},
-        base::BindOnce(base::GetDeleteFileCallback(), swap_path));
+    manager->operation_runner().PostTaskWithThisObject(
+        FROM_HERE, base::BindOnce(&RemoveSwapFile, swap_url));
     std::move(callback).Run(native_file_system_error::FromStatus(
         NativeFileSystemStatus::kOperationAborted,
         "Failed to perform Safe Browsing check."));
@@ -335,13 +396,15 @@ void NativeFileSystemFileWriterImpl::DoAfterWriteCheck(
   file_writer->manager()->permission_context()->PerformAfterWriteChecks(
       std::move(item), file_writer->context().frame_id,
       base::BindOnce(&NativeFileSystemFileWriterImpl::DidAfterWriteCheck,
-                     file_writer, swap_path, std::move(callback)));
+                     file_writer, std::move(manager), swap_url,
+                     std::move(callback)));
 }
 
 // static
 void NativeFileSystemFileWriterImpl::DidAfterWriteCheck(
     base::WeakPtr<NativeFileSystemFileWriterImpl> file_writer,
-    const base::FilePath& swap_path,
+    scoped_refptr<NativeFileSystemManagerImpl> manager,
+    const storage::FileSystemURL& swap_url,
     NativeFileSystemFileWriterImpl::CloseCallback callback,
     NativeFileSystemPermissionContext::AfterWriteCheckResult result) {
   if (file_writer &&
@@ -354,9 +417,8 @@ void NativeFileSystemFileWriterImpl::DidAfterWriteCheck(
   // Writer is gone, or safe browsing check failed. In this case we should
   // try deleting the swap file and call the callback to report that close
   // failed.
-  base::ThreadPool::PostTask(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(base::GetDeleteFileCallback(), swap_path));
+  manager->operation_runner().PostTaskWithThisObject(
+      FROM_HERE, base::BindOnce(&RemoveSwapFile, swap_url));
   std::move(callback).Run(native_file_system_error::FromStatus(
       NativeFileSystemStatus::kOperationAborted,
       "Write operation blocked by Safe Browsing."));
@@ -396,6 +458,19 @@ void NativeFileSystemFileWriterImpl::DidSwapFileBeforeClose(
     std::move(callback).Run(native_file_system_error::Ok());
     return;
   }
+
+  // url().path() has to make sense for quarantine to work. On ChromeOS that
+  // means it has to not be in the sandboxed file system, while on other
+  // platforms it means it has to be a local or test file.
+#if defined(OS_CHROMEOS)
+  DCHECK(url().type() != storage::kFileSystemTypeTemporary &&
+         url().type() != storage::kFileSystemTypePersistent)
+      << url().type();
+#else
+  DCHECK(url().type() == storage::kFileSystemTypeNativeLocal ||
+         url().type() == storage::kFileSystemTypeTest)
+      << url().type();
+#endif
 
   GURL referrer_url = manager()->is_off_the_record() ? GURL() : context().url;
   GURL authority_url =
@@ -460,24 +535,18 @@ void NativeFileSystemFileWriterImpl::ComputeHashForSwapFile(
     HashCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-#if defined(OS_CHROMEOS)
-  // TOOD(crbug.com/1103076): Extend this check to non-native paths.
-  DCHECK(swap_url().type() == storage::kFileSystemTypeNativeLocal ||
-         swap_url().type() == storage::kFileSystemTypeNativeForPlatformApp)
-      << swap_url().type();
-#else
-  DCHECK_EQ(swap_url().type(), storage::kFileSystemTypeNativeLocal);
-#endif
+  auto wrapped_callback = base::BindOnce(
+      [](scoped_refptr<base::SequencedTaskRunner> runner, HashCallback callback,
+         base::File::Error error, const std::string& hash, int64_t size) {
+        runner->PostTask(
+            FROM_HERE, base::BindOnce(std::move(callback), error, hash, size));
+      },
+      base::SequencedTaskRunnerHandle::Get(), std::move(callback));
 
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&ReadAndComputeSHA256ChecksumAndSize, swap_url().path()),
-      base::BindOnce(
-          [](HashCallback callback, HashResult result) {
-            std::move(callback).Run(result.status, result.hash,
-                                    result.file_size);
-          },
-          std::move(callback)));
+  manager()->operation_runner().PostTaskWithThisObject(
+      FROM_HERE, base::BindOnce(&HashCalculator::CreateAndStart,
+                                base::WrapRefCounted(file_system_context()),
+                                std::move(wrapped_callback), swap_url()));
 }
 
 base::WeakPtr<NativeFileSystemHandleBase>

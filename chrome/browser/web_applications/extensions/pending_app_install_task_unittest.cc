@@ -335,6 +335,8 @@ class PendingAppInstallTaskTest : public ChromeRenderViewHostTestHarness {
         GetFactoryForRetriever(std::move(data_retriever)));
     auto manifest = std::make_unique<blink::Manifest>();
     manifest->start_url = options.url;
+    manifest->name =
+        base::NullableString16(base::ASCIIToUTF16("Manifest Name"));
 
     data_retriever_->SetRendererWebApplicationInfo(
         std::make_unique<WebApplicationInfo>());

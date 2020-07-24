@@ -253,13 +253,6 @@ std::ostream& operator<<(std::ostream& out,
 }
 
 std::ostream& operator<<(std::ostream& out, const WebApp& app) {
-  const std::string display_mode =
-      blink::DisplayModeToString(app.display_mode_);
-  const std::string user_display_mode =
-      blink::DisplayModeToString(app.user_display_mode_);
-  const bool is_locally_installed = app.is_locally_installed_;
-  const bool is_in_sync_install = app.is_in_sync_install_;
-
   out << "app_id: " << app.app_id_ << std::endl
       << "  name: " << app.name_ << std::endl
       << "  launch_url: " << app.launch_url_ << std::endl
@@ -267,25 +260,27 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
       << "  theme_color: " << ColorToString(app.theme_color_) << std::endl
       << "  background_color: " << ColorToString(app.background_color_)
       << std::endl
-      << "  display_mode: " << display_mode << std::endl
+      << "  display_mode: " << blink::DisplayModeToString(app.display_mode_)
+      << std::endl
       << "  display_override: " << app.display_mode_override_.size()
       << std::endl;
   for (const DisplayMode& mode : app.display_mode_override_)
     out << "    " << blink::DisplayModeToString(mode) << std::endl;
-  out << "  user_display_mode: " << user_display_mode << std::endl
+  out << "  user_display_mode: "
+      << blink::DisplayModeToString(app.user_display_mode_) << std::endl
       << "  user_page_ordinal: " << app.user_page_ordinal_.ToDebugString()
       << std::endl
-      << "  user_launch_ordinal_: " << app.user_launch_ordinal_.ToDebugString()
+      << "  user_launch_ordinal: " << app.user_launch_ordinal_.ToDebugString()
       << std::endl
       << "  sources: " << app.sources_.to_string() << std::endl
-      << "  is_locally_installed: " << is_locally_installed << std::endl
-      << "  is_in_sync_install: " << is_in_sync_install << std::endl
+      << "  is_locally_installed: " << app.is_locally_installed_ << std::endl
+      << "  is_in_sync_install: " << app.is_in_sync_install_ << std::endl
       << "  sync_fallback_data: " << std::endl
       << app.sync_fallback_data_ << "  description: " << app.description_
       << std::endl
       << "  last_launch_time: " << app.last_launch_time_ << std::endl
       << "  install_time: " << app.install_time_ << std::endl
-      << "  is_generated_icon_: " << app.is_generated_icon_ << std::endl;
+      << "  is_generated_icon: " << app.is_generated_icon_ << std::endl;
   for (const WebApplicationIconInfo& icon : app.icon_infos_)
     out << "  icon_info: " << icon << std::endl;
   for (SquareSizePx size : app.downloaded_icon_sizes_)

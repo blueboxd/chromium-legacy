@@ -139,6 +139,7 @@
 #include "content/public/common/content_switches.h"
 #include "device/base/features.h"
 #include "device/fido/features.h"
+#include "device/gamepad/public/cpp/gamepad_features.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "gpu/config/gpu_finch_features.h"
@@ -4195,6 +4196,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout)},
 
+#if defined(OS_WIN)
+    {"enable-windows-gaming-input-data-fetcher",
+     flag_descriptions::kEnableWindowsGamingInputDataFetcherName,
+     flag_descriptions::kEnableWindowsGamingInputDataFetcherDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kEnableWindowsGamingInputDataFetcher)},
+#endif
+
 #if defined(OS_ANDROID)
     {"enable-start-surface", flag_descriptions::kStartSurfaceAndroidName,
      flag_descriptions::kStartSurfaceAndroidDescription, kOsAndroid,
@@ -5200,6 +5208,19 @@ const FeatureEntry kFeatureEntries[] = {
     {"safety-check-android", flag_descriptions::kSafetyCheckAndroidName,
      flag_descriptions::kSafetyCheckAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kSafetyCheckAndroid)},
+#endif
+
+#if defined(OS_ANDROID)
+    {"safe-browsing-enhanced-protection-android",
+     flag_descriptions::kSafeBrowsingEnhancedProtectionAndroidName,
+     flag_descriptions::kSafeBrowsingEnhancedProtectionAndroidDescription,
+     kOsAndroid, FEATURE_VALUE_TYPE(safe_browsing::kEnhancedProtection)},
+
+    {"safe-browsing-security-section-ui-android",
+     flag_descriptions::kSafeBrowsingSecuritySectionUiAndroidName,
+     flag_descriptions::kSafeBrowsingSecuritySectionUiAndroidDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(safe_browsing::kSafeBrowsingSecuritySectionUIAndroid)},
 #endif
 
 #if defined(OS_CHROMEOS)

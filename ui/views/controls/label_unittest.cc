@@ -940,7 +940,7 @@ TEST_F(LabelTest, EmptyLabel) {
   EXPECT_TRUE(label()->size().IsEmpty());
 
   // With no text, neither links nor labels have a size in any dimension.
-  Link concrete_link((base::string16()));
+  Link concrete_link;
   EXPECT_TRUE(concrete_link.GetPreferredSize().IsEmpty());
 }
 

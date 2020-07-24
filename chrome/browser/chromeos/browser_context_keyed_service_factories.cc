@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
 #include "chrome/browser/chromeos/tether/tether_service_factory.h"
 #include "chrome/browser/chromeos/web_applications/crosh_loader_factory.h"
+#include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 
 #if defined(USE_CUPS)
 #include "chrome/browser/chromeos/extensions/printing/printing_api_handler.h"
@@ -65,6 +66,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   file_manager::VolumeManagerFactory::GetInstance();
   file_system_provider::ServiceFactory::GetInstance();
   guest_os::GuestOsRegistryServiceFactory::GetInstance();
+  ash::HoldingSpaceKeyedServiceFactory::GetInstance();
   KerberosCredentialsManagerFactory::GetInstance();
   launcher_search_provider::ServiceFactory::GetInstance();
   OwnerSettingsServiceChromeOSFactory::GetInstance();

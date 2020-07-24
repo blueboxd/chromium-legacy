@@ -292,8 +292,17 @@ bool Controller::GetProgressVisible() const {
 void Controller::SetStepProgressBarConfiguration(
     const ShowProgressBarProto::StepProgressBarConfiguration& configuration) {
   step_progress_bar_configuration_ = configuration;
+  if (!configuration.step_icons().empty() &&
+      progress_active_step_.has_value() &&
+      configuration.step_icons().size() < *progress_active_step_) {
+    progress_active_step_ = configuration.step_icons().size();
+  }
   for (ControllerObserver& observer : observers_) {
     observer.OnStepProgressBarConfigurationChanged(configuration);
+    if (progress_active_step_.has_value()) {
+      observer.OnProgressActiveStepChanged(*progress_active_step_);
+    }
+    observer.OnProgressBarErrorStateChanged(progress_bar_error_state_);
   }
 }
 

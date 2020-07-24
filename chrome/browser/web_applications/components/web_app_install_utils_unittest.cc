@@ -472,6 +472,8 @@ TEST(WebAppInstallUtils, PopulateShortcutItemIconsNoShortcutIcons) {
 // correctly populated.
 TEST(WebAppInstallUtils, FilterAndResizeIconsGenerateMissingNoWebAppIconData) {
   WebApplicationInfo web_app_info;
+  web_app_info.title = base::ASCIIToUTF16("App Name");
+
   IconsMap icons_map;
   std::vector<SkBitmap> bmp1 = {CreateSquareIcon(32, SK_ColorWHITE)};
   icons_map.emplace(IconUrl1(), bmp1);
@@ -486,6 +488,8 @@ TEST(WebAppInstallUtils, FilterAndResizeIconsGenerateMissingNoWebAppIconData) {
 TEST_F(WebAppInstallUtilsWithShortcutsMenu,
        FilterAndResizeIconsGenerateMissingNoWebAppIconData) {
   WebApplicationInfo web_app_info;
+  web_app_info.title = base::ASCIIToUTF16("App Name");
+
   IconsMap icons_map;
   std::vector<SkBitmap> bmp1 = {CreateSquareIcon(32, SK_ColorWHITE)};
   icons_map.emplace(IconUrl1(), bmp1);
@@ -508,6 +512,8 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
 
   // Construct |info| to add to |web_app_info.icon_infos|.
   WebApplicationInfo web_app_info;
+  web_app_info.title = base::ASCIIToUTF16("App Name");
+
   WebApplicationIconInfo info;
   info.url = IconUrl1();
   web_app_info.icon_infos.push_back(info);

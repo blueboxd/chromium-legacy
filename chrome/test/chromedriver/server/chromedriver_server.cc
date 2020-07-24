@@ -58,8 +58,8 @@ namespace {
 // need to support messages that are too large.
 const int kBufferSize = 256 * 1024 * 1024;  // 256 MB
 
-typedef base::Callback<
-    void(const net::HttpServerRequestInfo&, const HttpResponseSenderFunc&)>
+typedef base::RepeatingCallback<void(const net::HttpServerRequestInfo&,
+                                     const HttpResponseSenderFunc&)>
     HttpRequestHandlerFunc;
 
 int ListenOnIPv4(net::ServerSocket* socket, uint16_t port, bool allow_remote) {
@@ -194,11 +194,9 @@ class HttpServer : public net::HttpServer::Delegate {
       return;
     }
     handle_request_func_.Run(
-        info,
-        base::Bind(&HttpServer::OnResponse,
-                   weak_factory_.GetWeakPtr(),
-                   connection_id,
-                   !info.HasHeaderValue("connection", "close")));
+        info, base::BindRepeating(&HttpServer::OnResponse,
+                                  weak_factory_.GetWeakPtr(), connection_id,
+                                  !info.HasHeaderValue("connection", "close")));
   }
 
   void OnWebSocketRequest(int connection_id,
@@ -318,10 +316,11 @@ void HandleRequestOnIOThread(
     const net::HttpServerRequestInfo& request,
     const HttpResponseSenderFunc& send_response_func) {
   cmd_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(handle_request_on_cmd_func, request,
-                                base::Bind(&SendResponseOnCmdThread,
-                                           base::ThreadTaskRunnerHandle::Get(),
-                                           send_response_func)));
+      FROM_HERE,
+      base::BindOnce(handle_request_on_cmd_func, request,
+                     base::BindRepeating(&SendResponseOnCmdThread,
+                                         base::ThreadTaskRunnerHandle::Get(),
+                                         send_response_func)));
 }
 
 base::LazyInstance<base::ThreadLocalPointer<HttpServer>>::DestructorAtExit
@@ -466,14 +465,15 @@ void RunServer(uint16_t port,
   HttpHandler handler(cmd_run_loop.QuitClosure(), io_thread.task_runner(),
                       url_base, adb_port);
   HttpRequestHandlerFunc handle_request_func =
-      base::Bind(&HandleRequestOnCmdThread, &handler, whitelisted_ips);
+      base::BindRepeating(&HandleRequestOnCmdThread, &handler, whitelisted_ips);
 
   io_thread.task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &StartServerOnIOThread, port, allow_remote, url_base, whitelisted_ips,
-          base::Bind(&HandleRequestOnIOThread, main_task_executor.task_runner(),
-                     handle_request_func)));
+      base::BindOnce(&StartServerOnIOThread, port, allow_remote, url_base,
+                     whitelisted_ips,
+                     base::BindRepeating(&HandleRequestOnIOThread,
+                                         main_task_executor.task_runner(),
+                                         handle_request_func)));
   // Run the command loop. This loop is quit after the response for a shutdown
   // request is posted to the IO loop. After the command loop quits, a task
   // is posted to the IO loop to stop the server. Lastly, the IO thread is

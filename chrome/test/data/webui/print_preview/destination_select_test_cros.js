@@ -10,7 +10,7 @@ import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 import {waitBeforeNextRender} from '../test_util.m.js';
 
 import {NativeLayerStub} from './native_layer_stub.js';
-import {getGoogleDriveDestination, selectOption} from './print_preview_test_utils.js';
+import {getGoogleDriveDestination, getSaveAsPdfDestination, selectOption} from './print_preview_test_utils.js';
 
 window.printer_status_test_cros = {};
 const printer_status_test_cros = window.printer_status_test_cros;
@@ -20,6 +20,7 @@ printer_status_test_cros.TestNames = {
   PrinterStatusUpdatesColor: 'printer status updates color',
   SendStatusRequestOnce: 'send status request once',
   HiddenStatusText: 'hidden status text',
+  ChangeIcon: 'change icon',
 };
 
 suite(printer_status_test_cros.suiteName, function() {
@@ -255,20 +256,64 @@ suite(printer_status_test_cros.suiteName, function() {
       // trigger the error text being populated.
       const destinationWithErrorStatus =
           createDestination('ID4', 'Four', DestinationOrigin.CROS);
+      const cloudPrintDestination = new Destination(
+          'ID2', DestinationType.GOOGLE, DestinationOrigin.COOKIES, 'Two',
+          DestinationConnectionStatus.OFFLINE, {account: account});
 
       destinationSelect.recentDestinationList = [
         destinationWithoutErrorStatus,
         destinationWithErrorStatus,
+        cloudPrintDestination,
       ];
 
+      const destinationStatus =
+          destinationSelect.$$('.destination-additional-info');
+      const destinationEulaWrapper =
+          destinationSelect.$$('#destinationEulaWrapper');
+
+      destinationSelect.destination = cloudPrintDestination;
+      assertFalse(destinationStatus.hidden);
+      assertTrue(destinationEulaWrapper.hidden);
+
       destinationSelect.destination = destinationWithoutErrorStatus;
-      assertTrue(destinationSelect.$$('.destination-additional-info').hidden);
+      assertTrue(destinationStatus.hidden);
+      assertTrue(destinationEulaWrapper.hidden);
+
+      destinationSelect.set('destination.eulaUrl', 'chrome://os-credits/eula');
+      assertFalse(destinationEulaWrapper.hidden);
 
       destinationSelect.destination = destinationWithErrorStatus;
       return nativeLayer.whenCalled('requestPrinterStatusUpdate').then(() => {
-        assertFalse(
-            destinationSelect.$$('.destination-additional-info').hidden);
+        assertFalse(destinationStatus.hidden);
       });
+    });
+  });
+
+  test(assert(printer_status_test_cros.TestNames.ChangeIcon), function() {
+    return waitBeforeNextRender(destinationSelect).then(() => {
+      const localCrosPrinter =
+          createDestination('ID1', 'One', DestinationOrigin.CROS);
+      const saveToDrive = getGoogleDriveDestination('account');
+      const saveAsPdf = getSaveAsPdfDestination();
+
+      destinationSelect.recentDestinationList = [
+        localCrosPrinter,
+        saveToDrive,
+        saveAsPdf,
+      ];
+      const dropdown = destinationSelect.$$('#dropdown');
+
+      destinationSelect.destination = localCrosPrinter;
+      destinationSelect.updateDestination();
+      assertEquals('print-preview:print', dropdown.destinationIcon);
+
+      destinationSelect.destination = saveToDrive;
+      destinationSelect.updateDestination();
+      assertEquals('print-preview:save-to-drive', dropdown.destinationIcon);
+
+      destinationSelect.destination = saveAsPdf;
+      destinationSelect.updateDestination();
+      assertEquals('cr:insert-drive-file', dropdown.destinationIcon);
     });
   });
 });

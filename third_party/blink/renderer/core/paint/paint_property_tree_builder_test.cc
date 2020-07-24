@@ -5466,8 +5466,6 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentPaintOffsetUnderOverflowScroll) {
 
   EXPECT_EQ(PhysicalOffset(), first_fragment.PaintOffset());
   EXPECT_EQ(PhysicalOffset(390, -10), second_fragment->PaintOffset());
-  EXPECT_EQ(IntRect(0, 0, 20, 20), first_fragment.VisualRect());
-  EXPECT_EQ(IntRect(390, -10, 20, 20), second_fragment->VisualRect());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FragmentClipPixelSnapped) {

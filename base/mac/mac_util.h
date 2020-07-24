@@ -5,10 +5,11 @@
 #ifndef BASE_MAC_MAC_UTIL_H_
 #define BASE_MAC_MAC_UTIL_H_
 
-#include <stdint.h>
-#include <string>
-
+#include <AvailabilityMacros.h>
 #import <CoreGraphics/CoreGraphics.h>
+#include <stdint.h>
+
+#include <string>
 
 #include "base/base_export.h"
 
@@ -73,9 +74,11 @@ BASE_EXPORT bool RemoveQuarantineAttribute(const FilePath& file_path);
 
 namespace internal {
 
-// Returns the system's Mac OS X minor version. This is the |y| value
-// in 10.y or 10.y.z.
-BASE_EXPORT int MacOSXMinorVersion();
+// Returns the system's macOS major and minor version numbers combined into an
+// integer value. For example, for macOS Sierra this returns 1012, and for macOS
+// Big Sur it returns 1100. Note that the accuracy returned by this function is
+// as granular as the major version number of Darwin.
+BASE_EXPORT int MacOSVersion();
 
 }  // namespace internal
 
@@ -85,25 +88,48 @@ BASE_EXPORT int MacOSXMinorVersion();
 // "AtMost" variants to those that check for a specific version, unless you know
 // for sure that you need to check for a specific version.
 
-#define DEFINE_IS_OS_FUNCS_CR_MIN_REQUIRED(V, TEST_DEPLOYMENT_TARGET) \
-  inline bool IsOS10_##V() {                                          \
-    TEST_DEPLOYMENT_TARGET(>, V, false)                               \
-    return internal::MacOSXMinorVersion() == V;                       \
+#define DEFINE_OLD_IS_OS_FUNCS_CR_MIN_REQUIRED(V, DEPLOYMENT_TARGET_TEST) \
+  inline bool IsOS10_##V() {                                              \
+    DEPLOYMENT_TARGET_TEST(>, V, false)                                   \
+    return internal::MacOSVersion() == 1000 + V;                          \
+  }                                                                       \
+  inline bool IsAtMostOS10_##V() {                                        \
+    DEPLOYMENT_TARGET_TEST(>, V, false)                                   \
+    return internal::MacOSVersion() <= 1000 + V;                          \
+  }
+
+#define DEFINE_OLD_IS_OS_FUNCS(V, DEPLOYMENT_TARGET_TEST)           \
+  DEFINE_OLD_IS_OS_FUNCS_CR_MIN_REQUIRED(V, DEPLOYMENT_TARGET_TEST) \
+  inline bool IsAtLeastOS10_##V() {                                 \
+    DEPLOYMENT_TARGET_TEST(>=, V, true)                             \
+    return internal::MacOSVersion() >= 1000 + V;                    \
+  }
+
+// TODO(https://crbug.com/1105187): Update MAC_OS_X_VERSION_MIN_REQUIRED to
+// whatever macro it turns into in the future.
+
+#define DEFINE_IS_OS_FUNCS_CR_MIN_REQUIRED(V, DEPLOYMENT_TARGET_TEST) \
+  inline bool IsOS##V() {                                             \
+    DEPLOYMENT_TARGET_TEST(>, V, false)                               \
+    return internal::MacOSVersion() == V * 100;                       \
   }                                                                   \
-  inline bool IsAtMostOS10_##V() {                                    \
-    TEST_DEPLOYMENT_TARGET(>, V, false)                               \
-    return internal::MacOSXMinorVersion() <= V;                       \
+  inline bool IsAtMostOS##V() {                                       \
+    DEPLOYMENT_TARGET_TEST(>, V, false)                               \
+    return internal::MacOSVersion() <= V * 100;                       \
   }
 
-#define DEFINE_IS_OS_FUNCS(V, TEST_DEPLOYMENT_TARGET)           \
-  DEFINE_IS_OS_FUNCS_CR_MIN_REQUIRED(V, TEST_DEPLOYMENT_TARGET) \
-  inline bool IsAtLeastOS10_##V() {                             \
-    TEST_DEPLOYMENT_TARGET(>=, V, true)                         \
-    return internal::MacOSXMinorVersion() >= V;                 \
+#define DEFINE_IS_OS_FUNCS(V, DEPLOYMENT_TARGET_TEST)           \
+  DEFINE_IS_OS_FUNCS_CR_MIN_REQUIRED(V, DEPLOYMENT_TARGET_TEST) \
+  inline bool IsAtLeastOS##V() {                                \
+    DEPLOYMENT_TARGET_TEST(>=, V, true)                         \
+    return internal::MacOSVersion() >= V * 100;                 \
   }
 
-#define TEST_DEPLOYMENT_TARGET(OP, V, RET)                      \
+#define OLD_TEST_DEPLOYMENT_TARGET(OP, V, RET)                  \
   if (MAC_OS_X_VERSION_MIN_REQUIRED OP MAC_OS_X_VERSION_10_##V) \
+    return RET;
+#define TEST_DEPLOYMENT_TARGET(OP, V, RET)                     \
+  if (MAC_OS_X_VERSION_MIN_REQUIRED OP MAC_OS_VERSION_##V##_0) \
     return RET;
 #define IGNORE_DEPLOYMENT_TARGET(OP, V, RET)
 
@@ -111,37 +137,47 @@ BASE_EXPORT int MacOSXMinorVersion();
 // - When bumping the minimum version of the macOS required by Chromium, remove
 //   lines from below corresponding to versions of the macOS no longer
 //   supported. Ensure that the minimum supported version uses the
-//   DEFINE_IS_OS_FUNCS_CR_MIN_REQUIRED macro.
+//   DEFINE_OLD_IS_OS_FUNCS_CR_MIN_REQUIRED macro. When macOS 11.0 is the
+//   minimum required version, remove all the OLD versions of the macros.
 // - When bumping the minimum version of the macOS SDK required to build
-//   Chromium, remove the #ifdef that switches between TEST_DEPLOYMENT_TARGET
-//   and IGNORE_DEPLOYMENT_TARGET.
+//   Chromium, remove the #ifdef that switches between
+//   TEST_DEPLOYMENT_TARGET and IGNORE_DEPLOYMENT_TARGET.
 
 // Versions of macOS supported at runtime but whose SDK is not supported for
 // building.
-DEFINE_IS_OS_FUNCS_CR_MIN_REQUIRED(10, TEST_DEPLOYMENT_TARGET)
-DEFINE_IS_OS_FUNCS(11, TEST_DEPLOYMENT_TARGET)
-DEFINE_IS_OS_FUNCS(12, TEST_DEPLOYMENT_TARGET)
-DEFINE_IS_OS_FUNCS(13, TEST_DEPLOYMENT_TARGET)
-DEFINE_IS_OS_FUNCS(14, TEST_DEPLOYMENT_TARGET)
+DEFINE_OLD_IS_OS_FUNCS_CR_MIN_REQUIRED(10, OLD_TEST_DEPLOYMENT_TARGET)
+DEFINE_OLD_IS_OS_FUNCS(11, OLD_TEST_DEPLOYMENT_TARGET)
+DEFINE_OLD_IS_OS_FUNCS(12, OLD_TEST_DEPLOYMENT_TARGET)
+DEFINE_OLD_IS_OS_FUNCS(13, OLD_TEST_DEPLOYMENT_TARGET)
+DEFINE_OLD_IS_OS_FUNCS(14, OLD_TEST_DEPLOYMENT_TARGET)
 
 // Versions of macOS supported at runtime and whose SDK is supported for
 // building.
 #ifdef MAC_OS_X_VERSION_10_15
-DEFINE_IS_OS_FUNCS(15, TEST_DEPLOYMENT_TARGET)
+DEFINE_OLD_IS_OS_FUNCS(15, OLD_TEST_DEPLOYMENT_TARGET)
 #else
-DEFINE_IS_OS_FUNCS(15, IGNORE_DEPLOYMENT_TARGET)
+DEFINE_OLD_IS_OS_FUNCS(15, IGNORE_DEPLOYMENT_TARGET)
 #endif
 
-#undef IGNORE_DEPLOYMENT_TARGET
-#undef TEST_DEPLOYMENT_TARGET
+#ifdef MAC_OS_VERSION_11_0
+DEFINE_IS_OS_FUNCS(11, TEST_DEPLOYMENT_TARGET)
+#else
+DEFINE_IS_OS_FUNCS(11, IGNORE_DEPLOYMENT_TARGET)
+#endif
+
+#undef DEFINE_OLD_IS_OS_FUNCS_CR_MIN_REQUIRED
+#undef DEFINE_OLD_IS_OS_FUNCS
 #undef DEFINE_IS_OS_FUNCS_CR_MIN_REQUIRED
 #undef DEFINE_IS_OS_FUNCS
+#undef OLD_TEST_DEPLOYMENT_TARGET
+#undef TEST_DEPLOYMENT_TARGET
+#undef IGNORE_DEPLOYMENT_TARGET
 
 // This should be infrequently used. It only makes sense to use this to avoid
 // codepaths that are very likely to break on future (unreleased, untested,
 // unborn) OS releases, or to log when the OS is newer than any known version.
-inline bool IsOSLaterThan10_15_DontCallThis() {
-  return !IsAtMostOS10_15();
+inline bool IsOSLaterThan11_DontCallThis() {
+  return !IsAtMostOS11();
 }
 
 // Retrieve the system's model identifier string from the IOKit registry:

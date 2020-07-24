@@ -122,8 +122,7 @@ try_.chromium_android_builder(
     goma_jobs = goma.jobs.J300,
     ssd = True,
     use_java_coverage = True,
-    # TODO(https://crbug.com/1108842) Re-enable once network outage is over
-    # tryjob = try_.job(),
+    tryjob = try_.job(),
 )
 
 try_.chromium_android_builder(

@@ -709,15 +709,6 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
 <translation id="2168397434410358693">Độ trễ lúc không sử dụng khi chạy trên nguồn AC</translation>
 <translation id="217013996107840632">Các tham số dòng lệnh để chuyển từ trình duyệt thay thế.</translation>
 <translation id="2170233653554726857">Bật tối ưu hóa WPAD</translation>
-<translation id="2171245625445050634">Chúng tôi gỡ bỏ chính sách này trong phiên bản M82, vui lòng sử dụng MinimumChromeVersionEnforced.
-
-      Định cấu hình cho yêu cầu đối với phiên bản tối thiểu được phép của <ph name="PRODUCT_NAME" />. Các phiên bản cũ hơn đều được coi là lỗi thời và người dùng sẽ không đăng nhập được vào thiết bị nếu không cập nhật hệ điều hành.
-
-      Nếu phiên bản đang sử dụng đã lỗi thời trong phiên người dùng, thì người dùng sẽ buộc phải đăng xuất.
-
-      Nếu bạn không đặt chính sách này thì không có hạn chế nào được áp dụng, và người dùng có thể đăng nhập bất kể phiên bản <ph name="PRODUCT_NAME" /> là gì.
-
-      Ở đây, "Phiên bản" có thể là phiên bản chính xác, chẳng hạn như '61.0.3163.120', hoặc có tiền tố của phiên bản, chẳng hạn như '61.0'  </translation>
 <translation id="2172774896158845977">Định cấu hình loại trang chủ mặc định trong <ph name="PRODUCT_NAME" /> và ngăn không cho người dùng thay đổi các tùy chọn trang chủ. Bạn có thể đặt trang chủ thành một URL mà bạn chỉ định hoặc đặt thành trang Thẻ mới.
 
           Nếu bạn bật tùy chọn cài đặt này, thì trang Thẻ mới luôn được dùng cho trang chủ và vị trí URL trang chủ sẽ bị bỏ qua.
@@ -1861,11 +1852,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Nếu bạn chưa đặt hoặc đặt chính sách này thành false, thì <ph name="PRODUCT_NAME" /> sẽ tuân theo lịch biểu ngừng hoạt động đã thông báo công khai.
 
       Hãy truy cập vào https://g.co/chrome/symantecpkicerts để biết thêm thông tin chi tiết về việc ngừng hoạt động này.</translation>
-<translation id="383466854578875212">Cho phép bạn chỉ định máy chủ nhắn tin gốc không bị đưa vào danh sách cấm.
-
-          Giá trị danh sách cấm * nghĩa là tất cả máy chủ nhắn tin gốc đều bị đưa vào danh sách cấm và chỉ có máy chủ nhắn tin gốc được liệt kê trong danh sách cho phép mới được tải.
-
-          Theo mặc định, tất cả các máy chủ nhắn tin gốc đều được đưa vào danh sách cho phép nhưng nếu tất cả các máy chủ nhắn tin gốc đã bị đưa vào danh sách cấm theo chính sách thì có thể sử dụng danh sách cho phép để ghi đè chính sách đó.</translation>
 <translation id="3835692988507803626">Buộc tắt ngôn ngữ có tính năng kiểm tra chính tả</translation>
 <translation id="3837424079837455272">Chính sách này kiểm soát việc có thể thêm người dùng mới vào <ph name="PRODUCT_OS_NAME" /> hay không. Chính sách này không ngăn người dùng đăng nhập vào tài khoản Google bổ sung trong Android. Nếu bạn muốn ngăn việc này, hãy định cấu hình chính sách <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> dành riêng cho Android như là một phần của <ph name="ARC_POLICY_POLICY_NAME" />.</translation>
 <translation id="3838094946886335701">Nếu đặt chính sách này (chỉ khi khuyên dùng), thì bạn có thể đăng ký danh sách các trình xử lý giao thức (sẽ hợp nhất với các trình xử lý giao thức mà người dùng đăng ký) để đưa vào sử dụng. Hãy đặt thuộc tính "giao thức" thành lược đồ, chẳng hạn như "mailto", và đặt thuộc tính "URL" thành mẫu URL của ứng dụng xử lý lược đồ được chỉ định trong trường "giao thức". Mẫu này có thể bao gồm trình giữ chỗ "%s" (thay bằng URL đã xử lý).
@@ -2405,7 +2391,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="4625915093043961294">Định cấu hình danh sách trắng cài đặt tiện ích</translation>
 <translation id="4632343302005518762">Cho phép <ph name="PRODUCT_FRAME_NAME" /> xử lý các loại nội dung được liệt kê</translation>
 <translation id="4632566332417930481">Không cho phép sử dụng Công cụ dành cho nhà phát triển trên các tiện ích được cài đặt theo chính sách doanh nghiệp, nhưng lại cho phép sử dụng Công cụ dành cho nhà phát triển trong các ngữ cảnh khác</translation>
-<translation id="4639407427807680016">Tên của các máy chủ nhắn tin gốc cần xóa khỏi danh sách cấm</translation>
 <translation id="4649395978608361979">Đích máy in cục bộ</translation>
 <translation id="4650759511838826572">Tắt lược đồ giao thức URL</translation>
 <translation id="465099050592230505">URL cửa hàng trực tuyến dành cho doanh nghiệp (không dùng nữa)</translation>
@@ -4911,7 +4896,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu bạn không đặt chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ cho phép người dùng kiểm soát xem đây có phải là trình duyệt mặc định hay không; nếu không phải là trình duyệt mặc định, thì có hiển thị thông báo cho người dùng hay không.
 
       Lưu ý: Đối với quản trị viên <ph name="MS_WIN_NAME" />, thao tác bật tùy chọn cài đặt này chỉ thực hiện được trên máy chạy Windows 7. Đối với các phiên bản mới, bạn phải triển khai tệp "liên kết ứng dụng mặc định" để đặt <ph name="PRODUCT_NAME" /> làm trình xử lý cho giao thức <ph name="HTTPS_PROTOCOL" /> và <ph name="HTTP_PROTOCOL" /> (và giao thức <ph name="FTP_PROTOCOL" /> cũng như các định dạng tệp khác (không bắt buộc)). Xem phần Trợ giúp về Chrome (https://support.google.com/chrome?p=make_chrome_default_win).</translation>
-<translation id="8442489215829828465">Định cấu hình thông báo hết thời hạn tự động cập nhật cho chính sách MinimumChromeVersionEnforced</translation>
 <translation id="8445576299806775661">Sau mỗi lần cập nhật phiên bản trên quy mô lớn, Chrome sẽ chụp nhanh một số phần dữ liệu duyệt web của người dùng để sử dụng trong trường hợp khôi phục phiên bản khẩn cấp diễn ra sau đó. Nếu tiến hành khôi phục khẩn cấp đối với một phiên bản mà người dùng có ảnh chụp nhanh tương ứng, thì dữ liệu trong ảnh chụp nhanh đó sẽ được khôi phục. Điều này cho phép người dùng giữ lại những tùy chọn cài đặt như dấu trang và dữ liệu tự động điền.
 
       Nếu bạn không đặt chính sách này, thì giá trị mặc định là 3 sẽ được sử dụng
@@ -4961,14 +4945,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
           Để biết các mẫu ví dụ, hãy xem http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Tắt lưu lịch sử trình duyệt</translation>
-<translation id="8498143772090164675">Chính sách này chỉ có hiệu lực khi thiết bị đã hết thời hạn tự động cập nhật và không đáp ứng yêu cầu về phiên bản tối thiểu được phép của <ph name="PRODUCT_NAME" /> mà chính sách <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> quy định.
-
-      Khi bạn đặt chính sách này thành một chuỗi không trống:
-      Nếu đã hết thời gian cảnh báo được đề cập trong chính sách <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" />, thì thông báo này sẽ hiển thị ở màn hình đăng nhập khi mọi người dùng đăng nhập vào thiết bị đều bị chặn.
-      Nếu đã hết thời gian cảnh báo được đề cập trong chính sách <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" />, thì thông báo này sẽ hiển thị trên trang Cài đặt sau khi người dùng đăng nhập.
-
-      Nếu bạn đặt chính sách này thành trống hoặc không đặt chính sách này, thì thông báo mặc định về việc hết thời hạn sử dụng sẽ hiển thị với người dùng trong cả hai trường hợp trên.
-      Thông báo hết thời hạn sử dụng phải ở dạng văn bản thuần túy chứ không ở bất kỳ định dạng nào. Không được phép đánh dấu. </translation>
 <translation id="8499172469244085141">Cài đặt mặc định (người dùng có thể ghi đè)</translation>
 <translation id="849962487677588458">Chính sách này không còn dùng nữa và dự kiến bị xóa trong Chrome 78 mà không có chính sách thay thế.
 
@@ -5473,26 +5449,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu đặt chính sách này thành true, thì tùy chọn 'Đầu trang và chân trang' sẽ được chọn trong hộp thoại xem trước bản in và người dùng không thể thay đổi điều này.</translation>
 <translation id="9213751049772256263">Không cho phép tất cả các biến</translation>
 <translation id="9217154963008402249">Tần suất theo dõi gói mạng</translation>
-<translation id="9222882926274278513">Định cấu hình yêu cầu đối với phiên bản tối thiểu được phép của <ph name="PRODUCT_NAME" />.
-
-      Khi bạn đặt chính sách này thành danh sách không trống:
-      Nếu không mục nào có "chrome_version" cao hơn phiên bản đang dùng trong thiết bị, thì không có hạn chế nào được áp dụng và các hạn chế đã có sẽ được thu hồi.
-      Nếu ít nhất một trong các mục có "chrome_version" cao hơn phiên bản đang dùng, thì mục mạnh nhất có phiên bản gần với phiên bản đang dùng nhất sẽ được chọn.
-      Trong trường hợp xung đột, mục có "warning_period" hoặc "aue_warning_period" thấp hơn sẽ được ưu tiên và chính sách này sẽ có hiệu lực bằng cách dùng mục đó.
-
-      Nếu phiên bản đang dùng đã lỗi thời trong phiên đăng nhập của người dùng và mạng hiện tại giới hạn số lượt tự động cập nhật, thì màn hình sẽ hiển thị thông báo cập nhật thiết bị trong vòng "warning_period".
-      Sẽ không có thông báo nào hiển thị nếu mạng hiện tại cho phép tự động cập nhật và thiết bị phải được cập nhật trong vòng "warning_period".
-      "warning_period" sẽ bắt đầu từ thời điểm áp dụng chính sách này.
-      Nếu cho đến khi kết thúc "warning_period" mà vẫn chưa cập nhật thiết bị, thì người dùng sẽ bị đăng xuất khỏi phiên đăng nhập.
-      Nếu chúng tôi nhận thấy phiên bản đang dùng bị lỗi thời tại thời điểm đăng nhập mà "warning_period" đã hết hạn, thì người dùng sẽ phải cập nhật thiết bị trước khi đăng nhập.
-
-      Nếu phiên bản đang dùng đã lỗi thời trong phiên đăng nhập của người dùng và thiết bị đã hết hạn tự động cập nhật, thì màn hình sẽ hiển thị thông báo trả lại thiết bị trong vòng "eol_warning_period".
-      Nếu nhận thấy thiết bị đã hết hạn tự động cập nhật tại thời điểm đăng nhập mà "eol_warning_period" đã hết, thì chúng tôi sẽ chặn hoạt động đăng nhập của bất kỳ người dùng nào trên thiết bị đó.
-
-      Nếu bạn đặt chính sách này thành trống hoặc không đặt chính sách này, thì không có hạn chế nào được áp dụng. Các hạn chế đã có sẽ được thu hồi và người dùng có thể đăng nhập, bất kể phiên bản của <ph name="PRODUCT_NAME" /> là gì.
-
-      Ở đây, "chrome_version" có thể là phiên bản chính xác, chẳng hạn như "61.0.3163.120", hoặc có tiền tố của phiên bản, chẳng hạn như "61.0".
-      "warning_period" và "aue_warning_period" là các giá trị không bắt buộc, được chỉ định theo số ngày. Giá trị mặc định là 0 ngày, tức là không có khoảng thời gian cảnh báo. </translation>
 <translation id="922540222991413931">Định cấu hình nguồn cài đặt tiện ích, ứng dụng và tập lệnh người dùng</translation>
 <translation id="924557436754151212">Nhập mật khẩu đã lưu từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
 <translation id="927444535723396977">Nếu bạn đặt chính sách này thành 1, thì các trang web có thể chạy JavaScript. Nếu bạn đặt chính sách này thành 2, thì các trang web không được chạy JavaScript.

@@ -711,15 +711,6 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="2168397434410358693">Intervalo de inatividade no funcionamento com alimentação CA</translation>
 <translation id="217013996107840632">Parâmetros de linha de comando para fazer a mudança do navegador alternativo.</translation>
 <translation id="2170233653554726857">Ativar otimização WPAD</translation>
-<translation id="2171245625445050634">Esta política foi removida no M82. Use MinimumChromeVersionEnforced.
-
-      Ela configura o requisito da versão mínima permitida do <ph name="PRODUCT_NAME" />. As versões abaixo são tratadas como obsoletas, e o dispositivo não permite o login do usuário antes que o SO seja atualizado.
-
-      Se a versão atual se tornar obsoleta durante a sessão, o usuário será forçadamente desconectado da conta.
-
-      Se esta política não for definida, nenhuma restrição será aplicada e o usuário poderá fazer login independentemente da versão do <ph name="PRODUCT_NAME" />.
-
-      Aqui, "versão" pode ser uma versão exata, como "61.0.3163.120", ou um prefixo de versão, como "61.0".</translation>
 <translation id="2172774896158845977">Configura o tipo de página inicial padrão no <ph name="PRODUCT_NAME" /> e evita que os usuários mudem as preferências de página inicial. A página inicial pode ser definida como um URL especificado por você ou como a página "Nova guia".
 
           Se você ativar essa configuração, a página "Nova guia" será sempre usada como página inicial, e o local do URL da página inicial será ignorado.
@@ -1881,11 +1872,6 @@ Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não usa
       Se esta política não for definida, ou for definida como falso, o <ph name="PRODUCT_NAME" /> seguirá a programação de suspensão de uso publicamente anunciada.
 
       Acesse https://g.co/chrome/symantecpkicerts para ver mais detalhes sobre esta suspensão de uso.</translation>
-<translation id="383466854578875212">Permite especificar quais hosts de mensagens nativas não estão sujeitos à lista de proibições.
-
-          O valor "*" na lista de proibições significa que todos os hosts de mensagens nativas estão incluídos na lista de proibições. Além disso, somente os hosts de mensagens nativas presentes na lista de permissões serão carregados.
-
-          Por padrão, todos os hosts de mensagens nativas estão incluídos na lista de permissões. No entanto, se todos os hosts de mensagens nativas tiverem sido adicionados à lista de proibições pela política, a lista de permissões poderá ser usada para substituir essa política.</translation>
 <translation id="3835692988507803626">Forçar a desativação da correção ortográfica de idiomas</translation>
 <translation id="3837424079837455272">Esta política controla se novos usuários podem ser adicionados ao <ph name="PRODUCT_OS_NAME" />. Ela não impede que os usuários façam login em outras Contas do Google no Android. Para impedir essa ação, configure a política <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> específica para Android como parte da <ph name="ARC_POLICY_POLICY_NAME" />.</translation>
 <translation id="3838094946886335701">Se a política for definida (apenas como recomendado), será possível registrar uma lista de gerenciadores de protocolo, que será mesclada às registradas pelo usuário de forma que as duas configurações sejam aplicadas. Defina a propriedade "protocolo" conforme o esquema, por exemplo, "mailto", e defina a propriedade "URL" conforme o padrão de URL do aplicativo que gerencia o esquema especificado no campo "protocolo". O padrão pode incluir um marcador "%s", que é substituído pelo URL gerenciado.
@@ -2435,7 +2421,6 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 <translation id="4625915093043961294">Configurar a lista branca de instalação de extensão</translation>
 <translation id="4632343302005518762">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> trabalhe com os tipos de conteúdo listados</translation>
 <translation id="4632566332417930481">Não permite o uso das Ferramentas para Desenvolvedores em extensões instaladas por uma política corporativa; permite o uso das Ferramentas para desenvolvedores em outros contextos</translation>
-<translation id="4639407427807680016">Nomes dos hosts de mensagens nativas a serem mantidos fora da lista de proibições</translation>
 <translation id="4649395978608361979">Destinos de impressoras locais</translation>
 <translation id="4650759511838826572">Desativar esquemas do protocolo de URL</translation>
 <translation id="465099050592230505">URL da loja on-line da empresa (uso suspenso)</translation>
@@ -4974,7 +4959,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
       Se a política não for definida, o <ph name="PRODUCT_NAME" /> permitirá que os usuários controlem se ele será o padrão ou não e, caso não seja, se as notificações do usuário serão exibidas.
 
       Observação: para administradores do <ph name="MS_WIN_NAME" />, a ativação dessa configuração só funciona em máquinas com o Windows 7. Para versões mais recentes, é necessário implantar um arquivo de "associações de aplicativo padrão", que torna o <ph name="PRODUCT_NAME" /> o gerenciador dos protocolos <ph name="HTTPS_PROTOCOL" /> e <ph name="HTTP_PROTOCOL" /> e, opcionalmente, o protocolo <ph name="FTP_PROTOCOL" /> e outros formatos de arquivo. Consulte a Ajuda do Google Chrome (https://support.google.com/chrome?p=make_chrome_default_win).</translation>
-<translation id="8442489215829828465">Configurar a mensagem de expiração da atualização automática para a política MinimumChromeVersionEnforced</translation>
 <translation id="8445576299806775661">Depois de cada atualização importante de versão, o Chrome criará um snapshot de certas partes dos dados de navegação do usuário para uso em caso de reversão de emergência da versão. Se uma reversão de emergência for feita para uma versão da qual o usuário tem um snapshot correspondente, os dados serão restaurados. Isso permite que o usuário retenha essas configurações na forma de favoritos e dados de preenchimento automático.
 
       Se essa política não for definida, o valor padrão 3 será usado.
@@ -5024,14 +5008,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
           Para ver exemplos de padrões, acesse http://www.chromium.org/developers/how-tos/chrome-frame-getting-started (link em inglês).</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Desativar o salvamento do histórico do navegador</translation>
-<translation id="8498143772090164675">Esta política só será eficaz quando o dispositivo tiver atingido a data de expiração da atualização automática e não atender mais os requisitos mínimos permitidos pela versão do <ph name="PRODUCT_NAME" /> definidos pela <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" />.
-
-      Quando esta política for definida como uma string não vazia:
-      Se o tempo de aviso mencionado na política <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> tiver expirado, essa mensagem será exibida na tela de login quando o dispositivo for bloqueado para login.
-      Se o tempo de aviso mencionado na política <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> não tiver expirado, a mensagem será exibida na página "Configurações" depois que o usuário fizer login.
-
-      Se esta política não for definida ou for definida como vazia, a mensagem padrão de fim da vida útil será exibida ao usuário nos dois casos mencionados acima.
-      A mensagem de fim da vida útil precisa ser um texto simples, sem nenhuma formatação. Nenhuma marcação é permitida. </translation>
 <translation id="8499172469244085141">Configurações padrão (podem ser substituídas pelos usuários)</translation>
 <translation id="849962487677588458">Esta política está obsoleta e será removida no Chrome 78, sem substituição.
 
@@ -5545,26 +5521,6 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
       Se a política for definida como verdadeira, a opção "Cabeçalhos e rodapés" ficará selecionada na caixa de diálogo de visualização de impressão, e o usuário não poderá alterá-la.</translation>
 <translation id="9213751049772256263">Desativar todas as variações</translation>
 <translation id="9217154963008402249">Frequência de pacotes de monitoramento de rede</translation>
-<translation id="9222882926274278513">Configura o requisito da versão mínima permitida do <ph name="PRODUCT_NAME" />.
-
-      Quando esta política estiver definida com uma lista não vazia:
-      se nenhuma das entradas tiver uma "chrome_version" mais recente do que a versão atual no dispositivo, nenhuma restrição será aplicada e as existentes serão revogadas.
-      Se pelo menos uma das entradas tiver uma "chrome_version" mais recente do que a versão atual, a entrada escolhida será a com versão mais próxima da atual.
-      Em caso de conflito, será dada preferência à versão com menor "warning_period" ou "aue_warning_period", e a política será aplicada usando essa entrada.
-
-      Se a versão atual ficar obsoleta durante a sessão do usuário e a rede atual limitar as atualizações automáticas, uma notificação será exibida na tela para atualizar o dispositivo dentro do "warning_period" exibido na notificação.
-      Nenhuma notificação será exibida se a rede atual permitir atualizações automáticas e o dispositivo precisar ser atualizado dentro do "warning_period".
-      O "warning_period" começará a partir do momento em que a política for aplicada.
-      Se o dispositivo não for atualizado até a expiração do "warning_period", o usuário será desconectado da sessão.
-      Se a versão atual estiver obsoleta durante o login com o "warning_period" expirado, o usuário precisará atualizar o dispositivo antes do login.
-
-      Se a versão atual ficar obsoleta durante a sessão do usuário e o dispositivo tiver atingido a data de expiração da atualização automática, uma notificação será exibida na tela para que o dispositivo seja devolvido dentro do "eol_warning_period".
-      Se o dispositivo tiver atingido a data de expiração da atualização automática no momento do login com o "eol_warning_period" expirado, o dispositivo bloqueará o login de todos os usuários.
-
-      Se esta política não for definida ou for configurada como vazia, nenhuma restrição será aplicada, as existentes serão revogadas e o usuário poderá fazer login independentemente da versão do <ph name="PRODUCT_NAME" />.
-
-      Aqui, "chrome_version" pode ser uma versão exata, como "61.0.3163.120", ou um prefixo de versão, como "61.0".
-      O "warning_period" e o "aue_warning_period" são valores opcionais especificados em número de dias. O valor padrão para eles é 0 dia, o que significa que não há um período de aviso. </translation>
 <translation id="922540222991413931">Configurar extensão, aplicativo e origens de instalação do script do usuário</translation>
 <translation id="924557436754151212">Importar senhas salvas do navegador padrão na primeira execução</translation>
 <translation id="927444535723396977">Se a política for definida como 1, os sites poderão executar o JavaScript. Se for definida como 2, o JavaScript não será executado.

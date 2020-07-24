@@ -731,15 +731,6 @@
 <translation id="2168397434410358693">AC 전원으로 실행할 때 유휴 지연</translation>
 <translation id="217013996107840632">다른 브라우저에서 Chrome으로 전환하기 위한 명령줄 매개변수입니다.</translation>
 <translation id="2170233653554726857">WPAD 최적화 사용</translation>
-<translation id="2171245625445050634">이 정책은 M82에서 삭제됩니다. 대신 MinimumChromeVersionEnforced를 사용하세요.
-
-      <ph name="PRODUCT_NAME" />의 최소 허용 버전 요구사항을 구성합니다. 주어진 버전보다 낮은 버전은 지원 중단된 것으로 간주되며 OS가 업데이트되지 않으면 기기에서 사용자 로그인을 허용하지 않습니다.
-
-      현재 버전이 사용자 세션 중에 지원 중단되면 사용자는 강제 로그아웃됩니다.
-
-      정책이 설정되지 않으면 제한사항이 적용되지 않으며 사용자는 <ph name="PRODUCT_NAME" /> 버전에 관계없이 로그인할 수 있습니다.
-
-      이때 '버전'은 '61.0.3163.120'과 같은 정확한 버전 또는 '61.0'과 같은 버전 접두어 중 하나를 의미합니다.  </translation>
 <translation id="2172774896158845977"><ph name="PRODUCT_NAME" />에서 기본 홈페이지 유형을 구성하고 사용자가 홈페이지 환경설정을 변경하지 못하게 차단합니다. 홈페이지는 지정한 URL로 설정할 수도 있고 새 탭 페이지로 설정할 수도 있습니다.
 
           이 설정을 사용하면 홈페이지에 항상 새 탭 페이지가 사용되며 홈페이지 URL 위치는 무시됩니다.
@@ -1909,11 +1900,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       이 정책이 설정되어 있지 않거나 false로 설정되어 있으면 <ph name="PRODUCT_NAME" />에서 공개 발표된 지원 중단 일정을 따릅니다.
 
       지원 중단에 관한 자세한 정보는 https://g.co/chrome/symantecpkicerts를 확인하세요.</translation>
-<translation id="383466854578875212">차단 목록에 적용되지 않는 기본 메시지 호스트를 지정하도록 허용합니다.
-
-          차단 목록 * 값은 모든 기본 메시지 호스트가 차단되며 허용 목록에 표시된 기본 메시지 호스트만 로드됨을 나타냅니다.
-
-          기본적으로 모든 기본 메시지 호스트가 허용 목록에 포함되지만, 모든 기본 메시지 호스트가 정책에 의해 차단된 경우 허용 목록을 사용하여 정책을 무시할 수 있습니다.</translation>
 <translation id="3835692988507803626">언어 맞춤법 검사를 강제로 사용 중지합니다.</translation>
 <translation id="3837424079837455272">이 정책은 새로운 사용자가 <ph name="PRODUCT_OS_NAME" />에 추가될 수 있는지를 제어합니다. 이 정책은 사용자가 Android 내에서 추가 Google 계정에 로그인하지 못하도록 막지 않습니다. 사용자가 추가 Google 계정으로 로그인하지 못하게 하려면 <ph name="ARC_POLICY_POLICY_NAME" />의 일환으로 Android <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> 정책을 구성하세요.</translation>
 <translation id="3838094946886335701">정책을 설정하면(권장되는 방식으로만) 프로토콜 핸들러 목록을 등록할 수 있으며, 여기에는 사용자가 등록한 핸들러가 병합되므로 두 핸들러가 모두 사용됩니다. '프로토콜' 속성을 'mailto'와 같은 스키마로, 'URL' 속성을 '프로토콜' 필드에 지정된 스키마를 처리하는 애플리케이션의 URL 패턴으로 설정합니다. 패턴에는 '%s' 자리표시자가 포함될 수 있으며, 이 부분은 처리된 URL로 교체됩니다.
@@ -2473,7 +2459,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="4625915093043961294">확장 프로그램 설치 허용목록 설정</translation>
 <translation id="4632343302005518762"><ph name="PRODUCT_FRAME_NAME" />이(가) 목록에 있는 콘텐츠 유형을 처리하도록 허용</translation>
 <translation id="4632566332417930481">엔터프라이즈 정책에 의해 설치된 확장 프로그램에서는 Developer Tools 사용 금지, 다른 컨텍스트에서는 Developer Tools 사용 허용</translation>
-<translation id="4639407427807680016">차단 목록에 적용되지 않는 기본 메시지 호스트의 이름</translation>
 <translation id="4649395978608361979">로컬 프린터 목적지</translation>
 <translation id="4650759511838826572">URL 프로토콜 스키마 사용 중지</translation>
 <translation id="465099050592230505">엔터프라이즈 웹 스토어 URL(지원 중단됨)</translation>
@@ -5063,7 +5048,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       정책을 설정하지 않으면 <ph name="PRODUCT_NAME" />에서 사용자가 기본 브라우저 여부를 제어하며 기본 브라우저가 아닌 경우 사용자 알림이 표시되어야 하는지를 제어할 수 있습니다.
 
       참고: <ph name="MS_WIN_NAME" /> 관리자의 경우 Windows 7을 실행하는 기기에서만 이 설정을 사용 설정할 수 있습니다. 이후 버전의 경우 <ph name="PRODUCT_NAME" />을(를) <ph name="HTTPS_PROTOCOL" /> 및 <ph name="HTTP_PROTOCOL" /> 프로토콜(선택적으로 <ph name="FTP_PROTOCOL" /> 프로토콜 및 기타 파일 형식)의 핸들러로 설정하는 '기본 애플리케이션 연결' 파일을 배포해야 합니다. Chrome 도움말( https://support.google.com/chrome?p=make_chrome_default_win )을 참조하세요.</translation>
-<translation id="8442489215829828465">MinimumChromeVersionEnforced 정책의 자동 업데이트 만료 메시지 구성</translation>
 <translation id="8445576299806775661">각 주요 버전 업데이트 이후 Chrome에서는 향후 응급 버전 롤백 시 사용하기 위해 사용자의 인터넷 사용 기록 일부에 대한 스냅샷을 생성합니다. 스냅샷이 생성된 버전에 대해 응급 상황 롤백이 실행될 경우, 스냅샷 내 데이터가 복원됩니다. 그럼 사용자는 북마크 및 자동 완성 데이터와 같은 설정을 유지할 수 있습니다.
 
       정책이 설정되지 않은 경우 기본값 3이 사용됩니다.
@@ -5113,14 +5097,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
           예제 패턴은 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started 페이지를 참조하세요.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">브라우저 기록 저장 사용 중지</translation>
-<translation id="8498143772090164675">이 정책은 기기가 자동 업데이트 만료에 도달했으며 <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 정책을 통해 설정된 <ph name="PRODUCT_NAME" />의 최소 허용 버전을 충족하지 않을 때만 적용됩니다.
-
-      정책이 비어있지 않은 문자열로 설정된 경우:
-      <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 정책에 명시된 경고 시간이 만료되었으면 모든 사용자의 기기 로그인이 차단되었을 때 로그인 화면에 이 메시지가 표시됩니다.
-      <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 정책에 명시된 경고 시간이 만료되지 않았으면 사용자가 로그인한 후 설정 페이지에 이 메시지가 표시됩니다.
-
-      정책이 설정되지 않았거나 빈 목록으로 설정되었으면 위의 모든 경우 사용자에게 기본 지원 종료 메시지가 표시됩니다.
-      지원 종료 메시지는 서식 없는 일반 텍스트여야 합니다. 마크업은 허용되지 않습니다. </translation>
 <translation id="8499172469244085141">기본 설정(사용자가 변경할 수 있음)</translation>
 <translation id="849962487677588458">이 정책은 지원이 중단되었으며 곧 Chrome 78에서 삭제될 예정입니다. 이를 대체하는 정책은 없습니다.
 
@@ -5648,26 +5624,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       정책이 True로 설정되어 있으면 인쇄 미리보기 대화상자에 '머리글과 바닥글'이 선택되어 있으며 사용자가 이를 변경할 수 없습니다.</translation>
 <translation id="9213751049772256263">모든 변형 사용 안함</translation>
 <translation id="9217154963008402249">네트워크 패킷 모니터링 빈도</translation>
-<translation id="9222882926274278513"><ph name="PRODUCT_NAME" />의 최소 허용 버전 요건을 구성합니다.
-
-      이 정책이 비어있지 않은 목록으로 설정된 경우:
-      기기에 있는 현재 버전보다 높은 'chrome_version'을 포함하는 항목이 없으면 제한사항이 적용되지 않으며 기존의 제한사항도 취소됩니다.
-      기기에 있는 현재 버전보다 높은 'chrome_version'이 하나 이상의 항목에 포함되어 있으면 버전이 현재 버전과 가장 가까우며 가장 강력한 항목이 선택됩니다.
-      충돌이 발생하는 경우 'warning_period' 또는 'aue_warning_period'가 가장 적은 항목이 우선권을 가지며 해당 항목을 사용해 정책이 적용됩니다.
-
-      현재 버전이 사용자 세션 중에 지원 중단되고 현재 네트워크에서 자동 업데이트를 제한하면 명시된 'warning_period' 내에 기기를 업데이트하라는 알림이 화면에 표시됩니다.
-      현재 네트워크에서 자동 업데이트를 허용하고 기기를 'warning_period' 내에 업데이트해야 하면 알림이 표시되지 않습니다.
-      'warning_period'는 정책이 적용된 시점부터 시작됩니다.
-      'warning_period'가 만료될 때까지 기기가 업데이트되지 않으면 사용자가 세션에서 로그아웃됩니다.
-      로그인 시 'warning_period'가 만료되어 현재 버전이 지원 중단된 것으로 확인되면 사용자는 기기를 업데이트해야 로그인할 수 있습니다.
-
-      현재 버전이 사용자 세션 중에 지원 중단되고 기기가 자동 업데이트 만료에 도달했다면 'eol_warning_period' 이내에 기기를 반환하라는 알림이 화면에 표시됩니다.
-      로그인 시 'eol_warning_period'가 만료되고 기기가 자동 업데이트 만료에 도달한 것으로 확인되면 기기에 어떤 사용자도 로그인할 수 없도록 차단됩니다.
-
-      정책이 설정되지 않거나 빈 목록으로 설정되면 제한사항이 적용되지 않으며 기존의 제한사항도 취소됩니다. 또한 사용자는 <ph name="PRODUCT_NAME" /> 버전에 관계없이 로그인할 수 있습니다.
-
-      이때 'chrome_version'은 '61.0.3163.120'과 같은 정확한 버전이거나 '61.0'과 같은 버전 접두어임을 의미합니다.
-      'warning_period' 및 'aue_warning_period'는 일 단위로 지정되는 선택적인 값입니다. 기본값은 0일이며, 경고 기간이 없다는 의미입니다. </translation>
 <translation id="922540222991413931">확장 프로그램, 앱, 사용자 스크립트 설치 소스 등 설정</translation>
 <translation id="924557436754151212">처음 실행 시 기본 브라우저에서 저장된 비밀번호 가져오기</translation>
 <translation id="927444535723396977">정책을 1로 설정하면 웹사이트에서 자바스크립트를 실행하도록 허용합니다. 정책을 2로 설정하면 자바스크립트를 거부합니다.

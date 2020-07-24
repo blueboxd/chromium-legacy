@@ -721,15 +721,6 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
 <translation id="2168397434410358693">Menunda waktu menganggur saat menggunakan daya AC</translation>
 <translation id="217013996107840632">Parameter command line untuk beralih dari browser alternatif.</translation>
 <translation id="2170233653554726857">Aktifkan pengoptimalan WPAD</translation>
-<translation id="2171245625445050634">Kebijakan ini dihapus di M82, gunakan MinimumChromeVersionEnforced sebagai gantinya.
-
-      Mengonfigurasi persyaratan versi minimum yang diizinkan untuk <ph name="PRODUCT_NAME" />. Versi yang diberikan di bawah ini dianggap sudah tidak terpakai dan perangkat tidak akan mengizinkan pengguna login sebelum OS diupdate.
-
-      Jika versi saat ini menjadi tidak terpakai saat sesi pengguna berlangsung, pengguna akan dipaksa logout.
-
-      Jika kebijakan ini tidak ditetapkan, tidak ada batasan yang ditetapkan dan pengguna dapat login, berapa pun versi <ph name="PRODUCT_NAME" />.
-
-      "Versi" di sini bisa merupakan versi yang tepat seperti '61.0.3163.120' atau awalan versi, seperti '61.0'  </translation>
 <translation id="2172774896158845977">Mengonfigurasi jenis halaman beranda default di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah preferensi halaman beranda. Halaman beranda dapat disetel ke URL yang Anda tetapkan, atau disetel ke Halaman Tab Baru.
 
           Jika Anda mengaktifkan setelan ini, Halaman Tab Baru akan selalu digunakan untuk halaman beranda, dan lokasi URL halaman beranda akan diabaikan.
@@ -1903,11 +1894,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
       Jika kebijakan ini tidak disetel, atau disetel ke false, <ph name="PRODUCT_NAME" /> akan mengikuti jadwal penghentian yang diumumkan secara publik.
 
       Lihat https://g.co/chrome/symantecpkicerts untuk mengetahui detail selengkapnya tentang penghentian ini.</translation>
-<translation id="383466854578875212">Memungkinkan Anda menentukan hosting perpesanan asli mana yang tidak termasuk daftar hitam.
-
-          Nilai daftar hitam * menunjukkan bahwa semua hosting perpesanan asli dimasukkan dalam daftar hitam dan hanya hosting perpesanan asli yang tercantum dalam daftar putih yang akan dimuat.
-
-          Secara default, semua hosting perpesanan asli dimasukkan dalam daftar putih, namun jika semua hosting perpesanan asli telah dimasukkan dalam daftar hitam sesuai dengan kebijakan, daftar putih dapat digunakan untuk menggantikan kebijakan tersebut.</translation>
 <translation id="3835692988507803626">Menonaktifkan secara paksa fitur pemeriksa ejaan bahasa</translation>
 <translation id="3837424079837455272">Kebijakan ini mengontrol apakah pengguna baru dapat ditambahkan ke <ph name="PRODUCT_OS_NAME" /> atau tidak. Kebijakan ini tidak mencegah pengguna login ke akun Google lain dalam Android. Jika Anda ingin mencegah tindakan ini, konfigurasikan kebijakan <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> khusus Android sebagai bagian dari <ph name="ARC_POLICY_POLICY_NAME" />.</translation>
 <translation id="3838094946886335701">Jika menyetel kebijakan (sebagai direkomendasikan saja), Anda akan dapat mendaftarkan daftar pengendali protokol, yang digabungkan dengan yang didaftarkan pengguna, sehingga keduanya dapat digunakan. Setel properti "protokol" ke skema, seperti "mailto", dan setel properti "URL" ke pola URL aplikasi yang menangani skema yang ditentukan dalam kolom "protokol". Pola dapat mencakup placeholder "%s", yang diganti dengan URL yang ditangani.
@@ -2457,7 +2443,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4625915093043961294">Mengonfigurasi daftar putih pemasangan ekstensi</translation>
 <translation id="4632343302005518762">Izinkan <ph name="PRODUCT_FRAME_NAME" /> menangani jenis konten yang tercantum</translation>
 <translation id="4632566332417930481">Larang penggunaan Developer Tools pada ekstensi yang diinstal oleh kebijakan perusahaan, izinkan penggunaan Developer Tools dalam konteks lainnya</translation>
-<translation id="4639407427807680016">Nama hosting perpesanan asli untuk dikeluarkan dari daftar hitam</translation>
 <translation id="4649395978608361979">Tujuan printer lokal</translation>
 <translation id="4650759511838826572">Nonaktifkan skema protokol URL</translation>
 <translation id="465099050592230505">URL toko web perusahaan (tidak digunakan)</translation>
@@ -5015,7 +5000,6 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
       Jika kebijakan tidak ditetapkan, <ph name="PRODUCT_NAME" /> akan mengizinkan pengguna mengontrol apakah browser merupakan default dan, jika tidak, apakah notifikasi pengguna seharusnya muncul.
 
       Catatan: Untuk administrator <ph name="MS_WIN_NAME" />, mengaktifkan setelan ini hanya akan berfungsi pada mesin yang menjalankan Windows 7. Untuk versi setelahnya, Anda harus men-deploy file "asosiasi aplikasi default" yang menjadikan <ph name="PRODUCT_NAME" /> sebagai pengendali untuk protokol <ph name="HTTPS_PROTOCOL" /> dan <ph name="HTTP_PROTOCOL" /> (dan secara opsional, protokol <ph name="FTP_PROTOCOL" /> dan format file lainnya). Lihat Bantuan Chrome ( https://support.google.com/chrome?p=make_chrome_default_win ).</translation>
-<translation id="8442489215829828465">Mengonfigurasi pesan batas akhir update otomatis untuk kebijakan MinimumChromeVersionEnforced</translation>
 <translation id="8445576299806775661">Setelah masing-masing update versi utama, Chrome akan membuat rekaman bagian tertentu dari data penjelajahan pengguna untuk digunakan ketika terjadi rollback versi darurat nantinya. Jika rollback darurat dilakukan ke versi yang rekaman terkaitnya dimiliki pengguna, data di rekaman tersebut akan dipulihkan. Ini memungkinkan pengguna mempertahankan setelan seperti bookmark dan data isi otomatis.
 
       Jika kebijakan ini tidak ditetapkan, nilai default 3 akan digunakan
@@ -5057,14 +5041,6 @@ Kebijakan akan dihapus pada M75.</translation>
           Untuk melihat contoh pola, buka https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Menonaktifkan penyimpanan histori browser</translation>
-<translation id="8498143772090164675">Kebijakan ini hanya berlaku jika perangkat telah mencapai batas akhir update otomatis dan tidak memenuhi versi minimum <ph name="PRODUCT_NAME" /> yang diizinkan sebagaimana disetel melalui kebijakan <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" />.
-
-      Jika kebijakan ini disetel ke string yang tidak kosong:
-      Jika waktu peringatan yang disebutkan dalam kebijakan <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> telah berakhir, pesan ini akan ditampilkan di layar login saat perangkat diblokir bagi siapa pun yang ingin login.
-      Jika waktu peringatan yang disebutkan dalam kebijakan <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> belum berakhir, pesan ini akan ditampilkan di halaman Setelan setelah pengguna login.
-
-      Jika kebijakan ini tidak disetel atau dibiarkan kosong, pesan akhir siklus proses default akan ditampilkan ke pengguna di kedua kasus di atas.
-      Pesan akhir siklus proses harus berupa teks biasa tanpa format apa pun. Markup tidak diizinkan. </translation>
 <translation id="8499172469244085141">Setelan Default (pengguna dapat menggantinya)</translation>
 <translation id="849962487677588458">Kebijakan ini sudah tidak digunakan lagi, dan dijadwalkan untuk dihapus di Chrome 78, tanpa adanya pengganti.
 
@@ -5566,26 +5542,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       Jika kebijakan disetel ke true, 'Header dan footer' dipilih dalam dialog pratinjau cetak, dan pengguna tidak dapat mengubahnya.</translation>
 <translation id="9213751049772256263">Nonaktifkan semua variasi</translation>
 <translation id="9217154963008402249">Frekuensi paket jaringan pemantauan</translation>
-<translation id="9222882926274278513">Mengonfigurasi persyaratan versi minimum <ph name="PRODUCT_NAME" /> yang diizinkan.
-
-      Jika kebijakan ini disetel ke daftar tidak kosong:
-      Jika tidak ada entri yang memiliki "chrome_version" lebih baru daripada versi di perangkat saat ini, tidak ada batasan yang diterapkan dan batasan yang telah diterapkan akan dicabut.
-      Jika setidaknya salah satu entri memiliki "chrome_version" yang lebih baru daripada versi saat ini, entri terkuat yang memiliki versi paling dekat dengan versi saat ini akan dipilih.
-      Jika terjadi konflik, preferensi akan diberikan pada entri dengan "warning_period" atau "aue_warning_period" yang lebih sedikit dan kebijakan diterapkan menggunakan entri tersebut.
-
-      Jika versi saat ini menjadi tidak terpakai saat sesi pengguna berlangsung dan jaringan saat ini membatasi update otomatis, akan muncul notifikasi di layar untuk mengupdate perangkat dalam "warning_period" yang ditampilkan di notifikasi.
-      Tidak ada notifikasi yang ditampilkan jika jaringan saat ini mengizinkan update otomatis dan perangkat harus diupdate dalam "warning_period".
-      "Warning_period" dimulai pada saat kebijakan diterapkan.
-      Jika kebijakan tidak diupdate hingga "warning_period" berakhir, pengguna akan dipaksa logout dari sesi.
-      Jika diketahui bahwa versi saat ini tidak terpakai saat login ketika "warning_period" berakhir, pengguna akan diminta mengupdate perangkat sebelum login.
-
-      Jika versi saat ini menjadi tidak terpakai saat sesi pengguna berlangsung dan perangkat telah mencapai batas akhir update otomatis, akan muncul notifikasi di layar untuk mengembalikan perangkat dalam "eol_warning_period".
-      Jika diketahui bahwa perangkat telah mencapai batas akhir update otomatis saat login ketika "eol_warning_period" berakhir, perangkat akan diblokir bagi siapa pun yang ingin login.
-
-      Jika kebijakan ini tidak disetel atau dibiarkan kosong, tidak ada batasan yang diterapkan, batasan yang ada akan dicabut, dan pengguna dapat login, berapa pun versi <ph name="PRODUCT_NAME" />.
-
-      "chrome_version" di sini bisa merupakan versi yang tepat seperti '61.0.3163.120' atau awalan versi, seperti '61.0'.
-      "warning_period" dan "aue_warning_period" adalah nilai opsional yang ditentukan dalam jumlah hari. Nilai defaultnya adalah 0 hari, yang artinya tidak ada periode peringatan. </translation>
 <translation id="922540222991413931">Konfigurasi sumber pemasangan skrip pengguna, aplikasi, dan ekstensi</translation>
 <translation id="924557436754151212">Impor sandi yang disimpan dari browser default saat pertama kali dijalankan</translation>
 <translation id="927444535723396977">Jika kebijakan disetel ke 1, situs akan dapat menjalankan JavaScript. Jika kebijakan disetel ke 2, JavaScript tidak akan dapat dijalankan.

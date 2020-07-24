@@ -660,14 +660,6 @@
 <translation id="2168397434410358693">在 AC 供電環境下執行時的閒置延遲時間</translation>
 <translation id="217013996107840632">從替代瀏覽器切換到 Chrome 所使用的指令列參數。</translation>
 <translation id="2170233653554726857">啟用 WPAD 最佳化功能</translation>
-<translation id="2171245625445050634">這項政策已在 M82 版中移除，請改用 MinimumChromeVersionEnforced。
-
-      設定 <ph name="PRODUCT_NAME" /> 的最低版本限制。系統會將低於設定值的版本視為過時版本，使用者必須先更新作業系統，才能登入裝置。
-
-      如果目前版本在使用者工作階段期間成為過時版本，系統會將使用者強制登出。
-
-      如果不設定這項政策，系統不會套用任何限制；不論使用哪種 <ph name="PRODUCT_NAME" /> 版本，使用者皆可登入。
-      此處的「版本」可以指確切版本 (例如「61.0.3163.120」)，也可以指版本前置字元 (例如「61.0」)。  </translation>
 <translation id="2172774896158845977">設定 <ph name="PRODUCT_NAME" /> 的預設首頁類型，並禁止使用者變更首頁偏好設定。首頁可以設為你指定的網址，也可以設為「新分頁」。
 
           如果啟用這項設定，系統一律會將「新分頁」當做首頁，並忽略指定的首頁網址位置。
@@ -1797,11 +1789,6 @@
       如果未設定這項政策，或是將這項政策設為 false，<ph name="PRODUCT_NAME" /> 將會按照公開宣佈的淘汰時間表。
 
       如要進一步瞭解這項淘汰作業，請參閱 https://g.co/chrome/symantecpkicerts。</translation>
-<translation id="383466854578875212">讓你指定不列入黑名單的內建訊息傳遞主機。
-
-          如果黑名單的值指定為 *，表示將所有內建訊息傳遞主機列入黑名單，只載入許可清單中列出的內建訊息傳遞主機。
-
-          根據預設，所有內建訊息傳遞主機都會列入許可清單。不過，如果透過政策將所有內建訊息傳遞主機列入黑名單，則可使用許可清單來覆寫政策。</translation>
 <translation id="3835692988507803626">針對指定語言強制停用拼字檢查功能</translation>
 <translation id="3837424079837455272">這項政策可控管是否能在 <ph name="PRODUCT_OS_NAME" />中新增使用者，但不會禁止使用者在 Android 應用程式中登入其他 Google 帳戶。如要禁止使用者登入其他 Google 帳戶，你可以在 <ph name="ARC_POLICY_POLICY_NAME" /> 中設定 Android 專屬的 <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> 政策。</translation>
 <translation id="3838094946886335701">你可以透過這項政策 (只能設為「建議」) 註冊通訊協定處理常式的清單，其中的通訊協定處理常式會與使用者所註冊的合併，二種皆可供使用。請將「protocol」(通訊協定) 屬性設為「mailto」等類型的網路通訊協定配置，並將「URL」(網址) 屬性設為處理該網路通訊協定的應用程式所使用的網址模式 (這裡的網路通訊協定指的是「通訊協定」欄位中所指定的網路通訊協定配置)。模式可包含「%s」預留位置，將替換為受處理的網址。
@@ -2326,7 +2313,6 @@
 <translation id="4625915093043961294">設定擴充功能安裝許可清單</translation>
 <translation id="4632343302005518762">允許 <ph name="PRODUCT_FRAME_NAME" /> 處理下列內容類型</translation>
 <translation id="4632566332417930481">禁止在由企業政策安裝的擴充功能中使用開發人員工具，允許在其他情況下使用開發人員工具</translation>
-<translation id="4639407427807680016">要從黑名單中排除的內建訊息傳遞主機名稱</translation>
 <translation id="4649395978608361979">本機印表機目的地</translation>
 <translation id="4650759511838826572">停用網址通訊協定機制</translation>
 <translation id="465099050592230505">企業線上應用程式商店網址 (已不適用)</translation>
@@ -4785,7 +4771,6 @@
       如果未設定這項政策，<ph name="PRODUCT_NAME" /> 將允許使用者決定其是否為預設瀏覽器，並在不是預設瀏覽器時允許使用者控制是否要顯示使用者通知。
 
       注意：<ph name="MS_WIN_NAME" /> 的系統管理員只能在搭載 Windows 7 的電腦上開啟這項設定。如果是較新版本的電腦，系統管理員必須部署「預設應用程式關聯」檔案，將 <ph name="PRODUCT_NAME" /> 做為 <ph name="HTTPS_PROTOCOL" /> 和 <ph name="HTTP_PROTOCOL" /> 通訊協定的處理常式 (也可以一併做為 <ph name="FTP_PROTOCOL" /> 通訊協定和其他檔案格式的處理常式)。請參閱 Chrome 說明文章：https://support.google.com/chrome?p=make_chrome_default_win。</translation>
-<translation id="8442489215829828465">設定 MinimumChromeVersionEnforced 政策的自動更新期限訊息。</translation>
 <translation id="8445576299806775661">Chrome 會在每次更新主要版本時，為一部分的使用者瀏覽資料建立快照，以便日後需要執行緊急版本復原作業時使用。如果使用者要緊急復原的目標版本有相應快照，系統會復原快照中的資料。這種做法可讓使用者保留書籤和自動填入資料等設定。
 
       如果不設定這項政策，系統會使用預設值 3
@@ -4827,14 +4812,6 @@
           如需模式範例，請參閱 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">停用儲存瀏覽記錄功能</translation>
-<translation id="8498143772090164675">只有在裝置的自動更新期限已結束，且裝置不符合透過 <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 政策設定的 <ph name="PRODUCT_NAME" /> 最低版本限制時，這項政策才會生效。
-
-      將這項政策設為非空白的字串時：
-      如果 <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 政策中提及的警告時間已過，且系統已禁止任何使用者登入裝置，登入畫面上即會顯示這則訊息。
-      如果 <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 政策中提及的警告時間還沒到，系統會在使用者登入後，於「設定」頁面中顯示這則訊息。
-
-      如果不設定這項政策或設為空白，系統會在以上兩種情況中，向使用者顯示預設的服務終止訊息。
-      服務終止訊息必須是不包含任何格式設定的純文字，而且不可有任何標記。 </translation>
 <translation id="8499172469244085141">預設設定 (使用者可覆寫)</translation>
 <translation id="849962487677588458">這項政策已淘汰且沒有替代項目，日後將從 Chrome 78 版中移除。
 
@@ -5313,26 +5290,6 @@
       如果將這項政策設為 true，列印對話方塊中的「頁首及頁尾」選項會預設為啟用，且使用者無法變更這項設定。</translation>
 <translation id="9213751049772256263">停用所有變化版本</translation>
 <translation id="9217154963008402249">監控網路封包的傳送頻率</translation>
-<translation id="9222882926274278513">設定 <ph name="PRODUCT_NAME" /> 的最低版本限制。
-
-      將這項政策設為非空白的清單時：
-      如果沒有任何項目的「chrome_version」高於裝置的目前版本，則系統不會套用任何限制，並會撤銷現有限制。
-      如果至少有一個項目的「chrome_version」高於目前版本，系統會選擇其版本最接近目前版本的項目。
-      如果發生衝突，系統會優先選擇「warning_period」或「aue_warning_period」值較小的項目，並使用該項目套用政策。
-
-      如果目前版本在使用者工作階段期間成為過時版本，且目前的網路限制自動更新，系統會在畫面上顯示通知，要求使用者在通知中顯示的「warning_period」期限內更新裝置。
-      如果目前的網路允許自動更新，系統不會顯示通知，且使用者必須在「warning_period」期限內更新裝置。
-      「warning_period」自系統套用政策時起算。
-      如果使用者未在「warning_period」到期前更新裝置，系統會將使用者登出工作階段。
-      如果使用者登入時「warning_period」已過期，且目前版本已過時，則使用者必須先更新裝置才能登入。
-
-      如果目前版本在使用者工作階段期間成為過時版本，且裝置的自動更新期限已結束，系統會在畫面上顯示通知，要求使用者在「eol_warning_period」期限內退還裝置。
-      如果使用者登入時「eol_warning_period」已過期，且裝置的自動更新期限已結束，則系統會禁止任何使用者登入裝置。
-
-      如果不設定這項政策或設為空白，系統不會套用任何限制，並會撤銷現有限制；不論使用哪種 <ph name="PRODUCT_NAME" /> 版本，使用者皆可登入。
-
-      此處的「chrome_version」可以指確切版本 (例如「61.0.3163.120」)，也可以指版本前置字元 (例如「61.0」)。
-      「warning_period」和「aue_warning_period」是選用值，以天數為單位。這兩個期間的預設值是 0 天，表示沒有任何警告期間。 </translation>
 <translation id="922540222991413931">設定擴充功能、應用程式和使用者指令碼安裝來源</translation>
 <translation id="924557436754151212">第一次執行時從預設瀏覽器匯入已儲存的密碼</translation>
 <translation id="927444535723396977">如果將這項政策設為 1，網站即可執行 JavaScript。如果將這項政策設為 2，網站將無法執行 JavaScript。

@@ -665,15 +665,6 @@
 <translation id="2168397434410358693">使用交流电源供电时的闲置延迟时间</translation>
 <translation id="217013996107840632">用于从替代浏览器切换至 Chrome 的命令行参数。</translation>
 <translation id="2170233653554726857">启用WPAD优化</translation>
-<translation id="2171245625445050634">在 M82 中，我们移除了此政策，请改用 MinimumChromeVersionEnforced。
-
-      设定 <ph name="PRODUCT_NAME" /> 的最低版本要求。低于要求的版本将被视为已过时版本，因此只有在用户更新操作系统后，才可以登录设备。
-
-      如果当前版本在用户使用期间变为过时版本，系统会强制用户退出登录。
-
-      如果此政策未设置，系统将不会应用任何限制，并且无论使用的是哪个 <ph name="PRODUCT_NAME" /> 版本，用户都能登录。
-
-      此处的“版本”既可以是确切版本（如“61.0.3163.120”），也可以是版本前缀（如“61.0”）。</translation>
 <translation id="2172774896158845977">配置 <ph name="PRODUCT_NAME" /> 中的默认主页的类型，并禁止用户更改主页偏好设置。您可以将主页设为指定的网址，也可以将其设为“新标签页”页面。
 
           如果您启用了此设置，该浏览器将会始终使用“新标签页”页面作为主页，并会忽略主页网址。
@@ -1829,11 +1820,6 @@
       如果此政策设为 false 或未设置，<ph name="PRODUCT_NAME" /> 则会遵循公开发布的弃用时间表。
 
       若想获取与本次弃用相关的更多详情，请访问 https://g.co/chrome/symantecpkicerts。</translation>
-<translation id="383466854578875212">允许您指定哪些本地消息传递主机不列入黑名单。
-
-          如果黑名单的值为“*”，则意味着所有本地消息传递主机均会列入黑名单，而系统只会加载白名单中所列的本地消息传递主机。
-
-          默认情况下，所有本地消息传递主机均在白名单中，但如果所有本地消息传递主机都按相关政策被列入黑名单，则您可以使用白名单来替换该政策。</translation>
 <translation id="3835692988507803626">强制停用语言拼写检查</translation>
 <translation id="3837424079837455272">此政策用于控制是否可向 <ph name="PRODUCT_OS_NAME" />添加新用户，但不会阻止用户在 Android 内登录其他 Google 帐号。如果您想阻止此类情况，请将 Android 专用的 <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> 政策配置为 <ph name="ARC_POLICY_POLICY_NAME" /> 的一部分。</translation>
 <translation id="3838094946886335701">通过设置此政策（仅为建议性政策），您可以注册一个协议处理程序列表以与用户注册的协议处理程序列表合并，从而同时使用这两组协议处理程序。“protocol”属性应设为“mailto”之类的协议，“URL”属性应设为处理相应协议（“protocol”字段中指定的协议）的应用所采用的网址格式。该格式可以包含一个“%s”占位符（将会替换为被处理的网址）。
@@ -2360,7 +2346,6 @@
 <translation id="4625915093043961294">配置扩展程序安装白名单</translation>
 <translation id="4632343302005518762">允许 <ph name="PRODUCT_FRAME_NAME" />处理列出的内容类型</translation>
 <translation id="4632566332417930481">禁止在由企业政策安装的扩展程序中使用开发者工具，允许在其他情境中使用开发者工具</translation>
-<translation id="4639407427807680016">免于列入黑名单的本地消息传递主机名</translation>
 <translation id="4649395978608361979">本地打印机目的地</translation>
 <translation id="4650759511838826572">停用网址协议架构</translation>
 <translation id="465099050592230505">企业网上应用店网址（已弃用）</translation>
@@ -4881,7 +4866,6 @@
       如果您不设置此政策，<ph name="PRODUCT_NAME" /> 会让用户控制是否将它设置为默认浏览器，以及是否在它不是默认浏览器的情况下显示用户通知。
 
       <ph name="MS_WIN_NAME" /> 管理员需要注意：只能在运行 Windows 7 的设备中开启此设置。在运行更高版本的设备中，您必须部署一个“默认应用关联”文件，使 <ph name="PRODUCT_NAME" /> 成为 <ph name="HTTPS_PROTOCOL" /> 和 <ph name="HTTP_PROTOCOL" /> 协议的处理程序（也可成为 <ph name="FTP_PROTOCOL" /> 协议和其他文件格式的处理程序）。请参阅 Chrome 帮助文章 ( https://support.google.com/chrome?p=make_chrome_default_win )。</translation>
-<translation id="8442489215829828465">为 MinimumChromeVersionEnforced 政策配置自动更新期限已过消息</translation>
 <translation id="8445576299806775661">每次实施完重大版本更新后，Chrome 都会为用户浏览数据的某些部分创建快照，以供日后执行紧急版本回滚时使用。如果对某个版本执行了紧急回滚，且用户拥有与此版本对应的快照，系统便会恢复相应快照中的数据。这就使得用户能够继续拥有自己的书签和自动填充数据等设置。
 
       如果此政策未设置，系统将会使用默认值（即 3）
@@ -4923,14 +4907,6 @@
           要查看示例格式，请访问 https://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">停用保存浏览器历史记录的功能</translation>
-<translation id="8498143772090164675">仅当设备的自动更新期限已过且不符合允许使用的最低 <ph name="PRODUCT_NAME" /> 版本（通过 <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 政策设置）的要求时，此政策才有效。
-
-      当此政策设为非空字符串时：
-      如果 <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 政策中提及的警告时间已过，当任何用户都无法登录设备时，系统会在登录屏幕上显示此消息。
-      如果 <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 政策中提及的警告时间未过，当用户登录后，系统会在“设置”页面中显示此消息。
-
-      如果此政策未设置或设为空字符串，在上述两种情况下，系统都会向用户显示默认的生命周期结束消息。
-      生命周期结束消息必须是不带任何格式的纯文本，且不得使用任何标记。 </translation>
 <translation id="8499172469244085141">默认设置（用户可以覆盖）</translation>
 <translation id="849962487677588458">此政策已被弃用，预定会在 Chrome 78 中被移除，且无替代政策。
 
@@ -5403,26 +5379,6 @@
       如果此政策设为 true，系统会在打印预览对话框内选中“页眉和页脚”，并且用户将无法更改此设置。</translation>
 <translation id="9213751049772256263">停用所有变体</translation>
 <translation id="9217154963008402249">发送监控网络数据包的频率</translation>
-<translation id="9222882926274278513">此政策旨在配置允许使用的最低 <ph name="PRODUCT_NAME" /> 版本的要求。
-
-      当此政策设为非空列表时：
-      如果所有条目的“chrome_version”都不高于设备中的当前版本，系统将不会应用任何限制，而且已有的限制会被撤消。
-      如果有至少 1 个条目的“chrome_version”高于当前版本，系统会选择其版本与当前版本最接近的那个条目。
-      如果存在冲突，系统会优先考虑“warning_period”或“aue_warning_period”期限较为紧急的那个条目，并会使用该条目应用此政策。
-
-      如果当前版本在用户使用期间变为过时版本，并且当前网络限制自动更新，系统就会在屏幕上显示通知，以要求用户在通知中显示的“warning_period”期限内更新设备。
-      如果当前网络允许自动更新，系统将不会显示任何通知，而用户必须在“warning_period”期限内更新设备。
-      “warning_period”期限的起算点是此政策被应用时。
-      如果设备在“warning_period”期限内一直未更新，用户会被强制退出会话。
-      如果当前版本在用户登录时已过时，并且“warning_period”期限已过，用户必须更新设备才能登录。
-
-      如果当前版本在用户使用期间变为过时版本，并且设备的自动更新期限已过，系统就会在屏幕上显示通知，以要求用户在“eol_warning_period”期限内退还设备。
-      如果用户登录时设备的自动更新期限已过，并且“eol_warning_period”期限已过，任何用户都无法登录设备。
-
-      如果此政策未设置或设为空，系统将不会应用任何限制，已有的限制会被撤消，并且无论使用的是哪个 <ph name="PRODUCT_NAME" /> 版本，用户都能登录。
-
-      此处的“chrome_version”既可以是确切版本（如“61.0.3163.120”），也可以是版本前缀（如“61.0”）。
-      “warning_period”和“aue_warning_period”都是可选值，在使用时应以天数为单位指定。这两个期限的默认值都是 0 天，表示没有警告期。 </translation>
 <translation id="922540222991413931">配置扩展程序、应用和用户脚本安装源</translation>
 <translation id="924557436754151212">首次运行时，从默认浏览器导入保存的密码</translation>
 <translation id="927444535723396977">如果此政策设为 1，系统会允许网站运行 JavaScript。如果此政策设为 2，系统会禁止网站运行 JavaScript。

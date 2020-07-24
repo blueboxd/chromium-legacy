@@ -737,15 +737,6 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 <translation id="2168397434410358693">Délai d'inactivité (secteur)</translation>
 <translation id="217013996107840632">Paramètres de ligne de commande pour basculer vers Chrome à partir du navigateur secondaire.</translation>
 <translation id="2170233653554726857">Activer l'optimisation WPAD</translation>
-<translation id="2171245625445050634">Cette règle étant supprimée dans la version M82, veuillez utiliser la règle "MinimumChromeVersionEnforced" à la place.
-
-      Permet de configurer la version minimale autorisée requise de <ph name="PRODUCT_NAME" />. Les versions ci-dessous étant considérées comme obsolètes, l'appareil ne permet pas à l'utilisateur de se connecter avant la mise à jour du système d'exploitation.
-
-      Si la version actuelle devient obsolète pendant une session utilisateur, cet utilisateur est déconnecté de manière forcée.
-
-      Si cette règle n'est pas configurée, aucune restriction n'est appliquée, et l'utilisateur peut se connecter quelle que soit la version de <ph name="PRODUCT_NAME" />.
-
-      Dans le cas présent, le terme "version" peut désigner une version exacte telle que "61.0.3163.120" ou le préfixe d'une version tel que "61.0".  </translation>
 <translation id="2172774896158845977">Permet de configurer le type de page d'accueil par défaut dans <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de modifier les préférences de page d'accueil. Vous pouvez définir la page d'accueil sur une URL que vous spécifiez ou sur la page Nouvel onglet.
 
           Si vous activez ce paramètre, la page Nouvel onglet est systématiquement utilisée comme page d'accueil, et l'URL de la page d'accueil est ignorée.
@@ -1894,11 +1885,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
       Si cette règle n'est pas définie, ou qu'elle est définie sur "False", <ph name="PRODUCT_NAME" /> suivra le calendrier annoncé publiquement pour l'abandon.
 
       Consultez la page https://g.co/chrome/symantecpkicerts pour en savoir plus sur cet abandon.</translation>
-<translation id="383466854578875212">Cette règle vous permet de spécifier les hôtes de messagerie native à exclure de la liste noire.
-
-          Si vous définissez la valeur liée à la liste noire sur "*", cela signifie que tous les hôtes de messagerie native sont ajoutés à la liste noire et que seuls les hôtes de messagerie native figurant sur la liste blanche sont chargés.
-
-          Par défaut, tous les hôtes de messagerie native figurent sur la liste blanche, mais si tous les hôtes de messagerie native ont été ajoutés à la liste noire via cette règle, la liste blanche peut être utilisée pour ignorer celle-ci.</translation>
 <translation id="3835692988507803626">Force la désactivation de la vérification orthographique pour certaines langues</translation>
 <translation id="3837424079837455272">Cette règle permet de déterminer si les nouveaux utilisateurs peuvent être ajoutés à <ph name="PRODUCT_OS_NAME" />. Elle n'empêche pas les utilisateurs de se connecter à un autre compte Google sur un appareil Android. Pour ce faire, configurez la règle <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> propre à Android via <ph name="ARC_POLICY_POLICY_NAME" />.</translation>
 <translation id="3838094946886335701">Cette règle (recommandation uniquement) permet d'enregistrer une liste de gestionnaires de protocoles combinée à ceux enregistrés par l'utilisateur, afin que les deux ensembles s'appliquent. Définissez la propriété "protocole" sur le schéma (par exemple, "mailto") et la propriété "URL" sur le format d'URL de l'application qui gère le schéma spécifié dans le champ "protocole". Le schéma peut inclure un espace réservé "%s" remplacé par l'URL gérée.
@@ -2458,7 +2444,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4625915093043961294">Configurer la liste blanche d'installation des extensions</translation>
 <translation id="4632343302005518762">Autoriser <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenu répertoriés</translation>
 <translation id="4632566332417930481">Interdire l'utilisation des outils pour les développeurs avec les extensions installées par la stratégie d'entreprise, mais autoriser l'utilisation des outils pour les développeurs dans les autres cas</translation>
-<translation id="4639407427807680016">Noms des hôtes de messagerie native à exclure de la liste noire</translation>
 <translation id="4649395978608361979">Destinations des imprimantes locales</translation>
 <translation id="4650759511838826572">Désactiver les schémas de protocole d'URL</translation>
 <translation id="465099050592230505">URL de boutique en ligne d'entreprise (abandonné)</translation>
@@ -4964,7 +4949,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
       Si cette règle n'est pas configurée, les utilisateurs peuvent contrôler si <ph name="PRODUCT_NAME" /> est le navigateur par défaut et, dans le cas contraire, si une notification doit être affichée pour les en informer.
 
       Remarque (pour les administrateurs <ph name="MS_WIN_NAME" />) : Ce paramètre ne peut être activé que pour les ordinateurs sous Windows 7. Pour les versions ultérieures, vous devez déployer un fichier d'associations d'applications par défaut qui définisse <ph name="PRODUCT_NAME" /> comme le gestionnaire des protocoles <ph name="HTTPS_PROTOCOL" /> et <ph name="HTTP_PROTOCOL" /> (et éventuellement du protocole <ph name="FTP_PROTOCOL" /> ainsi que d'autres formats de fichiers). Pour en savoir plus, consultez l'aide de Chrome à l'adresse https://support.google.com/chrome?p=make_chrome_default_win.</translation>
-<translation id="8442489215829828465">Configurer le message concernant l'expiration de la mise à jour automatique pour la règle MinimumChromeVersionEnforced</translation>
 <translation id="8445576299806775661">Après chaque mise à jour de version majeure, Chrome crée un instantané de certaines portions des données de navigation de l'utilisateur en prévision d'un éventuel rollback de version d'urgence. Si un rollback d'urgence a lieu et que Chrome dispose de l'instantané correspondant, les données de cet instantané sont restaurées. L'utilisateur récupérera ainsi ses favoris et ses données de saisie automatique, entre autres.
 
       Si la règle n'est pas définie, la valeur par défaut 3 est utilisée.
@@ -5006,14 +4990,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
           Pour voir des exemples de formats, accédez à l'adresse https://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Désactiver l'enregistrement de l'historique du navigateur</translation>
-<translation id="8498143772090164675">Cette règle n'est appliquée que si la date d'expiration des mises à jour automatiques associée à l'appareil est atteinte et que celui-ci ne répond pas aux exigences de version minimale pour <ph name="PRODUCT_NAME" />, définies dans la règle <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" />.
-
-      Lorsque cette règle est définie sur une chaîne non vide :
-      Si le délai d'avertissement mentionné dans la règle <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> est arrivé à expiration, ce message s'affiche sur l'écran de connexion lorsqu'aucun utilisateur ne peut se connecter avec l'appareil.
-      Si le délai d'avertissement mentionné dans la règle <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> n'est pas arrivé à expiration, ce message s'affiche sur la page "Paramètres" une fois l'utilisateur connecté.
-
-      Si cette règle n'est pas configurée ou si elle est vide, l'utilisateur voit le message de fin de vie par défaut dans les deux cas ci-dessus.
-      Le texte du message de fin de vie doit être brut et sans mise en forme. Aucun balisage n'est autorisé. </translation>
 <translation id="8499172469244085141">Paramètres par défaut (les utilisateurs peuvent les contourner)</translation>
 <translation id="849962487677588458">Cette règle est obsolète (elle va être supprimée dans Chrome 78 et ne sera pas remplacée).
 
@@ -5523,26 +5499,6 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
       Si la règle est définie sur True, "En-têtes et pieds de page" est sélectionné dans la boîte de dialogue d'aperçu avant impression et l'utilisateur ne peut pas le modifier.</translation>
 <translation id="9213751049772256263">Désactiver toutes les variantes</translation>
 <translation id="9217154963008402249">Fréquence des paquets réseau de contrôle</translation>
-<translation id="9222882926274278513">Permet de configurer la version minimale autorisée requise de <ph name="PRODUCT_NAME" />.
-
-      Lorsque cette règle est définie sur des entrées de la liste :
-      Si aucune des entrées de la liste ne possède une "chrome_version" ultérieure à la version actuelle de l'appareil, aucune restriction n'est alors appliquée, et les restrictions existantes sont révoquées.
-      Si au moins une entrée possède une "chrome_version" ultérieure à la version actuelle, l'entrée choisie est celle qui est la plus performante et dont la version est la plus proche de la version actuelle.
-      En cas de conflit, la préférence est donnée à celle dont la "warning_period" ou la "aue_warning_period" est la plus réduite. De plus, la règle est appliquée avec cette entrée.
-
-      Si la version actuelle devient obsolète pendant la session utilisateur et que le réseau actuel limite les mises à jour automatiques, une notification s'affiche à l'écran pour inviter l'utilisateur à mettre à jour l'appareil dans la "warning_period" qui lui est indiquée.
-      En revanche, si le réseau actuel autorise les mises à jour automatiques et que l'appareil doit être mis à jour dans la "warning_period" définie, aucune notification ne s'affiche.
-      La "warning_period" commence à partir de l'application de la règle.
-      Si l'appareil n'est pas mis à jour avant la fin de la "warning_period", l'utilisateur est déconnecté de la session.
-      Si la version actuelle s'avère obsolète au moment de la connexion, et si la "warning_period" est arrivée à expiration, l'utilisateur doit mettre à jour l'appareil avant de se connecter.
-
-      Si la version actuelle devient obsolète pendant la session utilisateur et que la date d'expiration des mises à jour automatiques associée à l'appareil est atteinte, une notification s'affiche à l'écran pour appliquer de nouveau la "eol_warning_period" à l'appareil.
-      Si la date d'expiration des mises à jour automatiques associée à l'appareil est atteinte au moment de la connexion et que la "eol_warning_period" est arrivée à expiration, aucun utilisateur ne peut se connecter à l'appareil.
-
-      Si cette règle n'est pas configurée ou si aucune entrée ne figure dans la liste, aucune restriction n'est appliquée, les restrictions existantes sont révoquées, et l'utilisateur peut se connecter quelle que soit la version de <ph name="PRODUCT_NAME" />.
-
-      Dans le cas présent, "chrome_version" peut désigner une version exacte telle que "61.0.3163.120" ou le préfixe d'une version tel que "61.0".
-      Les "warning_period" et "aue_warning_period" sont des valeurs facultatives exprimées en nombre de jours. Elles sont définies par défaut sur 0 jour, ce qui signifie qu'il n'y a pas de période d'avertissement. </translation>
 <translation id="922540222991413931">Configurer les sources d'installation des extensions, des applications et des scripts d'utilisateur</translation>
 <translation id="924557436754151212">Importer les mots de passe enregistrés du navigateur par défaut à la première exécution</translation>
 <translation id="927444535723396977">Si cette règle est définie sur "1", les sites Web peuvent exécuter JavaScript. Si cette règle est définie sur "2", les sites ne sont pas autorisés à exécuter ce langage.

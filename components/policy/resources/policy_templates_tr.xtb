@@ -703,15 +703,6 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
 <translation id="2168397434410358693">AC güçle çalışırken boşta kalma gecikmesi</translation>
 <translation id="217013996107840632">Alternatif tarayıcıdan geçiş yapmak için komut satırı parametreleri.</translation>
 <translation id="2170233653554726857">WPAD optimizasyonunu etkinleştir</translation>
-<translation id="2171245625445050634">Bu politika M82 sürümünde kaldırılmıştır. Bunun yerine lütfen MinimumChromeVersionEnforced politikasını kullanın.
-
-      İzin verilen en eski <ph name="PRODUCT_NAME" /> sürümü gereksinimini yapılandırır. Aşağıda verilen sürümler eski olarak değerlendirilir ve cihaz, OS güncellenmeden kullanıcının oturum açmasına izin vermez.
-
-      Geçerli sürüm, kullanıcı oturumu sırasında eski hale gelirse kullanıcının oturumu zorla kapatılır.
-
-      Bu politika ayarlanmazsa hiçbir kısıtlama uygulanmaz ve kullanıcı, <ph name="PRODUCT_NAME" /> sürümüne bakılmaksızın oturum açabilir.
-
-      Burada "Sürüm" ile kastedilen, tam sürüm (ör. "61.0.3163.120") veya sürüm öneki (ör. "61.0") olabilir.  </translation>
 <translation id="2172774896158845977"><ph name="PRODUCT_NAME" /> ürününde varsayılan ana sayfa türünü yapılandırır ve kullanıcıların ana sayfa tercihlerini değiştirmesini engeller. Ana sayfa sizin belirttiğiniz bir URL'ye veya Yeni Sekme Sayfası'na ayarlanabilir.
 
           Bu ayarı etkinleştirirseniz ana sayfa için her zaman Yeni Sekme Sayfası kullanılır ve ana sayfa URL konumu yok sayılır.
@@ -1862,11 +1853,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
       Bu politikanın ayarlanmaması veya yanlış değerine ayarlanması durumunda, <ph name="PRODUCT_NAME" />, herkese açık bir şekilde duyurulan kullanımdan kaldırma programını takip eder.
 
       Bu kullanımdan kaldırma süreci hakkında daha fazla bilgi için https://g.co/chrome/symantecpkicerts adresine bakın.</translation>
-<translation id="383466854578875212">Hangi yerel mesajlaşma ana makinelerinin kara listeye tabi olmayacağını belirtmenize olanak sağlar.
-
-          Kara liste değerinin * olarak belirtilmesi tüm yerel mesajlaşma ana makinelerinin kara listede olacağı ve yalnızca beyaz listedeki yerel mesajlaşma ana makinelerinin yükleneceği anlamına gelir.
-
-          Varsayılan olarak tüm yerel mesajlaşma ana makineleri beyaz listededir, ancak tüm yerel mesajlaşma ana makineleri politika tarafından kara listeye alınırsa beyaz liste bu politikayı geçersiz kılmak için kullanılabilir.</translation>
 <translation id="3835692988507803626">Yazım denetimi dillerini zorla devre dışı bırak</translation>
 <translation id="3837424079837455272">Bu politika, <ph name="PRODUCT_OS_NAME" /> ürününe yeni kullanıcıların eklenip eklenemeyeceğini kontrol eder. Kullanıcıların Android'de başka Google hesapları ile oturum açmalarını engellemez. Bunu engellemek isterseniz Android'e özgü <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> politikasını <ph name="ARC_POLICY_POLICY_NAME" /> politikası kapsamında yapılandırın.</translation>
 <translation id="3838094946886335701">Politikayı (yalnızca önerildiği gibi) ayarlamak, kullanıcının kaydettiği ile birleşen protokol işleyicileri listesi kaydetmenize olanak tanır. Böylece her iki liste de kullanılır. "Protokol" özelliğini "mailto" gibi bir düzene ayarlayın ve "URL" özelliğini "protokol" alanında belirtilen düzeni işleyen uygulamanın URL kalıbına ayarlayın. Kalıp, işlenen URL'nin yerini aldığı bir "%s" yer tutucu içerebilir.
@@ -2424,7 +2410,6 @@ politikayı geçersiz kılamaz.
 <translation id="4625915093043961294">Uzantı yükleme beyaz listesini yapılandır</translation>
 <translation id="4632343302005518762"><ph name="PRODUCT_FRAME_NAME" /> için listelenen içerik türlerini işlemeye izin ver</translation>
 <translation id="4632566332417930481">Kurumsal politika tarafından yüklenen uzantılarda Geliştirici Araçları kullanımına izin verme, diğer bağlamlarda Geliştirici Araçları kullanımına izin ver</translation>
-<translation id="4639407427807680016">Kara listeden muaf tutulacak yerel mesajlaşma ana makinelerinin adları</translation>
 <translation id="4649395978608361979">Yerel yazıcı hedefleri</translation>
 <translation id="4650759511838826572">URL protokol şemalarını devre dışı bırak</translation>
 <translation id="465099050592230505">Kurumsal web mağazası URL'si (kullanımdan kaldırıldı)</translation>
@@ -4935,7 +4920,6 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
       Politikanının ayarlanmadan bırakılması, <ph name="PRODUCT_NAME" /> ürününün varsayılan olup olmadığını ve varsayılan değilse kullanıcı bildirimlerinin gösterilip gösterilmeyeceğini kullanıcının denetlemesine izin verdiği anlamına gelir.
 
       Not: <ph name="MS_WIN_NAME" /> yöneticileri için bu ayar yalnızca Windows 7 çalıştıran makinelerde etkinleştirilebilir. Daha yeni sürümlerde <ph name="PRODUCT_NAME" /> ürününü <ph name="HTTPS_PROTOCOL" /> ve <ph name="HTTP_PROTOCOL" /> protokollerinin (ve isteğe bağlı olarak <ph name="FTP_PROTOCOL" /> protokolünün ve diğer dosya biçimlerinin) işleyicisi haline getiren bir "varsayılan uygulama ilişkilendirmeleri" dosyası dağıtmanız gerekir. Daha fazla bilgi için Chrome Yardımı'na (https://support.google.com/chrome?p=make_chrome_default_win) bakabilirsiniz.</translation>
-<translation id="8442489215829828465">MinimumChromeVersionEnforced politikası için otomatik güncelleme süre sonu mesajı yapılandırma</translation>
 <translation id="8445576299806775661">Her büyük sürüm güncellemesinin ardından Chrome, daha sonra bir acil sürüm geri alma durumunda kullanılmak üzere kullanıcının tarama verilerinin belirli bölümlerinin anlık görüntüsünü oluşturur. Kullanıcının karşılık gelen anlık görüntüsüne sahip olduğu bir sürümde acil durum geri alma gerçekleştirilirse anlık görüntüdeki veriler geri yüklenir. Bu, kullanıcıların yer işaretleri ve otomatik doldurma verileri gibi ayarları saklamasına olanak tanır.
 
       Bu politika ayarlanmazsa varsayılan değer olan 3 değeri kullanılır
@@ -4971,14 +4955,6 @@ Politika ayarlanırsa sınıra uymak için eski anlık görüntüler gerektiğin
           Örnek kalıplar için https://www.chromium.org/developers/how-tos/chrome-frame-getting-started sayfasına bakın.</translation>
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Tarayıcı geçmişini kaydetmeyi devre dışı bırak</translation>
-<translation id="8498143772090164675">Bu politika, yalnızca cihaz otomatik güncelleme süre sonuna ulaştığında ve <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> politikası aracılığıyla ayarlanan <ph name="PRODUCT_NAME" /> ürününün izin verilen minimum sürümünü karşılamadığında geçerli olur.
-
-      Bu politika boş olmayan bir dizeye ayarlandığında :
-     <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> politikasında bahsedilen uyarı süresi dolduysa bu mesaj herhangi bir kullanıcının oturum açması için cihaz engellendiğinde giriş ekranında gösterilir.
-      <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> politikasında belirtilen uyarı süresi dolmadıysa bu mesaj kullanıcı oturum açtıktan sonra Ayarlar sayfasında gösterilir.
-
-      Bu politika ayarlanmaz veya boş değerine ayarlanırsa yukarıdaki her iki durumda da kullanıcıya varsayılan kullanım ömrü sonu mesajı gösterilir.
-      Kullanım ömrü sonu mesajı biçimlendirme içermeyen düz metin olmalıdır. İşaretlemeye izin verilmez. </translation>
 <translation id="8499172469244085141">Varsayılan Ayarlar (kullanıcılar geçersiz kılabilir)</translation>
 <translation id="849962487677588458">Bu politika kullanımdan kaldırılmıştır ve Chrome 78'de yerine başka bir politika getirilmeden ileride kaldırılması planlanmaktadır.
 
@@ -5480,26 +5456,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
       Politika true (doğru) değerine ayarlanırsa "Üst bilgiler ve alt bilgiler", baskı önizleme iletişim kutusunda seçilir ve kullanıcı bu değerleri değiştiremez.</translation>
 <translation id="9213751049772256263">Tüm varyasyonları devre dışı bırakma</translation>
 <translation id="9217154963008402249">İzleme amaçlı ağ paketlerinin sıklığı</translation>
-<translation id="9222882926274278513">İzin verilen minimum <ph name="PRODUCT_NAME" /> sürümü gereksinimini yapılandırır.
-
-      Bu politika boş olmayan bir listeye ayarlandığında:
-      Girişlerin hiçbirinin "chrome_version" sürümü cihazdaki geçerli sürümden yüksek değilse herhangi bir kısıtlama uygulanmaz ve mevcut kısıtlamalar iptal edilir.
-      Girişlerin en az birinin "chrome_version" sürümü geçerli sürümden yüksekse sürümü geçerli sürüme en yakın olan en güçlü giriş seçilir.
-      İhtilaf olması halinde tercih daha az "warning_period" veya "aue_warning_period" içeren girişten yana kullanılır ve politika, bu giriş kullanılarak uygulanır.
-
-      Geçerli sürüm, kullanıcı oturumu sırasında eski hale gelirse ve geçerli ağ otomatik güncellemeleri sınırlıyorsa ekranda, cihazın belirtilen "warning_period" içinde güncellenmesi gerektiğine dair bir bildirim gösterilir.
-      Geçerli ağ otomatik güncellemelere izin veriyorsa ve cihazın "warning_period" içinde güncellenmesi gerekiyorsa bildirim gösterilmez.
-      "warning_period", politika uygulandığı zaman başlar.
-      Cihaz, "warning_period" sona erene kadar güncellenmezse kullanıcının oturumdan çıkışı yapılır.
-      "warning_period" sona erdikten sonra giriş yapılırken geçerli sürümün eski olduğu belirlenirse kullanıcının oturum açmadan önce cihazı güncellemesi gerekir.
-
-      Geçerli sürüm, kullanıcı oturumu sırasında eski hale gelirse ve cihaz otomatik güncelleme süre sonuna ulaştıysa ekranda, cihazın "eol_warning_period" içinde geri verilmesi gerektiğine dair bir bildirim gösterilir.
-      "eol_warning_period" sona erdikten sonra giriş yapılırken cihazın otomatik güncelleme süre sonuna ulaştığı belirlenirse cihazda herhangi bir kullanıcının oturum açması engellenir.
-
-      Bu politika ayarlanmaz veya boş olarak ayarlanırsa hiçbir kısıtlama uygulanmaz, mevcut kısıtlamalar iptal edilir ve kullanıcı, <ph name="PRODUCT_NAME" /> sürümüne bakılmaksızın oturum açabilir.
-
-      Burada "chrome_version" ile kastedilen, tam sürüm (ör. "61.0.3163.120") veya sürüm öneki (ör. "61.0") olabilir.
-      "warning_period" ve "aue_warning_period", gün sayısı şeklinde belirtilen isteğe bağlı değerlerdir. Bunlar için varsayılan değer 0 gündür ve uyarı süresi olmadığı anlamına gelir. </translation>
 <translation id="922540222991413931">Uzantı, uygulama ve kullanıcı komut dosyası yükleme kaynaklarını yapılandır</translation>
 <translation id="924557436754151212">İlk çalıştırmada kayıtlı şifreleri varsayılan tarayıcıdan içe aktar</translation>
 <translation id="927444535723396977">Politikayı True (Doğru) değerine ayarlanmak web sitelerinin JavaScript çalıştırmasına izin verir. Politikayı False (Yanlış) değerine ayarlamak web sitelerinin JavaScript çalıştırmasını engeller.

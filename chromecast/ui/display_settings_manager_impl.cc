@@ -59,6 +59,7 @@ DisplaySettingsManagerImpl::DisplaySettingsManagerImpl(
       screen_on_(true),
 #if defined(USE_AURA)
       screen_power_on_(true),
+      allow_screen_power_off_(false),
 #endif  // defined(USE_AURA)
       color_temperature_animation_(std::make_unique<ColorTemperatureAnimation>(
           window_manager_,
@@ -189,13 +190,12 @@ void DisplaySettingsManagerImpl::OnDisplayOffTimeoutCompleted() {
   screen_power_on_ = false;
 }
 
-void DisplaySettingsManagerImpl::SetScreenOn(bool screen_on,
-                                             bool display_power) {
+void DisplaySettingsManagerImpl::SetScreenOn(bool screen_on) {
   // Allow this to run if screen_on == screen_on_ == false IF
   // previously, the screen was turned off without powering off the screen
   // and we want to power it off this time
   if (screen_on == screen_on_ &&
-      !(!screen_on && !display_power && screen_power_on_)) {
+      !(!screen_on && allow_screen_power_off_ && screen_power_on_)) {
     return;
   }
 
@@ -210,7 +210,7 @@ void DisplaySettingsManagerImpl::SetScreenOn(bool screen_on,
   } else {
     UpdateBrightness(kScreenOnOffDuration);
     window_manager_->SetTouchInputDisabled(!screen_on_);
-    if (!screen_on && !display_power) {
+    if (!screen_on && allow_screen_power_off_) {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(
@@ -220,9 +220,12 @@ void DisplaySettingsManagerImpl::SetScreenOn(bool screen_on,
     }
   }
 }
+
+void DisplaySettingsManagerImpl::SetAllowScreenPowerOff(bool allow_power_off) {
+  allow_screen_power_off_ = allow_power_off;
+}
 #else
-void DisplaySettingsManagerImpl::SetScreenOn(bool screen_on,
-                                             bool display_power) {
+void DisplaySettingsManagerImpl::SetScreenOn(bool screen_on) {
   if (screen_on == screen_on_) {
     return;
   }
@@ -233,6 +236,7 @@ void DisplaySettingsManagerImpl::SetScreenOn(bool screen_on,
   UpdateBrightness(kScreenOnOffDuration);
   window_manager_->SetTouchInputDisabled(!screen_on_);
 }
+void DisplaySettingsManagerImpl::SetAllowScreenPowerOff(bool allow_power_off) {}
 #endif
 
 void DisplaySettingsManagerImpl::AddDisplaySettingsObserver(

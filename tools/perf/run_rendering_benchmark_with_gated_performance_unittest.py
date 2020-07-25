@@ -219,14 +219,74 @@ class TestRepresentativePerfScript(unittest.TestCase):
     result_recorder.invalidate_failures(BENCHMARK)
     (output, overall_return_code) = result_recorder.get_output(0)
 
+    self.assertEquals(overall_return_code, 1)
+    self.assertEquals(output['num_failures_by_type'].get('FAIL', 0), 1)
+    self.assertEquals(output['tests'][BENCHMARK]['story_1']['actual'], 'PASS')
+    self.assertEquals(output['tests'][BENCHMARK]['story_2']['actual'], 'FAIL')
+    self.assertEquals(output['tests'][BENCHMARK]['story_3']['actual'], 'PASS')
+    self.assertEquals(output['tests'][BENCHMARK]['story_4']['actual'], 'PASS')
+
+  # Invalidating failure as a result of noisy control test
+  def test_compare_values_3(self):
+    values_per_story = {
+      'story_1': {
+        'averages': [16.0, 17.0, 21.0],
+        'ci_095': [2.0, 15.0, 16.0],
+        'cpu_wall_time_ratio': [0.45, 0.42],
+      },
+      'story_3': { # Two of the runs have acceptable CI but high averages.
+        'averages': [10, 13],
+        'ci_095': [14, 16, 12],
+        'cpu_wall_time_ratio': [0.5, 0.52],
+      },
+      'story_4': {  # All runs have high noise.
+        'averages': [],
+        'ci_095': [16, 17, 18],
+        'cpu_wall_time_ratio': [],
+      },
+      'story_5': {  # No recorded values.
+        'averages': [],
+        'ci_095': [],
+        'cpu_wall_time_ratio': [],
+      }
+    }
+
+    sample_perf_results = create_sample_perf_results(
+        ['story_1', 'story_3', 'story_4', 'story_5'], [], BENCHMARK)
+    rerun = True
+    perf_test = perf_test_initializer()
+    perf_test.result_recorder[rerun].set_tests(sample_perf_results)
+
+    self.assertEquals(perf_test.result_recorder[rerun].fails, 0)
+
+    perf_test.compare_values(values_per_story, rerun)
+    result_recorder = perf_test.result_recorder[rerun]
+    self.assertEquals(result_recorder.tests, 4)
+    self.assertEquals(result_recorder.failed_stories,
+                      set(['story_3', 'story_4', 'story_5']))
+    self.assertTrue(result_recorder.is_control_stories_noisy)
+
+    result_recorder.invalidate_failures(BENCHMARK)
+    (output, overall_return_code) = result_recorder.get_output(0)
+
     self.assertEquals(overall_return_code, 0)
     self.assertEquals(output['num_failures_by_type'].get('FAIL', 0), 0)
     self.assertEquals(output['tests'][BENCHMARK]['story_1']['actual'], 'PASS')
-    self.assertEquals(output['tests'][BENCHMARK]['story_3']['actual'], 'FAIL')
-    self.assertEquals(output['tests'][BENCHMARK]['story_4']['actual'], 'FAIL')
+    self.assertEquals(output['tests'][BENCHMARK]['story_3']['actual'], 'PASS')
+    self.assertEquals(output['tests'][BENCHMARK]['story_4']['actual'], 'PASS')
+    self.assertEquals(output['tests'][BENCHMARK]['story_5']['actual'], 'PASS')
+    self.assertEquals(
+        output['tests'][BENCHMARK]['story_3']['invalidation_reason'],
+        'Noisy control test')
+    self.assertEquals(
+        output['tests'][BENCHMARK]['story_4']['invalidation_reason'],
+        'Noisy control test')
+    self.assertEquals(
+        output['tests'][BENCHMARK]['story_5']['invalidation_reason'],
+        'Noisy control test')
 
   # Experimental stories should not fail the test
-  def test_compare_values_3(self):
+  def test_compare_values_4(self):
     values_per_story = {
         'story_1': {
             'averages': [16.0, 17.0, 21.0],
@@ -254,10 +314,42 @@ class TestRepresentativePerfScript(unittest.TestCase):
     self.assertEquals(result_recorder.tests, 2)
     self.assertEquals(result_recorder.failed_stories, set([]))
 
-    result_recorder.invalidate_failures(BENCHMARK)
     (output, overall_return_code) = result_recorder.get_output(0)
 
     self.assertEquals(overall_return_code, 0)
     self.assertEquals(output['num_failures_by_type'].get('FAIL', 0), 0)
     self.assertEquals(output['tests'][BENCHMARK]['story_1']['actual'], 'PASS')
     self.assertEquals(output['tests'][BENCHMARK]['story_7']['actual'], 'PASS')
+
+  # Low cpu_wall_time_ratio invalidates the failure
+  def test_compare_values_5(self):
+    values_per_story = {
+        'story_1': {
+            'averages': [26.0, 27.0, 21.0],
+            'ci_095': [2.0, 15.0, 16.0],
+            'cpu_wall_time_ratio': [0.35, 0.42, 0.34],
+            # Higher avg than upper limit with low Cpu_wall_time_ratio
+        }
+    }
+
+    sample_perf_results = create_sample_perf_results(['story_1'], [], BENCHMARK)
+    rerun = False
+    perf_test = perf_test_initializer()
+    perf_test.result_recorder[rerun].set_tests(sample_perf_results)
+
+    self.assertEquals(perf_test.result_recorder[rerun].fails, 0)
+
+    perf_test.compare_values(values_per_story, rerun)
+    result_recorder = perf_test.result_recorder[rerun]
+    self.assertEquals(result_recorder.tests, 1)
+    self.assertEquals(result_recorder.failed_stories, set([]))
+
+    result_recorder.invalidate_failures(BENCHMARK)
+    (output, overall_return_code) = result_recorder.get_output(0)
+
+    self.assertEquals(overall_return_code, 0)
+    self.assertEquals(output['num_failures_by_type'].get('FAIL', 0), 0)
+    self.assertEquals(output['tests'][BENCHMARK]['story_1']['actual'], 'PASS')
+    self.assertEquals(
+        output['tests'][BENCHMARK]['story_1']['invalidation_reason'],
+        'Low cpu_wall_time_ratio')

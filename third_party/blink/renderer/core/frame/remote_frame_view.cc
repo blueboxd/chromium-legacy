@@ -339,10 +339,6 @@ uint32_t RemoteFrameView::CapturePaintPreview(const IntRect& rect,
   auto* tracker = canvas->GetPaintPreviewTracker();
   DCHECK(tracker);  // |tracker| must exist or there is a bug upstream.
 
-  // Create a placeholder ID that maps to an embedding token.
-  HTMLFrameOwnerElement* owner = remote_frame_->DeprecatedLocalOwner();
-  DCHECK(owner);
-
   // RACE: there is a possibility that the embedding token will be null and
   // still be in a valid state. This can occur is the frame has recently
   // navigated and the embedding token hasn't propagated from the FrameTreeNode
@@ -350,7 +346,7 @@ uint32_t RemoteFrameView::CapturePaintPreview(const IntRect& rect,
   // failure can be handled gracefully by simply ignoring the subframe in the
   // result.
   base::Optional<base::UnguessableToken> maybe_embedding_token =
-      owner->GetEmbeddingToken();
+      remote_frame_->GetEmbeddingToken();
   if (!maybe_embedding_token.has_value())
     return 0;
   uint32_t content_id =

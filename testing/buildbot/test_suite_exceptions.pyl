@@ -1127,11 +1127,6 @@
       # Can't run on MSAN because gl_tests uses the hardware driver,
       # which isn't instrumented.
       'Linux MSan Tests',
-      # TODO(crbug.com/1108842): Undo the change once ATL capacity is
-      # online.
-      'Linux ASan LSan Tests (1)',
-      'Linux CFI',
-      'Linux TSan Tests',
     ],
     'modifications': {
       # TODO(kbr): figure out a better way to specify blocks of
@@ -1193,11 +1188,6 @@
       # Can't run on MSAN because gl_tests uses the hardware driver,
       # which isn't instrumented.
       'Linux MSan Tests',
-      # TODO(crbug.com/1108842): Undo the change once ATL capacity is
-      # online.
-      'Linux ASan LSan Tests (1)',
-      'Linux CFI',
-      'Linux TSan Tests',
     ],
     'modifications': {
       # TODO(kbr): figure out a better way to specify blocks of

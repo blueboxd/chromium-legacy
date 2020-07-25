@@ -529,9 +529,6 @@ class CORE_EXPORT LocalFrame final
   void SetPrescientNetworkingForTesting(
       std::unique_ptr<WebPrescientNetworking> prescient_networking);
 
-  void SetEmbeddingToken(const base::UnguessableToken& embedding_token);
-  const base::Optional<base::UnguessableToken>& GetEmbeddingToken() const;
-
   void CopyImageAtViewportPoint(const IntPoint& viewport_point);
   void MediaPlayerActionAtViewportPoint(
       const IntPoint& viewport_position,

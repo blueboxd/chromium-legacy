@@ -62,7 +62,8 @@ class DisplaySettingsManagerImpl : public DisplaySettingsManager,
   void SetBrightness(float brightness) override;
   void SetBrightnessSmooth(float brightness, base::TimeDelta duration) override;
   void ResetBrightness() override;
-  void SetScreenOn(bool screen_on, bool display_power) override;
+  void SetScreenOn(bool screen_on) override;
+  void SetAllowScreenPowerOff(bool allow_power_off) override;
 
  private:
   // mojom::DisplaySettingsObserver implementation
@@ -87,6 +88,7 @@ class DisplaySettingsManagerImpl : public DisplaySettingsManager,
   bool screen_on_;
 #if defined(USE_AURA)
   bool screen_power_on_;
+  bool allow_screen_power_off_;
 #endif  // defined(USE_AURA)
 
   std::unique_ptr<ColorTemperatureAnimation> color_temperature_animation_;

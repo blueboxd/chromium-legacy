@@ -279,7 +279,7 @@ class TestFeedNetwork : public FeedNetwork {
         FROM_HERE, base::BindOnce(std::move(callback), std::move(result)));
   }
   void SendActionRequest(
-      const feedwire::ActionRequest& request,
+      const feedwire::FeedActionRequest& request,
       base::OnceCallback<void(ActionRequestResult)> callback) override {
     action_request_sent = request;
     ++action_request_call_count;
@@ -327,7 +327,7 @@ class TestFeedNetwork : public FeedNetwork {
     result.response_body = nullptr;
     InjectActionRequestResult(std::move(result));
   }
-  base::Optional<feedwire::ActionRequest> action_request_sent;
+  base::Optional<feedwire::FeedActionRequest> action_request_sent;
   int action_request_call_count = 0;
   std::string consistency_token;
 
@@ -1419,17 +1419,13 @@ TEST_F(FeedStreamTest, LoadStreamFromNetworkUploadsActions) {
   WaitForIdleTaskQueue();
 
   EXPECT_EQ(1, network_.action_request_call_count);
-  EXPECT_EQ(
-      1,
-      network_.action_request_sent->feed_action_request().feed_action_size());
+  EXPECT_EQ(1, network_.action_request_sent->feed_action_size());
 
   // Uploaded action should have been erased from store.
   stream_->UploadAction(MakeFeedAction(100ul), true, base::DoNothing());
   WaitForIdleTaskQueue();
   EXPECT_EQ(2, network_.action_request_call_count);
-  EXPECT_EQ(
-      1,
-      network_.action_request_sent->feed_action_request().feed_action_size());
+  EXPECT_EQ(1, network_.action_request_sent->feed_action_size());
 }
 
 TEST_F(FeedStreamTest, LoadMoreUploadsActions) {
@@ -1445,22 +1441,16 @@ TEST_F(FeedStreamTest, LoadMoreUploadsActions) {
   stream_->LoadMore(surface.GetSurfaceId(), base::DoNothing());
   WaitForIdleTaskQueue();
 
-  EXPECT_EQ(
-      1,
-      network_.action_request_sent->feed_action_request().feed_action_size());
+  EXPECT_EQ(1, network_.action_request_sent->feed_action_size());
   EXPECT_EQ("token-12", stream_->GetMetadata()->GetConsistencyToken());
 
   // Uploaded action should have been erased from the store.
   network_.action_request_sent.reset();
   stream_->UploadAction(MakeFeedAction(100ul), true, base::DoNothing());
   WaitForIdleTaskQueue();
-  EXPECT_EQ(
-      1,
-      network_.action_request_sent->feed_action_request().feed_action_size());
-  EXPECT_EQ(100ul, network_.action_request_sent->feed_action_request()
-                       .feed_action(0)
-                       .content_id()
-                       .id());
+  EXPECT_EQ(1, network_.action_request_sent->feed_action_size());
+  EXPECT_EQ(100ul,
+            network_.action_request_sent->feed_action(0).content_id().id());
 }
 
 TEST_F(FeedStreamTest, UploadActionsOneBatch) {
@@ -1469,16 +1459,12 @@ TEST_F(FeedStreamTest, UploadActionsOneBatch) {
   WaitForIdleTaskQueue();
 
   EXPECT_EQ(1, network_.action_request_call_count);
-  EXPECT_EQ(
-      3,
-      network_.action_request_sent->feed_action_request().feed_action_size());
+  EXPECT_EQ(3, network_.action_request_sent->feed_action_size());
 
   stream_->UploadAction(MakeFeedAction(99ul), true, base::DoNothing());
   WaitForIdleTaskQueue();
   EXPECT_EQ(2, network_.action_request_call_count);
-  EXPECT_EQ(
-      1,
-      network_.action_request_sent->feed_action_request().feed_action_size());
+  EXPECT_EQ(1, network_.action_request_sent->feed_action_size());
 }
 
 TEST_F(FeedStreamTest, UploadActionsMultipleBatches) {
@@ -1500,9 +1486,7 @@ TEST_F(FeedStreamTest, UploadActionsMultipleBatches) {
   stream_->UploadAction(MakeFeedAction(99ul), true, base::DoNothing());
   WaitForIdleTaskQueue();
   EXPECT_EQ(4, network_.action_request_call_count);
-  EXPECT_EQ(
-      1,
-      network_.action_request_sent->feed_action_request().feed_action_size());
+  EXPECT_EQ(1, network_.action_request_sent->feed_action_size());
 }
 
 TEST_F(FeedStreamTest, UploadActionsSkipsStaleActionsByTimestamp) {
@@ -1517,13 +1501,9 @@ TEST_F(FeedStreamTest, UploadActionsSkipsStaleActionsByTimestamp) {
 
   // Just one action should have been uploaded.
   EXPECT_EQ(1, network_.action_request_call_count);
-  EXPECT_EQ(
-      1,
-      network_.action_request_sent->feed_action_request().feed_action_size());
-  EXPECT_EQ(3ul, network_.action_request_sent->feed_action_request()
-                     .feed_action(0)
-                     .content_id()
-                     .id());
+  EXPECT_EQ(1, network_.action_request_sent->feed_action_size());
+  EXPECT_EQ(3ul,
+            network_.action_request_sent->feed_action(0).content_id().id());
 
   ASSERT_TRUE(cr.GetResult());
   EXPECT_EQ(1ul, cr.GetResult()->upload_attempt_count);
@@ -1545,9 +1525,7 @@ TEST_F(FeedStreamTest, UploadActionsErasesStaleActionsByAttempts) {
 
   // Four requests, three pending actions in the last request.
   EXPECT_EQ(4, network_.action_request_call_count);
-  EXPECT_EQ(
-      3,
-      network_.action_request_sent->feed_action_request().feed_action_size());
+  EXPECT_EQ(3, network_.action_request_sent->feed_action_size());
 
   // Action 0 should have been erased.
   ASSERT_TRUE(cr.GetResult());

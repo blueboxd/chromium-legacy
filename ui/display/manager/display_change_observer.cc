@@ -97,7 +97,7 @@ gfx::DisplayColorSpaces FillDisplayColorSpaces(
       gfx::ColorSpace::CreateSRGB(), DisplaySnapshot::PrimaryFormat());
 
   if (allow_high_bit_depth) {
-    constexpr float kSDRJoint = 0.5;
+    constexpr float kSDRJoint = 0.75;
     constexpr float kHDRLevel = 3.0;
     const auto primary_id = snapshot_color_space.GetPrimaryID();
     gfx::ColorSpace hdr_color_space;

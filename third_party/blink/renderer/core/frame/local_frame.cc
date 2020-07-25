@@ -2440,18 +2440,6 @@ mojom::blink::LocalFrameHost& LocalFrame::GetLocalFrameHostRemote() {
   return *local_frame_host_remote_.get();
 }
 
-void LocalFrame::SetEmbeddingToken(
-    const base::UnguessableToken& embedding_token) {
-  embedding_token_ = embedding_token;
-  if (auto* owner = DynamicTo<HTMLFrameOwnerElement>(Owner()))
-    owner->SetEmbeddingToken(embedding_token);
-}
-
-const base::Optional<base::UnguessableToken>& LocalFrame::GetEmbeddingToken()
-    const {
-  return embedding_token_;
-}
-
 void LocalFrame::GetTextSurroundingSelection(
     uint32_t max_length,
     GetTextSurroundingSelectionCallback callback) {

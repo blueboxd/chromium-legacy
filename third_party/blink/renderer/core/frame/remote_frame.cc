@@ -544,8 +544,8 @@ void RemoteFrame::UpdateUserActivationState(
 
 void RemoteFrame::SetEmbeddingToken(
     const base::UnguessableToken& embedding_token) {
-  FrameOwner* owner = Owner();
-  To<HTMLFrameOwnerElement>(owner)->SetEmbeddingToken(embedding_token);
+  DCHECK(IsA<HTMLFrameOwnerElement>(Owner()));
+  Frame::SetEmbeddingToken(embedding_token);
 }
 
 void RemoteFrame::SetPageFocus(bool is_focused) {

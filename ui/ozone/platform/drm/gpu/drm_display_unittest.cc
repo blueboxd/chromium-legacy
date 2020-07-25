@@ -19,26 +19,21 @@
 using ::testing::_;
 using ::testing::SizeIs;
 
-// Verifies that the argument goes from 0 to the maximum uint16_t times |scale|.
-MATCHER_P(MatchesLinearRamp, scale, "") {
+// Verifies that the argument goes from 0 to the maximum uint16_t times |scale|
+// following a power function with |exponent|.
+MATCHER_P2(MatchesPowerFunction, scale, exponent, "") {
   EXPECT_FALSE(arg.empty());
-
-  EXPECT_EQ(arg.front().r, 0);
-  EXPECT_EQ(arg.front().g, 0);
-  EXPECT_EQ(arg.front().b, 0);
 
   const uint16_t max_value = std::numeric_limits<uint16_t>::max() * scale;
 
-  const auto middle_element = arg[arg.size() / 2];
-  const uint16_t middle_value = max_value * (arg.size() / 2) / (arg.size() - 1);
-  EXPECT_NEAR(middle_element.r, middle_value, 1);
-  EXPECT_NEAR(middle_element.g, middle_value, 1);
-  EXPECT_NEAR(middle_element.b, middle_value, 1);
-
-  const uint16_t last_value = max_value;
-  EXPECT_EQ(arg.back().r, last_value);
-  EXPECT_EQ(arg.back().g, last_value);
-  EXPECT_EQ(arg.back().b, last_value);
+  float i = 1.0;
+  for (const auto rgb_value : arg) {
+    const uint16_t expected_value = max_value * pow(i / arg.size(), exponent);
+    i++;
+    EXPECT_NEAR(rgb_value.r, expected_value, 1.0);
+    EXPECT_NEAR(rgb_value.g, expected_value, 1.0);
+    EXPECT_NEAR(rgb_value.b, expected_value, 1.0);
+  }
 
   return true;
 }
@@ -154,10 +149,11 @@ TEST_F(DrmDisplayTest, SetColorSpace) {
   drm_display_.SetColorSpace(kHDRColorSpace);
 
   const auto kSDRColorSpace = gfx::ColorSpace::CreateREC709();
-  constexpr float kHDRLevel = 2.0;
-  EXPECT_CALL(
-      *plane_manager,
-      SetGammaCorrection(_, SizeIs(0), MatchesLinearRamp(1.0 / kHDRLevel)));
+  constexpr float kSDRLevel = 0.75;
+  constexpr float kExponent = 1.2;
+  EXPECT_CALL(*plane_manager,
+              SetGammaCorrection(_, SizeIs(0),
+                                 MatchesPowerFunction(kSDRLevel, kExponent)));
   drm_display_.SetColorSpace(kSDRColorSpace);
 }
 
@@ -181,10 +177,11 @@ TEST_F(DrmDisplayTest, SetEmptyGammaCorrectionHDRDisplay) {
   ON_CALL(*plane_manager, SetGammaCorrection(_, _, _))
       .WillByDefault(::testing::Return(true));
 
-  constexpr float kHDRLevel = 2.0;
-  EXPECT_CALL(
-      *plane_manager,
-      SetGammaCorrection(_, SizeIs(0), MatchesLinearRamp(1.0 / kHDRLevel)));
+  constexpr float kSDRLevel = 0.75;
+  constexpr float kExponent = 1.2;
+  EXPECT_CALL(*plane_manager,
+              SetGammaCorrection(_, SizeIs(0),
+                                 MatchesPowerFunction(kSDRLevel, kExponent)));
   drm_display_.SetGammaCorrection(std::vector<display::GammaRampRGBEntry>(),
                                   std::vector<display::GammaRampRGBEntry>());
 }

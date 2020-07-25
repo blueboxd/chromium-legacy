@@ -66,7 +66,7 @@ void SVGExternalDocumentCache::Entry::NotifyFinished(Resource* resource) {
 
 Document* SVGExternalDocumentCache::Entry::GetDocument() {
   const TextResource* resource = To<TextResource>(GetResource());
-  if (!document_ && resource->HasData() &&
+  if (!document_ && resource->IsLoaded() && resource->HasData() &&
       MimeTypeAllowed(resource->GetResponse())) {
     document_ = XMLDocument::CreateSVG(
         DocumentInit::Create()

@@ -36,7 +36,7 @@
   },
   {
     "name": "add-web-content-drop-interaction",
-    "owners": [ "edchin" ],
+    "owners": [ "edchin", "bling-flags" ],
     "expiry_milestone": 90
   },
   {
@@ -313,7 +313,7 @@
   },
   {
     "name": "autofill-ios-delay-between-fields",
-    "owners": [ "olivierrobin" ],
+    "owners": [ "olivierrobin", "bling-flags" ],
     "expiry_milestone": 86
   },
   {
@@ -358,17 +358,17 @@
   },
   {
     "name": "autofill-save-card-dismiss-on-navigation",
-    "owners": [ "sczs" ],
+    "owners": [ "sczs", "bling-flags" ],
     "expiry_milestone": 82
   },
   {
     "name": "autofill-save-card-infobar-edit-support",
-    "owners": [ "sczs" ],
+    "owners": [ "sczs", "bling-flags" ],
     "expiry_milestone": 84
   },
   {
     "name": "autofill-show-all-profiles-on-prefilled-forms",
-    "owners": [ "olivierrobin" ],
+    "owners": [ "olivierrobin", "bling-flags" ],
     "expiry_milestone": 86
   },
   {
@@ -453,7 +453,7 @@
   },
   {
     "name": "change-tab-switcher-position",
-    "owners": [ "ewannpv", "gambard" ],
+    "owners": [ "ewannpv", "gambard", "bling-flags" ],
     "expiry_milestone": 87
   },
   {
@@ -513,7 +513,7 @@
   },
   {
     "name": "collections-card-presentation-style",
-    "owners": [ "sczs" ],
+    "owners": [ "sczs", "bling-flags" ],
     "expiry_milestone": 80
   },
   {
@@ -538,7 +538,7 @@
   },
   {
     "name": "contained-browser-bvc",
-    "owners": [ "gambard" ],
+    "owners": [ "gambard", "bling-flags" ],
     "expiry_milestone": 87
   },
   {
@@ -643,7 +643,7 @@
   },
   {
     "name": "credit-card-scanner",
-    "owners": [ "gambard", "javierrobles" ],
+    "owners": [ "gambard", "javierrobles", "bling-flags" ],
     "expiry_milestone": 86
   },
   {
@@ -765,7 +765,7 @@
   },
   {
     "name": "desktop-version-default",
-    "owners": [ "gambard" ],
+    "owners": [ "gambard", "bling-flags" ],
     "expiry_milestone": 87
   },
   {
@@ -885,7 +885,7 @@
   },
   {
     "name": "disable-progress-bar-animation",
-    "owners": [ "eugenebut", "djean" ],
+    "owners": [ "eugenebut", "djean", "bling-flags" ],
     "expiry_milestone": 88
   },
   {
@@ -979,8 +979,8 @@
   },
   {
     "name": "drag_and_drop",
-    "owners": [ "//ios/chrome/browser/drag_and_drop/OWNERS" ],
-    "expiry_milestone": 86
+    "owners": [ "//ios/chrome/browser/drag_and_drop/OWNERS", "bling-flags" ],
+    "expiry_milestone": 90
   },
   {
     "name": "drag-to-snap-in-clamshell-mode",
@@ -1005,7 +1005,7 @@
   },
   {
     "name": "edit-bookmarks-ios",
-    "owners": [ "edchin", "rohitrao" ],
+    "owners": [ "edchin", "rohitrao", "bling-flags" ],
     "expiry_milestone": 90
   },
   {
@@ -1020,7 +1020,7 @@
   },
   {
     "name": "embedder-block-restore-url",
-    "owners": [ "justincohen", "rohitrao" ],
+    "owners": [ "justincohen", "rohitrao", "bling-flags" ],
     // Needed for manual testing of fallback flow on iOS.
     "expiry_milestone": -1
   },
@@ -1645,7 +1645,7 @@
   },
   {
     "name": "enable-ios-managed-settings-ui",
-    "owners": [ "tinazwang", "rohitrao" ],
+    "owners": [ "tinazwang", "rohitrao", "bling-flags" ],
     "expiry_milestone": 90
   },
   {
@@ -1860,7 +1860,7 @@
   },
   {
     "name": "enable-persistent-downloads",
-    "owners": [ "ewannpv", "gambard" ],
+    "owners": [ "ewannpv", "gambard", "bling-flags" ],
     "expiry_milestone": 87
   },
   { "name": "enable-phone-hub",
@@ -2375,7 +2375,7 @@
   },
   {
     "name": "expanded-tab-strip",
-    "owners": [ "mouraroberto@google.com", "gambard" ],
+    "owners": [ "mouraroberto@google.com", "gambard", "bling-flags" ],
     "expiry_milestone": 90
   },
   {
@@ -2511,7 +2511,7 @@
   },
   {
     "name": "force-unstacked-tabstrip",
-    "owners": [ "//ios/chrome/browser/ui/tabs/OWNERS" ],
+    "owners": [ "//ios/chrome/browser/ui/tabs/OWNERS", "bling-flags" ],
     "expiry_milestone": 86
   },
   {
@@ -2553,12 +2553,12 @@
   },
   {
     "name": "fullscreen-controller-browser-scoped",
-    "owners": [ "thegreenfrog", "kkhorimoto" ],
+    "owners": [ "thegreenfrog", "bling-flags" ],
     "expiry_milestone": 85
   },
   {
     "name": "fullscreen-viewport-adjustment-experiment",
-    "owners": [ "thegreenfrog", "kkhorimoto" ],
+    "owners": [ "thegreenfrog", "bling-flags" ],
     // Needed for manual testing of fallback flow on iOS.
     "expiry_milestone": -1
   },
@@ -2729,17 +2729,17 @@
   },
   {
     "name": "infobar-overlay-ui",
-    "owners": [ "kkhorimoto", "sczs" ],
+    "owners": [ "sczs", "bling-flags" ],
     "expiry_milestone": 85
   },
   {
     "name": "infobar-ui-reboot",
-    "owners": [ "sczs", "thegreenfrog" ],
+    "owners": [ "sczs", "thegreenfrog", "bling-flags" ],
     "expiry_milestone": 83
   },
   {
     "name": "infobar-ui-reboot-only-ios13",
-    "owners": [ "sczs", "thegreenfrog" ],
+    "owners": [ "sczs", "thegreenfrog", "bling-flags" ],
     "expiry_milestone": 84
   },
   {
@@ -2794,19 +2794,19 @@
   },
   {
     "name": "ios-breadcrumbs",
-    "owners": [ "michaeldo" ],
+    "owners": [ "michaeldo", "bling-flags" ],
     // Breadcrumbs is not a launching feature, but rather a tool used on
     // pre-stable channels for diagnosing crashes.
     "expiry_milestone": -1
   },
   {
     "name": "ios-lookalike-url-navigation-suggestions-ui",
-    "owners": [ "livvielin" ],
+    "owners": [ "livvielin", "bling-flags" ],
     "expiry_milestone": 85
   },
   {
     "name": "ios-synthetic-crash-reports",
-    "owners": [ "eugenebut", "olivierrobin" ],
+    "owners": [ "eugenebut", "olivierrobin", "bling-flags" ],
     "expiry_milestone": 95
   },
   {
@@ -2882,7 +2882,7 @@
   },
   {
     "name": "managed-bookmarks-ios",
-    "owners": [ "edchin", "rohitrao" ],
+    "owners": [ "edchin", "rohitrao", "bling-flags" ],
     "expiry_milestone": 90
   },
   {
@@ -2933,32 +2933,32 @@
   },
   {
     "name": "messages-block-popup-infobars",
-    "owners": [ "sczs", "thegreenfrog" ],
+    "owners": [ "sczs", "thegreenfrog", "bling-flags" ],
     "expiry_milestone": 85
   },
   {
     "name": "messages-confirm-infobars",
-    "owners": [ "sczs", "thegreenfrog" ],
+    "owners": [ "sczs", "thegreenfrog", "bling-flags" ],
     "expiry_milestone": 83
   },
   {
     "name": "messages-crash-restore-infobars",
-    "owners": [ "sczs", "thegreenfrog" ],
+    "owners": [ "sczs", "thegreenfrog", "bling-flags" ],
     "expiry_milestone": 83
   },
   {
     "name": "messages-download-infobar",
-    "owners": [ "sczs" ],
+    "owners": [ "sczs", "bling-flags" ],
     "expiry_milestone": 85
   },
   {
     "name": "messages-save-card-infobar",
-    "owners": [ "sczs", "thegreenfrog" ],
+    "owners": [ "sczs", "thegreenfrog", "bling-flags" ],
     "expiry_milestone": 83
   },
   {
     "name": "messages-translate-infobar",
-    "owners": [ "thegreenfrog", "sczs" ],
+    "owners": [ "thegreenfrog", "sczs", "bling-flags" ],
     "expiry_milestone": 83
   },
   {
@@ -2983,7 +2983,7 @@
   },
   {
     "name": "mobile-google-srp",
-    "owners": [ "gambard" ],
+    "owners": [ "gambard", "bling-flags" ],
     "expiry_milestone": 88
   },
   {
@@ -3023,7 +3023,7 @@
   },
   {
     "name": "new-content-suggestions-feed",
-    "owners": [ "adamta", "sczs", "gogerald" ],
+    "owners": [ "adamta", "sczs", "gogerald", "bling-flags" ],
     "expiry_milestone": 89
   },
   {
@@ -3378,7 +3378,7 @@
   },
   {
     "name": "open-downloads-in-files.app",
-    "owners": [ "ewannpv", "gambard" ],
+    "owners": [ "ewannpv", "gambard", "bling-flags" ],
     "expiry_milestone": 87
   },
   {
@@ -3429,7 +3429,7 @@
   },
   {
     "name": "page-info-refactoring",
-    "owners": [ "ewannpv", "gambard" ],
+    "owners": [ "ewannpv", "gambard", "bling-flags" ],
     "expiry_milestone": 88
   },
   {
@@ -3534,8 +3534,8 @@
   },
   {
     "name": "pointer-support",
-    "owners": [ "noyau" ],
-    "expiry_milestone": 85
+    "owners": [ "edchin", "bling-flags" ],
+    "expiry_milestone": 88
   },
   {
     "name": "policy-atomic-group-enabled",
@@ -3679,7 +3679,7 @@
   },
   {
     "name": "reload-sad-tab",
-    "owners": [ "gambard" ],
+    "owners": [ "gambard", "bling-flags" ],
     "expiry_milestone": 85
   },
   {
@@ -3724,7 +3724,7 @@
   },
   {
     "name": "safe-browsing-available",
-    "owners": [ "//ios/chrome/browser/safe_browsing/OWNERS" ],
+    "owners": [ "//ios/chrome/browser/safe_browsing/OWNERS", "bling-flags" ],
     "expiry_milestone": 85
   },
   {
@@ -3738,7 +3738,7 @@
   },
   {
     "name": "safe-browsing-real-time",
-    "owners": [ "//ios/chrome/browser/safe_browsing/OWNERS" ],
+    "owners": [ "//ios/chrome/browser/safe_browsing/OWNERS", "bling-flags" ],
     "expiry_milestone": 88
   },
   {
@@ -3815,7 +3815,7 @@
   },
   {
     "name": "send-uma-cellular",
-    "owners": [ "thegreenfrog" ],
+    "owners": [ "thegreenfrog", "bling-flags" ],
     "expiry_milestone": 80
   },
   {
@@ -3827,7 +3827,7 @@
   },
   {
     "name": "settings-refresh",
-    "owners": [ "gambard" ],
+    "owners": [ "gambard", "bling-flags" ],
     "expiry_milestone": 89
   },
   {
@@ -3987,8 +3987,8 @@
   },
   {
     "name": "snapshot-draw-view",
-    "owners": [ "//ios/chrome/browser/snapshots/OWNERS" ],
-    "expiry_milestone": 85
+    "owners": [ "//ios/chrome/browser/snapshots/OWNERS", "bling-flags" ],
+    "expiry_milestone": 90
   },
   {
     "name": "split-partially-occluded-quads",
@@ -4114,7 +4114,7 @@
   },
   {
     "name": "toolbar-container",
-    "owners": [ "thegreenfrog", "kkhorimoto" ],
+    "owners": [ "thegreenfrog", "bling-flags" ],
     "expiry_milestone": 85
   },
   {
@@ -4232,7 +4232,7 @@
   },
   {
     "name": "url-blocklist-ios",
-    "owners": [ "michaeldo", "rohitrao" ],
+    "owners": [ "michaeldo", "rohitrao", "bling-flags" ],
     "expiry_milestone": 90
   },
   {
@@ -4268,7 +4268,7 @@
   },
   {
     "name": "use-js-error-page",
-    "owners": [ "gambard" ],
+    "owners": [ "gambard", "bling-flags" ],
     "expiry_milestone": 89
   },
   {

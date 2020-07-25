@@ -227,7 +227,6 @@ void HTMLFrameOwnerElement::ClearContentFrame() {
 
   DCHECK_EQ(content_frame_->Owner(), this);
   content_frame_ = nullptr;
-  embedding_token_ = base::nullopt;
 
   for (ContainerNode* node = this; node; node = node->ParentOrShadowHostNode())
     node->DecrementConnectedSubframeCount();
@@ -631,26 +630,6 @@ void HTMLFrameOwnerElement::ParseAttribute(
   } else {
     HTMLElement::ParseAttribute(params);
   }
-}
-
-void HTMLFrameOwnerElement::SetEmbeddingToken(
-    const base::UnguessableToken& embedding_token) {
-  DCHECK(ContentFrame());
-  if (embedding_token_ == embedding_token)
-    return;
-
-  embedding_token_ = embedding_token;
-
-  // The embedding token is also used as the AXTreeID to reference the child
-  // accessibility tree for an HTMLFrameOwnerElement, so we need to notify the
-  // AXObjectCache object whenever this changes, to get the AX tree updated.
-  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
-    cache->EmbeddingTokenChanged(this);
-}
-
-const base::Optional<base::UnguessableToken>&
-HTMLFrameOwnerElement::GetEmbeddingToken() const {
-  return embedding_token_;
 }
 
 bool HTMLFrameOwnerElement::IsAdRelated() const {

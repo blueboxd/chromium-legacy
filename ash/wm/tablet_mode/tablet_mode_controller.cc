@@ -213,7 +213,7 @@ constexpr TabletModeController::TabletModeBehavior kOnBySensor{
     /*observe_pointer_device_events=*/true,
     /*block_internal_input_device=*/true,
     /*always_show_overview_button=*/false,
-    /*force_physical_tablet_state=*/false,
+    TabletModeController::ForcePhysicalTabletState::kDefault,
 };
 
 // Defines the behavior that sticks to tablet mode. Used to implement the
@@ -224,7 +224,7 @@ constexpr TabletModeController::TabletModeBehavior kLockInTabletMode{
     /*observe_pointer_device_events=*/false,
     /*block_internal_input_device=*/false,
     /*always_show_overview_button=*/true,
-    /*force_physical_tablet_state=*/false,
+    TabletModeController::ForcePhysicalTabletState::kDefault,
 };
 
 // Defines the behavior that sticks to tablet mode. Used to implement the
@@ -235,7 +235,7 @@ constexpr TabletModeController::TabletModeBehavior kLockInClamshellMode{
     /*observe_pointer_device_events=*/false,
     /*block_internal_input_device=*/false,
     /*always_show_overview_button=*/false,
-    /*force_physical_tablet_state=*/false,
+    TabletModeController::ForcePhysicalTabletState::kDefault,
 };
 
 // Defines the behavior used for testing. It prevents the device from
@@ -246,7 +246,31 @@ constexpr TabletModeController::TabletModeBehavior kOnForTest{
     /*observe_pointer_device_events=*/true,
     /*block_internal_input_device=*/true,
     /*always_show_overview_button=*/false,
-    /*force_physical_tablet_state=*/true,
+    TabletModeController::ForcePhysicalTabletState::kForceTabletMode,
+};
+
+// Used for the testing API to forcibly enter into the tablet mode. It should
+// not observe hardware events as tests want to stick with the tablet mode, and
+// it should not block internal keyboard as some tests may want to use keyboard
+// events in the tablet mode.
+// TODO(mukai): consolidate this with kOnFOrTest.
+constexpr TabletModeController::TabletModeBehavior kOnForAutotest{
+    /*use_sensor=*/false,
+    /*observe_display_events=*/false,
+    /*observe_pointer_device_events=*/false,
+    /*block_internal_input_device=*/false,
+    /*always_show_overview_button=*/false,
+    TabletModeController::ForcePhysicalTabletState::kForceTabletMode,
+};
+
+// Used for the testing API to forcibly exit from the tablet mode.
+constexpr TabletModeController::TabletModeBehavior kOffForAutotest{
+    /*use_sensor=*/false,
+    /*observe_display_events=*/false,
+    /*observe_pointer_device_events=*/false,
+    /*block_internal_input_device=*/false,
+    /*always_show_overview_button=*/false,
+    TabletModeController::ForcePhysicalTabletState::kForceClamshellMode,
 };
 
 // Used for development purpose (currently debug shortcut shift-ctrl-alt). This
@@ -258,7 +282,7 @@ constexpr TabletModeController::TabletModeBehavior kOnForDev{
     /*observe_pointer_device_events=*/true,
     /*block_internal_input_device=*/false,
     /*always_show_overview_button=*/true,
-    /*force_physical_tablet_state=*/true,
+    TabletModeController::ForcePhysicalTabletState::kForceTabletMode,
 };
 
 using LidState = chromeos::PowerManagerClient::LidState;
@@ -531,19 +555,22 @@ void TabletModeController::ForceUiTabletModeState(
     base::Optional<bool> enabled) {
   if (!enabled.has_value()) {
     tablet_mode_behavior_ = kDefault;
-    forced_ui_mode_ = UiMode::kNone;
+    AccelerometerReader::GetInstance()->SetEnabled(true);
     if (!SetIsInTabletPhysicalState(CalculateIsInTabletPhysicalState()))
       UpdateUiTabletState();
     return;
   }
   if (*enabled) {
-    tablet_mode_behavior_ = kLockInTabletMode;
-    forced_ui_mode_ = UiMode::kTabletMode;
+    tablet_mode_behavior_ = kOnForAutotest;
   } else {
-    tablet_mode_behavior_ = kLockInClamshellMode;
-    forced_ui_mode_ = UiMode::kClamshell;
+    tablet_mode_behavior_ = kOffForAutotest;
   }
-  UpdateUiTabletState();
+  // We want to suppress the accelerometer to auto-rotate the screen based on
+  // the physical orientation, as it will confuse the test scenarios. Note that
+  // this should not block ScreenOrientationController as the screen may want
+  // to be rotated for other factors.
+  AccelerometerReader::GetInstance()->SetEnabled(false);
+  SetIsInTabletPhysicalState(CalculateIsInTabletPhysicalState());
 }
 
 void TabletModeController::SetEnabledForTest(bool enabled) {
@@ -1211,11 +1238,18 @@ void TabletModeController::OnScreenshotTaken(
 }
 
 bool TabletModeController::CalculateIsInTabletPhysicalState() const {
+  switch (tablet_mode_behavior_.force_physical_tablet_state) {
+    case ForcePhysicalTabletState::kDefault:
+      // Don't return forced result. Check the hardware configuration.
+      break;
+    case ForcePhysicalTabletState::kForceTabletMode:
+      return true;
+    case ForcePhysicalTabletState::kForceClamshellMode:
+      return false;
+  }
+
   if (!HasActiveInternalDisplay())
     return false;
-
-  if (tablet_mode_behavior_.force_physical_tablet_state)
-    return true;
 
   // For updated EC, the tablet mode switch activates at 200 degrees, and
   // deactivates at 160 degrees.

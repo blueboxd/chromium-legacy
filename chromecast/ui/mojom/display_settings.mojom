@@ -28,10 +28,10 @@ interface DisplaySettings {
 
   // Sets whether screen should be on. If set to false, then screen will always
   // be off and other settings will not be applied.
-  // |display_on| is false, and |display_power| is false, power off the
-  // display. |display_power| is ignored if |display_on| is true (since
-  // display cannot turn on without display power)
-  SetScreenOn(bool display_on, bool display_power);
+  SetScreenOn(bool display_on);
+
+  // Sets whether the screen should power off when SetScreenOn(false) is called.
+  SetAllowScreenPowerOff(bool allow_power_off);
 
   // Adds an observer to DisplaySettings.
   AddDisplaySettingsObserver(pending_remote<DisplaySettingsObserver> observer);

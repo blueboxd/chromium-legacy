@@ -59,7 +59,7 @@ suite('ImportDataDialog', function() {
     {
       autofillFormData: true,
       favorites: true,
-      history: true,
+      history: false,  // Emulate unsupported import option
       index: 1,
       name: 'Mozilla Firefox',
       passwords: true,
@@ -230,6 +230,27 @@ suite('ImportDataDialog', function() {
 
       assertFalse(dialog.$.successIcon.parentElement.hidden);
       assertTrue(dialog.$$('settings-toggle-button').parentElement.hidden);
+    });
+  });
+
+  test('ImportFromBrowserProfileWithUnsupportedOption', function() {
+    // Flip all prefs to true.
+    Object.keys(prefs).forEach(function(prefName) {
+      ensureSettingsCheckboxCheckedStatus(prefName, true);
+    });
+
+    const expectedIndex = 1;
+    simulateBrowserProfileChange(expectedIndex);
+    dialog.$.import.click();
+
+    const importCalled = browserProxy.whenCalled('importData');
+    return importCalled.then(([actualIndex, types]) => {
+      assertEquals(expectedIndex, actualIndex);
+
+      Object.keys(prefs).forEach(function(prefName) {
+        // import_dialog_history is unsupported and hidden
+        assertEquals(prefName !== 'import_dialog_history', types[prefName]);
+      });
     });
   });
 

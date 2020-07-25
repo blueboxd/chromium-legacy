@@ -36,6 +36,7 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_remote_frame_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/document_type.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -128,6 +129,7 @@ void Frame::Detach(FrameDetachType type) {
   // the frame tree. https://crbug.com/578349.
   DisconnectOwnerElement();
   page_ = nullptr;
+  embedding_token_ = base::nullopt;
 }
 
 void Frame::DisconnectOwnerElement() {
@@ -331,6 +333,17 @@ const std::string& Frame::ToTraceValue() {
   if (!trace_value_)
     trace_value_ = devtools_frame_token_.ToString();
   return trace_value_.value();
+}
+
+void Frame::SetEmbeddingToken(const base::UnguessableToken& embedding_token) {
+  embedding_token_ = embedding_token;
+  if (auto* owner = DynamicTo<HTMLFrameOwnerElement>(Owner())) {
+    // The embedding token is also used as the AXTreeID to reference the child
+    // accessibility tree for an HTMLFrameOwnerElement, so we need to notify the
+    // AXObjectCache object whenever this changes, to get the AX tree updated.
+    if (AXObjectCache* cache = owner->GetDocument().ExistingAXObjectCache())
+      cache->EmbeddingTokenChanged(owner);
+  }
 }
 
 Frame::Frame(FrameClient* client,

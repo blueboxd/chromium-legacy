@@ -175,8 +175,9 @@ ResultCode TargetProcess::Create(
   }
   base::win::ScopedProcessInformation process_info(temp_process_info);
 
-  if (job_) {
-    // Assign the suspended target to the windows job object.
+  if (job_ && base::win::GetVersion() < base::win::Version::WIN10) {
+    // Assign the suspended target to the windows job object. On Win 10
+    // this happens through PROC_THREAD_ATTRIBUTE_JOB_LIST.
     if (!::AssignProcessToJobObject(job_, process_info.process_handle())) {
       *win_error = ::GetLastError();
       ::TerminateProcess(process_info.process_handle(), 0);

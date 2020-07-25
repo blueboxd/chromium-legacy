@@ -230,16 +230,11 @@ void UploadActionsTask::OnUpdateActionsFinished(
       batch->disown_feed_action_request();
   request->mutable_consistency_token()->set_token(consistency_token_);
 
-  feedwire::ActionRequest action_request;
-  action_request.set_request_version(
-      feedwire::ActionRequest::FEED_UPLOAD_ACTION);
-  action_request.set_allocated_feed_action_request(request.release());
-
   FeedNetwork* network = stream_->GetNetwork();
   DCHECK(network);
 
   network->SendActionRequest(
-      action_request,
+      *request,
       base::BindOnce(&UploadActionsTask::OnUploadFinished,
                      weak_ptr_factory_.GetWeakPtr(), std::move(batch)));
 }

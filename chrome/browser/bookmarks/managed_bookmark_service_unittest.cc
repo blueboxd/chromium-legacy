@@ -38,17 +38,23 @@ TEST(ManagedBookmarkServiceNoPolicyTest, EmptyManagedNode) {
   // Verifies that the managed node is empty and invisible when the policy is
   // not set.
   content::BrowserTaskEnvironment task_environment;
-  TestingProfile profile;
+  TestingProfile::Builder profile_builder;
+  profile_builder.AddTestingFactory(BookmarkModelFactory::GetInstance(),
+                                    BookmarkModelFactory::GetDefaultFactory());
+  profile_builder.AddTestingFactory(
+      ManagedBookmarkServiceFactory::GetInstance(),
+      ManagedBookmarkServiceFactory::GetDefaultFactory());
+  std::unique_ptr<TestingProfile> profile = profile_builder.Build();
 
   // Make sure the policy isn't set.
-  ASSERT_EQ(nullptr, profile.GetTestingPrefService()->GetManagedPref(
+  ASSERT_EQ(nullptr, profile->GetTestingPrefService()->GetManagedPref(
                          bookmarks::prefs::kManagedBookmarks));
 
-  profile.CreateBookmarkModel(false);
-  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(&profile);
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForBrowserContext(profile.get());
   bookmarks::test::WaitForBookmarkModelToLoad(model);
   ManagedBookmarkService* managed =
-      ManagedBookmarkServiceFactory::GetForProfile(&profile);
+      ManagedBookmarkServiceFactory::GetForProfile(profile.get());
   DCHECK(managed);
 
   ASSERT_TRUE(managed->managed_node());
@@ -62,7 +68,16 @@ class ManagedBookmarkServiceTest : public testing::Test {
   ~ManagedBookmarkServiceTest() override {}
 
   void SetUp() override {
-    prefs_ = profile_.GetTestingPrefService();
+    TestingProfile::Builder profile_builder;
+    profile_builder.AddTestingFactory(
+        BookmarkModelFactory::GetInstance(),
+        BookmarkModelFactory::GetDefaultFactory());
+    profile_builder.AddTestingFactory(
+        ManagedBookmarkServiceFactory::GetInstance(),
+        ManagedBookmarkServiceFactory::GetDefaultFactory());
+    profile_ = profile_builder.Build();
+
+    prefs_ = profile_->GetTestingPrefService();
     ASSERT_FALSE(prefs_->HasPrefPath(bookmarks::prefs::kManagedBookmarks));
 
     // TODO(crbug.com/697817): Convert SetManagedPrefs to take a unique_ptr.
@@ -70,11 +85,10 @@ class ManagedBookmarkServiceTest : public testing::Test {
                            CreateTestTree());
 
     // Create and load the bookmark model.
-    profile_.CreateBookmarkModel(false);
-    model_ = BookmarkModelFactory::GetForBrowserContext(&profile_);
+    model_ = BookmarkModelFactory::GetForBrowserContext(profile_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
     model_->AddObserver(&observer_);
-    managed_ = ManagedBookmarkServiceFactory::GetForProfile(&profile_);
+    managed_ = ManagedBookmarkServiceFactory::GetForProfile(profile_.get());
     DCHECK(managed_);
 
     // The managed node always exists.
@@ -152,7 +166,7 @@ class ManagedBookmarkServiceTest : public testing::Test {
   }
 
   content::BrowserTaskEnvironment task_environment_;
-  TestingProfile profile_;
+  std::unique_ptr<TestingProfile> profile_;
   sync_preferences::TestingPrefServiceSyncable* prefs_;
   bookmarks::MockBookmarkModelObserver observer_;
   ManagedBookmarkService* managed_;
@@ -306,14 +320,14 @@ TEST_F(ManagedBookmarkServiceTest, HasDescendantsOfManagedNode) {
 
 TEST_F(ManagedBookmarkServiceTest, GetManagedBookmarksDomain) {
   // Not managed profile
-  profile_.set_profile_name("user@google.com");
+  profile_->set_profile_name("user@google.com");
   EXPECT_TRUE(
-      ManagedBookmarkServiceFactory::GetManagedBookmarksDomain(&profile_)
+      ManagedBookmarkServiceFactory::GetManagedBookmarksDomain(profile_.get())
           .empty());
 
   // Managed profile
-  profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);
+  profile_->GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);
   EXPECT_EQ(
       "google.com",
-      ManagedBookmarkServiceFactory::GetManagedBookmarksDomain(&profile_));
+      ManagedBookmarkServiceFactory::GetManagedBookmarksDomain(profile_.get()));
 }

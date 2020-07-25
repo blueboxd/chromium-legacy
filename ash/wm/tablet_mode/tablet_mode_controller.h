@@ -192,6 +192,15 @@ class ASH_EXPORT TabletModeController
   // Returns true if the system tray should have a overview button.
   bool ShouldShowOverviewButton() const;
 
+  // ForcePhysicalTabletState is to control physical tablet state. The default
+  // state is not to force the state, so the tablet-mode controller will observe
+  // device configurations.
+  enum class ForcePhysicalTabletState {
+    kDefault,
+    kForceTabletMode,
+    kForceClamshellMode,
+  };
+
   // Defines how the tablet mode controller controls the
   // tablet mode and its transition between clamshell mode.
   // This is defined as a public to define constexpr in cc.
@@ -201,7 +210,8 @@ class ASH_EXPORT TabletModeController
     bool observe_pointer_device_events = true;
     bool block_internal_input_device = false;
     bool always_show_overview_button = false;
-    bool force_physical_tablet_state = false;
+    ForcePhysicalTabletState force_physical_tablet_state =
+        ForcePhysicalTabletState::kDefault;
   };
 
  private:

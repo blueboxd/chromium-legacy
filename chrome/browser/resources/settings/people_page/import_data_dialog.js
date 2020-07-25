@@ -150,7 +150,7 @@ Polymer({
     } else {
       const types = {};
       checkboxes.forEach(checkbox => {
-        types[checkbox.pref.key] = checkbox.checked;
+        types[checkbox.pref.key] = checkbox.checked && !checkbox.hidden;
       });
       this.browserProxy_.importData(this.$.browserSelect.selectedIndex, types);
     }

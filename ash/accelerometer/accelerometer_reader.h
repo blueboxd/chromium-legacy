@@ -49,6 +49,11 @@ class ASH_EXPORT AccelerometerReader {
   void StartListenToTabletModeController();
   void StopListenToTabletModeController();
 
+  // Controls the availability of emitting acccelerometer reader events to
+  // its observers. This shouldn't be called normally, but Tast tests should
+  // be able to control the accelerometer feature.
+  void SetEnabled(bool enabled);
+
  protected:
   AccelerometerReader();
   virtual ~AccelerometerReader();

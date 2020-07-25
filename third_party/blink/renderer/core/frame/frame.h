@@ -245,6 +245,11 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   }
   const std::string& ToTraceValue();
 
+  void SetEmbeddingToken(const base::UnguessableToken& embedding_token);
+  const base::Optional<base::UnguessableToken>& GetEmbeddingToken() const {
+    return embedding_token_;
+  }
+
   NavigationRateLimiter& navigation_rate_limiter() {
     return navigation_rate_limiter_;
   }
@@ -394,6 +399,12 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   bool is_loading_;
   base::UnguessableToken devtools_frame_token_;
   base::Optional<std::string> trace_value_;
+
+  // Embedding token, if existing, associated to this frame. For local frames
+  // this will only be valid if the frame has committed a navigation and will
+  // change when a new document is committed. For remote frames this will only
+  // be valid when owned by an HTMLFrameOwnerElement.
+  base::Optional<base::UnguessableToken> embedding_token_;
 
   // The user activation state of the current frame.  See |UserActivationState|
   // for details on how this state is maintained.

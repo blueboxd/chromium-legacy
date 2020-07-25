@@ -3798,12 +3798,8 @@ IntPoint LocalFrameView::SoonToBeRemovedUnscaledViewportToContents(
 
 bool LocalFrameView::CapturePaintPreview(GraphicsContext& context,
                                          const IntSize& paint_offset) const {
-  HTMLFrameOwnerElement* owner =
-      DynamicTo<HTMLFrameOwnerElement>(GetFrame().Owner());
-  DCHECK(owner);
-
   base::Optional<base::UnguessableToken> maybe_embedding_token =
-      owner->GetEmbeddingToken();
+      GetFrame().GetEmbeddingToken();
 
   // Avoid crashing if a local frame doesn't have an embedding token.
   // e.g. it was unloaded or hasn't finished loading (crbug/1103157).

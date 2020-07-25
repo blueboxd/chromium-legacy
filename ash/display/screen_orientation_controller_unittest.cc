@@ -57,7 +57,7 @@ display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
 }
 
 void EnableTabletMode(bool enable) {
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(enable);
+  Shell::Get()->tablet_mode_controller()->ForceUiTabletModeState(enable);
 }
 
 bool RotationLocked() {

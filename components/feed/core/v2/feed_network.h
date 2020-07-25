@@ -11,7 +11,7 @@
 #include "components/feed/core/v2/public/types.h"
 
 namespace feedwire {
-class ActionRequest;
+class FeedActionRequest;
 class Request;
 class Response;
 }  // namespace feedwire
@@ -51,11 +51,11 @@ class FeedNetwork {
       const feedwire::Request& request,
       base::OnceCallback<void(QueryRequestResult)> callback) = 0;
 
-  // Send a feedwire::ActionRequest, and receive the response in |callback|.
+  // Send a feedwire::FeedActionRequest, and receive the response in |callback|.
   // |callback| will be called unless the request is canceled with
   // |CancelRequests()|.
   virtual void SendActionRequest(
-      const feedwire::ActionRequest& request,
+      const feedwire::FeedActionRequest& request,
       base::OnceCallback<void(ActionRequestResult)> callback) = 0;
 
   // Cancels all pending requests immediately. This could be used, for example,

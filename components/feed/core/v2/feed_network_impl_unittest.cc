@@ -16,6 +16,7 @@
 #include "base/test/task_environment.h"
 #include "components/feed/core/common/pref_names.h"
 #include "components/feed/core/proto/v2/wire/action_request.pb.h"
+#include "components/feed/core/proto/v2/wire/feed_action_request.pb.h"
 #include "components/feed/core/proto/v2/wire/feed_action_response.pb.h"
 #include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
@@ -58,9 +59,10 @@ feedwire::Response GetTestFeedResponse() {
   return response;
 }
 
-feedwire::ActionRequest GetTestActionRequest() {
-  feedwire::ActionRequest request;
-  request.set_request_version(feedwire::ActionRequest::FEED_UPLOAD_ACTION);
+feedwire::FeedActionRequest GetTestActionRequest() {
+  feedwire::FeedActionRequest request;
+  request.add_feed_action()->mutable_content_id()->set_content_domain(
+      "example.com");
   return request;
 }
 
@@ -409,10 +411,8 @@ TEST_F(FeedNetworkTest, SendActionRequestSendsValidRequest) {
   network::ResourceRequest resource_request =
       RespondToActionRequest(GetTestActionResponse(), net::HTTP_OK);
 
-  EXPECT_EQ(
-      GURL(
-          "https://discover-pa.googleapis.com/v1/actions:upload?fmt=bin&hl=en"),
-      resource_request.url);
+  EXPECT_EQ(GURL("https://discover-pa.googleapis.com/v1/actions:upload"),
+            resource_request.url);
 
   EXPECT_EQ("POST", resource_request.method);
   std::string content_encoding;

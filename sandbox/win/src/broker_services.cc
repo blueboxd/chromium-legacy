@@ -507,6 +507,14 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
     }
   }
 
+  // On Win10, associate the process with these jobs at startup.
+  // Job handles must remain valid until TargetProcess::Create() completes.
+  std::vector<HANDLE> job_handle_list;
+  if (base::win::GetVersion() >= base::win::Version::WIN10 && job.IsValid()) {
+    job_handle_list.push_back(job.Get());
+    ++attribute_count;
+  }
+
   if (!startup_info.InitializeProcThreadAttributeList(attribute_count))
     return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
 
@@ -539,6 +547,14 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
     // Allowing inheritance of handles is only secure now that we
     // have limited which handles will be inherited.
     inherit_handles = true;
+  }
+
+  if (!job_handle_list.empty()) {
+    if (!startup_info.UpdateProcThreadAttribute(
+            PROC_THREAD_ATTRIBUTE_JOB_LIST, &job_handle_list[0],
+            sizeof(HANDLE) * job_handle_list.size())) {
+      return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
+    }
   }
 
   // Declared here to ensure they stay in scope until after process creation.

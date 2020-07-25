@@ -41,7 +41,7 @@
 
 namespace feed {
 namespace {
-constexpr char kApplicationOctetStream[] = "application/octet-stream";
+constexpr char kApplicationXProtobuf[] = "application/x-protobuf";
 constexpr base::TimeDelta kNetworkTimeout = base::TimeDelta::FromSeconds(30);
 
 signin::ScopeSet GetAuthScopes() {
@@ -127,12 +127,10 @@ void ParseAndForwardResponse(base::OnceCallback<void(RESULT)> result_callback,
   std::move(result_callback).Run(std::move(result));
 }
 
-void AddMothershipPayloadQueryParams(bool is_post,
-                                     const std::string& payload,
+void AddMothershipPayloadQueryParams(const std::string& payload,
                                      const std::string& language_tag,
                                      GURL& url) {
-  if (!is_post)
-    url = net::AppendQueryParameter(url, "reqpld", payload);
+  url = net::AppendQueryParameter(url, "reqpld", payload);
   url = net::AppendQueryParameter(url, "fmt", "bin");
   if (!language_tag.empty())
     url = net::AppendQueryParameter(url, "hl", language_tag);
@@ -146,8 +144,7 @@ int PopulateRequestBody(const std::string& request_body,
     return 0;
   std::string compressed_request_body;
   compression::GzipCompress(request_body, &compressed_request_body);
-  loader->AttachStringForUpload(compressed_request_body,
-                                kApplicationOctetStream);
+  loader->AttachStringForUpload(compressed_request_body, kApplicationXProtobuf);
   return compressed_request_body.size();
 }
 
@@ -311,7 +308,7 @@ class FeedNetworkImpl::NetworkFetch {
                          network::ResourceRequest& request) const {
     if (has_request_body) {
       request.headers.SetHeader(net::HttpRequestHeaders::kContentType,
-                                kApplicationOctetStream);
+                                kApplicationXProtobuf);
       request.headers.SetHeader("Content-Encoding", "gzip");
     }
 
@@ -448,8 +445,8 @@ void FeedNetworkImpl::SendQueryRequest(
   if (url.is_empty())
     return std::move(callback).Run({});
 
-  AddMothershipPayloadQueryParams(/*is_post=*/false, base64proto,
-                                  delegate_->GetLanguageTag(), url);
+  AddMothershipPayloadQueryParams(base64proto, delegate_->GetLanguageTag(),
+                                  url);
   Send(url, "GET", /*request_body=*/{},
        base::BindOnce(&ParseAndForwardResponse<QueryRequestResult,
                                                NetworkRequestType::kFeedQuery>,
@@ -457,15 +454,12 @@ void FeedNetworkImpl::SendQueryRequest(
 }
 
 void FeedNetworkImpl::SendActionRequest(
-    const feedwire::ActionRequest& request,
+    const feedwire::FeedActionRequest& request,
     base::OnceCallback<void(ActionRequestResult)> callback) {
   std::string binary_proto;
   request.SerializeToString(&binary_proto);
 
   GURL url = GetUploadActionURL(chrome_channel_);
-  AddMothershipPayloadQueryParams(/*is_post=*/true,
-                                  /*payload=*/{}, delegate_->GetLanguageTag(),
-                                  url);
   Send(url, "POST", std::move(binary_proto),
        base::BindOnce(
            &ParseAndForwardResponse<ActionRequestResult,

@@ -64,20 +64,26 @@ class ResultRecorder(object):
     if is_control:
       self._noisy_control_stories.add(name)
 
-  def remove_failure(self, name, benchmark, is_control=False):
+  def remove_failure(self, name, benchmark, is_control=False,
+                      invalidation_reason=None):
     self.output['tests'][benchmark][name]['actual'] = 'PASS'
     self.output['tests'][benchmark][name]['is_unexpected'] = False
     self._failed_stories.remove(name)
     self.fails -= 1
     if is_control:
       self._noisy_control_stories.remove(name)
+    if invalidation_reason:
+      self.add_invalidation_reason(name, benchmark, invalidation_reason)
 
   def invalidate_failures(self, benchmark):
     # The method is for invalidating the failures in case of noisy control test
-    for story in self._failed_stories:
+    for story in self._failed_stories.copy():
       print(story + ' [Invalidated Failure]: The story failed but was ' +
         'invalidated as a result of noisy control test.')
-      self.output['tests'][benchmark][story]['is_unexpected'] = False
+      self.remove_failure(story, benchmark, False, 'Noisy control test')
+
+  def add_invalidation_reason(self, name, benchmark, reason):
+    self.output['tests'][benchmark][name]['invalidation_reason'] = reason
 
   @property
   def failed_stories(self):
@@ -90,10 +96,7 @@ class ResultRecorder(object):
   def get_output(self, return_code):
     self.output['seconds_since_epoch'] = time.time() - self.start_time
     self.output['num_failures_by_type']['PASS'] = self.tests - self.fails
-    if self.fails > 0 and not self.is_control_stories_noisy:
-      self.output['num_failures_by_type']['FAIL'] = self.fails
-    else:
-      self.output['num_failures_by_type']['FAIL'] = 0
+    self.output['num_failures_by_type']['FAIL'] = self.fails
     if return_code == 1:
       self.output['interrupted'] = True
 
@@ -101,7 +104,7 @@ class ResultRecorder(object):
     tests = lambda n: plural(n, 'test', 'tests')
 
     print('[  PASSED  ] ' + tests(self.tests - self.fails) + '.')
-    if self.fails > 0 and not self.is_control_stories_noisy:
+    if self.fails > 0:
       print('[  FAILED  ] ' + tests(self.fails) + '.')
       self.return_code = 1
 
@@ -250,6 +253,8 @@ class RenderingRepresentativePerfTest(object):
             'to upper limit({:.3f}). Invalidated for low cpu_wall_time_ratio'
             ).format(self.benchmark, story_name, METRIC_NAME, measured_avg,
                       upper_limit_avg))
+          self.result_recorder[rerun].add_invalidation_reason(
+            story_name, self.benchmark, 'Low cpu_wall_time_ratio')
       else:
         print(('[       OK ] {}/{} lower average {}({:.3f}) compared ' +
           'to upper limit({:.3f}).').format(self.benchmark, story_name,

@@ -85,12 +85,13 @@ std::vector<drmModeModeInfo> GetDrmModeVector(drmModeConnector* connector) {
   return modes;
 }
 
-void FillLinearValues(std::vector<display::GammaRampRGBEntry>* table,
-                      size_t table_size,
-                      float max_value) {
+void FillPowerFunctionValues(std::vector<display::GammaRampRGBEntry>* table,
+                             size_t table_size,
+                             float max_value,
+                             float exponent) {
   for (size_t i = 0; i < table_size; i++) {
-    const uint16_t v =
-        max_value * std::numeric_limits<uint16_t>::max() * i / (table_size - 1);
+    const uint16_t v = max_value * std::numeric_limits<uint16_t>::max() *
+                       pow((static_cast<float>(i) + 1) / table_size, exponent);
     struct display::GammaRampRGBEntry gamma_entry = {v, v, v};
     table->push_back(gamma_entry);
   }
@@ -271,12 +272,15 @@ void DrmDisplay::SetColorSpace(const gfx::ColorSpace& color_space) {
   if (current_color_space_.IsHDR())
     return CommitGammaCorrection(degamma, gamma);
 
-  // TODO(mcasas) This should be the same value as in DisplayChangeObservers's
-  // FillDisplayColorSpaces, move to a common place.
-  constexpr float kHDRLevel = 2.0;
+  // TODO(mcasas) This should be the inverse value of DisplayChangeObservers's
+  // FillDisplayColorSpaces's kHDRLevel, move to a common place.
+  constexpr float kSDRLevel = 0.75;
   // TODO(mcasas): Retrieve this from the |drm_| HardwareDisplayPlaneManager.
-  constexpr size_t kNumGammaSamples = 16ul;
-  FillLinearValues(&gamma, kNumGammaSamples, 1.0 / kHDRLevel);
+  constexpr size_t kNumGammaSamples = 64ul;
+  // Only using kSDRLevel of the available values shifts the contrast ratio, we
+  // restore it via a smaller local gamma correction using this exponent.
+  constexpr float kExponent = 1.2;
+  FillPowerFunctionValues(&gamma, kNumGammaSamples, kSDRLevel, kExponent);
   CommitGammaCorrection(degamma, gamma);
 }
 

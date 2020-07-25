@@ -61,8 +61,8 @@ gsutil cp $tgt/chromedriver_win32.zip gs://chromedriver/$version/chromedriver_wi
 
 echo -n $version > latest
 
-build=`echo $version | sed 's/\.[0-9]\+$//'`
-major=`echo $version | sed 's/\.[0-9.]\+$//'`
+build=`echo $version | sed -E 's/\.[0-9]+$//'`
+major=`echo $version | sed -E 's/\.[0-9.]+$//'`
 gsutil -h Content-Type:text/plain cp latest gs://chromedriver/LATEST_RELEASE_$build
 gsutil -h Content-Type:text/plain cp latest gs://chromedriver/LATEST_RELEASE_$major
 

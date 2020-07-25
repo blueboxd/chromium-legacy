@@ -188,6 +188,8 @@ class AccelerometerFileReader
   void StartListenToTabletModeController();
   void StopListenToTabletModeController();
 
+  void SetEmitEvents(bool emit_events);
+
   // TabletModeObserver:
   void OnTabletPhysicalStateChanged() override;
 
@@ -261,6 +263,8 @@ class AccelerometerFileReader
   // reading to an AccelerometerUpdate and notifies observers.
   void ReadFileAndNotify();
 
+  void SetEmitEventsInternal(bool emit_events);
+
   // State of ChromeOS EC lid angle driver, if SUPPORTED, it means EC can handle
   // lid angle calculation.
   ECLidAngleDriver ec_lid_angle_driver_ = UNKNOWN;
@@ -270,6 +274,8 @@ class AccelerometerFileReader
 
   // True if periodical accelerometer read is on.
   bool accelerometer_read_on_ = false;
+
+  bool emit_events_ = true;
 
   // The time at which initialization re-tries should stop.
   base::TimeTicks initialization_timeout_;
@@ -541,6 +547,17 @@ void AccelerometerFileReader::StopListenToTabletModeController() {
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
 }
 
+void AccelerometerFileReader::SetEmitEvents(bool emit_events) {
+  task_runner_->PostNonNestableTask(
+      FROM_HERE, base::BindOnce(&AccelerometerFileReader::SetEmitEventsInternal,
+                                this, emit_events));
+}
+
+void AccelerometerFileReader::SetEmitEventsInternal(bool emit_events) {
+  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
+  emit_events_ = emit_events;
+}
+
 void AccelerometerFileReader::OnTabletPhysicalStateChanged() {
   // When CrOS EC lid angle driver is not present, accelerometer read is always
   // ON and can't be tuned. Thus AccelerometerFileReader no longer listens to
@@ -704,6 +721,9 @@ void AccelerometerFileReader::ReadFileAndNotify() {
     }
   }
 
+  if (!emit_events_)
+    return;
+
   observers_->Notify(FROM_HERE,
                      &AccelerometerReader::Observer::OnAccelerometerUpdated,
                      update_);
@@ -747,6 +767,10 @@ void AccelerometerReader::StartListenToTabletModeController() {
 
 void AccelerometerReader::StopListenToTabletModeController() {
   accelerometer_file_reader_->StopListenToTabletModeController();
+}
+
+void AccelerometerReader::SetEnabled(bool enabled) {
+  accelerometer_file_reader_->SetEmitEvents(enabled);
 }
 
 AccelerometerReader::AccelerometerReader()

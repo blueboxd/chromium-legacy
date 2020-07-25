@@ -9,6 +9,8 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 
+class GURL;
+
 namespace updater {
 
 // Returns the base directory common to all versions of the updater. For
@@ -34,6 +36,20 @@ struct CaseInsensitiveASCIICompare {
     return base::CompareCaseInsensitiveASCII(x, y) > 0;
   }
 };
+
+// Returns a new GURL by appending the given query parameter name and the
+// value. Unsafe characters in the name and the value are escaped like
+// %XX%XX. The original query component is preserved if it's present.
+//
+// Examples:
+//
+// AppendQueryParameter(GURL("http://example.com"), "name", "value").spec()
+// => "http://example.com?name=value"
+// AppendQueryParameter(GURL("http://example.com?x=y"), "name", "value").spec()
+// => "http://example.com?x=y&name=value"
+GURL AppendQueryParameter(const GURL& url,
+                          const std::string& name,
+                          const std::string& value);
 
 }  // namespace updater
 

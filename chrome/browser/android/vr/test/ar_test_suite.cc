@@ -6,8 +6,8 @@
 
 #include <memory>
 
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/path_service.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
@@ -28,11 +28,8 @@ void ArTestSuite::Initialize() {
 
   mojo::core::Init();
 
-  base::FilePath pak_path;
   ui::RegisterPathProvider();
-  base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_path);
-  ui::ResourceBundle::InitSharedInstanceWithPakPath(
-      pak_path.AppendASCII("vr_test.pak"));
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(base::FilePath());
 }
 
 void ArTestSuite::Shutdown() {

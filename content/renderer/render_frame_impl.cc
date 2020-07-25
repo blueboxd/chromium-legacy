@@ -6515,18 +6515,6 @@ void RenderFrameImpl::AbortCommitNavigation() {
   navigation_client_impl_.reset();
 }
 
-void RenderFrameImpl::TransferUserActivationFrom(
-    blink::WebLocalFrame* source_frame) {
-  int32_t source_routing_id = MSG_ROUTING_NONE;
-  if (source_frame) {
-    RenderFrameImpl* source_render_frame =
-        RenderFrameImpl::FromWebFrame(source_frame);
-    source_routing_id = source_render_frame->GetRoutingID();
-
-    GetFrameHost()->TransferUserActivationFrom(source_routing_id);
-  }
-}
-
 bool RenderFrameImpl::GetCaretBoundsFromFocusedPlugin(gfx::Rect& rect) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   if (focused_pepper_plugin_) {

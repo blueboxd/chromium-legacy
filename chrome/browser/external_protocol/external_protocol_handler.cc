@@ -5,6 +5,7 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/check_op.h"
@@ -79,13 +80,12 @@ constexpr const char* kAllowedSchemes[] = {
 // Functions enabling unit testing. Using a NULL delegate will use the default
 // behavior; if a delegate is provided it will be used instead.
 scoped_refptr<shell_integration::DefaultProtocolClientWorker> CreateShellWorker(
-    const shell_integration::DefaultWebClientWorkerCallback& callback,
     const std::string& protocol,
     ExternalProtocolHandler::Delegate* delegate) {
   if (delegate)
-    return delegate->CreateShellWorker(callback, protocol);
+    return delegate->CreateShellWorker(protocol);
   return base::MakeRefCounted<shell_integration::DefaultProtocolClientWorker>(
-      callback, protocol);
+      protocol);
 }
 
 ExternalProtocolHandler::BlockState GetBlockStateWithDelegate(
@@ -436,7 +436,7 @@ void ExternalProtocolHandler::LaunchUrl(
 
   // The worker creates tasks with references to itself and puts them into
   // message loops.
-  shell_integration::DefaultWebClientWorkerCallback callback = base::Bind(
+  shell_integration::DefaultWebClientWorkerCallback callback = base::BindOnce(
       &OnDefaultProtocolClientWorkerFinished, escaped_url,
       render_process_host_id, render_view_routing_id, block_state == UNKNOWN,
       page_transition, has_user_gesture, initiating_origin_or_precursor,
@@ -445,9 +445,8 @@ void ExternalProtocolHandler::LaunchUrl(
   // Start the check process running. This will send tasks to a worker task
   // runner and when the answer is known will send the result back to
   // OnDefaultProtocolClientWorkerFinished().
-  CreateShellWorker(callback, escaped_url.scheme(),
-                    g_external_protocol_handler_delegate)
-      ->StartCheckIsDefault();
+  CreateShellWorker(escaped_url.scheme(), g_external_protocol_handler_delegate)
+      ->StartCheckIsDefault(std::move(callback));
 }
 
 // static

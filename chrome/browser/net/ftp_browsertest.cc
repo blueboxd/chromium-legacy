@@ -69,10 +69,8 @@ void WaitForTitle(content::WebContents* contents, const char* expected_title) {
 class FakeDefaultProtocolClientWorker
     : public shell_integration::DefaultProtocolClientWorker {
  public:
-  FakeDefaultProtocolClientWorker(
-      const shell_integration::DefaultWebClientWorkerCallback& callback,
-      const std::string& protocol)
-      : DefaultProtocolClientWorker(callback, protocol) {}
+  explicit FakeDefaultProtocolClientWorker(const std::string& protocol)
+      : DefaultProtocolClientWorker(protocol) {}
 
  private:
   ~FakeDefaultProtocolClientWorker() override = default;
@@ -100,11 +98,8 @@ class FakeProtocolHandlerDelegate : public ExternalProtocolHandler::Delegate {
 
  private:
   scoped_refptr<shell_integration::DefaultProtocolClientWorker>
-  CreateShellWorker(
-      const shell_integration::DefaultWebClientWorkerCallback& callback,
-      const std::string& protocol) override {
-    return base::MakeRefCounted<FakeDefaultProtocolClientWorker>(callback,
-                                                                 protocol);
+  CreateShellWorker(const std::string& protocol) override {
+    return base::MakeRefCounted<FakeDefaultProtocolClientWorker>(protocol);
   }
 
   ExternalProtocolHandler::BlockState GetBlockState(const std::string& scheme,

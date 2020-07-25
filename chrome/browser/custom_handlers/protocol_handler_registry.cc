@@ -101,9 +101,8 @@ void ProtocolHandlerRegistry::Delegate::RegisterWithOSAsDefaultClient(
   // The worker pointer is reference counted. While it is running, the
   // sequence it runs on will hold references it will be automatically freed
   // once all its tasks have finished.
-  base::MakeRefCounted<shell_integration::DefaultProtocolClientWorker>(
-      std::move(callback), protocol)
-      ->StartSetAsDefault();
+  base::MakeRefCounted<shell_integration::DefaultProtocolClientWorker>(protocol)
+      ->StartSetAsDefault(std::move(callback));
 }
 
 void ProtocolHandlerRegistry::Delegate::CheckDefaultClientWithOS(
@@ -112,9 +111,8 @@ void ProtocolHandlerRegistry::Delegate::CheckDefaultClientWithOS(
   // The worker pointer is reference counted. While it is running, the
   // sequence it runs on will hold references it will be automatically freed
   // once all its tasks have finished.
-  base::MakeRefCounted<shell_integration::DefaultProtocolClientWorker>(
-      std::move(callback), protocol)
-      ->StartCheckIsDefault();
+  base::MakeRefCounted<shell_integration::DefaultProtocolClientWorker>(protocol)
+      ->StartCheckIsDefault(std::move(callback));
 }
 
 // ProtocolHandlerRegistry -----------------------------------------------------

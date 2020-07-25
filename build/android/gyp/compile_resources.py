@@ -61,31 +61,6 @@ def _ParseArgs(args):
   input_opts.add_argument(
       '--android-manifest', required=True, help='AndroidManifest.xml path.')
   input_opts.add_argument(
-      '--expected-file',
-      help='Expected contents for the check. If'
-      '--android-manifest-verify-diff-base is set, this is a diff file. If'
-      'not, this is a AndroidManifest file.')
-  input_opts.add_argument(
-      '--android-manifest-normalized', help='Normalized manifest.')
-  input_opts.add_argument(
-      '--android-manifest-expectations-failure-file',
-      help='Write to this file if expected manifest contents do not match '
-      'final manifest contents.')
-  input_opts.add_argument(
-      '--fail-on-expectations',
-      action="store_true",
-      help='When passed, fails the build on AndroidManifest expectation '
-      'mismatches.')
-  input_opts.add_argument(
-      '--expected-manifest-base-expectation',
-      help='When we expect the actual normalized manifest is different from'
-      'the file from --android-manifest-expected, this file specifies the'
-      'difference.')
-  input_opts.add_argument(
-      '--only-verify-expectations',
-      action='store_true',
-      help='If passed, only verify the android manifest expectation and exit.')
-  input_opts.add_argument(
       '--r-java-root-package-name',
       default='base',
       help='Short package name for this target\'s root R java file (ex. '
@@ -255,6 +230,7 @@ def _ParseArgs(args):
       action='store_true',
       help='Whether resources are being generated for a bundle module.')
 
+  diff_utils.AddCommandLineFlags(parser)
   options = parser.parse_args(args)
 
   resource_utils.HandleCommonOptions(options)
@@ -483,41 +459,6 @@ def _FixManifest(options, temp_dir):
 
   manifest_utils.SaveManifest(doc, debug_manifest_path)
   return debug_manifest_path, orig_package
-
-
-def _VerifyManifest(actual_manifest, expected_file, normalized_manifest,
-                    expected_manifest_base_expectation,
-                    unexpected_manifest_failure_file, fail_on_mismatch):
-  with build_utils.AtomicOutput(normalized_manifest) as normalized_output:
-    normalized_output.write(manifest_utils.NormalizeManifest(actual_manifest))
-
-  if expected_manifest_base_expectation:
-    with tempfile.NamedTemporaryFile() as generated_diff:
-      actual_diff_content = diff_utils.GenerateDiffWithOnlyAdditons(
-          expected_manifest_base_expectation, normalized_manifest)
-      generated_diff.write(actual_diff_content)
-      generated_diff.flush()
-
-      msg = diff_utils.DiffFileContents(expected_file, generated_diff.name)
-  else:
-    msg = diff_utils.DiffFileContents(expected_file, normalized_manifest)
-
-  if not msg:
-    return
-
-  msg_header = """\
-AndroidManifest.xml expectations file needs updating. For details see:
-https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md
-"""
-  sys.stderr.write(msg_header)
-  sys.stderr.write(msg)
-  if unexpected_manifest_failure_file:
-    build_utils.MakeDirectory(os.path.dirname(unexpected_manifest_failure_file))
-    with open(unexpected_manifest_failure_file, 'w') as f:
-      f.write(msg_header)
-      f.write(msg)
-  if fail_on_mismatch:
-    sys.exit(1)
 
 
 def _CreateKeepPredicate(resource_exclusion_regex,
@@ -1048,14 +989,10 @@ def _WriteOutputs(options, build):
       shutil.move(temp, final)
 
 
-def _VerifyExpectations(options):
+def _CreateNormalizedManifest(options):
   with build_utils.TempDir() as tempdir:
     fixed_manifest, _ = _FixManifest(options, tempdir)
-    _VerifyManifest(fixed_manifest, options.expected_file,
-                    options.android_manifest_normalized,
-                    options.expected_manifest_base_expectation,
-                    options.android_manifest_expectations_failure_file,
-                    options.fail_on_expectations)
+    return manifest_utils.NormalizeManifest(fixed_manifest)
 
 
 def _OnStaleMd5(options):
@@ -1152,9 +1089,10 @@ def main(args):
   options = _ParseArgs(args)
 
   if options.expected_file:
-    _VerifyExpectations(options)
-  if options.only_verify_expectations:
-    return
+    actual_data = _CreateNormalizedManifest(options)
+    diff_utils.CheckExpectations(actual_data, options)
+    if options.only_verify_expectations:
+      return
 
   depfile_deps = (options.dependencies_res_zips +
                   options.extra_main_r_text_files + options.include_resources)
@@ -1163,7 +1101,7 @@ def main(args):
       options.aapt2_path,
       options.android_manifest,
       options.expected_file,
-      options.expected_manifest_base_expectation,
+      options.expected_file_base,
       options.resources_config_path,
       options.shared_resources_allowlist,
       options.use_resource_ids_path,
@@ -1171,11 +1109,11 @@ def main(args):
   ]
   input_paths = [p for p in possible_input_paths if p]
   input_strings = [
-      options.android_manifest_expectations_failure_file,
       options.app_as_shared_lib,
       options.arsc_package_name,
       options.debuggable,
       options.extra_res_packages,
+      options.failure_file,
       options.include_resources,
       options.locale_allowlist,
       options.manifest_package,
@@ -1202,7 +1140,7 @@ def main(args):
   ]
   output_paths = [options.srcjar_out]
   possible_output_paths = [
-      options.android_manifest_normalized,
+      options.actual_file,
       options.arsc_path,
       options.emit_ids_out,
       options.info_path,

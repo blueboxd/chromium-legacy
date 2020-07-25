@@ -95,6 +95,8 @@ if (is_win || is_mac) {
       "control_service_in_process.h",
       "dm_cached_policy_info.cc",
       "dm_cached_policy_info.h",
+      "dm_client.cc",
+      "dm_client.h",
       "dm_message.cc",
       "dm_message.h",
       "dm_policy_manager.cc",
@@ -237,6 +239,7 @@ if (is_win || is_mac) {
 
     sources = [
       "app/app_server_unittest.cc",
+      "dm_client_unittest.cc",
       "dm_message_unittest.cc",
       "dm_policy_builder_for_testing.cc",
       "dm_policy_builder_for_testing.h",
@@ -271,6 +274,7 @@ if (is_win || is_mac) {
       "//components/prefs:test_support",
       "//components/update_client",
       "//crypto",
+      "//net:test_support",
       "//testing/gtest",
       "//url",
     ]
@@ -285,6 +289,7 @@ if (is_win || is_mac) {
 
       deps += [
         "//chrome/updater/win:constants",
+        "//chrome/updater/win:lib",
         "//chrome/updater/win:updater_tests",
       ]
 
@@ -307,6 +312,7 @@ if (is_win || is_mac) {
         "//chrome/common/mac:launchd",
         "//chrome/updater/app/server/mac:protocol",
         "//chrome/updater/mac:enterprise_tests",
+        "//chrome/updater/mac:network_fetcher_sources",
         "//chrome/updater/mac:updater_bundle",
         "//chrome/updater/mac:updater_setup_tests",
         "//chrome/updater/mac:updater_tests",

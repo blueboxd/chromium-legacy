@@ -34,6 +34,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -41,6 +42,7 @@ import org.chromium.chrome.browser.signin.account_picker.AccountPickerBottomShee
 import org.chromium.chrome.browser.signin.account_picker.AccountPickerDelegate;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
@@ -49,6 +51,8 @@ import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
 import org.chromium.components.signin.test.util.FakeProfileDataSource;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+
+import java.io.IOException;
 
 /**
  * Tests account picker bottom sheet of the web signin flow.
@@ -78,6 +82,10 @@ public class AccountPickerBottomSheetTest {
     public final Features.InstrumentationProcessor mProcessor =
             new Features.InstrumentationProcessor();
 
+    @Rule
+    public final ChromeRenderTestRule mRenderTestRule =
+            ChromeRenderTestRule.Builder.withPublicCorpus().setRevision(0).build();
+
     private final ChromeTabbedActivityTestRule mActivityTestRule =
             new ChromeTabbedActivityTestRule();
 
@@ -86,6 +94,8 @@ public class AccountPickerBottomSheetTest {
 
     private final AccountManagerTestRule mAccountManagerTestRule =
             new AccountManagerTestRule(mFakeProfileDataSource);
+
+    private AccountPickerBottomSheetCoordinator mCoordinator;
 
     // Destroys the mock AccountManagerFacade in the end as ChromeActivity may needs
     // to unregister observers in the stub.
@@ -113,6 +123,15 @@ public class AccountPickerBottomSheetTest {
 
     @Test
     @MediumTest
+    @Feature("RenderTest")
+    public void testCollapsedSheetWithAccountView() throws IOException {
+        buildAndShowCollapsedBottomSheet();
+        mRenderTestRule.render(
+                mCoordinator.getBottomSheetViewForTesting(), "collapsed_sheet_with_account");
+    }
+
+    @Test
+    @MediumTest
     public void testExpandedSheet() {
         buildAndShowExpandedBottomSheet();
         onView(allOf(withText(PROFILE_DATA1.getAccountName()), withEffectiveVisibility(VISIBLE)))
@@ -124,6 +143,14 @@ public class AccountPickerBottomSheetTest {
 
         onView(withId(R.id.account_picker_selected_account)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_continue_as_button)).check(matches(not(isDisplayed())));
+    }
+
+    @Test
+    @MediumTest
+    @Feature("RenderTest")
+    public void testExpandedSheetView() throws IOException {
+        buildAndShowExpandedBottomSheet();
+        mRenderTestRule.render(mCoordinator.getBottomSheetViewForTesting(), "expanded_sheet");
     }
 
     @Test
@@ -323,9 +350,8 @@ public class AccountPickerBottomSheetTest {
 
     private void buildAndShowCollapsedBottomSheet() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AccountPickerBottomSheetCoordinator accountPickerBottomSheetCoordinator =
-                    new AccountPickerBottomSheetCoordinator(mActivityTestRule.getActivity(),
-                            getBottomSheetController(), mAccountPickerDelegateMock);
+            mCoordinator = new AccountPickerBottomSheetCoordinator(mActivityTestRule.getActivity(),
+                    getBottomSheetController(), mAccountPickerDelegateMock);
         });
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }

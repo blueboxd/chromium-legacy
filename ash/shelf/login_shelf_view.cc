@@ -14,6 +14,7 @@
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_constants.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -89,6 +90,9 @@ LoginMetricsRecorder::ShelfButtonClickTarget GetUserClickTarget(int button_id) {
       return LoginMetricsRecorder::ShelfButtonClickTarget::kCancelButton;
     case LoginShelfView::kParentAccess:
       return LoginMetricsRecorder::ShelfButtonClickTarget::kParentAccessButton;
+    case LoginShelfView::kEnterpriseEnrollment:
+      return LoginMetricsRecorder::ShelfButtonClickTarget::
+          kEnterpriseEnrollmentButton;
   }
   return LoginMetricsRecorder::ShelfButtonClickTarget::kTargetCount;
 }
@@ -481,6 +485,8 @@ LoginShelfView::LoginShelfView(
              kShelfBrowseAsGuestButtonIcon);
   add_button(kAddUser, IDS_ASH_ADD_USER_BUTTON, kShelfAddPersonButtonIcon);
   add_button(kParentAccess, IDS_ASH_PARENT_ACCESS_BUTTON, kPinRequestLockIcon);
+  add_button(kEnterpriseEnrollment, IDS_ASH_ENTERPRISE_ENROLLMENT_BUTTON,
+             kLoginScreenEnterpriseIcon);
 
   // Adds observers for states that affect the visiblity of different buttons.
   tray_action_observer_.Add(Shell::Get()->tray_action());
@@ -579,6 +585,10 @@ void LoginShelfView::ButtonPressed(views::Button* sender,
             LockScreen::Get()->ShowParentAccessDialog();
           }));
       break;
+    case kEnterpriseEnrollment:
+      Shell::Get()->login_screen_controller()->HandleAccelerator(
+          ash::LoginAcceleratorAction::kStartEnrollment);
+      break;
     default:
       NOTREACHED();
   }
@@ -644,8 +654,16 @@ void LoginShelfView::SetShutdownButtonEnabled(bool enable_shutdown_button) {
 }
 void LoginShelfView::SetButtonOpacity(float target_opacity) {
   static constexpr ButtonId kButtonIds[] = {
-      kShutdown, kRestart,      kSignOut,       kCloseNote,
-      kCancel,   kParentAccess, kBrowseAsGuest, kAddUser};
+      kShutdown,
+      kRestart,
+      kSignOut,
+      kCloseNote,
+      kCancel,
+      kParentAccess,
+      kBrowseAsGuest,
+      kAddUser,
+      kEnterpriseEnrollment
+  };
   for (const auto& button_id : kButtonIds) {
     AnimateButtonOpacity(GetViewByID(button_id)->layer(), target_opacity,
                          ShelfConfig::Get()->DimAnimationDuration(),
@@ -749,6 +767,8 @@ void LoginShelfView::UpdateUi() {
   bool is_oobe = (session_state == SessionState::OOBE);
 
   GetViewByID(kBrowseAsGuest)->SetVisible(ShouldShowGuestButton());
+  GetViewByID(kEnterpriseEnrollment)
+      ->SetVisible(ShouldShowEnterpriseEnrollmentButton());
 
   // Show add user button when it's in login screen and Oobe UI dialog is not
   // visible. The button should not appear if the device is not connected to a
@@ -776,6 +796,8 @@ void LoginShelfView::UpdateButtonColors(bool use_dark_colors) {
     static_cast<LoginShelfButton*>(GetViewByID(kBrowseAsGuest))
         ->PaintDarkColors();
     static_cast<LoginShelfButton*>(GetViewByID(kAddUser))->PaintDarkColors();
+    static_cast<LoginShelfButton*>(GetViewByID(kEnterpriseEnrollment))
+        ->PaintDarkColors();
     kiosk_apps_button_->PaintDarkColors();
   } else {
     static_cast<LoginShelfButton*>(GetViewByID(kShutdown))->PaintLightColors();
@@ -788,6 +810,8 @@ void LoginShelfView::UpdateButtonColors(bool use_dark_colors) {
     static_cast<LoginShelfButton*>(GetViewByID(kBrowseAsGuest))
         ->PaintLightColors();
     static_cast<LoginShelfButton*>(GetViewByID(kAddUser))->PaintLightColors();
+    static_cast<LoginShelfButton*>(GetViewByID(kEnterpriseEnrollment))
+        ->PaintLightColors();
     kiosk_apps_button_->PaintLightColors();
   }
 }
@@ -841,6 +865,13 @@ bool LoginShelfView::ShouldShowGuestButton() const {
     return !login_screen_has_users_ && allow_guest_in_oobe_;
 
   return true;
+}
+
+bool LoginShelfView::ShouldShowEnterpriseEnrollmentButton() const {
+  const SessionState session_state =
+      Shell::Get()->session_controller()->GetSessionState();
+  return session_state == SessionState::OOBE &&
+         dialog_state_ == OobeDialogState::USER_CREATION;
 }
 
 }  // namespace ash

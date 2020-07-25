@@ -1370,13 +1370,12 @@ void BrowserProcessImpl::ApplyDefaultBrowserPolicy() {
     // message loops of the FILE and UI thread will hold references to it
     // and it will be automatically freed once all its tasks have finished.
     auto set_browser_worker =
-        base::MakeRefCounted<shell_integration::DefaultBrowserWorker>(
-            shell_integration::DefaultWebClientWorkerCallback());
+        base::MakeRefCounted<shell_integration::DefaultBrowserWorker>();
     // The user interaction must always be disabled when applying the default
     // browser policy since it is done at each browser startup and the result
     // of the interaction cannot be forced.
     set_browser_worker->set_interactive_permitted(false);
-    set_browser_worker->StartSetAsDefault();
+    set_browser_worker->StartSetAsDefault(base::NullCallback());
   }
 }
 

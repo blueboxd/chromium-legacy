@@ -1391,6 +1391,10 @@ base::FilePath StoragePartitionImpl::GetPath() {
   return partition_path_;
 }
 
+std::string StoragePartitionImpl::GetPartitionDomain() {
+  return partition_domain_;
+}
+
 network::mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
   DCHECK(initialized_);
   if (!network_context_.is_bound())

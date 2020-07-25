@@ -487,6 +487,14 @@ class MainThreadSchedulerImplTest : public testing::Test {
         .get();
   }
 
+  scoped_refptr<MainThreadTaskQueue> NewUnpausableTaskQueue() {
+    return scheduler_->NewTaskQueue(
+        MainThreadTaskQueue::QueueCreationParams(
+            MainThreadTaskQueue::QueueType::kFrameUnpausable)
+            .SetQueueTraits(
+                main_frame_scheduler_->UnpausableTaskQueueTraits()));
+  }
+
   void TearDown() override {
     widget_scheduler_.reset();
     main_frame_scheduler_.reset();
@@ -3051,9 +3059,7 @@ TEST_F(MainThreadSchedulerImplTest, UnthrottledTaskRunner) {
   // Ensure neither suspension nor timer task throttling affects an unthrottled
   // task runner.
   SimulateCompositorGestureStart(TouchEventPolicy::kSendTouchStart);
-  scoped_refptr<TaskQueue> unthrottled_task_queue =
-      scheduler_->NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
-          MainThreadTaskQueue::QueueType::kUnthrottled));
+  scoped_refptr<TaskQueue> unthrottled_task_queue = NewUnpausableTaskQueue();
 
   size_t timer_count = 0;
   size_t unthrottled_count = 0;
@@ -3113,9 +3119,7 @@ TEST_F(MainThreadSchedulerImplTest, EnableVirtualTime) {
       MainThreadTaskQueue::QueueType::kFrameLoadingControl, nullptr);
   scoped_refptr<MainThreadTaskQueue> timer_tq = scheduler_->NewTimerTaskQueue(
       MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr);
-  scoped_refptr<MainThreadTaskQueue> unthrottled_tq =
-      scheduler_->NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
-          MainThreadTaskQueue::QueueType::kUnthrottled));
+  scoped_refptr<MainThreadTaskQueue> unthrottled_tq = NewUnpausableTaskQueue();
 
   EXPECT_EQ(scheduler_->DefaultTaskQueue()->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
@@ -3151,10 +3155,7 @@ TEST_F(MainThreadSchedulerImplTest, EnableVirtualTime) {
                     MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr)
                 ->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
-  EXPECT_EQ(scheduler_
-                ->NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
-                    MainThreadTaskQueue::QueueType::kUnthrottled))
-                ->GetTimeDomain(),
+  EXPECT_EQ(NewUnpausableTaskQueue()->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
   EXPECT_EQ(scheduler_
                 ->NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
@@ -3188,9 +3189,7 @@ TEST_F(MainThreadSchedulerImplTest, DisableVirtualTimeForTesting) {
 
   scoped_refptr<MainThreadTaskQueue> timer_tq = scheduler_->NewTimerTaskQueue(
       MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr);
-  scoped_refptr<MainThreadTaskQueue> unthrottled_tq =
-      scheduler_->NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
-          MainThreadTaskQueue::QueueType::kUnthrottled));
+  scoped_refptr<MainThreadTaskQueue> unthrottled_tq = NewUnpausableTaskQueue();
 
   scheduler_->DisableVirtualTimeForTesting();
   EXPECT_EQ(scheduler_->DefaultTaskQueue()->GetTimeDomain(),

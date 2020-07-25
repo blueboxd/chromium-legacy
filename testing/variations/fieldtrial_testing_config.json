@@ -6370,6 +6370,23 @@
             ]
         }
     ],
+    "SaveEditedPDFForm": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SaveEditedPDFForm"
+                    ]
+                }
+            ]
+        }
+    ],
     "ScrollResamplingRollout": [
         {
             "platforms": [

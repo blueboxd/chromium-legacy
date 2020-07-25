@@ -38,9 +38,6 @@ class CORE_EXPORT FrameClient : public GarbageCollected<FrameClient> {
 
   virtual base::UnguessableToken GetDevToolsFrameToken() const = 0;
 
-  // Transfers user activation state from |source_frame| to the this frame.
-  virtual void TransferUserActivationFrom(LocalFrame* source_frame) {}
-
   virtual ~FrameClient() = default;
 
   virtual void Trace(Visitor* visitor) const {}

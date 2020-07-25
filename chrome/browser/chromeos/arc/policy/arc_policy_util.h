@@ -37,7 +37,7 @@ enum class EcryptfsMigrationAction : int32_t {
   // only).
   kAskUser = 3,
   // Minimal migration - similar to kWipe, but runs migration code with a small
-  // whitelist of files to preserve authentication data.
+  // allowlist of files to preserve authentication data.
   kMinimalMigrate = 4,
   // No longer supported.
   kAskForEcryptfsArcUsersNoLongerSupported = 5,

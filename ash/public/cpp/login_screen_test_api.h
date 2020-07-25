@@ -34,6 +34,7 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static bool IsAddUserButtonShown();
   static bool IsCancelButtonShown();
   static bool IsParentAccessButtonShown();
+  static bool IsEnterpriseEnrollmentButtonShown();
   static bool IsWarningBubbleShown();
   static bool IsSystemInfoShown();
   static bool IsPasswordFieldShown(const AccountId& account_id);

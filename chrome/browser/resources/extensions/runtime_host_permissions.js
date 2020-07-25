@@ -102,6 +102,17 @@ Polymer({
     },
 
     /**
+     * Indicator to track if an onHostAccessChange_ event is coming from the
+     * setting being automatically reverted to the previous value, after a
+     * change to a new value was canceled.
+     * @private
+     */
+    revertingHostAccess_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Proxying the enum to be used easily by the html template.
      * @private
      */
@@ -118,6 +129,25 @@ Polymer({
   onHostAccessChange_(event) {
     const group = /** @type {!HTMLElement} */ (this.$['host-access']);
     const access = group.selected;
+
+    // Log a user action when the host access selection is changed by the user,
+    // but not when reverting from a canceled change to another setting.
+    if (!this.revertingHostAccess_) {
+      switch (access) {
+        case chrome.developerPrivate.HostAccess.ON_CLICK:
+          chrome.metricsPrivate.recordUserAction(
+              'Extensions.Settings.Hosts.OnClickSelected');
+          break;
+        case chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES:
+          chrome.metricsPrivate.recordUserAction(
+              'Extensions.Settings.Hosts.OnSpecificSitesSelected');
+          break;
+        case chrome.developerPrivate.HostAccess.ON_ALL_SITES:
+          chrome.metricsPrivate.recordUserAction(
+              'Extensions.Settings.Hosts.OnAllSitesSelected');
+          break;
+      }
+    }
 
     if (access === chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES &&
         this.permissions.hostAccess !==
@@ -169,6 +199,8 @@ Polymer({
    * @private
    */
   onAddHostClick_(e) {
+    chrome.metricsPrivate.recordUserAction(
+        'Extensions.Settings.Hosts.AddHostActivated');
     const target = /** @type {!HTMLElement} */ (e.target);
     this.doShowHostDialog_(target, null);
   },
@@ -199,9 +231,13 @@ Polymer({
   onHostDialogCancel_() {
     // The user canceled the dialog. Set host-access back to the old value,
     // if the dialog was shown when just transitioning to a new state.
+    chrome.metricsPrivate.recordUserAction(
+        'Extensions.Settings.Hosts.AddHostDialogCanceled');
     if (this.oldHostAccess_) {
       assert(this.permissions.hostAccess === this.oldHostAccess_);
+      this.revertingHostAccess_ = true;
       this.$['host-access'].selected = this.oldHostAccess_;
+      this.revertingHostAccess_ = false;
       this.oldHostAccess_ = null;
     }
   },
@@ -222,6 +258,8 @@ Polymer({
    * @private
    */
   onEditHostClick_(e) {
+    chrome.metricsPrivate.recordUserAction(
+        'Extensions.Settings.Hosts.ActionMenuOpened');
     this.actionMenuModel_ = e.model.item;
     this.actionMenuAnchorElement_ = e.target;
     const actionMenu =
@@ -231,6 +269,8 @@ Polymer({
 
   /** @private */
   onActionMenuEditClick_() {
+    chrome.metricsPrivate.recordUserAction(
+        'Extensions.Settings.Hosts.ActionMenuEditActivated');
     // Cache the site before closing the action menu, since it's cleared.
     const site = this.actionMenuModel_;
 
@@ -246,6 +286,8 @@ Polymer({
 
   /** @private */
   onActionMenuRemoveClick_() {
+    chrome.metricsPrivate.recordUserAction(
+        'Extensions.Settings.Hosts.ActionMenuRemoveActivated');
     this.delegate.removeRuntimeHostPermission(
         this.itemId, assert(this.actionMenuModel_, 'Action Menu Model'));
     this.closeActionMenu_();
@@ -263,4 +305,10 @@ Polymer({
     this.actionMenuModel_ = null;
     this.actionMenuAnchorElement_ = null;
   },
+
+  /** @private */
+  onLearnMoreClick_() {
+    chrome.metricsPrivate.recordUserAction(
+        'Extensions.Settings.Hosts.LearnMoreActivated');
+  }
 });

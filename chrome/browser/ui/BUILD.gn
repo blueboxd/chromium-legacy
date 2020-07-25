@@ -3072,10 +3072,10 @@ static_library("ui") {
 
     if (use_dbus && (use_x11 || ozone_platform_x11)) {
       sources += [
-        "views/frame/global_menu_bar_registrar_x11.cc",
-        "views/frame/global_menu_bar_registrar_x11.h",
-        "views/frame/global_menu_bar_x11.cc",
-        "views/frame/global_menu_bar_x11.h",
+        "views/frame/dbus_appmenu.cc",
+        "views/frame/dbus_appmenu.h",
+        "views/frame/dbus_appmenu_registrar.cc",
+        "views/frame/dbus_appmenu_registrar.h",
       ]
       defines += [ "USE_DBUS_MENU" ]
       deps += [ "//ui/gfx/x" ]

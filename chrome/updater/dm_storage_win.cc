@@ -34,14 +34,14 @@ class TokenService : public TokenServiceInterface {
   ~TokenService() override = default;
 
   // Overrides for TokenServiceInterface.
-  std::string GetDeviceID() override;
+  std::string GetDeviceID() const override;
   bool StoreEnrollmentToken(const std::string& enrollment_token) override;
-  std::string GetEnrollmentToken() override;
+  std::string GetEnrollmentToken() const override;
   bool StoreDmToken(const std::string& dm_token) override;
-  std::string GetDmToken() override;
+  std::string GetDmToken() const override;
 };
 
-std::string TokenService::GetDeviceID() {
+std::string TokenService::GetDeviceID() const {
   base::string16 device_id;
   base::win::RegKey key;
   key.Open(HKEY_LOCAL_MACHINE, kRegKeyCryptographyKey,
@@ -59,7 +59,7 @@ bool TokenService::StoreEnrollmentToken(const std::string& token) {
                         base::SysUTF8ToWide(token).c_str()) == ERROR_SUCCESS;
 }
 
-std::string TokenService::GetEnrollmentToken() {
+std::string TokenService::GetEnrollmentToken() const {
   base::string16 token;
   base::win::RegKey key;
   key.Open(HKEY_LOCAL_MACHINE, kRegKeyCompanyCloudManagement, KEY_READ);
@@ -76,7 +76,7 @@ bool TokenService::StoreDmToken(const std::string& token) {
          ERROR_SUCCESS;
 }
 
-std::string TokenService::GetDmToken() {
+std::string TokenService::GetDmToken() const {
   base::string16 token;
   base::win::RegKey key;
   key.Open(HKEY_LOCAL_MACHINE, kRegKeyCompanyEnrollment, KEY_READ);

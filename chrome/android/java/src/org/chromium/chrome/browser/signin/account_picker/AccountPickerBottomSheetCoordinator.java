@@ -5,8 +5,10 @@
 package org.chromium.chrome.browser.signin.account_picker;
 
 import android.content.Context;
+import android.view.View;
 
 import androidx.annotation.MainThread;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
@@ -17,6 +19,7 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  * Coordinator of the account picker bottom sheet used in web signin flow.
  */
 public class AccountPickerBottomSheetCoordinator {
+    private final AccountPickerBottomSheetView mView;
     private final AccountPickerBottomSheetMediator mAccountPickerBottomSheetMediator;
     private final AccountPickerCoordinator mAccountPickerCoordinator;
     private final BottomSheetController mBottomSheetController;
@@ -38,16 +41,16 @@ public class AccountPickerBottomSheetCoordinator {
     public AccountPickerBottomSheetCoordinator(Context context,
             BottomSheetController bottomSheetController,
             AccountPickerDelegate accountPickerDelegate) {
-        AccountPickerBottomSheetView view = new AccountPickerBottomSheetView(context);
+        mView = new AccountPickerBottomSheetView(context);
         mAccountPickerBottomSheetMediator =
                 new AccountPickerBottomSheetMediator(context, accountPickerDelegate);
         mAccountPickerCoordinator = new AccountPickerCoordinator(
-                view.getAccountListView(), mAccountPickerBottomSheetMediator, null);
+                mView.getAccountListView(), mAccountPickerBottomSheetMediator, null);
         mBottomSheetController = bottomSheetController;
-        PropertyModelChangeProcessor.create(mAccountPickerBottomSheetMediator.getModel(), view,
+        PropertyModelChangeProcessor.create(mAccountPickerBottomSheetMediator.getModel(), mView,
                 AccountPickerBottomSheetViewBinder::bind);
         mBottomSheetController.addObserver(mBottomSheetObserver);
-        mBottomSheetController.requestShowContent(view, true);
+        mBottomSheetController.requestShowContent(mView, true);
     }
 
     /**
@@ -59,5 +62,10 @@ public class AccountPickerBottomSheetCoordinator {
         mAccountPickerBottomSheetMediator.destroy();
 
         mBottomSheetController.removeObserver(mBottomSheetObserver);
+    }
+
+    @VisibleForTesting
+    public View getBottomSheetViewForTesting() {
+        return mView.getContentView();
     }
 }

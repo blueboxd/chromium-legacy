@@ -71,9 +71,7 @@ class ExternalProtocolDialogBrowserTest
 
   // ExternalProtocolHander::Delegate:
   scoped_refptr<shell_integration::DefaultProtocolClientWorker>
-  CreateShellWorker(
-      const shell_integration::DefaultWebClientWorkerCallback& callback,
-      const std::string& protocol) override {
+  CreateShellWorker(const std::string& protocol) override {
     return nullptr;
   }
   ExternalProtocolHandler::BlockState GetBlockState(const std::string& scheme,

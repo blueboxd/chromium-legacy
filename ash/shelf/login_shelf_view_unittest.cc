@@ -501,6 +501,15 @@ TEST_F(LoginShelfViewTest, ClickBrowseAsGuestButton) {
   Click(LoginShelfView::kBrowseAsGuest);
 }
 
+TEST_F(LoginShelfViewTest, ClickEnterpriseEnrollmentButton) {
+  auto client = std::make_unique<MockLoginScreenClient>();
+  EXPECT_CALL(*client,
+              HandleAccelerator(ash::LoginAcceleratorAction::kStartEnrollment));
+
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::USER_CREATION);
+  Click(LoginShelfView::kEnterpriseEnrollment);
+}
+
 TEST_F(LoginShelfViewTest, TabGoesFromShelfToStatusAreaAndBackToShelf) {
   CreateUserSessions(1);
   NotifySessionStateChanged(SessionState::LOCKED);
@@ -676,6 +685,33 @@ TEST_F(LoginShelfViewTest, ParentAccessButtonVisibilityChangeOnLockScreen) {
   Shell::Get()->login_screen_controller()->ShowParentAccessButton(false);
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut}));
+}
+
+TEST_F(LoginShelfViewTest, EnterpriseEnrollmentButtonVisbility) {
+  // Enterprise enrollment button should only be available when user creation
+  // screen is shown in OOBE.
+  login_shelf_view_->SetLoginDialogState(OobeDialogState::USER_CREATION);
+
+  NotifySessionStateChanged(SessionState::OOBE);
+  EXPECT_TRUE(ShowsShelfButtons(
+      {LoginShelfView::kShutdown, LoginShelfView::kEnterpriseEnrollment}));
+
+  NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
+
+  NotifySessionStateChanged(SessionState::LOGGED_IN_NOT_ACTIVE);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
+
+  NotifySessionStateChanged(SessionState::ACTIVE);
+  EXPECT_TRUE(ShowsShelfButtons({}));
+
+  NotifySessionStateChanged(SessionState::LOCKED);
+  EXPECT_TRUE(
+      ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut}));
+
+  NotifySessionStateChanged(SessionState::LOGIN_SECONDARY);
+  EXPECT_TRUE(
+      ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kCancel}));
 }
 
 TEST_F(LoginShelfViewTest, TapShutdownWithSwipeDetectionEnabledOnLogin) {

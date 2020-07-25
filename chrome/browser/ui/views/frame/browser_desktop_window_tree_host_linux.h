@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host.h"
 
 #if defined(USE_DBUS_MENU)
-#include "chrome/browser/ui/views/frame/global_menu_bar_x11.h"  // nogncheck
+#include "chrome/browser/ui/views/frame/dbus_appmenu.h"  // nogncheck
 #endif
 
 #if defined(USE_X11)
@@ -70,7 +70,7 @@ class BrowserDesktopWindowTreeHostLinux
   // Each browser frame maintains its own menu bar object because the lower
   // level dbus protocol associates a xid to a menu bar; we can't map multiple
   // xids to the same menu bar.
-  std::unique_ptr<GlobalMenuBarX11> global_menu_bar_x11_;
+  std::unique_ptr<DbusAppmenu> dbus_appmenu_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserDesktopWindowTreeHostLinux);

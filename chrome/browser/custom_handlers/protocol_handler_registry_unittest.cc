@@ -72,9 +72,9 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
     // the result with a task to the current thread.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(callback, force_os_failure_
-                                     ? shell_integration::NOT_DEFAULT
-                                     : shell_integration::IS_DEFAULT));
+        base::BindOnce(std::move(callback),
+                       force_os_failure_ ? shell_integration::NOT_DEFAULT
+                                         : shell_integration::IS_DEFAULT));
 
     if (!force_os_failure_)
       os_registered_protocols_.insert(protocol);

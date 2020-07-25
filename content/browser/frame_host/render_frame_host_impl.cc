@@ -4632,16 +4632,6 @@ base::WeakPtr<RenderFrameHostImpl> RenderFrameHostImpl::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void RenderFrameHostImpl::TransferUserActivationFrom(
-    int32_t source_routing_id) {
-  RenderFrameHostImpl* source_rfh = RenderFrameHostImpl::FromID(
-      GlobalFrameRoutingId(GetProcess()->GetID(), source_routing_id));
-  if (source_rfh &&
-      source_rfh->frame_tree_node()->HasTransientUserActivation()) {
-    frame_tree_node()->TransferUserActivationFrom(source_rfh);
-  }
-}
-
 void RenderFrameHostImpl::CreateNewWindow(
     mojom::CreateNewWindowParamsPtr params,
     CreateNewWindowCallback callback) {
@@ -5968,17 +5958,14 @@ void RenderFrameHostImpl::CommitNavigation(
     }
 #endif
 
-    StoragePartition* partition =
-        BrowserContext::GetStoragePartition(browser_context, GetSiteInstance());
-    auto storage_partition_config =
-        GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-            browser_context, site_instance_->GetSiteInfo().site_url());
+    auto* partition =
+        static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
+            browser_context, GetSiteInstance()));
     non_network_url_loader_factories_.emplace(
-        url::kFileSystemScheme,
-        content::CreateFileSystemURLLoaderFactory(
-            process_->GetID(), GetFrameTreeNodeId(),
-            partition->GetFileSystemContext(),
-            storage_partition_config.partition_domain()));
+        url::kFileSystemScheme, content::CreateFileSystemURLLoaderFactory(
+                                    process_->GetID(), GetFrameTreeNodeId(),
+                                    partition->GetFileSystemContext(),
+                                    partition->GetPartitionDomain()));
 
     non_network_url_loader_factories_.emplace(
         url::kDataScheme, std::make_unique<DataURLLoaderFactory>());

@@ -99,6 +99,26 @@ static const uint8_t kTestResponsesGoodbyePacket[] = {
     74, 125, 95, 121,  // RDATA is the IP: 74.125.95.121
 };
 
+static const uint8_t kTestResponsesDifferentCapitalization[] = {
+    // Answer 1
+    // GHS.l.google.com in DNS format.
+    3, 'G', 'H', 'S', 1, 'l', 6, 'g', 'o', 'o', 'g', 'l', 'e', 3, 'c', 'o', 'm',
+    0x00, 0x00, 0x01,  // TYPE is A.
+    0x00, 0x01,        // CLASS is IN.
+    0, 0, 0, 53,       // TTL (4 bytes) is 53 seconds.
+    0, 4,              // RDLENGTH is 4 bytes.
+    74, 125, 95, 121,  // RDATA is the IP: 74.125.95.121
+
+    // Answer 2
+    // ghs.l.GOOGLE.com in DNS format.
+    3, 'g', 'h', 's', 1, 'l', 6, 'G', 'O', 'O', 'G', 'L', 'E', 3, 'c', 'o', 'm',
+    0x00, 0x00, 0x01,  // TYPE is A.
+    0x00, 0x01,        // CLASS is IN.
+    0, 0, 0, 53,       // TTL (4 bytes) is 53 seconds.
+    0, 4,              // RDLENGTH is 4 bytes.
+    74, 125, 95, 122,  // RDATA is the IP: 74.125.95.122
+};
+
 class RecordRemovalMock {
  public:
   MOCK_METHOD1(OnRecordRemoved, void(const RecordParsed*));
@@ -400,6 +420,30 @@ TEST_F(MDnsCacheTest, ClearOnOverfilledCleanup) {
   cache_.FindDnsRecords(dns_protocol::kTypeAAAA, "ghs.l.google.com", &results,
                         default_time_);
   EXPECT_TRUE(results.empty());
+}
+
+TEST_F(MDnsCacheTest, CaseInsensitive) {
+  DnsRecordParser parser(kTestResponsesDifferentCapitalization,
+                         sizeof(kTestResponsesDifferentCapitalization), 0);
+
+  std::unique_ptr<const RecordParsed> record1;
+  std::unique_ptr<const RecordParsed> record2;
+  std::vector<const RecordParsed*> results;
+
+  record1 = RecordParsed::CreateFrom(&parser, default_time_);
+  record2 = RecordParsed::CreateFrom(&parser, default_time_);
+  EXPECT_EQ(MDnsCache::RecordAdded, cache_.UpdateDnsRecord(std::move(record1)));
+  EXPECT_EQ(MDnsCache::RecordChanged,
+            cache_.UpdateDnsRecord(std::move(record2)));
+
+  cache_.FindDnsRecords(0, "ghs.l.google.com", &results, default_time_);
+
+  EXPECT_EQ(1u, results.size());
+  EXPECT_EQ("ghs.l.GOOGLE.com", results[0]->name());
+
+  std::vector<const RecordParsed*> results2;
+  cache_.FindDnsRecords(0, "GHS.L.google.COM", &results2, default_time_);
+  EXPECT_EQ(results, results2);
 }
 
 }  // namespace net

@@ -21,6 +21,8 @@ if (is_win || (is_linux && use_udev) || is_mac) {
     ]
 
     sources = [
+      "bluetooth_serial_device_enumerator.cc",
+      "bluetooth_serial_device_enumerator.h",
       "buffer.cc",
       "buffer.h",
       "serial_device_enumerator.cc",
@@ -47,8 +49,11 @@ if (is_win || (is_linux && use_udev) || is_mac) {
 
     deps = [
       "//base",
+      "//device/bluetooth:bluetooth",
+      "//device/bluetooth/public/cpp",
       "//mojo/public/cpp/bindings",
       "//net",
+      "//services/device/public/cpp/serial:switches",
     ]
 
     if (is_posix) {

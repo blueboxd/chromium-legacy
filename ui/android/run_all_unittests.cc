@@ -5,8 +5,8 @@
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,9 +25,7 @@ class UIAndroidTestSuite : public base::TestSuite {
 
     ui::RegisterPathProvider();
 
-    base::FilePath ui_test_pak_path;
-    ASSERT_TRUE(base::PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
+    ui::ResourceBundle::InitSharedInstanceWithPakPath(base::FilePath());
   }
 
   void Shutdown() override {

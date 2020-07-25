@@ -87,9 +87,8 @@ void CrostiniRecoveryView::OnStopVm(crostini::CrostiniResult result) {
     LOG(ERROR) << "Error stopping VM for recovery: " << (int)result;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&crostini::LaunchCrostiniApp, profile_, app_id_,
-                     display_id_, std::move(files_), std::move(callback_)));
+      FROM_HERE, base::BindOnce(&crostini::LaunchCrostiniApp, profile_, app_id_,
+                                display_id_, files_, std::move(callback_)));
   GetWidget()->CloseWithReason(
       views::Widget::ClosedReason::kAcceptButtonClicked);
 }

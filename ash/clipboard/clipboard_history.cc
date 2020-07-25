@@ -5,10 +5,12 @@
 #include "ash/clipboard/clipboard_history.h"
 
 #include "ash/clipboard/clipboard_history_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/account_id/account_id.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/clipboard_constants.h"
@@ -20,6 +22,10 @@ namespace ash {
 namespace {
 
 constexpr size_t kMaxClipboardItemsShared = 5;
+
+AccountId GetActiveAccountId() {
+  return Shell::Get()->session_controller()->GetActiveAccountId();
+}
 
 }  // namespace
 
@@ -34,6 +40,8 @@ ClipboardHistory::ScopedPause::~ScopedPause() {
 
 ClipboardHistory::ClipboardHistory() {
   ui::ClipboardMonitor::GetInstance()->AddObserver(this);
+  Shell::Get()->session_controller()->AddObserver(this);
+  Shell::Get()->AddShellObserver(this);
 }
 
 ClipboardHistory::~ClipboardHistory() {
@@ -41,14 +49,17 @@ ClipboardHistory::~ClipboardHistory() {
 }
 
 void ClipboardHistory::ClearHistory() {
-  history_with_duplicates_ = std::deque<ui::ClipboardData>();
+  history_with_duplicates_mappings_[GetActiveAccountId()] =
+      std::deque<ui::ClipboardData>();
 }
 
 std::vector<ui::ClipboardData>
 ClipboardHistory::GetRecentClipboardDataWithNoDuplicates() const {
   std::vector<ui::ClipboardData> history_without_duplicates;
-  for (auto it = history_with_duplicates_.crbegin();
-       it != history_with_duplicates_.crend(); ++it) {
+  const std::deque<ui::ClipboardData>& history_with_duplicates =
+      history_with_duplicates_mappings_.find(GetActiveAccountId())->second;
+  for (auto it = history_with_duplicates.crbegin();
+       it != history_with_duplicates.crend(); ++it) {
     if (history_without_duplicates.size() == kMaxClipboardItemsShared)
       break;
     const ui::ClipboardData& current_data = *it;
@@ -59,7 +70,9 @@ ClipboardHistory::GetRecentClipboardDataWithNoDuplicates() const {
 }
 
 bool ClipboardHistory::IsEmpty() const {
-  return history_with_duplicates_.empty();
+  auto it = history_with_duplicates_mappings_.find(GetActiveAccountId());
+  DCHECK(it != history_with_duplicates_mappings_.cend());
+  return it->second.empty();
 }
 
 void ClipboardHistory::OnClipboardDataChanged() {
@@ -108,27 +121,43 @@ void ClipboardHistory::OnClipboardDataChanged() {
     clipboard->ReadImage(
         ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr,
         base::BindOnce(&ClipboardHistory::OnRecievePNGFromClipboard,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(new_data)));
+                       weak_ptr_factory_.GetWeakPtr(), GetActiveAccountId(),
+                       std::move(new_data)));
     return;
   }
-  CommitData(std::move(new_data));
+  CommitData(GetActiveAccountId(), std::move(new_data));
 }
 
-void ClipboardHistory::CommitData(ui::ClipboardData data) {
+void ClipboardHistory::CommitData(const AccountId& account_id,
+                                  ui::ClipboardData data) {
+  const AccountId active_account_id = GetActiveAccountId();
+
+  // CommitData() is called asynchronously when handling bitmap data.
+  // Theoretically the active account may switch before CommitData() is handled.
+  // Return early in this edge case.
+  if (account_id != active_account_id)
+    return;
+
+  DCHECK(active_account_id.is_valid());
+
+  std::deque<ui::ClipboardData>& history_with_duplicates =
+      history_with_duplicates_mappings_[active_account_id];
+
   // Keep duplicates to maintain most recent ordering.
-  history_with_duplicates_.push_back(std::move(data));
+  history_with_duplicates.push_back(std::move(data));
 
   // Keep the history with duplicates to a reasonable limit, but greater than
   // kMaxClipboardItemsShared, so that repeated copies to not push off relevant
   // data.
-  if (history_with_duplicates_.size() > kMaxClipboardItemsShared * 2)
-    history_with_duplicates_.pop_front();
+  if (history_with_duplicates.size() > kMaxClipboardItemsShared * 2)
+    history_with_duplicates.pop_front();
 }
 
-void ClipboardHistory::OnRecievePNGFromClipboard(ui::ClipboardData data,
+void ClipboardHistory::OnRecievePNGFromClipboard(const AccountId& account_id,
+                                                 ui::ClipboardData data,
                                                  const SkBitmap& bitmap) {
   data.SetBitmapData(bitmap);
-  CommitData(std::move(data));
+  CommitData(account_id, std::move(data));
 }
 
 void ClipboardHistory::PauseClipboardHistory() {
@@ -137,6 +166,21 @@ void ClipboardHistory::PauseClipboardHistory() {
 
 void ClipboardHistory::UnPauseClipboardHistory() {
   --num_pause_clipboard_history_;
+}
+
+void ClipboardHistory::OnActiveUserSessionChanged(
+    const AccountId& active_account_id) {
+  if (!base::Contains(history_with_duplicates_mappings_, active_account_id)) {
+    history_with_duplicates_mappings_[active_account_id] =
+        std::deque<ui::ClipboardData>();
+  }
+}
+
+void ClipboardHistory::OnShellDestroying() {
+  // ClipboardHistory depends on Shell to access the classes it observes. So
+  // remove itself from observer lists before the Shell instance is destroyed.
+  Shell::Get()->session_controller()->RemoveObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 }
 
 }  // namespace ash

@@ -141,6 +141,24 @@ TEST_F(DNRManifestTest, InvalidRulesFileKey) {
       keys::kDeclarativeRuleResourcesKey));
 }
 
+TEST_F(DNRManifestTest, InvalidRulesFileFormat) {
+  const char* kRulesetFile = "file1.json";
+  std::unique_ptr<base::DictionaryValue> manifest = CreateManifest({});
+  manifest->Set(keys::kDeclarativeNetRequestKey,
+                DictionaryBuilder()
+                    .Set(keys::kDeclarativeRuleResourcesKey,
+                         (ListBuilder().Append(
+                              std::make_unique<base::Value>(kRulesetFile)))
+                             .Build())
+                    .Build());
+
+  WriteManifestAndRuleset(*manifest, {});
+
+  LoadAndExpectError(
+      "expected dictionary, got string. Invalid value for 'rule_resources' "
+      "key");
+}
+
 TEST_F(DNRManifestTest, ZeroRulesets) {
   std::vector<TestRulesetInfo> no_rulesets;
   WriteManifestAndRuleset(*CreateManifest(no_rulesets), no_rulesets);

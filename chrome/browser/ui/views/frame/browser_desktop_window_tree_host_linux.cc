@@ -17,8 +17,11 @@
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/extensions/x11_extension.h"
 
+#if defined(USE_DBUS_MENU)
+
 namespace {
 
+#if defined(USE_DBUS_MENU)
 bool CreateGlobalMenuBar() {
 #if defined(USE_OZONE)
   return ui::OzonePlatform::GetInstance()
@@ -28,8 +31,11 @@ bool CreateGlobalMenuBar() {
   return true;
 #endif
 }
+#endif
 
 }  // namespace
+
+#endif  // defined(USE_DBUS_MENU)
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopWindowTreeHostLinux, public:
@@ -94,17 +100,16 @@ void BrowserDesktopWindowTreeHostLinux::Init(
 #if defined(USE_DBUS_MENU)
   // We have now created our backing X11 window.  We now need to (possibly)
   // alert the desktop environment that there's a menu bar attached to it.
-
   if (CreateGlobalMenuBar()) {
-    global_menu_bar_x11_ = std::make_unique<GlobalMenuBarX11>(
-        browser_view_, GetAcceleratedWidget());
+    dbus_appmenu_ =
+        std::make_unique<DbusAppmenu>(browser_view_, GetAcceleratedWidget());
   }
 #endif
 }
 
 void BrowserDesktopWindowTreeHostLinux::CloseNow() {
 #if defined(USE_DBUS_MENU)
-  global_menu_bar_x11_.reset();
+  dbus_appmenu_.reset();
 #endif
   DesktopWindowTreeHostLinuxImpl::CloseNow();
 }

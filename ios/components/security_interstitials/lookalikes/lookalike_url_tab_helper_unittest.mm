@@ -5,6 +5,8 @@
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_helper.h"
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/lookalikes/core/features.h"
 #include "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
 #include "ios/components/security_interstitials/lookalikes/lookalike_url_tab_allow_list.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
@@ -90,4 +92,22 @@ TEST_F(LookalikeUrlTabHelperTest, ShouldAllowResponse) {
                   .ShouldAllowNavigation());
 
   histogram_tester_.ExpectTotalCount(lookalikes::kHistogramName, 1);
+}
+
+// Tests that ShouldAllowResponse properly blocks lookalike navigations
+// to IDNs when the feature is enabled.
+TEST_F(LookalikeUrlTabHelperTest, ShouldAllowResponseForPunycode) {
+  GURL lookalike_url("https://ɴoτ-τoρ-ďoᛖaiɴ.com/");
+
+  base::test::ScopedFeatureList feature_list_disabled;
+  feature_list_disabled.InitAndDisableFeature(
+      lookalikes::features::kLookalikeInterstitialForPunycode);
+  EXPECT_TRUE(ShouldAllowResponseUrl(lookalike_url, /*main_frame=*/true)
+                  .ShouldAllowNavigation());
+
+  base::test::ScopedFeatureList feature_list_enabled;
+  feature_list_enabled.InitAndEnableFeature(
+      lookalikes::features::kLookalikeInterstitialForPunycode);
+  EXPECT_FALSE(ShouldAllowResponseUrl(lookalike_url, /*main_frame=*/true)
+                   .ShouldAllowNavigation());
 }

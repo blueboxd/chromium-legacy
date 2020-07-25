@@ -124,17 +124,22 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
 SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
     ResourceType resource_type,
     scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
-    const base::RepeatingCallback<web::WebState*()>& web_state_getter)
+    const base::RepeatingCallback<web::WebState*()>& web_state_getter,
+    bool real_time_lookup_enabled,
+    bool can_rt_check_subresource_url,
+    base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui)
     : load_flags_(0),
       resource_type_(resource_type),
       has_user_gesture_(false),
       web_state_getter_(web_state_getter),
       url_checker_delegate_(url_checker_delegate),
       database_manager_(url_checker_delegate_->GetDatabaseManager()),
-      real_time_lookup_enabled_(false),
-      can_rt_check_subresource_url_(false),
-      can_check_db_(true) {
+      real_time_lookup_enabled_(real_time_lookup_enabled),
+      can_rt_check_subresource_url_(can_rt_check_subresource_url),
+      can_check_db_(true),
+      url_lookup_service_on_ui_(url_lookup_service_on_ui) {
   DCHECK(!web_state_getter_.is_null());
+  DCHECK(!can_rt_check_subresource_url_ || real_time_lookup_enabled_);
 }
 
 SafeBrowsingUrlCheckerImpl::~SafeBrowsingUrlCheckerImpl() {

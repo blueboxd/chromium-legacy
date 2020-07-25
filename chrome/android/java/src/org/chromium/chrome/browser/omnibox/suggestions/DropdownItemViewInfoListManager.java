@@ -10,6 +10,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.omnibox.styles.OmniboxTheme;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -21,14 +22,14 @@ class DropdownItemViewInfoListManager {
     private static final int OMNIBOX_HISTOGRAMS_MAX_SUGGESTIONS = 10;
     private final ModelList mManagedModel;
     private int mLayoutDirection;
-    private boolean mUseDarkColors;
+    private @OmniboxTheme int mOmniboxTheme;
     private List<DropdownItemViewInfo> mSourceViewInfoList;
     private SparseArray<Boolean> mGroupVisibility;
 
     DropdownItemViewInfoListManager(@NonNull ModelList managedModel) {
         assert managedModel != null : "Must specify a non-null model.";
         mLayoutDirection = View.LAYOUT_DIRECTION_INHERIT;
-        mUseDarkColors = true;
+        mOmniboxTheme = OmniboxTheme.LIGHT_THEME;
         mSourceViewInfoList = Collections.emptyList();
         mGroupVisibility = new SparseArray<>();
         mManagedModel = managedModel;
@@ -54,16 +55,16 @@ class DropdownItemViewInfoListManager {
     }
 
     /**
-     * Specifies the visual state to be used by the suggestions.
-     * @param useDarkColors Whether dark colors should be used for fonts and icons.
+     * Specifies the visual theme to be used by the suggestions.
+     * @param omniboxTheme Specifies which {@link OmniboxTheme} should be used.
      */
-    void setUseDarkColors(boolean useDarkColors) {
-        if (mUseDarkColors == useDarkColors) return;
+    void setOmniboxTheme(@OmniboxTheme int omniboxTheme) {
+        if (mOmniboxTheme == omniboxTheme) return;
 
-        mUseDarkColors = useDarkColors;
+        mOmniboxTheme = omniboxTheme;
         for (int i = 0; i < mSourceViewInfoList.size(); i++) {
             PropertyModel model = mSourceViewInfoList.get(i).model;
-            model.set(SuggestionCommonProperties.USE_DARK_COLORS, useDarkColors);
+            model.set(SuggestionCommonProperties.OMNIBOX_THEME, omniboxTheme);
         }
     }
 
@@ -134,7 +135,7 @@ class DropdownItemViewInfoListManager {
         for (int i = 0; i < mSourceViewInfoList.size(); i++) {
             PropertyModel model = mSourceViewInfoList.get(i).model;
             model.set(SuggestionCommonProperties.LAYOUT_DIRECTION, mLayoutDirection);
-            model.set(SuggestionCommonProperties.USE_DARK_COLORS, mUseDarkColors);
+            model.set(SuggestionCommonProperties.OMNIBOX_THEME, mOmniboxTheme);
         }
         // Note: Despite DropdownItemViewInfo extending ListItem, we can't use the
         // List<DropdownItemViewInfo> as a parameter expecting a List<ListItem>.

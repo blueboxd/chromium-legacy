@@ -54,13 +54,14 @@ IN_PROC_BROWSER_TEST_F(LoginUIShelfVisibilityTest, DefaultVisibility) {
   EXPECT_TRUE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 }
 
-// Verifies that guest button and add user button are hidden when Gaia
-// dialog is shown.
+// Verifies that guest button, add user button and enterprise enrollment button
+// are hidden when Gaia dialog is shown.
 IN_PROC_BROWSER_TEST_F(LoginUIShelfVisibilityTest, GaiaDialogOpen) {
   EXPECT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
   test::OobeGaiaPageWaiter().WaitUntilReady();
   EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
   EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsEnterpriseEnrollmentButtonShown());
 }
 
 // Verifies that guest button and add user button are hidden on post-login

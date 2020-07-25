@@ -1956,7 +1956,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                               const base::string16& message,
                               int32_t line_no,
                               const base::string16& source_id) override;
-  void TransferUserActivationFrom(int32_t source_routing_id) override;
   void ShowCreatedWindow(int32_t pending_widget_routing_id,
                          WindowOpenDisposition disposition,
                          const gfx::Rect& initial_rect,

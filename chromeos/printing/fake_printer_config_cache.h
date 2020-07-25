@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/strings/string_piece.h"
 #include "base/time/clock.h"
 #include "chromeos/printing/printer_config_cache.h"
@@ -40,8 +41,19 @@ class CHROMEOS_EXPORT FakePrinterConfigCache : public PrinterConfigCache {
   void SetFetchResponseForTesting(base::StringPiece key,
                                   base::StringPiece value);
 
+  // Sets internal state of |this| s.t. future Fetch() calls for
+  // |key| are consumed (i.e. delayed indefinitely and never called
+  // back). The effects of this are undone by a subsequent call to
+  // SetFetchResponseForTesting() or to Drop().
+  //
+  // This method is useful for simulating a slow server: one that
+  // doesn't immediately respond to a Fetch() request (in fact, it
+  // never responds at all, so use this carefully).
+  void DiscardFetchRequestFor(base::StringPiece key);
+
  private:
   base::flat_map<std::string, std::string> contents_;
+  base::flat_set<std::string> fetch_requests_to_ignore_;
 };
 
 }  // namespace chromeos

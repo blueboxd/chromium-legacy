@@ -45,7 +45,7 @@ PrefNotifierImpl::~PrefNotifierImpl() {
       // preferences which are known to have subscriptions outliving the
       // profile.
       if (
-          // For GlobalMenuBarX11, crbug.com/946668
+          // For DbusAppmenu, crbug.com/946668
           pref_name == "bookmark_bar.show_on_all_tabs" ||
           // For BrowserWindowPropertyManager, crbug.com/942491
           pref_name == "profile.icon_version" ||

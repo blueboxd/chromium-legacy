@@ -448,10 +448,8 @@ class MailtoExternalProtocolHandlerDelegate
 
   scoped_refptr<shell_integration::DefaultProtocolClientWorker>
   CreateShellWorker(
-      const shell_integration::DefaultWebClientWorkerCallback& callback,
       const std::string& protocol) override {
-    return new shell_integration::DefaultProtocolClientWorker(callback,
-                                                              protocol);
+    return new shell_integration::DefaultProtocolClientWorker(protocol);
   }
 
   ExternalProtocolHandler::BlockState GetBlockState(const std::string& scheme,
@@ -1497,7 +1495,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, JSPrintDuringSwap) {
       "a.com", "/print_during_load_with_broken_pdf_then_navigate.html"));
   ui_test_utils::NavigateToURL(browser(), main_url);
 
-  // Ensure the first process did not crash when the queued print() fires during frame detach.
+  // Ensure the first process did not crash when the queued print() fires
+  // during frame detach.
   EXPECT_TRUE(WaitForLoadStop(contents));
   watcher.Wait();
   EXPECT_TRUE(watcher.did_exit_normally());

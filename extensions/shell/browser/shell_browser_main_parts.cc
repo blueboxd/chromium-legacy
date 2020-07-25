@@ -77,6 +77,7 @@
 #endif
 
 #if defined(USE_AURA) && defined(USE_X11)
+#include "ui/base/ui_base_features.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"  // nogncheck
 #endif
 
@@ -112,7 +113,8 @@ ShellBrowserMainParts::~ShellBrowserMainParts() {
 
 void ShellBrowserMainParts::PreMainMessageLoopStart() {
 #if defined(USE_AURA) && defined(USE_X11)
-  ui::TouchFactory::SetTouchDeviceListFromCommandLine();
+  if (!features::IsUsingOzonePlatform())
+    ui::TouchFactory::SetTouchDeviceListFromCommandLine();
 #endif
 }
 

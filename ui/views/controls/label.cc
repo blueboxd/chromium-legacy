@@ -210,6 +210,7 @@ void Label::SetSubpixelRenderingEnabled(bool subpixel_rendering_enabled) {
   if (subpixel_rendering_enabled_ == subpixel_rendering_enabled)
     return;
   subpixel_rendering_enabled_ = subpixel_rendering_enabled;
+  ApplyTextColors();
   OnPropertyChanged(&subpixel_rendering_enabled_, kPropertyEffectsPaint);
 }
 

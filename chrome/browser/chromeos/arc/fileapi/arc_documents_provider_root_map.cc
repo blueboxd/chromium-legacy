@@ -25,7 +25,7 @@ struct DocumentsProviderSpec {
 };
 
 // List of documents providers for media views.
-constexpr DocumentsProviderSpec kDocumentsProviderWhitelist[] = {
+constexpr DocumentsProviderSpec kDocumentsProviderAllowlist[] = {
     {"com.android.providers.media.documents", "images_root", "images_root",
      true},
     {"com.android.providers.media.documents", "videos_root", "videos_root",
@@ -54,7 +54,7 @@ ArcDocumentsProviderRootMap::ArcDocumentsProviderRootMap(Profile* profile)
   // in ArcDocumentsProviderRootMapFactory.
   DCHECK(runner_);
 
-  for (const auto& spec : kDocumentsProviderWhitelist) {
+  for (const auto& spec : kDocumentsProviderAllowlist) {
     RegisterRoot(spec.authority, spec.root_document_id, spec.root_id,
                  spec.read_only, {});
   }

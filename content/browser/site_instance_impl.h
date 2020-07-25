@@ -22,6 +22,7 @@ namespace content {
 class BrowsingInstance;
 class ProcessLock;
 class RenderProcessHostFactory;
+class StoragePartitionImpl;
 
 // SiteInfo represents the principal of a SiteInstance. All documents and
 // workers within a SiteInstance are considered part of this principal and will
@@ -267,6 +268,19 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // process to this SiteInstance's SiteInfo. The ProcessLock relies heavily on
   // the SiteInfo's process_lock_url() for security decisions.
   const ProcessLock GetProcessLock() const;
+
+  // Helper function that returns the storage partition domain for this
+  // object.
+  // This is a temporary helper function used to verify that
+  // the partition domain computed using this SiteInstance's site URL matches
+  // the partition domain returned by storage_partition->GetPartitionDomain().
+  // If there is a mismatch, we call DumpWithoutCrashing() and return the value
+  // computed from the site URL since that is the legacy behavior.
+  //
+  // TODO(acolwell) : Remove this function and update callers to directly call
+  // storage_partition->GetPartitionDomain() once we've verified that this is
+  // safe.
+  std::string GetPartitionDomain(StoragePartitionImpl* storage_partition);
 
   // This function returns a SiteInfo with the appropriate site_url and
   // process_lock_url computed.

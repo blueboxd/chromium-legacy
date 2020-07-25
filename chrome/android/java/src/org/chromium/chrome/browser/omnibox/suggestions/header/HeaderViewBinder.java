@@ -9,6 +9,7 @@ import androidx.core.widget.TextViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -20,8 +21,9 @@ public class HeaderViewBinder {
     public static void bind(PropertyModel model, HeaderView view, PropertyKey propertyKey) {
         if (HeaderViewProperties.TITLE == propertyKey) {
             view.getTextView().setText(model.get(HeaderViewProperties.TITLE));
-        } else if (propertyKey == SuggestionCommonProperties.USE_DARK_COLORS) {
-            final boolean useDarkColors = model.get(SuggestionCommonProperties.USE_DARK_COLORS);
+        } else if (propertyKey == SuggestionCommonProperties.OMNIBOX_THEME) {
+            final boolean useDarkColors = !OmniboxResourceProvider.isDarkMode(
+                    model.get(SuggestionCommonProperties.OMNIBOX_THEME));
             TextViewCompat.setTextAppearance(
                     view.getTextView(), ChromeColors.getMediumTextSecondaryStyle(!useDarkColors));
             ApiCompatibilityUtils.setImageTintList(view.getIconView(),

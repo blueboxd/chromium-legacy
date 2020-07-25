@@ -19,6 +19,7 @@
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/icon_loader.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -159,7 +160,7 @@ class DownloadItemView : public views::View,
                              int percent_done) const;
 
   // When not in normal mode, returns the current help/warning/error icon.
-  gfx::ImageSkia GetWarningIcon();
+  ui::ImageModel GetIcon() const;
 
   // Returns the text and style to use for the status label.
   std::pair<base::string16, int> GetStatusTextAndStyle() const;
@@ -204,9 +205,6 @@ class DownloadItemView : public views::View,
   // submission was successful.
   bool SubmitDownloadToFeedbackService(
       DownloadCommands::Command download_command);
-
-  // Returns the height/width of the warning icon, in dp.
-  static int GetWarningIconSize();
 
   // Forwards |command| to |commands_|; useful for callbacks.
   void ExecuteCommand(DownloadCommands::Command command);

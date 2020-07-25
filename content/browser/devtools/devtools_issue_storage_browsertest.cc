@@ -30,6 +30,13 @@ class DevToolsIssueStorageBrowserTest : public DevToolsProtocolTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     SetupCrossSiteRedirector(embedded_test_server());
   }
+
+ protected:
+  RenderFrameHostImpl* main_frame_host() {
+    WebContentsImpl* web_contents_impl =
+        static_cast<WebContentsImpl*>(shell()->web_contents());
+    return web_contents_impl->GetFrameTree()->GetMainFrame();
+  }
 };
 
 namespace {
@@ -54,10 +61,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsIssueStorageBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
 
   // 2) Report an empty SameSite cookie issue.
-  WebContentsImpl* web_contents_impl =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-  RenderFrameHostImpl* root = web_contents_impl->GetFrameTree()->GetMainFrame();
-  ReportDummyIssue(root);
+  ReportDummyIssue(main_frame_host());
 
   // 3) Open DevTools.
   Attach();
@@ -85,10 +89,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsIssueStorageBrowserTest,
   ASSERT_TRUE(notifications_.empty());
 
   // 4) Report an empty SameSite cookie issue.
-  WebContentsImpl* web_contents_impl =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-  RenderFrameHostImpl* root = web_contents_impl->GetFrameTree()->GetMainFrame();
-  ReportDummyIssue(root);
+  ReportDummyIssue(main_frame_host());
 
   // 5) Verify we have received the SameSite issue.
   WaitForNotification("Audits.issueAdded", true);
@@ -103,11 +104,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsIssueStorageBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
 
   // 2) Report an empty SameSite cookie issue in the iframe.
-  WebContentsImpl* web_contents_impl =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-  RenderFrameHostImpl* root = web_contents_impl->GetFrameTree()->GetMainFrame();
-  EXPECT_EQ(root->child_count(), static_cast<unsigned>(1));
-  RenderFrameHostImpl* iframe = root->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* main_frame = main_frame_host();
+  EXPECT_EQ(main_frame->child_count(), static_cast<unsigned>(1));
+  RenderFrameHostImpl* iframe = main_frame->child_at(0)->current_frame_host();
   EXPECT_FALSE(iframe->is_main_frame());
 
   ReportDummyIssue(iframe);
@@ -115,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsIssueStorageBrowserTest,
   // 3) Delete the iframe from the page. This should cause the issue to be
   // re-assigned
   //    to the root frame.
-  root->RemoveChild(iframe->frame_tree_node());
+  main_frame->RemoveChild(iframe->frame_tree_node());
 
   // 4) Open DevTools and enable Audits domain.
   Attach();
@@ -131,10 +130,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsIssueStorageBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
 
   // 2) Report an empty SameSite cookie issue.
-  WebContentsImpl* web_contents_impl =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-  RenderFrameHostImpl* root = web_contents_impl->GetFrameTree()->GetMainFrame();
-  ReportDummyIssue(root);
+  ReportDummyIssue(main_frame_host());
 
   // 3) Navigate to /devtools/navigation.html
   ASSERT_TRUE(embedded_test_server()->Start());

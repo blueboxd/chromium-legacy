@@ -410,3 +410,13 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_print_draft_version, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_disable_server_blackhole_detection,
           false)
+
+// Remove ACK_DECIMATION_WITH_REORDERING mode and fast_ack_after_quiescence
+// option in QUIC received packet manager.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_remove_unused_ack_options,
+          false)
+
+// If true, QUIC subclasses will no longer directly access stream_map for its
+// content.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_do_not_use_stream_map, false)

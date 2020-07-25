@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_GLOBAL_MENU_BAR_REGISTRAR_X11_H_
-#define CHROME_BROWSER_UI_VIEWS_FRAME_GLOBAL_MENU_BAR_REGISTRAR_X11_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_DBUS_APPMENU_REGISTRAR_H_
+#define CHROME_BROWSER_UI_VIEWS_FRAME_DBUS_APPMENU_REGISTRAR_H_
 
 #include <map>
 #include <string>
@@ -18,25 +18,25 @@ class Bus;
 class ObjectProxy;
 }  // namespace dbus
 
-class GlobalMenuBarX11;
+class DbusAppmenu;
 
 // Advertises our menu bars to com.canonical.AppMenu.Registrar.
 //
-// GlobalMenuBarRegistrarX11 is responsible for managing the dbus::Bus shared by
+// DbusAppmenuRegistrar is responsible for managing the dbus::Bus shared by
 // each menu. We need a separate object to own the dbus channel and to
 // register/unregister the mapping between a menu and the com.canonical.dbusmenu
 // instance we are offering.
-class GlobalMenuBarRegistrarX11 {
+class DbusAppmenuRegistrar {
  public:
-  static GlobalMenuBarRegistrarX11* GetInstance();
+  static DbusAppmenuRegistrar* GetInstance();
 
-  void OnMenuBarCreated(GlobalMenuBarX11* menu);
-  void OnMenuBarDestroyed(GlobalMenuBarX11* menu);
+  void OnMenuBarCreated(DbusAppmenu* menu);
+  void OnMenuBarDestroyed(DbusAppmenu* menu);
 
   dbus::Bus* bus() { return bus_.get(); }
 
  private:
-  friend struct base::DefaultSingletonTraits<GlobalMenuBarRegistrarX11>;
+  friend struct base::DefaultSingletonTraits<DbusAppmenuRegistrar>;
 
   enum MenuState {
     // Initialize() hasn't been called.
@@ -56,15 +56,15 @@ class GlobalMenuBarRegistrarX11 {
     kRegistered,
   };
 
-  GlobalMenuBarRegistrarX11();
-  ~GlobalMenuBarRegistrarX11();
+  DbusAppmenuRegistrar();
+  ~DbusAppmenuRegistrar();
 
-  void InitializeMenu(GlobalMenuBarX11* menu);
+  void InitializeMenu(DbusAppmenu* menu);
 
   // Sends the actual message.
-  void RegisterMenu(GlobalMenuBarX11* menu);
+  void RegisterMenu(DbusAppmenu* menu);
 
-  void OnMenuInitialized(GlobalMenuBarX11* menu, bool success);
+  void OnMenuInitialized(DbusAppmenu* menu, bool success);
 
   void OnNameOwnerChanged(const std::string& service_owner);
 
@@ -74,11 +74,11 @@ class GlobalMenuBarRegistrarX11 {
 
   // Maps menus to flags that indicate if the menu has been successfully
   // initialized.
-  std::map<GlobalMenuBarX11*, MenuState> menus_;
+  std::map<DbusAppmenu*, MenuState> menus_;
 
-  base::WeakPtrFactory<GlobalMenuBarRegistrarX11> weak_ptr_factory_{this};
+  base::WeakPtrFactory<DbusAppmenuRegistrar> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(GlobalMenuBarRegistrarX11);
+  DISALLOW_COPY_AND_ASSIGN(DbusAppmenuRegistrar);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_GLOBAL_MENU_BAR_REGISTRAR_X11_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_DBUS_APPMENU_REGISTRAR_H_

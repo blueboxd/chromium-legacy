@@ -36,7 +36,7 @@ class ImportNotifier(object):
         self._monorail_api = MonorailAPI
         self.default_port = host.port_factory.get()
         self.finder = PathFinder(host.filesystem)
-        self.owners_extractor = DirectoryOwnersExtractor(host.filesystem)
+        self.owners_extractor = DirectoryOwnersExtractor(host)
         self.new_failures_by_directory = defaultdict(list)
 
     def main(self,

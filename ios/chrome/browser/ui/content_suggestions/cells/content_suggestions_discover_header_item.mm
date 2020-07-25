@@ -68,6 +68,7 @@ const CGFloat kHeaderMargin = 25;
     _menuButton.translatesAutoresizingMaskIntoConstraints = NO;
     _menuButton.accessibilityIdentifier =
         kContentSuggestionsDiscoverHeaderButtonIdentifier;
+    // TODO(crbug.com/1085419): Change icon to proper one for feed (TBD by UX).
     [_menuButton setImage:[UIImage imageNamed:@"infobar_settings_icon"]
                  forState:UIControlStateNormal];
 
@@ -95,6 +96,13 @@ const CGFloat kHeaderMargin = 25;
     ]];
   }
   return self;
+}
+
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  [self.menuButton removeTarget:nil
+                         action:nil
+               forControlEvents:UIControlEventAllEvents];
 }
 
 @end

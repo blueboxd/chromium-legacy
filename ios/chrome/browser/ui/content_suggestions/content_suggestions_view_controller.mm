@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cell.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_discover_header_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_discover_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
@@ -22,6 +23,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_layout.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recording.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
+#import "ios/chrome/browser/ui/content_suggestions/discover_feed_menu_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/theme_change_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
@@ -422,6 +424,25 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
   return cell;
 }
 
+#pragma mark - UICollectionViewDataSource
+
+- (UICollectionReusableView*)collectionView:(UICollectionView*)collectionView
+          viewForSupplementaryElementOfKind:(NSString*)kind
+                                atIndexPath:(NSIndexPath*)indexPath {
+  UICollectionReusableView* cell = [super collectionView:collectionView
+                       viewForSupplementaryElementOfKind:kind
+                                             atIndexPath:indexPath];
+  if ([kind isEqualToString:UICollectionElementKindSectionHeader] &&
+      [self.collectionUpdater isDiscoverSection:indexPath.section]) {
+    ContentSuggestionsDiscoverHeaderCell* discoverFeedHeader =
+        base::mac::ObjCCastStrict<ContentSuggestionsDiscoverHeaderCell>(cell);
+    [discoverFeedHeader.menuButton addTarget:self
+                                      action:@selector(openDiscoverFeedMenu:)
+                            forControlEvents:UIControlEventTouchUpInside];
+  }
+  return cell;
+}
+
 #pragma mark - UICollectionViewDelegateFlowLayout
 
 - (CGSize)collectionView:(UICollectionView*)collectionView
@@ -742,6 +763,11 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
     }
   }
   _initialContentOffset = NAN;
+}
+
+// Opens top-level feed menu when pressing |menuButton|.
+- (void)openDiscoverFeedMenu:(id)menuButton {
+  [self.discoverFeedMenuHandler openDiscoverFeedMenu:menuButton];
 }
 
 @end

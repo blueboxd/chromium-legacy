@@ -143,7 +143,7 @@ base::string16 GetAppShortcutsSubdirName();
 // The type of callback used to communicate processing state to consumers of
 // DefaultBrowserWorker and DefaultProtocolClientWorker.
 using DefaultWebClientWorkerCallback =
-    base::RepeatingCallback<void(DefaultWebClientState)>;
+    base::OnceCallback<void(DefaultWebClientState)>;
 
 //  Helper objects that handle checking if Chrome is the default browser
 //  or application for a url protocol on Windows and Linux, and also setting
@@ -165,27 +165,27 @@ class DefaultWebClientWorker
   }
 
   // Checks to see if Chrome is the default web client application. The
-  // instance's callback will be run to communicate the default state to the
+  // provided callback will be run to communicate the default state to the
   // caller.
-  void StartCheckIsDefault();
+  void StartCheckIsDefault(DefaultWebClientWorkerCallback callback);
 
   // Sets Chrome as the default web client application. Once done, it will
   // trigger a check for the default state using StartCheckIsDefault() to return
   // the default state to the caller.
-  void StartSetAsDefault();
+  void StartSetAsDefault(DefaultWebClientWorkerCallback callback);
 
  protected:
   friend class base::RefCountedThreadSafe<DefaultWebClientWorker>;
 
-  DefaultWebClientWorker(const DefaultWebClientWorkerCallback& callback,
-                         const char* worker_name);
+  explicit DefaultWebClientWorker(const char* worker_name);
   virtual ~DefaultWebClientWorker();
 
-  // Communicates the result via the |callback_|. When
+  // Communicates the result via |callback|. When
   // |is_following_set_as_default| is true, |state| will be reported to UMA as
   // the result of the set-as-default operation.
   void OnCheckIsDefaultComplete(DefaultWebClientState state,
-                                bool is_following_set_as_default);
+                                bool is_following_set_as_default,
+                                DefaultWebClientWorkerCallback callback);
 
   // When false, the operation to set as default will fail for interactive
   // flows.
@@ -196,11 +196,12 @@ class DefaultWebClientWorker
   // blocking sequence. When |is_following_set_as_default| is true, The default
   // state will be reported to UMA as the result of the set-as-default
   // operation.
-  void CheckIsDefault(bool is_following_set_as_default);
+  void CheckIsDefault(bool is_following_set_as_default,
+                      DefaultWebClientWorkerCallback callback);
 
   // Sets Chrome as the default web client. Always called on a blocking
   // sequence.
-  void SetAsDefault();
+  void SetAsDefault(DefaultWebClientWorkerCallback callback);
 
   // Implementation of CheckIsDefault() and SetAsDefault() for subclasses.
   virtual DefaultWebClientState CheckIsDefaultImpl() = 0;
@@ -213,13 +214,6 @@ class DefaultWebClientWorker
   // Reports the result for the set-as-default operation.
   void ReportSetDefaultResult(DefaultWebClientState state);
 
-  // Updates the UI in our associated view with the current default web
-  // client state.
-  void UpdateUI(DefaultWebClientState state);
-
-  // Called with the default state after the worker is done.
-  DefaultWebClientWorkerCallback callback_;
-
   // Used to differentiate UMA metrics for setting the default browser and
   // setting the default protocol client. The pointer must be valid for the
   // lifetime of the worker.
@@ -231,7 +225,7 @@ class DefaultWebClientWorker
 // Worker for checking and setting the default browser.
 class DefaultBrowserWorker : public DefaultWebClientWorker {
  public:
-  explicit DefaultBrowserWorker(const DefaultWebClientWorkerCallback& callback);
+  DefaultBrowserWorker();
 
  protected:
   ~DefaultBrowserWorker() override;
@@ -252,8 +246,7 @@ class DefaultBrowserWorker : public DefaultWebClientWorker {
 // multiple protocols you should use multiple worker objects.
 class DefaultProtocolClientWorker : public DefaultWebClientWorker {
  public:
-  DefaultProtocolClientWorker(const DefaultWebClientWorkerCallback& callback,
-                              const std::string& protocol);
+  explicit DefaultProtocolClientWorker(const std::string& protocol);
 
   const std::string& protocol() const { return protocol_; }
 

@@ -960,7 +960,7 @@ String HTMLCanvasElement::ToDataURLInternal(
     }
     if (IsUserInIdentifiabilityStudy()) {
       const uint64_t context_digest =
-          context_ ? context_->IdentifiabilityTextDigest() : 0;
+          context_ ? context_->IdentifiableTextToken().ToUkmMetricValue() : 0;
       const uint64_t canvas_digest =
           ResourceProvider() ? ResourceProvider()->GetIdentifiabilityDigest()
                              : 0;

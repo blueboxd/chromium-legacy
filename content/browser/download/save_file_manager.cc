@@ -19,6 +19,7 @@
 #include "content/browser/file_system/file_system_url_loader_factory.h"
 #include "content/browser/loader/file_url_loader_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -252,8 +253,8 @@ void SaveFileManager::SaveURL(SaveItemId save_item_id,
 
     network::mojom::URLLoaderFactory* factory = nullptr;
     std::unique_ptr<network::mojom::URLLoaderFactory> url_loader_factory;
-    RenderFrameHost* rfh = RenderFrameHost::FromID(render_process_host_id,
-                                                   render_frame_routing_id);
+    auto* rfh = RenderFrameHostImpl::FromID(render_process_host_id,
+                                            render_frame_routing_id);
 
     // TODO(qinmin): should this match the if statements in
     // DownloadManagerImpl::BeginResourceDownloadOnChecksComplete so that it
@@ -268,16 +269,13 @@ void SaveFileManager::SaveURL(SaveItemId save_item_id,
           base::TaskPriority::USER_VISIBLE);
       factory = url_loader_factory.get();
     } else if (url.SchemeIsFileSystem() && rfh) {
-      std::string storage_domain;
-      auto* site_instance = rfh->GetSiteInstance();
-      auto storage_partition_config =
-          GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-              context, site_instance->GetSiteURL());
-
+      auto* storage_partition_impl =
+          static_cast<StoragePartitionImpl*>(storage_partition);
+      auto partition_domain =
+          rfh->GetSiteInstance()->GetPartitionDomain(storage_partition_impl);
       url_loader_factory = CreateFileSystemURLLoaderFactory(
           rfh->GetProcess()->GetID(), rfh->GetFrameTreeNodeId(),
-          storage_partition->GetFileSystemContext(),
-          storage_partition_config.partition_domain());
+          storage_partition->GetFileSystemContext(), partition_domain);
       factory = url_loader_factory.get();
     } else if (rfh && url.SchemeIs(content::kChromeUIScheme)) {
       url_loader_factory = CreateWebUIURLLoader(rfh, url.scheme(),

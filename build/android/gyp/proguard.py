@@ -94,26 +94,6 @@ def _ParseOptions():
       '--extra-mapping-output-paths',
       help='GN-list of additional paths to copy output mapping file to.')
   parser.add_argument(
-      '--output-config',
-      help='Path to write the merged ProGuard config file to.')
-  parser.add_argument(
-      '--expected-configs-file',
-      help='Path to a file containing the expected merged ProGuard configs')
-  parser.add_argument(
-      '--proguard-expectations-failure-file',
-      help='Path to file written to if the expected merged ProGuard configs '
-      'differ from the generated merged ProGuard configs.')
-  parser.add_argument(
-      '--fail-on-expectations',
-      action="store_true",
-      help='When passed fails the build on proguard config expectation '
-      'mismatches.')
-  parser.add_argument(
-      '--only-verify-expectations',
-      action='store_true',
-      help='If passed only verifies that the proguard configs match '
-      'expectations but does not do any optimization with proguard/R8.')
-  parser.add_argument(
       '--classpath',
       action='append',
       help='GN-list of .jar files to include as libraries.')
@@ -167,24 +147,19 @@ def _ParseOptions():
   parser.add_argument('--desugared-library-keep-rule-output',
                       help='Path to desugared library keep rule output file.')
 
+  diff_utils.AddCommandLineFlags(parser)
   options = parser.parse_args(args)
 
   if options.feature_names:
     if options.output_path:
       parser.error('Feature splits cannot specify an output in GN.')
-    if not options.stamp:
+    if not options.actual_file and not options.stamp:
       parser.error('Feature splits require a stamp file as output.')
   elif not options.output_path:
     parser.error('Output path required when feature splits aren\'t used')
 
   if options.main_dex_rules_path and not options.r8_path:
     parser.error('R8 must be enabled to pass main dex rules.')
-
-  if options.expected_configs_file and not options.output_config:
-    parser.error('--expected-configs-file requires --output-config')
-
-  if options.only_verify_expectations and not options.stamp:
-    parser.error('--only-verify-expectations requires --stamp')
 
   options.classpath = build_utils.ParseGnList(options.classpath)
   options.proguard_configs = build_utils.ParseGnList(options.proguard_configs)
@@ -204,27 +179,6 @@ def _ParseOptions():
     ]
 
   return options
-
-
-def _VerifyExpectedConfigs(expected_path, actual_path, failure_file_path,
-                           fail_on_mismatch):
-  msg = diff_utils.DiffFileContents(expected_path, actual_path)
-  if not msg:
-    return
-
-  msg_header = """\
-ProGuard flag expectations file needs updating. For details see:
-https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README.md
-"""
-  sys.stderr.write(msg_header)
-  sys.stderr.write(msg)
-  if failure_file_path:
-    build_utils.MakeDirectory(os.path.dirname(failure_file_path))
-    with open(failure_file_path, 'w') as f:
-      f.write(msg_header)
-      f.write(msg)
-  if fail_on_mismatch:
-    sys.exit(1)
 
 
 class _DexPathContext(object):
@@ -388,16 +342,16 @@ def _OptimizeWithR8(options,
 def _CombineConfigs(configs, dynamic_config_data, exclude_generated=False):
   ret = []
 
-  def add_header(name):
-    ret.append('#' * 80)
-    ret.append('# ' + name)
-    ret.append('#' * 80)
+  # Sort in this way so //clank versions of the same libraries will sort
+  # to the same spot in the file.
+  def sort_key(path):
+    return tuple(reversed(path.split(os.path.sep)))
 
-  for config in sorted(configs):
+  for config in sorted(configs, key=sort_key):
     if exclude_generated and config.endswith('.resources.proguard.txt'):
       continue
 
-    add_header(config)
+    ret.append('# File: ' + config)
     with open(config) as config_file:
       contents = config_file.read().rstrip()
 
@@ -410,7 +364,7 @@ def _CombineConfigs(configs, dynamic_config_data, exclude_generated=False):
     ret.append('')
 
   if dynamic_config_data:
-    add_header('Dynamically generated from build/android/gyp/proguard.py')
+    ret.append('# File: //build/android/gyp/proguard.py (generated rules)')
     ret.append(dynamic_config_data)
     ret.append('')
   return '\n'.join(ret)
@@ -511,26 +465,13 @@ def main():
       proguard_configs, dynamic_config_data, exclude_generated=True)
   print_stdout = _ContainsDebuggingConfig(merged_configs) or options.verbose
 
-
-  if options.expected_configs_file:
-    with tempfile.NamedTemporaryFile() as f:
-      f.write(merged_configs)
-      f.flush()
-      _VerifyExpectedConfigs(options.expected_configs_file, f.name,
-                             options.proguard_expectations_failure_file,
-                             options.fail_on_expectations)
-  if options.only_verify_expectations:
-    _MaybeWriteStampAndDepFile(options, options.proguard_configs)
-    return
-
-  # Writing the config output before we know ProGuard is going to succeed isn't
-  # great, since then a failure will result in one of the outputs being updated.
-  # We do it anyways though because the error message prints out the path to the
-  # config. Ninja will still know to re-run the command because of the other
-  # stale outputs.
-  if options.output_config:
-    with open(options.output_config, 'w') as f:
-      f.write(merged_configs)
+  if options.expected_file:
+    diff_utils.CheckExpectations(merged_configs, options)
+    if options.only_verify_expectations:
+      build_utils.WriteDepfile(options.depfile,
+                               options.actual_file,
+                               inputs=options.proguard_configs)
+      return
 
   _OptimizeWithR8(options, proguard_configs, libraries, dynamic_config_data,
                   print_stdout)

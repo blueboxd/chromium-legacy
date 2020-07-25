@@ -186,4 +186,7 @@ TargetEmbeddingType GetTargetEmbeddingType(
     const LookalikeTargetAllowlistChecker& in_target_allowlist,
     std::string* safe_hostname);
 
+// Returns true if a navigation to an IDN should be blocked.
+bool ShouldBlockBySpoofCheckResult(const DomainInfo& navigated_domain);
+
 #endif  // COMPONENTS_LOOKALIKES_CORE_LOOKALIKE_URL_UTIL_H_

@@ -461,14 +461,8 @@ void ResourceBundle::LoadTestResources(const base::FilePath& path,
   if (!path.empty()) {
     const ScaleFactor scale_factor(ui::GetSupportedScaleFactors()[0]);
     auto data_pack = std::make_unique<DataPack>(scale_factor);
-#if defined(OS_ANDROID)
-    // TODO(https://crbug.com/1078365): Fix Android and remove this conditional.
-    if (data_pack->LoadFromPath(path))
-      AddDataPack(std::move(data_pack));
-#else   // !defined(OS_ANDROID)
     CHECK(data_pack->LoadFromPath(path));
     AddDataPack(std::move(data_pack));
-#endif  // !define(OS_ANDROID)
   }
 
   auto data_pack = std::make_unique<DataPack>(ui::SCALE_FACTOR_NONE);

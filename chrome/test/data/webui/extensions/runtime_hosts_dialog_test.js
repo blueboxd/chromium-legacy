@@ -4,7 +4,10 @@
 
 import {getPatternFromSite} from 'chrome://extensions/extensions.js';
 
+import {eventToPromise} from '../test_util.m.js';
+
 import {TestService} from './test_service.js';
+import {MetricsPrivateMock} from './test_util.js';
 
 suite('RuntimeHostsDialog', function() {
   /** @type {RuntimeHostsDialogElement} */ let dialog;
@@ -20,6 +23,8 @@ suite('RuntimeHostsDialog', function() {
     dialog.itemId = ITEM_ID;
 
     document.body.appendChild(dialog);
+
+    chrome.metricsPrivate = new MetricsPrivateMock();
   });
 
   teardown(function() {
@@ -104,6 +109,14 @@ suite('RuntimeHostsDialog', function() {
         .then((args) => {
           expectEquals(ITEM_ID, args[0] /* id */);
           expectEquals(newPattern, args[1] /* pattern */);
+          return eventToPromise('close', dialog);
+        })
+        .then(() => {
+          expectFalse(dialog.isOpen());
+          expectEquals(
+              chrome.metricsPrivate.getUserActionCount(
+                  'Extensions.Settings.Hosts.AddHostDialogSubmitted'),
+              1);
         });
   });
 

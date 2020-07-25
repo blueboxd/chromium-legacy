@@ -49,8 +49,7 @@ public class DownloadLaterDialogHelper implements DownloadLaterDialogController 
      */
     public static DownloadLaterDialogHelper create(
             Context context, ModalDialogManager manager, PrefService prefService) {
-        DownloadDateTimePickerDialogCoordinator dateTimePicker =
-                new DownloadDateTimePickerDialogCoordinator();
+        DownloadDateTimePickerDialog dateTimePicker = new DownloadDateTimePickerDialogImpl();
         DownloadLaterDialogCoordinator dialog = new DownloadLaterDialogCoordinator(dateTimePicker);
         dateTimePicker.initialize(dialog);
         return new DownloadLaterDialogHelper(context, manager, prefService, dialog);

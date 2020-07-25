@@ -9,6 +9,8 @@
 #include <string>
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "build/build_config.h"
 #include "chrome/updater/dm_message.h"
 
@@ -23,38 +25,37 @@ class TokenServiceInterface {
   virtual ~TokenServiceInterface() = default;
 
   // ID of the device that the tokens target to.
-  virtual std::string GetDeviceID() = 0;
+  virtual std::string GetDeviceID() const = 0;
 
   // Writes |enrollment_token| to storage.
   virtual bool StoreEnrollmentToken(const std::string& enrollment_token) = 0;
 
   // Reads the enrollment token from sources as-needed to find one.
   // Returns an empty string if no enrollment token is found.
-  virtual std::string GetEnrollmentToken() = 0;
+  virtual std::string GetEnrollmentToken() const = 0;
 
   // Writes |dm_token| into storage.
   virtual bool StoreDmToken(const std::string& dm_token) = 0;
 
   // Returns the device management token from storage, or returns an empty
   // string if no device management token is found.
-  virtual std::string GetDmToken() = 0;
+  virtual std::string GetDmToken() const = 0;
 };
 
 // The DMStorage is responsible for serialization of:
 //   1) DM enrollment token.
 //   2) DM token.
 //   3) DM policies.
-class DMStorage {
+class DMStorage : public base::RefCountedThreadSafe<DMStorage> {
  public:
   explicit DMStorage(const base::FilePath& policy_cache_root);
   DMStorage(const base::FilePath& policy_cache_root,
             std::unique_ptr<TokenServiceInterface> token_service);
   DMStorage(const DMStorage&) = delete;
   DMStorage& operator=(const DMStorage&) = delete;
-  virtual ~DMStorage();
 
   // Forwards to token service to get device ID
-  std::string GetDeviceID() { return token_service_->GetDeviceID(); }
+  std::string GetDeviceID() const { return token_service_->GetDeviceID(); }
 
   // Forwards to token service to save enrollment token.
   bool StoreEnrollmentToken(const std::string& enrollment_token) {
@@ -62,7 +63,7 @@ class DMStorage {
   }
 
   // Forwards to token service to get enrollment token.
-  std::string GetEnrollmentToken() {
+  std::string GetEnrollmentToken() const {
     return token_service_->GetEnrollmentToken();
   }
 
@@ -72,7 +73,7 @@ class DMStorage {
   }
 
   // Forwards to token service to get DM token.
-  std::string GetDmToken() { return token_service_->GetDmToken(); }
+  std::string GetDmToken() const { return token_service_->GetDmToken(); }
 
   // Writes a special DM token to storage to mark current device as
   // deregistered.
@@ -80,7 +81,10 @@ class DMStorage {
 
   // Returns true if the DM token is valid, where valid is defined as non-blank
   // and not de-registered.
-  bool IsValidDMToken();
+  bool IsValidDMToken() const;
+
+  // Returns true if the device is de-registered.
+  bool IsDeviceDeregistered() const;
 
   // Persists DM policies.
   //
@@ -122,9 +126,16 @@ class DMStorage {
   std::unique_ptr<PolicyManagerInterface> GetOmahaPolicyManager();
 
  private:
+  friend class base::RefCountedThreadSafe<DMStorage>;
+  ~DMStorage();
+
   const base::FilePath policy_cache_root_;
   std::unique_ptr<TokenServiceInterface> token_service_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 };
+
+scoped_refptr<DMStorage> GetDefaultDMStorage();
 
 }  // namespace updater
 

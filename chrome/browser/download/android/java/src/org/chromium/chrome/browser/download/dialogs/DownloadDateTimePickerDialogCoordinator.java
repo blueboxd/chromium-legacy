@@ -18,29 +18,13 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
- * The coordinator for download date time picker. The user can pick an exact time to start the
- * download later. The dialog has two stage:
- * 1. A calendar to let the user to pick the date.
- * 2. A clock to let the user to pick a time.
+ * A {@link DownloadDateTimePickerDialog} that uses Clank modal dialog and embeds the date picker
+ * and time picker view.
  */
-public class DownloadDateTimePickerDialogCoordinator implements ModalDialogProperties.Controller {
-    /**
-     * The controller that receives events from the date time picker.
-     */
-    public interface Controller {
-        /**
-         * Called when the user picked the time from date picker and time picker.
-         * @param time The time the user picked as a unix timestamp.
-         */
-        void onDateTimePicked(long time);
-
-        /**
-         * The user canceled date time picking flow.
-         */
-        void onDateTimePickerCanceled();
-    }
-
-    private Controller mController;
+// TODO(xingliu): Remove this.
+public class DownloadDateTimePickerDialogCoordinator
+        implements DownloadDateTimePickerDialog, ModalDialogProperties.Controller {
+    private DownloadDateTimePickerDialog.Controller mController;
 
     private ModalDialogManager mModalDialogManager;
 
@@ -49,20 +33,13 @@ public class DownloadDateTimePickerDialogCoordinator implements ModalDialogPrope
     private DownloadDateTimePickerView mView;
     private PropertyModelChangeProcessor mProcessor;
 
-    /**
-     * Initializes the download date time picker dialog.
-     * @param controller The controller that receives events from the date time picker.
-     */
-    public void initialize(@NonNull Controller controller) {
+    // DownloadDateTimePickerDialog implementation.
+    @Override
+    public void initialize(@NonNull DownloadDateTimePickerDialog.Controller controller) {
         mController = controller;
     }
 
-    /**
-     * Shows the date time picker.
-     * @param context The {@link Context} for the date time picker.
-     * @param windowAndroid The window android handle that provides contexts.
-     * @param model The model that defines the application data used to update the UI view.
-     */
+    @Override
     public void showDialog(
             Context context, ModalDialogManager modalDialogManager, PropertyModel model) {
         if (context == null || modalDialogManager == null) {
@@ -80,9 +57,7 @@ public class DownloadDateTimePickerDialogCoordinator implements ModalDialogPrope
                 getModalDialogModel(context), ModalDialogManager.ModalDialogType.APP);
     }
 
-    /**
-     * Destroys the download date time picker dialog.
-     */
+    @Override
     public void destroy() {
         if (mProcessor != null) mProcessor.destroy();
     }

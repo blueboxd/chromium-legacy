@@ -20,6 +20,7 @@
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_util.h"
+#include "ash/login_status.h"
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/public/cpp/accessibility_controller_client.h"
 #include "ash/public/cpp/ash_constants.h"
@@ -1121,6 +1122,13 @@ bool AccessibilityControllerImpl::IsSwitchAccessRunning() const {
 }
 
 bool AccessibilityControllerImpl::IsSwitchAccessSettingVisibleInTray() {
+  // Switch Access cannot be enabled on the sign-in page until crbug/1108808 has
+  // been fully resolved.
+  if (!switch_access().enabled() &&
+      Shell::Get()->session_controller()->login_status() ==
+          ash::LoginStatus::NOT_LOGGED_IN) {
+    return false;
+  }
   return switch_access().IsVisibleInTray();
   return IsEnterpriseIconVisibleInTrayMenu(
       prefs::kAccessibilitySwitchAccessEnabled);

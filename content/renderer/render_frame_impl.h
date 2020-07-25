@@ -875,8 +875,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidCancelResponse(int request_id);
   void DidReceiveTransferSizeUpdate(int request_id, int received_data_length);
 
-  void TransferUserActivationFrom(blink::WebLocalFrame* source_frame) override;
-
   bool GetCaretBoundsFromFocusedPlugin(gfx::Rect& rect) override;
 
   // Used in tests to install a fake WebURLLoaderFactory via

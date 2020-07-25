@@ -25,6 +25,7 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
+import org.chromium.chrome.browser.omnibox.styles.OmniboxTheme;
 import org.chromium.ui.modelutil.ListObservable.ListObserver;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -86,16 +87,16 @@ public class DropdownItemViewInfoListManagerUnitTest {
     /**
      * Verify that PropertyModels of all suggestions on managed list reflect the expected values.
      */
-    private void verifyPropertyValues(int layoutDirection, boolean useDarkColors) {
+    private void verifyPropertyValues(int layoutDirection, @OmniboxTheme int omniboxTheme) {
         for (int index = 0; index < mSuggestionModels.size(); index++) {
             Assert.assertEquals("Unexpected layout direction for suggestion at position " + index,
                     layoutDirection,
                     mSuggestionModels.get(index).model.get(
                             SuggestionCommonProperties.LAYOUT_DIRECTION));
             Assert.assertEquals("Unexpected visual theme for suggestion at position " + index,
-                    useDarkColors,
+                    omniboxTheme,
                     mSuggestionModels.get(index).model.get(
-                            SuggestionCommonProperties.USE_DARK_COLORS));
+                            SuggestionCommonProperties.OMNIBOX_THEME));
         }
     }
 
@@ -285,13 +286,16 @@ public class DropdownItemViewInfoListManagerUnitTest {
 
         mManager.setSourceViewInfoList(list);
         verifyModelEquals(list);
-        verifyPropertyValues(View.LAYOUT_DIRECTION_INHERIT, /* useDarkColors= */ true);
+        verifyPropertyValues(View.LAYOUT_DIRECTION_INHERIT, OmniboxTheme.LIGHT_THEME);
 
         mManager.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
-        verifyPropertyValues(View.LAYOUT_DIRECTION_RTL, /* useDarkColors= */ true);
+        verifyPropertyValues(View.LAYOUT_DIRECTION_RTL, OmniboxTheme.LIGHT_THEME);
 
-        mManager.setUseDarkColors(false);
-        verifyPropertyValues(View.LAYOUT_DIRECTION_RTL, /* useDarkColors= */ false);
+        mManager.setOmniboxTheme(OmniboxTheme.DARK_THEME);
+        verifyPropertyValues(View.LAYOUT_DIRECTION_RTL, OmniboxTheme.DARK_THEME);
+
+        mManager.setOmniboxTheme(OmniboxTheme.INCOGNITO);
+        verifyPropertyValues(View.LAYOUT_DIRECTION_RTL, OmniboxTheme.INCOGNITO);
 
         // Finally, set the new list and confirm that the values are still applied.
         list = Arrays.asList(new DropdownItemViewInfo(mHeaderProcessor,
@@ -304,7 +308,7 @@ public class DropdownItemViewInfoListManagerUnitTest {
                         new PropertyModel(SuggestionCommonProperties.ALL_KEYS), 2));
         mManager.setSourceViewInfoList(list);
         verifyModelEquals(list);
-        verifyPropertyValues(View.LAYOUT_DIRECTION_RTL, /* useDarkColors= */ false);
+        verifyPropertyValues(View.LAYOUT_DIRECTION_RTL, OmniboxTheme.INCOGNITO);
     }
 
     @Test

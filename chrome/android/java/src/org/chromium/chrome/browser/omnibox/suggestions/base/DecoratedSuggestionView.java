@@ -9,8 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import androidx.annotation.DrawableRes;
-
 import org.chromium.chrome.R;
 import org.chromium.components.browser_ui.widget.RoundedCornerImageView;
 
@@ -25,12 +23,10 @@ class DecoratedSuggestionView<T extends View> extends SimpleHorizontalLayoutView
      * Constructs a new suggestion view.
      *
      * @param context The context used to construct the suggestion view.
-     * @param background Selectable background resource ID.
      */
-    DecoratedSuggestionView(Context context, @DrawableRes int background) {
+    DecoratedSuggestionView(Context context) {
         super(context);
 
-        setBackgroundResource(background);
         setClickable(true);
         setFocusable(true);
 

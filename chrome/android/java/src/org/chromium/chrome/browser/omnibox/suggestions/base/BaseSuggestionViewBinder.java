@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.omnibox.suggestions.base;
 
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -15,6 +16,7 @@ import androidx.core.view.ViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties.Action;
 import org.chromium.components.browser_ui.styles.ChromeColors;
@@ -57,7 +59,7 @@ public final class BaseSuggestionViewBinder<T extends View>
             ViewCompat.setLayoutDirection(
                     view, model.get(SuggestionCommonProperties.LAYOUT_DIRECTION));
             updateContentViewPadding(model, view.getDecoratedSuggestionView());
-        } else if (SuggestionCommonProperties.USE_DARK_COLORS == propertyKey) {
+        } else if (SuggestionCommonProperties.OMNIBOX_THEME == propertyKey) {
             updateColorScheme(model, view);
         } else if (BaseSuggestionViewProperties.ACTIONS == propertyKey) {
             bindActionButtons(model, view, model.get(BaseSuggestionViewProperties.ACTIONS));
@@ -78,7 +80,7 @@ public final class BaseSuggestionViewBinder<T extends View>
             actionView.setContentDescription(
                     view.getContext().getResources().getString(action.accessibilityDescription));
             updateIcon(actionView, action.icon,
-                    ChromeColors.getPrimaryIconTintRes(!isDarkMode(model)));
+                    ChromeColors.getPrimaryIconTintRes(!useDarkColors(model)));
         }
     }
 
@@ -86,6 +88,10 @@ public final class BaseSuggestionViewBinder<T extends View>
     private static <T extends View> void updateColorScheme(
             PropertyModel model, BaseSuggestionView<T> view) {
         updateSuggestionIcon(model, view);
+        Drawable selectableBackgroundDrawable = OmniboxResourceProvider.resolveAttributeToDrawable(
+                view.getContext(), model.get(SuggestionCommonProperties.OMNIBOX_THEME),
+                R.attr.selectableItemBackground);
+        view.getDecoratedSuggestionView().setBackground(selectableBackgroundDrawable);
 
         final List<Action> actions = model.get(BaseSuggestionViewProperties.ACTIONS);
         // Setting ACTIONS and updating actionViews can happen later. Appropriate color scheme will
@@ -94,14 +100,17 @@ public final class BaseSuggestionViewBinder<T extends View>
 
         final List<ImageView> actionViews = view.getActionButtons();
         for (int index = 0; index < actionViews.size(); index++) {
-            updateIcon(actionViews.get(index), actions.get(index).icon,
-                    ChromeColors.getPrimaryIconTintRes(!isDarkMode(model)));
+            ImageView actionView = actionViews.get(index);
+            actionView.setBackground(selectableBackgroundDrawable.getConstantState().newDrawable());
+            updateIcon(actionView, actions.get(index).icon,
+                    ChromeColors.getPrimaryIconTintRes(!useDarkColors(model)));
         }
     }
 
-    /** Returns which color scheme should be used to tint drawables. */
-    private static boolean isDarkMode(PropertyModel model) {
-        return model.get(SuggestionCommonProperties.USE_DARK_COLORS);
+    /** @return Whether currently used color scheme is considered to be dark. */
+    private static boolean useDarkColors(PropertyModel model) {
+        return !OmniboxResourceProvider.isDarkMode(
+                model.get(SuggestionCommonProperties.OMNIBOX_THEME));
     }
 
     /** Update attributes of decorated suggestion icon. */
@@ -133,7 +142,7 @@ public final class BaseSuggestionViewBinder<T extends View>
             rciv.setRoundedCorners(radius, radius, radius, radius);
         }
 
-        updateIcon(rciv, sds, ChromeColors.getSecondaryIconTintRes(!isDarkMode(model)));
+        updateIcon(rciv, sds, ChromeColors.getSecondaryIconTintRes(!useDarkColors(model)));
     }
 
     /**

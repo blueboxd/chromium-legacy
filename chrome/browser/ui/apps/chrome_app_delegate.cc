@@ -175,12 +175,11 @@ ChromeAppDelegate::NewWindowContentsDelegate::OpenURLFromTab(
     // tasks.
     scoped_refptr<shell_integration::DefaultBrowserWorker>
         check_if_default_browser_worker =
-            new shell_integration::DefaultBrowserWorker(
-                base::Bind(&OpenURLAfterCheckIsDefaultBrowser,
-                           base::Passed(&owned_source), params));
-    check_if_default_browser_worker->StartCheckIsDefault();
+            new shell_integration::DefaultBrowserWorker();
+    check_if_default_browser_worker->StartCheckIsDefault(base::BindOnce(
+        &OpenURLAfterCheckIsDefaultBrowser, std::move(owned_source), params));
   }
-  return NULL;
+  return nullptr;
 }
 
 ChromeAppDelegate::ChromeAppDelegate(bool keep_alive)

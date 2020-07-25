@@ -18,6 +18,7 @@
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/crosapi/ash_chrome_service_impl.h"
@@ -177,6 +178,16 @@ bool LacrosManager::Start() {
                                    "--enable-oop-rasterization",
                                    "--lang=en-US",
                                    "--enable-crashpad"};
+
+  std::string additional_flags =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          chromeos::switches::kLacrosChromeAdditionalArgs);
+  std::vector<std::string> delimited_flags = base::SplitStringUsingSubstr(
+      additional_flags, "####", base::TRIM_WHITESPACE,
+      base::SPLIT_WANT_NONEMPTY);
+  for (const std::string& flag : delimited_flags) {
+    argv.push_back(flag);
+  }
 
   // We assume that if there's a custom chrome path, that this is a developer
   // and they want to enable logging.

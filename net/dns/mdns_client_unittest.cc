@@ -76,6 +76,32 @@ const uint8_t kSamplePacket1[] = {
     0x24, 0x75, 0x00, 0x08,  // RDLENGTH is 8 bytes.
     0x05, 'h', 'e', 'l', 'l', 'o', 0xc0, 0x32};
 
+const uint8_t kSamplePacket1WithCapitalization[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x02,  // 2 RRs (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+
+    // Answer 1
+    0x07, '_', 'p', 'r', 'i', 'v', 'e', 't', 0x04, '_', 'T', 'C', 'P', 0x05,
+    'l', 'o', 'c', 'a', 'l', 0x00, 0x00, 0x0c,  // TYPE is PTR.
+    0x00, 0x01,                                 // CLASS is IN.
+    0x00, 0x00,                                 // TTL (4 bytes) is 1 second;
+    0x00, 0x01, 0x00, 0x08,                     // RDLENGTH is 8 bytes.
+    0x05, 'h', 'e', 'l', 'l', 'o', 0xc0, 0x0c,
+
+    // Answer 2
+    0x08, '_', 'P', 'r', 'i', 'n', 't', 'e', 'R', 0xc0,
+    0x14,        // Pointer to "._tcp.local"
+    0x00, 0x0c,  // TYPE is PTR.
+    0x00, 0x01,  // CLASS is IN.
+    0x00, 0x01,  // TTL (4 bytes) is 20 hours, 47 minutes, 49 seconds.
+    0x24, 0x75, 0x00, 0x08,  // RDLENGTH is 8 bytes.
+    0x05, 'h', 'e', 'l', 'l', 'o', 0xc0, 0x32};
+
 const uint8_t kCorruptedPacketBadQuestion[] = {
     // Header
     0x00, 0x00,  // ID is zeroed out
@@ -244,6 +270,22 @@ const uint8_t kQueryPacketPrivet[] = {
     // Question
     // This part is echoed back from the respective query.
     0x07, '_', 'p', 'r', 'i', 'v', 'e', 't', 0x04, '_', 't', 'c', 'p', 0x05,
+    'l', 'o', 'c', 'a', 'l', 0x00, 0x00, 0x0c,  // TYPE is PTR.
+    0x00, 0x01,                                 // CLASS is IN.
+};
+
+const uint8_t kQueryPacketPrivetWithCapitalization[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x00, 0x00,  // No flags.
+    0x00, 0x01,  // One question.
+    0x00, 0x00,  // 0 RRs (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+
+    // Question
+    // This part is echoed back from the respective query.
+    0x07, '_', 'P', 'R', 'I', 'V', 'E', 'T', 0x04, '_', 't', 'c', 'p', 0x05,
     'l', 'o', 'c', 'a', 'l', 0x00, 0x00, 0x0c,  // TYPE is PTR.
     0x00, 0x01,                                 // CLASS is IN.
 };
@@ -525,6 +567,48 @@ TEST_F(MDnsTest, PassiveListeners) {
   listener_printer.reset();
 }
 
+TEST_F(MDnsTest, PassiveListenersWithCapitalization) {
+  StrictMock<MockListenerDelegate> delegate_privet;
+  StrictMock<MockListenerDelegate> delegate_printer;
+
+  PtrRecordCopyContainer record_privet;
+  PtrRecordCopyContainer record_printer;
+
+  std::unique_ptr<MDnsListener> listener_privet = test_client_->CreateListener(
+      dns_protocol::kTypePTR, "_privet._tcp.LOCAL", &delegate_privet);
+  std::unique_ptr<MDnsListener> listener_printer = test_client_->CreateListener(
+      dns_protocol::kTypePTR, "_prinTER._Tcp.Local", &delegate_printer);
+
+  ASSERT_TRUE(listener_privet->Start());
+  ASSERT_TRUE(listener_printer->Start());
+
+  // Send the same packet twice to ensure no records are double-counted.
+
+  EXPECT_CALL(delegate_privet, OnRecordUpdate(MDnsListener::RECORD_ADDED, _))
+      .Times(Exactly(1))
+      .WillOnce(
+          Invoke(&record_privet, &PtrRecordCopyContainer::SaveWithDummyArg));
+
+  EXPECT_CALL(delegate_printer, OnRecordUpdate(MDnsListener::RECORD_ADDED, _))
+      .Times(Exactly(1))
+      .WillOnce(
+          Invoke(&record_printer, &PtrRecordCopyContainer::SaveWithDummyArg));
+
+  SimulatePacketReceive(kSamplePacket1WithCapitalization,
+                        sizeof(kSamplePacket1WithCapitalization));
+  SimulatePacketReceive(kSamplePacket1WithCapitalization,
+                        sizeof(kSamplePacket1WithCapitalization));
+
+  EXPECT_TRUE(record_privet.IsRecordWith("_privet._TCP.local",
+                                         "hello._privet._TCP.local"));
+
+  EXPECT_TRUE(record_printer.IsRecordWith("_PrinteR._TCP.local",
+                                          "hello._PrinteR._TCP.local"));
+
+  listener_privet.reset();
+  listener_printer.reset();
+}
+
 TEST_F(MDnsTest, PassiveListenersCacheCleanup) {
   StrictMock<MockListenerDelegate> delegate_privet;
 
@@ -707,6 +791,34 @@ TEST_F(MDnsTest, TransactionWithEmptyCache) {
 
   EXPECT_TRUE(record_privet.IsRecordWith("_privet._tcp.local",
                                          "hello._privet._tcp.local"));
+}
+
+TEST_F(MDnsTest, TransactionWithEmptyCacheAndCapitalization) {
+  ExpectPacket(kQueryPacketPrivetWithCapitalization,
+               sizeof(kQueryPacketPrivetWithCapitalization));
+
+  std::unique_ptr<MDnsTransaction> transaction_privet =
+      test_client_->CreateTransaction(
+          dns_protocol::kTypePTR, "_PRIVET._tcp.local",
+          MDnsTransaction::QUERY_NETWORK | MDnsTransaction::QUERY_CACHE |
+              MDnsTransaction::SINGLE_RESULT,
+          base::BindRepeating(&MDnsTest::MockableRecordCallback,
+                              base::Unretained(this)));
+
+  ASSERT_TRUE(transaction_privet->Start());
+
+  PtrRecordCopyContainer record_privet;
+
+  EXPECT_CALL(*this, MockableRecordCallback(MDnsTransaction::RESULT_RECORD, _))
+      .Times(Exactly(1))
+      .WillOnce(
+          Invoke(&record_privet, &PtrRecordCopyContainer::SaveWithDummyArg));
+
+  SimulatePacketReceive(kSamplePacket1WithCapitalization,
+                        sizeof(kSamplePacket1WithCapitalization));
+
+  EXPECT_TRUE(record_privet.IsRecordWith("_privet._TCP.local",
+                                         "hello._privet._TCP.local"));
 }
 
 TEST_F(MDnsTest, TransactionCacheOnlyNoResult) {

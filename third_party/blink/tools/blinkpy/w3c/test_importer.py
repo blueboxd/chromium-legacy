@@ -524,7 +524,7 @@ class TestImporter(object):
         """Returns a mapping of email addresses to owners of changed tests."""
         _log.info('Gathering directory owners emails to CC.')
         changed_files = self.chromium_git.changed_files()
-        extractor = DirectoryOwnersExtractor(self.fs)
+        extractor = DirectoryOwnersExtractor(self.host)
         return extractor.list_owners(changed_files)
 
     def _cl_description(self, directory_owners):

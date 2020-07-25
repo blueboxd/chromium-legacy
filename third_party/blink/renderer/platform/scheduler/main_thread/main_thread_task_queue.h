@@ -49,7 +49,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
     // 3 was used for default timer task runner but this was deprecated.
 
-    kUnthrottled = 4,
+    // 4: kUnthrottled, obsolete.
+
     kFrameLoading = 5,
     // 6 : kFrameThrottleable, replaced with FRAME_THROTTLEABLE.
     // 7 : kFramePausable, replaced with kFramePausable

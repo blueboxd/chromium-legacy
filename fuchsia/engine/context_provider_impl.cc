@@ -517,10 +517,19 @@ void ContextProviderImpl::Create(
         base::JoinString(cors_exempt_headers, ","));
   }
 
-  if (launch_for_test_)
-    launch_for_test_.Run(launch_command, launch_options);
-  else
-    base::LaunchProcess(launch_command, launch_options);
+  base::Process context_process;
+  if (launch_for_test_) {
+    context_process = launch_for_test_.Run(launch_command, launch_options);
+  } else {
+    context_process = base::LaunchProcess(launch_command, launch_options);
+  }
+
+  if (context_process.IsValid()) {
+    // Set |context_process| termination to teardown its job and sub-processes.
+    zx_status_t result = zx_job_set_critical(launch_options.job_handle, 0,
+                                             context_process.Handle());
+    ZX_CHECK(ZX_OK == result, result) << "zx_job_set_critical";
+  }
 
   // |context_request| and any DevTools channels were transferred (not copied)
   // to the Context process.

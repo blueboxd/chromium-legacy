@@ -48,15 +48,16 @@ class ASH_EXPORT LoginShelfView : public views::View,
                                   public LoginDataDispatcher::Observer {
  public:
   enum ButtonId {
-    kShutdown = 1,   // Shut down the device.
-    kRestart,        // Restart the device.
-    kSignOut,        // Sign out the active user session.
-    kCloseNote,      // Close the lock screen note.
-    kCancel,         // Cancel multiple user sign-in.
-    kBrowseAsGuest,  // Use in guest mode.
-    kAddUser,        // Add a new user.
-    kApps,           // Show list of available kiosk apps.
-    kParentAccess    // Unlock child device with Parent Access Code.
+    kShutdown = 1,          // Shut down the device.
+    kRestart,               // Restart the device.
+    kSignOut,               // Sign out the active user session.
+    kCloseNote,             // Close the lock screen note.
+    kCancel,                // Cancel multiple user sign-in.
+    kBrowseAsGuest,         // Use in guest mode.
+    kAddUser,               // Add a new user.
+    kApps,                  // Show list of available kiosk apps.
+    kParentAccess,          // Unlock child device with Parent Access Code.
+    kEnterpriseEnrollment,  // Start enterprise enrollment flow.
   };
 
   // Stores and notifies UiUpdate test callbacks.
@@ -168,6 +169,8 @@ class ASH_EXPORT LoginShelfView : public views::View,
   void UpdateButtonUnionBounds();
 
   bool ShouldShowGuestButton() const;
+
+  bool ShouldShowEnterpriseEnrollmentButton() const;
 
   OobeDialogState dialog_state_ = OobeDialogState::HIDDEN;
   bool allow_guest_ = true;

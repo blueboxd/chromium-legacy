@@ -4,6 +4,8 @@
 
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_helper.h"
 
+#include "base/feature_list.h"
+#include "components/lookalikes/core/features.h"
 #include "components/lookalikes/core/lookalike_url_ui_util.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
 #include "components/ukm/ios/ukm_url_recorder.h"
@@ -96,6 +98,15 @@ void LookalikeUrlTabHelper::ShouldAllowResponse(
       });
   if (!GetMatchingDomain(navigated_domain, engaged_sites, in_target_allowlist,
                          &matched_domain, &match_type)) {
+    if (base::FeatureList::IsEnabled(
+            lookalikes::features::kLookalikeInterstitialForPunycode) &&
+        ShouldBlockBySpoofCheckResult(navigated_domain)) {
+      match_type = LookalikeUrlMatchType::kFailedSpoofChecks;
+      RecordUMAFromMatchType(match_type);
+      std::move(callback).Run(CreateLookalikeErrorDecision());
+      return;
+    }
+
     std::move(callback).Run(CreateAllowDecision());
     return;
   }

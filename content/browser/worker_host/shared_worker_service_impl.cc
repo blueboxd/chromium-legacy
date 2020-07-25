@@ -182,15 +182,12 @@ void SharedWorkerServiceImpl::ConnectToWorker(
   // Could not find an existing SharedWorkerHost to reuse. Create a new one.
 
   // Get a storage domain.
-  SiteInstance* site_instance = render_frame_host->GetSiteInstance();
+  auto* site_instance = render_frame_host->GetSiteInstance();
   if (!site_instance) {
     ScriptLoadFailed(std::move(client), /*error_message=*/"");
     return;
   }
-  auto storage_partition_config =
-      GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-          storage_partition_->browser_context(), site_instance->GetSiteURL());
-
+  auto partition_domain = site_instance->GetPartitionDomain(storage_partition_);
   SharedWorkerInstance instance(
       info->url, info->options->type, info->options->credentials,
       info->options->name, constructor_origin, info->content_security_policy,
@@ -198,9 +195,8 @@ void SharedWorkerServiceImpl::ConnectToWorker(
       creation_context_type);
   host = CreateWorker(shared_worker_id_generator_.GenerateNextId(), instance,
                       std::move(info->outside_fetch_client_settings_object),
-                      client_render_frame_host_id,
-                      storage_partition_config.partition_domain(), message_port,
-                      std::move(blob_url_loader_factory));
+                      client_render_frame_host_id, partition_domain,
+                      message_port, std::move(blob_url_loader_factory));
   host->AddClient(std::move(client), client_render_frame_host_id, message_port,
                   client_ukm_source_id);
 }

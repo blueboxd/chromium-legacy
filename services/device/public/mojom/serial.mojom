@@ -16,6 +16,10 @@ struct SerialPortInfo {
 
   mojo_base.mojom.FilePath path;
 
+  // This member is used to identify whether the SerialPortInfo object is
+  // converted from a Bluetooth serial device.
+  DeviceType type;
+
   // On macOS a serial device may have two paths, one for the call-out device
   // and one for the dial-in device. The call-out device is preferred. If
   // there is also an associated dial-in device its path is provided here. If
@@ -78,6 +82,13 @@ enum SerialPortFlushMode {
   // Flushes the send buffers and discards data in the data_pipe_consumer by
   // closing it.
   kTransmit,
+};
+
+enum DeviceType {
+  // The SerialPortInfo object is created from a serial device.
+  PLATFORM_SERIAL,
+  // The SerialPortInfo object is created from a Bluetooth SPP device.
+  SPP_DEVICE,
 };
 
 struct SerialConnectionOptions {

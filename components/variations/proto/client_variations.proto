@@ -11,6 +11,8 @@ option java_package = "org.chromium.components.variations";
 
 package variations;
 
+// NOTE: If you update this proto, you'll also need to rebuild the JS parser for
+// devtools. See //components/variations/proto/devtools/BUILD.gn for details.
 message ClientVariations {
   // A list of client experiment variation IDs that are active.
   repeated int32 variation_id = 1;

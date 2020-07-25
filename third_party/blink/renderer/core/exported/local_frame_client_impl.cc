@@ -1147,12 +1147,6 @@ bool LocalFrameClientImpl::UsePrintingLayout() const {
   return web_frame_->UsePrintingLayout();
 }
 
-void LocalFrameClientImpl::TransferUserActivationFrom(
-    LocalFrame* source_frame) {
-  web_frame_->Client()->TransferUserActivationFrom(
-      WebLocalFrameImpl::FromFrame(source_frame));
-}
-
 void LocalFrameClientImpl::UpdateSubresourceFactory(
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle> pending_factory) {
   DCHECK(web_frame_->Client());

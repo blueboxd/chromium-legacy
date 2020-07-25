@@ -66,6 +66,9 @@ enum class OobeDialogState {
   // Showing login UI provided by a Chrome extension using chrome.loginScreenUi
   // API.
   EXTENSION_LOGIN = 14,
+
+  // Showing user creation screen.
+  USER_CREATION = 15,
 };
 
 // Supported multi-profile user behavior values.

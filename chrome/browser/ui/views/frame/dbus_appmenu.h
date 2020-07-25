@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_GLOBAL_MENU_BAR_X11_H_
-#define CHROME_BROWSER_UI_VIEWS_FRAME_GLOBAL_MENU_BAR_X11_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_DBUS_APPMENU_H_
+#define CHROME_BROWSER_UI_VIEWS_FRAME_DBUS_APPMENU_H_
 
 #include <map>
 #include <string>
@@ -33,7 +33,7 @@ class Accelerator;
 
 class Browser;
 class BrowserView;
-struct GlobalMenuBarCommand;
+struct DbusAppmenuCommand;
 class Profile;
 
 // Controls the Mac style menu bar on Linux desktop environments.
@@ -42,22 +42,22 @@ class Profile;
 // depending on the active window.  Unity has been discontinued but the menu
 // survived and is usually referred to as DBus AppMenu.  There is support for it
 // in KDE Plasma in form of a widget that can be inserted into a panel.
-class GlobalMenuBarX11 : public AvatarMenuObserver,
-                         public BrowserListObserver,
-                         public CommandObserver,
-                         public history::TopSitesObserver,
-                         public sessions::TabRestoreServiceObserver,
-                         public ui::SimpleMenuModel::Delegate {
+class DbusAppmenu : public AvatarMenuObserver,
+                    public BrowserListObserver,
+                    public CommandObserver,
+                    public history::TopSitesObserver,
+                    public sessions::TabRestoreServiceObserver,
+                    public ui::SimpleMenuModel::Delegate {
  public:
-  GlobalMenuBarX11(BrowserView* browser_view, uint32_t browser_frame_xid);
-  ~GlobalMenuBarX11() override;
+  DbusAppmenu(BrowserView* browser_view, uint32_t browser_frame_id);
+  ~DbusAppmenu() override;
 
   void Initialize(DbusMenu::InitializedCallback callback);
 
   // Creates the object path for DbusemenuServer which is attached to |window|.
   std::string GetPath() const;
 
-  uint32_t browser_frame_xid() const { return browser_frame_xid_; }
+  uint32_t browser_frame_id() const { return browser_frame_id_; }
 
  private:
   struct HistoryItem;
@@ -65,7 +65,7 @@ class GlobalMenuBarX11 : public AvatarMenuObserver,
   // Creates a whole menu defined with |commands| and titled with the string
   // |string_id|. Then appends it to |root_menu_|.
   ui::SimpleMenuModel* BuildStaticMenu(int string_id,
-                                       const GlobalMenuBarCommand* commands);
+                                       const DbusAppmenuCommand* commands);
 
   // Creates a HistoryItem from the data in |entry|.
   std::unique_ptr<HistoryItem> HistoryItemForTab(
@@ -134,8 +134,8 @@ class GlobalMenuBarX11 : public AvatarMenuObserver,
   // as plain int (and not as x11::Window) because it is never used for any
   // calls to the X server, but it is always used for building string paths and
   // messages, for which it is converted to int (see GetPath() and calls to our
-  // browser_frame_xid() in GlobalMenuBarRegistrarX11).
-  const uint32_t browser_frame_xid_;
+  // browser_frame_id() in DbusAppmenuRegistrar).
+  const uint32_t browser_frame_id_;
 
   // Has Initialize() been called?
   bool initialized_ = false;
@@ -179,9 +179,9 @@ class GlobalMenuBarX11 : public AvatarMenuObserver,
   int last_command_id_;
 
   // For callbacks may be run after destruction.
-  base::WeakPtrFactory<GlobalMenuBarX11> weak_ptr_factory_{this};
+  base::WeakPtrFactory<DbusAppmenu> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(GlobalMenuBarX11);
+  DISALLOW_COPY_AND_ASSIGN(DbusAppmenu);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_GLOBAL_MENU_BAR_X11_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_DBUS_APPMENU_H_

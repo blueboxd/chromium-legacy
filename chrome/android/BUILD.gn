@@ -3243,25 +3243,27 @@ generate_jni("native_j_unittests_jni_headers") {
   feature_list_file = "//chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java"
 }
 
-# Used by android-binary-size trybot to know which expectations to validate.
-group("validate_expectations") {
-  deps = []
-  if (_enable_libs_and_assets_verification) {
-    deps += [
-      ":chrome_modern_public_bundle_validate_libs_and_assets",
-      ":monochrome_public_bundle_validate_libs_and_assets",
-      ":trichrome_chrome_bundle_validate_libs_and_assets",
-      ":trichrome_library_apk_validate_libs_and_assets",
-    ]
-  }
-  if (_enable_manifest_verification) {
-    deps += [
-      ":monochrome_public_bundle__base_bundle_module_validate_android_manifest",
-      ":monochrome_public_bundle_validate_proguard_config",
-      ":trichrome_chrome_bundle__base_bundle_module_validate_android_manifest",
-      ":trichrome_library_apk_validate_android_manifest",
-      "//android_webview:system_webview_base_bundle_module_validate_android_manifest",
-      "//android_webview:trichrome_webview_base_bundle_module_validate_android_manifest",
-    ]
+# Used by android-binary-size trybot to validate expectations.
+if (_enable_libs_and_assets_verification || _enable_manifest_verification) {
+  group("validate_expectations") {
+    deps = []
+    if (_enable_libs_and_assets_verification) {
+      deps += [
+        ":chrome_modern_public_bundle_validate_libs_and_assets",
+        ":monochrome_public_bundle_validate_libs_and_assets",
+        ":trichrome_chrome_bundle_validate_libs_and_assets",
+        ":trichrome_library_apk_validate_libs_and_assets",
+      ]
+    }
+    if (_enable_manifest_verification) {
+      deps += [
+        ":monochrome_public_bundle__base_bundle_module_validate_android_manifest",
+        ":monochrome_public_bundle_validate_proguard_config",
+        ":trichrome_chrome_bundle__base_bundle_module_validate_android_manifest",
+        ":trichrome_library_apk_validate_android_manifest",
+        "//android_webview:system_webview_base_bundle_module_validate_android_manifest",
+        "//android_webview:trichrome_webview_base_bundle_module_validate_android_manifest",
+      ]
+    }
   }
 }

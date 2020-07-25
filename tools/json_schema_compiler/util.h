@@ -71,11 +71,8 @@ template <class T>
 bool PopulateItem(const base::Value& from,
                   std::unique_ptr<T>* out,
                   base::string16* error) {
-  const base::DictionaryValue* dict = nullptr;
-  if (!from.GetAsDictionary(&dict))
-    return false;
   std::unique_ptr<T> obj(new T());
-  if (!T::Populate(*dict, obj.get(), error))
+  if (!T::Populate(from, obj.get(), error))
     return false;
   *out = std::move(obj);
   return true;
@@ -85,11 +82,8 @@ bool PopulateItem(const base::Value& from,
 // error generation enabled.
 template <class T>
 bool PopulateItem(const base::Value& from, T* out, base::string16* error) {
-  const base::DictionaryValue* dict = nullptr;
-  if (!from.GetAsDictionary(&dict))
-    return false;
   T obj;
-  if (!T::Populate(*dict, &obj, error))
+  if (!T::Populate(from, &obj, error))
     return false;
   *out = std::move(obj);
   return true;

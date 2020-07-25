@@ -1316,16 +1316,12 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
             BrowserContext::GetStoragePartitionForSite(browser_context_,
                                                        site_url));
 
-    auto storage_partition_config =
-        GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-            browser_context_, site_url);
-
     pending_url_loader_factory =
         CreatePendingSharedURLLoaderFactoryFromURLLoaderFactory(
             CreateFileSystemURLLoaderFactory(
                 rfh->GetProcess()->GetID(), rfh->GetFrameTreeNodeId(),
                 storage_partition->GetFileSystemContext(),
-                storage_partition_config.partition_domain()));
+                storage_partition->GetPartitionDomain()));
   } else if (params->url().SchemeIs(url::kDataScheme)) {
     pending_url_loader_factory =
         CreatePendingSharedURLLoaderFactoryFromURLLoaderFactory(

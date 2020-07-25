@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_factory.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/identifiability_study_helper.h"
+#include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
 
 namespace blink {
 
@@ -128,8 +129,8 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   bool PushFrame() override;
 
-  uint64_t IdentifiabilityTextDigest() override {
-    return identifiability_study_helper_.digest();
+  IdentifiableToken IdentifiableTextToken() override {
+    return identifiability_study_helper_.GetToken();
   }
 
  protected:

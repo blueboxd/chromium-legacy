@@ -25,9 +25,9 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 /**
  * Coordinator to construct the download later dialog.
  */
-public class DownloadLaterDialogCoordinator
-        implements ModalDialogProperties.Controller, DownloadLaterDialogView.Controller,
-                   DownloadDateTimePickerDialogCoordinator.Controller {
+public class DownloadLaterDialogCoordinator implements ModalDialogProperties.Controller,
+                                                       DownloadLaterDialogView.Controller,
+                                                       DownloadDateTimePickerDialog.Controller {
     private static final long INVALID_START_TIME = -1;
     private PropertyModel mDownloadLaterDialogModel;
     private DownloadLaterDialogView mCustomView;
@@ -41,7 +41,7 @@ public class DownloadLaterDialogCoordinator
             mPropertyModelChangeProcessor;
 
     private DownloadLaterDialogController mController;
-    private final DownloadDateTimePickerDialogCoordinator mDateTimePickerDialog;
+    private final DownloadDateTimePickerDialog mDateTimePickerDialog;
 
     @DownloadLaterDialogChoice
     private int mDownloadLaterChoice = DownloadLaterDialogChoice.DOWNLOAD_NOW;
@@ -51,7 +51,7 @@ public class DownloadLaterDialogCoordinator
      * @param dateTimePickerDialog The date time selection widget.
      */
     public DownloadLaterDialogCoordinator(
-            @NonNull DownloadDateTimePickerDialogCoordinator dateTimePickerDialog) {
+            @NonNull DownloadDateTimePickerDialog dateTimePickerDialog) {
         mDateTimePickerDialog = dateTimePickerDialog;
     }
 
@@ -216,7 +216,7 @@ public class DownloadLaterDialogCoordinator
         notifyCancel();
     }
 
-    // DownloadDateTimePickerDialogCoordinator.Controller implementation.
+    // DownloadDateTimePickerDialog.Controller implementation.
     @Override
     public void onDateTimePicked(long time) {
         DownloadLaterMetrics.recordDownloadLaterUiEvent(

@@ -206,7 +206,10 @@ class DropdownItemViewInfoListBuilder {
             mImageFetcher.clear();
         }
 
-        mBuiltListHasFullyConcealedElements = false;
+        if (!hasFocus) {
+            mBuiltListHasFullyConcealedElements = false;
+        }
+
         mHeaderProcessor.onUrlFocusChange(hasFocus);
         for (int index = 0; index < mPriorityOrderedSuggestionProcessors.size(); index++) {
             mPriorityOrderedSuggestionProcessors.get(index).onUrlFocusChange(hasFocus);

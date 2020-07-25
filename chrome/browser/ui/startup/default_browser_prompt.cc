@@ -158,10 +158,10 @@ void ShowDefaultBrowserPrompt(Profile* profile) {
   }
 
   scoped_refptr<shell_integration::DefaultBrowserWorker>(
-      new shell_integration::DefaultBrowserWorker(
-          base::Bind(&OnCheckIsDefaultBrowserFinished, profile->GetPath(),
-                     ShouldShowDefaultBrowserPrompt(profile))))
-      ->StartCheckIsDefault();
+      new shell_integration::DefaultBrowserWorker())
+      ->StartCheckIsDefault(
+          base::BindOnce(&OnCheckIsDefaultBrowserFinished, profile->GetPath(),
+                         ShouldShowDefaultBrowserPrompt(profile)));
 }
 
 void DefaultBrowserPromptDeclined(Profile* profile) {

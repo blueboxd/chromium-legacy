@@ -7,11 +7,10 @@
 
 #include <stdint.h>
 
-// Must be included before identifiable_surface.h.
-#include "third_party/blink/renderer/modules/canvas/canvas2d/blink_identifiability_digest_helpers.h"
-
 #include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_participation.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_token_builder.h"
+#include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
 
 namespace blink {
 
@@ -40,19 +39,27 @@ enum class CanvasOps {
 class IdentifiabilityStudyHelper {
  public:
   template <typename... Ts>
-  void MaybeUpdateDigest(Ts... args) {
+  void MaybeUpdateBuilder(Ts... tokens) {
     constexpr int kMaxOperations = 1 << 20;
     if (!IsUserInIdentifiabilityStudy() || operation_count_ > kMaxOperations) {
       return;
     }
-    digest_ ^= IdentifiabilityDigestHelper(args...);
+    AddTokens(tokens...);
     operation_count_++;
   }
 
-  uint64_t digest() { return digest_; }
+  IdentifiableToken GetToken() { return builder_.GetToken(); }
 
  private:
-  uint64_t digest_ = 0;
+  // Note that primitives are implicitly converted to IdentifiableTokens
+  template <typename... Ts>
+  void AddTokens(IdentifiableToken token, Ts... args) {
+    builder_.AddToken(token);
+    AddTokens(args...);
+  }
+  void AddTokens() {}
+
+  IdentifiableTokenBuilder builder_;
   int operation_count_ = 0;
 };
 

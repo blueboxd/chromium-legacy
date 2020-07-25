@@ -16,12 +16,19 @@
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
 #include "components/version_info/version_info.h"
+#include "fuchsia/base/feedback_registration.h"
 #include "fuchsia/base/init_logging.h"
 #include "fuchsia/base/inspect.h"
 #include "fuchsia/base/lifecycle_impl.h"
 #include "fuchsia/engine/context_provider_impl.h"
 
 namespace {
+
+constexpr char kFeedbackAnnotationsNamespace[] = "web-engine";
+constexpr char kCrashProductName[] = "FuchsiaWebEngine";
+// TODO(https://fxbug.dev/51490): Use a programmatic mechanism to obtain this.
+constexpr char kComponentUrl[] =
+    "fuchsia-pkg://fuchsia.com/web_engine#meta/context_provider.cmx";
 
 std::string GetVersionString() {
   std::string version_string = version_info::GetVersionNumber();
@@ -31,11 +38,13 @@ std::string GetVersionString() {
   return version_string;
 }
 
+// TODO(ddorwin): Move to feedback_registration.h.
 // TODO(https://crbug.com/1010222): Add annotations at Context startup, once
 // Contexts are moved out to run in their own components.
 void RegisterFeedbackAnnotations() {
   fuchsia::feedback::ComponentData component_data;
-  component_data.set_namespace_("web-engine");
+  component_data.set_namespace_(kFeedbackAnnotationsNamespace);
+  // TODO(https://crbug.com/1077428): Add release channel to the annotations.
   component_data.mutable_annotations()->push_back(
       {"version", version_info::GetVersionNumber()});
   base::ComponentContextForProcess()
@@ -48,6 +57,8 @@ void RegisterFeedbackAnnotations() {
 
 int ContextProviderMain() {
   base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
+
+  cr_fuchsia::RegisterCrashReportingFields(kComponentUrl, kCrashProductName);
 
   if (!cr_fuchsia::InitLoggingFromCommandLine(
           *base::CommandLine::ForCurrentProcess())) {

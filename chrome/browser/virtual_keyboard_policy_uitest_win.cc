@@ -219,7 +219,6 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardPolicyTest, ShowVK) {
       ui_controls::PRESS, 1,
       bounds.x() + kTextAreaWidth / 2 + kTextAreaOffsetX * 2,
       bounds.y() + kTextAreaHeight / 2));
-  WaitForTitle("focusin3");
   type_observer_auto.Wait();
 }
 
@@ -250,7 +249,6 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardPolicyTest, DontShowVKOnJSFocus) {
       ui_controls::PRESS, 1,
       bounds.x() + kTextAreaWidth / 2 + kTextAreaOffsetX * 2,
       bounds.y() + kTextAreaHeight / 2));
-  WaitForTitle("focusin3");
   show_ime_observer_true.Wait();
 }
 
@@ -272,7 +270,6 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardPolicyTest, HideVK) {
   ASSERT_TRUE(ui_controls::SendTouchEvents(
       ui_controls::PRESS, 1, bounds.x() + kTextAreaWidth / 2 + kTextAreaOffsetX,
       bounds.y() + kTextAreaHeight / 2));
-  WaitForTitle("focusin2");
   type_observer_hide.Wait();
 }
 
@@ -296,7 +293,6 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardPolicyTest, ShowAndThenHideVK) {
   ASSERT_TRUE(ui_controls::SendTouchEvents(ui_controls::PRESS, 1,
                                            bounds.x() + kTextAreaWidth / 2,
                                            bounds.y() + kTextAreaHeight / 2));
-  WaitForTitle("focusin1");
   type_observer_show.Wait();
   TextInputManagerVkVisibilityRequestObserver type_observer_hide(
       GetActiveWebContents(),
@@ -304,7 +300,6 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardPolicyTest, ShowAndThenHideVK) {
   ASSERT_TRUE(ui_controls::SendTouchEvents(
       ui_controls::PRESS, 1, bounds.x() + kTextAreaWidth / 2 + kTextAreaOffsetX,
       bounds.y() + kTextAreaHeight / 2));
-  WaitForTitle("focusin2");
   type_observer_hide.Wait();
 }
 
@@ -328,7 +323,6 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardPolicyTest, ShowAndThenHideVKOnKeyDown) {
   ASSERT_TRUE(ui_controls::SendTouchEvents(ui_controls::PRESS, 1,
                                            bounds.x() + kTextAreaWidth / 2,
                                            bounds.y() + kTextAreaHeight / 2));
-  WaitForTitle("focusin1");
   type_observer_show.Wait();
   TextInputManagerVkVisibilityRequestObserver type_observer_hide(
       GetActiveWebContents(),
@@ -336,7 +330,6 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardPolicyTest, ShowAndThenHideVKOnKeyDown) {
   ASSERT_TRUE(ui_controls::SendKeyPress(GetWindow()->GetNativeWindow(),
                                         ui::VKEY_RETURN, false, false, false,
                                         false));
-  WaitForTitle("KeyDown1");
   type_observer_hide.Wait();
 }
 
@@ -359,7 +352,6 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardPolicyTest,
       ui_controls::PRESS, 1,
       bounds.x() + kTextAreaWidth / 2 + kTextAreaOffsetX * 8,
       bounds.y() + kTextAreaHeight / 2));
-  WaitForTitle("focusin5");
   type_observer_none.Wait();
 }
 
@@ -385,7 +377,6 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardPolicyTest,
       ui_controls::PRESS, 1,
       bounds.x() + kTextAreaWidth / 2 + kTextAreaOffsetX * 4,
       bounds.y() + kTextAreaHeight / 2));
-  WaitForTitle("focusin4");
   type_observer_show.Wait();
   TextInputManagerVkVisibilityRequestObserver type_observer_hide(
       GetActiveWebContents(),
@@ -393,7 +384,6 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardPolicyTest,
   ASSERT_TRUE(ui_controls::SendKeyPress(GetWindow()->GetNativeWindow(),
                                         ui::VKEY_RETURN, false, false, false,
                                         false));
-  WaitForTitle("hidevkin4");
   type_observer_hide.Wait();
 }
 

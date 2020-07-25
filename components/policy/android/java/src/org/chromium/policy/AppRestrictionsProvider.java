@@ -17,35 +17,47 @@ import org.chromium.base.metrics.RecordHistogram;
  * restrictions.
  */
 public class AppRestrictionsProvider extends AbstractAppRestrictionsProvider {
+    /**
+     * Get the app restriction information from provided user manager, and record some timing
+     * metrics on its runtime.
+     * @param userManager UserManager service from Android System service
+     * @param packageName package name for target application.
+     * @return The restrictions for the provided package name, an empty bundle if they are not
+     *         available.
+     */
+    public static Bundle getApplicationRestrictionsFromUserManager(
+            UserManager userManager, String packageName) {
+        try {
+            return userManager.getApplicationRestrictions(packageName);
+        } catch (SecurityException e) {
+            // Android bug may throw SecurityException. See crbug.com/886814.
+            return new Bundle();
+        }
+    }
+
     private final UserManager mUserManager;
 
     public AppRestrictionsProvider(Context context) {
         super(context);
 
-        // getApplicationRestrictions method of UserManager was introduced in JELLY_BEAN_MR2.
         mUserManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
     }
 
     @Override
     protected Bundle getApplicationRestrictions(String packageName) {
-        try {
-            long startTime = SystemClock.elapsedRealtime();
-            Bundle bundle = mUserManager.getApplicationRestrictions(packageName);
-            long endTime = SystemClock.elapsedRealtime();
-            long duration = endTime - startTime;
-            RecordHistogram.recordTimesHistogram("Enterprise.AppRestrictionLoadTime2", duration);
-            if (bundle.isEmpty()) {
-                RecordHistogram.recordTimesHistogram(
-                        "Enterprise.AppRestrictionLoadTime2.EmptyBundle", duration);
-            } else {
-                RecordHistogram.recordTimesHistogram(
-                        "Enterprise.AppRestrictionLoadTime2.NonEmptyBundle", duration);
-            }
-            return bundle;
-        } catch (SecurityException e) {
-            // Android bug may throw SecurityException. See crbug.com/886814.
-            return new Bundle();
+        long startTime = SystemClock.elapsedRealtime();
+        Bundle bundle = getApplicationRestrictionsFromUserManager(mUserManager, packageName);
+        long endTime = SystemClock.elapsedRealtime();
+        long duration = endTime - startTime;
+        RecordHistogram.recordTimesHistogram("Enterprise.AppRestrictionLoadTime2", duration);
+        if (bundle.isEmpty()) {
+            RecordHistogram.recordTimesHistogram(
+                    "Enterprise.AppRestrictionLoadTime2.EmptyBundle", duration);
+        } else {
+            RecordHistogram.recordTimesHistogram(
+                    "Enterprise.AppRestrictionLoadTime2.NonEmptyBundle", duration);
         }
+        return bundle;
     }
 
     @Override

@@ -545,32 +545,10 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
   if (options->includeUserActivation())
     user_activation = UserActivation::CreateSnapshot(source);
 
-  LocalFrame* source_frame = source->GetFrame();
-
   MessageEvent* event = MessageEvent::Create(
       std::move(channels), std::move(message),
       source->GetSecurityOrigin()->ToString(), String(), source,
       user_activation, options->transferUserActivation());
-
-  // Transfer user activation state in the source's renderer when
-  // |transferUserActivation| is true. We are making an expriment with
-  // dynamic delegation of "autoplay" capability using this post message
-  // approach to transfer user activation.
-  // TODO(lanwei): we should execute the below code after the post task fires
-  // (for both local and remote posting messages).
-  bool should_transfer_user_activation =
-      RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
-      options->transferUserActivation();
-  if (should_transfer_user_activation &&
-      LocalFrame::HasTransientUserActivation(source_frame)) {
-    GetFrame()->TransferUserActivationFrom(source_frame);
-
-    // When the source and target frames are in the same process, we need to
-    // update the user activation state in the browser process. For the cross
-    // process case, it is handled in RemoteDOMWindow.
-    if (IsLocalDOMWindow())
-      GetFrame()->Client()->TransferUserActivationFrom(source->GetFrame());
-  }
 
   SchedulePostMessage(event, std::move(target), source);
 }

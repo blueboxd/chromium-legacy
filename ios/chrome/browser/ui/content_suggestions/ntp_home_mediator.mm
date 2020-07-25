@@ -65,6 +65,9 @@
 #endif
 
 namespace {
+// URL for 'Manage Interests' item in the Discover feed menu.
+const char kFeedManageInterestsURL[] =
+    "https://google.com/preferences/interests";
 // URL for the page displaying help for the NTP.
 const char kNTPHelpURL[] =
     "https://support.google.com/chrome/?p=ios_new_tab&ios=1";
@@ -374,6 +377,15 @@ const char kNTPHelpURL[] =
     return;
   }
   NOTREACHED() << "Promo type is neither URL or command.";
+}
+
+- (void)handleManageInterestsTapped {
+  NewTabPageTabHelper* NTPHelper =
+      NewTabPageTabHelper::FromWebState(self.webState);
+  if (NTPHelper && NTPHelper->IgnoreLoadRequests())
+    return;
+  _URLLoader->Load(UrlLoadParams::InCurrentTab(GURL(kFeedManageInterestsURL)));
+  // TODO(crbug.com/1085419): Add metrics.
 }
 
 - (void)handleLearnMoreTapped {

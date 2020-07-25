@@ -21,9 +21,7 @@ message ClientInfo {
     IOS = 2;
   }
 
-  // TODO(harringtond): This should be CLANK = 3, but the server isn't yet
-  // updated to support it.
-  enum AppType { CLANK = 2; }
+  enum AppType { CLANK = 3; }
 
   // The type of OS that the client is running.
   optional PlatformType platform_type = 1;

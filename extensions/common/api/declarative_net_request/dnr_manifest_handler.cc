@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/utf_string_conversions.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
@@ -63,6 +64,11 @@ bool DNRManifestHandler::Parse(Extension* extension, base::string16* error) {
   std::vector<dnr_api::Ruleset> rulesets;
   if (!json_schema_compiler::util::PopulateArrayFromList(*rules_file_list,
                                                          &rulesets, error)) {
+    DCHECK(!error->empty());
+    error->append(base::ASCIIToUTF16(". "));
+    error->append(ErrorUtils::FormatErrorMessageUTF16(
+        errors::kInvalidDeclarativeNetRequestKey,
+        keys::kDeclarativeRuleResourcesKey));
     return false;
   }
 

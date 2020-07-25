@@ -274,8 +274,7 @@ class InvalidOSMacroNamesTest(unittest.TestCase):
   def testInvalidOSMacroNames(self):
     lines = ['#if defined(OS_WINDOWS)',
              ' #elif defined(OS_WINDOW)',
-             ' # if defined(OS_MACOSX) || defined(OS_CHROME)',
-             '# else  // defined(OS_MAC)',
+             ' # if defined(OS_MAC) || defined(OS_CHROME)',
              '#endif  // defined(OS_MACOS)']
     errors = PRESUBMIT._CheckForInvalidOSMacrosInFile(
         MockInputApi(), MockFile('some/path/foo_platform.cc', lines))

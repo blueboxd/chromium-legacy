@@ -79,7 +79,7 @@ class ArcCertStoreBridge
   content::BrowserContext* const context_;
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   policy::PolicyService* policy_service_ = nullptr;
-  // Set to true if at least one ARC app is whitelisted by KeyPermissions
+  // Set to true if at least one ARC app is allowlisted by KeyPermissions
   // policy.
   bool channel_enabled_ = false;
 

@@ -5,14 +5,12 @@
 package org.chromium.chrome.browser.omnibox.suggestions.base;
 
 import android.content.Context;
-import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
-import androidx.annotation.DrawableRes;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.widget.AppCompatImageView;
@@ -33,7 +31,6 @@ import java.util.List;
  */
 public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutView {
     private final List<ImageView> mActionButtons;
-    private final @DrawableRes int mSelectableBackgroundRes;
     private final DecoratedSuggestionView<T> mDecoratedView;
     private SuggestionViewDelegate mDelegate;
 
@@ -45,11 +42,7 @@ public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutVi
     public BaseSuggestionView(T view) {
         super(view.getContext());
 
-        TypedValue themeRes = new TypedValue();
-        getContext().getTheme().resolveAttribute(R.attr.selectableItemBackground, themeRes, true);
-        mSelectableBackgroundRes = themeRes.resourceId;
-
-        mDecoratedView = new DecoratedSuggestionView<>(getContext(), mSelectableBackgroundRes);
+        mDecoratedView = new DecoratedSuggestionView<>(getContext());
         mDecoratedView.setOnClickListener(v -> mDelegate.onSelection());
         mDecoratedView.setOnLongClickListener(v -> {
             mDelegate.onLongPress();
@@ -93,7 +86,6 @@ public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutVi
     private void increaseActionButtonsCount(int desiredViewCount) {
         for (int index = mActionButtons.size(); index < desiredViewCount; index++) {
             ImageView actionView = new AppCompatImageView(getContext());
-            actionView.setBackgroundResource(mSelectableBackgroundRes);
             actionView.setClickable(true);
             actionView.setFocusable(true);
             actionView.setScaleType(ImageView.ScaleType.CENTER);
@@ -177,7 +169,7 @@ public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutVi
     }
 
     /** @return Decorated suggestion view. */
-    @VisibleForTesting
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     public DecoratedSuggestionView<T> getDecoratedSuggestionView() {
         return mDecoratedView;
     }

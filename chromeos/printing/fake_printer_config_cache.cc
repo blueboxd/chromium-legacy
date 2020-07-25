@@ -22,6 +22,15 @@ void FakePrinterConfigCache::SetFetchResponseForTesting(
     base::StringPiece key,
     base::StringPiece value) {
   contents_.insert_or_assign(std::string(key), std::string(value));
+
+  // If Fetch(|key|) was previously being consumed by prior call to
+  // DiscardFetchRequestFor(), we unblock it now.
+  fetch_requests_to_ignore_.erase(key);
+}
+
+void FakePrinterConfigCache::DiscardFetchRequestFor(base::StringPiece key) {
+  fetch_requests_to_ignore_.insert(std::string(key));
+  contents_.erase(key);
 }
 
 void FakePrinterConfigCache::Fetch(const std::string& key,
@@ -31,12 +40,20 @@ void FakePrinterConfigCache::Fetch(const std::string& key,
     std::move(cb).Run(PrinterConfigCache::FetchResult::Success(
         key, contents_.at(key), base::Time()));
     return;
+  } else if (fetch_requests_to_ignore_.contains(key)) {
+    // Caller has directed us, by way of DiscardFetchRequestFor(), to
+    // _not_ respond to this Fetch().
+    return;
   }
   std::move(cb).Run(PrinterConfigCache::FetchResult::Failure(key));
 }
 
 void FakePrinterConfigCache::Drop(const std::string& key) {
   contents_.erase(key);
+
+  // If Fetch(|key|) was previously being consumed by prior call to
+  // DiscardFetchRequestFor(), we unblock it now.
+  fetch_requests_to_ignore_.erase(key);
 }
 
 }  // namespace chromeos

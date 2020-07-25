@@ -207,6 +207,11 @@ bool LoginScreenTestApi::IsParentAccessButtonShown() {
 }
 
 // static
+bool LoginScreenTestApi::IsEnterpriseEnrollmentButtonShown() {
+  return IsLoginShelfViewButtonShown(LoginShelfView::kEnterpriseEnrollment);
+}
+
+// static
 bool LoginScreenTestApi::IsWarningBubbleShown() {
   LockScreen::TestApi lock_screen_test(LockScreen::Get());
   LockContentsView::TestApi lock_contents_test(

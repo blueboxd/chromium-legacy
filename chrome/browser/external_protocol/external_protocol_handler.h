@@ -47,9 +47,7 @@ class ExternalProtocolHandler {
   class Delegate {
    public:
     virtual scoped_refptr<shell_integration::DefaultProtocolClientWorker>
-    CreateShellWorker(
-        const shell_integration::DefaultWebClientWorkerCallback& callback,
-        const std::string& protocol) = 0;
+    CreateShellWorker(const std::string& protocol) = 0;
     virtual BlockState GetBlockState(const std::string& scheme,
                                      Profile* profile) = 0;
     virtual void BlockRequest() = 0;

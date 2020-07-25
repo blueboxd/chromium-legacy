@@ -21,6 +21,7 @@ source_set("lookalikes") {
   deps = [
     "//base",
     "//components/lookalikes/core",
+    "//components/lookalikes/core:features",
     "//components/security_interstitials/core",
     "//components/ukm/ios",
     "//components/url_formatter/spoof_checks/top_domains:common",
@@ -43,6 +44,7 @@ source_set("unit_tests") {
     ":lookalikes",
     "//base/test:test_support",
     "//components/lookalikes/core",
+    "//components/lookalikes/core:features",
     "//components/security_interstitials/core",
     "//components/ukm:test_support",
     "//components/ukm/ios",

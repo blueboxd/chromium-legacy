@@ -269,8 +269,6 @@ class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
 
   bool UsePrintingLayout() const override;
 
-  void TransferUserActivationFrom(LocalFrame* source_frame) override;
-
   void UpdateSubresourceFactory(
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle> pending_factory)
       override;

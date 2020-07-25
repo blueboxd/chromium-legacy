@@ -26,20 +26,20 @@ class TestTokenService : public TokenServiceInterface {
   ~TestTokenService() override = default;
 
   // Overrides for TokenServiceInterface.
-  std::string GetDeviceID() override { return "TestDeviceID"; }
+  std::string GetDeviceID() const override { return "TestDeviceID"; }
 
   bool StoreEnrollmentToken(const std::string& enrollment_token) override {
     enrollment_token_ = enrollment_token;
     return true;
   }
 
-  std::string GetEnrollmentToken() override { return enrollment_token_; }
+  std::string GetEnrollmentToken() const override { return enrollment_token_; }
 
   bool StoreDmToken(const std::string& dm_token) override {
     dm_token_ = dm_token;
     return true;
   }
-  std::string GetDmToken() override { return dm_token_; }
+  std::string GetDmToken() const override { return dm_token_; }
 
  private:
   std::string enrollment_token_;
@@ -89,8 +89,9 @@ std::string CannedOmahaPolicyFetchResponse() {
 #if defined(OS_MACOSX)
 
 TEST(DMStorage, LoadDeviceID) {
-  DMStorage storage(base::FilePath(FILE_PATH_LITERAL("/TestPolicyCacheRoot")));
-  EXPECT_FALSE(storage.GetDeviceID().empty());
+  auto storage = base::MakeRefCounted<DMStorage>(
+      base::FilePath(FILE_PATH_LITERAL("/TestPolicyCacheRoot")));
+  EXPECT_FALSE(storage->GetDeviceID().empty());
 }
 
 #endif  // OS_MACOSX
@@ -109,8 +110,8 @@ TEST(DMStorage, PersistPolicies) {
   EXPECT_TRUE(base::CreateDirectory(stale_poliy));
   EXPECT_TRUE(base::DirectoryExists(stale_poliy));
 
-  DMStorage storage(cache_root.GetPath());
-  EXPECT_TRUE(storage.PersistPolicies("policy-meta-data", policies));
+  auto storage = base::MakeRefCounted<DMStorage>(cache_root.GetPath());
+  EXPECT_TRUE(storage->PersistPolicies("policy-meta-data", policies));
   base::FilePath policy_info_file =
       cache_root.GetPath().AppendASCII("CachedPolicyInfo");
   EXPECT_TRUE(base::PathExists(policy_info_file));
@@ -161,11 +162,12 @@ TEST(DMStorage, GetCachedPolicyInfo) {
 
   base::ScopedTempDir cache_root;
   ASSERT_TRUE(cache_root.CreateUniqueTempDir());
-  DMStorage storage(cache_root.GetPath(), std::make_unique<TestTokenService>());
-  EXPECT_TRUE(storage.PersistPolicies(response.SerializeAsString(),
-                                      /* policies map */ {}));
+  auto storage = base::MakeRefCounted<DMStorage>(
+      cache_root.GetPath(), std::make_unique<TestTokenService>());
+  EXPECT_TRUE(storage->PersistPolicies(response.SerializeAsString(),
+                                       /* policies map */ {}));
 
-  auto policy_info = storage.GetCachedPolicyInfo();
+  auto policy_info = storage->GetCachedPolicyInfo();
   ASSERT_NE(policy_info, nullptr);
   EXPECT_EQ(policy_info->public_key(), "SampleNewPublicKeyData");
   EXPECT_TRUE(policy_info->has_key_version());
@@ -182,10 +184,11 @@ TEST(DMStorage, ReadCachedOmahaPolicy) {
   });
   base::ScopedTempDir cache_root;
   ASSERT_TRUE(cache_root.CreateUniqueTempDir());
-  DMStorage storage(cache_root.GetPath(), std::make_unique<TestTokenService>());
-  EXPECT_TRUE(storage.PersistPolicies(omaha_policy_data, policies));
+  auto storage = base::MakeRefCounted<DMStorage>(
+      cache_root.GetPath(), std::make_unique<TestTokenService>());
+  EXPECT_TRUE(storage->PersistPolicies(omaha_policy_data, policies));
 
-  auto policy_manager = storage.GetOmahaPolicyManager();
+  auto policy_manager = storage->GetOmahaPolicyManager();
   ASSERT_NE(policy_manager, nullptr);
 
   int check_interval = 0;
@@ -261,9 +264,9 @@ TEST(DMStorage, ReadCachedOmahaPolicy) {
       non_exist_appid, &app_rollback_allowed));
 
   // Verify no policy manager once device is deregistered.
-  EXPECT_TRUE(storage.DeregisterDevice());
-  EXPECT_FALSE(storage.IsValidDMToken());
-  ASSERT_EQ(storage.GetOmahaPolicyManager(), nullptr);
+  EXPECT_TRUE(storage->DeregisterDevice());
+  EXPECT_FALSE(storage->IsValidDMToken());
+  ASSERT_EQ(storage->GetOmahaPolicyManager(), nullptr);
 }
 
 }  // namespace updater

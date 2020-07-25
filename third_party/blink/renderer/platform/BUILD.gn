@@ -1334,6 +1334,8 @@ jumbo_component("platform") {
     "peerconnection/webrtc_util.h",
     "peerconnection/webrtc_video_track_source.cc",
     "peerconnection/webrtc_video_track_source.h",
+    "privacy_budget/identifiability_digest_helpers.cc",
+    "privacy_budget/identifiability_digest_helpers.h",
     "resolution_units.h",
     "supplementable.cc",
     "supplementable.h",

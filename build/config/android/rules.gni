@@ -2130,9 +2130,14 @@ if (enable_java_templates) {
   #   main_component_library: Specifies the name of the base component's library
   #     in a component build. If given, the system will find dependent native
   #     libraries at runtime by inspecting this library (optional).
-  #   expected_libs_and_assets: (optional): Verify the list
-  #     of included native libraries and assets is consistent with the given
-  #     expectation file.
+  #   expected_libs_and_assets: Verify the list of included native libraries
+  #     and assets is consistent with the given expectation file.
+  #   expected_libs_and_assets_base: Treat expected_libs_and_assets as a diff
+  #     with this file as the base.
+  #   expected_proguard_config: Checks that the merged set of proguard flags
+  #     matches the given config.
+  #   expected_proguard_config_base: Treat expected_proguard_config as a diff
+  #     with this file as the base.
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
     assert(defined(invoker.android_manifest))
@@ -3130,6 +3135,7 @@ if (enable_java_templates) {
         forward_variables_from(invoker,
                                [
                                  "expected_libs_and_assets",
+                                 "expected_libs_and_assets_base",
                                  "native_lib_placeholders",
                                  "secondary_abi_loadable_modules",
                                  "secondary_native_lib_placeholders",
@@ -3453,6 +3459,10 @@ if (enable_java_templates) {
                                "enable_jetify",
                                "enable_multidex",
                                "enable_native_mocks",
+                               "expected_android_manifest",
+                               "expected_android_manifest_base",
+                               "expected_libs_and_assets",
+                               "expected_libs_and_assets_base",
                                "generate_buildconfig_java",
                                "generate_final_jni",
                                "input_jars_paths",
@@ -3514,9 +3524,6 @@ if (enable_java_templates) {
                                "library_always_compress",
                                "library_renames",
                                "use_chromium_linker",
-                               "expected_android_manifest",
-                               "expected_android_manifest_base",
-                               "expected_libs_and_assets",
                                "version_code",
                                "version_name",
                              ])
@@ -3588,6 +3595,8 @@ if (enable_java_templates) {
                                "data_deps",
                                "deps",
                                "enable_multidex",
+                               "expected_android_manifest",
+                               "expected_android_manifest_base",
                                "generate_buildconfig_java",
                                "generate_final_jni",
                                "input_jars_paths",
@@ -3639,8 +3648,6 @@ if (enable_java_templates) {
                                "library_renames",
                                "use_chromium_linker",
                                "use_modern_linker",
-                               "expected_android_manifest",
-                               "expected_android_manifest_base",
                                "version_code",
                                "version_name",
                              ])
@@ -4469,17 +4476,19 @@ if (enable_java_templates) {
   #      avoid library duplication. Effectively, the static library will be
   #      treated as the parent of the base module.
   #
+  #    expected_libs_and_assets: Verify the list of included native libraries
+  #      and assets is consistent with the given expectation file.
+  #    expected_libs_and_assets_base: Treat expected_libs_and_assets as a diff
+  #      with this file as the base.
   #    expected_proguard_config: Checks that the merged set of proguard flags
   #      matches the given config.
+  #    expected_proguard_config_base: Treat expected_proguard_config as a diff
+  #      with this file as the base.
   #
   #    version_code: Optional. Version code of the target.
   #
   #    is_multi_abi: If true will add a library placeholder for the missing ABI
   #      if either the primary or the secondary ABI has no native libraries set.
-  #
-  #    expected_libs_and_assets: (optional): Verify the list
-  #      of included native libraries and assets is consistent with the given
-  #      expectation file.
   #
   #    default_modules_for_testing: (optional): A list of DFM that the wrapper
   #      script should install. This is for local testing only, and does not
@@ -4704,6 +4713,7 @@ if (enable_java_templates) {
           forward_variables_from(invoker,
                                  [
                                    "expected_proguard_config",
+                                   "expected_proguard_config_base",
                                    "min_sdk_version",
                                  ])
           if (defined(expected_proguard_config)) {
@@ -4758,8 +4768,12 @@ if (enable_java_templates) {
 
         if (module_name == "base" &&
             defined(invoker.expected_libs_and_assets)) {
+          forward_variables_from(invoker,
+                                 [
+                                   "expected_libs_and_assets",
+                                   "expected_libs_and_assets_base",
+                                 ])
           top_target_name = _target_name
-          expected_libs_and_assets = invoker.expected_libs_and_assets
           build_config_target = _module_build_config_target
           native_libraries_config_target = ":$_native_libraries_config_target"
           if (defined(android_app_secondary_abi)) {

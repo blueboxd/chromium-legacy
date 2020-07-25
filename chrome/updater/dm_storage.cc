@@ -15,6 +15,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/updater/dm_cached_policy_info.h"
 #include "chrome/updater/dm_policy_manager.h"
+#include "chrome/updater/updater_version.h"
+#include "chrome/updater/util.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace updater {
@@ -38,6 +40,9 @@ constexpr char kPolicyFileName[] = "PolicyFetchResponse";
 
 // The policy type for Omaha policy settings.
 constexpr char kGoogleUpdatePolicyType[] = "google/machine-level-omaha";
+
+// Policy subfolder in the updater installation path.
+constexpr char kPolicyCacheSubfolder[] = "Policies";
 
 // Deletes the child directories in cache root if they do not appear in
 // set |policy_types_base64|.
@@ -70,19 +75,30 @@ DMStorage::DMStorage(const base::FilePath& policy_cache_root,
   DCHECK(token_service_);
 }
 
-DMStorage::~DMStorage() = default;
+DMStorage::~DMStorage() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 bool DMStorage::DeregisterDevice() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return token_service_->StoreDmToken(kInvalidTokenValue);
 }
 
-bool DMStorage::IsValidDMToken() {
+bool DMStorage::IsValidDMToken() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::string dm_token = GetDmToken();
   return !dm_token.empty() && dm_token != kInvalidTokenValue;
 }
 
+bool DMStorage::IsDeviceDeregistered() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return GetDmToken() == kInvalidTokenValue;
+}
+
 bool DMStorage::PersistPolicies(const std::string& policy_info_data,
                                 const DMPolicyMap& policy_map) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Persists policy cached info
   base::FilePath policy_info_file =
       policy_cache_root_.AppendASCII(kPolicyInfoFileName);
@@ -118,6 +134,8 @@ bool DMStorage::PersistPolicies(const std::string& policy_info_data,
 }
 
 std::unique_ptr<CachedPolicyInfo> DMStorage::GetCachedPolicyInfo() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!IsValidDMToken())
     return nullptr;
 
@@ -135,6 +153,8 @@ std::unique_ptr<CachedPolicyInfo> DMStorage::GetCachedPolicyInfo() {
 }
 
 std::unique_ptr<PolicyManagerInterface> DMStorage::GetOmahaPolicyManager() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!IsValidDMToken())
     return nullptr;
 
@@ -159,6 +179,17 @@ std::unique_ptr<PolicyManagerInterface> DMStorage::GetOmahaPolicyManager() {
   }
 
   return std::make_unique<DMPolicyManager>(omaha_settings);
+}
+
+scoped_refptr<DMStorage> GetDefaultDMStorage() {
+  base::FilePath updater_versioned_path;
+  if (!GetVersionedDirectory(&updater_versioned_path))
+    return nullptr;
+
+  base::FilePath policy_cache_folder =
+      updater_versioned_path.AppendASCII(kPolicyCacheSubfolder);
+
+  return base::MakeRefCounted<DMStorage>(policy_cache_folder);
 }
 
 }  // namespace updater

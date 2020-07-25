@@ -343,7 +343,7 @@ void DownloadItemView::Layout() {
 
   if (is_download_warning(mode_)) {
     gfx::Point child_origin(
-        kStartPadding + GetWarningIconSize() + kStartPadding,
+        kStartPadding + GetIcon().Size().width() + kStartPadding,
         CenterY(warning_label_->height()));
     warning_label_->SetPosition(child_origin);
 
@@ -360,7 +360,7 @@ void DownloadItemView::Layout() {
       scan_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
   } else if (is_mixed_content(mode_)) {
     gfx::Point child_origin(
-        kStartPadding + GetWarningIconSize() + kStartPadding,
+        kStartPadding + GetIcon().Size().width() + kStartPadding,
         CenterY(warning_label_->height()));
     warning_label_->SetPosition(child_origin);
 
@@ -373,7 +373,7 @@ void DownloadItemView::Layout() {
       discard_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
   } else if (mode_ == Mode::kDeepScanning) {
     gfx::Point child_origin(
-        kStartPadding + GetWarningIconSize() + kStartPadding,
+        kStartPadding + GetIcon().Size().width() + kStartPadding,
         CenterY(deep_scanning_label_->height()));
     deep_scanning_label_->SetPosition(child_origin);
 
@@ -601,7 +601,8 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
 
   if (has_warning_label(mode_)) {
     // Width.
-    width = kStartPadding + GetWarningIconSize() + kStartPadding +
+    const gfx::Size icon_size = GetIcon().Size();
+    width = kStartPadding + icon_size.width() + kStartPadding +
             warning_label_->width() + kLabelPadding;
     gfx::Size button_size = GetButtonSize();
     if (save_button_->GetVisible() && discard_button_->GetVisible())
@@ -610,16 +611,17 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
 
     // Height: make sure the button fits and the warning icon fits.
     child_height =
-        std::max({child_height, button_size.height(), GetWarningIconSize()});
+        std::max({child_height, button_size.height(), icon_size.height()});
   } else if (mode_ == Mode::kDeepScanning) {
-    width = kStartPadding + GetWarningIconSize() + kStartPadding +
+    const gfx::Size icon_size = GetIcon().Size();
+    width = kStartPadding + icon_size.width() + kStartPadding +
             deep_scanning_label_->width() + kLabelPadding;
     if (open_now_button_->GetVisible()) {
       width += open_now_button_->GetPreferredSize().width();
       // Height: make sure the button fits and the warning icon fits.
       child_height =
           std::max({child_height, open_now_button_->GetPreferredSize().height(),
-                    GetWarningIconSize()});
+                    icon_size.height()});
       width += kEndPadding;
     }
   } else {
@@ -668,11 +670,12 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
   bool use_new_warnings = UseNewWarnings();
   bool show_warning_icon = mode_ != Mode::kNormal;
   if (show_warning_icon && !use_new_warnings) {
-    int icon_x =
-        (base::i18n::IsRTL() ? width() - GetWarningIconSize() - kStartPadding
-                             : kStartPadding);
-    int icon_y = CenterY(GetWarningIconSize());
-    canvas->DrawImageInt(GetWarningIcon(), icon_x, icon_y);
+    const gfx::ImageSkia icon = ui::ThemedVectorIcon(GetIcon().GetVectorIcon())
+                                    .GetImageSkia(GetNativeTheme());
+    const int icon_x =
+        GetMirroredXWithWidthInView(kStartPadding, icon.size().width());
+    const int icon_y = CenterY(icon.size().height());
+    canvas->DrawImageInt(icon, icon_x, icon_y);
 
     OnPaintBorder(canvas);
     return;
@@ -737,12 +740,14 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
     // Overlay the warning icon if appropriate.
     if (show_warning_icon && use_new_warnings) {
       constexpr int kDangerIconOffset = 8;
-      int icon_x =
-          (base::i18n::IsRTL() ? width() - GetWarningIconSize() - kStartPadding
-                               : kStartPadding) +
+      const gfx::ImageSkia icon =
+          ui::ThemedVectorIcon(GetIcon().GetVectorIcon())
+              .GetImageSkia(GetNativeTheme());
+      const int icon_x =
+          GetMirroredXWithWidthInView(kStartPadding, icon.size().width()) +
           kDangerIconOffset;
-      int icon_y = CenterY(GetWarningIconSize()) + kDangerIconOffset;
-      canvas->DrawImageInt(GetWarningIcon(), icon_x, icon_y);
+      const int icon_y = CenterY(icon.size().height()) + kDangerIconOffset;
+      canvas->DrawImageInt(icon, icon_x, icon_y);
     }
   }
 
@@ -1063,26 +1068,28 @@ void DownloadItemView::PaintDownloadProgress(
   canvas->DrawPath(progress, progress_flags);
 }
 
-gfx::ImageSkia DownloadItemView::GetWarningIcon() {
+ui::ImageModel DownloadItemView::GetIcon() const {
   // TODO(pkasting): Use a child view (ImageView subclass?) to display the icon
   // instead of recomputing this and drawing manually.
 
-  // TODO(drubery): Replace this with a constexpr variable when the new UX is
-  // fully launched.
-  const int error_icon_size = UseNewWarnings() ? 20 : 27;
+  // TODO(pkasting): Some names/icons here are backwards.
+  // TODO(drubery): Replace these sizes with layout provider constants when the
+  // new UX is fully launched.
+  const int help_or_error_icon_size = UseNewWarnings() ? 20 : 27;
+  const auto kWarning = ui::ImageModel::FromVectorIcon(
+      vector_icons::kErrorIcon, ui::NativeTheme::kColorId_AlertSeverityMedium,
+      help_or_error_icon_size);
+  const auto kError = ui::ImageModel::FromVectorIcon(
+      vector_icons::kWarningIcon, ui::NativeTheme::kColorId_AlertSeverityHigh,
+      UseNewWarnings() ? 20 : 24);
 
   switch (model_->GetDangerType()) {
     case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
-      if (safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
-              model()->profile())
-              ->IsUnderAdvancedProtection()) {
-        return gfx::CreateVectorIcon(
-            vector_icons::kErrorIcon, error_icon_size,
-            GetNativeTheme()->GetSystemColor(
-                ui::NativeTheme::kColorId_AlertSeverityMedium));
-      }
-      FALLTHROUGH;
-
+      return safe_browsing::AdvancedProtectionStatusManagerFactory::
+                     GetForProfile(model_->profile())
+                         ->IsUnderAdvancedProtection()
+                 ? kWarning
+                 : kError;
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
@@ -1091,24 +1098,16 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE:
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
     case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK:
-      return gfx::CreateVectorIcon(
-          vector_icons::kWarningIcon, GetWarningIconSize(),
-          GetNativeTheme()->GetSystemColor(
-              ui::NativeTheme::kColorId_AlertSeverityHigh));
-
+      return kError;
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING:
-      return gfx::CreateVectorIcon(
-          vector_icons::kErrorIcon, error_icon_size,
-          GetNativeTheme()->GetSystemColor(
-              ui::NativeTheme::kColorId_DefaultIconColor));
-
+      return ui::ImageModel::FromVectorIcon(
+          vector_icons::kErrorIcon, ui::NativeTheme::kColorId_DefaultIconColor,
+          help_or_error_icon_size);
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
-      return gfx::CreateVectorIcon(
-          vector_icons::kHelpIcon, error_icon_size,
-          GetNativeTheme()->GetSystemColor(
-              ui::NativeTheme::kColorId_DefaultIconColor));
-
+      return ui::ImageModel::FromVectorIcon(
+          vector_icons::kHelpIcon, ui::NativeTheme::kColorId_DefaultIconColor,
+          help_or_error_icon_size);
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
@@ -1122,15 +1121,9 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
 
   switch (model_->GetMixedContentStatus()) {
     case download::DownloadItem::MixedContentStatus::BLOCK:
-      return gfx::CreateVectorIcon(
-          vector_icons::kWarningIcon, GetWarningIconSize(),
-          GetNativeTheme()->GetSystemColor(
-              ui::NativeTheme::kColorId_AlertSeverityHigh));
+      return kError;
     case download::DownloadItem::MixedContentStatus::WARN:
-      return gfx::CreateVectorIcon(
-          vector_icons::kErrorIcon, error_icon_size,
-          GetNativeTheme()->GetSystemColor(
-              ui::NativeTheme::kColorId_AlertSeverityMedium));
+      return kWarning;
     case download::DownloadItem::MixedContentStatus::UNKNOWN:
     case download::DownloadItem::MixedContentStatus::SAFE:
     case download::DownloadItem::MixedContentStatus::VALIDATED:
@@ -1139,7 +1132,7 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
   }
 
   NOTREACHED();
-  return gfx::ImageSkia();
+  return ui::ImageModel();
 }
 
 std::pair<base::string16, int> DownloadItemView::GetStatusTextAndStyle() const {
@@ -1301,13 +1294,6 @@ bool DownloadItemView::SubmitDownloadToFeedbackService(
   NOTREACHED();
   return false;
 #endif
-}
-
-// static
-int DownloadItemView::GetWarningIconSize() {
-  // TODO(drubery): Replace this method with a constexpr variable when the new
-  // UX is fully launched.
-  return UseNewWarnings() ? 20 : 24;
 }
 
 void DownloadItemView::ExecuteCommand(DownloadCommands::Command command) {

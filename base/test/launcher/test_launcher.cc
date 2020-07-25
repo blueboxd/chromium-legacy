@@ -1465,6 +1465,10 @@ bool TestLauncher::Init(CommandLine* command_line) {
   results_tracker_.AddGlobalTag("OS_ANDROID");
 #endif
 
+#if defined(OS_APPLE)
+  results_tracker_.AddGlobalTag("OS_APPLE");
+#endif
+
 #if defined(OS_BSD)
   results_tracker_.AddGlobalTag("OS_BSD");
 #endif
@@ -1483,6 +1487,10 @@ bool TestLauncher::Init(CommandLine* command_line) {
 
 #if defined(OS_LINUX)
   results_tracker_.AddGlobalTag("OS_LINUX");
+#endif
+
+#if defined(OS_MAC)
+  results_tracker_.AddGlobalTag("OS_MAC");
 #endif
 
 #if defined(OS_MACOSX)

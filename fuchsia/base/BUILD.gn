@@ -11,6 +11,7 @@ import("//testing/test.gni")
 source_set("base") {
   sources = [
     "config_reader.cc",
+    "feedback_registration.cc",
     "fuchsia_dir_scheme.cc",
     "init_logging.cc",
     "inspect.cc",
@@ -19,6 +20,7 @@ source_set("base") {
   ]
   public = [
     "config_reader.h",
+    "feedback_registration.h",
     "fuchsia_dir_scheme.h",
     "init_logging.h",
     "inspect.h",
@@ -28,8 +30,10 @@ source_set("base") {
   deps = [
     "//base",
     "//components/version_info",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.feedback",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem",
     "//third_party/fuchsia-sdk/sdk/pkg/fdio",
+    "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_inspect_cpp",
     "//url",
   ]

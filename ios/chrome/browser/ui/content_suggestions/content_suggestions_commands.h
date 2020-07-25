@@ -35,6 +35,8 @@
 - (void)handlePromoTapped;
 // Handles the actions following a tap on the "Learn more" item.
 - (void)handleLearnMoreTapped;
+// Handles the actions following a tap on the "Manage Interests" item.
+- (void)handleManageInterestsTapped;
 
 @end
 

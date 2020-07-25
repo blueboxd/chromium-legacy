@@ -16,6 +16,7 @@
 @protocol ContentSuggestionsHeaderSynchronizing;
 @protocol ContentSuggestionsMetricsRecording;
 @protocol ContentSuggestionsViewControllerAudience;
+@protocol DiscoverFeedMenuCommands;
 @protocol OverscrollActionsControllerDelegate;
 @protocol SnackbarCommands;
 @protocol SuggestedContent;
@@ -49,6 +50,7 @@ extern NSString* const
     overscrollDelegate;
 // Delegate for handling theme changes (dark/light theme).
 @property(nonatomic, weak) id<ThemeChangeDelegate> themeChangeDelegate;
+@property(nonatomic, weak) id<DiscoverFeedMenuCommands> discoverFeedMenuHandler;
 @property(nonatomic, weak) id<ContentSuggestionsMetricsRecording>
     metricsRecorder;
 

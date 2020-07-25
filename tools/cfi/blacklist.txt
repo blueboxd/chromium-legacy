@@ -181,8 +181,8 @@ src:*ui/gtk/unity_service.cc
 src:*components/cronet/native/*
 src:*third_party/breakpad/breakpad/src/client/linux/handler/exception_handler_unittest.cc
 
-# chrome/browser/ui/views/frame/global_menu_bar_x11.cc
-fun:*GlobalMenuBarX11*
+# chrome/browser/ui/views/frame/dbus_appmenu.cc
+fun:*dbus_appmenu*
 
 # third_party/skia/include/gpu/gl/GrGLFunctions.h
 fun:*GrGLFunction*

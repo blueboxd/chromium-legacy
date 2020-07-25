@@ -1206,15 +1206,6 @@ if (enable_java_templates) {
       ]
     }
 
-    if (defined(invoker.config_output_path)) {
-      # Do not add as an explicit output since it's only for debugging.
-      _config_output_path = invoker.config_output_path
-      _args += [
-        "--output-config",
-        rebase_path(_config_output_path, root_build_dir),
-      ]
-    }
-
     if (_enable_jdk_library_desugaring) {
       _args += [
         "--desugar-jdk-libs-json",
@@ -1264,22 +1255,29 @@ if (enable_java_templates) {
           invoker.build_config,
           invoker.expected_proguard_config,
         ]
+        _actual_file = "$target_gen_dir/$target_name.proguard_configs"
         _failure_file =
             "$android_configuration_failure_dir/" +
             string_replace(invoker.expected_proguard_config, "/", "_")
-        _expectation_stamp = "$target_gen_dir/$target_name.stamp"
-        outputs = [ _expectation_stamp ]
+        outputs = [ _actual_file ]
         args = _args + [
                  "--depfile",
                  rebase_path(depfile, root_build_dir),
-                 "--proguard-expectations-failure-file",
+                 "--failure-file",
                  rebase_path(_failure_file, root_build_dir),
-                 "--expected-configs-file",
+                 "--expected-file",
                  rebase_path(invoker.expected_proguard_config, root_build_dir),
-                 "--stamp",
-                 rebase_path(_expectation_stamp, root_build_dir),
+                 "--actual-file",
+                 rebase_path(_actual_file, root_build_dir),
                  "--only-verify-expectations",
                ]
+        if (defined(invoker.expected_proguard_config_base)) {
+          inputs += [ invoker.expected_proguard_config_base ]
+          args += [
+            "--expected-file-base",
+            rebase_path(invoker.expected_proguard_config_base, root_build_dir),
+          ]
+        }
         if (fail_on_android_expectations) {
           args += [ "--fail-on-expectations" ]
         }
@@ -1405,9 +1403,6 @@ if (enable_java_templates) {
     }
 
     if (_proguard_enabled) {
-      if (defined(invoker.output)) {
-        _proguard_output_path = invoker.output
-      }
       _proguard_target_name = target_name
 
       proguard(_proguard_target_name) {
@@ -1420,6 +1415,7 @@ if (enable_java_templates) {
                                  "disable_checkdiscard",
                                  "disable_r8_outlining",
                                  "expected_proguard_config",
+                                 "expected_proguard_config_base",
                                  "is_static_library",
                                  "modules",
                                  "proguard_mapping_path",
@@ -1487,12 +1483,10 @@ if (enable_java_templates) {
           inputs += [ _main_dex_rules ]
         }
 
-        if (defined(_proguard_output_path)) {
-          output_path = _proguard_output_path
-          config_output_path = "$_proguard_output_path.proguard_flags"
+        if (defined(invoker.output)) {
+          output_path = invoker.output
         } else {
           mapping_path = "$target_out_dir/$target_name.mapping"
-          config_output_path = "$target_out_dir/$target_name.proguard_flags"
         }
       }
     } else {  # !_proguard_enabled
@@ -2637,7 +2631,7 @@ if (enable_java_templates) {
       _expectations_target =
           "${invoker.top_target_name}_validate_android_manifest"
       action_with_pydeps(_expectations_target) {
-        _normalized_output = "${invoker.android_manifest}.normalized"
+        _actual_file = "${invoker.android_manifest}.normalized"
         _failure_file =
             "$android_configuration_failure_dir/" +
             string_replace(invoker.expected_android_manifest, "/", "_")
@@ -2646,18 +2640,7 @@ if (enable_java_templates) {
           invoker.build_config,
           invoker.expected_android_manifest,
         ]
-        if (defined(invoker.expected_android_manifest_base)) {
-          _args += [
-            "--expected-manifest-base-expectation",
-            rebase_path(invoker.expected_android_manifest_base, root_build_dir),
-          ]
-          inputs += [ invoker.expected_android_manifest_base ]
-        }
-        if (fail_on_android_expectations) {
-          _args += [ "--fail-on-expectations" ]
-        }
-
-        outputs = [ _normalized_output ]
+        outputs = [ _actual_file ]
         deps = [
           invoker.android_manifest_dep,
           invoker.build_config_dep,
@@ -2666,12 +2649,22 @@ if (enable_java_templates) {
         args = _args + [
                  "--expected-file",
                  rebase_path(invoker.expected_android_manifest, root_build_dir),
-                 "--android-manifest-normalized",
-                 rebase_path(_normalized_output, root_build_dir),
-                 "--android-manifest-expectations-failure-file",
+                 "--actual-file",
+                 rebase_path(_actual_file, root_build_dir),
+                 "--failure-file",
                  rebase_path(_failure_file, root_build_dir),
                  "--only-verify-expectations",
                ]
+        if (defined(invoker.expected_android_manifest_base)) {
+          args += [
+            "--expected-file-base",
+            rebase_path(invoker.expected_android_manifest_base, root_build_dir),
+          ]
+          inputs += [ invoker.expected_android_manifest_base ]
+        }
+        if (fail_on_android_expectations) {
+          args += [ "--fail-on-expectations" ]
+        }
       }
       _deps += [ ":$_expectations_target" ]
     }
@@ -2765,6 +2758,10 @@ if (enable_java_templates) {
   #       asset information.
   #   deps: Specifies the dependencies of this target.
   #   dex_path: Path to classes.dex file to include (optional).
+  #   expected_libs_and_assets: Verify the list of included native libraries
+  #     and assets is consistent with the given expectation file.
+  #   expected_libs_and_assets_base: Treat expected_libs_and_assets as a diff
+  #     with this file as the base.
   #   jdk_libs_dex: Path to classes.dex for desugar_jdk_libs.
   #   packaged_resources_path: Path to .ap_ to use.
   #   output_apk_path: Output path for the generated .apk.
@@ -2784,8 +2781,6 @@ if (enable_java_templates) {
   #   keystore_password: Keystore password.
   #   uncompress_shared_libraries: (optional, default false) Whether to store
   #     native libraries inside the APK uncompressed and page-aligned.
-  #   expected_libs_and_assets: (optional): Verify the list of included native
-  #     libraries and assets is consistent with the given expectation file.
   template("package_apk") {
     forward_variables_from(invoker,
                            [
@@ -2915,7 +2910,7 @@ if (enable_java_templates) {
       _expectations_target =
           "${invoker.top_target_name}_validate_libs_and_assets"
       action_with_pydeps(_expectations_target) {
-        _stamp = "$target_gen_dir/$target_name.stamp"
+        _actual_file = "$target_gen_dir/$target_name.libs_and_assets"
         _failure_file =
             "$android_configuration_failure_dir/" +
             string_replace(invoker.expected_libs_and_assets, "/", "_")
@@ -2924,17 +2919,24 @@ if (enable_java_templates) {
           invoker.expected_libs_and_assets,
         ]
         deps = [ invoker.build_config_dep ]
-        outputs = [ _stamp ]
+        outputs = [ _actual_file ]
         script = _script
         args = _args + [
-                 "--expected-native-libs-and-assets",
+                 "--expected-file",
                  rebase_path(invoker.expected_libs_and_assets, root_build_dir),
-                 "--native-libs-and-assets-expectation-failure-file",
+                 "--actual-file",
+                 rebase_path(_actual_file, root_build_dir),
+                 "--failure-file",
                  rebase_path(_failure_file, root_build_dir),
-                 "--stamp",
-                 rebase_path(_stamp, root_build_dir),
                  "--only-verify-expectations",
                ]
+        if (defined(invoker.expected_libs_and_assets_base)) {
+          inputs += [ invoker.expected_libs_and_assets_base ]
+          args += [
+            "--expected-file-base",
+            rebase_path(invoker.expected_libs_and_assets_base, root_build_dir),
+          ]
+        }
         if (fail_on_android_expectations) {
           args += [ "--fail-on-expectations" ]
         }
@@ -4024,13 +4026,15 @@ if (enable_java_templates) {
 #     is the path to its dex file and is passed directly to the creation script.
 #     Otherwise, dex_path is undefined and we retrieve the module's dex file
 #     using its build_config.
+#   expected_libs_and_assets: Verify the list of included native libraries
+#     and assets is consistent with the given expectation file.
+#   expected_libs_and_assets_base: Treat expected_libs_and_assets as a diff
+#     with this file as the base.
+#   is_multi_abi: If true will add a library placeholder for the missing ABI if
+#     either the primary or the secondary ABI has no native libraries set.
 #   module_name: The module's name.
 #   native_libraries_config: Path to file listing native libraries to be
 #     packaged into each module.
-#   is_multi_abi: If true will add a library placeholder for the missing ABI if
-#     either the primary or the secondary ABI has no native libraries set.
-#   expected_libs_and_assets: (optional): Verify the list of included native
-#     libraries and assets is consistent with the given expectation file.
 #   proguard_enabled: Optional. True if proguarding is enabled for this
 #     bundle. Default is to enable this only for release builds. Note that
 #     this will always perform synchronized proguarding.
@@ -4127,7 +4131,7 @@ template("create_android_app_bundle_module") {
   if (defined(invoker.expected_libs_and_assets)) {
     _expectations_target = "${invoker.top_target_name}_validate_libs_and_assets"
     action_with_pydeps(_expectations_target) {
-      _stamp = "$target_gen_dir/$target_name.stamp"
+      _actual_file = "$target_gen_dir/$target_name.libs_and_assets"
       _failure_file = "$android_configuration_failure_dir/" +
                       string_replace(invoker.expected_libs_and_assets, "/", "_")
       inputs = [
@@ -4143,17 +4147,24 @@ template("create_android_app_bundle_module") {
         inputs += [ invoker.secondary_abi_native_libraries_config ]
         deps += [ invoker.secondary_abi_native_libraries_config_target ]
       }
-      outputs = [ _stamp ]
+      outputs = [ _actual_file ]
       script = _script
       args = _args + [
-               "--expected-native-libs-and-assets",
+               "--expected-file",
                rebase_path(invoker.expected_libs_and_assets, root_build_dir),
-               "--native-libs-and-assets-expectation-failure-file",
+               "--actual-file",
+               rebase_path(_actual_file, root_build_dir),
+               "--failure-file",
                rebase_path(_failure_file, root_build_dir),
-               "--stamp",
-               rebase_path(_stamp, root_build_dir),
                "--only-verify-expectations",
              ]
+      if (defined(invoker.expected_libs_and_assets_base)) {
+        inputs += [ invoker.expected_libs_and_assets_base ]
+        args += [
+          "--expected-file-base",
+          rebase_path(invoker.expected_libs_and_assets_base, root_build_dir),
+        ]
+      }
       if (fail_on_android_expectations) {
         args += [ "--fail-on-expectations" ]
       }

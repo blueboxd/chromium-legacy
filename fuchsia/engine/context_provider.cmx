@@ -8,6 +8,7 @@
     ],
     "services": [
       "fuchsia.feedback.ComponentDataRegister",
+      "fuchsia.feedback.CrashReportingProductRegister",
       "fuchsia.logger.LogSink",
       "fuchsia.process.Launcher"
     ]

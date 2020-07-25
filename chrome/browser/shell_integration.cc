@@ -64,6 +64,23 @@ base::LazyThreadPoolSequencedTaskRunner g_sequenced_task_runner =
         base::TaskTraits(base::MayBlock()));
 #endif
 
+void RunCallback(DefaultWebClientWorkerCallback callback,
+                 DefaultWebClientState state) {
+  if (!callback.is_null()) {
+    switch (state) {
+      case NOT_DEFAULT:
+      case IS_DEFAULT:
+      case UNKNOWN_DEFAULT:
+      case OTHER_MODE_IS_DEFAULT:
+        std::move(callback).Run(state);
+        return;
+      case NUM_DEFAULT_STATES:
+        break;
+    }
+    NOTREACHED();
+  }
+}
+
 }  // namespace
 
 bool CanSetAsDefaultBrowser() {
@@ -85,7 +102,7 @@ const struct AppModeInfo* AppModeInfo() {
 }
 
 bool IsRunningInAppMode() {
-  return gAppModeInfo != NULL;
+  return gAppModeInfo != nullptr;
 }
 
 base::CommandLine CommandLineArgsForLauncher(
@@ -156,32 +173,34 @@ base::string16 GetAppShortcutsSubdirName() {
 // DefaultWebClientWorker
 //
 
-void DefaultWebClientWorker::StartCheckIsDefault() {
+void DefaultWebClientWorker::StartCheckIsDefault(
+    DefaultWebClientWorkerCallback callback) {
   g_sequenced_task_runner.Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DefaultWebClientWorker::CheckIsDefault, this, false));
+      FROM_HERE, base::BindOnce(&DefaultWebClientWorker::CheckIsDefault, this,
+                                false, std::move(callback)));
 }
 
-void DefaultWebClientWorker::StartSetAsDefault() {
+void DefaultWebClientWorker::StartSetAsDefault(
+    DefaultWebClientWorkerCallback callback) {
   g_sequenced_task_runner.Get()->PostTask(
-      FROM_HERE, base::BindOnce(&DefaultWebClientWorker::SetAsDefault, this));
+      FROM_HERE, base::BindOnce(&DefaultWebClientWorker::SetAsDefault, this,
+                                std::move(callback)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultWebClientWorker, protected:
 
-DefaultWebClientWorker::DefaultWebClientWorker(
-    const DefaultWebClientWorkerCallback& callback,
-    const char* worker_name)
-    : callback_(callback), worker_name_(worker_name) {}
+DefaultWebClientWorker::DefaultWebClientWorker(const char* worker_name)
+    : worker_name_(worker_name) {}
 
 DefaultWebClientWorker::~DefaultWebClientWorker() = default;
 
 void DefaultWebClientWorker::OnCheckIsDefaultComplete(
     DefaultWebClientState state,
-    bool is_following_set_as_default) {
+    bool is_following_set_as_default,
+    DefaultWebClientWorkerCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  UpdateUI(state);
+  RunCallback(std::move(callback), state);
 
   if (is_following_set_as_default)
     ReportSetDefaultResult(state);
@@ -190,23 +209,27 @@ void DefaultWebClientWorker::OnCheckIsDefaultComplete(
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultWebClientWorker, private:
 
-void DefaultWebClientWorker::CheckIsDefault(bool is_following_set_as_default) {
+void DefaultWebClientWorker::CheckIsDefault(
+    bool is_following_set_as_default,
+    DefaultWebClientWorkerCallback callback) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
   DefaultWebClientState state = CheckIsDefaultImpl();
   content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&DefaultBrowserWorker::OnCheckIsDefaultComplete,
-                                this, state, is_following_set_as_default));
+      FROM_HERE,
+      base::BindOnce(&DefaultBrowserWorker::OnCheckIsDefaultComplete, this,
+                     state, is_following_set_as_default, std::move(callback)));
 }
 
-void DefaultWebClientWorker::SetAsDefault() {
+void DefaultWebClientWorker::SetAsDefault(
+    DefaultWebClientWorkerCallback callback) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
   // SetAsDefaultImpl will make sure the callback is executed exactly once.
-  SetAsDefaultImpl(
-      base::BindOnce(&DefaultWebClientWorker::CheckIsDefault, this, true));
+  SetAsDefaultImpl(base::BindOnce(&DefaultWebClientWorker::CheckIsDefault, this,
+                                  true, std::move(callback)));
 }
 
 void DefaultWebClientWorker::ReportSetDefaultResult(
@@ -219,29 +242,12 @@ void DefaultWebClientWorker::ReportSetDefaultResult(
       ->Add(state);
 }
 
-void DefaultWebClientWorker::UpdateUI(DefaultWebClientState state) {
-  if (!callback_.is_null()) {
-    switch (state) {
-      case NOT_DEFAULT:
-      case IS_DEFAULT:
-      case UNKNOWN_DEFAULT:
-      case OTHER_MODE_IS_DEFAULT:
-        callback_.Run(state);
-        return;
-      case NUM_DEFAULT_STATES:
-        break;
-    }
-    NOTREACHED();
-  }
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultBrowserWorker
 //
 
-DefaultBrowserWorker::DefaultBrowserWorker(
-    const DefaultWebClientWorkerCallback& callback)
-    : DefaultWebClientWorker(callback, "DefaultBrowser") {}
+DefaultBrowserWorker::DefaultBrowserWorker()
+    : DefaultWebClientWorker("DefaultBrowser") {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultBrowserWorker, private:
@@ -287,10 +293,8 @@ void DefaultBrowserWorker::SetAsDefaultImpl(
 //
 
 DefaultProtocolClientWorker::DefaultProtocolClientWorker(
-    const DefaultWebClientWorkerCallback& callback,
     const std::string& protocol)
-    : DefaultWebClientWorker(callback, "DefaultProtocolClient"),
-      protocol_(protocol) {}
+    : DefaultWebClientWorker("DefaultProtocolClient"), protocol_(protocol) {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultProtocolClientWorker, protected:

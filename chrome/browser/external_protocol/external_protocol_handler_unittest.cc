@@ -4,6 +4,7 @@
 
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/run_loop.h"
@@ -25,10 +26,9 @@ class FakeExternalProtocolHandlerWorker
     : public shell_integration::DefaultProtocolClientWorker {
  public:
   FakeExternalProtocolHandlerWorker(
-      const shell_integration::DefaultWebClientWorkerCallback& callback,
       const std::string& protocol,
       shell_integration::DefaultWebClientState os_state)
-      : shell_integration::DefaultProtocolClientWorker(callback, protocol),
+      : shell_integration::DefaultProtocolClientWorker(protocol),
         os_state_(os_state) {}
 
  private:
@@ -59,9 +59,8 @@ class FakeExternalProtocolHandlerDelegate
 
   scoped_refptr<shell_integration::DefaultProtocolClientWorker>
   CreateShellWorker(
-      const shell_integration::DefaultWebClientWorkerCallback& callback,
       const std::string& protocol) override {
-    return new FakeExternalProtocolHandlerWorker(callback, protocol, os_state_);
+    return new FakeExternalProtocolHandlerWorker(protocol, os_state_);
   }
 
   ExternalProtocolHandler::BlockState GetBlockState(const std::string& scheme,

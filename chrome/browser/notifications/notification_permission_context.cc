@@ -262,13 +262,6 @@ ContentSetting NotificationPermissionContext::GetPermissionStatusForExtension(
 }
 #endif
 
-void NotificationPermissionContext::ResetPermission(
-    const GURL& requesting_origin,
-    const GURL& embedder_origin) {
-  UpdatePermission(browser_context(), requesting_origin,
-                   CONTENT_SETTING_DEFAULT);
-}
-
 void NotificationPermissionContext::DecidePermission(
     content::WebContents* web_contents,
     const permissions::PermissionRequestID& id,
@@ -314,20 +307,6 @@ void NotificationPermissionContext::DecidePermission(
   permissions::PermissionContextBase::DecidePermission(
       web_contents, id, requesting_origin, embedding_origin, user_gesture,
       std::move(callback));
-}
-
-// Unlike other permission types, granting a notification for a given origin
-// will not take into account the |embedder_origin|, it will only be based
-// on the requesting iframe origin.
-// TODO(mukai) Consider why notifications behave differently than
-// other permissions. https://crbug.com/416894
-void NotificationPermissionContext::UpdateContentSetting(
-    const GURL& requesting_origin,
-    const GURL& embedder_origin,
-    ContentSetting content_setting) {
-  DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
-         content_setting == CONTENT_SETTING_BLOCK);
-  UpdatePermission(browser_context(), requesting_origin, content_setting);
 }
 
 bool NotificationPermissionContext::IsRestrictedToSecureOrigins() const {

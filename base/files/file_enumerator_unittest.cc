@@ -551,6 +551,11 @@ TEST(FileEnumerator, GetInfoRecursive) {
 #if defined(OS_FUCHSIA)
 // FileEnumerator::GetInfo does not work correctly with INCLUDE_DOT_DOT.
 // https://crbug.com/1106172
+#elif defined(OS_WIN)
+// Windows has a bug in their handling of ".."; they always report the file
+// modification time of the current directory, not the parent directory. This is
+// a bug in Windows, not us -- you can see it with the "dir" command (notice
+// that the time of . and .. always match). Skip this test.
 #else
 // Tests that FileEnumerator::GetInfo() returns the correct info for the ..
 // directory.
@@ -603,6 +608,6 @@ TEST(FileEnumerator, GetInfoDotDot) {
         << "File " << file.path.value() << " was not returned";
   }
 }
-#endif  // !defined(OS_FUCHSIA)
+#endif  // !defined(OS_FUCHSIA) && !defined(OS_WIN)
 
 }  // namespace base

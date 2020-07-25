@@ -6366,6 +6366,114 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Extensions.Settings.Hosts.ActionMenuEditActivated">
+  <owner>tjudkins@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user activated the &quot;Edit&quot; option in the context menu for a
+    specific host entry in the site access section of an extension's settings
+    page.
+  </description>
+</action>
+
+<action name="Extensions.Settings.Hosts.ActionMenuOpened">
+  <owner>tjudkins@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    While having the site access on an extension's setting page set to &quot;On
+    specific sites&quot;, the user activated the three dot button on a specific
+    host entry.
+  </description>
+</action>
+
+<action name="Extensions.Settings.Hosts.ActionMenuRemoveActivated">
+  <owner>tjudkins@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user activated the &quot;Remove&quot; option in the context menu for a
+    specific host entry in the site access section of an extension's settings
+    page.
+  </description>
+</action>
+
+<action name="Extensions.Settings.Hosts.AddHostActivated">
+  <owner>tjudkins@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user activated the link to add a new host to the list of sites an
+    extension is allowed to access, on an extesion's settings page. Note that
+    this is only visible and can only be activated when the extension is already
+    set to run only on a specific list of sites.
+  </description>
+</action>
+
+<action name="Extensions.Settings.Hosts.AddHostDialogCanceled">
+  <owner>tjudkins@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user closed the dialog for adding a specific host to the list of sites
+    an extension is allowed to access, on an extension's settings page. This can
+    be triggered either by activating the cancel button on the dialog, or by
+    pressing escape to dismiss it.
+  </description>
+</action>
+
+<action name="Extensions.Settings.Hosts.AddHostDialogSubmitted">
+  <owner>tjudkins@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user activated the confirmation button on the dialog for adding or
+    editing a specific host in the list of sites an extension is allowed to
+    access, on an extension's settings page. Note that this button is only
+    enabled when a host pattern entered into the textbox of the dialog is valid.
+  </description>
+</action>
+
+<action name="Extensions.Settings.Hosts.LearnMoreActivated">
+  <owner>tjudkins@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user activated the learn more icon on the site access section of an
+    extension's settings page, for an extension which requested an
+    &quot;all_urls&quot; type permission.
+  </description>
+</action>
+
+<action name="Extensions.Settings.Hosts.OnAllSitesSelected">
+  <owner>tjudkins@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user changed the site access setting for an extension to the &quot;On
+    all sites&quot; radio option on an extension's settings page. This is only
+    recorded when the user choses to change to this option and not if it is
+    automatically changed back when canceling a change to the &quot;specific
+    sites&quot; option.
+  </description>
+</action>
+
+<action name="Extensions.Settings.Hosts.OnClickSelected">
+  <owner>tjudkins@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user changed the site access setting for an extension to the &quot;On
+    click&quot; radio option on an extension's settings page. This is only
+    recorded when the user choses to change to this option and not if it is
+    automatically changed back when canceling a change to the &quot;specific
+    sites&quot; option.
+  </description>
+</action>
+
+<action name="Extensions.Settings.Hosts.OnSpecificSitesSelected">
+  <owner>tjudkins@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <description>
+    The user changed the site access setting for an extension to the &quot;On
+    specific sites&quot; radio option on an extension's settings page. Note that
+    on changing to this selection, a dialog pops up for entering a specfic host
+    pattern.
+  </description>
+</action>
+
 <action name="Extensions.Toolbar.ExtensionActivatedFromMenu">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>

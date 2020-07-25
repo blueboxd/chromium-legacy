@@ -519,6 +519,18 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
 
     CleanupSpareRenderProcessHost();
 
+    // Don't create a spare renderer for a BrowserContext that is in the
+    // process of shutting down.
+    if (browser_context->ShutdownStarted()) {
+      // Create a crash dump to help us assess what scenarios trigger this
+      // path to be taken.
+      // TODO(acolwell): Remove this call once are confident we've eliminated
+      // any problematic callers.
+      base::debug::DumpWithoutCrashing();
+
+      return;
+    }
+
     // Don't create a spare renderer if we're using --single-process or if we've
     // got too many processes. See also ShouldTryToUseExistingProcessHost in
     // this file.
@@ -1572,6 +1584,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       instance_weak_factory_(base::in_place, this),
       frame_sink_provider_(id_),
       shutdown_exit_code_(-1) {
+  CHECK(!browser_context->ShutdownStarted());
   TRACE_EVENT2("shutdown", "RenderProcessHostImpl", "render_process_host", this,
                "id", GetID());
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN2("shutdown", "Browser.RenderProcessHostImpl",

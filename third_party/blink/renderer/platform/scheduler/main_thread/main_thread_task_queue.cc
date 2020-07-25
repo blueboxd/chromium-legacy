@@ -29,8 +29,6 @@ const char* MainThreadTaskQueue::NameForQueueType(
       return "control_tq";
     case MainThreadTaskQueue::QueueType::kDefault:
       return "default_tq";
-    case MainThreadTaskQueue::QueueType::kUnthrottled:
-      return "unthrottled_tq";
     case MainThreadTaskQueue::QueueType::kFrameLoading:
       return "frame_loading_tq";
     case MainThreadTaskQueue::QueueType::kFrameThrottleable:
@@ -89,7 +87,6 @@ bool MainThreadTaskQueue::IsPerFrameTaskQueue(
     case MainThreadTaskQueue::QueueType::kWebScheduling:
       return true;
     case MainThreadTaskQueue::QueueType::kControl:
-    case MainThreadTaskQueue::QueueType::kUnthrottled:
     case MainThreadTaskQueue::QueueType::kCompositor:
     case MainThreadTaskQueue::QueueType::kTest:
     case MainThreadTaskQueue::QueueType::kV8:
@@ -123,7 +120,6 @@ MainThreadTaskQueue::QueueClass MainThreadTaskQueue::QueueClassForQueueType(
     case QueueType::kFrameLoading:
     case QueueType::kFrameLoadingControl:
       return QueueClass::kLoading;
-    case QueueType::kUnthrottled:
     case QueueType::kFrameThrottleable:
     case QueueType::kFrameDeferrable:
     case QueueType::kFramePausable:

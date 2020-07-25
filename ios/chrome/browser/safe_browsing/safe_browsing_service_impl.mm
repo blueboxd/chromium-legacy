@@ -84,7 +84,10 @@ SafeBrowsingServiceImpl::CreateUrlChecker(
     safe_browsing::ResourceType resource_type,
     web::WebState* web_state) {
   return std::make_unique<safe_browsing::SafeBrowsingUrlCheckerImpl>(
-      resource_type, url_checker_delegate_, web_state->CreateDefaultGetter());
+      resource_type, url_checker_delegate_, web_state->CreateDefaultGetter(),
+      /*real_time_lookup_enabled=*/false,
+      /*can_rt_check_subresource_url=*/false,
+      /*url_lookup_service_on_ui=*/nullptr);
 }
 
 bool SafeBrowsingServiceImpl::CanCheckUrl(const GURL& url) const {

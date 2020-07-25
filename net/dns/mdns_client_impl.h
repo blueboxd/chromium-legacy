@@ -154,7 +154,19 @@ class NET_EXPORT_PRIVATE MDnsClientImpl : public MDnsClient {
    private:
     FRIEND_TEST_ALL_PREFIXES(MDnsTest, CacheCleanupWithShortTTL);
 
-    typedef std::pair<std::string, uint16_t> ListenerKey;
+    class ListenerKey {
+     public:
+      ListenerKey(const std::string& name, uint16_t type);
+      ListenerKey(const ListenerKey&) = default;
+      ListenerKey(ListenerKey&&) = default;
+      bool operator<(const ListenerKey& key) const;
+      const std::string& name_lowercase() const { return name_lowercase_; }
+      uint16_t type() const { return type_; }
+
+     private:
+      std::string name_lowercase_;
+      uint16_t type_;
+    };
     typedef base::ObserverList<MDnsListenerImpl>::Unchecked ObserverListType;
     typedef std::map<ListenerKey, std::unique_ptr<ObserverListType>>
         ListenerMap;

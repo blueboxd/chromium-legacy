@@ -681,53 +681,6 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
-                       CheckFilePermissionNotGranted) {
-  // This case should succeed because a normal page URL is used.
-  std::string script_result;
-
-  permissions::PermissionManager* permission_manager =
-      PermissionManagerFactory::GetForProfile(browser()->profile());
-
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            permission_manager
-                ->GetPermissionStatus(ContentSettingsType::NOTIFICATIONS,
-                                      TestPageUrl(), TestPageUrl())
-                .content_setting);
-
-  RequestAndAcceptPermission();
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            permission_manager
-                ->GetPermissionStatus(ContentSettingsType::NOTIFICATIONS,
-                                      TestPageUrl(), TestPageUrl())
-                .content_setting);
-
-  // This case should fail because a file URL is used.
-  base::FilePath dir_source_root;
-  EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &dir_source_root));
-  base::FilePath full_file_path =
-      dir_source_root.Append(server_root_).AppendASCII(kTestFileName);
-  GURL file_url(net::FilePathToFileURL(full_file_path));
-
-  ui_test_utils::NavigateToURL(browser(), file_url);
-
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            permission_manager
-                ->GetPermissionStatus(ContentSettingsType::NOTIFICATIONS,
-                                      file_url, file_url)
-                .content_setting);
-
-  RequestAndAcceptPermission();
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            permission_manager
-                ->GetPermissionStatus(ContentSettingsType::NOTIFICATIONS,
-                                      file_url, file_url)
-                .content_setting)
-      << "If this test fails, you may have fixed a bug preventing file origins "
-      << "from sending their origin from Blink; if so you need to update the "
-      << "display function for notification origins to show the file path.";
-}
-
-IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        DataUrlAsNotificationImage) {
   GrantNotificationPermissionForTest();
 

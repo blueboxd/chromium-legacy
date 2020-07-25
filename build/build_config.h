@@ -31,20 +31,21 @@
 #elif defined(ANDROID)
 #define OS_ANDROID 1
 #elif defined(__APPLE__)
-// only include TargetConditions after testing ANDROID as some android builds
-// on mac don't have this header available and it's not needed unless the target
-// is really mac/ios.
+// Only include TargetConditionals after testing ANDROID as some Android builds
+// on the Mac have this header available and it's not needed unless the target
+// is really an Apple platform.
 #include <TargetConditionals.h>
-#define OS_MACOSX 1
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #define OS_IOS 1
+#else
+#define OS_MAC 1
 #endif  // defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #elif defined(__linux__)
 #define OS_LINUX 1
-// include a system header to pull in features.h for glibc/uclibc macros.
+// Include a system header to pull in features.h for glibc/uclibc macros.
 #include <unistd.h>
 #if defined(__GLIBC__) && !defined(__UCLIBC__)
-// we really are using glibc, not uClibc pretending to be glibc
+// We really are using glibc, not uClibc pretending to be glibc.
 #define LIBC_GLIBC 1
 #endif
 #elif defined(_WIN32)
@@ -70,6 +71,13 @@
 #endif
 // NOTE: Adding a new port? Please follow
 // https://chromium.googlesource.com/chromium/src/+/master/docs/new_port_policy.md
+
+#if defined(OS_MAC) || defined(OS_IOS)
+// TODO(https://crbug.com/1105907): Migrate off of OS_MACOSX to an appropriate
+// combination of OS_MAC, OS_IOS, and OS_APPLE.
+#define OS_MACOSX 1
+#define OS_APPLE 1
+#endif
 
 // For access to standard BSD features, use OS_BSD instead of a
 // more specific macro.

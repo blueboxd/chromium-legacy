@@ -54,11 +54,15 @@ void NGTextPainter::PaintSelectedText(unsigned start_offset,
   if (!fragment_paint_info_.shape_result)
     return;
 
-  // Use fast path if all glyphs fit in |selection_rect|. Note |text_bounds_| is
-  // the bounds of all glyphs of this text fragment, including characters before
+  // Use fast path if all glyphs fit in |selection_rect|. |visual_rect_| is the
+  // ink bounds of all glyphs of this text fragment, including characters before
   // |start_offset| or after |end_offset|. Computing exact bounds is expensive
   // that this code only checks bounds of all glyphs.
-  if (selection_rect.Contains(text_bounds_)) {
+  IntRect snapped_selection_rect(PixelSnappedIntRect(selection_rect));
+  // Allowing 1px overflow is almost unnoticeable, while it can avoid two-pass
+  // painting in most small text.
+  snapped_selection_rect.Inflate(1);
+  if (snapped_selection_rect.Contains(visual_rect_)) {
     Paint(start_offset, end_offset, length, selection_style, node_id);
     return;
   }

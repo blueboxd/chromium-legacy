@@ -108,6 +108,9 @@ extern const char kUpdaterJSONDefaultUrl[];
 extern const char kCrashUploadURL[];
 extern const char kCrashStagingUploadURL[];
 
+// DM server end point.
+extern const char kDeviceManagementServerURL[];
+
 // File system paths.
 //
 // The directory name where CRX apps get installed. This is provided for demo

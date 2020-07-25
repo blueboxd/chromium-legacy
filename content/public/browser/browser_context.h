@@ -229,6 +229,11 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // StoragePartition can have time to do necessary cleanups on IO thread.
   void ShutdownStoragePartitions();
 
+  // Returns true if shutdown has been initiated via a
+  // NotifyWillBeDestroyed() call. This is a signal that the object will be
+  // destroyed soon and no new references to this object should be created.
+  bool ShutdownStarted() { return was_notify_will_be_destroyed_called_; }
+
 #if !defined(OS_ANDROID)
   // Creates a delegate to initialize a HostZoomMap and persist its information.
   // This is called during creation of each StoragePartition.

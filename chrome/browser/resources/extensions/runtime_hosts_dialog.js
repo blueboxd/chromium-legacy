@@ -163,6 +163,8 @@ Polymer({
    * @private
    */
   onSubmitTap_() {
+    chrome.metricsPrivate.recordUserAction(
+        'Extensions.Settings.Hosts.AddHostDialogSubmitted');
     if (this.currentSite !== null) {
       this.handleEdit_();
     } else {

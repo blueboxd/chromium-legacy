@@ -841,6 +841,8 @@ TEST(StringNumberConversionsTest, StringToDouble) {
       {"+123 e4", 123.0, false},
       {"123e ", 123.0, false},
       {"123e", 123.0, false},
+      {"10.5px", 10.5, false},
+      {"11.5e2em", 1150, false},
       {" 2.99", 2.99, false},
       {"1e3.4", 1000.0, false},
       {"nothing", 0.0, false},

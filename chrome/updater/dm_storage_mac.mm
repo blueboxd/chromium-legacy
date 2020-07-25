@@ -85,15 +85,15 @@ bool LoadTokenFromFile(const base::FilePath& token_file_path,
 
 class TokenService : public TokenServiceInterface {
  public:
-  TokenService() = default;
+  TokenService();
   ~TokenService() override = default;
 
   // Overrides for TokenServiceInterface.
-  std::string GetDeviceID() override;
+  std::string GetDeviceID() const override { return device_id_; }
   bool StoreEnrollmentToken(const std::string& enrollment_token) override;
-  std::string GetEnrollmentToken() override;
+  std::string GetEnrollmentToken() const override { return enrollment_token_; }
   bool StoreDmToken(const std::string& dm_token) override;
-  std::string GetDmToken() override;
+  std::string GetDmToken() const override { return dm_token_; }
 
  private:
   // Cached values in memory.
@@ -102,10 +102,18 @@ class TokenService : public TokenServiceInterface {
   std::string dm_token_;
 };
 
-std::string TokenService::GetDeviceID() {
-  if (device_id_.empty())
-    device_id_ = base::mac::GetPlatformSerialNumber();
-  return device_id_;
+TokenService::TokenService() {
+  device_id_ = base::mac::GetPlatformSerialNumber();
+  std::string enrollment_token;
+  if (LoadEnrollmentTokenFromPolicy(&enrollment_token) ||
+      LoadTokenFromFile(GetEnrollmentTokenFilePath(), &enrollment_token)) {
+    enrollment_token_ = enrollment_token;
+  }
+
+  std::string dm_token;
+  if (LoadTokenFromFile(GetDmTokenFilePath(), &dm_token)) {
+    dm_token_ = dm_token;
+  }
 }
 
 bool TokenService::StoreEnrollmentToken(const std::string& enrollment_token) {
@@ -120,15 +128,6 @@ bool TokenService::StoreEnrollmentToken(const std::string& enrollment_token) {
   return true;
 }
 
-std::string TokenService::GetEnrollmentToken() {
-  if (enrollment_token_.empty() &&
-      !LoadEnrollmentTokenFromPolicy(&enrollment_token_) &&
-      !LoadTokenFromFile(GetEnrollmentTokenFilePath(), &enrollment_token_)) {
-    enrollment_token_.clear();  // Safeguard in case it has incomplete value.
-  }
-  return enrollment_token_;
-}
-
 bool TokenService::StoreDmToken(const std::string& token) {
   const base::FilePath dm_token_path = GetDmTokenFilePath();
   if (dm_token_path.empty() ||
@@ -137,15 +136,6 @@ bool TokenService::StoreDmToken(const std::string& token) {
   }
   dm_token_ = token;
   return true;
-}
-
-std::string TokenService::GetDmToken() {
-  if (dm_token_.empty() &&
-      !LoadTokenFromFile(GetDmTokenFilePath(), &dm_token_)) {
-    dm_token_.clear();  // Safeguard in case it has incomplete value.
-  }
-
-  return dm_token_;
 }
 
 }  // namespace

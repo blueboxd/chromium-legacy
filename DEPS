@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'b2282feee0a786d881f34c8a2bce515d878c36c1',
+  'catapult_revision': '342ad5228da269a374f41c384cd89340e40e906c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -318,11 +318,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '4d9cadd58aeaeeac18af40fa2b773db1a579328f',
+  'dawn_revision': '0d158ac68107df4a4102c1b6c8a92b9060004521',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '8b6881bd2a9b4a70dfd7076b00df0062784dd951',
+  'quiche_revision': 'eede82b9b785ad030686f73a15c9e04cfd24a494',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -545,7 +545,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'fb4f43d36c7b1887f8396dada4d88177ea32d3d7',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '2a5996b407f3ba821672bf35cee5cace2bebdbd8',
       'condition': 'checkout_ios',
   },
 
@@ -875,7 +875,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '2bda4d1319b4d4f0c7c4b4378d7e3f99bdd5fc5f',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '1d5171690554e9211324a84f677f4dde351e58eb',
       'condition': 'checkout_linux',
   },
 
@@ -1326,7 +1326,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': '-zGqW99um_GNQKURMgzhK855VvGi_CfraQRvXhNduEQC'
+              'version': '5fdPMx2T4YfntZi4ZvMmJQWoGhmnqtVYBM6iihtbvB4C'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',

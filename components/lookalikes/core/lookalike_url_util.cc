@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/i18n/char_iterator.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
@@ -635,4 +636,69 @@ TargetEmbeddingType GetTargetEmbeddingType(
     }
   }
   return TargetEmbeddingType::kNone;
+}
+
+bool IsASCII(UChar32 codepoint) {
+  return !(codepoint & ~0x7F);
+}
+
+// Returns true if |codepoint| has emoji related properties.
+bool IsEmojiRelatedCodepoint(UChar32 codepoint) {
+  return u_hasBinaryProperty(codepoint, UCHAR_EMOJI) ||
+         // Characters that have emoji presentation by default (e.g. hourglass)
+         u_hasBinaryProperty(codepoint, UCHAR_EMOJI_PRESENTATION) ||
+         // Characters displayed as country flags when used as a valid pair.
+         // E.g. Regional Indicator Symbol Letter B used once in a string
+         // is rendered as 🇧, used twice is rendered as the flag of Barbados
+         // (with country code BB). It's therefore possible to come up with
+         // a spoof using regional indicator characters as text, but these
+         // domain names will be readily punycoded and detecting pairs isn't
+         // easy so we keep the code simple here.
+         u_hasBinaryProperty(codepoint, UCHAR_REGIONAL_INDICATOR) ||
+         // Pictographs such as Black Cross On Shield (U+26E8).
+         u_hasBinaryProperty(codepoint, UCHAR_EXTENDED_PICTOGRAPHIC);
+}
+
+// Returns true if |text| contains only ASCII characters, pictographs
+// or emojis. This check is only used to determine if a domain that already
+// failed spoof checks should be blocked by an interstitial. Ideally, we would
+// check this for non-ASCII scripts as well (e.g. Cyrillic + emoji), but such
+// usage isn't common.
+bool IsASCIIAndEmojiOnly(const base::StringPiece16& text) {
+  base::i18n::UTF16CharIterator iter(text.data(), text.length());
+  while (!iter.end()) {
+    const UChar32 codepoint = iter.get();
+    if (!IsASCII(codepoint) && !IsEmojiRelatedCodepoint(codepoint)) {
+      return false;
+    }
+    iter.Advance();
+  }
+  return true;
+}
+
+bool ShouldBlockBySpoofCheckResult(const DomainInfo& navigated_domain) {
+  // Here, only a subset of spoof checks that cause an IDN to fallback to
+  // punycode are configured to show an interstitial.
+  switch (navigated_domain.idn_result.spoof_check_result) {
+    case url_formatter::IDNSpoofChecker::Result::kNone:
+    case url_formatter::IDNSpoofChecker::Result::kSafe:
+      return false;
+
+    case url_formatter::IDNSpoofChecker::Result::kICUSpoofChecks:
+      // If the eTLD+1 contains only a mix of ASCII + Emoji, allow.
+      return !IsASCIIAndEmojiOnly(navigated_domain.idn_result.result);
+
+    case url_formatter::IDNSpoofChecker::Result::kDeviationCharacters:
+      // Failures because of deviation characters, especially ß, is common.
+      return false;
+
+    case url_formatter::IDNSpoofChecker::Result::kTLDSpecificCharacters:
+    case url_formatter::IDNSpoofChecker::Result::kUnsafeMiddleDot:
+    case url_formatter::IDNSpoofChecker::Result::kWholeScriptConfusable:
+    case url_formatter::IDNSpoofChecker::Result::kDigitLookalikes:
+    case url_formatter::IDNSpoofChecker::Result::
+        kNonAsciiLatinCharMixedWithNonLatin:
+    case url_formatter::IDNSpoofChecker::Result::kDangerousPattern:
+      return true;
+  }
 }

@@ -28,6 +28,7 @@
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -40,6 +41,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
+#import "ios/chrome/browser/ui/content_suggestions/discover_feed_menu_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
@@ -52,8 +54,10 @@
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/voice/voice_search_availability.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/discover_feed/discover_feed_provider.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -61,6 +65,7 @@
 
 @interface ContentSuggestionsCoordinator () <
     ContentSuggestionsViewControllerAudience,
+    DiscoverFeedMenuCommands,
     OverscrollActionsControllerDelegate,
     ThemeChangeDelegate,
     URLDropDelegate> {
@@ -78,7 +83,7 @@
 @property(nonatomic, strong) NTPHomeMediator* NTPMediator;
 @property(nonatomic, strong) UIViewController* discoverFeedViewController;
 @property(nonatomic, strong) URLDragDropHandler* dragDropHandler;
-
+@property(nonatomic, strong) ActionSheetCoordinator* alertCoordinator;
 // Redefined as readwrite.
 @property(nonatomic, strong, readwrite)
     ContentSuggestionsHeaderViewController* headerController;
@@ -122,15 +127,12 @@
     ntp_home::RecordNTPImpression(ntp_home::LOCAL_SUGGESTIONS);
   }
 
-  UrlLoadingBrowserAgent* URLLoader =
-      UrlLoadingBrowserAgent::FromBrowser(self.browser);
-
   self.NTPMediator = [[NTPHomeMediator alloc]
              initWithWebState:self.webState
            templateURLService:ios::TemplateURLServiceFactory::
                                   GetForBrowserState(
                                       self.browser->GetBrowserState())
-                    URLLoader:URLLoader
+                    URLLoader:UrlLoadingBrowserAgent::FromBrowser(self.browser)
                   authService:AuthenticationServiceFactory::GetForBrowserState(
                                   self.browser->GetBrowserState())
               identityManager:IdentityManagerFactory::GetForBrowserState(
@@ -214,6 +216,7 @@
   id<SnackbarCommands> dispatcher = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), SnackbarCommands);
   self.suggestionsViewController.dispatcher = dispatcher;
+  self.suggestionsViewController.discoverFeedMenuHandler = self;
 
   self.NTPMediator.consumer = self.headerController;
   // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
@@ -350,6 +353,35 @@
 - (void)view:(UIView*)view didDropURL:(const GURL&)URL atPoint:(CGPoint)point {
   UrlLoadingBrowserAgent::FromBrowser(self.browser)
       ->Load(UrlLoadParams::InCurrentTab(URL));
+}
+
+#pragma mark - DiscoverFeedMenuCommands
+
+- (void)openDiscoverFeedMenu:(UIView*)menuButton {
+  self.alertCoordinator = [[ActionSheetCoordinator alloc]
+      initWithBaseViewController:self.suggestionsViewController
+                         browser:self.browser
+                           title:nil
+                         message:nil
+                            rect:menuButton.frame
+                            view:menuButton.superview];
+  __weak ContentSuggestionsCoordinator* weakSelf = self;
+  [self.alertCoordinator
+      addItemWithTitle:l10n_util::GetNSString(
+                           IDS_IOS_DISCOVER_FEED_MENU_MANAGE_INTERESTS_ITEM)
+                action:^{
+                  [weakSelf.NTPMediator handleManageInterestsTapped];
+                }
+                 style:UIAlertActionStyleDefault];
+
+  [self.alertCoordinator
+      addItemWithTitle:l10n_util::GetNSString(
+                           IDS_IOS_DISCOVER_FEED_MENU_LEARN_MORE_ITEM)
+                action:^{
+                  [weakSelf.NTPMediator handleLearnMoreTapped];
+                }
+                 style:UIAlertActionStyleDefault];
+  [self.alertCoordinator start];
 }
 
 #pragma mark - Public methods

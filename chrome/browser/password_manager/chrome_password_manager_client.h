@@ -293,8 +293,8 @@ class ChromePasswordManagerClient
 #if !defined(OS_ANDROID)
   void OnPaste() override;
 #endif
-
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
   // content::RenderWidgetHost::InputEventObserver overrides.
   void OnInputEvent(const blink::WebInputEvent&) override;

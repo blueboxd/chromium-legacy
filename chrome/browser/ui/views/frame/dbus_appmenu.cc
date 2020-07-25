@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/global_menu_bar_x11.h"
+#include "chrome/browser/ui/views/frame/dbus_appmenu.h"
 
 #include <dlfcn.h>
 #include <glib-object.h>
@@ -34,7 +34,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_live_tab_context.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/global_menu_bar_registrar_x11.h"
+#include "chrome/browser/ui/views/frame/dbus_appmenu_registrar.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/history/core/browser/top_sites.h"
@@ -50,7 +50,7 @@
 #include "ui/gfx/text_elider.h"
 
 // A line in the static menu definitions.
-struct GlobalMenuBarCommand {
+struct DbusAppmenuCommand {
   int command;
   int str_id;
 };
@@ -80,7 +80,7 @@ enum ReservedCommandId {
   kFirstUnreservedCommandId
 };
 
-constexpr GlobalMenuBarCommand kFileMenu[] = {
+constexpr DbusAppmenuCommand kFileMenu[] = {
     {IDC_NEW_TAB, IDS_NEW_TAB},
     {IDC_NEW_WINDOW, IDS_NEW_WINDOW},
     {IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW},
@@ -95,16 +95,16 @@ constexpr GlobalMenuBarCommand kFileMenu[] = {
     {IDC_PRINT, IDS_PRINT},
     {kMenuEnd}};
 
-constexpr GlobalMenuBarCommand kEditMenu[] = {{IDC_CUT, IDS_CUT},
-                                              {IDC_COPY, IDS_COPY},
-                                              {IDC_PASTE, IDS_PASTE},
-                                              {kSeparator},
-                                              {IDC_FIND, IDS_FIND},
-                                              {kSeparator},
-                                              {IDC_OPTIONS, IDS_PREFERENCES},
-                                              {kMenuEnd}};
+constexpr DbusAppmenuCommand kEditMenu[] = {{IDC_CUT, IDS_CUT},
+                                            {IDC_COPY, IDS_COPY},
+                                            {IDC_PASTE, IDS_PASTE},
+                                            {kSeparator},
+                                            {IDC_FIND, IDS_FIND},
+                                            {kSeparator},
+                                            {IDC_OPTIONS, IDS_PREFERENCES},
+                                            {kMenuEnd}};
 
-constexpr GlobalMenuBarCommand kViewMenu[] = {
+constexpr DbusAppmenuCommand kViewMenu[] = {
     {IDC_SHOW_BOOKMARK_BAR, IDS_SHOW_BOOKMARK_BAR},
     {kSeparator},
     {IDC_STOP, IDS_STOP_MENU_LINUX},
@@ -116,7 +116,7 @@ constexpr GlobalMenuBarCommand kViewMenu[] = {
     {IDC_ZOOM_MINUS, IDS_TEXT_SMALLER_LINUX},
     {kMenuEnd}};
 
-constexpr GlobalMenuBarCommand kHistoryMenu[] = {
+constexpr DbusAppmenuCommand kHistoryMenu[] = {
     {IDC_HOME, IDS_HISTORY_HOME_LINUX},
     {IDC_BACK, IDS_HISTORY_BACK_LINUX},
     {IDC_FORWARD, IDS_HISTORY_FORWARD_LINUX},
@@ -128,7 +128,7 @@ constexpr GlobalMenuBarCommand kHistoryMenu[] = {
     {IDC_SHOW_HISTORY, IDS_HISTORY_SHOWFULLHISTORY_LINK},
     {kMenuEnd}};
 
-constexpr GlobalMenuBarCommand kToolsMenu[] = {
+constexpr DbusAppmenuCommand kToolsMenu[] = {
     {IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS},
     {IDC_SHOW_HISTORY, IDS_HISTORY_SHOW_HISTORY},
     {IDC_MANAGE_EXTENSIONS, IDS_SHOW_EXTENSIONS},
@@ -143,13 +143,13 @@ constexpr GlobalMenuBarCommand kToolsMenu[] = {
     {IDC_DEV_TOOLS_DEVICES, IDS_DEV_TOOLS_DEVICES},
     {kMenuEnd}};
 
-constexpr GlobalMenuBarCommand kProfilesMenu[] = {
+constexpr DbusAppmenuCommand kProfilesMenu[] = {
     {kSeparator},
     {kTagProfileEdit, IDS_PROFILES_MANAGE_BUTTON_LABEL},
     {kTagProfileCreate, IDS_PROFILES_CREATE_BUTTON_LABEL},
     {kMenuEnd}};
 
-constexpr GlobalMenuBarCommand kHelpMenu[] = {
+constexpr DbusAppmenuCommand kHelpMenu[] = {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {IDC_FEEDBACK, IDS_FEEDBACK},
 #endif
@@ -180,7 +180,7 @@ std::vector<std::pair<ui::MenuModel*, int>> FindMenuItemsForCommand(
 
 }  // namespace
 
-struct GlobalMenuBarX11::HistoryItem {
+struct DbusAppmenu::HistoryItem {
   HistoryItem() : session_id(SessionID::InvalidValue()) {}
 
   // The title for the menu item.
@@ -196,7 +196,7 @@ struct GlobalMenuBarX11::HistoryItem {
   SessionID session_id;
 
   // If the HistoryItem is a window, this will be the vector of tabs. Note
-  // that this is a list of weak references. GlobalMenuBarX11::history_items_
+  // that this is a list of weak references. DbusAppmenu::history_items_
   // is the owner of all items. If it is not a window, then the entry is a
   // single page and the vector will be empty.
   std::vector<HistoryItem*> tabs;
@@ -205,19 +205,18 @@ struct GlobalMenuBarX11::HistoryItem {
   DISALLOW_COPY_AND_ASSIGN(HistoryItem);
 };
 
-GlobalMenuBarX11::GlobalMenuBarX11(BrowserView* browser_view,
-                                   uint32_t browser_frame_xid)
+DbusAppmenu::DbusAppmenu(BrowserView* browser_view, uint32_t browser_frame_id)
     : browser_(browser_view->browser()),
       profile_(browser_->profile()),
       browser_view_(browser_view),
-      browser_frame_xid_(browser_frame_xid),
+      browser_frame_id_(browser_frame_id),
       tab_restore_service_(nullptr),
       last_command_id_(kFirstUnreservedCommandId - 1) {
-  GlobalMenuBarRegistrarX11::GetInstance()->OnMenuBarCreated(this);
+  DbusAppmenuRegistrar::GetInstance()->OnMenuBarCreated(this);
 }
 
-GlobalMenuBarX11::~GlobalMenuBarX11() {
-  auto* registrar = GlobalMenuBarRegistrarX11::GetInstance();
+DbusAppmenu::~DbusAppmenu() {
+  auto* registrar = DbusAppmenuRegistrar::GetInstance();
   registrar->OnMenuBarDestroyed(this);
 
   if (!initialized_)
@@ -236,7 +235,7 @@ GlobalMenuBarX11::~GlobalMenuBarX11() {
   BrowserList::RemoveObserver(this);
 }
 
-void GlobalMenuBarX11::Initialize(DbusMenu::InitializedCallback callback) {
+void DbusAppmenu::Initialize(DbusMenu::InitializedCallback callback) {
   DCHECK(!initialized_);
   initialized_ = true;
 
@@ -255,7 +254,7 @@ void GlobalMenuBarX11::Initialize(DbusMenu::InitializedCallback callback) {
   pref_change_registrar_.Init(browser_->profile()->GetPrefs());
   pref_change_registrar_.Add(
       bookmarks::prefs::kShowBookmarkBar,
-      base::Bind(&GlobalMenuBarX11::OnBookmarkBarVisibilityChanged,
+      base::Bind(&DbusAppmenu::OnBookmarkBarVisibilityChanged,
                  base::Unretained(this)));
 
   top_sites_ = TopSitesFactory::GetForProfile(profile_);
@@ -278,19 +277,19 @@ void GlobalMenuBarX11::Initialize(DbusMenu::InitializedCallback callback) {
   RebuildProfilesMenu();
 
   menu_service_ = std::make_unique<DbusMenu>(
-      GlobalMenuBarRegistrarX11::GetInstance()->bus()->GetExportedObject(
+      DbusAppmenuRegistrar::GetInstance()->bus()->GetExportedObject(
           dbus::ObjectPath(GetPath())),
       std::move(callback));
   menu_service_->SetModel(root_menu_.get(), false);
 }
 
-std::string GlobalMenuBarX11::GetPath() const {
-  return base::StringPrintf("/com/canonical/menu/%X", browser_frame_xid_);
+std::string DbusAppmenu::GetPath() const {
+  return base::StringPrintf("/com/canonical/menu/%X", browser_frame_id_);
 }
 
-ui::SimpleMenuModel* GlobalMenuBarX11::BuildStaticMenu(
+ui::SimpleMenuModel* DbusAppmenu::BuildStaticMenu(
     int string_id,
-    const GlobalMenuBarCommand* commands) {
+    const DbusAppmenuCommand* commands) {
   toplevel_menus_.push_back(std::make_unique<ui::SimpleMenuModel>(this));
   ui::SimpleMenuModel* menu = toplevel_menus_.back().get();
   for (; commands->command != kMenuEnd; commands++) {
@@ -320,8 +319,7 @@ ui::SimpleMenuModel* GlobalMenuBarX11::BuildStaticMenu(
   return menu;
 }
 
-std::unique_ptr<GlobalMenuBarX11::HistoryItem>
-GlobalMenuBarX11::HistoryItemForTab(
+std::unique_ptr<DbusAppmenu::HistoryItem> DbusAppmenu::HistoryItemForTab(
     const sessions::TabRestoreService::Tab& entry) {
   const sessions::SerializedNavigationEntry& current_navigation =
       entry.navigations.at(entry.current_navigation_index);
@@ -332,9 +330,9 @@ GlobalMenuBarX11::HistoryItemForTab(
   return item;
 }
 
-void GlobalMenuBarX11::AddHistoryItemToMenu(std::unique_ptr<HistoryItem> item,
-                                            ui::SimpleMenuModel* menu,
-                                            int index) {
+void DbusAppmenu::AddHistoryItemToMenu(std::unique_ptr<HistoryItem> item,
+                                       ui::SimpleMenuModel* menu,
+                                       int index) {
   base::string16 title = item->title;
   std::string url_string = item->url.possibly_invalid_spec();
 
@@ -347,14 +345,14 @@ void GlobalMenuBarX11::AddHistoryItemToMenu(std::unique_ptr<HistoryItem> item,
   history_items_[command_id] = std::move(item);
 }
 
-void GlobalMenuBarX11::GetTopSitesData() {
+void DbusAppmenu::GetTopSitesData() {
   DCHECK(top_sites_);
 
   top_sites_->GetMostVisitedURLs(base::BindOnce(
-      &GlobalMenuBarX11::OnTopSitesReceived, weak_ptr_factory_.GetWeakPtr()));
+      &DbusAppmenu::OnTopSitesReceived, weak_ptr_factory_.GetWeakPtr()));
 }
 
-void GlobalMenuBarX11::OnTopSitesReceived(
+void DbusAppmenu::OnTopSitesReceived(
     const history::MostVisitedURLList& visited_list) {
   int index = ClearHistoryMenuSection(kTagMostVisited);
 
@@ -374,12 +372,12 @@ void GlobalMenuBarX11::OnTopSitesReceived(
     menu_service_->MenuLayoutUpdated(history_menu_);
 }
 
-void GlobalMenuBarX11::OnBookmarkBarVisibilityChanged() {
+void DbusAppmenu::OnBookmarkBarVisibilityChanged() {
   menu_service_->MenuItemsPropertiesUpdated(
       FindMenuItemsForCommand(root_menu_.get(), IDC_SHOW_BOOKMARK_BAR));
 }
 
-void GlobalMenuBarX11::RebuildProfilesMenu() {
+void DbusAppmenu::RebuildProfilesMenu() {
   while (profiles_menu_->GetTypeAt(0) != ui::MenuModel::TYPE_SEPARATOR)
     profiles_menu_->RemoveItemAt(0);
   profile_commands_.clear();
@@ -405,7 +403,7 @@ void GlobalMenuBarX11::RebuildProfilesMenu() {
     menu_service_->MenuLayoutUpdated(profiles_menu_);
 }
 
-int GlobalMenuBarX11::ClearHistoryMenuSection(int header_command_id) {
+int DbusAppmenu::ClearHistoryMenuSection(int header_command_id) {
   int index = 0;
   while (history_menu_->GetCommandIdAt(index++) != header_command_id) {
   }
@@ -416,7 +414,7 @@ int GlobalMenuBarX11::ClearHistoryMenuSection(int header_command_id) {
   return index;
 }
 
-void GlobalMenuBarX11::RegisterCommandObserver(int command) {
+void DbusAppmenu::RegisterCommandObserver(int command) {
   if (command > kLastChromeCommand)
     return;
 
@@ -429,7 +427,7 @@ void GlobalMenuBarX11::RegisterCommandObserver(int command) {
   chrome::AddCommandObserver(browser_, command, this);
 }
 
-int GlobalMenuBarX11::NextCommandId() {
+int DbusAppmenu::NextCommandId() {
   do {
     if (last_command_id_ == std::numeric_limits<int>::max())
       last_command_id_ = kFirstUnreservedCommandId;
@@ -440,11 +438,11 @@ int GlobalMenuBarX11::NextCommandId() {
   return last_command_id_;
 }
 
-void GlobalMenuBarX11::OnAvatarMenuChanged(AvatarMenu* avatar_menu) {
+void DbusAppmenu::OnAvatarMenuChanged(AvatarMenu* avatar_menu) {
   RebuildProfilesMenu();
 }
 
-void GlobalMenuBarX11::OnBrowserSetLastActive(Browser* browser) {
+void DbusAppmenu::OnBrowserSetLastActive(Browser* browser) {
   // Notify the avatar menu of the change and rebuild the menu. Note: The
   // ActiveBrowserChanged() call needs to happen first to update the state.
   avatar_menu_->ActiveBrowserChanged(browser);
@@ -452,19 +450,19 @@ void GlobalMenuBarX11::OnBrowserSetLastActive(Browser* browser) {
   RebuildProfilesMenu();
 }
 
-void GlobalMenuBarX11::EnabledStateChangedForCommand(int id, bool enabled) {
+void DbusAppmenu::EnabledStateChangedForCommand(int id, bool enabled) {
   menu_service_->MenuItemsPropertiesUpdated(
       FindMenuItemsForCommand(root_menu_.get(), id));
 }
 
-void GlobalMenuBarX11::TopSitesLoaded(history::TopSites* top_sites) {}
+void DbusAppmenu::TopSitesLoaded(history::TopSites* top_sites) {}
 
-void GlobalMenuBarX11::TopSitesChanged(history::TopSites* top_sites,
-                                       ChangeReason change_reason) {
+void DbusAppmenu::TopSitesChanged(history::TopSites* top_sites,
+                                  ChangeReason change_reason) {
   GetTopSitesData();
 }
 
-void GlobalMenuBarX11::TabRestoreServiceChanged(
+void DbusAppmenu::TabRestoreServiceChanged(
     sessions::TabRestoreService* service) {
   const sessions::TabRestoreService::Entries& entries = service->entries();
 
@@ -521,12 +519,12 @@ void GlobalMenuBarX11::TabRestoreServiceChanged(
   menu_service_->MenuLayoutUpdated(history_menu_);
 }
 
-void GlobalMenuBarX11::TabRestoreServiceDestroyed(
+void DbusAppmenu::TabRestoreServiceDestroyed(
     sessions::TabRestoreService* service) {
   tab_restore_service_ = nullptr;
 }
 
-bool GlobalMenuBarX11::IsCommandIdChecked(int command_id) const {
+bool DbusAppmenu::IsCommandIdChecked(int command_id) const {
   if (command_id == IDC_SHOW_BOOKMARK_BAR) {
     return browser_->profile()->GetPrefs()->GetBoolean(
         bookmarks::prefs::kShowBookmarkBar);
@@ -536,7 +534,7 @@ bool GlobalMenuBarX11::IsCommandIdChecked(int command_id) const {
   return it != profile_commands_.end() && it->second == active_profile_index_;
 }
 
-bool GlobalMenuBarX11::IsCommandIdEnabled(int command_id) const {
+bool DbusAppmenu::IsCommandIdEnabled(int command_id) const {
   if (command_id <= kLastChromeCommand)
     return chrome::IsCommandEnabled(browser_, command_id);
   // There is no active profile in Guest mode, in which case the action
@@ -546,7 +544,7 @@ bool GlobalMenuBarX11::IsCommandIdEnabled(int command_id) const {
   return command_id != kTagRecentlyClosed && command_id != kTagMostVisited;
 }
 
-void GlobalMenuBarX11::ExecuteCommand(int command_id, int event_flags) {
+void DbusAppmenu::ExecuteCommand(int command_id, int event_flags) {
   if (command_id <= kLastChromeCommand) {
     chrome::ExecuteCommand(browser_, command_id);
   } else if (command_id == kTagProfileEdit) {
@@ -575,7 +573,7 @@ void GlobalMenuBarX11::ExecuteCommand(int command_id, int event_flags) {
   }
 }
 
-void GlobalMenuBarX11::OnMenuWillShow(ui::SimpleMenuModel* source) {
+void DbusAppmenu::OnMenuWillShow(ui::SimpleMenuModel* source) {
   if (source != history_menu_ || tab_restore_service_)
     return;
 
@@ -592,7 +590,7 @@ void GlobalMenuBarX11::OnMenuWillShow(ui::SimpleMenuModel* source) {
   TabRestoreServiceChanged(tab_restore_service_);
 }
 
-bool GlobalMenuBarX11::GetAcceleratorForCommandId(
+bool DbusAppmenu::GetAcceleratorForCommandId(
     int command_id,
     ui::Accelerator* accelerator) const {
   return browser_view_->GetAccelerator(command_id, accelerator);

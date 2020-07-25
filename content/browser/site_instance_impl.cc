@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "content/browser/bad_message.h"
@@ -685,6 +686,42 @@ bool SiteInstanceImpl::IsSameSiteWithURL(const GURL& url) {
 
 bool SiteInstanceImpl::IsGuest() {
   return is_guest_;
+}
+
+std::string SiteInstanceImpl::GetPartitionDomain(
+    StoragePartitionImpl* storage_partition) {
+  auto storage_partition_config =
+      GetContentClient()->browser()->GetStoragePartitionConfigForSite(
+          GetBrowserContext(), GetSiteURL());
+
+  // The DCHECK here is to allow the trybots to detect any attempt to introduce
+  // new code that violates this assumption.
+  DCHECK_EQ(storage_partition->GetPartitionDomain(),
+            storage_partition_config.partition_domain());
+
+  if (storage_partition->GetPartitionDomain() !=
+      storage_partition_config.partition_domain()) {
+    // Trigger crash logging if we encounter a case that violates our
+    // assumptions.
+    static auto* storage_partition_domain_key =
+        base::debug::AllocateCrashKeyString("storage_partition_domain",
+                                            base::debug::CrashKeySize::Size256);
+    static auto* storage_partition_config_domain_key =
+        base::debug::AllocateCrashKeyString(
+            "storage_partition_config_domain_key",
+            base::debug::CrashKeySize::Size256);
+    base::debug::SetCrashKeyString(storage_partition_domain_key,
+                                   storage_partition->GetPartitionDomain());
+    base::debug::SetCrashKeyString(storage_partition_config_domain_key,
+                                   storage_partition_config.partition_domain());
+
+    base::debug::DumpWithoutCrashing();
+
+    // Return the value from the config to preserve legacy behavior until we
+    // can land a fix.
+    return storage_partition_config.partition_domain();
+  }
+  return storage_partition->GetPartitionDomain();
 }
 
 bool SiteInstanceImpl::IsOriginalUrlSameSite(

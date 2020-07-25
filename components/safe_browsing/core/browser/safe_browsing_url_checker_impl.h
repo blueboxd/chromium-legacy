@@ -89,12 +89,16 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
       bool can_check_db,
       base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui);
 
-  // Constructor that takes only a ResourceType and a UrlCheckerDelegate,
-  // omitting other arguments that never have non-default values on iOS.
+  // Constructor that takes only a ResourceType, a UrlCheckerDelegate, and
+  // real-time lookup-related arguments, omitting other arguments that never
+  // have non-default values on iOS.
   SafeBrowsingUrlCheckerImpl(
       ResourceType resource_type,
       scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
-      const base::RepeatingCallback<web::WebState*()>& web_state_getter);
+      const base::RepeatingCallback<web::WebState*()>& web_state_getter,
+      bool real_time_lookup_enabled,
+      bool can_rt_check_subresource_url,
+      base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui);
 
   ~SafeBrowsingUrlCheckerImpl() override;
 

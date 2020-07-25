@@ -132,6 +132,24 @@ export class MockItemDelegate extends ClickMock {
 }
 
 /**
+ * A mock to intercept User Action logging calls and verify how many times they
+ * were called.
+ */
+export class MetricsPrivateMock {
+  constructor() {
+    this.userActionMap = new Map();
+  }
+
+  getUserActionCount(metricName) {
+    return this.userActionMap.get(metricName) || 0;
+  }
+
+  recordUserAction(metricName) {
+    this.userActionMap.set(metricName, this.getUserActionCount(metricName) + 1);
+  }
+}
+
+/**
  * @param {!HTMLElement} element
  * @return {boolean} whether or not the element passed in is visible
  */

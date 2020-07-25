@@ -413,6 +413,14 @@ const char kIgnoreUserProfileMappingForTests[] =
 // chrome://flags
 const char kKernelnextRestrictVMs[] = "kernelnext-restrict-vms";
 
+// If this switch is set, then ash-chrome will pass additional arguments when
+// launching lacros-chrome. The string '####' is used as a delimiter. Example:
+// --lacros-chrome-additional-args="--foo=5####--bar=/tmp/dir name". Will
+// result in two arguments passed to lacros-chrome:
+//   --foo=5
+//   --bar=/tmp/dir name
+const char kLacrosChromeAdditionalArgs[] = "lacros-chrome-additional-args";
+
 // If this switch is set, then ash-chrome will exec the lacros-chrome binary
 // from the indicated path rather than from component updater. Note that the
 // path should be to a directory that contains a binary named 'chrome'.
@@ -517,6 +525,11 @@ const char kHideAndroidFilesInFilesApp[] = "hide-android-files-in-files-app";
 // The per-model directories (if there are any) are located under
 // "/usr/share/chromeos-assets/regulatory_labels/".
 const char kRegulatoryLabelDir[] = "regulatory-label-dir";
+
+// If true, the debug view overlay will be shown for the in-session
+// authentication dialog. This enables development of the dialog.
+// TODO(yichenli): Remove this after the feature is released.
+const char kShowAuthDialogDevOverlay[] = "show-auth-dialog-dev-overlay";
 
 // If true, the developer tool overlay will be shown for the login/lock screen.
 // This makes it easier to test layout logic.

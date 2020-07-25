@@ -41,6 +41,8 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
+import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
+import org.chromium.chrome.browser.omnibox.styles.OmniboxTheme;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
@@ -308,7 +310,10 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      * @param isIncognito Whether the UI is for incognito mode or not.
      */
     void updateVisualsForState(boolean useDarkColors, boolean isIncognito) {
-        mDropdownViewInfoListManager.setUseDarkColors(useDarkColors);
+        @OmniboxTheme
+        int omniboxTheme = OmniboxResourceProvider.getThemeFromDarkColorsAndIncognito(
+                useDarkColors, isIncognito);
+        mDropdownViewInfoListManager.setOmniboxTheme(omniboxTheme);
         mListPropertyModel.set(SuggestionListProperties.IS_INCOGNITO, isIncognito);
     }
 

@@ -177,6 +177,19 @@ void AddToWidgetInputEventObservers(
   widget_host->AddInputEventObserver(observer);
 }
 
+// Removes |observer| from the input observers of |widget_host|.
+void RemoveFromWidgetInputEventObservers(
+    content::RenderWidgetHost* widget_host,
+    content::RenderWidgetHost::InputEventObserver* observer) {
+  if (!widget_host)
+    return;
+
+#if defined(OS_ANDROID)
+  widget_host->RemoveImeInputEventObserver(observer);
+#endif
+  widget_host->RemoveInputEventObserver(observer);
+}
+
 #if defined(OS_ANDROID)
 void HideSavePasswordInfobar(content::WebContents* web_contents) {
   InfoBarService* infobar_service =
@@ -1179,6 +1192,7 @@ void ChromePasswordManagerClient::DidFinishNavigation(
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   password_reuse_detection_manager_.DidNavigateMainFrame(GetLastCommittedURL());
 #endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+
   AddToWidgetInputEventObservers(
       web_contents()->GetRenderViewHost()->GetWidget(), this);
 #if defined(OS_ANDROID)
@@ -1200,6 +1214,10 @@ void ChromePasswordManagerClient::WebContentsDestroyed() {
   // Other classes may contain callbacks to the Mojo methods. Those callbacks
   // don't like to be destroyed earlier than the pipe itself.
   content_credential_manager_.DisconnectBinding();
+
+  DCHECK(web_contents()->GetRenderViewHost());
+  RemoveFromWidgetInputEventObservers(
+      web_contents()->GetRenderViewHost()->GetWidget(), this);
 }
 
 #if !defined(OS_ANDROID)
@@ -1220,6 +1238,14 @@ void ChromePasswordManagerClient::RenderFrameCreated(
   // Currently any password reuse for this WebContents will report password
   // reuse on the main frame URL.
   AddToWidgetInputEventObservers(
+      render_frame_host->GetView()->GetRenderWidgetHost(), this);
+}
+
+void ChromePasswordManagerClient::RenderFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  if (!render_frame_host->GetView())
+    return;
+  RemoveFromWidgetInputEventObservers(
       render_frame_host->GetView()->GetRenderWidgetHost(), this);
 }
 

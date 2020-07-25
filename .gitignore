@@ -58,7 +58,6 @@ tags
 Thumbs.db
 v8.log
 vs-chromium-project.txt
-/.cache/
 /.clangd/
 /.clangd-index/
 # Settings directories for eclipse
@@ -71,7 +70,6 @@ vs-chromium-project.txt
 /android_emulator_sdk
 /ash/ash_unittests_run.xml
 /base/base_unittests_run.xml
-/.cache/
 # See build/.gitignore for entries covering src/build.
 
 # The Chrome OS build creates a /c symlink due to http://crbug.com/54866.
@@ -330,4 +328,3 @@ vs-chromium-project.txt
 # Ignore the default results output directory for tools/run-swarmed.py
 /results
 
-.cache

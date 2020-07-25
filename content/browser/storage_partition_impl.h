@@ -198,6 +198,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   QuotaContext* GetQuotaContext();
   NativeIOContext* GetNativeIOContext();
   ConversionManagerImpl* GetConversionManager();
+  std::string GetPartitionDomain();
 
   // blink::mojom::DomStorage interface.
   void OpenLocalStorage(

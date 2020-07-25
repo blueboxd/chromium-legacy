@@ -1418,10 +1418,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldNotMoveFakeboxForIframeSizes) {
   }
 }
 
-// Fails on gLinux with legacy flexbox. Fails locally and on bots with FlexNG.
-// https://crbug.com/1062484
-IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
-                       DISABLED_ShouldMoveFakeboxWhenIframeResized) {
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldMoveFakeboxWhenIframeResized) {
   EncodedLogo cached_logo;
   cached_logo.encoded_image = MakeRefPtr(std::string());
   cached_logo.metadata.mime_type = "image/png";

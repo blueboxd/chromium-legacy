@@ -70,9 +70,9 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
-import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.share.clipboard.ClipboardImageFileProvider;
 import org.chromium.chrome.browser.sharing.shared_clipboard.SharedClipboardShareActivity;
+import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.webapps.WebApkVersionManager;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
@@ -380,7 +380,7 @@ public class ProcessInitializationHandler {
         deferredStartupHandler.addDeferredTask(new Runnable() {
             @Override
             public void run() {
-                GoogleServicesManager.get().onMainActivityStart();
+                SigninHelper.get().onMainActivityStart();
                 RevenueStats.getInstance();
             }
         });

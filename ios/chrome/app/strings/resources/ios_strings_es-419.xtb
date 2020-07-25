@@ -26,6 +26,7 @@
 <translation id="1209206284964581585">Ocultar por el momento</translation>
 <translation id="1219674500290482172">No se puede establecer conexión con Internet.</translation>
 <translation id="122699739164161391">Cerrar todas las pestañas</translation>
+<translation id="1229222343402087523">Buscar ${searchPhrase} en Chrome</translation>
 <translation id="1231733316453485619">¿Quieres activar la sincronización?</translation>
 <translation id="1254117744268754948">Seleccionar carpeta</translation>
 <translation id="1265739287306757398">Más información</translation>
@@ -72,6 +73,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> a <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Activa la sincronización para que tus favoritos estén en todos tus dispositivos.</translation>
 <translation id="1687475363370981210">Marcar todas como leídas</translation>
+<translation id="1689333818294560261">Sobrenombre</translation>
 <translation id="1690731385917361335">Sin elementos</translation>
 <translation id="1692118695553449118">La sincronización está activada.</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> seleccionados</translation>
@@ -207,6 +209,7 @@ Cuando está activado el modo Incógnito, los sitios no pueden usar cookies para
 <translation id="3335947283844343239">Volver a abrir pestaña cerrada</translation>
 <translation id="3371831930909698441">Está disponible la traducción. Las opciones disponibles se encuentran cerca de la parte inferior de la pantalla.</translation>
 <translation id="3393920035788932672">Ventanas permitidas</translation>
+<translation id="3425644765244388016">Sobrenombre de la tarjeta</translation>
 <translation id="3443810440409579745">Se recibió una pestaña.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Vista dividida</translation>
@@ -241,6 +244,7 @@ Cuando está activado el modo Incógnito, los sitios no pueden usar cookies para
 <translation id="3783017676699494206">Guardar imagen</translation>
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="3803696231112616155">Ofrecer traducir este sitio</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{No hay contraseñas hackeadas}=1{{COUNT} contraseña hackeada}other{{COUNT} contraseñas hackeadas}}</translation>
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3892144330757387737">Aquí encontrarás tu historial</translation>
 <translation id="3897092660631435901">Menú</translation>
@@ -530,6 +534,7 @@ Sin embargo, no pueden usar cookies para ver la actividad de navegación en dife
 <translation id="7189598951263744875">Compartir...</translation>
 <translation id="7192050974311852563">Iniciar registro</translation>
 <translation id="7203585745079012652">Decir las respuestas</translation>
+<translation id="721597782417389033">El sobrenombre de la tarjeta no es válido</translation>
 <translation id="7265758999917665941">Nunca para este sitio</translation>
 <translation id="7272437679830969316">No se puede verificar tu identidad. La contraseña no se copió.</translation>
 <translation id="7291368939935408496">Preparando las contraseñas…</translation>

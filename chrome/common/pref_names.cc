@@ -1942,9 +1942,9 @@ const char kEnableAuthNegotiatePort[] = "auth.enable_negotiate_port";
 // Whitelist containing servers for which Integrated Authentication is enabled.
 const char kAuthServerWhitelist[] = "auth.server_whitelist";
 
-// Whitelist containing servers Chrome is allowed to do Kerberos delegation
+// Allowlist containing servers Chrome is allowed to do Kerberos delegation
 // with.
-const char kAuthNegotiateDelegateWhitelist[] =
+const char kAuthNegotiateDelegateAllowlist[] =
     "auth.negotiate_delegate_whitelist";
 
 // String that specifies the name of a custom GSSAPI library to load.
@@ -1974,7 +1974,7 @@ const char kAmbientAuthenticationInPrivateModesEnabled[] =
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 // Boolean that specifies whether OK-AS-DELEGATE flag from KDC is respected
-// along with kAuthNegotiateDelegateWhitelist.
+// along with kAuthNegotiateDelegateAllowlist.
 const char kAuthNegotiateDelegateByKdcPolicy[] =
     "auth.negotiate_delegate_by_kdc_policy";
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)

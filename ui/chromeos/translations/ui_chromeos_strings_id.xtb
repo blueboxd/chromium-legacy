@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Kacamata Hitam</translation>
 <translation id="115443833402798225">Hangul Ahnmatae</translation>
 <translation id="1155759005174418845">Catalan</translation>
+<translation id="1172970565351728681">Sekitar <ph name="REMAINING_TIME" /> lagi</translation>
 <translation id="1173894706177603556">Ganti nama</translation>
 <translation id="117624967391683467">Menyalin <ph name="FILE_NAME" />...</translation>
 <translation id="1178581264944972037">Jeda</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Kepemilikan akan ditransfer ke <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">Irlandia</translation>
 <translation id="3245321423178950146">Artis Tidak Dikenal</translation>
+<translation id="3248185426436836442">Tertunda</translation>
 <translation id="3252266817569339921">Prancis</translation>
 <translation id="3254434849914415189">Pilih aplikasi default untuk file <ph name="FILE_TYPE" />:</translation>
 <translation id="3264582393905923483">Konteks</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Anda tidak memiliki izin untuk memindahkan file ke '<ph name="FOLDER_NAME" />'.</translation>
 <translation id="3786301125658655746">Anda sedang offline</translation>
 <translation id="3789841737615482174">Instal</translation>
+<translation id="3793469551756281394">Sekitar <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> lagi</translation>
 <translation id="3798449238516105146">Versi</translation>
 <translation id="3801082500826908679">Faeroe</translation>
 <translation id="3809272675881623365">Kelinci</translation>

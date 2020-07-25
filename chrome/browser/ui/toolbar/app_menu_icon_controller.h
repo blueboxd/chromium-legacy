@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/image/image_skia.h"
+#include "ui/base/models/image_model.h"
 
 class Profile;
 class UpgradeDetector;
@@ -79,7 +79,7 @@ class AppMenuIconController : public GlobalErrorObserver,
   // indicates whether the touch-friendly variant is requested.
   // |severity_none_color|, if provided, will be used when the Severity is NONE.
   // Otherwise the basic toolbar button icon color will be used.
-  gfx::ImageSkia GetIconImage(
+  ui::ImageModel GetIconImage(
       bool touch_ui,
       const base::Optional<SkColor>& severity_none_color = base::nullopt) const;
 

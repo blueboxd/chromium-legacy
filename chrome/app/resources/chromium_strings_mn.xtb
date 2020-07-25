@@ -220,6 +220,7 @@
 <translation id="8417404458978023919">{0,plural, =1{Chromium-г 1 хоногийн дотор дахин ажиллуулна уу}other{Chromium-г # хоногийн дотор дахин ажиллуулна уу}}</translation>
 <translation id="8453117565092476964">Суулгагчийн архив устгагдсан эсвэл хүчингүй болсон байна. Chromium-ыг дахин татаж авна уу.</translation>
 <translation id="8493179195440786826">Chromium нь хуучирсан байна</translation>
+<translation id="8545858702702650646">Chromium-н орон зайгаа сонгох</translation>
 <translation id="8558383651099478961">Таны эцэг эх Chromium-н "Сайтууд, аппууд болон өргөтгөлүүдийн зөвшөөрөл"-ийг унтраасан байна. Энэ <ph name="EXTENSION_TYPE_PARAMETER" />-г нэмэхийг зөвшөөрдөггүй.</translation>
 <translation id="8568283329061645092">Chromium нь таныг Google Бүртгэлээрээ нэвтрэх үед таны нууц үгсийг шалгах боломжтой</translation>
 <translation id="8586442755830160949">Chromium-ийн зохиогчийн эрх <ph name="YEAR" />. Бүх эрхийг хуулиар хамгаалсан.</translation>
@@ -243,6 +244,7 @@
 <translation id="911206726377975832">Хайлтын мэдээллээ бас устгамаар байна уу?</translation>
 <translation id="9158494823179993217">Таны системийн админ Chromium-г<ph name="TARGET_URL_HOSTNAME" />-д хандахын тулд өөр хөтөч нээхээр тохируулсан байна.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Энэ төхөөрөмж дээр үзэлтээ цэгцтэй байлгахын тулд Chromium-н орон зайг ашиглаарай</translation>
 <translation id="93478295209880648">Windows XP болон Windows Vista нь цаашид Chromium-г дэмжихгүй тул буруу ажиллаж болзошгүй</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" />-аас танаас энэ төхөөрөмжийг ашиглахаасаа өмнө дараах үйлчилгээний нөхцлийг уншиж, хүлээн зөвшөөрсөн байхыг шаардаж байна. Эдгээр нөхцлүүд нь Google Chrome OS нөхцлүүдийг өргөтгөж, өөрчилж бас хязгаарлахгүй.</translation>
 <translation id="985602178874221306">Chromium-ыг бүтээгчид</translation>

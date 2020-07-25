@@ -154,7 +154,9 @@ js_type_check("closure_compile") {
     #":settings_subpage_test",
     #":settings_textarea_tests",
     #":settings_toggle_button_tests",
-    #":settings_ui_tests",
+
+    ":settings_ui_tests",
+
     #":site_data_details_subpage_tests",
     #":site_data_test",
     #":site_details_permission_tests",
@@ -334,6 +336,16 @@ js_library("security_page_test") {
 
 js_library("settings_page_test_util") {
   deps = [ "..:chai_assert" ]
+}
+
+js_library("settings_ui_tests") {
+  deps = [
+    "..:chai_assert",
+    "..:test_util.m",
+    "//chrome/browser/resources/settings:settings",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 
 js_library("site_list_tests") {

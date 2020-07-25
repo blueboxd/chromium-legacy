@@ -77,6 +77,7 @@
 <translation id="3089968997497233615">Доступна нова, безпечніша версія Google Chrome.</translation>
 <translation id="3127818369811890733">ОС Chrome не вдалося синхронізувати ваші дані.</translation>
 <translation id="3149510190863420837">Додатки Chrome</translation>
+<translation id="3351117925998652957">Виберіть свій профіль Chrome</translation>
 <translation id="3360895254066713204">Помічник Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome перезапуститься зараз}=1{Chrome перезапуститься через 1 секунду}one{Chrome перезапуститься через # секунду}few{Chrome перезапуститься через # секунди}many{Chrome перезапуститься через # секунд}other{Chrome перезапуститься через # секунди}}</translation>
 <translation id="3395323229510056640">Отримати довідку щодо ОС Chrome</translation>
@@ -205,6 +206,7 @@
 <translation id="7535429826459677826">Версія Google Chrome для розробників</translation>
 <translation id="7573289029918943991">Щоб дізнатися, чи пристрій використовує актуальну версію операційної системи, перейдіть у <ph name="LINK_BEGIN" />налаштування ОС Chrome<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">На цей комп’ютер більше не надходитимуть оновлення Google Chrome, оскільки ОС Mac X 10.9 уже не підтримується.</translation>
+<translation id="7591404275842302616">Користуйтеся профілями Chrome, щоб упорядкувати свій веб-перегляд на цьому пристрої</translation>
 <translation id="7592736734348559088">Google Chrome не вдалося синхронізувати ваші дані, оскільки дані для входу в обліковий запис застаріли.</translation>
 <translation id="7626032353295482388">Вітаємо у Chrome!</translation>
 <translation id="7629695634924605473">Chrome повідомляє, коли ваші паролі зламують</translation>

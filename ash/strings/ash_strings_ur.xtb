@@ -8,7 +8,7 @@
 <translation id="1036672894875463507">‏آپ کی پورے دن مدد کرنے کے لیے میں آپ کی Google اسسٹنٹ ہوں!
 یہاں کچھ چیزیں ہیں جنہیں آپ شروع کرنے کے لیے آزما سکتے ہیں۔</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> کو شامل کیا گیا</translation>
-<translation id="1056775291175587022">کوئی نیٹ ورک نہیں ہے</translation>
+<translation id="1056775291175587022">نیٹ ورک نہیں</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="108486256082349153">سیلولر: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">مجھے بوریت ہو رہی ہے</translation>
@@ -111,7 +111,7 @@
 <translation id="2222338659135520253">سائن ان درکار ہے</translation>
 <translation id="225680501294068881">آلات کیلئے سکیننگ کی جا رہی ہے…</translation>
 <translation id="2268130516524549846">بلوٹوتھ غیر فعال کر دیا گیا</translation>
-<translation id="2268813581635650749">سبھی سے سائن آؤٹ کریں</translation>
+<translation id="2268813581635650749">سب سے سائن آؤٹ کریں</translation>
 <translation id="2277103315734023688">آگے کریں</translation>
 <translation id="2292698582925480719">ڈسپلے اسکیل</translation>
 <translation id="229397294990920565">موبائل ڈیٹا بند ہو رہا ہے...</translation>
@@ -301,7 +301,7 @@
 <translation id="4356930093361201197">اعلی تناسب امتزاج وضع</translation>
 <translation id="4368583494516669646">شب بخیر <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">کاسٹ کی ترتیبات</translation>
-<translation id="4378551569595875038">منسلک کیا جا رہا ہے…</translation>
+<translation id="4378551569595875038">منسلک ہو رہا ہے…</translation>
 <translation id="4379531060876907730">یہ آپ کے اسٹائلس ٹولز ہیں</translation>
 <translation id="4389184120735010762">آپ نے ڈاک کردہ مکبّر کیلئے کی بورڈ شارٹ کٹ دبایا ہے۔ کیا آپ اسے آن کرنا چاہتے ہیں؟</translation>
 <translation id="4421231901400348175">ریموٹ اسسٹنس کے ذریعے <ph name="HELPER_NAME" /> کے ساتھ آپ کی اسکرین کے کنٹرول کا اشتراک کیا جا رہا ہے۔</translation>
@@ -393,7 +393,7 @@
 <translation id="5600837773213129531">‏صوتی تاثرات کو غیر فعال کرنے کے لیے Ctrl + Alt + Z دبائیں۔</translation>
 <translation id="5625955975703555628">LTE+‎</translation>
 <translation id="5648021990716966815">مائیک جیک</translation>
-<translation id="5669267381087807207">فعال کیا جا رہا ہے</translation>
+<translation id="5669267381087807207">فعال ہو رہا ہے</translation>
 <translation id="5673434351075758678">‏آپ کی ترتیبات کی مطابقت پذیری کے بعد '<ph name="FROM_LOCALE" />' سے '‎'‎<ph name="TO_LOCALE" />‎ میں۔</translation>
 <translation id="5682642926269496722">‏Google اسسٹنٹ موجودہ صارف اکاؤنٹ کے لیے دستیاب نہیں ہے۔</translation>
 <translation id="5689633613396158040">نائٹ لائٹ سے مدھم روشنی میں اپنی اسکرین کو دیکھنا یا پڑھنا آسان ہو جاتا ہے۔ نائٹ لائٹ کے آن ہونے کے وقت کو تبدیل کرنے کے لئے تھپتھپائیں یا اسے مکمل طور پر آف کر دیں۔</translation>
@@ -421,7 +421,7 @@
 <translation id="5958529069007801266">تحفظ یافتہ صارف</translation>
 <translation id="5977415296283489383">ہیڈفون</translation>
 <translation id="5978382165065462689">ریموٹ اسسٹنس کے ذریعے آپ کی اسکرین کے کنٹرول کا اشتراک کیا جا رہا ہے۔</translation>
-<translation id="5980301590375426705">مہمان سیشن سے باہر نکلیں</translation>
+<translation id="5980301590375426705">مہمان سیشن ختم کریں</translation>
 <translation id="598882571027504733">‏اپ ڈیٹ حاصل کرنے کیلئے، منسلک شدہ کی بورڈ سے اپنا Chromebook دوبارہ شروع کریں۔</translation>
 <translation id="5992218262414051481">‏اعلی تناسب امتزاج کی وضع فعال ہے۔ اسے آف ٹوگل کرنے کیلئے Ctrl+Search+H کو دوبارہ دبائیں۔</translation>
 <translation id="6018164090099858612">مرر وضع سے باہر نکل رہے ہیں</translation>
@@ -639,7 +639,7 @@
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> میں <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" /> ہے۔</translation>
 <translation id="8477270416194247200">‏منسوخ کرنے کے لیے Alt+Search یا Shift دبائیں۔</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> کو سپورٹ نہیں کرتا ہے۔ ریزولیوشن کو تبدیل کر کے <ph name="FALLBACK_RESOLUTION" /> کر دیا گیا تھا۔ تبدیلیاں باقی رکھنے کے لیے تصدیق کریں پر کلک کریں۔ گزشتہ تبدیلیوں کو <ph name="TIMEOUT_SECONDS" /> میں بحال کر دیا جائے گا۔</translation>
-<translation id="8513108775083588393">خود کار طور پر گھمائیں</translation>
+<translation id="8513108775083588393">خودکار گھمائیں</translation>
 <translation id="8517041960877371778">ہو سکتا ہے کہ آپ کا <ph name="DEVICE_TYPE" /> آن ہونے کی صورت میں چارج نہ ہو۔</translation>
 <translation id="8563862697512465947">اطلاع کی ترتیبات</translation>
 <translation id="857201607579416096">مینو کو اسکرین کے نچلے دائیں کونے میں منتقل کر دیا گیا۔</translation>

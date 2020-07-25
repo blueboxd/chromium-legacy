@@ -81,6 +81,7 @@
 <translation id="3089968997497233615">Достапна е нова, побезбедна верзија на Google Chrome.</translation>
 <translation id="3127818369811890733">Chrome OS не можеше да ги синхронизира вашите податоци.</translation>
 <translation id="3149510190863420837">Апликации на Chrome</translation>
+<translation id="3351117925998652957">Изберете го својот простор на Chrome</translation>
 <translation id="3360895254066713204">Помошник на Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome ќе се рестартира сега}=1{Chrome ќе се рестартира по 1 секунда}one{Chrome ќе се рестартира по # секунда}other{Chrome ќе се рестартира по # секунди}}</translation>
 <translation id="3395323229510056640">Добијте помош за Chrome OS</translation>
@@ -213,6 +214,7 @@ Google Chrome не може да ги обнови вашите поставки
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">За да видите дали уредот ви е ажуриран, одете на <ph name="LINK_BEGIN" />Поставки за Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Компјутеров веќе нема да добива ажурирања на Google Chrome затоа што Mac OS X 10.9 веќе не е поддржан.</translation>
+<translation id="7591404275842302616">Користете ги просторите на Chrome за да го организирате пребарувањето на уредов</translation>
 <translation id="7592736734348559088">Google Chrome не можеше да ги синхронизира вашите податоци бидејќи вашите информации за пријавување на сметката се застарени.</translation>
 <translation id="7626032353295482388">Добре дојдовте на Chrome</translation>
 <translation id="7629695634924605473">Chrome ве известува дали вашите лозинки се компромитирани</translation>

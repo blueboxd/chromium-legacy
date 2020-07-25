@@ -444,6 +444,7 @@
 <translation id="2824775600643448204">網址與搜尋列</translation>
 <translation id="2826760142808435982">連線採用 <ph name="CIPHER" /> 加密，並設有 <ph name="KX" /> 金鑰交換機制。</translation>
 <translation id="2835170189407361413">清除表單</translation>
+<translation id="2839501879576190149">你要造訪的是偽造的網站</translation>
 <translation id="2847118875340931228">開啟無痕式視窗</translation>
 <translation id="2850739647070081192">Invite (信封)</translation>
 <translation id="2856444702002559011">攻擊者可能會試圖從 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 竊取你的資訊 (例如密碼、郵件或信用卡資料)。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -556,6 +557,9 @@
 <translation id="3364869320075768271"><ph name="URL" /> 要求使用你的虛擬實境裝置和資料</translation>
 <translation id="3366477098757335611">查看卡片</translation>
 <translation id="3369192424181595722">時鐘錯誤</translation>
+<translation id="3371076217486966826"><ph name="URL" /> 要求：
+      • 根據你的周遭環境建立 3D 地圖並追蹤攝影機位置
+      • 使用裝置的攝影機</translation>
 <translation id="337363190475750230">已取消佈建</translation>
 <translation id="3377144306166885718">伺服器的傳輸層安全標準 (TLS) 版本已過時。</translation>
 <translation id="3377188786107721145">政策解析錯誤</translation>
@@ -798,6 +802,7 @@
 <translation id="42981349822642051">展開</translation>
 <translation id="4300675098767811073">多孔 (右側)</translation>
 <translation id="4302965934281694568">Chou3 (信封)</translation>
+<translation id="4305666528087210886">無法存取你的檔案</translation>
 <translation id="4305817255990598646">切換</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">封鎖 (預設)</translation>
@@ -816,6 +821,7 @@
 <translation id="4358461427845829800">管理付款方式...</translation>
 <translation id="4359160567981085931">你剛才在詐騙網站上輸入了密碼。Chrome 能夠幫助你。如要變更密碼並通知 Google 你的帳戶可能面臨風險，請按一下 [保護帳戶]。</translation>
 <translation id="4367563149485757821">Number-12 (Envelope)</translation>
+<translation id="4367839622597707614">{1,plural, =0{你使用的某個網站或應用程式發生資料侵害事件，因此你為 <ph name="ORIGIN" /> 儲存的密碼已遭洩露。Chrome 建議你立即變更 <ph name="ORIGIN" /> 上的密碼。}=1{你使用的某個網站或應用程式發生資料侵害事件，因此你為 <ph name="ORIGIN" /> 和另外一個網站儲存的密碼已遭洩露。Chrome 建議你立即檢查已儲存的密碼。}other{你使用的某個網站或應用程式發生資料侵害事件，因此你為 <ph name="ORIGIN" /> 和另外 <ph name="SITES_COUNT" /> 個網站儲存的密碼已遭洩露。Chrome 建議你立即檢查已儲存的密碼。}}</translation>
 <translation id="437058704415269440">帳戶餘額</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">預期的「<ph name="VALUE_TYPE" />」值。</translation>
@@ -1286,6 +1292,7 @@
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">你要造訪的網站可能會誘導使用者支付額外額外費用。</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{以及另外 1 個建議項目}other{以及另外 # 個建議項目}}</translation>
+<translation id="6387645831795005740">攻擊者有時會在網址中加入難以辨識的細微變更來仿冒網站。</translation>
 <translation id="6389470377220713856">持卡人姓名</translation>
 <translation id="6390200185239044127">對折後的彈簧二摺</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1499,6 +1506,7 @@
 <translation id="7372973238305370288">搜尋結果</translation>
 <translation id="7374733840632556089">發生這個問題是因為你或其他人在裝置上安裝了具有風險的憑證。已知這個憑證是用於監控及攔截網路資訊，且不受 Chrome 信任。雖然有部分監控活動屬於正當行為 (例如學校或公司網路上的監控機制)，Chrome 仍想確保你知曉此一情況，即使你無法阻止這類監控活動。任何存取網路的瀏覽器或應用程式都可能受到監控。</translation>
 <translation id="7375818412732305729">已附加檔案</translation>
+<translation id="7376551888419889433">當 Chrome Enterprise 連接器標記安全性事件時，系統會將與事件相關的資料傳送給系統管理員。這些資料可能包括你在 Chrome 中造訪的網頁網址、檔案名稱或中繼資料，以及用於登入裝置和 Chrome 的使用者名稱。</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">媒體控制項</translation>
 <translation id="7378627244592794276">不需要</translation>
@@ -1546,6 +1554,7 @@
 <translation id="7518003948725431193">找不到此網址的網頁：<ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (信封)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">已隱藏「<ph name="SECTION" />」區段</translation>
 <translation id="7526934274050461096">你與這個網站之間的連線不是私人連線</translation>
 <translation id="7535087603100972091">值</translation>
 <translation id="7537536606612762813">強制</translation>
@@ -1746,6 +1755,7 @@
 <translation id="8293206222192510085">新增書籤</translation>
 <translation id="8294431847097064396">來源</translation>
 <translation id="8298115750975731693">目前使用的 Wi-Fi 網路 (<ph name="WIFI_NAME" />) 可能會要求您造訪 <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />。</translation>
+<translation id="8303854710873047864">已顯示「<ph name="SECTION" />」區段</translation>
 <translation id="830498451218851433">對折</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">已安裝的應用程式以及使用頻率</translation>
@@ -1865,6 +1875,7 @@
 <translation id="8931333241327730545">您要將這張卡片的資訊儲存到您的 Google 帳戶嗎？</translation>
 <translation id="8932102934695377596">你的時鐘時間過慢</translation>
 <translation id="893332455753468063">新增名稱</translation>
+<translation id="8942355029279167844">系統管理員已允許 <ph name="APP_NAME" /> 收集診斷資料以改善產品使用體驗。詳情請參閱 <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />。</translation>
 <translation id="8943282376843390568">萊姆綠</translation>
 <translation id="8957210676456822347">監控式入口網站授權</translation>
 <translation id="8962950042226115166">可疑網站</translation>
@@ -1895,6 +1906,7 @@
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">你嘗試連線至 <ph name="DOMAIN" />，但伺服器提供的憑證無效。</translation>
 <translation id="9050666287014529139">通關密語</translation>
+<translation id="9062620674789239642">檔案可能已遭到移動、編輯或刪除。</translation>
 <translation id="9065203028668620118">編輯</translation>
 <translation id="9065745800631924235">「<ph name="TEXT" />」的搜尋記錄</translation>
 <translation id="9069693763241529744">依據擴充功能設定封鎖</translation>

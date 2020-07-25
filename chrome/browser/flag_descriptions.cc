@@ -1768,6 +1768,11 @@ const char kPassiveMixedContentWarningDescription[] =
     "Causes a 'Not Secure' chip to be shown in the omnibox if a site contains "
     "passive (aka optionally blockable) mixed content.";
 
+const char kPasswordChangeInSettingsName[] =
+    "Rework password change flow from settings";
+const char kPasswordChangeInSettingsDescription[] =
+    "Change password when bulk leak check detected an issue.";
+
 const char kPasswordChangeName[] = "Rework password change flow";
 const char kPasswordChangeDescription[] =
     "Change password when password leak is detected.";

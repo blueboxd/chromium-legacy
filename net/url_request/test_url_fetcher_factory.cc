@@ -363,12 +363,10 @@ const GURL& FakeURLFetcher::GetURL() const {
   return TestURLFetcher::GetOriginalURL();
 }
 
-FakeURLFetcherFactory::FakeURLFetcherFactory(
-    URLFetcherFactory* default_factory)
+FakeURLFetcherFactory::FakeURLFetcherFactory(URLFetcherFactory* default_factory)
     : ScopedURLFetcherFactory(this),
-      creator_(base::Bind(&DefaultFakeURLFetcherCreator)),
-      default_factory_(default_factory) {
-}
+      creator_(base::BindRepeating(&DefaultFakeURLFetcherCreator)),
+      default_factory_(default_factory) {}
 
 FakeURLFetcherFactory::FakeURLFetcherFactory(
     URLFetcherFactory* default_factory,

@@ -563,6 +563,9 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="3364869320075768271"><ph name="URL" /> mahu menggunakan peranti dan data realiti maya anda</translation>
 <translation id="3366477098757335611">Lihat kad</translation>
 <translation id="3369192424181595722">Ralat Jam</translation>
+<translation id="3371076217486966826"><ph name="URL" /> mahu:
+      • Membuat peta 3D bagi persekitaran anda dan menjejak kedudukan kamera
+      • Gunakan kamera anda</translation>
 <translation id="337363190475750230">Nyahperuntukkan</translation>
 <translation id="3377144306166885718">Pelayan menggunakan versi TLS yang sudah lapuk.</translation>
 <translation id="3377188786107721145">Ralat menghuraikan dasar</translation>
@@ -1515,7 +1518,7 @@ Butiran tambahan:
 <translation id="7372973238305370288">hasil carian</translation>
 <translation id="7374733840632556089">Masalah ini berlaku disebabkan oleh sijil yang anda pasang atau dipasang oleh orang lain pada peranti anda. Sijil itu diketahui digunakan untuk memantau dan memintas rangkaian, dan tidak dipercayai oleh Chrome. Walaupun terdapat sebab yang munasabah untuk melakukan pemantauan, seperti pada rangkaian institusi pengajian atau syarikat, Chrome ingin memastikan anda menyedari pemantauan berlaku, walaupun anda tidak dapat menghentikan pemantauan itu. Pemantauan boleh berlaku pada mana-mana penyemak imbas atau aplikasi yang mengakses web.</translation>
 <translation id="7375818412732305729">Fail dilampirkan</translation>
-<translation id="7376551888419889433">Apabila acara keselamatan dibenderakan oleh Chrome Enterprise Connectors, data yang berkaitan tentang acara tersebut akan dihantar kepada pentadbir anda. Data ini boleh termasuk URL halaman yang anda lawati dalam Chrome, nama fail atau metadata dan nama pengguna yang anda gunakan untuk melog masuk ke peranti dan Chrome anda.</translation>
+<translation id="7376551888419889433">Apabila peristiwa keselamatan dibenderakan oleh Chrome Enterprise Connectors, data yang berkaitan tentang peristiwa tersebut akan dihantar kepada pentadbir anda. Data ini boleh termasuk URL halaman yang anda lawati dalam Chrome, nama fail atau metadata dan nama pengguna yang anda gunakan untuk log masuk ke peranti dan Chrome anda.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Kawalan Media</translation>
 <translation id="7378627244592794276">Tidak</translation>
@@ -1563,6 +1566,7 @@ Butiran tambahan:
 <translation id="7518003948725431193">Tiada halaman web dijumpai untuk alamat web: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Sampul Surat)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Bahagian "<ph name="SECTION" />" disembunyikan</translation>
 <translation id="7526934274050461096">Sambungan anda ke tapak ini tidak berciri peribadi</translation>
 <translation id="7535087603100972091">Nilai</translation>
 <translation id="7537536606612762813">Wajib</translation>
@@ -1763,6 +1767,7 @@ Butiran tambahan:
 <translation id="8293206222192510085">Tambah Penanda Halaman</translation>
 <translation id="8294431847097064396">Sumber</translation>
 <translation id="8298115750975731693">Wi-Fi yang anda gunakan (<ph name="WIFI_NAME" />) mungkin memerlukan anda untuk melawat <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Bahagian "<ph name="SECTION" />" ditunjukkan</translation>
 <translation id="830498451218851433">Lipat dua</translation>
 <translation id="8307358339886459768">Foto-Kecil</translation>
 <translation id="8307888238279532626">Apl yang dipasang dan kekerapan apl itu digunakan</translation>
@@ -1883,6 +1888,7 @@ Butiran tambahan:
 <translation id="8931333241327730545">Adakah anda mahu menyimpan kad ini ke Akaun Google anda?</translation>
 <translation id="8932102934695377596">Jam anda di belakang</translation>
 <translation id="893332455753468063">Tambahkan Nama</translation>
+<translation id="8942355029279167844">Pentadbir anda telah membenarkan <ph name="APP_NAME" /> untuk mengumpulkan data diagnostik untuk meningkatkan pengalaman produk. Lihat <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> untuk mendapatkan maklumat lanjut.</translation>
 <translation id="8943282376843390568">Hijau pucuk pisang</translation>
 <translation id="8957210676456822347">Keizinan Portal Tawanan</translation>
 <translation id="8962950042226115166">Tapak mencurigakan</translation>
@@ -1913,7 +1919,7 @@ Butiran tambahan:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Anda cuba untuk mencapai <ph name="DOMAIN" />, tetapi pelayan memberikan sijil tidak sah.</translation>
 <translation id="9050666287014529139">Frasa laluan</translation>
-<translation id="9062620674789239642">Ia mungkin telah dipindahkan, diedit atau dipadamkan.</translation>
+<translation id="9062620674789239642">Fail mungkin telah dipindahkan, diedit atau dipadamkan.</translation>
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9065745800631924235">Carian <ph name="TEXT" /> daripada sejarah</translation>
 <translation id="9069693763241529744">Disekat oleh sambungan</translation>

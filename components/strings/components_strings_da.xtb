@@ -563,6 +563,9 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="3364869320075768271"><ph name="URL" /> vil gerne anvende din virtual reality-enhed og dine VR-data</translation>
 <translation id="3366477098757335611">Se kort</translation>
 <translation id="3369192424181595722">Urfejl</translation>
+<translation id="3371076217486966826"><ph name="URL" /> ønsker at:
+      • Oprette et 3D-kort over dine omgivelser og registrere kamerapositionen
+      • Anvende dit kamera</translation>
 <translation id="337363190475750230">Deprovisioneret</translation>
 <translation id="3377144306166885718">Serveren benyttede en forældet version af TSL.</translation>
 <translation id="3377188786107721145">Det opstod en fejl ved parsing af politik</translation>
@@ -1562,6 +1565,7 @@ Yderligere oplysninger:
 <translation id="7518003948725431193">Ingen webside fundet på webadressen: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Envelope)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Sektionen "<ph name="SECTION" />" er skjult</translation>
 <translation id="7526934274050461096">Din forbindelse til dette website er ikke privat</translation>
 <translation id="7535087603100972091">Værdi</translation>
 <translation id="7537536606612762813">Obligatorisk</translation>
@@ -1762,6 +1766,7 @@ Yderligere oplysninger:
 <translation id="8293206222192510085">Tilføj bogmærke</translation>
 <translation id="8294431847097064396">Kilde</translation>
 <translation id="8298115750975731693">Det Wi-Fi-netværk, du bruger (<ph name="WIFI_NAME" />), kan kræve, at du går til <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Sektionen "<ph name="SECTION" />" vises</translation>
 <translation id="830498451218851433">Fals halvt</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Installerede apps, og hvor ofte de bruges</translation>
@@ -1882,6 +1887,7 @@ Yderligere oplysninger:
 <translation id="8931333241327730545">Vil du gemme dette kort på din Google-konto?</translation>
 <translation id="8932102934695377596">Dit ur er bagud</translation>
 <translation id="893332455753468063">Tilføj navn</translation>
+<translation id="8942355029279167844">Din administrator har givet <ph name="APP_NAME" /> tilladelse til at indsamle diagnostikdata med henblik på at forbedre brugeroplevelsen i produktet. Du kan få flere oplysninger på <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />.</translation>
 <translation id="8943282376843390568">Limegrøn</translation>
 <translation id="8957210676456822347">Godkendelse af captive portal</translation>
 <translation id="8962950042226115166">Mistænkeligt website</translation>

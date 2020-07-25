@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Sluneční brýle</translation>
 <translation id="115443833402798225">Hangul Ahnmatae</translation>
 <translation id="1155759005174418845">katalánština</translation>
+<translation id="1172970565351728681">Zbývá přibližně: <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">Přejmenovat</translation>
 <translation id="117624967391683467">Kopírování souboru <ph name="FILE_NAME" />...</translation>
 <translation id="1178581264944972037">Pozastavit</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Vlastnictví bude převedeno na <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">irština</translation>
 <translation id="3245321423178950146">Neznámý interpret</translation>
+<translation id="3248185426436836442">Nevyřízeno</translation>
 <translation id="3252266817569339921">francouzština</translation>
 <translation id="3254434849914415189">Vyberte pro soubory <ph name="FILE_TYPE" /> výchozí aplikaci:</translation>
 <translation id="3264582393905923483">Kontext</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">K přesunutí souborů do složky „<ph name="FOLDER_NAME" />“ nemáte oprávnění.</translation>
 <translation id="3786301125658655746">Jste offline</translation>
 <translation id="3789841737615482174">Instalovat</translation>
+<translation id="3793469551756281394">Zbývá přibližně: <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">Verze</translation>
 <translation id="3801082500826908679">faerština</translation>
 <translation id="3809272675881623365">Králík</translation>

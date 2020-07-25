@@ -557,6 +557,9 @@
 <translation id="3364869320075768271"><ph name="URL" /> ต้องการเข้าถึงอุปกรณ์และข้อมูล Virtual Reality ของคุณ</translation>
 <translation id="3366477098757335611">ดูบัตร</translation>
 <translation id="3369192424181595722">ข้อผิดพลาดของนาฬิกา</translation>
+<translation id="3371076217486966826"><ph name="URL" /> ต้องการ
+      • สร้างแผนที่ 3 มิติของสิ่งที่อยู่รอบตัวคุณและติดตามตำแหน่งของกล้อง
+      • ใช้กล้องของคุณ</translation>
 <translation id="337363190475750230">ยกเลิกการจัดเตรียมแล้ว</translation>
 <translation id="3377144306166885718">เซิร์ฟเวอร์ใช้ TLS เวอร์ชันที่ล้าสมัย</translation>
 <translation id="3377188786107721145">ข้อผิดพลาดในการแยกวิเคราะห์นโยบาย</translation>
@@ -1550,6 +1553,7 @@
 <translation id="7518003948725431193">ไม่พบหน้าเว็บสำหรับที่อยู่เว็บ: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (ซองจดหมาย)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">ส่วน "<ph name="SECTION" />" ซ่อนอยู่</translation>
 <translation id="7526934274050461096">การเชื่อมต่อกับไซต์นี้ไม่เป็นส่วนตัว</translation>
 <translation id="7535087603100972091">ราคา</translation>
 <translation id="7537536606612762813">จำเป็น</translation>
@@ -1750,6 +1754,7 @@
 <translation id="8293206222192510085">เพิ่มบุ๊กมาร์ก</translation>
 <translation id="8294431847097064396">แหล่งที่มา</translation>
 <translation id="8298115750975731693">Wi-Fi ที่คุณใช้ (<ph name="WIFI_NAME" />) อาจต้องการให้คุณไปที่ <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /></translation>
+<translation id="8303854710873047864">แสดงส่วน "<ph name="SECTION" />"</translation>
 <translation id="830498451218851433">พับครึ่ง</translation>
 <translation id="8307358339886459768">รูปภาพขนาดเล็ก</translation>
 <translation id="8307888238279532626">แอปที่ติดตั้งและความถี่ในการใช้</translation>
@@ -1870,6 +1875,7 @@
 <translation id="8931333241327730545">คุณต้องการบันทึกบัตรนี้ในบัญชี Google ไหม</translation>
 <translation id="8932102934695377596">นาฬิกาช้าเกินไป</translation>
 <translation id="893332455753468063">เพิ่มชื่อ</translation>
+<translation id="8942355029279167844">ผู้ดูแลระบบของคุณอนุญาตให้ <ph name="APP_NAME" /> รวบรวมข้อมูลการวิเคราะห์เพื่อปรับปรุงประสบการณ์การใช้ผลิตภัณฑ์ ดูข้อมูลเพิ่มเติมได้ที่ <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /></translation>
 <translation id="8943282376843390568">เหลืองมะนาว</translation>
 <translation id="8957210676456822347">การให้สิทธิ์แคปทีฟพอร์ทัล</translation>
 <translation id="8962950042226115166">เว็บไซต์ที่น่าสงสัย</translation>

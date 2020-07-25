@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Sasisha Chrome</translation>
 <translation id="1569387923882100876">Kifaa Kilichounganishwa</translation>
 <translation id="1571304935088121812">Nakili jina la mtumiaji</translation>
+<translation id="1592864538817356322">Ulinzi wa kawaida:</translation>
 <translation id="1612196535745283361">Chrome inahitaji idhini ya kufikia mahali ili itafute vifaa. Kipengele cha kufikia mahali <ph name="BEGIN_LINK" />kimezimwa kwenye kifaa hiki<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Ondoa kipengee 1 kilichochaguliwa}other{Ondoa vipengee # vilivyochaguliwa}}</translation>
@@ -578,7 +579,8 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5659593005791499971">Barua pepe</translation>
 <translation id="5665379678064389456">Unda tukio katika <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Batilisha ombi la tovuti ili kuzuia kuvuta karibu</translation>
-<translation id="5683547024293500885">Chrome imeshindwa kukagua masasisho</translation>
+<translation id="568275469169136466">Ili uingie katika akaunti kwa muda</translation>
+<translation id="5683547024293500885">Chrome imeshindwa kukagua kama kuna masasisho</translation>
 <translation id="5686790454216892815">Jina la faili ni ndefu mno</translation>
 <translation id="5694049548840660018">Rudi kwenye ukurasa wa kwanza kwa urahisi</translation>
 <translation id="569536719314091526">Tafsiri ukurasa huu katika lugha yoyote kutoka kitufe cha Chaguo zaidi</translation>
@@ -589,6 +591,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5723735397759933332">Hali nyepesi sasa inaokoa data yako zaidi kwa kuboresha picha kwenye kurasa za HTTPS.</translation>
 <translation id="5726692708398506830">Fanya kila kitu kwenye ukurasa kiwe kikubwa zaidi</translation>
 <translation id="5732819098735351888">Itaanza kupakua kupitia Wi-Fi.</translation>
+<translation id="5733983706093266635">Imeshindwa kutunga msimbo wa QR. URL imepitisha herufi <ph name="CHARACTER_LIMIT" />.</translation>
 <translation id="5748802427693696783">Imebadilisha kwenda vichupo muundo-msingi</translation>
 <translation id="5749068826913805084">Chrome inahitaji idhini ya kufikia hifadhi ili ipakue faili.</translation>
 <translation id="5749237766298580851">Imezimwa <ph name="SEPARATOR" /> Haipendekezwi</translation>
@@ -641,6 +644,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="6111020039983847643">data iliyotumiwa</translation>
 <translation id="6112702117600201073">Inaonyesha upya ukurasa</translation>
 <translation id="6127379762771434464">Kipengee kimeondolewa</translation>
+<translation id="6140709049082532940">Ulinzi ulioboreshwa:</translation>
 <translation id="6140912465461743537">Nchi/Eneo</translation>
 <translation id="614940544461990577">Jaribu:</translation>
 <translation id="6154478581116148741">Washa kipengele cha kufunga skrini katika Mipangilio ili uhamishe manenosiri yako kutoka kwenye kifaa hiki</translation>
@@ -1017,6 +1021,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="9100610230175265781">Kaulisiri inahitajika</translation>
 <translation id="9102803872260866941">Kichupo cha kukagua kwanza kimefunguliwa</translation>
 <translation id="9104217018994036254">Orodha ya vifaa vinavyoweza kutumia kichupo pamoja.</translation>
+<translation id="9104402662006063371">Weka Hali Fiche</translation>
 <translation id="9108312223223904744">Kuweka Simu Itumike kama Ufunguo wa Usalama</translation>
 <translation id="9108808586816295166">Huenda DNS Salama isipatikane kila wakati</translation>
 <translation id="9133397713400217035">Pitia Ukiwa Nje ya Mtandao</translation>

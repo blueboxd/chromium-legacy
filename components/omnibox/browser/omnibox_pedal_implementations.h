@@ -12,14 +12,6 @@
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_pedal_concepts.h"
 
-class OmniboxPedalClearBrowsingData : public OmniboxPedal {
- public:
-  OmniboxPedalClearBrowsingData();
-#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
-  const gfx::VectorIcon& GetVectorIcon() const override;
-#endif
-};
-
 // Returns the full set of encapsulated OmniboxPedal implementations.
 std::unordered_map<OmniboxPedalId, std::unique_ptr<OmniboxPedal>>
 GetPedalImplementations();

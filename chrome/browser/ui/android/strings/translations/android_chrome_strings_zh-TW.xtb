@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1569387923882100876">連結的裝置</translation>
 <translation id="1571304935088121812">複製使用者名稱</translation>
+<translation id="1592864538817356322">標準防護：</translation>
 <translation id="1612196535745283361">Chrome 需要位置資訊存取權才能掃描裝置。<ph name="BEGIN_LINK" />這個裝置的位置資訊存取權已關閉<ph name="END_LINK" />。</translation>
 <translation id="1620510694547887537">攝影機</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{移除 1 個選取的項目}other{移除 # 個選取的項目}}</translation>
@@ -578,6 +579,8 @@
 <translation id="5659593005791499971">電子郵件</translation>
 <translation id="5665379678064389456">在「<ph name="APP_NAME" />」中建立活動</translation>
 <translation id="5668404140385795438">覆寫網站禁止放大的要求</translation>
+<translation id="568275469169136466">暫時登入</translation>
+<translation id="5683547024293500885">Chrome 無法檢查更新</translation>
 <translation id="5686790454216892815">檔案名稱過長</translation>
 <translation id="5694049548840660018">輕鬆返回首頁</translation>
 <translation id="569536719314091526">透過 [更多選項] 按鈕將這個網頁翻譯成任何語言</translation>
@@ -588,8 +591,10 @@
 <translation id="5723735397759933332">精簡模式現在可將 HTTPS 頁面上的圖片最佳化，為你進一步節省資料用量。</translation>
 <translation id="5726692708398506830">放大網頁上的所有內容</translation>
 <translation id="5732819098735351888">下載作業會在你使用 Wi-Fi 時開始。</translation>
+<translation id="5733983706093266635">無法建立 QR 圖碼。網址包含的字元數超過 <ph name="CHARACTER_LIMIT" /> 個。</translation>
 <translation id="5748802427693696783">已切換成標準分頁</translation>
 <translation id="5749068826913805084">Chrome 必須取得儲存空間的存取權才能下載檔案。</translation>
+<translation id="5749237766298580851">關閉 <ph name="SEPARATOR" /> 不建議</translation>
 <translation id="5754350196967618083">無法重新整理「探索」</translation>
 <translation id="5763382633136178763">無痕式分頁</translation>
 <translation id="5763514718066511291">輕觸即可複製這個應用程式的網址</translation>
@@ -639,6 +644,7 @@
 <translation id="6111020039983847643">(已使用的數據量)</translation>
 <translation id="6112702117600201073">重新整理網頁</translation>
 <translation id="6127379762771434464">已移除項目</translation>
+<translation id="6140709049082532940">強化防護：</translation>
 <translation id="6140912465461743537">國家/地區</translation>
 <translation id="614940544461990577">建議做法：</translation>
 <translation id="6154478581116148741">在「設定」中開啟螢幕鎖定，即可從這部裝置匯出你的密碼</translation>
@@ -997,6 +1003,7 @@
 <translation id="8970887620466824814">發生錯誤。</translation>
 <translation id="8972098258593396643">要下載至預設資料夾嗎？</translation>
 <translation id="8988028529677883095">使用手機做為安全金鑰</translation>
+<translation id="8990209962746788689">無法建立 QR 圖碼</translation>
 <translation id="8993760627012879038">在無痕模式下開啟新分頁</translation>
 <translation id="8998729206196772491">您即將使用由 <ph name="MANAGED_DOMAIN" /> 所管理的帳戶登入，並授權該網域的管理員控管您的 Chrome 資料。您的資料會與這個帳戶建立永久連結。登出 Chrome 後，系統會將您的資料從這個裝置上刪除，但繼續保留在您的 Google 帳戶中。</translation>
 <translation id="9028914725102941583">開啟同步功能即可將內容分享至其他裝置</translation>
@@ -1014,6 +1021,7 @@
 <translation id="9100610230175265781">請提供通關密語</translation>
 <translation id="9102803872260866941">預覽分頁已開啟</translation>
 <translation id="9104217018994036254">要共用分頁的裝置清單。</translation>
+<translation id="9104402662006063371">進入無痕模式</translation>
 <translation id="9108312223223904744">支援使用手機做為安全金鑰</translation>
 <translation id="9108808586816295166">可能無法隨時使用安全 DNS</translation>
 <translation id="9133397713400217035">離線探索</translation>

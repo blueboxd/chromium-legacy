@@ -225,6 +225,7 @@ Chromium មិនអាចសង្គ្រោះការកំណត់រ�
 <translation id="8417404458978023919">{0,plural, =1{ចាប់ផ្ដើម Chromium ឡើងវិញ​ក្នុងរយៈពេល​មួយ​ថ្ងៃទៀត}other{ចាប់ផ្ដើម Chromium ឡើងវិញ​ក្នុងរយៈពេល # ថ្ងៃទៀត}}</translation>
 <translation id="8453117565092476964">កម្មវិធីតំឡើងបណ្ណាសារមានបញ្ហា ឬគ្មានសុពលភាព។ សូមទាញយក Google Chromium ម្តងទៀត។</translation>
 <translation id="8493179195440786826">Chromium ហួសសម័យហើយ</translation>
+<translation id="8545858702702650646">ជ្រើសរើស Chromium Space របស់អ្នក</translation>
 <translation id="8558383651099478961">មាតាបិតា​របស់អ្នក​បានបិទ "ការអនុញ្ញាត​ឱ្យចូលប្រើ​គេហទំព័រ កម្មវិធី និង​កម្មវិធី​បន្ថែម" សម្រាប់ Chromium។ ការបញ្ចូល <ph name="EXTENSION_TYPE_PARAMETER" /> នេះ​មិនត្រូវបាន​អនុញ្ញាតទេ​។</translation>
 <translation id="8568283329061645092">Chromium អាចពិនិត្យពាក្យសម្ងាត់របស់អ្នក នៅពេលអ្នកចូល​ដោយប្រើគណនី Google របស់អ្នក</translation>
 <translation id="8586442755830160949">រក្សាសិទ្ធិគ្រប់យ៉ាងដោយផលិតករ Chromium។ រក្សាសិទ្ធិ <ph name="YEAR" />។</translation>
@@ -248,6 +249,7 @@ Chromium មិនអាចសង្គ្រោះការកំណត់រ�
 <translation id="911206726377975832">លុបទិន្នន័យរុករករបស់អ្នកផងដែរ?</translation>
 <translation id="9158494823179993217">អ្នក​គ្រប់គ្រង​ប្រព័ន្ធ​របស់អ្នកបាន​កំណត់​រចនាសម្ព័ន្ធ Chromium ឱ្យបើក​កម្មវិធីរុករកតាម​អ៊ីនធឺណិត​ផ្សេងសម្រាប់​ចូលប្រើ <ph name="TARGET_URL_HOSTNAME" /> ។</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">ប្រើ Chromium Spaces ដើម្បីរៀបចំ​ការរុករករបស់អ្នកនៅលើ​ឧបករណ៍នេះ</translation>
 <translation id="93478295209880648">Chromium អាច​នឹង​​ដំណើរការ​មិន​​ត្រឹមត្រូវ​ ដោយសារ​វា​មិន​អាចប្រើ​បាន​នៅលើ Windows XP ឬ Windows Vista ទៀត​ឡើយ។</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> តម្រូវឲ្យអ្នកអាន និងទទួលលក្ខខណ្ឌសេវាកម្មខាងក្រោម មុនពេលប្រើឧបករណ៍នេះ។ លក្ខខណ្ឌនេះមិនបន្ថែម កែសម្រួល ឬកំណត់ដោយលក្ខខណ្ឌ Chromium OS ទេ។</translation>
 <translation id="985602178874221306">ផលិតករ Chromium</translation>

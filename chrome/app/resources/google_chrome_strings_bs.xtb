@@ -81,6 +81,7 @@ Neke funkcije možda neće biti dostupne i promjene postavki se neće sačuvati.
 <translation id="3089968997497233615">Dostupna je nova, sigurnija verzija Google Chromea.</translation>
 <translation id="3127818369811890733">Chrome OS nije uspio sinhronizirati vaše podatke.</translation>
 <translation id="3149510190863420837">Chrome aplikacije</translation>
+<translation id="3351117925998652957">Odaberite Chrome prostor</translation>
 <translation id="3360895254066713204">Pomoćnik za Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome će se sada ponovo pokrenuti}=1{Chrome će se ponovo pokrenuti za 1 sekundu}one{Chrome će se ponovo pokrenuti za # sekundu}few{Chrome će se ponovo pokrenuti za # sekunde}other{Chrome će se ponovo pokrenuti za # sekundi}}</translation>
 <translation id="3395323229510056640">Potražite pomoć za Chrome OS</translation>
@@ -211,6 +212,7 @@ Moguće je da neke funkcije neće biti dostupne. Odredite drugi direktorij profi
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Da vidite je li vaš uređaj ažuriran, idite u <ph name="LINK_BEGIN" />Postavke Chrome OS-a<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Ovaj računar neće više primati ažuriranja za Google Chrome jer Mac OS X 10.9 nije više podržan.</translation>
+<translation id="7591404275842302616">Koristite Chrome prostore da organizirate svoje pregledanje na ovom uređaju</translation>
 <translation id="7592736734348559088">Google Chrome nije mogao sinhronizirati vaše podatke jer su detalji za prijavu na vaš račun zastarjeli.</translation>
 <translation id="7626032353295482388">Dobro došli u Chrome</translation>
 <translation id="7629695634924605473">Chrome vas obavještava ako sigurnost vaših lozinki bude ugrožena</translation>

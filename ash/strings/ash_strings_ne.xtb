@@ -111,7 +111,7 @@
 <translation id="2222338659135520253">साइन इन गर्न आवश्यक छ</translation>
 <translation id="225680501294068881">उपकरणहरूको लागि स्क्यान गर्दै ...</translation>
 <translation id="2268130516524549846">ब्लुतुथ असक्षम गरियो</translation>
-<translation id="2268813581635650749">सबैलाई साइन आउट गर्नुहोस्</translation>
+<translation id="2268813581635650749">सबै साइन आउट गर्नु…</translation>
 <translation id="2277103315734023688">अगाडि जानुहोस्</translation>
 <translation id="2292698582925480719">प्रदर्शनको अनुपात</translation>
 <translation id="229397294990920565">मोबाइल डेटा अफ गरिँदै छ...</translation>
@@ -153,7 +153,7 @@
 <translation id="2704781753052663061">अन्य Wi-Fi नेटवर्कहरूमा सामेल हुनुहोस्</translation>
 <translation id="2705001408393684014">माइक टगल गर्नुहोस्। <ph name="STATE_TEXT" /></translation>
 <translation id="2706462751667573066">माथि</translation>
-<translation id="2718395828230677721">रात्रि प्रकाश</translation>
+<translation id="2718395828230677721">रात्रिकालीन प्रकाश</translation>
 <translation id="2727977024730340865">कम शक्ति भएको चार्जरमा प्लग इन गरिएको छ। ब्याट्री चार्जिङ भरपर्दो नहुन सक्छ।</translation>
 <translation id="2792498699870441125">Alt + खोज</translation>
 <translation id="2819276065543622893">तपाइँलाई अब साइन आउट गराइनेछ।</translation>
@@ -276,7 +276,7 @@
 <translation id="4028481283645788203">थप सुरक्षाका लागि पासवर्ड चाहिन्छ</translation>
 <translation id="4032485810211612751"><ph name="HOURS" /> : <ph name="MINUTES" /> : <ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">तपाईं आफ्नो स्क्रिन आदान प्रदान गर्दै हुनुहुन्छ</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{एउटा अनुप्रयोगमा निष्क्रिय}other{# एपहरूमा निष्क्रिय}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{एउटा एपमा अफ}other{# एपमा अफ}}</translation>
 <translation id="4072264167173457037">मध्यम सिग्नल</translation>
 <translation id="4112140312785995938">पछाडि जानुहोस्</translation>
 <translation id="4129129681837227511">आफ्नो लक स्क्रिनमा सूचनाहरू हेर्नका लागि सेटिङहरू परिवर्तन गर्न अनलक गर्नुहोस्</translation>
@@ -384,7 +384,7 @@
 <translation id="5496819745535887422">तपाईंको प्रशासकले तपाईंको यन्त्रलाई पहिलेको स्थितिमा फर्काउँदै हुनुहुन्छ। यन्त्र पुनः सुरु हुँदा सबै डेटा मेटाइने छ।</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">सत्रबाट बाहिर जाँदै</translation>
-<translation id="5537725057119320332">कास्ट</translation>
+<translation id="5537725057119320332">कास्ट गर्नु</translation>
 <translation id="5548285847212963613">विस्तार "<ph name="EXTENSION_NAME" />" ले यो नेटवर्कमा जडान गर्न मद्दत गर्न सक्छ।</translation>
 <translation id="554893713779400387">श्रुतिलेखन सुविधा टगल गर्नुहोस्</translation>
 <translation id="556042886152191864">बटन</translation>
@@ -413,7 +413,7 @@
 <translation id="5895138241574237353">पुन: शुरू गर्नुहोस्</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
-<translation id="5916664084637901428">खुल्ला</translation>
+<translation id="5916664084637901428">अन</translation>
 <translation id="5920710855273935292">माइक म्युट गरिएको छ।</translation>
 <translation id="5947494881799873997">उल्टाउनुहोस्</translation>
 <translation id="595202126637698455">प्रदर्शन ट्रेसिङ सक्षम गरियो</translation>
@@ -421,7 +421,7 @@
 <translation id="5958529069007801266">सुपरिवेक्षित प्रयोगकर्ता</translation>
 <translation id="5977415296283489383">हेडफोन</translation>
 <translation id="5978382165065462689">रिमोट सहायता मार्फत तपाईँको स्क्रीन नियन्त्रण साझेदारी गर्दै।</translation>
-<translation id="5980301590375426705">अतिथि निकास</translation>
+<translation id="5980301590375426705">अतिथि सत्रबाट निस्कनु…</translation>
 <translation id="598882571027504733">अद्यावधिक प्राप्त गर्न, उक्त किबोर्ड जोडिएकै अवस्थामा आफ्नो Chromebook पुनः सुरु गर्नुहोस्।</translation>
 <translation id="5992218262414051481">उच्च कन्ट्रास्ट मोड सक्षम गरिएको छ। यसलाई टगल गर्दै निष्क्रिय पार्न फेरि Ctrl+Search+H थिच्नुहोस्।</translation>
 <translation id="6018164090099858612">मिरर मोडबाट बाहिर निस्कँदै</translation>
@@ -511,7 +511,7 @@
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> मा फर्केर आउनुहोस्।</translation>
 <translation id="7025533177575372252">तपाईंको <ph name="DEVICE_NAME" /> लाई आफ्नो फोनसँग जोड्नुहोस्</translation>
 <translation id="7026338066939101231">घटाई</translation>
-<translation id="7029814467594812963">निकास सत्र</translation>
+<translation id="7029814467594812963">सत्रबाट निस्कनु…</translation>
 <translation id="703425375924687388"><ph name="QUERY_NAME" />, Google सहायक</translation>
 <translation id="7042322267639375032">वस्तुस्थिति देखाउने क्षेत्र संक्षिप्त गर्नुहोस्</translation>
 <translation id="7066646422045619941">यस नेटवर्कलाई तपाईंको प्रशासकद्वारा असक्षम गरिएको छ।</translation>
@@ -598,7 +598,7 @@
 <translation id="8054466585765276473">ब्याटरि समय हिसाब गर्दै।</translation>
 <translation id="8061464966246066292">उच्च कन्ट्रास्ट</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> मा स्क्रिन casting गर्ने काम रोक्नुहोस्</translation>
-<translation id="8113423164597455979">सबै यन्त्रहरूमा सक्रिय</translation>
+<translation id="8113423164597455979">सबै यन्त्रमा अन</translation>
 <translation id="8131740175452115882">निश्चित</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> मा जडित</translation>
 <translation id="813913629614996137">सुरुवात गर्दै...</translation>

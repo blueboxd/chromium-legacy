@@ -287,6 +287,10 @@ void It2MeNativeMessagingHost::ProcessConnect(
           },
           username, access_token);
 
+      register_host_request =
+          std::make_unique<RemotingRegisterSupportHostRequest>(
+              std::make_unique<PassthroughOAuthTokenGetter>(username,
+                                                            access_token));
       log_to_server = std::make_unique<RemotingLogToServer>(
           ServerLogEntry::IT2ME, std::make_unique<PassthroughOAuthTokenGetter>(
                                      username, access_token));

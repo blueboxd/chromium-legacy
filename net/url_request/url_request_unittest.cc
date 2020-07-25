@@ -11634,9 +11634,9 @@ TEST_F(URLRequestTestHTTP, HeadersCallbacks) {
     std::unique_ptr<URLRequest> r(context.CreateRequest(
         url, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
     r->SetExtraRequestHeaders(extra_headers);
-    r->SetRequestHeadersCallback(base::Bind(
+    r->SetRequestHeadersCallback(base::BindRepeating(
         &HttpRawRequestHeaders::Assign, base::Unretained(&raw_req_headers)));
-    r->SetResponseHeadersCallback(base::Bind(
+    r->SetResponseHeadersCallback(base::BindRepeating(
         [](scoped_refptr<const HttpResponseHeaders>* left,
            scoped_refptr<const HttpResponseHeaders> right) { *left = right; },
         base::Unretained(&raw_resp_headers)));
@@ -11659,11 +11659,11 @@ TEST_F(URLRequestTestHTTP, HeadersCallbacks) {
     std::unique_ptr<URLRequest> r(context.CreateRequest(
         url, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
     r->SetExtraRequestHeaders(extra_headers);
-    r->SetRequestHeadersCallback(base::Bind([](HttpRawRequestHeaders) {
+    r->SetRequestHeadersCallback(base::BindRepeating([](HttpRawRequestHeaders) {
       FAIL() << "Callback should not be called unless request is sent";
     }));
     r->SetResponseHeadersCallback(
-        base::Bind([](scoped_refptr<const HttpResponseHeaders>) {
+        base::BindRepeating([](scoped_refptr<const HttpResponseHeaders>) {
           FAIL() << "Callback should not be called unless request is sent";
         }));
     r->set_isolation_info(isolation_info1_);
@@ -11686,9 +11686,9 @@ TEST_F(URLRequestTestHTTP, HeadersCallbacksWithRedirect) {
   std::unique_ptr<URLRequest> r(default_context().CreateRequest(
       url, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   r->SetExtraRequestHeaders(extra_headers);
-  r->SetRequestHeadersCallback(base::Bind(&HttpRawRequestHeaders::Assign,
-                                          base::Unretained(&raw_req_headers)));
-  r->SetResponseHeadersCallback(base::Bind(
+  r->SetRequestHeadersCallback(base::BindRepeating(
+      &HttpRawRequestHeaders::Assign, base::Unretained(&raw_req_headers)));
+  r->SetResponseHeadersCallback(base::BindRepeating(
       [](scoped_refptr<const HttpResponseHeaders>* left,
          scoped_refptr<const HttpResponseHeaders> right) { *left = right; },
       base::Unretained(&raw_resp_headers)));
@@ -11728,11 +11728,12 @@ TEST_F(URLRequestTest, HeadersCallbacksConnectFailed) {
   std::unique_ptr<URLRequest> r(default_context().CreateRequest(
       GURL("http://127.0.0.1:9/"), DEFAULT_PRIORITY, &request_delegate,
       TRAFFIC_ANNOTATION_FOR_TESTS));
-  r->SetRequestHeadersCallback(base::Bind([](net::HttpRawRequestHeaders) {
-    FAIL() << "Callback should not be called unless request is sent";
-  }));
+  r->SetRequestHeadersCallback(
+      base::BindRepeating([](net::HttpRawRequestHeaders) {
+        FAIL() << "Callback should not be called unless request is sent";
+      }));
   r->SetResponseHeadersCallback(
-      base::Bind([](scoped_refptr<const net::HttpResponseHeaders>) {
+      base::BindRepeating([](scoped_refptr<const net::HttpResponseHeaders>) {
         FAIL() << "Callback should not be called unless request is sent";
       }));
   r->Start();
@@ -11758,12 +11759,12 @@ TEST_F(URLRequestTestHTTP, HeadersCallbacksAuthRetry) {
       std::vector<scoped_refptr<const HttpResponseHeaders>>;
   RespHeadersVector raw_resp_headers;
 
-  auto req_headers_callback = base::Bind(
+  auto req_headers_callback = base::BindRepeating(
       [](ReqHeadersVector* vec, HttpRawRequestHeaders headers) {
         vec->emplace_back(new HttpRawRequestHeaders(std::move(headers)));
       },
       &raw_req_headers);
-  auto resp_headers_callback = base::Bind(
+  auto resp_headers_callback = base::BindRepeating(
       [](RespHeadersVector* vec,
          scoped_refptr<const HttpResponseHeaders> headers) {
         vec->push_back(headers);

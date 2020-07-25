@@ -1462,7 +1462,7 @@ TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsOnShutdown) {
 
   int pref_updates = 0;
   pref_delegate_->set_extra_update_prefs_callback(
-      base::Bind([](int* updates) { (*updates)++; }, &pref_updates));
+      base::BindRepeating([](int* updates) { (*updates)++; }, &pref_updates));
   http_server_props_.reset();
   EXPECT_EQ(1, pref_updates);
 }

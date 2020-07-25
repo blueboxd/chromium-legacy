@@ -26,6 +26,7 @@
 <translation id="1209206284964581585">अभी छिपाएं</translation>
 <translation id="1219674500290482172">इंटरनेट से कनेक्‍ट होने में असमर्थ.</translation>
 <translation id="122699739164161391">सभी टैब बंद करें</translation>
+<translation id="1229222343402087523">Chrome में ${searchPhrase} खोजें</translation>
 <translation id="1231733316453485619">क्या सिंक करना चालू करें?</translation>
 <translation id="1254117744268754948">फ़ोल्डर चुनें</translation>
 <translation id="1265739287306757398">तरीका जानें</translation>
@@ -243,7 +244,7 @@
 <translation id="3783017676699494206">इमेज सेव करें</translation>
 <translation id="3789841737615482174">इंस्‍टॉल करें</translation>
 <translation id="3803696231112616155">इस साइट का अनुवाद करने के लिए पूछें</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{कोई पासवर्ड न तो हैक हुआ है और न ही चोरी हुआ है}=1{{COUNT} पासवर्ड हैक या चोरी हुआ है}one{{COUNT} पासवर्ड हैक या चोरी हुआ है}other{{COUNT} पासवर्ड हैक या चोरी हुए हैं}}</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{कोई पासवर्ड हैक नहीं हुआ है}=1{{COUNT} पासवर्ड हैक हुआ है}one{{COUNT} पासवर्ड हैक हुआ है}other{{COUNT} पासवर्ड हैक हुए हैं}}</translation>
 <translation id="385051799172605136">वापस</translation>
 <translation id="3892144330757387737">आपको अपनी गतिविधि का इतिहास यहां मिलेगा</translation>
 <translation id="3897092660631435901">मेन्यू</translation>

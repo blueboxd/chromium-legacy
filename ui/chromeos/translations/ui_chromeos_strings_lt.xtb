@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Akiniai nuo saulės</translation>
 <translation id="115443833402798225">Hangul Ahnmatae</translation>
 <translation id="1155759005174418845">Katalonų</translation>
+<translation id="1172970565351728681">Liko maždaug <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">Pervadinti</translation>
 <translation id="117624967391683467">Kopijuojamas failas „<ph name="FILE_NAME" />“...</translation>
 <translation id="1178581264944972037">Pristabdyti</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Nuosavybės teisė bus perkelta <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">Airių</translation>
 <translation id="3245321423178950146">Nežinomas atlikėjas</translation>
+<translation id="3248185426436836442">Laukiama</translation>
 <translation id="3252266817569339921">Prancūzų</translation>
 <translation id="3254434849914415189">Keisti numatytąją <ph name="FILE_TYPE" /> failų programą:</translation>
 <translation id="3264582393905923483">Kontekstas</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Neturite leidimo perkelti failų į aplanką „<ph name="FOLDER_NAME" />“.</translation>
 <translation id="3786301125658655746">Esate neprisijungę</translation>
 <translation id="3789841737615482174">Įdiegti</translation>
+<translation id="3793469551756281394">Liko maždaug <ph name="REMAINING_TIME_HOUR" /> ir <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">Versija</translation>
 <translation id="3801082500826908679">Farerų</translation>
 <translation id="3809272675881623365">Triušis</translation>

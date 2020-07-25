@@ -64,7 +64,8 @@ class LiteVideoObserver
       base::Optional<lite_video::LiteVideoHint> hint) const;
 
   // Records the metrics for LiteVideos applied to any frames associated with
-  // the current mainframe navigation id. Called once per frame.
+  // the current mainframe navigation id. Called once per frame. Also, called
+  // for frames in the same document navigations.
   void RecordUKMMetrics(lite_video::LiteVideoDecision decision,
                         lite_video::LiteVideoBlocklistReason blocklist_reason);
 
@@ -81,6 +82,9 @@ class LiteVideoObserver
   // |is_coinflip_holdback_| is updated each time a mainframe navigation
   // commits.
   bool is_coinflip_holdback_ = false;
+
+  // True if the main frame was not eligible for LiteVideo.
+  bool ineligible_main_frame_ = false;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

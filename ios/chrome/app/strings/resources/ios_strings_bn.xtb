@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> থেকে <ph name="TARGET_LANGUAGE" />-এ</translation>
 <translation id="168715261339224929">সব ডিভাইসে আপনার বুকমার্ক পেতে সিঙ্ক চালু করুন।</translation>
 <translation id="1687475363370981210">সমস্ত পঠিত হিসেবে চিহ্নিত করুন</translation>
+<translation id="1689333818294560261">বিশেষ নাম</translation>
 <translation id="1690731385917361335">কোনো আইটেম নেই</translation>
 <translation id="1692118695553449118">সিঙ্ক চালু রয়েছে</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />টি নির্বাচিত</translation>
@@ -207,6 +208,7 @@
 <translation id="3335947283844343239">বন্ধ হওয়া ট্যাব আবার খুলুন</translation>
 <translation id="3371831930909698441">অনুবাদ পাওয়া যাচ্ছে। স্ক্রিনের একটু নিচের দিকে বিকল্পগুলি দেওয়া আছে।</translation>
 <translation id="3393920035788932672">মঞ্জুরিপ্রাপ্ত পপ-আপ</translation>
+<translation id="3425644765244388016">কার্ডের বিশেষ নাম</translation>
 <translation id="3443810440409579745">ট্যাব পাওয়া গেছে।</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> মিনিট</translation>
 <translation id="3448016392200048164">বিভক্ত দৃশ্য</translation>
@@ -241,6 +243,7 @@
 <translation id="3783017676699494206">ছবি সেভ করুন</translation>
 <translation id="3789841737615482174">ইনস্টল করুন</translation>
 <translation id="3803696231112616155">এই সাইট অনুবাদ করার প্রস্তাব দিন</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{কোনও পাসওয়ার্ড চুরি যায়নি}=1{{COUNT}টি পাসওয়ার্ড চুরি গেছে}one{{COUNT}টি পাসওয়ার্ড চুরি গেছে}other{{COUNT}টি পাসওয়ার্ড চুরি গেছে}}</translation>
 <translation id="385051799172605136">ফিরুন</translation>
 <translation id="3892144330757387737">আপনি এখানে আপনার ইতিহাস দেখতে পাবেন</translation>
 <translation id="3897092660631435901">মেনু</translation>
@@ -531,6 +534,7 @@
 <translation id="7189598951263744875">শেয়ার করুন...</translation>
 <translation id="7192050974311852563">লগ করা শুরু করুন</translation>
 <translation id="7203585745079012652">আবার উত্তরগুলি বলে</translation>
+<translation id="721597782417389033">কার্ডের বিশেষ নামটি সঠিক নয়</translation>
 <translation id="7265758999917665941">এই সাইটের জন্য কখনই নয়</translation>
 <translation id="7272437679830969316">আপনার পরিচয় যাচাই করা যাবে না। পাসওয়ার্ড কপি করা হয়নি।</translation>
 <translation id="7291368939935408496">পাসওয়ার্ড তৈরি করা হচ্ছে...</translation>

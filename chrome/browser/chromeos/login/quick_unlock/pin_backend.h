@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "chromeos/login/auth/key.h"
+#include "components/prefs/pref_service.h"
 
 class AccountId;
 class Profile;
@@ -57,6 +58,13 @@ class PinBackend {
            const std::string& pin,
            BoolCallback did_set);
 
+  // Set the state of PIN auto submit for the given user. Called when enabling
+  // auto submit through the confirmation dialog in Settings.
+  void SetPinAutoSubmitEnabled(const AccountId& account_id,
+                               const std::string& pin,
+                               const bool enabled,
+                               BoolCallback did_set);
+
   // Remove the given user's PIN.
   void Remove(const AccountId& account_id,
               const std::string& auth_token,
@@ -80,6 +88,11 @@ class PinBackend {
   // Resets any cached state for testing purposes.
   static void ResetForTesting();
 
+  // Interface for the lock/login screen to access the user's PIN length.
+  // Ensures that the UI is always consistent with the pref values without the
+  // need for individual observers.
+  int GetExposedPinLength(const AccountId& account_id);
+
  private:
   // Called when we know if the cryptohome supports PIN.
   void OnIsCryptohomeBackendSupported(bool is_supported);
@@ -87,6 +100,42 @@ class PinBackend {
   // Called when a migration attempt has completed. If |success| is true the PIN
   // should be cleared from prefs.
   void OnPinMigrationAttemptComplete(Profile* profile, bool success);
+
+  // Actions to be performed after an authentication attempt with Cryptohome.
+  // The only use case right now is for PIN auto submit, where we might want to
+  // expose the PIN length upon a successful attempt.
+  void OnCryptohomeAuthenticationResponse(const AccountId& account_id,
+                                          const Key& key,
+                                          BoolCallback result,
+                                          bool success);
+
+  // Called after checking the user's PIN when enabling auto submit.
+  // If the authentication was |success|ful, the |pin_length| will be
+  // exposed in local state.
+  void OnPinAutosubmitCheckComplete(const AccountId& account_id,
+                                    size_t pin_length,
+                                    BoolCallback result,
+                                    bool success);
+
+  // Help method for working with the PIN auto submit preference.
+  PrefService* PrefService(const AccountId& account_id);
+
+  // Simple operations to be performed for PIN auto submit during the common
+  // operations in PinBackend - Set, Remove, TryAuthenticate
+
+  // When setting/updating a PIN. After every 'Set' operation the
+  // exposed length can only be either the true PIN length, or zero.
+  void UpdatePinAutosubmitOnSet(const AccountId& account_id, size_t pin_length);
+
+  // Clears the exposed PIN length and resets the user setting.
+  void UpdatePinAutosubmitOnRemove(const AccountId& account_id);
+
+  // A successful authentication attempt will expose the pin length. This is
+  // necessary when the preference is being set by policy. When the pref is
+  // being controlled by the user -- through Settings --, the length is exposed
+  // through a confirmation dialog immediately.
+  void UpdatePinAutosubmitOnSuccessfulTryAuth(const AccountId& account_id,
+                                              size_t pin_length);
 
   // True if still trying to determine which backend should be used.
   bool resolving_backend_ = true;

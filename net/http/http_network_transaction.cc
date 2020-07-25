@@ -514,8 +514,8 @@ void HttpNetworkTransaction::SetWebSocketHandshakeStreamCreateHelper(
 }
 
 void HttpNetworkTransaction::SetBeforeNetworkStartCallback(
-    const BeforeNetworkStartCallback& callback) {
-  before_network_start_callback_ = callback;
+    BeforeNetworkStartCallback callback) {
+  before_network_start_callback_ = std::move(callback);
 }
 
 void HttpNetworkTransaction::SetConnectedCallback(
@@ -802,7 +802,7 @@ int HttpNetworkTransaction::DoNotifyBeforeCreateStream() {
   next_state_ = STATE_CREATE_STREAM;
   bool defer = false;
   if (!before_network_start_callback_.is_null())
-    before_network_start_callback_.Run(&defer);
+    std::move(before_network_start_callback_).Run(&defer);
   if (!defer)
     return OK;
   return ERR_IO_PENDING;

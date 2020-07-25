@@ -787,8 +787,8 @@ TransportSecurityState::CheckPinsAndMaybeSendReport(
           base::TimeDelta::FromMinutes(kTimeToRememberReportsMins));
 
   report_sender_->Send(pkp_state.report_uri, "application/json; charset=utf-8",
-                       serialized_report, base::Callback<void()>(),
-                       base::Bind(RecordUMAForHPKPReportFailure));
+                       serialized_report, base::OnceCallback<void()>(),
+                       base::BindOnce(RecordUMAForHPKPReportFailure));
   return PKPStatus::VIOLATED;
 }
 

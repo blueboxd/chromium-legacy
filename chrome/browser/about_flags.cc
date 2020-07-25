@@ -2130,6 +2130,21 @@ const FeatureEntry::Choice kFrameThrottleFpsChoices[] = {
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
+// The variations of --password-change-in-settings.
+const FeatureEntry::FeatureParam
+    kPasswordChangeInSettingsVariationWithForcedWarningForEverySite[] = {
+        {password_manager::features::
+             kPasswordChangeInSettingsWithForcedWarningForEverySite,
+         "true"}};
+
+const FeatureEntry::FeatureVariation
+    kPasswordChangeInSettingsFeatureVariations[] = {
+        {"Force leak warnings for every site in settings.",
+         kPasswordChangeInSettingsVariationWithForcedWarningForEverySite,
+         base::size(
+             kPasswordChangeInSettingsVariationWithForcedWarningForEverySite),
+         nullptr}};
+
 // The variations of --password-change-support.
 const FeatureEntry::FeatureParam
     kPasswordChangeVariationWithForcedDialogAfterEverySuccessfulSubmission[] = {
@@ -5808,11 +5823,18 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
+    {"password-change-in-settings",
+     flag_descriptions::kPasswordChangeInSettingsName,
+     flag_descriptions::kPasswordChangeInSettingsDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         password_manager::features::kPasswordChangeInSettings,
+         kPasswordChangeInSettingsFeatureVariations,
+         "PasswordChangeInSettingsFeatureVariations")},
     {"password-change-support", flag_descriptions::kPasswordChangeName,
      flag_descriptions::kPasswordChangeDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(password_manager::features::kPasswordChange,
                                     kPasswordChangeFeatureVariations,
-                                    "PasswordChangeFeatureVariations.")},
+                                    "PasswordChangeFeatureVariations")},
 
     {"context-menu-performance-info-and-remote-hints-fetching",
      flag_descriptions::kContextMenuPerformanceInfoAndRemoteHintFetchingName,
@@ -6207,9 +6229,15 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
     return true;
   }
 
+#if defined(OS_ANDROID)
+  if (!strcmp("password-change-in-settings", entry.internal_name)) {
+    return !base::FeatureList::IsEnabled(features::kTeamfoodFlags);
+  }
+
   if (!strcmp("password-change-support", entry.internal_name)) {
     return !base::FeatureList::IsEnabled(features::kTeamfoodFlags);
   }
+#endif  // OS_ANDROID
 
   if (flags::IsFlagExpired(entry.internal_name))
     return true;

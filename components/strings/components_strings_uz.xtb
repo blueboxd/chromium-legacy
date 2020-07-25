@@ -560,6 +560,9 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="3364869320075768271"><ph name="URL" /> virtual reallik qurilmangiz va uning maʼlumotlaridan foydalanmoqchi</translation>
 <translation id="3366477098757335611">Kartalarni ko‘rish</translation>
 <translation id="3369192424181595722">Soat xatoligi</translation>
+<translation id="3371076217486966826"><ph name="URL" /> sayti quyidagi amallarga ruxsat olmoqchi:
+      • Atrofingiz 3D xaritasini yaratish yoki kamera holatini kuzatish
+      • Kameradan foydalanish</translation>
 <translation id="337363190475750230">O‘chirib qo‘yilgan</translation>
 <translation id="3377144306166885718">Server eskirgan TLS versiyasidan foydalanadi.</translation>
 <translation id="3377188786107721145">Siyosatni tekshirib chiqish vaqtida xatolik yuz berdi</translation>
@@ -1556,6 +1559,7 @@ Batafsil axborot:
 <translation id="7518003948725431193">Bu manzilda hech qanday veb-sahifa topilmadi: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Envelope)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">“<ph name="SECTION" />” bandi yopiq</translation>
 <translation id="7526934274050461096">Bu saytga ulanish himoyalanmagan.</translation>
 <translation id="7535087603100972091">Qiymat</translation>
 <translation id="7537536606612762813">Majburiy</translation>
@@ -1756,6 +1760,7 @@ Batafsil axborot:
 <translation id="8293206222192510085">Xatcho‘p qo‘shish</translation>
 <translation id="8294431847097064396">Manba</translation>
 <translation id="8298115750975731693">Siz ulangan Wi-Fi (<ph name="WIFI_NAME" />) tarmog‘idan foydalanish uchun <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> sahifaga o‘tish talab qilinishi mumkin.</translation>
+<translation id="8303854710873047864">“<ph name="SECTION" />” bandini ochiq</translation>
 <translation id="830498451218851433">Yarim taxlash</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Oʻrnatilgan ilovalar va ularning qanday ishlatilishi</translation>
@@ -1875,6 +1880,7 @@ Batafsil axborot:
 <translation id="8931333241327730545">Ushbu karta Google hisobingizda saqlansinmi?</translation>
 <translation id="8932102934695377596">Soatingiz orqada</translation>
 <translation id="893332455753468063">Ism qo‘shing</translation>
+<translation id="8942355029279167844">Mahsulot sifatini yaxshilash maqsadida <ph name="APP_NAME" /> diagnostika maʼlumotlarini jamlashiga Administrator tomonidan ruxsat berildi. Batafsil: <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />.</translation>
 <translation id="8943282376843390568">Laym</translation>
 <translation id="8957210676456822347">Tegishli portalga kirish</translation>
 <translation id="8962950042226115166">Shubhali sayt</translation>

@@ -3047,6 +3047,7 @@ void LayerTreeHostImpl::DidLoseLayerTreeFrameSink() {
     return;
   has_valid_layer_tree_frame_sink_ = false;
   client_->DidLoseLayerTreeFrameSinkOnImplThread();
+  lag_tracking_manager_.Clear();
 }
 
 bool LayerTreeHostImpl::ShouldPinTopControlsToContentTop() const {

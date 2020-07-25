@@ -322,9 +322,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAuthServerWhitelist,
     prefs::kAuthServerWhitelist,
     base::Value::Type::STRING },
-  { key::kAuthNegotiateDelegateWhitelist,
-    prefs::kAuthNegotiateDelegateWhitelist,
-    base::Value::Type::STRING },
   { key::kGSSAPILibraryName,
     prefs::kGSSAPILibraryName,
     base::Value::Type::STRING },
@@ -1440,6 +1437,14 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<RestoreOnStartupPolicyHandler>());
   handlers->AddHandler(
       std::make_unique<safe_browsing::SafeBrowsingPolicyHandler>());
+  handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
+      std::make_unique<SimplePolicyHandler>(
+          key::kAuthNegotiateDelegateWhitelist,
+          prefs::kAuthNegotiateDelegateAllowlist, base::Value::Type::STRING),
+      std::make_unique<SimplePolicyHandler>(
+          key::kAuthNegotiateDelegateAllowlist,
+          prefs::kAuthNegotiateDelegateAllowlist, base::Value::Type::STRING)));
+
   handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
       std::make_unique<SimplePolicyHandler>(
           key::kSafeBrowsingWhitelistDomains,

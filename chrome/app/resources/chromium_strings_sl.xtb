@@ -224,6 +224,7 @@ Chromium ne more obnoviti vaših nastavitev.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Chromium znova zaženite v enem dnevu}one{Chromium znova zaženite v # dnevu}two{Chromium znova zaženite v # dnevih}few{Chromium znova zaženite v # dnevih}other{Chromium znova zaženite v # dnevih}}</translation>
 <translation id="8453117565092476964">Arhiv namestitvenega programa je poškodovan ali neveljaven. Znova prenesite Chromium.</translation>
 <translation id="8493179195440786826">Chromium je zastarel</translation>
+<translation id="8545858702702650646">Izbira prostora v Chromiumu</translation>
 <translation id="8558383651099478961">Tvoj starš je izklopil »Dovoljenja za spletna mesta, aplikacije in razširitve« za Chromium. Dodajanje tega ni dovoljeno: <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8568283329061645092">Chromium lahko preveri vaša gesla, ko se prijavite z računom Google</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Ustvarjalci Chromiuma. Vse pravice pridržane.</translation>
@@ -247,6 +248,7 @@ Chromium ne more obnoviti vaših nastavitev.</translation>
 <translation id="911206726377975832">Ali želite izbrisati tudi podatke brskanja?</translation>
 <translation id="9158494823179993217">Skrbnik sistema je Chromium nastavil tako, da za dostop do <ph name="TARGET_URL_HOSTNAME" /> odpre drug brskalnik.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Uporabite prostore v Chromiumu za organizirano brskanje v tej napravi</translation>
 <translation id="93478295209880648">Chromium morda ne bo deloval pravilno, ker ni več podprt v sistemu Windows XP ali Windows Vista</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> zahteva, da preberete in sprejmete pogoje storitve, preden začnete uporabljati napravo. Ti pogoji ne dopolnjujejo, spreminjajo ali omejujejo pogojev za Chromium OS.</translation>
 <translation id="985602178874221306">Ustvarjalci Chromiuma</translation>

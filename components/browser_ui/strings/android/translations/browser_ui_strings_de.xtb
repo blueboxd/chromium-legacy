@@ -243,7 +243,7 @@
 <translation id="8609465669617005112">Nach oben</translation>
 <translation id="8676374126336081632">Eingabe löschen</translation>
 <translation id="8702612070107455751">Alle Offlinedaten werden gelöscht.</translation>
-<translation id="8719283222052720129">Aktivieren Sie die Berechtigung für <ph name="APP_NAME" /> in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" />.</translation>
+<translation id="8719283222052720129">Die Berechtigung für <ph name="APP_NAME" /> kann in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktiviert werden.</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="8730621377337864115">Fertig</translation>
 <translation id="8737217482364735741">Dadurch werden alle von <ph name="ORIGIN" /> gespeicherten Daten und Cookies gelöscht.</translation>
@@ -259,7 +259,7 @@
 <translation id="8959122750345127698">Navigation nicht möglich: <ph name="URL" /> ist nicht erreichbar.</translation>
 <translation id="9019902583201351841">Von deinen Eltern verwaltet</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
-<translation id="913657688200966289">Aktivieren Sie die Berechtigungen für <ph name="APP_NAME" /> in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" />.</translation>
+<translation id="913657688200966289">Die Berechtigungen für <ph name="APP_NAME" /> können in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktiviert werden.</translation>
 <translation id="945632385593298557">Mikrofonzugriff</translation>
 <translation id="965817943346481315">Blockieren, wenn Website aufdringliche oder irreführende Werbung anzeigt (empfohlen)</translation>
 </translationbundle>

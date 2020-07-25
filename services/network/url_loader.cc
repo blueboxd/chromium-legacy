@@ -1155,6 +1155,44 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     return;
   }
 
+  response_ = network::mojom::URLResponseHead::New();
+  PopulateResourceResponse(
+      url_request_.get(), is_load_timing_enabled_,
+      options_ & mojom::kURLLoadOptionSendSSLInfoWithResponse, response_.get());
+  if (report_raw_headers_) {
+    response_->raw_request_response_info = BuildRawRequestResponseInfo(
+        *url_request_, raw_request_headers_, raw_response_headers_.get());
+    raw_request_headers_ = net::HttpRawRequestHeaders();
+    raw_response_headers_ = nullptr;
+  }
+
+  // Parse and remove the Trust Tokens response headers, if any are expected,
+  // potentially failing the request if an error occurs.
+  if (trust_token_helper_) {
+    trust_token_helper_->Finalize(
+        response_.get(),
+        base::BindOnce(&URLLoader::OnDoneFinalizingTrustTokenOperation,
+                       weak_ptr_factory_.GetWeakPtr()));
+    // |this| may have been deleted.
+    return;
+  }
+
+  ContinueOnResponseStarted();
+}
+
+void URLLoader::OnDoneFinalizingTrustTokenOperation(
+    mojom::TrustTokenOperationStatus status) {
+  trust_token_status_ = status;
+
+  if (status != mojom::TrustTokenOperationStatus::kOk) {
+    NotifyCompleted(net::ERR_TRUST_TOKEN_OPERATION_FAILED);
+    // |this| may have been deleted.
+    return;
+  }
+  ContinueOnResponseStarted();
+}
+
+void URLLoader::ContinueOnResponseStarted() {
   MojoCreateDataPipeOptions options;
   options.struct_size = sizeof(MojoCreateDataPipeOptions);
   options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
@@ -1178,17 +1216,6 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   if (upload_progress_tracker_) {
     upload_progress_tracker_->OnUploadCompleted();
     upload_progress_tracker_ = nullptr;
-  }
-
-  response_ = network::mojom::URLResponseHead::New();
-  PopulateResourceResponse(
-      url_request_.get(), is_load_timing_enabled_,
-      options_ & mojom::kURLLoadOptionSendSSLInfoWithResponse, response_.get());
-  if (report_raw_headers_) {
-    response_->raw_request_response_info = BuildRawRequestResponseInfo(
-        *url_request_, raw_request_headers_, raw_response_headers_.get());
-    raw_request_headers_ = net::HttpRawRequestHeaders();
-    raw_response_headers_ = nullptr;
   }
 
   peer_closed_handle_watcher_.Watch(
@@ -1220,34 +1247,6 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     return;
   }
 
-  // Parse and remove the Trust Tokens response headers, if any are expected,
-  // potentially failing the request if an error occurs.
-  if (trust_token_helper_) {
-    trust_token_helper_->Finalize(
-        response_.get(),
-        base::BindOnce(
-            [](base::WeakPtr<URLLoader> loader, net::URLRequest* request,
-               int net_error, mojom::TrustTokenOperationStatus status) {
-              if (!loader)
-                return;
-              if (status != mojom::TrustTokenOperationStatus::kOk) {
-                loader->trust_token_status_ = status;
-                loader->NotifyCompleted(net::ERR_TRUST_TOKEN_OPERATION_FAILED);
-                // |loader| may have been deleted.
-                return;
-              }
-              loader->ContinueOnResponseStarted(request, net_error);
-            },
-            weak_ptr_factory_.GetWeakPtr(), url_request, net_error));
-    // |this| may have been deleted.
-    return;
-  }
-
-  ContinueOnResponseStarted(url_request, net_error);
-}
-
-void URLLoader::ContinueOnResponseStarted(net::URLRequest* url_request,
-                                          int net_error) {
   // Figure out if we need to sniff (for MIME type detection or for Cross-Origin
   // Read Blocking / CORB).
   if (factory_params_->is_corb_enabled && !is_nocors_corb_excluded_request_) {
@@ -1304,8 +1303,8 @@ void URLLoader::ContinueOnResponseStarted(net::URLRequest* url_request,
     // request of the original URL.
     net::IsolationInfo isolation_info = net::IsolationInfo::Create(
         net::IsolationInfo::RedirectMode::kUpdateNothing,
-        url_request->isolation_info().top_frame_origin().value(),
-        url_request->isolation_info().frame_origin().value(),
+        url_request_->isolation_info().top_frame_origin().value(),
+        url_request_->isolation_info().frame_origin().value(),
         net::SiteForCookies());
     origin_policy_manager_->RetrieveOriginPolicy(
         url::Origin::Create(url_request_->url()), isolation_info,

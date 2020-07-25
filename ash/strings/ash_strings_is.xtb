@@ -8,7 +8,7 @@
 <translation id="1036672894875463507">Ég er Google hjálparinn þinn og er þér til aðstoðar í dag!
 Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> bætt við</translation>
-<translation id="1056775291175587022">Ekkert net í boði</translation>
+<translation id="1056775291175587022">Engin net</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="108486256082349153">Farsímakerfi: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">Mér leiðist</translation>
@@ -347,7 +347,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="490375751687810070">Lóðrétt</translation>
 <translation id="4905614135390995787">Flýtilykli fyrir stillingu með miklum birtuskilum var breytt. Notaðu <ph name="NEW_SHORTCUT" /> í staðinn fyrir <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" />% rafhlaða</translation>
-<translation id="4917385247580444890">Mikill</translation>
+<translation id="4917385247580444890">Sterkt</translation>
 <translation id="4918086044614829423">Samþykkja</translation>
 <translation id="4924411785043111640">Endurræsa og endurstilla</translation>
 <translation id="495046168593986294">Fletta upp</translation>
@@ -586,7 +586,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="7955885781510802139">Mikil birtuskil</translation>
 <translation id="7977927628060636163">Leitar að farsímakerfum...</translation>
 <translation id="7980780401175799550">Prófaðu nýjar leiðir til að nota Chrome OS</translation>
-<translation id="7982789257301363584">Símkerfi</translation>
+<translation id="7982789257301363584">Net</translation>
 <translation id="7984197416080286869">Of margar tilraunir til að nota fingrafar</translation>
 <translation id="7994370417837006925">Innskráning á marga reikninga</translation>
 <translation id="8000066093800657092">Ekkert net</translation>
@@ -598,7 +598,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="8054466585765276473">Reiknar rafhlöðuendingu.</translation>
 <translation id="8061464966246066292">Mikil birtuskil</translation>
 <translation id="8098591350844501178">Hætta að senda skjáinn út í <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">Kveikt, í öllum forritum</translation>
+<translation id="8113423164597455979">Öll forrit</translation>
 <translation id="8131740175452115882">Staðfesta</translation>
 <translation id="8132793192354020517">Tengt við <ph name="NAME" /></translation>
 <translation id="813913629614996137">Frumstillir...</translation>
@@ -617,7 +617,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="826107067893790409">Ýttu á Enter til að opna fyrir <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Eyða</translation>
 <translation id="828708037801473432">Slökkt</translation>
-<translation id="8297006494302853456">Veikur</translation>
+<translation id="8297006494302853456">Veikt</translation>
 <translation id="8308637677604853869">Fyrri valmynd</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Búa til glósu</translation>
@@ -639,7 +639,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> hefur <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Ýttu á Alt+leitarlykil eða Shift til að hætta við.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> styður ekki <ph name="SPECIFIED_RESOLUTION" />. Upplausninni var breytt í <ph name="FALLBACK_RESOLUTION" />. Veldu „Staðfesta“ til að halda breytingum. Fyrri stillingar verða valdar eftir <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="8513108775083588393">Sjálfvirkur snúningur</translation>
+<translation id="8513108775083588393">Snýst sjálft</translation>
 <translation id="8517041960877371778">Ekki er víst að <ph name="DEVICE_TYPE" /> hlaðist á meðan kveikt er á tölvunni.</translation>
 <translation id="8563862697512465947">Tilkynningastillingar</translation>
 <translation id="857201607579416096">Valmynd færð neðst í hægra horn skjásins.</translation>

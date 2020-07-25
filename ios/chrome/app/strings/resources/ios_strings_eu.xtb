@@ -26,6 +26,7 @@
 <translation id="1209206284964581585">Ezkutatu</translation>
 <translation id="1219674500290482172">Ezin da konektatu Internetera.</translation>
 <translation id="122699739164161391">Itxi fitxa guztiak</translation>
+<translation id="1229222343402087523">Bilatu "${searchPhrase}" Chrome-n</translation>
 <translation id="1231733316453485619">Sinkronizazioa aktibatu nahi duzu?</translation>
 <translation id="1254117744268754948">Aukeratu karpeta</translation>
 <translation id="1265739287306757398">Lortu argibideak</translation>
@@ -243,7 +244,7 @@ Ezkutuko moduan zaudenean, webguneek ezin dituzte erabili cookieak beste webgune
 <translation id="3783017676699494206">Gorde irudia</translation>
 <translation id="3789841737615482174">Instalatu</translation>
 <translation id="3803696231112616155">Eskaini webgunea itzultzea</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Ez dago pasahitzik arriskuan}=1{{COUNT} pasahitz dago arriskuan dago}other{{COUNT} pasahitz daude arriskuan daude}}</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Ez dago pasahitzik arriskuan}=1{{COUNT} pasahitz arriskuan dago}other{{COUNT} pasahitz arriskuan daude}}</translation>
 <translation id="385051799172605136">Atzera</translation>
 <translation id="3892144330757387737">Historia aurkituko duzu hemen</translation>
 <translation id="3897092660631435901">Menua</translation>

@@ -564,6 +564,9 @@
 <translation id="3364869320075768271"><ph name="URL" /> က သင်၏ပကတိအသွင်စက်နှင့် ဒေတာများကို အသုံးပြုလိုသည်</translation>
 <translation id="3366477098757335611">ကတ်များကို ကြည့်ရန်</translation>
 <translation id="3369192424181595722">နာရီ အမှား</translation>
+<translation id="3371076217486966826"><ph name="URL" /> သည် -
+      • သင့်ပတ်ဝန်းကျင်၏ 3D မြေပုံ ဖန်တီးလိုပြီး ကင်မရာ တည်နေရာကိုခြေရာခံလိုသည်
+      • သင့်ကင်မရာကို သုံးလိုသည်</translation>
 <translation id="337363190475750230">စီမံဆောင်ရွက်မှု မရှိတော့သော</translation>
 <translation id="3377144306166885718">ဆာဗာက TLS ဗာရှင်းအဟောင်းကို သုံးထားသည်။</translation>
 <translation id="3377188786107721145">မူဝါဒ ဆန်းစစ်မှု အမှား</translation>
@@ -1562,6 +1565,7 @@
 <translation id="7518003948725431193">ဝဘ် လိပ်စာ အတွက် ဝဘ် စာမျက်နှာများကို ရှာမတွေ့ခဲ့ပါ: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (စာအိတ်)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">ကဏ္ဍ "<ph name="SECTION" />" ခု ဝှက်ထားသည်</translation>
 <translation id="7526934274050461096">ဤဝဘ်ဆိုက်သို့ သင့်ချိတ်ဆက်ထားမှုသည် သီးသန့်မဟုတ်ပါ</translation>
 <translation id="7535087603100972091">တန်ဖိုး</translation>
 <translation id="7537536606612762813">မလုပ်မနေရ</translation>
@@ -1762,6 +1766,7 @@
 <translation id="8293206222192510085">စာညှပ် ထည့်ပေးရန်</translation>
 <translation id="8294431847097064396">အရင်းအမြစ်</translation>
 <translation id="8298115750975731693">သင်အသုံးပြုနေသော Wi-Fi ( <ph name="WIFI_NAME" /> ) ၏ login စာမျက်နှာသို့ သင်သွားရောက်ကြည့်ရှုရန် လိုမည်။<ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />။</translation>
+<translation id="8303854710873047864">ကဏ္ဍ "<ph name="SECTION" />" ခု ပြထားသည်</translation>
 <translation id="830498451218851433">တစ်ဝက် ခေါက်ရန်</translation>
 <translation id="8307358339886459768">ဓာတ်ပုံ အသေး</translation>
 <translation id="8307888238279532626">ထည့်သွင်းထားသော အက်ပ်များနှင့် ၎င်းတို့ကို မည်မျှတစ်ကြိမ် အသုံးပြုပုံ</translation>
@@ -1881,6 +1886,7 @@
 <translation id="8931333241327730545">သင့် Google အကောင့်သို့ ဤကဒ်ကိုသိမ်းလိုပါသလား။</translation>
 <translation id="8932102934695377596">သင်၏ နာရီ နောက်ကျနေ</translation>
 <translation id="893332455753468063">အမည် ထည့်သွင်းခြင်း</translation>
+<translation id="8942355029279167844">သင်၏ စီမံခန့်ခွဲသူသည် ထုတ်ကုန်အသုံးပြုမှု ပိုမိုကောင်းမွန်စေရန်အတွက် အမှားရှာပြင်ခြင်းဒေတာများကို စုဆောင်းရန် <ph name="APP_NAME" /> ကို ခွင့်ပြုထားသည်။ နောက်ထပ်အချက်အလက်များအတွက် <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> တွင် ကြည့်ပါ။</translation>
 <translation id="8943282376843390568">သံပုရာ</translation>
 <translation id="8957210676456822347">ထွက်ပေါက်မရှိသော မူလအင်တာနက်စာမျက်နှာ ခွင့်ပြူချက်</translation>
 <translation id="8962950042226115166">သံသယဖြစ်ဖွယ် ဝဘ်ဆိုက်</translation>

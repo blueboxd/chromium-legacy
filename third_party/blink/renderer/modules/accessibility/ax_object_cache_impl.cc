@@ -117,7 +117,7 @@ namespace blink {
 namespace {
 
 // Return a node for the current layout object or ancestor layout object.
-Node* GetClosestNodeForLayoutObject(LayoutObject* layout_object) {
+Node* GetClosestNodeForLayoutObject(const LayoutObject* layout_object) {
   if (!layout_object)
     return nullptr;
   Node* node = layout_object->GetNode();
@@ -262,7 +262,7 @@ AXObject* AXObjectCacheImpl::FocusedObject() {
   return GetOrCreateFocusedObjectFromNode(this->FocusedElement());
 }
 
-AXObject* AXObjectCacheImpl::Get(LayoutObject* layout_object) {
+AXObject* AXObjectCacheImpl::Get(const LayoutObject* layout_object) {
   if (!layout_object)
     return nullptr;
 
@@ -957,7 +957,7 @@ void AXObjectCacheImpl::UpdateReverseRelations(
   relation_cache_->UpdateReverseRelations(relation_source, target_ids);
 }
 
-void AXObjectCacheImpl::StyleChanged(LayoutObject* layout_object) {
+void AXObjectCacheImpl::StyleChanged(const LayoutObject* layout_object) {
   // There is a ton of style change notifications coming from newly-opened
   // calendar popups for pickers. Solving that problem is what inspired the
   // approach below, which is likely true for all elements.
@@ -988,7 +988,7 @@ void AXObjectCacheImpl::TextChanged(Node* node) {
   DeferTreeUpdate(&AXObjectCacheImpl::TextChangedWithCleanLayout, node);
 }
 
-void AXObjectCacheImpl::TextChanged(LayoutObject* layout_object) {
+void AXObjectCacheImpl::TextChanged(const LayoutObject* layout_object) {
   if (!layout_object)
     return;
 
@@ -1101,7 +1101,7 @@ void AXObjectCacheImpl::ChildrenChanged(Node* node) {
   DeferTreeUpdate(&AXObjectCacheImpl::ChildrenChangedWithCleanLayout, node);
 }
 
-void AXObjectCacheImpl::ChildrenChanged(LayoutObject* layout_object) {
+void AXObjectCacheImpl::ChildrenChanged(const LayoutObject* layout_object) {
   if (!layout_object)
     return;
 
@@ -1250,7 +1250,7 @@ void AXObjectCacheImpl::PostNotifications(Document& document) {
   }
 }
 
-void AXObjectCacheImpl::PostNotification(LayoutObject* layout_object,
+void AXObjectCacheImpl::PostNotification(const LayoutObject* layout_object,
                                          ax::mojom::blink::Event notification) {
   if (!layout_object)
     return;
@@ -1426,7 +1426,7 @@ void AXObjectCacheImpl::ListboxActiveIndexChanged(HTMLSelectElement* select) {
   ax_object->ActiveIndexChanged();
 }
 
-void AXObjectCacheImpl::LocationChanged(LayoutObject* layout_object) {
+void AXObjectCacheImpl::LocationChanged(const LayoutObject* layout_object) {
   // No need to send this notification if the object is aria-hidden.
   // Note that if the node is ignored for other reasons, it still might
   // be important to send this notification if any of its children are
@@ -1459,7 +1459,7 @@ void AXObjectCacheImpl::RadiobuttonRemovedFromGroup(
   ax_first_obj->RequestUpdateToNextNode(true);
 }
 
-void AXObjectCacheImpl::ImageLoaded(LayoutObject* layout_object) {
+void AXObjectCacheImpl::ImageLoaded(const LayoutObject* layout_object) {
   AXObject* obj = Get(layout_object);
   MarkAXObjectDirty(obj, false);
 }

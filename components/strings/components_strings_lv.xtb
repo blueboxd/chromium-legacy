@@ -561,6 +561,9 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="3364869320075768271">Vietne <ph name="URL" /> vēlas izmantot jūsu virtuālās realitātes ierīci un datus.</translation>
 <translation id="3366477098757335611">Skatīt kartes</translation>
 <translation id="3369192424181595722">Pulksteņa kļūda</translation>
+<translation id="3371076217486966826"><ph name="URL" /> vēlas:
+      • izveidot jūsu apkārtnes 3D karti un izsekot kameras pozīciju;
+      • izmantot jūsu kameru.</translation>
 <translation id="337363190475750230">Tika noņemta piekļuve</translation>
 <translation id="3377144306166885718">Serveris izmantoja novecojušu TLS versiju.</translation>
 <translation id="3377188786107721145">Radās politikas parsēšanas kļūda.</translation>
@@ -1511,7 +1514,7 @@ Papildu informācija:
 <translation id="7372973238305370288">meklēšanas rezultāts</translation>
 <translation id="7374733840632556089">Šīs problēmas iemesls ir sertifikāts, kuru jūs vai kāds cits ir instalējis jūsu ierīcē. Ir zināms, ka šis sertifikāts tiek izmantots tīklu pārraudzībai un pārtveršanai, un pārlūks Chrome tam neuzticas. Lai gan pastāv daži likumīgi pārraudzības gadījumi, piemēram, skolas vai uzņēmuma tīklā, pārlūks Chrome vēlas pārliecināties, ka esat par to informēts, pat ja nevarat to apturēt. Pārraudzība var notikt jebkurā pārlūkā vai lietojumprogrammā ar piekļuvi tīmeklim.</translation>
 <translation id="7375818412732305729">Tiek pievienots fails</translation>
-<translation id="7376551888419889433">Ja Chrome Enterprise Connectors atzīmē ar drošību saistītus notikumus, atbilstoši dati par notikumiem tiek nosūtīti administratoram. Šie dati var būt, piemēram, pārlūkā Chrome apmeklēto lapu URL, failu nosaukumi vai metadati un lietotājvārds, ar kuru pierakstāties ierīcē un pārlūkā Chrome.</translation>
+<translation id="7376551888419889433">Ja Chrome Enterprise Connectors atzīmē ar drošību saistītus notikumus, atbilstošie dati par notikumiem tiek nosūtīti administratoram. Šie dati var būt, piemēram, pārlūkā Chrome apmeklēto lapu URL, failu nosaukumi vai metadati un lietotājvārds, ar kuru pierakstāties ierīcē un pārlūkā Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Multivides vadīklas</translation>
 <translation id="7378627244592794276">Nē</translation>
@@ -1559,6 +1562,7 @@ Papildu informācija:
 <translation id="7518003948725431193">Šādā tīmekļa adresē netika atrasta neviena tīmekļa lapa: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (aploksne)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Sadaļa “<ph name="SECTION" />” ir paslēpta</translation>
 <translation id="7526934274050461096">Jūsu savienojums ar šo vietni nav privāts.</translation>
 <translation id="7535087603100972091">Vērtība</translation>
 <translation id="7537536606612762813">Obligāti</translation>
@@ -1759,6 +1763,7 @@ Papildu informācija:
 <translation id="8293206222192510085">Pievienot grāmatzīmi</translation>
 <translation id="8294431847097064396">Avots</translation>
 <translation id="8298115750975731693">Iespējams, izmantotajā Wi-Fi tīklā (<ph name="WIFI_NAME" />) tiks pieprasīts apmeklēt vietni <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Tiek rādīta sadaļa “<ph name="SECTION" />”</translation>
 <translation id="830498451218851433">Locījums uz pusēm</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Instalētās lietotnes un to izmantošanas biežums</translation>
@@ -1879,6 +1884,7 @@ Papildu informācija:
 <translation id="8931333241327730545">Vai vēlaties saglabāt šo karti savā Google kontā?</translation>
 <translation id="8932102934695377596">Norādītais laiks ir pārāk tālu pagātnē</translation>
 <translation id="893332455753468063">Vārda pievienošana</translation>
+<translation id="8942355029279167844">Jūsu administrators atļāva lietotnei <ph name="APP_NAME" /> vākt diagnostikas datus, lai uzlabotu produkta lietošanas iespējas. Plašāku informāciju skatiet vietnē <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />.</translation>
 <translation id="8943282376843390568">Laima zaļa</translation>
 <translation id="8957210676456822347">Caurlaides lapas autorizācija</translation>
 <translation id="8962950042226115166">Aizdomīga vietne</translation>

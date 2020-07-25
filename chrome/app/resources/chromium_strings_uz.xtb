@@ -220,6 +220,7 @@ Chromium sozlamalaringizni qaytadan tiklay olmadi.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Chromiumni 1 kun ichida qayta ishga tushiring}other{Chromiumni # kun ichida qayta ishga tushiring}}</translation>
 <translation id="8453117565092476964">O‘rnatish dasturi arxivi shikastlangan. Chromium‘ni qaytadan yuklab oling.</translation>
 <translation id="8493179195440786826">Chromium versiyasi eskirgan</translation>
+<translation id="8545858702702650646">Chromium profilingizni tanlang</translation>
 <translation id="8558383651099478961">Chromiumdagi “Sayt, ilova va kengaytmalarga ruxsat” ota-onangiz tomonidan faolsizlantirilgan. <ph name="EXTENSION_TYPE_PARAMETER" /> kiritilishi taqiqlangan.</translation>
 <translation id="8568283329061645092">Google hisobingizga kirsangiz, Chromium parollaringizni tekshira oladi</translation>
 <translation id="8586442755830160949">© The Chromium Authors, <ph name="YEAR" />. Barcha huquqlar himoyalangan.</translation>
@@ -243,6 +244,7 @@ Chromium sozlamalaringizni qaytadan tiklay olmadi.</translation>
 <translation id="911206726377975832">Brauzer faoliyati haqidagi ma’lumotlar ham tozalansinmi?</translation>
 <translation id="9158494823179993217">Tizim administratori <ph name="TARGET_URL_HOSTNAME" /> havolasini muqobil brauzerda ochiladigan qilib sozlagan.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Bu qurilmada internetni tartibli kezish uchun Chromium profillaridan foydalaning</translation>
 <translation id="93478295209880648">Chromium brauzeri Windows XP yoki Windows Vista tizimlarida ishlamay qolishi mumkin, chunki uning yangi versiyalarida bu tizimlar ta’minoti to‘xtatiladi</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> bu qurilmadan foydalanishdan oldin quyidagi Xizmat shartlarini o‘qib, qabul qilishingizni talab qiladi. Bu shartlar Chromium OS shartlarini kengaytirmaydi, o‘zgartirmaydi yoki cheklamaydi.</translation>
 <translation id="985602178874221306">Chromium mualliflari</translation>

@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">ធ្វើបច្ចុប្បន្នភាព Chrome</translation>
 <translation id="1569387923882100876">ឧបករណ៍ដែលបានភ្ជាប់</translation>
 <translation id="1571304935088121812">ចម្លងឈ្មោះអ្នកប្រើ</translation>
+<translation id="1592864538817356322">ការការពារ​ស្តង់ដារ៖</translation>
 <translation id="1612196535745283361">Chrome ត្រូវការចូលប្រើទីតាំងដើម្បីស្កេនរកឧបករណ៍។ ការចូលប្រើទីតាំងត្រូវ<ph name="BEGIN_LINK" />បិទសម្រាប់ឧបករណ៍នេះ<ph name="END_LINK" />។</translation>
 <translation id="1620510694547887537">កាមេរ៉ា</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{លុបធាតុដែលបានជ្រើសរើស 1}other{លុបធាតុដែលបានជ្រើសរើស #}}</translation>
@@ -578,6 +579,7 @@
 <translation id="5659593005791499971">អ៊ីម៉េល</translation>
 <translation id="5665379678064389456">បង្កើតព្រឹត្តិការណ៍នៅក្នុង <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">បដិសេធសំណើរគេហទំព័រដើម្បីបង្ការការពង្រីក</translation>
+<translation id="568275469169136466">ដើម្បីចូលគណនី​ជាបណ្ដោះអាសន្ន</translation>
 <translation id="5683547024293500885">Chrome មិនអាចពិនិត្យរក​កំណែថ្មីបានទេ</translation>
 <translation id="5686790454216892815">ឈ្មោះ​ឯកសារ​វែងពេក</translation>
 <translation id="5694049548840660018">ត្រឡប់ទៅ​ទំព័រដើមវិញ​បានយ៉ាង​ងាយស្រួល</translation>
@@ -589,6 +591,7 @@
 <translation id="5723735397759933332">ឥឡូវនេះ មុខងារស្រាល​សន្សំសំចៃ​ទិន្នន័យ​ឱ្យអ្នក​បានច្រើនជាងមុន ដោយបង្កើនគុណភាព​រូបភាព​នៅលើ​ទំព័រ HTTPS​។</translation>
 <translation id="5726692708398506830">ធ្វើឲ្យអ្វីគ្រប់យ៉ាងនៅលើទំព័រនេះធំជាងមុន</translation>
 <translation id="5732819098735351888">ការទាញយក​នឹងចាប់ផ្ដើមពេលមាន Wi-Fi។</translation>
+<translation id="5733983706093266635">មិនអាចបង្កើត​កូដ QR បានទេ។ URL មានតួអក្សរ​ច្រើនជាង <ph name="CHARACTER_LIMIT" /> តួ។</translation>
 <translation id="5748802427693696783">បានប្តូរទៅផ្ទាំងស្តង់ដារ</translation>
 <translation id="5749068826913805084">Chrome ត្រូវការលទ្ធភាពចូលប្រើទំហំផ្ទុកដើម្បីដោនឡូតឯកសារ</translation>
 <translation id="5749237766298580851">បិទ <ph name="SEPARATOR" /> មិនណែនាំទេ</translation>
@@ -641,6 +644,7 @@
 <translation id="6111020039983847643">ទិន្នន័យ​ដែល​បានប្រើ</translation>
 <translation id="6112702117600201073">កំពុងធ្វើឲ្យទំព័រថ្មីឡើងវិញ</translation>
 <translation id="6127379762771434464">ធាតុត្រូវបានយកចេញ</translation>
+<translation id="6140709049082532940">ការការពារ​ដែលប្រសើរជាងមុន៖</translation>
 <translation id="6140912465461743537">ប្រទេស/តំបន់៖</translation>
 <translation id="614940544461990577">សាកល្បង៖</translation>
 <translation id="6154478581116148741">បើកការ​ចាក់សោ​អេក្រង់​នៅក្នុង​ការកំណត់ ដើម្បី​នាំពាក្យ​សម្ងាត់​របស់អ្នកចេញ​ពី​ឧបករណ៍​នេះ</translation>
@@ -1017,6 +1021,7 @@
 <translation id="9100610230175265781">តម្រូវឲ្យមានឃ្លាសម្ងាត់</translation>
 <translation id="9102803872260866941">ផ្ទាំងមើលសាកល្បងបានបើក</translation>
 <translation id="9104217018994036254">បញ្ជី​ឧបករណ៍​ដែលត្រូវ​ចែករំលែក​ផ្ទាំងជាមួយ។</translation>
+<translation id="9104402662006063371">ចូលមុខងារឯកជន</translation>
 <translation id="9108312223223904744">ជំនួយក្នុងការដំឡើងទូរសព្ទ​ធ្វើជាសោសុវត្ថិភាព</translation>
 <translation id="9108808586816295166">DNS សុវត្ថិភាពប្រហែលជាមិនអាចប្រើបានគ្រប់ពេលនោះទេ</translation>
 <translation id="9133397713400217035">រុករក​ដោយគ្មានអ៊ីនធឺណិត</translation>

@@ -26,6 +26,7 @@
 <translation id="1209206284964581585">Amaga per ara</translation>
 <translation id="1219674500290482172">No es pot connectar a Internet.</translation>
 <translation id="122699739164161391">Tanca totes les pestanyes</translation>
+<translation id="1229222343402087523">Cerca ${searchPhrase} a Chrome</translation>
 <translation id="1231733316453485619">Vols activar la sincronització?</translation>
 <translation id="1254117744268754948">Tria la carpeta</translation>
 <translation id="1265739287306757398">Informació</translation>
@@ -189,7 +190,7 @@ Els llocs web no poden fer servir galetes per veure la teva activitat de navegac
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3175081911749765310">Serveis web</translation>
 <translation id="3178650076442119961">Actiu avui</translation>
-<translation id="3181954750937456830">Navegació segura (et protegeix a tu i al teu dispositiu de llocs web perillosos)</translation>
+<translation id="3181954750937456830">Navegació segura (us protegeix a tu i al teu dispositiu de llocs web perillosos)</translation>
 <translation id="3196681740617426482">Els llocs web poden fer servir galetes per millorar la teva experiència de navegació, per exemple, per mantenir la teva sessió iniciada o per recordar els elements que tens al carretó de la compra.
 
 En mode d'incògnit, els llocs web no poden fer servir galetes per veure la teva activitat de navegació en diferents llocs web, per exemple, per personalitzar els anuncis.</translation>

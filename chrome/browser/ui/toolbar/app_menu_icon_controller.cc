@@ -121,7 +121,7 @@ AppMenuIconController::GetTypeAndSeverity() const {
   return {IconType::NONE, Severity::NONE};
 }
 
-gfx::ImageSkia AppMenuIconController::GetIconImage(
+ui::ImageModel AppMenuIconController::GetIconImage(
     bool touch_ui,
     const base::Optional<SkColor>& severity_none_color) const {
   const gfx::VectorIcon* icon_id =
@@ -138,7 +138,8 @@ gfx::ImageSkia AppMenuIconController::GetIconImage(
           touch_ui ? &kBrowserToolsErrorTouchIcon : &kBrowserToolsErrorIcon;
       break;
   }
-  return gfx::CreateVectorIcon(*icon_id, GetIconColor(severity_none_color));
+  return ui::ImageModel::FromVectorIcon(*icon_id,
+                                        GetIconColor(severity_none_color));
 }
 
 SkColor AppMenuIconController::GetIconColor(

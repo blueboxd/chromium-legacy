@@ -222,6 +222,7 @@ Chromium ei saa teie seadeid taastada.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Käivitage Chromium uuesti päeva jooksul}other{Käivitage Chromium uuesti # päeva jooksul}}</translation>
 <translation id="8453117565092476964">Installeri arhiiv on rikutud või kehtetu. Laadige Chromium uuesti alla.</translation>
 <translation id="8493179195440786826">Chromium on aegunud</translation>
+<translation id="8545858702702650646">Chromiumi ruumi valimine</translation>
 <translation id="8558383651099478961">Sinu vanem lülitas valiku „Saitide, rakenduste ja laienduste load” Chromiumi puhul välja. Laienduse <ph name="EXTENSION_TYPE_PARAMETER" /> lubamine on keelatud.</translation>
 <translation id="8568283329061645092">Chromium saab teie paroole kontrollida siis, kui logite sisse oma Google'i kontoga</translation>
 <translation id="8586442755830160949">Autoriõigus <ph name="YEAR" /> The Chromium Authors. Kõik õigused on kaitstud.</translation>
@@ -245,6 +246,7 @@ Chromium ei saa teie seadeid taastada.</translation>
 <translation id="911206726377975832">Kas kustutada ka teie sirvimisandmed?</translation>
 <translation id="9158494823179993217">Teie süsteemiadministraator on konfigureerinud Chromiumi avama alternatiivset brauserit, et saada juurdepääs lehele <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Kasutage Chromiumi ruume, et oma sirvimist selles seadmes korrastatuna hoida</translation>
 <translation id="93478295209880648">Chromium ei pruugi õigesti töötada, kuna seda ei toetata enam Windows XP-s ega Windows Vistas</translation>
 <translation id="95514773681268843">Domeen <ph name="DOMAIN" /> nõuab, et loete enne selle seadme kasutamist läbi järgmised teenusetingimused ja nõustute nendega. Need tingimused ei laienda, muuda ega piira Chromium OS-i tingimusi.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

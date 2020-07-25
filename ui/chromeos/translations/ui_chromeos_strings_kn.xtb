@@ -17,6 +17,7 @@
 <translation id="1150565364351027703">ಸನ್‌ಗ್ಲಾಸ್‌ಗಳು</translation>
 <translation id="115443833402798225">ಹಂಗುಲ್ ಅಹ್ಮಟೆ</translation>
 <translation id="1155759005174418845">ಕೆಟಲಾನ್</translation>
+<translation id="1172970565351728681"><ph name="REMAINING_TIME" /> ಬಾಕಿ ಉಳಿದಿದೆ</translation>
 <translation id="1173894706177603556">ಮರುಹೆಸರಿಸು</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> ನಕಲಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="1178581264944972037">ವಿರಾಮ</translation>
@@ -194,6 +195,7 @@
 <translation id="3236289833370040187"><ph name="DESTINATION_DOMAIN" /> ಗೆ ಮಾಲೀಕತ್ವವನ್ನು ವರ್ಗಾಯಿಸಲಾಗವುದು.</translation>
 <translation id="3241720467332021590">ಐರಿಷ್</translation>
 <translation id="3245321423178950146">ಅಪರಿಚಿತ ಕಲಾವಿದ</translation>
+<translation id="3248185426436836442">ಬಾಕಿ ಉಳಿದಿರುವುದು</translation>
 <translation id="3252266817569339921">ಫ್ರೆಂಚ್</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> ಫೈಲ್‌ಗಳಿಗಾಗಿ ಡಿಫಾಲ್ಟ್ ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ಆರಿಸಿ:</translation>
 <translation id="3264582393905923483">ಸಂದರ್ಭ</translation>
@@ -240,6 +242,7 @@
 <translation id="3780536599611287598">ಫೈಲ್‌ಗಳನ್ನು '<ph name="FOLDER_NAME" />' ಗೆ ಸರಿಸಲು ನಿಮಗೆ ಅನುಮತಿಯಿಲ್ಲ.</translation>
 <translation id="3786301125658655746">ನೀವು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿರುವಿರಿ</translation>
 <translation id="3789841737615482174">ಇನ್‌ಸ್ಟಾಲ್</translation>
+<translation id="3793469551756281394"><ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> ಬಾಕಿ ಉಳಿದಿದೆ</translation>
 <translation id="3798449238516105146">ಆವೃತ್ತಿ</translation>
 <translation id="3801082500826908679">ಫರೋಸೆ</translation>
 <translation id="3809272675881623365">ಮೊಲ</translation>

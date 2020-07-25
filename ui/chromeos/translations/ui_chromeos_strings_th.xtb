@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">แว่นกันแดด</translation>
 <translation id="115443833402798225">ฮังกูล Ahnmatae</translation>
 <translation id="1155759005174418845">คาตาลัน</translation>
+<translation id="1172970565351728681">เหลือเวลาอีกประมาณ <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">เปลี่ยนชื่อ</translation>
 <translation id="117624967391683467">กำลังคัดลอก <ph name="FILE_NAME" />...</translation>
 <translation id="1178581264944972037">หยุดชั่วคราว</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">ระบบจะโอนการเป็นเจ้าของไปยัง <ph name="DESTINATION_DOMAIN" /></translation>
 <translation id="3241720467332021590">ไอริช</translation>
 <translation id="3245321423178950146">ไม่ทราบศิลปิน</translation>
+<translation id="3248185426436836442">รอดำเนินการ</translation>
 <translation id="3252266817569339921">ฝรั่งเศส</translation>
 <translation id="3254434849914415189">เลือกแอปพลิเคชันค่าเริ่มต้นสำหรับไฟล์ <ph name="FILE_TYPE" />:</translation>
 <translation id="3264582393905923483">บริบท</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">คุณไม่มีสิทธิ์ย้ายไฟล์ลงใน "<ph name="FOLDER_NAME" />"</translation>
 <translation id="3786301125658655746">คุณออฟไลน์อยู่</translation>
 <translation id="3789841737615482174">ติดตั้ง</translation>
+<translation id="3793469551756281394">เหลือเวลาอีกประมาณ <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">รุ่น</translation>
 <translation id="3801082500826908679">แฟโร</translation>
 <translation id="3809272675881623365">กระต่าย</translation>

@@ -5,7 +5,6 @@
 #import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/mac/mac_util.h"
 #include "base/trace_event/trace_event.h"
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #include "components/remote_cocoa/app_shim/native_widget_ns_window_host_helper.h"
@@ -60,7 +59,7 @@
 
 @implementation NativeWidgetMacNSWindowTitledFrame
 - (void)mouseDown:(NSEvent*)event {
-  if (base::mac::IsAtMostOS10_11() && self.window.isMovable)
+  if (self.window.isMovable)
     [self cr_mouseDownOnFrameView:event];
   [super mouseDown:event];
 }

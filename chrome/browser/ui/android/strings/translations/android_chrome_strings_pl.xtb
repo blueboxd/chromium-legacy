@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Zaktualizuj Chrome</translation>
 <translation id="1569387923882100876">Połączone urządzenie</translation>
 <translation id="1571304935088121812">Kopiuj nazwę użytkownika</translation>
+<translation id="1592864538817356322">Standardowa ochrona:</translation>
 <translation id="1612196535745283361">Aby wyszukać urządzenia, Chrome potrzebuje dostępu do lokalizacji. Dostęp jest <ph name="BEGIN_LINK" />wyłączony na tym urządzeniu<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Usuń 1 wybrany element}few{Usuń # wybrane elementy}many{Usuń # wybranych elementów}other{Usuń # wybranego elementu}}</translation>
@@ -578,6 +579,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5665379678064389456">Utwórz wydarzenie w aplikacji <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Zignoruj żądanie strony, gdy chce zapobiec powiększeniu widoku</translation>
+<translation id="568275469169136466">Aby zalogować się tymczasowo</translation>
 <translation id="5683547024293500885">Chrome nie może sprawdzić dostępności aktualizacji</translation>
 <translation id="5686790454216892815">Nazwa pliku jest za długa</translation>
 <translation id="5694049548840660018">Łatwy powrót na stronę główną</translation>
@@ -589,6 +591,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5723735397759933332">Wersja uproszczona oszczędza teraz więcej danych dzięki optymalizacji obrazów na stronach HTTPS.</translation>
 <translation id="5726692708398506830">Powiększ całą zawartość strony</translation>
 <translation id="5732819098735351888">Pobieranie rozpocznie się po połączeniu z siecią Wi-Fi.</translation>
+<translation id="5733983706093266635">Nie udało się utworzyć kodu QR. URL ma za dużo znaków – ponad <ph name="CHARACTER_LIMIT" />.</translation>
 <translation id="5748802427693696783">Przełączono na karty standardowe</translation>
 <translation id="5749068826913805084">Chrome musi mieć dostęp do pamięci, by pobierać pliki.</translation>
 <translation id="5749237766298580851">Wyłączono <ph name="SEPARATOR" /> Niezalecane</translation>
@@ -641,6 +644,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="6111020039983847643">użytych danych</translation>
 <translation id="6112702117600201073">Odświeżam stronę</translation>
 <translation id="6127379762771434464">Element został usunięty</translation>
+<translation id="6140709049082532940">Silniejsza ochrona:</translation>
 <translation id="6140912465461743537">Kraj/region</translation>
 <translation id="614940544461990577">Wypróbuj te rozwiązania:</translation>
 <translation id="6154478581116148741">Włącz blokadę ekranu w ustawieniach, by wyeksportować hasła z urządzenia</translation>
@@ -1017,6 +1021,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="9100610230175265781">Wymagane jest hasło</translation>
 <translation id="9102803872260866941">Karta podglądu jest otwarta</translation>
 <translation id="9104217018994036254">Lista urządzeń, którym udostępnisz kartę.</translation>
+<translation id="9104402662006063371">Włącz tryb incognito</translation>
 <translation id="9108312223223904744">Telefon jako klucz bezpieczeństwa</translation>
 <translation id="9108808586816295166">Bezpieczny DNS może nie być dostępny przez cały czas</translation>
 <translation id="9133397713400217035">Przeglądaj offline</translation>

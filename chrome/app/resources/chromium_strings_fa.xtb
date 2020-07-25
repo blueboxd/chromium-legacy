@@ -220,6 +220,7 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="8417404458978023919">{0,plural, =1{‏Chromium را ظرف یک روز راه‌اندازی مجدد کنید}one{‏Chromium را ظرف # روز راه‌اندازی مجدد کنید}other{‏Chromium را ظرف # روز راه‌اندازی مجدد کنید}}</translation>
 <translation id="8453117565092476964">‏بایگانی نصب‌کننده خراب یا نامعتبر است. لطفاً Chromium را دوباره را بارگیری کنید.</translation>
 <translation id="8493179195440786826">‏نسخه Chromium قدیمی است</translation>
+<translation id="8545858702702650646">‏انتخاب «فضای Chromium»</translation>
 <translation id="8558383651099478961">‏ولی‌تان «اجازه‌های مربوط به سایت‌ها، برنامه‌ها، و افزونه‌ها» را برای Chromium خاموش کرده است. افزودن این <ph name="EXTENSION_TYPE_PARAMETER" /> مجاز نیست.</translation>
 <translation id="8568283329061645092">‏وقتی با «حساب Google» خود به سیستم وارد می‌شوید، Chromium می‌تواند گذرواژه‌هایتان را بررسی کند</translation>
 <translation id="8586442755830160949">‏حق نسخه‌برداری <ph name="YEAR" /> نویسندگان Chromium. کلیه حقوق محفوظ است.</translation>
@@ -243,6 +244,7 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="911206726377975832">داده‌های مرور شما نیز حذف شود؟</translation>
 <translation id="9158494823179993217">‏سرپرست سیستم شما برای باز شدن مرورگر جایگزین برای دسترسی به <ph name="TARGET_URL_HOSTNAME" />، Chromium را پیکربندی کرده است.</translation>
 <translation id="9190841055450128916">‏Chromium‏ (mDNS ورودی)</translation>
+<translation id="9191317372410544836">‏بااستفاده از «فضاهای Chromium»، مرورتان را در این دستگاه سازمان‌دهی کنید</translation>
 <translation id="93478295209880648">‏Chromium ممکن است درست کار نکند زیرا دیگر در Windows XP یا Windows Vista پشتیبانی نمی‌شود</translation>
 <translation id="95514773681268843">‏<ph name="DOMAIN" /> از شما می‌خواهد قبل از استفاده از دستگاه، شرایط خدمات زیر را خوانده و بپذیرید. این شرایط بسط داده نمی‌شوند، اصلاح نمی‌شوند و شرایط سیستم عامل Chromium را محدود نمی‌کنند.</translation>
 <translation id="985602178874221306">Chromium Authors</translation>

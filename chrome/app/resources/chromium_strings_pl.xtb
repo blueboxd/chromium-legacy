@@ -219,6 +219,7 @@ Chromium nie może odzyskać ustawień.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Ponowne uruchomienie Chromium nastąpi w ciągu 1 dnia}few{Ponowne uruchomienie Chromium nastąpi w ciągu # dni}many{Ponowne uruchomienie Chromium nastąpi w ciągu # dni}other{Ponowne uruchomienie Chromium nastąpi w ciągu # dnia}}</translation>
 <translation id="8453117565092476964">Archiwum instalatora jest uszkodzone lub nieprawidłowe. Pobierz Chromium ponownie.</translation>
 <translation id="8493179195440786826">Chromium jest nieaktualny</translation>
+<translation id="8545858702702650646">Wybierz swój profil w Chromium</translation>
 <translation id="8558383651099478961">Rodzic wyłączył „Uprawnienia stron, aplikacji i rozszerzeń” dla Chromium. Dodanie elementu <ph name="EXTENSION_TYPE_PARAMETER" /> jest niedozwolone.</translation>
 <translation id="8568283329061645092">Chromium może sprawdzić Twoje hasła, gdy zalogujesz się na swoje konto Google</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autorzy Chromium. Wszelkie prawa zastrzeżone.</translation>
@@ -242,6 +243,7 @@ Chromium nie może odzyskać ustawień.</translation>
 <translation id="911206726377975832">Czy usunąć także dane przeglądania?</translation>
 <translation id="9158494823179993217">Administrator systemu skonfigurował Chromium w taki sposób, by strona <ph name="TARGET_URL_HOSTNAME" /> otwierała się w alternatywnej przeglądarce.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Używaj profili w Chromium, by zachować porządek podczas przeglądania na tym urządzeniu</translation>
 <translation id="93478295209880648">Chromium może działać nieprawidłowo, bo nie jest już zgodny z Windows XP ani Windows Vista</translation>
 <translation id="95514773681268843">Domena <ph name="DOMAIN" /> wymaga, by przed korzystaniem z tego urządzenia przeczytać i zaakceptować Warunki korzystania z usługi. Nie rozszerzają, nie zmieniają ani nie ograniczają one Warunków korzystania z systemu Chromium OS.</translation>
 <translation id="985602178874221306">Autorzy Chromium</translation>

@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Güneş Gözlüğü</translation>
 <translation id="115443833402798225">Hangul Ahnmatae</translation>
 <translation id="1155759005174418845">Katalanca</translation>
+<translation id="1172970565351728681">Yaklaşık <ph name="REMAINING_TIME" /> kaldı</translation>
 <translation id="1173894706177603556">Yeniden adlandır</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> kopyalanıyor...</translation>
 <translation id="1178581264944972037">Duraklat</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Sahiplik <ph name="DESTINATION_DOMAIN" /> alanına aktarılacak.</translation>
 <translation id="3241720467332021590">İrlanda dili</translation>
 <translation id="3245321423178950146">Bilinmeyen Sanatçı</translation>
+<translation id="3248185426436836442">Beklemede</translation>
 <translation id="3252266817569339921">Fransızca</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> dosyaları için varsayılan uygulamayı seç:</translation>
 <translation id="3264582393905923483">Bağlam</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Dosyaları "<ph name="FOLDER_NAME" />" klasörüne taşıma izniniz yok.</translation>
 <translation id="3786301125658655746">Çevrimdışısınız</translation>
 <translation id="3789841737615482174">Yükle</translation>
+<translation id="3793469551756281394">Yaklaşık <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> kaldı</translation>
 <translation id="3798449238516105146">Sürüm</translation>
 <translation id="3801082500826908679">Faroece</translation>
 <translation id="3809272675881623365">Tavşan</translation>

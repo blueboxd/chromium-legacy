@@ -219,6 +219,7 @@ A Chromium nem tudja visszaállítani a beállításait.</translation>
 <translation id="8417404458978023919">{0,plural, =1{A Chromiumot 1 napon belül újra kell indítani}other{A Chromiumot # napon belül újra kell indítani}}</translation>
 <translation id="8453117565092476964">A telepítő tömörített állománya megsérült vagy érvénytelen. Kérjük, töltse le újra a Chromium böngészőt.</translation>
 <translation id="8493179195440786826">A Chromium elavult</translation>
+<translation id="8545858702702650646">Chromium Space-profil kiválasztása</translation>
 <translation id="8558383651099478961">Szülőd kikapcsolta a Chromium „Engedélyek webhelyek, alkalmazások és bővítmények számára” beállítását. A(z) <ph name="EXTENSION_TYPE_PARAMETER" /> nem telepíthető.</translation>
 <translation id="8568283329061645092">A Chromium ellenőrizni tudja a mentett jelszavakat, ha Ön bejelentkezik Google-fiókjával</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> – A Chromium szerzői. Minden jog fenntartva.</translation>
@@ -242,6 +243,7 @@ A Chromium nem tudja visszaállítani a beállításait.</translation>
 <translation id="911206726377975832">Törli a böngészési adatait is?</translation>
 <translation id="9158494823179993217">Rendszergazdája úgy állította be a Chromiumot, hogy másik böngészőt nyisson meg a(z) <ph name="TARGET_URL_HOSTNAME" /> eléréséhez.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">A Chromium Space-profilok segítségével rendszerezheti böngészési tevékenységeit ezen az eszközön</translation>
 <translation id="93478295209880648">Előfordulhat, hogy a Chromium nem működik majd megfelelően, mert a továbbiakban már nem támogatja a következő rendszereket: Windows XP és Windows Vista</translation>
 <translation id="95514773681268843">A(z) <ph name="DOMAIN" /> megköveteli, hogy olvassa, majd fogadja el a következő Általános Szerződési Feltételeket, mielőtt használná ezt az eszközt. Ezek a feltételek nem bővítik, módosítják vagy korlátozzák a Chromium OS feltételeit.</translation>
 <translation id="985602178874221306">A Chromium szerzői</translation>

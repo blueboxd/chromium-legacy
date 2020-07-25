@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1569387923882100876">连接的设备</translation>
 <translation id="1571304935088121812">复制用户名</translation>
+<translation id="1592864538817356322">标准保护：</translation>
 <translation id="1612196535745283361">Chrome 需要拥有位置信息使用权才能扫描设备。<ph name="BEGIN_LINK" />此设备的位置信息使用权已被停用<ph name="END_LINK" />。</translation>
 <translation id="1620510694547887537">摄像头</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{移除 1 个所选项}other{移除 # 个所选项}}</translation>
@@ -578,6 +579,7 @@
 <translation id="5659593005791499971">电子邮件</translation>
 <translation id="5665379678064389456">在<ph name="APP_NAME" />中创建活动</translation>
 <translation id="5668404140385795438">覆盖网站的请求，以防止放大</translation>
+<translation id="568275469169136466">只是为了暂时登录</translation>
 <translation id="5683547024293500885">Chrome 无法检查是否有更新</translation>
 <translation id="5686790454216892815">文件名过长</translation>
 <translation id="5694049548840660018">轻松访问主页</translation>
@@ -589,6 +591,7 @@
 <translation id="5723735397759933332">现在，精简模式会优化 HTTPS 网页上的图片，为您节省更多流量。</translation>
 <translation id="5726692708398506830">放大网页上的所有内容</translation>
 <translation id="5732819098735351888">一旦有 Wi-Fi 可用即开始下载。</translation>
+<translation id="5733983706093266635">无法创建二维码。网址长度超出了 <ph name="CHARACTER_LIMIT" /> 个字符（上限）。</translation>
 <translation id="5748802427693696783">已切换到标准标签页</translation>
 <translation id="5749068826913805084">Chrome 需要具备存储空间使用权限，才能下载文件。</translation>
 <translation id="5749237766298580851">已关闭 <ph name="SEPARATOR" /> 不推荐</translation>
@@ -641,6 +644,7 @@
 <translation id="6111020039983847643">已耗用的流量</translation>
 <translation id="6112702117600201073">正在刷新页面</translation>
 <translation id="6127379762771434464">该项已移除</translation>
+<translation id="6140709049082532940">增强型保护：</translation>
 <translation id="6140912465461743537">国家/地区</translation>
 <translation id="614940544461990577">请试试以下办法：</translation>
 <translation id="6154478581116148741">需在“设置”部分中开启屏幕锁定功能，才能从此设备中导出您的密码</translation>
@@ -717,7 +721,7 @@
 <translation id="6656545060687952787">Chrome 需要拥有位置信息权限才能扫描设备。<ph name="BEGIN_LINK" />更新权限<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">密码</translation>
 <translation id="6659594942844771486">标签页</translation>
-<translation id="6663079968236414793">关联到所选文字</translation>
+<translation id="6663079968236414793">为所选文本创建链接</translation>
 <translation id="666573598175432848">已推出新版 Chrome。点按此元素即可转到 Play 商店。</translation>
 <translation id="666731172850799929">在 <ph name="APP_NAME" />中打开</translation>
 <translation id="666981079809192359">Chrome 隐私权声明</translation>
@@ -1017,6 +1021,7 @@
 <translation id="9100610230175265781">必须提供密码</translation>
 <translation id="9102803872260866941">预览标签页已打开</translation>
 <translation id="9104217018994036254">要与之分享标签页的设备的列表。</translation>
+<translation id="9104402662006063371">进入无痕模式</translation>
 <translation id="9108312223223904744">支持使用手机作为安全密钥</translation>
 <translation id="9108808586816295166">安全 DNS 未必一直可用</translation>
 <translation id="9133397713400217035">离线浏览</translation>

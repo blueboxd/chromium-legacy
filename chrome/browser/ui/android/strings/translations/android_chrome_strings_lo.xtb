@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">ອັບ​ເດດ Chrome</translation>
 <translation id="1569387923882100876">ອຸປະກອນທີ່ເຊື່ອມຕໍ່ແລ້ວ</translation>
 <translation id="1571304935088121812">ສຳເນົາຊື່ຜູ້ໃຊ້</translation>
+<translation id="1592864538817356322">ການປົກປ້ອງມາດຕະຖານ:</translation>
 <translation id="1612196535745283361">Chrome ຈຳເປັນຕ້ອງເຂົ້າເຖິງສະຖານທີ່ເພື່ອສະແກນຫາອຸປະກອນ. ການເຂົ້າເຖິງສະຖານທີ່ <ph name="BEGIN_LINK" />ປິດຢູ່ສຳລັບອຸປະກອນນີ້<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">ກ້ອງ​ຖ່າຍ​ຮູບ</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{ລຶບ 1 ລາຍການທີ່ເລືອກອອກ}other{ລຶບ # ລາຍການທີ່ເລືອກອອກ}}</translation>
@@ -578,6 +579,7 @@
 <translation id="5659593005791499971">ອີເມວ</translation>
 <translation id="5665379678064389456">ສ້າງເຫດການໃນ <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">ແທນ​ທີ່​ຄຳ​ຂໍ​ຂອງ​ເວັບໄຊທ໌​ເພື່ອ​ປ້ອງ​ກັນ​ການ​ຊູມ​ເຂົ້າ</translation>
+<translation id="568275469169136466">ເພື່ອເຂົ້າສູ່ລະບົບແບບຊົ່ວຄາວ</translation>
 <translation id="5683547024293500885">Chrome ບໍ່ສາມາດກວດຫາການອັບເດດໄດ້</translation>
 <translation id="5686790454216892815">ຊື່ໄຟລ໌ຍາວເກີນໄປ</translation>
 <translation id="5694049548840660018">ກັບຄືນໜ້າຫຼັກໄດ້ຢ່າງງ່າຍດາຍ</translation>
@@ -589,6 +591,7 @@
 <translation id="5723735397759933332">ດຽວນີ້ໂໝດ Lite ຊ່ວຍທ່ານປະຢັດອິນເຕີເນັດຫຼາຍຂຶ້ນໂດຍການປັບຮູບໃນໜ້າ HTTPS ໃຫ້ເໝາະສົມ.</translation>
 <translation id="5726692708398506830">ເຮັດໃຫ້ທຸກຢ່າງໃນໜ້າໃຫຍ່ຂຶ້ນ</translation>
 <translation id="5732819098735351888">ການດາວໂຫຼດຈະເລີ່ມຕົ້ນເມື່ອເຊື່ອມຕໍ່ Wi-Fi.</translation>
+<translation id="5733983706093266635">ບໍ່ສາມາດສ້າງລະຫັດ QR ໄດ້ URL ຫຼາຍກວ່າ <ph name="CHARACTER_LIMIT" /> ຕົວອັກສອນ.</translation>
 <translation id="5748802427693696783">ປ່ຽນເປັນແຖບມາດຕະຖານ</translation>
 <translation id="5749068826913805084">Chrome ຕ້ອງ​ການ​ໃຫ້​ມີ​ການ​ເຂົ້າ​ຫາ​ບ່ອນ​ຈັດ​ເກັບ​ຂໍ້​ມູນ​ເພື່ອ​ດາວ​ໂຫຼດ​ໄຟ​ລ໌.</translation>
 <translation id="5749237766298580851">ປິດ <ph name="SEPARATOR" /> ບໍ່ແນະນຳ</translation>
@@ -641,6 +644,7 @@
 <translation id="6111020039983847643">ຂໍ້ມູນທີ່ໃຊ້</translation>
 <translation id="6112702117600201073">ການ​ຣີ​ເຟ​ຣ​ຊ​ໜ້າ</translation>
 <translation id="6127379762771434464">ລຶບລາຍການອອກແລ້ວ</translation>
+<translation id="6140709049082532940">ການປົກປ້ອງທີ່ປັບປຸງດີຂຶ້ນ:</translation>
 <translation id="6140912465461743537">ປະເທດ/ພາກພື້ນ</translation>
 <translation id="614940544461990577">ລອງ:</translation>
 <translation id="6154478581116148741">ເປີດການລັອກໜ້າຈໍໃນການຕັ້ງຄ່າເພື່ອສົ່ງອອກລະຫັດຜ່ານຂອງທ່ານຈາກອຸປະກອນນີ້</translation>
@@ -1017,6 +1021,7 @@
 <translation id="9100610230175265781">ຕ້ອງມີລະຫັດຜ່ານ</translation>
 <translation id="9102803872260866941">ແຖບສະແດງຕົວຢ່າງເປີດຢູ່</translation>
 <translation id="9104217018994036254">ລາຍການອຸປະກອນທີ່ຈະແບ່ງປັນແຖບນຳ.</translation>
+<translation id="9104402662006063371">ໃຊ້ໂໝດບໍ່ເປິດເຜີຍຕົວຕົນ</translation>
 <translation id="9108312223223904744">ການຮອງຮັບໂທລະສັບເປັນກະແຈຄວາມປອດໄພ</translation>
 <translation id="9108808586816295166">DNS ທີ່ປອດໄພອາດຈະບໍ່ສາມາດໃຊ້ໄດ້ຕະຫຼອດເວລາ</translation>
 <translation id="9133397713400217035">ສຳຫຼວດອອບລາຍ</translation>

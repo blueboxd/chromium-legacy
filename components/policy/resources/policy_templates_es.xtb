@@ -773,6 +773,7 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 <translation id="2197625019569762163">Si se asigna el valor "true" a esta política, se mostrará un teclado numérico por defecto para introducir la contraseña en la pantalla de inicio de sesión. Si quieren, los usuarios pueden cambiar al teclado normal.
 
       Si se configura la política, los usuarios no podrán cambiarla. Si no se le asigna ningún valor o se le asigna el valor "false", no tiene ningún efecto.</translation>
+<translation id="2200698565850397198">Configurar la lista de bloqueados de mensajes nativos</translation>
 <translation id="2201555246697292490">Configurar la lista blanca de mensajes nativos</translation>
 <translation id="2204753382813641270">Controlar opción para ocultar archivos automáticamente</translation>
 <translation id="2208976000652006649">Parámetros para URL de búsqueda que utiliza POST</translation>
@@ -1413,7 +1414,7 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 <translation id="3023572080620427845">URL de un archivo XML que contiene las URL que se cargarán en un navegador alternativo.</translation>
 <translation id="3025855836862205995">Esta política está obsoleta. Usa la política <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" /> en su lugar.
 
-       Si se define esta política, se especificará qué extensiones no pueden instalar los usuarios. Si se prohíben, las extensiones ya instaladas quedarán desactivadas y los usuarios no podrán activarlas. Si se quita una extensión prohibida de la lista de bloqueados, se volverá a habilitar automáticamente. Usa el valor <ph name="ALL_EXTENSIONS" /> para prohibir todas las extensiones excepto las que estén permitidas de forma explícita.
+       Si se define esta política, se especificará qué extensiones no pueden instalar los usuarios. Si se prohíben, las extensiones ya instaladas quedarán desactivadas y los usuarios no podrán activarlas. Si se quita una extensión prohibida de la lista de bloqueadas, se volverá a habilitar automáticamente. Usa el valor <ph name="ALL_EXTENSIONS" /> para prohibir todas las extensiones excepto las que estén permitidas de forma explícita.
 
       Si no se define esta política, los usuarios podrán instalar cualquier extensión en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3026740867910702435">Habilita la función de accesibilidad del cursor grande en la pantalla de inicio de sesión.
@@ -1718,9 +1719,9 @@ Si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> no usará notificac
 
       La disponibilidad de esta función dependerá también de la política de usuarios correspondiente.</translation>
 <translation id="3496296378755072552">Gestor de contraseñas</translation>
-<translation id="3498109920669229084">Si se define esta política, se especificarán las extensiones que no están sujetas a la lista de bloqueados.
+<translation id="3498109920669229084">Si se define esta política, se especificarán las extensiones que no están sujetas a la lista de bloqueadas.
 
-       Si el valor de una lista de bloqueados es <ph name="ALL_EXTENSIONS" />, se bloquearán todas las extensiones y los usuarios solo podrán instalar extensiones de la lista de permitidos.
+       Si el valor de una lista de extensiones bloqueadas es <ph name="ALL_EXTENSIONS" />, se bloquearán todas las extensiones y los usuarios solo podrán instalar extensiones de la lista de permitidas.
 
        De forma predeterminada, se permiten todas las extensiones. Sin embargo, si has prohibido las extensiones mediante una política, usa la lista de extensiones permitidas para cambiar esa política.</translation>
 <translation id="3500732098526756068">Permite controlar la activación de la advertencia de protección de contraseña. La protección de contraseña avisa a los usuarios cuando reutilizan su contraseña protegida en sitios web potencialmente sospechosos.
@@ -1819,9 +1820,9 @@ Si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> no usará notificac
 
         El registro automático de políticas de permisos de nube utiliza esta política en el escritorio y se puede configurar mediante el registro o el GPO en Windows, mediante plist en Mac y mediante el archivo de políticas JSON en Linux.</translation>
 <translation id="3660562134618097814">Transferir las cookies del proveedor de identidad SAML durante el inicio de sesión</translation>
-<translation id="3669373349666208904">Si se asigna el valor "True" a esta política, las páginas podrán mostrar ventanas emergentes mientras se descargan.
+<translation id="3669373349666208904">Si se asigna el valor "Verdadero" a esta política, las páginas podrán mostrar ventanas emergentes mientras se descargan.
 
-      Si se le asigna el valor "False" o no se le asigna ningún valor, las páginas no podrán mostrar ventanas emergentes mientras se descargan.
+      Si se le asigna el valor "Falso" o no se le asigna ningún valor, las páginas no podrán mostrar ventanas emergentes mientras se descargan.
 
       Esta política se eliminará de la versión 88 de Chrome.
 
@@ -2545,6 +2546,13 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
           Si se asigna un valor a esta política, los usuarios no podrán cambiarlo ni anularlo.
 
           Si no se le asigna ningún valor, el audio en mono se inhabilitará al inicio, pero el usuario podrá habilitarlo en cualquier momento.</translation>
+<translation id="4764901562691611575">Esta política está obsoleta. Usa la política <ph name="NATIVE_MESSAGING_BLOCKLIST_POLICY_NAME" /> en su lugar.
+
+          Permite especificar qué hosts de mensajes nativos no se deben cargar.
+
+          Si el valor de una lista de bloqueados es un asterisco (*), se bloquearán todos los hosts de mensajes nativos excepto los que estén incluidos explícitamente en la lista de permitidos.
+
+          Si no se asigna ningún valor a esta política, <ph name="PRODUCT_NAME" /> cargará todos los hosts instalados de mensajes nativos.</translation>
 <translation id="4771144269610910963">Esta política controla el análisis profundo de las descargas de usuario con Navegación Segura. Si no se le asigna ningún valor o se le asigna el valor predeterminado "No analizar archivos", las descargas de usuario no se analizarán con Navegación Segura.
 
       Si se le asigna el valor "Enviar descargas de usuario para analizarlas", las descargas de usuario se enviarán a Navegación Segura a través de la red para realizar un análisis de software malicioso.
@@ -3268,6 +3276,11 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
           Cuando no se establece esta política, se lleva a cabo una acción predeterminada (es decir, la suspensión).
 
           Si la acción es la suspensión, <ph name="PRODUCT_OS_NAME" /> se puede configurar por separado para bloquear o no la pantalla antes de entrar en modo de suspensión.</translation>
+<translation id="5745980816926303222">Esta política está obsoleta. Usa la política <ph name="AUTOPLAY_ALLOWLIST_POLICY_NAME" /> en su lugar.
+
+      Si se establece esta política, los vídeos podrán reproducirse automáticamente (sin el consentimiento del usuario) con contenido de audio en <ph name="PRODUCT_NAME" />. Si se asigna el valor "True" a <ph name="AUTOPLAY_ALLOWED_POLICY_NAME" />, esta política no tendrá efecto. Si se asigna el valor "False" a <ph name="AUTOPLAY_ALLOWED_POLICY_NAME" />, todos los patrones de URL establecidos en esta política podrán reproducir contenido. Si se realizan cambios en esta política mientras <ph name="PRODUCT_NAME" /> está abierto, solo se aplicarán al abrir pestañas nuevas.
+
+      Para obtener información detallada sobre los patrones de URL válidos, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="574983287620584622">Habilitar las combinaciones de teclas para las funciones de accesibilidad en la pantalla de inicio de sesión</translation>
 <translation id="5755002458331714762"> Las API v0 de componentes web (Shadow DOM v0, Custom Elements v0 y HTML Imports) están obsoletas desde 2018 y se han inhabilitado de forma predeterminada desde M80. Esta política permite volver a habilitar estas funciones de forma selectiva hasta M84.
 
@@ -3334,7 +3347,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 
       Todos los elementos de esta lista son patrones que coinciden con el estilo de las extensiones. Para obtener más información, visita https://developer.chrome.com/extensions/match_patterns. Los usuarios pueden instalar fácilmente elementos procedentes de cualquier URL que coincida con un elemento de esta lista. Estos patrones deben permitir tanto la ubicación del archivo .crx como la página en la que se inicia la descarga (la URL referente).
 
-      <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" /> prevalece frente a esta política. Esto significa que las extensiones incluidas en la lista de bloqueados no se instalarán, aunque procedan de un sitio web incluido en esta lista.</translation>
+      <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" /> prevalece frente a esta política. Esto significa que las extensiones incluidas en la lista de bloqueadas no se instalarán, aunque procedan de un sitio web incluido en esta lista.</translation>
 <translation id="5861856285460256766">Configuración del código de acceso parental</translation>
 <translation id="5868414965372171132">Configuración de red de usuarios</translation>
 <translation id="587242272905978723">Permitir que <ph name="PLUGIN_VM_NAME" /> recoja datos de uso de <ph name="PLUGIN_VM_NAME" />.
@@ -3564,6 +3577,11 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 
       Nota: Esta política afecta a todas las salidas de audio, incluidas las funciones de accesibilidad de audio. No debes activarla si un usuario necesita un lector de pantalla.</translation>
 <translation id="6221175752766085998">Admite certificados emitidos por los anclajes de veracidad locales que no tienen la extensión subjectAlternativeName</translation>
+<translation id="6222839831045864769">Permite especificar qué hosts de mensajes nativos no se deben cargar.
+
+          Si el valor de una lista de bloqueados es un asterisco (*), se bloquearán todos los hosts de mensajes nativos excepto los que estén incluidos explícitamente en la lista de permitidos.
+
+          Si no se asigna ningún valor a esta política, <ph name="PRODUCT_NAME" /> cargará todos los hosts instalados de mensajes nativos.</translation>
 <translation id="6224304369267200483">Las URL y los dominios han permitido automáticamente la confirmación directa de la llave de seguridad</translation>
 <translation id="6233173491898450179">Establecer directorio de descargas</translation>
 <translation id="6234177445959386333">Configurar la lista de las URL de acceso de empresa en las que el servicio de protección de contraseñas debería capturar los hashes con salt de las contraseñas.</translation>
@@ -3910,6 +3928,24 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 
       Si se le asigna el valor "false" a esta política o no se le asigna ninguno, <ph name="PLUGIN_VM_NAME" /> no estará habilitado para el usuario.
       Si se le asigna el valor "true", <ph name="PLUGIN_VM_NAME" /> estará habilitado para el usuario (si los demás ajustes lo permiten). A <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> y <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> se les debe haber asignado el valor "true", y <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> o <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> deben haberse configurado para que <ph name="PLUGIN_VM_NAME" /> pueda ejecutarse.</translation>
+<translation id="6741496055862838205">Proporciona opciones de configuración de impresoras empresariales vinculadas a dispositivos.
+
+      Esta política permite proporcionar opciones de configuración de impresoras a dispositivos <ph name="PRODUCT_OS_NAME" />.  El formato es el mismo que el del diccionario NativePrinters, con un campo id o guid obligatorio por impresora para incluirla en una lista blanca o negra.
+
+      El tamaño máximo del archivo es de 5 MB y se debe codificar con formato JSON.  Se estima que el tamaño de un archivo que contiene unas 21.000 impresoras es de 5 MB.  Se usará el hash criptográfico para comprobar la integridad de la descarga.
+
+      El archivo se descargará y se almacenará en caché. Se volverá a descargar si se cambia la URL o el hash.
+
+      Si se establece esta política, <ph name="PRODUCT_OS_NAME" /> descargará el archivo con las configuraciones de las impresoras y estas estarán disponibles según lo especificado en las políticas <ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" /> y <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
+
+      Esta política no afecta a la capacidad de los usuarios de configurar impresoras en determinados dispositivos.  La política está pensada para servir de complemento de la configuración de impresoras que realizan los usuarios.
+
+      Esta política sirve de complemento de la política <ph name="BULK_PRINTERS_POLICY" />.
+
+      Si no se establece esta política, no habrá impresoras de dispositivos y se ignorará el resto de las políticas <ph name="DEVICE_NATIVE_PRINTERS_POLICY_PATTERN" />.
+
+      Esta política está obsoleta. Usa la política <ph name="DEVICE_PRINTERS" /> en su lugar.
+      </translation>
 <translation id="6752711782954612641">Si <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> está activada y se asigna un valor a <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" />, se especificarán los parámetros utilizados al buscar una URL con POST. Se compone de pares de nombre-valor separados por comas. Si un valor es un parámetro de plantilla, como <ph name="SEARCH_TERM_MARKER" />, se sustituirá por datos de términos de búsqueda reales.
 
       Si no se asigna ningún valor a <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" />, las solicitudes de búsqueda se enviarán mediante el método "get".</translation>
@@ -5163,7 +5199,7 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
           Si no se establece esta política, se utiliza un valor de tiempo predeterminado.
 
           El valor de esta política debe especificarse en milisegundos.</translation>
-<translation id="8604178325750278068">Si se asigna el valor "Habilitada" a esta política, el Asistente de Google podrá escuchar por si se pronuncia la frase de activación. Si se le asigna el valor "Inhabilitada", el Asistente de Google no podrá escuchar por si pronuncia esa frase.
+<translation id="8604178325750278068">Si se asigna el valor "Habilitada" a esta política, el Asistente de Google podrá escuchar por si se pronuncia la frase de activación. Si se le asigna el valor "Inhabilitada", el Asistente de Google no podrá escuchar por si se pronuncia esa frase.
 
       Si no se le asigna ningún valor, los usuarios podrán decidir si quieren activar esta función o no.</translation>
 <translation id="8606263947930257189">Permite controlar si <ph name="PRODUCT_NAME" /> puede inmovilizar las pestañas que hayan estado en segundo plano durante un mínimo de 5 minutos.
@@ -5214,6 +5250,11 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
       Si se inhabilita, la función de Respuestas rápidas no podrá acceder al contenido seleccionado.
       Si no se establece la política, los usuarios podrán decidir si permiten o no que la función de Respuestas rápidas acceda al contenido seleccionado.</translation>
 <translation id="8685024486845674965">La advertencia de protección de contraseña se activa al reutilizar la contraseña</translation>
+<translation id="8685680544554917389">Si se asigna el valor "True" a esta política, <ph name="PRODUCT_NAME" /> reproducirá automáticamente el contenido multimedia. Si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> no podrá reproducir automáticamente el contenido multimedia.
+
+       <ph name="PRODUCT_NAME" /> no reproduce automáticamente el contenido multimedia de forma predeterminada. Sin embargo, en determinados patrones de URL, puedes usar la política <ph name="AUTOPLAY_ALLOWLIST_POLICY_NAME" /> para cambiar este ajuste.
+
+      Si se realizan cambios en esta política mientras <ph name="PRODUCT_NAME" /> está abierto, solo se aplicarán al abrir pestañas nuevas.</translation>
 <translation id="8687958770985542440">Volver a habilitar la API v0 de componentes web hasta M84.</translation>
 <translation id="8693243869659262736">Utilizar cliente DNS integrado</translation>
 <translation id="8698286761337647563">Número de días de antelación para notificar a los usuarios de SAML que su contraseña está a punto de caducar</translation>
@@ -5555,8 +5596,8 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
 <translation id="9126014181388780690">"Permitir que el Asistente de Google acceda al contexto de la pantalla"</translation>
 <translation id="9130298333414322767">Envía información sobre el sistema del dispositivo.
 
-      Si se asigna el valor "false" a esta política o no se establece, no se enviará ninguna información.
-      Si se le asigna el valor "true", se enviará información sobre el sistema del dispositivo.</translation>
+      Si se asigna el valor "Falso" a esta política o no se establece, no se enviará ninguna información.
+      Si se le asigna el valor "Verdadero", se enviará información sobre el sistema del dispositivo.</translation>
 <translation id="913195841488580904">Bloquear el acceso a una lista de URL</translation>
 <translation id="9135033364005346124">Habilitar el proxy de <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9136399279941091445">Intervalos fuera del horario en los que se publican las políticas de dispositivos especificadas</translation>

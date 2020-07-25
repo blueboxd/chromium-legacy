@@ -24,9 +24,6 @@
 // Opens the offline page at |offlineURL| in a new tab.
 - (void)openOfflineURLInNewTabForContextMenuWithParams:
     (ReadingListContextMenuParams*)params;
-// Cancels the context menu created with |params|.
-- (void)cancelReadingListContextMenuWithParams:
-    (ReadingListContextMenuParams*)params;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_READING_LIST_CONTEXT_MENU_READING_LIST_CONTEXT_MENU_DELEGATE_H_

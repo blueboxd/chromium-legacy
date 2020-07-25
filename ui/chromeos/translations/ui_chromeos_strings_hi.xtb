@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">धूप के चश्मे</translation>
 <translation id="115443833402798225">हंगुल आनमाटी</translation>
 <translation id="1155759005174418845">कैटेलन</translation>
+<translation id="1172970565351728681">करीब <ph name="REMAINING_TIME" /> बाकी हैं</translation>
 <translation id="1173894706177603556">नाम बदलें</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> की कॉपी बन रही है...</translation>
 <translation id="1178581264944972037">रोकें</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">स्वामित्व <ph name="DESTINATION_DOMAIN" /> को स्थानांतरित कर दिया जाएगा.</translation>
 <translation id="3241720467332021590">आयरिश</translation>
 <translation id="3245321423178950146">अज्ञात कलाकार</translation>
+<translation id="3248185426436836442">रुका हुआ है</translation>
 <translation id="3252266817569339921">फ़्रांसीसी</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" />की फ़ाइलों के लिए डिफ़ॉल्ट ऐप्लिकेशन चुनें:</translation>
 <translation id="3264582393905923483">प्रसंग</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">आपके पास फ़ाइलों को '<ph name="FOLDER_NAME" />' में ले जाने की मंज़ूरी नहीं है.</translation>
 <translation id="3786301125658655746">आप ऑफ़लाइन हैं</translation>
 <translation id="3789841737615482174">इंस्‍टॉल करें</translation>
+<translation id="3793469551756281394">करीब <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> बाकी हैं</translation>
 <translation id="3798449238516105146">वर्शन</translation>
 <translation id="3801082500826908679">फ़ारोईस</translation>
 <translation id="3809272675881623365">खरगोश</translation>

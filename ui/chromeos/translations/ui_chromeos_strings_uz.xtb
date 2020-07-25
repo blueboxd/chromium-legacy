@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Qora ko‘zoynak</translation>
 <translation id="115443833402798225">Koreys (Ahnmatae)</translation>
 <translation id="1155759005174418845">Katalan tili</translation>
+<translation id="1172970565351728681">Taxminan <ph name="REMAINING_TIME" /> qoldi</translation>
 <translation id="1173894706177603556">Qayta nomlash</translation>
 <translation id="117624967391683467">“<ph name="FILE_NAME" />” fayli nusxalanmoqda...</translation>
 <translation id="1178581264944972037">Pauza</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Egalik huquqi <ph name="DESTINATION_DOMAIN" /> domeniga beriladi.</translation>
 <translation id="3241720467332021590">Irland tili</translation>
 <translation id="3245321423178950146">Notanish ijrochi</translation>
+<translation id="3248185426436836442">Kutilmoqda</translation>
 <translation id="3252266817569339921">Fransuzcha</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> fayllari uchun standart ilovani tanlang:</translation>
 <translation id="3264582393905923483">Kontekst</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Fayllarni “<ph name="FOLDER_NAME" />” jildiga ko‘chirishga ruxsatingiz yo‘q.</translation>
 <translation id="3786301125658655746">Siz hozir internetsiz rejimdasiz</translation>
 <translation id="3789841737615482174">O‘rnatish</translation>
+<translation id="3793469551756281394">Taxminan <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> qoldi</translation>
 <translation id="3798449238516105146">Versiya</translation>
 <translation id="3801082500826908679">Farer klaviaturasi</translation>
 <translation id="3809272675881623365">Quyon</translation>

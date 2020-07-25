@@ -324,7 +324,7 @@
 <translation id="1396259464226642517">האם התוצאה הזו הייתה בלתי צפויה? <ph name="BEGIN_LINK" />שליחת משוב<ph name="END_LINK" /></translation>
 <translation id="1396963298126346194">הזנת שם משתמש או סיסמה שגויים</translation>
 <translation id="1397500194120344683">אין מכשירים שיכולים להתחבר. <ph name="LINK_BEGIN" />מידע נוסף<ph name="LINK_END" /></translation>
-<translation id="1397738625398125236">אפשר לבדוק אם יש חיבור לשער באמצעות נדנוד</translation>
+<translation id="1397738625398125236">אפשר לבדוק אם יש חיבור לשער באמצעות פינג</translation>
 <translation id="1398853756734560583">הגדל</translation>
 <translation id="139911022479327130">ביטול הנעילה של הטלפון ואימות הזהות שלך</translation>
 <translation id="1399511500114202393">אין אישור משתמש</translation>
@@ -4552,7 +4552,7 @@
 <translation id="6701535245008341853">לא ניתן לקבל פרופיל.</translation>
 <translation id="6702639462873609204">&amp;ערוך...</translation>
 <translation id="6703966911896067184">איור של שגיאה בהרשמה</translation>
-<translation id="6704062477274546131">‏זיהוי DNS</translation>
+<translation id="6704062477274546131">‏פענוח DNS</translation>
 <translation id="6706210727756204531">היקף</translation>
 <translation id="6707389671160270963">‏אישור לקוח SSL</translation>
 <translation id="6709002550153567782">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> וכרטיסייה נוספת אחת}two{<ph name="PAGE_TITLE" /> ו-# כרטיסיות נוספות}many{<ph name="PAGE_TITLE" /> ו-# כרטיסיות נוספות}other{<ph name="PAGE_TITLE" /> ו-# כרטיסיות נוספות}}</translation>

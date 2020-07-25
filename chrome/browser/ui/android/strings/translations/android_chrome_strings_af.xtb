@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Dateer Chrome op</translation>
 <translation id="1569387923882100876">Gekoppelde toestel</translation>
 <translation id="1571304935088121812">Kopieer gebruikernaam</translation>
+<translation id="1592864538817356322">Standaardbeskerming:</translation>
 <translation id="1612196535745283361">Chrome benodig liggingtoegang om toestelle te soek. Liggingtoegang is <ph name="BEGIN_LINK" />afgeskakel vir hierdie toestel<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Verwyder 1 gekose item}other{Verwyder # gekose items}}</translation>
@@ -578,6 +579,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5659593005791499971">E-pos</translation>
 <translation id="5665379678064389456">Skep geleentheid in <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignoreer 'n webwerf se versoek om inzoem te verhoed</translation>
+<translation id="568275469169136466">Om tydelik aan te meld</translation>
 <translation id="5683547024293500885">Chrome kan nie nagaan of daar opdaterings is nie</translation>
 <translation id="5686790454216892815">Lêernaam is te lank</translation>
 <translation id="5694049548840660018">Gaan maklik terug na die tuisblad toe</translation>
@@ -589,6 +591,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5723735397759933332">Ligte modus bespaar jou nou meer data deur prente op HTTPS-bladsye te optimeer.</translation>
 <translation id="5726692708398506830">Maak alles op die bladsy groter</translation>
 <translation id="5732819098735351888">Aflaai sal begin op Wi-Fi.</translation>
+<translation id="5733983706093266635">Kan nie QR-kode skep nie. URL is meer as <ph name="CHARACTER_LIMIT" /> karakters.</translation>
 <translation id="5748802427693696783">Het na standaardoortjies oorgeskakel</translation>
 <translation id="5749068826913805084">Chrome het bergingtoegang nodig om lêers af te laai.</translation>
 <translation id="5749237766298580851">Af <ph name="SEPARATOR" /> Nie aanbeveel nie</translation>
@@ -641,6 +644,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="6111020039983847643">data gebruik</translation>
 <translation id="6112702117600201073">Herlaai tans bladsy</translation>
 <translation id="6127379762771434464">Item is verwyder</translation>
+<translation id="6140709049082532940">Verbeterde beskerming:</translation>
 <translation id="6140912465461743537">Land/streek</translation>
 <translation id="614940544461990577">Probeer:</translation>
 <translation id="6154478581116148741">Skakel skermslot in Instellings aan om jou wagwoorde van hierdie toestel af uit te voer</translation>
@@ -1017,6 +1021,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="9100610230175265781">Wagwoordfrase word vereis</translation>
 <translation id="9102803872260866941">Voorskou-oortjie is oopgemaak</translation>
 <translation id="9104217018994036254">Lys toestelle om 'n oortjie mee te deel.</translation>
+<translation id="9104402662006063371">Meld aan by incognitomodus</translation>
 <translation id="9108312223223904744">Foon as 'n sekuriteitsleutelvervanging</translation>
 <translation id="9108808586816295166">Veilige DNS is dalk nie die hele tyd beskikbaar nie</translation>
 <translation id="9133397713400217035">Verken vanlyn</translation>

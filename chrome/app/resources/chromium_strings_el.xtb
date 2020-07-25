@@ -222,6 +222,7 @@
 <translation id="8417404458978023919">{0,plural, =1{Επανεκκίνηση του Chromium σε μία ημέρα}other{Επανεκκίνηση του Chromium σε # ημέρες}}</translation>
 <translation id="8453117565092476964">Το αρχείο του προγράμματος εγκατάστασης είναι κατεστραμμένο ή μη έγκυρο. Κατεβάστε το Chromium ξανά.</translation>
 <translation id="8493179195440786826">Το Chromium δεν είναι ενημερωμένο</translation>
+<translation id="8545858702702650646">Επιλέξτε Chromium Space</translation>
 <translation id="8558383651099478961">Ο γονέας σου απενεργοποίησε την επιλογή "Άδειες για ιστοτόπους, εφαρμογές και επεκτάσεις" για το Chromium. Η προσθήκη του στοιχείου <ph name="EXTENSION_TYPE_PARAMETER" /> δεν επιτρέπεται.</translation>
 <translation id="8568283329061645092">Το Chromium μπορεί να ελέγξει τους κωδικούς πρόσβασής σας όταν συνδέεστε με τον Λογαριασμό σας Google.</translation>
 <translation id="8586442755830160949">Πνευματικά δικαιώματα <ph name="YEAR" /> Οι συντάκτες του Chromium. Με επιφύλαξη παντός δικαιώματος.</translation>
@@ -245,6 +246,7 @@
 <translation id="911206726377975832">Να γίνει διαγραφή και των δεδομένων περιήγησης;</translation>
 <translation id="9158494823179993217">Ο διαχειριστής συστήματος έχει διαμορφώσει το Chromium έτσι ώστε να ανοίγει άλλο πρόγραμμα περιήγησης για την πρόσβαση στη διεύθυνση <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Χρησιμοποιήστε τα Chromium Space, για να διατηρείτε οργανωμένη την περιήγησή σας σε αυτήν τη συσκευή.</translation>
 <translation id="93478295209880648">Το Chromium μπορεί να μην λειτουργεί σωστά, επειδή δεν υποστηρίζεται πια σε Windows XP και Windows Vista</translation>
 <translation id="95514773681268843">Το <ph name="DOMAIN" /> απαιτεί να διαβάσετε και να αποδεχτείτε τους ακόλουθους Όρους Παροχής Υπηρεσιών πριν από τη χρήση αυτής της συσκευής. Οι συγκεκριμένοι όροι δεν επεκτείνουν, τροποποιούν ή περιορίζουν τους όρους του Chromium OS.</translation>
 <translation id="985602178874221306">Οι συντάκτες του Chromium</translation>

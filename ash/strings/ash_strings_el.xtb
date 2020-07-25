@@ -8,7 +8,7 @@
 <translation id="1036672894875463507">Είμαι ο Βοηθός σας Google, εδώ για να σας προσφέρω βοήθεια όλη την ημέρα!
 Ακολουθούν ορισμένα πράγματα που μπορείτε να δοκιμάσετε για να ξεκινήσετε.</translation>
 <translation id="1037492556044956303">Προστέθηκε η συσκευή <ph name="DEVICE_NAME" /></translation>
-<translation id="1056775291175587022">Δεν βρέθηκαν δίκτυα</translation>
+<translation id="1056775291175587022">Κανένα δίκτυο</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="108486256082349153">Κινητό: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">Βαριέμαι</translation>
@@ -146,7 +146,7 @@
 <translation id="2582112259361606227">Επανεκκίνηση για ενημέρωση</translation>
 <translation id="2595239820337756193">5 χλμ. σε μίλια</translation>
 <translation id="2617342710774726426">Η κάρτα SIM είναι κλειδωμένη</translation>
-<translation id="2621713457727696555">Ασφαλές</translation>
+<translation id="2621713457727696555">Unsecured</translation>
 <translation id="2653659639078652383">Υποβολή</translation>
 <translation id="2658778018866295321">Κάντε κλικ και σύρετε</translation>
 <translation id="2700493154570097719">Ρύθμιση του πληκτρολογίου σας</translation>
@@ -175,7 +175,7 @@
 <translation id="2996462380875591307">Ο Μεγεθυντικός φακός σε παράθυρο ενεργοποιήθηκε. Πατήστε Ctrl+Αναζήτηση+D ξανά για να τον απενεργοποιήσετε.</translation>
 <translation id="3000461861112256445">Μονοφωνικός ήχος</translation>
 <translation id="3009178788565917040">Έξοδος</translation>
-<translation id="3033545621352269033">Ενεργοποιημένο</translation>
+<translation id="3033545621352269033">Eνεργό</translation>
 <translation id="3051128274746680507">Το προφίλ εποπτευόμενου χρήστη θα καταργηθεί σύντομα. Συνδεθείτε για να μάθετε περισσότερα.</translation>
 <translation id="3055162170959710888">Χρησιμοποιήσατε αυτήν τη συσκευή για <ph name="USED_TIME" /> σήμερα</translation>
 <translation id="3076778413190775903">Δίσκος κατάστασης, ώρα <ph name="TIME" />,
@@ -276,7 +276,7 @@
 <translation id="4028481283645788203">Απαιτείται κωδικός πρόσβασης για περισσότερη ασφάλεια.</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Μοιράζεστε την οθόνη σας</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Απενεργοποιημένες για κάποια εφαρμογή}other{Απενεργοποιημένες για # εφαρμογές}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Ανενεργές για κάποια εφαρμογή}other{Ανενεργές για # εφαρμογές}}</translation>
 <translation id="4072264167173457037">Μεσαίο σήμα</translation>
 <translation id="4112140312785995938">Αναζήτηση προς τα πίσω</translation>
 <translation id="4129129681837227511">Για να βλέπετε ειδοποιήσεις στην οθόνη κλειδώματος, ξεκλειδώστε τη συσκευή για να αλλάξετε τη ρύθμιση</translation>
@@ -393,7 +393,7 @@
 <translation id="5600837773213129531">Πιέστε Ctrl + Alt + Z, για να απενεργοποιήσετε τα εκφωνημένα σχόλια.</translation>
 <translation id="5625955975703555628">LTE+</translation>
 <translation id="5648021990716966815">Υποδοχή μικροφώνου</translation>
-<translation id="5669267381087807207">Ενεργοποίηση</translation>
+<translation id="5669267381087807207">Ενεργοπ.</translation>
 <translation id="5673434351075758678">Από "<ph name="FROM_LOCALE" />" σε "<ph name="TO_LOCALE" />" μετά τον συγχρονισμό των ρυθμίσεων.</translation>
 <translation id="5682642926269496722">Ο Βοηθός Google δεν είναι διαθέσιμος για τον τρέχοντα λογαριασμό χρήστη.</translation>
 <translation id="5689633613396158040">Ο Νυχτερινός φωτισμός διευκολύνει το θέαση της οθόνης ή την ανάγνωση σε συνθήκες χαμηλού φωτισμού. Πατήστε για να αλλάξετε την ώρα που ενεργοποιείται ο Νυχτερινός φωτισμός ή απενεργοποιήστε τον πλήρως.</translation>
@@ -616,7 +616,7 @@
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />, Μπαταρία τηλεφώνου <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409">Πατήστε το Enter για να ξεκλειδώσετε το <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Διαγραφή</translation>
-<translation id="828708037801473432">Απενεργοποιημένο</translation>
+<translation id="828708037801473432">Ανενεργό</translation>
 <translation id="8297006494302853456">Αδύναμο</translation>
 <translation id="8308637677604853869">Προηγούμενο μενού</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
@@ -639,7 +639,7 @@
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> έχει <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Πατήστε Alt+Search ή Shift για ακύρωση.</translation>
 <translation id="8492573885090281069">Η οθόνη <ph name="DISPLAY_NAME" /> δεν υποστηρίζει <ph name="SPECIFIED_RESOLUTION" />. Η ανάλυση άλλαξε σε <ph name="FALLBACK_RESOLUTION" />. Κάντε κλικ στην Επιβεβαίωση για να κρατήσετε τις αλλαγές. Θα γίνει επαναφορά των προηγούμενων ρυθμίσεων σε <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="8513108775083588393">Αυτόματη περιστροφή</translation>
+<translation id="8513108775083588393">Αυτ. περιστρ.</translation>
 <translation id="8517041960877371778">Δεν είναι δυνατή η φόρτιση της συσκευής <ph name="DEVICE_TYPE" /> ενώ είναι ενεργοποιημένη.</translation>
 <translation id="8563862697512465947">Ρυθμίσεις ειδοποίησης</translation>
 <translation id="857201607579416096">Το μενού μεταφέρθηκε στην κάτω δεξιά γωνία της οθόνης.</translation>
@@ -672,7 +672,7 @@
 <translation id="8843682306134542540">Εναλλαγή κλειδώματος περιστροφής. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Πλήκτρο αναζήτησης+Esc</translation>
 <translation id="8870509716567206129">Η εφαρμογή δεν υποστηρίζει διαχωρισμό οθόνης.</translation>
-<translation id="8874184842967597500">Δεν υπάρχει σύνδεση</translation>
+<translation id="8874184842967597500">Καμία σύνδεση</translation>
 <translation id="8877788021141246043">Ορισμός υπενθύμισης</translation>
 <translation id="8878886163241303700">Επέκταση οθόνης</translation>
 <translation id="890616557918890486">Αλλαγή πηγής</translation>

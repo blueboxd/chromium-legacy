@@ -562,6 +562,9 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="3364869320075768271"><ph name="URL" /> inataka kutumia data na kifaa chako cha uhalisia pepe</translation>
 <translation id="3366477098757335611">Angalia kadi</translation>
 <translation id="3369192424181595722">Hitilafu ya saa</translation>
+<translation id="3371076217486966826"><ph name="URL" /> inataka:
+      • Kuunda ramani ya 3D ya mazingira yako na kufuatilia mkao wa kamera yako
+      • Tumia kamera yako</translation>
 <translation id="337363190475750230">Imewekwa katika hali ya kutotumika</translation>
 <translation id="3377144306166885718">Seva ilitumia toleo la TLS lililopitwa na wakati.</translation>
 <translation id="3377188786107721145">Hitilafu ya kuchanganua sera</translation>
@@ -1559,6 +1562,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="7518003948725431193">Hakuna ukurasa wa wavuti uliopatikana kwa anwani hii ya wavuti: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Bahasha)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Sehemu ya "<ph name="SECTION" />" imefichwa</translation>
 <translation id="7526934274050461096">Muunganisho wako kwenye tovuti hii si wa faragha</translation>
 <translation id="7535087603100972091">Thamani</translation>
 <translation id="7537536606612762813">Lazima</translation>
@@ -1759,6 +1763,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="8293206222192510085">Ongeza Alamisho</translation>
 <translation id="8294431847097064396">Chanzo</translation>
 <translation id="8298115750975731693">Wi-Fi unayotumia (<ph name="WIFI_NAME" />) inaweza kukuhitaji kutembelea <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Sehemu ya "<ph name="SECTION" />" imeonyeshwa</translation>
 <translation id="830498451218851433">Kunja nusu</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Programu zilizosakinishwa na mara ambazo zinatumika</translation>
@@ -1877,6 +1882,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="8931333241327730545">Je, ungependa kuhifadhi kadi hii katika Akaunti yako ya Google?</translation>
 <translation id="8932102934695377596">Saa yako iko nyuma</translation>
 <translation id="893332455753468063">Ongeza Jina</translation>
+<translation id="8942355029279167844">Msimamizi wako ameruhusu <ph name="APP_NAME" /> kukusanya data ya uchunguzi ili kuboresha hali ya utumiaji wa bidhaa. Angalia <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> ili upate maelezo zaidi.</translation>
 <translation id="8943282376843390568">Chokaa</translation>
 <translation id="8957210676456822347">Uidhinishaji wa Ukurasa wa Wavuti</translation>
 <translation id="8962950042226115166">Tovuti inayotiliwa shaka</translation>

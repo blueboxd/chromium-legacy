@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Թարմացնել Chrome-ը</translation>
 <translation id="1569387923882100876">Կապված սարք</translation>
 <translation id="1571304935088121812">Պատճենել օգտանունը</translation>
+<translation id="1592864538817356322">Սովորական պաշտպանություն՝</translation>
 <translation id="1612196535745283361">Սարքեր գտնելու համար Chrome-ին անհրաժեշտ է տեղադրության հասանելիություն: Տեղադրության հասանելիությունն <ph name="BEGIN_LINK" />այս սարքում անջատված է<ph name="END_LINK" />։</translation>
 <translation id="1620510694547887537">Տեսախցիկ</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Հեռացնել ընտրված 1 տարրը}one{Remove # selected items}other{Հեռացնել ընտրված # տարրերը}}</translation>
@@ -578,6 +579,7 @@
 <translation id="5659593005791499971">Էլփոստ</translation>
 <translation id="5665379678064389456">Ստեղծեք միջոցառում <ph name="APP_NAME" /> հավելվածում</translation>
 <translation id="5668404140385795438">Անտեսել կայքերի՝ խոշորացումը կանխելու հարցումները</translation>
+<translation id="568275469169136466">ժամանակավորապես հաշիվ մտնելու համար</translation>
 <translation id="5683547024293500885">Chrome-ը չի կարող ստուգել թարմացումների առկայությունը</translation>
 <translation id="5686790454216892815">Ֆայլի անունը չափազանց երկար է</translation>
 <translation id="5694049548840660018">Արագ անցում գլխավոր էջ</translation>
@@ -589,6 +591,7 @@
 <translation id="5723735397759933332">HTTPS էջերում պատկերների օպտիմալացման շնորհիվ Lite ռեժիմն այժմ ավելի շատ թրաֆիկ է խնայում։</translation>
 <translation id="5726692708398506830">Էջում ամեն ինչ մեծացնել</translation>
 <translation id="5732819098735351888">Ներբեռնումը կսկսվի Wi-Fi ցանցով։</translation>
+<translation id="5733983706093266635">Չհաջողվեց ստեղծել QR կոդ։ URL-ը կարող է պարունակել առավելագույնը <ph name="CHARACTER_LIMIT" /> նիշ։</translation>
 <translation id="5748802427693696783">Դուք անցում կատարեցիք սովորական ներդիրների ռեժիմին</translation>
 <translation id="5749068826913805084">Ֆայլեր ներբեռնելու համար Chrome-ին անհրաժեշտ է պահեստի մուտք:</translation>
 <translation id="5749237766298580851">Անջատված է <ph name="SEPARATOR" /> Խորհուրդ չի տրվում</translation>
@@ -641,6 +644,7 @@
 <translation id="6111020039983847643">օգտագործվել է</translation>
 <translation id="6112702117600201073">Էջի թարմացում</translation>
 <translation id="6127379762771434464">Տարրը հեռացվեց</translation>
+<translation id="6140709049082532940">Լրացուցիչ պաշտպանություն՝</translation>
 <translation id="6140912465461743537">Երկիր/տարածաշրջան</translation>
 <translation id="614940544461990577">Փորձեք՝</translation>
 <translation id="6154478581116148741">Այս սարքից ձեր գաղտնաբառերն արտահանելու համար կարգավորումներում միացրեք էկրանի կողպումը։</translation>
@@ -1017,6 +1021,7 @@
 <translation id="9100610230175265781">Անհրաժեշտ է անցաբառ</translation>
 <translation id="9102803872260866941">Նախադիտման ներդիրը բացված է</translation>
 <translation id="9104217018994036254">Սարքերը, որոնց հետ կիսվելու եք ներդիրով:</translation>
+<translation id="9104402662006063371">Անցնեք ինկոգնիտո ռեժիմ,</translation>
 <translation id="9108312223223904744">Հեռախոսի օգտագործում որպես անվտանգության բանալի</translation>
 <translation id="9108808586816295166">Ապահով DNS-ը կարող է ամբողջ ընթացքում հասանելի չլինել</translation>
 <translation id="9133397713400217035">Դիտել անցանց ռեժիմում</translation>

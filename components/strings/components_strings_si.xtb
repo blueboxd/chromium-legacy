@@ -561,6 +561,9 @@
 <translation id="3364869320075768271"><ph name="URL" /> ඔබේ අතත්‍ය යථාර්ථ උපාංගය සහ දත්ත භාවිත කිරීමට කැමතියි</translation>
 <translation id="3366477098757335611">කාඩ්පත් බලන්න</translation>
 <translation id="3369192424181595722">ඔරලෝසු දෝෂය</translation>
+<translation id="3371076217486966826"><ph name="URL" /> හට පහත දේවල් අවශ්‍යයි:
+      • ඔබගේ අවට 3D සිතියමක් තැනීම සහ කැමරා පිහිටීම හඹා යාම
+      • ඔබගේ කැමරාව භාවිත කිරීම</translation>
 <translation id="337363190475750230">ප්‍රතිවිධාන කර ඇත</translation>
 <translation id="3377144306166885718">සේවාදායකය TLS හි යල් පැන ගිය අනුවාදයක් භාවිත කළා.</translation>
 <translation id="3377188786107721145">ප්‍රතිපත්ති විග්‍රහ දෝෂය</translation>
@@ -1557,6 +1560,7 @@
 <translation id="7518003948725431193">ජාල ලිපිනය සඳහා කිසිඳු ජාල පිටුවක් හමු නොවුනි: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (ලියුම් කවරය)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">"<ph name="SECTION" />" කොටස සඟවා ඇත</translation>
 <translation id="7526934274050461096">මෙම අඩවිය වෙත ඔබේ සබැඳුම පුද්ගලික නොවේ</translation>
 <translation id="7535087603100972091">අගය</translation>
 <translation id="7537536606612762813">අත්‍යාවශ්‍ය</translation>
@@ -1757,6 +1761,7 @@
 <translation id="8293206222192510085">පිටුසන එක් කරන්න</translation>
 <translation id="8294431847097064396">මූලාශ්‍රය</translation>
 <translation id="8298115750975731693">ඔබ භාවිතා කරන Wi-Fi (<ph name="WIFI_NAME" />) මගින් ඔබ <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> වෙත පිවිසීමට අවශ්‍ය විය හැක.</translation>
+<translation id="8303854710873047864">"<ph name="SECTION" />" කොටස පෙන්වන ලදි</translation>
 <translation id="830498451218851433">භාගයට නවන්න</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">ස්ථාපනය කළ යෙදුම් සහ ඒවා කොතරම් නිතර භාවිත කරන්නේද යන්න</translation>
@@ -1876,6 +1881,7 @@
 <translation id="8931333241327730545">ඔබට ඔබේ Google ගිණුම වෙත මෙම කාඩ්පත සුරැකීමට අවශ්‍යද?</translation>
 <translation id="8932102934695377596">ඔබගේ ඔරලෝසුව ඇත්තේ පිටුපසින් ය</translation>
 <translation id="893332455753468063">නම එක් කරන්න</translation>
+<translation id="8942355029279167844">ඔබගේ පරිපාලක <ph name="APP_NAME" /> හට නිෂ්පාදන අත්දැකීම වැඩිදියුණු කිරීම සඳහා දෝෂ නිර්ණ දත්ත රැස් කිරීමට ඉඩ දී ඇත. වැඩි විස්තර සඳහා <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> බලන්න.</translation>
 <translation id="8943282376843390568">දෙහි</translation>
 <translation id="8957210676456822347">බැඳි ද්වාර සත්‍යාපනය</translation>
 <translation id="8962950042226115166">සැක සහිත වෙබ් අඩවිය</translation>

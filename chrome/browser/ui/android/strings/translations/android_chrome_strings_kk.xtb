@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Chrome жаңарту</translation>
 <translation id="1569387923882100876">Қосылған құрылғы</translation>
 <translation id="1571304935088121812">Пайдаланушы атын көшіру</translation>
+<translation id="1592864538817356322">Стандартты қорғау:</translation>
 <translation id="1612196535745283361">Құрылғыларды іздеу үшін Chrome жүйесіне орналасу орны деректеріне кіру рұқсаты қажет. Мұндай рұқсат <ph name="BEGIN_LINK" />бұл құрылғы үшін өшірілген<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Таңдалған 1 элементті өшіру}other{Таңдалған # элементті өшіру}}</translation>
@@ -578,6 +579,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="5659593005791499971">Электрондық пошта</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> қолданбасында оқиға жасау</translation>
 <translation id="5668404140385795438">Веб-сайттардың үлкейтуге тыйым салу туралы сұрауларын елемеу</translation>
+<translation id="568275469169136466">Уақытша тіркелу үшін</translation>
 <translation id="5683547024293500885">Chrome жаңа нұсқалардың бар-жоғын тексере алмайды.</translation>
 <translation id="5686790454216892815">Файлдың аты тым ұзын</translation>
 <translation id="5694049548840660018">Негізгі экранға оңай өту</translation>
@@ -589,6 +591,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="5723735397759933332">Lite режимі HTTPS беттеріндегі кескіндерді оңтайландыру арқылы интернет трафигін үнемдейді.</translation>
 <translation id="5726692708398506830">Беттегі барлық элементтерді үлкейту</translation>
 <translation id="5732819098735351888">Wi-Fi арқылы жүктеп алынады.</translation>
+<translation id="5733983706093266635">QR кодын жасау мүмкін емес. URL мекенжайының ұзындығы <ph name="CHARACTER_LIMIT" /> таңба шегінен асып кеткен.</translation>
 <translation id="5748802427693696783">Стандартты қойындыларға ауысты</translation>
 <translation id="5749068826913805084">Файлдарды жүктеп алу үшін, Chrome-ға сақтау орнын пайдалану құқығы қажет.</translation>
 <translation id="5749237766298580851">Өшірулі <ph name="SEPARATOR" /> Ұсынылмайды</translation>
@@ -641,6 +644,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6111020039983847643">пайдаланылған деректер</translation>
 <translation id="6112702117600201073">Бетті жаңарту</translation>
 <translation id="6127379762771434464">Элемент жойылған</translation>
+<translation id="6140709049082532940">Жақсартылған қорғау:</translation>
 <translation id="6140912465461743537">Ел/аймақ</translation>
 <translation id="614940544461990577">Орындап көріңіз:</translation>
 <translation id="6154478581116148741">Құпия сөздерді бұл құрылғыдан экспорттау үшін "Параметрлер" бөлімінде экран құлпын қосыңыз</translation>
@@ -1017,6 +1021,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="9100610230175265781">Құпия фраза қажет</translation>
 <translation id="9102803872260866941">"Алдын ала қарау" қойындысы ашылды.</translation>
 <translation id="9104217018994036254">Қойынды жіберілетін құрылғылар тізімі.</translation>
+<translation id="9104402662006063371">Инкогнито режиміне өту</translation>
 <translation id="9108312223223904744">Телефонның қауіпсіздік кілті ретінде қолдауы</translation>
 <translation id="9108808586816295166">Қауіпсіз DNS барлық уақытта қолжетімді болмауы мүмкін.</translation>
 <translation id="9133397713400217035">Офлайн режимде</translation>

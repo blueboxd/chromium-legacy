@@ -220,6 +220,7 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="8417404458978023919">{0,plural, =1{Chromium'u bir gün ərzində yenidən başladın}other{Chromium'u # gün ərzində yenidən başladın}}</translation>
 <translation id="8453117565092476964">Quraşdırıcı arxivi zədələnib və ya yanlışdır. Lütfən, Chromium'u yenidən endirin.</translation>
 <translation id="8493179195440786826">Chromium'um vaxtı keçib</translation>
+<translation id="8545858702702650646">Chromium Sahənizi seçin</translation>
 <translation id="8558383651099478961">Valideyniniz Chromium üçün "Saytlar, tətbiqlər və artırmalar üçün icazələri" deaktiv edib. Bu <ph name="EXTENSION_TYPE_PARAMETER" /> artırmasının əlavə edilməsinə icazə verilmir.</translation>
 <translation id="8568283329061645092">Google Hesabınız ilə daxil olduqda Chromium parollarınızı yoxlaya bilər</translation>
 <translation id="8586442755830160949">Müəlliflik Hüququ <ph name="YEAR" /> Chromium Müəllifləri. Bütün hüquqlar qorunur.</translation>
@@ -243,6 +244,7 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="911206726377975832">Brauzinq datanız da silinsin?</translation>
 <translation id="9158494823179993217">Sistem administratoru Chromium'u <ph name="TARGET_URL_HOSTNAME" /> ünvanına daxil olmaq məqsədilə alternativ brauzer açmaq üçün konfiqurasiya edib.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Bu cihazda baxışın yaxşı təşkil olunması üçün Chromium Sahələr istifadə edin</translation>
 <translation id="93478295209880648">Chromium düzgün işləməyə bilər, çünki daha Windows XP və ya Windows Vista'da dəstəklənmir</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> bu cihazı istifadə etməzdən əvvəl aşağıdakı Xidmət Şərtlərini oxuyub razılaşmağı tələb edir. Bu şərtlər Chromium OS Şərtlərini artırmır, dəyişdirmir və ya məhdudlaşdırmır.</translation>
 <translation id="985602178874221306">Chromium Müəllifləri</translation>

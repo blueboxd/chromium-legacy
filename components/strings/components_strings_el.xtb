@@ -563,6 +563,9 @@
 <translation id="3364869320075768271">Το <ph name="URL" /> θέλει να χρησιμοποιήσει τη συσκευή και τα δεδομένα εικονικής πραγματικότητας.</translation>
 <translation id="3366477098757335611">Προβολή καρτών</translation>
 <translation id="3369192424181595722">Σφάλμα ρολογιού</translation>
+<translation id="3371076217486966826">Ο ιστότοπος <ph name="URL" /> θέλει:
+      • Να δημιουργήσει έναν τρισδιάστατο χάρτη του περιβάλλοντα χώρου σας και να παρακολουθεί τη θέση της κάμερας
+      • Να χρησιμοποιήσει την κάμερά σας</translation>
 <translation id="337363190475750230">Κατάργηση παροχής</translation>
 <translation id="3377144306166885718">Ο διακομιστής έχει παρωχημένη έκδοση TLS.</translation>
 <translation id="3377188786107721145">Σφάλμα ανάλυσης πολιτικής</translation>
@@ -1563,6 +1566,7 @@
 <translation id="7518003948725431193">Δεν βρέθηκε καμία ιστοσελίδα για τη διεύθυνση ιστού:<ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Φάκελος)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Η ενότητα <ph name="SECTION" /> δεν εμφανίζεται</translation>
 <translation id="7526934274050461096">Η σύνδεσή σας σε αυτόν τον ιστότοπο δεν είναι ιδιωτική</translation>
 <translation id="7535087603100972091">Τιμή</translation>
 <translation id="7537536606612762813">Υποχρεωτική</translation>
@@ -1763,6 +1767,7 @@
 <translation id="8293206222192510085">Προσθήκη σελιδοδείκτη</translation>
 <translation id="8294431847097064396">Πηγή</translation>
 <translation id="8298115750975731693">Το Wi-Fi που χρησιμοποιείτε (<ph name="WIFI_NAME" />) ενδέχεται να σας ζητήσει να επισκεφτείτε τη διεύθυνση <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Εμφανίζεται η ενότητα <ph name="SECTION" /></translation>
 <translation id="830498451218851433">Δίπλωση στη μέση</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Εγκατεστημένες εφαρμογές και η συχνότητα χρήσης τους</translation>
@@ -1883,6 +1888,7 @@
 <translation id="8931333241327730545">Θέλετε να αποθηκεύσετε αυτήν την κάρτα στο Λογαριασμό σας Google;</translation>
 <translation id="8932102934695377596">Το ρολόι σας πάει πίσω</translation>
 <translation id="893332455753468063">Προσθήκη ονόματος</translation>
+<translation id="8942355029279167844">Ο διαχειριστής επέτρεψε στην εφαρμογή <ph name="APP_NAME" /> να συλλέγει διαγνωστικά στοιχεία για τη βελτίωση της εμπειρίας του προϊόντος. Ανατρέξτε στη διεύθυνση <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> για περισσότερες πληροφορίες.</translation>
 <translation id="8943282376843390568">Λάιμ</translation>
 <translation id="8957210676456822347">Εξουσιοδότηση πύλης υποδοχής</translation>
 <translation id="8962950042226115166">Ύποπτος ιστότοπος</translation>

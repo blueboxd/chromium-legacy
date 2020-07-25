@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Solbriller</translation>
 <translation id="115443833402798225">Hangul Ahnmatae</translation>
 <translation id="1155759005174418845">Katalansk</translation>
+<translation id="1172970565351728681">Omtrent <ph name="REMAINING_TIME" /> gjenstår</translation>
 <translation id="1173894706177603556">Gi nytt navn</translation>
 <translation id="117624967391683467">Kopierer <ph name="FILE_NAME" /> ...</translation>
 <translation id="1178581264944972037">Stans midlertidig</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Eierskapet overføres til <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">Irsk</translation>
 <translation id="3245321423178950146">Ukjent artist</translation>
+<translation id="3248185426436836442">Venter</translation>
 <translation id="3252266817569339921">Fransk</translation>
 <translation id="3254434849914415189">Velg standardapp for <ph name="FILE_TYPE" />-filer:</translation>
 <translation id="3264582393905923483">Kontekst</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Du har ikke tillatelse til å flytte filer til «<ph name="FOLDER_NAME" />».</translation>
 <translation id="3786301125658655746">Du er ikke tilkoblet Internett</translation>
 <translation id="3789841737615482174">Installer</translation>
+<translation id="3793469551756281394">Omtrent <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> gjenstår</translation>
 <translation id="3798449238516105146">Versjon</translation>
 <translation id="3801082500826908679">Færøysk</translation>
 <translation id="3809272675881623365">Kanin</translation>

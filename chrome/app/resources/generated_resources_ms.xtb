@@ -408,6 +408,7 @@
 <translation id="1500297251995790841">Peranti tidak diketahui [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">Akaun pemilik ini perlu menjadi akaun dilog masuk yang pertama dalam sesi berbilang log masuk.</translation>
 <translation id="150411034776756821">Alih keluar <ph name="SITE" /></translation>
+<translation id="1504551620756424144">Folder kongsi tersedia dalam Windows di <ph name="BASE_DIR" />.</translation>
 <translation id="1506061864768559482">Enjin carian</translation>
 <translation id="1507170440449692343">Halaman ini telah disekat daripada mengakses kamera anda.</translation>
 <translation id="1507246803636407672">&amp;Buang</translation>
@@ -652,6 +653,7 @@
 <translation id="177989070088644880">Apl (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Tutup Kumpulan</translation>
 <translation id="1781291988450150470">PIN semasa</translation>
+<translation id="1781398670452016618"><ph name="DOMAIN" /> menghendaki anda menyambung kepada Wi-Fi sekarang dan memuat turun kemas kini.</translation>
 <translation id="1781502536226964113">Buka halaman Tab Baharu</translation>
 <translation id="1781771911845953849">Akaun dan penyegerakan</translation>
 <translation id="1782196717298160133">Mencari telefon anda</translation>
@@ -1849,6 +1851,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="3274763671541996799">Anda telah menggunakan skrin penuh.</translation>
 <translation id="3275778809241512831">Kunci keselamatan dalaman tidak selamat pada masa ini. Sila alih keluar kunci tersebut daripada mana-mana perkhidmatan yang menggunakan kunci itu. Untuk menyelesaikan isu ini, sila tetapkan semula kunci keselamatan.</translation>
 <translation id="3275778913554317645">Buka sebagai tetingkap</translation>
+<translation id="3277691515294482687">Sandarkan apl dan fail saya pada folder Fail Saya sebelum meningkatkan Linux.</translation>
 <translation id="3278001907972365362">Akaun Google anda memerlukan perhatian</translation>
 <translation id="3279230909244266691">Proses ini mungkin mengambil masa beberapa minit. Memulakan mesin maya.</translation>
 <translation id="3280237271814976245">Simpan &amp;sebagai...</translation>
@@ -2150,7 +2153,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="3636096452488277381">Helo, <ph name="USER_GIVEN_NAME" /> .</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - berbaki <ph name="TIME" /></translation>
 <translation id="3637682276779847508">Kad SIM anda akan dilumpuhkan secara kekal jika anda tidak dapat memasukkan Kunci Buka Kunci PIN yang betul.</translation>
-<translation id="3639220004740062347">Keluar Daripada Mod Pembaca</translation>
+<translation id="3639220004740062347">Keluar daripada Mod Pembaca</translation>
 <translation id="3640214691812501263">Tambahkan "<ph name="EXTENSION_NAME" />" untuk <ph name="USER_NAME" />?</translation>
 <translation id="3640613767643722554">Ajar Assistant supaya mengecam suara anda</translation>
 <translation id="3645372836428131288">Bergerak sedikit untuk menangkap bahagian lain cap jari.</translation>
@@ -2251,7 +2254,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="3748706263662799310">Laporkan pepijat</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">Peranti saya</translation>
-<translation id="3752757212511661046">Cipta Profil Kerja?</translation>
+<translation id="3752757212511661046">Buat Profil Kerja?</translation>
 <translation id="3753033997400164841">Simpan sekali. Gunakan di mana-mana</translation>
 <translation id="3755411799582650620"><ph name="PHONE_NAME" /> anda kini boleh membuka kunci <ph name="DEVICE_TYPE" /> ini juga.</translation>
 <translation id="375636864092143889">Tapak sedang menggunakan mikrofon anda</translation>
@@ -4919,7 +4922,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="7141105143012495934">Log masuk gagal kerana butiran akaun anda tidak boleh didapatkan semula. Sila hubungi pentadbir anda atau cuba lagi.</translation>
 <translation id="7143207342074048698">Menyambung</translation>
 <translation id="7144878232160441200">Cuba semula</translation>
-<translation id="714876143603641390">Kesambungan Lan</translation>
+<translation id="714876143603641390">Kesambungan LAN</translation>
 <translation id="7149893636342594995">24 jam yang lalu</translation>
 <translation id="715118844758971915">Pencetak klasik</translation>
 <translation id="7152478047064750137">Sambungan ini tidak memerlukan kebenaran khas</translation>
@@ -6415,7 +6418,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8986362086234534611">Lupa</translation>
 <translation id="8986494364107987395">Hantar statistik penggunaan dan laporan nahas kepada Google secara automatik</translation>
 <translation id="8987927404178983737">Bulan</translation>
-<translation id="8990209962746788689">Tidak dapat mencipta kod QR</translation>
+<translation id="8990209962746788689">Tidak dapat membuat kod QR</translation>
 <translation id="8991520179165052608">Tapak boleh menggunakan mikrofon anda</translation>
 <translation id="8992117551007229513">{COUNT,plural, =1{1 item}other{# item}}</translation>
 <translation id="899384117894244799">Alih keluar pengguna yang disekat</translation>

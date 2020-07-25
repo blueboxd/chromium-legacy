@@ -556,6 +556,9 @@
 <translation id="3364869320075768271"><ph name="URL" /> የእርስዎን ምናባዊ እውነታ መሣሪያ እና ውሂብ መጠቀም ይፈልጋል</translation>
 <translation id="3366477098757335611">ካርዶችን ይመልከቱ</translation>
 <translation id="3369192424181595722">የሰዓት ስህተት</translation>
+<translation id="3371076217486966826"><ph name="URL" /> የሚከተሉትን ማድረግ ይፈልጋል፦
+      • የዙሪያዎ የ3ል ካርታ መፍጠር እና የካሜራ ቦታን መከታተል 
+      • የእርስዎን ካሜራ መጠቀም</translation>
 <translation id="337363190475750230">አቅርቦት ተቋርጧል</translation>
 <translation id="3377144306166885718">አገልጋዩ ጊዜ ያለፈበት የTLS ስሪት ተጠቅመዋል።</translation>
 <translation id="3377188786107721145">የመምሪያ ትንተና ስህተት</translation>
@@ -1552,6 +1555,7 @@
 <translation id="7518003948725431193">ለዚህ የድር አድራሻ ምንም ድረ-ገጽ አልተገኘም፦ <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (የደብዳቤ ፖስታ)</translation>
 <translation id="7521387064766892559">ጃቫስክሪፕት</translation>
+<translation id="7521825010239864438">የ«<ph name="SECTION" />» ክፍል ተደብቋል</translation>
 <translation id="7526934274050461096">ከዚሃ ጣቢያ ጋር ያለዎት ግንኙነት የግል አይደለም</translation>
 <translation id="7535087603100972091">እሴት</translation>
 <translation id="7537536606612762813">ግዴታ</translation>
@@ -1752,6 +1756,7 @@
 <translation id="8293206222192510085">እልባት ያክሉ</translation>
 <translation id="8294431847097064396">ምንጭ</translation>
 <translation id="8298115750975731693">እየተጠቀሙበት ያለው Wi-Fi (<ph name="WIFI_NAME" />) <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />ን እንዲጎበኙ ሊጠይቅዎት ይችላል።</translation>
+<translation id="8303854710873047864">የ«<ph name="SECTION" />» ክፍሉ ታይቷል</translation>
 <translation id="830498451218851433">ግማሽ እጠፍ</translation>
 <translation id="8307358339886459768">ትንሽ-ፎቶ</translation>
 <translation id="8307888238279532626">መተግበሪያዎች ተጭነዋል እና ምን ያህል ጊዜ ስራ ላይ የሚውሉ</translation>
@@ -1872,6 +1877,7 @@
 <translation id="8931333241327730545">ይህን ካርድ በእርስዎ የGoogle መለያ ላይ ማስቀመጥ ይፈልጋሉ?</translation>
 <translation id="8932102934695377596">የእርስዎ ሰዓት ወደ ኋላ ቀርቷል</translation>
 <translation id="893332455753468063">ስም ያክሉ</translation>
+<translation id="8942355029279167844">የእርስዎ አስተዳዳሪ <ph name="APP_NAME" /> የምርቱን ተሞክሮ ለማሻሻል የምርመራዎች ውሂብ እንዲሰበስብ ፈቅዷል። ተጨማሪ መረጃ ለማግኘት <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />ን ይመልከቱ።</translation>
 <translation id="8943282376843390568">ሎሚ ቀለም</translation>
 <translation id="8957210676456822347">የተያዥ መግቢያ ፈቀዳ</translation>
 <translation id="8962950042226115166">አጠራጣሪ ጣቢያ</translation>

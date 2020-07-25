@@ -578,6 +578,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5665379678064389456">Créer un événement dans <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignore la demande d'un site d'empêcher les zooms avant</translation>
+<translation id="5683547024293500885">Chrome ne parvient pas à rechercher les mises à jour</translation>
 <translation id="5686790454216892815">Nom de fichier trop long</translation>
 <translation id="5694049548840660018">Revenir facilement à l'accueil</translation>
 <translation id="569536719314091526">Traduire cette page dans n'importe quelle langue à partir du bouton "Plus d'options"</translation>
@@ -590,6 +591,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5732819098735351888">Le téléchargement va être lancé via le réseau Wi-Fi.</translation>
 <translation id="5748802427693696783">Onglets standards sélectionnés</translation>
 <translation id="5749068826913805084">Pour télécharger des fichiers, Chrome a besoin d'accéder à l'espace de stockage.</translation>
+<translation id="5749237766298580851">Désactivée <ph name="SEPARATOR" /> Non recommandée</translation>
 <translation id="5754350196967618083">Impossible d'actualiser Discover</translation>
 <translation id="5763382633136178763">Onglets de navigation privée</translation>
 <translation id="5763514718066511291">Appuyez pour copier l'URL pour cette application</translation>
@@ -997,6 +999,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8970887620466824814">Un problème est survenu</translation>
 <translation id="8972098258593396643">Télécharger dans le dossier par défaut ?</translation>
 <translation id="8988028529677883095">Utiliser un téléphone comme clé de sécurité</translation>
+<translation id="8990209962746788689">Impossible de créer le code QR</translation>
 <translation id="8993760627012879038">Ouvrir un nouvel onglet en mode navigation privée</translation>
 <translation id="8998729206196772491">Vous vous connectez avec un compte géré par <ph name="MANAGED_DOMAIN" />, ce qui permettra à son administrateur de contrôler vos données Chrome. Celles-ci seront définitivement associées à ce compte. Si vous vous déconnectez de Chrome, vos données seront supprimées de cet appareil, mais elles seront conservées dans votre compte Google.</translation>
 <translation id="9028914725102941583">Activer la synchronisation pour partager des contenus entre des appareils</translation>

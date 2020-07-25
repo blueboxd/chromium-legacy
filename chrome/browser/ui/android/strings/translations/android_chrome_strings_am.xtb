@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Chromeን አዘምን</translation>
 <translation id="1569387923882100876">የተገናኘ መሣሪያ</translation>
 <translation id="1571304935088121812">የተጠቃሚ ስምን ቅዳ</translation>
+<translation id="1592864538817356322">መደበኛ ጥበቃ፦</translation>
 <translation id="1612196535745283361">Chrome መሣሪያዎችን መቃኘት እንዲችል የአካባቢ መዳረሻ ያስፈልገዋል። የአካባቢ መዳረሻ <ph name="BEGIN_LINK" />ለዚህ መሣሪያ ጠፍቷል<ph name="END_LINK" />።</translation>
 <translation id="1620510694547887537">ካሜራ</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{1 የተመረጠ ንጥልን አስወግድ}one{# የተመረጡ ንጥሎችን አስወግድ}other{# የተመረጡ ንጥሎችን አስወግድ}}</translation>
@@ -578,6 +579,7 @@
 <translation id="5659593005791499971">ኢሜይል</translation>
 <translation id="5665379678064389456">በ<ph name="APP_NAME" /> ውስጥ ክስተት ይፍጠሩ</translation>
 <translation id="5668404140385795438">የአንድ ድር ጣቢያ ማጉላትን መከልከል ጥያቄ ሻር</translation>
+<translation id="568275469169136466">ለጊዜው ለመግባት</translation>
 <translation id="5683547024293500885">Chrome ዝማኔዎች ካሉ መፈተሽ አይችልም</translation>
 <translation id="5686790454216892815">የፋይሉ ስም በጣም ረጅም ነው</translation>
 <translation id="5694049548840660018">በቀላሉ ወደ ቤት ይመለሱ</translation>
@@ -589,6 +591,7 @@
 <translation id="5723735397759933332">ቀላል ሁነታ አሁን በኤችቲቲፒኤስ ገጾች ላይ ምስሎችን በማላቅ ተጨማሪ ውሂብ ያስቀምጠዎታል።</translation>
 <translation id="5726692708398506830">በገጹ ላይ ያለውን ሁሉንም ነገር ይበልጥ አተልቅ</translation>
 <translation id="5732819098735351888">ውርድ በWi-Fi ላይ ይጀመራል።</translation>
+<translation id="5733983706093266635">የQR ኮድ መፍጠር አልተቻለም። ዩአርኤል ከ<ph name="CHARACTER_LIMIT" /> ቁምፊዎች ይበልጣል።</translation>
 <translation id="5748802427693696783">ወደ መደበኛ ትሮች ቀይር</translation>
 <translation id="5749068826913805084">Chrome ፋይሎችን ለማውረድ የማከማቻ መዳረሻ ያስፈልገዋል።</translation>
 <translation id="5749237766298580851">አጥፋ <ph name="SEPARATOR" /> አይመከርም</translation>
@@ -641,6 +644,7 @@
 <translation id="6111020039983847643">ጥቅም ላይ የዋለው ውሂብ</translation>
 <translation id="6112702117600201073">ገጽ በማደስ ላይ</translation>
 <translation id="6127379762771434464">ንጥል ተወግዷል</translation>
+<translation id="6140709049082532940">የላቀ ጥበቃ</translation>
 <translation id="6140912465461743537">አገር/ክልል</translation>
 <translation id="614940544461990577">ይሞክሩ፦</translation>
 <translation id="6154478581116148741">የይለፍ ቃላትዎን ከዚህ መሣሪያ ወደ ውጭ ለመላክ በቅንብሮች ውስጥ የማያ ገጽ ቁልፍን ያብሩ</translation>
@@ -1017,6 +1021,7 @@
 <translation id="9100610230175265781">የይለፍ ሐረግ ያስፈልጋል</translation>
 <translation id="9102803872260866941">የቅድመ-እይታ ትር ተከፍቷል</translation>
 <translation id="9104217018994036254">ትርን ለመጋራት የሚሆኑ የመሣሪያዎች ዝርዝር።</translation>
+<translation id="9104402662006063371">ወደ ማንነት የማያሳውቅ ሁነታ ይሂዱ</translation>
 <translation id="9108312223223904744">ስልክ እንደ የደህንነት ቁልፍ ድጋፍ</translation>
 <translation id="9108808586816295166">ደህንነቱ የተጠበቀ ዲኤንኤስ ሁልጊዜ ሊገኝ የሚችል ላይሆን ይችላል</translation>
 <translation id="9133397713400217035">ከመስመር ውጭ ያስሱ</translation>

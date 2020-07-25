@@ -14,7 +14,7 @@ def CheckChangeLintsClean(input_api, output_api, allowlist, denylist=None):
       input_api, output_api, source_filter, lint_filters=[], verbose_level=1)
 
 def CheckAsserts(input_api, output_api, allowlist, denylist=None):
-  denylist = tuple(denylist or input_api.DEFAULT_BLACK_LIST)
+  denylist = tuple(denylist or input_api.DEFAULT_FILES_TO_SKIP)
   source_file_filter = lambda x: input_api.FilterSourceFile(x, allowlist, denylist)
 
   assert_files = []
@@ -33,7 +33,7 @@ def CheckAsserts(input_api, output_api, allowlist, denylist=None):
 
 def CheckStdAbs(input_api, output_api,
                 allowlist, denylist=None):
-  denylist = tuple(denylist or input_api.DEFAULT_BLACK_LIST)
+  denylist = tuple(denylist or input_api.DEFAULT_FILES_TO_SKIP)
   source_file_filter = lambda x: input_api.FilterSourceFile(x,
                                                             allowlist,
                                                             denylist)
@@ -81,7 +81,7 @@ def CheckPassByValue(input_api,
                      output_api,
                      allowlist,
                      denylist=None):
-  denylist = tuple(denylist or input_api.DEFAULT_BLACK_LIST)
+  denylist = tuple(denylist or input_api.DEFAULT_FILES_TO_SKIP)
   source_file_filter = lambda x: input_api.FilterSourceFile(x,
                                                             allowlist,
                                                             denylist)
@@ -246,7 +246,7 @@ def CheckForUseOfWrongClock(input_api,
                             allowlist,
                             denylist=None):
   """Make sure new lines of code don't use a clock susceptible to skew."""
-  denylist = tuple(denylist or input_api.DEFAULT_BLACK_LIST)
+  denylist = tuple(denylist or input_api.DEFAULT_FILES_TO_SKIP)
   source_file_filter = lambda x: input_api.FilterSourceFile(x,
                                                             allowlist,
                                                             denylist)

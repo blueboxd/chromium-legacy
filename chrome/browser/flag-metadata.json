@@ -3458,6 +3458,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "password-change-in-settings",
+    "owners": [ "kolos" ],
+    "expiry_milestone": 89
+  },
+  {
     "name": "password-change-support",
     "owners": [ "selakovic" ],
     "expiry_milestone": 87

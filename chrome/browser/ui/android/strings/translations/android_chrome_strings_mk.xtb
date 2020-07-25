@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Ажурирај го Chrome</translation>
 <translation id="1569387923882100876">Поврзан уред</translation>
 <translation id="1571304935088121812">Копирај го корисничкото име</translation>
+<translation id="1592864538817356322">Стандардна заштита:</translation>
 <translation id="1612196535745283361">На Chrome му треба пристап до локацијата за да скенира уреди. Пристапот до локацијата е <ph name="BEGIN_LINK" />исклучен за овој уред<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Отстрани 1 избрана ставка}one{Отстрани # избрана ставка}other{Отстрани # избрани ставки}}</translation>
@@ -578,6 +579,7 @@
 <translation id="5659593005791499971">Е-пошта</translation>
 <translation id="5665379678064389456">Создаjте настан во <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Отфрли го барањето на веб-локацијата да спречи зумирање</translation>
+<translation id="568275469169136466">За да се најавите привремено</translation>
 <translation id="5683547024293500885">Chrome не може да провери за ажурирања</translation>
 <translation id="5686790454216892815">Името на датотеката е предолго</translation>
 <translation id="5694049548840660018">Вратете се дома лесно</translation>
@@ -589,6 +591,7 @@
 <translation id="5723735397759933332">Lite-режимот отсега ќе ви штеди повеќе интернет со оптимизирање слики на HTTPS-страниците.</translation>
 <translation id="5726692708398506830">Зголеми сѐ што се наоѓа на страницата</translation>
 <translation id="5732819098735351888">Преземањето ќе започне преку Wi-Fi.</translation>
+<translation id="5733983706093266635">Не може да се создаде QR-код. URL-адресата има повеќе од <ph name="CHARACTER_LIMIT" /> знаци.</translation>
 <translation id="5748802427693696783">Префрлено на стандардни картички</translation>
 <translation id="5749068826913805084">На Chrome му треба пристап до меморијата за да презема датотеки.</translation>
 <translation id="5749237766298580851">Исклучено <ph name="SEPARATOR" /> Не се препорачува</translation>
@@ -641,6 +644,7 @@
 <translation id="6111020039983847643">искористен сообраќај</translation>
 <translation id="6112702117600201073">Страницата се освежува</translation>
 <translation id="6127379762771434464">Ставката е отстранета</translation>
+<translation id="6140709049082532940">Подобрена заштита:</translation>
 <translation id="6140912465461743537">Држава/регион</translation>
 <translation id="614940544461990577">Обидете се:</translation>
 <translation id="6154478581116148741">Вклучете го заклучувањето на екранот во „Поставки“ за да ги извезете лозинките од уредов</translation>
@@ -1017,6 +1021,7 @@
 <translation id="9100610230175265781">Потребна е лозинка-фраза</translation>
 <translation id="9102803872260866941">Картичката за преглед е отворена</translation>
 <translation id="9104217018994036254">Список со уреди за споделување картичка.</translation>
+<translation id="9104402662006063371">Оди во режим инкогнито</translation>
 <translation id="9108312223223904744">Телефонот како поддршка во вид на безбедносен клуч</translation>
 <translation id="9108808586816295166">Безбедниот DNS можеби не е достапен во секое време</translation>
 <translation id="9133397713400217035">Истражете офлајн</translation>

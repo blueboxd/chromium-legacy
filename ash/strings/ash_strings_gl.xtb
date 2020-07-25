@@ -277,7 +277,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="4028481283645788203">É necesario escribir o contrasinal para obter seguranza adicional</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Estás compartindo a pantalla</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Opción desactivada para unha aplicación}other{Opción desactivada para # aplicacións}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Non para 1 app}other{Non para # apps}}</translation>
 <translation id="4072264167173457037">Sinal medio</translation>
 <translation id="4112140312785995938">Retroceder</translation>
 <translation id="4129129681837227511">Para ver notificacións na pantalla de bloqueo, desbloquea o dispositivo e cambia a opción de configuración correspondente</translation>
@@ -385,7 +385,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="5496819745535887422">O administrador está instalando unha versión anterior no teu dispositivo. Ao reinicialo, eliminaranse todos os datos.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Pechando sesión</translation>
-<translation id="5537725057119320332">Cast</translation>
+<translation id="5537725057119320332">Emitir</translation>
 <translation id="5548285847212963613">A extensión "<ph name="EXTENSION_NAME" />" pode axudar a conectarte a esta rede.</translation>
 <translation id="554893713779400387">Activar ou desactivar ditado</translation>
 <translation id="556042886152191864">Botón</translation>
@@ -401,7 +401,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="5691772641933328258">Non se recoñeceu a impresión dixital</translation>
 <translation id="5710450975648804523">O modo Non molestar está activado</translation>
 <translation id="573413375004481890">Este dispositivo non puido admitir todas as túas liñas de braille, así que se desconectou unha</translation>
-<translation id="574392208103952083">Mediano</translation>
+<translation id="574392208103952083">Medio</translation>
 <translation id="5744083938413354016">Acción de tocar e arrastrar</translation>
 <translation id="5745612484876805746">A opción Luz nocturna activarase automaticamente ao anoitecer</translation>
 <translation id="5750765938512549687">O Bluetooth está desactivado</translation>
@@ -599,7 +599,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="8054466585765276473">Calculando o tempo da batería.</translation>
 <translation id="8061464966246066292">Alto contraste</translation>
 <translation id="8098591350844501178">Deter a emisión da pantalla en: <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">Opción activada, todas as aplicacións</translation>
+<translation id="8113423164597455979">Si, para todas</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Iniciando...</translation>
@@ -640,7 +640,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Preme Alt + Buscar ou Maiúsculas para cancelar.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> non admite <ph name="SPECIFIED_RESOLUTION" />. A resolución cambiouse a <ph name="FALLBACK_RESOLUTION" />. Para gardar os cambios, fai clic en Confirmar. A configuración anterior restaurarase en <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="8513108775083588393">Xirar automaticamente</translation>
+<translation id="8513108775083588393">Xirar autom.</translation>
 <translation id="8517041960877371778">É posible que o teu <ph name="DEVICE_TYPE" /> non cargue mentres estea acendido.</translation>
 <translation id="8563862697512465947">Configuración de notificacións</translation>
 <translation id="857201607579416096">O menú moveuse á esquina inferior dereita da pantalla.</translation>

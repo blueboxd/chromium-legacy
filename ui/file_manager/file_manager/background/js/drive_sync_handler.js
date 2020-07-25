@@ -260,6 +260,9 @@ class DriveSyncHandlerImpl extends cr.EventTarget {
           item.id = DriveSyncHandlerImpl.DRIVE_SYNC_ERROR_PREFIX +
               this.driveErrorIdOutOfQuota_;
           break;
+        case 'no_local_space':
+          item.message = strf('DRIVE_OUT_OF_SPACE_HEADER', entry.name);
+          break;
         case 'misc':
           item.message = strf('SYNC_MISC_ERROR', entry.name);
           break;

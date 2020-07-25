@@ -5,6 +5,26 @@
 import {GraphModel, D3GraphData} from './graph_model.js';
 
 /**
+ * Various different graph edge color schemes.
+ * @enum {string}
+ */
+const GraphEdgeColor = {
+  DEFAULT: 'default',
+  GREY_GRADIENT: 'grey-gradient',
+  BLUE_TO_RED: 'blue-to-red',
+};
+
+/**
+ * The data configuring the visualization's display.
+ * @typedef {Object} DisplaySettingsData
+ * @property {boolean} curveEdges Whether edges should be curved.
+ * @property {boolean} colorOnlyOnHover Whether edge colors should only be shown
+ *     when hovering on nodes touching those edges.
+ * @property {GraphEdgeColor} graphEdgeColor The color of the edges.
+ */
+let DisplaySettingsData;
+
+/**
  * A container representing the visualization's node filter. Nodes included in
  * the filter are allowed to be displayed on the graph.
  */
@@ -93,6 +113,13 @@ class PageModel {
     this.outboundDepthData = {
       outboundDepth: 0,
     };
+
+    /** @public {!DisplaySettingsData} */
+    this.displaySettingsData = {
+      curveEdges: true,
+      colorOnlyOnHover: true,
+      graphEdgeColor: GraphEdgeColor.DEFAULT,
+    };
   }
 
   /**
@@ -116,6 +143,8 @@ class PageModel {
 }
 
 export {
+  DisplaySettingsData,
+  GraphEdgeColor,
   NodeFilterData,
   PageModel,
 };

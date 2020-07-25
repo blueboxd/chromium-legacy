@@ -432,15 +432,30 @@ void NativeFileSystemFileWriterImpl::DidPassAfterWriteCheck(
   // will not exist anymore.
   // In case of error, the swap file URL will point to a valid filesystem
   // location. The file at this URL will be deleted when the mojo pipe closes.
+  base::OnceCallback<void(base::File::Error)> result_callback;
+  if (RequireSecurityChecks()) {
+    GURL referrer_url = manager()->is_off_the_record() ? GURL() : context().url;
+    mojo::Remote<quarantine::mojom::Quarantine> quarantine_remote;
+    if (quarantine_connection_callback_) {
+      quarantine_connection_callback_.Run(
+          quarantine_remote.BindNewPipeAndPassReceiver());
+    }
+    result_callback =
+        base::BindOnce(&NativeFileSystemFileWriterImpl::DidSwapFileDoQuarantine,
+                       weak_factory_.GetWeakPtr(), url(), referrer_url,
+                       std::move(quarantine_remote), std::move(callback));
+  } else {
+    result_callback = base::BindOnce(
+        &NativeFileSystemFileWriterImpl::DidSwapFileSkipQuarantine,
+        weak_factory_.GetWeakPtr(), std::move(callback));
+  }
   DoFileSystemOperation(
-      FROM_HERE, &FileSystemOperationRunner::Move,
-      base::BindOnce(&NativeFileSystemFileWriterImpl::DidSwapFileBeforeClose,
-                     weak_factory_.GetWeakPtr(), std::move(callback)),
+      FROM_HERE, &FileSystemOperationRunner::Move, std::move(result_callback),
       swap_url(), url(),
       storage::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED);
 }
 
-void NativeFileSystemFileWriterImpl::DidSwapFileBeforeClose(
+void NativeFileSystemFileWriterImpl::DidSwapFileSkipQuarantine(
     CloseCallback callback,
     base::File::Error result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -453,44 +468,60 @@ void NativeFileSystemFileWriterImpl::DidSwapFileBeforeClose(
     return;
   }
 
-  if (!RequireSecurityChecks()) {
-    state_ = State::kClosed;
-    std::move(callback).Run(native_file_system_error::Ok());
+  state_ = State::kClosed;
+  std::move(callback).Run(native_file_system_error::Ok());
+}
+
+// static
+void NativeFileSystemFileWriterImpl::DidSwapFileDoQuarantine(
+    base::WeakPtr<NativeFileSystemFileWriterImpl> file_writer,
+    const storage::FileSystemURL& target_url,
+    const GURL& referrer_url,
+    mojo::Remote<quarantine::mojom::Quarantine> quarantine_remote,
+    CloseCallback callback,
+    base::File::Error result) {
+  if (file_writer)
+    DCHECK_CALLED_ON_VALID_SEQUENCE(file_writer->sequence_checker_);
+
+  if (result != base::File::FILE_OK) {
+    if (file_writer)
+      file_writer->state_ = State::kCloseError;
+    DLOG(ERROR) << "Swap file move operation failed dest: " << target_url.path()
+                << " error: " << base::File::ErrorToString(result);
+    std::move(callback).Run(native_file_system_error::FromFileError(result));
     return;
   }
 
-  // url().path() has to make sense for quarantine to work. On ChromeOS that
-  // means it has to not be in the sandboxed file system, while on other
-  // platforms it means it has to be a local or test file.
+  // The quarantine service operates on files identified by a base::FilePath. As
+  // such we can only quarantine files that are actual local files.
+  // On ChromeOS on the other hand anything that isn't in the sandboxed file
+  // system is also uniquely identifiable by its FileSystemURL::path(), and
+  // thus we accept all other FileSystemURL types.
 #if defined(OS_CHROMEOS)
-  DCHECK(url().type() != storage::kFileSystemTypeTemporary &&
-         url().type() != storage::kFileSystemTypePersistent)
-      << url().type();
+  DCHECK(target_url.type() != storage::kFileSystemTypeTemporary &&
+         target_url.type() != storage::kFileSystemTypePersistent)
+      << target_url.type();
 #else
-  DCHECK(url().type() == storage::kFileSystemTypeNativeLocal ||
-         url().type() == storage::kFileSystemTypeTest)
-      << url().type();
+  DCHECK(target_url.type() == storage::kFileSystemTypeNativeLocal ||
+         target_url.type() == storage::kFileSystemTypeTest)
+      << target_url.type();
 #endif
 
-  GURL referrer_url = manager()->is_off_the_record() ? GURL() : context().url;
   GURL authority_url =
       referrer_url.is_valid() && referrer_url.SchemeIsHTTPOrHTTPS()
           ? referrer_url
           : GURL();
 
-  mojo::Remote<quarantine::mojom::Quarantine> quarantine_remote;
-  if (quarantine_connection_callback_) {
-    quarantine_connection_callback_.Run(
-        quarantine_remote.BindNewPipeAndPassReceiver());
+  if (quarantine_remote) {
     quarantine::mojom::Quarantine* raw_quarantine = quarantine_remote.get();
     raw_quarantine->QuarantineFile(
-        url().path(), authority_url, referrer_url,
+        target_url.path(), authority_url, referrer_url,
         GetContentClient()
             ->browser()
             ->GetApplicationClientGUIDForQuarantineCheck(),
         mojo::WrapCallbackWithDefaultInvokeIfNotRun(
             base::BindOnce(&NativeFileSystemFileWriterImpl::DidAnnotateFile,
-                           weak_factory_.GetWeakPtr(), std::move(callback),
+                           std::move(file_writer), std::move(callback),
                            std::move(quarantine_remote)),
             quarantine::mojom::QuarantineFileResult::ANNOTATION_FAILED));
   } else {
@@ -498,13 +529,16 @@ void NativeFileSystemFileWriterImpl::DidSwapFileBeforeClose(
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock()},
         base::BindOnce(&quarantine::SetInternetZoneIdentifierDirectly,
-                       url().path(), authority_url, referrer_url),
+                       target_url.path(), authority_url, referrer_url),
         base::BindOnce(&NativeFileSystemFileWriterImpl::DidAnnotateFile,
-                       weak_factory_.GetWeakPtr(), std::move(callback),
+                       std::move(file_writer), std::move(callback),
                        std::move(quarantine_remote)));
 #else
-    DidAnnotateFile(std::move(callback), std::move(quarantine_remote),
-                    quarantine::mojom::QuarantineFileResult::ANNOTATION_FAILED);
+    if (file_writer) {
+      file_writer->DidAnnotateFile(
+          std::move(callback), std::move(quarantine_remote),
+          quarantine::mojom::QuarantineFileResult::ANNOTATION_FAILED);
+    }
 #endif
   }
 }

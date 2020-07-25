@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Actualizar Chrome</translation>
 <translation id="1569387923882100876">Dispositivo conectado</translation>
 <translation id="1571304935088121812">Copiar nombre de usuario</translation>
+<translation id="1592864538817356322">Protección estándar:</translation>
 <translation id="1612196535745283361">Chrome necesita acceder a la ubicación para buscar dispositivos. El acceso a la ubicación está <ph name="BEGIN_LINK" />desactivado en este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Quitar 1 elemento seleccionado}other{Quitar # elementos seleccionados}}</translation>
@@ -578,6 +579,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5665379678064389456">Crear evento en <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignorar la solicitud de un sitio web para no ampliar la imagen</translation>
+<translation id="568275469169136466">Iniciar sesión de forma temporal.</translation>
 <translation id="5683547024293500885">Chrome no puede comprobar si hay actualizaciones</translation>
 <translation id="5686790454216892815">El nombre del archivo es demasiado largo</translation>
 <translation id="5694049548840660018">Vuelve al principio fácilmente</translation>
@@ -589,6 +591,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5723735397759933332">Ahora, el modo básico gasta menos datos gracias a la optimización de las imágenes de páginas HTTPS.</translation>
 <translation id="5726692708398506830">Amplía todo el contenido de la página</translation>
 <translation id="5732819098735351888">La descarga comenzará al conectarse a una red Wi‑Fi.</translation>
+<translation id="5733983706093266635">No se puede crear el código QR. La URL contiene más de <ph name="CHARACTER_LIMIT" /> caracteres.</translation>
 <translation id="5748802427693696783">Se ha cambiado a las pestañas estándares</translation>
 <translation id="5749068826913805084">Chrome necesita acceso de almacenamiento para descargar archivos.</translation>
 <translation id="5749237766298580851">Desactivada <ph name="SEPARATOR" /> No recomendado</translation>
@@ -641,6 +644,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="6111020039983847643">de datos utilizados</translation>
 <translation id="6112702117600201073">Actualizando página</translation>
 <translation id="6127379762771434464">Elemento quitado</translation>
+<translation id="6140709049082532940">Protección mejorada:</translation>
 <translation id="6140912465461743537">País/región</translation>
 <translation id="614940544461990577">Prueba a:</translation>
 <translation id="6154478581116148741">Activa el bloqueo de pantalla en Configuración para exportar las contraseñas de este dispositivo</translation>
@@ -1017,6 +1021,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="9100610230175265781">La frase de contraseña es obligatoria</translation>
 <translation id="9102803872260866941">La pestaña de vista previa está abierta</translation>
 <translation id="9104217018994036254">Lista de dispositivos con los que puedes compartir una pestaña.</translation>
+<translation id="9104402662006063371">Usar el modo de incógnito</translation>
 <translation id="9108312223223904744">Teléfono como llave de seguridad compatible</translation>
 <translation id="9108808586816295166">Es posible que no haya un DNS seguro disponible de forma ininterrumpida</translation>
 <translation id="9133397713400217035">Explorar sin conexión</translation>

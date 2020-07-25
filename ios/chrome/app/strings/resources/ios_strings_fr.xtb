@@ -72,6 +72,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> à <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Activez la synchronisation pour accéder à vos favoris sur tous vos appareils.</translation>
 <translation id="1687475363370981210">Tout marquer comme lu</translation>
+<translation id="1689333818294560261">Pseudo</translation>
 <translation id="1690731385917361335">Aucun élément</translation>
 <translation id="1692118695553449118">Synchronisation activée</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> favoris sélectionnés.</translation>
@@ -207,6 +208,7 @@ En revanche, lorsque vous êtes en mode navigation privée, les sites ne peuvent
 <translation id="3335947283844343239">Rouvrir l'onglet fermé</translation>
 <translation id="3371831930909698441">La traduction est disponible. Options disponibles au bas de l'écran.</translation>
 <translation id="3393920035788932672">Pop-up autorisés</translation>
+<translation id="3425644765244388016">Pseudo associé à la carte</translation>
 <translation id="3443810440409579745">Onglet reçu.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Vue fractionnée</translation>
@@ -241,6 +243,7 @@ En revanche, lorsque vous êtes en mode navigation privée, les sites ne peuvent
 <translation id="3783017676699494206">Enregistrer l'image</translation>
 <translation id="3789841737615482174">Installer</translation>
 <translation id="3803696231112616155">Proposer de traduire ce site</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Aucun mot de passe compromis}=1{{COUNT} mot de passe compromis}one{{COUNT} mot de passe compromis}other{{COUNT} mots de passe compromis}}</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="3892144330757387737">Votre historique s'affichera ici</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -530,6 +533,7 @@ En revanche, ils ne peuvent pas en utiliser pour voir votre activité de navigat
 <translation id="7189598951263744875">Partager…</translation>
 <translation id="7192050974311852563">Démarrer la journalisation</translation>
 <translation id="7203585745079012652">Énoncer les réponses</translation>
+<translation id="721597782417389033">Pseudo incorrect associé à la carte</translation>
 <translation id="7265758999917665941">Jamais pour ce site</translation>
 <translation id="7272437679830969316">Impossible de confirmer votre identité. Mot de passe non copié.</translation>
 <translation id="7291368939935408496">Préparation des mots de passe…</translation>

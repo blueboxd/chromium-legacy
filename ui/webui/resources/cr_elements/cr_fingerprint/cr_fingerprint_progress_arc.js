@@ -2,6 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {CrLottieElement} from '../cr_lottie/cr_lottie.m.js';
+
+/** @type {string} */
+/* #export */ const FINGEPRINT_TICK_DARK_URL =
+    'chrome://theme/IDR_FINGERPRINT_COMPLETE_TICK_DARK';
+
+/** @type {string} */
+/* #export */ const FINGEPRINT_TICK_LIGHT_URL =
+    'chrome://theme/IDR_FINGERPRINT_COMPLETE_TICK';
+
 (function() {
 
 /**
@@ -127,10 +137,36 @@ Polymer({
    */
   updateTimerId_: undefined,
 
+  /**
+   * Media query for dark mode.
+   * @type {MediaQueryList|undefined}
+   * @private
+   */
+  darkModeQuery_: undefined,
+
+  /**
+   * Dark mode change listener callback.
+   * @type {function(MediaQueryList)|undefined}
+   * @private
+   */
+  darkModeListener_: undefined,
+
   /** @override */
   attached() {
     this.scale_ = this.circleRadius / DEFAULT_CANVAS_CIRCLE_RADIUS;
     this.updateImages_();
+
+    this.darkModeListener_ = this.updateAnimationAsset_.bind(this);
+    this.darkModeQuery_ = window.matchMedia('(prefers-color-scheme: dark)');
+    this.darkModeQuery_.addListener(this.darkModeListener_);
+    this.updateAnimationAsset_();
+  },
+
+  /** @override */
+  detached() {
+    this.darkModeQuery_.removeListener(
+        /** @type {function(MediaQueryList)} */ (this.darkModeListener_));
+    this.darkModeListener_ = undefined;
   },
 
   /**
@@ -227,6 +263,24 @@ Polymer({
     }
   },
 
+  /**
+   * Updates the lottie animation taking into account the current state and
+   * whether dark mode is enabled.
+   * @private
+   */
+  updateAnimationAsset_() {
+    const scanningAnimation =
+        /** @type {CrLottieElement} */ (this.$.scanningAnimation);
+    if (this.isComplete_) {
+      scanningAnimation.animationUrl = this.darkModeQuery_.matches ?
+          FINGEPRINT_TICK_DARK_URL :
+          FINGEPRINT_TICK_LIGHT_URL;
+      return;
+    }
+    scanningAnimation.animationUrl =
+        'chrome://theme/IDR_FINGERPRINT_ICON_ANIMATION';
+  },
+
   /*
    * Cleans up any pending animation update created by setInterval().
    * @private
@@ -247,12 +301,12 @@ Polymer({
    * @private
    */
   animateScanComplete_() {
-    this.$.scanningAnimation.singleLoop = true;
-    this.$.scanningAnimation.classList.remove('translucent');
-    this.$.scanningAnimation.animationUrl =
-        'chrome://theme/IDR_FINGERPRINT_COMPLETE_TICK';
-    this.resizeCheckMark_(
-        /** @type {!HTMLElement} */ (this.$.scanningAnimation));
+    const scanningAnimation =
+        /** @type {CrLottieElement|HTMLElement} */ (this.$.scanningAnimation);
+    scanningAnimation.singleLoop = true;
+    scanningAnimation.classList.remove('translucent');
+    this.updateAnimationAsset_();
+    this.resizeCheckMark_(scanningAnimation);
 
     this.$.enrollmentDone.hidden = false;
   },
@@ -288,13 +342,13 @@ Polymer({
     this.drawBackgroundCircle();
     this.$.enrollmentDone.hidden = true;
 
-    this.$.scanningAnimation.singleLoop = false;
-    this.$.scanningAnimation.classList.add('translucent');
-    this.$.scanningAnimation.animationUrl =
-        'chrome://theme/IDR_FINGERPRINT_ICON_ANIMATION';
-    this.resizeAndCenterIcon_(
-        /** @type {!HTMLElement} */ (this.$.scanningAnimation));
-    this.$.scanningAnimation.hidden = false;
+    const scanningAnimation =
+        /** @type {CrLottieElement|HTMLElement} */ (this.$.scanningAnimation);
+    scanningAnimation.singleLoop = false;
+    scanningAnimation.classList.add('translucent');
+    this.updateAnimationAsset_();
+    this.resizeAndCenterIcon_(scanningAnimation);
+    scanningAnimation.hidden = false;
   },
 
   /**

@@ -153,13 +153,6 @@ void RecordRequestsAllowedHistogram(ResourceRequestsAllowedState state) {
                             RESOURCE_REQUESTS_ALLOWED_ENUM_SIZE);
 }
 
-enum VariationsSeedExpiry {
-  VARIATIONS_SEED_EXPIRY_NOT_EXPIRED,
-  VARIATIONS_SEED_EXPIRY_FETCH_TIME_MISSING,
-  VARIATIONS_SEED_EXPIRY_EXPIRED,
-  VARIATIONS_SEED_EXPIRY_ENUM_SIZE,
-};
-
 // Converts ResourceRequestAllowedNotifier::State to the corresponding
 // ResourceRequestsAllowedState value.
 ResourceRequestsAllowedState ResourceRequestStateToHistogramValue(

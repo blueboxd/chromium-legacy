@@ -79,6 +79,7 @@
 <translation id="3089968997497233615">ಹೊಸದಾದ, ಸುರಕ್ಷಿತವಾದ Google Chrome ನ ಆವೃತ್ತಿ ಲಭ್ಯವಿದೆ.</translation>
 <translation id="3127818369811890733">ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chrome OS ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="3149510190863420837">Chrome ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
+<translation id="3351117925998652957">ನಿಮ್ಮ Chrome ಸ್ಪೇಸ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="3360895254066713204">Chrome ಸಹಾಯಕ</translation>
 <translation id="3379938682270551431">{0,plural, =0{ಇದೀಗ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}=1{1 ಸೆಕೆಂಡಿನಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}one{# ಸೆಕೆಂಡುಗಳಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}other{# ಸೆಕೆಂಡುಗಳಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}}</translation>
 <translation id="3395323229510056640">Chrome OS ನಿಂದ ಸಹಾಯ ಪಡೆಯಿರಿ</translation>
@@ -206,6 +207,7 @@
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">ನಿಮ್ಮ ಸಾಧನ ಅಪ್ ಟು ಡೇಟ್ ಆಗಿದೆಯೇ ಎಂಬುದನ್ನು ನೋಡಲು, <ph name="LINK_BEGIN" />Chrome OS ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ<ph name="LINK_END" /> ಹೋಗಿ</translation>
 <translation id="7589360514048265910">ಈ ಕಂಪ್ಯೂಟರ್‌ ಇನ್ನು ಮುಂದೆ Google Chrome ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಸ್ವೀಕರಿಸುವುದಿಲ್ಲ. ಏಕೆಂದರೆ ಅದರ Mac OS X 10.9 ಇನ್ನು ಮುಂದೆ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.</translation>
+<translation id="7591404275842302616">ಈ ಸಾಧನದಲ್ಲಿ ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಅನ್ನು ವ್ಯವಸ್ಥಿತಗೊಳಿಸಲು Chrome ಸ್ಪೇಸ್‌ಗಳನ್ನು ಬಳಸಿ</translation>
 <translation id="7592736734348559088">ನಿಮ್ಮ ಖಾತೆಯ ಸೈನ್ ಇನ್ ವಿವರಗಳು ತೀರಾ ಹಳತಾಗಿರುವ ಕಾರಣ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Google Chrome ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="7626032353295482388">Chrome ಗೆ ಸ್ವಾಗತ</translation>
 <translation id="7629695634924605473">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಎಂದಾದರೂ ಹ್ಯಾಕ್‌ ಆಗಿವೆಯೇ ಎಂಬುದನ್ನು Chrome ನಿಮಗೆ ತಿಳಿಸುತ್ತದೆ</translation>

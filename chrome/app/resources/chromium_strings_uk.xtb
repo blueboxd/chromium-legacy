@@ -222,6 +222,7 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="8417404458978023919">{0,plural, =1{Перезапустіть Chromium упродовж дня}one{Перезапустіть Chromium упродовж # дня}few{Перезапустіть Chromium упродовж # днів}many{Перезапустіть Chromium упродовж # днів}other{Перезапустіть Chromium упродовж # дня}}</translation>
 <translation id="8453117565092476964">Архів програми встановлення пошкоджений або недійсний. Завантажте Chromium ще раз.</translation>
 <translation id="8493179195440786826">Версія Chromium застаріла</translation>
+<translation id="8545858702702650646">Виберіть свій профіль Chromium</translation>
 <translation id="8558383651099478961">Хтось із твоїх батьків вимкнув "Дозволи для сайтів, додатків і розширень" у Chromium. Додавати це <ph name="EXTENSION_TYPE_PARAMETER" /> заборонено.</translation>
 <translation id="8568283329061645092">Chromium зможе перевірити ваші паролі, коли ви ввійдете у свій обліковий запис Google</translation>
 <translation id="8586442755830160949">Авторське право <ph name="YEAR" /> Автори Chromium. Усі права захищено.</translation>
@@ -245,6 +246,7 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="911206726377975832">Також видалити дані веб-перегляду?</translation>
 <translation id="9158494823179993217">Ваш системний адміністратор налаштував Chromium відкривати сторінку <ph name="TARGET_URL_HOSTNAME" /> в альтернативному веб-переглядачі.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Користуйтеся профілями Chromium, щоб упорядкувати свій веб-перегляд на цьому пристрої</translation>
 <translation id="93478295209880648">Chromium може працювати неналежним чином, оскільки більше не підтримується у Windows XP та Windows Vista</translation>
 <translation id="95514773681268843">Перш ніж використовувати цей пристрій, потрібно прочитати й прийняти наведені нижче Загальні положення та умови для <ph name="DOMAIN" />. Ці умови не розширюють, не змінюють і не обмежують Умови використання ОС Chromium.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

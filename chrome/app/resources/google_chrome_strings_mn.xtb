@@ -81,6 +81,7 @@
 <translation id="3089968997497233615">Google Chrome-ийн шинэ, илүү аюулгүй хувилбар бэлэн боллоо.</translation>
 <translation id="3127818369811890733">Chrome үйлдлийн систем таны өгөгдлийг синк хийж чадсангүй.</translation>
 <translation id="3149510190863420837">Chrome Аппликейшнууд</translation>
+<translation id="3351117925998652957">Chrome-н орон зайгаа сонгох</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome-г одоо дахин ажиллуулж байна}=1{Chrome-г 1 секундийн дотор дахин ажиллуулна}other{Chrome-г # секундийн дотор дахин ажиллуулна}}</translation>
 <translation id="3395323229510056640">Chrome үйлдлийн системээс тусламж авах</translation>
@@ -213,6 +214,7 @@ Google Chrome таны тохируулгыг дахин сэргээх боло
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Таны төхөөрөмж шинэчлэгдсэн эсэхийг харахын тулд <ph name="LINK_BEGIN" />Chrome үйлдлийн системийн тохиргоо<ph name="LINK_END" /> руу очно уу</translation>
 <translation id="7589360514048265910">Энэ компьютер Mac үйлдлийн систем X 10.9-г дэмжихээ больсон тул Google Chrome-н шинэчлэлтийг цаашид авахгүй.</translation>
+<translation id="7591404275842302616">Энэ төхөөрөмж дээр үзэлтээ цэгцтэй байлгахын тулд Chrome-н орон зайг ашиглаарай</translation>
 <translation id="7592736734348559088">Таны дансандаа нэвтрэх мэдээлэл хуучирсан учраас Google Chrome таны өгөгдлийг синхрончилж чадахгүй.</translation>
 <translation id="7626032353295482388">Chrome-д тавтай морил</translation>
 <translation id="7629695634924605473">Хэрэв таны нууц үг алдагдсан байвал Chrome танд мэдэгдэнэ</translation>

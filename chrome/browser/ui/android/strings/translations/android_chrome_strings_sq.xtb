@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Përditëso Chrome</translation>
 <translation id="1569387923882100876">Pajisja e lidhur</translation>
 <translation id="1571304935088121812">Kopjo emrin e përdoruesit</translation>
+<translation id="1592864538817356322">Mbrojtja standarde:</translation>
 <translation id="1612196535745283361">Chrome ka nevojë për qasjen te vendndodhja për të skanuar për pajisje. Qasja te vendndodhja është <ph name="BEGIN_LINK" />e çaktivizuar për këtë pajisje<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Hiq 1 artikull të zgjedhur}other{Hiq # artikuj të zgjedhur}}</translation>
@@ -578,6 +579,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5659593005791499971">Mail-i</translation>
 <translation id="5665379678064389456">Krijo ngjarje në <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Zëvendësoje kërkesën e një sajti uebi për të parandaluar zmadhimin</translation>
+<translation id="568275469169136466">Për t'u identifikuar përkohësisht</translation>
 <translation id="5683547024293500885">Chrome nuk mund të kontrollojë për përditësime</translation>
 <translation id="5686790454216892815">Emri i skedarit është tepër i gjatë</translation>
 <translation id="5694049548840660018">Kthehu te faqja kryesore me lehtësi</translation>
@@ -589,6 +591,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5723735397759933332">"Modaliteti i lehtë" tani të ruan më shumë të dhëna duke optimizuar imazhet në faqet HTTPS.</translation>
 <translation id="5726692708398506830">Bëje më të madhe gjithçka në faqe</translation>
 <translation id="5732819098735351888">Shkarkimi do të fillojë në Wi-Fi.</translation>
+<translation id="5733983706093266635">Kodi QR nuk mund të krijohet. URL-ja është më shumë se <ph name="CHARACTER_LIMIT" /> karaktere.</translation>
 <translation id="5748802427693696783">Kaloi në skedat standarde</translation>
 <translation id="5749068826913805084">Chrome ka nevojë për qasje te hapësira ruajtëse për të shkarkuar skedarë.</translation>
 <translation id="5749237766298580851">Joaktiv <ph name="SEPARATOR" /> Nuk rekomandohet</translation>
@@ -641,6 +644,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="6111020039983847643">të dhënat e përdorura</translation>
 <translation id="6112702117600201073">Po rifreskon faqen</translation>
 <translation id="6127379762771434464">Artikulli u hoq</translation>
+<translation id="6140709049082532940">Mbrojtja e përmirësuar:</translation>
 <translation id="6140912465461743537">Shteti/rajoni</translation>
 <translation id="614940544461990577">Provo:</translation>
 <translation id="6154478581116148741">Aktivizo kyçjen e ekranit te "Cilësimet" për të eksportuar fjalëkalime e tua nga kjo pajisje</translation>
@@ -1017,6 +1021,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="9100610230175265781">Kërkohet shprehja e kalimit</translation>
 <translation id="9102803872260866941">Skeda e shikimit paraprak është e hapur</translation>
 <translation id="9104217018994036254">Lista e pajisjeve për të ndarë një skedë.</translation>
+<translation id="9104402662006063371">Shko në modalitetin "i fshehtë"</translation>
 <translation id="9108312223223904744">Telefoni si mbështetje çelësi sigurie</translation>
 <translation id="9108808586816295166">DNS-ja e sigurt mund të mos jetë e disponueshme në çdo kohë</translation>
 <translation id="9133397713400217035">Eksploro jashtë linje</translation>

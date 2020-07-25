@@ -419,6 +419,7 @@
         'DisableAuthNegotiateCnameLookup',
         'EnableAuthNegotiatePort',
         'AuthServerWhitelist',
+        'AuthNegotiateDelegateAllowlist',
         'AuthNegotiateDelegateWhitelist',
         'AuthNegotiateDelegateByKdcPolicy',
         'GSSAPILibraryName',
@@ -4153,6 +4154,7 @@
       'type': 'string',
       'schema': { 'type': 'string' },
       'supported_on': ['chrome.*:9-','android:46-','chrome_os:62-'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -4160,6 +4162,28 @@
       'example_value': 'foobar.example.com',
       'id': 30,
       'caption': '''Kerberos delegation server whitelist''',
+      'tags': [],
+      'desc': '''This policy is deprecated, please use the '<ph name="AUTH_NEGOCIATE_DELEGATE_ALLOWLIST_POLICY_NAME">AuthNegotiateDelegateAllowlist</ph>' policy instead.
+
+          Servers that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may delegate to.
+
+          Separate multiple server names with commas. Wildcards (*) are allowed.
+
+          If you leave this policy not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not delegate user credentials even if a server is detected as Intranet.''',
+    },
+    {
+      'name': 'AuthNegotiateDelegateAllowlist',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'supported_on': ['chrome.*:86-','android:86-','chrome_os:86-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': 'foobar.example.com',
+      'id': 746,
+      'caption': '''Kerberos delegation server allowlist''',
       'tags': [],
       'desc': '''Servers that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may delegate to.
 
@@ -4183,9 +4207,9 @@
       'tags': ['website-sharing'],
       'desc': '''Controls whether approval by KDC policy is respected to decide whether to delegate <ph name="KERBEROS">Kerberos</ph> tickets.
 
-          If this policy is true, HTTP authentication respects approval by KDC policy, i.e. Chrome only delegates credentials if the KDC sets <ph name="OK_AS_DELEGATE">OK-AS-DELEGATE</ph> on a service ticket. Please see https://tools.ietf.org/html/rfc5896.html for more information. Service should also match 'AuthNegotiateDelegateWhitelist' policy.
+          If this policy is true, HTTP authentication respects approval by KDC policy, i.e. Chrome only delegates credentials if the KDC sets <ph name="OK_AS_DELEGATE">OK-AS-DELEGATE</ph> on a service ticket. Please see https://tools.ietf.org/html/rfc5896.html for more information. Service should also match 'AuthNegotiateDelegateAllowlist' policy.
 
-          If this policy is not set or set to false, KDC policy is ignored on supported platforms and 'AuthNegotiateDelegateWhitelist' policy only is respected.
+          If this policy is not set or set to false, KDC policy is ignored on supported platforms and 'AuthNegotiateDelegateAllowlist' policy only is respected.
 
           On Windows KDC policy is always respected.''',
     },
@@ -23065,6 +23089,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 745,
+  'highest_id_currently_used': 746,
   'highest_atomic_group_id_currently_used': 38
 }

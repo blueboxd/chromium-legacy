@@ -36,7 +36,7 @@ class CORE_EXPORT TextPainterBase {
   TextPainterBase(GraphicsContext&,
                   const Font&,
                   const PhysicalOffset& text_origin,
-                  const PhysicalRect& text_bounds,
+                  const PhysicalRect& text_frame_rect,
                   bool horizontal);
   ~TextPainterBase();
 
@@ -115,7 +115,7 @@ class CORE_EXPORT TextPainterBase {
   GraphicsContext& graphics_context_;
   const Font& font_;
   PhysicalOffset text_origin_;
-  PhysicalRect text_bounds_;
+  PhysicalRect text_frame_rect_;
   bool horizontal_;
   bool has_combined_text_;
   AtomicString emphasis_mark_;

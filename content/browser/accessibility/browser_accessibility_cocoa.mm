@@ -3762,9 +3762,8 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
 }
 
 - (BOOL)accessibilityNotifiesWhenDestroyed {
-  TRACE_EVENT1("accessibility",
-               "BrowserAccessibilityCocoa::accessibilityNotifiesWhenDestroyed",
-               "role=", ui::ToString([self internalRole]));
+  TRACE_EVENT0("accessibility",
+               "BrowserAccessibilityCocoa::accessibilityNotifiesWhenDestroyed");
   // Indicate that BrowserAccessibilityCocoa will post a notification when it's
   // destroyed (see -detach). This allows VoiceOver to do some internal things
   // more efficiently.

@@ -22,6 +22,7 @@
 <translation id="115443833402798225">Χανγκίλ Ahnmatae</translation>
 <translation id="1155759005174418845">Καταλανικά
 </translation>
+<translation id="1172970565351728681">Απομένουν περίπου <ph name="REMAINING_TIME" />.</translation>
 <translation id="1173894706177603556">Μετονομασία</translation>
 <translation id="117624967391683467">Αντιγραφή αρχείου <ph name="FILE_NAME" />…</translation>
 <translation id="1178581264944972037">Παύση</translation>
@@ -202,6 +203,7 @@
 <translation id="3236289833370040187">Η ιδιοκτησία θα μεταφερθεί στον τομέα <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">Ιρλανδικά</translation>
 <translation id="3245321423178950146">Άγνωστος καλλιτέχνης</translation>
+<translation id="3248185426436836442">Σε εκκρεμότητα</translation>
 <translation id="3252266817569339921">Γαλλικά
 </translation>
 <translation id="3254434849914415189">Επιλέξτε την προεπιλεγμένη εφαρμογή για τα αρχεία <ph name="FILE_TYPE" />:</translation>
@@ -251,6 +253,7 @@
 <translation id="3780536599611287598">Δεν έχετε άδεια για τη μετακίνηση αρχείων στον φάκελο "<ph name="FOLDER_NAME" />".</translation>
 <translation id="3786301125658655746">Είστε εκτός σύνδεσης</translation>
 <translation id="3789841737615482174">Εγκατάσταση</translation>
+<translation id="3793469551756281394">Απομένουν περίπου <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" />.</translation>
 <translation id="3798449238516105146">Έκδοση</translation>
 <translation id="3801082500826908679">Φερόε</translation>
 <translation id="3809272675881623365">Κουνέλι</translation>

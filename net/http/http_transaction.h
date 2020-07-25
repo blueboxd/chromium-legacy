@@ -37,7 +37,7 @@ class NET_EXPORT_PRIVATE HttpTransaction {
  public:
   // If |*defer| is set to true, the transaction will wait until
   // ResumeNetworkStart is called before establishing a connection.
-  typedef base::Callback<void(bool* defer)> BeforeNetworkStartCallback;
+  typedef base::OnceCallback<void(bool* defer)> BeforeNetworkStartCallback;
 
   // Called each time a connection is obtained, before any data is sent.
   //
@@ -188,7 +188,7 @@ class NET_EXPORT_PRIVATE HttpTransaction {
 
   // Sets the callback to receive notification just before network use.
   virtual void SetBeforeNetworkStartCallback(
-      const BeforeNetworkStartCallback& callback) = 0;
+      BeforeNetworkStartCallback callback) = 0;
 
   // Sets the callback to receive a notification upon connection.
   virtual void SetConnectedCallback(const ConnectedCallback& callback) = 0;

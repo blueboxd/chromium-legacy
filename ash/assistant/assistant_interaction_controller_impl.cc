@@ -30,6 +30,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -397,6 +398,7 @@ void AssistantInteractionControllerImpl::OnInteractionStarted(
 
 void AssistantInteractionControllerImpl::OnInteractionFinished(
     AssistantInteractionResolution resolution) {
+  base::UmaHistogramEnumeration("Assistant.Interaction.Resolution", resolution);
   model_.SetMicState(MicState::kClosed);
 
   // If we don't have an active interaction, that indicates that this

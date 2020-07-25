@@ -26,6 +26,7 @@
 <translation id="1209206284964581585">ယခု ဖျောက်ထားပါ</translation>
 <translation id="1219674500290482172">အင်တာနက်သို့ ချိတ်ဆက်၍ မရနိုင်ပါ</translation>
 <translation id="122699739164161391">တဘ်အားလုံး ပိတ်ရန်</translation>
+<translation id="1229222343402087523">Chrome တွင် ${searchPhrase} ရှာရန်</translation>
 <translation id="1231733316453485619">စင့်ခ်လုပ်ခြင်းကို ဖွင့်မလား။</translation>
 <translation id="1254117744268754948">ဖိုလ်ဒါကို ရွေးရန်</translation>
 <translation id="1265739287306757398">လုပ်ပုံကို လေ့လာပါ</translation>
@@ -72,7 +73,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> မှ <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">သင်၏ဝဘ်လိပ်စာများကို သင့်စက်များအားလုံးတွင် ရယူနိုင်ရန် စင့်ခ်လုပ်ခြင်းကို ဖွင့်ပါ။</translation>
 <translation id="1687475363370981210">အားလုံးကို ဖတ်ပြီးကြောင်း အမှတ်အသားလုပ်ရန်</translation>
-<translation id="1689333818294560261">အမည်ပြောင်</translation>
+<translation id="1689333818294560261">နာမည်ပြောင်</translation>
 <translation id="1690731385917361335">အကြောင်းအရာမရှိပါ</translation>
 <translation id="1692118695553449118">စင့်က်ကို ဖွင့်ထား</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ရွေးချယ်ထားသည်</translation>

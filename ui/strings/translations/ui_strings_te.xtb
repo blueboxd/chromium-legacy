@@ -157,7 +157,7 @@
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" />లో <ph name="SELECTED_PAGE" />వ పేజీ</translation>
 <translation id="6022924867608035986">శోధన పెట్టె వచనాన్ని క్లియర్ చేయండి</translation>
 <translation id="6040143037577758943">మూసివేయి</translation>
-<translation id="6119846243427417423">ఆక్టివేట్ చెయ్యి</translation>
+<translation id="6119846243427417423">ఆక్టివేట్ చేయి</translation>
 <translation id="6129953537138746214">ఖాళీ</translation>
 <translation id="6134259848159370930">మీ పరికరం, యాప్‌లు, సెట్టింగ్‌లు, వెబ్‌ను వెతకండి.</translation>
 <translation id="6135826906199951471">Del</translation>
@@ -224,7 +224,7 @@
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 సెక. మిగిలి ఉంది}other{# సెక. మిగిలి ఉన్నాయి}}</translation>
 <translation id="8134065097954893699">ఈ పేజీని మళ్లీ లోడ్ చేస్తోంది</translation>
 <translation id="8144660977431427332">మీ శోధనలు Google అసిస్టెంట్ ఆధారితంగా ఉంటాయి. <ph name="LEARN_MORE" /></translation>
-<translation id="8152264887680882389"><ph name="TEXT" />, స్వయంపూర్తి</translation>
+<translation id="8152264887680882389"><ph name="TEXT" />, ఆటోఫిల్</translation>
 <translation id="815598010540052116">కిందికి స్క్రోల్ చేయి</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">పేజీ క్రిందికి</translation>

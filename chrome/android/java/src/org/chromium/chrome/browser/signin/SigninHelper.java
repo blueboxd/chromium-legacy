@@ -8,19 +8,22 @@ import android.accounts.Account;
 import android.annotation.SuppressLint;
 import android.content.Context;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import com.google.android.gms.auth.AccountChangeEvent;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 
+import org.chromium.base.ApplicationState;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.AccountUtils;
@@ -38,8 +41,7 @@ import java.util.List;
  *
  * This should be merged into SigninManager when it is upstreamed.
  */
-public class SigninHelper {
-
+public class SigninHelper implements ApplicationStatus.ApplicationStateListener {
     private static final String TAG = "SigninHelper";
 
     private static final Object LOCK = new Object();
@@ -84,8 +86,6 @@ public class SigninHelper {
         }
     }
 
-    @Nullable private final ProfileSyncService mProfileSyncService;
-
     private final SigninManager mSigninManager;
 
     private final AccountTrackerService mAccountTrackerService;
@@ -102,11 +102,18 @@ public class SigninHelper {
     }
 
     private SigninHelper() {
-        mProfileSyncService = ProfileSyncService.get();
+        // Initialize sync.
+        SyncController.get();
+
         Profile profile = Profile.getLastUsedRegularProfile();
         mSigninManager = IdentityServicesProvider.get().getSigninManager(profile);
         mAccountTrackerService = IdentityServicesProvider.get().getAccountTrackerService(profile);
         mPrefsManager = SigninPreferencesManager.getInstance();
+
+        // TODO(https://crbug.com/1107942): Remove this after removing GoogleServicesManager.
+        GoogleServicesManager.get();
+
+        ApplicationStatus.registerApplicationStateListener(this);
     }
 
     public void validateAccountSettings(boolean accountsChanged) {
@@ -271,6 +278,26 @@ public class SigninHelper {
 
         if (newIndex != eventIndex) {
             prefsManager.setLastAccountChangedEventIndex(newIndex);
+        }
+    }
+
+    /**
+     * Called once during initialization and then again for every start (warm-start).
+     * Responsible for checking if configuration has changed since Chrome was last launched
+     * and updates state accordingly.
+     */
+    public void onMainActivityStart() {
+        try (TraceEvent ignored = TraceEvent.scoped("SigninHelper.onMainActivityStart")) {
+            boolean accountsChanged =
+                    SigninPreferencesManager.getInstance().checkAndClearAccountsChangedPref();
+            validateAccountSettings(accountsChanged);
+        }
+    }
+
+    @Override
+    public void onApplicationStateChange(int newState) {
+        if (newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
+            onMainActivityStart();
         }
     }
 }

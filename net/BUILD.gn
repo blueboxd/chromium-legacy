@@ -1418,8 +1418,8 @@ component("net") {
       ]
     }
 
-    # Use getifaddrs() on POSIX platforms, except Linux and Android.
-    if (is_posix && !is_linux && !is_android) {
+    # Use getifaddrs() on POSIX platforms, except Linux.
+    if (is_posix && !is_linux) {
       sources += [
         "base/network_interfaces_getifaddrs.cc",
         "base/network_interfaces_getifaddrs.h",

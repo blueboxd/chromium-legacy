@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Eguneratu Chrome</translation>
 <translation id="1569387923882100876">Konektatutako gailua</translation>
 <translation id="1571304935088121812">Kopiatu erabiltzaile-izena</translation>
+<translation id="1592864538817356322">Babes estandarra:</translation>
 <translation id="1612196535745283361">Chrome-k kokapenerako sarbidea izan behar du gailuak bilatzeko. Kokapenerako sarbidea <ph name="BEGIN_LINK" />desaktibatuta dago gailu honetan<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Kendu hautatutako elementua}other{Kendu hautatutako # elementuak}}</translation>
@@ -578,6 +579,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5659593005791499971">Helbide elektronikoa</translation>
 <translation id="5665379678064389456">Sortu gertaera <ph name="APP_NAME" /> aplikazioan</translation>
 <translation id="5668404140385795438">Gainidatzi zoom-maila ez handiagotzeko webgune baten eskaera</translation>
+<translation id="568275469169136466">Saioa aldi baterako hasteko</translation>
 <translation id="5683547024293500885">Chrome-k ezin ditu bilatu eguneratzeak</translation>
 <translation id="5686790454216892815">Luzeegia da fitxategiaren izena</translation>
 <translation id="5694049548840660018">Joan zuzenean orri nagusira</translation>
@@ -589,6 +591,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5723735397759933332">Oinarrizko moduari esker, datu gehiago aurreztuko dituzu HTTPS orrietan irudiak optimizatuta.</translation>
 <translation id="5726692708398506830">Handitu orriko eduki guztia</translation>
 <translation id="5732819098735351888">Wifia erabiltzean hasiko da deskarga.</translation>
+<translation id="5733983706093266635">Ezin da sortu QR kodea. URLak <ph name="CHARACTER_LIMIT" /> karaktere baino gehiago ditu.</translation>
 <translation id="5748802427693696783">Fitxa arruntetara aldatu da</translation>
 <translation id="5749068826913805084">Chrome-k memorian sartzeko baimena behar du fitxategiak deskargatu ahal izateko.</translation>
 <translation id="5749237766298580851">Desaktibatuta <ph name="SEPARATOR" /> Ez da gomendagarria</translation>
@@ -641,6 +644,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="6111020039983847643">erabilitako datuak</translation>
 <translation id="6112702117600201073">Orria freskatzen</translation>
 <translation id="6127379762771434464">Kendu egin da elementua</translation>
+<translation id="6140709049082532940">Babes hobetua:</translation>
 <translation id="6140912465461743537">Herrialdea/Lurraldea</translation>
 <translation id="614940544461990577">Konpontzeko, hauek egin ditzakezu:</translation>
 <translation id="6154478581116148741">Gailu honetako pasahitzak esportatzeko, aktibatu pantailaren blokeoa Ezarpenak atalean</translation>
@@ -1017,6 +1021,7 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="9100610230175265781">Pasaesaldia behar da</translation>
 <translation id="9102803872260866941">Aurrebista-fitxa irekita dago</translation>
 <translation id="9104217018994036254">Fitxa partekatzeko hautatutako gailuen zerrenda.</translation>
+<translation id="9104402662006063371">Erabili ezkutuko modua</translation>
 <translation id="9108312223223904744">Telefonoa segurtasun-giltza gisa erabiltzeko aukera</translation>
 <translation id="9108808586816295166">Baliteke DNS segurua beti erabilgarri ez egotea</translation>
 <translation id="9133397713400217035">Arakatu konexiorik gabeko edukia</translation>

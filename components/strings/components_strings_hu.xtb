@@ -559,6 +559,9 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="3364869320075768271">A(z) <ph name="URL" /> webhely használni szeretné az Ön virtuálisvalóság-eszközeit és -adatait</translation>
 <translation id="3366477098757335611">Kártyák megtekintése</translation>
 <translation id="3369192424181595722">Órahiba</translation>
+<translation id="3371076217486966826">A(z) <ph name="URL" /> a következőkre kér engedélyt:
+      • 3D-s térkép létrehozása az Ön környezetéről és a kamera pozíciójának követése
+      • A kamera használata</translation>
 <translation id="337363190475750230">Deaktiválva</translation>
 <translation id="3377144306166885718">A szerver elavult TLS-verziót használt.</translation>
 <translation id="3377188786107721145">Irányelv-előfeldolgozási hiba</translation>
@@ -1558,6 +1561,7 @@ További részletek:
 <translation id="7518003948725431193">Nem található weboldal az internetcímen:<ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (boríték)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">A(z) „<ph name="SECTION" />” szakasz elrejtve</translation>
 <translation id="7526934274050461096">A webhellyel való kapcsolata nem privát</translation>
 <translation id="7535087603100972091">Érték</translation>
 <translation id="7537536606612762813">Kötelező</translation>
@@ -1758,6 +1762,7 @@ További részletek:
 <translation id="8293206222192510085">Könyvjelző hozzáadása</translation>
 <translation id="8294431847097064396">Forrás</translation>
 <translation id="8298115750975731693">Az Ön által használt Wi-Fi-hálózat (<ph name="WIFI_NAME" />) megkövetelheti a(z) <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> felkeresését.</translation>
+<translation id="8303854710873047864">A(z) „<ph name="SECTION" />” szakasz megjelenítve</translation>
 <translation id="830498451218851433">Félbehajtás</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Telepített alkalmazások és a használatuk gyakorisága</translation>
@@ -1878,6 +1883,7 @@ További részletek:
 <translation id="8931333241327730545">Menti ezt a kártyát a Google-fiókjába?</translation>
 <translation id="8932102934695377596">Késik az órája</translation>
 <translation id="893332455753468063">Név hozzáadása</translation>
+<translation id="8942355029279167844">Rendszergazdája engedélyezte, hogy a(z) <ph name="APP_NAME" /> diagnosztikai adatokat gyűjtsön a felhasználói élmény javítása érdekében. További információt a következő oldalon találhat: <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />.</translation>
 <translation id="8943282376843390568">Limezöld</translation>
 <translation id="8957210676456822347">Hitelesítés hitelesítési portállal</translation>
 <translation id="8962950042226115166">Gyanús webhely</translation>

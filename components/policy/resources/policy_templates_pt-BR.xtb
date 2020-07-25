@@ -747,6 +747,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="2197625019569762163">Se esta política for definida como verdadeira, o teclado numérico será exibido por padrão para inserir a senha na tela de login. Os usuários ainda podem alternar para o teclado normal.
 
       Se você definir a política, os usuários não poderão mudá-la. Se não for definida ou for definida como falsa, não terá efeito.</translation>
+<translation id="2200698565850397198">Configurar a lista de bloqueio de mensagens nativas</translation>
 <translation id="2201555246697292490">Configurar a lista de permissões de mensagens nativas</translation>
 <translation id="2204753382813641270">Controlar a ocultação automática da estante</translation>
 <translation id="2208976000652006649">Parâmetros para URL de pesquisa que usa POST</translation>
@@ -2495,6 +2496,13 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
           Se você definir esta política, o usuário não poderá alterá-la ou modificá-la.
 
           Se esta política não for definida, o áudio mono ficará desativado inicialmente, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
+<translation id="4764901562691611575">Esta política está obsoleta. Use <ph name="NATIVE_MESSAGING_BLOCKLIST_POLICY_NAME" />.
+
+          Permite que você especifique quais hosts de mensagens nativas não serão carregados.
+
+          Um valor "*" da lista de bloqueio significa que todos os hosts de mensagens nativas estão nessa lista, a menos que estejam explicitamente mencionados na lista de permissões.
+
+          Se a política não for definida, o <ph name="PRODUCT_NAME" /> carregará todos os hosts de mensagens nativas instalados.</translation>
 <translation id="4771144269610910963">Esta política controla a verificação detalhada de downloads do usuário com o "Navegação segura". Se ela não for definida ou a configuração padrão "Não verificar arquivos" for escolhida, os downloads do usuário não serão verificados pelo "Navegação segura".
 
       Se ela for definida como "Enviar downloads do usuário para verificação", os downloads serão enviados pela rede para que o "Navegação segura" faça a verificação de malware.
@@ -3197,6 +3205,11 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
           Quando esta política não for definida, a ação padrão de suspender o dispositivo será tomada.
 
           Se a ação for de suspender, o <ph name="PRODUCT_OS_NAME" /> poderá ser configurado separadamente para bloquear ou não a tela antes da suspensão.</translation>
+<translation id="5745980816926303222">Esta política está obsoleta. Use <ph name="AUTOPLAY_ALLOWLIST_POLICY_NAME" />.
+
+      Se a política for definida, será possível iniciar vídeos automaticamente (sem o consentimento do usuário) com conteúdo de áudio no <ph name="PRODUCT_NAME" />. Se a política <ph name="AUTOPLAY_ALLOWED_POLICY_NAME" /> for definida como verdadeira, esta política não terá efeito. Se a política <ph name="AUTOPLAY_ALLOWED_POLICY_NAME" /> for definida como falsa, todos os padrões de URL definidos nesta política terão permissão para serem iniciados. Se a política for modificada enquanto o <ph name="PRODUCT_NAME" /> estiver em execução, ela se aplicará apenas a guias abertas recentemente.
+
+      Para informações detalhadas sobre padrões de URL válidos, consulte https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="574983287620584622">Ativar atalhos de recursos de acessibilidade na tela de login</translation>
 <translation id="5755002458331714762"> As APIs Web Components v0 (Shadow DOM v0, Custom Elements v0 e HTML Imports) se tornaram obsoletas em 2018 e estão desativadas por padrão desde o M80. Esta política permite que esses recursos sejam seletivamente reativados até o M84.
 
@@ -3494,6 +3507,11 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 
       Observação: a política afeta todas as saídas de áudio, incluindo recursos de acessibilidade de áudio. Não desative a política se o usuário precisar de um leitor de tela.</translation>
 <translation id="6221175752766085998">Permitir certificados emitidos pelas âncoras de confiança locais sem a extensão subjectAlternativeName</translation>
+<translation id="6222839831045864769">Permite que você especifique quais hosts de mensagens nativas não serão carregados.
+
+          Um valor "*" da lista de bloqueio significa que todos os hosts de mensagens nativas estão nessa lista, a menos que estejam explicitamente mencionados na lista de permissões.
+
+          Se a política não for definida, o <ph name="PRODUCT_NAME" /> carregará todos os hosts de mensagens nativas instalados.</translation>
 <translation id="6224304369267200483">Os URLs/domínios permitidos automaticamente direcionam a declaração da chave de segurança</translation>
 <translation id="6233173491898450179">Definir diretório de download</translation>
 <translation id="6234177445959386333">Configura a lista de URLs de login corporativo em que o serviço de proteção de senha capturará hashes com salt de senhas.</translation>
@@ -3832,6 +3850,24 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 
       Se esta política for definida como falsa ou não for definida, o <ph name="PLUGIN_VM_NAME" /> não será ativado para o usuário.
       Se for definida como verdadeira, o <ph name="PLUGIN_VM_NAME" /> será ativado para o usuário desde que permitido por outras configurações. É necessário definir <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> e <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> como verdadeiras, e <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> ou <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> precisam ser definidas para que <ph name="PLUGIN_VM_NAME" /> possa ser executado.</translation>
+<translation id="6741496055862838205">Fornece configurações para impressoras empresariais vinculadas a dispositivos.
+
+      Esta política permite fornecer configurações de impressora para dispositivos <ph name="PRODUCT_OS_NAME" />.  O formato é igual ao do dicionário NativePrinters, com um campo "id" ou "guid" obrigatório extra por impressora para inclusão na lista de bloqueio ou de permissões.
+
+      O tamanho do arquivo não pode exceder 5 MB e precisa estar codificado em JSON.  Estima-se que um arquivo contendo aproximadamente 21.000 impressoras será codificado como um arquivo de 5 MB.  O hash criptográfico é usado para verificar a integridade do download.
+
+      O arquivo é transferido por download e armazenado em cache. O download será refeito sempre que o URL ou o hash mudarem.
+
+      Se esta política for definida, o <ph name="PRODUCT_OS_NAME" /> fará o download do arquivo para as configurações de impressora e disponibilizará as impressoras de acordo com <ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" />e <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
+
+      Esta política não afeta a possibilidade de os usuários configurarem impressoras em dispositivos individuais.  Ela tem o objetivo de complementar a configuração de impressoras por usuários individuais.
+
+      Esta política é complementar à <ph name="BULK_PRINTERS_POLICY" />.
+
+      Se esta política for deixada sem definição, não haverá nenhuma impressora, e as outras políticas <ph name="DEVICE_NATIVE_PRINTERS_POLICY_PATTERN" /> serão ignoradas.
+
+      Esta política está obsoleta. Use <ph name="DEVICE_PRINTERS" />.
+      </translation>
 <translation id="6752711782954612641">Se a <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> estiver ativada, definir <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" /> especificará os parâmetros ao pesquisar um URL com POST. Ela consiste em pares de nome-valor separados por vírgula. Se o valor for um parâmetro modelo, como <ph name="SEARCH_TERM_MARKER" />, ele será substituído pelos dados dos termos de pesquisa reais.
 
       Se a <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" /> não for definida, as solicitações de pesquisa serão enviadas usando o método get.</translation>
@@ -5138,6 +5174,11 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
       Se estiver desativada, o "Respostas rápidas" não poderá acessar conteúdos selecionados.
       Se a política não for definida, os usuários poderão decidir se concedem ou não permissão para o "Respostas rápidas" acessar conteúdos selecionados.</translation>
 <translation id="8685024486845674965">O aviso de proteção de senha é acionado pela reutilização da senha</translation>
+<translation id="8685680544554917389">Se a política for definida como verdadeira, o <ph name="PRODUCT_NAME" /> poderá tocar mídia automaticamente. Se a política for definida como falsa, o <ph name="PRODUCT_NAME" /> será impedido de tocar mídia automaticamente.
+
+       Por padrão, o <ph name="PRODUCT_NAME" /> não toca mídia automaticamente, mas você pode usar a política <ph name="AUTOPLAY_ALLOWLIST_POLICY_NAME" /> para mudar essa configuração para padrões de URL específicos.
+
+      Se a política for modificada enquanto o <ph name="PRODUCT_NAME" /> estiver em execução, ela se aplicará apenas a guias abertas recentemente.</translation>
 <translation id="8687958770985542440">Reativar API Web Components v0 até o M84.</translation>
 <translation id="8693243869659262736">Usar cliente DNS integrado</translation>
 <translation id="8698286761337647563">Com quantos dias de antecedência os usuários do SAML precisam ser notificados quando as senhas estiverem prestes a expirar</translation>

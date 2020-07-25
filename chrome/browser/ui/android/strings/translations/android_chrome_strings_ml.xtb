@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Chrome അപ്‌ഡേറ്റുചെയ്യുക</translation>
 <translation id="1569387923882100876">കണക്റ്റ് ചെയ്‌തിരിക്കുന്ന ഉപകരണം</translation>
 <translation id="1571304935088121812">ഉപയോക്തൃനാമം പകർത്തുക</translation>
+<translation id="1592864538817356322">സ്‌റ്റാൻഡേർഡ് പരിരക്ഷ:</translation>
 <translation id="1612196535745283361">ഉപകരണങ്ങൾ സ്‌കാൻ ചെയ്യാൻ Chrome-ന് ലൊക്കേഷൻ ആക്‌സസ് ആവശ്യമാണ്. ഈ ഉപകരണത്തിന്റെ <ph name="BEGIN_LINK" />ലൊക്കേഷൻ ആക്‌സസ് ഓഫാണ്<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">ക്യാമറ</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{തിരഞ്ഞെടുത്ത ഒരു ഇനം നീക്കംചെയ്യുക}other{തിരഞ്ഞെടുത്ത # ഇനങ്ങൾ നീക്കംചെയ്യുക}}</translation>
@@ -578,6 +579,7 @@
 <translation id="5659593005791499971">ഇമെയില്‍</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> ആപ്പിൽ ഇവന്റ് സൃഷ്‌ടിക്കുക</translation>
 <translation id="5668404140385795438">സൂം ഇൻ ചെയ്യുന്നത് തടയുന്നതിനുള്ള ഒരു വെബ്സൈറ്റിന്റെ അഭ്യർത്ഥന അസാധുവാക്കുക</translation>
+<translation id="568275469169136466">താൽക്കാലികമായി സൈൻ ഇൻ ചെയ്യാൻ</translation>
 <translation id="5683547024293500885">Chrome-ന് അപ്‌ഡേറ്റുകൾക്കായി പരിശോധിക്കാനാകില്ല</translation>
 <translation id="5686790454216892815">ഫയലിന്റെ പേര് ദൈർഘ്യമേറിയതാണ്</translation>
 <translation id="5694049548840660018">ഹോമിലേക്ക് എളുപ്പത്തിൽ മടങ്ങൂ</translation>
@@ -589,6 +591,7 @@
 <translation id="5723735397759933332">HTTPS പേജുകളിൽ ചിത്രങ്ങൾ ഒപ്റ്റിമൈസ് ചെയ്യുന്നതിലൂടെ, ലൈറ്റ് മോഡ് ഇപ്പോൾ നിങ്ങൾക്കായി കൂടുതൽ ഡാറ്റ ലാഭിക്കുന്നു.</translation>
 <translation id="5726692708398506830">പേജിൽ എല്ലാം വലുതായി നൽകുക</translation>
 <translation id="5732819098735351888">വൈഫൈയിൽ ഡൗൺലോഡ് ആരംഭിക്കും.</translation>
+<translation id="5733983706093266635">QR കോഡ് സൃഷ്‌ടിക്കാനാകുന്നില്ല. URL-ൽ <ph name="CHARACTER_LIMIT" /> പ്രതീകങ്ങളിൽ കൂടുതൽ അടങ്ങിയിരിക്കുന്നു.</translation>
 <translation id="5748802427693696783">സ്റ്റാൻഡേർഡ് ടാബുകളിലേക്ക് മാറി</translation>
 <translation id="5749068826913805084">ഫയലുകൾ ഡൗൺലോഡ് ചെയ്യാൻ Chrome-ന് സ്റ്റോറേജ് ആക്‌സസ് ആവശ്യമുണ്ട്.</translation>
 <translation id="5749237766298580851">ഓഫാണ് <ph name="SEPARATOR" /> ശുപാർശ ചെയ്യുന്നില്ല</translation>
@@ -641,6 +644,7 @@
 <translation id="6111020039983847643">ഉപയോഗിച്ച ഡാറ്റ</translation>
 <translation id="6112702117600201073">പേജ് പുതുക്കുന്നു</translation>
 <translation id="6127379762771434464">ഇനം നീക്കംചെയ്‌തു</translation>
+<translation id="6140709049082532940">മെച്ചപ്പെടുത്തിയ പരിരക്ഷ:</translation>
 <translation id="6140912465461743537">രാജ്യം/പ്രദേശം</translation>
 <translation id="614940544461990577">പരീക്ഷിച്ചുനോക്കൂ:</translation>
 <translation id="6154478581116148741">ഈ ഉപകരണത്തിൽ നിന്ന് നിങ്ങളുടെ പാസ്‌വേഡുകൾ എക്‌സ്‌പോർട്ട് ചെയ്യാൻ ക്രമീകരണത്തിൽ സ്‌ക്രീൻ ലോക്ക് ഓണാക്കുക</translation>
@@ -1017,6 +1021,7 @@
 <translation id="9100610230175265781">പാസ്‌ഫ്രെയ്‌സ് ആവശ്യമാണ്</translation>
 <translation id="9102803872260866941">പ്രിവ്യു ടാബ് തുറന്നു</translation>
 <translation id="9104217018994036254">ടാബ് പങ്കിടാനാകുന്ന ഉപകരണങ്ങളുടെ ലിസ്‌റ്റ്.</translation>
+<translation id="9104402662006063371">അദൃശ്യ മോഡിലേക്ക് പോകുക</translation>
 <translation id="9108312223223904744">സുരക്ഷാ കീയായി ഫോൺ</translation>
 <translation id="9108808586816295166">എപ്പോഴും സുരക്ഷിത DNS ലഭ്യമായേക്കില്ല</translation>
 <translation id="9133397713400217035">ഓഫ്‍ലൈൻ ഉള്ളടക്കങ്ങൾ അടുത്തറിയൂ</translation>

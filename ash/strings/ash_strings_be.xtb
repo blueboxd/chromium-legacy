@@ -301,7 +301,7 @@
 <translation id="4356930093361201197">рэжым высокай кантраснасці</translation>
 <translation id="4368583494516669646">Добрай ночы, <ph name="GIVEN_NAME" />!</translation>
 <translation id="4371348193907997655">Налады трансляцыі</translation>
-<translation id="4378551569595875038">Ідзе падключэнне...</translation>
+<translation id="4378551569595875038">Падключэнне...</translation>
 <translation id="4379531060876907730">Гэта інструменты стыла</translation>
 <translation id="4389184120735010762">Вы націснулі спалучэнне клавіш для прыстыкаванай лупы. Уключыць яе?</translation>
 <translation id="4421231901400348175">Абагульванне кантролю над экранам з карыстальнікам <ph name="HELPER_NAME" /> праз Аддаленую дапамогу.</translation>
@@ -344,7 +344,7 @@
 <translation id="4872237917498892622">Alt + Search або Shift</translation>
 <translation id="4890187583552566966">Адміністратар выключыў Памочніка Google.</translation>
 <translation id="4895488851634969361">Акумулятар зараджаны.</translation>
-<translation id="490375751687810070">Па вертыкалі</translation>
+<translation id="490375751687810070">Вертыкальна</translation>
 <translation id="4905614135390995787">Спалучэнне клавіш для пераключэння рэжыму высокага кантрасту змянілася. Замест <ph name="OLD_SHORTCUT" /> выкарыстоўвайце <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="490788395437447240">Зарад акумулятара: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">Моцны</translation>
@@ -400,7 +400,7 @@
 <translation id="5691772641933328258">Адбітак пальца не распазнаны</translation>
 <translation id="5710450975648804523">Рэжым "Не турбаваць" уключаны</translation>
 <translation id="573413375004481890">Гэта прылада не можа падтрымліваць усе вашы дысплэі, таму адзін з іх быў адключаны</translation>
-<translation id="574392208103952083">Сярэдняя</translation>
+<translation id="574392208103952083">Сярэдні</translation>
 <translation id="5744083938413354016">Перацягванне дотыкам</translation>
 <translation id="5745612484876805746">Начная падсветка ўключаецца аўтаматычна пасля захаду сонца</translation>
 <translation id="5750765938512549687">Bluetooth выключаны</translation>
@@ -506,7 +506,7 @@
 <translation id="6919251195245069855">Не ўдалося распазнаць вашу разумную картку. Паўтарыце спробу.</translation>
 <translation id="6945221475159498467">Выбраць</translation>
 <translation id="6972754398087986839">Пачатак працы</translation>
-<translation id="6981982820502123353">Спецыяльныя магчымасці</translation>
+<translation id="6981982820502123353">Спец. магчымасці</translation>
 <translation id="698231206551913481">Пры выдаленні карыстальніка будуць выдалены ўсе звязаныя з ім файлы і лакальныя даныя.</translation>
 <translation id="7015766095477679451">Можна будзе прадоўжыць у <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7025533177575372252">Падключыце прыладу "<ph name="DEVICE_NAME" />" да тэлефона</translation>
@@ -521,7 +521,7 @@
 <translation id="7088960765736518739">Доступ праз пераключальнікі</translation>
 <translation id="7098389117866926363">Прылада USB-C (задні порт злева)</translation>
 <translation id="7131634465328662194">Будзе выкананы аўтаматычны выхад.</translation>
-<translation id="7143207342074048698">Ідзе падключэнне</translation>
+<translation id="7143207342074048698">Падключэнне</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Вяртанне да старой раздзяляльнасці праз <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">Меню перамешчана ў левы верхні вугал экрана.</translation>
@@ -672,7 +672,7 @@
 <translation id="8843682306134542540">Уключыць або выключыць блакіроўку павароту. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Клавіша пошуку + Esc</translation>
 <translation id="8870509716567206129">Праграма не падтрымлівае рэжым падзеленага экрана.</translation>
-<translation id="8874184842967597500">Няма падключэння</translation>
+<translation id="8874184842967597500">Не падключана</translation>
 <translation id="8877788021141246043">Задайце напамін</translation>
 <translation id="8878886163241303700">Экран пашыраецца</translation>
 <translation id="890616557918890486">Змяніць крыніцу</translation>

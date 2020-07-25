@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">მზის სათვალე</translation>
 <translation id="115443833402798225">ჰანგული ანმატე</translation>
 <translation id="1155759005174418845">კატალანური</translation>
+<translation id="1172970565351728681">დარჩა დაახლოებით <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">სახელის შეცვლა</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" />-ის გადაწერა…</translation>
 <translation id="1178581264944972037">პაუზა</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">მფლობელი გახდება <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">ირლანდიური</translation>
 <translation id="3245321423178950146">უცნობი შემსრულებელი</translation>
+<translation id="3248185426436836442">მომლოდინე</translation>
 <translation id="3252266817569339921">ფრანგული</translation>
 <translation id="3254434849914415189">აირჩიეთ ნაგულისხმევი პროგრამა <ph name="FILE_TYPE" /> ფაილებისთვის:</translation>
 <translation id="3264582393905923483">კონტექსტი</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">თქვენ არ გაქვთ „<ph name="FOLDER_NAME" />“-ში ფაილების გადატანის ნებართვა.</translation>
 <translation id="3786301125658655746">თქვენ ოფლაინში ხართ</translation>
 <translation id="3789841737615482174">ინსტალაცია</translation>
+<translation id="3793469551756281394">დარჩა დაახლოებით <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">ვერსია</translation>
 <translation id="3801082500826908679">ფარერული</translation>
 <translation id="3809272675881623365">კურდღელი</translation>

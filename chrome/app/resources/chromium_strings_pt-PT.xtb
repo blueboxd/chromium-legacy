@@ -222,6 +222,7 @@ O Chromium não consegue recuperar as suas definições.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Reinicie o Chromium dentro de um dia}other{Reinicie o Chromium dentro de # dias}}</translation>
 <translation id="8453117565092476964">O arquivo do programa de instalação está corrompido ou não é válido. Descarregue novamente o Chromium.</translation>
 <translation id="8493179195440786826">O Chromium Está Desatualizado</translation>
+<translation id="8545858702702650646">Escolha o seu Espaço do Chromium</translation>
 <translation id="8558383651099478961">O teu pai/mãe desativou as "Autorizações para sites, apps e extensões" para o Chromium. Não é permitido adicionar esta <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8568283329061645092">O Chromium pode verificar as suas palavras-passe quando inicia sessão com a sua Conta Google.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Os autores do Chromium. Todos os direitos reservados.</translation>
@@ -245,6 +246,7 @@ O Chromium não consegue recuperar as suas definições.</translation>
 <translation id="911206726377975832">Eliminar também os seus dados de navegação?</translation>
 <translation id="9158494823179993217">O administrador do sistema configurou o Chromium para abrir um navegador alternativo, de modo a aceder a <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Utilize os Espaços do Chromium para manter a sua navegação organizada neste dispositivo</translation>
 <translation id="93478295209880648">O Chromium pode não funcionar corretamente, uma vez que já não é suportado no Windows XP ou no Windows Vista.</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> obriga-o a ler e aceitar os seguintes Termos de Utilização antes de utilizar este dispositivo. Estes termos não ampliam, modificam nem limitam os Termos do SO Chromium.</translation>
 <translation id="985602178874221306">Os Autores do Chromium</translation>

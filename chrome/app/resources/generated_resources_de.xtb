@@ -235,7 +235,7 @@
 <translation id="1274997165432133392">Cookies und andere Websitedaten</translation>
 <translation id="1275718070701477396">Ausgewählt</translation>
 <translation id="1276994519141842946"><ph name="APP_NAME" /> konnte nicht deinstalliert werden</translation>
-<translation id="127946606521051357">Gerät in der Nähe teilt gerade</translation>
+<translation id="127946606521051357">Gerät in der Nähe möchte Inhalte teilen</translation>
 <translation id="1280820357415527819">Nach Mobilfunknetzen wird gesucht</translation>
 <translation id="1280965841156951489">Dateien bearbeiten</translation>
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
@@ -2635,7 +2635,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4220648711404560261">Bei der Aktivierung ist ein Fehler aufgetreten.</translation>
 <translation id="4222772810963087151">Build-Details</translation>
 <translation id="4225397296022057997">Auf allen Websites</translation>
-<translation id="4231095370974836764">Apps und Spiele von Google Play auf Ihrem <ph name="DEVICE_TYPE" /> installieren. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
+<translation id="4231095370974836764">Apps und Spiele von Google Play auf dem <ph name="DEVICE_TYPE" /> installieren. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="4232375817808480934">Kerberos konfigurieren</translation>
 <translation id="4235200303672858594">Gesamten Bildschirm</translation>
 <translation id="4235965441080806197">Anmeldung abbrechen</translation>
@@ -3512,7 +3512,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5388885445722491159">Gepaart</translation>
 <translation id="5389237414310520250">Der neue Nutzer konnte nicht erstellt werden. Bitte überprüfen Sie Ihren Festplattenspeicherplatz und Ihre Berechtigungen und versuchen Sie es dann erneut.</translation>
 <translation id="5390100381392048184">Wiedergabe von Ton auf Websites zulassen</translation>
-<translation id="5390112241331447203">Gesendete Datei system_logs.txt in Feedbackberichten einbeziehen.</translation>
+<translation id="5390112241331447203">Datei system_logs.txt, die in Feedbackberichten gesendet wird, einbeziehen.</translation>
 <translation id="5390677308841849479">Dunkelrot und Orange</translation>
 <translation id="5390743329570580756">Senden für</translation>
 <translation id="5397794290049113714">Ich</translation>
@@ -4921,7 +4921,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7152478047064750137">Diese Erweiterung erfordert keine speziellen Berechtigungen</translation>
 <translation id="7154130902455071009">Startseite in <ph name="START_PAGE" /> ändern</translation>
 <translation id="7155171745945906037">Vorhandenes Foto von der Kamera oder als Datei</translation>
-<translation id="7163766494674803047">Druckerfehler</translation>
+<translation id="7163766494674803047">Drucker-Gerätefehler</translation>
 <translation id="7165320105431587207">Fehler beim Konfigurieren des Netzwerks</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" kann Bilder, Video- und Sounddateien an den geprüften Orten lesen.</translation>
 <translation id="7167486101654761064">Dateien dieses Typs &amp;immer öffnen</translation>
@@ -6608,7 +6608,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">Passphrase eingeben</translation>
 <translation id="939736085109172342">Neuer Ordner</translation>
-<translation id="941070664607309480">Klicken Sie, damit Ihr Gerät sichtbar wird und die Inhalte mit Ihnen geteilt werden können</translation>
+<translation id="941070664607309480">Hier klicken, damit Ihr Gerät sichtbar wird und die Inhalte mit Ihnen geteilt werden können</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> hat einen Chrome-Tab und Audio freigegeben.</translation>
 <translation id="945522503751344254">Feedback geben</translation>
 <translation id="947329552760389097">&amp;Elemente untersuchen</translation>
@@ -6638,7 +6638,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="975893173032473675">Sprache, in die übersetzt wird</translation>
 <translation id="978146274692397928">Anfängliche Punktbreite ist "Voll".</translation>
 <translation id="97905529126098460">Dieses Fenster wird nach Abbruch der Installation geschlossen.</translation>
-<translation id="980731642137034229">Aktionsmenü-Schaltfläche</translation>
+<translation id="980731642137034229">Dreipunkt-Menü-Schaltfläche</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="983511809958454316">Diese Funktion wird im VR-Modus nicht unterstützt</translation>
 <translation id="984275831282074731">Zahlungsmethoden</translation>

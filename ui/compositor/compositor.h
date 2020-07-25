@@ -416,6 +416,13 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
 
   ui::ContextFactory* context_factory_;
 
+  // |display_private_| can be null for:
+  // 1. Tests that don't set |display_private_|.
+  // 2. Intermittently on creation or if there is some kind of error (GPU crash,
+  //    GL context loss, etc.) that triggers reinitializing message pipes to the
+  //    GPU process RootCompositorFrameSinkImpl.
+  // Therefore, it should always be null checked for safety before use.
+  //
   // These pointers are owned by |context_factory_|, and must be reset before
   // calling RemoveCompositor();
   viz::mojom::DisplayPrivate* display_private_ = nullptr;

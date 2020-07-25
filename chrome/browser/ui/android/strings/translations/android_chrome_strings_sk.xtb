@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Aktualizovať Chrome</translation>
 <translation id="1569387923882100876">Pripojené zariadenie</translation>
 <translation id="1571304935088121812">Kopírovať používateľské meno</translation>
+<translation id="1592864538817356322">Štandardná ochrana:</translation>
 <translation id="1612196535745283361">Na to, aby mohol Chrome hľadať zariadenia, musí mať prístup k polohe. Prístup k polohe je v tomto zariadení <ph name="BEGIN_LINK" />vypnutý<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Odstrániť 1 vybranú položku}few{Odstrániť # vybrané položky}many{Odstrániť # vybranej položky}other{Odstrániť # vybraných položiek}}</translation>
@@ -578,6 +579,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5665379678064389456">Vytvorte udalosť v aplikácii <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignorovať požiadavku webových stránok na zákaz priblíženia</translation>
+<translation id="568275469169136466">Dočasné prihlásenie</translation>
 <translation id="5683547024293500885">Chrome nemôže skontrolovať dostupnosť aktualizácií</translation>
 <translation id="5686790454216892815">Názov súboru je príliš dlhý</translation>
 <translation id="5694049548840660018">Prechádzajte ľahko na domovskú stránku</translation>
@@ -589,6 +591,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5723735397759933332">Zjednodušený režim teraz šetrí viac dát optimalizovaním obrázkov na stránkach HTTPS.</translation>
 <translation id="5726692708398506830">Zväčšenie obsahu na stránke</translation>
 <translation id="5732819098735351888">Sťahovanie sa začne v sieti Wi-Fi.</translation>
+<translation id="5733983706093266635">QR kód nie je možné vytvoriť. Webová adresa obsahuje viac ako <ph name="CHARACTER_LIMIT" /> znakov.</translation>
 <translation id="5748802427693696783">Prepnuté na štandardné karty</translation>
 <translation id="5749068826913805084">Chrome potrebuje na sťahovanie súborov prístup k úložisku.</translation>
 <translation id="5749237766298580851">Vypnuté <ph name="SEPARATOR" /> Neodporúča sa</translation>
@@ -641,6 +644,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="6111020039983847643">využité dáta</translation>
 <translation id="6112702117600201073">Obnovenie stránky</translation>
 <translation id="6127379762771434464">Položka bola odstránená</translation>
+<translation id="6140709049082532940">Rozšírená ochrana:</translation>
 <translation id="6140912465461743537">Krajina alebo oblasť</translation>
 <translation id="614940544461990577">Vyskúšajte:</translation>
 <translation id="6154478581116148741">Ak chcete exportovať heslá z tohto zariadenia, zapnite v Nastaveniach zámku obrazovky</translation>
@@ -1017,6 +1021,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="9100610230175265781">Vyžaduje sa prístupová fráza</translation>
 <translation id="9102803872260866941">Karta ukážky je otvorená</translation>
 <translation id="9104217018994036254">Zoznam zariadení, s ktorými sa má zdieľať karta.</translation>
+<translation id="9104402662006063371">Prejsť do anonymného režimu</translation>
 <translation id="9108312223223904744">Podpora používania telefónu ako bezpečnostného kľúča</translation>
 <translation id="9108808586816295166">Zabezpečený systém DNS nemusí byť vždy k dispozícii</translation>
 <translation id="9133397713400217035">Preskúmať offline</translation>

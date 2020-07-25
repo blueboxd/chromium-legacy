@@ -396,6 +396,11 @@ js_type_check("closure_compile_local") {
   ]
 }
 
+js_library("mock_controller.m") {
+  sources = [ "$root_gen_dir/chrome/test/data/webui/mock_controller.m.js" ]
+  extra_deps = [ ":modulize_local" ]
+}
+
 js_library("mock_timer.m") {
   sources = [ "$root_gen_dir/chrome/test/data/webui/mock_timer.m.js" ]
   extra_deps = [ ":modulize_local" ]

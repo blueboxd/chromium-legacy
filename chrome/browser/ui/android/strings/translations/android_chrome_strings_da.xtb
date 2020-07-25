@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Opdater Chrome</translation>
 <translation id="1569387923882100876">Tilsluttet enhed</translation>
 <translation id="1571304935088121812">Kopiér brugernavnet</translation>
+<translation id="1592864538817356322">Standardbeskyttelse:</translation>
 <translation id="1612196535745283361">Chrome skal have placeringsadgang for at kunne scanne efter enheder. Placeringsadgang er <ph name="BEGIN_LINK" />slået fra på denne enhed<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Fjern 1 valgt element}one{Fjern # valgt element}other{Fjern # valgte elementer}}</translation>
@@ -578,6 +579,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5659593005791499971">Mail</translation>
 <translation id="5665379678064389456">Opret begivenhed i <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Tilsidesæt en anmodning fra et website om at undgå at zoome ind</translation>
+<translation id="568275469169136466">For at logge ind midlertidigt</translation>
 <translation id="5683547024293500885">Chrome kan ikke søge efter opdateringer</translation>
 <translation id="5686790454216892815">Filnavnet er for langt</translation>
 <translation id="5694049548840660018">Vend nemt tilbage til startsiden</translation>
@@ -589,6 +591,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5723735397759933332">Lite-tilstand optimerer nu billeder på HTTPS-sider for at reducere dit dataforbrug.</translation>
 <translation id="5726692708398506830">Gør alting på siden større</translation>
 <translation id="5732819098735351888">Downloaden starter, når der er Wi-Fi-forbindelse.</translation>
+<translation id="5733983706093266635">QR-koden kan ikke oprettes. Webadressen indeholder mere end <ph name="CHARACTER_LIMIT" /> tegn.</translation>
 <translation id="5748802427693696783">Skiftet til standardfaner</translation>
 <translation id="5749068826913805084">Chrome skal have lageradgang for at kunne downloade filer.</translation>
 <translation id="5749237766298580851">Fra <ph name="SEPARATOR" /> Anbefales ikke</translation>
@@ -641,6 +644,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="6111020039983847643">dataforbrug</translation>
 <translation id="6112702117600201073">Opdaterer siden</translation>
 <translation id="6127379762771434464">Elementet blev fjernet</translation>
+<translation id="6140709049082532940">Forbedret beskyttelse:</translation>
 <translation id="6140912465461743537">Land/region</translation>
 <translation id="614940544461990577">Prøv at:</translation>
 <translation id="6154478581116148741">Aktivér skærmlåsen i Indstillinger for at eksportere dine adgangskoder fra denne enhed</translation>
@@ -1017,6 +1021,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="9100610230175265781">Adgangssætning kræves</translation>
 <translation id="9102803872260866941">Fanen forhåndsvisning er åben</translation>
 <translation id="9104217018994036254">Liste over enheder, der skal deles en fane med.</translation>
+<translation id="9104402662006063371">Åbn Inkognitotilstand</translation>
 <translation id="9108312223223904744">Understøttelse af telefonen som en sikkerhedsnøgle</translation>
 <translation id="9108808586816295166">Sikre DNS-servere er muligvis ikke altid tilgængelige</translation>
 <translation id="9133397713400217035">Udforsk offline</translation>

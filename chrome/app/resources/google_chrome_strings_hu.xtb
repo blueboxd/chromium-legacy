@@ -77,6 +77,7 @@
 <translation id="3089968997497233615">Elérhető a Google Chrome új, biztonságosabb verziója.</translation>
 <translation id="3127818369811890733">A Chrome OS nem tudta szinkronizálni az adatait.</translation>
 <translation id="3149510190863420837">Chrome-alkalmazások</translation>
+<translation id="3351117925998652957">Chrome Space-profil kiválasztása</translation>
 <translation id="3360895254066713204">Chrome segéd</translation>
 <translation id="3379938682270551431">{0,plural, =0{A Chrome most újraindul}=1{A Chrome 1 másodpercen belül újraindul}other{A Chrome # másodpercen belül újraindul}}</translation>
 <translation id="3395323229510056640">Segítség a Chrome OS használatával kapcsolatban</translation>
@@ -204,6 +205,7 @@
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Ha szeretné megtekinteni, hogy eszköze naprakész-e, lépjen a <ph name="LINK_BEGIN" />Chrome OS beállításaihoz<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Mivel a jelenlegi Mac OS X 10.9 rendszer támogatása megszűnik, ez a számítógép a továbbiakban nem kap Google Chrome-frissítéseket.</translation>
+<translation id="7591404275842302616">A Chrome Space-profilok segítségével rendszerezheti böngészési tevékenységeit ezen az eszközön</translation>
 <translation id="7592736734348559088">A Google Chrome nem tudta szinkronizálni az adatokat, mert a fiók bejelentkezési adatai elavultak.</translation>
 <translation id="7626032353295482388">A Chrome üdvözli Önt!</translation>
 <translation id="7629695634924605473">A Chrome tájékoztatja arról, ha jelszavai illetéktelen kezekbe kerülnek</translation>

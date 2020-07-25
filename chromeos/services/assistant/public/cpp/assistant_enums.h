@@ -73,17 +73,19 @@ enum class AssistantInteractionType {
 };
 
 // Enumeration of possible completions for an Assistant interaction.
+// The values are recorded in UMA, do not reuse existing values when updating.
 enum class AssistantInteractionResolution {
   // Assistant interaction completed normally.
-  kNormal,
+  kNormal = 0,
   // Assistant interaction completed due to barge in or cancellation.
-  kInterruption,
+  kInterruption = 1,
   // Assistant interaction completed due to error.
-  kError,
+  kError = 2,
   // Assistant interaction completed due to mic timeout.
-  kMicTimeout,
+  kMicTimeout = 3,
   // Assistant interaction completed due to multi-device hotword loss.
-  kMultiDeviceHotwordLoss,
+  kMultiDeviceHotwordLoss = 4,
+  kMaxValue = kMultiDeviceHotwordLoss,
 };
 
 // Enumeration of possible Assistant suggestion types.

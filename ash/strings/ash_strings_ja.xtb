@@ -8,7 +8,7 @@
 <translation id="1036672894875463507">私は Google アシスタント、あなたの 1 日をサポートします。
 使用できるフレーズをいくつか紹介します。</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> が追加されました</translation>
-<translation id="1056775291175587022">ネットワークが見つかりません</translation>
+<translation id="1056775291175587022">なし</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="108486256082349153">携帯電話: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">退屈だな</translation>
@@ -276,7 +276,7 @@
 <translation id="4028481283645788203">セキュリティ強化のためパスワードが必要です</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">画面を共有しています</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{1 件のアプリでオフ}other{# 件のアプリでオフ}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{1 アプリでオフ}other{# アプリでオフ}}</translation>
 <translation id="4072264167173457037">電波: 中程度</translation>
 <translation id="4112140312785995938">後方に移動</translation>
 <translation id="4129129681837227511">ロック画面に通知を表示するには、ロックを解除して設定を変更してください</translation>
@@ -393,7 +393,7 @@
 <translation id="5600837773213129531">音声フィードバックを無効にするには Ctrl+Alt+Z を押してください。</translation>
 <translation id="5625955975703555628">LTE+</translation>
 <translation id="5648021990716966815">マイク差込口</translation>
-<translation id="5669267381087807207">有効にしています</translation>
+<translation id="5669267381087807207">有効化中</translation>
 <translation id="5673434351075758678">設定の同期後に「<ph name="FROM_LOCALE" />」から「<ph name="TO_LOCALE" />」に変更されました。</translation>
 <translation id="5682642926269496722">Google アシスタントは、現在のユーザー アカウントではご利用いただけません。</translation>
 <translation id="5689633613396158040">夜間モードを利用すると、薄明かりの下でも画面が見やすくなります。タップして、夜間モードをオンにする時間を変更したり、完全にオフにしたりできます。</translation>
@@ -421,7 +421,7 @@
 <translation id="5958529069007801266">監視対象ユーザー</translation>
 <translation id="5977415296283489383">ヘッドホン</translation>
 <translation id="5978382165065462689">リモート サポート経由で画面の制御を共有しています。</translation>
-<translation id="5980301590375426705">ゲスト セッションを終了</translation>
+<translation id="5980301590375426705">ゲストを終了</translation>
 <translation id="598882571027504733">アップデートを取得するには、キーボードを接続した状態で Chromebook を再起動してください。</translation>
 <translation id="5992218262414051481">ハイコントラスト モードが有効になりました。無効にするには、Ctrl+検索+H キーをもう一度押します。</translation>
 <translation id="6018164090099858612">ミラーモードを終了しています</translation>
@@ -468,7 +468,7 @@
 <translation id="6501401484702599040">画面を <ph name="RECEIVER_NAME" /> にキャスト中</translation>
 <translation id="652139407789908527">更新中は、空白の画面が通常より長く表示されます（最長 1 分）。更新中は電源ボタンを押さないでください。</translation>
 <translation id="6521655319214113338">手書き入力</translation>
-<translation id="6528179044667508675">サイレント モード</translation>
+<translation id="6528179044667508675">サイレント</translation>
 <translation id="6537270692134705506">画面をキャプチャ</translation>
 <translation id="6537924328260219877">信号強度 <ph name="SIGNAL_STRENGTH" />、電池残量 <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> にキャストしています</translation>
@@ -604,7 +604,7 @@
 <translation id="8132793192354020517"><ph name="NAME" /> に接続しました</translation>
 <translation id="813913629614996137">初期化しています...</translation>
 <translation id="8142441511840089262">ダブルクリック</translation>
-<translation id="8142699993796781067">プライベート ネットワーク</translation>
+<translation id="8142699993796781067">プライベート</translation>
 <translation id="8152092012181020186">閉じるには Ctrl+W キーを押します。</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> この設定は管理者によって管理されています。</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> を使用しています</translation>

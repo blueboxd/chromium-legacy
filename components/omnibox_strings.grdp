@@ -110,16 +110,6 @@
     Clear Chrome's browsing history data
   </message>
 
-  <message name="IDS_OMNIBOX_PEDAL_CHANGE_SEARCH_ENGINE_HINT" desc="The button text contents to suggest pedal action, change search engine.">
-    Change Search Engine
-  </message>
-  <message name="IDS_OMNIBOX_PEDAL_CHANGE_SEARCH_ENGINE_HINT_SHORT" desc="The short one-word button text contents to suggest pedal action, change search engine.">
-    Change
-  </message>
-  <message name="IDS_OMNIBOX_PEDAL_CHANGE_SEARCH_ENGINE_SUGGESTION_CONTENTS" desc="The suggestion content text to suggest pedal action, change search engine.">
-    Change Search Engine settings in Chrome
-  </message>
-
   <message name="IDS_OMNIBOX_PEDAL_MANAGE_PASSWORDS_HINT" desc="The button text contents to suggest pedal action, manage passwords.">
     Manage Passwords
   </message>
@@ -128,16 +118,6 @@
   </message>
   <message name="IDS_OMNIBOX_PEDAL_MANAGE_PASSWORDS_SUGGESTION_CONTENTS" desc="The suggestion content text to suggest pedal action, change language.">
     Manage passwords in Chrome settings
-  </message>
-
-  <message name="IDS_OMNIBOX_PEDAL_CHANGE_HOME_PAGE_HINT" desc="The button text contents to suggest pedal action, change home page.">
-    Change Home Page
-  </message>
-  <message name="IDS_OMNIBOX_PEDAL_CHANGE_HOME_PAGE_HINT_SHORT" desc="The short one-word button text contents to suggest pedal action, change home page.">
-    Change
-  </message>
-  <message name="IDS_OMNIBOX_PEDAL_CHANGE_HOME_PAGE_SUGGESTION_CONTENTS" desc="The suggestion content text to suggest pedal action, change home page.">
-    Change home page in Chrome settings
   </message>
 
   <message name="IDS_OMNIBOX_PEDAL_UPDATE_CREDIT_CARD_HINT" desc="The button text contents to suggest pedal action, update credit card.">

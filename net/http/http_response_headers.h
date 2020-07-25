@@ -418,7 +418,7 @@ class NET_EXPORT HttpResponseHeaders
 };
 
 using ResponseHeadersCallback =
-    base::Callback<void(scoped_refptr<const HttpResponseHeaders>)>;
+    base::RepeatingCallback<void(scoped_refptr<const HttpResponseHeaders>)>;
 
 }  // namespace net
 

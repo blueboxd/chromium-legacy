@@ -266,7 +266,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="2001146170449793414">{COUNT,plural, =1{y 1 más}other{y # más}}</translation>
 <translation id="2003709556000175978">Restablecer tu contraseña ahora</translation>
 <translation id="2003775180883135320">Perforación cuádruple en la parte superior</translation>
-<translation id="202072848677994234">Se envía este formulario mediante una conexión no segura. Se inhabilitó la función de rellenado automático.</translation>
+<translation id="202072848677994234">Como este formulario se enviará mediante una conexión no segura, se inhabilitó la función de Autocompletar.</translation>
 <translation id="2025115093177348061">Realidad aumentada</translation>
 <translation id="2025186561304664664">El proxy se estableció en configuración automática.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Comprobar el proxy y el firewall<ph name="END_LINK" />.</translation>
@@ -448,6 +448,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="2824775600643448204">Barra de direcciones y de búsqueda</translation>
 <translation id="2826760142808435982">La conexión se encriptó y autenticó con <ph name="CIPHER" />, y utiliza <ph name="KX" /> como el mecanismo de intercambio de claves.</translation>
 <translation id="2835170189407361413">Eliminar formulario</translation>
+<translation id="2839501879576190149">El sitio es falso</translation>
 <translation id="2847118875340931228">Abrir ventana de incógnito</translation>
 <translation id="2850739647070081192">Invite (Envelope)</translation>
 <translation id="2856444702002559011">Es posible que algunos atacantes intenten robar tu información de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (p. ej., contraseñas, mensajes o tarjetas de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -561,6 +562,9 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="3364869320075768271"><ph name="URL" /> quiere usar tus datos y dispositivos de realidad virtual</translation>
 <translation id="3366477098757335611">Ver tarjetas</translation>
 <translation id="3369192424181595722">Error de reloj</translation>
+<translation id="3371076217486966826"><ph name="URL" /> quiere hacer lo siguiente:
+      • Crear un mapa 3D de tu entorno y rastrear la posición de la cámara
+      • Usar la cámara</translation>
 <translation id="337363190475750230">Desaprovisionado</translation>
 <translation id="3377144306166885718">El servidor usaba una versión obsoleta de TLS.</translation>
 <translation id="3377188786107721145">Error al analizar la política</translation>
@@ -808,6 +812,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="42981349822642051">Expandir</translation>
 <translation id="4300675098767811073">Perforaciones múltiples a la derecha</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
+<translation id="4305666528087210886">No se pudo acceder a tu archivo</translation>
 <translation id="4305817255990598646">Cambiar</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Bloquear (predeterminado)</translation>
@@ -826,6 +831,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="4358461427845829800">Administrar formas de pago…</translation>
 <translation id="4359160567981085931">Ingresaste tu contraseña en un sitio engañoso. Chrome puede ayudarte. Para cambiar la contraseña y notificar a Google que tu cuenta podría estar en riesgo, haz clic en Proteger cuenta.</translation>
 <translation id="4367563149485757821">Number-12 (Envelope)</translation>
+<translation id="4367839622597707614">{1,plural, =0{La contraseña que guardaste para <ph name="ORIGIN" /> quedó expuesta debido a una violación de la seguridad de los datos que se produjo en un sitio o app. Chrome te recomienda cambiar ahora la contraseña que usas en <ph name="ORIGIN" />.}=1{Las contraseñas que guardaste para <ph name="ORIGIN" /> y un sitio más quedaron expuestas debido a una violación de la seguridad de los datos que se produjo en un sitio o app. Chrome te recomienda revisar ahora las contraseñas que tengas guardadas.}other{Las contraseñas que guardaste para <ph name="ORIGIN" /> y <ph name="SITES_COUNT" /> sitios más quedaron expuestas debido a una violación de la seguridad de los datos que se produjo en un sitio o app. Chrome te recomienda revisar ahora las contraseñas que tengas guardadas.}}</translation>
 <translation id="437058704415269440">Saldo de cuenta</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Valor <ph name="VALUE_TYPE" /> esperado.</translation>
@@ -1296,6 +1302,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Es posible que se cobren cargos.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 sugerencia más}other{# sugerencias más}}</translation>
+<translation id="6387645831795005740">A veces, los atacantes hacen cambios sutiles y difíciles de detectar en la URL para imitar sitios.</translation>
 <translation id="6389470377220713856">Nombre en tarj.</translation>
 <translation id="6390200185239044127">Plegado en Z a la mitad</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1509,6 +1516,7 @@ Detalles adicionales:
 <translation id="7372973238305370288">resultado de búsqueda</translation>
 <translation id="7374733840632556089">Se produjo este problema debido a un certificado que tú o alguien más instaló en el dispositivo. El certificado se usa para interceptar y supervisar redes, y no es de confianza para Chrome. Si bien existen usos legítimos de la supervisión, como en el caso de redes de empresas o instituciones educativas, Chrome quiere asegurarse de que estás al tanto de esta situación, aunque no puedas impedirlo. La supervisión puede ocurrir en cualquier navegador o app que acceda a la Web.</translation>
 <translation id="7375818412732305729">Se adjuntó un archivo</translation>
+<translation id="7376551888419889433">Cuando Chrome Enterprise Connectors marca eventos de seguridad, se envían datos relevantes sobre los eventos a tu administrador. Esta información puede incluir URL de las páginas que visitas en Chrome, nombres de archivos o metadatos, y el nombre de usuario con el que accedes a tu dispositivo y a Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Controles de contenido multimedia</translation>
 <translation id="7378627244592794276">No</translation>
@@ -1556,6 +1564,7 @@ Detalles adicionales:
 <translation id="7518003948725431193">No se encontró una página web para la siguiente dirección web: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Envelope)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Se ocultó la sección "<ph name="SECTION" />"</translation>
 <translation id="7526934274050461096">Tu conexión con este sitio no es privada</translation>
 <translation id="7535087603100972091">Valor</translation>
 <translation id="7537536606612762813">Obligatoria</translation>
@@ -1756,6 +1765,7 @@ Detalles adicionales:
 <translation id="8293206222192510085">Agregar Marcador</translation>
 <translation id="8294431847097064396">Fuente</translation>
 <translation id="8298115750975731693">Es posible que la red Wi-Fi que estás usando (<ph name="WIFI_NAME" />) requiera que accedas a <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Se muestra la sección "<ph name="SECTION" />"</translation>
 <translation id="830498451218851433">Plegado a la mitad</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Las apps instaladas y su frecuencia de uso</translation>
@@ -1876,6 +1886,7 @@ Detalles adicionales:
 <translation id="8931333241327730545">¿Quieres guardar esta tarjeta en tu cuenta de Google?</translation>
 <translation id="8932102934695377596">El reloj está atrasado</translation>
 <translation id="893332455753468063">Agregar nombre</translation>
+<translation id="8942355029279167844">El administrador permitió que <ph name="APP_NAME" /> recopile datos de diagnóstico para mejorar la experiencia del producto. Para obtener más información, consulta <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />.</translation>
 <translation id="8943282376843390568">Verde lima</translation>
 <translation id="8957210676456822347">Autorización de portal cautivo</translation>
 <translation id="8962950042226115166">Sitio sospechoso</translation>
@@ -1906,6 +1917,7 @@ Detalles adicionales:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Has intentado acceder a <ph name="DOMAIN" />, pero el servidor presentó un certificado no válido.</translation>
 <translation id="9050666287014529139">Frase de contraseña</translation>
+<translation id="9062620674789239642">Es posible que se haya movido, editado o borrado.</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9065745800631924235">Búsqueda de <ph name="TEXT" /> desde el historial</translation>
 <translation id="9069693763241529744">Bloqueado por una extensión</translation>

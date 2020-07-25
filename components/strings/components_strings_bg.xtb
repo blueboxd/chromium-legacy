@@ -559,6 +559,9 @@
 <translation id="3364869320075768271"><ph name="URL" /> иска да използва устройствата и данните ви за виртуална реалност</translation>
 <translation id="3366477098757335611">Преглед на картите</translation>
 <translation id="3369192424181595722">Грешка в часовника</translation>
+<translation id="3371076217486966826"><ph name="URL" /> иска да:
+      • създаде триизмерна карта на заобикалящата ви среда и да следи позицията на камерата;
+      • използва камерата ви.</translation>
 <translation id="337363190475750230">Обезпечаването е отменено</translation>
 <translation id="3377144306166885718">Сървърът използва остаряла версия на TLS.</translation>
 <translation id="3377188786107721145">Грешка при синтактичния анализ на правилото</translation>
@@ -1558,6 +1561,7 @@
 <translation id="7518003948725431193">Не е намерена уеб страница за уеб адреса: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (плик)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Секцията „<ph name="SECTION" />“ бе скрита</translation>
 <translation id="7526934274050461096">Връзката ви с този сайт не е частна</translation>
 <translation id="7535087603100972091">Стойност</translation>
 <translation id="7537536606612762813">Задължително</translation>
@@ -1758,6 +1762,7 @@
 <translation id="8293206222192510085">Добавяне на отметка</translation>
 <translation id="8294431847097064396">Източник</translation>
 <translation id="8298115750975731693">Използваната от вас Wi-Fi мрежа (<ph name="WIFI_NAME" />) може да изисква да посетите <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Секцията „<ph name="SECTION" />“ бе показана</translation>
 <translation id="830498451218851433">Сгъване в средата</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Инсталираните приложения и колко често са използвани</translation>
@@ -1877,6 +1882,7 @@
 <translation id="8931333241327730545">Искате ли да запазите тази карта в профила си в Google?</translation>
 <translation id="8932102934695377596">Часовникът ви е назад</translation>
 <translation id="893332455753468063">Добавяне на име</translation>
+<translation id="8942355029279167844">Администраторът ви е разрешил на <ph name="APP_NAME" /> да събира диагностични данни с цел подобряване на практическата работа с продукта. За повече информация вижте <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />.</translation>
 <translation id="8943282376843390568">лимоненозелено</translation>
 <translation id="8957210676456822347">Упълномощаване в портал за удостоверяване</translation>
 <translation id="8962950042226115166">Подозрителен сайт</translation>

@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">ແວ່ນກັນແດດ</translation>
 <translation id="115443833402798225">ຮາງກຸລ ອັນມາແຕ</translation>
 <translation id="1155759005174418845">ພາສາຄາ​ຕາ​ລັນ</translation>
+<translation id="1172970565351728681">ເວລາຍັງເຫຼືອປະມານ <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">ໃສ່ຊື່ໃໝ່</translation>
 <translation id="117624967391683467">ກໍາລັງກັອບປີ້ <ph name="FILE_NAME" />...</translation>
 <translation id="1178581264944972037">ຢຸດຊົ່ວຄາວ</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">ກຳມະສິດຈະຖືກໂອນໃຫ້ <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">ພາສາໄອແລນ</translation>
 <translation id="3245321423178950146">ສິລະປິນທີ່ບໍ່​ຮູ້ຈັກ</translation>
+<translation id="3248185426436836442">ກຳລັງລໍຖ້າ</translation>
 <translation id="3252266817569339921">ພາສາຝຣັ່ງ</translation>
 <translation id="3254434849914415189">ເລືອກ​ແອັບມາດຕະຖານສໍາ​ລັບໄຟລ໌ <ph name="FILE_TYPE" />:</translation>
 <translation id="3264582393905923483">ສະພາບການ</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">ທ່ານບໍ່ມີການອະນຸຍາດຍ້າຍໄຟລ໌ໄປໃສ່ '<ph name="FOLDER_NAME" />'.</translation>
 <translation id="3786301125658655746">ທ່ານອອຟລາຍນ໌ຢູ່</translation>
 <translation id="3789841737615482174">​ຕິດ​ຕັ້ງ</translation>
+<translation id="3793469551756281394">ຍັງເຫຼືອປະມານ <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">ລຸ້ນ</translation>
 <translation id="3801082500826908679">ພາ​ສາຟາໂຣອີ​ສ</translation>
 <translation id="3809272675881623365">ກະຕ່າຍ</translation>

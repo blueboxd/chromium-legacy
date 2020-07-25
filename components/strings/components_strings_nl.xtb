@@ -555,6 +555,9 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="3364869320075768271"><ph name="URL" /> wil je virtualreality-apparaat en -gegevens gebruiken</translation>
 <translation id="3366477098757335611">Passen bekijken</translation>
 <translation id="3369192424181595722">Klokfout</translation>
+<translation id="3371076217486966826"><ph name="URL" /> wil:
+      • Een 3D-kaart van je omgeving maken en de camerapositie volgen
+      • De camera gebruiken</translation>
 <translation id="337363190475750230">Uitgeschreven</translation>
 <translation id="3377144306166885718">De server gebruikte een verouderde versie van TLS.</translation>
 <translation id="3377188786107721145">Fout bij het parseren van beleid</translation>
@@ -1551,6 +1554,7 @@ Aanvullende informatie:
 <translation id="7518003948725431193">Er is geen webpagina gevonden voor het webadres: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (envelop)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Het gedeelte '<ph name="SECTION" />' is verborgen</translation>
 <translation id="7526934274050461096">Je verbinding met deze site is niet privé</translation>
 <translation id="7535087603100972091">Waarde</translation>
 <translation id="7537536606612762813">Verplicht</translation>
@@ -1751,6 +1755,7 @@ Aanvullende informatie:
 <translation id="8293206222192510085">Bookmark toevoegen</translation>
 <translation id="8294431847097064396">Bron</translation>
 <translation id="8298115750975731693">Het is mogelijk dat je <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> moet bezoeken van het wifi-netwerk (<ph name="WIFI_NAME" />) dat je gebruikt.</translation>
+<translation id="8303854710873047864">Het gedeelte '<ph name="SECTION" />' wordt weergegeven</translation>
 <translation id="830498451218851433">Enkele vouw</translation>
 <translation id="8307358339886459768">Kleine foto</translation>
 <translation id="8307888238279532626">Geïnstalleerde apps en hoe vaak ze zijn gebruikt</translation>
@@ -1870,6 +1875,7 @@ Aanvullende informatie:
 <translation id="8931333241327730545">Wil je deze pas opslaan in je Google-account?</translation>
 <translation id="8932102934695377596">Je klok loopt achter</translation>
 <translation id="893332455753468063">Naam toevoegen</translation>
+<translation id="8942355029279167844">Je beheerder heeft toegestaan dat <ph name="APP_NAME" /> diagnostische gegevens verzamelt om de productfunctionaliteit te verbeteren. Zie <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> voor meer informatie.</translation>
 <translation id="8943282376843390568">Limoengroen</translation>
 <translation id="8957210676456822347">Autorisatie van captive portal</translation>
 <translation id="8962950042226115166">Verdachte site</translation>

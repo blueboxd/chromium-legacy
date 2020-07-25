@@ -81,6 +81,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3089968997497233615">There's a new, safer version of Google Chrome available.</translation>
 <translation id="3127818369811890733">Chrome OS could not sync your data.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
+<translation id="3351117925998652957">Pick your Chrome space</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome will relaunch now}=1{Chrome will relaunch in 1 second}other{Chrome will relaunch in # seconds}}</translation>
 <translation id="3395323229510056640">Get help with Chrome OS</translation>
@@ -213,6 +214,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">To see if your device is up to date, go to <ph name="LINK_BEGIN" />Chrome OS Settings<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">This computer will no longer receive Google Chrome updates because Mac OS X 10.9 is no longer supported.</translation>
+<translation id="7591404275842302616">Use Chrome spaces to keep your browsing organised on this device</translation>
 <translation id="7592736734348559088">Google Chrome could not sync your data because your account sign-in details are out of date.</translation>
 <translation id="7626032353295482388">Welcome to Chrome</translation>
 <translation id="7629695634924605473">Chrome lets you know if your passwords are ever compromised</translation>

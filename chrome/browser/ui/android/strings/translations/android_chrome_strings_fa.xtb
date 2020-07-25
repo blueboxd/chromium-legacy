@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">‏به‌روزرسانی Chrome</translation>
 <translation id="1569387923882100876">دستگاه متصل</translation>
 <translation id="1571304935088121812">کپی کردن نام کاربری</translation>
+<translation id="1592864538817356322">محافظت استاندارد:</translation>
 <translation id="1612196535745283361">‏Chrome برای جستجوی دستگاه‌ها باید به مکان دسترسی داشته باشد. دسترسی به مکان <ph name="BEGIN_LINK" />برای این دستگاه خاموش است<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">دوربین</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{حذف ۱ مورد انتخاب‌شده}one{حذف # مورد انتخاب‌شده}other{حذف # مورد انتخاب‌شده}}</translation>
@@ -578,6 +579,7 @@
 <translation id="5659593005791499971">ایمیل</translation>
 <translation id="5665379678064389456">ایجاد رویداد در <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">لغو درخواست وب‌سایت برای جلوگیری از بزرگ‌نمایی</translation>
+<translation id="568275469169136466">برای ورود موقت به سیستم</translation>
 <translation id="5683547024293500885">‏Chrome نمی‌تواند به‌روزرسانی‌ها را بررسی کند</translation>
 <translation id="5686790454216892815">نام فایل خیلی طولانی است</translation>
 <translation id="5694049548840660018">برگشت آسان به صفحه اصلی</translation>
@@ -589,6 +591,7 @@
 <translation id="5723735397759933332">‏اکنون «حالت ساده» با بهینه‌سازی تصاویر در صفحه‌های HTTPS باعث صرفه‌جویی بیشتر در مصرف داده می‌شود.</translation>
 <translation id="5726692708398506830">بزرگ‌تر کردن همه‌چیز در صفحه</translation>
 <translation id="5732819098735351888">‏بارگیری هنگام اتصال به Wi-Fi شروع خواهد شد.</translation>
+<translation id="5733983706093266635">‏نمی‌توان کد QR ایجاد کرد. نشانی وب بیش از <ph name="CHARACTER_LIMIT" /> نویسه دارد.</translation>
 <translation id="5748802427693696783">به برگه‌های استاندارد تغییر یافت</translation>
 <translation id="5749068826913805084">‏Chrome برای بارگیری فایل‌ها باید به حافظه دسترسی داشته باشد.</translation>
 <translation id="5749237766298580851">خاموش <ph name="SEPARATOR" /> توصیه نمی‌شود</translation>
@@ -641,6 +644,7 @@
 <translation id="6111020039983847643">داده مصرف‌شده</translation>
 <translation id="6112702117600201073">درحال بازخوانی صفحه</translation>
 <translation id="6127379762771434464">مورد برداشته شد</translation>
+<translation id="6140709049082532940">محافظت بهبودیافته:</translation>
 <translation id="6140912465461743537">کشور/منطقه</translation>
 <translation id="614940544461990577">این موارد را امتحان کنید:</translation>
 <translation id="6154478581116148741">برای صادر کردن گذرواژه‌ها از این دستگاه، قفل صفحه را در تنظیمات روشن کنید.</translation>
@@ -1017,6 +1021,7 @@
 <translation id="9100610230175265781">عبارت عبور لازم است</translation>
 <translation id="9102803872260866941">برگه پیش‌نمایش باز است</translation>
 <translation id="9104217018994036254">فهرست دستگاه‌هایی که می‌توان با آن‌ها برگه هم‌رسانی کرد.</translation>
+<translation id="9104402662006063371">رفتن به «حالت ناشناس»</translation>
 <translation id="9108312223223904744">«تلفن» به‌عنوان «پشتیبان کلید امنیتی»</translation>
 <translation id="9108808586816295166">‏ممکن است DNS ایمن همیشه در دسترس نباشد</translation>
 <translation id="9133397713400217035">کاوش درحالت آفلاین</translation>

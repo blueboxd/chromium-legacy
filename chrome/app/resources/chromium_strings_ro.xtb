@@ -222,6 +222,7 @@ Chromium nu poate recupera setările.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Relansează Chromium în cel mult o zi}few{Relansează Chromium în cel mult # zile}other{Relansează Chromium în cel mult # de zile}}</translation>
 <translation id="8453117565092476964">Arhiva programului de instalare este deteriorată sau nevalidă. Descărcați din nou Chromium.</translation>
 <translation id="8493179195440786826">Chromium nu este actualizat</translation>
+<translation id="8545858702702650646">Alege spațiul tău din Chromium</translation>
 <translation id="8558383651099478961">Părintele tău a dezactivat opțiunea „Permisiuni pentru site-uri, aplicații și extensii” în Chromium. Adăugarea acestei <ph name="EXTENSION_TYPE_PARAMETER" /> nu este permisă.</translation>
 <translation id="8568283329061645092">Chromium poate să îți verifice parolele atunci când te conectezi folosind Contul Google</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Toate drepturile rezervate.</translation>
@@ -245,6 +246,7 @@ Chromium nu poate recupera setările.</translation>
 <translation id="911206726377975832">Ștergi și datele de navigare?</translation>
 <translation id="9158494823179993217">Administratorul de sistem a configurat Chromium să deschidă un browser secundar pentru a accesa <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Folosește spațiile din Chromium pentru a organiza activitatea de navigare pe acest dispozitiv</translation>
 <translation id="93478295209880648">Este posibil ca Chromium să nu funcționeze corespunzător, deoarece nu mai este acceptat pe Windows XP sau Windows Vista</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> necesită să citiți și să acceptați Termenii și condițiile următoare înainte de a utiliza acest dispozitiv. Acești termeni nu extind, nu modifică și nu limitează Termenii pentru sistemul de operare Chromium.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

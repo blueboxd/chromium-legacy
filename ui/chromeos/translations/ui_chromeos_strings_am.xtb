@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">የጸሐይ መነጽሮች</translation>
 <translation id="115443833402798225">ሃንጉል አንማቴ</translation>
 <translation id="1155759005174418845">ካታላን</translation>
+<translation id="1172970565351728681"><ph name="REMAINING_TIME" /> ገደማ ይቀራል</translation>
 <translation id="1173894706177603556">ዳግም ሰይም</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" />ን በመቅዳት ላይ</translation>
 <translation id="1178581264944972037">ለአፍታ አቁም</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">ባለቤትነትን ወደ <ph name="DESTINATION_DOMAIN" /> ይዛወራል።</translation>
 <translation id="3241720467332021590">አይሪሽ</translation>
 <translation id="3245321423178950146">ያልታወቀ አርቲስት</translation>
+<translation id="3248185426436836442">በመጠባበቅ ላይ</translation>
 <translation id="3252266817569339921">ፈረንሳይኛ</translation>
 <translation id="3254434849914415189">ለ<ph name="FILE_TYPE" /> ፋይሎች ነባሪውን መተግበሪያ ይምረጡ፦</translation>
 <translation id="3264582393905923483">አውድ</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">ፋይሎችን ወደ '<ph name="FOLDER_NAME" />' ለማንቀሳቀስ ፈቃድ የልዎትም።</translation>
 <translation id="3786301125658655746">ከመስመር ውጪ ነዎት</translation>
 <translation id="3789841737615482174">ጫን  </translation>
+<translation id="3793469551756281394"><ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> ገደማ ይቀራል</translation>
 <translation id="3798449238516105146">ስሪት</translation>
 <translation id="3801082500826908679">ፋሮኛ</translation>
 <translation id="3809272675881623365">ጥንቸል</translation>

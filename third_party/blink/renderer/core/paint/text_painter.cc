@@ -36,7 +36,7 @@ void TextPainter::Paint(unsigned start_offset,
   if (combined_text_) {
     graphics_context_.Save();
     combined_text_->TransformToInlineCoordinates(graphics_context_,
-                                                 text_bounds_);
+                                                 text_frame_rect_);
     PaintInternal<kPaintText>(start_offset, end_offset, length, node_id);
     graphics_context_.Restore();
   } else {
@@ -124,15 +124,15 @@ void TextPainter::PaintEmphasisMarkForCombinedText() {
   DCHECK(combined_text_);
   TextRun placeholder_text_run(&kIdeographicFullStopCharacter, 1);
   FloatPoint emphasis_mark_text_origin(
-      text_bounds_.X().ToFloat(), text_bounds_.Y().ToFloat() +
-                                      font_data->GetFontMetrics().Ascent() +
-                                      emphasis_mark_offset_);
+      text_frame_rect_.X().ToFloat(), text_frame_rect_.Y().ToFloat() +
+                                          font_data->GetFontMetrics().Ascent() +
+                                          emphasis_mark_offset_);
   TextRunPaintInfo text_run_paint_info(placeholder_text_run);
-  graphics_context_.ConcatCTM(Rotation(text_bounds_, kClockwise));
+  graphics_context_.ConcatCTM(Rotation(text_frame_rect_, kClockwise));
   graphics_context_.DrawEmphasisMarks(combined_text_->OriginalFont(),
                                       text_run_paint_info, emphasis_mark_,
                                       emphasis_mark_text_origin);
-  graphics_context_.ConcatCTM(Rotation(text_bounds_, kCounterclockwise));
+  graphics_context_.ConcatCTM(Rotation(text_frame_rect_, kCounterclockwise));
 }
 
 }  // namespace blink

@@ -3903,7 +3903,9 @@
       {
         "args": [
           "--use-cmd-decoder=validating",
-          "--test-launcher-print-test-stdio=always"
+          "--test-launcher-print-test-stdio=always",
+          "--use-gpu-in-tests",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -3914,7 +3916,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-16.04"
+              "gpu": "10de:1cb3",
+              "os": "Ubuntu",
+              "pool": "chromium.tests.gpu"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5591,7 +5595,9 @@
       },
       {
         "args": [
-          "--use-cmd-decoder=validating"
+          "--use-cmd-decoder=validating",
+          "--use-gpu-in-tests",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -5602,7 +5608,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-16.04"
+              "gpu": "10de:1cb3",
+              "os": "Ubuntu",
+              "pool": "chromium.tests.gpu"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -12752,7 +12760,9 @@
       {
         "args": [
           "--use-cmd-decoder=validating",
-          "--test-launcher-print-test-stdio=always"
+          "--test-launcher-print-test-stdio=always",
+          "--use-gpu-in-tests",
+          "--no-xvfb"
         ],
         "merge": {
           "args": [],
@@ -12763,7 +12773,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Ubuntu-16.04"
+              "gpu": "10de:1cb3",
+              "os": "Ubuntu",
+              "pool": "chromium.tests.gpu"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"

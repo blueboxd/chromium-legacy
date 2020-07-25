@@ -77,6 +77,7 @@
 <translation id="3089968997497233615">Hay disponible una versión de Google Chrome más nueva y más segura.</translation>
 <translation id="3127818369811890733">El Sistema operativo Chrome no pudo sincronizar los datos.</translation>
 <translation id="3149510190863420837">Aplicaciones de Chrome</translation>
+<translation id="3351117925998652957">Selecciona tu espacio de Chrome</translation>
 <translation id="3360895254066713204">Ayuda de Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Se reiniciará Chrome ahora}=1{Se reiniciará Chrome en 1 segundo}other{Se reiniciará Chrome en # segundos}}</translation>
 <translation id="3395323229510056640">Obtener ayuda con el Sistema operativo Chrome</translation>
@@ -175,6 +176,7 @@
 <translation id="6291549208091401781">Google Chrome ya está instalado para todos los usuarios en tu computadora.</translation>
 <translation id="6338556085225130112">Actualizando Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS es posible gracias al <ph name="BEGIN_LINK_CROS_OSS" />software de código abierto<ph name="END_LINK_CROS_OSS" /> adicional.</translation>
+<translation id="6372315130616785175">Accediste con una cuenta de trabajo. ¿Quieres crear un perfil nuevo de Chrome para el trabajo y así mantener los datos separados?</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" />: Versión para desarrolladores de Google Chrome</translation>
 <translation id="6566149418543181476">Actualizando Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6676384891291319759">Acceder a Internet</translation>
@@ -204,6 +206,7 @@
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Para saber si tu dispositivo está actualizado, ve a la <ph name="LINK_BEGIN" />configuración del Sistema operativo Chrome<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Esta computadora no recibirá más actualizaciones de Google Chrome porque Mac OS X 10.9 ya no es compatible.</translation>
+<translation id="7591404275842302616">Usa los espacios de Chrome para organizar tu forma de navegar en este dispositivo</translation>
 <translation id="7592736734348559088">Google Chrome no pudo sincronizar los datos porque los datos de acceso de la cuenta están obsoletos.</translation>
 <translation id="7626032353295482388">Te damos la bienvenida a Chrome</translation>
 <translation id="7629695634924605473">Chrome te informará si tus contraseñas se ven comprometidas</translation>

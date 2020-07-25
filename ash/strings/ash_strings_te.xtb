@@ -8,7 +8,7 @@
 <translation id="1036672894875463507">నేను మీ Google Assistantను, రోజంతా మీకు సహాయం చేయడానికి మీతో ఉంటాను!
 ప్రారంభించడానికి ఇక్కడ కొన్ని అంశాలు ఇవ్వబడ్డాయి.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> జోడించబడింది</translation>
-<translation id="1056775291175587022">నెట్‌వర్క్‌లు లేవు</translation>
+<translation id="1056775291175587022">నెట్‌వ. లేవు</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="108486256082349153">సెల్యులార్: <ph name="ADDRESS" /></translation>
 <translation id="109942774857561566">నాకు ఏమీ తోచడం లేదు</translation>
@@ -20,7 +20,7 @@
 <translation id="1178581264944972037">పాజ్ చేయి</translation>
 <translation id="1190609913194133056">నోటిఫికేషన్ కేంద్రం</translation>
 <translation id="1195412055398077112">ఓవర్‌స్కాన్</translation>
-<translation id="119944043368869598">అన్ని క్లియర్ చెయ్యి</translation>
+<translation id="119944043368869598">అన్ని క్లియర్ చేయి</translation>
 <translation id="1199716647557067911">స్విచ్ యాక్సెస్‌ను మీరు ఆఫ్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="121097972571826261">ఒక పదం ముందుకు</translation>
 <translation id="1229194443904279055">ఎంచుకోవడం ఆపివేయండి</translation>
@@ -111,7 +111,7 @@
 <translation id="2222338659135520253">సైన్ ఇన్ చేయాలి</translation>
 <translation id="225680501294068881">పరికరాల కోసం స్కాన్ చేస్తోంది...</translation>
 <translation id="2268130516524549846">బ్లూటూత్‌ నిలిపివేయబడింది</translation>
-<translation id="2268813581635650749">అందరినీ సైన్ అవుట్ చేయి</translation>
+<translation id="2268813581635650749">అన్నీ సైన్అవుట్ చేయి</translation>
 <translation id="2277103315734023688">ముందుకు జరుపు</translation>
 <translation id="2292698582925480719">ప్రదర్శన ప్రమాణం</translation>
 <translation id="229397294990920565">మొబైల్ డేటా ఆఫ్ చేయబడుతోంది...</translation>
@@ -146,7 +146,7 @@
 <translation id="2582112259361606227">అప్‌డేేట్ చేయడానికి పునఃప్రారంభించండి</translation>
 <translation id="2595239820337756193">5 కిలోమీటర్‌లు, మైళ్ళలో</translation>
 <translation id="2617342710774726426">SIM కార్డ్ లాక్ అయింది</translation>
-<translation id="2621713457727696555">సురక్షితం చేయబడింది</translation>
+<translation id="2621713457727696555">సురక్షితమైంది</translation>
 <translation id="2653659639078652383">సమర్పించు</translation>
 <translation id="2658778018866295321">క్లిక్ చేసి, లాగండి</translation>
 <translation id="2700493154570097719">మీ కీబోర్డ్‌ని సెట్ చేయండి</translation>
@@ -277,7 +277,7 @@
 <translation id="4028481283645788203">మరింత సెక్యూరిటీ కోసం పాస్‌వర్డ్‌ కావాలి</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">మీరు మీ స్క్రీన్‌ను షేర్ చేస్తున్నారు</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{ఒక యాప్‌కు ఆఫ్‌లో ఉంది}other{# యాప్‌లకు ఆఫ్‌లో ఉంది}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{ఒక యాప్‌కు ఆఫ్}other{# యాప్‌లకు ఆఫ్}}</translation>
 <translation id="4072264167173457037">సిగ్నల్ ఓ మోస్తరుగా ఉంది</translation>
 <translation id="4112140312785995938">వెనుకకు జరుపు</translation>
 <translation id="4129129681837227511">మీ లాక్ స్క్రీన్‌లో నోటిఫికేషన్‌లను చూడటానికి, సెట్టింగ్‌ను మార్చేందుకు అన్‌లాక్ చేయండి</translation>
@@ -302,7 +302,7 @@
 <translation id="4356930093361201197">అధిక కాంట్రాస్ట్ మోడ్</translation>
 <translation id="4368583494516669646">గుడ్ నైట్ <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">ప్రసార సెట్టింగ్‌లు</translation>
-<translation id="4378551569595875038">కనెక్ట్ అవుతోంది...</translation>
+<translation id="4378551569595875038">కనెక్టింగ్...</translation>
 <translation id="4379531060876907730">ఇవి మీ స్టైలస్ సాధనాలు</translation>
 <translation id="4389184120735010762">మీరు డాక్ చేసిన మాగ్నిఫైయర్‌ కోసం కీబోర్డ్ షార్ట్‌కట్‌ను నొక్కారు. మీరు దీన్ని ఆన్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="4421231901400348175">రిమోట్ సహాయం విధానంలో మీ స్క్రీన్ నియంత్రణ <ph name="HELPER_NAME" />కి భాగస్వామ్యం చేయబడుతోంది.</translation>
@@ -336,7 +336,7 @@
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> కోసం పాస్‌వర్డ్</translation>
 <translation id="4778095205580009397">Google అసిస్టెంట్ డెమో సెషన్‌లో అందుబాటులో లేదు.</translation>
 <translation id="479989351350248267">search</translation>
-<translation id="4804818685124855865">డిస్‌కనెక్ట్ చెయ్యి</translation>
+<translation id="4804818685124855865">డిస్‌కనెక్ట్ చేయి</translation>
 <translation id="4814539958450445987">లాగిన్ స్క్రీన్</translation>
 <translation id="4831034276697007977">ఆటోమేటిక్ క్లిక్‌లను మీరు ఖచ్చితంగా ఆఫ్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="4849058404725798627">కీబోర్డ్ దృష్టి కేంద్రీకరణతో అంశాన్ని హైలైట్ చేయి</translation>
@@ -394,7 +394,7 @@
 <translation id="5600837773213129531">ప్రసంగ రూప అభిప్రాయాన్ని నిలిపివేయడానికి Ctrl + Alt + Z నొక్కండి.</translation>
 <translation id="5625955975703555628">LTE+</translation>
 <translation id="5648021990716966815">మైక్ జాక్</translation>
-<translation id="5669267381087807207">సక్రియం చేస్తోంది</translation>
+<translation id="5669267381087807207">సక్రియమవుతోంది</translation>
 <translation id="5673434351075758678">మీ సెట్టింగులను సమకాలీకరించిన తర్వాత "<ph name="FROM_LOCALE" />" నుండి "<ph name="TO_LOCALE" />"కి.</translation>
 <translation id="5682642926269496722">ప్రస్తుత వినియోగదారు ఖాతాలో Google అసిస్టెంట్ పని చేయదు.</translation>
 <translation id="5689633613396158040">రాత్రి కాంతి ఫీచర్ అనేది తక్కువ కాంతి ఉన్న సందర్భాలలో మీ స్క్రీన్‌ను స్పష్టంగా చూడటాన్ని లేదా చదవడాన్ని మరింత సులభతరం చేస్తుంది. నైట్ లైట్ ఆన్ చేసే సమయాన్ని మార్చడానికి నొక్కండి లేదా దాన్ని పూర్తిగా ఆపివేయండి.</translation>
@@ -469,7 +469,7 @@
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" />కి స్క్రీన్‌ను ప్రసారం చేస్తున్నాము</translation>
 <translation id="652139407789908527">ఈ అప్‌డేట్ సమయంలో మీ స్క్రీన్ సాధారణ కంటే ఎక్కువ సమయం పాటు (ఒక నిమిషం వరకు) బ్లాంక్‌గా అవుతుంది. అప్‌డేట్ ప్రోగ్రెస్‌లో ఉన్నప్పుడు దయచేసి పవర్ బటన్‌ను నొక్కవద్దు.</translation>
 <translation id="6521655319214113338">చేతివ్రాత ఇన్‌పుట్</translation>
-<translation id="6528179044667508675">అంతరాయం కలిగించవద్దు</translation>
+<translation id="6528179044667508675">అంతరాయం వద్దు</translation>
 <translation id="6537270692134705506">స్క్రీన్‌ని సంగ్రహించు</translation>
 <translation id="6537924328260219877">సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />, ఫోన్ బ్యాటరీ <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" />కు ప్రసారం చేస్తున్నారు</translation>
@@ -500,7 +500,7 @@
 <translation id="6803622936009808957">మద్దతు ఉన్న రిజల్యూషన్‌లు కనుగొనబడనందున ప్రదర్శనలను ప్రతిబింబించడం సాధ్యపడలేదు. దానికి బదులుగా విస్తారిత డెస్క్‌టాప్‌కు మారారు.</translation>
 <translation id="6818242057446442178">ఒక పదం వెనుకకు</translation>
 <translation id="6820676911989879663">విరామం తీసుకోండి!</translation>
-<translation id="6857811139397017780"><ph name="NETWORKSERVICE" />ని సక్రియం చెయ్యి</translation>
+<translation id="6857811139397017780"><ph name="NETWORKSERVICE" />ని సక్రియం చేయి</translation>
 <translation id="6878400149835617132">షార్ట్‌కట్ ఆఫ్ చేయబడింది</translation>
 <translation id="6896758677409633944">కాపీ చేయి</translation>
 <translation id="6910714959251846841">ఈ అప్‌డేట్ కోసం మీ పరికరాన్ని పవర్‌వాష్ చేయాలి. తాజా <ph name="SYSTEM_APP_NAME" /> అప్‌డేట్ గురించి మరింత తెలుసుకోండి.</translation>
@@ -512,7 +512,7 @@
 <translation id="7015766095477679451">తిరిగి <ph name="COME_BACK_TIME" />కి రండి.</translation>
 <translation id="7025533177575372252">మీ <ph name="DEVICE_NAME" />ని మీ ఫోన్‌కి కనెక్ట్ చేయండి</translation>
 <translation id="7026338066939101231">తరుగుదల</translation>
-<translation id="7029814467594812963">సెషన్‌ను నిష్క్రమించు</translation>
+<translation id="7029814467594812963">సెషన్ నిష్క్రమించు</translation>
 <translation id="703425375924687388"><ph name="QUERY_NAME" />, Google అసిస్టెంట్</translation>
 <translation id="7042322267639375032">స్టేటస్ ప్రాంతాన్ని కుదించండి</translation>
 <translation id="7066646422045619941">ఈ నెట్‌వర్క్‌ను మీ నిర్వాహ‌కుడు నిలిపివేశారు.</translation>
@@ -522,7 +522,7 @@
 <translation id="7088960765736518739">స్విచ్ యాక్సెస్</translation>
 <translation id="7098389117866926363">USB-C పరికరం (వెనుక భాగంలో ఎడమ పోర్ట్)</translation>
 <translation id="7131634465328662194">మీరు ఆటోమేటిక్‌గా సైన్ అవుట్ చేయబడతారు.</translation>
-<translation id="7143207342074048698">కనెక్ట్ అవుతోంది</translation>
+<translation id="7143207342074048698">కనెక్ట్ అవుతో.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />లో తిరిగి పాత రిజల్యూషన్‌కి మార్చబడుతుంది</translation>
 <translation id="7188494361780961876">స్క్రీన్‌లో పైన ఎడమ వైపు మూలకు మెనూ తరలించబడింది.</translation>
@@ -599,12 +599,12 @@
 <translation id="8054466585765276473">బ్యాటరీ సమయాన్ని లెక్కిస్తోంది.</translation>
 <translation id="8061464966246066292">అధిక కాంట్రాస్ట్</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" />కి స్క్రీన్‌ను ప్రసారం చేయడాన్ని ఆపివేయి</translation>
-<translation id="8113423164597455979">ఆన్, అన్ని యాప్‌లు</translation>
+<translation id="8113423164597455979">యాప్‌లన్నీ ఆన్</translation>
 <translation id="8131740175452115882">నిర్ధారించు</translation>
 <translation id="8132793192354020517"><ph name="NAME" />కు కనెక్ట్ చేయబడింది</translation>
 <translation id="813913629614996137">ప్రారంభిస్తోంది...</translation>
 <translation id="8142441511840089262">రెండు సార్లు క్లిక్ చేయండి</translation>
-<translation id="8142699993796781067">ప్రైవేట్ నెట్‌వర్క్</translation>
+<translation id="8142699993796781067">ప్రైవే. నెట్‌వర్క్</translation>
 <translation id="8152092012181020186">మూసివేయడానికి Ctrl + W నొక్కండి.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> ఈ సెట్టింగ్ మీ నిర్వాహకుడి ద్వారా నిర్వహించబడుతుంది.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" />ని ఉపయోగిస్తోంది</translation>
@@ -640,7 +640,7 @@
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> <ph name="FEATURE_NAME" />ను <ph name="FEATURE_STATE" />.</translation>
 <translation id="8477270416194247200">రద్దు చేయడానికి Alt+Search లేదా Shiftను నొక్కండి.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" />ను సపోర్ట్ చేయదు. <ph name="FALLBACK_RESOLUTION" />కు రిజల్యూషన్ మార్చబడింది. మార్పులను అలాగే ఉంచడానికి 'ధృవీకరించు'ను క్లిక్ చేయండి. మునుపటి సెట్టింగ్‌లు <ph name="TIMEOUT_SECONDS" />లో రీస్టోర్ చేయబడతాయి.</translation>
-<translation id="8513108775083588393">ఆటో-రొటేట్‌లో ఉంది</translation>
+<translation id="8513108775083588393">ఆటో-రొటేట్</translation>
 <translation id="8517041960877371778">మీ <ph name="DEVICE_TYPE" /> ఆన్‌లో ఉన్నప్పుడు ఛార్జ్ కాకపోవచ్చు.</translation>
 <translation id="8563862697512465947">నోటిఫికేషన్ సెట్టింగ్‌లు</translation>
 <translation id="857201607579416096">స్క్రీన్‌లో కింద కుడి వైపు మూలకు మెనూ తరలించబడింది.</translation>
@@ -673,7 +673,7 @@
 <translation id="8843682306134542540">భ్రమణం లాక్‌ను టోగుల్ చేయండి. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">యాప్‌లో విభజన స్క్రీన్‌కు మద్దతు లేదు.</translation>
-<translation id="8874184842967597500">కనెక్ట్ చేయబడలేదు</translation>
+<translation id="8874184842967597500">కనెక్ట్ కాలేదు</translation>
 <translation id="8877788021141246043">రిమైండర్‌ సెట్ చేయి</translation>
 <translation id="8878886163241303700">స్క్రీన్ విస్తరించబడుతోంది</translation>
 <translation id="890616557918890486">మూలాధారాన్ని మార్చు</translation>
@@ -714,7 +714,7 @@
 <translation id="9220525904950070496">ఖాతాను తీసివేయండి</translation>
 <translation id="923686485342484400">సైన్ అవుట్ చేయడానికి Control Shift Qను రెండుసార్లు నొక్కండి.</translation>
 <translation id="938963181863597773">నా క్యాలెండర్‌లో ఏమి ఉన్నాయి?</translation>
-<translation id="945522503751344254">అభిప్రాయాన్ని పంపండి</translation>
+<translation id="945522503751344254">ఫీడ్‌బ్యాక్ పంపండి</translation>
 <translation id="98515147261107953">సమతలదిశ</translation>
 <translation id="990277280839877440"><ph name="WINDOW_TITILE" /> విండో మూసివేయబడింది.</translation>
 </translationbundle>

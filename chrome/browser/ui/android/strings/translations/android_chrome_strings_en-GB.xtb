@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Update Chrome</translation>
 <translation id="1569387923882100876">Connected device</translation>
 <translation id="1571304935088121812">Copy username</translation>
+<translation id="1592864538817356322">Standard protection:</translation>
 <translation id="1612196535745283361">Chrome needs location access to scan for devices. Location access is <ph name="BEGIN_LINK" />turned off for this device<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Remove 1 selected item}other{Remove # selected items}}</translation>
@@ -578,6 +579,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5659593005791499971">Email</translation>
 <translation id="5665379678064389456">Create event in <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Override a website’s request to prevent zooming in</translation>
+<translation id="568275469169136466">To sign in temporarily</translation>
 <translation id="5683547024293500885">Chrome can’t check for updates</translation>
 <translation id="5686790454216892815">File name too long</translation>
 <translation id="5694049548840660018">Get back home easily</translation>
@@ -589,6 +591,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5723735397759933332">Lite mode now saves you more data by optimising images on HTTPS pages.</translation>
 <translation id="5726692708398506830">Make everything on the page bigger</translation>
 <translation id="5732819098735351888">Download will start on Wi-Fi.</translation>
+<translation id="5733983706093266635">Can't create QR code. URL is more than <ph name="CHARACTER_LIMIT" /> characters.</translation>
 <translation id="5748802427693696783">Switched to standard tabs</translation>
 <translation id="5749068826913805084">Chrome needs storage access to download files.</translation>
 <translation id="5749237766298580851">Off <ph name="SEPARATOR" /> Not recommended</translation>
@@ -641,6 +644,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="6111020039983847643">data used</translation>
 <translation id="6112702117600201073">Refreshing page</translation>
 <translation id="6127379762771434464">Item removed</translation>
+<translation id="6140709049082532940">Enhanced protection:</translation>
 <translation id="6140912465461743537">Country/Region</translation>
 <translation id="614940544461990577">Try:</translation>
 <translation id="6154478581116148741">Turn on screen lock in Settings to export your passwords from this device</translation>
@@ -1017,6 +1021,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="9100610230175265781">Passphrase required</translation>
 <translation id="9102803872260866941">Preview tab is opened</translation>
 <translation id="9104217018994036254">List of devices to share a tab with.</translation>
+<translation id="9104402662006063371">Go Incognito mode</translation>
 <translation id="9108312223223904744">Phone as a security key support</translation>
 <translation id="9108808586816295166">Secure DNS may not be available all the time</translation>
 <translation id="9133397713400217035">Explore offline</translation>

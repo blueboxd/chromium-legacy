@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Күнқағар көзілдірік</translation>
 <translation id="115443833402798225">Ханғыл (Ahnmatae)</translation>
 <translation id="1155759005174418845">каталан</translation>
+<translation id="1172970565351728681">Шамамен <ph name="REMAINING_TIME" /> қалды.</translation>
 <translation id="1173894706177603556">Атын өзгерту</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> көшірілуде…</translation>
 <translation id="1178581264944972037">Кідірту</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Иелік <ph name="DESTINATION_DOMAIN" /> доменіне өтеді.</translation>
 <translation id="3241720467332021590">ирландша</translation>
 <translation id="3245321423178950146">Белгісіз орындаушы</translation>
+<translation id="3248185426436836442">Кезекте тұр</translation>
 <translation id="3252266817569339921">француз</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> файлдары үшін әдепкі қолданбаны таңдаңыз:</translation>
 <translation id="3264582393905923483">Мәнмәтін</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Файлдарды "<ph name="FOLDER_NAME" />" қалтасына салатын рұқсатыңыз жоқ.</translation>
 <translation id="3786301125658655746">Желіде емессіз</translation>
 <translation id="3789841737615482174">Орнату</translation>
+<translation id="3793469551756281394">Шамамен <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> қалды.</translation>
 <translation id="3798449238516105146">Нұсқа</translation>
 <translation id="3801082500826908679">Фарер</translation>
 <translation id="3809272675881623365">Қоян</translation>

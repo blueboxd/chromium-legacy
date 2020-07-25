@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Päikeseprillid</translation>
 <translation id="115443833402798225">Hanguli ahnmatae</translation>
 <translation id="1155759005174418845">katalaani keel</translation>
+<translation id="1172970565351728681">Jäänud on ligikaudu <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">Muuda nime</translation>
 <translation id="117624967391683467">Faili <ph name="FILE_NAME" /> kopeerimine ...</translation>
 <translation id="1178581264944972037">Peata</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Omandiline kuuluvus kantakse üle domeenile <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">iiri keel</translation>
 <translation id="3245321423178950146">Tundmatu esitaja</translation>
+<translation id="3248185426436836442">Ootel</translation>
 <translation id="3252266817569339921">prantsuse keel</translation>
 <translation id="3254434849914415189">Valige vaikerakendus <ph name="FILE_TYPE" />-failide jaoks:</translation>
 <translation id="3264582393905923483">Kontekst</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Teil ei ole luba failide teisaldamiseks kausta „<ph name="FOLDER_NAME" />”.</translation>
 <translation id="3786301125658655746">Olete võrguühenduseta</translation>
 <translation id="3789841737615482174">Installi</translation>
+<translation id="3793469551756281394">Jäänud on ligikaudu <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">Versioon</translation>
 <translation id="3801082500826908679">fääri</translation>
 <translation id="3809272675881623365">Küülik</translation>

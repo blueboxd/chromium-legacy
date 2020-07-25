@@ -79,6 +79,7 @@
 <translation id="3089968997497233615">‏يتوفر إصدار جديد وأكثر أمانًا لمتصفح Google Chrome.</translation>
 <translation id="3127818369811890733">‏تعذّر على نظام التشغيل Chrome مزامنة بياناتك.</translation>
 <translation id="3149510190863420837">‏تطبيقات Chrome</translation>
+<translation id="3351117925998652957">‏اختيار مساحتك الشخصية في Chrome Spaces</translation>
 <translation id="3360895254066713204">‏مساعد Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{‏ستتم إعادة تشغيل Chrome الآن}=1{‏ستتم إعادة تشغيل Chrome في غضون ثانية واحدة}two{‏ستتم إعادة تشغيل Chrome في غضون ثانيتين}few{‏ستتم إعادة تشغيل Chrome في غضون # ثوان}many{‏ستتم إعادة تشغيل Chrome في غضون # ثانيةً}other{‏ستتم إعادة تشغيل Chrome في غضون # ثانية}}</translation>
 <translation id="3395323229510056640">‏الحصول على مساعدة في نظام التشغيل Chrome</translation>
@@ -209,6 +210,7 @@
 <translation id="7535429826459677826">‏إصدار مطوري البرامج من Google Chrome</translation>
 <translation id="7573289029918943991">‏للتأكّد من أن جهازك يستخدم أحدث إصدار من نظام التشغيل، يُرجى الانتقال إلى <ph name="LINK_BEGIN" />إعدادات نظام التشغيل Chrome<ph name="LINK_END" />.</translation>
 <translation id="7589360514048265910">‏لن يتلقى هذا الكمبيوتر تحديثات Google Chrome بعد الآن لأن نظام التشغيل Mac OS X 10.9 لم يعُد متاحًا.</translation>
+<translation id="7591404275842302616">‏يمكنك استخدام ميزة Chrome Spaces لإبقاء تصفُّحك منظَّمًا على هذا الجهاز.</translation>
 <translation id="7592736734348559088">‏تعذر على Google Chrome مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>
 <translation id="7626032353295482388">‏مرحبًا بك في Chrome‏</translation>
 <translation id="7629695634924605473">‏يتم إعلامك من خلال Chrome في حال تم اختراق كلمات المرور في أي وقت.</translation>

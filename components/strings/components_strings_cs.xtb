@@ -554,6 +554,9 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="3364869320075768271"><ph name="URL" /> chce používat vaše zařízení a data pro virtuální realitu</translation>
 <translation id="3366477098757335611">Zobrazit karty</translation>
 <translation id="3369192424181595722">Chyba hodin</translation>
+<translation id="3371076217486966826">Web <ph name="URL" /> chce:
+      • vytvářet 3D mapu vašeho okolí a sledovat polohu kamery,
+      • používat fotoaparát.</translation>
 <translation id="337363190475750230">Vyřazeno</translation>
 <translation id="3377144306166885718">Server použil zastaralou verzi protokolu TLS.</translation>
 <translation id="3377188786107721145">Chyba analýzy zásady</translation>
@@ -1545,6 +1548,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7518003948725431193">Na webové adrese <ph name="URL" /> se nepodařilo nalézt žádnou webovou stránku.</translation>
 <translation id="7520302887438682816">C8 (obálka)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Sekce <ph name="SECTION" /> je skryta</translation>
 <translation id="7526934274050461096">Připojení k tomuto webu není soukromé</translation>
 <translation id="7535087603100972091">Hodnota</translation>
 <translation id="7537536606612762813">Povinná</translation>
@@ -1745,6 +1749,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8293206222192510085">Přidat záložku</translation>
 <translation id="8294431847097064396">Zdroj</translation>
 <translation id="8298115750975731693">Síť Wi-Fi, kterou používáte (<ph name="WIFI_NAME" />), může vyžadovat, abyste navštívili stránku <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Je zobrazena sekce <ph name="SECTION" /></translation>
 <translation id="830498451218851433">Přeložení napůl</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Nainstalované aplikace a četnost jejich používání</translation>
@@ -1865,6 +1870,7 @@ Další podrobnosti:
 <translation id="8931333241327730545">Chcete tuto kartu uložit do účtu Google?</translation>
 <translation id="8932102934695377596">Vaše hodiny se zpožďují</translation>
 <translation id="893332455753468063">Přidání jména</translation>
+<translation id="8942355029279167844">Váš administrátor aplikaci <ph name="APP_NAME" /> povolil shromažďovat diagnostická data ke zlepšování služby. Další informace naleznete na adrese <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />.</translation>
 <translation id="8943282376843390568">Limetková</translation>
 <translation id="8957210676456822347">Autorizace captive portálu</translation>
 <translation id="8962950042226115166">Podezřelý web</translation>

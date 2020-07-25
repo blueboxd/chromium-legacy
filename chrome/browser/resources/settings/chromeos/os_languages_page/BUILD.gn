@@ -10,6 +10,7 @@ js_type_check("closure_compile") {
   deps = [
     ":input_method_options_page",
     ":input_method_util",
+    ":languages_metrics_proxy",
     ":manage_input_methods_page",
     ":os_add_languages_dialog",
     ":os_languages_page",
@@ -32,6 +33,11 @@ js_library("input_method_options_page") {
 
 js_library("input_method_util") {
   deps = [ "//ui/webui/resources/js:cr" ]
+}
+
+js_library("languages_metrics_proxy") {
+  deps = [ "//ui/webui/resources/js:cr" ]
+  externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
 js_library("manage_input_methods_page") {
@@ -63,6 +69,7 @@ js_library("os_languages_section") {
 js_library("os_languages_page") {
   deps = [
     ":input_method_util",
+    ":languages_metrics_proxy",
     "..:metrics_recorder",
     "..:os_route",
     "../..:lifetime_browser_proxy",
@@ -90,17 +97,18 @@ js_library("os_add_languages_dialog") {
 }
 
 # TODO: Uncomment as the Polymer3 migration makes progress.
-#js_type_check("closure_compile_module") {
-#  is_polymer3 = true
-#  deps = [
-#    ":input_method_options_page.m",
-#    ":input_method_util.m",
-#    ":manage_input_methods_page.m",
-#    ":os_add_languages_dialog.m",
-#    ":os_languages_page.m",
-#    ":os_languages_section.m"
-#  ]
-#}
+js_type_check("closure_compile_module") {
+  is_polymer3 = true
+  deps = [
+    #    ":input_method_options_page.m",
+    #    ":input_method_util.m",
+    ":languages_metrics_proxy.m",
+    #    ":manage_input_methods_page.m",
+    #    ":os_add_languages_dialog.m",
+    #    ":os_languages_page.m",
+    #    ":os_languages_section.m"
+  ]
+}
 
 js_library("input_method_util.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_languages_page/input_method_util.m.js" ]
@@ -116,6 +124,13 @@ js_library("input_method_options_page.m") {
     # TODO: Fill those in.
   ]
   extra_deps = [ ":input_method_options_page_module" ]
+}
+
+js_library("languages_metrics_proxy.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_languages_page/languages_metrics_proxy.m.js" ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
+  extra_deps = [ ":modulize" ]
+  externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
 js_library("manage_input_methods_page.m") {
@@ -194,6 +209,9 @@ polymer_modulizer("input_method_options_page") {
 }
 
 js_modulizer("modulize") {
-  input_files = [ "input_method_util.js" ]
+  input_files = [
+    "input_method_util.js",
+    "languages_metrics_proxy.js",
+  ]
   namespace_rewrites = os_settings_namespace_rewrites
 }

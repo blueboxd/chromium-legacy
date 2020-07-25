@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Posodobi Chrome</translation>
 <translation id="1569387923882100876">Povezana naprava</translation>
 <translation id="1571304935088121812">Kopiranje uporabniškega imena</translation>
+<translation id="1592864538817356322">Standardna zaščita:</translation>
 <translation id="1612196535745283361">Chrome za iskanje naprav potrebuje dostop do lokacije. Dostop do lokacije <ph name="BEGIN_LINK" />je izklopljen za to napravo<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Odstranitev 1 izbranega elementa}one{Odstranitev # izbranega elementa}two{Odstranitev # izbranih elementov}few{Odstranitev # izbranih elementov}other{Odstranitev # izbranih elementov}}</translation>
@@ -578,6 +579,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5659593005791499971">E-pošta</translation>
 <translation id="5665379678064389456">Ustvarite dogodek v aplikaciji <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Preglasi zahtevo spletnega mesta za preprečevanje povečave</translation>
+<translation id="568275469169136466">Za začasno prijavo</translation>
 <translation id="5683547024293500885">Chrome ne more preveriti, ali so na voljo posodobitve</translation>
 <translation id="5686790454216892815">Ime datoteke je predolgo</translation>
 <translation id="5694049548840660018">Preprosta vrnitev na domačo stran</translation>
@@ -589,6 +591,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5723735397759933332">Lahki način z optimiziranjem slik na straneh HTTPS zdaj poskrbi, da prihranite pri prenosu podatkov.</translation>
 <translation id="5726692708398506830">Povečanje vsebine strani</translation>
 <translation id="5732819098735351888">Prenos se bo začel v omrežju Wi-Fi.</translation>
+<translation id="5733983706093266635">Kode QR ni mogoče ustvariti. URL vsebuje več kot toliko znakov: <ph name="CHARACTER_LIMIT" />.</translation>
 <translation id="5748802427693696783">Preklopljeno na standardne zavihke</translation>
 <translation id="5749068826913805084">Chrome za prenos datotek potrebuje dostop do shrambe.</translation>
 <translation id="5749237766298580851">Izklopljeno <ph name="SEPARATOR" /> Ni priporočljivo</translation>
@@ -641,6 +644,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="6111020039983847643">prenesenih podatkov</translation>
 <translation id="6112702117600201073">Osveževanje strani</translation>
 <translation id="6127379762771434464">Element odstranjen</translation>
+<translation id="6140709049082532940">Izboljšana zaščita:</translation>
 <translation id="6140912465461743537">Država/regija</translation>
 <translation id="614940544461990577">Poskusite:</translation>
 <translation id="6154478581116148741">Vklopite zaklepanje zaslona v nastavitvah, če želite izvoziti gesla iz te naprave.</translation>
@@ -1017,6 +1021,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="9100610230175265781">Zahtevano je geslo</translation>
 <translation id="9102803872260866941">Zavihek za predogled je odprt</translation>
 <translation id="9104217018994036254">Seznam naprav, s katerimi želite deliti zavihek.</translation>
+<translation id="9104402662006063371">Uporabite način brez beleženja dejavnosti</translation>
 <translation id="9108312223223904744">Podpora za telefon kot varnostni ključ</translation>
 <translation id="9108808586816295166">Varni DNS morda ni na voljo ves čas</translation>
 <translation id="9133397713400217035">Raziščite vsebino brez povezave</translation>

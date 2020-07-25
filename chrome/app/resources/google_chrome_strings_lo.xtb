@@ -81,6 +81,7 @@
 <translation id="3089968997497233615">ມີ Google Chrome ລຸ້ນໃໝ່ປອດໄພກ່ວາຢູ່.</translation>
 <translation id="3127818369811890733">Chrome OS ບໍ່ສາມາດຊິ້ງຂໍ້ມູນຂອງທ່ານໄດ້.</translation>
 <translation id="3149510190863420837">ແອັບ Chrome</translation>
+<translation id="3351117925998652957">ເລືອກພື້ນທີ່ Chrome ຂອງທ່ານ</translation>
 <translation id="3360895254066713204">ຕົວຊ່ວຍ Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome ຈະເປີດຄືນໃໝ່ດຽວນີ້}=1{Chrome ຈະເປີດຄືນໃໝ່ໃນ 1 ວິນາທີ}other{Chrome ຈະເປີດຄືນໃໝ່ໃນ # ວິນາທີ}}</translation>
 <translation id="3395323229510056640">ຂໍຄວາມຊ່ວຍເຫຼືອເລື່ອງ Chrome OS</translation>
@@ -213,6 +214,7 @@ Google Chrome ບໍ່ສາມາດກູ້ຄືນການຕັ້ງຄ
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">ເພື່ອເບິ່ງວ່າອຸປະກອນຂອງທ່ານໃໝ່ຫຼ້າສຸດຫຼືບໍ່, ກະລຸນາໄປທີ່ <ph name="LINK_BEGIN" />ການຕັ້ງຄ່າ Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">ຄອມພິວເຕີນີ້ຈະບໍ່ໄດ້ຮັບການອັບເດດ Google Chrome ອີກຕໍ່ໄປ ເພາະວ່າບໍ່ຮອງຮັບ Mac OS X 10.9 ອີກແລ້ວ.</translation>
+<translation id="7591404275842302616">ໃຊ້ພື້ນທີ່ Chrome ເພື່ອຮັກສາໃຫ້ການທ່ອງເວັບຂອງທ່ານເປັນລະບຽບຢູ່ໃນອຸປະກອນນີ້</translation>
 <translation id="7592736734348559088">Goolge Chrome ບໍ່​ສາ​ມາດຊິງຄ໌ຂໍ້​ມູນ​ຂອງ​ທ່ານໄດ້ ​ເພາະ​ວ່າ​ລາຍລະອຽດການລົງຊື່ເຂົ້າໃຊ້ບັນ​ຊີຂອງທ່ານຫຼ້າສະໄໝແລ້ວ.</translation>
 <translation id="7626032353295482388">ຍິນ​ດີ​ຕ້ອນ​ຮັບສູ່ Chrome</translation>
 <translation id="7629695634924605473">Chrome ແຈ້ງໃຫ້ທ່ານຮູ້ຖ້າມີຄົນຮູ້ລະຫັດຜ່ານຂອງທ່ານ</translation>

@@ -26,6 +26,7 @@
 <translation id="1209206284964581585">Ẩn ngay bây giờ</translation>
 <translation id="1219674500290482172">Không thể kết nối Internet.</translation>
 <translation id="122699739164161391">Đóng tất cả các thẻ</translation>
+<translation id="1229222343402087523">Tìm kiếm ${searchPhrase} trên Chrome</translation>
 <translation id="1231733316453485619">Bạn muốn bật tính năng đồng bộ hóa?</translation>
 <translation id="1254117744268754948">Chọn thư mục</translation>
 <translation id="1265739287306757398">Tìm hiểu cách thức</translation>
@@ -72,6 +73,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> sang <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Để sử dụng dấu trang trên tất cả các thiết bị của bạn, hãy bật đồng bộ hóa.</translation>
 <translation id="1687475363370981210">Đánh dấu tất cả là đã đọc</translation>
+<translation id="1689333818294560261">Biệt hiệu</translation>
 <translation id="1690731385917361335">Không có mục nào</translation>
 <translation id="1692118695553449118">Đồng bộ hóa đang bật</translation>
 <translation id="1700629756560807968">Đã chọn <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> dấu trang</translation>
@@ -207,6 +209,7 @@ Các trang web không thể dùng cookie để giám sát hoạt động duyệt
 <translation id="3335947283844343239">Mở lại Thẻ đã Đóng</translation>
 <translation id="3371831930909698441">Có tính năng dịch. Các tùy chọn nằm ở gần cuối màn hình.</translation>
 <translation id="3393920035788932672">Cửa sổ bật lên được cho phép</translation>
+<translation id="3425644765244388016">Biệt hiệu của thẻ</translation>
 <translation id="3443810440409579745">Đã nhận thẻ.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> phút</translation>
 <translation id="3448016392200048164">Chế độ xem phân tách</translation>
@@ -241,6 +244,7 @@ Các trang web không thể dùng cookie để giám sát hoạt động duyệt
 <translation id="3783017676699494206">Lưu hình ảnh</translation>
 <translation id="3789841737615482174">Cài đặt</translation>
 <translation id="3803696231112616155">Đề xuất dịch trang web này</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Không mật khẩu nào bị lộ}=1{{COUNT} mật khẩu bị lộ}other{{COUNT} mật khẩu bị lộ}}</translation>
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="3892144330757387737">Bạn sẽ thấy lịch sử hoạt động ở đây</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -530,6 +534,7 @@ Các trang web không thể dùng cookie để giám sát hoạt động duyệt
 <translation id="7189598951263744875">Chia sẻ...</translation>
 <translation id="7192050974311852563">Bắt đầu ghi nhật ký</translation>
 <translation id="7203585745079012652">Trả lời bằng giọng nói</translation>
+<translation id="721597782417389033">Biệt hiệu của thẻ không hợp lệ</translation>
 <translation id="7265758999917665941">Không bao giờ đối với trang web này</translation>
 <translation id="7272437679830969316">Không thể xác minh danh tính của bạn. Chưa sao chép mật khẩu.</translation>
 <translation id="7291368939935408496">Đang chuẩn bị mật khẩu...</translation>

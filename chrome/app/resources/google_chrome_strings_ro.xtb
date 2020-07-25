@@ -77,6 +77,7 @@
 <translation id="3089968997497233615">Google Chrome este disponibil într-o versiune nouă și mai sigură.</translation>
 <translation id="3127818369811890733">Sistemul de operare Chrome nu a putut sincroniza datele.</translation>
 <translation id="3149510190863420837">Aplicații Chrome</translation>
+<translation id="3351117925998652957">Alege un spațiu din Chrome</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome se va relansa acum}=1{Chrome se va relansa într-o secundă}few{Chrome se va relansa în # secunde}other{Chrome se va relansa în # de secunde}}</translation>
 <translation id="3395323229510056640">Obține ajutor privind sistemul de operare Chrome</translation>
@@ -205,6 +206,7 @@
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Pentru a verifica dacă dispozitivul este actualizat, accesează <ph name="LINK_BEGIN" />Setările sistemului de operare Chrome<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Acest computer nu va mai primi actualizări pentru Google Chrome, deoarece Mac OS X 10.9 nu mai este acceptat.</translation>
+<translation id="7591404275842302616">Folosește spațiile din Chrome pentru a organiza activitatea de navigare pe acest dispozitiv</translation>
 <translation id="7592736734348559088">Google Chrome nu a putut sincroniza datele, deoarece detaliile de conectare pentru contul dvs. nu sunt actualizate.</translation>
 <translation id="7626032353295482388">Bun venit la Chrome</translation>
 <translation id="7629695634924605473">Chrome te anunță dacă parolele tale sunt compromise</translation>

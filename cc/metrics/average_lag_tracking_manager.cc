@@ -55,7 +55,8 @@ void AverageLagTrackingManager::CollectScrollEventsFromFrame(
     event_infos.push_back(event_info);
   }
 
-  frame_token_to_info_.push_back(std::make_pair(frame_token, event_infos));
+  if (event_infos.size() > 0)
+    frame_token_to_info_.push_back(std::make_pair(frame_token, event_infos));
 }
 
 void AverageLagTrackingManager::DidPresentCompositorFrame(
@@ -94,5 +95,9 @@ void AverageLagTrackingManager::DidPresentCompositorFrame(
       lag_tracker_presentation_.AddScrollEventInFrame(info);
     }
   }
+}
+
+void AverageLagTrackingManager::Clear() {
+  frame_token_to_info_.clear();
 }
 }  // namespace cc

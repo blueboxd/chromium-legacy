@@ -557,6 +557,9 @@
 <translation id="3364869320075768271"><ph name="URL" />에서 가상 현실 기기 및 데이터를 사용하려고 합니다.</translation>
 <translation id="3366477098757335611">카드 보기</translation>
 <translation id="3369192424181595722">시계 오류</translation>
+<translation id="3371076217486966826"><ph name="URL" />에서 다음을 요청합니다.
+      • 주변의 3D 지도를 만들고 카메라 위치를 추적
+      • 카메라 사용</translation>
 <translation id="337363190475750230">사용 중단됨</translation>
 <translation id="3377144306166885718">서버에서 지원 중단된 TLS 버전을 사용했습니다.</translation>
 <translation id="3377188786107721145">정책 파싱 오류</translation>
@@ -1550,6 +1553,7 @@
 <translation id="7518003948725431193">다음 웹 주소(<ph name="URL" />)에 대해 발견된 웹페이지가 없습니다.</translation>
 <translation id="7520302887438682816">C8(봉투)</translation>
 <translation id="7521387064766892559">자바스크립트</translation>
+<translation id="7521825010239864438">‘<ph name="SECTION" />’ 섹션 숨김</translation>
 <translation id="7526934274050461096">이 사이트로의 연결은 비공개가 아닙니다.</translation>
 <translation id="7535087603100972091">값</translation>
 <translation id="7537536606612762813">필수</translation>
@@ -1750,6 +1754,7 @@
 <translation id="8293206222192510085">북마크 추가</translation>
 <translation id="8294431847097064396">출처</translation>
 <translation id="8298115750975731693">사용 중인 Wi-Fi(<ph name="WIFI_NAME" />)에서 <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> 방문을 요청할 수 있습니다.</translation>
+<translation id="8303854710873047864">‘<ph name="SECTION" />’ 섹션 표시됨</translation>
 <translation id="830498451218851433">폴드 하프</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">설치된 앱 및 앱의 사용 빈도</translation>
@@ -1869,6 +1874,7 @@
 <translation id="8931333241327730545">이 카드를 Google 계정에 저장하시겠습니까?</translation>
 <translation id="8932102934695377596">시간이 너무 먼 과거로 설정되어 있습니다.</translation>
 <translation id="893332455753468063">이름 추가</translation>
+<translation id="8942355029279167844">관리자가 <ph name="APP_NAME" /> 앱에서 제품 환경 개선을 위한 진단 데이터를 수집하도록 허용했습니다. 자세한 내용은 <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />를 참고하세요.</translation>
 <translation id="8943282376843390568">라임색</translation>
 <translation id="8957210676456822347">캡티브 포털 승인</translation>
 <translation id="8962950042226115166">의심스러운 사이트</translation>

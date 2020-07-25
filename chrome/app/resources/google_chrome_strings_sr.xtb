@@ -81,6 +81,7 @@
 <translation id="3089968997497233615">Доступна је нова, безбеднија верзија Google Chrome прегледача.</translation>
 <translation id="3127818369811890733">Chrome ОС није успео да синхронизује податке.</translation>
 <translation id="3149510190863420837">Chrome апликације</translation>
+<translation id="3351117925998652957">Изаберите Chrome простор</translation>
 <translation id="3360895254066713204">Chrome помоћник</translation>
 <translation id="3379938682270551431">{0,plural, =0{Поново ћемо покренути Chrome}=1{Поново ћемо покренути Chrome за 1 секунду}one{Поново ћемо покренути Chrome за # секунду}few{Поново ћемо покренути Chrome за # секунде}other{Поново ћемо покренути Chrome за # секунди}}</translation>
 <translation id="3395323229510056640">Пронађите помоћ за Chrome OS</translation>
@@ -213,6 +214,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7535429826459677826">Програмерска верзија Google Chrome-а</translation>
 <translation id="7573289029918943991">Да бисте проверили да ли је уређај ажуриран, идите у <ph name="LINK_BEGIN" />Подешавања Chrome ОС-а<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Овај рачунар више неће добијати ажурирања за Google Chrome зато што Mac OS X 10.9 више није подржан.</translation>
+<translation id="7591404275842302616">Користите Chrome просторе да би прегледање било организовано на овом уређају</translation>
 <translation id="7592736734348559088">Google Chrome не може да синхронизује податке зато што су подаци за пријављивање на налог застарели.</translation>
 <translation id="7626032353295482388">Добро дошли у Chrome</translation>
 <translation id="7629695634924605473">Chrome вас обавештава ако су лозинке угрожене</translation>

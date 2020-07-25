@@ -615,5 +615,20 @@ TEST_F(DriveFsEventRouterTest, OnError_CantUploadStorageFull) {
                       base::FilePath("/a")});
 }
 
+TEST_F(DriveFsEventRouterTest, OnError_CantPinDiskFull) {
+  DriveSyncErrorEvent event;
+  event.type = file_manager_private::DRIVE_SYNC_ERROR_TYPE_NO_LOCAL_SPACE;
+  event.file_url = "ext:a";
+  EXPECT_CALL(
+      mock(),
+      DispatchEventToExtensionImpl(
+          "ext", file_manager_private::OnDriveSyncError::kEventName,
+          testing::MakeMatcher(new ListValueMatcher(std::move(
+              *file_manager_private::OnDriveSyncError::Create(event))))));
+
+  observer().OnError({drivefs::mojom::DriveError::Type::kPinningFailedDiskFull,
+                      base::FilePath("a")});
+}
+
 }  // namespace
 }  // namespace file_manager

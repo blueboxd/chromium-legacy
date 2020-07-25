@@ -224,6 +224,7 @@ Chromium kan inte återställa dina inställningar.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Starta om Chromium inom en dag}other{Starta om Chromium inom # dagar}}</translation>
 <translation id="8453117565092476964">Arkivet för installationsfilen är skadat eller ogiltigt. Ladda ned Chromium igen.</translation>
 <translation id="8493179195440786826">Den här versionen av Chromium är inaktuell</translation>
+<translation id="8545858702702650646">Välj arbetsyta i Chromium</translation>
 <translation id="8558383651099478961">Din förälder har inaktiverat Behörigheter för webbplatser, appar och tillägg för Chromium. Det är inte tillåtet att lägga till denna <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8568283329061645092">Chromium kan kontrollera dina lösenord när du loggar in med Google-kontot</translation>
 <translation id="8586442755830160949">Upphovsrätt <ph name="YEAR" /> The Chromium Authors. Med ensamrätt.</translation>
@@ -247,6 +248,7 @@ Chromium kan inte återställa dina inställningar.</translation>
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
 <translation id="9158494823179993217">Systemadministratören har konfigurerat Chromium så att <ph name="TARGET_URL_HOSTNAME" /> öppnas i en annan webbläsare.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Håll ordning när du surfar på enheten med arbetsytor i Chromium</translation>
 <translation id="93478295209880648">Chromium kanske inte fungerar ordentligt eftersom den inte längre stöds på Windows XP och Windows Vista</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> kräver att du läser och godkänner följande användarvillkor innan du använder enheten. Villkoren varken utökar, ändrar eller begränsar villkoren för Chromium OS.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

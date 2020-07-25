@@ -557,6 +557,9 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="3364869320075768271"><ph name="URL" /> vol utilitzar les teves dades i els teus dispositius de realitat virtual</translation>
 <translation id="3366477098757335611">Mostra les targetes</translation>
 <translation id="3369192424181595722">Error de rellotge</translation>
+<translation id="3371076217486966826"><ph name="URL" /> vol:
+      • Crear un mapa 3D del teu entorn i fer un seguiment de la posició de la càmera.
+      • Utilitzar la teva càmera.</translation>
 <translation id="337363190475750230">No administrat</translation>
 <translation id="3377144306166885718">El servidor ha utilitzat una versió obsoleta de TLS.</translation>
 <translation id="3377188786107721145">S'ha produït un error en analitzar la política</translation>
@@ -1551,6 +1554,7 @@ Detalls addicionals:
 <translation id="7518003948725431193">No s'ha trobat cap pàgina web per a l'adreça: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (sobre)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">S'ha amagat la secció "<ph name="SECTION" />"</translation>
 <translation id="7526934274050461096">La connexió amb aquest lloc no és privada</translation>
 <translation id="7535087603100972091">Valor</translation>
 <translation id="7537536606612762813">Obligatòria</translation>
@@ -1751,6 +1755,7 @@ Detalls addicionals:
 <translation id="8293206222192510085">Afegeix una adreça d'interès</translation>
 <translation id="8294431847097064396">Font</translation>
 <translation id="8298115750975731693">És possible que la xarxa Wi-Fi (<ph name="WIFI_NAME" />) que esteu fent servir requereixi que visiteu <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">S'ha mostrat la secció "<ph name="SECTION" />"</translation>
 <translation id="830498451218851433">Plegat per la meitat</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Aplicacions instal·lades i freqüència d'utilització</translation>
@@ -1870,6 +1875,7 @@ Detalls addicionals:
 <translation id="8931333241327730545">Voleu desar aquesta targeta al vostre compte de Google?</translation>
 <translation id="8932102934695377596">El rellotge està endarrerit</translation>
 <translation id="893332455753468063">Afegeix un nom</translation>
+<translation id="8942355029279167844">L'administrador ha permès que <ph name="APP_NAME" /> reculli dades de diagnòstic per millorar l'experiència amb el producte. Consulta <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> per obtenir més informació.</translation>
 <translation id="8943282376843390568">Verd llima</translation>
 <translation id="8957210676456822347">Autorització de portals captius</translation>
 <translation id="8962950042226115166">Lloc web sospitós</translation>

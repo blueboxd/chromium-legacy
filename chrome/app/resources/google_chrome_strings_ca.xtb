@@ -77,6 +77,7 @@
 <translation id="3089968997497233615">Hi ha disponible una nova versió més segura de Google Chrome.</translation>
 <translation id="3127818369811890733">Chrome OS no ha pogut sincronitzar les teves dades.</translation>
 <translation id="3149510190863420837">Aplicacions de Chrome</translation>
+<translation id="3351117925998652957">Tria el teu Chrome Space</translation>
 <translation id="3360895254066713204">Aplicació d'ajuda de Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome es reiniciarà ara}=1{Chrome es reiniciarà d'aquí a 1 segon}other{Chrome es reiniciarà d'aquí a # segons}}</translation>
 <translation id="3395323229510056640">Obtén ajuda per a Chrome OS</translation>
@@ -106,7 +107,7 @@
 <translation id="4147555960264124640">Esteu a punt d'iniciar la sessió amb un compte gestionat i d'atorgar el control del vostre perfil de Google Chrome a l'administrador corresponent. Les vostres dades de Chrome, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres opcions, s'enllaçaran permanentment amb <ph name="USER_NAME" />. Podreu suprimir aquestes dades mitjançant el tauler de control de comptes de Google, però no les podreu associar amb un altre compte. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">L'instal·lador no ha pogut descomprimir el fitxer. Torna a baixar Google Chrome.</translation>
 <translation id="4191857738314598978">{0,plural, =1{Reinicia Chrome en 1 dia}other{Reinicia Chrome en # dies}}</translation>
-<translation id="4205939740494406371">Chrome no pot comprovar les teves contrasenyes. Torna-ho a provar al cap de 24 hores o <ph name="BEGIN_LINK" />comprova les contrasenyes al teu Compte de Google<ph name="END_LINK" />.</translation>
+<translation id="4205939740494406371">Chrome no pot comprovar les teves contrasenyes. Torna-ho a provar al cap de 24 hores o <ph name="BEGIN_LINK" />comprova les contrasenyes desades al teu Compte de Google<ph name="END_LINK" />.</translation>
 <translation id="424864128008805179">Vols tancar la sessió de Chrome?</translation>
 <translation id="4251615635259297716">Voleu enllaçar les vostres dades de Chrome amb aquest compte?</translation>
 <translation id="4281844954008187215">Condicions del servei</translation>
@@ -204,6 +205,7 @@
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Per veure si el dispositiu està actualitzat, ves a la <ph name="LINK_BEGIN" />configuració de Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Aquest ordinador ja no rebrà més actualitzacions de Google Chrome perquè Mac OS X 10.9 ja no és compatible.</translation>
+<translation id="7591404275842302616">Fes servir Chrome Spaces per mantenir la teva navegació organitzada en aquest dispositiu</translation>
 <translation id="7592736734348559088">Google Chrome no ha pogut sincronitzar les dades perquè els detalls d'inici de sessió del compte no estan actualitzats.</translation>
 <translation id="7626032353295482388">Et donem la benvinguda a Chrome</translation>
 <translation id="7629695634924605473">Chrome et permet saber si les contrasenyes s'han posat en perill</translation>

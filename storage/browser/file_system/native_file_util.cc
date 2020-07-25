@@ -147,6 +147,10 @@ base::File::Error NativeFileUtil::EnsureFileExists(const base::FilePath& path,
     // If its parent does not exist, should return NOT_FOUND error.
     return base::File::FILE_ERROR_NOT_FOUND;
 
+  // If |path| is a directory, return an error.
+  if (base::DirectoryExists(path))
+    return base::File::FILE_ERROR_NOT_A_FILE;
+
   // Tries to create the |path| exclusively.  This should fail
   // with base::File::FILE_ERROR_EXISTS if the path already exists.
   base::File file(path, base::File::FLAG_CREATE | base::File::FLAG_READ);
@@ -180,7 +184,7 @@ base::File::Error NativeFileUtil::CreateDirectory(const base::FilePath& path,
 
   // If file exists at the path.
   if (path_exists && !base::DirectoryExists(path))
-    return base::File::FILE_ERROR_EXISTS;
+    return base::File::FILE_ERROR_NOT_A_DIRECTORY;
 
   if (!base::CreateDirectory(path))
     return base::File::FILE_ERROR_FAILED;

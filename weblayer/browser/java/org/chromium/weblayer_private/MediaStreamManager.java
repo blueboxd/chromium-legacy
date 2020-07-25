@@ -223,12 +223,13 @@ public class MediaStreamManager {
         int mediaType = audio && video ? MediaType.AUDIO_AND_VIDEO
                                        : audio ? MediaType.AUDIO_ONLY : MediaType.VIDEO_ONLY;
 
-        // TODO(crbug/1076098): don't pass a URL in incognito.
         NotificationWrapper notification = MediaCaptureNotificationUtil.createNotification(
                 WebLayerNotificationWrapperBuilder.create(
                         WebLayerNotificationChannels.ChannelId.WEBRTC_CAM_AND_MIC,
                         new NotificationMetadata(0, AV_STREAM_TAG, mNotificationId)),
-                mediaType, mTab.getWebContents().getVisibleUrl().getSpec(),
+                mediaType,
+                mTab.getProfile().isIncognito() ? null
+                                                : mTab.getWebContents().getVisibleUrl().getSpec(),
                 WebLayerImpl.getClientApplicationName(), contentIntent, null /*stopIntent*/);
         getNotificationManager().notify(notification);
 

@@ -560,6 +560,9 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="3364869320075768271"><ph name="URL" /> kërkon të përdorë pajisjen dhe të dhënat e tua të realitetit virtual</translation>
 <translation id="3366477098757335611">Shiko kartat</translation>
 <translation id="3369192424181595722">Gabim i orës</translation>
+<translation id="3371076217486966826"><ph name="URL" /> kërkon që:
+      • Të krijojë një hartë 3D të ambientit tënd rrethues ose të gjurmojë pozicionin e kamerës
+      • Të përdorë kamerën tënde</translation>
 <translation id="337363190475750230">Qasja u çaktivizua</translation>
 <translation id="3377144306166885718">Serveri ka përdorur një version të vjetruar të protokollit TLS.</translation>
 <translation id="3377188786107721145">Gabim i analizimit të politikës</translation>
@@ -1556,6 +1559,7 @@ Detaje shtesë:
 <translation id="7518003948725431193">Nuk u gjet asnjë faqe interneti për adresën: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Zarf)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Seksioni "<ph name="SECTION" />" është i fshehur</translation>
 <translation id="7526934274050461096">Lidhja jote me këtë faqe nuk është private</translation>
 <translation id="7535087603100972091">Vlera</translation>
 <translation id="7537536606612762813">E detyrueshme</translation>
@@ -1756,6 +1760,7 @@ Detaje shtesë:
 <translation id="8293206222192510085">Shto një faqeshënues</translation>
 <translation id="8294431847097064396">Burimi</translation>
 <translation id="8298115750975731693">Lidhja Wi-Fi që po përdor (<ph name="WIFI_NAME" />) mund të kërkojë që të vizitosh <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Seksioni "<ph name="SECTION" />" është i shfaqur</translation>
 <translation id="830498451218851433">Palosje në gjysmë</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Aplikacionet e instaluara dhe sa shpesh përdoren</translation>
@@ -1875,6 +1880,7 @@ Detaje shtesë:
 <translation id="8931333241327730545">Dëshiron që ta ruash këtë kartë te llogaria jote e Google?</translation>
 <translation id="8932102934695377596">Ora ka mbetur prapa</translation>
 <translation id="893332455753468063">Shto emër</translation>
+<translation id="8942355029279167844">Administratori yt ka lejuar që <ph name="APP_NAME" /> të grumbullojë të dhënat e diagnostikimit për të përmirësuar përvojën e produktit. Shiko <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> për më shumë informacion.</translation>
 <translation id="8943282376843390568">Ngjyrë limoni jeshil</translation>
 <translation id="8957210676456822347">Autorizimi i portalit izolues</translation>
 <translation id="8962950042226115166">Sajt i dyshimtë</translation>

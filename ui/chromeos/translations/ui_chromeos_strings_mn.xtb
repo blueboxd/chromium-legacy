@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Нарны шил</translation>
 <translation id="115443833402798225">Хангыль Ahnmatae горим</translation>
 <translation id="1155759005174418845">Каталан</translation>
+<translation id="1172970565351728681">Ойролцоогоор <ph name="REMAINING_TIME" /> үлдсэн</translation>
 <translation id="1173894706177603556">Нэр солих</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" />-ийг хуулж байна...</translation>
 <translation id="1178581264944972037">Түр зогсоох</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Эзэмшигчийг <ph name="DESTINATION_DOMAIN" />-д шилжүүлнэ.</translation>
 <translation id="3241720467332021590">Ирланд хэл</translation>
 <translation id="3245321423178950146">Дуучны нэр мэдэгдэхгүй байна</translation>
+<translation id="3248185426436836442">Хүлээгдэж буй</translation>
 <translation id="3252266817569339921">Франц</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> файлуудад анхдагч аппликейшнийг сонгох:</translation>
 <translation id="3264582393905923483">Хам сэдэв</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Танд '<ph name="FOLDER_NAME" />'-д файл зөөх зөвшөөрөл алга.</translation>
 <translation id="3786301125658655746">Та офлайн байна</translation>
 <translation id="3789841737615482174">Суулгах</translation>
+<translation id="3793469551756281394">Ойролцоогоор <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> үлдсэн</translation>
 <translation id="3798449238516105146">Хувилбар</translation>
 <translation id="3801082500826908679">Фөриэс хэл</translation>
 <translation id="3809272675881623365">Туулай</translation>

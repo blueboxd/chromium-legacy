@@ -3581,7 +3581,7 @@ TEST_F(HttpCacheTest, SimpleGET_ParallelValidationCancelReader) {
     MockHttpRequest* this_request = &request;
     if (i == 3) {
       this_request = &validate_request;
-      c->trans->SetBeforeNetworkStartCallback(base::Bind(&DeferCallback));
+      c->trans->SetBeforeNetworkStartCallback(base::BindOnce(&DeferCallback));
     }
 
     c->result = c->trans->Start(this_request, c->callback.callback(),
@@ -3722,7 +3722,7 @@ TEST_F(HttpCacheTest, SimpleGET_ParallelWritingCancelWriter) {
     MockHttpRequest* this_request = &request;
     if (i == 2) {
       this_request = &validate_request;
-      c->trans->SetBeforeNetworkStartCallback(base::Bind(&DeferCallback));
+      c->trans->SetBeforeNetworkStartCallback(base::BindOnce(&DeferCallback));
     }
 
     c->result = c->trans->Start(this_request, c->callback.callback(),
@@ -4438,7 +4438,7 @@ TEST_F(HttpCacheTest, SimpleGET_ParallelWritersStopCachingNoOp) {
     MockHttpRequest* this_request = &request;
     if (i == 2) {
       this_request = &validate_request;
-      c->trans->SetBeforeNetworkStartCallback(base::Bind(&DeferCallback));
+      c->trans->SetBeforeNetworkStartCallback(base::BindOnce(&DeferCallback));
     }
 
     c->result = c->trans->Start(this_request, c->callback.callback(),
@@ -4498,7 +4498,7 @@ TEST_F(HttpCacheTest, SimpleGET_ParallelValidationCancelHeaders) {
     ASSERT_THAT(c->result, IsOk());
 
     if (i == 0)
-      c->trans->SetBeforeNetworkStartCallback(base::Bind(&DeferCallback));
+      c->trans->SetBeforeNetworkStartCallback(base::BindOnce(&DeferCallback));
 
     c->result =
         c->trans->Start(&request, c->callback.callback(), NetLogWithSource());
@@ -4755,7 +4755,7 @@ TEST_F(HttpCacheTest, DoomDoesNotSetHints) {
   c1.result = cache.CreateTransaction(&c1.trans);
   ASSERT_THAT(c1.result, IsOk());
   c1.trans->SetBeforeNetworkStartCallback(
-      base::Bind([](bool* defer) { *defer = true; }));
+      base::BindOnce([](bool* defer) { *defer = true; }));
   c1.result =
       c1.trans->Start(&request1, c1.callback.callback(), NetLogWithSource());
   ASSERT_THAT(c1.result, IsError(ERR_IO_PENDING));
@@ -11368,8 +11368,8 @@ TEST_P(HttpCacheHugeResourceTest,
 
   bool network_transaction_started = false;
   if (stop_caching_phase == TransactionPhase::AFTER_NETWORK_READ) {
-    http_transaction->SetBeforeNetworkStartCallback(
-        base::Bind(&SetFlagOnBeforeNetworkStart, &network_transaction_started));
+    http_transaction->SetBeforeNetworkStartCallback(base::BindOnce(
+        &SetFlagOnBeforeNetworkStart, &network_transaction_started));
   }
 
   rv = http_transaction->Start(&request, callback.callback(),

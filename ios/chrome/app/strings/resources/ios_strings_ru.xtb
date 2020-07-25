@@ -26,6 +26,7 @@
 <translation id="1209206284964581585">Скрыть</translation>
 <translation id="1219674500290482172">Не удалось подключиться к Интернету.</translation>
 <translation id="122699739164161391">Закрыть все вкладки</translation>
+<translation id="1229222343402087523">Искать "${searchPhrase}" в Chrome</translation>
 <translation id="1231733316453485619">Включить синхронизацию?</translation>
 <translation id="1254117744268754948">Выбор папки</translation>
 <translation id="1265739287306757398">Подробнее</translation>
@@ -72,6 +73,7 @@
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> – <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Чтобы получить доступ к закладкам на всех ваших устройствах, включите синхронизацию.</translation>
 <translation id="1687475363370981210">Отметить все как прочитанные</translation>
+<translation id="1689333818294560261">Название</translation>
 <translation id="1690731385917361335">Закладок нет</translation>
 <translation id="1692118695553449118">Синхронизация включена</translation>
 <translation id="1700629756560807968">Выбрано закладок: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -207,6 +209,7 @@
 <translation id="3335947283844343239">Открыть закрытую вкладку</translation>
 <translation id="3371831930909698441">Доступен перевод. Параметры указаны в нижней части экрана.</translation>
 <translation id="3393920035788932672">Вспл. окна разрешены</translation>
+<translation id="3425644765244388016">Название карты</translation>
 <translation id="3443810440409579745">Вкладка получена.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин.</translation>
 <translation id="3448016392200048164">Режим Split View</translation>
@@ -241,6 +244,7 @@
 <translation id="3783017676699494206">Сохранить изображение</translation>
 <translation id="3789841737615482174">Установить</translation>
 <translation id="3803696231112616155">Предлагать переводить этот сайт</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Нет раскрытых паролей}=1{{COUNT} пароль раскрыт}one{{COUNT} пароль раскрыт}few{{COUNT} пароля раскрыты}many{{COUNT} паролей раскрыты}other{{COUNT} пароля раскрыто}}</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3892144330757387737">Здесь вы найдете свою историю</translation>
 <translation id="3897092660631435901">Меню</translation>
@@ -530,6 +534,7 @@
 <translation id="7189598951263744875">Поделиться…</translation>
 <translation id="7192050974311852563">Начать запись журнала</translation>
 <translation id="7203585745079012652">Озвучивать результаты поиска</translation>
+<translation id="721597782417389033">Недопустимое название карты</translation>
 <translation id="7265758999917665941">Никогда для этого сайта</translation>
 <translation id="7272437679830969316">Не удалось пройти проверку. Пароль не скопирован.</translation>
 <translation id="7291368939935408496">Подготовка паролей…</translation>

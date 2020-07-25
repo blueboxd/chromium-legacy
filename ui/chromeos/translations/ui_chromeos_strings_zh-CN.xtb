@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">太阳镜</translation>
 <translation id="115443833402798225">韩语（安马太）</translation>
 <translation id="1155759005174418845">加泰罗尼亚语</translation>
+<translation id="1172970565351728681">还需大约 <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">重命名</translation>
 <translation id="117624967391683467">正在复制<ph name="FILE_NAME" />…</translation>
 <translation id="1178581264944972037">暂停</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">所有权将被转移到 <ph name="DESTINATION_DOMAIN" />。</translation>
 <translation id="3241720467332021590">爱尔兰语</translation>
 <translation id="3245321423178950146">未知艺术家</translation>
+<translation id="3248185426436836442">待定</translation>
 <translation id="3252266817569339921">法语</translation>
 <translation id="3254434849914415189">选择用于打开 <ph name="FILE_TYPE" /> 文件的默认应用：</translation>
 <translation id="3264582393905923483">上下文</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">您无权将文件移动到“<ph name="FOLDER_NAME" />”中。</translation>
 <translation id="3786301125658655746">您处于离线状态</translation>
 <translation id="3789841737615482174">安装</translation>
+<translation id="3793469551756281394">还需大约 <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">版本</translation>
 <translation id="3801082500826908679">法罗语</translation>
 <translation id="3809272675881623365">兔子</translation>

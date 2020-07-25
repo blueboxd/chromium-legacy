@@ -215,7 +215,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '9e1fc05ef7a247c6b3810c4ed20e5d17742020f2',
+  'pdfium_revision': 'df34e3c37407321369e09837155862c0068c3cd7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '038b9b33775be9de430187e33529fdd8b696fdb9',
+  'devtools_frontend_revision': 'b7260027e661f6ad5d6a36d1c5817ff280f61d1c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -314,7 +314,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'shaderc_revision': 'ba92b11e1fcaf4c38a64f84d643d6429175bf650',
+  'shaderc_revision': 'ff8fe2df35293e078ea05cab0fb8233eb730f1d6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1231,7 +1231,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '921d95386ccd785317948682de4dd51c311e161a',
+    Var('chromium_git') + '/openscreen' + '@' + '8c11e26c0dfd54e7308b1825fe9ffbf4bc5882a8',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',
@@ -1460,7 +1460,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/SeleniumHQ/selenium/py.git' + '@' + 'd0045ec570c1a77612db35d1e92f05e1d27b4d53',
 
   'src/third_party/webgl/src':
-    Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'a503e4226c7b1095f2e8a0051021f0b20bbe585b',
+    Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '803227b615f4c230700f38049ff7dfbd51e9f8e4',
 
   'src/third_party/webgpu-cts/src':
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '6371fe6f1acf4b614155acfb468dec4c55c50d27',
@@ -1548,7 +1548,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7f89cfd4944e7f1f7bf735a6fca26dece20d87fd',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@df7cabc2cd027ef0f43d5e5270f47757caf5a1ce',
     'condition': 'checkout_src_internal',
   },
 
@@ -1556,7 +1556,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'vqT-WqhwS504vwcLdBC9Y998VXTrAydEbVVHCjdZSPMC',
+        'version': 'hDrQ1hG023-nuNtIIehQNIQY9tTQgBnjI31EiuAFH_sC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

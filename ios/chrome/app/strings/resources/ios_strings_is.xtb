@@ -26,6 +26,7 @@
 <translation id="1209206284964581585">Fela í bili</translation>
 <translation id="1219674500290482172">Ekki er hægt að tengjast internetinu.</translation>
 <translation id="122699739164161391">Loka öllum flipum</translation>
+<translation id="1229222343402087523">Leita að ${searchPhrase} í Chrome</translation>
 <translation id="1231733316453485619">Kveikja á samstillingu?</translation>
 <translation id="1254117744268754948">Velja möppu</translation>
 <translation id="1265739287306757398">Kynntu þér hvernig</translation>
@@ -593,7 +594,7 @@ Vefsvæði geta ekki notað fótsporin þín til að sjá vafranotkun þína á 
 
 Vefsvæði geta notað fótspor til að sjá vafranotkun þína á mismunandi vefsvæðum, til dæmis til að sérsníða auglýsingar.</translation>
 <translation id="7971521879845308059">Útiloka sprettiglugga</translation>
-<translation id="7982789257301363584">Símkerfi</translation>
+<translation id="7982789257301363584">Net</translation>
 <translation id="7993619969781047893">Ekki er víst að allir eiginleikar á öllum vefsvæðum virki</translation>
 <translation id="800361585186029508">Opnar innslegnar vefslóðir í Google Chrome.</translation>
 <translation id="8007420562015504427">Leit í huliðsstillingu</translation>

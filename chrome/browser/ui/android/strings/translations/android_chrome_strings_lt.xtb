@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Atnaujinkite „Chrome“</translation>
 <translation id="1569387923882100876">Prijungtas įrenginys</translation>
 <translation id="1571304935088121812">Kopijuoti naudotojo vardą</translation>
+<translation id="1592864538817356322">Įprasta apsauga:</translation>
 <translation id="1612196535745283361">„Chrome“ reikalinga prieiga prie informacijos apie vietovę, kad galėtų nuskaityti įrenginius. Galimybė pasiekti informaciją apie vietovę <ph name="BEGIN_LINK" />išjungta šiame įrenginyje<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Pašalinti 1 pasirinktą elementą}one{Pašalinti # pasirinktą elementą}few{Pašalinti # pasirinktus elementus}many{Pašalinti # pasirinkto elemento}other{Pašalinti # pasirinktų elementų}}</translation>
@@ -578,6 +579,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5659593005791499971">El. paštas</translation>
 <translation id="5665379678064389456">Sukurti įvykį naudojant „<ph name="APP_NAME" />“</translation>
 <translation id="5668404140385795438">Nepaisyti svetainės mastelio keitimo vengimo užklausos</translation>
+<translation id="568275469169136466">Prisijungti laikinai</translation>
 <translation id="5683547024293500885">„Chrome“ negali tikrinti, ar yra naujinių</translation>
 <translation id="5686790454216892815">Failo pavadinimas per ilgas</translation>
 <translation id="5694049548840660018">Lengvai grįžkite į pagrindinį ekraną</translation>
@@ -589,6 +591,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5723735397759933332">Naudojant supaprastintą režimą dabar sutaupoma daugiau duomenų, nes HTTPS puslapiuose optimizuojami vaizdai.</translation>
 <translation id="5726692708398506830">Padidinti visą puslapio turinį</translation>
 <translation id="5732819098735351888">Atsisiuntimas bus pradėtas prisijungus prie „Wi-Fi“.</translation>
+<translation id="5733983706093266635">Nepavyko sukurti QR kodo. URL sudaro daugiau nei <ph name="CHARACTER_LIMIT" /> simbol.</translation>
 <translation id="5748802427693696783">Perjungta į įprastus skirtukus</translation>
 <translation id="5749068826913805084">„Chrome“ reikia prieigos prie saugyklos failams atsisiųsti.</translation>
 <translation id="5749237766298580851">Išjungta <ph name="SEPARATOR" /> Nerekomenduojama</translation>
@@ -641,6 +644,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="6111020039983847643">išnaudoti duomenys</translation>
 <translation id="6112702117600201073">Puslapio atnaujinimas</translation>
 <translation id="6127379762771434464">Elementas pašalintas</translation>
+<translation id="6140709049082532940">Sustiprinta apsauga:</translation>
 <translation id="6140912465461743537">Šalis / regionas</translation>
 <translation id="614940544461990577">Pabandykite atlikti toliau nurodytus veiksmus.</translation>
 <translation id="6154478581116148741">Norėdami iš šio įrenginio eksportuoti slaptažodžius, nustatymuose įjunkite ekrano užraktą</translation>
@@ -1017,6 +1021,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="9100610230175265781">Būtina slaptafrazė</translation>
 <translation id="9102803872260866941">Peržiūros skirtukas atidarytas</translation>
 <translation id="9104217018994036254">Įrenginių, su kuriais reikia bendrinti skirtuką, sąrašas.</translation>
+<translation id="9104402662006063371">Įjungti inkognito režimą</translation>
 <translation id="9108312223223904744">Telefonas kaip saugos raktas</translation>
 <translation id="9108808586816295166">Saugi DNS gali būti pasiekiama ne visą laiką</translation>
 <translation id="9133397713400217035">Naršyti neprisijungus</translation>

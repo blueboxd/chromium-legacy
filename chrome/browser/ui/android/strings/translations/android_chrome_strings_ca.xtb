@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Actualitza Chrome</translation>
 <translation id="1569387923882100876">Dispositiu connectat</translation>
 <translation id="1571304935088121812">Copia el nom d'usuari</translation>
+<translation id="1592864538817356322">Protecció estàndard:</translation>
 <translation id="1612196535745283361">Chrome necessita accedir a la ubicació per poder cercar dispositius, però aquesta funció està <ph name="BEGIN_LINK" />desactivada en aquest dispositiu<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Càmera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Suprimeix 1 element seleccionat}other{Suprimeix # elements seleccionats}}</translation>
@@ -268,7 +269,7 @@ Mantén premuda qualsevol paraula per cercar-la. Per definir millor la cerca, se
 <translation id="3157842584138209013">Consulta la quantitat de dades que has estalviat des del botó Més opcions</translation>
 <translation id="3166827708714933426">Dreceres per a pestanyes i finestres</translation>
 <translation id="3169472444629675720">Discover</translation>
-<translation id="3181954750937456830">Navegació segura (et protegeix a tu i al teu dispositiu de llocs web perillosos)</translation>
+<translation id="3181954750937456830">Navegació segura (us protegeix a tu i al teu dispositiu de llocs web perillosos)</translation>
 <translation id="3205824638308738187">Falta poc per acabar.</translation>
 <translation id="3207960819495026254">S'ha afegit a les adreces d'interès.</translation>
 <translation id="3208584281581115441">Comprova ara</translation>
@@ -578,6 +579,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5659593005791499971">Correu electrònic</translation>
 <translation id="5665379678064389456">Crea un esdeveniment a <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignora la sol·licitud d'un lloc web per evitar que s'apropi la imatge</translation>
+<translation id="568275469169136466">Per iniciar la sessió temporalment</translation>
 <translation id="5683547024293500885">Chrome no pot cercar actualitzacions</translation>
 <translation id="5686790454216892815">El nom del fitxer és massa llarg</translation>
 <translation id="5694049548840660018">Torna a l'inici fàcilment</translation>
@@ -589,6 +591,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5723735397759933332">Ara el mode bàsic et permet estalviar més dades optimitzant imatges de pàgines HTTPS.</translation>
 <translation id="5726692708398506830">Augmenta la mida de tots els elements de la pàgina</translation>
 <translation id="5732819098735351888">La baixada començarà quan hi hagi connexió Wi-Fi.</translation>
+<translation id="5733983706093266635">No es pot crear el codi QR. L'URL conté més de <ph name="CHARACTER_LIMIT" /> caràcters.</translation>
 <translation id="5748802427693696783">S'ha canviat a les pestanyes estàndard</translation>
 <translation id="5749068826913805084">Chrome necessita accedir a l'emmagatzematge per poder baixar fitxers.</translation>
 <translation id="5749237766298580851">Desactivada <ph name="SEPARATOR" /> Opció no recomanada</translation>
@@ -641,6 +644,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="6111020039983847643">dades utilitzades</translation>
 <translation id="6112702117600201073">S'està actualitzant la pàgina</translation>
 <translation id="6127379762771434464">S'ha suprimit l'element</translation>
+<translation id="6140709049082532940">Protecció millorada:</translation>
 <translation id="6140912465461743537">País/regió</translation>
 <translation id="614940544461990577">Prova el següent:</translation>
 <translation id="6154478581116148741">Activa el bloqueig de pantalla a Configuració per exportar les teves contrasenyes d'aquest dispositiu</translation>
@@ -1017,6 +1021,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="9100610230175265781">S'ha d'introduir una frase de contrasenya </translation>
 <translation id="9102803872260866941">La pestanya de previsualització està oberta</translation>
 <translation id="9104217018994036254">Llista de dispositius amb què es compartirà una pestanya.</translation>
+<translation id="9104402662006063371">Entra al mode d'incògnit</translation>
 <translation id="9108312223223904744">el telèfon com a clau de seguretat</translation>
 <translation id="9108808586816295166">És possible que el DNS segur no estigui disponible en tot moment</translation>
 <translation id="9133397713400217035">Explora sense connexió</translation>

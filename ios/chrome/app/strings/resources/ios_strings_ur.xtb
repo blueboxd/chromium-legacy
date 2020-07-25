@@ -243,7 +243,7 @@
 <translation id="3783017676699494206">تصویر محفوظ کریں</translation>
 <translation id="3789841737615482174">انسٹال کریں</translation>
 <translation id="3803696231112616155">اس سائٹ کا ترجمہ کرنے کی پیشکش کریں</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{کوئی متاثرہ پاس ورڈ نہیں}=1{{COUNT} پاس ورڈز متاثرہ ہیں}other{{COUNT} پاس ورڈز متاثرہ ہیں}}</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{کوئی متاثرہ پاس ورڈ نہیں}=1{{COUNT} متاثرہ پاس ورڈ}other{{COUNT} متاثرہ پاس ورڈز}}</translation>
 <translation id="385051799172605136">پیچھے</translation>
 <translation id="3892144330757387737">آپ کو اپنی سرگزشت یہاں ملے گی</translation>
 <translation id="3897092660631435901">مینو</translation>

@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Atjaunināt Chrome</translation>
 <translation id="1569387923882100876">Pievienota ierīce</translation>
 <translation id="1571304935088121812">Kopēt lietotājvārdu</translation>
+<translation id="1592864538817356322">Standarta aizsardzība:</translation>
 <translation id="1612196535745283361">Lai meklētu ierīces, pārlūkam Chrome ir nepieciešama piekļuve atrašanās vietas datiem. <ph name="BEGIN_LINK" />Šajā ierīcē ir izslēgta piekļuve atrašanās vietas datiem<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Noņemt 1 atlasīto vienumu}zero{Noņemt # atlasītos vienumus}one{Noņemt # atlasīto vienumu}other{Noņemt # atlasītos vienumus}}</translation>
@@ -578,6 +579,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5659593005791499971">E-pasts</translation>
 <translation id="5665379678064389456">Izveidojiet pasākumu lietotnē <ph name="APP_NAME" />.</translation>
 <translation id="5668404140385795438">Ignorēt vietnes pieprasījumu, lai novērstu tuvināšanu</translation>
+<translation id="568275469169136466">lai īslaicīgi pierakstītos</translation>
 <translation id="5683547024293500885">Pārlūkā Chrome nevar pārbaudīt atjauninājumu pieejamību.</translation>
 <translation id="5686790454216892815">Faila nosaukums ir pārāk garš</translation>
 <translation id="5694049548840660018">Ātra atgriešanās sākumlapā</translation>
@@ -589,6 +591,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5723735397759933332">Tagad vienkāršotajā režīmā tiek vēl vairāk samazināts datu lietojums, optimizējot attēlus HTTPS lapās.</translation>
 <translation id="5726692708398506830">Palielināt visu lapas saturu</translation>
 <translation id="5732819098735351888">Lejupielāde tiks sākta, kad būs izveidots Wi-Fi savienojums.</translation>
+<translation id="5733983706093266635">Nevar izveidot QR kodu. URL garums pārsniedz <ph name="CHARACTER_LIMIT" /> rakstzīmes.</translation>
 <translation id="5748802427693696783">Notika pārslēgšanās uz standarta cilnēm</translation>
 <translation id="5749068826913805084">Chrome ir nepieciešama piekļuve krātuvei, lai varētu lejupielādēt failus.</translation>
 <translation id="5749237766298580851">Izslēgta <ph name="SEPARATOR" /> Nav ieteicams</translation>
@@ -641,6 +644,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="6111020039983847643">Izmantotie dati</translation>
 <translation id="6112702117600201073">Lapas atsvaidzināšana</translation>
 <translation id="6127379762771434464">Vienums ir noņemts</translation>
+<translation id="6140709049082532940">Uzlabota aizsardzība:</translation>
 <translation id="6140912465461743537">Valsts/reģions</translation>
 <translation id="614940544461990577">Veiciet tālāk norādītās darbības.</translation>
 <translation id="6154478581116148741">Lai eksportētu paroles no šīs ierīces, sadaļā “Iestatījumi” ieslēdziet ekrāna bloķēšanu.</translation>
@@ -1017,6 +1021,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="9100610230175265781">Jāievada ieejas frāze.</translation>
 <translation id="9102803872260866941">Priekšskatījuma cilne ir atvērta</translation>
 <translation id="9104217018994036254">Ierīču saraksts, ar ko kopīgot cilni.</translation>
+<translation id="9104402662006063371">Pāriet uz inkognito režīmu,</translation>
 <translation id="9108312223223904744">Atbalsts, kas var palīdzēt izmantot tālruni kā drošības atslēgu</translation>
 <translation id="9108808586816295166">Drošs DNS serveris var nebūt pieejams visu laiku.</translation>
 <translation id="9133397713400217035">Izpētīt bezsaisti</translation>

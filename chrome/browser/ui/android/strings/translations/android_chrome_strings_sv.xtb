@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Uppdatera Chrome</translation>
 <translation id="1569387923882100876">Ansluten enhet</translation>
 <translation id="1571304935088121812">Kopiera användarnamn</translation>
+<translation id="1592864538817356322">Standardskydd:</translation>
 <translation id="1612196535745283361">Chrome behöver åtkomst till platsinformation för att kunna söka efter enheter. Platsåtkomst är <ph name="BEGIN_LINK" />inaktiverat för enheten<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Ta bort 1 markerat objekt}other{Ta bort # markerade objekt}}</translation>
@@ -578,6 +579,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5659593005791499971">E-post</translation>
 <translation id="5665379678064389456">Skapa händelse i <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Åsidosätt en webbplats begäran att hindra inzoomning</translation>
+<translation id="568275469169136466">För tillfällig inloggning</translation>
 <translation id="5683547024293500885">Chrome kan inte söka efter uppdateringar</translation>
 <translation id="5686790454216892815">Filnamnet är för långt</translation>
 <translation id="5694049548840660018">Kom tillbaka till startsidan snabbt</translation>
@@ -589,6 +591,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5723735397759933332">Nu sparar du mer data i Begränsat läge tack vare att bilder på HTTPS-sidor optimeras.</translation>
 <translation id="5726692708398506830">Gör allt på sidan större</translation>
 <translation id="5732819098735351888">Nedladdningen påbörjas via Wi-Fi.</translation>
+<translation id="5733983706093266635">Det gick inte att skapa QR-koden Webbadressen är längre än <ph name="CHARACTER_LIMIT" /> tecken.</translation>
 <translation id="5748802427693696783">Bytte till standardflikar</translation>
 <translation id="5749068826913805084">Chrome måste ha åtkomst till lagringsutrymmet om det ska gå att ladda ned filer.</translation>
 <translation id="5749237766298580851">Av <ph name="SEPARATOR" /> Rekommenderas inte</translation>
@@ -641,6 +644,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="6111020039983847643">Använd data</translation>
 <translation id="6112702117600201073">Uppdaterar sidan</translation>
 <translation id="6127379762771434464">Objektet har tagits bort</translation>
+<translation id="6140709049082532940">Förbättrat skydd</translation>
 <translation id="6140912465461743537">Land/region</translation>
 <translation id="614940544461990577">Testa att</translation>
 <translation id="6154478581116148741">Aktivera ett skärmlås i inställningarna om du vill exportera lösenord från den här enheten.</translation>
@@ -1017,6 +1021,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="9100610230175265781">Lösenfras krävs</translation>
 <translation id="9102803872260866941">Fliken Förhandsgranskning har öppnats</translation>
 <translation id="9104217018994036254">Lista över enheter som fliken kan delas med.</translation>
+<translation id="9104402662006063371">Använd inkognitoläge</translation>
 <translation id="9108312223223904744">Telefonen som säkerhetsnyckel</translation>
 <translation id="9108808586816295166">Säker DNS kanske inte alltid är tillgänglig</translation>
 <translation id="9133397713400217035">Utforska offline</translation>

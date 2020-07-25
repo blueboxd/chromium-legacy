@@ -22,6 +22,8 @@
           :page-model="pageModel"
           @[CUSTOM_EVENTS.NODE_CLICKED]="graphNodeClicked"/>
       <div id="node-details-container">
+        <GraphDisplaySettings
+            :display-settings-data="pageModel.displaySettingsData"/>
         <GraphSelectedNodeDetails
             :selected-node-details-data="pageModel.selectedNodeDetailsData"
             @[CUSTOM_EVENTS.ADD_TO_FILTER_CLICKED]="addNodeToFilter"
@@ -45,6 +47,7 @@ import {PageModel} from '../page_model.js';
 import {parseClassGraphModelFromJson} from '../process_graph_json.js';
 
 import ClassDetailsPanel from './class_details_panel.vue';
+import GraphDisplaySettings from './graph_display_settings.vue';
 import GraphFilterInput from './graph_filter_input.vue';
 import GraphFilterItems from './graph_filter_items.vue';
 import GraphInboundInput from './graph_inbound_input.vue';
@@ -57,6 +60,7 @@ import PageUrlGenerator from './page_url_generator.vue';
 const ClassGraphPage = {
   components: {
     ClassDetailsPanel,
+    GraphDisplaySettings,
     GraphFilterInput,
     GraphFilterItems,
     GraphInboundInput,
@@ -92,6 +96,7 @@ const ClassGraphPage = {
     CUSTOM_EVENTS: () => CUSTOM_EVENTS,
     graphUpdateTriggers: function() {
       return [
+        this.pageModel.displaySettingsData,
         this.pageModel.nodeFilterData.nodeList,
         this.pageModel.inboundDepthData.inboundDepth,
         this.pageModel.outboundDepthData.outboundDepth,

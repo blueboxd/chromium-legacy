@@ -77,6 +77,7 @@
 <translation id="3089968997497233615">Dostępna jest nowa, bezpieczniejsza wersja przeglądarki Google Chrome.</translation>
 <translation id="3127818369811890733">System operacyjny Chrome nie może zsynchronizować danych.</translation>
 <translation id="3149510190863420837">Aplikacje Chrome</translation>
+<translation id="3351117925998652957">Wybierz swój profil w Chrome</translation>
 <translation id="3360895254066713204">Pomoc Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome uruchomi się ponownie teraz}=1{Chrome uruchomi się ponownie za 1 sekundę}few{Chrome uruchomi się ponownie za # sekundy}many{Chrome uruchomi się ponownie za # sekund}other{Chrome uruchomi się ponownie za # sekundy}}</translation>
 <translation id="3395323229510056640">Pomoc do Chrome OS</translation>
@@ -204,6 +205,7 @@
 <translation id="7535429826459677826">Wersja deweloperska Google Chrome</translation>
 <translation id="7573289029918943991">Aby sprawdzić, czy urządzenie jest zaktualizowane, otwórz <ph name="LINK_BEGIN" />ustawienia systemu operacyjnego Chrome<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Google Chrome nie będzie już aktualizować się na tym komputerze, bo system Mac OS X 10.9 nie jest już obsługiwany.</translation>
+<translation id="7591404275842302616">Używaj profili w Chrome, by zachować porządek podczas przeglądania na tym urządzeniu</translation>
 <translation id="7592736734348559088">Google Chrome nie może zsynchronizować danych, ponieważ dane logowania na Twoje konto są nieaktualne.</translation>
 <translation id="7626032353295482388">Witamy w Chrome</translation>
 <translation id="7629695634924605473">Chrome poinformuje Cię, jeśli Twoje hasła dostaną się w niepowołane ręce</translation>

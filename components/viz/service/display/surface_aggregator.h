@@ -204,6 +204,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   //    the surface quad in the render pass merged to, plus its |damage_rect|
   //    and damage passed onto it by its parent if any.
   //    If there's no merging of |surface|, |accummulated_damage| is empty.
+  //  - |target_to_root_transform| is the transform from current render pass to
+  //    the root.
   //  - |result| is the result of a prewalk of the surface that contains the
   //    render pass.
   gfx::Rect PrewalkRenderPass(
@@ -212,6 +214,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       base::flat_map<RenderPassId, RenderPassMapEntry>* render_pass_map,
       bool will_draw,
       const gfx::Rect& damage_from_parent,
+      const gfx::Transform& target_to_root_transform,
       PrewalkResult* result);
 
   // Walk the Surface tree from |surface|. Validate the resources of the

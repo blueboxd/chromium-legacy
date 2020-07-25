@@ -274,8 +274,8 @@ void ThrottlingNetworkTransaction::SetWebSocketHandshakeStreamCreateHelper(
 }
 
 void ThrottlingNetworkTransaction::SetBeforeNetworkStartCallback(
-    const BeforeNetworkStartCallback& callback) {
-  network_transaction_->SetBeforeNetworkStartCallback(callback);
+    BeforeNetworkStartCallback callback) {
+  network_transaction_->SetBeforeNetworkStartCallback(std::move(callback));
 }
 
 void ThrottlingNetworkTransaction::SetRequestHeadersCallback(

@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Chrome-ის განახლება</translation>
 <translation id="1569387923882100876">დაკავშირებული მოწყობილობა</translation>
 <translation id="1571304935088121812">მომხმარებლის სახელის კოპირება</translation>
+<translation id="1592864538817356322">სტანდარტული დაცვა:</translation>
 <translation id="1612196535745283361">მოწყობილობების სკანირებისთვის, Chrome მდებარეობაზე წვდომას საჭიროებს. მდებარეობაზე წვდომა <ph name="BEGIN_LINK" />ამ მოწყობილობისთვის გამორთულია<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">კამერა</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{1 არჩეული ერთეულის ამოშლა}other{# არჩეული ერთეულის ამოშლა}}</translation>
@@ -578,6 +579,7 @@
 <translation id="5659593005791499971">ელფოსტა</translation>
 <translation id="5665379678064389456">მოვლენის <ph name="APP_NAME" />-ში შექმნა</translation>
 <translation id="5668404140385795438">ვებსაიტის მიერ მასშტაბირების აკრძალვის გაუქმება</translation>
+<translation id="568275469169136466">დროებით შესასვლელად</translation>
 <translation id="5683547024293500885">Chrome ვერ ახერხებს განახლებების შემოწმებას</translation>
 <translation id="5686790454216892815">ფაილის სახელი მეტისმეტად გრძელია</translation>
 <translation id="5694049548840660018">მარტივად დაბრუნდით მთავარ გვერდზე</translation>
@@ -589,6 +591,7 @@
 <translation id="5723735397759933332">Lite რეჟიმი ამიერიდან დაზოგავს კიდევ უფრო მეტ მონაცემს HTTPS-გვერდებზე სურათების ოპტიმიზაციის მეშვეობით.</translation>
 <translation id="5726692708398506830">გვერდზე ყველაფრის გადიდება</translation>
 <translation id="5732819098735351888">ჩამოტვირთვა დაიწყება Wi-Fi ქსელის მეშვეობით.</translation>
+<translation id="5733983706093266635">QR კოდის შექმნა ვერ მოხერხდა. URL შედგება <ph name="CHARACTER_LIMIT" />-ზე მეტი სიმბოლოსგან.</translation>
 <translation id="5748802427693696783">გადართულია სტანდარტულ ჩანართებზე</translation>
 <translation id="5749068826913805084">ფაილების ჩამოსატვირთად Chrome საცავზე წვდომას საჭიროებს.</translation>
 <translation id="5749237766298580851">გამორთული <ph name="SEPARATOR" /> არ არის რეკომენდებული</translation>
@@ -641,6 +644,7 @@
 <translation id="6111020039983847643">მოხმარებული მონაცემები</translation>
 <translation id="6112702117600201073">გვერდის განახლება</translation>
 <translation id="6127379762771434464">ერთეული ამოიშალა</translation>
+<translation id="6140709049082532940">გაძლიერებული დაცვა:</translation>
 <translation id="6140912465461743537">ქვეყანა/რეგიონი</translation>
 <translation id="614940544461990577">ცადეთ:</translation>
 <translation id="6154478581116148741">ამ მოწყობილობიდან პაროლების ექსპორტირებისთვის პარამეტრებიდან გაააქტიურეთ ეკრანის დაბლოკვის მეთოდი</translation>
@@ -1017,6 +1021,7 @@
 <translation id="9100610230175265781">აუცილებელია კოდური ფრაზის მითითება</translation>
 <translation id="9102803872260866941">გადახედვის ჩანართი გახსნილია</translation>
 <translation id="9104217018994036254">მოწყობილობების სია, რომლებთანაც უნდა გაზიარდეს ჩანართი.</translation>
+<translation id="9104402662006063371">ინკოგნიტო რეჟიმზე გადასვლა</translation>
 <translation id="9108312223223904744">ტელეფონის, როგორც უსაფრთხოების გასაღების, მხარდაჭერა</translation>
 <translation id="9108808586816295166">დაცული DNS შეიძლება ზოგჯერ მიუწვდომელი იყოს</translation>
 <translation id="9133397713400217035">ხაზგარეშე რეჟიმში გაცნობა</translation>

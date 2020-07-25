@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Сонечныя акуляры</translation>
 <translation id="115443833402798225">Карэйскі алфавіт (хангыль), рэжым AhnMaTae</translation>
 <translation id="1155759005174418845">Каталанская</translation>
+<translation id="1172970565351728681">Прыблізны час да завяршэння: <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">Перайменаваць</translation>
 <translation id="117624967391683467">Ідзе капіраванне файла "<ph name="FILE_NAME" />"...</translation>
 <translation id="1178581264944972037">Прыпыніць</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Права ўласнасці будзе перададзена дамену <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">Ірландская</translation>
 <translation id="3245321423178950146">Невядомы выканаўца</translation>
+<translation id="3248185426436836442">У чаканні</translation>
 <translation id="3252266817569339921">Французская</translation>
 <translation id="3254434849914415189">Выберыце стандартную праграму для файлаў <ph name="FILE_TYPE" />:</translation>
 <translation id="3264582393905923483">Кантэкст</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">У вас няма дазволу на перамяшчэнне файлаў у папку "<ph name="FOLDER_NAME" />".</translation>
 <translation id="3786301125658655746">Вы па-за сеткай</translation>
 <translation id="3789841737615482174">Усталяваць</translation>
+<translation id="3793469551756281394">Прыблізны час да завяршэння: <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">Версія</translation>
 <translation id="3801082500826908679">Фарэрская</translation>
 <translation id="3809272675881623365">Трус</translation>

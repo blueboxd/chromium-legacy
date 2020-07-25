@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Ažuriraj Chrome</translation>
 <translation id="1569387923882100876">Povezani uređaj</translation>
 <translation id="1571304935088121812">Kopiraj korisničko ime</translation>
+<translation id="1592864538817356322">Standardna zaštita:</translation>
 <translation id="1612196535745283361">Chrome treba pristup lokaciji kako bi skenirao uređaje. Pristup lokaciji <ph name="BEGIN_LINK" />isključen je za ovaj uređaj<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Fotoaparat</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Uklanjanje 1 odabrane stavke}one{Uklanjanje # odabrane stavke}few{Uklanjanje # odabranih stavki}other{Uklanjanje # odabranih stavki}}</translation>
@@ -578,6 +579,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5659593005791499971">E-pošta</translation>
 <translation id="5665379678064389456">Stvorite događaj u aplikaciji <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Nadjača zahtjev web-lokacije za sprječavanje povećavanja</translation>
+<translation id="568275469169136466">da biste se privremeno prijavili</translation>
 <translation id="5683547024293500885">Chrome ne može provjeriti ima li ažuriranja</translation>
 <translation id="5686790454216892815">Datoteka ima predugačak naziv</translation>
 <translation id="5694049548840660018">Vratite se kući jednostavno</translation>
@@ -589,9 +591,10 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5723735397759933332">Jednostavni način sad vam štedi više podataka optimiziranjem slika na HTTPS stranicama.</translation>
 <translation id="5726692708398506830">Povećavanje svega na stranici</translation>
 <translation id="5732819098735351888">Preuzimanje će se pokrenuti na Wi-Fiju.</translation>
+<translation id="5733983706093266635">Izrada QR koda nije uspjela. Broj znakova u URL-u veći je od <ph name="CHARACTER_LIMIT" />.</translation>
 <translation id="5748802427693696783">Prešli ste na standardne kartice</translation>
 <translation id="5749068826913805084">Chrome treba pristup pohrani radi preuzimanja datoteka.</translation>
-<translation id="5749237766298580851">Isključeno <ph name="SEPARATOR" /> ne preporučuje se</translation>
+<translation id="5749237766298580851">Isključeno <ph name="SEPARATOR" /> Ne preporučuje se</translation>
 <translation id="5754350196967618083">Nije moguće osvježiti Discover</translation>
 <translation id="5763382633136178763">Anonimne kartice</translation>
 <translation id="5763514718066511291">Dodirnite da biste kopirali URL za tu aplikaciju</translation>
@@ -641,6 +644,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="6111020039983847643">iskorišteni podaci</translation>
 <translation id="6112702117600201073">Osvježavanje stranice</translation>
 <translation id="6127379762771434464">Stavka je uklonjena</translation>
+<translation id="6140709049082532940">Poboljšana zaštita:</translation>
 <translation id="6140912465461743537">Država/regija</translation>
 <translation id="614940544461990577">Pokušajte sljedeće:</translation>
 <translation id="6154478581116148741">Uključite zaključavanje zaslona u postavkama da biste izvezli svoje zaporke s ovog uređaja</translation>
@@ -1017,6 +1021,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="9100610230175265781">Potrebna je zaporka</translation>
 <translation id="9102803872260866941">Kartica pregleda je otvorena</translation>
 <translation id="9104217018994036254">Popis za odabir uređaja s kojim će se dijeliti kartica.</translation>
+<translation id="9104402662006063371">Pokrenite anonimni način</translation>
 <translation id="9108312223223904744">Podrška za telefon kao sigurnosni ključ</translation>
 <translation id="9108808586816295166">Sigurni DNS možda neće biti dostupan cijelo vrijeme</translation>
 <translation id="9133397713400217035">Istraživanje izvan mreže</translation>

@@ -563,6 +563,9 @@ To inače blokiraju podešavanja privatnosti. To omogućava da sadržaj sa koji
 <translation id="3364869320075768271"><ph name="URL" /> želi da koristi uređaj i podatke virtuelne realnosti</translation>
 <translation id="3366477098757335611">Prikaži kartice</translation>
 <translation id="3369192424181595722">Greška na satu</translation>
+<translation id="3371076217486966826"><ph name="URL" /> želi:
+      • da pravi 3D mapu okruženja i da prati položaj kamere
+      • da koristi kameru</translation>
 <translation id="337363190475750230">Onemogućen je</translation>
 <translation id="3377144306166885718">Server koristi zastarelu verziju TLS-a.</translation>
 <translation id="3377188786107721145">Greška pri raščlanjivanju smernica</translation>
@@ -1561,6 +1564,7 @@ Dodatni detalji:
 <translation id="7518003948725431193">Nijedna veb-stranica nije pronađena za veb adresu: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (koverat)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Odeljak „<ph name="SECTION" />“ je sakriven</translation>
 <translation id="7526934274050461096">Veza sa ovim sajtom nije privatna</translation>
 <translation id="7535087603100972091">Vrednost</translation>
 <translation id="7537536606612762813">Obavezno</translation>
@@ -1761,6 +1765,7 @@ Dodatni detalji:
 <translation id="8293206222192510085">Dodavanje obeleživača</translation>
 <translation id="8294431847097064396">Izvor</translation>
 <translation id="8298115750975731693">Wi-Fi mreža koju koristite (<ph name="WIFI_NAME" />) će možda zahtevati da posetite <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Prikazuje se odeljak „<ph name="SECTION" />“</translation>
 <translation id="830498451218851433">Presavijanje napola</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Instalirane aplikacije i koliko često se koriste</translation>
@@ -1881,6 +1886,7 @@ Dodatni detalji:
 <translation id="8931333241327730545">Da li želite da sačuvate ovu karticu na Google nalog?</translation>
 <translation id="8932102934695377596">Sat vam kasni</translation>
 <translation id="893332455753468063">Dodajte ime</translation>
+<translation id="8942355029279167844">Administrator je dozvolio da <ph name="APP_NAME" /> prikuplja dijagnostičke podatke radi poboljšanja doživljaja proizvoda. Više informacija potražite na <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />.</translation>
 <translation id="8943282376843390568">Jarkozelena</translation>
 <translation id="8957210676456822347">Ovlašćenje na ulaznom portalu</translation>
 <translation id="8962950042226115166">Sumnjivi sajt</translation>

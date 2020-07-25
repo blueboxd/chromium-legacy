@@ -339,6 +339,65 @@ public class OmahaBaseTest {
     @Test
     @SmallTest
     @Feature({"Omaha"})
+    public void testPipelineFreshInstallUpdatedAvailable_crbug_1095755() {
+        final long now = 11684;
+        final String updateVersion = "10.0.0.0";
+
+        mDelegate = new MockOmahaDelegate(mContext, DeviceType.HANDSET, InstallSource.ORGANIC);
+        mDelegate.getScheduler().setCurrentTime(now);
+
+        // Trigger Omaha.
+        mOmahaBase = createOmahaBase();
+        mOmahaBase.setUpdateVersion(updateVersion);
+        mOmahaBase.run();
+
+        Assert.assertEquals(2, mDelegate.mGenerateAndPostRequestResults.size());
+        Assert.assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
+        Assert.assertTrue(mDelegate.mGenerateAndPostRequestResults.get(1));
+
+        SharedPreferences sharedPreferences = OmahaBase.getSharedPreferences();
+        String storedLastVersion = sharedPreferences.getString(OmahaBase.PREF_LATEST_VERSION, null);
+        String storedMarketURL = sharedPreferences.getString(OmahaBase.PREF_MARKET_URL, null);
+        Assert.assertEquals(updateVersion, storedLastVersion);
+        Assert.assertEquals(MockConnection.STRIPPED_MARKET_URL, storedMarketURL);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testPipelineRegularPingUpdateAvailable_crbug_1095755() {
+        final long now = 11684;
+        String updateVersion = "10.0.0.0";
+
+        mDelegate = new MockOmahaDelegate(mContext, DeviceType.HANDSET, InstallSource.ORGANIC);
+        mDelegate.getScheduler().setCurrentTime(now);
+
+        // Record that an install event has already been sent and that we're due for a new request.
+        SharedPreferences.Editor editor = OmahaBase.getSharedPreferences().edit();
+        editor.putBoolean(OmahaBase.PREF_SEND_INSTALL_EVENT, false);
+        editor.putLong(OmahaBase.PREF_TIMESTAMP_FOR_NEW_REQUEST, now);
+        editor.putLong(OmahaBase.PREF_TIMESTAMP_FOR_NEXT_POST_ATTEMPT, now);
+        editor.apply();
+
+        // Trigger Omaha.
+        mOmahaBase = createOmahaBase();
+        mOmahaBase.setUpdateVersion(updateVersion);
+        mOmahaBase.run();
+
+        // Only the regular ping should have been sent.
+        Assert.assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
+        Assert.assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
+
+        SharedPreferences sharedPreferences = OmahaBase.getSharedPreferences();
+        String storedLastVersion = sharedPreferences.getString(OmahaBase.PREF_LATEST_VERSION, null);
+        String storedMarketURL = sharedPreferences.getString(OmahaBase.PREF_MARKET_URL, null);
+        Assert.assertEquals(updateVersion, storedLastVersion);
+        Assert.assertEquals(MockConnection.STRIPPED_MARKET_URL, storedMarketURL);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Omaha"})
     public void testTooEarlyToPing() {
         final long now = 0;
         final long later = 10000;

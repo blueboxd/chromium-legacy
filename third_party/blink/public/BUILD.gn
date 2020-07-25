@@ -117,7 +117,6 @@ source_set("blink_headers") {
     "platform/blame_context.h",
     "platform/cross_variant_mojo_util.h",
     "platform/file_path_conversion.h",
-    "platform/input/elastic_overscroll_controller.h",
     "platform/input/input_handler_proxy.h",
     "platform/input/input_handler_proxy_client.h",
     "platform/input/input_predictor.h",

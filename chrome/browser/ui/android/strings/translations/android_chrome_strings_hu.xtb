@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">A Chrome böngésző frissítése</translation>
 <translation id="1569387923882100876">Csatlakoztatott eszköz</translation>
 <translation id="1571304935088121812">Felhasználónév másolása</translation>
+<translation id="1592864538817356322">Normál védelem:</translation>
 <translation id="1612196535745283361">A Chrome-nak hozzá kell férnie a tartózkodási helyhez, hogy eszközöket kereshessen. A tartózkodási helyhez való hozzáférés <ph name="BEGIN_LINK" />ki van kapcsolva ezen az eszközön<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{1 kijelölt elem eltávolítása}other{# kijelölt elem eltávolítása}}</translation>
@@ -578,6 +579,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5665379678064389456">Esemény létrehozása a(z) <ph name="APP_NAME" /> alkalmazásban</translation>
 <translation id="5668404140385795438">Felülbírálja a webhely kérelmét, mely megakadályozná a nagyítást</translation>
+<translation id="568275469169136466">Ideiglenes bejelentkezéshez</translation>
 <translation id="5683547024293500885">A Chrome nem tud frissítéseket keresni</translation>
 <translation id="5686790454216892815">A fájl neve túl hosszú</translation>
 <translation id="5694049548840660018">Egyszerűen megnyithatja a kezdőlapot</translation>
@@ -589,6 +591,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5723735397759933332">Az Egyszerűsített mód mostantól még tovább csökkenti az adatforgalmat a HTTPS-oldalakon lévő képek optimalizálásával.</translation>
 <translation id="5726692708398506830">Minden nagyítása az oldalon</translation>
 <translation id="5732819098735351888">A letöltés Wi-Fi-hálózaton indul el.</translation>
+<translation id="5733983706093266635">Nem lehet létrehozni QR-kódot. Az URL több mint <ph name="CHARACTER_LIMIT" /> karakterből áll.</translation>
 <translation id="5748802427693696783">Szabványos lapokra váltva</translation>
 <translation id="5749068826913805084">A Chrome-nak tárhelyhozzáférésre van szüksége a fájlok letöltéséhez.</translation>
 <translation id="5749237766298580851">Ki <ph name="SEPARATOR" /> Nem javasolt</translation>
@@ -641,6 +644,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="6111020039983847643">használt adatmennyiség</translation>
 <translation id="6112702117600201073">Oldal frissítése</translation>
 <translation id="6127379762771434464">Elem eltávolítva</translation>
+<translation id="6140709049082532940">Speciális védelem:</translation>
 <translation id="6140912465461743537">Ország/régió</translation>
 <translation id="614940544461990577">Próbálja ki a következőket:</translation>
 <translation id="6154478581116148741">Kapcsolja be a képernyőzárat a Beállítások menüben, hogy exportálhassa az ezen az eszközön tárolt jelszavait</translation>
@@ -1017,6 +1021,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="9100610230175265781">Összetett jelszó szükséges</translation>
 <translation id="9102803872260866941">Az előnézeti lap meg van nyitva</translation>
 <translation id="9104217018994036254">Lap megosztására szolgáló eszközök listája.</translation>
+<translation id="9104402662006063371">Inkognitó mód megnyitása</translation>
 <translation id="9108312223223904744">Telefon a biztonsági hardverkulcs támogatásaként</translation>
 <translation id="9108808586816295166">Előfordulhat, hogy a biztonságos DNS nem mindig áll rendelkezésre</translation>
 <translation id="9133397713400217035">Offline felfedezés</translation>

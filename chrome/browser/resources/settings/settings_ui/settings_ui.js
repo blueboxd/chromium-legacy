@@ -321,4 +321,20 @@ Polymer({
       this.$.drawer.close();
     }
   },
+
+  /**
+   * Only used in tests.
+   * @return {boolean}
+   */
+  getAdvancedOpenedInMainForTest() {
+    return this.advancedOpenedInMain_;
+  },
+
+  /**
+   * Only used in tests.
+   * @return {boolean}
+   */
+  getAdvancedOpenedInMenuForTest() {
+    return this.advancedOpenedInMenu_;
+  }
 });

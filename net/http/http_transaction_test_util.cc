@@ -513,7 +513,7 @@ int MockNetworkTransaction::StartInternal(const HttpRequestInfo* request,
   // Pause and resume.
   if (!before_network_start_callback_.is_null()) {
     bool defer = false;
-    before_network_start_callback_.Run(&defer);
+    std::move(before_network_start_callback_).Run(&defer);
     if (defer) {
       resume_start_callback_ = std::move(callback);
       return net::ERR_IO_PENDING;
@@ -533,8 +533,8 @@ int MockNetworkTransaction::StartInternal(const HttpRequestInfo* request,
 }
 
 void MockNetworkTransaction::SetBeforeNetworkStartCallback(
-    const BeforeNetworkStartCallback& callback) {
-  before_network_start_callback_ = callback;
+    BeforeNetworkStartCallback callback) {
+  before_network_start_callback_ = std::move(callback);
 }
 
 void MockNetworkTransaction::SetConnectedCallback(

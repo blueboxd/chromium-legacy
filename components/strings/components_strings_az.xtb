@@ -561,6 +561,9 @@
 <translation id="3364869320075768271"><ph name="URL" /> virtual reallıq cihazınız və datanızı istifadə etmək istəyir</translation>
 <translation id="3366477098757335611">Kartlara baxın</translation>
 <translation id="3369192424181595722">Saat xətası</translation>
+<translation id="3371076217486966826"><ph name="URL" /> bunun üçün icazə istəyir:
+      • Ətrafınızdakı sahələrin 3D xəritəsini yaratmaq və ya kamera mövqeyini izləmək
+      • Kameranızı istifadə etmək</translation>
 <translation id="337363190475750230">Nəzərdə tutulmayıb</translation>
 <translation id="3377144306166885718">Server köhnə TLS versiyasından istifadə etdi.</translation>
 <translation id="3377188786107721145">Siyasət təhlili xətası</translation>
@@ -1557,6 +1560,7 @@
 <translation id="7518003948725431193">Bu veb ünvan üçün heç bir səhifə tapılmadı: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Zərf)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">"<ph name="SECTION" />" bölməsi gizlədilib</translation>
 <translation id="7526934274050461096">Bu saytla olan bağlantınız şəxsi deyil</translation>
 <translation id="7535087603100972091">Dəyər</translation>
 <translation id="7537536606612762813">Məcburi</translation>
@@ -1757,6 +1761,7 @@
 <translation id="8293206222192510085">Əlfəcin əlavə edin</translation>
 <translation id="8294431847097064396">Mənbə</translation>
 <translation id="8298115750975731693">İstifadə etdiyiniz Wi-Fi (<ph name="WIFI_NAME" />) <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> səhifəsinə daxil olmağınızı tələb edə bilər.</translation>
+<translation id="8303854710873047864">"<ph name="SECTION" />" bölməsi göstərilir</translation>
 <translation id="830498451218851433">Yarımçıq qatlayın</translation>
 <translation id="8307358339886459768">Kiçik Ölçülü Foto</translation>
 <translation id="8307888238279532626">Quraşdırılmış tətbiqlər və nə zaman istifadə edildikləri</translation>
@@ -1876,6 +1881,7 @@
 <translation id="8931333241327730545">Bu kartı Google Hesabınızda yadda saxlamaq istəyirsiniz?</translation>
 <translation id="8932102934695377596">Saatınız geridədir</translation>
 <translation id="893332455753468063">Ad əlavə edin</translation>
+<translation id="8942355029279167844">Admininiz <ph name="APP_NAME" /> tətbiqinə məhsul üzrə təcrübəni yaxşılaşdırmaq üçün diaqnostik datanı toplamaq icazəsi verib. Ətraflı məlumat üçün <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> ünvanına baxın.</translation>
 <translation id="8943282376843390568">Yaşıl Limon</translation>
 <translation id="8957210676456822347">Kaptiv Portal Doğrulanması</translation>
 <translation id="8962950042226115166">Şübhəli sayt</translation>

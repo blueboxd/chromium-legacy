@@ -79,6 +79,7 @@
 <translation id="3089968997497233615">Налице е нова, по-сигурна версия на Google Chrome.</translation>
 <translation id="3127818369811890733">Chrome OS не синхронизира данните ви.</translation>
 <translation id="3149510190863420837">Приложения в Chrome</translation>
+<translation id="3351117925998652957">Изберете работната си област в Chrome</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome ще се стартира отново сега}=1{Chrome ще се стартира отново след 1 секунда}other{Chrome ще се стартира отново след # секунди}}</translation>
 <translation id="3395323229510056640">Получаване на помощ за Chrome OS</translation>
@@ -206,6 +207,7 @@
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">За да разберете дали устройството ви е актуално, отворете <ph name="LINK_BEGIN" />настройките на Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Занапред този компютър няма да получава актуализации на Google Chrome, защото Mac OS X 10.9 вече не се поддържа.</translation>
+<translation id="7591404275842302616">Използвайте работни области в Chrome, за да организирате сърфирането си на това устройство</translation>
 <translation id="7592736734348559088">Google Chrome не можа да синхронизира данните ви, защото потребителското име и паролата за вход в профила ви не са актуални.</translation>
 <translation id="7626032353295482388">Добре дошли в Chrome</translation>
 <translation id="7629695634924605473">Chrome ви уведомява, ако паролите ви бъдат компрометирани</translation>

@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Солнцезащитные очки</translation>
 <translation id="115443833402798225">Корейская раскладка (Ahnmatae)</translation>
 <translation id="1155759005174418845">Каталанский</translation>
+<translation id="1172970565351728681">Осталось около <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">Переименовать</translation>
 <translation id="117624967391683467">Копирование файла "<ph name="FILE_NAME" />"…</translation>
 <translation id="1178581264944972037">Пауза</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Право собственности будет передано домену <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">Ирландский</translation>
 <translation id="3245321423178950146">Неизвестный исполнитель</translation>
+<translation id="3248185426436836442">Выполняется…</translation>
 <translation id="3252266817569339921">Французский</translation>
 <translation id="3254434849914415189">Выбор приложения по умолчанию для <ph name="FILE_TYPE" />-файлов</translation>
 <translation id="3264582393905923483">Контекст</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">У вас недостаточно прав для перемещения файлов в папку "<ph name="FOLDER_NAME" />"</translation>
 <translation id="3786301125658655746">Вы работаете в автономном режиме.</translation>
 <translation id="3789841737615482174">Установить</translation>
+<translation id="3793469551756281394">Осталось около <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">Версия</translation>
 <translation id="3801082500826908679">Фарерский</translation>
 <translation id="3809272675881623365">Кролик</translation>

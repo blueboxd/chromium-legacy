@@ -18,6 +18,7 @@
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="input_method_util.html">
+<link rel="import" href="languages_metrics_proxy.html">
 <link rel="import" href="os_add_languages_dialog.html">
 <link rel="import" href="../localized_link/localized_link.html">
 <link rel="import" href="../../controls/controlled_radio_button.html">
@@ -241,7 +242,8 @@
       <settings-toggle-button
           class="hr"
           pref="{{prefs.settings.language.ime_menu_activated}}"
-          label="$i18n{showImeMenu}">
+          label="$i18n{showImeMenu}"
+          on-settings-boolean-control-change="onShowImeMenuChange_">
       </settings-toggle-button>
 
       <cr-lazy-render id="menu">

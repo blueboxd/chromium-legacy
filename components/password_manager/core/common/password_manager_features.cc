@@ -59,6 +59,10 @@ const base::Feature kGooglePasswordManager = {
 const base::Feature kPasswordChange = {"PasswordChange",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables password change flow from bulk leak check in settings.
+const base::Feature kPasswordChangeInSettings = {
+    "PasswordChangeInSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the bulk Password Check feature for signed in users.
 const base::Feature kPasswordCheck = {"PasswordCheck",
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -117,6 +121,11 @@ const char kGenerationRequirementsTimeout[] = "timeout";
 // Enables showing leaked dialog after every successful form submission.
 const char kPasswordChangeWithForcedDialogAfterEverySuccessfulSubmission[] =
     "should_force_dialog_after_every_sucessful_form_submission";
+
+// Enables showing leaked warning for every site while doing bulk leak check in
+// settings.
+const char kPasswordChangeInSettingsWithForcedWarningForEverySite[] =
+    "should_force_warning_for_every_site_in_settings";
 
 }  // namespace features
 

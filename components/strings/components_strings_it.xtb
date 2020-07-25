@@ -450,6 +450,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="2824775600643448204">Barra degli indirizzi e di ricerca</translation>
 <translation id="2826760142808435982">La connessione è stata criptata e autenticata utilizzando <ph name="CIPHER" /> e <ph name="KX" /> come meccanismo di scambio delle chiavi.</translation>
 <translation id="2835170189407361413">Cancella modulo</translation>
+<translation id="2839501879576190149">Sito falso in vista</translation>
 <translation id="2847118875340931228">Apri finestra di navigazione in incognito</translation>
 <translation id="2850739647070081192">Invite (Envelope)</translation>
 <translation id="2856444702002559011">Gli utenti malintenzionati potrebbero provare a carpire le tue informazioni da <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (ad esempio, password, messaggi o carte di credito). <ph name="BEGIN_LEARN_MORE_LINK" />Ulteriori informazioni<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -559,6 +560,9 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="3364869320075768271"><ph name="URL" /> vorrebbe usare i dati e dispositivi per realtà virtuale</translation>
 <translation id="3366477098757335611">Visualizza le carte</translation>
 <translation id="3369192424181595722">Errore dell'orologio</translation>
+<translation id="3371076217486966826"><ph name="URL" /> vuole:
+      • Creare una mappa 3D dell'ambiente circostante e monitorare la posizione della fotocamera
+      • Usare la fotocamera</translation>
 <translation id="337363190475750230">Deprovisioning effettuato</translation>
 <translation id="3377144306166885718">Il server usava una versione obsoleta di TLS.</translation>
 <translation id="3377188786107721145">Errore di analisi del criterio</translation>
@@ -806,6 +810,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="42981349822642051">Espandi</translation>
 <translation id="4300675098767811073">Perforatura multipla a destra</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
+<translation id="4305666528087210886">Impossibile accedere al file</translation>
 <translation id="4305817255990598646">Cambia</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Blocca (predefinita)</translation>
@@ -824,6 +829,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="4358461427845829800">Gestisci metodi di pagamento…</translation>
 <translation id="4359160567981085931">Hai appena inserito la tua password su un sito ingannevole. Chrome può aiutarti. Per cambiare la password e informare Google che il tuo account potrebbe essere a rischio, fai clic su Proteggi account.</translation>
 <translation id="4367563149485757821">Number-12 (Envelope)</translation>
+<translation id="4367839622597707614">{1,plural, =0{A causa di una violazione dei dati su un sito o un'app, la tua password salvata su <ph name="ORIGIN" /> è stata esposta. Chrome ti consiglia di cambiare subito la password su <ph name="ORIGIN" />.}=1{A causa di una violazione dei dati su un sito o un'app, la tua password salvata su <ph name="ORIGIN" /> e un altro sito è stata esposta. Chrome ti consiglia di controllare subito le password che hai salvato.}other{A causa di una violazione dei dati su un sito o un'app, la tua password su <ph name="ORIGIN" /> e <ph name="SITES_COUNT" /> altri siti è stata esposta. Chrome ti consiglia di controllare subito le password che hai salvato.}}</translation>
 <translation id="437058704415269440">Saldo dell'account</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">È previsto il valore <ph name="VALUE_TYPE" />.</translation>
@@ -1293,6 +1299,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Potrebbe essere applicato un addebito.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 altro suggerimento}other{# altri suggerimenti}}</translation>
+<translation id="6387645831795005740">A volte i malintenzionati imitano i siti modificando leggermente e in modo poco evidente l'URL.</translation>
 <translation id="6389470377220713856">Nome sulla carta</translation>
 <translation id="6390200185239044127">Piegatura a Z a metà</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1506,6 +1513,7 @@ Ulteriori dettagli:
 <translation id="7372973238305370288">risultato della ricerca</translation>
 <translation id="7374733840632556089">Questo problema si verifica a causa di un certificato installato sul dispositivo da te o da un'altra persona. È noto che il certificato viene usato per monitorare e intercettare le reti e non è considerato attendibile da Chrome. Esistono alcuni casi leciti per il monitoraggio, ad esempio su una rete scolastica o aziendale, ma Chrome vuole assicurarsi che tu sappia che viene effettuato, anche se non puoi interromperlo. Il monitoraggio potrebbe essere effettuato in qualsiasi browser o applicazione che accede al Web.</translation>
 <translation id="7375818412732305729">Viene allegato un file</translation>
+<translation id="7376551888419889433">Quando Chrome Enterprise Connectors segnala eventi di sicurezza, i dati corrispondenti agli eventi vengono inviati al tuo amministratore. Tali dati possono includere URL delle pagine visitate in Chrome, metadati o nomi dei file e il nome utente che usi per accedere al tuo dispositivo e a Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Controlli multimediali</translation>
 <translation id="7378627244592794276">No</translation>
@@ -1553,6 +1561,7 @@ Ulteriori dettagli:
 <translation id="7518003948725431193">Nessuna pagina web trovata per l'indirizzo web: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Envelope)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Sezione "<ph name="SECTION" />" nascosta</translation>
 <translation id="7526934274050461096">La connessione a questo sito non è privata</translation>
 <translation id="7535087603100972091">Valore</translation>
 <translation id="7537536606612762813">Obbligatorio</translation>
@@ -1753,6 +1762,7 @@ Ulteriori dettagli:
 <translation id="8293206222192510085">Aggiunta preferito</translation>
 <translation id="8294431847097064396">Origine</translation>
 <translation id="8298115750975731693">La rete Wi-Fi in uso (<ph name="WIFI_NAME" />) potrebbe richiedere la visita della pagina <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Sezione "<ph name="SECTION" />" mostrata</translation>
 <translation id="830498451218851433">Piegatura a metà</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">App installate e frequenza di utilizzo</translation>
@@ -1872,6 +1882,7 @@ Ulteriori dettagli:
 <translation id="8931333241327730545">Vuoi salvare la scheda nel tuo Account Google?</translation>
 <translation id="8932102934695377596">L'orologio è indietro</translation>
 <translation id="893332455753468063">Aggiungi nome</translation>
+<translation id="8942355029279167844">L'amministratore ha autorizzato <ph name="APP_NAME" /> a raccogliere dati diagnostici per migliorare l'esperienza con il prodotto. Per ulteriori informazioni, visita la pagina <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />.</translation>
 <translation id="8943282376843390568">Giallo-verde</translation>
 <translation id="8957210676456822347">Autorizzazione Captive Portal</translation>
 <translation id="8962950042226115166">Sito sospetto</translation>
@@ -1902,6 +1913,7 @@ Ulteriori dettagli:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Hai tentato di connetterti a <ph name="DOMAIN" />, ma il server ha presentato un certificato scaduto.</translation>
 <translation id="9050666287014529139">Passphrase</translation>
+<translation id="9062620674789239642">Potrebbe essere stato spostato, modificato o eliminato.</translation>
 <translation id="9065203028668620118">Modifica</translation>
 <translation id="9065745800631924235">Ricerca di <ph name="TEXT" /> nella cronologia</translation>
 <translation id="9069693763241529744">Bloccata da un'estensione</translation>

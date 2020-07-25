@@ -1008,6 +1008,9 @@ extern const char kPaintHoldingDescription[];
 extern const char kParallelDownloadingName[];
 extern const char kParallelDownloadingDescription[];
 
+extern const char kPasswordChangeInSettingsName[];
+extern const char kPasswordChangeInSettingsDescription[];
+
 extern const char kPasswordChangeName[];
 extern const char kPasswordChangeDescription[];
 

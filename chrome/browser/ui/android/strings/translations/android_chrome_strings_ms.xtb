@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Kemas Kini Chrome</translation>
 <translation id="1569387923882100876">Peranti Bersambung</translation>
 <translation id="1571304935088121812">Salin nama pengguna</translation>
+<translation id="1592864538817356322">Perlindungan standard:</translation>
 <translation id="1612196535745283361">Chrome memerlukan akses lokasi untuk mengimbas peranti. Akses lokasi <ph name="BEGIN_LINK" />dimatikan untuk peranti ini<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Alih keluar 1 item yang dipilih}other{Alih keluar # item yang dipilih}}</translation>
@@ -578,6 +579,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5659593005791499971">E-mel</translation>
 <translation id="5665379678064389456">Buat acara dalam <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Mengatasi permintaan tapak web untuk menghalang zum masuk</translation>
+<translation id="568275469169136466">Untuk log masuk sementara</translation>
 <translation id="5683547024293500885">Chrome tidak dapat menyemak kemas kini</translation>
 <translation id="5686790454216892815">Nama fail terlalu panjang</translation>
 <translation id="5694049548840660018">Kembali ke laman utama dengan mudah</translation>
@@ -589,9 +591,10 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5723735397759933332">Kini mod Ringkas menjimatkan lebih banyak data dengan mengoptimumkan imej pada halaman HTTPS.</translation>
 <translation id="5726692708398506830">Jadikan semua yang ada pada halaman lebih besar</translation>
 <translation id="5732819098735351888">Muat turun akan bermula pada Wi-Fi.</translation>
+<translation id="5733983706093266635">Tidak dapat membuat kod QR. URL melebihi <ph name="CHARACTER_LIMIT" /> aksara.</translation>
 <translation id="5748802427693696783">Beralih ke tab standard</translation>
 <translation id="5749068826913805084">Chrome memerlukan akses storan untuk memuat turun fail.</translation>
-<translation id="5749237766298580851">Pematian <ph name="SEPARATOR" /> Tidak disyorkan</translation>
+<translation id="5749237766298580851">Dimatikan <ph name="SEPARATOR" /> Tidak disyorkan</translation>
 <translation id="5754350196967618083">Tidak dapat memuatkan semula Discover</translation>
 <translation id="5763382633136178763">Tab inkognito</translation>
 <translation id="5763514718066511291">Ketik untuk menyalin URL apl ini</translation>
@@ -641,6 +644,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="6111020039983847643">data digunakan</translation>
 <translation id="6112702117600201073">Memuat semula halaman</translation>
 <translation id="6127379762771434464">Item dialih keluar</translation>
+<translation id="6140709049082532940">Perlindungan dipertingkat:</translation>
 <translation id="6140912465461743537">Negara/Rantau</translation>
 <translation id="614940544461990577">Cuba:</translation>
 <translation id="6154478581116148741">Hidupkan kunci skrin dalam Tetapan untuk mengeksport kata laluan anda daripada peranti ini</translation>
@@ -999,7 +1003,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8970887620466824814">Kesilapan telah berlaku.</translation>
 <translation id="8972098258593396643">Muat turun ke folder lalai?</translation>
 <translation id="8988028529677883095">Gunakan telefon sebagai kunci keselamatan</translation>
-<translation id="8990209962746788689">Tidak dapat mencipta kod QR</translation>
+<translation id="8990209962746788689">Tidak dapat membuat kod QR</translation>
 <translation id="8993760627012879038">Buka tetingkap baharu dalam mod Inkognito</translation>
 <translation id="8998729206196772491">Anda log masuk dengan akaun yang diurus oleh <ph name="MANAGED_DOMAIN" /> dan memberikan kawalan terhadap data Chrome anda kepada pentadbirnya. Data anda akan terikat secara kekal kepada akaun ini. Tindakan log keluar daripada Chrome akan memadamkan data anda daripada peranti ini, tetapi data itu akan kekal disimpan dalam Akaun Google anda.</translation>
 <translation id="9028914725102941583">Hidupkan penyegerakan untuk berkongsi merentas peranti</translation>
@@ -1017,6 +1021,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="9100610230175265781">Frasa laluan diperlukan</translation>
 <translation id="9102803872260866941">Tab pratonton dibuka</translation>
 <translation id="9104217018994036254">Senarai peranti untuk berkongsi tab.</translation>
+<translation id="9104402662006063371">Masuk mod Inkognito</translation>
 <translation id="9108312223223904744">Telefon sebagai Sokongan Kunci Keselamatan</translation>
 <translation id="9108808586816295166">DNS selamat mungkin tidak tersedia sepanjang masa</translation>
 <translation id="9133397713400217035">Teroka Luar Talian</translation>

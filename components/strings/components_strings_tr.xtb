@@ -558,6 +558,9 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="3364869320075768271"><ph name="URL" /> sanal gerçeklik cihazınızı ve verilerinizi kullanmak istiyor</translation>
 <translation id="3366477098757335611">Kartları göster</translation>
 <translation id="3369192424181595722">Saat hatası</translation>
+<translation id="3371076217486966826"><ph name="URL" /> şunları yapmak istiyor:
+      • Çevrenizin 3D haritasını oluşturma ve kamera konumunu takip etme
+      • Kameranızı kullanma</translation>
 <translation id="337363190475750230">Temel hazırlık iptal edildi</translation>
 <translation id="3377144306166885718">Sunucu TLS'nin eski bir sürümünü kullandı.</translation>
 <translation id="3377188786107721145">Politika ayrıştırma hatası</translation>
@@ -1505,7 +1508,7 @@ Ek ayrıntılar:
 <translation id="7372973238305370288">arama sonucu</translation>
 <translation id="7374733840632556089">Bu sorunun nedeni sizin veya başka birinin cihazınıza yüklediği bir sertifika olabilir. Sertifikanın ağa müdahale etmek ve izlemek amacıyla kullanıldığı bilindiğinden, Chrome bu sertifikaya güvenmez. Okul veya şirket ağı gibi izlemenin meşru olduğu durumlar vardır. İzlemeyi durduramasanız bile Chrome yine de farkında olmanızı sağlamak ister. Web’e erişen her tarayıcı ve uygulamada izleme yapılabilir.</translation>
 <translation id="7375818412732305729">Dosya ekleme</translation>
-<translation id="7376551888419889433">Güvenlik etkinlikleri Chrome Enterprise Connectors tarafından işaretlendiğinde ilgili veriler yöneticinize gönderilir. Bu veriler Chrome'da ziyaret ettiğiniz sayfaların URLsini, dosya adlarını veya meta verileri, Chrome'da ve cihazınızda açtığınız oturumun kullanıcı adını içerir.</translation>
+<translation id="7376551888419889433">Güvenlik etkinlikleri Chrome Enterprise Connectors tarafından işaretlendiğinde ilgili veriler yöneticinize gönderilir. Bu veriler Chrome'da ziyaret ettiğiniz sayfaların URL'sini, dosya adlarını veya meta verileri, Chrome'da ve cihazınızda açtığınız oturumun kullanıcı adını içerir.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Medya Denetimleri</translation>
 <translation id="7378627244592794276">Hayır</translation>
@@ -1553,6 +1556,7 @@ Ek ayrıntılar:
 <translation id="7518003948725431193">Şu web adresi için web sayfası bulunamadı:<ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Zarf)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">"<ph name="SECTION" />" bölümü gizlendi</translation>
 <translation id="7526934274050461096">Bu siteye bağlantınız gizli değil</translation>
 <translation id="7535087603100972091">Değer</translation>
 <translation id="7537536606612762813">Zorunlu</translation>
@@ -1753,6 +1757,7 @@ Ek ayrıntılar:
 <translation id="8293206222192510085">Yer İşareti Ekle</translation>
 <translation id="8294431847097064396">Kaynak</translation>
 <translation id="8298115750975731693">Kullandığınız kablosuz bağlantı ağı (<ph name="WIFI_NAME" />) <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> adresini ziyaret etmenizi gerektiriyor olabilir.</translation>
+<translation id="8303854710873047864">"<ph name="SECTION" />" bölümü gösterildi</translation>
 <translation id="830498451218851433">Ortadan katlama</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Yüklü uygulamalar ve ne sıklıkla kullanıldıkları</translation>
@@ -1873,6 +1878,7 @@ Ek ayrıntılar:
 <translation id="8931333241327730545">Bu kartı Google Hesabınıza kaydetmek istiyor musunuz?</translation>
 <translation id="8932102934695377596">Saatiniz geri</translation>
 <translation id="893332455753468063">Ad Ekleyin</translation>
+<translation id="8942355029279167844">Yöneticiniz, <ph name="APP_NAME" /> uygulamasının ürün deneyimini iyileştirmek için teşhis verileri toplamasına izin verdi. Daha fazla bilgi için <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> sayfasına bakın.</translation>
 <translation id="8943282376843390568">Küf yeşili</translation>
 <translation id="8957210676456822347">Giriş Portalı Yetkilendirmesi</translation>
 <translation id="8962950042226115166">Şüpheli site</translation>

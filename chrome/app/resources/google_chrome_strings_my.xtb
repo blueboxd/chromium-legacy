@@ -81,6 +81,7 @@
 <translation id="3089968997497233615">ပိုသစ်သော၊ ပိုလုံခြုံသော Google Chrome ရနိုင်ပါသည်။</translation>
 <translation id="3127818369811890733">Chrome OS က သင့်ဒေတာများကို စင့်ခ်လုပ်၍မရပါ။</translation>
 <translation id="3149510190863420837">Chrome အက်ပ်များ</translation>
+<translation id="3351117925998652957">သင်၏ Chrome Space ကို ယူပါ</translation>
 <translation id="3360895254066713204">Chrome ကူညီပေးသူ</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome ကို ယခု ပြန်လည်စတင်ပါမည်}=1{Chrome ကို ၁ စက္ကန့်အကြာတွင် ပြန်လည်စတင်ပါမည်}other{Chrome ကို # စက္ကန့်အကြာတွင် ပြန်လည်စတင်ပါမည်}}</translation>
 <translation id="3395323229510056640">Chrome OS အကူအညီရယူရန်</translation>
@@ -183,7 +184,7 @@ Google Chrome သည် သင်၏ ဆက်တင်များကို ပ
 <translation id="6291549208091401781">သင့်ကွန်ပျူတာပေါ်ရှိ အသုံးပြုသူများအတွက် Google Chrome ကို ထည့်သွင်းထားပြီးဖြစ်ပါသည်။</translation>
 <translation id="6338556085225130112">Google Chrome ကို အပ်ဒိတ်လုပ်နေသည်</translation>
 <translation id="6368958679917195344">Chrome OS ကို ထပ်ဖြည့်ပေးခဲ့သည့် <ph name="BEGIN_LINK_CROS_OSS" />အခမဲ့ ရင်းမြစ် ဆော့ဝဲ<ph name="END_LINK_CROS_OSS" />များဖြင့် အားဖြည့်ပေးထားသည်။</translation>
-<translation id="6372315130616785175">အလုပ်သုံးအကောင့်ဖြင့် သင်လက်မှတ်ထိုးဝင်ခဲ့သည်။ သင့်ဒေတာကို ခွဲထားရန်အတွက် အလုပ်သုံး Chrome ပရိုဖိုင်အသစ်တစ်ခု ဖန်တီးလိုသလား။</translation>
+<translation id="6372315130616785175">အလုပ်သုံးအကောင့်ဖြင့် သင်လက်မှတ်ထိုးဝင်ခဲ့သည်။ သင့်ဒေတာကို ခွဲထားရန်အတွက် အလုပ်သုံး Chrome ပရိုဖိုင်အသစ်တစ်ခု ပြုလုပ်လိုသလား။</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Google Chrome ကို အပ်ဒိတ်လုပ်နေသည် (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6676384891291319759">အင်တာနက် ရယူရန်</translation>
@@ -213,6 +214,7 @@ Google Chrome သည် သင်၏ ဆက်တင်များကို ပ
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">သင်၏စက် အပ်ဒိတ်ဖြစ်မဖြစ် ကြည့်ရန် <ph name="LINK_BEGIN" />Chrome OS ဆက်တင်များ<ph name="LINK_END" /> သို့သွားပါ</translation>
 <translation id="7589360514048265910">Mac OS X 10.9 ကို ဆက်လက် မပံ့ပိုးတော့သောကြောင့် ဤကွန်ပျူတာသည် Google Chrome အပ်ဒိတ်များကို မရရှိနိုင်တော့ပါ။</translation>
+<translation id="7591404275842302616">သင်၏ ရှာဖွေမှုကို ဤစက်ပေါ်တွင် စုစည်းထားရန်အတွက် Chrome Spaces ကို သုံးပါ။</translation>
 <translation id="7592736734348559088">သင်၏ လက်မှတ်ထိုးရေး အသေးစိတ်များမှာ ဟောင်းသွားကြပြီ ဖြစ်၍ Google Chrome သည် သင်၏ ဒေတာကို စင့်က် မလုပ်နိုင်ခဲ့ပါ။</translation>
 <translation id="7626032353295482388">Chrome မှ ကြိုဆိုပါသည်</translation>
 <translation id="7629695634924605473">သင့်စကားဝှက်များ ကျိုးပေါက်ထားခြင်း ရှိမရှိ Chrome က သင့်အား အသိပေးပါမည်</translation>

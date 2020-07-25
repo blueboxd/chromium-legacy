@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Perbarui browser Chrome</translation>
 <translation id="1569387923882100876">Perangkat yang Terhubung</translation>
 <translation id="1571304935088121812">Salin nama pengguna</translation>
+<translation id="1592864538817356322">Perlindungan standar:</translation>
 <translation id="1612196535745283361">Chrome memerlukan akses lokasi untuk memindai perangkat. Akses lokasi <ph name="BEGIN_LINK" />dinonaktifkan untuk perangkat ini<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Hapus 1 item yang dipilih}other{Hapus # item yang dipilih}}</translation>
@@ -578,6 +579,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5659593005791499971">Email</translation>
 <translation id="5665379678064389456">Buat acara di <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Abaikan permintaan situs web untuk mencegah zoom</translation>
+<translation id="568275469169136466">Untuk login sementara</translation>
 <translation id="5683547024293500885">Chrome tidak dapat memeriksa update</translation>
 <translation id="5686790454216892815">Nama file terlalu panjang</translation>
 <translation id="5694049548840660018">Kembali ke beranda dengan mudah</translation>
@@ -589,6 +591,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5723735397759933332">Mode Ringan kini menghemat data Anda lebih banyak dengan mengoptimalkan gambar di halaman HTTPS.</translation>
 <translation id="5726692708398506830">Memperbesar semua yang ada di halaman</translation>
 <translation id="5732819098735351888">Download akan dimulai saat terhubung ke Wi-Fi.</translation>
+<translation id="5733983706093266635">Tidak dapat membuat kode QR. URL berisi lebih dari <ph name="CHARACTER_LIMIT" /> karakter.</translation>
 <translation id="5748802427693696783">Beralih ke tab standar</translation>
 <translation id="5749068826913805084">Chrome memerlukan akses penyimpanan untuk mendownload file.</translation>
 <translation id="5749237766298580851">Nonaktif <ph name="SEPARATOR" /> Tidak direkomendasikan</translation>
@@ -641,6 +644,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="6111020039983847643">data digunakan</translation>
 <translation id="6112702117600201073">Menyegarkan halaman</translation>
 <translation id="6127379762771434464">Item dihapus</translation>
+<translation id="6140709049082532940">Perlindungan yang disempurnakan:</translation>
 <translation id="6140912465461743537">Negara/Wilayah</translation>
 <translation id="614940544461990577">Coba:</translation>
 <translation id="6154478581116148741">Aktifkan kunci layar di Setelan untuk mengekspor sandi dari perangkat ini</translation>
@@ -1017,6 +1021,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="9100610230175265781">Frasa sandi diwajibkan</translation>
 <translation id="9102803872260866941">Tab pratinjau dibuka</translation>
 <translation id="9104217018994036254">Daftar perangkat yang dapat digunakan untuk berbagi tab.</translation>
+<translation id="9104402662006063371">Buka mode Samaran</translation>
 <translation id="9108312223223904744">Dukungan Ponsel sebagai Kunci Keamanan</translation>
 <translation id="9108808586816295166">DNS aman mungkin tidak tersedia sepanjang waktu</translation>
 <translation id="9133397713400217035">Jelajahi Offline</translation>

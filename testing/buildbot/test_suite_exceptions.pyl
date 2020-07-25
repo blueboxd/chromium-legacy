@@ -1131,54 +1131,51 @@
     'modifications': {
       # TODO(kbr): figure out a better way to specify blocks of
       # arguments like this for tests on multiple machines.
-
-      # TODO(crbug.com/1108842): Add GPU back once ATL capacity is
-      # online.
-      #'Linux ASan LSan Tests (1)': {
-      #  'args': [
-      #    '--use-gpu-in-tests',
-      #    '--no-xvfb',
-      #  ],
-      #  'swarming': {
-      #    'dimension_sets': [
-      #      {
-      #        'gpu': '10de:1cb3',
-      #        'os': 'Ubuntu',
-      #        'pool': 'chromium.tests.gpu',
-      #      },
-      #    ],
-      #  },
-      #},
-      #'Linux CFI': {
-      #  'args': [
-      #    '--use-gpu-in-tests',
-      #    '--no-xvfb',
-      #  ],
-      #  'swarming': {
-      #    'dimension_sets': [
-      #      {
-      #        'gpu': '10de:1cb3',
-      #        'os': 'Ubuntu',
-      #        'pool': 'chromium.tests.gpu',
-      #      },
-      #    ],
-      #  },
-      #},
-      #'Linux TSan Tests': {
-      #  'args': [
-      #    '--use-gpu-in-tests',
-      #    '--no-xvfb',
-      #  ],
-      #  'swarming': {
-      #    'dimension_sets': [
-      #      {
-      #        'gpu': '10de:1cb3',
-      #        'os': 'Ubuntu',
-      #        'pool': 'chromium.tests.gpu',
-      #      },
-      #    ],
-      #  },
-      #},
+      'Linux ASan LSan Tests (1)': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'chromium.tests.gpu',
+            },
+          ],
+        },
+      },
+      'Linux CFI': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'chromium.tests.gpu',
+            },
+          ],
+        },
+      },
+      'Linux TSan Tests': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'chromium.tests.gpu',
+            },
+          ],
+        },
+      },
     },
   },
   'gl_tests_validating': {
@@ -1192,54 +1189,51 @@
     'modifications': {
       # TODO(kbr): figure out a better way to specify blocks of
       # arguments like this for tests on multiple machines.
-
-      # TODO(crbug.com/1108842): Add GPU back once ATL capacity is
-      # online.
-      #'Linux ASan LSan Tests (1)': {
-      #  'args': [
-      #    '--use-gpu-in-tests',
-      #    '--no-xvfb',
-      #  ],
-      #  'swarming': {
-      #    'dimension_sets': [
-      #      {
-      #        'gpu': '10de:1cb3',
-      #        'os': 'Ubuntu',
-      #        'pool': 'chromium.tests.gpu',
-      #      },
-      #    ],
-      #  },
-      #},
-      #'Linux CFI': {
-      #  'args': [
-      #    '--use-gpu-in-tests',
-      #    '--no-xvfb',
-      #  ],
-      #  'swarming': {
-      #    'dimension_sets': [
-      #      {
-      #        'gpu': '10de:1cb3',
-      #        'os': 'Ubuntu',
-      #        'pool': 'chromium.tests.gpu',
-      #      },
-      #    ],
-      #  },
-      #},
-      #'Linux TSan Tests': {
-      #  'args': [
-      #    '--use-gpu-in-tests',
-      #    '--no-xvfb',
-      #  ],
-      #  'swarming': {
-      #    'dimension_sets': [
-      #      {
-      #        'gpu': '10de:1cb3',
-      #        'os': 'Ubuntu',
-      #        'pool': 'chromium.tests.gpu',
-      #      },
-      #    ],
-      #  },
-      #},
+      'Linux ASan LSan Tests (1)': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'chromium.tests.gpu',
+            },
+          ],
+        },
+      },
+      'Linux CFI': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'chromium.tests.gpu',
+            },
+          ],
+        },
+      },
+      'Linux TSan Tests': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'chromium.tests.gpu',
+            },
+          ],
+        },
+      },
       'android-marshmallow-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.gl_tests.filter',

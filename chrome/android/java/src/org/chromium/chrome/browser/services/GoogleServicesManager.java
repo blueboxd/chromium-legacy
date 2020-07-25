@@ -9,16 +9,10 @@ import android.util.Log;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ApplicationState;
-import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ApplicationStatus.ApplicationStateListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
-import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.chrome.browser.signin.SigninPreferencesManager;
-import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.metrics.SignoutReason;
 
@@ -34,8 +28,7 @@ import org.chromium.components.signin.metrics.SignoutReason;
  * The object must be created on the main thread.
  * <p/>
  */
-public class GoogleServicesManager implements ApplicationStateListener {
-
+public class GoogleServicesManager {
     private static final String TAG = "GoogleServicesManager";
 
     @VisibleForTesting
@@ -76,31 +69,6 @@ public class GoogleServicesManager implements ApplicationStateListener {
                 // TODO(https://crbug.com/873116): Pass the correct reason for the signout.
                 signinManager.signOut(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS);
             }
-
-            // Initialize sync.
-            SyncController.get();
-
-            ApplicationStatus.registerApplicationStateListener(this);
-        }
-    }
-
-    /**
-     * Called once during initialization and then again for every start (warm-start).
-     * Responsible for checking if configuration has changed since Chrome was last launched
-     * and updates state accordingly.
-     */
-    public void onMainActivityStart() {
-        try (TraceEvent ignored = TraceEvent.scoped("GoogleServicesManager.onMainActivityStart")) {
-            boolean accountsChanged =
-                    SigninPreferencesManager.getInstance().checkAndClearAccountsChangedPref();
-            SigninHelper.get().validateAccountSettings(accountsChanged);
-        }
-    }
-
-    @Override
-    public void onApplicationStateChange(int newState) {
-        if (newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
-            onMainActivityStart();
         }
     }
 }

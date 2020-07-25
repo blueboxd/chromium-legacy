@@ -77,6 +77,7 @@
 <translation id="3089968997497233615">Google Chrome 推出全新版本，安全性更勝以往。</translation>
 <translation id="3127818369811890733">Chrome 作業系統無法同步處理你的資料。</translation>
 <translation id="3149510190863420837">Chrome 應用程式</translation>
+<translation id="3351117925998652957">選擇你的 Chrome 空間</translation>
 <translation id="3360895254066713204">Chrome 小幫手</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome 將立即重新啟動}=1{Chrome 將在 1 秒後重新啟動}other{Chrome 將在 # 秒後重新啟動}}</translation>
 <translation id="3395323229510056640">前往 Chrome 作業系統說明頁面</translation>
@@ -177,6 +178,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="6291549208091401781">電腦上的所有使用者都已經安裝 Google Chrome 了。</translation>
 <translation id="6338556085225130112">正在更新 Google Chrome</translation>
 <translation id="6368958679917195344">Chrome 作業系統藉助了其他<ph name="BEGIN_LINK_CROS_OSS" />開放原始碼軟體<ph name="END_LINK_CROS_OSS" />的相關技術才得以問世。</translation>
+<translation id="6372315130616785175">你已使用公司帳戶登入。要建立新的工作用 Chrome 設定檔以分開保留資料嗎？</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome 開發人員版</translation>
 <translation id="6566149418543181476">正在更新 Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6676384891291319759">連線到網際網路</translation>
@@ -206,6 +208,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="7535429826459677826">Google Chrome 開發人員版</translation>
 <translation id="7573289029918943991">如要查看你的裝置是否為最新版，請前往 <ph name="LINK_BEGIN" />Chrome 作業系統設定<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">我們已不支援 Mac OS X 10.9，因此這部電腦不會再收到 Google Chrome 更新。</translation>
+<translation id="7591404275842302616">使用 Chrome 空間妥善整理這部裝置上的瀏覽記錄</translation>
 <translation id="7592736734348559088">你的帳戶登入詳細資料尚未更新，因此 Google Chrome 無法同步處理你的資料。</translation>
 <translation id="7626032353295482388">歡迎使用 Chrome</translation>
 <translation id="7629695634924605473">Chrome 會通知你密碼是否曾遭外洩</translation>

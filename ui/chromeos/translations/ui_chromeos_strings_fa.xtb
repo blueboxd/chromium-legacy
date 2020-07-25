@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">عینک آفتابی</translation>
 <translation id="115443833402798225">هانگول آهنماتائه</translation>
 <translation id="1155759005174418845">کاتالان</translation>
+<translation id="1172970565351728681">تقریباً <ph name="REMAINING_TIME" /> باقی مانده است</translation>
 <translation id="1173894706177603556">تغییر نام</translation>
 <translation id="117624967391683467">درحال کپی <ph name="FILE_NAME" />...</translation>
 <translation id="1178581264944972037">مکث</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">مالکیت به <ph name="DESTINATION_DOMAIN" /> منتقل می‌شود.</translation>
 <translation id="3241720467332021590">ایرلندی</translation>
 <translation id="3245321423178950146">هنرمند ناشناس</translation>
+<translation id="3248185426436836442">درانتظار</translation>
 <translation id="3252266817569339921">فرانسوی</translation>
 <translation id="3254434849914415189">برنامه پیش‌فرض را برای فایل‌های <ph name="FILE_TYPE" /> انتخاب کنید:</translation>
 <translation id="3264582393905923483">زمینه</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">اجازه ندارید فایل‌ها را به «<ph name="FOLDER_NAME" />» منتقل کنید.</translation>
 <translation id="3786301125658655746">شما آفلاین هستید</translation>
 <translation id="3789841737615482174">نصب</translation>
+<translation id="3793469551756281394">تقریباً <ph name="REMAINING_TIME_HOUR" /> و <ph name="REMAINING_TIME_MINUTE" /> باقی مانده است</translation>
 <translation id="3798449238516105146">نسخه</translation>
 <translation id="3801082500826908679">فاروئی</translation>
 <translation id="3809272675881623365">خرگوش</translation>

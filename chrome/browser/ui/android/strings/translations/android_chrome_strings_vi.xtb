@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Cập nhật Chrome</translation>
 <translation id="1569387923882100876">Thiết bị đã kết nối</translation>
 <translation id="1571304935088121812">Sao chép tên người dùng</translation>
+<translation id="1592864538817356322">Chế độ bảo vệ thông thường:</translation>
 <translation id="1612196535745283361">Chrome cần có quyền truy cập vị trí để quét tìm thiết bị. Tính năng truy cập vị trí bị <ph name="BEGIN_LINK" />tắt cho thiết bị này<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Máy ảnh</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Xóa 1 mục đã chọn}other{Xóa # mục đã chọn}}</translation>
@@ -578,6 +579,8 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5659593005791499971">Email</translation>
 <translation id="5665379678064389456">Tạo sự kiện trong <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ghi đè yêu cầu của trang web để chặn phóng to</translation>
+<translation id="568275469169136466">Để đăng nhập tạm thời</translation>
+<translation id="5683547024293500885">Chrome không thể kiểm tra các bản cập nhật</translation>
 <translation id="5686790454216892815">Tên tệp quá dài</translation>
 <translation id="5694049548840660018">Dễ dàng quay lại trang chủ</translation>
 <translation id="569536719314091526">Dịch trang này sang ngôn ngữ bất kỳ từ nút Tùy chọn khác</translation>
@@ -588,8 +591,10 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5723735397759933332">Giờ đây, chế độ thu gọn giúp bạn tiết kiệm được nhiều dữ liệu hơn bằng cách tối ưu hóa hình ảnh trên các trang HTTPS.</translation>
 <translation id="5726692708398506830">Phóng to mọi nội dung trên trang</translation>
 <translation id="5732819098735351888">Hoạt động tải xuống sẽ bắt đầu qua Wi-Fi.</translation>
+<translation id="5733983706093266635">Không thể tạo mã QR. URL dài hơn <ph name="CHARACTER_LIMIT" /> ký tự.</translation>
 <translation id="5748802427693696783">Đã chuyển sang thẻ chuẩn</translation>
 <translation id="5749068826913805084">Chrome cần quyền truy cập vào bộ nhớ để tải tệp xuống.</translation>
+<translation id="5749237766298580851">Tắt <ph name="SEPARATOR" /> Không khuyến nghị</translation>
 <translation id="5754350196967618083">Không thể làm mới tính năng Khám phá</translation>
 <translation id="5763382633136178763">Thẻ ẩn danh</translation>
 <translation id="5763514718066511291">Nhấn để sao chép URL cho ứng dụng này</translation>
@@ -639,6 +644,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="6111020039983847643">dữ liệu đã dùng</translation>
 <translation id="6112702117600201073">Làm mới trang</translation>
 <translation id="6127379762771434464">Đã xóa mục</translation>
+<translation id="6140709049082532940">Chế độ bảo vệ nâng cao:</translation>
 <translation id="6140912465461743537">Quốc gia/Vùng</translation>
 <translation id="614940544461990577">Hãy thử:</translation>
 <translation id="6154478581116148741">Bật khóa màn hình trong Cài đặt để xuất mật khẩu của bạn từ thiết bị này</translation>
@@ -997,6 +1003,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8970887620466824814">Đã xảy ra lỗi.</translation>
 <translation id="8972098258593396643">Tải xuống thư mục mặc định?</translation>
 <translation id="8988028529677883095">Dùng điện thoại làm khóa bảo mật</translation>
+<translation id="8990209962746788689">Không thể tạo mã QR</translation>
 <translation id="8993760627012879038">Mở thẻ mới trong chế độ Ẩn danh</translation>
 <translation id="8998729206196772491">Bạn đang đăng nhập bằng tài khoản do <ph name="MANAGED_DOMAIN" /> quản lý và cấp cho quản trị viên quyền kiểm soát dữ liệu Chrome của bạn. Dữ liệu của bạn sẽ được liên kết vĩnh viễn với tài khoản này. Việc đăng xuất khỏi Chrome sẽ xóa dữ liệu của bạn khỏi thiết bị này nhưng dữ liệu sẽ vẫn được lưu trữ trong Tài khoản Google.</translation>
 <translation id="9028914725102941583">Bật tính năng đồng bộ hóa để chia sẻ giữa các thiết bị</translation>
@@ -1014,6 +1021,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="9100610230175265781">Yêu cầu cụm mật khẩu</translation>
 <translation id="9102803872260866941">Thẻ xem trước đang mở</translation>
 <translation id="9104217018994036254">Danh sách các thiết bị mà bạn có thể chia sẻ một thẻ.</translation>
+<translation id="9104402662006063371">Chuyển sang Chế độ ẩn danh</translation>
 <translation id="9108312223223904744">Hỗ trợ dùng điện thoại làm Khóa bảo mật</translation>
 <translation id="9108808586816295166">DNS bảo mật có thể không phải lúc nào cũng hoạt động</translation>
 <translation id="9133397713400217035">Khám phá khi không kết nối Internet</translation>

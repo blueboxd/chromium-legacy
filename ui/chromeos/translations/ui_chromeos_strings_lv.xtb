@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Saulesbrilles</translation>
 <translation id="115443833402798225">Hangils (Ahnmatae)</translation>
 <translation id="1155759005174418845">Kataloniešu valoda</translation>
+<translation id="1172970565351728681">Aptuvens atlikušais laiks: <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">Pārdēvēt</translation>
 <translation id="117624967391683467">Notiek faila “<ph name="FILE_NAME" />” kopēšana...</translation>
 <translation id="1178581264944972037">Pauzēt</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Īpašumtiesības tiks nodotas domēnam <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">Īru valoda</translation>
 <translation id="3245321423178950146">Nezināms izpildītājs</translation>
+<translation id="3248185426436836442">Gaida</translation>
 <translation id="3252266817569339921">Franču valoda</translation>
 <translation id="3254434849914415189">Izvēlieties noklusējuma lietotni <ph name="FILE_TYPE" /> failu atvēršanai:</translation>
 <translation id="3264582393905923483">Konteksts</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Jums nav atļaujas pārvietot failus uz mapi “<ph name="FOLDER_NAME" />”.</translation>
 <translation id="3786301125658655746">Esat bezsaistē</translation>
 <translation id="3789841737615482174">Instalēt</translation>
+<translation id="3793469551756281394">Aptuvens atlikušais laiks: <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">Versija</translation>
 <translation id="3801082500826908679">Fēru valoda</translation>
 <translation id="3809272675881623365">Trusis</translation>

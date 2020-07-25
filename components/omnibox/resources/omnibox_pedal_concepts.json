@@ -1,7 +1,7 @@
 {
   "schema": "pedals_translation_model",
   "schema_version": 1,
-  "time_generated": "20200224T180007",
+  "time_generated": "20200724T004514",
   "primary_language_code": "en",
   "locales": [
     {
@@ -70,46 +70,6 @@
           ]
         },
         {
-          "name": "CHANGE_SEARCH_ENGINE",
-          "groups": [
-            {
-              "required": false,
-              "single": true,
-              "synonyms": [
-                "google chrome",
-                "browser",
-                "chrome",
-                "google"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "ändern",
-                "wechseln",
-                "umstellen",
-                "einstellen"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "standardeinstellung suche",
-                "suchmaschine",
-                "standardsuchmaschine",
-                "standard suchmaschine",
-                "standardsuche",
-                "standard suche",
-                "standard suchmaschine",
-                "sucheinstellung",
-                "einstellungen suche"
-              ]
-            }
-          ]
-        },
-        {
           "name": "MANAGE_PASSWORDS",
           "groups": [
             {
@@ -137,38 +97,6 @@
               "synonyms": [
                 "passwörter",
                 "passwort"
-              ]
-            }
-          ]
-        },
-        {
-          "name": "CHANGE_HOME_PAGE",
-          "groups": [
-            {
-              "required": false,
-              "single": true,
-              "synonyms": [
-                "google chrome",
-                "browser",
-                "chrome"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "ändern",
-                "einstellen",
-                "wechseln",
-                "umstellen"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "start seite",
-                "startseite"
               ]
             }
           ]
@@ -365,41 +293,9 @@
               "synonyms": [
                 "history",
                 "cache",
-                "data"
-              ]
-            }
-          ]
-        },
-        {
-          "name": "CHANGE_SEARCH_ENGINE",
-          "groups": [
-            {
-              "required": false,
-              "single": true,
-              "synonyms": [
-                "google chrome",
-                "browser",
-                "chrome"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "choose",
-                "change",
-                "switch",
-                "select"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "standard search engine",
-                "default search engine",
-                "search engine",
-                "search"
+                "data",
+                "information",
+                "info"
               ]
             }
           ]
@@ -432,39 +328,6 @@
               "single": true,
               "synonyms": [
                 "passwords"
-              ]
-            }
-          ]
-        },
-        {
-          "name": "CHANGE_HOME_PAGE",
-          "groups": [
-            {
-              "required": false,
-              "single": true,
-              "synonyms": [
-                "google chrome",
-                "browser",
-                "chrome"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "change",
-                "choose",
-                "set"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "home page",
-                "homepage",
-                "home",
-                "home button"
               ]
             }
           ]
@@ -593,8 +456,7 @@
               "single": true,
               "synonyms": [
                 "upgrade",
-                "install",
-                "update"
+                "install"
               ]
             }
           ]
@@ -661,50 +523,6 @@
           ]
         },
         {
-          "name": "CHANGE_SEARCH_ENGINE",
-          "groups": [
-            {
-              "required": false,
-              "single": true,
-              "synonyms": [
-                "google chrome",
-                "navigateur",
-                "chrome"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "choisir",
-                "changer",
-                "passer",
-                "sélectionner",
-                "modifier",
-                "actualiser",
-                "choisis",
-                "choisit",
-                "change",
-                "passe",
-                "sélectionne",
-                "modifie",
-                "actualise"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "moteur de recherche par défaut",
-                "moteur de recherche",
-                "recherche",
-                "autre moteur de recherche",
-                "moteur de recherche standard"
-              ]
-            }
-          ]
-        },
-        {
           "name": "MANAGE_PASSWORDS",
           "groups": [
             {
@@ -741,46 +559,6 @@
               "synonyms": [
                 "mot de passe",
                 "mots de passe"
-              ]
-            }
-          ]
-        },
-        {
-          "name": "CHANGE_HOME_PAGE",
-          "groups": [
-            {
-              "required": false,
-              "single": true,
-              "synonyms": [
-                "google chrome",
-                "navigateur",
-                "chrome"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "changer",
-                "choisir",
-                "définir",
-                "modifier",
-                "actualiser",
-                "choisis",
-                "choisit",
-                "définis",
-                "définit",
-                "modifie",
-                "actualise"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "page d'accueil",
-                "page accueil",
-                "homepage"
               ]
             }
           ]
@@ -1016,46 +794,6 @@
           ]
         },
         {
-          "name": "CHANGE_SEARCH_ENGINE",
-          "groups": [
-            {
-              "required": false,
-              "single": true,
-              "synonyms": [
-                "google chrome",
-                "グーグルクローム",
-                "ブラウザ",
-                "ブラウザー",
-                "chrome",
-                "クローム"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "選択",
-                "変更",
-                "切替",
-                "切り替え",
-                "管理",
-                "変える",
-                "設定"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "既定検索エンジン",
-                "デフォルト検索エンジン",
-                "検索エンジン",
-                "サーチエンジン"
-              ]
-            }
-          ]
-        },
-        {
           "name": "MANAGE_PASSWORDS",
           "groups": [
             {
@@ -1087,42 +825,6 @@
               "single": true,
               "synonyms": [
                 "パスワード"
-              ]
-            }
-          ]
-        },
-        {
-          "name": "CHANGE_HOME_PAGE",
-          "groups": [
-            {
-              "required": false,
-              "single": true,
-              "synonyms": [
-                "google chrome",
-                "グーグルクローム",
-                "ブラウザ",
-                "ブラウザー",
-                "chrome",
-                "クローム"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "変更",
-                "変える",
-                "選択",
-                "選ぶ",
-                "設定"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "ホームページ",
-                "hp"
               ]
             }
           ]
@@ -1333,42 +1035,6 @@
           ]
         },
         {
-          "name": "CHANGE_SEARCH_ENGINE",
-          "groups": [
-            {
-              "required": false,
-              "single": true,
-              "synonyms": [
-                "google chrome",
-                "浏览器",
-                "chrome"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "更改",
-                "更换",
-                "改变",
-                "切换",
-                "换",
-                "设置"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "搜索引擎",
-                "搜索器",
-                "搜索",
-                "默认搜索"
-              ]
-            }
-          ]
-        },
-        {
           "name": "MANAGE_PASSWORDS",
           "groups": [
             {
@@ -1397,41 +1063,6 @@
               "single": true,
               "synonyms": [
                 "密码"
-              ]
-            }
-          ]
-        },
-        {
-          "name": "CHANGE_HOME_PAGE",
-          "groups": [
-            {
-              "required": false,
-              "single": true,
-              "synonyms": [
-                "google chrome",
-                "浏览器",
-                "chrome"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "更改",
-                "更换",
-                "改变",
-                "切换",
-                "换",
-                "设置",
-                "修改"
-              ]
-            },
-            {
-              "required": true,
-              "single": true,
-              "synonyms": [
-                "主页",
-                "首页"
               ]
             }
           ]

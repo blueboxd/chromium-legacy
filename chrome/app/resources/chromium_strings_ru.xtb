@@ -99,6 +99,7 @@
 <translation id="4943838377383847465">Chromium работает в фоновом режиме</translation>
 <translation id="4987820182225656817">Используйте Chromium в гостевом режиме, если не хотите сохранять данные о посещенных сайтах.</translation>
 <translation id="4994636714258228724">Добавить пользователя Chromium</translation>
+<translation id="5037694917996535813">Вы вошли в рабочий аккаунт. Хотите создать рабочий профиль Chromium для хранения данных отдельно?</translation>
 <translation id="5224391634244552924">Сохраненных паролей нет. Чтобы браузер Chromium мог проверять пароли, сохраните их.</translation>
 <translation id="5277894862589591112">Чтобы изменения вступили в силу, перезапустите Chromium.</translation>
 <translation id="5358375970380395591">Выполнив вход в управляемый аккаунт, вы предоставляете администратору право контролировать настройки вашего профиля Chromium. Ваши данные Chromium (приложения, закладки, история, пароли и другие настройки) будут временно связаны с аккаунтом <ph name="USER_NAME" />. Эти данные можно удалить в Личном кабинете Google, но их нельзя связать с другим аккаунтом. <ph name="LEARN_MORE" /></translation>
@@ -216,6 +217,7 @@
 <translation id="8417404458978023919">{0,plural, =1{Перезапустите Chromium в течение дня}one{Перезапустите Chromium в течение # дня}few{Перезапустите Chromium в течение # дней}many{Перезапустите Chromium в течение # дней}other{Перезапустите Chromium в течение # дня}}</translation>
 <translation id="8453117565092476964">Установочный архив поврежден. Скачайте Chromium ещё раз.</translation>
 <translation id="8493179195440786826">Версия Chromium устарела</translation>
+<translation id="8545858702702650646">Выберите профиль Chromium</translation>
 <translation id="8558383651099478961">Родители отключили в Chromium параметр "Разрешения для сайтов, приложений и расширений". Добавлять это <ph name="EXTENSION_TYPE_PARAMETER" /> запрещено.</translation>
 <translation id="8568283329061645092">Chromium проверит ваши пароли, когда вы войдете в аккаунт Google.</translation>
 <translation id="8586442755830160949">© The Chromium Authors, <ph name="YEAR" /> . Все права защищены.</translation>
@@ -239,6 +241,7 @@
 <translation id="911206726377975832">Также удалить данные о работе в браузере?</translation>
 <translation id="9158494823179993217">Ваш системный администратор задал настройки, согласно которым Chromium должен запускать альтернативный браузер для доступа к сайту <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Используйте профили Chromium на этом устройстве, чтобы работать в браузере было удобнее.</translation>
 <translation id="93478295209880648">В работе Chromium могут возникать сбои, так как браузер больше не поддерживает Windows XP и Windows Vista.</translation>
 <translation id="95514773681268843">Прежде чем приступать к работе, ознакомьтесь с Условиями использования на сайте <ph name="DOMAIN" /> и примите их. Эти условия не дополняют, не заменяют и не ограничивают Условий использования Chromium OS.</translation>
 <translation id="985602178874221306">Авторы Chromium</translation>

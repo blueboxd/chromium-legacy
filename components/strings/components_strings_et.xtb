@@ -562,6 +562,9 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="3364869320075768271"><ph name="URL" /> soovib kasutada teie virtuaalreaalsuse seadet ja andmeid</translation>
 <translation id="3366477098757335611">Kuva kaardid</translation>
 <translation id="3369192424181595722">Kella viga</translation>
+<translation id="3371076217486966826"><ph name="URL" /> soovib:
+      • luua teid ümbritsevast 3D-kaardi ja jälgida kaamera asendit;
+      • kasutada teie kaamerat.</translation>
 <translation id="337363190475750230">Eraldatud</translation>
 <translation id="3377144306166885718">Server kasutas TLS-i aegunud versiooni.</translation>
 <translation id="3377188786107721145">Viga reegli sõelumisel</translation>
@@ -1561,6 +1564,7 @@ Lisateave:
 <translation id="7518003948725431193">Järgneval veebiaadressil ei olnud ühtegi veebilehte: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (ümbrik)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Jaotis „<ph name="SECTION" />” on peidetud</translation>
 <translation id="7526934274050461096">Teie ühendus selle saidiga pole privaatne</translation>
 <translation id="7535087603100972091">Väärtus</translation>
 <translation id="7537536606612762813">Kohustuslik</translation>
@@ -1761,6 +1765,7 @@ Lisateave:
 <translation id="8293206222192510085">Lisa järjehoidja</translation>
 <translation id="8294431847097064396">Allikas</translation>
 <translation id="8298115750975731693">WiFi-võrk, mida kasutate (<ph name="WIFI_NAME" />), võib nõuda veebilehe <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> külastamist.</translation>
+<translation id="8303854710873047864">Jaotis „<ph name="SECTION" />” on kuvatud</translation>
 <translation id="830498451218851433">Pooleks volditud</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Installitud rakendused ja nende kasutussagedus</translation>
@@ -1880,6 +1885,7 @@ Lisateave:
 <translation id="8931333241327730545">Kas soovite selle kaardi salvestada oma Google'i kontole?</translation>
 <translation id="8932102934695377596">Teie kell on taga</translation>
 <translation id="893332455753468063">Nime lisamine</translation>
+<translation id="8942355029279167844">Teie administraator on lubanud rakendusel <ph name="APP_NAME" /> diagnostikaandmeid koguda, et toote kasutuskogemust täiustada. Lisateavet vaadake saidilt <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />.</translation>
 <translation id="8943282376843390568">Laimiroheline</translation>
 <translation id="8957210676456822347">Kontrollportaali volitamine</translation>
 <translation id="8962950042226115166">Kahtlane sait</translation>

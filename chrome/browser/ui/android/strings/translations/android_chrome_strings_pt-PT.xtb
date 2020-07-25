@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Atualizar o Chrome</translation>
 <translation id="1569387923882100876">Dispositivo ligado</translation>
 <translation id="1571304935088121812">Copiar nome de utilizador</translation>
+<translation id="1592864538817356322">Proteção padrão:</translation>
 <translation id="1612196535745283361">O Chrome precisa de acesso à localização para procurar dispositivos. O acesso à localização está <ph name="BEGIN_LINK" />desativado para este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Câmara</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Remover 1 item selecionado}other{Remover # itens selecionados}}</translation>
@@ -578,6 +579,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5659593005791499971">Email</translation>
 <translation id="5665379678064389456">Criar evento no <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Substituir pedido de um Website para evitar aumentar o zoom</translation>
+<translation id="568275469169136466">Para iniciar sessão temporariamente</translation>
 <translation id="5683547024293500885">O Chrome não consegue verificar se existem atualizações.</translation>
 <translation id="5686790454216892815">O nome do ficheiro é demasiado longo</translation>
 <translation id="5694049548840660018">Volte ao início facilmente</translation>
@@ -589,6 +591,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5723735397759933332">Agora, o Modo Lite guarda mais dados ao otimizar imagens em páginas HTTPS.</translation>
 <translation id="5726692708398506830">Aumentar o tamanho de todos os itens na página</translation>
 <translation id="5732819098735351888">A transferência vai ser iniciada através de Wi-Fi.</translation>
+<translation id="5733983706093266635">Não é possível criar o código QR. O URL contém mais de <ph name="CHARACTER_LIMIT" /> carateres.</translation>
 <translation id="5748802427693696783">Mudado para separadores padrão</translation>
 <translation id="5749068826913805084">O Chrome necessita de acesso ao armazenamento para transferir ficheiros.</translation>
 <translation id="5749237766298580851">Desativada <ph name="SEPARATOR" /> Não recomendado</translation>
@@ -641,6 +644,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="6111020039983847643">dados utilizados</translation>
 <translation id="6112702117600201073">A atualizar a página</translation>
 <translation id="6127379762771434464">Item removido</translation>
+<translation id="6140709049082532940">Proteção melhorada:</translation>
 <translation id="6140912465461743537">País/região</translation>
 <translation id="614940544461990577">Experimente:</translation>
 <translation id="6154478581116148741">Ative o bloqueio de ecrã nas Definições para exportar as suas palavras-passe a partir deste dispositivo.</translation>
@@ -1017,6 +1021,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="9100610230175265781">Frase de acesso obrigatória</translation>
 <translation id="9102803872260866941">O separador Pré-visualização está aberto</translation>
 <translation id="9104217018994036254">Lista de dispositivos com os quais pretende partilhar um separador.</translation>
+<translation id="9104402662006063371">Entrar no Modo de navegação anónima</translation>
 <translation id="9108312223223904744">Telemóvel como suporte de chave de segurança</translation>
 <translation id="9108808586816295166">O DNS seguro pode não estar sempre disponível.</translation>
 <translation id="9133397713400217035">Explorar offline</translation>

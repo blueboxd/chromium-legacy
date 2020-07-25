@@ -101,6 +101,7 @@
 <translation id="4943838377383847465">Chromium è in modalità background.</translation>
 <translation id="4987820182225656817">Gli ospiti possono utilizzare Chromium senza lasciare tracce.</translation>
 <translation id="4994636714258228724">Aggiungiti a Chromium</translation>
+<translation id="5037694917996535813">Hai effettuato l'accesso con un account di lavoro. Vuoi creare un nuovo profilo Chromium di lavoro per mantenere i tuoi dati separati?</translation>
 <translation id="5224391634244552924">Nessuna password salvata. Chromium può controllare le password quando le salvi.</translation>
 <translation id="5277894862589591112">Riavvia Chromium per applicare le modifiche</translation>
 <translation id="5358375970380395591">Stai per accedere con un account gestito e per dare al relativo amministratore il controllo del tuo profilo Chromium. I tuoi dati di Chromium, come app, Preferiti, cronologia, password e altre impostazioni, verranno collegati definitivamente a <ph name="USER_NAME" />. Potrai eliminare questi dati tramite la Dashboard di Google Account, ma non potrai associare questi dati a un altro account. <ph name="LEARN_MORE" /></translation>
@@ -220,6 +221,7 @@ Chromium non è in grado di recuperare le impostazioni.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Riavvia Chromium entro un giorno}other{Riavvia Chromium entro # giorni}}</translation>
 <translation id="8453117565092476964">L'archivio di installazione è danneggiato o non valido. Scarica di nuovo Chromium.</translation>
 <translation id="8493179195440786826">Chromium non è aggiornato</translation>
+<translation id="8545858702702650646">Scegli il tuo Chromium Space</translation>
 <translation id="8558383651099478961">Uno dei tuoi genitori ha disattivato "Autorizzazioni per siti, app ed estensioni" per Chromium. L'aggiunta di <ph name="EXTENSION_TYPE_PARAMETER" /> non è consentita.</translation>
 <translation id="8568283329061645092">Chromium può controllare le tue password quando accedi con il tuo Account Google</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Tutti i diritti riservati.</translation>
@@ -243,6 +245,7 @@ Chromium non è in grado di recuperare le impostazioni.</translation>
 <translation id="911206726377975832">Eliminare anche i tuoi dati di navigazione?</translation>
 <translation id="9158494823179993217">L'amministratore di sistema ha configurato Chromium per l'apertura di un browser alternativo per accedere a <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Utilizza i Chromium Space per mantenere organizzata la navigazione su questo dispositivo</translation>
 <translation id="93478295209880648">Chromium potrebbe non funzionare correttamente perché non è più supportato su Windows XP o Windows Vista</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> richiede di leggere e accettare i seguenti Termini di servizio prima di utilizzare il dispositivo. Questi termini non ampliano, modificano o limitano i Termini di Chromium OS.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

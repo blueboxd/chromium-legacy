@@ -563,6 +563,9 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="3364869320075768271"><ph name="URL" /> vill använda VR-enheter och VR-data</translation>
 <translation id="3366477098757335611">Visa kort</translation>
 <translation id="3369192424181595722">Fel på klockan</translation>
+<translation id="3371076217486966826"><ph name="URL" /> vill
+      • skapa en 3D-karta över dina omgivningar och registrera kamerans position
+      • använda kameran.</translation>
 <translation id="337363190475750230">Tagen ur bruk</translation>
 <translation id="3377144306166885718">En föråldrad version av TLS används på servern.</translation>
 <translation id="3377188786107721145">Fel vid analys av policyn</translation>
@@ -1562,6 +1565,7 @@ Mer information.
 <translation id="7518003948725431193">Det fanns ingen webbsida på webbadressen: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (kuvert)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Avsnittet <ph name="SECTION" /> har dolts</translation>
 <translation id="7526934274050461096">Din anslutning till webbplatsen är inte privat</translation>
 <translation id="7535087603100972091">Värde</translation>
 <translation id="7537536606612762813">Obligatorisk</translation>
@@ -1762,6 +1766,7 @@ Mer information.
 <translation id="8293206222192510085">Lägg till bokmärke</translation>
 <translation id="8294431847097064396">Källa</translation>
 <translation id="8298115750975731693">Wi-Fi-nätverket du använder (<ph name="WIFI_NAME" />) kanske kräver att du besöker <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Avsnittet <ph name="SECTION" /> visades</translation>
 <translation id="830498451218851433">Enkelfalsning</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Vilka appar som har installerats och hur ofta de används</translation>
@@ -1882,6 +1887,7 @@ Mer information:
 <translation id="8931333241327730545">Vill du spara det här kortet i ditt Google-konto?</translation>
 <translation id="8932102934695377596">Klockan går efter</translation>
 <translation id="893332455753468063">Lägg till namn</translation>
+<translation id="8942355029279167844">Administratören har tillåtit <ph name="APP_NAME" /> att samla in diagnostikdata i syfte att förbättra produktupplevelsen. Du hittar mer information på <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />.</translation>
 <translation id="8943282376843390568">Limegrön</translation>
 <translation id="8957210676456822347">Auktorisering av infångstportal</translation>
 <translation id="8962950042226115166">Misstänkt webbplats</translation>

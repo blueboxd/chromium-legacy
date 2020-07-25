@@ -79,6 +79,7 @@
 <translation id="3089968997497233615">Đã có phiên bản Google Chrome mới và an toàn hơn.</translation>
 <translation id="3127818369811890733">Chrome OS không thể đồng bộ hóa dữ liệu của bạn.</translation>
 <translation id="3149510190863420837">Ứng dụng Chrome</translation>
+<translation id="3351117925998652957">Chọn Không gian Chrome của bạn</translation>
 <translation id="3360895254066713204">Trình trợ giúp của Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome sẽ khởi động lại ngay bây giờ}=1{Chrome sẽ khởi động lại sau 1 giây}other{Chrome sẽ khởi động lại sau # giây}}</translation>
 <translation id="3395323229510056640">Nhận trợ giúp về Chrome OS</translation>
@@ -179,6 +180,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="6291549208091401781">Google Chrome đã được cài đặt cho tất cả người dùng trên máy tính của bạn.</translation>
 <translation id="6338556085225130112">Đang cập nhật Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS trở nên khả thi là nhờ <ph name="BEGIN_LINK_CROS_OSS" />phần mềm nguồn mở<ph name="END_LINK_CROS_OSS" /> bổ sung.</translation>
+<translation id="6372315130616785175">Bạn đang đăng nhập bằng tài khoản công việc. Bạn có muốn tạo Hồ sơ Chrome mới dành cho Công việc để lưu giữ dữ liệu riêng biệt không?</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome dành cho nhà phát triển</translation>
 <translation id="6566149418543181476">Đang cập nhật Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6676384891291319759">Truy cập Internet</translation>
@@ -208,6 +210,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Để kiểm tra xem thiết bị của bạn đã cập nhật hay chưa, hãy chuyển đến phần <ph name="LINK_BEGIN" />Cài đặt Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Máy tính này sẽ không còn nhận được bản cập nhật của Google Chrome do hệ điều hành Mac OS X 10.9 không được hỗ trợ nữa.</translation>
+<translation id="7591404275842302616">Hãy dùng Không gian Chrome để duyệt web một cách quy củ trên thiết bị này</translation>
 <translation id="7592736734348559088">Google Chrome không thể đồng bộ hóa dữ liệu của bạn vì chi tiết đăng nhập tài khoản của bạn đã cũ.</translation>
 <translation id="7626032353295482388">Chào mừng bạn đến với Chrome</translation>
 <translation id="7629695634924605473">Chrome cho bạn biết mật khẩu của bạn có bị đánh cắp hay không</translation>

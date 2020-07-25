@@ -13,6 +13,7 @@
 // This file defines IfaddrsToNetworkInterfaceList() so it can be called in
 // unittests.
 
+#include "build/build_config.h"
 #include "net/base/net_export.h"
 #include "net/base/network_interfaces.h"
 
@@ -50,6 +51,12 @@ NET_EXPORT_PRIVATE bool IfaddrsToNetworkInterfaceList(
     const ifaddrs* interfaces,
     IPAttributesGetter* ip_attributes_getter,
     NetworkInterfaceList* networks);
+
+#if defined(OS_ANDROID)
+// A version of GetNetworkList() that uses getifaddrs(). Only callable on
+// Android N+ where getifaddrs() was available.
+bool GetNetworkListUsingGetifaddrs(NetworkInterfaceList* networks, int policy);
+#endif
 
 }  // namespace internal
 }  // namespace net

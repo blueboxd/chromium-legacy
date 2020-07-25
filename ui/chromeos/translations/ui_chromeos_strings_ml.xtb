@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">സൺഗ്ലാസുകൾ</translation>
 <translation id="115443833402798225">ഹംഗുൽ അൻമാറ്റീ</translation>
 <translation id="1155759005174418845">കാറ്റലൻ</translation>
+<translation id="1172970565351728681">ഏകദേശം <ph name="REMAINING_TIME" /> ശേഷിക്കുന്നു</translation>
 <translation id="1173894706177603556">പേരുമാറ്റുക</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> പകർത്തുന്നു...</translation>
 <translation id="1178581264944972037">അല്പംനിര്‍ത്തൂ</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">ഉടമസ്ഥാവകാശം <ph name="DESTINATION_DOMAIN" /> എന്നതിലേക്ക് കൈമാറ്റം ചെയ്യുന്നതാണ്.</translation>
 <translation id="3241720467332021590">ഐറിഷ്</translation>
 <translation id="3245321423178950146">അറിയപ്പെടാത്ത കലാകാരൻ</translation>
+<translation id="3248185426436836442">തീര്‍‌ച്ചപ്പെടുത്തിയിട്ടില്ല</translation>
 <translation id="3252266817569339921">ഫ്രഞ്ച്</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> ഫയലുകൾക്കായി ഡിഫോൾട്ട് ആപ്പ് തിരഞ്ഞെടുക്കുക:</translation>
 <translation id="3264582393905923483">സന്ദർഭം</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">'<ph name="FOLDER_NAME" />'-ലേക്ക് ഫയലുകൾ നീക്കാൻ നിങ്ങൾക്ക് അനുമതിയില്ല.</translation>
 <translation id="3786301125658655746">നിങ്ങൾ ഓഫ്‌ലൈനിലാണ്</translation>
 <translation id="3789841737615482174">ഇന്‍സ്റ്റാൾ ചെയ്യുക</translation>
+<translation id="3793469551756281394">ഏകദേശം <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> ശേഷിക്കുന്നു</translation>
 <translation id="3798449238516105146">പതിപ്പ്</translation>
 <translation id="3801082500826908679">ഫാറോസി</translation>
 <translation id="3809272675881623365">മുയൽ</translation>

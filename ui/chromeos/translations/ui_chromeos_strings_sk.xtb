@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Slnečné okuliare</translation>
 <translation id="115443833402798225">Hangul Ahnmatae</translation>
 <translation id="1155759005174418845">Katalánčina</translation>
+<translation id="1172970565351728681">Zostáva približne <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">Premenovať</translation>
 <translation id="117624967391683467">Prebieha kopírovanie súboru <ph name="FILE_NAME" />...</translation>
 <translation id="1178581264944972037">Pozastaviť</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Vlastníctvo bude prenesené do domény <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">Írčina</translation>
 <translation id="3245321423178950146">Neznámy interpret</translation>
+<translation id="3248185426436836442">Nespracované</translation>
 <translation id="3252266817569339921">Francúzština</translation>
 <translation id="3254434849914415189">Zvoľte pre súbory <ph name="FILE_TYPE" /> predvolenú aplikáciu:</translation>
 <translation id="3264582393905923483">Kontext</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Na presunutie súborov do priečinka <ph name="FOLDER_NAME" /> nemáte povolenie.</translation>
 <translation id="3786301125658655746">Ste offline</translation>
 <translation id="3789841737615482174">Inštalovať</translation>
+<translation id="3793469551756281394">Zostáva približne <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">Verzia</translation>
 <translation id="3801082500826908679">Faerčina</translation>
 <translation id="3809272675881623365">Králik</translation>

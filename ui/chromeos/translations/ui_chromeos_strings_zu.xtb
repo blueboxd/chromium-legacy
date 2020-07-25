@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Izibuko zelanga</translation>
 <translation id="115443833402798225">I-Hangul Ahnmatae</translation>
 <translation id="1155759005174418845">Isi-Catalan</translation>
+<translation id="1172970565351728681">Cishe okungu-<ph name="REMAINING_TIME" /> okusele</translation>
 <translation id="1173894706177603556">Qamba kabusha</translation>
 <translation id="117624967391683467">Ikopisha i-<ph name="FILE_NAME" />...</translation>
 <translation id="1178581264944972037">Misa isikhashana</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Ubunikazi buzodluliselwa ku-<ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">Isi-Irish</translation>
 <translation id="3245321423178950146">Umculi ongaziwa</translation>
+<translation id="3248185426436836442">Ilindile</translation>
 <translation id="3252266817569339921">Isi-French</translation>
 <translation id="3254434849914415189">Khetha uhlelo lokusebenza oluzenzakalelayo lwamafayela we-<ph name="FILE_TYPE" />:</translation>
 <translation id="3264582393905923483">Okuqukethwe</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Awunayo imvume yokuhambisa amafayela ku-'<ph name="FOLDER_NAME" />'.</translation>
 <translation id="3786301125658655746">Awuxhunyiwe ku-inthanethi</translation>
 <translation id="3789841737615482174">Faka</translation>
+<translation id="3793469551756281394">Cishe kusele okungu-<ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">Inguqulo</translation>
 <translation id="3801082500826908679">I-Faroese</translation>
 <translation id="3809272675881623365">Unogwaja</translation>

@@ -224,6 +224,7 @@ Chromium nuk është në gjendje të rikuperojë cilësimet e tua.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Hap përsëri Chromium brenda një dite}other{Hap përsëri Chromium brenda # ditësh}}</translation>
 <translation id="8453117565092476964">Arkivi i instaluesit është i dëmtuar ose i pavlefshëm. Shkarkoje Chromium përsëri.</translation>
 <translation id="8493179195440786826">Chromium nuk është i përditësuar</translation>
+<translation id="8545858702702650646">Zgjidh "Hapësirën tënde të Chromium"</translation>
 <translation id="8558383651099478961">Prindi yt ka çaktivizuar "Lejet për sajtet, aplikacionet dhe shtesat" për Chromium. Nuk lejohet shtimi për këtë <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8568283329061645092">Chromium mund t'i kontrollojë fjalëkalimet e tua kur të identifikohesh me "Llogarinë tënde të Google"</translation>
 <translation id="8586442755830160949">Të drejtat e autorit <ph name="YEAR" /> Autorët e Chromium. Të gjitha të drejtat të rezervuara.</translation>
@@ -247,6 +248,7 @@ Chromium nuk është në gjendje të rikuperojë cilësimet e tua.</translation>
 <translation id="911206726377975832">Të fshihen po ashtu të dhënat e shfletimit?</translation>
 <translation id="9158494823179993217">Administratori i sistemit ka konfiguruar Chromium që të hapë një shfletues alternativ për të pasur qasje te <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Përdor "Hapësirat e Chromium" për ta mbajtur shfletimin tënd të organizuar në këtë pajisje</translation>
 <translation id="93478295209880648">Chromium mund të mos funksionojë si duhet sepse nuk mbështetet më në Windows XP ose Windows Vista</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> kërkon që të lexosh dhe të pranosh "Kushtet e shërbimit" më poshtë para se të përdorësh këtë pajisje. Këto kushte nuk i zgjerojnë, modifikojnë ose kufizojnë kushtet e sistemit operativ të Chromium.</translation>
 <translation id="985602178874221306">Autorët e Chromium</translation>

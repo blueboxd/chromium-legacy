@@ -226,11 +226,6 @@
            incognito:NO];
 }
 
-- (void)cancelReadingListContextMenuWithParams:
-    (ReadingListContextMenuParams*)params {
-  self.contextMenuCoordinator = nil;
-}
-
 #pragma mark - ReadingListTableViewControllerDelegate
 
 - (void)dismissReadingListListViewController:(UIViewController*)viewController {

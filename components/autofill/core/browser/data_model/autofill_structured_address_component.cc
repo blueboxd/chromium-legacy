@@ -433,7 +433,7 @@ base::string16 AddressComponent::ReplacePlaceholderTypesWithValues(
   result_pieces.reserve(10);
 
   // Store the inserted values to allow the used StringPieces to stay valid.
-  std::vector<const base::string16> inserted_values;
+  std::vector<base::string16> inserted_values;
   inserted_values.reserve(4);
 
   // Use a StringPiece rather than the string since this allows for getting

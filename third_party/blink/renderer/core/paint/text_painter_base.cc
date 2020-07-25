@@ -119,12 +119,12 @@ float DoubleOffsetFromThickness(float thickness_pixels) {
 TextPainterBase::TextPainterBase(GraphicsContext& context,
                                  const Font& font,
                                  const PhysicalOffset& text_origin,
-                                 const PhysicalRect& text_bounds,
+                                 const PhysicalRect& text_frame_rect,
                                  bool horizontal)
     : graphics_context_(context),
       font_(font),
       text_origin_(text_origin),
-      text_bounds_(text_bounds),
+      text_frame_rect_(text_frame_rect),
       horizontal_(horizontal),
       has_combined_text_(false),
       emphasis_mark_offset_(0),
@@ -291,7 +291,7 @@ void TextPainterBase::PaintDecorationsExceptLineThrough(
   UpdateGraphicsContext(context, text_style, horizontal_, state_saver);
 
   if (has_combined_text_)
-    context.ConcatCTM(Rotation(text_bounds_, kClockwise));
+    context.ConcatCTM(Rotation(text_frame_rect_, kClockwise));
 
   // text-underline-position may flip underline and overline.
   ResolvedUnderlinePosition underline_position =
@@ -355,7 +355,7 @@ void TextPainterBase::PaintDecorationsExceptLineThrough(
 
   // Restore rotation as needed.
   if (has_combined_text_)
-    context.ConcatCTM(Rotation(text_bounds_, kCounterclockwise));
+    context.ConcatCTM(Rotation(text_frame_rect_, kCounterclockwise));
 }
 
 void TextPainterBase::PaintDecorationsOnlyLineThrough(
@@ -368,7 +368,7 @@ void TextPainterBase::PaintDecorationsOnlyLineThrough(
   UpdateGraphicsContext(context, text_style, horizontal_, state_saver);
 
   if (has_combined_text_)
-    context.ConcatCTM(Rotation(text_bounds_, kClockwise));
+    context.ConcatCTM(Rotation(text_frame_rect_, kClockwise));
 
   DCHECK_EQ(decorations.size(),
             decoration_info.applied_decorations_thickness.size());
@@ -404,7 +404,7 @@ void TextPainterBase::PaintDecorationsOnlyLineThrough(
 
   // Restore rotation as needed.
   if (has_combined_text_)
-    context.ConcatCTM(Rotation(text_bounds_, kCounterclockwise));
+    context.ConcatCTM(Rotation(text_frame_rect_, kCounterclockwise));
 }
 
 void TextPainterBase::ComputeDecorationInfo(

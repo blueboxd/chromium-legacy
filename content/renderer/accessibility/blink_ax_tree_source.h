@@ -91,6 +91,10 @@ class CONTENT_EXPORT BlinkAXTreeSource
   bool ShouldLoadInlineTextBoxes(const blink::WebAXObject& obj) const;
   void SetLoadInlineTextBoxesForId(int32_t id);
 
+  void PopulateAXRelativeBounds(blink::WebAXObject obj,
+                                ui::AXRelativeBounds* bounds,
+                                bool* clips_children = nullptr) const;
+
   // AXTreeSource implementation.
   bool GetTreeData(ui::AXTreeData* tree_data) const override;
   blink::WebAXObject GetRoot() const override;

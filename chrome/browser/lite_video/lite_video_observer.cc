@@ -79,8 +79,12 @@ void LiteVideoObserver::DidStartNavigation(
 void LiteVideoObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK(navigation_handle);
+
+  if (navigation_handle->IsInMainFrame()) {
+    ineligible_main_frame_ = !navigation_handle->HasCommitted() ||
+                             !navigation_handle->GetURL().SchemeIsHTTPOrHTTPS();
+  }
   if (!navigation_handle->HasCommitted() ||
-      navigation_handle->IsSameDocument() ||
       !navigation_handle->GetURL().SchemeIsHTTPOrHTTPS()) {
     return;
   }
@@ -148,7 +152,12 @@ lite_video::LiteVideoDecision LiteVideoObserver::MakeLiteVideoDecision(
 void LiteVideoObserver::RecordUKMMetrics(
     lite_video::LiteVideoDecision decision,
     lite_video::LiteVideoBlocklistReason blocklist_reason) {
-  DCHECK(current_mainframe_navigation_id_);
+  // |current_mainframe_navigation_id_| may be null (e.g., if the mainframe was
+  // non-http/https).
+  DCHECK(current_mainframe_navigation_id_ || ineligible_main_frame_);
+  if (!current_mainframe_navigation_id_) {
+    return;
+  }
   ukm::SourceId ukm_source_id = ukm::ConvertToSourceId(
       *current_mainframe_navigation_id_, ukm::SourceIdType::NAVIGATION_ID);
   ukm::builders::LiteVideo builder(ukm_source_id);

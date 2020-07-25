@@ -564,6 +564,9 @@
 <translation id="3364869320075768271"><ph name="URL" /> нь таны виртуал бодит байдлын төхөөрөмж болон өгөгдлийг ашиглах хүсэлтэй байна</translation>
 <translation id="3366477098757335611">Картыг харах</translation>
 <translation id="3369192424181595722">Цагийн тохиргооны алдаа</translation>
+<translation id="3371076217486966826"><ph name="URL" /> нь дараахад зөвшөөрөл хүсэж байна:
+      • Таны эргэн тойрны 3D газрын зургийг үүсгэж, камерын байршлыг хянах
+      • Таны камерыг ашиглах</translation>
 <translation id="337363190475750230">Хадгалагдаагүй</translation>
 <translation id="3377144306166885718">Сервер TLS-н хуучирсан хувилбарыг ашигласан.</translation>
 <translation id="3377188786107721145">Тохиргооны задаргааны алдаа</translation>
@@ -1562,6 +1565,7 @@
 <translation id="7518003948725431193">Энэ вэб хаягаар хайхад тохирох хуудас олдсонгүй: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Дугтуй)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">"<ph name="SECTION" />" хэсгийг нуусан</translation>
 <translation id="7526934274050461096">Таны энэ сайтад хийсэн холболт хувийн биш байна</translation>
 <translation id="7535087603100972091">Утга</translation>
 <translation id="7537536606612762813">Заавал</translation>
@@ -1762,6 +1766,7 @@
 <translation id="8293206222192510085">Хадгалагдсан хуудас нэмэх</translation>
 <translation id="8294431847097064396">Эх сурвалж</translation>
 <translation id="8298115750975731693">Таны ашиглаж буй Wi-Fi сүлжээ (<ph name="WIFI_NAME" />) таныг <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> нэвтрэхийг шаардах магадлалтай.</translation>
+<translation id="8303854710873047864">"<ph name="SECTION" />" хэсгийг харуулсан</translation>
 <translation id="830498451218851433">Хагас нугалаа</translation>
 <translation id="8307358339886459768">Жижиг-Зураг</translation>
 <translation id="8307888238279532626">Суулгасан аппууд болон тэдгээрийг ашигладаг давтамж</translation>
@@ -1881,6 +1886,7 @@
 <translation id="8931333241327730545">Та картаа өөрийн Google Бүртгэлд хадгалах уу?</translation>
 <translation id="8932102934695377596">Таны цаг хоцорч байна</translation>
 <translation id="893332455753468063">Нэр нэмэх</translation>
+<translation id="8942355029279167844">Таны администратор бүтээгдэхүүний туршлагыг сайжруулахын тулд <ph name="APP_NAME" />-д оношилгооны өгөгдлийг цуглуулахыг зөвшөөрсөн байна. Нэмэлт мэдээлэл авахын тулд <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />-г харна уу.</translation>
 <translation id="8943282376843390568">Нимбэгний ногоон</translation>
 <translation id="8957210676456822347">Captive Portal Authorization</translation>
 <translation id="8962950042226115166">Сэжигтэй сайт</translation>

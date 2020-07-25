@@ -98,7 +98,15 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
       NativeFileSystemFileWriterImpl::CloseCallback callback,
       NativeFileSystemPermissionContext::AfterWriteCheckResult result);
   void DidPassAfterWriteCheck(CloseCallback callback);
-  void DidSwapFileBeforeClose(CloseCallback callback, base::File::Error result);
+  void DidSwapFileSkipQuarantine(CloseCallback callback,
+                                 base::File::Error result);
+  static void DidSwapFileDoQuarantine(
+      base::WeakPtr<NativeFileSystemFileWriterImpl> file_writer,
+      const storage::FileSystemURL& target_url,
+      const GURL& referrer_url,
+      mojo::Remote<quarantine::mojom::Quarantine> quarantine_remote,
+      CloseCallback callback,
+      base::File::Error result);
   void DidAnnotateFile(
       CloseCallback callback,
       mojo::Remote<quarantine::mojom::Quarantine> quarantine_remote,

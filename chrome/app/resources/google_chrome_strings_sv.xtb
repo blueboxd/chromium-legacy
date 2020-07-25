@@ -81,6 +81,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="3089968997497233615">Det finns en ny, ännu säkrare version av Google Chrome.</translation>
 <translation id="3127818369811890733">Det gick inte att synkronisera data i Chrome OS.</translation>
 <translation id="3149510190863420837">Chrome-appar</translation>
+<translation id="3351117925998652957">Välj arbetsyta i Chrome</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome startas om nu}=1{Om en sekund startas Chrome om}other{Om # sekunder startas Chrome om}}</translation>
 <translation id="3395323229510056640">Få hjälp med Chrome OS</translation>
@@ -214,6 +215,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Om du vill se om enheten är uppdaterad öppnar du <ph name="LINK_BEGIN" />inställningarna för Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Den här datorn får inte längre uppdateringar för Google Chrome eftersom Mac OS X 10.9 inte längre stöds.</translation>
+<translation id="7591404275842302616">Håll ordning när du surfar på enheten med arbetsytor i Chrome</translation>
 <translation id="7592736734348559088">Google Chrome kunde inte synkronisera data eftersom inloggningsuppgifterna för kontot är inaktuella.</translation>
 <translation id="7626032353295482388">Välkommen till Chrome</translation>
 <translation id="7629695634924605473">Om dina lösenord någonsin skulle läcka ut får du veta det i Chrome</translation>

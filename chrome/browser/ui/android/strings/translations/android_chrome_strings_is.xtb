@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Uppfæra Chrome</translation>
 <translation id="1569387923882100876">Tengt tæki</translation>
 <translation id="1571304935088121812">Afrita notandanafn</translation>
+<translation id="1592864538817356322">Hefðbundin vörn:</translation>
 <translation id="1612196535745283361">Chrome þarf að hafa aðgang að staðsetningu til að geta leitað að tækjum. Aðgangur að staðsetningu er <ph name="BEGIN_LINK" />óvirkur fyrir þetta tæki<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Myndavél</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Fjarlægja 1 valið atriði}one{Fjarlægja # valið atriði}other{Fjarlægja # valin atriði}}</translation>
@@ -578,6 +579,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5659593005791499971">Netfang</translation>
 <translation id="5665379678064389456">Búa til viðburð í <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Hunsa beiðni vefsvæðis um að koma í veg fyrir aðdrátt</translation>
+<translation id="568275469169136466">Til að skrá þig inn tímabundið</translation>
 <translation id="5683547024293500885">Chrome getur ekki leitað að uppfærslum.</translation>
 <translation id="5686790454216892815">Skráarheiti of langt</translation>
 <translation id="5694049548840660018">Þú kemst alltaf aftur heim</translation>
@@ -589,6 +591,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5723735397759933332">Léttútgáfa sparar nú meiri gögn með því að fínstilla myndir á HTTPS-síðum.</translation>
 <translation id="5726692708398506830">Stækka allt á síðunni</translation>
 <translation id="5732819098735351888">Niðurhal hefst um Wi-Fi.</translation>
+<translation id="5733983706093266635">Ekki er hægt að búa til QR-kóða. Vefslóð er lengri en <ph name="CHARACTER_LIMIT" /> stafir.</translation>
 <translation id="5748802427693696783">Skipt yfir í staðlaða flipa</translation>
 <translation id="5749068826913805084">Chrome þarf aðgang að geymslu til að geta sótt skrár.</translation>
 <translation id="5749237766298580851">Slökkt <ph name="SEPARATOR" /> Ekki mælt með</translation>
@@ -641,6 +644,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="6111020039983847643">gagnanotkun</translation>
 <translation id="6112702117600201073">Endurnýjar síðu</translation>
 <translation id="6127379762771434464">Atriði fjarlægt</translation>
+<translation id="6140709049082532940">Aukin vörn:</translation>
 <translation id="6140912465461743537">Land/svæði</translation>
 <translation id="614940544461990577">Prófaðu að:</translation>
 <translation id="6154478581116148741">Kveiktu á skjálás í stillingunum til að flytja aðgangsorðin þín út úr þessu tæki</translation>
@@ -1017,6 +1021,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="9100610230175265781">Aðgangsorðs krafist</translation>
 <translation id="9102803872260866941">Forskoðunarflipi er opinn</translation>
 <translation id="9104217018994036254">Tækjalisti fyrir deilingu flipa.</translation>
+<translation id="9104402662006063371">Fara í huliðsstillingu</translation>
 <translation id="9108312223223904744">Aðstoð með síma sem öryggislykil</translation>
 <translation id="9108808586816295166">Ekki er víst að hægt sé að nota örugg DNS alltaf</translation>
 <translation id="9133397713400217035">Skoða ónettengt</translation>

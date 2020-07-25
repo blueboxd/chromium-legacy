@@ -84,7 +84,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   void SetWebSocketHandshakeStreamCreateHelper(
       WebSocketHandshakeStreamBase::CreateHelper* create_helper) override;
   void SetBeforeNetworkStartCallback(
-      const BeforeNetworkStartCallback& callback) override;
+      BeforeNetworkStartCallback callback) override;
   void SetConnectedCallback(const ConnectedCallback& callback) override;
   void SetRequestHeadersCallback(RequestHeadersCallback callback) override;
   void SetResponseHeadersCallback(ResponseHeadersCallback callback) override;

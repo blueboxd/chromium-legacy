@@ -43,6 +43,10 @@ class CC_EXPORT AverageLagTrackingManager {
   void DidPresentCompositorFrame(uint32_t frame_token,
                                  const viz::FrameTimingDetails& frame_details);
 
+  // Clears the list of events |frame_token_to_info_| if the current frames wont
+  // receive a presentation feedback (e.g. LayerTreeFrameSink loses context)
+  void Clear();
+
  private:
   // TODO(https://crbug.com/1101005): Remove GpuSwap implementation after M86.
   // Tracker for the AverageLag metrics that uses the gpu swap begin timing as

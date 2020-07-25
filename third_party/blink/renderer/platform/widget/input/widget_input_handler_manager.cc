@@ -20,6 +20,7 @@
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/scheduler/web_widget_scheduler.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
+#include "third_party/blink/renderer/platform/widget/input/elastic_overscroll_controller.h"
 #include "third_party/blink/renderer/platform/widget/input/main_thread_event_queue.h"
 #include "third_party/blink/renderer/platform/widget/input/widget_input_handler_impl.h"
 #include "third_party/blink/renderer/platform/widget/widget_base.h"

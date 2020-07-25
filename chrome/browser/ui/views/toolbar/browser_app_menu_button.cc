@@ -225,13 +225,14 @@ void BrowserAppMenuButton::UpdateIcon() {
       SkColor icon_color =
           toolbar_view_->app_menu_icon_controller()->GetIconColor(
               GetForegroundColor(state));
-      SetImage(state, gfx::CreateVectorIcon(icon, icon_color));
+      SetImageModel(state, ui::ImageModel::FromVectorIcon(icon, icon_color));
     }
     return;
   }
   for (auto state : kButtonStates) {
-    SetImage(state, toolbar_view_->app_menu_icon_controller()->GetIconImage(
-                        touch_ui, GetForegroundColor(state)));
+    SetImageModel(state,
+                  toolbar_view_->app_menu_icon_controller()->GetIconImage(
+                      touch_ui, GetForegroundColor(state)));
   }
 }
 

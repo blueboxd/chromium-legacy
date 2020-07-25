@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Atualizar o Google Chrome</translation>
 <translation id="1569387923882100876">Dispositivo conectado</translation>
 <translation id="1571304935088121812">Copiar nome de usuário</translation>
+<translation id="1592864538817356322">Proteção padrão:</translation>
 <translation id="1612196535745283361">O Chrome precisa ter acesso ao local para verificar dispositivos. O acesso ao local está <ph name="BEGIN_LINK" />desativado neste dispositivo<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Câmera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Remover 1 item selecionado}one{Remover # item selecionado}other{Remover # itens selecionados}}</translation>
@@ -579,6 +580,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5665379678064389456">Criar evento no <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Aplicar zoom mesmo que o site tente impedir.</translation>
+<translation id="568275469169136466">Para fazer login temporariamente</translation>
 <translation id="5683547024293500885">O Chrome não pode verificar se há atualizações</translation>
 <translation id="5686790454216892815">Nome do arquivo muito longo</translation>
 <translation id="5694049548840660018">Volte para o início de forma simples</translation>
@@ -590,6 +592,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5723735397759933332">Agora, o Modo Lite economiza mais dados para você com a otimização de imagens em páginas HTTPS.</translation>
 <translation id="5726692708398506830">Aumentar tudo na página</translation>
 <translation id="5732819098735351888">O download será iniciado quando houver uma conexão Wi-Fi.</translation>
+<translation id="5733983706093266635">Não é possível criar o código QR. O URL tem mais de <ph name="CHARACTER_LIMIT" /> caracteres.</translation>
 <translation id="5748802427693696783">Alternada para guias padrão</translation>
 <translation id="5749068826913805084">O Chrome precisa de acesso para fazer o download e armazenar arquivos.</translation>
 <translation id="5749237766298580851">Desativado <ph name="SEPARATOR" /> Não recomendado</translation>
@@ -642,6 +645,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="6111020039983847643">dados usados</translation>
 <translation id="6112702117600201073">Atualizando página</translation>
 <translation id="6127379762771434464">Item removido</translation>
+<translation id="6140709049082532940">Proteção reforçada:</translation>
 <translation id="6140912465461743537">País/região</translation>
 <translation id="614940544461990577">Tente:</translation>
 <translation id="6154478581116148741">Ative o bloqueio da tela em Configurações para exportar suas senhas deste dispositivo</translation>
@@ -1018,6 +1022,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="9100610230175265781">Senha necessária</translation>
 <translation id="9102803872260866941">A guia "Visualizar" está aberta</translation>
 <translation id="9104217018994036254">Lista de dispositivos com os quais é possível compartilhar uma guia.</translation>
+<translation id="9104402662006063371">Iniciar modo de navegação anônima</translation>
 <translation id="9108312223223904744">Smartphone como um suporte de chave de segurança</translation>
 <translation id="9108808586816295166">DNS seguro pode não estar disponível o tempo todo</translation>
 <translation id="9133397713400217035">Navegar off-line</translation>

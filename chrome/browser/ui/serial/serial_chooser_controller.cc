@@ -138,6 +138,12 @@ void SerialChooserController::OnPortManagerConnectionError() {
 
 void SerialChooserController::OnGetDevices(
     std::vector<device::mojom::SerialPortInfoPtr> ports) {
+  // Sort ports by file paths.
+  std::sort(ports.begin(), ports.end(),
+            [](const auto& port1, const auto& port2) {
+              return port1->path.BaseName() < port2->path.BaseName();
+            });
+
   for (auto& port : ports) {
     if (FilterMatchesAny(*port))
       ports_.push_back(std::move(port));

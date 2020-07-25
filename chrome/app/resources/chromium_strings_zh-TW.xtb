@@ -101,6 +101,7 @@
 <translation id="4943838377383847465">Chromium 正在背景模式中執行。</translation>
 <translation id="4987820182225656817">以訪客身分使用 Chromium 不會留下任何記錄。</translation>
 <translation id="4994636714258228724">新增為 Chromium 使用者</translation>
+<translation id="5037694917996535813">你已使用公司帳戶登入。要建立新的工作用 Chromium 設定檔以分開保留資料嗎？</translation>
 <translation id="5224391634244552924">未儲存任何密碼。你必須先儲存密碼，才能使用 Chromium 的密碼檢查功能。</translation>
 <translation id="5277894862589591112">如要套用變更，請重新啟動 Chromium</translation>
 <translation id="5358375970380395591">你已登入管理化環境下的帳戶，並將管理控制權授予你的 Chromium 設定檔。你的 Chromium 資料 (例如應用程式、書籤、記錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。你可以透過 Google 帳戶資訊主頁刪除這些資料，但你無法將這些資料與其他帳戶建立關聯。<ph name="LEARN_MORE" /></translation>
@@ -221,6 +222,7 @@ Chromium 無法復原你的設定。</translation>
 <translation id="8417404458978023919">{0,plural, =1{請在 1 天內重新啟動 Chromium}other{請在 # 天內重新啟動 Chromium}}</translation>
 <translation id="8453117565092476964">安裝程式封存檔案已毀損或無效，請重新下載 Chromium。</translation>
 <translation id="8493179195440786826">Chromium 版本過舊</translation>
+<translation id="8545858702702650646">選擇你的 Chromium 空間</translation>
 <translation id="8558383651099478961">你的家長已停用 Chromium 的「網站、應用程式和擴充功能的權限」設定，因此你無法新增這個<ph name="EXTENSION_TYPE_PARAMETER" />。</translation>
 <translation id="8568283329061645092">如果你使用 Google 帳戶登入，Chromium 可以檢查你的密碼</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. 保留所有權利。</translation>
@@ -244,6 +246,7 @@ Chromium 無法復原你的設定。</translation>
 <translation id="911206726377975832">你要一併刪除瀏覽資料嗎？</translation>
 <translation id="9158494823179993217">系統管理員已設定 Chromium 開啟替代瀏覽器來存取 <ph name="TARGET_URL_HOSTNAME" />。</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">使用 Chromium 空間妥善整理這部裝置上的瀏覽記錄</translation>
 <translation id="93478295209880648">Chromium 已不適用於 Windows XP 或 Windows Vista，因此可能無法正常運作</translation>
 <translation id="95514773681268843">在使用這個裝置前，<ph name="DOMAIN" /> 要求你詳讀並接受下列《服務條款》。這些條款不會擴展、修改或限制《Chromium 作業系統條款》。</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

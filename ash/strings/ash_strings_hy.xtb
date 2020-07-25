@@ -276,7 +276,7 @@
 <translation id="4028481283645788203">Անվտանգության նկատառումներից ելնելով անհրաժեշտ է մուտքագրել գաղտնաբառը</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Դուք հասանելի եք դարձրել ձեր էկրանը</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Անջատել 1 հավելվածի համար}one{Անջատել # հավելվածի համար}other{Անջատել # հավելվածների համար}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Անջատել 1 ծրագրի համար}one{Անջատել # ծրագրի համար}other{Անջատել # ծրագրերի համար}}</translation>
 <translation id="4072264167173457037">Միջին ուժգնության ազդանշան</translation>
 <translation id="4112140312785995938">Հետ գնալ</translation>
 <translation id="4129129681837227511">Ծանուցումները կողպէկրանին տեսնելու համար ապակողպեք սարքը և փոխեք կարգավորումները:</translation>
@@ -421,7 +421,7 @@
 <translation id="5958529069007801266">Վերահսկվող պրոֆիլ</translation>
 <translation id="5977415296283489383">Ականջակալ</translation>
 <translation id="5978382165065462689">Էկրանի կառավարման համօգտագործում Հեռակա օգնության միջոցով:</translation>
-<translation id="5980301590375426705">Դուրս գալ հյուրի ռեժիմից</translation>
+<translation id="5980301590375426705">Ավարտել հյուրի սեսիան</translation>
 <translation id="598882571027504733">Թարմացումը տեղադրելու համար վերագործարկեք Chromebook-ը՝ առանց ստեղնաշարն անջատելու։</translation>
 <translation id="5992218262414051481">Բարձր կոնտրաստի ռեժիմը միացավ: Այն անջատելու համար նորից սեղմեք Ctrl+Search+H:</translation>
 <translation id="6018164090099858612">Ելք հայելային ռեժիմից</translation>
@@ -511,7 +511,7 @@
 <translation id="7015766095477679451">Վերադարձեք <ph name="COME_BACK_TIME" />։</translation>
 <translation id="7025533177575372252">Կապեք ձեր <ph name="DEVICE_NAME" /> սարքը ձեր հեռախոսի հետ</translation>
 <translation id="7026338066939101231">Նվազեցնել</translation>
-<translation id="7029814467594812963">Ելնել աշխատաշրջանից</translation>
+<translation id="7029814467594812963">Ավարտել սեսիան</translation>
 <translation id="703425375924687388"><ph name="QUERY_NAME" />, Google Օգնական</translation>
 <translation id="7042322267639375032">Ծալել կարգավիճակի տարածքը</translation>
 <translation id="7066646422045619941">Ադմինիստրատորն արգելափակել է այս ցանցը:</translation>
@@ -598,7 +598,7 @@
 <translation id="8054466585765276473">Մարտկոցի ժամանակի հաշվարկում:</translation>
 <translation id="8061464966246066292">Բարձր կոնտրաստ</translation>
 <translation id="8098591350844501178">Դադարեցնել էկրանի հեռարձակումը <ph name="RECEIVER_NAME" />-ին</translation>
-<translation id="8113423164597455979">Միացված են բոլոր հավելվածների համար</translation>
+<translation id="8113423164597455979">Բոլորը միացված են</translation>
 <translation id="8131740175452115882">Հաստատել</translation>
 <translation id="8132793192354020517">Միացված է <ph name="NAME" />-ին</translation>
 <translation id="813913629614996137">Նախապատրաստվում է...</translation>

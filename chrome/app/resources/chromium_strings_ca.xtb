@@ -95,7 +95,7 @@
 <translation id="4746050847053251315">Vols sortir de Chromium igualment?</translation>
 <translation id="4748217263233248895">S'acaba d'aplicar una actualització de seguretat especial per a Chromium. Reinicia el navegador i restaurarem les pestanyes.</translation>
 <translation id="4750035648288509542">Gairebé has acabat amb l'actualització. Reinicia Chromium per completar-la. Les finestres d'incògnit no es tornaran a obrir.</translation>
-<translation id="4788777615168560705">Chromium no pot comprovar les teves contrasenyes. Torna-ho a provar al cap de 24 hores o <ph name="BEGIN_LINK" />comprova les contrasenyes al teu Compte de Google<ph name="END_LINK" />.</translation>
+<translation id="4788777615168560705">Chromium no pot comprovar les teves contrasenyes. Torna-ho a provar al cap de 24 hores o <ph name="BEGIN_LINK" />comprova les contrasenyes desades al teu Compte de Google<ph name="END_LINK" />.</translation>
 <translation id="479167709087336770">Fa servir el mateix corrector ortogràfic que s'utilitza a la Cerca de Google. El text que escrius al navegador s'envia a Google. Pots canviar aquest comportament sempre que vulguis a la configuració.</translation>
 <translation id="4888717733111232871">Regla d'entrada de Chromium per permetre el trànsit de mDNS.</translation>
 <translation id="4943838377383847465">Chromium està en mode de segon pla.</translation>
@@ -221,6 +221,7 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Reinicia Chromium en 1 dia}other{Reinicia Chromium en # dies}}</translation>
 <translation id="8453117565092476964">L'arxiu d'instal·lació està malmès o no és vàlid. Torneu a baixar Chromium.</translation>
 <translation id="8493179195440786826">Chromium no està actualitzat</translation>
+<translation id="8545858702702650646">Tria el teu Chromium Space</translation>
 <translation id="8558383651099478961">Els teus pares han desactivat Permisos per a llocs web, aplicacions i extensions en relació amb Chromium. No es permet afegir aquesta <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8568283329061645092">Chromium pot comprovar les teves contrasenyes quan inicies la sessió amb el Compte de Google</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Els autors de Chromium. Tots els drets reservats.</translation>
@@ -244,6 +245,7 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="911206726377975832">També voleu suprimir les dades de navegació?</translation>
 <translation id="9158494823179993217">L'administrador del sistema ha configurat Chromium perquè obri un navegador alternatiu per accedir a <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Fes servir Chromium Spaces per mantenir la teva navegació organitzada en aquest dispositiu</translation>
 <translation id="93478295209880648">Pot ser que Chromium no funcioni correctament perquè ja no és compatible amb Windows XP ni Windows Vista</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> exigeix que llegiu i accepteu els Termes i condicions següents abans no utilitzeu el dispositiu. Aquestes condicions no amplien, modifiquen ni restringeixen les condicions de Chromium OS.</translation>
 <translation id="985602178874221306">Els autors de Chromium</translation>

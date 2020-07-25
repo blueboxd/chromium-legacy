@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Aggiorna Chrome</translation>
 <translation id="1569387923882100876">Dispositivo collegato</translation>
 <translation id="1571304935088121812">Copia nome utente</translation>
+<translation id="1592864538817356322">Protezione standard:</translation>
 <translation id="1612196535745283361">Chrome ha bisogno dell'accesso alla posizione per cercare dispositivi. L'accesso alla posizione è <ph name="BEGIN_LINK" />disattivato su questo dispositivo<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Videocamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Rimuovi 1 elemento selezionato}other{Rimuovi # elementi selezionati}}</translation>
@@ -578,6 +579,8 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5659593005791499971">Email</translation>
 <translation id="5665379678064389456">Crea evento in <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignora la richiesta di un sito per evitare l'aumento dello zoom</translation>
+<translation id="568275469169136466">Per accedere temporaneamente</translation>
+<translation id="5683547024293500885">Chrome non può controllare la disponibilità di aggiornamenti</translation>
 <translation id="5686790454216892815">Nome file troppo lungo</translation>
 <translation id="5694049548840660018">Torna alla home page facilmente</translation>
 <translation id="569536719314091526">Traduci questa pagina in una lingua qualsiasi usando il pulsante Altre opzioni</translation>
@@ -588,8 +591,10 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5723735397759933332">La modalità Lite ora ti permette di ridurre il consumo di dati ottimizzando le immagini sulle pagine HTTPS.</translation>
 <translation id="5726692708398506830">Ingrandisci i contenuti della pagina</translation>
 <translation id="5732819098735351888">Il download inizierà tramite Wi-Fi.</translation>
+<translation id="5733983706093266635">Impossibile creare il codice QR. L'URL contiene più di <ph name="CHARACTER_LIMIT" /> caratteri.</translation>
 <translation id="5748802427693696783">Schede standard attivate</translation>
 <translation id="5749068826913805084">Chrome deve avere accesso allo spazio di archiviazione per poter scaricare file.</translation>
+<translation id="5749237766298580851">Disattivato <ph name="SEPARATOR" /> Sconsigliato</translation>
 <translation id="5754350196967618083">Impossibile aggiornare Discover</translation>
 <translation id="5763382633136178763">Schede in incognito</translation>
 <translation id="5763514718066511291">Tocca per copiare l'URL di quest'app</translation>
@@ -639,6 +644,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="6111020039983847643">di dati utilizzati</translation>
 <translation id="6112702117600201073">Aggiornamento della pagina in corso</translation>
 <translation id="6127379762771434464">Elemento rimosso</translation>
+<translation id="6140709049082532940">Protezione avanzata:</translation>
 <translation id="6140912465461743537">Paese/regione</translation>
 <translation id="614940544461990577">Prova a:</translation>
 <translation id="6154478581116148741">Attiva il blocco schermo in Impostazioni per esportare le tue password da questo dispositivo</translation>
@@ -997,6 +1003,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8970887620466824814">C'è stato un problema.</translation>
 <translation id="8972098258593396643">Scaricare nella cartella predefinita?</translation>
 <translation id="8988028529677883095">Utilizza il telefono come token di sicurezza</translation>
+<translation id="8990209962746788689">Impossibile creare codice QR</translation>
 <translation id="8993760627012879038">Apri nuova scheda in mod. di navigaz. in incognito</translation>
 <translation id="8998729206196772491">Stai per eseguire l'accesso con un account gestito da <ph name="MANAGED_DOMAIN" /> e consentire al relativo amministratore di avere il controllo dei tuoi dati di Chrome. I tuoi dati verranno associati definitivamente a questo account. Se esci da Chrome, i dati verranno eliminati da questo dispositivo, ma rimarranno memorizzati nel tuo Account Google.</translation>
 <translation id="9028914725102941583">Attiva la sincronizzazione per la condivisione tra dispositivi</translation>
@@ -1014,6 +1021,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="9100610230175265781">Passphrase obbligatoria</translation>
 <translation id="9102803872260866941">La scheda di anteprima è aperta</translation>
 <translation id="9104217018994036254">Elenco di dispositivi con cui condividere una scheda.</translation>
+<translation id="9104402662006063371">Passa alla Modalità di navigazione in incognito</translation>
 <translation id="9108312223223904744">Assistenza relativa a Telefono come token di sicurezza</translation>
 <translation id="9108808586816295166">Il sistema DNS sicuro potrebbe non essere sempre disponibile</translation>
 <translation id="9133397713400217035">Esplora offline</translation>

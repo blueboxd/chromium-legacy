@@ -81,6 +81,7 @@
 <translation id="3089968997497233615">ხელმისაწვდომია Google Chrome-ის უფრო ახალი და უსაფრთხო ვერსია.</translation>
 <translation id="3127818369811890733">Chrome OS-მა ვერ მოახერხა თქვენი მონაცემების სინქრონიზაცია.</translation>
 <translation id="3149510190863420837">Chrome-ის პროგრამები</translation>
+<translation id="3351117925998652957">აირჩიეთ თქვენი Chrome სივრცე</translation>
 <translation id="3360895254066713204">Chrome-ის დამხმარე</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome ახლა ხელახლა გაეშვება}=1{Chrome ხელახლა გაეშვება 1 წამში}other{Chrome ხელახლა გაეშვება # წამში}}</translation>
 <translation id="3395323229510056640">Chrome OS-თან დაკავშირებული დახმარების მიღება</translation>
@@ -212,6 +213,7 @@ Google Chrome ვერ შეძლებს თქვენი პარამ
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">თქვენი მოწყობილობის განახლების სტატუსის სანახავად გადადით <ph name="LINK_BEGIN" />Chrome OS-ის პარამეტრებზე<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">ეს კომპიუტერი აღარ მიიღებს Google Chrome-ის განახლებებს, რადგან Mac OS X 10.9 აღარ არის მხარდაჭერილი.</translation>
+<translation id="7591404275842302616">გამოიყენეთ Chrome სივრცეები, რათა მოახდინოთ თქვენი დათვალიერების ისტორიის ორგანიზება ამ მოწყობილობაზე</translation>
 <translation id="7592736734348559088">Google Chrome-მა ვერ დაასინქრონა თქვენი მონაცემები, რადგან თქვენი ანგარიშზე შესვლის დეტალები მოძველდა.</translation>
 <translation id="7626032353295482388">მოგესალმებათ Chrome!</translation>
 <translation id="7629695634924605473">Chrome გაცნობებთ, თუ თქვენს პაროლებს ვინმე გატეხავს</translation>

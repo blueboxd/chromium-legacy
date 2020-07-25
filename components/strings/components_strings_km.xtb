@@ -566,6 +566,9 @@
 <translation id="3364869320075768271"><ph name="URL" /> ចង់ប្រើ​ទិន្នន័យ និង​ឧបករណ៍ VR របស់អ្នក</translation>
 <translation id="3366477098757335611">មើលកាត</translation>
 <translation id="3369192424181595722">កំហុសម៉ោង</translation>
+<translation id="3371076217486966826"><ph name="URL" /> ចង់៖
+      • បង្កើតផែនទី 3D នៃមជ្ឈដ្ឋានជុំវិញ​របស់អ្នក និងតាមដាន​ទីតាំងកាមេរ៉ា
+      • ប្រើកាមេរ៉ារបស់អ្នក</translation>
 <translation id="337363190475750230">បានផ្តាច់ការផ្តល់ជូន</translation>
 <translation id="3377144306166885718">ម៉ាស៊ីនមេបានប្រើ​កំណែ TLS ដែលលែងប្រើ។</translation>
 <translation id="3377188786107721145">កំហុសឆ្គងការវិភាគគោលការណ៍</translation>
@@ -813,7 +816,7 @@
 <translation id="42981349822642051">ពង្រីក</translation>
 <translation id="4300675098767811073">ចោះ​ច្រើនរន្ធ​ខាងស្ដាំ</translation>
 <translation id="4302965934281694568">Chou3 (ស្រោម​សំបុត្រ)</translation>
-<translation id="4305666528087210886">មិនអាចូលប្រើ​ឯកសារ​របស់អ្នកបានទេ</translation>
+<translation id="4305666528087210886">មិនអាចចូលប្រើ​ឯកសារ​របស់អ្នកបានទេ</translation>
 <translation id="4305817255990598646">ប្ដូរ​</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">រារាំង (លំនាំដើម)</translation>
@@ -1566,6 +1569,7 @@
 <translation id="7518003948725431193">គ្មានគេហទំព័រត្រូវបានរកឃើញសម្រាប់អាសយដ្ឋាននេះទេ៖ <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (ស្រោម​សំបុត្រ)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">ផ្នែក "<ph name="SECTION" />" ត្រូវបានលាក់</translation>
 <translation id="7526934274050461096">ការតភ្ជាប់​របស់អ្នក​ទៅ​ទំព័រនេះ​មិនមែន​ជាលក្ខណៈ​ឯកជន​ទេ</translation>
 <translation id="7535087603100972091">តម្លៃ</translation>
 <translation id="7537536606612762813">ចាំបាច់</translation>
@@ -1767,6 +1771,7 @@
 <translation id="8293206222192510085">បន្ថែមចំណាំ</translation>
 <translation id="8294431847097064396">ប្រភព</translation>
 <translation id="8298115750975731693">Wi-Fi ដែលអ្នកកំពុងប្រើ (<ph name="WIFI_NAME" />) អាចតម្រូវឲ្យអ្នកទៅកាន់ <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />។</translation>
+<translation id="8303854710873047864">ផ្នែក "<ph name="SECTION" />" ត្រូវបានបង្ហាញ</translation>
 <translation id="830498451218851433">បត់​ពាក់កណ្ដាល</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">កម្មវិធី​ដែលបានដំឡើង និងភាពញឹកញាប់​នៃការប្រើប្រាស់កម្មវិធីទាំងនោះ</translation>
@@ -1886,6 +1891,7 @@
 <translation id="8931333241327730545">តើអ្នកចង់រក្សាទុកកាតនេះទៅគណនី Google របស់អ្នកដែរឬទេ?</translation>
 <translation id="8932102934695377596">ម៉ោងរបស់អ្នកដើរយឺត</translation>
 <translation id="893332455753468063">បញ្ចូល​ឈ្មោះ</translation>
+<translation id="8942355029279167844">អ្នកគ្រប់គ្រង​របស់អ្នកបាន​អនុញ្ញាតឱ្យ <ph name="APP_NAME" /> ប្រមូលទិន្នន័យ​វិភាគ ដើម្បីកែលម្អបទពិសោធន៍ប្រើប្រាស់​ផលិតផល។ សូមមើល <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> ដើម្បីទទួលបាន​ព័ត៌មានបន្ថែម។</translation>
 <translation id="8943282376843390568">លឿងខ្ចី</translation>
 <translation id="8957210676456822347">ការអនុញ្ញាតច្រកចូលគ្រប់គ្រង</translation>
 <translation id="8962950042226115166">គេហទំព័រ​គួរឱ្យសង្ស័យ</translation>

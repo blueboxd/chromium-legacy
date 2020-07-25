@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">सनग्लासेस</translation>
 <translation id="115443833402798225">हँगल Ahnmatae</translation>
 <translation id="1155759005174418845">कॅटलान</translation>
+<translation id="1172970565351728681">सुमारे <ph name="REMAINING_TIME" /> शिल्लक आहे/आहेत</translation>
 <translation id="1173894706177603556">नाव बदला</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> कॉपी करत आहे...</translation>
 <translation id="1178581264944972037">विराम द्या</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">मालकी <ph name="DESTINATION_DOMAIN" /> कडे हस्तांतरित केली जाईल.</translation>
 <translation id="3241720467332021590">आयरिश</translation>
 <translation id="3245321423178950146">अज्ञात कलाकार</translation>
+<translation id="3248185426436836442">प्रलंबित</translation>
 <translation id="3252266817569339921">फ्रेंच</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> फायलींसाठी डीफॉल्ट ॲप्लिकेशन निवडा:</translation>
 <translation id="3264582393905923483">संदर्भ</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">तुम्हाला '<ph name="FOLDER_NAME" />' या फोल्डरमध्ये फाइल हलवण्यास परवानगी नाही.</translation>
 <translation id="3786301125658655746">तुम्ही ऑफलाइन आहात</translation>
 <translation id="3789841737615482174">स्थापना करा</translation>
+<translation id="3793469551756281394">सुमारे <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> शिल्लक आहेत</translation>
 <translation id="3798449238516105146">आवृत्ती</translation>
 <translation id="3801082500826908679">फारोसे</translation>
 <translation id="3809272675881623365">ससा</translation>

@@ -77,6 +77,7 @@
 <translation id="3089968997497233615">È disponibile una nuova versione più sicura di Google Chrome.</translation>
 <translation id="3127818369811890733">Impossibile sincronizzare i dati in Chrome OS.</translation>
 <translation id="3149510190863420837">Applicazioni Chrome</translation>
+<translation id="3351117925998652957">Scegli il tuo Chrome Space</translation>
 <translation id="3360895254066713204">Supporto Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome verrà riavviato ora}=1{Chrome verrà riavviato tra 1 secondo}other{Chrome verrà riavviato tra # secondi}}</translation>
 <translation id="3395323229510056640">Ricevi assistenza per Chrome OS</translation>
@@ -174,6 +175,7 @@
 <translation id="6291549208091401781">Google Chrome è già installato per tutti gli utenti sul computer.</translation>
 <translation id="6338556085225130112">Aggiornamento di Google Chrome in corso</translation>
 <translation id="6368958679917195344">Chrome OS è reso possibile da <ph name="BEGIN_LINK_CROS_OSS" />software open source<ph name="END_LINK_CROS_OSS" /> aggiuntivi.</translation>
+<translation id="6372315130616785175">Hai effettuato l'accesso con un account di lavoro. Vuoi creare un nuovo profilo Chrome di lavoro per mantenere i tuoi dati separati?</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome per gli sviluppatori</translation>
 <translation id="6566149418543181476">Aggiornamento di Google Chrome in corso (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6676384891291319759">Accesso a Internet</translation>
@@ -203,6 +205,7 @@
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Per controllare se il tuo dispositivo è aggiornato, vai alle <ph name="LINK_BEGIN" />Impostazioni di Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Questo computer non riceverà più gli aggiornamenti di Google Chrome perché Mac OS X 10.9 non è più supportato.</translation>
+<translation id="7591404275842302616">Utilizza i Chrome Space per mantenere organizzata la navigazione su questo dispositivo</translation>
 <translation id="7592736734348559088">Impossibile sincronizzare i dati in Google Chrome perché i dati di accesso dell'account sono obsoleti.</translation>
 <translation id="7626032353295482388">Benvenuto in Chrome</translation>
 <translation id="7629695634924605473">Chrome ti avvisa se le tue password vengono compromesse</translation>

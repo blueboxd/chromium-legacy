@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Zonnebril</translation>
 <translation id="115443833402798225">Hangul Ahnmatae</translation>
 <translation id="1155759005174418845">Catalaans</translation>
+<translation id="1172970565351728681">Ongeveer <ph name="REMAINING_TIME" /> resterend</translation>
 <translation id="1173894706177603556">Naam wijzigen</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> kopiëren...</translation>
 <translation id="1178581264944972037">Onderbreken</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Eigendom wordt overgedragen aan <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">Iers</translation>
 <translation id="3245321423178950146">Onbekende artiest</translation>
+<translation id="3248185426436836442">In behandeling</translation>
 <translation id="3252266817569339921">Frans</translation>
 <translation id="3254434849914415189">Kies de standaardapp voor <ph name="FILE_TYPE" />-bestanden:</translation>
 <translation id="3264582393905923483">Context</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Je hebt geen rechten om bestanden te verplaatsen naar '<ph name="FOLDER_NAME" />'.</translation>
 <translation id="3786301125658655746">Je bent offline</translation>
 <translation id="3789841737615482174">Installeren</translation>
+<translation id="3793469551756281394">Ongeveer <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> resterend</translation>
 <translation id="3798449238516105146">Versie</translation>
 <translation id="3801082500826908679">Faeröers</translation>
 <translation id="3809272675881623365">Konijn</translation>

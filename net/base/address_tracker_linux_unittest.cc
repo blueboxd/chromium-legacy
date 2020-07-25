@@ -16,8 +16,13 @@
 #include "base/test/spin_wait.h"
 #include "base/test/task_environment.h"
 #include "base/threading/simple_thread.h"
+#include "build/build_config.h"
 #include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
 
 #ifndef IFA_F_HOMEADDRESS
 #define IFA_F_HOMEADDRESS 0x10
@@ -685,6 +690,12 @@ TEST_F(AddressTrackerLinuxTest, NonTrackingMode) {
 }
 
 TEST_F(AddressTrackerLinuxTest, NonTrackingModeInit) {
+#if defined(OS_ANDROID)
+  // Calling Init() on Android P+ isn't supported.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_P)
+    return;
+#endif
   AddressTrackerLinux tracker;
   tracker.Init();
 }
@@ -721,6 +732,12 @@ class GetCurrentConnectionTypeRunner
 };
 
 TEST_F(AddressTrackerLinuxTest, BroadcastInit) {
+#if defined(OS_ANDROID)
+  // Calling Init() on Android P+ isn't supported.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_P)
+    return;
+#endif
   base::test::TaskEnvironment task_environment(
       base::test::TaskEnvironment::MainThreadType::IO);
   InitializeAddressTracker(true);

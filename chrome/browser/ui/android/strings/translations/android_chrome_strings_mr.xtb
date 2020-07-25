@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Chrome अपडेट करा</translation>
 <translation id="1569387923882100876">कनेक्‍ट केलेले डिव्हाइस</translation>
 <translation id="1571304935088121812">वापरकर्तानाव कॉपी करा</translation>
+<translation id="1592864538817356322">साधारण संरक्षण:</translation>
 <translation id="1612196535745283361">डिव्हाइस स्कॅन करण्‍यासाठी Chrome ला स्थान ॲक्सेसची आवश्यकता असते. स्थान ॲक्सेस <ph name="BEGIN_LINK" />या डिव्हाइसाठी बंद केला आहे<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">कॅमेरा</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{1 निवडलेला आयटम काढून टाका}other{# निवडलेले आयटम काढून टाका}}</translation>
@@ -578,6 +579,7 @@
 <translation id="5659593005791499971">ईमेल</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> मध्ये इव्हेंट तयार करा</translation>
 <translation id="5668404140385795438">झूम वाढविणे निर्बंधित करण्याची वेबसाइटची विनंती ओव्हरराइड करा</translation>
+<translation id="568275469169136466">तात्पुरते साइन इन करण्यासाठी</translation>
 <translation id="5683547024293500885">Chrome अपडेट तपासू शकत नाही</translation>
 <translation id="5686790454216892815">फाइलचे नाव खूप लांब आहे</translation>
 <translation id="5694049548840660018">होमवर सहजपणे परत जा</translation>
@@ -589,6 +591,7 @@
 <translation id="5723735397759933332">HTTPS पेजवरील इमेज ऑप्टिमाइझ करून लाइट मोड आता तुमचा आणखी डेटा वाचवतो.</translation>
 <translation id="5726692708398506830">पृष्ठावरील प्रत्येकगोष्ट आणखी मोठी करा</translation>
 <translation id="5732819098735351888">डाउनलोड वाय-फायवर सुरू होईल.</translation>
+<translation id="5733983706093266635">QR कोड तयार करता आला नाही. URL <ph name="CHARACTER_LIMIT" /> वर्णांपेक्षा जास्त आहे.</translation>
 <translation id="5748802427693696783">मानक टॅबवर स्विच केले</translation>
 <translation id="5749068826913805084">Chrome ला फाइल डाउनलोड करण्यासाठी स्टोरेज ॲक्सेस आवश्यक आहे.</translation>
 <translation id="5749237766298580851">बंद <ph name="SEPARATOR" /> शिफारस केली जात नाही</translation>
@@ -641,6 +644,7 @@
 <translation id="6111020039983847643">डेटा वापरला</translation>
 <translation id="6112702117600201073">पृष्ठ रिफ्रेश करीत आहे</translation>
 <translation id="6127379762771434464">आयटम काढला</translation>
+<translation id="6140709049082532940">वर्धित संरक्षण:</translation>
 <translation id="6140912465461743537">देश/प्रदेश</translation>
 <translation id="614940544461990577">हे करून पहा:</translation>
 <translation id="6154478581116148741">तुमचे पासवर्ड या डिव्हाइसवरून एक्सपोर्ट करण्यासाठी सेटिंग्जमधील लॉक स्क्रीन सुरू करा</translation>
@@ -1017,6 +1021,7 @@
 <translation id="9100610230175265781">सांकेतिक पासफ्रेझ आवश्यक</translation>
 <translation id="9102803872260866941">पूर्वावलोकन टॅब उघडला आहे</translation>
 <translation id="9104217018994036254">टॅबसह शेअर करण्यासाठी डिव्हाइसची सूची.</translation>
+<translation id="9104402662006063371">गुप्त मोड वर जा</translation>
 <translation id="9108312223223904744">सिक्युरिटी की सपोर्ट म्हणून फोन वापरा</translation>
 <translation id="9108808586816295166">सुरक्षित DNS कदाचित प्रत्येक वेळी उपलब्ध नसेल</translation>
 <translation id="9133397713400217035">ऑफलाइन असताना एक्सप्लोर करा</translation>

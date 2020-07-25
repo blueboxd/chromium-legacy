@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Kính mát</translation>
 <translation id="115443833402798225">Hangul Ahnmatae</translation>
 <translation id="1155759005174418845">Tiếng Catalan</translation>
+<translation id="1172970565351728681">Còn khoảng <ph name="REMAINING_TIME" /> nữa</translation>
 <translation id="1173894706177603556">Đổi tên</translation>
 <translation id="117624967391683467">Đang sao chép <ph name="FILE_NAME" />...</translation>
 <translation id="1178581264944972037">Tạm dừng</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Sẽ chuyển quyền sở hữu sang <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">Tiếng Ai-len</translation>
 <translation id="3245321423178950146">Nghệ sĩ không xác định</translation>
+<translation id="3248185426436836442">Đang chờ xử lý</translation>
 <translation id="3252266817569339921">Tiếng Pháp</translation>
 <translation id="3254434849914415189">Chọn ứng dụng mặc định cho các tệp <ph name="FILE_TYPE" />:</translation>
 <translation id="3264582393905923483">Ngữ cảnh</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Bạn không có quyền di chuyển tệp vào '<ph name="FOLDER_NAME" />'.</translation>
 <translation id="3786301125658655746">Bạn đang ngoại tuyến</translation>
 <translation id="3789841737615482174">Cài đặt</translation>
+<translation id="3793469551756281394">Còn khoảng <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> nữa</translation>
 <translation id="3798449238516105146">Phiên bản</translation>
 <translation id="3801082500826908679">Tiếng Faroe</translation>
 <translation id="3809272675881623365">Con thỏ</translation>

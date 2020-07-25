@@ -561,6 +561,9 @@
 <translation id="3364869320075768271"><ph name="URL" /> می‌خواهد از دستگاه و داده‌های واقعیت مجازی استفاده کند</translation>
 <translation id="3366477098757335611">مشاهده کارت‌ها</translation>
 <translation id="3369192424181595722">خطای ساعت</translation>
+<translation id="3371076217486966826"><ph name="URL" /> می‌خواهد کارهای زیر را انجام دهد:
+      • ایجاد نقشه سه‌بعدی از محیط اطرافتان و ردیابی موقعیت دوربین
+      • استفاده از دوربین</translation>
 <translation id="337363190475750230">لغو مجوز شد</translation>
 <translation id="3377144306166885718">سرور از نسخه منسوخ «امنیت لایه انتقال» استفاده می‌کرد.</translation>
 <translation id="3377188786107721145">خطای تجزیه خط‌مشی</translation>
@@ -1560,6 +1563,7 @@
 <translation id="7518003948725431193">صفحه وبی با این آدرس وب یافت نشد: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Envelope)</translation>
 <translation id="7521387064766892559">جاوا اسکریپت</translation>
+<translation id="7521825010239864438">بخش «<ph name="SECTION" />» پنهان شد</translation>
 <translation id="7526934274050461096">اتصال شما به این سایت خصوصی نیست</translation>
 <translation id="7535087603100972091">مقدار</translation>
 <translation id="7537536606612762813">اجباری</translation>
@@ -1760,6 +1764,7 @@
 <translation id="8293206222192510085">افزودن نشانک</translation>
 <translation id="8294431847097064396">منبع</translation>
 <translation id="8298115750975731693">‏شبکه Wi-Fi (<ph name="WIFI_NAME" />) مورد استفاده‌تان احتمالاً نیاز دارد که به صفحه <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> بروید.</translation>
+<translation id="8303854710873047864">بخش «<ph name="SECTION" />» نمایش داده شد</translation>
 <translation id="830498451218851433">تاخوردگی از وسط</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">برنامه‌های نصب‌شده و میزان استفاده از آن‌ها</translation>
@@ -1879,6 +1884,7 @@
 <translation id="8931333241327730545">‏می‌خواهید این کارت را در حساب Google خود ذخیره کنید؟</translation>
 <translation id="8932102934695377596">ساعت شما عقب است</translation>
 <translation id="893332455753468063">افزودن نام</translation>
+<translation id="8942355029279167844">‏سرپرستتان به <ph name="APP_NAME" /> اجازه داده است تا برای بهبود دادن تجربه استفاده از محصول، داده‌های عیب‌یابی را جمع‌آوری کند. برای دریافت اطلاعات بیشتر، به <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> بروید.</translation>
 <translation id="8943282376843390568">لیمویی</translation>
 <translation id="8957210676456822347">مجوز پورتال محدود</translation>
 <translation id="8962950042226115166">سایت مشکوک</translation>

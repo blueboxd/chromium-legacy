@@ -101,6 +101,7 @@
 <translation id="4943838377383847465">Chromium đang chạy trong nền.</translation>
 <translation id="4987820182225656817">Khách có thể sử dụng Chromium mà không phải thoát khỏi bất cứ nội dung nào.</translation>
 <translation id="4994636714258228724">Thêm chính bạn vào Chromium</translation>
+<translation id="5037694917996535813">Bạn đang đăng nhập bằng tài khoản công việc. Bạn có muốn tạo Hồ sơ Chromium mới dành cho Công việc để lưu giữ dữ liệu riêng biệt không?</translation>
 <translation id="5224391634244552924">Bạn chưa lưu mật khẩu nào. Chromium có thể kiểm tra các mật khẩu của bạn khi bạn lưu các mật khẩu đó.</translation>
 <translation id="5277894862589591112">Để áp dụng các mục thay đổi của bạn, hãy chạy lại Chromium</translation>
 <translation id="5358375970380395591">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát cấu hình Chromium của bạn. Dữ liệu Chromium của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn được liên kết với <ph name="USER_NAME" />. Bạn có thể xóa dữ liệu này thông qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác. <ph name="LEARN_MORE" /></translation>
@@ -221,6 +222,7 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Khởi động lại Chromium trong vòng một ngày}other{Khởi động lại Chromium trong vòng # ngày}}</translation>
 <translation id="8453117565092476964">Tệp lưu trữ trình cài đặt bị hỏng hoặc không hợp lệ. Hãy tải xuống Chromium lại lần nữa.</translation>
 <translation id="8493179195440786826">Chromium đã lỗi thời</translation>
+<translation id="8545858702702650646">Chọn Không gian Chromium của bạn</translation>
 <translation id="8558383651099478961">Cha mẹ bạn đã tắt tùy chọn "Quyền của các trang web, ứng dụng và tiện ích" đối với Chromium. Bạn không được phép thêm <ph name="EXTENSION_TYPE_PARAMETER" /> này.</translation>
 <translation id="8568283329061645092">Chromium có thể kiểm tra mật khẩu khi bạn đăng nhập bằng Tài khoản Google của mình</translation>
 <translation id="8586442755830160949">Bản quyền <ph name="YEAR" /> Tác giả Chromium. Mọi quyền được bảo lưu.</translation>
@@ -244,6 +246,7 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
 <translation id="911206726377975832">Bạn cũng muốn xóa dữ liệu duyệt web của mình?</translation>
 <translation id="9158494823179993217">Quản trị viên hệ thống của bạn đã định cấu hình Chromium để mở một trình duyệt thay thế khi truy cập vào <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Hãy dùng Không gian Chromium để duyệt web một cách quy củ trên thiết bị này</translation>
 <translation id="93478295209880648">Chromium có thể không hoạt động chính xác do không được hỗ trợ trên Windows XP hoặc Windows Vista nữa</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> yêu cầu bạn đọc và chấp nhận Điều khoản dịch vụ sau đây trước khi sử dụng thiết bị này. Những điều khoản này không mở rộng, sửa đổi hoặc giới hạn Điều khoản Chromium OS.</translation>
 <translation id="985602178874221306">Tác giả Chromium</translation>

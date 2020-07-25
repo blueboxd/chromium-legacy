@@ -561,6 +561,9 @@ Lokhu uma kungenjalo kuzovinjelwa izilungiselelo zakho zobumfihlo. Lokhu kuzovum
 <translation id="3364869320075768271">I-<ph name="URL" /> ifuna ukusebenzisa idivayisi yakho yento engekho ngokoqobo nedatha</translation>
 <translation id="3366477098757335611">Buka amakhadi</translation>
 <translation id="3369192424181595722">Iphutha lewashi</translation>
+<translation id="3371076217486966826">I-<ph name="URL" /> ifuna:
+      • Ukudala imephu engu-3D yakho nokulandelela ukuma kwekhamera
+      • Ukusebenzisa ikhamera yakho</translation>
 <translation id="337363190475750230">Iyekiswe ukunikezwa</translation>
 <translation id="3377144306166885718">Iseva isebenzise inguqulo ye-TLS ephelelwe isikhathi.</translation>
 <translation id="3377188786107721145">Iphutha lokuncozula inqubomgomo</translation>
@@ -1559,6 +1562,7 @@ Imininingwane engeziwe:
 <translation id="7518003948725431193">Alikho ikhasi lewebhu eliye latholwa kukheli lewebhu: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Envelope)</translation>
 <translation id="7521387064766892559">I-JavaScript</translation>
+<translation id="7521825010239864438">Isigaba se-"<ph name="SECTION" />" sifihliwe</translation>
 <translation id="7526934274050461096">Ukuxhumeka kwakho kusayithi akuyona imfihlo</translation>
 <translation id="7535087603100972091">Inani</translation>
 <translation id="7537536606612762813">Iyadingeka</translation>
@@ -1759,6 +1763,7 @@ Imininingwane engeziwe:
 <translation id="8293206222192510085">Engeza ibhukhimakhi</translation>
 <translation id="8294431847097064396">Umthombo</translation>
 <translation id="8298115750975731693">I-Wi-Fi oyisebenzisayo (<ph name="WIFI_NAME" />) ingakudinga ukuthi uvakashele ku-<ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Isigaba se-"<ph name="SECTION" />" esibonisiwe</translation>
 <translation id="830498451218851433">Goqa ngohafu</translation>
 <translation id="8307358339886459768">Isithombe esincane</translation>
 <translation id="8307888238279532626">Izinhlelo zokusebenza ezifakiwe nokuthi zisetshenziswa kaningi kangakanani</translation>
@@ -1878,6 +1883,7 @@ Imininingwane engeziwe:
 <translation id="8931333241327730545">Ingabe ufuna ukulondoloza leli khadi ku-Akhawunti yakho ye-Google?</translation>
 <translation id="8932102934695377596">Iwashi lakho lisemuva</translation>
 <translation id="893332455753468063">Engeza igama</translation>
+<translation id="8942355029279167844">Umlawuli wakho uvumele i-<ph name="APP_NAME" /> ukuthi iqoqe idatha yokuxilonga ukuthuthukisa ukuzizwela komkhiqizo. Bona i-<ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> ukuthola ulwazi olwengeziwe.</translation>
 <translation id="8943282376843390568">I-Lime</translation>
 <translation id="8957210676456822347">I-Captive Portal Authorization</translation>
 <translation id="8962950042226115166">Isayithi elisolisayo</translation>

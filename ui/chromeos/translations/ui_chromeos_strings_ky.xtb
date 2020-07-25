@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Күндөн калкалоочу көз айнек</translation>
 <translation id="115443833402798225">Хангул Ахнматае</translation>
 <translation id="1155759005174418845">Каталанча</translation>
+<translation id="1172970565351728681">Болжол менен <ph name="REMAINING_TIME" /> калды</translation>
 <translation id="1173894706177603556">Атын өзгөртүү</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> көчүрүлүүдө…</translation>
 <translation id="1178581264944972037">Бир азга токтотуу</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Менчик укугу <ph name="DESTINATION_DOMAIN" /> доменине өткөрүлүп берилет.</translation>
 <translation id="3241720467332021590">Ирландча</translation>
 <translation id="3245321423178950146">Белгисиз аткаруучу</translation>
+<translation id="3248185426436836442">Күтүлүүдө</translation>
 <translation id="3252266817569339921">Французча</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> файлдары үчүн демейки колдонмону тандаңыз:</translation>
 <translation id="3264582393905923483">Контекст</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Файлдарды "<ph name="FOLDER_NAME" />" папкасына жылдырууга уруксатыңыз жок.</translation>
 <translation id="3786301125658655746">Офлайндасыз</translation>
 <translation id="3789841737615482174">Орнотуу</translation>
+<translation id="3793469551756281394">Болжол менен <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> калды</translation>
 <translation id="3798449238516105146">Версия</translation>
 <translation id="3801082500826908679">Фарерче</translation>
 <translation id="3809272675881623365">Коён</translation>

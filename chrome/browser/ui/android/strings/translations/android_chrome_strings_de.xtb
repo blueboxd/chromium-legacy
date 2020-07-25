@@ -254,7 +254,7 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="2996809686854298943">URL erforderlich</translation>
 <translation id="3016635187733453316">Prüfen Sie, ob das Gerät mit dem Internet verbunden ist</translation>
 <translation id="3029704984691124060">Passphrasen stimmen nicht überein.</translation>
-<translation id="3034163383943672781">Der Download beginnt am <ph name="DATE" />.</translation>
+<translation id="3034163383943672781">Beginn des Downloads: <ph name="DATE" />.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" /></translation>
 <translation id="305593374596241526">Die Standortermittlung ist deaktiviert. Sie können sie in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
 <translation id="3058498974290601450">Sie können die Synchronisierung jederzeit in den Einstellungen aktivieren</translation>

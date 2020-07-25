@@ -32,8 +32,7 @@ class CheckboxTest : public ViewsTestBase {
     widget_->Init(std::move(params));
     widget_->Show();
 
-    checkbox_ =
-        widget_->SetContentsView(std::make_unique<Checkbox>(base::string16()));
+    checkbox_ = widget_->SetContentsView(std::make_unique<Checkbox>());
   }
 
   void TearDown() override {

@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Сонцезахисні окуляри</translation>
 <translation id="115443833402798225">Клавіатура хангул (анмате)</translation>
 <translation id="1155759005174418845">Каталанська</translation>
+<translation id="1172970565351728681">Залишилося приблизно <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">Перейменувати</translation>
 <translation id="117624967391683467">Копіювання файлу <ph name="FILE_NAME" />…</translation>
 <translation id="1178581264944972037">Пауза</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Право власності буде передано в домен <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">Ірландська</translation>
 <translation id="3245321423178950146">Невідомий виконавець</translation>
+<translation id="3248185426436836442">Очікування</translation>
 <translation id="3252266817569339921">Французька</translation>
 <translation id="3254434849914415189">Вибрати програму за умовчанням для файлів <ph name="FILE_TYPE" />:</translation>
 <translation id="3264582393905923483">Контекст</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">У вас немає дозволу переміщати файли в папку "<ph name="FOLDER_NAME" />".</translation>
 <translation id="3786301125658655746">Ви в режимі офлайн</translation>
 <translation id="3789841737615482174">Встановити</translation>
+<translation id="3793469551756281394">Залишилося приблизно <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">Версія</translation>
 <translation id="3801082500826908679">Фарерська</translation>
 <translation id="3809272675881623365">Кролик</translation>

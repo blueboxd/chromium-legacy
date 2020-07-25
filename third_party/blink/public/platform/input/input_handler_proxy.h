@@ -13,7 +13,6 @@
 #include "cc/paint/element_id.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
-#include "third_party/blink/public/platform/input/elastic_overscroll_controller.h"
 #include "third_party/blink/public/platform/input/synchronous_input_handler_proxy.h"
 #include "third_party/blink/public/platform/web_common.h"
 
@@ -29,6 +28,7 @@ namespace blink {
 class WebInputEventAttribution;
 class WebMouseWheelEvent;
 class WebTouchEvent;
+class ElasticOverscrollController;
 }  // namespace blink
 
 namespace blink {
@@ -43,7 +43,6 @@ class UnifiedScrollingInputHandlerProxyTest;
 }  // namespace test
 
 class CompositorThreadEventQueue;
-class ElasticOverscrollController;
 class EventWithCallback;
 class InputHandlerProxyClient;
 class ScrollPredictor;

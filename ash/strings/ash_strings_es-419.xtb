@@ -146,7 +146,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="2582112259361606227">Reiniciar para actualizar</translation>
 <translation id="2595239820337756193">5 km en millas</translation>
 <translation id="2617342710774726426">La tarjeta SIM está bloqueada</translation>
-<translation id="2621713457727696555">Bloqueada</translation>
+<translation id="2621713457727696555">Segura</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2658778018866295321">Hacer clic y arrastrar</translation>
 <translation id="2700493154570097719">Establecer el teclado</translation>
@@ -640,7 +640,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> tiene <ph name="FEATURE_NAME" /> <ph name="FEATURE_STATE" />.</translation>
 <translation id="8477270416194247200">Presiona Alt y la tecla de búsqueda o mayúscula para cancelarlo.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> no admite la resolución <ph name="SPECIFIED_RESOLUTION" />. Se cambió la resolución a <ph name="FALLBACK_RESOLUTION" />. Para mantener este cambio, haz clic en Confirmar. En <ph name="TIMEOUT_SECONDS" />, se restablecerá la configuración anterior.</translation>
-<translation id="8513108775083588393">Giro automático</translation>
+<translation id="8513108775083588393">Giro autom.</translation>
 <translation id="8517041960877371778">Tu <ph name="DEVICE_TYPE" /> podría no cargarse si el dispositivo está encendido.</translation>
 <translation id="8563862697512465947">Configuración de notificación</translation>
 <translation id="857201607579416096">El menú se movió a la esquina inferior derecha de la pantalla.</translation>

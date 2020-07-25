@@ -52,7 +52,7 @@
 <translation id="1054153489933238809">元の画像を新しいタブで開く(&amp;I)</translation>
 <translation id="1055806300943943258">Bluetooth デバイスと USB デバイスを検索しています...</translation>
 <translation id="1056466516655540509"><ph name="MINUTES" /> 分前に更新されました</translation>
-<translation id="1056775291175587022">ネットワークが見つかりません</translation>
+<translation id="1056775291175587022">なし</translation>
 <translation id="1056898198331236512">警告</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1060292118287751956">画面の更新頻度を指定します</translation>
@@ -1228,7 +1228,7 @@
 <translation id="2489918096470125693">フォルダを追加(&amp;F)...</translation>
 <translation id="2490481887078769936">「<ph name="FILE_NAME" />」をリストから削除しました</translation>
 <translation id="249113932447298600">デバイス <ph name="DEVICE_LABEL" /> は現在サポートされていません。</translation>
-<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> から <ph name="ATTACHMENTS" /> が共有されています。</translation>
+<translation id="2492308681814209210"><ph name="DEVICE_NAME" /> が <ph name="ATTACHMENTS" />を共有しています。</translation>
 <translation id="2492461744635776704">証明書の署名のリクエストを準備しています</translation>
 <translation id="249303669840926644">登録を完了できませんでした</translation>
 <translation id="2495777824269688114">新しい機能を見つけたり、疑問の答えを探したりするには、[？] を選択してヘルプを表示します。</translation>
@@ -3746,7 +3746,7 @@
 <translation id="5659833766619490117">このページを翻訳できませんでした</translation>
 <translation id="5662513737565158057">Linux アプリの動作を変更します。</translation>
 <translation id="5667546120811588575">Google Play を設定しています...</translation>
-<translation id="5669267381087807207">有効にしています</translation>
+<translation id="5669267381087807207">有効化中</translation>
 <translation id="5669691691057771421">新しい PIN を入力</translation>
 <translation id="5671641761787789573">画像がブロックされました</translation>
 <translation id="5671658447180261823">候補<ph name="SUGGESTION_NAME" />を削除します</translation>
@@ -6613,7 +6613,7 @@
 <translation id="939519157834106403">SSID</translation>
 <translation id="939598580284253335">パスフレーズを入力</translation>
 <translation id="939736085109172342">新しいフォルダ</translation>
-<translation id="941070664607309480">クリックすると表示され、共有できるようになります</translation>
+<translation id="941070664607309480">クリックすると相手に表示され、共有できるようになります</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> が Chrome タブと音声を共有しています。</translation>
 <translation id="945522503751344254">フィードバックを送信</translation>
 <translation id="947329552760389097">要素の検証(&amp;I)</translation>

@@ -68,15 +68,15 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
 
   virtual void SelectionChanged(Node*) = 0;
   virtual void ChildrenChanged(Node*) = 0;
-  virtual void ChildrenChanged(LayoutObject*) = 0;
+  virtual void ChildrenChanged(const LayoutObject*) = 0;
   virtual void ChildrenChanged(AccessibleNode*) = 0;
   virtual void CheckedStateChanged(Node*) = 0;
   virtual void ListboxOptionStateChanged(HTMLOptionElement*) = 0;
   virtual void ListboxSelectedChildrenChanged(HTMLSelectElement*) = 0;
   virtual void ListboxActiveIndexChanged(HTMLSelectElement*) = 0;
-  virtual void LocationChanged(LayoutObject*) = 0;
+  virtual void LocationChanged(const LayoutObject*) = 0;
   virtual void RadiobuttonRemovedFromGroup(HTMLInputElement*) = 0;
-  virtual void ImageLoaded(LayoutObject*) = 0;
+  virtual void ImageLoaded(const LayoutObject*) = 0;
 
   virtual void Remove(AccessibleNode*) = 0;
   virtual void Remove(LayoutObject*) = 0;
@@ -86,11 +86,11 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   virtual const Element* RootAXEditableElement(const Node*) = 0;
 
   // Called when aspects of the style (e.g. color, alignment) change.
-  virtual void StyleChanged(LayoutObject*) = 0;
+  virtual void StyleChanged(const LayoutObject*) = 0;
 
   // Called by a node when text or a text equivalent (e.g. alt) attribute is
   // changed.
-  virtual void TextChanged(LayoutObject*) = 0;
+  virtual void TextChanged(const LayoutObject*) = 0;
   virtual void DocumentTitleChanged() = 0;
   // Called when a node has just been attached, so we can make sure we have the
   // right subclass of AXObject.

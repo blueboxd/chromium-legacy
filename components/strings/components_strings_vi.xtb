@@ -450,6 +450,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="2824775600643448204">Thanh địa chỉ và tìm kiếm</translation>
 <translation id="2826760142808435982">Kết nối được mã hóa và xác thực bằng <ph name="CIPHER" /> đồng thời sử dụng <ph name="KX" /> làm cơ chế trao đổi chính.</translation>
 <translation id="2835170189407361413">Xóa biểu mẫu</translation>
+<translation id="2839501879576190149">Bạn sắp truy cập vào trang web giả mạo</translation>
 <translation id="2847118875340931228">Mở cửa sổ ẩn danh</translation>
 <translation id="2850739647070081192">Invite (Phong bì)</translation>
 <translation id="2856444702002559011">Những kẻ tấn công có thể đang cố gắng đánh cắp thông tin của bạn từ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (ví dụ: mật khẩu, thư hoặc thẻ tín dụng). <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -562,6 +563,9 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="3364869320075768271"><ph name="URL" /> muốn sử dụng dữ liệu và thiết bị thực tế ảo của bạn</translation>
 <translation id="3366477098757335611">Xem thẻ</translation>
 <translation id="3369192424181595722">Lỗi đồng hồ</translation>
+<translation id="3371076217486966826"><ph name="URL" /> muốn:
+      • Tạo bản đồ 3D về các khu vực xung quanh và theo dõi thông tin vị trí của máy ảnh
+      • Dùng máy ảnh của bạn</translation>
 <translation id="337363190475750230">Đã hủy cấp phép</translation>
 <translation id="3377144306166885718">Máy chủ sử dụng phiên bản TLS lỗi thời.</translation>
 <translation id="3377188786107721145">Lỗi phân tích cú pháp chính sách</translation>
@@ -809,6 +813,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="42981349822642051">Mở rộng</translation>
 <translation id="4300675098767811073">Đục nhiều lỗ bên phải</translation>
 <translation id="4302965934281694568">Chou3 (Phong bì)</translation>
+<translation id="4305666528087210886">Không thể truy cập vào tệp của bạn</translation>
 <translation id="4305817255990598646">Chuyển</translation>
 <translation id="4312613361423056926">B2</translation>
 <translation id="4312866146174492540">Chặn (mặc định)</translation>
@@ -827,6 +832,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="4358461427845829800">Quản lý phương thức thanh toán...</translation>
 <translation id="4359160567981085931">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chrome có thể trợ giúp bạn. Để đổi mật khẩu và thông báo cho Google biết rằng tài khoản của bạn có thể gặp nguy hiểm, hãy nhấp vào Bảo vệ tài khoản.</translation>
 <translation id="4367563149485757821">Number-12 (Phong bì)</translation>
+<translation id="4367839622597707614">{1,plural, =0{Một sự cố rò rỉ dữ liệu xảy ra trên một trang web hoặc ứng dụng đã làm lộ mật khẩu mà bạn lưu trên <ph name="ORIGIN" />. Bạn nên đổi mật khẩu dùng trên <ph name="ORIGIN" /> ngay bây giờ.}=1{Một sự cố rò rỉ dữ liệu xảy ra trên một trang web hoặc ứng dụng đã làm lộ mật khẩu mà bạn lưu trên <ph name="ORIGIN" /> và một trang web khác. Bạn nên kiểm tra các mật khẩu đã lưu ngay bây giờ.}other{Một sự cố rò rỉ dữ liệu xảy ra trên một trang web hoặc ứng dụng đã làm lộ mật khẩu mà bạn lưu trên <ph name="ORIGIN" /> và <ph name="SITES_COUNT" /> trang web khác. Bạn nên kiểm tra các mật khẩu đã lưu ngay bây giờ.}}</translation>
 <translation id="437058704415269440">Số dư tài khoản</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Giá trị <ph name="VALUE_TYPE" /> mong đợi.</translation>
@@ -1297,6 +1303,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Nếu tiếp tục, bạn có thể bị tính phí.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 đề xuất khác}other{# đề xuất khác}}</translation>
+<translation id="6387645831795005740">Kẻ tấn công đôi khi tạo trang web giả mạo bằng cách thực hiện các thay đổi nhỏ, khó phát hiện đối với URL.</translation>
 <translation id="6389470377220713856">Tên trên thẻ</translation>
 <translation id="6390200185239044127">Gấp đôi kiểu chữ Z</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1510,6 +1517,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7372973238305370288">kết quả tìm kiếm</translation>
 <translation id="7374733840632556089">Sự cố này xảy ra do một chứng chỉ mà bạn hoặc ai đó đã cài đặt trên thiết bị của bạn. Chrome không tin cậy chứng chỉ này vì chứng chỉ được xác định là dùng để chặn và giám sát mạng. Mặc dù có một số trường hợp trong đó hoạt động giám sát là hợp pháp, chẳng hạn như mạng của trường học hay công ty, nhưng Chrome muốn đảm bảo rằng bạn biết điều này, ngay cả khi bạn không thể ngăn chặn. Hoạt động giám sát có thể diễn ra trong bất kỳ trình duyệt hoặc ứng dụng nào có quyền truy cập vào web.</translation>
 <translation id="7375818412732305729">Đính kèm tệp</translation>
+<translation id="7376551888419889433">Khi Chrome Enterprise Connectors gắn cờ các sự kiện bảo mật, quản trị viên của bạn sẽ nhận được dữ liệu liên quan đến các sự kiện đó. Dữ liệu này có thể bao gồm URL của những trang bạn truy cập trong Chrome, tên tệp hoặc siêu dữ liệu, cũng như tên người dùng mà bạn sử dụng để đăng nhập vào thiết bị của bạn và Chrome.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378594059915113390">Các chức năng điều khiển nội dung đa phương tiện</translation>
 <translation id="7378627244592794276">Không</translation>
@@ -1557,6 +1565,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7518003948725431193">Không tìm thấy trang web nào ứng với địa chỉ web:<ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Phong bì)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Đã ẩn phần "<ph name="SECTION" />"</translation>
 <translation id="7526934274050461096">Kết nối của bạn tới trang web này không ở chế độ riêng tư</translation>
 <translation id="7535087603100972091">Giá trị</translation>
 <translation id="7537536606612762813">Bắt buộc</translation>
@@ -1757,6 +1766,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8293206222192510085">Thêm Dấu trang</translation>
 <translation id="8294431847097064396">Nguồn</translation>
 <translation id="8298115750975731693">Wi-Fi mà bạn đang sử dụng (<ph name="WIFI_NAME" />) có thể yêu cầu bạn phải truy cập <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Đã hiển thị phần "<ph name="SECTION" />"</translation>
 <translation id="830498451218851433">Gấp đôi</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Số ứng dụng đã cài đặt và tần suất sử dụng</translation>
@@ -1877,6 +1887,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8931333241327730545">Bạn có muốn lưu thẻ này vào Tài khoản Google của mình không?</translation>
 <translation id="8932102934695377596">Đồng hồ của bạn chạy chậm</translation>
 <translation id="893332455753468063">Thêm tên</translation>
+<translation id="8942355029279167844">Quản trị viên đã cho phép <ph name="APP_NAME" /> thu thập dữ liệu chẩn đoán để nâng cao trải nghiệm sử dụng sản phẩm. Hãy truy cập vào <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> để biết thêm thông tin.</translation>
 <translation id="8943282376843390568">Vàng chanh</translation>
 <translation id="8957210676456822347">Ủy quyền cổng bị khóa</translation>
 <translation id="8962950042226115166">Trang web đáng ngờ</translation>
@@ -1907,6 +1918,7 @@ Thông tin chi tiết bổ sung:
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">Bạn đã cố truy cập vào <ph name="DOMAIN" />, nhưng máy chủ cho biết chứng chỉ không hợp lệ.</translation>
 <translation id="9050666287014529139">Cụm mật khẩu</translation>
+<translation id="9062620674789239642">Tệp này có thể đã bị di chuyển, chỉnh sửa hoặc xóa.</translation>
 <translation id="9065203028668620118">Chỉnh sửa</translation>
 <translation id="9065745800631924235">Cụm từ tìm kiếm <ph name="TEXT" /> từ lịch sử</translation>
 <translation id="9069693763241529744">Bị một tiện ích chặn</translation>

@@ -147,8 +147,6 @@ enum UMAContextMenuAction {
   // Add "Cancel" option.
   [self addItemWithTitle:l10n_util::GetNSString(IDS_APP_CANCEL)
                   action:^{
-                    [weakDelegate
-                        cancelReadingListContextMenuWithParams:weakParams];
                     UMA_HISTOGRAM_ENUMERATION("ReadingList.ContextMenu", CANCEL,
                                               ENUM_MAX);
                   }

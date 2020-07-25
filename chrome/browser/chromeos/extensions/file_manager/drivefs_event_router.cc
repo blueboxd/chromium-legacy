@@ -172,6 +172,9 @@ void DriveFsEventRouter::OnError(const drivefs::mojom::DriveError& error) {
     case drivefs::mojom::DriveError::Type::kCantUploadStorageFull:
       event.type = file_manager_private::DRIVE_SYNC_ERROR_TYPE_NO_SERVER_SPACE;
       break;
+    case drivefs::mojom::DriveError::Type::kPinningFailedDiskFull:
+      event.type = file_manager_private::DRIVE_SYNC_ERROR_TYPE_NO_LOCAL_SPACE;
+      break;
   }
   for (const auto& extension_id : GetEventListenerExtensionIds(
            file_manager_private::OnDriveSyncError::kEventName)) {

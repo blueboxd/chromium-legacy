@@ -1168,6 +1168,16 @@
     ]
   },
 
+  "AuthNegotiateDelegateAllowlist": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "AuthNegotiateDelegateAllowlist": "localhost" },
+        "prefs": { "auth.negotiate_delegate_whitelist": { "local_state": true } }
+      }
+    ]
+  },
+
   "AuthNegotiateDelegateByKdcPolicy": {
     "os": ["linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [

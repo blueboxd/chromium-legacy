@@ -563,6 +563,9 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="3364869320075768271"><ph name="URL" /> quiere usar tu dispositivo y tus datos de realidad virtual</translation>
 <translation id="3366477098757335611">Ver tarjetas</translation>
 <translation id="3369192424181595722">Error del reloj</translation>
+<translation id="3371076217486966826"><ph name="URL" /> quiere hacer lo siguiente:
+      • Crear un mapa 3D de tu entorno y hacer un seguimiento de la posición de la cámara.
+      • Usar tu cámara.</translation>
 <translation id="337363190475750230">Dado de baja</translation>
 <translation id="3377144306166885718">El servidor utiliza una versión de TLS obsoleta.</translation>
 <translation id="3377188786107721145">Error al analizar la política</translation>
@@ -1562,6 +1565,7 @@ Más información:
 <translation id="7518003948725431193">No se ha encontrado ninguna página web para la dirección <ph name="URL" />.</translation>
 <translation id="7520302887438682816">C8 (sobre)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Sección <ph name="SECTION" /> ocultada</translation>
 <translation id="7526934274050461096">Tu conexión con este sitio web no es privada</translation>
 <translation id="7535087603100972091">Valor</translation>
 <translation id="7537536606612762813">Obligatoria</translation>
@@ -1762,6 +1766,7 @@ Más información:
 <translation id="8293206222192510085">Añadir marcador</translation>
 <translation id="8294431847097064396">Origen</translation>
 <translation id="8298115750975731693">La red Wi-Fi que estás utilizando (<ph name="WIFI_NAME" />) puede requerir que accedas a la página <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Sección <ph name="SECTION" /> mostrada</translation>
 <translation id="830498451218851433">Plegado al medio</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Las aplicaciones instaladas y la frecuencia con la que se usan</translation>
@@ -1881,6 +1886,7 @@ Más información:
 <translation id="8931333241327730545">¿Quieres guardar esta tarjeta en tu cuenta de Google?</translation>
 <translation id="8932102934695377596">Tu reloj está atrasado</translation>
 <translation id="893332455753468063">Añade un nombre</translation>
+<translation id="8942355029279167844">Tu administrador ha permitido a <ph name="APP_NAME" /> recoger datos de diagnóstico para mejorar la experiencia de los usuarios con el producto. Visita <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> para consultar más información.</translation>
 <translation id="8943282376843390568">Lima</translation>
 <translation id="8957210676456822347">Autorización de portal cautivo</translation>
 <translation id="8962950042226115166">Sitio web sospechoso</translation>

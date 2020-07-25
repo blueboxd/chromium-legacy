@@ -215,6 +215,7 @@
 <translation id="8417404458978023919">{0,plural, =1{Повторно стартиране на Chromium до 1 ден}other{Повторно стартиране на Chromium до # дни}}</translation>
 <translation id="8453117565092476964">Архивът на инсталационната програма е повреден или невалиден. Моля, изтеглете отново Chromium.</translation>
 <translation id="8493179195440786826">Chromium не е актуален</translation>
+<translation id="8545858702702650646">Изберете работната си област в Chromium</translation>
 <translation id="8558383651099478961">Някой от родителите ви е изключил разрешенията за сайтове, приложения и разширения за Chromium. Добавянето на <ph name="EXTENSION_TYPE_PARAMETER" /> не е разрешено.</translation>
 <translation id="8568283329061645092">Chromium може да проверява паролите ви, когато влезете с профила си в Google</translation>
 <translation id="8586442755830160949">Авторски права <ph name="YEAR" /> Авторите на Chromium. Всички права запазени.</translation>
@@ -238,6 +239,7 @@
 <translation id="911206726377975832">Да се изтрият ли и данните от сърфирането?</translation>
 <translation id="9158494823179993217">Системният ви администратор е конфигурирал Chromium да отваря алтернативен браузър за достъп до <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="9190841055450128916">Chromium (входящ трафик за mDNS)</translation>
+<translation id="9191317372410544836">Използвайте работни области в Chromium, за да организирате сърфирането си на това устройство</translation>
 <translation id="93478295209880648">Chromium може да не функционира правилно, тъй като вече не се поддържа под Windows XP и Windows Vista</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> изисква да прочетете и приемете следните Общи условия, преди да използвате това устройство. Те не разширяват, не променят, нито ограничават Условията на Chromium OS.</translation>
 <translation id="985602178874221306">Авторите на Chromium</translation>

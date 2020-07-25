@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Chrome'u güncelle</translation>
 <translation id="1569387923882100876">Bağlı Cihaz</translation>
 <translation id="1571304935088121812">Kullanıcı adını kopyala</translation>
+<translation id="1592864538817356322">Standart koruma:</translation>
 <translation id="1612196535745283361">Chrome'un cihazları taraması için konum bilgilerine erişmesi gerekiyor. Konum bilgilerine erişim <ph name="BEGIN_LINK" />bu cihaz için kapalı<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{1 seçili öğeyi kaldır}other{# seçili öğeyi kaldır}}</translation>
@@ -578,6 +579,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5659593005791499971">E-posta</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> adlı uygulamada etkinlik oluştur</translation>
 <translation id="5668404140385795438">Web sitesinin yakınlaştırmayı önleme isteğini geçersiz kıl</translation>
+<translation id="568275469169136466">Geçici olarak oturum açmak için</translation>
 <translation id="5683547024293500885">Chrome, güncellemeleri denetleyemiyor</translation>
 <translation id="5686790454216892815">Dosya adı çok uzun</translation>
 <translation id="5694049548840660018">Ana sayfaya kolayca geri dönün</translation>
@@ -589,6 +591,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5723735397759933332">Basit mod, HTTPS sayfalarındaki görselleri optimize ederek size veri tasarrufu sağlıyor.</translation>
 <translation id="5726692708398506830">Sayfadaki her şeyi büyütür</translation>
 <translation id="5732819098735351888">İndirme kablosuz bağlantı üzerinden başlatılacak.</translation>
+<translation id="5733983706093266635">QR kodu oluşturulamıyor. URL, <ph name="CHARACTER_LIMIT" /> karakterden fazlasını içeriyor.</translation>
 <translation id="5748802427693696783">Standart sekmelere geçildi</translation>
 <translation id="5749068826913805084">Dosya indirmek için Chrome'un depolama alanına erişmesi gerekiyor.</translation>
 <translation id="5749237766298580851">Kapalı <ph name="SEPARATOR" /> Önerilmez</translation>
@@ -641,6 +644,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6111020039983847643">kullanılan veri miktarı</translation>
 <translation id="6112702117600201073">Sayfa yenileniyor</translation>
 <translation id="6127379762771434464">Öğe kaldırıldı</translation>
+<translation id="6140709049082532940">Gelişmiş koruma:</translation>
 <translation id="6140912465461743537">Ülke/Bölge</translation>
 <translation id="614940544461990577">Aşağıdakileri deneyin:</translation>
 <translation id="6154478581116148741">Bu cihazdaki şifrelerinizi dışarı aktarmak için Ayarlar'da ekran kilidini açın</translation>
@@ -1017,6 +1021,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="9100610230175265781">Parola gerekli</translation>
 <translation id="9102803872260866941">Önizleme sekmesi açık</translation>
 <translation id="9104217018994036254">Sekme paylaşılacak cihazların listesi.</translation>
+<translation id="9104402662006063371">Gizli moda geçin</translation>
 <translation id="9108312223223904744">Güvenlik Anahtarı Desteği olarak telefon</translation>
 <translation id="9108808586816295166">Güvenli DNS her zaman kullanılamayabilir</translation>
 <translation id="9133397713400217035">Çevrimdışıyken Keşfet</translation>

@@ -81,6 +81,7 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="3089968997497233615">Ofrohet një version i ri dhe më i sigurt i Google Chrome.</translation>
 <translation id="3127818369811890733">Sistemi operativ Chrome nuk mund t'i sinkronizonte të dhënat e tua.</translation>
 <translation id="3149510190863420837">Aplikacionet e Chrome</translation>
+<translation id="3351117925998652957">Zgjidh "Hapësirën tënde të Chrome"</translation>
 <translation id="3360895254066713204">Ndihmësi i Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome do të hapet përsëri tani}=1{Chrome do të hapet përsëri për 1 sekondë}other{Chrome do të hapet përsëri për # sekonda}}</translation>
 <translation id="3395323229510056640">Merr ndihmë për Chrome OS</translation>
@@ -213,6 +214,7 @@ Google Chrome nuk është në gjendje të rikuperojë cilësimet e tua.</transla
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Për të parë nëse pajisja jote është e përditësuar, shko te <ph name="LINK_BEGIN" />Cilësimet e sistemit operativ Chrome<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Ky kompjuter nuk do të marrë më përditësime të Google Chrome sepse Mac OS X 10.9 nuk mbështetet më.</translation>
+<translation id="7591404275842302616">Përdor "Hapësirat e Chrome" për ta mbajtur shfletimin tënd të organizuar në këtë pajisje</translation>
 <translation id="7592736734348559088">Google Chrome nuk mund të sinkronizonte të dhënat e tua sepse detajet e identifikimit të llogarisë nuk janë të përditësuara.</translation>
 <translation id="7626032353295482388">Mirë se vjen në Chrome</translation>
 <translation id="7629695634924605473">Chrome të informon nëse fjalëkalimet e tua komprometohen ndonjëherë</translation>

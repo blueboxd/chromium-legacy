@@ -101,7 +101,7 @@
 <translation id="4943838377383847465">Chromium dalam mod latar belakang.</translation>
 <translation id="4987820182225656817">Tetamu boleh menggunakan Chromium tanpa meninggalkan apa-apa.</translation>
 <translation id="4994636714258228724">Tambahkan diri anda kepada Chromium</translation>
-<translation id="5037694917996535813">Anda melog masuk dengan akaun kerja. Adakah anda mahu mencipta Profil Chromium untuk Kerja yang baharu untuk mengasingkan data anda?</translation>
+<translation id="5037694917996535813">Anda dilog masuk dengan akaun kerja. Adakah anda mahu membuat Profil Chromium untuk Kerja yang baharu untuk mengasingkan data anda?</translation>
 <translation id="5224391634244552924">Tiada kata laluan yang disimpan. Chromium boleh menyemak kata laluan anda yang disimpan.</translation>
 <translation id="5277894862589591112">Untuk menggunakan perubahan anda, mulakan semula Chromium</translation>
 <translation id="5358375970380395591">Anda log masuk menggunakan akaun yang terurus dan memberikan pentadbirnya kawalan ke atas profil Chromium anda. Data Chromium anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME" /> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain. <ph name="LEARN_MORE" /></translation>
@@ -222,6 +222,7 @@ Chromium tidak dapat mengembalikan tetapan anda.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Lancarkan semula Chromium dalam masa sehari}other{Lancarkan semula Chromium dalam masa # hari}}</translation>
 <translation id="8453117565092476964">Arkib pemasang rosak atau tidak sah. Sila muat turun Chromium sekali lagi.</translation>
 <translation id="8493179195440786826">Chromium sudah usang</translation>
+<translation id="8545858702702650646">Pilih Ruang Chromium anda</translation>
 <translation id="8558383651099478961">Ibu/bapa anda telah mematikan "Kebenaran untuk tapak web, apl dan sambungan" untuk Chromium. Tindakan menambah <ph name="EXTENSION_TYPE_PARAMETER" /> ini tidak dibenarkan.</translation>
 <translation id="8568283329061645092">Chromium boleh menyemak kata laluan anda apabila anda log masuk menggunakan Akaun Google anda</translation>
 <translation id="8586442755830160949">Hak Cipta <ph name="YEAR" /> Pengarang Chromium. Hak cipta terpelihara.</translation>
@@ -245,6 +246,7 @@ Chromium tidak dapat mengembalikan tetapan anda.</translation>
 <translation id="911206726377975832">Padamkan juga data menyemak imbas anda?</translation>
 <translation id="9158494823179993217">Pentadbir sistem anda telah mengkonfigurasikan Chromium agar membuka penyemak imbas alternatif untuk mengakses <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Gunakan Ruang Chromium untuk mengatur penyemakan imbas anda pada peranti ini</translation>
 <translation id="93478295209880648">Chromium mungkin tidak akan berfungsi dengan betul kerana tidak lagi disokong pada Windows XP atau Windows Vista</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> menghendaki anda membaca dan menerima Syarat Perkhidmatan berikut sebelum menggunakan peranti ini. Syarat ini tidak meluaskan, mengubah suai atau mengehadkan Syarat OS Chromium.</translation>
 <translation id="985602178874221306">Pengarang Chromium</translation>

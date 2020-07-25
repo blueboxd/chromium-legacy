@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Syze dielli</translation>
 <translation id="115443833402798225">Hangul ahnmatae</translation>
 <translation id="1155759005174418845">Katalonisht</translation>
+<translation id="1172970565351728681">Koha e mbetur: <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">Riemërto</translation>
 <translation id="117624967391683467">Po kopjon <ph name="FILE_NAME" />...</translation>
 <translation id="1178581264944972037">Pauzë</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Pronësia do të transferohet te <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">Irlandisht</translation>
 <translation id="3245321423178950146">Artist i panjohur</translation>
+<translation id="3248185426436836442">Në pritje</translation>
 <translation id="3252266817569339921">Frëngjisht</translation>
 <translation id="3254434849914415189">Zgjidh aplikacionin e parazgjedhur për skedarët <ph name="FILE_TYPE" />:</translation>
 <translation id="3264582393905923483">Konteksti</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Nuk ke autorizim për t'i lëvizur skedarët në "<ph name="FOLDER_NAME" />".</translation>
 <translation id="3786301125658655746">Je jashtë linje</translation>
 <translation id="3789841737615482174">Instalo</translation>
+<translation id="3793469551756281394">Koha e mbetur: <ph name="REMAINING_TIME_HOUR" /> e <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">Versioni</translation>
 <translation id="3801082500826908679">Faroisht</translation>
 <translation id="3809272675881623365">Lepur</translation>

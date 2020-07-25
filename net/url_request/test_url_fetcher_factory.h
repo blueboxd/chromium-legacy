@@ -347,7 +347,7 @@ class FakeURLFetcherFactory : public URLFetcherFactory,
   // These arguments should by default be used in instantiating FakeURLFetcher
   // like so:
   // new FakeURLFetcher(url, delegate, response_data, response_code, status)
-  typedef base::Callback<std::unique_ptr<FakeURLFetcher>(
+  typedef base::RepeatingCallback<std::unique_ptr<FakeURLFetcher>(
       const GURL&,
       URLFetcherDelegate*,
       const std::string&,

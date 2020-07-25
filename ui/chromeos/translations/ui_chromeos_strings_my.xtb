@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">နေကာမျက်မှန်များ</translation>
 <translation id="115443833402798225">ဟံဂူလ် Ahnmatae</translation>
 <translation id="1155759005174418845">ကက်တလန်</translation>
+<translation id="1172970565351728681"><ph name="REMAINING_TIME" /> ခန့် ကျန်ပါသေးသည်</translation>
 <translation id="1173894706177603556">အမည်ပြောင်းရန်</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> ကူးယူနေ...</translation>
 <translation id="1178581264944972037">ဆိုင်းငံ့ထားရန်</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">ပိုင်ဆိုင်မှုကို <ph name="DESTINATION_DOMAIN" /> သို့ လွှဲပြောင်းပါမည်။</translation>
 <translation id="3241720467332021590">အိုင်ယာလန်</translation>
 <translation id="3245321423178950146">အမည်မသိရ အနုပညာရှင်</translation>
+<translation id="3248185426436836442">ဆိုင်းငံ့ထားသည်</translation>
 <translation id="3252266817569339921">ပြင်သစ်</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> ဖိုင်များ အတွက် ပုံသေ အက်ပ်ကို ရွေးရန်:</translation>
 <translation id="3264582393905923483">အခြေအနေ</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">ဖိုင်များကို '<ph name="FOLDER_NAME" />' သို့ ရွှေ့ရန် သင့်ထံတွင် ခွင့်ပြုချက်မရှိပါ။</translation>
 <translation id="3786301125658655746">သင်သည် အော့ဖ်လိုင်း ဖြစ်နေ</translation>
 <translation id="3789841737615482174">တပ်ဆင်ရန်</translation>
+<translation id="3793469551756281394"><ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> ခန့် ကျန်သေးသည်</translation>
 <translation id="3798449238516105146">ဗားရှင်း</translation>
 <translation id="3801082500826908679">ဖားရို့စ်</translation>
 <translation id="3809272675881623365">ယုန်</translation>

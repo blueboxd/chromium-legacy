@@ -224,6 +224,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="8417404458978023919">{0,plural, =1{„Chromium“ paleidimas iš naujo po dienos}one{„Chromium“ paleidimas iš naujo po # dienos}few{„Chromium“ paleidimas iš naujo po # dienų}many{„Chromium“ paleidimas iš naujo po # dienos}other{„Chromium“ paleidimas iš naujo po # dienų}}</translation>
 <translation id="8453117565092476964">Diegimo programos archyvas sugadintas arba negalioja. Atsisiųskite „Chromium“ dar kartą.</translation>
 <translation id="8493179195440786826">„Chromium“ versija yra pasenusi</translation>
+<translation id="8545858702702650646">Pasirinkite savo „Chromium Space“</translation>
 <translation id="8558383651099478961">Jūsų tėvai išjungė svetainių, programų ir plėtinių leidimus sistemoje „Chromium“. Neleidžiama pridėti šio <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8568283329061645092">„Chromium“ gali tikrinti jūsų slaptažodžius, kai prisijungiate naudodami „Google“ paskyrą</translation>
 <translation id="8586442755830160949">Autorių teisės priklauso „Chromium“ autoriams, <ph name="YEAR" /> m. Visos teisės saugomos.</translation>
@@ -247,6 +248,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="911206726377975832">Ar ištrinti naršymo duomenis?</translation>
 <translation id="9158494823179993217">Sistemos administratorius sukonfigūravo „Chromium“ atidaryti alternatyvią naršyklę, kad būtų galima pasiekti <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="9190841055450128916">„Chromium“ (mDNS-In)</translation>
+<translation id="9191317372410544836">Naudodami „Chromium Spaces“ šiame įrenginyje naršykite organizuotai</translation>
 <translation id="93478295209880648">„Chromium“ gali tinkamai neveikti, nes ji nebepalaikoma naudojant „Windows XP“ arba „Windows Vista“</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> reikia, kad prieš naudodami šį įrenginį perskaitytumėte toliau pateiktas paslaugų teikimo sąlygas. Šios sąlygos neišplečia, nepakeičia ir neapriboja „Chromium“ OS sąlygų.</translation>
 <translation id="985602178874221306">„Chromium“ autoriai</translation>

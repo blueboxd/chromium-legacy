@@ -414,6 +414,34 @@ void BlinkAXTreeSource::SetLoadInlineTextBoxesForId(int32_t id) {
   load_inline_text_boxes_ids_.insert(id);
 }
 
+void BlinkAXTreeSource::PopulateAXRelativeBounds(WebAXObject obj,
+                                                 ui::AXRelativeBounds* bounds,
+                                                 bool* clips_children) const {
+  WebAXObject offset_container;
+  WebFloatRect bounds_in_container;
+  SkMatrix44 web_container_transform;
+  obj.GetRelativeBounds(offset_container, bounds_in_container,
+                        web_container_transform, clips_children);
+  bounds->bounds = bounds_in_container;
+  if (!offset_container.IsDetached())
+    bounds->offset_container_id = offset_container.AxID();
+
+  if (content::AXShouldIncludePageScaleFactorInRoot() && obj.Equals(root())) {
+    const WebView* web_view = render_frame_->GetRenderView()->GetWebView();
+    std::unique_ptr<gfx::Transform> container_transform =
+        std::make_unique<gfx::Transform>(web_container_transform);
+    container_transform->Scale(web_view->PageScaleFactor(),
+                               web_view->PageScaleFactor());
+    container_transform->Translate(
+        -web_view->VisualViewportOffset().OffsetFromOrigin());
+    if (!container_transform->IsIdentity())
+      bounds->transform = std::move(container_transform);
+  } else if (!web_container_transform.isIdentity()) {
+    bounds->transform =
+        base::WrapUnique(new gfx::Transform(web_container_transform));
+  }
+}
+
 bool BlinkAXTreeSource::GetTreeData(ui::AXTreeData* tree_data) const {
   CHECK(frozen_);
   tree_data->doctype = "html";
@@ -652,29 +680,8 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
 void BlinkAXTreeSource::SerializeBoundingBoxAttributes(
     WebAXObject src,
     ui::AXNodeData* dst) const {
-  WebAXObject offset_container;
-  WebFloatRect bounds_in_container;
-  SkMatrix44 container_transform;
   bool clips_children = false;
-  src.GetRelativeBounds(offset_container, bounds_in_container,
-                        container_transform, &clips_children);
-  dst->relative_bounds.bounds = bounds_in_container;
-  if (content::AXShouldIncludePageScaleFactorInRoot() && src.Equals(root())) {
-    WebView* web_view = render_frame_->GetRenderView()->GetWebView();
-    std::unique_ptr<gfx::Transform> container_transform_gfx =
-        std::make_unique<gfx::Transform>(container_transform);
-    container_transform_gfx->Scale(web_view->PageScaleFactor(),
-                                   web_view->PageScaleFactor());
-    container_transform_gfx->Translate(
-        -web_view->VisualViewportOffset().OffsetFromOrigin());
-    if (!container_transform_gfx->IsIdentity())
-      dst->relative_bounds.transform = std::move(container_transform_gfx);
-  } else if (!container_transform.isIdentity()) {
-    dst->relative_bounds.transform =
-        base::WrapUnique(new gfx::Transform(container_transform));
-  }
-  if (!offset_container.IsDetached())
-    dst->relative_bounds.offset_container_id = offset_container.AxID();
+  PopulateAXRelativeBounds(src, &dst->relative_bounds, &clips_children);
   if (clips_children)
     dst->AddBoolAttribute(ax::mojom::BoolAttribute::kClipsChildren, true);
 

@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Ulleres de sol</translation>
 <translation id="115443833402798225">Ahnmatae de hangul</translation>
 <translation id="1155759005174418845">Català</translation>
+<translation id="1172970565351728681">Temps restant aproximat: <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">Canvia el nom</translation>
 <translation id="117624967391683467">S'està copiant <ph name="FILE_NAME" />...</translation>
 <translation id="1178581264944972037">Posa en pausa</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">La propietat es transferirà a <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">Irlandès</translation>
 <translation id="3245321423178950146">Artista desconegut</translation>
+<translation id="3248185426436836442">Pendent</translation>
 <translation id="3252266817569339921">Francès</translation>
 <translation id="3254434849914415189">Tria l'aplicació predeterminada per als fitxers <ph name="FILE_TYPE" />:</translation>
 <translation id="3264582393905923483">Context</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">No tens permís per moure fitxers a <ph name="FOLDER_NAME" />.</translation>
 <translation id="3786301125658655746">No tens connexió</translation>
 <translation id="3789841737615482174">Instal·la</translation>
+<translation id="3793469551756281394">Temps restant aproximat: <ph name="REMAINING_TIME_HOUR" /> i <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">Versió</translation>
 <translation id="3801082500826908679">Feroès</translation>
 <translation id="3809272675881623365">Conill</translation>

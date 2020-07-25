@@ -563,6 +563,9 @@
 <translation id="3364869320075768271"><ph name="URL" /> ला तुमचे आभासी वास्तविकता डिव्हाइस आणि डेटा वापरायचा आहे</translation>
 <translation id="3366477098757335611">कार्डे पाहा</translation>
 <translation id="3369192424181595722">घड्याळ एरर</translation>
+<translation id="3371076217486966826"><ph name="URL" /> ला हे करायचे आहे:
+      • तुमच्या सभोवतालचा 3D नकाशा तयार करणे आणि कॅमेरा स्थितीचा मागोवा घेणे
+      • तुमचा कॅमेरा वापरणे</translation>
 <translation id="337363190475750230">तरतूद रद्द केली</translation>
 <translation id="3377144306166885718">सर्व्हरने TLS ची ऑब्सोलीट आवृत्ती वापरली.</translation>
 <translation id="3377188786107721145">धोरण पार्स एरर</translation>
@@ -1300,7 +1303,7 @@
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">पुढे संभाव्य शुल्क आहे.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 अन्य सूचना}other{# अन्य सूचना}}</translation>
-<translation id="6387645831795005740">आक्रमणकर्ते काहीवेळा URL मध्ये छोटे व पाहण्यासाठी कठीण असलेले बदल करून बनावट साइट बनवतात.</translation>
+<translation id="6387645831795005740">हल्लेखोर काहीवेळा URL मध्ये छोटे व पाहण्यासाठी कठीण असलेले बदल करून बनावट साइट बनवतात.</translation>
 <translation id="6389470377220713856">कार्डवरील नाव</translation>
 <translation id="6390200185239044127">Z-फोल्ड हाफ</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1562,6 +1565,7 @@
 <translation id="7518003948725431193">या वेबपत्त्यासाठी वेबपेज आढळले नाही: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Envelope)C8 (Envelope)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">"<ph name="SECTION" />" विभाग लपवलेला आहे</translation>
 <translation id="7526934274050461096">या साइटवर तुमचे कनेक्शन खाजगी नाही</translation>
 <translation id="7535087603100972091">मूल्य</translation>
 <translation id="7537536606612762813">अनिवार्य</translation>
@@ -1762,6 +1766,7 @@
 <translation id="8293206222192510085">बुकमार्क जोडा</translation>
 <translation id="8294431847097064396">स्रोत</translation>
 <translation id="8298115750975731693">तुम्ही वापरत असलेल्या (<ph name="WIFI_NAME" />) वाय-फाय ला तुम्ही <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> ला भेट देण्याची आवश्यकता असू शकते.</translation>
+<translation id="8303854710873047864">"<ph name="SECTION" />" विभाग दाखवला आहे</translation>
 <translation id="830498451218851433">फोल्ड हाफ</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">इंस्टॉल केलेली अ‍ॅप्स आणि ती किती वेळा वापरली जातात</translation>
@@ -1881,6 +1886,7 @@
 <translation id="8931333241327730545">तुम्ही तुमच्या Google खात्यात हे कार्ड सेव्ह करू इच्छिता?</translation>
 <translation id="8932102934695377596">तुमचे घड्याळ मागे आहे</translation>
 <translation id="893332455753468063">नाव जोडा</translation>
+<translation id="8942355029279167844">तुमच्या अ‍ॅडमिनिस्ट्रेटरने <ph name="APP_NAME" /> ला उत्पादन वापरण्याचा अनुभव सुधारित करण्यासाठी निदान डेटा गोळा करण्याची अनुमती दिली आहे. अधिक माहितीसाठी <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> पहा.</translation>
 <translation id="8943282376843390568">लिंबू</translation>
 <translation id="8957210676456822347">बंद पोर्टल प्राधिकृतता</translation>
 <translation id="8962950042226115166">संशयास्पद साइट</translation>

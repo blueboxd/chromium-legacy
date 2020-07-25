@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">อัปเดต Chrome</translation>
 <translation id="1569387923882100876">อุปกรณ์ที่เชื่อมต่อ</translation>
 <translation id="1571304935088121812">คัดลอกชื่อผู้ใช้</translation>
+<translation id="1592864538817356322">การปกป้องแบบมาตรฐาน:</translation>
 <translation id="1612196535745283361">Chrome ต้องมีสิทธิ์เข้าถึงตำแหน่งเพื่อสแกนหาอุปกรณ์ ตัวเลือกสิทธิ์เข้าถึงตำแหน่ง<ph name="BEGIN_LINK" />สำหรับอุปกรณ์เครื่องนี้ปิดอยู่<ph name="END_LINK" /></translation>
 <translation id="1620510694547887537">กล้องถ่ายรูป</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{นำ 1 รายการที่เลือกออก}other{นำ # รายการที่เลือกออก}}</translation>
@@ -578,6 +579,7 @@
 <translation id="5659593005791499971">อีเมล</translation>
 <translation id="5665379678064389456">สร้างกิจกรรมใน <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">ลบล้างคำขอของเว็บไซต์เพื่อป้องกันการซูมเข้า</translation>
+<translation id="568275469169136466">เพื่อลงชื่อเข้าใช้ชั่วคราว</translation>
 <translation id="5683547024293500885">Chrome ตรวจหาอัปเดตไม่ได้</translation>
 <translation id="5686790454216892815">ชื่อไฟล์ยาวเกินไป</translation>
 <translation id="5694049548840660018">กลับสู่หน้าแรกได้ง่ายๆ</translation>
@@ -589,6 +591,7 @@
 <translation id="5723735397759933332">ตอนนี้โหมด Lite จะประหยัดอินเทอร์เน็ตมือถือโดยการเพิ่มประสิทธิภาพให้รูปภาพในหน้า HTTPS</translation>
 <translation id="5726692708398506830">ขยายรายละเอียดทั้งหมดบนหน้า</translation>
 <translation id="5732819098735351888">การดาวน์โหลดจะเริ่มผ่าน Wi-Fi</translation>
+<translation id="5733983706093266635">สร้างคิวอาร์โค้ดไม่ได้ URL มากกว่า <ph name="CHARACTER_LIMIT" /> อักขระ</translation>
 <translation id="5748802427693696783">สลับเป็นแท็บมาตรฐานแล้ว</translation>
 <translation id="5749068826913805084">Chrome ต้องมีสิทธิ์เข้าถึงพื้นที่เก็บข้อมูลเพื่อดาวน์โหลดไฟล์</translation>
 <translation id="5749237766298580851">ปิด <ph name="SEPARATOR" /> ไม่แนะนำ</translation>
@@ -641,6 +644,7 @@
 <translation id="6111020039983847643">อินเทอร์เน็ตที่ใช้</translation>
 <translation id="6112702117600201073">กำลังรีเฟรชหน้า</translation>
 <translation id="6127379762771434464">นำรายการออกแล้ว</translation>
+<translation id="6140709049082532940">การปกป้องที่ปรับปรุงแล้ว:</translation>
 <translation id="6140912465461743537">ประเทศ/ภูมิภาค</translation>
 <translation id="614940544461990577">ลอง:</translation>
 <translation id="6154478581116148741">เปิดล็อกหน้าจอใน "การตั้งค่า" เพื่อส่งออกรหัสผ่านจากอุปกรณ์นี้</translation>
@@ -1017,6 +1021,7 @@
 <translation id="9100610230175265781">ต้องระบุรหัสผ่าน</translation>
 <translation id="9102803872260866941">แท็บแสดงตัวอย่างเปิดอยู่</translation>
 <translation id="9104217018994036254">รายการอุปกรณ์ที่จะแชร์แท็บด้วย</translation>
+<translation id="9104402662006063371">เข้าสู่โหมดไม่ระบุตัวตน</translation>
 <translation id="9108312223223904744">โทรศัพท์เป็นการรองรับคีย์ความปลอดภัย</translation>
 <translation id="9108808586816295166">DNS ที่ปลอดภัยอาจไม่พร้อมใช้งานในบางครั้ง</translation>
 <translation id="9133397713400217035">สำรวจแบบออฟไลน์</translation>

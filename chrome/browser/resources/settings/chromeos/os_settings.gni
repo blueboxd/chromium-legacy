@@ -23,6 +23,8 @@ os_settings_namespace_rewrites =
       "settings.MultiDeviceFeature|MultiDeviceFeature",
       "settings.MultiDeviceFeatureState|MultiDeviceFeatureState",
       "settings.MultiDevicePageContentData|MultiDevicePageContentData",
+      "settings.LanguagesMetricsProxy|LanguagesMetricsProxy",
+      "settings.LanguagesPageInteraction|LanguagesPageInteraction",
       "settings.OsResetBrowserProxy|OsResetBrowserProxy",
       "settings.RouteObserverBehavior|RouteObserverBehavior",
       "settings.Route|Route",

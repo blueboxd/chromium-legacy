@@ -18,31 +18,15 @@
 
 // =============================================================================
 
-OmniboxPedalClearBrowsingData::OmniboxPedalClearBrowsingData()
-    : OmniboxPedal(
-          LabelStrings(
-              IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT,
-              IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT_SHORT,
-              IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUGGESTION_CONTENTS),
-          GURL("chrome://settings/clearBrowserData")) {}
-
-#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
-const gfx::VectorIcon& OmniboxPedalClearBrowsingData::GetVectorIcon() const {
-  return omnibox::kAnswerWhenIsIcon;
-}
-#endif
-
-// =============================================================================
-
-class OmniboxPedalChangeSearchEngine : public OmniboxPedal {
+class OmniboxPedalClearBrowsingData : public OmniboxPedal {
  public:
-  OmniboxPedalChangeSearchEngine()
+  OmniboxPedalClearBrowsingData()
       : OmniboxPedal(
             LabelStrings(
-                IDS_OMNIBOX_PEDAL_CHANGE_SEARCH_ENGINE_HINT,
-                IDS_OMNIBOX_PEDAL_CHANGE_SEARCH_ENGINE_HINT_SHORT,
-                IDS_OMNIBOX_PEDAL_CHANGE_SEARCH_ENGINE_SUGGESTION_CONTENTS),
-            GURL("chrome://settings/searchEngines")) {}
+                IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT,
+                IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT_SHORT,
+                IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUGGESTION_CONTENTS),
+            GURL("chrome://settings/clearBrowserData")) {}
 };
 
 // =============================================================================
@@ -56,20 +40,6 @@ class OmniboxPedalManagePasswords : public OmniboxPedal {
                 IDS_OMNIBOX_PEDAL_MANAGE_PASSWORDS_HINT_SHORT,
                 IDS_OMNIBOX_PEDAL_MANAGE_PASSWORDS_SUGGESTION_CONTENTS),
             GURL("chrome://settings/passwords")) {}
-};
-
-// =============================================================================
-
-// TODO(orinj): Use better scoping for existing setting, or link to new UI.
-class OmniboxPedalChangeHomePage : public OmniboxPedal {
- public:
-  OmniboxPedalChangeHomePage()
-      : OmniboxPedal(
-            LabelStrings(
-                IDS_OMNIBOX_PEDAL_CHANGE_HOME_PAGE_HINT,
-                IDS_OMNIBOX_PEDAL_CHANGE_HOME_PAGE_HINT_SHORT,
-                IDS_OMNIBOX_PEDAL_CHANGE_HOME_PAGE_SUGGESTION_CONTENTS),
-            GURL("chrome://settings/?search=show+home+button")) {}
 };
 
 // =============================================================================
@@ -141,10 +111,7 @@ GetPedalImplementations() {
     pedals.insert(std::make_pair(id, std::unique_ptr<OmniboxPedal>(pedal)));
   };
   add(OmniboxPedalId::CLEAR_BROWSING_DATA, new OmniboxPedalClearBrowsingData());
-  add(OmniboxPedalId::CHANGE_SEARCH_ENGINE,
-      new OmniboxPedalChangeSearchEngine());
   add(OmniboxPedalId::MANAGE_PASSWORDS, new OmniboxPedalManagePasswords());
-  add(OmniboxPedalId::CHANGE_HOME_PAGE, new OmniboxPedalChangeHomePage());
   add(OmniboxPedalId::UPDATE_CREDIT_CARD, new OmniboxPedalUpdateCreditCard());
   add(OmniboxPedalId::LAUNCH_INCOGNITO, new OmniboxPedalLaunchIncognito());
   add(OmniboxPedalId::TRANSLATE, new OmniboxPedalTranslate());

@@ -3,13 +3,40 @@
 // found in the LICENSE file.
 
 import {GraphNode, D3GraphData} from './graph_model.js';
+import {DisplaySettingsData, GraphEdgeColor} from './page_model.js';
 
 import * as d3 from 'd3';
 
-// The unique HTML IDs for the SVG's `defs`
-// (https://developer.mozilla.org/en-US/docs/Web/SVG/Element/defs)
-const DEF_IDS = {
-  GRAPH_ARROWHEAD: 'graph-arrowhead',
+// The perpendicular distance from the center of an edge to place the control
+// point for a quadratic Bezier curve.
+const EDGE_CURVE_OFFSET = {
+  CURVED: 30,
+  STRAIGHT: 0,
+};
+
+// The default color for edges.
+const DEFAULT_EDGE_COLOR = '#999';
+
+// A map from GraphEdgeColor to its start and end color codes. The property
+// `targetDefId` will be used as the unique ID of the colored arrow in the SVG
+// defs (https://developer.mozilla.org/en-US/docs/Web/SVG/Element/defs), and the
+// arrowhead will be referred to by `url(#targetDefId)` in the SVG.
+const EDGE_COLORS = {
+  [GraphEdgeColor.DEFAULT]: {
+    source: DEFAULT_EDGE_COLOR,
+    target: DEFAULT_EDGE_COLOR,
+    targetDefId: 'graph-arrowhead-default',
+  },
+  [GraphEdgeColor.GREY_GRADIENT]: {
+    source: '#ddd',
+    target: '#666',
+    targetDefId: 'graph-arrowhead-grey-gradient',
+  },
+  [GraphEdgeColor.BLUE_TO_RED]: {
+    source: '#00f',
+    target: '#f00',
+    targetDefId: 'graph-arrowhead-blue-to-red',
+  },
 };
 
 // Parameters determining the force-directed simulation cooldown speed.
@@ -70,13 +97,15 @@ function getNodeColor(node) {
 /**
  * Adds a def for an arrowhead (triangle) marker to the SVG.
  * @param {*} defs The d3 selection of the SVG defs.
+ * @param {string} id The HTML id for the arrowhead.
+ * @param {string} color The color of the arrowhead.
  * @param {number} length The length of the arrowhead.
  * @param {number} width The width of the arrowhead.
  */
-function addArrowMarkerDef(defs, length, width) {
+function addArrowMarkerDef(defs, id, color, length, width) {
   const halfWidth = Math.floor(width / 2);
   defs.append('marker')
-      .attr('id', DEF_IDS.GRAPH_ARROWHEAD)
+      .attr('id', id) // 'graph-arrowhead-*'
       .attr('viewBox', `0 -${halfWidth} ${length} ${width}`)
       // TODO(yjlong): 5 is the hardcoded radius, change for dynamic radius.
       .attr('refX', length + 5)
@@ -86,7 +115,7 @@ function addArrowMarkerDef(defs, length, width) {
       .attr('markerHeight', width)
       .append('path')
       .attr('d', `M 0 -${halfWidth} L ${length} 0 L 0 ${halfWidth}`)
-      .attr('fill', '#999')
+      .attr('fill', color)
       .style('stroke', 'none');
 }
 
@@ -110,6 +139,39 @@ function countNumReheatTicks() {
 }
 
 /**
+ * Wrapper class around the logic for the currently hovered node.
+ *
+ * The hovered node should not change when being dragged, even if the "real"
+ * hovered node (as determined by mouse position) changes during the drag (e.g.,
+ * if the mouse moves too fast). Update takes place when drag ends, i.e., the
+ * dragged node become unhovered after drag if the mouse came off the node.
+ */
+class HoveredNodeManager {
+  constructor() {
+    /** @public {?GraphNode} */
+    this.hoveredNode = null;
+    /** @private {?GraphNode} */
+    this.realHoveredNode_ = null;
+    /** @private {boolean} */
+    this.isDragging_ = false;
+  }
+  setDragging(isDragging) {
+    this.isDragging_ = isDragging;
+    if (!this.isDragging_) {
+      // When the drag ends, update the hovered node.
+      this.hoveredNode = this.realHoveredNode_;
+    }
+  }
+  setHoveredNode(hoveredNode) {
+    this.realHoveredNode_ = hoveredNode;
+    if (!this.isDragging_) {
+      // The hovered node can only be updated when not dragging.
+      this.hoveredNode = this.realHoveredNode_;
+    }
+  }
+}
+
+/**
  * A callback to be triggered whenever a node is clicked in the visualization.
  * @callback OnNodeClickedCallback
  * @param {!GraphNode} node The node that was clicked.
@@ -123,14 +185,26 @@ class GraphView {
    * we can maybe change this to bind to a given DOM element if necessary.
    */
   constructor() {
+    /** @private {number} */
+    this.edgeCurveOffset_ = EDGE_CURVE_OFFSET.CURVED;
+    /** @private {boolean} */
+    this.colorEdgesOnlyOnHover_ = true;
+    /** @private {string} */
+    this.graphEdgeColor_ = GraphEdgeColor.DEFAULT;
+    /** @private {!HoveredNodeManager} */
+    this.hoveredNodeManager_ = new HoveredNodeManager();
+
     /** @private @type {?OnNodeClickedCallback} */
     this.onNodeClicked_ = null;
 
     const svg = d3.select('#graph-svg');
     const graphGroup = svg.append('g'); // Contains entire graph (for zoom/pan).
-    const svgDefs = svg.append('defs');
+    this.svgDefs_ = svg.append('defs');
 
-    addArrowMarkerDef(svgDefs, 10, 4);
+    // Add an arrowhead def for every possible edge target color.
+    for (const {target, targetDefId} of Object.values(EDGE_COLORS)) {
+      addArrowMarkerDef(this.svgDefs_, targetDefId, target, 10, 6);
+    }
 
     // Set up zoom and pan on the entire graph.
     svg.call(d3.zoom()
@@ -144,7 +218,8 @@ class GraphView {
     /** @private {*} */
     this.edgeGroup_ = graphGroup.append('g')
         .classed('graph-edges', true)
-        .attr('stroke-width', 1);
+        .attr('stroke-width', 1)
+        .attr('fill', 'transparent');
     /** @private {*} */
     this.nodeGroup_ = graphGroup.append('g')
         .classed('graph-nodes', true)
@@ -231,6 +306,96 @@ class GraphView {
     return (this.velocityDecayScale_(normalizedEaseTick));
   }
 
+  /** Synchronizes the path of all edges to their underlying data. */
+  syncEdgePaths() {
+    this.edgeGroup_.selectAll('path')
+        .attr('d', edge => {
+          // To calculate the control point, consider the edge vector [dX, dY]:
+          // * Flip over Y axis (since SVGs increase y downwards): [dX, -dY]
+          // * Rotate 90 degrees clockwise: [-dY, -dX]
+          // * Normalize and multiply by curve offset: offset/norm * [-dY, -dX]
+          // * Flip over Y again to get SVG coords: offset/norm * [-dY, dX]
+          // * Add to midpoint: [midX, midY] + offset/norm * [-dY, dX]
+          const deltaX = edge.target.x - edge.source.x;
+          const deltaY = edge.target.y - edge.source.y;
+          if (deltaX === 0 && deltaY === 0) {
+            return null; // Do not draw paths for self-edges.
+          }
+
+          const midX = (edge.source.x + edge.target.x) / 2;
+          const midY = (edge.source.y + edge.target.y) / 2;
+
+          const scaleFactor =
+            this.edgeCurveOffset_ / Math.hypot(deltaX, deltaY);
+          const controlPointX = midX - scaleFactor * deltaY;
+          const controlPointY = midY + scaleFactor * deltaX;
+
+          const path = d3.path();
+          path.moveTo(edge.source.x, edge.source.y);
+          path.quadraticCurveTo(
+              controlPointX, controlPointY, edge.target.x, edge.target.y);
+          return path.toString();
+        });
+  }
+
+  /** Synchronizes the color of all edges to their underlying data. */
+  syncEdgeColors() {
+    const hoveredNode = this.hoveredNodeManager_.hoveredNode;
+    const edgeTouchesHoveredNode = edge =>
+      edge.source === hoveredNode || edge.target === hoveredNode;
+    const nodeTouchesHoveredNode = node => {
+      return node === hoveredNode ||
+        hoveredNode.inbound.has(node) || hoveredNode.outbound.has(node);
+    };
+
+    // Point the associated gradient in the direction of the line.
+    this.svgDefs_.selectAll('linearGradient')
+        .attr('x1', edge => edge.source.x)
+        .attr('y1', edge => edge.source.y)
+        .attr('x2', edge => edge.target.x)
+        .attr('y2', edge => edge.target.y);
+
+    this.edgeGroup_.selectAll('path')
+        .attr('marker-end', edge => {
+          if (edge.source === edge.target) {
+            return null;
+          } else if (!this.colorEdgesOnlyOnHover_ ||
+              edgeTouchesHoveredNode(edge)) {
+            return `url(#${EDGE_COLORS[this.graphEdgeColor_].targetDefId})`;
+          }
+          return `url(#${EDGE_COLORS[GraphEdgeColor.DEFAULT].targetDefId})`;
+        })
+        .attr('stroke', edge => {
+          if (!this.colorEdgesOnlyOnHover_ || edgeTouchesHoveredNode(edge)) {
+            return `url(#${edge.id})`;
+          }
+          return DEFAULT_EDGE_COLOR;
+        })
+        .classed('non-hovered-edge', edge => {
+          return this.colorEdgesOnlyOnHover_ &&
+            hoveredNode !== null && !edgeTouchesHoveredNode(edge);
+        });
+
+    this.labelGroup_.selectAll('text')
+        .classed('non-hovered-text', node => {
+          return this.colorEdgesOnlyOnHover_ &&
+            hoveredNode !== null && !nodeTouchesHoveredNode(node);
+        });
+  }
+
+  /** Updates the colors of the edge gradients to match the selected color. */
+  syncEdgeGradients() {
+    const {source, target} = EDGE_COLORS[this.graphEdgeColor_];
+    const gradientSelection = this.svgDefs_.selectAll('linearGradient');
+    gradientSelection.selectAll('stop').remove();
+    gradientSelection.append('stop')
+        .attr('offset', '0%')
+        .attr('stop-color', source);
+    gradientSelection.append('stop')
+        .attr('offset', '100%')
+        .attr('stop-color', target);
+  }
+
   /**
    * Reheats the simulation, allowing all nodes to move according to the physics
    * simulation until they cool down again.
@@ -244,11 +409,8 @@ class GraphView {
     // The simulation updates position variables in the data every tick, it's up
     // to us to update the visualization to match.
     const tickActions = () => {
-      this.edgeGroup_.selectAll('line')
-          .attr('x1', edge => edge.source.x)
-          .attr('y1', edge => edge.source.y)
-          .attr('x2', edge => edge.target.x)
-          .attr('y2', edge => edge.target.y);
+      this.syncEdgePaths();
+      this.syncEdgeColors();
 
       this.nodeGroup_.selectAll('circle')
           .attr('cx', node => node.x)
@@ -277,6 +439,26 @@ class GraphView {
   }
 
   /**
+   * Updates the display settings for the visualization.
+   * @param {!DisplaySettingsData} displaySettings The display config.
+   */
+  updateDisplaySettings(displaySettings) {
+    const {
+      curveEdges,
+      colorOnlyOnHover,
+      graphEdgeColor,
+    } = displaySettings;
+    this.edgeCurveOffset_ = curveEdges ?
+      EDGE_CURVE_OFFSET.CURVED : EDGE_CURVE_OFFSET.STRAIGHT;
+    this.colorEdgesOnlyOnHover_ = colorOnlyOnHover;
+    this.graphEdgeColor_ = graphEdgeColor;
+
+    this.syncEdgeGradients();
+    this.syncEdgePaths();
+    this.syncEdgeColors();
+  }
+
+  /**
    * Updates the data source used for the visualization.
    *
    * @param {!D3GraphData} inputData The new data to use.
@@ -284,23 +466,18 @@ class GraphView {
   updateGraphData(inputData) {
     const {nodes: inputNodes, edges: inputEdges} = inputData;
 
-    this.simulation_
-        .nodes(inputNodes)
-        .force('links', d3.forceLink(inputEdges).id(edge => edge.id));
-    this.simulation_.stop();
-
     let nodesAddedOrRemoved = false;
+    this.svgDefs_.selectAll('linearGradient')
+        .data(inputEdges, edge => edge.id)
+        .join(enter => enter.append('linearGradient')
+            .attr('id', edge => edge.id)
+            .attr('gradientUnits', 'userSpaceOnUse'));
+
     // TODO(yjlong): Determine if we ever want to render self-loops (will need
     // to be a loop instead of a straight line) and handle accordingly.
-    this.edgeGroup_.selectAll('line')
+    this.edgeGroup_.selectAll('path')
         .data(inputEdges, edge => edge.id)
-        .join(enter => enter.append('line')
-            .attr('marker-end', edge => {
-              if ( edge.source === edge.target ) {
-                return null;
-              }
-              return `url(#${DEF_IDS.GRAPH_ARROWHEAD})`;
-            }));
+        .join(enter => enter.append('path'));
 
     this.nodeGroup_.selectAll('circle')
         .data(inputNodes, node => node.id)
@@ -311,14 +488,24 @@ class GraphView {
           return enter.append('circle')
               .attr('r', 5)
               .on('mousedown', node => this.onNodeClicked_(node))
+              .on('mouseenter', node => {
+                this.hoveredNodeManager_.setHoveredNode(node);
+                this.syncEdgeColors();
+              })
+              .on('mouseleave', () => {
+                this.hoveredNodeManager_.setHoveredNode(null);
+                this.syncEdgeColors();
+              })
               .call(d3.drag()
+                  .on('start', () => this.hoveredNodeManager_.setDragging(true))
                   .on('drag', (node, idx, nodes) => {
                     this.reheatSimulation(/* shouldEase */ false);
                     d3.select(nodes[idx]).classed('locked', true);
                     // Fix the node's position after it has been dragged.
                     node.fx = d3.event.x;
                     node.fy = d3.event.y;
-                  }))
+                  })
+                  .on('end', () => this.hoveredNodeManager_.setDragging(false)))
               .on('click', (node, idx, nodes) => {
                 if (d3.event.defaultPrevented) {
                   return; // Skip drag events.
@@ -362,7 +549,11 @@ class GraphView {
 
     // The graph should not be reheated on a no-op (eg. adding a visible node to
     // the filter which doesn't add/remove any new nodes).
+    this.simulation_
+        .nodes(inputNodes)
+        .force('links', d3.forceLink(inputEdges).id(edge => edge.id));
     if (nodesAddedOrRemoved) {
+      this.simulation_.stop();
       this.reheatSimulation(/* shouldEase */ true);
     }
   }

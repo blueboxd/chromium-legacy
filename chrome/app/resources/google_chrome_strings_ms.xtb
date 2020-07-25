@@ -77,6 +77,7 @@
 <translation id="3089968997497233615">Terdapat versi Google Chrome baharu yang lebih selamat tersedia.</translation>
 <translation id="3127818369811890733">OS Chrome tidak dapat menyegerakkan data anda.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
+<translation id="3351117925998652957">Pilih Ruang Chrome anda</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome akan dilancarkan semula sekarang}=1{Chrome akan dilancarkan semula dalam masa sesaat}other{Chrome akan dilancarkan semula dalam masa # saat}}</translation>
 <translation id="3395323229510056640">Dapatkan bantuan berkenaan Chrome OS</translation>
@@ -175,7 +176,7 @@ tetapan OS Chrome<ph name="LINK_END" /> anda</translation>
 <translation id="6291549208091401781">Google Chrome telah dipasang untuk semua pengguna pada komputer anda.</translation>
 <translation id="6338556085225130112">Mengemas kini Google Chrome</translation>
 <translation id="6368958679917195344">OS Chrome menjadi kenyataan dengan <ph name="BEGIN_LINK_CROS_OSS" />perisian sumber terbuka<ph name="END_LINK_CROS_OSS" /> tambahan.</translation>
-<translation id="6372315130616785175">Anda melog masuk dengan akaun kerja. Adakah anda mahu mencipta Profil Chrome untuk Kerja yang baharu untuk mengasingkan data anda?</translation>
+<translation id="6372315130616785175">Anda dilog masuk dengan akaun kerja. Adakah anda mahu membuat Profil Chrome untuk Kerja yang baharu untuk mengasingkan data anda?</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6566149418543181476">Mengemas kini Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6676384891291319759">Akses Internet</translation>
@@ -205,6 +206,7 @@ tetapan OS Chrome<ph name="LINK_END" /> anda</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Untuk melihat sama ada peranti anda telah dikemas kini, pergi ke <ph name="LINK_BEGIN" />Tetapan OS Chrome<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Komputer ini tidak akan menerima kemas kini Google Chrome lagi kerana Mac OS X 10.9 tidak lagi disokong.</translation>
+<translation id="7591404275842302616">Guna Ruang Chrome untuk mengatur penyemakan imbas anda pada peranti ini</translation>
 <translation id="7592736734348559088">Google Chrome tidak dapat menyegerakkan data anda kerana butiran log masuk akaun anda sudah lapuk.</translation>
 <translation id="7626032353295482388">Selamat Datang ke Chrome</translation>
 <translation id="7629695634924605473">Chrome akan memberitahu anda sekiranya kata laluan anda terjejas</translation>

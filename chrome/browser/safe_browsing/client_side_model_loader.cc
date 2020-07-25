@@ -78,7 +78,7 @@ int ModelLoader::GetModelNumber() {
       kClientModelFinchExperiment, kClientModelFinchParam);
   int model_number = 0;
   if (!base::StringToInt(num_str, &model_number)) {
-    model_number = 0;  // Default model
+    model_number = 4;  // Default model
   }
   return model_number;
 }

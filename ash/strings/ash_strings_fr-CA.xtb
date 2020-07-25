@@ -111,7 +111,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="2222338659135520253">Connexion requise</translation>
 <translation id="225680501294068881">Recherche d'appareils en cours…</translation>
 <translation id="2268130516524549846">La connectivité Bluetooth est désactivée</translation>
-<translation id="2268813581635650749">Déconnecter tous les utilisateurs</translation>
+<translation id="2268813581635650749">Tous déconnecter</translation>
 <translation id="2277103315734023688">Rechercher vers l'avant</translation>
 <translation id="2292698582925480719">Échelle d'affichage</translation>
 <translation id="229397294990920565">Désactivation des données cellulaires en cours…</translation>
@@ -276,7 +276,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="4028481283645788203">Le mot de passe est exigé pour plus de sécurité</translation>
 <translation id="4032485810211612751"><ph name="HOURS" /> h <ph name="MINUTES" /> min <ph name="SECONDS" /> s</translation>
 <translation id="4042660782729322247">Vous partagez votre écran</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Notifications désactivées pour une application}one{Notifications désactivées pour # application}other{Notifications désactivées pour # applications}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Désactivées pour une appli}one{Désactivées pour # appli}other{Désactivées pour # applis}}</translation>
 <translation id="4072264167173457037">Signal moyen</translation>
 <translation id="4112140312785995938">Rechercher vers l'arrière</translation>
 <translation id="4129129681837227511">Pour afficher les notifications sur l'écran de verrouillage, déverrouillez votre appareil afin de modifier ce paramètre</translation>
@@ -301,7 +301,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="4356930093361201197">mode de contraste élevé</translation>
 <translation id="4368583494516669646">Bonne nuit <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Paramètres de diffusion</translation>
-<translation id="4378551569595875038">Connexion en cours...</translation>
+<translation id="4378551569595875038">Connexion...</translation>
 <translation id="4379531060876907730">Voici vos outils de stylet</translation>
 <translation id="4389184120735010762">Vous avez appuyé sur le raccourci-clavier de loupe en mode ancré. Voulez-vous l'activer?</translation>
 <translation id="4421231901400348175">Partage du contrôle de votre écran avec <ph name="HELPER_NAME" /> au moyen de l’assistance à distance.</translation>
@@ -393,7 +393,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="5600837773213129531">Appuyez sur Ctrl + Alt + Z pour désactiver la rétroaction vocale.</translation>
 <translation id="5625955975703555628">LTE+</translation>
 <translation id="5648021990716966815">Prise du microphone</translation>
-<translation id="5669267381087807207">Activation en cours…</translation>
+<translation id="5669267381087807207">Activation…</translation>
 <translation id="5673434351075758678">De « <ph name="FROM_LOCALE" />  à « <ph name="TO_LOCALE" /> » après la synchronisation de vos paramètres.</translation>
 <translation id="5682642926269496722">L'Assistant Google n'est pas accessible pour le compte d'utilisateur actuel.</translation>
 <translation id="5689633613396158040">Le mode Éclairage nocturne permet de regarder l'écran plus facilement lorsque l'éclairage est faible. Touchez l'écran pour modifier l'heure à laquelle le mode Éclairage nocturne s'active ou se désactive complètement.</translation>
@@ -421,7 +421,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="5958529069007801266">Utilis. supervisé</translation>
 <translation id="5977415296283489383">Casque d'écoute</translation>
 <translation id="5978382165065462689">Partage du contrôle de votre écran au moyen de l’assistance à distance.</translation>
-<translation id="5980301590375426705">Fermer la session d'invité</translation>
+<translation id="5980301590375426705">Fermer sess. invité</translation>
 <translation id="598882571027504733">Pour télécharger la mise à jour, redémarrez votre Chromebook avec le clavier associé.</translation>
 <translation id="5992218262414051481">Mode de contraste élevé activé. Appuyez à nouveau sur Ctrl+Recherche+H pour le désactiver.</translation>
 <translation id="6018164090099858612">Fermeture du mode miroir</translation>
@@ -521,7 +521,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="7088960765736518739">Switch Access</translation>
 <translation id="7098389117866926363">Appareil USB-C (port arrière-gauche)</translation>
 <translation id="7131634465328662194">Vous serez automatiquement déconnecté.</translation>
-<translation id="7143207342074048698">Connexion en cours…</translation>
+<translation id="7143207342074048698">Connexion…</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Rétablissement de la résolution précédente dans <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7188494361780961876">Le menu a été déplacé vers le coin supérieur gauche de l'écran.</translation>
@@ -598,7 +598,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="8054466585765276473">Calcul de l'autonomie de la batterie en cours…</translation>
 <translation id="8061464966246066292">Contraste élevé</translation>
 <translation id="8098591350844501178">Arrêter la diffusion de l'écran sur <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">Notifications activées pour toutes les applications</translation>
+<translation id="8113423164597455979">Activées, toutes applis</translation>
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8132793192354020517">Connecté à <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialisation en cours...</translation>
@@ -639,7 +639,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> a <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Appuyez sur Alt + Recherche ou Majuscule pour le désactiver.</translation>
 <translation id="8492573885090281069">L'écran <ph name="DISPLAY_NAME" /> ne prend pas en charge la résolution de <ph name="SPECIFIED_RESOLUTION" />. La résolution a été changée à <ph name="FALLBACK_RESOLUTION" />. Cliquez sur Confirmer pour garder les changements. Les paramètres précédents seront restaurés dans <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="8513108775083588393">Rotation automatique</translation>
+<translation id="8513108775083588393">Rotation auto</translation>
 <translation id="8517041960877371778">Il est possible que votre <ph name="DEVICE_TYPE" /> ne se charge pas lorsqu’il est allumé.</translation>
 <translation id="8563862697512465947">Paramètres de notification</translation>
 <translation id="857201607579416096">Le menu a été déplacé vers le coin inférieur droit de l'écran.</translation>

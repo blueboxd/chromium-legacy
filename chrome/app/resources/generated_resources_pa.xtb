@@ -52,7 +52,7 @@
 <translation id="1054153489933238809">ਨਵੀਂ ਟੈਬ ਵਿੱਚ ਮੂਲ &amp;ਚਿੱਤਰ ਖੋਲ੍ਹੋ</translation>
 <translation id="1055806300943943258">Bluetooth ਅਤੇ USB ਡਿਵਾਈਸਾਂ ਖੋਜ ਰਿਹਾ ਹੈ...</translation>
 <translation id="1056466516655540509"><ph name="MINUTES" /> ਮਿੰਟ ਪਹਿਲਾਂ ਅੱਪਡੇਟ ਕੀਤਾ ਗਿਆ</translation>
-<translation id="1056775291175587022">ਕੋਈ ਨੈੱਟਵਰਕ ਨਹੀਂ ਮਿਲੇ</translation>
+<translation id="1056775291175587022">ਕੋਈ ਨੈੱਟਵਰਕ ਨਹੀਂ</translation>
 <translation id="1056898198331236512">ਚਿਤਾਵਨੀ</translation>
 <translation id="1058262162121953039">PUK</translation>
 <translation id="1060292118287751956">ਸਕ੍ਰੀਨ ਅੱਪਡੇਟ ਹੋਣ ਦੀ ਵਾਰਵਾਰਤਾ ਨੂੰ ਨਿਰਧਾਰਿਤ ਕਰਦੀ ਹੈ</translation>
@@ -2581,7 +2581,7 @@
 <translation id="4130750466177569591">ਮੈਂ ਸਹਿਮਤ ਹਾਂ</translation>
 <translation id="413121957363593859">ਕੰਪੋਨੈਂਟਸ</translation>
 <translation id="4131410914670010031">ਕਾਲਾ ਅਤੇ ਚਿੱਟਾ</translation>
-<translation id="413193092008917129">ਨੈੱਟਵਰਕ ਤਸ਼ਖੀਸੀ ਨਿਯਮਬੱਧ ਕੰਮ</translation>
+<translation id="413193092008917129">ਨੈੱਟਵਰਕ ਤਸ਼ਖੀਸ ਸੰਬੰਧੀ ਨਿਯਮਬੱਧ ਕੰਮ</translation>
 <translation id="4133076602192971179">ਆਪਣਾ ਪਾਸਵਰਡ ਬਦਲਣ ਲਈ ਐਪ ਖੋਲ੍ਹੋ</translation>
 <translation id="4136203100490971508">ਸੂਰਜ ਚੜ੍ਹਨ ਸਮੇਂ ਰਾਤ ਦੀ ਰੋਸ਼ਨੀ ਆਪਣੇ ਆਪ ਬੰਦ ਹੋ ਜਾਵੇਗੀ</translation>
 <translation id="41365691917097717">ਜਾਰੀ ਰੱਖਣ ਨਾਲ ADB ਡੀਬੱਗਿੰਗ ਨੂੰ Android ਐਪਾਂ ਬਣਾਉਣ ਅਤੇ ਉਹਨਾਂ ਦੀ ਜਾਂਚ ਕਰਨ ਲਈ ਚਾਲੂ ਕੀਤਾ ਜਾਵੇਗਾ। ਨੋਟ ਕਰੋ ਕਿ ਇਸ ਕਾਰਵਾਈ ਨਾਲ ਉਹ Android ਐਪਾਂ ਸਥਾਪਤ ਹੋ ਸਕਦੀਆਂ ਹਨ, ਜਿਨ੍ਹਾਂ ਦੀ ਪੁਸ਼ਟੀ Google ਨੇ ਨਹੀਂ ਕੀਤੀ ਹੈ, ਅਤੇ ਫੈਕਟਰੀ ਰੀਸੈੱਟ ਨੂੰ ਬੰਦ ਕਰਨ ਦੀ ਲੋੜ ਪੈਂਦੀ ਹੈ।</translation>
@@ -2991,7 +2991,7 @@
 <translation id="4691791363716065510"><ph name="ORIGIN" /> ਇਸ ਸਾਈਟ ਲਈ ਸਾਰੀਆਂ ਟੈਬਾਂ ਬੰਦ ਨਾ ਕੀਤੇ ਜਾਣ ਤੱਕ <ph name="FILENAME" /> ਨੂੰ ਦੇਖ ਸਕੇਗੀ</translation>
 <translation id="4692623383562244444">ਖੋਜ ਇੰਜਣ</translation>
 <translation id="4693155481716051732">ਸੁਸ਼ੀ</translation>
-<translation id="469379815867856270">ਸਿਗਨਲ ਸ਼ਕਤੀ</translation>
+<translation id="469379815867856270">ਸਿਗਨਲ ਦੀ ਤੀਬਰਤਾ</translation>
 <translation id="4694024090038830733">ਪ੍ਰਿੰਟਰ ਦਾ ਸੰਰੂਪਣ ਪ੍ਰਸ਼ਾਸਕ ਵੱਲੋਂ ਸੰਭਾਲਿਆ ਜਾਂਦਾ ਹੈ।</translation>
 <translation id="4694604912444486114">ਬਾਂਦਰ</translation>
 <translation id="4697551882387947560">ਜਦੋਂ ਬ੍ਰਾਊਜ਼ਿੰਗ ਸੈਸ਼ਨ ਖ਼ਤਮ ਹੁੰਦਾ ਹੈ</translation>
@@ -3940,7 +3940,7 @@
   ਪਬਲਿਕ ਪ੍ਰਤਿਨਿਧੀ (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="5916084858004523819">ਪਾਬੰਦੀ ਲਗਾਈ ਗਈ</translation>
-<translation id="5916664084637901428">ਤੇ</translation>
+<translation id="5916664084637901428">ਚਾਲੂ</translation>
 <translation id="59174027418879706">ਸਮਰਥਿਤ</translation>
 <translation id="5920543303088087579">ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਵੱਲੋਂ ਇਸ ਨੈੱਟਵਰਕ ਨਾਲ ਕਨੈਕਟ ਕਰਨਾ ਅਯੋਗ ਬਣਾਇਆ ਗਿਆ ਹੈ</translation>
 <translation id="5920835625712313205">Chrome OS ਸਿਸਟਮ ਇਮੇਜ਼ ਰਾਈਟਰ</translation>
@@ -6319,7 +6319,7 @@
 <translation id="8871974300055371298">ਸਮੱਗਰੀ ਸੈਟਿੰਗਾਂ</translation>
 <translation id="8872155268274985541">ਅਵੈਧ ਕਿਓਸਕ ਬਾਹਰੀ ਅੱਪਡੇਟ ਮੈਨੀਫ਼ੈਸਟ ਫ਼ਾਈਲ ਮਿਲੀ। ਕਿਓਸਕ ਐਪ ਨੂੰ ਅੱਪਡੇਟ ਕਰਨ ਵਿੱਚ ਅਸਫਲ। ਕਿਰਪਾ ਕਰਕੇ USB ਸਟਿੱਕ ਹਟਾਓ।</translation>
 <translation id="8872777911145321141">ਕਿਸੇ ਸਾਈਟ ਵੱਲੋਂ ਤੁਹਾਡੇ ਆਭਾਸੀ ਵਾਸਤਵਿਕਤਾ ਡੀਵਾਈਸਾਂ ਅਤੇ ਡਾਟੇ ਨੂੰ ਵਰਤਣ ਵੇਲੇ ਪੁੱਛੋ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
-<translation id="8874184842967597500">ਕਨੈਕਟ ਨਹੀਂ ਕੀਤਾ</translation>
+<translation id="8874184842967597500">ਕਨੈਕਟ ਨਹੀਂ ਹੈ</translation>
 <translation id="8875520811099717934">Linux ਅੱਪਗ੍ਰੇਡ</translation>
 <translation id="8876307312329369159">ਕਿਸੇ ਡੈਮੋ ਸੈਸ਼ਨ ਵਿੱਚ ਇਸ ਸੈਟਿੰਗ ਨੂੰ ਬਦਲਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ।</translation>
 <translation id="8877448029301136595">[ਮਾਤਾਜਾਂ ਪਿਤਾ ਦੀ ਡਾਇਰੈਕਟਰੀ]</translation>

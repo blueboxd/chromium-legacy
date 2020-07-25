@@ -90,15 +90,15 @@ class MODULES_EXPORT AXObjectCacheImpl
   void UpdateReverseRelations(const AXObject* relation_source,
                               const Vector<String>& target_ids);
   void ChildrenChanged(Node*) override;
-  void ChildrenChanged(LayoutObject*) override;
+  void ChildrenChanged(const LayoutObject*) override;
   void ChildrenChanged(AccessibleNode*) override;
   void CheckedStateChanged(Node*) override;
   void ListboxOptionStateChanged(HTMLOptionElement*) override;
   void ListboxSelectedChildrenChanged(HTMLSelectElement*) override;
   void ListboxActiveIndexChanged(HTMLSelectElement*) override;
-  void LocationChanged(LayoutObject*) override;
+  void LocationChanged(const LayoutObject*) override;
   void RadiobuttonRemovedFromGroup(HTMLInputElement*) override;
-  void ImageLoaded(LayoutObject*) override;
+  void ImageLoaded(const LayoutObject*) override;
 
   void Remove(AccessibleNode*) override;
   void Remove(LayoutObject*) override;
@@ -108,11 +108,11 @@ class MODULES_EXPORT AXObjectCacheImpl
   const Element* RootAXEditableElement(const Node*) override;
 
   // Called when aspects of the style (e.g. color, alignment) change.
-  void StyleChanged(LayoutObject*) override;
+  void StyleChanged(const LayoutObject*) override;
 
   // Called by a node when text or a text equivalent (e.g. alt) attribute is
   // changed.
-  void TextChanged(LayoutObject*) override;
+  void TextChanged(const LayoutObject*) override;
   void TextChangedWithCleanLayout(Node* optional_node, AXObject*);
   void FocusableChangedWithCleanLayout(Element* element);
   void DocumentTitleChanged() override;
@@ -185,7 +185,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   // will only return the AXObject if it already exists
   AXObject* Get(AccessibleNode*);
   AXObject* Get(const Node*) override;
-  AXObject* Get(LayoutObject*);
+  AXObject* Get(const LayoutObject*);
   AXObject* Get(AbstractInlineTextBox*);
 
   AXObject* FirstAccessibleObjectFromNode(const Node*);
@@ -215,7 +215,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   // values are cached as long as the modification count hasn't changed.
   int ModificationCount() const { return modification_count_; }
 
-  void PostNotification(LayoutObject*, ax::mojom::blink::Event);
+  void PostNotification(const LayoutObject*, ax::mojom::blink::Event);
   void PostNotification(Node*, ax::mojom::Event);
   void PostNotification(AXObject*, ax::mojom::blink::Event);
   void MarkAXObjectDirty(AXObject*, bool subtree);
@@ -349,7 +349,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   // LayoutObject and AbstractInlineTextBox are not on the Oilpan heap so we
   // do not use HeapHashMap for those mappings.
   HeapHashMap<Member<AccessibleNode>, AXID> accessible_node_mapping_;
-  HashMap<LayoutObject*, AXID> layout_object_mapping_;
+  HashMap<const LayoutObject*, AXID> layout_object_mapping_;
   HeapHashMap<Member<const Node>, AXID> node_object_mapping_;
   HashMap<AbstractInlineTextBox*, AXID> inline_text_box_object_mapping_;
   int modification_count_;

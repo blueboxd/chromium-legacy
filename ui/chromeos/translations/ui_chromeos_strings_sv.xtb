@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Solglasögon</translation>
 <translation id="115443833402798225">Hangul Ahnmatae</translation>
 <translation id="1155759005174418845">katalanska</translation>
+<translation id="1172970565351728681">Cirka <ph name="REMAINING_TIME" /> kvar</translation>
 <translation id="1173894706177603556">Ändra namn</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> kopieras ...</translation>
 <translation id="1178581264944972037">Paus</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187"><ph name="DESTINATION_DOMAIN" /> blir den nya ägaren efter överföringen.</translation>
 <translation id="3241720467332021590">iriska</translation>
 <translation id="3245321423178950146">Okänd artist</translation>
+<translation id="3248185426436836442">Väntar</translation>
 <translation id="3252266817569339921">franska</translation>
 <translation id="3254434849914415189">Välj standardapp för <ph name="FILE_TYPE" />-filer:</translation>
 <translation id="3264582393905923483">Sammanhang</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Du har inte behörighet att flytta filer till <ph name="FOLDER_NAME" />.</translation>
 <translation id="3786301125658655746">Du är offline</translation>
 <translation id="3789841737615482174">Installera</translation>
+<translation id="3793469551756281394">Cirka <ph name="REMAINING_TIME_HOUR" /> och <ph name="REMAINING_TIME_MINUTE" /> kvar</translation>
 <translation id="3798449238516105146">Version</translation>
 <translation id="3801082500826908679">färöiska</translation>
 <translation id="3809272675881623365">Kanin</translation>

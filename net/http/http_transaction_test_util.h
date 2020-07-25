@@ -231,7 +231,7 @@ class MockNetworkTransaction
       CreateHelper* create_helper) override;
 
   void SetBeforeNetworkStartCallback(
-      const BeforeNetworkStartCallback& callback) override;
+      BeforeNetworkStartCallback callback) override;
 
   void SetConnectedCallback(const ConnectedCallback& callback) override;
 

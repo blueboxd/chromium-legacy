@@ -13,10 +13,10 @@ INCLUDE_CPP_FILES_ONLY = (
 )
 
 def CheckChangeLintsClean(input_api, output_api):
-  """Makes sure that the ui/app_list/ code is cpplint clean."""
-  black_list = input_api.DEFAULT_BLACK_LIST
+  """Makes sure that the code is cpplint clean."""
+  files_to_skip = input_api.DEFAULT_FILES_TO_SKIP
   sources = lambda x: input_api.FilterSourceFile(
-    x, white_list = INCLUDE_CPP_FILES_ONLY, black_list = black_list)
+    x, files_to_check=INCLUDE_CPP_FILES_ONLY, files_to_skip=files_to_skip)
   return input_api.canned_checks.CheckChangeLintsClean(
       input_api, output_api, sources, lint_filters=[], verbose_level=1)
 

@@ -13749,6 +13749,55 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   host_impl_ = nullptr;
 }
 
+// Test if the AverageLagTrackingManager's pending frames list is cleared when
+// the LayerTreeFrameSink loses context. It is necessary since the frames won't
+// receive a presentation feedback if the context is lost, and the pending
+// frames will never be removed from the list otherwise.
+TEST_F(LayerTreeHostImplTest,
+       ClearTrackingManagerOnLayerTreeFrameSinkLoseContext) {
+  const gfx::Size content_size(1000, 10000);
+  const gfx::Size viewport_size(500, 500);
+  SetupViewportLayersOuterScrolls(viewport_size, content_size);
+  DrawFrame();
+
+  host_impl_->ScrollBegin(BeginState(gfx::Point(250, 250), gfx::Vector2dF(),
+                                     ui::ScrollInputType::kTouchscreen)
+                              .get(),
+                          ui::ScrollInputType::kTouchscreen);
+
+  // Draw 30 frames, each with 1 LatencyInfo object that will be added to the
+  // AverageLagTrackingManager.
+  for (int i = 0; i < 30; i++) {
+    // Makes a scroll update so the next frame is set to be processed
+    // (to force frame->has_no_damage = false).
+    host_impl_->ScrollUpdate(UpdateState(gfx::Point(), gfx::Vector2d(0, 10),
+                                         ui::ScrollInputType::kTouchscreen)
+                                 .get());
+
+    // Add a LatencyInfo object that will be accepted by
+    // AverageLagTrackingManager::CollectScrollEventsFromFrame.
+    ui::LatencyInfo latency_info;
+    latency_info.set_source_event_type(ui::SourceEventType::TOUCH);
+    latency_info.AddLatencyNumber(
+        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT);
+    latency_info.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT,
+        base::TimeTicks::Now());
+    std::unique_ptr<SwapPromise> swap_promise(
+        new LatencyInfoSwapPromise(latency_info));
+    host_impl_->active_tree()->QueuePinnedSwapPromise(std::move(swap_promise));
+
+    DrawFrame();
+  }
+
+  // Make LayerTreeFrameSink lose context. It should clear
+  // |lag_tracking_manager_|.
+  host_impl_->DidLoseLayerTreeFrameSink();
+
+  // Finish the test. |lag_tracking_manager_| will check in its destructor if
+  // there is less than 20 frames in its pending frames list.
+}
+
 // Tests that the scheduled autoscroll task aborts if a 2nd mousedown occurs in
 // the same frame.
 TEST_F(LayerTreeHostImplTest, AutoscrollTaskAbort) {

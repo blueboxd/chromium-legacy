@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Արևային ակնոց</translation>
 <translation id="115443833402798225">Հանգուլ Անմատա</translation>
 <translation id="1155759005174418845">Կատալոնական</translation>
+<translation id="1172970565351728681">Մնացել է մոտ <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">Վերանվանել</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> ֆայլը պատճենվում է…</translation>
 <translation id="1178581264944972037">Դադար</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Սեփականության իրավունքը կփոխանցվի <ph name="DESTINATION_DOMAIN" /> տիրույթին։</translation>
 <translation id="3241720467332021590">Իռլանդերեն</translation>
 <translation id="3245321423178950146">Անհայտ կատարող</translation>
+<translation id="3248185426436836442">Ընթացքում է</translation>
 <translation id="3252266817569339921">Ֆրանսիական</translation>
 <translation id="3254434849914415189">Ընտրեք կանխադրված հավելված <ph name="FILE_TYPE" /> ֆայլերի համար:</translation>
 <translation id="3264582393905923483">Համատեքստ</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Դուք այս ֆայլերը «<ph name="FOLDER_NAME" />» պանակ տեղափոխելու թույլտվություն չունեք։</translation>
 <translation id="3786301125658655746">Դուք միացած չեք ցանցին</translation>
 <translation id="3789841737615482174">Տեղադրել</translation>
+<translation id="3793469551756281394">Մնացել է մոտ <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">Տարբերակ</translation>
 <translation id="3801082500826908679">ֆարյորերեն</translation>
 <translation id="3809272675881623365">Ճագար</translation>

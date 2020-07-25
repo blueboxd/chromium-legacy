@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Occhiali da sole</translation>
 <translation id="115443833402798225">Hangul Ahnmatae</translation>
 <translation id="1155759005174418845">Catalan</translation>
+<translation id="1172970565351728681">Tempo rimanente: circa <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">Rinomina</translation>
 <translation id="117624967391683467">Copia di <ph name="FILE_NAME" />...</translation>
 <translation id="1178581264944972037">Pausa</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">La proprietà verrà trasferita a <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">Irlandese</translation>
 <translation id="3245321423178950146">Artista sconosciuto</translation>
+<translation id="3248185426436836442">In attesa</translation>
 <translation id="3252266817569339921">Francese</translation>
 <translation id="3254434849914415189">Seleziona l'applicazione predefinita per i file <ph name="FILE_TYPE" />:</translation>
 <translation id="3264582393905923483">Contesto</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Non hai l'autorizzazione per spostare questi file in "<ph name="FOLDER_NAME" />".</translation>
 <translation id="3786301125658655746">Sei offline</translation>
 <translation id="3789841737615482174">Installa</translation>
+<translation id="3793469551756281394">Tempo rimanente: circa <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">Versione</translation>
 <translation id="3801082500826908679">Faroese</translation>
 <translation id="3809272675881623365">Coniglio</translation>

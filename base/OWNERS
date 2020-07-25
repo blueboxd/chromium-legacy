@@ -11,10 +11,6 @@ thakis@chromium.org
 thestig@chromium.org
 wez@chromium.org
 
-# For Bind/Callback:
-per-file bind*=tzik@chromium.org
-per-file callback*=tzik@chromium.org
-
 # For Android-specific changes:
 per-file *android*=file://base/android/OWNERS
 per-file BUILD.gn=file://base/android/OWNERS

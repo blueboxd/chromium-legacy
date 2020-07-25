@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Gün eynəyi</translation>
 <translation id="115443833402798225">Hangul Ahnmatae</translation>
 <translation id="1155759005174418845">Katalan</translation>
+<translation id="1172970565351728681">Təxminən <ph name="REMAINING_TIME" /> qalıb</translation>
 <translation id="1173894706177603556">Adını dəyişin</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> kopyalanır...</translation>
 <translation id="1178581264944972037">Durdurun</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Sahiblik <ph name="DESTINATION_DOMAIN" /> domeninə ötürüləcək.</translation>
 <translation id="3241720467332021590">İrland</translation>
 <translation id="3245321423178950146">Naməlum Müğənni</translation>
+<translation id="3248185426436836442">Gözləmədə</translation>
 <translation id="3252266817569339921">Fransız</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> fayllar üçün defolt tətbiq seçin:</translation>
 <translation id="3264582393905923483">Məzmun</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Faylları "<ph name="FOLDER_NAME" />" ünvanına köçürmək üçün icazəniz yoxdur.</translation>
 <translation id="3786301125658655746">Oflaynsınız.</translation>
 <translation id="3789841737615482174">Quraşdırın</translation>
+<translation id="3793469551756281394">Təxminən <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> qalıb</translation>
 <translation id="3798449238516105146">Versiya</translation>
 <translation id="3801082500826908679">Farer</translation>
 <translation id="3809272675881623365">Dovşan</translation>

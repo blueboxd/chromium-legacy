@@ -222,6 +222,7 @@ Chromium tidak dapat memulihkan setelan Anda.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Luncurkan ulang Chromium dalam 1 hari}other{Luncurkan ulang Chromium dalam # hari}}</translation>
 <translation id="8453117565092476964">Arsip pemasang rusak atau tidak valid. Download Chromium lagi.</translation>
 <translation id="8493179195440786826">Chromium Terlalu Lawas</translation>
+<translation id="8545858702702650646">Pilih Chromium Space Anda</translation>
 <translation id="8558383651099478961">Orang tuamu telah menonaktifkan "Izin untuk situs, aplikasi, dan ekstensi" untuk Chromium. Tindakan menambahkan <ph name="EXTENSION_TYPE_PARAMETER" /> ini tidak diizinkan.</translation>
 <translation id="8568283329061645092">Chromium dapat memeriksa sandi saat Anda login dengan Akun Google</translation>
 <translation id="8586442755830160949">Hak Cipta <ph name="YEAR" /> Pengarang Chromium. Semua hak dilindungi undang-undang.</translation>
@@ -245,6 +246,7 @@ Chromium tidak dapat memulihkan setelan Anda.</translation>
 <translation id="911206726377975832">Hapus juga data browsing Anda?</translation>
 <translation id="9158494823179993217">Administrator sistem Anda telah mengonfigurasi Chromium untuk membuka browser alternatif guna mengakses <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Gunakan Chromium Space agar penjelajahan Anda tetap terkelola di perangkat ini</translation>
 <translation id="93478295209880648">Chromium mungkin tidak berfungsi dengan semestinya karena sudah tidak didukung di Windows XP atau Windows Vista</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> mewajibkan Anda membaca dan menyetujui Persyaratan Layanan sebelum menggunakan perangkat ini. Persyaratan ini tidak memperluas, mengubah, atau membatasi Persyaratan Chromium OS.</translation>
 <translation id="985602178874221306">Pengarang Chromium</translation>

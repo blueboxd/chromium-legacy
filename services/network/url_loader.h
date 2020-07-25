@@ -266,7 +266,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   //   - receive the result in OnDoneBeginningTrustTokenOperation;
   //   - if successful, ScheduleStart; if there was an error, fail.
   //
-  // (Inbound, response handling just takes a synchronous Finalize call.)
+  // Inbound control flow:
+  //
+  // Start in OnResponseStarted
+  // - If there are no Trust Tokens parameters, proceed to
+  // ContinueOnResponseStarted.
+  // - Otherwise:
+  //   - execute TrustTokenRequestHelper::Finalize against the helper;
+  //   - receive the result in OnDoneFinalizingTrusttokenOperation;
+  //   - if successful, ContinueOnResponseStarted; if there was an error, fail.
   void BeginTrustTokenOperationIfNecessaryAndThenScheduleStart(
       const ResourceRequest& request);
   void OnDoneConstructingTrustTokenHelper(
@@ -274,9 +282,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       TrustTokenStatusOrRequestHelper status_or_helper);
   void OnDoneBeginningTrustTokenOperation(
       mojom::TrustTokenOperationStatus status);
+  void OnDoneFinalizingTrustTokenOperation(
+      mojom::TrustTokenOperationStatus status);
   // Continuation of |OnResponseStarted| after possibly asynchronously
   // concluding the request's Trust Tokens operation.
-  void ContinueOnResponseStarted(net::URLRequest* url_request, int net_error);
+  void ContinueOnResponseStarted();
 
   void ScheduleStart();
   void ReadMore();

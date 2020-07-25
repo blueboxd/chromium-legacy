@@ -561,6 +561,9 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="3364869320075768271"><ph name="URL" /> dorește să folosească dispozitivul tău de realitate virtuală și datele conexe</translation>
 <translation id="3366477098757335611">Vezi cardurile</translation>
 <translation id="3369192424181595722">Eroare de ceas</translation>
+<translation id="3371076217486966826"><ph name="URL" /> vrea:
+      • să creeze o hartă 3D a lucrurilor din jurul tău și să urmărească poziția camerei video;
+      • să utilizeze camera.</translation>
 <translation id="337363190475750230">Scos din uz</translation>
 <translation id="3377144306166885718">Serverul a folosit o versiune TLS învechită.</translation>
 <translation id="3377188786107721145">Eroare la analizarea politicii</translation>
@@ -1560,6 +1563,7 @@ Detalii suplimentare:
 <translation id="7518003948725431193">Nu a fost găsită nicio pagină web pentru adresa: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Plic)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Secțiunea „<ph name="SECTION" />” a fost ascunsă</translation>
 <translation id="7526934274050461096">Conexiunea la acest site nu este privată</translation>
 <translation id="7535087603100972091">Valoare</translation>
 <translation id="7537536606612762813">Obligatorie</translation>
@@ -1760,6 +1764,7 @@ Detalii suplimentare:
 <translation id="8293206222192510085">Adăugați marcaj</translation>
 <translation id="8294431847097064396">Sursă</translation>
 <translation id="8298115750975731693">Rețeaua Wi-Fi pe care o folosești (<ph name="WIFI_NAME" />) poate solicita accesarea adresei <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Secțiunea „<ph name="SECTION" />” s-a afișat</translation>
 <translation id="830498451218851433">Îndoire la jumătate</translation>
 <translation id="8307358339886459768">Fotografie-Mic</translation>
 <translation id="8307888238279532626">Aplicațiile instalate și frecvența de folosire a acestora</translation>
@@ -1880,6 +1885,7 @@ Detalii suplimentare:
 <translation id="8931333241327730545">Dorești să salvezi acest card în Contul Google?</translation>
 <translation id="8932102934695377596">Ora este setată în trecut</translation>
 <translation id="893332455753468063">Adaugă un nume</translation>
+<translation id="8942355029279167844">Administratorul a permis ca <ph name="APP_NAME" /> să colecteze date de diagnosticare pentru a îmbunătăți experiența cu produsul. Consultă <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> pentru mai multe informații.</translation>
 <translation id="8943282376843390568">Verde-gălbui</translation>
 <translation id="8957210676456822347">Autorizarea prin portalul captiv</translation>
 <translation id="8962950042226115166">Site suspect</translation>

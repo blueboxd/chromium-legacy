@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Update Chrome</translation>
 <translation id="1569387923882100876">ချိတ်ဆက်ထားသော စက်ပစ္စည်း</translation>
 <translation id="1571304935088121812">အသုံးပြုသူအမည်ကို ကူးယူပါ</translation>
+<translation id="1592864538817356322">ပုံမှန်ကာကွယ်မှု -</translation>
 <translation id="1612196535745283361">Chrome သည် စက်ပစ္စည်းများကိုရှာဖွေရန်အတွက် တည်နေရာအားအသုံးပြုခွင့်ရှိရန် လိုအပ်ပါသည်။ တည်နေရာအသုံးပြုခွင့်ကို <ph name="BEGIN_LINK" />ဤစက်ပစ္စည်းအတွက် ပိတ်ထားပါသည်<ph name="END_LINK" />။</translation>
 <translation id="1620510694547887537">ကင်မရာ</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{ရွေးချယ်ထားသည့် အကြောင်းအရာ ၁ ခုကို ဖယ်ရှားရန်}other{ရွေးချယ်ထားသည့် အကြောင်းအရာ # ခုကို ဖယ်ရှားရန်}}</translation>
@@ -578,6 +579,7 @@
 <translation id="5659593005791499971">အီးမေးလ်</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> တွင် အစီအစဉ် ပြုလုပ်ပါ</translation>
 <translation id="5668404140385795438">ချဲ့နေမှုကို ဟန့်တားရန် ဝဘ်ဆိုက် တစ်ခု၏ တောင်းဆိုချက်ကို အုပ်ရေးပါ</translation>
+<translation id="568275469169136466">ယာယီလက်မှတ်ထိုးဝင်ရန်</translation>
 <translation id="5683547024293500885">Chrome က သင့်အပ်ဒိတ်များကို စစ်ဆေး၍မရပါ</translation>
 <translation id="5686790454216892815">ဖိုင်အမည် ရှည်လွန်းသည်</translation>
 <translation id="5694049548840660018">အိမ်သို့ လွယ်ကူစွာ ပြန်လိုက်ပါ</translation>
@@ -589,9 +591,10 @@
 <translation id="5723735397759933332">'အပေါ့စားမုဒ်' က ယခုအခါ HTTPS စာမျက်နှာများပေါ်တွင် ပုံများကို အကောင်းဆုံးပြုပြင်ခြင်းဖြင့် သင့်အတွက် ဒေတာပိုမိုချွေတာပေးနိုင်ပါပြီ။</translation>
 <translation id="5726692708398506830">စာမျက်နှာပေါ်ရှိ အရာအားလုံးကို ပိုကြီးအောင်လုပ်ရန်</translation>
 <translation id="5732819098735351888">Wi-Fi ပေါ်တွင် ဒေါင်းလုဒ် စတင်ပါမည်။</translation>
+<translation id="5733983706093266635">QR ကုဒ် ဖန်တီး၍မရပါ။ URL သည် အက္ခရာ <ph name="CHARACTER_LIMIT" /> လုံးထက်များသည်။</translation>
 <translation id="5748802427693696783">ပုံမှန်တဘ်များအဖြစ်သို့ ပြောင်းလိုက်ပါပြီ</translation>
 <translation id="5749068826913805084">Chrome သည် ဖိုင်များကို ဒေါင်းလုဒ် လုပ်ရန် သိုလှောင်ခန်းကို သုံးရန် လိုအပ်သည်။</translation>
-<translation id="5749237766298580851"><ph name="SEPARATOR" /> ပိတ်ခြင်း အကြံပြုမထားပါ</translation>
+<translation id="5749237766298580851">ပိတ်ထားသည် <ph name="SEPARATOR" /> အကြံပြုမထားပါ</translation>
 <translation id="5754350196967618083">Discover ပြန်လည် စတင်၍မရပါ</translation>
 <translation id="5763382633136178763">ရုပ်ဖျက် တဲဘ်များ</translation>
 <translation id="5763514718066511291">ဤအက်ပ်အတွက် URL ကို မိတ္တူကူးရန် တို့ပါ</translation>
@@ -641,6 +644,7 @@
 <translation id="6111020039983847643">သုံးထားသော ဒေတာ</translation>
 <translation id="6112702117600201073">စာမျက်နှာအား ပြန်လည်စတင်ရန်</translation>
 <translation id="6127379762771434464">အကြောင်းအရာကို ဖယ်ရှားလိုက်ပါပြီ</translation>
+<translation id="6140709049082532940">အရည်အသွေးမြှင့်တင်ထားသည့် ကာကွယ်မှု -</translation>
 <translation id="6140912465461743537">နိုင်ငံ/ဒေသ</translation>
 <translation id="614940544461990577">စမ်းကြည့်ပါ −</translation>
 <translation id="6154478581116148741">ဤစက်မှ သင့်စကားဝှက်များ တင်ပို့ရန် ဆက်တင်များတွင် မျက်နှာပြင်လော့ခ် ဖွင့်ပါ</translation>
@@ -1016,6 +1020,7 @@
 <translation id="9100610230175265781">စကားဝှက် လိုအပ်</translation>
 <translation id="9102803872260866941">အစမ်းကြည့်ရှုမှုတဘ်ကို ဖွင့်ထားသည်</translation>
 <translation id="9104217018994036254">တဘ်မျှဝေရန် စက်ပစ္စည်းစာရင်း။</translation>
+<translation id="9104402662006063371">ရုပ်ဖျက်မုဒ်သို့သွားရန်</translation>
 <translation id="9108312223223904744">ဖုန်းကို 'လုံခြုံရေးကီး အကူအညီ' အဖြစ်</translation>
 <translation id="9108808586816295166">လုံခြုံသော DNS ကို အမြဲမရနိုင်ပါ</translation>
 <translation id="9133397713400217035">အော့ဖ်လိုင်းတွင် စူးစမ်းလေ့လာရန်</translation>

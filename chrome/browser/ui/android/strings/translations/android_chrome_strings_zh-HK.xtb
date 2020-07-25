@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1569387923882100876">已連接的裝置</translation>
 <translation id="1571304935088121812">複製使用者名稱</translation>
+<translation id="1592864538817356322">標準保護功能：</translation>
 <translation id="1612196535745283361">Chrome 需要位置資訊存取權才能掃描裝置，而系統已<ph name="BEGIN_LINK" />關閉此裝置<ph name="END_LINK" />的位置存取權。</translation>
 <translation id="1620510694547887537">相機</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{移除 1 個已選取的項目}other{移除 # 個已選取的項目}}</translation>
@@ -578,6 +579,7 @@
 <translation id="5659593005791499971">電郵</translation>
 <translation id="5665379678064389456">在「<ph name="APP_NAME" />」中建立活動</translation>
 <translation id="5668404140385795438">覆寫網站禁止放大的要求</translation>
+<translation id="568275469169136466">暫時登入</translation>
 <translation id="5683547024293500885">Chrome 無法檢查更新</translation>
 <translation id="5686790454216892815">檔案名稱過長</translation>
 <translation id="5694049548840660018">鬆輕返回首頁</translation>
@@ -589,6 +591,7 @@
 <translation id="5723735397759933332">精簡模式現在會優化 HTTPS 網頁上的圖片，為您節省更多數據用量。</translation>
 <translation id="5726692708398506830">放大網頁中的所有內容</translation>
 <translation id="5732819098735351888">使用 Wi-Fi 時將開始下載。</translation>
+<translation id="5733983706093266635">無法建立二維條碼。網址超過 <ph name="CHARACTER_LIMIT" /> 個字元。</translation>
 <translation id="5748802427693696783">已切換至標準分頁</translation>
 <translation id="5749068826913805084">Chrome 需要儲存空間的存取權才能下載檔案。</translation>
 <translation id="5749237766298580851">關閉 <ph name="SEPARATOR" /> 不建議</translation>
@@ -641,6 +644,7 @@
 <translation id="6111020039983847643">數據用量</translation>
 <translation id="6112702117600201073">正在重新整理網頁</translation>
 <translation id="6127379762771434464">項目已移除</translation>
+<translation id="6140709049082532940">強化保護功能：</translation>
 <translation id="6140912465461743537">國家/地區</translation>
 <translation id="614940544461990577">建議做法：</translation>
 <translation id="6154478581116148741">在「設定」中開啟螢幕鎖定功能，即可從此裝置匯出您的密碼</translation>
@@ -1017,6 +1021,7 @@
 <translation id="9100610230175265781">請輸入複雜密碼</translation>
 <translation id="9102803872260866941">預覽分頁開咗</translation>
 <translation id="9104217018994036254">要共用分頁嘅裝置清單。</translation>
+<translation id="9104402662006063371">進入無痕模式</translation>
 <translation id="9108312223223904744">支援「讓手機作為安全密鑰」</translation>
 <translation id="9108808586816295166">可能無法隨時使用安全 DNS</translation>
 <translation id="9133397713400217035">離線探索</translation>

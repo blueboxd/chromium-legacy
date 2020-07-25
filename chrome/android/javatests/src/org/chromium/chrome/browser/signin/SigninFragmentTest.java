@@ -169,6 +169,8 @@ public class SigninFragmentTest {
         Assert.assertTrue(SyncTestUtil.isSyncRequested());
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { Assert.assertFalse(ProfileSyncService.get().isFirstSetupComplete()); });
+        // Close the SettingsActivity.
+        onView(withId(R.id.cancel_button)).perform(click());
     }
 
     @Test

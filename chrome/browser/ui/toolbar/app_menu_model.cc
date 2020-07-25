@@ -339,8 +339,7 @@ ui::ImageModel AppMenuModel::GetIconForCommandId(int command_id) const {
   if (command_id == IDC_UPGRADE_DIALOG) {
     DCHECK(browser_defaults::kShowUpgradeMenuItem);
     DCHECK(app_menu_icon_controller_);
-    return ui::ImageModel::FromImageSkia(
-        app_menu_icon_controller_->GetIconImage(false));
+    return app_menu_icon_controller_->GetIconImage(false);
   }
   return ui::ImageModel();
 }

@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Актуализиране на Chrome</translation>
 <translation id="1569387923882100876">Свързано устройство</translation>
 <translation id="1571304935088121812">Копиране на потребителското име</translation>
+<translation id="1592864538817356322">Стандартна защита:</translation>
 <translation id="1612196535745283361">Chrome се нуждае от достъп до местоположението, за да сканира за устройства, но съответните услуги са <ph name="BEGIN_LINK" />изключени за това устройство<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Премахване на 1 избран елемент}other{Премахване на # избрани елемента}}</translation>
@@ -578,6 +579,7 @@
 <translation id="5659593005791499971">Имейл</translation>
 <translation id="5665379678064389456">Създайте събитие в <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Отмяна на искането на уебсайта да не се допуска увеличаване на мащаба</translation>
+<translation id="568275469169136466">За да влезете временно в профила си</translation>
 <translation id="5683547024293500885">Chrome не може да провери за актуализации</translation>
 <translation id="5686790454216892815">Името на файла е твърде дълго</translation>
 <translation id="5694049548840660018">Връщайте се лесно към началната си страница</translation>
@@ -589,6 +591,7 @@
 <translation id="5723735397759933332">С олекотения режим вече спестявате повече данни, тъй като изображенията на HTTPS страниците се оптимизират.</translation>
 <translation id="5726692708398506830">Уголемяване на всички елементи на страницата</translation>
 <translation id="5732819098735351888">Изтеглянето ще стартира при връзка с Wi-Fi мрежа.</translation>
+<translation id="5733983706093266635">Не може да се създаде QR код. URL адресът е повече от <ph name="CHARACTER_LIMIT" /> знака.</translation>
 <translation id="5748802427693696783">Превключихте към стандартните раздели</translation>
 <translation id="5749068826913805084">Chrome се нуждае от достъп до хранилището, за да изтегля файлове.</translation>
 <translation id="5749237766298580851">Изключено <ph name="SEPARATOR" /> Не се препоръчва</translation>
@@ -641,6 +644,7 @@
 <translation id="6111020039983847643">използвани данни</translation>
 <translation id="6112702117600201073">Опресняване на страницата</translation>
 <translation id="6127379762771434464">Елементът бе премахнат</translation>
+<translation id="6140709049082532940">Подобрена защита:</translation>
 <translation id="6140912465461743537">Държава/регион</translation>
 <translation id="614940544461990577">Изпробвайте следното:</translation>
 <translation id="6154478581116148741">Включете функцията за заключване на екрана от настройките, за да експортирате паролите си от това устройство</translation>
@@ -1017,6 +1021,7 @@
 <translation id="9100610230175265781">Изисква се пропуск</translation>
 <translation id="9102803872260866941">Разделът за визуализация е отворен</translation>
 <translation id="9104217018994036254">Списъкът с устройства, с които да се сподели даден раздел.</translation>
+<translation id="9104402662006063371">Влизане в режим „инкогнито“</translation>
 <translation id="9108312223223904744">Поддръжка за използване на телефона като ключ за сигурност</translation>
 <translation id="9108808586816295166">Сигурният DNS може да не е налице по всяко време</translation>
 <translation id="9133397713400217035">Разглеждане в офлайн режим</translation>

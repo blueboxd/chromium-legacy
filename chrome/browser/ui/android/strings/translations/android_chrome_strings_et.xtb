@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Värskenda Chrome'i</translation>
 <translation id="1569387923882100876">Ühendatud seade</translation>
 <translation id="1571304935088121812">Kasutajanime kopeerimine</translation>
+<translation id="1592864538817356322">Standardne kaitse:</translation>
 <translation id="1612196535745283361">Chrome vajab seadmete otsimiseks juurdepääsu teie asukohale. Juurdepääs asukohale on <ph name="BEGIN_LINK" />selles seadmes välja lülitatud<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kaamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Eemalda 1 valitud üksus}other{Eemalda # valitud üksust}}</translation>
@@ -578,6 +579,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5659593005791499971">Meil</translation>
 <translation id="5665379678064389456">Looge sündmus rakenduses <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Sissesuumimise takistamiseks veebisaidi taotluse alistamine</translation>
+<translation id="568275469169136466">Ajutine sisselogimine</translation>
 <translation id="5683547024293500885">Chrome ei saa värskendusi otsida</translation>
 <translation id="5686790454216892815">Faili nimi on liiga pikk</translation>
 <translation id="5694049548840660018">Võimaldab hõlpsasti avalehele naasta</translation>
@@ -589,6 +591,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5723735397759933332">Lihtsustatud režiim säästab nüüd rohkem andmemahtu, optimeerides HTTPS-lehtedel kujutisi.</translation>
 <translation id="5726692708398506830">Lehel kuvatud sisu suurendamine</translation>
 <translation id="5732819098735351888">Allalaadimine algab WiFi kaudu.</translation>
+<translation id="5733983706093266635">QR-koodi ei saa luua. URL on pikem kui <ph name="CHARACTER_LIMIT" /> tähemärki.</translation>
 <translation id="5748802427693696783">Tavapärased vahelehed on aktiveeritud</translation>
 <translation id="5749068826913805084">Chrome vajab failide allalaadimiseks juurdepääsu salvestusruumile.</translation>
 <translation id="5749237766298580851">Väljas <ph name="SEPARATOR" /> Ei soovitata</translation>
@@ -641,6 +644,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="6111020039983847643">kasutatud andmemaht</translation>
 <translation id="6112702117600201073">Lehe värskendamine</translation>
 <translation id="6127379762771434464">Üksus eemaldati</translation>
+<translation id="6140709049082532940">Täiustatud kaitse:</translation>
 <translation id="6140912465461743537">Riik/piirkond</translation>
 <translation id="614940544461990577">Proovige järgmist.</translation>
 <translation id="6154478581116148741">Seadmes olevate paroolide eksportimiseks lülitage seadetes ekraanilukk sisse.</translation>
@@ -1017,6 +1021,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="9100610230175265781">Parool on vajalik</translation>
 <translation id="9102803872260866941">Eelvaate vaheleht on avatud</translation>
 <translation id="9104217018994036254">Vahelehe jagamise seadmete loend.</translation>
+<translation id="9104402662006063371">Sisene inkognito režiimi</translation>
 <translation id="9108312223223904744">Tugi telefoni kasutamiseks turvavõtmena</translation>
 <translation id="9108808586816295166">Turvaline DNS ei pruugi alati saadaval olla</translation>
 <translation id="9133397713400217035">Uurige võrguühenduseta</translation>

@@ -564,6 +564,9 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="3364869320075768271"><ph name="URL" /> haluaa käyttää virtuaalitodellisuuslaitteitasi ja ‑dataasi</translation>
 <translation id="3366477098757335611">Näytä kortit</translation>
 <translation id="3369192424181595722">Väärä kellonaika</translation>
+<translation id="3371076217486966826"><ph name="URL" /> haluaa
+      • luoda 3D-kartan ympäristöstäsi ja seurata kameran asentoa
+      • käyttää kameraasi</translation>
 <translation id="337363190475750230">Poistettu käytöstä</translation>
 <translation id="3377144306166885718">Palvelin käytti vanhentunutta TLS:n versiota.</translation>
 <translation id="3377188786107721145">Virhe jäsennettäessä käytäntöä</translation>
@@ -1563,6 +1566,7 @@ Lisätietoja:
 <translation id="7518003948725431193">Verkkosivua ei löytynyt osoitteelle: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (kirjekuori)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Osio "<ph name="SECTION" />" piilotettu</translation>
 <translation id="7526934274050461096">Sivustoon muodostamasi yhteys ei ole yksityinen.</translation>
 <translation id="7535087603100972091">Arvo</translation>
 <translation id="7537536606612762813">Pakollinen</translation>
@@ -1763,6 +1767,7 @@ Lisätietoja:
 <translation id="8293206222192510085">Lisää kirjanmerkki</translation>
 <translation id="8294431847097064396">Lähde</translation>
 <translation id="8298115750975731693">Käyttämäsi Wi-Fi (<ph name="WIFI_NAME" />) saattaa edellyttää vierailua osoitteessa <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Osio "<ph name="SECTION" />" näkyvissä</translation>
 <translation id="830498451218851433">Keskitaite</translation>
 <translation id="8307358339886459768">Pieni kuva</translation>
 <translation id="8307888238279532626">Asennetut sovellukset ja se, miten usein niitä käytetään</translation>
@@ -1883,6 +1888,7 @@ Lisätietoja:
 <translation id="8931333241327730545">Haluatko tallentaa tämän kortin Google-tilillesi?</translation>
 <translation id="8932102934695377596">Kellosi jätättää</translation>
 <translation id="893332455753468063">Lisää nimi</translation>
+<translation id="8942355029279167844"><ph name="APP_NAME" /> kerää järjestelmänvalvojan luvalla diagnostiikkadataa tuotteen käyttökokemuksen parantamiseksi. Katso lisätietoja osoitteesta <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />.</translation>
 <translation id="8943282376843390568">Lime</translation>
 <translation id="8957210676456822347">Captive portal -valtuutus</translation>
 <translation id="8962950042226115166">Epäilyttävä sivusto</translation>

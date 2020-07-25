@@ -222,6 +222,7 @@ Chromium ei voi palauttaa asetuksiasi.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Käynnistä Chromium uudelleen vuorokauden kuluessa}other{Käynnistä Chromium uudelleen # vuorokauden kuluessa}}</translation>
 <translation id="8453117565092476964">Asennusarkisto on virheellinen. Lataa Chromium uudelleen.</translation>
 <translation id="8493179195440786826">Chromium on vanhentunut</translation>
+<translation id="8545858702702650646">Valitse Chromium-tilasi</translation>
 <translation id="8558383651099478961">Vanhempasi ovat laittaneet Chromiumin sivustojen, sovellusten ja laajennusten käyttöluvat pois päältä. Lisäämistä (<ph name="EXTENSION_TYPE_PARAMETER" />) ei sallita.</translation>
 <translation id="8568283329061645092">Chromium voi tarkistaa salasanasi, kun kirjaudut sisään Google-tililläsi</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Kaikki oikeudet pidätetään.</translation>
@@ -245,6 +246,7 @@ Chromium ei voi palauttaa asetuksiasi.</translation>
 <translation id="911206726377975832">Poistetaanko myös selailutiedot?</translation>
 <translation id="9158494823179993217">Järjestelmänvalvojasi on määrittänyt Chromiumin avaamaan toisen selaimen, jolla <ph name="TARGET_URL_HOSTNAME" /> avataan.</translation>
 <translation id="9190841055450128916">Chromium (saapuva mDNS)</translation>
+<translation id="9191317372410544836">Pidä selaaminen laitteella järjestyksessä Chromiumin tilojen avulla</translation>
 <translation id="93478295209880648">Chromium ei välttämättä toimi oikein, koska se ei enää tue Windows XP:tä tai Windows Vistaa.</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> edellyttää, että luet ja hyväksyt seuraavat käyttöehdot ennen tämän laitteen käyttöä. Nämä ehdot eivät laajenna, muokkaa tai rajoita Chromium-käyttöliittymän ehtoja.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

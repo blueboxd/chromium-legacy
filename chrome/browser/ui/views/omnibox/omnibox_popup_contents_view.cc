@@ -474,8 +474,11 @@ void OmniboxPopupContentsView::FireAXEventsForNewActiveDescendant(
 void OmniboxPopupContentsView::OnWidgetBoundsChanged(
     views::Widget* widget,
     const gfx::Rect& new_bounds) {
-  DCHECK_EQ(popup_.get(), widget);
-  DCHECK(popup_);
+  // Because we don't directly control the lifetime of the widget, gracefully
+  // handle "stale" notifications by ignoring them. https://crbug.com/1108762
+  if (!popup_ || popup_.get() != widget)
+    return;
+
   // This is called on rotation or device scale change. We have to re-align to
   // the new location bar location.
 

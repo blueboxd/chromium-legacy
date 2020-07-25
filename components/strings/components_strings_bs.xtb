@@ -563,6 +563,9 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="3364869320075768271"><ph name="URL" /> želi koristiti vaš uređaj i podatke virtuelne realnosti</translation>
 <translation id="3366477098757335611">Prikaži kartice</translation>
 <translation id="3369192424181595722">Greška sa satom</translation>
+<translation id="3371076217486966826"><ph name="URL" /> želi:
+      • Kreirati 3D mapu vašeg okruženja i pratiti položaj kamere
+      • Koristiti vašu kameru</translation>
 <translation id="337363190475750230">Poništeno dodjeljivanje</translation>
 <translation id="3377144306166885718">Server je koristio zastarjelu verziju TLS-a.</translation>
 <translation id="3377188786107721145">Greška prilikom raščlanjivanja pravila</translation>
@@ -829,7 +832,7 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="4358461427845829800">Upravljajte načinima plaćanja…</translation>
 <translation id="4359160567981085931">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chrome vam može pomoći. Da promijenite lozinku i obavijestite Google da vam je račun možda ugrožen, kliknite Zaštiti račun.</translation>
 <translation id="4367563149485757821">Broj 12 (koverta)</translation>
-<translation id="4367839622597707614">{1,plural, =0{Došlo je do narušavanja podataka na web lokaciji ili u aplikaciji čime je izložena vaša sačuvana lozinka za <ph name="ORIGIN" />. Chrome preporučuje da odmah promijenite lozinku na web lokaciji <ph name="ORIGIN" />.}=1{Došlo je do narušavanja podataka na web lokaciji ili u aplikaciji čime je izložena vaša sačuvana lozinka za <ph name="ORIGIN" /> i za još jednu web lokaciju. Chrome vam preporučuje da odmah provjerite sačuvane lozinke.}one{Došlo je do narušavanja podataka na web lokaciji ili u aplikaciji čime je izložena vaša sačuvana lozinka za <ph name="ORIGIN" /> i za još <ph name="SITES_COUNT" /> web lokaciju. Chrome vam preporučuje da odmah provjerite sačuvane lozinke.}few{Došlo je do narušavanja podataka na web lokaciji ili u aplikaciji čime je izložena vaša sačuvana lozinka za <ph name="ORIGIN" /> i za još <ph name="SITES_COUNT" /> web lokacije. Chrome vam preporučuje da odmah provjerite sačuvane lozinke.}other{Došlo je do narušavanja podataka na web lokaciji ili u aplikaciji čime je izložena vaša sačuvana lozinka za <ph name="ORIGIN" /> i za još <ph name="SITES_COUNT" /> web lokacija. Chrome vam preporučuje da odmah provjerite sačuvane lozinke.}}</translation>
+<translation id="4367839622597707614">{1,plural, =0{Došlo je do narušavanja podataka na web lokaciji ili u aplikaciji čime je izložena vaša sačuvana lozinka za <ph name="ORIGIN" />. Chrome preporučuje da odmah promijenite lozinku na web lokaciji <ph name="ORIGIN" />.}=1{Došlo je do narušavanja podataka na web lokaciji ili u aplikaciji čime je izložena vaša sačuvana lozinka za <ph name="ORIGIN" /> i još jednu web lokaciju. Chrome vam preporučuje da odmah provjerite sačuvane lozinke.}one{Došlo je do narušavanja podataka na web lokaciji ili u aplikaciji čime je izložena vaša sačuvana lozinka za <ph name="ORIGIN" /> i još <ph name="SITES_COUNT" /> web lokaciju. Chrome vam preporučuje da odmah provjerite sačuvane lozinke.}few{Došlo je do narušavanja podataka na web lokaciji ili u aplikaciji čime je izložena vaša sačuvana lozinka za <ph name="ORIGIN" /> i još <ph name="SITES_COUNT" /> web lokacije. Chrome vam preporučuje da odmah provjerite sačuvane lozinke.}other{Došlo je do narušavanja podataka na web lokaciji ili u aplikaciji čime je izložena vaša sačuvana lozinka za <ph name="ORIGIN" /> i još <ph name="SITES_COUNT" /> web lokacija. Chrome vam preporučuje da odmah provjerite sačuvane lozinke.}}</translation>
 <translation id="437058704415269440">Sredstva na računu</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Očekivana vrijednost vrste <ph name="VALUE_TYPE" />.</translation>
@@ -1562,6 +1565,7 @@ Dodatni detalji:
 <translation id="7518003948725431193">Za web-adresu nije pronađena web-stranica:<ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (koverta)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Odjeljak "<ph name="SECTION" />" je skriven</translation>
 <translation id="7526934274050461096">Vaša veza s ovom web lokacijom nije privatna</translation>
 <translation id="7535087603100972091">Vrijednost</translation>
 <translation id="7537536606612762813">Obavezno</translation>
@@ -1762,6 +1766,7 @@ Dodatni detalji:
 <translation id="8293206222192510085">Dodavanje oznake</translation>
 <translation id="8294431847097064396">Izvor</translation>
 <translation id="8298115750975731693">WiFi koji koristite (<ph name="WIFI_NAME" />) može tražiti da posjetite <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Prikazan je odjeljak "<ph name="SECTION" />"</translation>
 <translation id="830498451218851433">Presavijanje napola</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Instalirane aplikacije i koliko često se koriste</translation>
@@ -1881,6 +1886,7 @@ Dodatni detalji:
 <translation id="8931333241327730545">Želite li sačuvati ovu karticu na svoj Google račun?</translation>
 <translation id="8932102934695377596">Vaš sat kasni</translation>
 <translation id="893332455753468063">Dodaj ime</translation>
+<translation id="8942355029279167844">Vaš administrator je dozvolio aplikaciji <ph name="APP_NAME" /> da prikuplja dijagnostičke podatke radi poboljšanja iskustva s proizvodom. Pogledajte <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> za više informacija.</translation>
 <translation id="8943282376843390568">Limeta zelena</translation>
 <translation id="8957210676456822347">Postupak odobrenja na zaštitnom portalu</translation>
 <translation id="8962950042226115166">Sumnjiva web lokacija</translation>

@@ -77,6 +77,7 @@
 <translation id="3089968997497233615">Google Chrome มีรุ่นใหม่ที่ปลอดภัยกว่าให้ใช้งานแล้ว</translation>
 <translation id="3127818369811890733">Chrome OS ซิงค์ข้อมูลของคุณไม่ได้</translation>
 <translation id="3149510190863420837">แอป Chrome</translation>
+<translation id="3351117925998652957">เลือก Chrome Space</translation>
 <translation id="3360895254066713204">ตัวช่วยเหลือของ Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome จะเปิดขึ้นมาใหม่ตอนนี้}=1{Chrome จะเปิดขึ้นมาใหม่ใน 1 วินาที}other{Chrome จะเปิดขึ้นมาใหม่ใน # วินาที}}</translation>
 <translation id="3395323229510056640">รับความช่วยเหลือเกี่ยวกับ Chrome OS</translation>
@@ -204,6 +205,7 @@
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">หากต้องการดูว่าอุปกรณ์เป็นเวอร์ชันล่าสุดแล้วหรือไม่ ให้ไปที่<ph name="LINK_BEGIN" />การตั้งค่า Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">คอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดตจาก Google Chrome อีก เนื่องจากระบบไม่รองรับ Mac OS X 10.9 แล้ว</translation>
+<translation id="7591404275842302616">ใช้ Chrome Space เพื่อจัดระเบียบการท่องเว็บในอุปกรณ์นี้</translation>
 <translation id="7592736734348559088">Google Chrome ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากรายละเอียดการลงชื่อเข้าใช้บัญชีของคุณล้าสมัย</translation>
 <translation id="7626032353295482388">ยินดีต้อนรับสู่ Chrome</translation>
 <translation id="7629695634924605473">Chrome จะแจ้งให้ทราบหากมีคนล่วงรู้รหัสผ่านของคุณ</translation>

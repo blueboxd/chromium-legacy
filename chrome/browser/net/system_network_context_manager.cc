@@ -134,7 +134,7 @@ network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams(
   auth_dynamic_params->server_allowlist =
       local_state->GetString(prefs::kAuthServerWhitelist);
   auth_dynamic_params->delegate_allowlist =
-      local_state->GetString(prefs::kAuthNegotiateDelegateWhitelist);
+      local_state->GetString(prefs::kAuthNegotiateDelegateAllowlist);
   auth_dynamic_params->negotiate_disable_cname_lookup =
       local_state->GetBoolean(prefs::kDisableAuthNegotiateCnameLookup);
   auth_dynamic_params->enable_negotiate_port =
@@ -348,7 +348,7 @@ SystemNetworkContextManager::SystemNetworkContextManager(
   PrefChangeRegistrar::NamedChangeCallback auth_pref_callback =
       base::BindRepeating(&OnAuthPrefsChanged, base::Unretained(local_state_));
   pref_change_registrar_.Add(prefs::kAuthServerWhitelist, auth_pref_callback);
-  pref_change_registrar_.Add(prefs::kAuthNegotiateDelegateWhitelist,
+  pref_change_registrar_.Add(prefs::kAuthNegotiateDelegateAllowlist,
                              auth_pref_callback);
   pref_change_registrar_.Add(prefs::kDisableAuthNegotiateCnameLookup,
                              auth_pref_callback);
@@ -403,7 +403,7 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kDisableAuthNegotiateCnameLookup, false);
   registry->RegisterBooleanPref(prefs::kEnableAuthNegotiatePort, false);
   registry->RegisterStringPref(prefs::kAuthServerWhitelist, std::string());
-  registry->RegisterStringPref(prefs::kAuthNegotiateDelegateWhitelist,
+  registry->RegisterStringPref(prefs::kAuthNegotiateDelegateAllowlist,
                                std::string());
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   registry->RegisterBooleanPref(prefs::kAuthNegotiateDelegateByKdcPolicy,

@@ -26,6 +26,7 @@
 <translation id="1209206284964581585">Nascondi per ora</translation>
 <translation id="1219674500290482172">Impossibile connettersi a Internet.</translation>
 <translation id="122699739164161391">Chiudi tutte le schede</translation>
+<translation id="1229222343402087523">Cerca ${searchPhrase} in Chrome</translation>
 <translation id="1231733316453485619">Attivare la sincronizzazione?</translation>
 <translation id="1254117744268754948">Scegli cartella</translation>
 <translation id="1265739287306757398">Scopri come</translation>
@@ -72,6 +73,7 @@
 <translation id="1674504678466460478">Da <ph name="SOURCE_LANGUAGE" /> a <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Attiva la sincronizzazione per trovare i tuoi preferiti su tutti i dispositivi.</translation>
 <translation id="1687475363370981210">Segna tutti come già letti</translation>
+<translation id="1689333818294560261">Nickname</translation>
 <translation id="1690731385917361335">Nessun elemento</translation>
 <translation id="1692118695553449118">La sincronizzazione è attiva</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> selezionati</translation>
@@ -207,6 +209,7 @@ In modalità di navigazione in incognito, i siti non possono utilizzare i cookie
 <translation id="3335947283844343239">Riapri scheda chiusa</translation>
 <translation id="3371831930909698441">Traduttore disponibile. Opzioni disponibili nella parte inferiore dello schermo.</translation>
 <translation id="3393920035788932672">Popup consentiti</translation>
+<translation id="3425644765244388016">Nickname carta</translation>
 <translation id="3443810440409579745">Scheda ricevuta.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Visualizzazione divisa</translation>
@@ -241,6 +244,7 @@ In modalità di navigazione in incognito, i siti non possono utilizzare i cookie
 <translation id="3783017676699494206">Salva immagine</translation>
 <translation id="3789841737615482174">Installa</translation>
 <translation id="3803696231112616155">Proponi di tradurre questo sito</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{Nessuna password compromessa}=1{{COUNT} password compromessa}other{{COUNT} password compromesse}}</translation>
 <translation id="385051799172605136">Indietro</translation>
 <translation id="3892144330757387737">Qui troverai la tua cronologia</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -530,6 +534,7 @@ I siti non possono utilizzare i cookie per conoscere la tua attività di navigaz
 <translation id="7189598951263744875">Condividi...</translation>
 <translation id="7192050974311852563">Avvia logging</translation>
 <translation id="7203585745079012652">Pronuncia le risposte</translation>
+<translation id="721597782417389033">Nickname carta non valido</translation>
 <translation id="7265758999917665941">Mai per questo sito</translation>
 <translation id="7272437679830969316">Impossibile verificare la tua identità. Password non copiata.</translation>
 <translation id="7291368939935408496">Preparazione delle password...</translation>

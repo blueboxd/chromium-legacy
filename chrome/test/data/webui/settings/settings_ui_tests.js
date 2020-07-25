@@ -5,25 +5,35 @@
 // clang-format off
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {CrSettingsPrefs, Router, routes} from 'chrome://settings/settings.js';
-import {eventToPromise} from 'chrome://test/test_util.m.js';
+
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+import {eventToPromise} from '../test_util.m.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for the Settings layout. */
-suite('settings-ui', function() {
-  let toolbar;
+suite('SettingsUIToolbarAndDrawer', function() {
+  /** @type {!SettingsUiElement} */
   let ui;
 
+  /** @type {!CrToolbarElement} */
+  let toolbar;
+
+  /** @type {!CrDrawerElement} */
+  let drawer;
+
   setup(function() {
-    PolymerTest.clearBody();
-    ui = document.createElement('settings-ui');
+    document.body.innerHTML = '';
+    ui = /** @type {!SettingsUiElement} */ (
+        document.createElement('settings-ui'));
     document.body.appendChild(ui);
     return CrSettingsPrefs.initialized.then(() => {
       flush();
+      toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
+      drawer = /** @type {!CrDrawerElement} */ (ui.$$('#drawer'));
     });
   });
 
   test('showing menu in toolbar is dependent on narrow mode', function() {
-    toolbar = ui.$$('cr-toolbar');
     assertTrue(!!toolbar);
     toolbar.narrow = true;
     assertTrue(toolbar.showMenu);
@@ -32,12 +42,11 @@ suite('settings-ui', function() {
     assertFalse(toolbar.showMenu);
   });
 
-  test('app drawer', function() {
+  test('app drawer', async () => {
     assertEquals(null, ui.$$('cr-drawer settings-menu'));
-    const drawer = ui.$.drawer;
     assertFalse(!!drawer.open);
 
-    const whenDone = eventToPromise('cr-drawer-opened', drawer);
+    const drawerOpened = eventToPromise('cr-drawer-opened', drawer);
     drawer.openDrawer();
     flush();
 
@@ -45,26 +54,18 @@ suite('settings-ui', function() {
     assertTrue(drawer.open);
     assertTrue(!!ui.$$('cr-drawer settings-menu'));
 
-    return whenDone
-        .then(function() {
-          const whenClosed = eventToPromise('close', drawer);
-          drawer.cancel();
-          return whenClosed;
-        })
-        .then(() => {
-          // Drawer is closed, but menu is still stamped so
-          // its contents remain visible as the drawer slides
-          // out.
-          assertTrue(!!ui.$$('cr-drawer settings-menu'));
-        });
+    await drawerOpened;
+    const drawerClosed = eventToPromise('close', drawer);
+    drawer.cancel();
+
+    await drawerClosed;
+    // Drawer is closed, but menu is still stamped so
+    // its contents remain visible as the drawer slides
+    // out.
+    assertTrue(!!ui.$$('cr-drawer settings-menu'));
   });
 
-  // TODO(rbpotter): Fix or delete this test. It is flaky (times out ~1 in 10
-  // runs) locally on a Linux non-optimized build.
-  test.skip('app drawer closes when exiting narrow mode', async () => {
-    const drawer = ui.$.drawer;
-    const toolbar = ui.$$('cr-toolbar');
-
+  test('app drawer closes when exiting narrow mode', async () => {
     // Mimic narrow mode and open the drawer
     toolbar.narrow = true;
     drawer.openDrawer();
@@ -76,16 +77,30 @@ suite('settings-ui', function() {
     await eventToPromise('close', drawer);
     assertFalse(drawer.open);
   });
+});
+
+suite('SettingsUIAdvanced', function() {
+  /** @type {!SettingsUiElement} */
+  let ui;
+
+  setup(function() {
+    document.body.innerHTML = '';
+    ui = /** @type {!SettingsUiElement} */ (
+        document.createElement('settings-ui'));
+    document.body.appendChild(ui);
+    return CrSettingsPrefs.initialized.then(() => flush());
+  });
 
   test('advanced UIs stay in sync', function() {
     const main = ui.$$('settings-main');
-    const floatingMenu = ui.$$('#left settings-menu');
+    const floatingMenu =
+        /** @type {!SettingsMenuElement} */ (ui.$$('#left settings-menu'));
     assertTrue(!!main);
     assertTrue(!!floatingMenu);
 
     assertFalse(!!ui.$$('cr-drawer settings-menu'));
-    assertFalse(ui.advancedOpenedInMain_);
-    assertFalse(ui.advancedOpenedInMenu_);
+    assertFalse(ui.getAdvancedOpenedInMainForTest());
+    assertFalse(ui.getAdvancedOpenedInMenuForTest());
     assertFalse(floatingMenu.advancedOpened);
     assertFalse(main.advancedToggleExpanded);
 
@@ -93,12 +108,12 @@ suite('settings-ui', function() {
     flush();
 
     assertFalse(!!ui.$$('cr-drawer settings-menu'));
-    assertTrue(ui.advancedOpenedInMain_);
-    assertTrue(ui.advancedOpenedInMenu_);
+    assertTrue(ui.getAdvancedOpenedInMainForTest());
+    assertTrue(ui.getAdvancedOpenedInMenuForTest());
     assertTrue(floatingMenu.advancedOpened);
     assertTrue(main.advancedToggleExpanded);
 
-    ui.$.drawerTemplate.if = true;
+    ui.$$('#drawerTemplate').if = true;
     flush();
 
     const drawerMenu = ui.$$('cr-drawer settings-menu');
@@ -107,34 +122,56 @@ suite('settings-ui', function() {
     assertTrue(drawerMenu.advancedOpened);
 
     // Collapse 'Advanced' in the menu
-    drawerMenu.$.advancedButton.click();
+    drawerMenu.$$('#advancedButton').click();
     flush();
 
     // Collapsing it in the menu should not collapse it in the main area
     assertFalse(drawerMenu.advancedOpened);
     assertFalse(floatingMenu.advancedOpened);
-    assertFalse(ui.advancedOpenedInMenu_);
+    assertFalse(ui.getAdvancedOpenedInMenuForTest());
     assertTrue(main.advancedToggleExpanded);
-    assertTrue(ui.advancedOpenedInMain_);
+    assertTrue(ui.getAdvancedOpenedInMainForTest());
 
     // Expand both 'Advanced's again
-    drawerMenu.$.advancedButton.click();
+    drawerMenu.$$('#advancedButton').click();
 
     // Collapse 'Advanced' in the main area
     main.advancedToggleExpanded = false;
     flush();
 
     // Collapsing it in the main area should not collapse it in the menu
-    assertFalse(ui.advancedOpenedInMain_);
+    assertFalse(ui.getAdvancedOpenedInMainForTest());
     assertTrue(drawerMenu.advancedOpened);
     assertTrue(floatingMenu.advancedOpened);
-    assertTrue(ui.advancedOpenedInMenu_);
+    assertTrue(ui.getAdvancedOpenedInMenuForTest());
+  });
+});
+
+suite('SettingsUISearch', function() {
+  /** @type {!SettingsUiElement} */
+  let ui;
+
+  /** @type {!CrToolbarElement} */
+  let toolbar;
+
+  /** @type {!CrToolbarSearchFieldElement} */
+  let searchField;
+
+  setup(function() {
+    document.body.innerHTML = '';
+    ui = /** @type {!SettingsUiElement} */ (
+        document.createElement('settings-ui'));
+    document.body.appendChild(ui);
+    return CrSettingsPrefs.initialized.then(() => {
+      flush();
+      toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
+      searchField =
+          /** @type {!CrToolbarSearchFieldElement} */ (
+              toolbar.getSearchField());
+    });
   });
 
   test('URL initiated search propagates to search box', function() {
-    toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
-    const searchField =
-        /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
     assertEquals('', searchField.getSearchInput().value);
 
     const query = 'foo';
@@ -144,10 +181,6 @@ suite('settings-ui', function() {
   });
 
   test('search box initiated search propagates to URL', function() {
-    toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
-    const searchField =
-        /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
-
     Router.getInstance().navigateTo(
         routes.BASIC, /* dynamicParams */ null,
         /* removeSearch */ true);
@@ -167,9 +200,6 @@ suite('settings-ui', function() {
   });
 
   test('whitespace only search query is ignored', function() {
-    toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
-    const searchField =
-        /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
     searchField.setValue('    ');
     let urlParams = Router.getInstance().getQueryParameters();
     assertFalse(urlParams.has('search'));

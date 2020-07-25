@@ -143,6 +143,8 @@ enum DriveSyncErrorType {
   service_unavailable,
   // There is no server space to sync a file.
   no_server_space,
+  // There is no local space to sync a file.
+  no_local_space,
   // Miscellaneous errors other than listed above.
   misc
 };

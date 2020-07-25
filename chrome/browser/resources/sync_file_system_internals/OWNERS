@@ -2,9 +2,6 @@ calvinlo@chromium.org
 kinuko@chromium.org
 nhiroki@chromium.org
 pwnall@chomium.org
-tzik@chromium.org
-
-per-file sync_file_system_internals_resources.*=tzik@chromium.org
 
 # TEAM: storage-dev@chromium.org
 # COMPONENT: Blink>Storage>FileSystem

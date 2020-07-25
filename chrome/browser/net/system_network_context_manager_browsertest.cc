@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
   EXPECT_EQ("", dynamic_params->delegate_allowlist);
 
   const char kDelegateAllowList[] = "bar, baz";
-  local_state->SetString(prefs::kAuthNegotiateDelegateWhitelist,
+  local_state->SetString(prefs::kAuthNegotiateDelegateAllowlist,
                          kDelegateAllowList);
   dynamic_params =
       SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting();

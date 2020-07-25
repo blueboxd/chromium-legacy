@@ -26,6 +26,7 @@
 <translation id="1209206284964581585">आतासाठी लपवा</translation>
 <translation id="1219674500290482172">इंटरनेटशी कनेक्ट करण्यात अक्षम.</translation>
 <translation id="122699739164161391">सर्व टॅब बंद करा</translation>
+<translation id="1229222343402087523">Chrome मध्ये ${searchPhrase} शोधा</translation>
 <translation id="1231733316453485619">सिंक सुरू करायचे का?</translation>
 <translation id="1254117744268754948">फोल्डर निवडा</translation>
 <translation id="1265739287306757398">कसे ते जाणून घ्या</translation>
@@ -208,7 +209,7 @@
 <translation id="3335947283844343239">बंद केलेले टॅब पुन्हा उघडा</translation>
 <translation id="3371831930909698441">भाषांतर उपलब्ध आहे. स्क्रीनच्या खाली पर्याय उपलब्ध आहेत.</translation>
 <translation id="3393920035788932672">पॉप-अपला अनुमती</translation>
-<translation id="3425644765244388016">कार्डावरील टोपणनाव</translation>
+<translation id="3425644765244388016">कार्डाचे टोपणनाव</translation>
 <translation id="3443810440409579745">टॅब मिळाला.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> मिनिटे</translation>
 <translation id="3448016392200048164">विभाजित दृश्य</translation>
@@ -243,7 +244,7 @@
 <translation id="3783017676699494206">इमेज सेव्ह करा</translation>
 <translation id="3789841737615482174">स्थापना करा</translation>
 <translation id="3803696231112616155">ही साइट भाषांतरित करण्यासाठी ऑफर</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{No passwords compromised}=1{{COUNT} पासवर्ड धोक्यात आला आहे}other{{COUNT} पासवर्ड धोक्यात आले आहेत}}</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{पासवर्ड धोक्यात आलेले नाहीत}=1{{COUNT} पासवर्ड धोक्यात आला आहे}other{{COUNT} पासवर्ड धोक्यात आले आहेत}}</translation>
 <translation id="385051799172605136">मागील</translation>
 <translation id="3892144330757387737">तुमचा इतिहास तुम्हाला येथे सापडेल</translation>
 <translation id="3897092660631435901">मेनू</translation>
@@ -534,7 +535,7 @@
 <translation id="7189598951263744875">सामयिक करा...</translation>
 <translation id="7192050974311852563">लॉग इन करणे सुरू करा</translation>
 <translation id="7203585745079012652">उत्तरे वाचून सांगा</translation>
-<translation id="721597782417389033">चुकीचे कार्डावरील टोपणनाव</translation>
+<translation id="721597782417389033">कार्डाचे चुकीचे टोपणनाव</translation>
 <translation id="7265758999917665941">या साइटसाठी कधीही नाही</translation>
 <translation id="7272437679830969316">तुमच्या ओळखीची पडताळणी करता आली नाही. पासवर्ड कॉपी केला नाही.</translation>
 <translation id="7291368939935408496">पासवर्ड तयार करत आहे…</translation>

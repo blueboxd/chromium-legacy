@@ -33,3 +33,5 @@ ExtensionUninstallDialogViewInteractiveBrowserTest.*
 # This test uses random network port and shows it on ui.
 -ContentSettingBubbleDialogTest.InvokeUi_popups
 -OutdatedUpgradeBubbleTest.InvokeUi_Critical__windows
+# TODO(crbug.com/1108988): Fix this flakiness test.
+-BookmarkBubbleViewBrowserTest.InvokeUi_bookmark_details_signed_in

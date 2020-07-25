@@ -408,6 +408,7 @@
 <translation id="1500297251995790841">未知设备 [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">在多帐号登录会话中，此所有者帐号必须是最先登录的帐号。</translation>
 <translation id="150411034776756821">移除 <ph name="SITE" /></translation>
+<translation id="1504551620756424144">在 Windows 中，共享文件夹是位于 <ph name="BASE_DIR" /> 下。</translation>
 <translation id="1506061864768559482">搜索引擎</translation>
 <translation id="1507170440449692343">已阻止此网页使用您的摄像头。</translation>
 <translation id="1507246803636407672">舍弃(&amp;D)</translation>
@@ -649,6 +650,7 @@
 <translation id="177989070088644880">应用 (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">关闭群组</translation>
 <translation id="1781291988450150470">当前 PIN 码</translation>
+<translation id="1781398670452016618"><ph name="DOMAIN" /> 要求您立即连接到 Wi-Fi 并下载更新。</translation>
 <translation id="1781502536226964113">打开新标签页</translation>
 <translation id="1781771911845953849">帐号和同步</translation>
 <translation id="1782196717298160133">正在查找您的手机</translation>
@@ -1845,6 +1847,7 @@
 <translation id="3274763671541996799">您已进入全屏模式。</translation>
 <translation id="3275778809241512831">您的内部安全密钥目前不安全。请从所有使用了此密钥的服务中将其移除。要想解决该问题，请重置此安全密钥。</translation>
 <translation id="3275778913554317645">在窗口中打开</translation>
+<translation id="3277691515294482687">在升级 Linux 之前，将我的应用和文件备份到“我的文件”文件夹。</translation>
 <translation id="3278001907972365362">您需要注意自己的 Google 帐号</translation>
 <translation id="3279230909244266691">此过程可能需要几分钟的时间。正在启动虚拟机。</translation>
 <translation id="3280237271814976245">另存为(&amp;A)...</translation>
@@ -4300,7 +4303,7 @@
 <translation id="6362853299801475928">报告问题(&amp;R)...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">添加亲朋好友</translation>
-<translation id="6367985768157257101">通过“附近分享”功能接收？</translation>
+<translation id="6367985768157257101">要接收来自“附近分享”的内容吗？</translation>
 <translation id="636850387210749493">企业注册</translation>
 <translation id="6370021412472292592">无法加载清单。</translation>
 <translation id="6374077068638737855">Iceweasel</translation>

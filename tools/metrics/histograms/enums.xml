@@ -3541,6 +3541,14 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Closed shape"/>
 </enum>
 
+<enum name="AssistantInteractionResolution">
+  <int value="0" label="kNormal"/>
+  <int value="1" label="kInterruption"/>
+  <int value="2" label="kError"/>
+  <int value="3" label="kMicTimeout"/>
+  <int value="4" label="kMultiDeviceHotwordLoss"/>
+</enum>
+
 <enum name="AssistantOptInFlowStatus">
   <int value="0" label="FLOW_STARTED"/>
   <int value="1" label="ACTIVITY_CONTROL_SHOWN"/>
@@ -21261,8 +21269,8 @@ Called by update_document_policy_enum.py.-->
   <int value="731" label="DeviceExternalPrintServersAllowlist"/>
   <int value="732" label="SafeBrowsingAllowlistDomains"/>
   <int value="733" label="DevicePrintersAccessMode"/>
-  <int value="734" label="DeviceNativePrintersBlocklist"/>
-  <int value="735" label="DeviceNativePrintersAllowlist"/>
+  <int value="734" label="DevicePrintersBlocklist"/>
+  <int value="735" label="DevicePrintersAllowlist"/>
   <int value="736" label="URLBlocklist"/>
   <int value="737" label="URLAllowlist"/>
   <int value="738" label="ExtensionInstallAllowlist"/>
@@ -21273,6 +21281,7 @@ Called by update_document_policy_enum.py.-->
   <int value="743" label="DevicePrinters"/>
   <int value="744" label="NativeMessagingBlocklist"/>
   <int value="745" label="NativeMessagingAllowlist"/>
+  <int value="746" label="AuthNegotiateDelegateAllowlist"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -39964,6 +39973,7 @@ from previous Chrome versions.
   <int value="-1867342522" label="MaterialDesignHistory:enabled"/>
   <int value="-1865155026" label="AutoFetchOnNetErrorPage:enabled"/>
   <int value="-1863962664" label="LockScreenNotifications:enabled"/>
+  <int value="-1863020461" label="PasswordChangeInSettings:enabled"/>
   <int value="-1861814223" label="MidiManagerDynamicInstantiation:enabled"/>
   <int value="-1860481724" label="ChromeHomeExpandButton:enabled"/>
   <int value="-1859421131" label="BackForwardCache:disabled"/>
@@ -41947,6 +41957,7 @@ from previous Chrome versions.
   <int value="291866104" label="WebAuthenticationPhoneSupport:enabled"/>
   <int value="291968978" label="HomepagePromoCard:enabled"/>
   <int value="292560715" label="ViewsCastDialog:disabled"/>
+  <int value="292731264" label="PasswordChangeInSettings:disabled"/>
   <int value="293134455" label="AutofillSendBillingCustomerNumber:disabled"/>
   <int value="293996306" label="ArrayPrototypeValues:disabled"/>
   <int value="295661985" label="video-capture-use-gpu-memory-buffer"/>
@@ -63240,6 +63251,14 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Timeout">
     The timer fired before a change to the protocol registry key was detected.
   </int>
+</enum>
+
+<enum name="SettingsLanguagesPageInteraction">
+  <int value="0" label="Switch system language"/>
+  <int value="1" label="Restart"/>
+  <int value="2" label="Restart now"/>
+  <int value="3" label="Restart later"/>
+  <int value="4" label="Open custom spell check"/>
 </enum>
 
 <enum name="SettingsNavigationSources">

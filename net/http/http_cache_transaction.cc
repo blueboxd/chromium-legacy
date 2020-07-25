@@ -569,9 +569,9 @@ void HttpCache::Transaction::SetWebSocketHandshakeStreamCreateHelper(
 }
 
 void HttpCache::Transaction::SetBeforeNetworkStartCallback(
-    const BeforeNetworkStartCallback& callback) {
+    BeforeNetworkStartCallback callback) {
   DCHECK(!network_trans_);
-  before_network_start_callback_ = callback;
+  before_network_start_callback_ = std::move(callback);
 }
 
 void HttpCache::Transaction::SetConnectedCallback(
@@ -1690,7 +1690,8 @@ int HttpCache::Transaction::DoSendRequest() {
     return rv;
   }
 
-  network_trans_->SetBeforeNetworkStartCallback(before_network_start_callback_);
+  network_trans_->SetBeforeNetworkStartCallback(
+      std::move(before_network_start_callback_));
   network_trans_->SetConnectedCallback(connected_callback_);
   network_trans_->SetRequestHeadersCallback(request_headers_callback_);
   network_trans_->SetResponseHeadersCallback(response_headers_callback_);

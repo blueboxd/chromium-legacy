@@ -56,7 +56,7 @@ export default PackageDetailsPanel;
 
 <style scoped>
 .package-details-panel {
-  max-height: 400px;
+  max-height: 300px;
   overflow: hidden;
   overflow-y: scroll;
 }

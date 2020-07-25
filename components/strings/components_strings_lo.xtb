@@ -563,6 +563,9 @@
 <translation id="3364869320075768271"><ph name="URL" /> ຕ້ອງການໃຊ້ອຸປະກອນ ແລະ ຂໍ້ມູນເວີຊົວ ຣິອາລິຕີ</translation>
 <translation id="3366477098757335611">ເບິ່ງບັດ</translation>
 <translation id="3369192424181595722">ໂມງ​ຜິດ​ພາດ</translation>
+<translation id="3371076217486966826"><ph name="URL" /> ຕ້ອງການ:
+      • ສ້າງແຜນທີ່ 3D ຂອງສິ່ງອ້ອມຂ້າງທ່ານ ແລະ ຕິດຕາມຕຳແໜ່ງກ້ອງ
+      • ໃຊ້ກ້ອງຂອງທ່ານ</translation>
 <translation id="337363190475750230">ຖອນການຈັດໃຫ້ແລ້ວ</translation>
 <translation id="3377144306166885718">ເຊີບເວີໃຊ້ TLS ເວີຊັນເກົ່າ.</translation>
 <translation id="3377188786107721145">ຄວາມ​ຜິດ​ພາດກະຈາຍນະ​ໂຍ​ບາຍ</translation>
@@ -1562,6 +1565,7 @@
 <translation id="7518003948725431193">ບໍ່ພົບໜ້າ​​ເວັບສໍາລັບທີ່ຢູ່ເວັບ: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (ຊອງຈົດໝາຍ)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">ເຊື່ອງສ່ວນ "<ph name="SECTION" />" ໄວ້ແລ້ວ</translation>
 <translation id="7526934274050461096">ການເຊື່ອມຕໍ່ກັບເວັບໄຊນີ້ຂອງທ່ານບໍ່ເປັນສ່ວນຕົວ</translation>
 <translation id="7535087603100972091">ຄ່າ</translation>
 <translation id="7537536606612762813">ບັງ​ຄັບ</translation>
@@ -1762,6 +1766,7 @@
 <translation id="8293206222192510085">ເພີ່ມບຸກມາກຄ໌</translation>
 <translation id="8294431847097064396">ແຫຼ່ງທີ່ມາ</translation>
 <translation id="8298115750975731693">Wi-Fi ທີ່​ທ່ານ​ກຳ​ລັງ​ໃຊ້​ຢູ່ (<ph name="WIFI_NAME" />) ອາດ​ຈະ​ຕ້ອງ​ການ​ໃຫ້​ທ່ານ​ເຂົ້າ​ <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> ຂອງ​ມັນ.</translation>
+<translation id="8303854710873047864">ສະແດງ "<ph name="SECTION" />" ແລ້ວ</translation>
 <translation id="830498451218851433">ພັບເຄິ່ງ</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">ແອັບທີ່ຕິດຕັ້ງ ແລະ ມີການນຳໃຊ້ພວກມັນເລື້ອຍໆສໍ່າໃດ</translation>
@@ -1881,6 +1886,7 @@
 <translation id="8931333241327730545">ທ່ານຕ້ອງການບັນທຶກບັດນີ້ໃສ່ບັນຊີ Google ຂອງທ່ານບໍ?</translation>
 <translation id="8932102934695377596">ໂມງ​ຂອງ​ທ່ານ​ຊ້າ</translation>
 <translation id="893332455753468063">ເພີ່ມຊື່</translation>
+<translation id="8942355029279167844">ຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານໄດ້ອະນຸຍາດໃຫ້ <ph name="APP_NAME" /> ເກັບເອົາຂໍ້ມູນການວິເຄາະບັນຫາເພື່ອປັບປຸງປະສົບການຜະລິດຕະພັນແລ້ວ. ເບິ່ງ <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> ສຳລັບຂໍ້ມູນເພີ່ມເຕີມ.</translation>
 <translation id="8943282376843390568">ສີຂຽວໝາກນາວ</translation>
 <translation id="8957210676456822347">ການ​ໃຫ້​ສິດ​ທາງ​ເຂົ້າ​ຈັບ​ໜ້າ​ຈໍ</translation>
 <translation id="8962950042226115166">ເວັບໄຊທີ່ໜ້າສົງໄສ</translation>

@@ -148,7 +148,7 @@ class OmniboxViewViews : public OmniboxView,
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnPaint(gfx::Canvas* canvas) override;
   void ExecuteCommand(int command_id, int event_flags) override;
-  ui::TextInputType GetTextInputType() const override;
+  void OnInputMethodChanged() override;
   void AddedToWidget() override;
   void RemovedFromWidget() override;
   base::string16 GetLabelForCommandId(int command_id) const override;

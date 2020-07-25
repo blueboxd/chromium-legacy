@@ -214,7 +214,7 @@
 <translation id="334252345105450327">Take a screenshot</translation>
 <translation id="3351879221545518001">Понастоящем предавате екрана.</translation>
 <translation id="3364721542077212959">Инструменти за писане</translation>
-<translation id="3368922792935385530">Установена е връзка</translation>
+<translation id="3368922792935385530">Има връзка</translation>
 <translation id="3371140690572404006">устройство с USB-C (предният десен порт)</translation>
 <translation id="3386978599540877378">Лупата за увеличаване на целия екран</translation>
 <translation id="3400357268283240774">Допълнителни настройки</translation>
@@ -276,7 +276,7 @@
 <translation id="4028481283645788203">За по-висока сигурност се изисква парола</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Споделяте екрана си</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Изключено за едно приложение}other{Изключено за # приложения}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Изкл. за 1 прил.}other{Изкл. за # прил.}}</translation>
 <translation id="4072264167173457037">умерен сигнал</translation>
 <translation id="4112140312785995938">Придвижване назад</translation>
 <translation id="4129129681837227511">За да виждате известия на заключения екран, отключете устройството и променете настройката</translation>
@@ -301,7 +301,7 @@
 <translation id="4356930093361201197">режим на висок контраст</translation>
 <translation id="4368583494516669646">Лека нощ, <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Настройки за предаване</translation>
-<translation id="4378551569595875038">Установява се връзка...</translation>
+<translation id="4378551569595875038">Свързване...</translation>
 <translation id="4379531060876907730">Това са инструментите ви за писане</translation>
 <translation id="4389184120735010762">Използвахте клавишната комбинация за лупата в прикрепен режим. Искате ли да включите функцията?</translation>
 <translation id="4421231901400348175">Споделяте с/ъс <ph name="HELPER_NAME" /> контрола върху екрана си чрез отдалечено съдействие.</translation>
@@ -330,7 +330,7 @@
 <translation id="4705716602320768426">Изпращане на отзиви</translation>
 <translation id="4710243778082831592">Настройки за редактора за метод на въвеждане</translation>
 <translation id="4731797938093519117">Достъп на родител</translation>
-<translation id="4734965478015604180">Хоризонтална ориентация</translation>
+<translation id="4734965478015604180">Хоризонтално</translation>
 <translation id="4774338217796918551">Заповядайте отново утре в <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Парола за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google Асистент не е налице по време на демонстрационна сесия.</translation>
@@ -344,7 +344,7 @@
 <translation id="4872237917498892622">„Alt + търсене“ или „Shift“</translation>
 <translation id="4890187583552566966">Администраторът ви е деактивирал Google Асистент.</translation>
 <translation id="4895488851634969361">Батерията е пълна.</translation>
-<translation id="490375751687810070">Вертикална ориентация</translation>
+<translation id="490375751687810070">Вертикално</translation>
 <translation id="4905614135390995787">Клавишната комбинация за превключване на режима на висок контраст е променена. Моля, използвайте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" />% батерия</translation>
 <translation id="4917385247580444890">Силен</translation>
@@ -421,7 +421,7 @@
 <translation id="5958529069007801266">Контролиран потребител</translation>
 <translation id="5977415296283489383">Слушалки</translation>
 <translation id="5978382165065462689">Споделяте контрола върху екрана си чрез отдалечено съдействие.</translation>
-<translation id="5980301590375426705">Изход от сесията като гост</translation>
+<translation id="5980301590375426705">Изход като гост</translation>
 <translation id="598882571027504733">За да инсталирате актуализацията, рестартирайте своя Chromebook, докато клавиатурата е прикачена.</translation>
 <translation id="5992218262414051481">Режимът на висок контраст е активиран. За да го изключите, натиснете отново Ctrl + клавиш „Търсене“ + H.</translation>
 <translation id="6018164090099858612">Излиза се от огледалния режим</translation>
@@ -598,7 +598,7 @@
 <translation id="8054466585765276473">Издръжливостта на батерията се изчислява.</translation>
 <translation id="8061464966246066292">Висок контраст</translation>
 <translation id="8098591350844501178">Спиране на предаването на екрана към „<ph name="RECEIVER_NAME" />“</translation>
-<translation id="8113423164597455979">Включено за всички приложения</translation>
+<translation id="8113423164597455979">Вкл. за всички</translation>
 <translation id="8131740175452115882">Потвърждаване</translation>
 <translation id="8132793192354020517">Установена е връзка с/ъс <ph name="NAME" /></translation>
 <translation id="813913629614996137">Подготвя се за работа...</translation>
@@ -639,7 +639,7 @@
 <translation id="8473301994082929012">Функцията „<ph name="FEATURE_NAME" />“ е <ph name="FEATURE_STATE" /> от <ph name="ORGANIZATION_NAME" />.</translation>
 <translation id="8477270416194247200">Натиснете Alt + клавиша „търсене“ или само Shift, за да анулирате.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> не поддържа <ph name="SPECIFIED_RESOLUTION" />. Разделителната способност бе променена на <ph name="FALLBACK_RESOLUTION" />. Кликнете върху бутона за потвърждаване, за да запазите промените. Предишните настройки ще бъдат възстановени след <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="8513108775083588393">Автоматична ориентация</translation>
+<translation id="8513108775083588393">Автоматично</translation>
 <translation id="8517041960877371778">Възможно е вашият <ph name="DEVICE_TYPE" /> да не се зарежда, докато е включен.</translation>
 <translation id="8563862697512465947">Настройки за известия</translation>
 <translation id="857201607579416096">Менюто е преместено в долния десен ъгъл на екрана.</translation>
@@ -696,7 +696,7 @@
 <translation id="9080132581049224423">Прекарайте пръст нагоре, за да отворите началния екран</translation>
 <translation id="9080206825613744995">Микрофонът се използва.</translation>
 <translation id="9084606467167974638">Промяна на позицията на менюто</translation>
-<translation id="9089416786594320554">Методи за въвеждане</translation>
+<translation id="9089416786594320554">Метод за въвеждане</translation>
 <translation id="9091626656156419976">Екранът „<ph name="DISPLAY_NAME" />“ бе премахнат</translation>
 <translation id="9151726767154816831">Рестартирайте и извършете Powerwash, за да актуализирате</translation>
 <translation id="9168436347345867845">По-късно</translation>

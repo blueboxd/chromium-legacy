@@ -677,6 +677,12 @@
       <structure name="IDR_OS_SETTINGS_LANGUAGES_ADD_LANGUAGES_DIALOG_JS"
                  file="chromeos/os_languages_page/os_add_languages_dialog.js"
                  compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_LANGUAGES_METRICS_PROXY_HTML"
+                 file="chromeos/os_languages_page/languages_metrics_proxy.html"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_LANGUAGES_METRICS_PROXY_JS"
+                 file="chromeos/os_languages_page/languages_metrics_proxy.js"
+                 compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_LANGUAGES_PAGE_HTML"
                  file="chromeos/os_languages_page/os_languages_page.html"
                  compress="false" type="chrome_html" />

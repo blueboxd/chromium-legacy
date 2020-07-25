@@ -223,6 +223,7 @@ Chromium nemůže vaše nastavení obnovit.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Do jednoho dne Chromium restartujte}few{Do # dní Chromium restartujte}many{Do # dne Chromium restartujte}other{Do # dní Chromium restartujte}}</translation>
 <translation id="8453117565092476964">Archiv instalačního programu je poškozený nebo neplatný. Stáhněte prosím Chromium znovu.</translation>
 <translation id="8493179195440786826">Prohlížeč Chromium je zastaralý</translation>
+<translation id="8545858702702650646">Vyberte profil Chromium Space</translation>
 <translation id="8558383651099478961">Tvůj rodič pro prohlížeč Chromium vypnul možnost Oprávnění pro weby, aplikace a rozšíření. Přidání tohoto <ph name="EXTENSION_TYPE_PARAMETER" /> není povoleno.</translation>
 <translation id="8568283329061645092">Když se přihlásíte pomocí účtu Google, může vám Chromium kontrolovat hesla</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autoři prohlížeče Chromium. Všechna práva vyhrazena.</translation>
@@ -246,6 +247,7 @@ Chromium nemůže vaše nastavení obnovit.</translation>
 <translation id="911206726377975832">Vymazat také všechna data procházení?</translation>
 <translation id="9158494823179993217">Administrátor systému nakonfiguroval prohlížeč Chromium tak, aby pro přístup k adrese <ph name="TARGET_URL_HOSTNAME" /> otevřel alternativní prohlížeč.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Pomocí profilů Chromium Space můžete procházení na tomto zařízení uspořádat</translation>
 <translation id="93478295209880648">Prohlížeč Chromium nemusí fungovat správně, protože v systémech Windows XP a Windows Vista již není podporován</translation>
 <translation id="95514773681268843">Doména <ph name="DOMAIN" /> vyžaduje, abyste si před použitím tohoto zařízení přečetli následující smluvní podmínky a odsouhlasili je. Tyto smluvní podmínky nerozšiřují, neupravují ani neomezují smluvní podmínky systému Chromium OS.</translation>
 <translation id="985602178874221306">Autoři prohlížeče Chromium</translation>

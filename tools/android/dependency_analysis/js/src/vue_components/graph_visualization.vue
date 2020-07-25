@@ -36,6 +36,8 @@ const GraphVisualization = {
     graphUpdateTriggers: {
       handler: function() {
         this.graphView.updateGraphData(this.pageModel.getDataForD3());
+        this.graphView.updateDisplaySettings(
+            this.pageModel.displaySettingsData);
       },
       deep: true,
     },
@@ -56,9 +58,8 @@ export default GraphVisualization;
 </script>
 
 <style>
-.graph-edges line {
-  stroke: #999;
-  stroke-opacity: 0.6;
+.graph-edges path.non-hovered-edge {
+  opacity: 0.4;
 }
 
 .graph-nodes circle {
@@ -69,6 +70,10 @@ export default GraphVisualization;
 .graph-labels text {
   font-family: sans-serif;
   font-size: 12px;
+}
+
+.graph-labels text.non-hovered-text {
+  opacity: 0.4;
 }
 
 .graph-nodes circle.locked {

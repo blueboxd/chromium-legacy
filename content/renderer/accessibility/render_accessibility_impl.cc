@@ -996,17 +996,8 @@ void RenderAccessibilityImpl::SendLocationChanges() {
       continue;
 
     // If the location has changed, append it to the IPC message.
-    WebAXObject offset_container;
-    WebFloatRect bounds_in_container;
-    SkMatrix44 container_transform;
-    obj.GetRelativeBounds(offset_container, bounds_in_container,
-                          container_transform);
     ui::AXRelativeBounds new_location;
-    new_location.offset_container_id = offset_container.AxID();
-    new_location.bounds = bounds_in_container;
-    if (!container_transform.isIdentity())
-      new_location.transform = base::WrapUnique(
-          new gfx::Transform(container_transform));
+    tree_source_->PopulateAXRelativeBounds(obj, &new_location);
     if (iter->second != new_location)
       changes.push_back(mojom::LocationChanges::New(id, new_location));
 

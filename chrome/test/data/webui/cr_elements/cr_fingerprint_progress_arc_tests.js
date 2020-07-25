@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import 'chrome://resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.m.js';
+// #import {FINGEPRINT_TICK_LIGHT_URL, FINGEPRINT_TICK_DARK_URL} from 'chrome://resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.m.js';
+// #import 'chrome://resources/cr_elements/cr_lottie/cr_lottie.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {assertEquals} from '../chai_assert.js';
+// #import {MockController, MockMethod} from '../mock_controller.m.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for cr-fingerprint-progress-arc. */
@@ -44,7 +46,31 @@ suite('cr_fingerprint_progress_arc_test', function() {
   /** @type {!Color} */
   const white = {r: 255, g: 255, b: 255};
 
+  /** @type {!MockController} */
+  let mockController;
+
+  /** @type {!Object} */
+  let darkModeQuery;
+
   setup(function() {
+    mockController = new MockController();
+    const matchMediaMock =
+        mockController.createFunctionMock(window, 'matchMedia');
+    matchMediaMock.addExpectation('(prefers-color-scheme: dark)');
+    darkModeQuery = {
+      listener: null,
+      matches: false,
+
+      addListener: function(listener) {
+        this.listener = listener;
+      },
+      removeListener: function(listener) {
+        assertEquals(listener, this.listener);
+        this.listener = null;
+      },
+    };
+    matchMediaMock.returnValue = darkModeQuery;
+
     document.body.innerHTML = '';
     progressArc = /** @type {!CrFingerprintProgressArcElement} */ (
         document.createElement('cr-fingerprint-progress-arc'));
@@ -160,5 +186,17 @@ suite('cr_fingerprint_progress_arc_test', function() {
     // After clearing, the points that were black should be white.
     progressArc.clearCanvas();
     assertListOfColorsEqual(white, expectedPointsInCircle);
+  });
+
+  test('TestSwitchToDarkMode', function() {
+    const scanningAnimation =
+        /** @type {!CrLottieElement} */ (progressArc.$$('#scanningAnimation'));
+
+    progressArc.setProgress(0, 1, true);
+    assertEquals(FINGEPRINT_TICK_LIGHT_URL, scanningAnimation.animationUrl);
+    darkModeQuery.matches = true;
+    darkModeQuery.listener();
+
+    assertEquals(FINGEPRINT_TICK_DARK_URL, scanningAnimation.animationUrl);
   });
 });

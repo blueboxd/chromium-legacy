@@ -81,6 +81,7 @@
 <translation id="3089968997497233615">새롭고 안전한 Chrome의 새 버전을 사용할 수 있습니다.</translation>
 <translation id="3127818369811890733">Chrome OS에서 데이터를 동기화할 수 없습니다.</translation>
 <translation id="3149510190863420837">Chrome 앱</translation>
+<translation id="3351117925998652957">Chrome Space 선택</translation>
 <translation id="3360895254066713204">Chrome 도우미</translation>
 <translation id="3379938682270551431">{0,plural, =0{지금 Chrome이 다시 시작됩니다}=1{1초 후 Chrome이 다시 시작됩니다}other{#초 후 Chrome이 다시 시작됩니다}}</translation>
 <translation id="3395323229510056640">Chrome OS 도움말 보기</translation>
@@ -213,6 +214,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7535429826459677826">Chrome 개발자</translation>
 <translation id="7573289029918943991">기기가 최신 버전인지 확인하려면 <ph name="LINK_BEGIN" />Chrome OS 설정<ph name="LINK_END" />으로 이동하세요.</translation>
 <translation id="7589360514048265910">Mac OS X 10.9가 더 이상 지원되지 않으므로 이 컴퓨터에서 Chrome 업데이트를 받을 수 없게 됩니다.</translation>
+<translation id="7591404275842302616">Chrome Space를 사용하여 기기의 탐색 환경을 정리하세요.</translation>
 <translation id="7592736734348559088">계정의 로그인 세부정보가 오래되어 Chrome에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="7626032353295482388">Chrome에 오신 것을 환영합니다</translation>
 <translation id="7629695634924605473">비밀번호가 유출되면 Chrome에서 알려줍니다.</translation>

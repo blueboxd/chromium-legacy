@@ -224,6 +224,7 @@ Chromium ne može vratiti vaše postavke.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Ponovo pokreni Chromium u roku od jednog dana}one{Ponovo pokreni Chromium u roku od # dana}few{Ponovo pokreni Chromium u roku od # dana}other{Ponovo pokreni Chromium u roku od # dana}}</translation>
 <translation id="8453117565092476964">Arhiva alata za instaliranje je oštećena ili nevažeća. Ponovo preuzmite Chromium.</translation>
 <translation id="8493179195440786826">Chromium nije ažuriran</translation>
+<translation id="8545858702702650646">Odaberite Chromium prostor</translation>
 <translation id="8558383651099478961">Tvoj roditelj je isključio "Odobrenja za web lokacije, aplikacije i ekstenzije" za Chromium. Dodavanje ove stavke (<ph name="EXTENSION_TYPE_PARAMETER" />) nije dozvoljeno.</translation>
 <translation id="8568283329061645092">Chromium može provjeravati vaše lozinke kada se prijavljujete putem Google računa</translation>
 <translation id="8586442755830160949">Autorska prava <ph name="YEAR" /> Autori Chromiuma. Sva prava zadržana.</translation>
@@ -247,6 +248,7 @@ Chromium ne može vratiti vaše postavke.</translation>
 <translation id="911206726377975832">Također izbrisati podatke pregledanja?</translation>
 <translation id="9158494823179993217">Vaš administrator sistema je konfigurirao Chromium da otvori alternativni preglednik za pristup URL-u<ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">Koristite Chromium prostore da organizirate svoje pregledanje na ovom uređaju</translation>
 <translation id="93478295209880648">Chromium možda neće ispravno raditi jer više nije podržan na sistemima Windows XP ili Windows Vista</translation>
 <translation id="95514773681268843">Domena <ph name="DOMAIN" /> zahtijeva da prije korištenja uređaja pročitate i prihvatite sljedeće Uslove korištenja usluge. Ovi uslovi ne predstavljaju dodatak, izmjenu ili ograničenje uslova za Chromium OS.</translation>
 <translation id="985602178874221306">Autori Chromiuma</translation>

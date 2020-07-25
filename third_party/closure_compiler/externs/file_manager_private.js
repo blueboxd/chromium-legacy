@@ -168,6 +168,7 @@ chrome.fileManagerPrivate.DriveSyncErrorType = {
   DELETE_WITHOUT_PERMISSION: 'delete_without_permission',
   SERVICE_UNAVAILABLE: 'service_unavailable',
   NO_SERVER_SPACE: 'no_server_space',
+  NO_LOCAL_SPACE: 'no_local_space',
   MISC: 'misc',
 };
 

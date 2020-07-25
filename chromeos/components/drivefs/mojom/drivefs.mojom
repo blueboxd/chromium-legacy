@@ -206,6 +206,7 @@ enum FileError {
 struct DriveError {
   [Extensible] enum Type {
     kCantUploadStorageFull,
+    kPinningFailedDiskFull,
   };
 
   Type type;

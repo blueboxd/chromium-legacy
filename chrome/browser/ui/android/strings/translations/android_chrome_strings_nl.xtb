@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Chrome updaten</translation>
 <translation id="1569387923882100876">Gekoppeld apparaat</translation>
 <translation id="1571304935088121812">Gebruikersnaam kopiëren</translation>
+<translation id="1592864538817356322">Standaardbeveiliging:</translation>
 <translation id="1612196535745283361">Chrome heeft locatietoegang nodig om naar apparaten te scannen. Locatietoegang is <ph name="BEGIN_LINK" />uitgeschakeld voor dit apparaat<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{1 geselecteerd item verwijderen}other{# geselecteerde items verwijderen}}</translation>
@@ -578,6 +579,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5659593005791499971">E-mailadres</translation>
 <translation id="5665379678064389456">Afspraak maken in <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Negeer verzoek van website om inzoomen te voorkomen</translation>
+<translation id="568275469169136466">Voor tijdelijk inloggen</translation>
 <translation id="5683547024293500885">Chrome kan niet checken op updates</translation>
 <translation id="5686790454216892815">Bestandsnaam te lang</translation>
 <translation id="5694049548840660018">Makkelijk naar je homepage gaan</translation>
@@ -589,6 +591,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5723735397759933332">In de Lite-versie kun je nu meer data besparen door afbeeldingen op HTTPS-pagina's te optimaliseren.</translation>
 <translation id="5726692708398506830">Alles op de pagina vergroten</translation>
 <translation id="5732819098735351888">Download wordt gestart via wifi.</translation>
+<translation id="5733983706093266635">Kan geen QR-code maken. De URL is langer dan <ph name="CHARACTER_LIMIT" /> tekens.</translation>
 <translation id="5748802427693696783">Overgeschakeld naar standaardtabbladen</translation>
 <translation id="5749068826913805084">Chrome heeft toegang tot de opslag nodig om deze bestanden te kunnen downloaden.</translation>
 <translation id="5749237766298580851">Uit <ph name="SEPARATOR" /> Niet aanbevolen</translation>
@@ -641,6 +644,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="6111020039983847643">data gebruikt</translation>
 <translation id="6112702117600201073">Pagina vernieuwen</translation>
 <translation id="6127379762771434464">Item verwijderd</translation>
+<translation id="6140709049082532940">Verbeterde beveiliging:</translation>
 <translation id="6140912465461743537">Land/regio</translation>
 <translation id="614940544461990577">Probeer dit eens:</translation>
 <translation id="6154478581116148741">Schakel schermvergrendeling in via Instellingen om je wachtwoorden te exporteren vanaf dit apparaat</translation>
@@ -1017,6 +1021,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="9100610230175265781">Wachtwoordzin vereist</translation>
 <translation id="9102803872260866941">Voorbeeldtabblad is geopend</translation>
 <translation id="9104217018994036254">Lijst met apparaten om een tabblad mee te delen.</translation>
+<translation id="9104402662006063371">Incognitomodus inschakelen</translation>
 <translation id="9108312223223904744">Telefoon als ondersteuning voor beveiligingssleutel</translation>
 <translation id="9108808586816295166">Beveiligde DNS is mogelijk niet altijd beschikbaar</translation>
 <translation id="9133397713400217035">Offline ontdekken</translation>

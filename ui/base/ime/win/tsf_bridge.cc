@@ -111,6 +111,10 @@ class TSFBridgeImpl : public TSFBridge {
   // An ITfThreadMgr object to be used in focus and document management.
   Microsoft::WRL::ComPtr<ITfThreadMgr> thread_manager_;
 
+  // An ITfInputProcessorProfiles object to be used to get current language
+  // locale profile.
+  Microsoft::WRL::ComPtr<ITfInputProcessorProfiles> input_processor_profiles_;
+
   // A map from TextInputType to an editable document for TSF. We use multiple
   // TSF documents that have different InputScopes and TSF attributes based on
   // the TextInputType associated with the target document. For a TextInputType
@@ -134,6 +138,9 @@ class TSFBridgeImpl : public TSFBridge {
   // Handle to ITfKeyTraceEventSink.
   DWORD key_trace_sink_cookie_ = 0;
 
+  // Handle to ITfLanguageProfileNotifySink
+  DWORD language_profile_cookie_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(TSFBridgeImpl);
 };
 
@@ -148,6 +155,11 @@ TSFBridgeImpl::~TSFBridgeImpl() {
     Microsoft::WRL::ComPtr<ITfSource> source;
     if (SUCCEEDED(thread_manager_->QueryInterface(IID_PPV_ARGS(&source)))) {
       source->UnadviseSink(key_trace_sink_cookie_);
+    }
+    Microsoft::WRL::ComPtr<ITfSource> language_source;
+    if (SUCCEEDED(input_processor_profiles_->QueryInterface(
+            IID_PPV_ARGS(&language_source)))) {
+      language_source->UnadviseSink(language_profile_cookie_);
     }
   }
 
@@ -170,6 +182,13 @@ bool TSFBridgeImpl::Initialize() {
   DCHECK(base::CurrentUIThread::IsSet());
   if (client_id_ != TF_CLIENTID_NULL) {
     DVLOG(1) << "Already initialized.";
+    return false;
+  }
+
+  if (FAILED(::CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr,
+                                CLSCTX_ALL,
+                                IID_PPV_ARGS(&input_processor_profiles_)))) {
+    DVLOG(1) << "Failed to create InputProcessorProfiles instance.";
     return false;
   }
 
@@ -418,6 +437,21 @@ bool TSFBridgeImpl::CreateDocumentManager(TSFTextStore* text_store,
           static_cast<ITfKeyTraceEventSink*>(text_store),
           &key_trace_sink_cookie_))) {
     DVLOG(1) << "AdviseSink for ITfKeyTraceEventSink failed.";
+    return false;
+  }
+
+  Microsoft::WRL::ComPtr<ITfSource> language_source;
+  if (FAILED(input_processor_profiles_->QueryInterface(
+          IID_PPV_ARGS(&language_source)))) {
+    DVLOG(1) << "Failed to get source_ITfInputProcessorProfiles.";
+    return false;
+  }
+
+  if (FAILED(
+          language_source->AdviseSink(IID_ITfLanguageProfileNotifySink,
+                                      static_cast<ITfTextEditSink*>(text_store),
+                                      &language_profile_cookie_))) {
+    DVLOG(1) << "AdviseSink for language profile notify sink failed.";
     return false;
   }
 

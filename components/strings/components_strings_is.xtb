@@ -451,7 +451,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="2824775600643448204">Veffanga- og leitarstika</translation>
 <translation id="2826760142808435982">Tengingin er dulkóðuð og sannvottuð með <ph name="CIPHER" /> og <ph name="KX" /> er notað sem aðferð til að skiptast á lyklum.</translation>
 <translation id="2835170189407361413">Hreinsa eyðublað</translation>
-<translation id="2839501879576190149">Fölsk síða</translation>
+<translation id="2839501879576190149">Falskt vefsvæði</translation>
 <translation id="2847118875340931228">Opna huliðsglugga</translation>
 <translation id="2850739647070081192">Invite (umslag)</translation>
 <translation id="2856444702002559011">Tölvuþrjótar gætu verið að reyna að stela upplýsingum þínum frá <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (til dæmis aðgangsorðum, skilaboðum eða kreditkortum). <ph name="BEGIN_LEARN_MORE_LINK" />Frekari upplýsingar<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -564,6 +564,9 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="3364869320075768271"><ph name="URL" /> vill fá að nota sýndarveruleikatæki og -gögn</translation>
 <translation id="3366477098757335611">Skoða kort</translation>
 <translation id="3369192424181595722">Klukkuvilla</translation>
+<translation id="3371076217486966826"><ph name="URL" /> vill:
+      • Búa til þrívíddarkort af umhverfi þínu og rekja stöðu myndavélarinnar
+      • Nota myndavélina þína</translation>
 <translation id="337363190475750230">Úthlutun dregin til baka</translation>
 <translation id="3377144306166885718">Þjónninn notaði úrelta útgáfu af TLS.</translation>
 <translation id="3377188786107721145">Villa við að þátta reglu</translation>
@@ -830,7 +833,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="4358461427845829800">Stjórna greiðslumátum...</translation>
 <translation id="4359160567981085931">Þú varst að slá aðgangsorðið þitt inn á villandi vefsvæði. Chrome getur aðstoðað. Smelltu á „Vernda reikning“ til að breyta lykilorðinu þínu og láta Google vita að reikningurinn þinn sé hugsanlega í hættu.</translation>
 <translation id="4367563149485757821">Number-12 (umslag)</translation>
-<translation id="4367839622597707614">{1,plural, =0{Öryggisbrot á vefsvæði eða í forriti afhjúpaði vistað aðgangsorð þitt fyrir <ph name="ORIGIN" />. Chrome mælir með því að þú breytir aðgangsorðinu þínu fyrir <ph name="ORIGIN" /> núna.}=1{Öryggisbrot á vefsvæði eða í forriti afhjúpaði vistað aðgangsorð þitt fyrir <ph name="ORIGIN" /> og eina síðu til vibótar. Chrome mælir með því að þú athugir vistuðu aðgangsorðin þín núna.}one{Öryggisbrot á vefsvæði eða í forriti afhjúpaði vistað aðgangsorð þitt fyrir <ph name="ORIGIN" /> og <ph name="SITES_COUNT" /> síðu til viðbótar. Chrome mælir með því að þú athugir vistuðu aðgangsorðin þín núna.}other{Öryggisbrot á vefsvæði eða í forriti afhjúpaði vistað aðgangsorð þitt fyrir <ph name="ORIGIN" /> og <ph name="SITES_COUNT" /> síður til viðbótar. Chrome mælir með því að þú athugir vistuðu aðgangsorðin þín núna.}}</translation>
+<translation id="4367839622597707614">{1,plural, =0{Öryggisbrot á vefsvæði eða í forriti afhjúpaði vistað aðgangsorð þitt að <ph name="ORIGIN" />. Chrome mælir með því að þú breytir aðgangsorðinu þínu að <ph name="ORIGIN" /> núna.}=1{Öryggisbrot á vefsvæði eða í forriti afhjúpaði vistað aðgangsorð þitt að <ph name="ORIGIN" /> og einu vefsvæði til vibótar. Chrome mælir með því að þú athugir vistuðu aðgangsorðin þín núna.}one{Öryggisbrot á vefsvæði eða í forriti afhjúpaði vistað aðgangsorð þitt að <ph name="ORIGIN" /> og <ph name="SITES_COUNT" /> vefsvæði til viðbótar. Chrome mælir með því að þú athugir vistuðu aðgangsorðin þín núna.}other{Öryggisbrot á vefsvæði eða í forriti afhjúpaði vistað aðgangsorð þitt að <ph name="ORIGIN" /> og <ph name="SITES_COUNT" /> vefsvæðum til viðbótar. Chrome mælir með því að þú athugir vistuðu aðgangsorðin þín núna.}}</translation>
 <translation id="437058704415269440">Reikningsstaða</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Búist var við <ph name="VALUE_TYPE" /> gildi.</translation>
@@ -1563,6 +1566,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="7518003948725431193">Engin vefsíða fannst fyrir veffangið: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (umslag)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">„<ph name="SECTION" />“ hluti falinn</translation>
 <translation id="7526934274050461096">Tenging þín við þessa síðu er ekki traust</translation>
 <translation id="7535087603100972091">Gildi</translation>
 <translation id="7537536606612762813">Áskilin</translation>
@@ -1763,6 +1767,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="8293206222192510085">Bæta við bókamerki</translation>
 <translation id="8294431847097064396">Uppruni</translation>
 <translation id="8298115750975731693">Wi-Fi netið sem þú notar (<ph name="WIFI_NAME" />) kann að fara fram á að þú farir á <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /></translation>
+<translation id="8303854710873047864">„<ph name="SECTION" />“ hluti sýndur</translation>
 <translation id="830498451218851433">Brotið í miðju</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Uppsett forrit og hversu oft þau eru notuð</translation>
@@ -1882,6 +1887,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="8931333241327730545">Viltu vista þetta kort á Google reikningnum þínum?</translation>
 <translation id="8932102934695377596">Klukkan er á eftir</translation>
 <translation id="893332455753468063">Bæta við nafni</translation>
+<translation id="8942355029279167844">Kerfisstjórinn þinn hefur gefið <ph name="APP_NAME" /> heimild til að safna greiningargögnum til að bæta vöruna. Frekari upplýsingar eru á <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />.</translation>
 <translation id="8943282376843390568">Límónugrænn</translation>
 <translation id="8957210676456822347">Auðkenningargátt</translation>
 <translation id="8962950042226115166">Grunsamlegt vefsvæði</translation>

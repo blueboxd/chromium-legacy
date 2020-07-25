@@ -2743,7 +2743,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4377363674125277448">Un problème est survenu avec le certificat du serveur.</translation>
 <translation id="4378154925671717803">Numéro de téléphone</translation>
 <translation id="4378373042927530923">Non exécuté</translation>
-<translation id="4378551569595875038">Connexion en cours...</translation>
+<translation id="4378551569595875038">Connexion...</translation>
 <translation id="4378556263712303865">Réquisition d'appareil</translation>
 <translation id="4379281552162875326">Désinstaller « <ph name="APP_NAME" /> »?</translation>
 <translation id="4380648069038809855">Mode plein écran activé</translation>
@@ -3747,7 +3747,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5659833766619490117">Impossible de traduire cette page</translation>
 <translation id="5662513737565158057">Modifiez la manière dont les applications Linux vont fonctionner.</translation>
 <translation id="5667546120811588575">Configuration de Google Play en cours…</translation>
-<translation id="5669267381087807207">Activation en cours…</translation>
+<translation id="5669267381087807207">Activation…</translation>
 <translation id="5669691691057771421">Entrez le nouveau NIP</translation>
 <translation id="5671641761787789573">Images bloquées</translation>
 <translation id="5671658447180261823">Supprimer la suggestion <ph name="SUGGESTION_NAME" /></translation>
@@ -4918,7 +4918,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="713888829801648570">Désolés, votre mot de passe n'a pas pu être vérifié parce que vous êtes déconnecté(e).</translation>
 <translation id="7140928199327930795">Aucun autre périphérique accessible.</translation>
 <translation id="7141105143012495934">La connexion a échoué, car les détails de votre compte n'ont pas pu être récupérés. Veuillez communiquer avec votre administrateur ou réessayer.</translation>
-<translation id="7143207342074048698">Connexion en cours…</translation>
+<translation id="7143207342074048698">Connexion…</translation>
 <translation id="7144878232160441200">Réessayer</translation>
 <translation id="714876143603641390">Connectivité LAN</translation>
 <translation id="7149893636342594995">24 dernières heures</translation>
@@ -6014,7 +6014,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8509646642152301857">Le téléchargement du dictionnaire de vérification orthographique a échoué.</translation>
 <translation id="8512476990829870887">Arrêter le processus</translation>
 <translation id="851263357009351303">Toujours autoriser <ph name="HOST" /> à afficher les images</translation>
-<translation id="8513108775083588393">Rotation automatique</translation>
+<translation id="8513108775083588393">Rotation auto</translation>
 <translation id="8514746246728959655">Essayez une clé de sécurité différente</translation>
 <translation id="8521475323816527629">Accédez rapidement à vos applications</translation>
 <translation id="8523493869875972733">Conserver les modifications</translation>

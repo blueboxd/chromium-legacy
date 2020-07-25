@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Оновити Chrome</translation>
 <translation id="1569387923882100876">Під’єднаний пристрій</translation>
 <translation id="1571304935088121812">Копіювати ім’я користувача</translation>
+<translation id="1592864538817356322">Стандартний захист:</translation>
 <translation id="1612196535745283361">Щоб шукати пристрої, Chrome потрібен доступ до геоданих. Доступ до геоданих <ph name="BEGIN_LINK" />вимкнено на цьому пристрої<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Вилучити 1 вибраний елемент}one{Вилучити # вибраний елемент}few{Вилучити # вибрані елементи}many{Вилучити # вибраних елементів}other{Вилучити # вибраного елемента}}</translation>
@@ -578,6 +579,7 @@
 <translation id="5659593005791499971">Електронна пошта</translation>
 <translation id="5665379678064389456">Створити подію в додатку <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Відхиляти запит веб-сайту, щоб забороняти масштабування</translation>
+<translation id="568275469169136466">Увійти на тимчасовий період</translation>
 <translation id="5683547024293500885">Chrome не може перевірити наявність оновлень</translation>
 <translation id="5686790454216892815">Назва файлу задовга</translation>
 <translation id="5694049548840660018">Легко повертайтеся на головну сторінку</translation>
@@ -589,6 +591,7 @@
 <translation id="5723735397759933332">Тепер спрощений режим оптимізує зображення на сторінках HTTPS, щоб заощаджувати більше трафіку.</translation>
 <translation id="5726692708398506830">Збільшити всі елементи на сторінці</translation>
 <translation id="5732819098735351888">Завантаження почнеться, коли пристрій підключиться до Wi-Fi.</translation>
+<translation id="5733983706093266635">Не вдається створити QR-код. URL-адреса перевищує ліміт символів (<ph name="CHARACTER_LIMIT" />).</translation>
 <translation id="5748802427693696783">Ви перейшли на стандартні вкладки</translation>
 <translation id="5749068826913805084">Щоб завантажувати файли, Chrome потребує доступу до пам’яті.</translation>
 <translation id="5749237766298580851">Вимкнено <ph name="SEPARATOR" /> Не рекомендовано</translation>
@@ -641,6 +644,7 @@
 <translation id="6111020039983847643">використаний трафік</translation>
 <translation id="6112702117600201073">Оновлення сторінки</translation>
 <translation id="6127379762771434464">Веб-сайт видалено</translation>
+<translation id="6140709049082532940">Покращений захист:</translation>
 <translation id="6140912465461743537">Країна або регіон</translation>
 <translation id="614940544461990577">Спробуйте:</translation>
 <translation id="6154478581116148741">Щоб експортувати паролі з цього пристрою, увімкніть блокування екрана</translation>
@@ -1017,6 +1021,7 @@
 <translation id="9100610230175265781">Потрібно вказати парольну фразу</translation>
 <translation id="9102803872260866941">Вкладку "Попередній перегляд" відкрито</translation>
 <translation id="9104217018994036254">Список пристроїв, з якими можна ділитися вкладкою.</translation>
+<translation id="9104402662006063371">Увімкнути режим анонімного перегляду</translation>
 <translation id="9108312223223904744">Служба підтримки для телефона як ключа безпеки</translation>
 <translation id="9108808586816295166">Безпечна система DNS може бути доступна не завжди</translation>
 <translation id="9133397713400217035">Перегляд у режимі офлайн</translation>

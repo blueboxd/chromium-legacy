@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Sonbril</translation>
 <translation id="115443833402798225">Hangul Ahnmatae</translation>
 <translation id="1155759005174418845">Katalaans</translation>
+<translation id="1172970565351728681">Omtrent <ph name="REMAINING_TIME" /> bly oor</translation>
 <translation id="1173894706177603556">Hernoem</translation>
 <translation id="117624967391683467">Kopieer tans <ph name="FILE_NAME" /> …</translation>
 <translation id="1178581264944972037">Laat wag</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Eienaarskap sal na <ph name="DESTINATION_DOMAIN" /> oorgedra word.</translation>
 <translation id="3241720467332021590">Iers</translation>
 <translation id="3245321423178950146">Onbekende kunstenaar</translation>
+<translation id="3248185426436836442">Hangend</translation>
 <translation id="3252266817569339921">Frans</translation>
 <translation id="3254434849914415189">Kies die verstekprogram vir <ph name="FILE_TYPE" />-lêers:</translation>
 <translation id="3264582393905923483">Konteks</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Jy het nie toestemming om lêers na "<ph name="FOLDER_NAME" />" te skuif nie.</translation>
 <translation id="3786301125658655746">Jy is vanlyn</translation>
 <translation id="3789841737615482174">Installeer</translation>
+<translation id="3793469551756281394">Omtrent <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> bly oor</translation>
 <translation id="3798449238516105146">Weergawe</translation>
 <translation id="3801082500826908679">Faroëes</translation>
 <translation id="3809272675881623365">Haas</translation>

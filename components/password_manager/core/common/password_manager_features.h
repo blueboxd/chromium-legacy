@@ -27,6 +27,7 @@ extern const base::Feature KEnablePasswordGenerationForClearTextFields;
 extern const base::Feature kFillOnAccountSelect;
 extern const base::Feature kGooglePasswordManager;
 extern const base::Feature kPasswordChange;
+extern const base::Feature kPasswordChangeInSettings;
 extern const base::Feature kPasswordCheck;
 extern const base::Feature kPasswordEditingAndroid;
 extern const base::Feature kPasswordImport;
@@ -47,11 +48,10 @@ extern const char kGenerationRequirementsVersion[];
 extern const char kGenerationRequirementsPrefixLength[];
 extern const char kGenerationRequirementsTimeout[];
 
-// Password change feature variation.
-// The new variation will allow showing credential leaked dialog after
-// every form submission (helpful for testing).
+// Password change feature variations.
 extern const char
     kPasswordChangeWithForcedDialogAfterEverySuccessfulSubmission[];
+extern const char kPasswordChangeInSettingsWithForcedWarningForEverySite[];
 
 }  // namespace features
 

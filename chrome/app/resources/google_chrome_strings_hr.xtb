@@ -77,6 +77,7 @@
 <translation id="3089968997497233615">Dostupna je nova, sigurnija verzija preglednika Google Chrome.</translation>
 <translation id="3127818369811890733">OS Chrome nije mogao sinkronizirati vaše podatke.</translation>
 <translation id="3149510190863420837">Aplikacije sustava Chrome</translation>
+<translation id="3351117925998652957">Odaberite svoj Chrome Space</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome će se sada ponovo pokrenuti}=1{Chrome će se ponovo pokrenuti za jednu sekundu}one{Chrome će se ponovo pokrenuti za # s}few{Chrome će se ponovo pokrenuti za # s}other{Chrome će se ponovo pokrenuti za # s}}</translation>
 <translation id="3395323229510056640">Potraži pomoć za upotrebu OS-a Chrome</translation>
@@ -205,6 +206,7 @@
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Ažurnost uređaja možete provjeriti u <ph name="LINK_BEGIN" />postavkama OS-a Chrome<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Ovo računalo više neće primati ažuriranja Google Chromea jer Mac OS X 10.9 više nije podržan.</translation>
+<translation id="7591404275842302616">Koristite Chrome Spaces za organiziranje pregledavanja na ovom uređaju</translation>
 <translation id="7592736734348559088">Google Chrome nije mogao sinkronizirati vaše podatke jer su vaši podaci za prijavu na račun zastarjeli.</translation>
 <translation id="7626032353295482388">Dobro došli u Chrome</translation>
 <translation id="7629695634924605473">Chrome će vas obavijestiti ako vaše zaporke budu ugrožene</translation>

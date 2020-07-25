@@ -272,6 +272,7 @@ CrElementsFingerprintProgressArcTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../mock_controller.js',
     'cr_fingerprint_progress_arc_tests.js',
   ]),
 };

@@ -210,8 +210,8 @@ class ReportSenderTest : public TestWithTaskEnvironment {
       const std::string& report,
       const GURL& url,
       size_t request_sequence_number,
-      const base::Callback<void()>& success_callback,
-      const base::Callback<void(const GURL&, int, int)>& error_callback) {
+      base::OnceCallback<void()> success_callback,
+      base::OnceCallback<void(const GURL&, int, int)> error_callback) {
     base::RunLoop run_loop;
     network_delegate_.set_url_request_destroyed_callback(
         run_loop.QuitClosure());
@@ -222,8 +222,8 @@ class ReportSenderTest : public TestWithTaskEnvironment {
 
     EXPECT_EQ(request_sequence_number, network_delegate_.num_requests());
 
-    reporter->Send(url, "application/foobar", report, success_callback,
-                   error_callback);
+    reporter->Send(url, "application/foobar", report,
+                   std::move(success_callback), std::move(error_callback));
 
     // The report is sent asynchronously, so wait for the report's
     // URLRequest to be destroyed before checking that the report was
@@ -238,8 +238,8 @@ class ReportSenderTest : public TestWithTaskEnvironment {
                   const GURL& url,
                   size_t request_sequence_number) {
     SendReport(reporter, report, url, request_sequence_number,
-               base::Callback<void()>(),
-               base::Callback<void(const GURL&, int, int)>());
+               base::OnceCallback<void()>(),
+               base::OnceCallback<void(const GURL&, int, int)>());
   }
 
   TestReportSenderNetworkDelegate network_delegate_;
@@ -279,11 +279,11 @@ TEST_F(ReportSenderTest, SendMultipleReportsSimultaneously) {
   EXPECT_EQ(0u, network_delegate_.num_requests());
 
   reporter.Send(url, "application/foobar", kDummyReport,
-                base::Callback<void()>(),
-                base::Callback<void(const GURL&, int, int)>());
+                base::OnceCallback<void()>(),
+                base::OnceCallback<void(const GURL&, int, int)>());
   reporter.Send(url, "application/foobar", kSecondDummyReport,
-                base::Callback<void()>(),
-                base::Callback<void(const GURL&, int, int)>());
+                base::OnceCallback<void()>(),
+                base::OnceCallback<void(const GURL&, int, int)>());
 
   run_loop.Run();
 
@@ -294,7 +294,7 @@ TEST_F(ReportSenderTest, SendMultipleReportsSimultaneously) {
 // is deleted.
 TEST_F(ReportSenderTest, PendingRequestGetsDeleted) {
   bool url_request_destroyed = false;
-  network_delegate_.set_url_request_destroyed_callback(base::Bind(
+  network_delegate_.set_url_request_destroyed_callback(base::BindRepeating(
       &MarkURLRequestDestroyed, base::Unretained(&url_request_destroyed)));
 
   GURL url = URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
@@ -308,8 +308,8 @@ TEST_F(ReportSenderTest, PendingRequestGetsDeleted) {
   std::unique_ptr<ReportSender> reporter(
       new ReportSender(context(), TRAFFIC_ANNOTATION_FOR_TESTS));
   reporter->Send(url, "application/foobar", kDummyReport,
-                 base::Callback<void()>(),
-                 base::Callback<void(const GURL&, int, int)>());
+                 base::OnceCallback<void()>(),
+                 base::OnceCallback<void(const GURL&, int, int)>());
   reporter.reset();
 
   EXPECT_EQ(1u, network_delegate_.num_requests());
@@ -333,8 +333,8 @@ TEST_F(ReportSenderTest, ErroredRequestCallsErrorCallback) {
   ReportSender reporter(context(), TRAFFIC_ANNOTATION_FOR_TESTS);
   // SendReport will block until the URLRequest is destroyed.
   SendReport(&reporter, kDummyReport, url, 0,
-             base::Bind(SuccessCallback, &success_callback_called),
-             base::Bind(ErrorCallback, &error_callback_called));
+             base::BindOnce(SuccessCallback, &success_callback_called),
+             base::BindOnce(ErrorCallback, &error_callback_called));
   EXPECT_TRUE(error_callback_called);
   EXPECT_FALSE(success_callback_called);
 }
@@ -348,9 +348,10 @@ TEST_F(ReportSenderTest, BadResponseCodeCallsErrorCallback) {
   const GURL url(std::string("http://") + kServerErrorHostname);
   ReportSender reporter(context(), TRAFFIC_ANNOTATION_FOR_TESTS);
   // SendReport will block until the URLRequest is destroyed.
-  SendReport(&reporter, kDummyReport, url, 0,
-             base::Bind(SuccessCallback, &success_callback_called),
-             base::Bind(ServerErrorResponseCallback, &error_callback_called));
+  SendReport(
+      &reporter, kDummyReport, url, 0,
+      base::BindOnce(SuccessCallback, &success_callback_called),
+      base::BindOnce(ServerErrorResponseCallback, &error_callback_called));
   EXPECT_TRUE(error_callback_called);
   EXPECT_FALSE(success_callback_called);
 }
@@ -363,8 +364,8 @@ TEST_F(ReportSenderTest, SuccessfulRequestCallsSuccessCallback) {
   const GURL url = URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
   ReportSender reporter(context(), TRAFFIC_ANNOTATION_FOR_TESTS);
   SendReport(&reporter, kDummyReport, url, 0,
-             base::Bind(SuccessCallback, &success_callback_called),
-             base::Bind(ErrorCallback, &error_callback_called));
+             base::BindOnce(SuccessCallback, &success_callback_called),
+             base::BindOnce(ErrorCallback, &error_callback_called));
   EXPECT_FALSE(error_callback_called);
   EXPECT_TRUE(success_callback_called);
 }

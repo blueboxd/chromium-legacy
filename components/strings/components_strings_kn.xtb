@@ -557,6 +557,9 @@
 <translation id="3364869320075768271">ನಿಮ್ಮ ವರ್ಚುವಲ್ ರಿಯಾಲಿಟಿ ಸಾಧನ ಮತ್ತು ಡೇಟಾವನ್ನು <ph name="URL" /> ಬಳಸಲು ಬಯಸುತ್ತಿದೆ</translation>
 <translation id="3366477098757335611">ಕಾರ್ಡ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಿ</translation>
 <translation id="3369192424181595722">ಗಡಿಯಾರ ದೋಷ</translation>
+<translation id="3371076217486966826"><ph name="URL" />, ಈ ಕೆಳಗಿನವುಗಳನ್ನು ಮಾಡಲು ಬಯಸುತ್ತದೆ:
+      • ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ 3D ನಕ್ಷೆಯನ್ನು ರಚಿಸುವುದು ಮತ್ತು ಕ್ಯಾಮರಾ ಸ್ಥಿತಿಯನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡುವುದು
+      • ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಬಳಸುವುದು</translation>
 <translation id="337363190475750230">ಅನುಮತಿ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="3377144306166885718">ಸರ್ವರ್ ಬಳಸುವ TLS ಆವೃತ್ತಿಯು ಹಳೆಯದಾಗಿದೆ.</translation>
 <translation id="3377188786107721145">ನೀತಿಯ ಪಾರ್ಸ್ ದೋಷ</translation>
@@ -1287,7 +1290,7 @@
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">ಮುಂದಕ್ಕೆ ಶುಲ್ಕವಿರುವ ಸಾಧ್ಯತೆಗಳಿವೆ</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 ಇತರ ಸಲಹೆ}one{# ಇತರ ಸಲಹೆಗಳು}other{# ಇತರ ಸಲಹೆಗಳು}}</translation>
-<translation id="6387645831795005740">ದಾಳಿಕೋರರು ಕೆಲವೊಮ್ಮೆ ವೆಬ್‌ಸೈಟ್‌ಗಳನ್ನು ನಕಲಿಸುತ್ತಾರೆ ಮತ್ತು URL ನಲ್ಲಿ ಸಣ್ಣ ಪ್ರಮಾಣದ ಅಥವಾ ಗುರುತಿಸಲು ಸಾಧ್ಯವಾಗದ ರೀತಿಯಲ್ಲಿ ಬದಲಾವಣೆಗಳನ್ನು ಮಾಡುತ್ತಾರೆ.</translation>
+<translation id="6387645831795005740">URL ನಲ್ಲಿ ಸಣ್ಣ ಪ್ರಮಾಣದ ಅಥವಾ ಗುರುತಿಸಲು ಸಾಧ್ಯವಾಗದ ರೀತಿಯಲ್ಲಿ ಬದಲಾವಣೆಗಳನ್ನು ಮಾಡುವ ಮೂಲಕ ದಾಳಿಕೋರರು ಕೆಲವೊಮ್ಮೆ ವೆಬ್‌ಸೈಟ್‌ಗಳನ್ನು ನಕಲಿಸುತ್ತಾರೆ.</translation>
 <translation id="6389470377220713856">ಕಾರ್ಡ್‌ನಲ್ಲಿರುವ ಹೆಸರು</translation>
 <translation id="6390200185239044127">ಅರ್ಧ ಝೆಡ್ ಮಾದರಿಯಲ್ಲಿ ಮಡಿಸಿ</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1548,6 +1551,7 @@
 <translation id="7518003948725431193">ಈ ವೆಬ್ ವಿಳಾಸಕ್ಕಾಗಿ ಯಾವುದೇ ವೆಬ್ ಪುಟವು ಕಂಡುಬರಲಿಲ್ಲ: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Envelope)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">"<ph name="SECTION" />" ವಿಭಾಗವನ್ನು ಮರೆಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7526934274050461096">ಈ ಸೈಟ್‌ಗೆ ನಿಮ್ಮ ಸಂಪರ್ಕವು ಖಾಸಗಿಯಾಗಿಲ್ಲ.</translation>
 <translation id="7535087603100972091">ಮೌಲ್ಯ</translation>
 <translation id="7537536606612762813">ಕಡ್ಡಾಯ</translation>
@@ -1748,6 +1752,7 @@
 <translation id="8293206222192510085">ಬುಕ್‌ಮಾರ್ಕ್ ಸೇರಿಸು</translation>
 <translation id="8294431847097064396">ಮೂಲ</translation>
 <translation id="8298115750975731693">ನೀವು ಬಳಸುತ್ತಿರುವ ವೈ-ಫೈ (<ph name="WIFI_NAME" />) ಗೆ ನೀವು <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> ಅನ್ನು ಭೇಟಿ ನೀಡುವ ಅಗತ್ಯವಿದೆ.</translation>
+<translation id="8303854710873047864">"<ph name="SECTION" />" ವಿಭಾಗವನ್ನು ತೋರಿಸಲಾಗಿದೆ</translation>
 <translation id="830498451218851433">ಅರ್ಧ ಮಡಿಸಿ</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">ಇನ್‍‍ಸ್ಟಾಲ್ ಮಾಡಿರುವ ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ಅವುಗಳನ್ನು ಎಷ್ಟು ಬಾರಿ ಬಳಸಿರುವುದು</translation>
@@ -1868,6 +1873,7 @@
 <translation id="8931333241327730545">ಈ ಕಾರ್ಡನ್ನು ನಿಮ್ಮ Google ಖಾತೆನಲ್ಲಿ ಉಳಿಸಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="8932102934695377596">ನಿಮ್ಮ ಗಡಿಯಾರ ಹಿಂದೆ ಇದೆ</translation>
 <translation id="893332455753468063">ಹೆಸರು ಸೇರಿಸಿ</translation>
+<translation id="8942355029279167844">ಉತ್ಪನ್ನದ ಅನುಭವವನ್ನು ಸುಧಾರಿಸುವುದಕ್ಕೆ ಡಯಾಗ್ನಾಸ್ಟಿಕ್ಸ್ ಡೇಟಾವನ್ನು ಸಂಗ್ರಹಿಸಲು ನಿಮ್ಮ ನಿರ್ವಾಹಕರು <ph name="APP_NAME" /> ಗೆ ಅನುಮತಿಸಿದ್ದಾರೆ. ಹೆಚ್ಚಿನ ಮಾಹಿತಿಗಾಗಿ, <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> ಗೆ ಭೇಟಿ ನೀಡಿ.</translation>
 <translation id="8943282376843390568">ನಿಂಬೆ ಹಳದಿ</translation>
 <translation id="8957210676456822347">ಕ್ಯಾಪ್ಟಿವ್ ಪೋರ್ಟಲ್ ದೃಢೀಕರಣ</translation>
 <translation id="8962950042226115166">ಅನುಮಾನಾಸ್ಪದ ಸೈಟ್</translation>

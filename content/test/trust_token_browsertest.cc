@@ -598,4 +598,26 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
                                         server_.GetURL("a.test", "/issue"))));
 }
 
+// If a server issues with a key not present in the client's collection of key
+// commitments, the issuance operation should fail.
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, IssuanceWithAbsentKeyFails) {
+  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
+
+  // Reset the handler, so that the client's valid keys disagree with the
+  // server's keys. (This is theoretically flaky, but the chance of the client's
+  // random keys colliding with the server's random keys is negligible.)
+  request_handler_.UpdateOptions(TrustTokenRequestHandler::Options());
+
+  GURL start_url = server_.GetURL("a.test", "/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), start_url));
+
+  std::string command = R"(fetch($1, {trustToken: {type: 'token-request'}})
+                             .then(() => "Success")
+                             .catch(error => error.name);)";
+  EXPECT_THAT(
+      EvalJs(shell(), JsReplace(command, server_.GetURL("a.test", "/issue")))
+          .ExtractString(),
+      HasSubstr("OperationError"));
+}
+
 }  // namespace content

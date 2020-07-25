@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Ažuriraj Chrome</translation>
 <translation id="1569387923882100876">Povezani uređaj</translation>
 <translation id="1571304935088121812">Kopiranje korisničkog imena</translation>
+<translation id="1592864538817356322">Standardna zaštita:</translation>
 <translation id="1612196535745283361">Chromeu je potreban pristup lokaciji da skenira uređaje. Pristup lokaciji je <ph name="BEGIN_LINK" />isključen za ovaj uređaj<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Ukloni 1 odabranu stavku}one{Ukloni # odabranu stavku}few{Ukloni # odabrane stavke}other{Ukloni # odabranih stavki}}</translation>
@@ -578,6 +579,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5659593005791499971">E-pošta</translation>
 <translation id="5665379678064389456">Kreirajte događaj u aplikaciji <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Zaobilaženje zahtjeva web lokacije kako bi se spriječilo zumiranje</translation>
+<translation id="568275469169136466">radi privremene prijave</translation>
 <translation id="5683547024293500885">Chrome ne može provjeriti ima li ažuriranja</translation>
 <translation id="5686790454216892815">Naziv fajla je predugačak</translation>
 <translation id="5694049548840660018">Jednostavan povratak na početnu stranicu</translation>
@@ -589,6 +591,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5723735397759933332">Jednostavni način rada će uštedjeti više podataka optimiziranjem slika na HTTPs stranicama.</translation>
 <translation id="5726692708398506830">Uvećaj prikaz svega na stranici</translation>
 <translation id="5732819098735351888">Preuzimanje će se pokrenuti putem WiFi mreže.</translation>
+<translation id="5733983706093266635">Nije moguće kreirati QR kôd. Broj znakova u URL-u je veći od <ph name="CHARACTER_LIMIT" />.</translation>
 <translation id="5748802427693696783">Prebačeno na standardne kartice</translation>
 <translation id="5749068826913805084">Chromeu treba pristup pohrani za preuzimanje fajlova.</translation>
 <translation id="5749237766298580851">Isključeno <ph name="SEPARATOR" /> Ne preporučuje se</translation>
@@ -641,6 +644,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="6111020039983847643">količina korištenih podataka</translation>
 <translation id="6112702117600201073">Osvježavanje stranice</translation>
 <translation id="6127379762771434464">Stavka je uklonjena</translation>
+<translation id="6140709049082532940">Poboljšana zaštita:</translation>
 <translation id="6140912465461743537">Država/regija</translation>
 <translation id="614940544461990577">Pokušajte:</translation>
 <translation id="6154478581116148741">Uključite zaključavanje ekrana u Postavkama da izvezete lozinke s ovog uređaja</translation>
@@ -1017,6 +1021,7 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="9100610230175265781">Potreban je pristupni izraz</translation>
 <translation id="9102803872260866941">Kartica za pregled je otvorena</translation>
 <translation id="9104217018994036254">Spisak uređaja s kojim će se dijeliti kartica.</translation>
+<translation id="9104402662006063371">Pređite na anonimni način rada</translation>
 <translation id="9108312223223904744">Podrška za telefon kao Sigurnosni ključ</translation>
 <translation id="9108808586816295166">Moguće je da sigurnosni DNS neće uvijek biti dostupan</translation>
 <translation id="9133397713400217035">Istražite van mreže</translation>

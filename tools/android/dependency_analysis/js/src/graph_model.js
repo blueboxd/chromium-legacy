@@ -120,12 +120,15 @@ let D3GraphData;
 
 /**
  * Generates and returns a unique edge ID from its source/target GraphNode IDs.
+ *
+ * This is used as an SVG element ID, so it must adhere to ID requirements
+ * (unique, non-empty, no whitespace).
  * @param {string} sourceId The ID of the source node.
  * @param {string} targetId The ID of the target node.
  * @return {string} The ID uniquely identifying the edge source -> target.
  */
 function getEdgeIdFromNodes(sourceId, targetId) {
-  return `${sourceId} > ${targetId}`;
+  return `${sourceId}>${targetId}`;
 }
 
 /** A directed graph. */

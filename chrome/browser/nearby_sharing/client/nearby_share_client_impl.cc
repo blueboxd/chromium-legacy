@@ -12,7 +12,9 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_api_call_flow_impl.h"
+#include "chrome/browser/nearby_sharing/client/nearby_share_http_notifier.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_switches.h"
+#include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/nearby_sharing/proto/certificate_rpc.pb.h"
 #include "chrome/browser/nearby_sharing/proto/contact_rpc.pb.h"
 #include "chrome/browser/nearby_sharing/proto/device_rpc.pb.h"
@@ -218,10 +220,12 @@ GetListPublicCertificatesAnnotation() {
 NearbyShareClientImpl::NearbyShareClientImpl(
     std::unique_ptr<NearbyShareApiCallFlow> api_call_flow,
     signin::IdentityManager* identity_manager,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    NearbyShareHttpNotifier* notifier)
     : api_call_flow_(std::move(api_call_flow)),
       identity_manager_(identity_manager),
       url_loader_factory_(std::move(url_loader_factory)),
+      notifier_(notifier),
       has_call_started_(false) {}
 
 NearbyShareClientImpl::~NearbyShareClientImpl() = default;
@@ -230,6 +234,7 @@ void NearbyShareClientImpl::UpdateDevice(
     const nearbyshare::proto::UpdateDeviceRequest& request,
     UpdateDeviceCallback&& callback,
     ErrorCallback&& error_callback) {
+  notifier_->NotifyOfRequest(request);
   // TODO(cclem): Use correct device identifier
   MakeApiCall(CreateV1RequestUrl(kUpdateDevicePath + request.device().name()),
               RequestType::kPatch, request.SerializeAsString(),
@@ -242,6 +247,7 @@ void NearbyShareClientImpl::CheckContactsReachability(
     const nearbyshare::proto::CheckContactsReachabilityRequest& request,
     CheckContactsReachabilityCallback&& callback,
     ErrorCallback&& error_callback) {
+  notifier_->NotifyOfRequest(request);
   MakeApiCall(CreateV1RequestUrl(kCheckContactsReachabilityPath),
               RequestType::kPost, request.SerializeAsString(),
               /*request_as_query_parameters=*/base::nullopt,
@@ -253,6 +259,7 @@ void NearbyShareClientImpl::ListContactPeople(
     const nearbyshare::proto::ListContactPeopleRequest& request,
     ListContactPeopleCallback&& callback,
     ErrorCallback&& error_callback) {
+  notifier_->NotifyOfRequest(request);
   // TODO(cclem): Use correct identifier in URL
   MakeApiCall(CreateV1RequestUrl(kListContactPeoplePathSeg1 + request.parent() +
                                  kListContactPeoplePathSeg2),
@@ -266,6 +273,7 @@ void NearbyShareClientImpl::ListPublicCertificates(
     const nearbyshare::proto::ListPublicCertificatesRequest& request,
     ListPublicCertificatesCallback&& callback,
     ErrorCallback&& error_callback) {
+  notifier_->NotifyOfRequest(request);
   // TODO(cclem): Use correct identifier in URL
   MakeApiCall(
       CreateV1RequestUrl(kListPublicCertificatesPathSeg1 + request.parent() +
@@ -379,17 +387,21 @@ void NearbyShareClientImpl::OnFlowSuccess(
     return;
   }
   std::move(result_callback).Run(response);
+  notifier_->NotifyOfResponse(response);
 }
 
 void NearbyShareClientImpl::OnApiCallFailed(NearbyShareRequestError error) {
   std::move(error_callback_).Run(error);
+  NS_LOG(ERROR) << error;
 }
 
 NearbyShareClientFactoryImpl::NearbyShareClientFactoryImpl(
     signin::IdentityManager* identity_manager,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    NearbyShareHttpNotifier* notifier)
     : identity_manager_(identity_manager),
-      url_loader_factory_(std::move(url_loader_factory)) {}
+      url_loader_factory_(std::move(url_loader_factory)),
+      notifier_(notifier) {}
 
 NearbyShareClientFactoryImpl::~NearbyShareClientFactoryImpl() = default;
 
@@ -397,5 +409,5 @@ std::unique_ptr<NearbyShareClient>
 NearbyShareClientFactoryImpl::CreateInstance() {
   return std::make_unique<NearbyShareClientImpl>(
       std::make_unique<NearbyShareApiCallFlowImpl>(), identity_manager_,
-      url_loader_factory_);
+      url_loader_factory_, notifier_);
 }

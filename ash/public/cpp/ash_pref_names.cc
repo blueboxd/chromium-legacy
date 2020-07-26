@@ -452,6 +452,10 @@ const char kDetachableBaseDevices[] = "ash.detachable_base.devices";
 const char kAssistantNumWarmerWelcomeTriggered[] =
     "ash.assistant.num_warmer_welcome_triggered";
 
+// Pref storing the time of the last Assistant interaction.
+const char kAssistantTimeOfLastInteraction[] =
+    "ash.assistant.time_of_last_interaction";
+
 // Whether the user is allowed to disconnect and configure VPN connections.
 const char kVpnConfigAllowed[] = "vpn_config_allowed";
 

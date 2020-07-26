@@ -26,6 +26,8 @@
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
+class PrefRegistrySimple;
+
 namespace ash {
 
 class AssistantControllerImpl;
@@ -55,11 +57,14 @@ class AssistantInteractionControllerImpl
       AssistantControllerImpl* assistant_controller);
   ~AssistantInteractionControllerImpl() override;
 
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
   // Provides a pointer to the |assistant| owned by AssistantService.
   void SetAssistant(chromeos::assistant::Assistant* assistant);
 
   // AssistantInteractionController:
   const AssistantInteractionModel* GetModel() const override;
+  base::TimeDelta GetTimeDeltaSinceLastInteraction() const override;
   void StartTextInteraction(const std::string& text,
                             bool allow_tts,
                             AssistantQuerySource query_source) override;

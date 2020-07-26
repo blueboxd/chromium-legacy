@@ -1501,6 +1501,13 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
     return false;
   }
 
+  // Keep the internal accessibility tree consistent for videos which lack
+  // a player and also inner text.
+  if (RoleValue() == ax::mojom::blink::Role::kVideo ||
+      RoleValue() == ax::mojom::blink::Role::kAudio) {
+    return true;
+  }
+
   // Always pass through Line Breaking objects, this is necessary to
   // detect paragraph edges, which are defined as hard-line breaks.
   if (IsLineBreakingObject())

@@ -280,8 +280,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
   policy::PolicyMap policy;
   policy.Set(policy::key::kAbusiveExperienceInterventionEnforce,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
-             std::make_unique<base::Value>(false), nullptr);
+             policy::POLICY_SOURCE_ENTERPRISE_DEFAULT, base::Value(false),
+             nullptr);
   UpdatePolicy(policy);
 
   const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
@@ -304,8 +304,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
   // from any new tab opened after the policy is set.
   policy.Set(policy::key::kAbusiveExperienceInterventionEnforce,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
-             std::make_unique<base::Value>(true), nullptr);
+             policy::POLICY_SOURCE_ENTERPRISE_DEFAULT, base::Value(true),
+             nullptr);
   UpdatePolicy(policy);
 
   // Open a new tab to make sure the SafeBrowsingTriggeredPopupBlocker gets

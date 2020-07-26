@@ -271,12 +271,6 @@ void InlineLoginHandlerChromeOS::SetExtraInitParams(
   params.SetBoolean("ignoreCrOSIdpSetting", true);
 }
 
-void InlineLoginHandlerChromeOS::HandleAuthExtensionReadyMessage(
-    const base::ListValue* args) {
-  AllowJavascript();
-  FireWebUIListener("show-back-button");
-}
-
 void InlineLoginHandlerChromeOS::CompleteLogin(const std::string& email,
                                                const std::string& password,
                                                const std::string& gaia_id,
@@ -339,7 +333,6 @@ void InlineLoginHandlerChromeOS::CompleteLogin(const std::string& email,
 
 void InlineLoginHandlerChromeOS::HandleDialogClose(
     const base::ListValue* args) {
-  AllowJavascript();
   close_dialog_closure_.Run();
 }
 

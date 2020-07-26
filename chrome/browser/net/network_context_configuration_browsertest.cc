@@ -713,8 +713,7 @@ class NetworkContextConfigurationBrowserTest
       policy::PolicyMap values;
       values.Set(policy::key::kSSLVersionMin, policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(switches::kSSLVersionTLSv11),
-                 nullptr);
+                 base::Value(switches::kSSLVersionTLSv11), nullptr);
       base::RunLoop run_loop;
       PrefChangeRegistrar pref_change_registrar;
       pref_change_registrar.Init(g_browser_process->local_state());
@@ -2037,8 +2036,7 @@ class NetworkContextConfigurationManagedProxySettingsBrowserTest
     policies.Set(policy::key::kMaxConnectionsPerProxy,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
                  policy::POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(
-                     static_cast<int>(kTestMaxConnectionsPerProxy)),
+                 base::Value(static_cast<int>(kTestMaxConnectionsPerProxy)),
                  /*external_data_fetcher=*/nullptr);
     UpdateChromePolicy(policies);
   }

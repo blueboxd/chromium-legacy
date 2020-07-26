@@ -16,6 +16,7 @@
 #include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/nearby_sharing/client/nearby_share_http_notifier.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_enums.h"
 #include "chrome/browser/nearby_sharing/incoming_share_target_info.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
@@ -124,6 +125,7 @@ class NearbySharingServiceImpl
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   std::unique_ptr<FastInitiationManager> fast_initiation_manager_;
   NearbyNotificationManager nearby_notification_manager_;
+  NearbyShareHttpNotifier nearby_share_http_notifier_;
 
   // A list of foreground receivers.
   base::ObserverList<TransferUpdateCallback> foreground_receive_callbacks_;

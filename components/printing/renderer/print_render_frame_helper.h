@@ -509,6 +509,7 @@ class PrintRenderFrameHelper
     int GetNextPageNumber();
     bool IsRendering() const;
     bool IsForArc() const;
+    bool IsPlugin() const;
     bool IsModifiable() const;
     bool IsPdf() const;
     bool HasSelection();
@@ -550,9 +551,7 @@ class PrintRenderFrameHelper
     // Reset some of the internal rendering context.
     void ClearContext();
 
-    void CalculateIsModifiable();
-
-    void CalculateIsPdf();
+    void CalculatePluginAttributes();
 
     // Specifies what to render for print preview.
     FrameReference source_frame_;
@@ -574,6 +573,9 @@ class PrintRenderFrameHelper
 
     // List of page indices that need to be rendered.
     std::vector<int> pages_to_render_;
+
+    // True, if the document source is a plugin.
+    bool is_plugin_ = false;
 
     // True, if the document source is modifiable. e.g. HTML and not PDF.
     bool is_modifiable_ = true;

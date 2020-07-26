@@ -53,15 +53,13 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   // scrollbar.
   static Scrollbar* CreateForTesting(ScrollableArea* scrollable_area,
                                      ScrollbarOrientation orientation,
-                                     ScrollbarControlSize size,
                                      ScrollbarTheme* theme) {
-    return MakeGarbageCollected<Scrollbar>(scrollable_area, orientation, size,
+    return MakeGarbageCollected<Scrollbar>(scrollable_area, orientation,
                                            nullptr, nullptr, theme);
   }
 
   Scrollbar(ScrollableArea*,
             ScrollbarOrientation,
-            ScrollbarControlSize,
             Element* style_source,
             ChromeClient* = nullptr,
             ScrollbarTheme* = nullptr);
@@ -93,7 +91,6 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   int VisibleSize() const { return visible_size_; }
   int TotalSize() const { return total_size_; }
   int Maximum() const;
-  ScrollbarControlSize GetControlSize() const { return control_size_; }
 
   ScrollbarPart PressedPart() const { return pressed_part_; }
   ScrollbarPart HoveredPart() const { return hovered_part_; }
@@ -219,7 +216,6 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
 
   Member<ScrollableArea> scrollable_area_;
   ScrollbarOrientation orientation_;
-  ScrollbarControlSize control_size_;
   ScrollbarTheme& theme_;
   Member<ChromeClient> chrome_client_;
 

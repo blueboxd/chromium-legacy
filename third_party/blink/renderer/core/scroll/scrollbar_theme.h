@@ -64,9 +64,7 @@ class CORE_EXPORT ScrollbarTheme {
   // This returns thickness when scrollbar is painted.  i.e. It's not 0 even in
   // overlay scrollbar mode.
   // See also Scrollbar::scrollbarThickness().
-  virtual int ScrollbarThickness(ScrollbarControlSize = kRegularScrollbar) {
-    return 0;
-  }
+  virtual int ScrollbarThickness() { return 0; }
   virtual int ScrollbarMargin() const { return 0; }
 
   virtual bool IsSolidColor() const { return false; }

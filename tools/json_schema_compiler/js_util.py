@@ -163,7 +163,14 @@ class JsUtil(object):
         c = Code()
         self.AppendObjectDefinition(c, namespace_name, js_type.properties)
         return c
+
+      # Support instanceof for types in the same namespace and built-in
+      # types. This doesn't support types in another namespace e.g. if
+      # js_type.instanceof is 'tabs.Tab'.
       if js_type.instance_of:
+        if js_type.instance_of in js_type.namespace.types:
+          return Code().Append('chrome.%s.%s' %
+                               (namespace_name, js_type.instance_of))
         return Code().Append(js_type.instance_of)
       return Code().Append('Object')
     if js_type.property_type is PropertyType.ARRAY:

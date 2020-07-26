@@ -203,10 +203,6 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
     return 0;
   }
 
-  virtual ScrollbarControlSize ScrollbarControlSizeForPart(ControlPart) {
-    return kRegularScrollbar;
-  }
-
   virtual void AdjustProgressBarBounds(ComputedStyle& style) const {}
 
   // Returns the repeat interval of the animation for the progress bar.

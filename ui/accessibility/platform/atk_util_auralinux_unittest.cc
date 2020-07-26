@@ -66,6 +66,25 @@ TEST_F(AtkUtilAuraLinuxTest, KeySnooping) {
 
   AtkUtilAuraLinux* atk_util = AtkUtilAuraLinux::GetInstance();
   atk_util->HandleAtkKeyEvent(&atk_key_event);
+  // AX mode is enabled and Key snooping works.
+  EXPECT_EQ(keyval_seen, 55);
+
+  TestAXNodeWrapper* wrapper =
+      TestAXNodeWrapper::GetOrCreate(GetTree(), GetRootAsAXNode());
+  DCHECK(wrapper);
+  AXMode prev_mode = wrapper->ax_platform_node()->ax_mode_;
+  // Disables AX mode.
+  wrapper->ax_platform_node()->ax_mode_ = 0;
+  keyval_seen = 0;
+  atk_util->HandleAtkKeyEvent(&atk_key_event);
+  // When AX mode is not enabled, Key snooping doesn't work.
+  EXPECT_EQ(keyval_seen, 0);
+
+  // Restores the previous AX mode.
+  wrapper->ax_platform_node()->ax_mode_ = prev_mode;
+  keyval_seen = 0;
+  atk_util->HandleAtkKeyEvent(&atk_key_event);
+  // AX mode is set again, Key snooping works.
   EXPECT_EQ(keyval_seen, 55);
 
   atk_remove_key_event_listener(listener_id);

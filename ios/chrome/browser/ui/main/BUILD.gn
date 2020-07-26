@@ -74,6 +74,7 @@ source_set("scene") {
     "//ios/chrome/browser/ui/first_run",
     "//ios/chrome/browser/ui/history",
     "//ios/chrome/browser/ui/settings:settings_root",
+    "//ios/chrome/browser/ui/settings/sync",
     "//ios/chrome/browser/ui/tab_grid",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",
@@ -89,7 +90,12 @@ source_set("scene") {
   ]
   public_deps = [ "//ios/chrome/browser/ui/scoped_ui_blocker" ]
 
-  allow_circular_includes_from = [ ":main" ]
+  allow_circular_includes_from = [
+    ":main",
+
+    # TODO(crbug.com/1103553): remove circular dependency.
+    "//ios/chrome/browser/ui/settings/sync",
+  ]
 
   frameworks = [ "UIKit.framework" ]
 }
@@ -139,6 +145,7 @@ source_set("main") {
     "//ios/chrome/browser/ui/qr_scanner:coordinator",
     "//ios/chrome/browser/ui/reading_list",
     "//ios/chrome/browser/ui/recent_tabs",
+    "//ios/chrome/browser/ui/settings/sync",
     "//ios/chrome/browser/ui/snackbar",
     "//ios/chrome/browser/ui/translate:legacy_translate",
     "//ios/chrome/browser/ui/util:multiwindow_util",
@@ -154,6 +161,9 @@ source_set("main") {
   if (ios_enable_multi_window || ios_enable_scene_startup) {
     deps += [ "//ios/chrome/app/resources:base_scene_storyboard" ]
   }
+
+  # TODO(crbug.com/1103553): remove circular dependency.
+  allow_circular_includes_from = [ "//ios/chrome/browser/ui/settings/sync" ]
 
   frameworks = [ "UIKit.framework" ]
 }

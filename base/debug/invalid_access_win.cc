@@ -19,11 +19,7 @@ namespace {
 
 // Function that can be jumped midway into safely.
 __attribute__((naked)) int nop_sled() {
-  __asm {
-     nop
-     nop
-     ret
-  }
+  asm("nop; nop; ret");
 }
 
 using FuncType = decltype(&nop_sled);

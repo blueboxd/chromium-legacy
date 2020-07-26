@@ -16,12 +16,15 @@
 #include "base/win/windows_version.h"
 #include "chrome/updater/win/net/network.h"
 #include "chrome/updater/win/net/network_winhttp.h"
+#include "chrome/updater/win/net/proxy_configuration.h"
 
 namespace updater {
 
-NetworkFetcher::NetworkFetcher(const HINTERNET& session_handle)
+NetworkFetcher::NetworkFetcher(const HINTERNET& session_handle,
+                               scoped_refptr<ProxyConfiguration> proxy_config)
     : network_fetcher_(
-          base::MakeRefCounted<NetworkFetcherWinHTTP>(session_handle)),
+          base::MakeRefCounted<NetworkFetcherWinHTTP>(session_handle,
+                                                      proxy_config)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 NetworkFetcher::~NetworkFetcher() {
@@ -77,16 +80,16 @@ void NetworkFetcher::DownloadToFileComplete() {
 }
 
 NetworkFetcherFactory::NetworkFetcherFactory()
-    : session_handle_(CreateSessionHandle()) {}
+    : proxy_configuration_(GetProxyConfiguration()),
+      session_handle_(
+          CreateSessionHandle(proxy_configuration_->access_type())) {}
+
 NetworkFetcherFactory::~NetworkFetcherFactory() = default;
 
-scoped_hinternet NetworkFetcherFactory::CreateSessionHandle() {
-  const auto* os_info = base::win::OSInfo::GetInstance();
-  const uint32_t access_type = os_info->version() >= base::win::Version::WIN8_1
-                                   ? WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY
-                                   : WINHTTP_ACCESS_TYPE_NO_PROXY;
+scoped_hinternet NetworkFetcherFactory::CreateSessionHandle(
+    int proxy_access_type) {
   scoped_hinternet session_handle(
-      ::WinHttpOpen(L"Chrome Updater", access_type, WINHTTP_NO_PROXY_NAME,
+      ::WinHttpOpen(L"Chrome Updater", proxy_access_type, WINHTTP_NO_PROXY_NAME,
                     WINHTTP_NO_PROXY_BYPASS, WINHTTP_FLAG_ASYNC));
 
   // Allow TLS1.2 on Windows 7 and Windows 8. See KB3140245. TLS 1.2 is enabled
@@ -106,7 +109,8 @@ std::unique_ptr<update_client::NetworkFetcher> NetworkFetcherFactory::Create()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return session_handle_.get()
-             ? std::make_unique<NetworkFetcher>(session_handle_.get())
+             ? std::make_unique<NetworkFetcher>(session_handle_.get(),
+                                                proxy_configuration_)
              : nullptr;
 }
 

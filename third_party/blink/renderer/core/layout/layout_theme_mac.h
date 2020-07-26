@@ -58,10 +58,6 @@ class LayoutThemeMac final : public LayoutTheme {
   Color PlatformGrammarMarkerUnderlineColor() const override;
   Color PlatformFocusRingColor() const override;
 
-  ScrollbarControlSize ScrollbarControlSizeForPart(ControlPart part) override {
-    return part == kListboxPart ? kSmallScrollbar : kRegularScrollbar;
-  }
-
   // System fonts.
   void SystemFont(CSSValueID system_font_id,
                   FontSelectionValue& font_slope,

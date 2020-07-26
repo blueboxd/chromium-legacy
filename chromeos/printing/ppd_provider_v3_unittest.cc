@@ -115,8 +115,8 @@ class PpdProviderTest : public ::testing::Test {
   };
 
   PpdProviderTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
-  }
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO,
+                          base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     ASSERT_TRUE(ppd_cache_temp_dir_.CreateUniqueTempDir());
@@ -390,13 +390,36 @@ TEST_F(PpdProviderTest, FailsOldestQueuedResolveManufacturers) {
   auto provider =
       CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
                       PropagateLocaleToMetadataManager::kDoNotPropagate});
+
+  // The moment we constructed a provider, it will have requested a
+  // metadata locale. But we don't want it to ever obtain one: we
+  // want to fill up the deferral queue and test that behavior, without
+  // ever hitting the success _or_ failure cases in getting the metadata
+  // locale.
+  //
+  // The pending task is the FakePrinterConfigCache calling back to
+  // indicate failure. We have to take this one, but before we do, we
+  // can ask the FakePrinterConfigCache to pretend to be an infinitely
+  // slow server for future calls.
+  ASSERT_EQ(1UL, task_environment_.GetPendingMainThreadTaskCount());
+  provider_backdoor_.manager_config_cache->DiscardFetchRequestFor(
+      "metadata_v3/locales.json");
+  task_environment_.FastForwardUntilNoTasksRemain();
+
   for (int i = kMethodDeferralLimitForTesting; i >= 0; i--) {
     provider->ResolveManufacturers(base::BindOnce(
         &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
   }
-  task_environment_.RunUntilIdle();
+
+  // The for loop above should have overflowed the deferral queue by
+  // a factor of one: the oldest call to ResolveManufacturers() should
+  // have been forced out and asked to fail, and we expect it to be
+  // sitting on the sequence right now.
+  ASSERT_EQ(1UL, task_environment_.GetPendingMainThreadTaskCount());
+  task_environment_.FastForwardUntilNoTasksRemain();
+
   ASSERT_EQ(1UL, captured_resolve_manufacturers_.size());
-  EXPECT_EQ(PpdProvider::CallbackResultCode::INTERNAL_ERROR,
+  EXPECT_EQ(PpdProvider::CallbackResultCode::SERVER_ERROR,
             captured_resolve_manufacturers_[0].first);
 }
 
@@ -407,15 +430,38 @@ TEST_F(PpdProviderTest, FailsOldestQueuedReverseLookup) {
   auto provider =
       CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
                       PropagateLocaleToMetadataManager::kDoNotPropagate});
+
+  // The moment we constructed a provider, it will have requested a
+  // metadata locale. But we don't want it to ever obtain one: we
+  // want to fill up the deferral queue and test that behavior, without
+  // ever hitting the success _or_ failure cases in getting the metadata
+  // locale.
+  //
+  // The pending task is the FakePrinterConfigCache calling back to
+  // indicate failure. We have to take this one, but before we do, we
+  // can ask the FakePrinterConfigCache to pretend to be an infinitely
+  // slow server for future calls.
+  ASSERT_EQ(1UL, task_environment_.GetPendingMainThreadTaskCount());
+  provider_backdoor_.manager_config_cache->DiscardFetchRequestFor(
+      "metadata_v3/locales.json");
+  task_environment_.FastForwardUntilNoTasksRemain();
+
   for (int i = kMethodDeferralLimitForTesting; i >= 0; i--) {
     provider->ReverseLookup(
         "some effective-make-and-model string",
         base::BindOnce(&PpdProviderTest::CaptureReverseLookup,
                        base::Unretained(this)));
   }
-  task_environment_.RunUntilIdle();
+
+  // The for loop above should have overflowed the deferral queue by
+  // a factor of one: the oldest call to ReverseLookup() should have
+  // been forced out and asked to fail, and we expect it to be sitting
+  // on the sequence right now.
+  ASSERT_EQ(1UL, task_environment_.GetPendingMainThreadTaskCount());
+  task_environment_.FastForwardUntilNoTasksRemain();
+
   ASSERT_EQ(1UL, captured_reverse_lookup_.size());
-  EXPECT_EQ(PpdProvider::CallbackResultCode::INTERNAL_ERROR,
+  EXPECT_EQ(PpdProvider::CallbackResultCode::SERVER_ERROR,
             captured_reverse_lookup_[0].code);
 }
 

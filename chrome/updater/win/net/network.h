@@ -7,11 +7,14 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "chrome/updater/win/net/scoped_hinternet.h"
 #include "components/update_client/network.h"
 
 namespace updater {
+
+class ProxyConfiguration;
 
 // Network fetcher factory for WinHTTP.
 class NetworkFetcherFactory : public update_client::NetworkFetcherFactory {
@@ -26,9 +29,12 @@ class NetworkFetcherFactory : public update_client::NetworkFetcherFactory {
   ~NetworkFetcherFactory() override;
 
  private:
-  static scoped_hinternet CreateSessionHandle();
+  static scoped_hinternet CreateSessionHandle(int proxy_access_type);
 
   SEQUENCE_CHECKER(sequence_checker_);
+  // Proxy configuration for WinHTTP should be initialized before
+  // the session handle.
+  scoped_refptr<ProxyConfiguration> proxy_configuration_;
   scoped_hinternet session_handle_;
 };
 

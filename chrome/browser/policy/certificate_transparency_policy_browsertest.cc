@@ -60,9 +60,8 @@ IN_PROC_BROWSER_TEST_F(CertificateTransparencyPolicyTest,
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 
   // Now exempt the URL from being blocked by setting policy.
-  std::unique_ptr<base::ListValue> disabled_urls =
-      std::make_unique<base::ListValue>();
-  disabled_urls->AppendString(https_server_ok.host_port_pair().HostForURL());
+  base::Value disabled_urls(base::Value::Type::LIST);
+  disabled_urls.Append(https_server_ok.host_port_pair().HostForURL());
 
   PolicyMap policies;
   policies.Set(key::kCertificateTransparencyEnforcementDisabledForUrls,
@@ -133,9 +132,8 @@ IN_PROC_BROWSER_TEST_F(CertificateTransparencyPolicyTest,
   net::HashValue leaf_hash;
   ASSERT_TRUE(net::x509_util::CalculateSha256SpkiHash(
       https_server_ok.GetCertificate()->cert_buffer(), &leaf_hash));
-  std::unique_ptr<base::ListValue> disabled_spkis =
-      std::make_unique<base::ListValue>();
-  disabled_spkis->AppendString(leaf_hash.ToString());
+  base::Value disabled_spkis(base::Value::Type::LIST);
+  disabled_spkis.Append(leaf_hash.ToString());
 
   PolicyMap policies;
   policies.Set(key::kCertificateTransparencyEnforcementDisabledForCas,

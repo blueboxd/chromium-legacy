@@ -26,8 +26,8 @@ IN_PROC_BROWSER_TEST_F(SuggestedContentPolicyTest, SuggestedContentEnabled) {
   // Verify that Suggested Content can be force disabled.
   PolicyMap policies;
   policies.Set(key::kSuggestedContentEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(
       prefs->IsManagedPreference(chromeos::prefs::kSuggestedContentEnabled));
@@ -37,8 +37,8 @@ IN_PROC_BROWSER_TEST_F(SuggestedContentPolicyTest, SuggestedContentEnabled) {
 
   // Verify that Suggested Content can be force enabled.
   policies.Set(key::kSuggestedContentEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(true),
+               nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(
       prefs->IsManagedPreference(chromeos::prefs::kSuggestedContentEnabled));

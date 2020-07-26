@@ -35,6 +35,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/url_util.h"
@@ -111,6 +112,13 @@ AssistantInteractionControllerImpl::~AssistantInteractionControllerImpl() {
     assistant_->RemoveAssistantInteractionSubscriber(this);
 }
 
+// static
+void AssistantInteractionControllerImpl::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterTimePref(prefs::kAssistantTimeOfLastInteraction,
+                             base::Time());
+}
+
 void AssistantInteractionControllerImpl::SetAssistant(
     chromeos::assistant::Assistant* assistant) {
   if (assistant_)
@@ -125,6 +133,12 @@ void AssistantInteractionControllerImpl::SetAssistant(
 const AssistantInteractionModel* AssistantInteractionControllerImpl::GetModel()
     const {
   return &model_;
+}
+
+base::TimeDelta
+AssistantInteractionControllerImpl::GetTimeDeltaSinceLastInteraction() const {
+  return base::Time::Now() -
+         pref_service()->GetTime(prefs::kAssistantTimeOfLastInteraction);
 }
 
 void AssistantInteractionControllerImpl::StartTextInteraction(
@@ -319,6 +333,13 @@ void AssistantInteractionControllerImpl::OnMicStateChanged(MicState mic_state) {
 
 void AssistantInteractionControllerImpl::OnCommittedQueryChanged(
     const AssistantQuery& assistant_query) {
+  // Update the time of the last Assistant interaction so that we can later
+  // determine how long it has been since a user interacted with the Assistant.
+  // NOTE: We do this in OnCommittedQueryChanged() to filter out accidental
+  // interactions that would still have triggered OnInteractionStarted().
+  pref_service()->SetTime(prefs::kAssistantTimeOfLastInteraction,
+                          base::Time::Now());
+
   std::string query;
   switch (assistant_query.type()) {
     case AssistantQueryType::kText: {

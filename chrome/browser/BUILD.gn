@@ -5851,6 +5851,7 @@ grit("resources") {
     deps += [
       "//chrome/browser/resources/discards:discards_resources_gen",
       "//chrome/browser/resources/gaia_auth_host:modulize",
+      "//chrome/browser/resources/inline_login:web_components",
       "//chrome/browser/resources/management:web_components",
       "//chrome/browser/resources/signin:web_components",
       "//chrome/browser/ui/webui/discards:mojo_bindings_js",

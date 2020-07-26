@@ -1499,15 +1499,10 @@ int PaintLayerScrollableArea::HypotheticalScrollbarThickness(
         this, orientation, To<Element>(style_source.GetNode()));
   }
 
-  ScrollbarControlSize scrollbar_size = kRegularScrollbar;
-  if (style_source.StyleRef().HasEffectiveAppearance()) {
-    scrollbar_size = LayoutTheme::GetTheme().ScrollbarControlSizeForPart(
-        style_source.StyleRef().EffectiveAppearance());
-  }
   ScrollbarTheme& theme = GetPageScrollbarTheme();
   if (theme.UsesOverlayScrollbars())
     return 0;
-  int thickness = theme.ScrollbarThickness(scrollbar_size);
+  int thickness = theme.ScrollbarThickness();
   return GetLayoutBox()
       ->GetDocument()
       .GetPage()
@@ -2720,22 +2715,17 @@ Scrollbar* PaintLayerScrollableArea::ScrollbarManager::CreateScrollbar(
     scrollbar = MakeGarbageCollected<CustomScrollbar>(
         ScrollableArea(), orientation, To<Element>(style_source.GetNode()));
   } else {
-    ScrollbarControlSize scrollbar_size = kRegularScrollbar;
-    if (style_source.StyleRef().HasEffectiveAppearance()) {
-      scrollbar_size = LayoutTheme::GetTheme().ScrollbarControlSizeForPart(
-          style_source.StyleRef().EffectiveAppearance());
-    }
     Element* style_source_element = nullptr;
     if (::features::IsFormControlsRefreshEnabled()) {
       style_source_element = DynamicTo<Element>(style_source.GetNode());
     }
-    scrollbar = MakeGarbageCollected<Scrollbar>(
-        ScrollableArea(), orientation, scrollbar_size, style_source_element,
-        &ScrollableArea()
-             ->GetLayoutBox()
-             ->GetFrame()
-             ->GetPage()
-             ->GetChromeClient());
+    scrollbar = MakeGarbageCollected<Scrollbar>(ScrollableArea(), orientation,
+                                                style_source_element,
+                                                &ScrollableArea()
+                                                     ->GetLayoutBox()
+                                                     ->GetFrame()
+                                                     ->GetPage()
+                                                     ->GetChromeClient());
   }
   ScrollableArea()->GetLayoutBox()->GetDocument().View()->AddScrollbar(
       scrollbar);

@@ -2356,7 +2356,7 @@ TEST_P(VisualViewportTest, EnsureEffectNodeForScrollbars) {
   auto& theme = ScrollbarThemeOverlayMobile::GetInstance();
   int scrollbar_thickness = clampTo<int>(std::floor(
       GetFrame()->GetPage()->GetChromeClient().WindowToViewportScalar(
-          GetFrame(), theme.ScrollbarThickness(kRegularScrollbar))));
+          GetFrame(), theme.ScrollbarThickness())));
 
   EXPECT_EQ(vertical_scrollbar->effect_tree_index(),
             vertical_scrollbar->layer_tree_host()

@@ -30,6 +30,7 @@ class SharedURLLoaderFactory;
 }  // namespace network
 
 class GoogleServiceAuthError;
+class NearbyShareHttpNotifier;
 
 // An implementation of NearbyShareClient that fetches access tokens for the
 // primary account and makes HTTP calls using NearbyShareApiCallFlow.
@@ -40,7 +41,8 @@ class NearbyShareClientImpl : public NearbyShareClient {
   NearbyShareClientImpl(
       std::unique_ptr<NearbyShareApiCallFlow> api_call_flow,
       signin::IdentityManager* identity_manager,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      NearbyShareHttpNotifier* notifier);
   ~NearbyShareClientImpl() override;
 
   NearbyShareClientImpl(NearbyShareClientImpl&) = delete;
@@ -126,6 +128,7 @@ class NearbyShareClientImpl : public NearbyShareClient {
       access_token_fetcher_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  NearbyShareHttpNotifier* notifier_ = nullptr;
 
   // True if an API call has been started. Remains true even after the API call
   // completes.
@@ -151,7 +154,8 @@ class NearbyShareClientFactoryImpl : public NearbyShareClientFactory {
   // |url_loader_factory|: Used to make the HTTP requests.
   NearbyShareClientFactoryImpl(
       signin::IdentityManager* identity_manager,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      NearbyShareHttpNotifier* notifier);
   ~NearbyShareClientFactoryImpl();
 
   NearbyShareClientFactoryImpl(NearbyShareClientFactoryImpl&) = delete;
@@ -164,6 +168,7 @@ class NearbyShareClientFactoryImpl : public NearbyShareClientFactory {
  private:
   signin::IdentityManager* identity_manager_;
   const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  NearbyShareHttpNotifier* notifier_;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_CLIENT_NEARBY_SHARE_CLIENT_IMPL_H_

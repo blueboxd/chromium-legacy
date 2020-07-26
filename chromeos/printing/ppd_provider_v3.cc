@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,10 +13,12 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "base/time/time.h"
 #include "chromeos/printing/ppd_cache.h"
 #include "chromeos/printing/ppd_metadata_manager.h"
 #include "chromeos/printing/ppd_provider_v3.h"
 #include "chromeos/printing/printer_config_cache.h"
+#include "net/base/backoff_entry.h"
 
 namespace chromeos {
 namespace {
@@ -25,6 +28,24 @@ namespace {
 // Arbitrarily chosen.
 // See also: struct MethodDeferralContext
 constexpr size_t kMethodDeferralLimit = 20;
+
+// Backoff policy for retrying
+// PpdProviderImpl::TryToGetMetadataManagerLocale(). Specifies that we
+// *  perform the first retry with a 1s delay,
+// *  double the retry delay thereafter, and
+// *  cap the retry delay at 32s.
+//
+// We perform backoff to prevent the PpdProviderImpl from running at
+// full sequence speed if it continuously fails to obtain a metadata
+// locale.
+constexpr net::BackoffEntry::Policy kBackoffPolicy{
+    /*num_errors_to_ignore=*/0,
+    /*initial_delay_ms=*/1000,
+    /*multiply_factor=*/2.0,
+    /*jitter_factor=*/0.0,
+    /*maximum_backoff_ms=*/32000LL,
+    /*entry_lifetime_ms=*/-1LL,
+    /*always_use_initial_delay=*/true};
 
 // Helper struct for PpdProviderImpl. Allows PpdProviderImpl to defer
 // its public method calls, which PpdProviderImpl will do when the
@@ -38,7 +59,7 @@ constexpr size_t kMethodDeferralLimit = 20;
 //    prevent infinite re-enqueueing of public methods once the queue
 //    is full.
 struct MethodDeferralContext {
-  MethodDeferralContext() = default;
+  MethodDeferralContext() : backoff_entry(&kBackoffPolicy) {}
   ~MethodDeferralContext() = default;
 
   // This struct is not copyable.
@@ -57,6 +78,13 @@ struct MethodDeferralContext {
     std::move(deferred_methods.front()).Run();
     deferred_methods.pop();
     current_method_is_being_failed = false;
+  }
+
+  // Fails all |deferred_methods| synchronously.
+  void FailAllEnqueuedMethods() {
+    while (!deferred_methods.empty()) {
+      FailOneEnqueuedMethod();
+    }
   }
 
   // Dequeues and posts all |deferred_methods| onto our sequence.
@@ -79,6 +107,10 @@ struct MethodDeferralContext {
   bool current_method_is_being_failed = false;
 
   base::queue<base::OnceCallback<void()>> deferred_methods;
+
+  // Implements retry backoff for
+  // PpdProviderImpl::TryToGetMetadataManagerLocale().
+  net::BackoffEntry backoff_entry;
 };
 
 // This class implements the PpdProvider interface for the v3 metadata
@@ -99,6 +131,7 @@ class PpdProviderImpl : public PpdProvider {
         file_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
             {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
+    // Immediately attempts to obtain a metadata locale.
     TryToGetMetadataManagerLocale();
   }
 
@@ -109,7 +142,7 @@ class PpdProviderImpl : public PpdProvider {
     if (deferral_context_) {
       if (deferral_context_->current_method_is_being_failed) {
         auto failure_cb = base::BindOnce(
-            std::move(cb), PpdProvider::CallbackResultCode::INTERNAL_ERROR,
+            std::move(cb), PpdProvider::CallbackResultCode::SERVER_ERROR,
             std::vector<std::string>());
         base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                          std::move(failure_cb));
@@ -170,7 +203,7 @@ class PpdProviderImpl : public PpdProvider {
     if (deferral_context_) {
       if (deferral_context_->current_method_is_being_failed) {
         auto failure_cb = base::BindOnce(
-            std::move(cb), PpdProvider::CallbackResultCode::INTERNAL_ERROR, "",
+            std::move(cb), PpdProvider::CallbackResultCode::SERVER_ERROR, "",
             "");
         base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                          std::move(failure_cb));
@@ -218,7 +251,20 @@ class PpdProviderImpl : public PpdProvider {
   // Callback fed to PpdMetadataManager::GetLocale().
   void OnMetadataManagerLocaleGotten(bool succeeded) {
     if (!succeeded) {
-      TryToGetMetadataManagerLocale();
+      // Uh-oh, we concretely failed to get a metadata locale. We should
+      // fail all outstanding deferred methods and let callers retry as
+      // they see fit.
+      deferral_context_->FailAllEnqueuedMethods();
+
+      // Inform the BackoffEntry of our failure; let it adjust the
+      // retry delay.
+      deferral_context_->backoff_entry.InformOfRequest(false);
+
+      base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&PpdProviderImpl::TryToGetMetadataManagerLocale,
+                         weak_factory_.GetWeakPtr()),
+          deferral_context_->backoff_entry.GetTimeUntilRelease());
       return;
     }
     deferral_context_->FlushAndPostAll();

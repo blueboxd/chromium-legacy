@@ -22,20 +22,20 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/gaia_auth_host_resources.h"
+#include "chrome/grit/gaia_auth_host_resources_map.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_switches.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "ui/resources/grit/webui_resources.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/chromeos/edu_account_login_handler_chromeos.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_chromeos.h"
-#include "chrome/grit/gaia_auth_host_resources.h"
-#include "chrome/grit/gaia_auth_host_resources_map.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/resources/grit/webui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 #else
 #include "chrome/browser/ui/webui/signin/inline_login_handler_impl.h"
@@ -43,10 +43,10 @@
 
 namespace {
 
-#if defined(OS_CHROMEOS)
 constexpr char kResourcesGeneratedPath[] =
     "@out_folder@/gen/chrome/browser/resources/";
 
+#if defined(OS_CHROMEOS)
 void AddEduStrings(content::WebUIDataSource* source,
                    const base::string16& username) {
   source->AddLocalizedString("okButton", IDS_APP_OK);
@@ -94,11 +94,10 @@ void AddEduStrings(content::WebUIDataSource* source,
 content::WebUIDataSource* CreateWebUIDataSource() {
   content::WebUIDataSource* source =
         content::WebUIDataSource::Create(chrome::kChromeUIChromeSigninHost);
-  source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::ObjectSrc, "object-src chrome:;");
-  source->UseStringsJs();
-
-  source->SetDefaultResource(IDR_INLINE_LOGIN_HTML);
+  webui::SetupWebUIDataSource(
+      source,
+      base::make_span(kGaiaAuthHostResources, kGaiaAuthHostResourcesSize),
+      kResourcesGeneratedPath, IDR_INLINE_LOGIN_HTML);
 
   // Only add a filter when runing as test.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -110,9 +109,8 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   }
 
   static constexpr webui::ResourcePath kResources[] = {
-    {"inline_login.css", IDR_INLINE_LOGIN_CSS},
-    {"inline_login.js", IDR_INLINE_LOGIN_JS},
-    {"gaia_auth_host.js", IDR_GAIA_AUTH_AUTHENTICATOR_JS},
+    {"inline_login_app.js", IDR_INLINE_LOGIN_APP_JS},
+    {"inline_login_browser_proxy.js", IDR_INLINE_LOGIN_BROWSER_PROXY_JS},
 #if defined(OS_CHROMEOS)
     {"error_screen.js", IDR_ACCOUNT_MANAGER_COMPONENTS_ERROR_SCREEN_JS},
     {"edu", IDR_EDU_LOGIN_EDU_LOGIN_HTML},
@@ -130,8 +128,6 @@ content::WebUIDataSource* CreateWebUIDataSource() {
     {"edu_login_parent_info.js", IDR_EDU_LOGIN_EDU_LOGIN_PARENT_INFO_JS},
     {"edu_login_signin.js", IDR_EDU_LOGIN_EDU_LOGIN_SIGNIN_JS},
     {"edu_login_error.js", IDR_EDU_LOGIN_EDU_LOGIN_ERROR_JS},
-    {"test_loader.js", IDR_WEBUI_JS_TEST_LOADER},
-    {"test_loader.html", IDR_WEBUI_HTML_TEST_LOADER},
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"googleg.svg", IDR_ACCOUNT_MANAGER_WELCOME_GOOGLE_LOGO_SVG},
 #endif
@@ -139,16 +135,6 @@ content::WebUIDataSource* CreateWebUIDataSource() {
 #endif  // defined(OS_CHROMEOS)
   };
   webui::AddResourcePathsBulk(source, kResources);
-
-#if defined(OS_CHROMEOS)
-  source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::ScriptSrc,
-      "script-src chrome://resources chrome://test 'self';");
-  webui::SetupWebUIDataSource(
-      source,
-      base::make_span(kGaiaAuthHostResources, kGaiaAuthHostResourcesSize),
-      kResourcesGeneratedPath, IDR_INLINE_LOGIN_HTML);
-#endif  // defined(OS_CHROMEOS)
 
   source->AddLocalizedString("title", IDS_CHROME_SIGNIN_TITLE);
   source->AddLocalizedString(

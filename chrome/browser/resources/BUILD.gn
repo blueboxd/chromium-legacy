@@ -32,6 +32,7 @@ if (enable_js_type_check) {
         "downloads:closure_compile",
         "gaia_auth_host:closure_compile",
         "history:closure_compile",
+        "inline_login:closure_compile",
         "local_ntp:closure_compile",
         "local_state:closure_compile",
         "management:closure_compile",

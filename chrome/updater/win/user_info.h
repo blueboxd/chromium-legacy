@@ -21,6 +21,9 @@ HRESULT GetProcessUser(base::string16* name,
 // Gets SID associated with the access token of the current process.
 HRESULT GetProcessUserSid(CSid* sid);
 
+// Returns true if the current user is NT AUTHORITY\SYSTEM.
+bool IsLocalSystemUser();
+
 // Gets the user SID associated with the access token of the current thread if
 // the thread is impersonating. If the thread is not impersonating, the API
 // fails with ERROR_NO_TOKEN.

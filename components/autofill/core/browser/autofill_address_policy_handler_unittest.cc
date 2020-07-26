@@ -32,8 +32,7 @@ TEST_F(AutofillAddressPolicyHandlerTest, Enabled) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kAutofillAddressEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
-             nullptr);
+             policy::POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
   PrefValueMap prefs;
   AutofillAddressPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);
@@ -47,8 +46,7 @@ TEST_F(AutofillAddressPolicyHandlerTest, Disabled) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kAutofillAddressEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(false),
-             nullptr);
+             policy::POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
   PrefValueMap prefs;
   AutofillAddressPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);

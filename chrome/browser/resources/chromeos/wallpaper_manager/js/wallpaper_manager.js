@@ -381,12 +381,6 @@ WallpaperManager.prototype.preDownloadDomInit_ = function() {
       'resize', this.onResize_.bind(this));
   this.document_.defaultView.addEventListener(
       'keydown', this.onKeyDown_.bind(this));
-  $('minimize-button').addEventListener('click', function() {
-    chrome.app.window.current().minimize();
-  });
-  $('close-button').addEventListener('click', function() {
-    window.close();
-  });
   window.addEventListener(Constants.WallpaperChangedBy3rdParty, e => {
     this.currentWallpaper_ = e.detail.wallpaperFileName;
     this.decorateCurrentWallpaperInfoBar_();

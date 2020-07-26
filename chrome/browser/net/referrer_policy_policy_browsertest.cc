@@ -41,16 +41,16 @@ IN_PROC_BROWSER_TEST_F(ForceLegacyDefaultReferrerPolicy, UpdatesDynamically) {
 
   policy::PolicyMap values;
   values.Set(key::kForceLegacyDefaultReferrerPolicy, POLICY_LEVEL_RECOMMENDED,
-             POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(true), nullptr);
+             POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, base::Value(true),
+             nullptr);
   policy_provider_.UpdateChromePolicy(values);
   base::RunLoop().RunUntilIdle();
   // When the policy's true, we should have flipped the global to true.
   EXPECT_TRUE(content::Referrer::ShouldForceLegacyDefaultReferrerPolicy());
 
   values.Set(key::kForceLegacyDefaultReferrerPolicy, POLICY_LEVEL_RECOMMENDED,
-             POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(false), nullptr);
+             POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, base::Value(false),
+             nullptr);
   policy_provider_.UpdateChromePolicy(values);
   base::RunLoop().RunUntilIdle();
   // When the policy's false, we should have flipped the global back to false.

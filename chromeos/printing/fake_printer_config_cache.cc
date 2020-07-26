@@ -9,6 +9,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/strings/string_piece.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "chromeos/printing/printer_config_cache.h"
@@ -37,15 +38,19 @@ void FakePrinterConfigCache::Fetch(const std::string& key,
                                    base::TimeDelta unused_expiration,
                                    PrinterConfigCache::FetchCallback cb) {
   if (contents_.contains(key)) {
-    std::move(cb).Run(PrinterConfigCache::FetchResult::Success(
-        key, contents_.at(key), base::Time()));
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(cb),
+                                  PrinterConfigCache::FetchResult::Success(
+                                      key, contents_.at(key), base::Time())));
     return;
   } else if (fetch_requests_to_ignore_.contains(key)) {
     // Caller has directed us, by way of DiscardFetchRequestFor(), to
     // _not_ respond to this Fetch().
     return;
   }
-  std::move(cb).Run(PrinterConfigCache::FetchResult::Failure(key));
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(cb),
+                                PrinterConfigCache::FetchResult::Failure(key)));
 }
 
 void FakePrinterConfigCache::Drop(const std::string& key) {

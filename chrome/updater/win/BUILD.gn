@@ -77,8 +77,15 @@ source_set("lib") {
     "net/network_fetcher.h",
     "net/network_winhttp.cc",
     "net/network_winhttp.h",
+    "net/proxy_configuration.cc",
+    "net/proxy_configuration.h",
+    "net/proxy_info.cc",
+    "net/proxy_info.h",
     "net/scoped_hinternet.h",
+    "net/scoped_winttp_proxy_info.h",
     "scoped_handle.h",
+    "scoped_impersonation.cc",
+    "scoped_impersonation.h",
     "setup/setup.cc",
     "setup/setup.h",
     "setup/setup_util.cc",
@@ -161,6 +168,8 @@ source_set("updater_tests") {
   sources = [
     "group_policy_manager_unittest.cc",
     "net/network_unittest.cc",
+    "net/proxy_configuration_unittest.cc",
+    "net/proxy_info_unittest.cc",
     "tag_extractor_unittest.cc",
     "util_unittest.cc",
   ]
@@ -172,6 +181,7 @@ source_set("updater_tests") {
     ":tag_extractor",
     "//base/test:test_support",
     "//testing/gtest",
+    "//url:url",
   ]
 
   data_deps = [

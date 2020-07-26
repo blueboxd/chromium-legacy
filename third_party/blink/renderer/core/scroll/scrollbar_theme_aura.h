@@ -38,7 +38,7 @@ namespace blink {
 
 class CORE_EXPORT ScrollbarThemeAura : public ScrollbarTheme {
  public:
-  int ScrollbarThickness(ScrollbarControlSize) override;
+  int ScrollbarThickness() override;
 
  protected:
   bool NativeThemeHasButtons() override { return true; }

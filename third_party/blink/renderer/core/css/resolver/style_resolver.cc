@@ -1323,6 +1323,9 @@ bool StyleResolver::ApplyAnimatedStyle(StyleResolverState& state,
   CSSAnimations::CalculateTransitionUpdate(
       state.AnimationUpdate(), CSSAnimations::PropertyPass::kStandard,
       animating_element, *state.Style());
+  CSSAnimations::CalculateTransitionUpdate(state.AnimationUpdate(),
+                                           CSSAnimations::PropertyPass::kCustom,
+                                           animating_element, *state.Style());
 
   CSSAnimations::SnapshotCompositorKeyframes(
       element, state.AnimationUpdate(), *state.Style(), state.ParentStyle());
@@ -1514,9 +1517,6 @@ void StyleResolver::CalculateAnimationUpdate(StyleResolverState& state) {
   CSSAnimations::CalculateAnimationUpdate(
       state.AnimationUpdate(), animating_element, state.GetElement(),
       *state.Style(), state.ParentStyle(), this);
-  CSSAnimations::CalculateTransitionUpdate(state.AnimationUpdate(),
-                                           CSSAnimations::PropertyPass::kCustom,
-                                           animating_element, *state.Style());
 
   state.SetIsAnimationInterpolationMapReady();
 }

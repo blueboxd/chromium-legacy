@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.editurl;
 
+import android.graphics.drawable.Drawable;
 import android.view.View;
 
+import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
+import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewBinder;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewViewBinder;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -24,5 +27,12 @@ public class EditUrlSuggestionViewBinder
     @Override
     public void bind(PropertyModel model, EditUrlSuggestionView view, PropertyKey propertyKey) {
         mBinder.bind(model, view.getBaseSuggestionView(), propertyKey);
+
+        if (SuggestionCommonProperties.OMNIBOX_THEME == propertyKey) {
+            Drawable drawable = OmniboxResourceProvider.resolveAttributeToDrawable(
+                    view.getContext(), model.get(SuggestionCommonProperties.OMNIBOX_THEME),
+                    android.R.attr.listDivider);
+            view.getDivider().setBackground(drawable);
+        }
     }
 }

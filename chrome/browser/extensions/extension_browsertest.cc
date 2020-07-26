@@ -330,9 +330,10 @@ bool ExtensionBrowserTest::CreateServiceWorkerBasedExtension(
   {
     base::Value* background_persistent = background_dict->FindKeyOfType(
         "persistent", base::Value::Type::BOOLEAN);
-    if (!background_persistent || background_persistent->GetBool()) {
+    if (!background_persistent) {
       ADD_FAILURE() << path.value()
-                    << ": Only event pages can be loaded as SW extension.";
+                    << ": The \"persistent\" key must be specified to run as a "
+                       "Service Worker-based extension.";
       return false;
     }
   }

@@ -109,6 +109,8 @@ class AX_EXPORT AXPlatformNode {
   virtual ~AXPlatformNode();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AtkUtilAuraLinuxTest, KeySnooping);
+
   // Global ObserverList for AXMode changes.
   static base::LazyInstance<
       base::ObserverList<AXModeObserver>::Unchecked>::Leaky ax_mode_observers_;

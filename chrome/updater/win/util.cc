@@ -7,6 +7,7 @@
 #include <aclapi.h>
 #include <shlobj.h>
 #include <windows.h>
+#include <wtsapi32.h>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -14,6 +15,7 @@
 #include "base/logging.h"
 #include "base/numerics/ranges.h"
 #include "base/process/process_iterator.h"
+#include "base/scoped_native_library.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -356,6 +358,33 @@ bool DeleteInstallerProgress(const std::string& app_id) {
   }
 
   return key.DeleteValue(kRegistryValueInstallerProgress) == ERROR_SUCCESS;
+}
+
+base::win::ScopedHandle GetUserTokenFromCurrentSessionId() {
+  base::win::ScopedHandle token_handle;
+
+  DWORD bytes_returned = 0;
+  DWORD* session_id_ptr = nullptr;
+  if (!::WTSQuerySessionInformation(
+          WTS_CURRENT_SERVER_HANDLE, WTS_CURRENT_SESSION, WTSSessionId,
+          reinterpret_cast<LPTSTR*>(&session_id_ptr), &bytes_returned)) {
+    PLOG(ERROR) << "WTSQuerySessionInformation failed.";
+    return token_handle;
+  }
+
+  DCHECK_EQ(bytes_returned, sizeof(*session_id_ptr));
+  DWORD session_id = *session_id_ptr;
+  ::WTSFreeMemory(session_id_ptr);
+  DVLOG(1) << "::WTSQuerySessionInformation session id: " << session_id;
+
+  HANDLE token_handle_raw = nullptr;
+  if (!::WTSQueryUserToken(session_id, &token_handle_raw)) {
+    PLOG(ERROR) << "WTSQueryUserToken failed";
+    return token_handle;
+  }
+
+  token_handle.Set(token_handle_raw);
+  return token_handle;
 }
 
 }  // namespace updater

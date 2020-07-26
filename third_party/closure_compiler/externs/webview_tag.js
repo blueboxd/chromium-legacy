@@ -486,6 +486,20 @@ WebView.prototype.loadstart;
 /** @type {!ChromeEvent} */
 WebView.prototype.loadstop;
 
+/**
+ * "newwindow" event object properties.
+ * @typedef{{
+ *   window: NewWindow,
+ *   targetUrl: string,
+ *   initialWidth: number,
+ *   initialHeight: number,
+ *   name: string,
+ *   windowOpenDisposition: string
+ * }}
+ * @see https://developer.chrome.com/apps/tags/webview#event-newwindow
+ */
+var NewWindowProperties;
+
 /** @type {!ChromeEvent} */
 WebView.prototype.newwindow;
 

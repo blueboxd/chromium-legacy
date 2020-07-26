@@ -45,7 +45,7 @@ class CORE_EXPORT ScrollbarThemeOverlay : public ScrollbarTheme {
       float old_position,
       float new_position) const override;
 
-  int ScrollbarThickness(ScrollbarControlSize) override;
+  int ScrollbarThickness() override;
   int ScrollbarMargin() const override;
   bool UsesOverlayScrollbars() const override;
   base::TimeDelta OverlayScrollbarFadeOutDelay() const override;

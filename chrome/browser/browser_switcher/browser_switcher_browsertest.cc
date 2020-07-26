@@ -70,7 +70,7 @@ std::string NativeToUTF8(const std::string& native) {
 
 void SetPolicy(policy::PolicyMap* map,
                const std::string& policy_name,
-               std::unique_ptr<base::Value> value) {
+               base::Value value) {
   map->Set(policy_name, policy::POLICY_LEVEL_MANDATORY,
            policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_PLATFORM,
            std::move(value), nullptr);
@@ -84,22 +84,19 @@ void InitPolicies(policy::MockConfigurationPolicyProvider* provider,
                   const base::CommandLine& cmd_line) {
   policy::PolicyMap map;
 
-  SetPolicy(&map, policy::key::kBrowserSwitcherEnabled,
-            std::make_unique<base::Value>(true));
-  SetPolicy(
-      &map, policy::key::kAlternativeBrowserPath,
-      std::make_unique<base::Value>(cmd_line.GetProgram().MaybeAsASCII()));
+  SetPolicy(&map, policy::key::kBrowserSwitcherEnabled, base::Value(true));
+  SetPolicy(&map, policy::key::kAlternativeBrowserPath,
+            base::Value(cmd_line.GetProgram().MaybeAsASCII()));
 
-  base::ListValue params;
+  base::Value params(base::Value::Type::LIST);
   for (size_t i = 1; i < cmd_line.argv().size(); i++)
     params.Append(NativeToUTF8(cmd_line.argv()[i]));
   SetPolicy(&map, policy::key::kAlternativeBrowserParameters,
-            std::make_unique<base::Value>(std::move(params)));
+            std::move(params));
 
-  base::ListValue sitelist;
+  base::Value sitelist(base::Value::Type::LIST);
   sitelist.Append("example.com");
-  SetPolicy(&map, policy::key::kBrowserSwitcherUrlList,
-            std::make_unique<base::Value>(std::move(sitelist)));
+  SetPolicy(&map, policy::key::kBrowserSwitcherUrlList, std::move(sitelist));
 
   provider->UpdateChromePolicy(map);
   base::RunLoop().RunUntilIdle();

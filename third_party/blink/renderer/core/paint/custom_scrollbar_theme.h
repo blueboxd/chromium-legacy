@@ -38,10 +38,7 @@ class CustomScrollbarTheme final : public ScrollbarTheme {
  public:
   ~CustomScrollbarTheme() override = default;
 
-  int ScrollbarThickness(
-      ScrollbarControlSize control_size = kRegularScrollbar) override {
-    return GetTheme().ScrollbarThickness(control_size);
-  }
+  int ScrollbarThickness() override { return GetTheme().ScrollbarThickness(); }
 
   bool NativeThemeHasButtons() override {
     return GetTheme().NativeThemeHasButtons();

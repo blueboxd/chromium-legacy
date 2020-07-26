@@ -26,6 +26,9 @@
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/ui/main/scene_state.h"
+#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
+#import "ios/chrome/browser/ui/scoped_ui_blocker/scoped_ui_blocker.h"
 #import "ios/chrome/browser/ui/settings/cells/byo_textfield_item.h"
 #import "ios/chrome/browser/ui/settings/cells/passphrase_error_item.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
@@ -34,6 +37,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
@@ -69,6 +73,7 @@ const CGFloat kSpinnerButtonPadding = 18;
   std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityManagerObserver;
   UITextField* _passphrase;
+  std::unique_ptr<ScopedUIBlocker> _uiBlocker;
 }
 
 @property(nonatomic, assign, readonly) Browser* browser;
@@ -152,6 +157,11 @@ const CGFloat kSpinnerButtonPadding = 18;
   [super viewDidLoad];
   [self loadModel];
   [self setRightNavBarItem];
+  if (IsSceneStartupSupported()) {
+    SceneState* sceneState =
+        SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
+    _uiBlocker = std::make_unique<ScopedUIBlocker>(sceneState);
+  }
 }
 
 - (void)didReceiveMemoryWarning {
@@ -171,6 +181,7 @@ const CGFloat kSpinnerButtonPadding = 18;
   if ([self isMovingFromParentViewController]) {
     [self unregisterTextField:self.passphrase];
   }
+  _uiBlocker.reset();
 }
 
 #pragma mark - SettingsRootTableViewController

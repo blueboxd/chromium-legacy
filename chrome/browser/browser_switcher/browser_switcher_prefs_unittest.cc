@@ -133,8 +133,8 @@ TEST_F(BrowserSwitcherPrefsTest, TriggersObserversOnPolicyChange) {
   policy::PolicyMap policy_map;
   policy_map.Set(policy::key::kAlternativeBrowserPath,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
-                 policy::POLICY_SOURCE_PLATFORM,
-                 std::make_unique<base::Value>("notepad.exe"), nullptr);
+                 policy::POLICY_SOURCE_PLATFORM, base::Value("notepad.exe"),
+                 nullptr);
 
   base::RunLoop run_loop;
   auto subscription = prefs()->RegisterPrefsChangedCallback(base::BindRepeating(

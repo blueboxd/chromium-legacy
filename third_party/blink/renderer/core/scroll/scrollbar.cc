@@ -45,13 +45,11 @@ namespace blink {
 
 Scrollbar::Scrollbar(ScrollableArea* scrollable_area,
                      ScrollbarOrientation orientation,
-                     ScrollbarControlSize control_size,
                      Element* style_source,
                      ChromeClient* chrome_client,
                      ScrollbarTheme* theme)
     : scrollable_area_(scrollable_area),
       orientation_(orientation),
-      control_size_(control_size),
       theme_(theme ? *theme : scrollable_area->GetPageScrollbarTheme()),
       chrome_client_(chrome_client),
       visible_size_(0),
@@ -80,7 +78,7 @@ Scrollbar::Scrollbar(ScrollableArea* scrollable_area,
   // code to actually query for scrollbar thickness and use it when sizing
   // scrollbars (rather than leaving one dimension of the scrollbar alone when
   // sizing).
-  int thickness = theme_.ScrollbarThickness(control_size);
+  int thickness = theme_.ScrollbarThickness();
   theme_scrollbar_thickness_ = thickness;
   if (chrome_client_) {
     thickness = chrome_client_->WindowToViewportScalar(

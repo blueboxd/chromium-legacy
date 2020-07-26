@@ -4,6 +4,9 @@
 
 #include "ash/clipboard/clipboard_history.h"
 
+#include <unordered_map>
+#include <vector>
+
 #include "ash/clipboard/clipboard_history_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -13,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
+#include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 namespace ash {
@@ -72,6 +76,29 @@ class ClipboardHistoryTest : public AshTestBase {
       EXPECT_TRUE(gfx::BitmapsAreEqual(
           expected_bitmaps[expected_bitmaps_index++], data.bitmap()));
     }
+  }
+
+  void WriteAndEnsureCustomDataHistory(
+      const std::unordered_map<base::string16, base::string16>& input_data,
+      const std::unordered_map<base::string16, base::string16>& expected_data) {
+    base::Pickle input_data_pickle;
+    ui::WriteCustomDataToPickle(input_data, &input_data_pickle);
+
+    {
+      ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
+      scw.WritePickledData(input_data_pickle,
+                           ui::ClipboardFormatType::GetWebCustomDataType());
+    }
+
+    const std::vector<ui::ClipboardData> datas = GetClipboardHistoryData();
+    EXPECT_EQ(1u, datas.size());
+
+    std::unordered_map<base::string16, base::string16> actual_data;
+    ui::ReadCustomDataIntoMap(datas.at(0).custom_data_data().c_str(),
+                              datas.at(0).custom_data_data().size(),
+                              &actual_data);
+
+    EXPECT_EQ(expected_data, actual_data);
   }
 
   ClipboardHistory* clipboard_history() { return clipboard_history_; }
@@ -205,6 +232,20 @@ TEST_F(ClipboardHistoryTest, DuplicateBitmap) {
                                       test_bitmap_1};
   std::vector<SkBitmap> expected_bitmaps{test_bitmap_1, test_bitmap_2};
   WriteAndEnsureBitmapHistory(input_bitmaps, expected_bitmaps);
+}
+
+// Tests that custom data is recorded in clipboard history.
+TEST_F(ClipboardHistoryTest, BasicCustomData) {
+  const std::unordered_map<base::string16, base::string16> input_data = {
+      {base::UTF8ToUTF16("custom-format-1"),
+       base::UTF8ToUTF16("custom-data-1")},
+      {base::UTF8ToUTF16("custom-format-2"),
+       base::UTF8ToUTF16("custom-data-2")}};
+
+  const std::unordered_map<base::string16, base::string16> expected_data =
+      input_data;
+
+  WriteAndEnsureCustomDataHistory(input_data, expected_data);
 }
 
 }  // namespace ash

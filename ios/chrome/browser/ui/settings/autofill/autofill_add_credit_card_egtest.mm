@@ -203,7 +203,8 @@ id<GREYMatcher> CardNumberIconView(NSString* icon_type) {
 
 // Tests when a user tries to add an invalid card nickname, the "Add" button is
 // not enabled.
-- (void)testAddButtonDisabledOnInvalidNickname {
+// TODO(crbug.com/1108809): Re-enable the test
+- (void)DISABLED_testAddButtonDisabledOnInvalidNickname {
   [[EarlGrey selectElementWithMatcher:CardNumberTextField()]
       performAction:grey_typeText(@"4111111111111111")];
   [[EarlGrey selectElementWithMatcher:MonthOfExpiryTextField()]

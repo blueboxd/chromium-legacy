@@ -14,10 +14,11 @@ import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionView;
 
 /**
  * Container view for Search-Ready Omnibox suggestions.
- * Decorates the suggestion with the bottom bar.
+ * Decorates the suggestion with a divider.
  */
 public class EditUrlSuggestionView extends FrameLayout {
-    BaseSuggestionView<View> mContent;
+    private BaseSuggestionView<View> mContent;
+    private View mDivider;
 
     public EditUrlSuggestionView(Context context) {
         super(context, null);
@@ -27,16 +28,22 @@ public class EditUrlSuggestionView extends FrameLayout {
         contentLayoutParams.height = LayoutParams.WRAP_CONTENT;
         addView(mContent, contentLayoutParams);
 
-        View divider = new View(context, null, 0, R.style.HorizontalDivider);
+        mDivider = new View(context, null, 0, R.style.HorizontalDivider);
         LayoutParams dividerLayoutParams = generateDefaultLayoutParams();
         dividerLayoutParams.gravity = Gravity.BOTTOM;
         dividerLayoutParams.width = LayoutParams.MATCH_PARENT;
         dividerLayoutParams.height = getResources().getDimensionPixelSize(R.dimen.divider_height);
-        addView(divider, dividerLayoutParams);
+        addView(mDivider, dividerLayoutParams);
     }
 
+    /** @return The base suggestion view for this edit URL suggestion. */
     BaseSuggestionView<View> getBaseSuggestionView() {
         return mContent;
+    }
+
+    /** @return The divider of this edit URL suggestion. */
+    View getDivider() {
+        return mDivider;
     }
 
     @Override

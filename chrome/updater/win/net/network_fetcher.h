@@ -26,6 +26,7 @@ class SingleThreadTaskRunner;
 namespace updater {
 
 class NetworkFetcherWinHTTP;
+class ProxyConfiguration;
 
 class NetworkFetcher : public update_client::NetworkFetcher {
  public:
@@ -37,7 +38,8 @@ class NetworkFetcher : public update_client::NetworkFetcher {
   using DownloadToFileCompleteCallback =
       update_client::NetworkFetcher::DownloadToFileCompleteCallback;
 
-  explicit NetworkFetcher(const HINTERNET& session_handle_);
+  NetworkFetcher(const HINTERNET& session_handle,
+                 scoped_refptr<ProxyConfiguration> proxy_config);
   ~NetworkFetcher() override;
   NetworkFetcher(const NetworkFetcher&) = delete;
   NetworkFetcher& operator=(const NetworkFetcher&) = delete;

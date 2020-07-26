@@ -173,8 +173,6 @@ void DownloadFeedbackService::BeginFeedback(const std::string& ping_request,
       DownloadFeedback::Create(url_loader_factory_, file_task_runner_.get(),
                                path, ping_request, ping_response));
   active_feedback_.push(std::move(feedback));
-  UMA_HISTOGRAM_COUNTS_100("SBDownloadFeedback.ActiveFeedbacks",
-                           active_feedback_.size());
 
   if (active_feedback_.size() == 1)
     StartPendingFeedback();

@@ -1559,19 +1559,29 @@ void WebLocalFrameImpl::DispatchPrintEventRecursively(
   }
 }
 
-int WebLocalFrameImpl::PrintBegin(const WebPrintParams& print_params,
-                                  const WebNode& constrain_to_node) {
-  WebPluginContainerImpl* plugin_container = nullptr;
+WebPluginContainerImpl* WebLocalFrameImpl::GetPluginToPrintHelper(
+    const WebNode& constrain_to_node) {
   if (constrain_to_node.IsNull()) {
     // If this is a plugin document, check if the plugin supports its own
     // printing. If it does, we will delegate all printing to that.
-    plugin_container = GetFrame()->GetWebPluginContainer();
-  } else {
-    // We only support printing plugin nodes for now.
-    plugin_container =
-        To<WebPluginContainerImpl>(constrain_to_node.PluginContainer());
+    return GetFrame()->GetWebPluginContainer();
   }
 
+  // We only support printing plugin nodes for now.
+  return To<WebPluginContainerImpl>(constrain_to_node.PluginContainer());
+}
+
+WebPlugin* WebLocalFrameImpl::GetPluginToPrint(
+    const WebNode& constrain_to_node) {
+  WebPluginContainerImpl* plugin_container =
+      GetPluginToPrintHelper(constrain_to_node);
+  return plugin_container ? plugin_container->Plugin() : nullptr;
+}
+
+int WebLocalFrameImpl::PrintBegin(const WebPrintParams& print_params,
+                                  const WebNode& constrain_to_node) {
+  WebPluginContainerImpl* plugin_container =
+      GetPluginToPrintHelper(constrain_to_node);
   if (plugin_container && plugin_container->SupportsPaginatedPrint()) {
     print_context_ = MakeGarbageCollected<ChromePluginPrintContext>(
         GetFrame(), plugin_container, print_params);

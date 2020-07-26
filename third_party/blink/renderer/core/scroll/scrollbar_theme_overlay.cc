@@ -64,8 +64,7 @@ ScrollbarPart ScrollbarThemeOverlay::PartsToInvalidateOnThumbPositionChange(
   return kNoPart;
 }
 
-int ScrollbarThemeOverlay::ScrollbarThickness(
-    ScrollbarControlSize control_size) {
+int ScrollbarThemeOverlay::ScrollbarThickness() {
   return thumb_thickness_ + scrollbar_margin_;
 }
 

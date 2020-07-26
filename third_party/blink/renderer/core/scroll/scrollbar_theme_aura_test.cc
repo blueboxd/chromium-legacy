@@ -72,7 +72,7 @@ TEST_F(ScrollbarThemeAuraTest, ButtonSizeHorizontal) {
   MockScrollableArea* mock_scrollable_area = MockScrollableArea::Create();
   ScrollbarThemeAuraButtonOverride theme;
   Scrollbar* scrollbar = Scrollbar::CreateForTesting(
-      mock_scrollable_area, kHorizontalScrollbar, kRegularScrollbar, &theme);
+      mock_scrollable_area, kHorizontalScrollbar, &theme);
 
   IntRect scrollbar_size_normal_dimensions(11, 22, 444, 66);
   scrollbar->SetFrameRect(scrollbar_size_normal_dimensions);
@@ -96,7 +96,7 @@ TEST_F(ScrollbarThemeAuraTest, ButtonSizeVertical) {
   MockScrollableArea* mock_scrollable_area = MockScrollableArea::Create();
   ScrollbarThemeAuraButtonOverride theme;
   Scrollbar* scrollbar = Scrollbar::CreateForTesting(
-      mock_scrollable_area, kVerticalScrollbar, kRegularScrollbar, &theme);
+      mock_scrollable_area, kVerticalScrollbar, &theme);
 
   IntRect scrollbar_size_normal_dimensions(11, 22, 44, 666);
   scrollbar->SetFrameRect(scrollbar_size_normal_dimensions);
@@ -120,7 +120,7 @@ TEST_F(ScrollbarThemeAuraTest, NoButtonsReturnsSize0) {
   MockScrollableArea* mock_scrollable_area = MockScrollableArea::Create();
   ScrollbarThemeAuraButtonOverride theme;
   Scrollbar* scrollbar = Scrollbar::CreateForTesting(
-      mock_scrollable_area, kVerticalScrollbar, kRegularScrollbar, &theme);
+      mock_scrollable_area, kVerticalScrollbar, &theme);
   theme.SetHasScrollbarButtons(false);
 
   scrollbar->SetFrameRect(IntRect(1, 2, 3, 4));
@@ -139,7 +139,7 @@ TEST_F(ScrollbarThemeAuraTest, ScrollbarPartsInvalidationTest) {
       MockScrollableArea::Create(ScrollOffset(0, 1000));
   ScrollbarThemeAuraButtonOverride theme;
   Scrollbar* scrollbar = Scrollbar::CreateForTesting(
-      mock_scrollable_area, kVerticalScrollbar, kRegularScrollbar, &theme);
+      mock_scrollable_area, kVerticalScrollbar, &theme);
   ON_CALL(*mock_scrollable_area, VerticalScrollbar())
       .WillByDefault(Return(scrollbar));
 

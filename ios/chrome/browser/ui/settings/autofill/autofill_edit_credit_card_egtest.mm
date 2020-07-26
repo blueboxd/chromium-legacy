@@ -98,7 +98,8 @@ id<GREYMatcher> NavigationBarEditButton() {
 }
 
 // Tests that invalid nicknames are not allowed when editing a card.
-- (void)testInvalidNickname {
+// TODO(crbug.com/1108809): Re-enable the test.
+- (void)DISABLED_testInvalidNickname {
   [[EarlGrey selectElementWithMatcher:NicknameTextField()]
       performAction:grey_typeText(@"1233")];
 

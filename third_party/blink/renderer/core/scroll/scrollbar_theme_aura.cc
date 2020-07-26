@@ -144,7 +144,7 @@ bool ScrollbarThemeAura::SupportsDragSnapBack() const {
 #endif
 }
 
-int ScrollbarThemeAura::ScrollbarThickness(ScrollbarControlSize control_size) {
+int ScrollbarThemeAura::ScrollbarThickness() {
   if (WebTestSupport::IsRunningWebTest())
     return kScrollbarThicknessForWebTests;
 

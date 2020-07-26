@@ -53,6 +53,7 @@ AssistantControllerImpl::~AssistantControllerImpl() {
 void AssistantControllerImpl::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kAssistantNumWarmerWelcomeTriggered, 0);
+  AssistantInteractionControllerImpl::RegisterProfilePrefs(registry);
 }
 
 void AssistantControllerImpl::BindReceiver(

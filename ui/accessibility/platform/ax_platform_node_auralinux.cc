@@ -3644,6 +3644,15 @@ bool AXPlatformNodeAuraLinux::SelectionAndFocusAreTheSame() {
 }
 
 bool AXPlatformNodeAuraLinux::EmitsAtkTextEvents() const {
+  // Objects which do not implement AtkText cannot emit AtkText events.
+  if (!atk_object_ || !ATK_IS_TEXT(atk_object_))
+    return false;
+
+  // Objects which do implement AtkText, but are ignored or invisible should not
+  // emit AtkText events.
+  if (IsInvisibleOrIgnored())
+    return false;
+
   // If this node is not a static text node, it supports the full AtkText
   // interface.
   if (GetAtkRole() != kStaticRole)

@@ -75,7 +75,7 @@ TEST_F(ScrollableAreaTest, ScrollbarTrackAndThumbRepaint) {
   MockScrollableArea* scrollable_area =
       MockScrollableArea::Create(ScrollOffset(0, 100));
   Scrollbar* scrollbar = Scrollbar::CreateForTesting(
-      scrollable_area, kHorizontalScrollbar, kRegularScrollbar, &theme);
+      scrollable_area, kHorizontalScrollbar, &theme);
 
   EXPECT_CALL(theme, ShouldRepaintAllPartsOnInvalidation())
       .WillRepeatedly(Return(true));
@@ -124,9 +124,8 @@ TEST_F(ScrollableAreaTest, ScrollbarLayerInvalidation) {
   EXPECT_CALL(*scrollable_area, LayerForHorizontalScrollbar())
       .WillRepeatedly(Return(layer.get()));
 
-  auto* scrollbar =
-      MakeGarbageCollected<Scrollbar>(scrollable_area, kHorizontalScrollbar,
-                                      kRegularScrollbar, nullptr, nullptr);
+  auto* scrollbar = MakeGarbageCollected<Scrollbar>(
+      scrollable_area, kHorizontalScrollbar, nullptr, nullptr);
   EXPECT_TRUE(layer->update_rect().IsEmpty());
   scrollbar->SetNeedsPaintInvalidation(kNoPart);
   EXPECT_FALSE(layer->update_rect().IsEmpty());
@@ -143,9 +142,9 @@ TEST_F(ScrollableAreaTest, InvalidatesNonCompositedScrollbarsWhenThumbMoves) {
   MockScrollableArea* scrollable_area =
       MockScrollableArea::Create(ScrollOffset(100, 100));
   Scrollbar* horizontal_scrollbar = Scrollbar::CreateForTesting(
-      scrollable_area, kHorizontalScrollbar, kRegularScrollbar, &theme);
-  Scrollbar* vertical_scrollbar = Scrollbar::CreateForTesting(
-      scrollable_area, kVerticalScrollbar, kRegularScrollbar, &theme);
+      scrollable_area, kHorizontalScrollbar, &theme);
+  Scrollbar* vertical_scrollbar =
+      Scrollbar::CreateForTesting(scrollable_area, kVerticalScrollbar, &theme);
   EXPECT_CALL(*scrollable_area, HorizontalScrollbar())
       .WillRepeatedly(Return(horizontal_scrollbar));
   EXPECT_CALL(*scrollable_area, VerticalScrollbar())
@@ -188,11 +187,11 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
   MockScrollableArea* scrollable_area =
       MockScrollableArea::Create(ScrollOffset(100, 100));
   Scrollbar* horizontal_scrollbar = Scrollbar::CreateForTesting(
-      scrollable_area, kHorizontalScrollbar, kRegularScrollbar, &theme);
+      scrollable_area, kHorizontalScrollbar, &theme);
   horizontal_scrollbar->ClearTrackNeedsRepaint();
   horizontal_scrollbar->ClearThumbNeedsRepaint();
-  Scrollbar* vertical_scrollbar = Scrollbar::CreateForTesting(
-      scrollable_area, kVerticalScrollbar, kRegularScrollbar, &theme);
+  Scrollbar* vertical_scrollbar =
+      Scrollbar::CreateForTesting(scrollable_area, kVerticalScrollbar, &theme);
   vertical_scrollbar->ClearTrackNeedsRepaint();
   vertical_scrollbar->ClearThumbNeedsRepaint();
   EXPECT_CALL(*scrollable_area, HorizontalScrollbar())
@@ -342,7 +341,7 @@ TEST_F(ScrollableAreaTest, PopupOverlayScrollbarShouldNotFadeOut) {
       (ScrollbarThemeOverlayMock&)scrollable_area->GetPageScrollbarTheme();
   theme.SetOverlayScrollbarFadeOutDelay(base::TimeDelta::FromSeconds(1));
   Scrollbar* scrollbar = Scrollbar::CreateForTesting(
-      scrollable_area, kHorizontalScrollbar, kRegularScrollbar, &theme);
+      scrollable_area, kHorizontalScrollbar, &theme);
 
   DCHECK(scrollbar->IsOverlayScrollbar());
   DCHECK(scrollbar->Enabled());

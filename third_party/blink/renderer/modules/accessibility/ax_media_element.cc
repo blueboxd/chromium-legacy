@@ -41,11 +41,29 @@ String AccessibilityMediaElement::TextAlternative(
       related_objects, name_sources);
 }
 
+bool AccessibilityMediaElement::CanHaveChildren() const {
+  return HasControls();
+}
+
+bool AccessibilityMediaElement::ComputeAccessibilityIsIgnored(
+    IgnoredReasons* ignored_reasons) const {
+  return !HasControls() && HasEmptySource();
+}
+
 AXRestriction AccessibilityMediaElement::Restriction() const {
   if (IsUnplayable())
     return kRestrictionDisabled;
 
   return AXNodeObject::Restriction();
+}
+
+bool AccessibilityMediaElement::HasControls() const {
+  return To<HTMLMediaElement>(GetNode())->ShouldShowControls();
+}
+
+bool AccessibilityMediaElement::HasEmptySource() const {
+  return To<HTMLMediaElement>(GetNode())->getNetworkState() ==
+         HTMLMediaElement::kNetworkEmpty;
 }
 
 bool AccessibilityMediaElement::IsUnplayable() const {

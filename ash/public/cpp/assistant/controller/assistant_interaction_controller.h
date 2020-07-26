@@ -10,6 +10,10 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 
+namespace base {
+class TimeDelta;
+}  // namespace base
+
 namespace ash {
 
 class AssistantInteractionModel;
@@ -22,6 +26,10 @@ class ASH_PUBLIC_EXPORT AssistantInteractionController {
 
   // Returns a pointer to the underlying model.
   virtual const AssistantInteractionModel* GetModel() const = 0;
+
+  // Returns the TimeDelta since the last Assistant interaction. Note that the
+  // last interaction may have been performed in a different user session.
+  virtual base::TimeDelta GetTimeDeltaSinceLastInteraction() const = 0;
 
   // Start Assistant text interaction.
   virtual void StartTextInteraction(

@@ -23,7 +23,6 @@ class InlineLoginHandlerChromeOS : public InlineLoginHandler {
   // InlineLoginHandler overrides.
   void RegisterMessages() override;
   void SetExtraInitParams(base::DictionaryValue& params) override;
-  void HandleAuthExtensionReadyMessage(const base::ListValue* args) override;
   void CompleteLogin(const std::string& email,
                      const std::string& password,
                      const std::string& gaia_id,

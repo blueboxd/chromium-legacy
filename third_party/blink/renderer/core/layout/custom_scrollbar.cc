@@ -41,7 +41,6 @@ CustomScrollbar::CustomScrollbar(ScrollableArea* scrollable_area,
                                  Element* style_source)
     : Scrollbar(scrollable_area,
                 orientation,
-                kRegularScrollbar,
                 style_source,
                 nullptr,
                 CustomScrollbarTheme::GetCustomScrollbarTheme()) {

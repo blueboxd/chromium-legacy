@@ -109,9 +109,9 @@ class ComponentCloudPolicyStoreTest : public testing::Test {
     PolicyMap& policy = expected_bundle_.Get(kTestPolicyNS);
     policy.Clear();
     policy.Set("Name", POLICY_LEVEL_MANDATORY, scope, source,
-               std::make_unique<base::Value>("disabled"), nullptr);
+               base::Value("disabled"), nullptr);
     policy.Set("Second", POLICY_LEVEL_RECOMMENDED, scope, source,
-               std::make_unique<base::Value>("maybe"), nullptr);
+               base::Value("maybe"), nullptr);
   }
 
   std::unique_ptr<em::PolicyFetchResponse> CreateResponse() {

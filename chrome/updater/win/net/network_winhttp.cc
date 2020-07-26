@@ -12,6 +12,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
@@ -22,9 +23,12 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/win/windows_version.h"
 #include "chrome/updater/win/net/net_util.h"
 #include "chrome/updater/win/net/network.h"
+#include "chrome/updater/win/net/proxy_info.h"
 #include "chrome/updater/win/net/scoped_hinternet.h"
+#include "chrome/updater/win/net/scoped_winttp_proxy_info.h"
 #include "chrome/updater/win/util.h"
 #include "url/url_constants.h"
 
@@ -53,9 +57,12 @@ void CrackUrl(const GURL& url,
 
 }  // namespace
 
-NetworkFetcherWinHTTP::NetworkFetcherWinHTTP(const HINTERNET& session_handle)
+NetworkFetcherWinHTTP::NetworkFetcherWinHTTP(
+    const HINTERNET& session_handle,
+    scoped_refptr<ProxyConfiguration> proxy_configuration)
     : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      session_handle_(session_handle) {}
+      session_handle_(session_handle),
+      proxy_configuration_(proxy_configuration) {}
 
 NetworkFetcherWinHTTP::~NetworkFetcherWinHTTP() {
   DVLOG(3) << "~NetworkFetcherWinHTTP";
@@ -130,8 +137,8 @@ void NetworkFetcherWinHTTP::PostRequest(
   fetch_progress_callback_ = std::move(fetch_progress_callback);
   fetch_complete_callback_ = std::move(fetch_complete_callback);
 
-  DCHECK(url.SchemeIsHTTPOrHTTPS());
-  CrackUrl(url, &is_https_, &host_, &port_, &path_for_request_);
+  DCHECK(url_.SchemeIsHTTPOrHTTPS());
+  CrackUrl(url_, &is_https_, &host_, &port_, &path_for_request_);
 
   verb_ = L"POST";
   content_type_ = content_type;
@@ -139,6 +146,7 @@ void NetworkFetcherWinHTTP::PostRequest(
       base::BindRepeating(&NetworkFetcherWinHTTP::WriteDataToMemory, this);
 
   net_error_ = BeginFetch(post_data, post_additional_headers);
+
   if (FAILED(net_error_))
     CompleteFetch();
 }
@@ -165,6 +173,7 @@ void NetworkFetcherWinHTTP::DownloadToFile(
       base::BindRepeating(&NetworkFetcherWinHTTP::WriteDataToFile, this);
 
   net_error_ = BeginFetch({}, {});
+
   if (FAILED(net_error_))
     CompleteFetch();
 }
@@ -173,13 +182,19 @@ HRESULT NetworkFetcherWinHTTP::BeginFetch(
     const std::string& data,
     base::flat_map<std::string, std::string> additional_headers) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   connect_handle_ = Connect();
   if (!connect_handle_.get())
     return HRESULTFromLastError();
 
+  base::Optional<ScopedWinHttpProxyInfo> winhttp_proxy_info =
+      proxy_configuration_->GetProxyForUrl(session_handle_, url_);
+
   request_handle_ = OpenRequest();
   if (!request_handle_.get())
     return HRESULTFromLastError();
+
+  SetProxyForRequest(request_handle_.get(), winhttp_proxy_info);
 
   const auto winhttp_callback = ::WinHttpSetStatusCallback(
       request_handle_.get(), &NetworkFetcherWinHTTP::WinHttpStatusCallback,

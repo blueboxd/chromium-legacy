@@ -366,15 +366,14 @@ void WaitUntilUIReady(Browser* browser) {
   std::string message;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       browser->tab_strip_model()->GetActiveWebContents(),
-      "if (!inline.login.getAuthExtHost())"
-      "  inline.login.initialize();"
       "var handler = function() {"
       "  window.domAutomationController.send('ready');"
       "};"
-      "if (inline.login.isAuthReady())"
+      "if (!document.querySelector('inline-login-app').loading_)"
       "  handler();"
       "else"
-      "  inline.login.getAuthExtHost().addEventListener('ready', handler);",
+      "  document.querySelector('inline-login-app').authExtHost_"
+      "     .addEventListener('ready', handler);",
       &message));
   ASSERT_EQ("ready", message);
 }

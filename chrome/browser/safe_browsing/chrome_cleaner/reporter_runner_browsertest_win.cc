@@ -138,8 +138,8 @@ class ReporterRunnerPolicyTest
       policy::PolicyMap policies;
       policies.Set(policy::key::kChromeCleanupEnabled,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                   policy::POLICY_SOURCE_PLATFORM,
-                   std::make_unique<base::Value>(is_enabled), nullptr);
+                   policy::POLICY_SOURCE_PLATFORM, base::Value(is_enabled),
+                   nullptr);
       policy_provider_.UpdateChromePolicy(policies);
     }
   }
@@ -218,8 +218,8 @@ class ReporterRunnerTest
         policy::PolicyMap policies;
         policies.Set(policy::key::kChromeCleanupReportingEnabled,
                      policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                     policy::POLICY_SOURCE_PLATFORM,
-                     std::make_unique<base::Value>(is_enabled), nullptr);
+                     policy::POLICY_SOURCE_PLATFORM, base::Value(is_enabled),
+                     nullptr);
         policy_provider_.UpdateChromePolicy(policies);
         EXPECT_CALL(mock_chrome_cleaner_controller_, logs_enabled(_))
             .WillRepeatedly(Return(is_enabled));

@@ -33,7 +33,7 @@ class TestRunnerTest(unittest.TestCase):
     args = ['script_name', 'download_for_bots']
     with mock.patch.object(sys, 'argv', args):
       test_runner.Main()
-      mock_download.assert_called_with('for_bots')
+      mock_download.assert_called_with('for_bots', True)
 
   @parameterized.expand([
       'url_unittests',

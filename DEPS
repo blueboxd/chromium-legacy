@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'df5ed61ddbcab119b059e6e5bd28a049b726766a',
+  'angle_revision': '43b951c8d8e2e6ff69823f96d6b1fe0840716557',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': 'b6183ea369757f6f0126c9822d21eaa88903b7c5',
+  'freetype_revision': '8cfc41ae955d99ff49214deea731527bbb8035f0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling HarfBuzz
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'b7260027e661f6ad5d6a36d1c5817ff280f61d1c',
+  'devtools_frontend_revision': '4ceefeb36e0e63ad75834e9a921249d389aa1658',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1248,7 +1248,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '33265b79e5b172adc3240c9733614e66ee33556b',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'bcad714ddf457bf4159361c42f063a0415a1c0f9',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1326,7 +1326,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': '5fdPMx2T4YfntZi4ZvMmJQWoGhmnqtVYBM6iihtbvB4C'
+              'version': 'BSmiob0gPivtoM5FO4ByhQHofOIKJ7KxRVPyfzhrjTkC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',

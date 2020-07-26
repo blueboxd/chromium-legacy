@@ -78,16 +78,16 @@ class SecureOriginAllowlistBrowsertest
         .WillRepeatedly(testing::Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
 
-    base::Value::ListStorage urls;
+    base::Value urls(base::Value::Type::LIST);
     if (variant == TestVariant::kPolicy || variant == TestVariant::kPolicyOld ||
         variant == TestVariant::kPolicyOldAndNew) {
-      urls.push_back(base::Value(BaseURL()));
+      urls.Append(BaseURL());
     } else if (variant == TestVariant::kPolicy2) {
-      urls.push_back(base::Value(BaseURL()));
-      urls.push_back(base::Value(OtherURL()));
+      urls.Append(BaseURL());
+      urls.Append(OtherURL());
     } else if (variant == TestVariant::kPolicy3) {
-      urls.push_back(base::Value(OtherURL()));
-      urls.push_back(base::Value(BaseURL()));
+      urls.Append(OtherURL());
+      urls.Append(BaseURL());
     }
 
     policy::PolicyMap values;
@@ -96,15 +96,13 @@ class SecureOriginAllowlistBrowsertest
                    ? policy::key::kUnsafelyTreatInsecureOriginAsSecure
                    : policy::key::kOverrideSecurityRestrictionsOnInsecureOrigin,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(std::move(urls)), nullptr);
+               policy::POLICY_SOURCE_CLOUD, std::move(urls), nullptr);
     if (variant == TestVariant::kPolicyOldAndNew) {
-      base::Value::ListStorage other_urls;
-      other_urls.push_back(base::Value(OtherURL()));
+      base::Value other_urls(base::Value::Type::LIST);
+      other_urls.Append(base::Value(OtherURL()));
       values.Set(policy::key::kOverrideSecurityRestrictionsOnInsecureOrigin,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                 policy::POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(std::move(other_urls)), nullptr);
+                 policy::POLICY_SOURCE_CLOUD, std::move(other_urls), nullptr);
     }
 
     provider_.UpdateChromePolicy(values);

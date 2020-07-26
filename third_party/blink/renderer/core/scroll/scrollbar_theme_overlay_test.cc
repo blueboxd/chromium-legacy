@@ -25,9 +25,9 @@ TEST_F(ScrollbarThemeOverlayTest, PaintInvalidation) {
   ScrollbarThemeOverlay theme(14, 0);
 
   Scrollbar* vertical_scrollbar = Scrollbar::CreateForTesting(
-      mock_scrollable_area, kVerticalScrollbar, kRegularScrollbar, &theme);
+      mock_scrollable_area, kVerticalScrollbar, &theme);
   Scrollbar* horizontal_scrollbar = Scrollbar::CreateForTesting(
-      mock_scrollable_area, kHorizontalScrollbar, kRegularScrollbar, &theme);
+      mock_scrollable_area, kHorizontalScrollbar, &theme);
   ON_CALL(*mock_scrollable_area, VerticalScrollbar())
       .WillByDefault(Return(vertical_scrollbar));
   ON_CALL(*mock_scrollable_area, HorizontalScrollbar())

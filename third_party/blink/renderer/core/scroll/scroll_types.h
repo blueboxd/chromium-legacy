@@ -160,8 +160,6 @@ enum ScrollbarOrientation { kHorizontalScrollbar, kVerticalScrollbar };
 
 enum ScrollOrientation { kHorizontalScroll, kVerticalScroll };
 
-enum ScrollbarControlSize { kRegularScrollbar, kSmallScrollbar };
-
 typedef unsigned ScrollbarControlState;
 
 enum ScrollbarControlStateMask {

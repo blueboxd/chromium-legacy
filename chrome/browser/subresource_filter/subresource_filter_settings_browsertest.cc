@@ -127,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
   policy.Set(policy::key::kAdsSettingForIntrusiveAdsSites,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
              policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
-             std::make_unique<base::Value>(CONTENT_SETTING_ALLOW), nullptr);
+             base::Value(CONTENT_SETTING_ALLOW), nullptr);
   UpdatePolicy(policy);
 
   ui_test_utils::NavigateToURL(browser(), url);
@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
   policy.Set(policy::key::kAdsSettingForIntrusiveAdsSites,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
              policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
-             std::make_unique<base::Value>(CONTENT_SETTING_BLOCK), nullptr);
+             base::Value(CONTENT_SETTING_BLOCK), nullptr);
   UpdatePolicy(policy);
 
   ui_test_utils::NavigateToURL(browser(), url);

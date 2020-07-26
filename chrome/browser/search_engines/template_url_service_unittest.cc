@@ -1224,7 +1224,6 @@ TEST_F(TemplateURLServiceWithoutFallbackTest, ManualCountrySpecificGoogleURL) {
 // Make sure TemplateURLService generates a KEYWORD_GENERATED visit for
 // KEYWORD visits.
 TEST_F(TemplateURLServiceTest, GenerateVisitOnKeyword) {
-  test_util()->profile()->CreateBookmarkModel(false);
   ASSERT_TRUE(test_util()->profile()->CreateHistoryService(true, false));
   test_util()->ResetModel(true);
 

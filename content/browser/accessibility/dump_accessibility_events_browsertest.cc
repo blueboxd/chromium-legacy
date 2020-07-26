@@ -811,6 +811,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsTextSelectionInsideHiddenElement) {
+  RunEventTest(FILE_PATH_LITERAL("text-selection-inside-hidden-element.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsTextSelectionInsideVideo) {
+  RunEventTest(FILE_PATH_LITERAL("text-selection-inside-video.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaCheckedChanged) {
   RunEventTest(FILE_PATH_LITERAL("aria-checked-changed.html"));
 }

@@ -130,8 +130,8 @@
     [MeasureAs=WindowResize] void resizeBy(long x, long y);
 
     // viewport
-    [Affects=Nothing, HighEntropy, MeasureAs=WindowInnerWidth, Replaceable] readonly attribute long innerWidth;
-    [Affects=Nothing, HighEntropy, MeasureAs=WindowInnerHeight, Replaceable] readonly attribute long innerHeight;
+    [Affects=Nothing, HighEntropy=Direct, MeasureAs=WindowInnerWidth, Replaceable] readonly attribute long innerWidth;
+    [Affects=Nothing, HighEntropy=Direct, MeasureAs=WindowInnerHeight, Replaceable] readonly attribute long innerHeight;
 
     // viewport scrolling
     [HighEntropy, MeasureAs=WindowScrollX, Replaceable] readonly attribute double scrollX;
@@ -150,11 +150,11 @@
     [Replaceable, SameObject] readonly attribute VisualViewport visualViewport;
 
     // client
-    [Affects=Nothing, HighEntropy, MeasureAs=WindowScreenX, Replaceable] readonly attribute long screenX;
-    [Affects=Nothing, HighEntropy, MeasureAs=WindowScreenY, Replaceable] readonly attribute long screenY;
-    [Affects=Nothing, HighEntropy, MeasureAs=WindowOuterWidth, Replaceable] readonly attribute long outerWidth;
-    [Affects=Nothing, HighEntropy, MeasureAs=WindowOuterHeight, Replaceable] readonly attribute long outerHeight;
-    [Affects=Nothing, HighEntropy, MeasureAs=WindowDevicePixelRatio, Replaceable] readonly attribute double devicePixelRatio;
+    [Affects=Nothing, HighEntropy=Direct, MeasureAs=WindowScreenX, Replaceable] readonly attribute long screenX;
+    [Affects=Nothing, HighEntropy=Direct, MeasureAs=WindowScreenY, Replaceable] readonly attribute long screenY;
+    [Affects=Nothing, HighEntropy=Direct, MeasureAs=WindowOuterWidth, Replaceable] readonly attribute long outerWidth;
+    [Affects=Nothing, HighEntropy=Direct, MeasureAs=WindowOuterHeight, Replaceable] readonly attribute long outerHeight;
+    [Affects=Nothing, HighEntropy=Direct, MeasureAs=WindowDevicePixelRatio, Replaceable] readonly attribute double devicePixelRatio;
 
     // Window Segments API
     // https://github.com/webscreens/window-segments
@@ -176,7 +176,7 @@
     // This is the interface orientation in degrees. Some examples are:
     //  0 is straight up; -90 is when the device is rotated 90 clockwise;
     //  90 is when rotated counter clockwise.
-    [HighEntropy, MeasureAs=WindowOrientation, RuntimeEnabled=OrientationEvent] readonly attribute long orientation;
+    [HighEntropy=Direct, MeasureAs=WindowOrientation, RuntimeEnabled=OrientationEvent] readonly attribute long orientation;
 
     // Accessibility Object Model
     // https://github.com/WICG/aom/blob/HEAD/explainer.md
@@ -198,8 +198,8 @@
                                         optional boolean searchInFrames = false,
                                         optional boolean showDialog = false);
     [MeasureAs=WindowOffscreenBuffering, Replaceable, NotEnumerable] readonly attribute boolean offscreenBuffering;
-    [HighEntropy, MeasureAs=WindowScreenLeft, Replaceable] readonly attribute long screenLeft;
-    [HighEntropy, MeasureAs=WindowScreenTop, Replaceable] readonly attribute long screenTop;
+    [HighEntropy=Direct, MeasureAs=WindowScreenLeft, Replaceable] readonly attribute long screenLeft;
+    [HighEntropy=Direct, MeasureAs=WindowScreenTop, Replaceable] readonly attribute long screenTop;
     [MeasureAs=WindowDefaultStatus] attribute DOMString defaultStatus;
     [MeasureAs=WindowDefaultstatus, ImplementedAs=defaultStatus] attribute DOMString defaultstatus;
     [MeasureAs=StyleMedia] readonly attribute StyleMedia styleMedia;

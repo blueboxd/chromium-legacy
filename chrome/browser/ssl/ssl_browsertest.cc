@@ -719,7 +719,7 @@ class SSLUITestBase : public InProcessBrowserTest,
     policy::PolicyMap policy_map;
     policy_map.Set(policy_name, policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
-                   std::make_unique<base::Value>(true), nullptr);
+                   base::Value(true), nullptr);
 
     EXPECT_NO_FATAL_FAILURE(UpdateChromePolicy(policy_map));
 
@@ -733,8 +733,7 @@ class SSLUITestBase : public InProcessBrowserTest,
   }
 
   // Sets the policy identified by |policy_name| to |policy_value|.
-  void SetPolicy(const char* policy_name,
-                 std::unique_ptr<base::Value> policy_value) {
+  void SetPolicy(const char* policy_name, base::Value policy_value) {
     policy::PolicyMap policy_map;
     policy_map.Set(policy_name, policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
@@ -1664,10 +1663,9 @@ class CertificateTransparencySSLUITest : public CertVerifierBrowserTest {
                                  const char* policy_name,
                                  const char* pref_name,
                                  const std::vector<std::string>& list_values) {
-    std::unique_ptr<base::ListValue> policy_value =
-        std::make_unique<base::ListValue>();
+    base::Value policy_value(base::Value::Type::LIST);
     for (const auto& value : list_values) {
-      policy_value->Append(value);
+      policy_value.Append(value);
     }
     policy::PolicyMap policy_map;
     policy_map.Set(policy_name, policy::POLICY_LEVEL_MANDATORY,
@@ -7142,8 +7140,7 @@ IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, ShowsInterstitial) {
 IN_PROC_BROWSER_TEST_F(LegacyTLSInterstitialTest, PolicyOverridesInterstitial) {
   // Set the SSLVersionMin policy and make sure that the network service has
   // received the update.
-  std::unique_ptr<base::Value> policy_value =
-      std::make_unique<base::Value>("tls1");  // TLS 1.0
+  base::Value policy_value("tls1");  // TLS 1.0
   SetPolicy(policy::key::kSSLVersionMin, std::move(policy_value));
 
   SetTLSVersion(net::SSL_PROTOCOL_VERSION_TLS1);

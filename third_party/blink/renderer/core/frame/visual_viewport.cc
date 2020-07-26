@@ -618,8 +618,8 @@ void VisualViewport::InitializeScrollbars() {
 }
 
 int VisualViewport::ScrollbarThickness() const {
-  auto& theme = ScrollbarThemeOverlayMobile::GetInstance();
-  int thickness = theme.ScrollbarThickness(kRegularScrollbar);
+  int thickness =
+      ScrollbarThemeOverlayMobile::GetInstance().ScrollbarThickness();
   return clampTo<int>(
       std::floor(GetPage().GetChromeClient().WindowToViewportScalar(
           MainFrame(), thickness)));

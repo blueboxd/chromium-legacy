@@ -140,6 +140,7 @@ source_set("tests") {
   testonly = true
   deps = [
     ":lib",
+    ":test_support",
     "//ash/public/cpp/assistant/test_support",
     "//ash/public/mojom",
     "//base",
@@ -187,8 +188,6 @@ source_set("tests") {
       "test_support/fake_platform_api.h",
       "test_support/fake_service_context.cc",
       "test_support/fake_service_context.h",
-      "test_support/mock_assistant_interaction_subscriber.cc",
-      "test_support/mock_assistant_interaction_subscriber.h",
       "test_support/mock_media_manager.cc",
       "test_support/mock_media_manager.h",
     ]
@@ -212,6 +211,8 @@ static_library("test_support") {
   sources = [
     "test_support/mock_assistant.cc",
     "test_support/mock_assistant.h",
+    "test_support/mock_assistant_interaction_subscriber.cc",
+    "test_support/mock_assistant_interaction_subscriber.h",
   ]
   deps = [
     "//base",

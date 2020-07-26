@@ -107,11 +107,9 @@ ComponentCloudPolicyUpdaterTest::ComponentCloudPolicyUpdaterTest()
 
   PolicyMap& policy = expected_bundle_.Get(kTestPolicyNS);
   policy.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("disabled"),
-             nullptr);
+             POLICY_SOURCE_CLOUD, base::Value("disabled"), nullptr);
   policy.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("maybe"),
-             nullptr);
+             POLICY_SOURCE_CLOUD, base::Value("maybe"), nullptr);
 }
 
 void ComponentCloudPolicyUpdaterTest::SetUp() {

@@ -17,6 +17,7 @@
 #include "chrome/browser/nearby_sharing/client/nearby_share_api_call_flow_impl.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_client.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_client_impl.h"
+#include "chrome/browser/nearby_sharing/client/nearby_share_http_notifier.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_switches.h"
 #include "chrome/browser/nearby_sharing/proto/certificate_rpc.pb.h"
 #include "chrome/browser/nearby_sharing/proto/contact_rpc.pb.h"
@@ -170,7 +171,8 @@ void SaveResultConstRef(T* out, const T& result) {
 
 }  // namespace
 
-class NearbyShareClientImplTest : public testing::Test {
+class NearbyShareClientImplTest : public testing::Test,
+                                  public NearbyShareHttpNotifier::Observer {
  protected:
   NearbyShareClientImplTest() {
     shared_factory_ =
@@ -193,7 +195,56 @@ class NearbyShareClientImplTest : public testing::Test {
 
     client_ = std::make_unique<NearbyShareClientImpl>(
         std::move(api_call_flow), identity_test_environment_.identity_manager(),
-        shared_factory_);
+        shared_factory_, &notifier_);
+
+    notifier_.AddObserver(this);
+  }
+
+  void TearDown() override { notifier_.RemoveObserver(this); }
+
+  // NearbyShareHttpNotifier::Observer:
+  void OnUpdateDeviceRequest(
+      const nearbyshare::proto::UpdateDeviceRequest& request) override {
+    update_device_request_from_notifier_ = request;
+  }
+
+  void OnUpdateDeviceResponse(
+      const nearbyshare::proto::UpdateDeviceResponse& response) override {
+    update_device_response_from_notifier_ = response;
+  }
+
+  void OnListContactPeopleRequest(
+      const nearbyshare::proto::ListContactPeopleRequest& request) override {
+    list_contact_people_request_from_notifier_ = request;
+  }
+
+  void OnListContactPeopleResponse(
+      const nearbyshare::proto::ListContactPeopleResponse& response) override {
+    list_contact_people_response_from_notifier_ = response;
+  }
+
+  void OnListPublicCertificatesRequest(
+      const nearbyshare::proto::ListPublicCertificatesRequest& request)
+      override {
+    list_public_certificate_request_from_notifier_ = request;
+  }
+
+  void OnListPublicCertificatesResponse(
+      const nearbyshare::proto::ListPublicCertificatesResponse& response)
+      override {
+    list_public_certificate_response_from_notifier_ = response;
+  }
+
+  void OnCheckContactsReachabilityResponse(
+      const nearbyshare::proto::CheckContactsReachabilityResponse& response)
+      override {
+    check_contact_readability_response_from_notifier_ = response;
+  }
+
+  void OnCheckContactsReachabilityRequest(
+      const nearbyshare::proto::CheckContactsReachabilityRequest& request)
+      override {
+    check_contact_readability_request_from_notifier_ = request;
   }
 
   const std::string& http_method() { return api_call_flow_->http_method_; }
@@ -221,14 +272,94 @@ class NearbyShareClientImplTest : public testing::Test {
     std::move(api_call_flow_->error_callback_).Run(error);
   }
 
+  void VerifyRequestNotification(
+      const nearbyshare::proto::UpdateDeviceRequest& expected_request) const {
+    ASSERT_TRUE(update_device_request_from_notifier_);
+    EXPECT_EQ(expected_request.SerializeAsString(),
+              update_device_request_from_notifier_->SerializeAsString());
+  }
+
+  void VerifyResponseNotification(
+      const nearbyshare::proto::UpdateDeviceResponse& expected_response) const {
+    ASSERT_TRUE(update_device_response_from_notifier_);
+    EXPECT_EQ(expected_response.SerializeAsString(),
+              update_device_response_from_notifier_->SerializeAsString());
+  }
+
+  void VerifyRequestNotification(
+      const nearbyshare::proto::ListContactPeopleRequest& expected_request)
+      const {
+    ASSERT_TRUE(list_contact_people_request_from_notifier_);
+    EXPECT_EQ(expected_request.SerializeAsString(),
+              list_contact_people_request_from_notifier_->SerializeAsString());
+  }
+
+  void VerifyResponseNotification(
+      const nearbyshare::proto::ListContactPeopleResponse& expected_response)
+      const {
+    ASSERT_TRUE(list_contact_people_response_from_notifier_);
+    EXPECT_EQ(expected_response.SerializeAsString(),
+              list_contact_people_response_from_notifier_->SerializeAsString());
+  }
+
+  void VerifyRequestNotification(
+      const nearbyshare::proto::ListPublicCertificatesRequest& expected_request)
+      const {
+    ASSERT_TRUE(list_public_certificate_request_from_notifier_);
+    EXPECT_EQ(
+        expected_request.SerializeAsString(),
+        list_public_certificate_request_from_notifier_->SerializeAsString());
+  }
+
+  void VerifyResponseNotification(
+      const nearbyshare::proto::ListPublicCertificatesResponse&
+          expected_response) const {
+    ASSERT_TRUE(list_public_certificate_response_from_notifier_);
+    EXPECT_EQ(
+        expected_response.SerializeAsString(),
+        list_public_certificate_response_from_notifier_->SerializeAsString());
+  }
+
+  void VerifyRequestNotification(
+      const nearbyshare::proto::CheckContactsReachabilityRequest&
+          expected_request) const {
+    ASSERT_TRUE(check_contact_readability_request_from_notifier_);
+    EXPECT_EQ(
+        expected_request.SerializeAsString(),
+        check_contact_readability_request_from_notifier_->SerializeAsString());
+  }
+
+  void VerifyResponseNotification(
+      const nearbyshare::proto::CheckContactsReachabilityResponse&
+          expected_response) const {
+    ASSERT_TRUE(check_contact_readability_response_from_notifier_);
+    EXPECT_EQ(
+        expected_response.SerializeAsString(),
+        check_contact_readability_response_from_notifier_->SerializeAsString());
+  }
+
  protected:
+  base::Optional<nearbyshare::proto::UpdateDeviceRequest>
+      update_device_request_from_notifier_;
+  base::Optional<nearbyshare::proto::UpdateDeviceResponse>
+      update_device_response_from_notifier_;
+  base::Optional<nearbyshare::proto::ListContactPeopleRequest>
+      list_contact_people_request_from_notifier_;
+  base::Optional<nearbyshare::proto::ListContactPeopleResponse>
+      list_contact_people_response_from_notifier_;
+  base::Optional<nearbyshare::proto::ListPublicCertificatesRequest>
+      list_public_certificate_request_from_notifier_;
+  base::Optional<nearbyshare::proto::ListPublicCertificatesResponse>
+      list_public_certificate_response_from_notifier_;
+  base::Optional<nearbyshare::proto::CheckContactsReachabilityRequest>
+      check_contact_readability_request_from_notifier_;
+  base::Optional<nearbyshare::proto::CheckContactsReachabilityResponse>
+      check_contact_readability_response_from_notifier_;
   base::test::TaskEnvironment task_environment_;
   signin::IdentityTestEnvironment identity_test_environment_;
-  // Owned by |client_|.
   FakeNearbyShareApiCallFlow* api_call_flow_;
-
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
-
+  NearbyShareHttpNotifier notifier_;
   std::unique_ptr<NearbyShareClient> client_;
 };
 
@@ -245,6 +376,8 @@ TEST_F(NearbyShareClientImplTest, UpdateDeviceSuccess) {
   identity_test_environment_
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
           kAccessToken, base::Time::Max());
+
+  VerifyRequestNotification(request_proto);
 
   EXPECT_EQ(kPatch, http_method());
   EXPECT_EQ(request_url(),
@@ -274,6 +407,7 @@ TEST_F(NearbyShareClientImplTest, UpdateDeviceSuccess) {
   device.mutable_contacts(2)->set_is_selected(true);
 
   FinishApiCallFlow(&response_proto);
+  VerifyResponseNotification(response_proto);
 
   // Check that the result received in callback is the same as the response.
   ASSERT_EQ(3, result_proto.device().contacts_size());
@@ -331,6 +465,8 @@ TEST_F(NearbyShareClientImplTest, CheckContactsReachabilitySuccess) {
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
           kAccessToken, base::Time::Max());
 
+  VerifyRequestNotification(request_proto);
+
   EXPECT_EQ(kPost, http_method());
   EXPECT_EQ(request_url(),
             "https://www.nearbysharing-pa.testgoogleapis.com/v1/"
@@ -352,6 +488,7 @@ TEST_F(NearbyShareClientImplTest, CheckContactsReachabilitySuccess) {
   response_proto.mutable_results(1)->set_is_recommended(true);
 
   FinishApiCallFlow(&response_proto);
+  VerifyResponseNotification(response_proto);
 
   // Check that the result received in callback is the same as the response.
   ASSERT_EQ(2, result_proto.results_size());
@@ -401,6 +538,8 @@ TEST_F(NearbyShareClientImplTest, ListContactPeopleSuccess) {
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
           kAccessToken, base::Time::Max());
 
+  VerifyRequestNotification(request_proto);
+
   EXPECT_EQ(kGet, http_method());
   EXPECT_EQ(
       request_url(),
@@ -425,6 +564,7 @@ TEST_F(NearbyShareClientImplTest, ListContactPeopleSuccess) {
       ->set_obfuscated_gaia(kObfuscatedGaia1);
   response_proto.set_next_page_token(kPageToken2);
   FinishApiCallFlow(&response_proto);
+  VerifyResponseNotification(response_proto);
 
   EXPECT_EQ(1, result_proto.contact_records_size());
   EXPECT_EQ(kContactId1, result_proto.contact_records(0).id());
@@ -458,6 +598,8 @@ TEST_F(NearbyShareClientImplTest, ListPublicCertificatesSuccess) {
   identity_test_environment_
       .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
           kAccessToken, base::Time::Max());
+
+  VerifyRequestNotification(request_proto);
 
   EXPECT_EQ(kGet, http_method());
   EXPECT_EQ(
@@ -501,6 +643,7 @@ TEST_F(NearbyShareClientImplTest, ListPublicCertificatesSuccess) {
   response_proto.mutable_public_certificates(0)
       ->set_metadata_encryption_key_tag(kMetadataEncryptionKeyTag1);
   FinishApiCallFlow(&response_proto);
+  VerifyResponseNotification(response_proto);
 
   EXPECT_EQ(kPageToken2, result_proto.next_page_token());
   EXPECT_EQ(1, result_proto.public_certificates_size());

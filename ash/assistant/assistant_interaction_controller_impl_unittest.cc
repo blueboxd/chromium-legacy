@@ -24,6 +24,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
+#include "chromeos/services/assistant/test_support/mock_assistant_interaction_subscriber.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace ash {
@@ -38,6 +39,8 @@ using chromeos::assistant::AssistantInteractionType;
 using chromeos::assistant::AssistantQuerySource;
 using chromeos::assistant::AssistantSuggestion;
 using chromeos::assistant::AssistantSuggestionType;
+using chromeos::assistant::MockAssistantInteractionSubscriber;
+using chromeos::assistant::ScopedAssistantInteractionSubscriber;
 
 using ::testing::Invoke;
 using ::testing::Mock;
@@ -248,6 +251,30 @@ TEST_P(AssistantInteractionControllerImplTest, ShouldDisplayGenericErrorOnce) {
 
   EXPECT_EQ(ui_elements.size(), 1ul);
   EXPECT_EQ(ui_elements.front()->type(), AssistantUiElementType::kError);
+}
+
+TEST_P(AssistantInteractionControllerImplTest,
+       ShouldUpdateTimeOfLastInteraction) {
+  MockAssistantInteractionSubscriber mock_subscriber;
+  ScopedAssistantInteractionSubscriber scoped_subscriber{&mock_subscriber};
+  scoped_subscriber.Add(assistant_service());
+
+  base::RunLoop run_loop;
+  base::Time actual_time_of_last_interaction;
+  EXPECT_CALL(mock_subscriber, OnInteractionStarted)
+      .WillOnce(Invoke([&](const AssistantInteractionMetadata& metadata) {
+        actual_time_of_last_interaction = base::Time::Now();
+        run_loop.QuitClosure().Run();
+      }));
+
+  ShowAssistantUi();
+  MockTextInteraction().WithTextResponse("<Any-Text-Response>");
+  run_loop.Run();
+
+  auto actual = interaction_controller()->GetTimeDeltaSinceLastInteraction();
+  auto expected = base::Time::Now() - actual_time_of_last_interaction;
+
+  EXPECT_NEAR(actual.InSeconds(), expected.InSeconds(), 1);
 }
 
 // We parameterize all AssistantInteractionControllerImplTests to verify that

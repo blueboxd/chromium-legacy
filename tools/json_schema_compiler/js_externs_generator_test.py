@@ -84,6 +84,8 @@ namespace fakeApi {
 
     static void instanceOfObjectParam([instanceOf=SomeType] object obj);
 
+    static void instanceOfBarObjectParam([instanceOf=Bar] object barObj);
+
     static void optionalParam(optional OptionalParamCallback callback);
 
     static void nonFinalOptionalParams(
@@ -240,6 +242,12 @@ chrome.fakeApi.returnString = function() {};
  * @see https://developer.chrome.com/extensions/fakeApi#method-instanceOfObjectParam
  */
 chrome.fakeApi.instanceOfObjectParam = function(obj) {};
+
+/**
+ * @param {chrome.fakeApi.Bar} barObj
+ * @see https://developer.chrome.com/extensions/fakeApi#method-instanceOfBarObjectParam
+ */
+chrome.fakeApi.instanceOfBarObjectParam = function(barObj) {};
 
 /**
  * @param {function((!chrome.fakeApi.Qux|undefined)): void=} callback

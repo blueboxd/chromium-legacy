@@ -1058,8 +1058,7 @@ TEST(SimpleDeprecatingPolicyHandlerTest, CheckDeprecatedUsedWhenNoNewValue) {
 
   // Check that legacy value alone is used.
   policy_map.Set(kLegacyPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(42),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(42), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
@@ -1071,8 +1070,7 @@ TEST(SimpleDeprecatingPolicyHandlerTest, CheckDeprecatedUsedWhenNoNewValue) {
 
   // Set the new value as invalid and verify that the total result is invalid.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("0"),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value("0"), nullptr);
   errors.Clear();
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
@@ -1080,8 +1078,7 @@ TEST(SimpleDeprecatingPolicyHandlerTest, CheckDeprecatedUsedWhenNoNewValue) {
 
   // Set the new value and verify that it overrides the legacy.
   policy_map.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(1337),
-                 nullptr);
+                 POLICY_SOURCE_CLOUD, base::Value(1337), nullptr);
   errors.Clear();
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());

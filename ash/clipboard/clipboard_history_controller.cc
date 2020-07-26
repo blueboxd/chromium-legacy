@@ -60,6 +60,11 @@ base::string16 GetLabelForClipboardData(const ui::ClipboardData& item) {
     return ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
         IDS_CLIPBOARD_MENU_WEB_SMART_PASTE);
   }
+  if (item.format() & static_cast<int>(ui::ClipboardInternalFormat::kCustom)) {
+    // TODO(crbug/1108901): Handle file manager case.
+    // TODO(crbug/1108902): Handle fallback case.
+    return base::UTF8ToUTF16("<CUSTOM DATA>");
+  }
   return base::string16();
 }
 
@@ -80,7 +85,11 @@ ui::ImageModel GetImageModelForClipboardData(const ui::ClipboardData& item) {
     return ui::ImageModel::FromVectorIcon(ash::kRtfIcon);
   if (item.format() & static_cast<int>(ui::ClipboardInternalFormat::kText))
     return ui::ImageModel::FromVectorIcon(ash::kTextIcon);
-  // TODO(newcomer): Handle custom data types, which could be files.
+  if (item.format() & static_cast<int>(ui::ClipboardInternalFormat::kCustom)) {
+    // TODO(crbug/1108901): Handle file manager case.
+    // TODO(crbug/1108902): Handle fallback case.
+    return ui::ImageModel();
+  }
   return ui::ImageModel();
 }
 
@@ -99,7 +108,13 @@ void WriteClipboardDataToClipboard(const ui::ClipboardData& data) {
     writer.WriteBookmark(base::UTF8ToUTF16(data.bookmark_title()),
                          data.bookmark_url());
   }
-  // TODO(newcomer): Handle custom data types, which could be files.
+  if (data.format() & static_cast<int>(ui::ClipboardInternalFormat::kCustom)) {
+    const auto& custom_format = ui::ClipboardFormatType::GetWebCustomDataType();
+    DCHECK_EQ(data.custom_data_format(), custom_format.GetName());
+    writer.WritePickledData(base::Pickle(data.custom_data_data().c_str(),
+                                         data.custom_data_data().size()),
+                            custom_format);
+  }
 }
 
 class ClipboardHistoryMenuDelegate : public ui::SimpleMenuModel::Delegate {

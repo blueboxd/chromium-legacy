@@ -248,6 +248,13 @@ export class PDFViewerElement extends PDFViewerBaseElement {
     assert(this.paramsParser);
     this.toolbarEnabled_ =
         this.paramsParser.shouldShowToolbar(this.originalUrl);
+
+    // The toolbar does not need to be manually accounted in the
+    // PDFViewerUpdate UI.
+    if (this.pdfViewerUpdateEnabled_) {
+      return 0;
+    }
+
     return this.toolbarEnabled_ ? MATERIAL_TOOLBAR_HEIGHT : 0;
   }
 

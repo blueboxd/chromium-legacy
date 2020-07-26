@@ -17,6 +17,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -83,7 +84,6 @@ class BrowsingHistoryHandlerTest : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    profile()->CreateBookmarkModel(false);
 
     sync_service_ = static_cast<syncer::TestSyncService*>(
         ProfileSyncServiceFactory::GetForProfile(profile()));
@@ -106,6 +106,8 @@ class BrowsingHistoryHandlerTest : public ChromeRenderViewHostTestHarness {
          base::BindRepeating(&BuildTestSyncService)},
         {WebHistoryServiceFactory::GetInstance(),
          base::BindRepeating(&BuildFakeWebHistoryService)},
+        {BookmarkModelFactory::GetInstance(),
+         BookmarkModelFactory::GetDefaultFactory()},
     };
   }
 

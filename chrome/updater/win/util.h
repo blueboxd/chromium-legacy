@@ -11,8 +11,10 @@
 
 #include <string>
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/win/atl.h"
+#include "base/win/scoped_handle.h"
 #include "base/win/windows_types.h"
 
 namespace updater {
@@ -110,6 +112,9 @@ int GetDownloadProgress(int64_t downloaded_bytes, int64_t total_bytes);
 int GetInstallerProgress(const std::string& app_id);
 
 bool DeleteInstallerProgress(const std::string& app_id);
+
+// Returns a logged on user token handle from the current session.
+base::win::ScopedHandle GetUserTokenFromCurrentSessionId();
 
 }  // namespace updater
 

@@ -29,9 +29,13 @@ class AccessibilityMediaElement : public AXLayoutObject {
                          NameSources*) const override;
 
   // AXNodeObject overrides.
+  bool CanHaveChildren() const override;
+  bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
   AXRestriction Restriction() const override;
 
  protected:
+  bool HasControls() const;
+  bool HasEmptySource() const;
   bool IsUnplayable() const;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityMediaElement);

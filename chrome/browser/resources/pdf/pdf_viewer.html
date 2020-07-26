@@ -1,6 +1,5 @@
 <style include="pdf-viewer-shared-style">
-  viewer-pdf-toolbar,
-  viewer-pdf-toolbar-new {
+  viewer-pdf-toolbar {
     position: fixed;
     width: 100%;
     z-index: 4;
@@ -16,6 +15,50 @@
     viewer-pdf-toolbar {
       display: none;
     }
+  }
+
+  /* Styles only applying when the pdfViewerUpdateEnabled flag is on. */
+
+  :host-context([pdf-viewer-update-enabled]):host {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+  }
+
+  #container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  #sidenav {
+    background-color: red;
+    min-width: 260px;
+  }
+
+  :host-context([pdf-viewer-update-enabled]) #plugin {
+    position: initial;
+  }
+
+  :host-context([pdf-viewer-update-enabled]) #content {
+    height: 100%;
+    left: 0;
+    position: sticky;
+    top: 0;
+    z-index: initial;
+  }
+
+  :host-context([pdf-viewer-update-enabled]) #sizer {
+    top: 0;
+    width: 100%;
+    z-index: initial;
+  }
+
+  #main {
+    flex: 1;
+    overflow: auto;
+    position: relative;
   }
 </style>
 
@@ -71,7 +114,20 @@
   </viewer-pdf-toolbar-new>
 </template>
 
-<div id="sizer"></div>
+<template is="dom-if" if="[[pdfViewerUpdateEnabled_]]">
+  <div id="container">
+    <div id="sidenav">sidenav</div>
+    <div id="main">
+      <div id="sizer"></div>
+      <div id="content"></div>
+    </div>
+  </div>
+</template>
+
+<template is="dom-if" if="[[!pdfViewerUpdateEnabled_]]">
+  <div id="sizer"></div>
+</template>
+
 <viewer-password-screen id="password-screen"
     on-password-submitted="onPasswordSubmitted_">
 </viewer-password-screen>
@@ -89,5 +145,6 @@
 <viewer-form-warning id="form-warning"></viewer-form-warning>
 </if>
 
-<div id="content"></div>
-
+<template is="dom-if" if="[[!pdfViewerUpdateEnabled_]]">
+  <div id="content"></div>
+</template>

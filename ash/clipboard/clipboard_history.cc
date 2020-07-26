@@ -114,7 +114,6 @@ void ClipboardHistory::OnClipboardDataChanged() {
     } else if (type == ui::ClipboardFormatType::GetBitmapType().GetName()) {
       contains_bitmap = true;
     }
-    // TODO(newcomer): Handle custom data, which could be files.
   }
 
   if (contains_bitmap) {
@@ -125,6 +124,13 @@ void ClipboardHistory::OnClipboardDataChanged() {
                        std::move(new_data)));
     return;
   }
+
+  std::string custom_data;
+  const auto& custom_format = ui::ClipboardFormatType::GetWebCustomDataType();
+  clipboard->ReadData(custom_format, /* data_dst = */ nullptr, &custom_data);
+  if (!custom_data.empty())
+    new_data.SetCustomData(custom_format.GetName(), custom_data);
+
   CommitData(GetActiveAccountId(), std::move(new_data));
 }
 

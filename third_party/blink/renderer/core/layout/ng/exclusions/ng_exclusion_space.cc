@@ -196,8 +196,10 @@ NGExclusionSpaceInternal& NGExclusionSpaceInternal::operator=(
     NGExclusionSpaceInternal&&) noexcept = default;
 
 NGExclusionSpaceInternal::DerivedGeometry::DerivedGeometry(
+    LayoutUnit block_offset_limit,
     bool track_shape_exclusions)
-    : track_shape_exclusions_(track_shape_exclusions) {
+    : block_offset_limit_(block_offset_limit),
+      track_shape_exclusions_(track_shape_exclusions) {
   // The exclusion space must always have at least one shelf, at -Infinity.
   shelves_.emplace_back(/* block_offset */ LayoutUnit::Min(),
                         track_shape_exclusions_);
@@ -230,8 +232,16 @@ void NGExclusionSpaceInternal::Add(scoped_refptr<const NGExclusion> exclusion) {
     derived_geometry_ = nullptr;
   }
 
-  if (derived_geometry_)
-    derived_geometry_->Add(*exclusion);
+  LayoutUnit exclusion_block_offset = exclusion->rect.BlockStartOffset();
+
+  // We can safely mutate the exclusion here as an exclusion will never be
+  // reused if this invariant doesn't hold.
+  const_cast<NGExclusion*>(exclusion.get())->is_past_other_exclusions =
+      exclusion_block_offset >= left_clear_offset_ &&
+      exclusion_block_offset >= right_clear_offset_;
+
+  last_float_block_start_ =
+      std::max(last_float_block_start_, exclusion_block_offset);
 
   // Update the members used for clearance calculations.
   LayoutUnit clear_offset = exclusion->rect.BlockEndOffset();
@@ -240,8 +250,8 @@ void NGExclusionSpaceInternal::Add(scoped_refptr<const NGExclusion> exclusion) {
   else if (exclusion->type == EFloat::kRight)
     right_clear_offset_ = std::max(right_clear_offset_, clear_offset);
 
-  last_float_block_start_ =
-      std::max(last_float_block_start_, exclusion->rect.BlockStartOffset());
+  if (derived_geometry_)
+    derived_geometry_->Add(*exclusion);
 
   if (!already_exists)
     exclusions_->data.emplace_back(std::move(exclusion));
@@ -250,6 +260,8 @@ void NGExclusionSpaceInternal::Add(scoped_refptr<const NGExclusion> exclusion) {
 
 void NGExclusionSpaceInternal::DerivedGeometry::Add(
     const NGExclusion& exclusion) {
+  DCHECK_GE(exclusion.rect.BlockStartOffset(), block_offset_limit_);
+
   // If the exclusion takes up no inline space, we shouldn't pay any further
   // attention to it. The only thing it can affect is block-axis positioning of
   // subsequent floats (dealt with above).
@@ -519,6 +531,7 @@ NGExclusionSpaceInternal::DerivedGeometry::FindLayoutOpportunity(
     const LayoutUnit available_inline_size,
     const LayoutUnit minimum_inline_size) const {
   // TODO(ikilpatrick): Determine what to do for a -ve available_inline_size.
+  DCHECK_GE(offset.block_offset, block_offset_limit_);
 
   NGLayoutOpportunity return_opportunity;
   IterateAllLayoutOpportunities(
@@ -548,6 +561,7 @@ LayoutOpportunityVector
 NGExclusionSpaceInternal::DerivedGeometry::AllLayoutOpportunities(
     const NGBfcOffset& offset,
     const LayoutUnit available_inline_size) const {
+  DCHECK_GE(offset.block_offset, block_offset_limit_);
   LayoutOpportunityVector opportunities;
 
   // This method is only used for determining the position of line-boxes.
@@ -626,14 +640,55 @@ void NGExclusionSpaceInternal::DerivedGeometry::IterateAllLayoutOpportunities(
 }
 
 const NGExclusionSpaceInternal::DerivedGeometry&
-NGExclusionSpaceInternal::GetDerivedGeometry() const {
+NGExclusionSpaceInternal::GetDerivedGeometry(
+    LayoutUnit block_offset_limit) const {
+  // We might have a geometry, but built at a lower block-offset limit.
+  if (derived_geometry_ &&
+      block_offset_limit < derived_geometry_->block_offset_limit_)
+    derived_geometry_ = nullptr;
+
   // Re-build the geometry if it isn't present.
   if (!derived_geometry_) {
-    derived_geometry_ =
-        std::make_unique<DerivedGeometry>(track_shape_exclusions_);
     DCHECK_LE(num_exclusions_, exclusions_->data.size());
-    for (wtf_size_t i = 0; i < num_exclusions_; ++i)
-      derived_geometry_->Add(*exclusions_->data[i]);
+    DCHECK_GE(num_exclusions_, 1u);
+
+    const auto* begin = exclusions_->data.begin();
+    const auto* end = begin + num_exclusions_;
+    DCHECK_LE(end, exclusions_->data.end());
+
+    // Find the first exclusion whose block-start offset is "after" the
+    // |block_offset_limit|.
+    auto* it = std::lower_bound(
+        begin, end, block_offset_limit,
+        [](const auto& exclusion, const auto& block_offset) -> bool {
+          return exclusion->rect.BlockStartOffset() < block_offset;
+        });
+
+    if (it == begin) {
+      block_offset_limit = LayoutUnit::Min();
+    } else {
+#if DCHECK_IS_ON()
+      if (it != end)
+        DCHECK_GE((*it)->rect.BlockStartOffset(), block_offset_limit);
+#endif
+
+      // Find the "highest" exclusion possible which itself is past other
+      // exclusions.
+      while (--it != begin) {
+        if ((*it)->is_past_other_exclusions)
+          break;
+      }
+
+      // This exclusion must be above the given block-offset limit.
+      DCHECK_LE((*it)->rect.BlockStartOffset(), block_offset_limit);
+      block_offset_limit = (*it)->rect.BlockStartOffset();
+    }
+
+    // Add all the exclusions below the block-offset limit.
+    derived_geometry_ = std::make_unique<DerivedGeometry>(
+        block_offset_limit, track_shape_exclusions_);
+    for (; it < end; ++it)
+      derived_geometry_->Add(**it);
   }
 
   return *derived_geometry_;

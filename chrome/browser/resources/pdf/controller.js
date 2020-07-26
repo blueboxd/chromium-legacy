@@ -167,6 +167,14 @@ export class PluginController extends ContentController {
   }
 
   /**
+   * @param {number} x
+   * @param {number} y
+   */
+  updateScroll(x, y) {
+    this.postMessage_({type: 'updateScroll', x, y});
+  }
+
+  /**
    * Notify the plugin to stop reacting to scroll events while zoom is taking
    * place to avoid flickering.
    * @override

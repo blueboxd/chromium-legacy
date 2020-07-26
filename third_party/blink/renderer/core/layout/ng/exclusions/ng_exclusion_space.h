@@ -51,8 +51,9 @@ class CORE_EXPORT NGExclusionSpaceInternal {
       return NGLayoutOpportunity(NGBfcRect(offset, end_offset), nullptr);
     }
 
-    return GetDerivedGeometry().FindLayoutOpportunity(
-        offset, available_inline_size, minimum_inline_size);
+    return GetDerivedGeometry(offset.block_offset)
+        .FindLayoutOpportunity(offset, available_inline_size,
+                               minimum_inline_size);
   }
 
   LayoutOpportunityVector AllLayoutOpportunities(
@@ -69,8 +70,8 @@ class CORE_EXPORT NGExclusionSpaceInternal {
           {NGLayoutOpportunity(NGBfcRect(offset, end_offset), nullptr)});
     }
 
-    return GetDerivedGeometry().AllLayoutOpportunities(offset,
-                                                       available_inline_size);
+    return GetDerivedGeometry(offset.block_offset)
+        .AllLayoutOpportunities(offset, available_inline_size);
   }
 
   LayoutUnit ClearanceOffset(EClear clear_type) const {
@@ -343,7 +344,17 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     USING_FAST_MALLOC(DerivedGeometry);
 
    public:
-    explicit DerivedGeometry(bool track_shape_exclusions);
+    // |block_offset_limit| represents the highest block-offset for which the
+    // geometry is valid. |FindLayoutOpportunity| and |AllLayoutOpportunities|
+    // should not be called for a block-offset higher than this.
+    // If |NGExclusionSpaceInternal::GetDerivedGeometry| is called with a
+    // higher limit the geometry is rebuilt.
+    //
+    // |track_shape_exclusions| is used to tell the geometry to track shape
+    // exclusions. Tracking shape exclusions is expensive, and uncommon, so
+    // when an exclusion with a shape is added we rebuilt the geometry to track
+    // this.
+    DerivedGeometry(LayoutUnit block_offset_limit, bool track_shape_exclusions);
     DerivedGeometry(DerivedGeometry&& o) noexcept = default;
 
     void Add(const NGExclusion& exclusion);
@@ -379,12 +390,18 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     // created, it can never change.
     Vector<NGClosedArea, 4> areas_;
 
+    // This represents the highest block-offset for which the geometry is valid
+    // for. If |NGExclusionSpaceInternal::GetDerivedGeometry| is called with a
+    // higher limit it is rebuilt.
+    LayoutUnit block_offset_limit_;
+
     bool track_shape_exclusions_;
   };
 
   // Returns the derived_geometry_ member, potentially re-built from the
   // exclusions_, and num_exclusions_ members.
-  const DerivedGeometry& GetDerivedGeometry() const;
+  const DerivedGeometry& GetDerivedGeometry(
+      LayoutUnit block_offset_limit) const;
 
   // See DerivedGeometry struct description.
   mutable std::unique_ptr<DerivedGeometry> derived_geometry_;

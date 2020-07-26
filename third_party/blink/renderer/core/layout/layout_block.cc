@@ -1733,18 +1733,14 @@ LayoutUnit LayoutBlock::BaselinePosition(
   // box, then the fact that we're an inline-block is irrelevant, and we behave
   // just like a block.
   if (IsInline() && line_position_mode == kPositionOnContainingLine) {
-    // For "leaf" theme objects, let the theme decide what the baseline position
-    // is.
+    // For checkbox and radio controls, we always use the border edge instead
+    // of the margin edge.
     // FIXME: Might be better to have a custom CSS property instead, so that if
     //        the theme is turned off, checkboxes/radios will still have decent
     //        baselines.
     // FIXME: Need to patch form controls to deal with vertical lines.
-    if (StyleRef().HasEffectiveAppearance() &&
-        !LayoutTheme::GetTheme().IsControlContainer(
-            StyleRef().EffectiveAppearance())) {
-      return Size().Height() + MarginTop() +
-             LayoutTheme::GetTheme().BaselinePositionAdjustment(StyleRef());
-    }
+    if (StyleRef().IsCheckboxOrRadioPart())
+      return MarginTop() + Size().Height();
 
     LayoutUnit baseline_pos = (IsWritingModeRoot() && !IsRubyRun())
                                   ? LayoutUnit(-1)

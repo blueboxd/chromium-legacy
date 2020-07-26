@@ -97,16 +97,6 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual String ExtraQuirksStyleSheet();
   virtual String ExtraFullscreenStyleSheet();
 
-  // A method to obtain the baseline position adjustment needed for a "leaf"
-  // control. This will only be used if a baseline position cannot be determined
-  // by examining child content.
-  // Checkboxes and radio buttons are examples of controls that need to do this.
-  virtual LayoutUnit BaselinePositionAdjustment(const ComputedStyle&) const;
-
-  // A method for asking if a control is a container or not.  Leaf controls have
-  // to have some special behavior (like the baseline position API above).
-  bool IsControlContainer(ControlPart) const;
-
   // Whether or not the control has been styled enough by the author to disable
   // the native appearance.
   virtual bool IsControlStyled(ControlPart part, const ComputedStyle&) const;

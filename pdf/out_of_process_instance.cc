@@ -89,6 +89,10 @@ constexpr char kJSPinchY[] = "pinchY";
 // kJSPinchVector represents the amount of panning caused by the pinch gesture.
 constexpr char kJSPinchVectorX[] = "pinchVectorX";
 constexpr char kJSPinchVectorY[] = "pinchVectorY";
+// UpdateScroll message arguments. (Page -> Plugin).
+constexpr char kJSUpdateScrollType[] = "updateScroll";
+constexpr char kJSUpdateScrollX[] = "x";
+constexpr char kJSUpdateScrollY[] = "y";
 // Stop scrolling message (Page -> Plugin)
 constexpr char kJSStopScrollingType[] = "stopScrolling";
 // Document dimension arguments (Plugin -> Page).
@@ -567,6 +571,8 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
 
   if (type == kJSViewportType) {
     HandleViewportMessage(dict);
+  } else if (type == kJSUpdateScrollType) {
+    HandleUpdateScrollMessage(dict);
   } else if (type == kJSGetPasswordCompleteType) {
     HandleGetPasswordCompleteMessage(dict);
   } else if (type == kJSPrintType) {
@@ -692,19 +698,32 @@ void OutOfProcessInstance::DidChangeView(const pp::View& view) {
     OnGeometryChanged(zoom_, old_device_scale);
   }
 
+  if (!is_print_preview_ &&
+      base::FeatureList::IsEnabled(features::kPDFViewerUpdate)) {
+    // Scrolling in the new PDF Viewer UI is already handled by
+    // HandleUpdateScrollMessage().
+    return;
+  }
+
   if (!stop_scrolling_) {
     scroll_offset_ = view.GetScrollOffset();
-    // Because view messages come from the DOM, the coordinates of the viewport
-    // are 0-based (i.e. they do not correspond to the viewport's coordinates in
-    // JS), so we need to subtract the toolbar height to convert them into
-    // viewport coordinates.
-    pp::FloatPoint scroll_offset_float(
-        scroll_offset_.x(),
-        scroll_offset_.y() - top_toolbar_height_in_viewport_coords_);
-    scroll_offset_float = BoundScrollOffsetToDocument(scroll_offset_float);
-    engine_->ScrolledToXPosition(scroll_offset_float.x() * device_scale_);
-    engine_->ScrolledToYPosition(scroll_offset_float.y() * device_scale_);
+    UpdateScroll();
   }
+}
+
+void OutOfProcessInstance::UpdateScroll() {
+  DCHECK(!stop_scrolling_);
+
+  // Because view messages come from the DOM, the coordinates of the viewport
+  // are 0-based (i.e. they do not correspond to the viewport's coordinates in
+  // JS), so we need to subtract the toolbar height to convert them into
+  // viewport coordinates.
+  pp::FloatPoint scroll_offset_float(
+      scroll_offset_.x(),
+      scroll_offset_.y() - top_toolbar_height_in_viewport_coords_);
+  scroll_offset_float = BoundScrollOffsetToDocument(scroll_offset_float);
+  engine_->ScrolledToXPosition(scroll_offset_float.x() * device_scale_);
+  engine_->ScrolledToYPosition(scroll_offset_float.y() * device_scale_);
 }
 
 void OutOfProcessInstance::DidChangeFocus(bool has_focus) {
@@ -1697,6 +1716,25 @@ void OutOfProcessInstance::HandleSetTwoUpViewMessage(
   }
 
   engine_->SetTwoUpView(dict.Get(pp::Var(kJSEnableTwoUpView)).AsBool());
+}
+
+void OutOfProcessInstance::HandleUpdateScrollMessage(
+    const pp::VarDictionary& dict) {
+  if (!base::FeatureList::IsEnabled(features::kPDFViewerUpdate) ||
+      !dict.Get(pp::Var(kJSUpdateScrollX)).is_int() ||
+      !dict.Get(pp::Var(kJSUpdateScrollY)).is_int()) {
+    NOTREACHED();
+    return;
+  }
+
+  if (stop_scrolling_) {
+    return;
+  }
+
+  int x = dict.Get(pp::Var(kJSUpdateScrollX)).AsInt();
+  int y = dict.Get(pp::Var(kJSUpdateScrollY)).AsInt();
+  scroll_offset_ = pp::Point(x, y);
+  UpdateScroll();
 }
 
 void OutOfProcessInstance::HandleViewportMessage(

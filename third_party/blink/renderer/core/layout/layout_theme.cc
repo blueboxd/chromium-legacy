@@ -404,17 +404,6 @@ Color LayoutTheme::PlatformInactiveListBoxSelectionForegroundColor(
   return PlatformInactiveSelectionForegroundColor(color_scheme);
 }
 
-LayoutUnit LayoutTheme::BaselinePositionAdjustment(
-    const ComputedStyle& style) const {
-  return LayoutUnit();
-}
-
-bool LayoutTheme::IsControlContainer(ControlPart appearance) const {
-  // There are more leaves than this, but we'll patch this function as we add
-  // support for more controls.
-  return appearance != kCheckboxPart && appearance != kRadioPart;
-}
-
 bool LayoutTheme::IsControlStyled(ControlPart part,
                                   const ComputedStyle& style) const {
   switch (part) {

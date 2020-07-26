@@ -7,5 +7,6 @@ include_rules = [
   "+net/cookies/cookie_constants.h",
   "+net/cookies/static_cookie_policy.h",
   "+testing",
+  "+third_party/icu/fuzzers/fuzzer_utils.h",
   "+url",
 ]

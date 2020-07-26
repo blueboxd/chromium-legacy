@@ -5,6 +5,11 @@
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 
+declare_args() {
+  # Controls the product part of the user agent calculated in sync_util.cc.
+  sync_user_agent_product = "Chrome"
+}
+
 jumbo_static_library("base") {
   sources = [
     "bind_to_task_runner.h",
@@ -53,6 +58,8 @@ jumbo_static_library("base") {
     "sync_prefs.cc",
     "sync_prefs.h",
     "sync_stop_metadata_fate.h",
+    "sync_util.cc",
+    "sync_util.h",
     "syncer_error.cc",
     "syncer_error.h",
     "system_encryptor.cc",
@@ -85,14 +92,18 @@ jumbo_static_library("base") {
     "//components/pref_registry",
     "//components/prefs",
     "//components/version_info",
+    "//components/version_info:generate_version_info",
     "//crypto",
     "//net",
     "//third_party/zlib",
+    "//ui/base",
   ]
 
   if (is_chromeos) {
     deps += [ "//chromeos/constants" ]
   }
+
+  defines = [ "SYNC_USER_AGENT_PRODUCT=$sync_user_agent_product" ]
 }
 
 static_library("test_support") {

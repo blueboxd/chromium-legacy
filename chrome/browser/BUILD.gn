@@ -2800,6 +2800,8 @@ static_library("browser") {
       "password_manager/android/update_password_infobar_delegate_android.h",
       "password_manager/biometric_authenticator_android.cc",
       "password_manager/biometric_authenticator_android.h",
+      "password_manager/password_scripts_fetcher_factory.cc",
+      "password_manager/password_scripts_fetcher_factory.h",
       "payments/android/can_make_payment_query_android.cc",
       "payments/android/journey_logger_android.cc",
       "payments/android/journey_logger_android.h",

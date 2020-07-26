@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/driver/sync_util.h"
+#include "components/sync/base/sync_util.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/stringize_macros.h"
 #include "build/build_config.h"
-#include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
 

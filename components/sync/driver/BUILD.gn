@@ -6,11 +6,6 @@ import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//tools/grit/grit_rule.gni")
 
-declare_args() {
-  # Controls the product part of the user agent calculated in sync_util.cc.
-  sync_user_agent_product = "Chrome"
-}
-
 jumbo_static_library("driver") {
   sources = [
     "about_sync_util.cc",
@@ -72,8 +67,6 @@ jumbo_static_library("driver") {
     "sync_user_settings.h",
     "sync_user_settings_impl.cc",
     "sync_user_settings_impl.h",
-    "sync_util.cc",
-    "sync_util.h",
     "syncable_service_based_model_type_controller.cc",
     "syncable_service_based_model_type_controller.h",
     "trusted_vault_client.h",
@@ -105,7 +98,6 @@ jumbo_static_library("driver") {
     "//components/version_info",
     "//components/version_info:generate_version_info",
     "//services/network/public/cpp",
-    "//ui/base",
   ]
 
   if (!is_ios) {
@@ -122,8 +114,6 @@ jumbo_static_library("driver") {
   if (is_chromeos) {
     deps += [ "//chromeos/constants" ]
   }
-
-  defines = [ "SYNC_USER_AGENT_PRODUCT=$sync_user_agent_product" ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }

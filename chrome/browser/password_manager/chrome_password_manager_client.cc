@@ -62,6 +62,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_requirements_service.h"
+#include "components/password_manager/core/browser/password_scripts_fetcher.h"
 #include "components/password_manager/core/browser/store_metrics_reporter.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -121,6 +122,7 @@
 #include "chrome/browser/password_manager/android/password_manager_launcher_android.h"
 #include "chrome/browser/password_manager/android/save_password_infobar_delegate_android.h"
 #include "chrome/browser/password_manager/android/update_password_infobar_delegate_android.h"
+#include "chrome/browser/password_manager/password_scripts_fetcher_factory.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_controller.h"
 #include "chrome/browser/ui/android/passwords/onboarding_dialog_view.h"
 #include "components/infobars/core/infobar.h"
@@ -561,6 +563,15 @@ void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
   if (base::FeatureList::IsEnabled(
           password_manager::features::kPasswordChange)) {
     was_leak_dialog_shown_ = true;
+    // Prefetch list of scripts whose execution is possible.
+    // TODO(crbug.com/1108692): Make sure the list is only prefetched in case
+    // the password-change-in-settings flag is enabled.
+    if (IsSavingAndFillingEnabled(origin) &&
+        GetPasswordFeatureManager()->IsGenerationEnabled()) {
+      PasswordScriptsFetcherFactory::GetInstance()
+          ->GetForBrowserContext(web_contents()->GetBrowserContext())
+          ->PrewarmCache();
+    }
   }
   HideSavePasswordInfobar(web_contents());
   (new CredentialLeakControllerAndroid(

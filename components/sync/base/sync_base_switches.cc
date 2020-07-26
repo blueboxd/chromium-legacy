@@ -6,6 +6,9 @@
 
 namespace switches {
 
+// Overrides the default server used for profile sync.
+const char kSyncServiceURL[] = "sync-url";
+
 const base::Feature kSyncNigoriRemoveMetadataOnCacheGuidMismatch{
     "SyncNigoriRemoveMetadataOnCacheGuidMismatch",
     base::FEATURE_ENABLED_BY_DEFAULT};

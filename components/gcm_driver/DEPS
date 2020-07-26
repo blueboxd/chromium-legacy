@@ -5,9 +5,7 @@ include_rules = [
   "+components/pref_registry",
   "+components/prefs",
   "+components/signin/public",
-  "+components/sync/driver",
-  "+components/sync/protocol",
-  "+components/sync_preferences",
+  "+components/sync/base",
   "+components/timers",  # Only used for Chrome OS builds.
   "+components/version_info",
   "+content/public/browser/browser_context.h",

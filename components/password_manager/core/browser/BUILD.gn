@@ -307,6 +307,14 @@ jumbo_static_library("browser") {
     "//url",
   ]
 
+  if (is_android) {
+    sources += [
+      "password_scripts_fetcher.h",
+      "password_scripts_fetcher_impl.cc",
+      "password_scripts_fetcher_impl.h",
+    ]
+  }
+
   if (!is_ios) {
     sources += [
       "hsts_query.cc",
@@ -608,6 +616,9 @@ source_set("unit_tests") {
     "vote_uploads_test_matchers.h",
     "votes_uploader_unittest.cc",
   ]
+  if (is_android) {
+    sources += [ "password_scripts_fetcher_impl_unittests.cc" ]
+  }
   if (is_mac) {
     sources -= [ "password_store_default_unittest.cc" ]
   }

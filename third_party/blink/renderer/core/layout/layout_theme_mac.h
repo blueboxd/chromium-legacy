@@ -166,8 +166,6 @@ class LayoutThemeMac final : public LayoutTheme {
   static const int kSliderTrackWidth = 5;
   static const int kSliderTrackBorderWidth = 1;
 
-  LayoutUnit BaselinePositionAdjustment(const ComputedStyle&) const override;
-
   FontDescription ControlFont(ControlPart,
                               const FontDescription&,
                               float zoom_factor) const override;

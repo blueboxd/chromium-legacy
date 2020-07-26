@@ -22,7 +22,6 @@ extern const char kDisableSync[];
 extern const char kSyncDeferredStartupTimeoutSeconds[];
 extern const char kSyncDisableDeferredStartup[];
 extern const char kSyncIncludeSpecificsInProtocolLog[];
-extern const char kSyncServiceURL[];
 extern const char kSyncShortInitialRetryOverride[];
 extern const char kSyncShortNudgeDelayForTest[];
 

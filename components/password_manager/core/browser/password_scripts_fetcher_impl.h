@@ -1,0 +1,75 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SCRIPTS_FETCHER_IMPL_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SCRIPTS_FETCHER_IMPL_H_
+
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "base/callback_forward.h"
+#include "base/containers/flat_set.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/time/time.h"
+#include "components/password_manager/core/browser/password_scripts_fetcher.h"
+#include "services/network/public/cpp/simple_url_loader.h"
+
+namespace url {
+class Origin;
+}
+
+namespace network {
+class SharedURLLoaderFactory;
+}
+
+namespace password_manager {
+
+extern const char kChangePasswordScriptsListUrl[];
+
+class PasswordScriptsFetcherImpl
+    : public password_manager::PasswordScriptsFetcher {
+ public:
+  explicit PasswordScriptsFetcherImpl(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  ~PasswordScriptsFetcherImpl() override;
+
+  // PasswordScriptsFetcher:
+  void PrewarmCache() override;
+  void GetPasswordScriptAvailability(const url::Origin& origin,
+                                     ResponseCallback callback) override;
+
+#if defined(UNIT_TEST)
+  void make_cache_stale_for_testing() {
+    last_fetch_timestamp_ =
+        base::TimeTicks::Now() - base::TimeDelta::FromDays(1);
+  }
+#endif
+
+ private:
+  // Sends new request to gstatic.
+  void StartFetch();
+  // Callback for the request to gstatic.
+  void OnFetchComplete(std::unique_ptr<std::string> response_body);
+  // Returns whether a re-fetch is needed.
+  bool IsCacheStale() const;
+  // Runs |callback| immediately with the script availability for |origin|.
+  void RunResponseCallback(url::Origin origin, ResponseCallback callback);
+
+  // Parsed set of domains from gstatic.
+  base::flat_set<url::Origin> password_change_domains_;
+  // Timestamp of the last finished request.
+  base::TimeTicks last_fetch_timestamp_;
+  // Stores the callbacks that are waiting for the request to finish.
+  std::vector<std::pair<url::Origin, ResponseCallback>> pending_callbacks_;
+  // URL loader object for the gstatic request. If |url_loader_| is not null, a
+  // request is currently in flight.
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
+  // Used for the gstatic requests.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+};
+
+}  // namespace password_manager
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SCRIPTS_FETCHER_IMPL_H_

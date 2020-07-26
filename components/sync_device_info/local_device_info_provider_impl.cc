@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/driver/sync_util.h"
+#include "components/sync/base/sync_util.h"
 #include "components/sync_device_info/device_info_sync_client.h"
 #include "components/sync_device_info/device_info_util.h"
 #include "components/sync_device_info/local_device_info_util.h"

@@ -681,8 +681,6 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
         PhysicalOffset(new_offset_from_layout_object);
     if (layers[i].offset_from_layout_object_set &&
         layers[i].offset_from_layout_object != new_offset_from_layout_object) {
-      ObjectPaintInvalidator(layers[i].paint_layer->GetLayoutObject())
-          .InvalidatePaintIncludingNonCompositingDescendants();
       layers_needing_paint_invalidation.push_back(layers[i].paint_layer);
     }
     layers[i].offset_from_layout_object = new_offset_from_layout_object;
@@ -872,8 +870,6 @@ void CompositedLayerMapping::UpdateScrollingContentsLayerGeometry(
 
     if (layer.offset_from_layout_object_set &&
         layer.offset_from_layout_object != new_offset_from_layout_object) {
-      ObjectPaintInvalidator(layer.paint_layer->GetLayoutObject())
-          .InvalidatePaintIncludingNonCompositingDescendants();
       layers_needing_paint_invalidation.push_back(layer.paint_layer);
     }
     layer.offset_from_layout_object = new_offset_from_layout_object;

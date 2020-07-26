@@ -17,21 +17,15 @@ NGLineHeightMetrics NGBoxFragment::BaselineMetrics(
     FontBaseline baseline_type) const {
   DCHECK(physical_fragment_.IsAtomicInline() ||
          physical_fragment_.IsListMarker());
-  const ComputedStyle& style = physical_fragment_.Style();
 
-  // For "leaf" theme objects, let the theme decide what the baseline position
-  // is. The theme baseline wins over the propagated baselines.
-  if (style.HasEffectiveAppearance() &&
-      !LayoutTheme::GetTheme().IsControlContainer(
-          style.EffectiveAppearance())) {
-    return NGLineHeightMetrics(
-        BlockSize() + margins.line_over +
-            LayoutTheme::GetTheme().BaselinePositionAdjustment(style),
-        margins.line_under);
+  // For checkbox and radio controls, we always use the border edge instead of
+  // the margin edge.
+  if (physical_fragment_.Style().IsCheckboxOrRadioPart()) {
+    return NGLineHeightMetrics(margins.line_over + BlockSize(),
+                               margins.line_under);
   }
 
-  base::Optional<LayoutUnit> baseline = Baseline();
-  if (baseline) {
+  if (base::Optional<LayoutUnit> baseline = Baseline()) {
     NGLineHeightMetrics metrics =
         IsFlippedLinesWritingMode(GetWritingMode())
             ? NGLineHeightMetrics(BlockSize() - *baseline, *baseline)

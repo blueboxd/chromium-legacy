@@ -1220,14 +1220,6 @@ NSView* LayoutThemeMac::EnsuredView(const IntSize& size) {
   return flipped_view;
 }
 
-LayoutUnit LayoutThemeMac::BaselinePositionAdjustment(
-    const ComputedStyle& style) const {
-  ControlPart part = style.EffectiveAppearance();
-  if (part == kCheckboxPart || part == kRadioPart)
-    return LayoutUnit(style.EffectiveZoom() * -2);
-  return LayoutTheme::BaselinePositionAdjustment(style);
-}
-
 FontDescription LayoutThemeMac::ControlFont(
     ControlPart part,
     const FontDescription& font_description,

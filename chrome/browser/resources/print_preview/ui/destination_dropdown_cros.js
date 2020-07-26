@@ -60,6 +60,13 @@ Polymer({
 
     /** Mirroring the enum so that it can be used from HTML bindings. */
     IconLocation: Object,
+
+    /** @private */
+    dropdownLength_: {
+      type: Number,
+      computed:
+          'computeDropdownLength_(itemList, pdfPrinterDisabled, driveDestinationKey, noDestinations, )',
+    },
   },
 
   listeners: {
@@ -301,5 +308,29 @@ Polymer({
             /** @type {!Element} */ (event.relatedTarget))) {
       this.closeDropdown_();
     }
+  },
+
+  /**
+   * @return {number}
+   * @private
+   */
+  computeDropdownLength_() {
+    if (this.noDestinations) {
+      return 1;
+    }
+
+    if (!this.itemList) {
+      return 0;
+    }
+
+    // + 1 for "See more"
+    let length = this.itemList.length + 1;
+    if (!this.pdfPrinterDisabled) {
+      length++;
+    }
+    if (this.driveDestinationKey) {
+      length++;
+    }
+    return length;
   },
 });

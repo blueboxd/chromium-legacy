@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_SYNC_UTIL_H_
-#define COMPONENTS_SYNC_DRIVER_SYNC_UTIL_H_
+#ifndef COMPONENTS_SYNC_BASE_SYNC_UTIL_H_
+#define COMPONENTS_SYNC_BASE_SYNC_UTIL_H_
 
 #include <string>
 
@@ -41,4 +41,4 @@ std::string MakeUserAgentForSync(version_info::Channel channel);
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_DRIVER_SYNC_UTIL_H_
+#endif  // COMPONENTS_SYNC_BASE_SYNC_UTIL_H_

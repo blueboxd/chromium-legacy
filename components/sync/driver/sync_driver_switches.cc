@@ -29,9 +29,6 @@ const char kSyncDisableDeferredStartup[] = "sync-disable-deferred-startup";
 // chrome://sync-internals is enabled.
 const char kSyncIncludeSpecificsInProtocolLog[] = "sync-include-specifics";
 
-// Overrides the default server used for profile sync.
-const char kSyncServiceURL[] = "sync-url";
-
 // This flag causes sync to retry very quickly (see polling_constants.h) the
 // when it encounters an error, as the first step towards exponential backoff.
 const char kSyncShortInitialRetryOverride[] =

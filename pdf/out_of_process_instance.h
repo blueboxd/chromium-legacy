@@ -184,7 +184,11 @@ class OutOfProcessInstance : public pp::Instance,
   void HandleResetPrintPreviewModeMessage(const pp::VarDictionary& dict);
   void HandleSaveMessage(const pp::VarDictionary& dict);
   void HandleSetTwoUpViewMessage(const pp::VarDictionary& dict);
+  void HandleUpdateScrollMessage(const pp::VarDictionary& dict);
   void HandleViewportMessage(const pp::VarDictionary& dict);
+
+  // Repaints plugin contents based on the current scroll position.
+  void UpdateScroll();
 
   void ResetRecentlySentFindUpdate(int32_t);
 

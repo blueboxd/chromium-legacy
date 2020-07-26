@@ -386,10 +386,13 @@ template("test") {
       testonly = true
       wrapper_script = "$root_build_dir/bin/run_" + _executable
 
+      data = []
       if (_use_xvfb) {
         executable = "//testing/xvfb.py"
+        data += [ "//testing/xvfb.py" ]
       } else {
         executable = "//testing/test_env.py"
+        data += [ "//testing/test_env.py" ]
       }
 
       executable_args = [
@@ -416,9 +419,8 @@ template("test") {
         executable_args += [ "--cfi-diag=true" ]
       }
 
-      data = [
+      data += [
         "//build/lacros/test_runner.py",
-        "//testing/test_env.py",
         "//.vpython",
       ]
       if (defined(invoker.use_ash_chrome) && invoker.use_ash_chrome) {
@@ -460,10 +462,13 @@ template("test") {
         testonly = true
         wrapper_script = "$root_build_dir/bin/run_" + _executable
 
+        data = []
         if (_use_xvfb) {
           executable = "//testing/xvfb.py"
+          data += [ "//testing/xvfb.py" ]
         } else {
           executable = "//testing/test_env.py"
+          data += [ "//testing/test_env.py" ]
         }
 
         executable_args = [
@@ -483,10 +488,7 @@ template("test") {
           executable_args += [ "--cfi-diag=true" ]
         }
 
-        data = [
-          "//testing/test_env.py",
-          "//.vpython",
-        ]
+        data += [ "//.vpython" ]
       }
     }
 

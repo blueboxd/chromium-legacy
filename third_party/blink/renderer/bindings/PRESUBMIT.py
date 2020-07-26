@@ -31,15 +31,12 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into gcl.
 """
 
-# Make sure binding templates are considered as source files.
-FILES_TO_CHECK = (r'.+\.tmpl$', )
-
-# Changes to v8/ do not change generated code or tests, so exclude from
-# _RunBindingsTests
-FILES_TO_SKIP = (r'.*\bv8[\\\/].*', )
-
-
 def _RunBindingsTests(input_api, output_api):
+    # Make sure binding templates are considered as source files.
+    FILES_TO_CHECK = (r'.+\.tmpl$', )
+    # Changes to v8/ do not change generated code or tests.
+    FILES_TO_SKIP = (r'.*\bv8[\\\/].*', )
+
     # Skip if nothing to do
     source_filter = lambda x: input_api.FilterSourceFile(
         x,

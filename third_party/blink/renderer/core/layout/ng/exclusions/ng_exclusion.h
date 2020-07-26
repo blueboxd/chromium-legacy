@@ -54,6 +54,7 @@ struct CORE_EXPORT NGExclusion : public RefCounted<NGExclusion> {
 
   const NGBfcRect rect;
   const EFloat type;
+  bool is_past_other_exclusions = false;
   const std::unique_ptr<NGExclusionShapeData> shape_data;
 
   bool operator==(const NGExclusion& other) const;

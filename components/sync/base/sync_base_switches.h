@@ -10,6 +10,8 @@
 
 namespace switches {
 
+extern const char kSyncServiceURL[];
+
 extern const base::Feature kSyncNigoriRemoveMetadataOnCacheGuidMismatch;
 extern const base::Feature kSyncForceDisableScryptForCustomPassphrase;
 extern const base::Feature kSyncE2ELatencyMeasurement;

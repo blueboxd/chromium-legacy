@@ -31,7 +31,6 @@ class MODULES_EXPORT PresentationAvailability final
       public ExecutionContextLifecycleStateObserver,
       public PageVisibilityObserver,
       public PresentationAvailabilityObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(PresentationAvailability);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

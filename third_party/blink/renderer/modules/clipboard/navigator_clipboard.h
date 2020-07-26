@@ -18,8 +18,6 @@ class ScriptState;
 
 class NavigatorClipboard final : public GarbageCollected<NavigatorClipboard>,
                                  public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorClipboard);
-
  public:
   static const char kSupplementName[];
   static Clipboard* clipboard(ScriptState*, Navigator&);

@@ -116,7 +116,6 @@ class MediaElementAudioSourceHandler final : public AudioHandler {
 class MediaElementAudioSourceNode final : public AudioNode,
                                           public AudioSourceProviderClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(MediaElementAudioSourceNode);
 
  public:
   static MediaElementAudioSourceNode* Create(AudioContext&,

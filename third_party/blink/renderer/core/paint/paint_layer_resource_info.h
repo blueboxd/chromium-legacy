@@ -52,8 +52,6 @@ class PaintLayer;
 class PaintLayerResourceInfo final
     : public GarbageCollected<PaintLayerResourceInfo>,
       public SVGResourceClient {
-  USING_GARBAGE_COLLECTED_MIXIN(PaintLayerResourceInfo);
-
  public:
   explicit PaintLayerResourceInfo(PaintLayer*);
   ~PaintLayerResourceInfo() override;

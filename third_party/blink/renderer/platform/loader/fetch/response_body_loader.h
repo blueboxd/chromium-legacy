@@ -70,8 +70,6 @@ class PLATFORM_EXPORT ResponseBodyLoader final
     : public ResponseBodyLoaderDrainableInterface,
       private ResponseBodyLoaderClient,
       private BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(ResponseBodyLoader);
-
  public:
   ResponseBodyLoader(BytesConsumer&,
                      ResponseBodyLoaderClient&,

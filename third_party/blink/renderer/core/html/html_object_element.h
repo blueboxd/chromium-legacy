@@ -41,7 +41,6 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
                                             public ListedElement,
                                             public FormAssociated {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLObjectElement);
 
  public:
   HTMLObjectElement(Document&, const CreateElementFlags);

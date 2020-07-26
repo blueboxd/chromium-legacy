@@ -1591,7 +1591,8 @@ bool PaintLayer::ShouldFragmentCompositedBounds(
     return false;
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return true;
-  if (PaintsWithTransform(kGlobalPaintNormalPhase))
+  if (Transform() &&
+      !PaintsWithDirectReasonIntoOwnBacking(kGlobalPaintNormalPhase))
     return true;
   if (!compositing_layer) {
     compositing_layer =
@@ -2862,6 +2863,12 @@ bool PaintLayer::PaintsIntoOwnBacking(
     GlobalPaintFlags global_paint_flags) const {
   return !(global_paint_flags & kGlobalPaintFlattenCompositingLayers) &&
          GetCompositingState() == kPaintsIntoOwnBacking;
+}
+
+bool PaintLayer::PaintsWithDirectReasonIntoOwnBacking(
+    GlobalPaintFlags global_paint_flags) const {
+  return !(global_paint_flags & kGlobalPaintFlattenCompositingLayers) &&
+         CanBeCompositedForDirectReasons();
 }
 
 bool PaintLayer::PaintsIntoOwnOrGroupedBacking(

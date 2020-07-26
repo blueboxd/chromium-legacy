@@ -16,15 +16,15 @@ We will be creating the following UI:
 
 To create this simple dialog, you would need to add the following files:
 
-`login_bubble_dialog.h`
+`login_bubble_dialog_example.h`
 
 ``` cpp
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LOGIN_BUBBLE_DIALOG_H_
-#define LOGIN_BUBBLE_DIALOG_H_
+#ifndef LOGIN_BUBBLE_DIALOG_EXAMPLE_H_
+#define LOGIN_BUBBLE_DIALOG_EXAMPLE_H_
 
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -41,18 +41,18 @@ class LoginBubbleDialogView : public views::BubbleDialogDelegateView {
                         views::BubbleBorder::Arrow anchor_position);
 };
 
-#endif  // LOGIN_BUBBLE_DIALOG_H_
+#endif  // LOGIN_BUBBLE_DIALOG_EXAMPLE_H_
 ```
 
 
-`login_bubble_dialog.cc`
+`login_bubble_dialog_example.cc`
 
 ``` cpp
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "login_bubble_dialog.h"
+#include "login_bubble_dialog_example.h"
 
 #include "ui/views/border.h"
 
@@ -85,7 +85,7 @@ To populate the login dialog, we first create a [`LayoutManager`](https://source
 dialog’s constructor.
 
 
-`login_bubble_dialog.cc`
+`login_bubble_dialog_example.cc`
 
 
 ``` cpp
@@ -123,7 +123,7 @@ To help with adding rows to the `GridLayout`, add the following scoped helper
 and relevant headers.
 
 
-`login_bubble_dialog.cc`
+`login_bubble_dialog_example.cc`
 
 ``` cpp
 #include "base/strings/string16.h"
@@ -178,7 +178,7 @@ Create the following string constants:
 Add the following to the bubble dialog header and implementation files.
 
 
-`login_bubble_dialog.h`
+`login_bubble_dialog_example.h`
 
 
 ``` cpp
@@ -194,7 +194,7 @@ class LoginBubbleDialogView : public views::BubbleDialogDelegateView {
 ```
 
 
-`login_bubble_dialog.cc`
+`login_bubble_dialog_example.cc`
 
 
 ``` cpp
@@ -231,7 +231,7 @@ To respond to a click on the login button, we define a callback that gets
 passed in by the caller. Update the code as follows.
 
 
-`login_bubble_dialog.h`
+`login_bubble_dialog_example.h`
 
 
 ``` cpp
@@ -256,7 +256,7 @@ class LoginBubbleDialogView : public views::BubbleDialogDelegateView {
 ```
 
 
-`login_bubble_dialog.cc`
+`login_bubble_dialog_example.cc`
 
 
 ``` cpp
@@ -310,7 +310,7 @@ the login button.
 Modify the code as follows:
 
 
-`login_bubble_dialog.h`
+`login_bubble_dialog_example.h`
 
 
 ``` cpp
@@ -328,7 +328,7 @@ class LoginBubbleDialogView : public views::BubbleDialogDelegateView,
 ```
 
 
-`login_bubble_dialog.cc`
+`login_bubble_dialog_example.cc`
 
 
 ``` cpp
@@ -376,7 +376,7 @@ LoginBubbleDialogView::LoginBubbleDialogView(
 The final code should resemble the following:
 
 
-`login_bubble_dialog.h`
+`login_bubble_dialog_example.h`
 
 
 ```
@@ -384,8 +384,8 @@ The final code should resemble the following:
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LOGIN_BUBBLE_DIALOG_H_
-#define LOGIN_BUBBLE_DIALOG_H_
+#ifndef LOGIN_BUBBLE_DIALOG_EXAMPLE_H_
+#define LOGIN_BUBBLE_DIALOG_EXAMPLE_H_
 
 #include "base/strings/string16.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -418,11 +418,11 @@ class LoginBubbleDialogView : public BubbleDialogDelegateView,
   Textfield* password_ = nullptr;
 };
 
-#endif  // LOGIN_BUBBLE_DIALOG_H_
+#endif  // LOGIN_BUBBLE_DIALOG_EXAMPLE_H_
 ```
 
 
-`login_bubble_dialog.cc`
+`login_bubble_dialog_example.cc`
 
 
 ```
@@ -430,7 +430,7 @@ class LoginBubbleDialogView : public BubbleDialogDelegateView,
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "login_bubble_dialog.h"
+#include "login_bubble_dialog_example.h"
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
@@ -544,7 +544,7 @@ The generated UI would be:
 
 The example code can be run inside Views example app. You can find the code
 inside the Views example at
-[`ui/views/examples/login_bubble_dialog.cc`](https://source.chromium.org/chromium/chromium/src/+/master:ui/views/examples/login_bubble_dialog.cc).
+[`ui/views/examples/login_bubble_dialog_example.cc`](https://source.chromium.org/chromium/chromium/src/+/master:ui/views/examples/login_bubble_dialog_example.cc).
 You can try out this example by running the following command:
 
 ``` shell

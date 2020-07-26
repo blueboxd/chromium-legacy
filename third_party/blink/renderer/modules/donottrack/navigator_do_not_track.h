@@ -42,8 +42,6 @@ class Navigator;
 
 class NavigatorDoNotTrack final : public GarbageCollected<NavigatorDoNotTrack>,
                                   public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorDoNotTrack);
-
  public:
   static const char kSupplementName[];
 

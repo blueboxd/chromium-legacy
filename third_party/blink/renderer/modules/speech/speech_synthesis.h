@@ -47,7 +47,6 @@ class MODULES_EXPORT SpeechSynthesis final
       public Supplement<LocalDOMWindow>,
       public mojom::blink::SpeechSynthesisVoiceListObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesis);
 
  public:
   static const char kSupplementName[];

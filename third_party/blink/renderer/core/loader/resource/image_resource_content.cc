@@ -33,8 +33,6 @@ namespace {
 class NullImageResourceInfo final
     : public GarbageCollected<NullImageResourceInfo>,
       public ImageResourceInfo {
-  USING_GARBAGE_COLLECTED_MIXIN(NullImageResourceInfo);
-
  public:
   NullImageResourceInfo() = default;
 

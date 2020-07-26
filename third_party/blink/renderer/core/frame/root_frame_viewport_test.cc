@@ -23,8 +23,6 @@ namespace blink {
 
 class ScrollableAreaStub : public GarbageCollected<ScrollableAreaStub>,
                            public ScrollableArea {
-  USING_GARBAGE_COLLECTED_MIXIN(ScrollableAreaStub);
-
  public:
   ScrollableAreaStub(const IntSize& viewport_size, const IntSize& contents_size)
       : user_input_scrollable_x_(true),

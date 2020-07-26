@@ -24,7 +24,6 @@ class CORE_EXPORT UnderlyingSourceBase
     : public ScriptWrappable,
       public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(UnderlyingSourceBase);
 
  public:
   void Trace(Visitor*) const override;

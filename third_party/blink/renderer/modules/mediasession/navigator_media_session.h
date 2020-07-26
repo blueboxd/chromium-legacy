@@ -18,8 +18,6 @@ class ScriptState;
 class NavigatorMediaSession final
     : public GarbageCollected<NavigatorMediaSession>,
       public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorMediaSession);
-
  public:
   static const char kSupplementName[];
 

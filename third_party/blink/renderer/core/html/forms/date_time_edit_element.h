@@ -46,8 +46,6 @@ enum class DateTimeField;
 //  - Hour, Minute, Second, Millisecond, AM/PM
 class DateTimeEditElement final : public HTMLDivElement,
                                   public DateTimeFieldElement::FieldOwner {
-  USING_GARBAGE_COLLECTED_MIXIN(DateTimeEditElement);
-
  public:
   // EditControlOwner implementer must call removeEditControlOwner when
   // it doesn't handle event, e.g. at destruction.

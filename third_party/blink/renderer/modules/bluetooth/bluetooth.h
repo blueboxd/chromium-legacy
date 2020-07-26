@@ -28,7 +28,6 @@ class Bluetooth final : public EventTargetWithInlineData,
                         public PageVisibilityObserver,
                         public mojom::blink::WebBluetoothAdvertisementClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Bluetooth);
 
  public:
   explicit Bluetooth(LocalDOMWindow*);

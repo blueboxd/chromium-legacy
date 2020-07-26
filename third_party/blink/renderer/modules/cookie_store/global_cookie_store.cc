@@ -25,8 +25,6 @@ template <typename T>
 class GlobalCookieStoreImpl final
     : public GarbageCollected<GlobalCookieStoreImpl<T>>,
       public Supplement<T> {
-  USING_GARBAGE_COLLECTED_MIXIN(GlobalCookieStoreImpl);
-
  public:
   static const char kSupplementName[];
 

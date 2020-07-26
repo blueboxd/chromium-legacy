@@ -29,7 +29,6 @@ class HID : public EventTargetWithInlineData,
             public ExecutionContextClient,
             public device::mojom::blink::HidManagerClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(HID);
 
  public:
   explicit HID(ExecutionContext& context);

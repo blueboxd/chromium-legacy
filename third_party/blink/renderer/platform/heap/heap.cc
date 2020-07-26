@@ -200,8 +200,6 @@ void ThreadHeap::DestroyMarkingWorklists(BlinkGC::StackState stack_state) {
   //
   // Possible reasons for encountering unmarked objects here:
   // - Object is not allocated through MakeGarbageCollected.
-  // - Type is missing a USING_GARBAGE_COLLECTED_MIXIN annotation which means
-  //   that the GC will always find pointers as in construction.
   // - Broken stack (roots) scanning.
   if (!not_fully_constructed_worklist_->IsGlobalEmpty()) {
 #if DCHECK_IS_ON()

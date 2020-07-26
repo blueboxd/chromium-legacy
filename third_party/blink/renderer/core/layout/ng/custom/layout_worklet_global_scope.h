@@ -19,7 +19,6 @@ class WorkerReportingProxy;
 
 class CORE_EXPORT LayoutWorkletGlobalScope final : public WorkletGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(LayoutWorkletGlobalScope);
 
  public:
   static LayoutWorkletGlobalScope* Create(

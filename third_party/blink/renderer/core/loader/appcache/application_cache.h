@@ -41,7 +41,6 @@ class LocalFrame;
 class ApplicationCache final : public EventTargetWithInlineData,
                                public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(ApplicationCache);
 
  public:
   explicit ApplicationCache(LocalFrame*);

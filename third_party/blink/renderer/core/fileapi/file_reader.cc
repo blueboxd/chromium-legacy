@@ -72,7 +72,6 @@ static const base::TimeDelta kProgressNotificationInterval =
 class FileReader::ThrottlingController final
     : public GarbageCollected<FileReader::ThrottlingController>,
       public Supplement<ExecutionContext> {
-  USING_GARBAGE_COLLECTED_MIXIN(FileReader::ThrottlingController);
 
  public:
   static const char kSupplementName[];

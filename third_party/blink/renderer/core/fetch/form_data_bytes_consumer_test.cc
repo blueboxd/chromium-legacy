@@ -123,8 +123,6 @@ scoped_refptr<EncodedFormData> DataPipeFormData() {
 
 class NoopClient final : public GarbageCollected<NoopClient>,
                          public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(NoopClient);
-
  public:
   void OnStateChange() override {}
   String DebugName() const override { return "NoopClient"; }

@@ -18,8 +18,6 @@ class ContentIndex;
 class ServiceWorkerRegistrationContentIndex final
     : public GarbageCollected<ServiceWorkerRegistrationContentIndex>,
       public Supplement<ServiceWorkerRegistration> {
-  USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistrationContentIndex);
-
  public:
   static const char kSupplementName[];
 

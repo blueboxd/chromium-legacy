@@ -21,8 +21,6 @@ class ScriptPromiseResolver;
 
 class KeyboardLayout final : public GarbageCollected<KeyboardLayout>,
                              public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(KeyboardLayout);
-
  public:
   explicit KeyboardLayout(ExecutionContext*);
   virtual ~KeyboardLayout() = default;

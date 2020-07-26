@@ -30,7 +30,6 @@ class CORE_EXPORT Response final : public ScriptWrappable,
                                    public ActiveScriptWrappable<Response>,
                                    public Body {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Response);
 
  public:
   // These "create" function which takes a ScriptState* must be called with

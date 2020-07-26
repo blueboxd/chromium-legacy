@@ -24,7 +24,6 @@ class ScriptState;
 class NativeIOManager final : public ScriptWrappable,
                               public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(NativeIOManager);
 
  public:
   explicit NativeIOManager(ExecutionContext*,

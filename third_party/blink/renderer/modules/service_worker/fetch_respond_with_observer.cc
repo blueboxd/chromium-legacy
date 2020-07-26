@@ -136,8 +136,6 @@ bool IsClientRequest(mojom::RequestContextFrameType frame_type,
 // blink.mojom.ServiceWorkerFetchResponseCallback.OnResponseStream().
 class FetchLoaderClient final : public GarbageCollected<FetchLoaderClient>,
                                 public FetchDataLoader::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(FetchLoaderClient);
-
  public:
   FetchLoaderClient(
       std::unique_ptr<ServiceWorkerEventQueue::StayAwakeToken> token)

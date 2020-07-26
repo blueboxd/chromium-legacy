@@ -55,7 +55,6 @@ class MODULES_EXPORT SpeechRecognition final
       public ExecutionContextLifecycleObserver,
       public mojom::blink::SpeechRecognitionSessionClient,
       public PageVisibilityObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognition);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

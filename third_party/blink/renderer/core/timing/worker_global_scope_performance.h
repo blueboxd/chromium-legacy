@@ -44,8 +44,6 @@ class WorkerGlobalScope;
 class CORE_EXPORT WorkerGlobalScopePerformance final
     : public GarbageCollected<WorkerGlobalScopePerformance>,
       public Supplement<WorkerGlobalScope> {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopePerformance);
-
  public:
   static const char kSupplementName[];
 

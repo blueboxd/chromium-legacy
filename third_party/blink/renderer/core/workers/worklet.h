@@ -26,7 +26,6 @@ class WorkletOptions;
 class CORE_EXPORT Worklet : public ScriptWrappable,
                             public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Worklet);
   USING_PRE_FINALIZER(Worklet, Dispose);
 
  public:

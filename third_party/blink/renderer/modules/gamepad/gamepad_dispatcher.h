@@ -27,8 +27,6 @@ class GamepadSharedMemoryReader;
 class GamepadDispatcher final : public GarbageCollected<GamepadDispatcher>,
                                 public PlatformEventDispatcher,
                                 public GamepadListener {
-  USING_GARBAGE_COLLECTED_MIXIN(GamepadDispatcher);
-
  public:
   explicit GamepadDispatcher(ExecutionContext& context);
   ~GamepadDispatcher() override;

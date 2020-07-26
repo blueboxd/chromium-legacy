@@ -20,8 +20,6 @@ namespace {
 
 class MockClient final : public GarbageCollected<MockClient>,
                          public ResourceLoadSchedulerClient {
-  USING_GARBAGE_COLLECTED_MIXIN(MockClient);
-
  public:
   // A delegate that can be used to determine the order clients were run in.
   class MockClientDelegate {
@@ -72,8 +70,6 @@ class ResourceLoadSchedulerTest : public testing::Test {
  public:
   class MockConsoleLogger final : public GarbageCollected<MockConsoleLogger>,
                                   public ConsoleLogger {
-    USING_GARBAGE_COLLECTED_MIXIN(MockConsoleLogger);
-
    public:
     bool HasMessage() const { return has_message_; }
 

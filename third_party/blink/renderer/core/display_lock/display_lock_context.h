@@ -64,8 +64,6 @@ static_assert(static_cast<uint32_t>(DisplayLockActivationReason::kAny) <
 class CORE_EXPORT DisplayLockContext final
     : public GarbageCollected<DisplayLockContext>,
       public LocalFrameView::LifecycleNotificationObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(DisplayLockContext);
-
  public:
   // The type of style that was blocked by this display lock.
   enum StyleType {

@@ -22,8 +22,6 @@ class ScriptValue;
 class MODULES_EXPORT WaitUntilObserver final
     : public GarbageCollected<WaitUntilObserver>,
       public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(WaitUntilObserver);
-
  public:
   using PromiseSettledCallback =
       base::RepeatingCallback<void(const ScriptValue&)>;

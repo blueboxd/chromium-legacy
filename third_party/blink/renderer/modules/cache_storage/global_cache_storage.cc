@@ -21,8 +21,6 @@ template <typename T>
 class GlobalCacheStorageImpl final
     : public GarbageCollected<GlobalCacheStorageImpl<T>>,
       public Supplement<T> {
-  USING_GARBAGE_COLLECTED_MIXIN(GlobalCacheStorageImpl);
-
  public:
   static const char kSupplementName[];
 

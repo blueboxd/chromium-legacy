@@ -28,8 +28,6 @@ class ClipboardItemOptions;
 
 class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
                                public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ClipboardPromise);
-
  public:
   // Creates promise to execute Clipboard API functions off the main thread.
   static ScriptPromise CreateForRead(ExecutionContext*,

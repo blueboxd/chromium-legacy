@@ -42,7 +42,6 @@ class SVGPatternElement final : public SVGElement,
                                 public SVGTests,
                                 public SVGFitToViewBox {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGPatternElement);
 
  public:
   explicit SVGPatternElement(Document&);

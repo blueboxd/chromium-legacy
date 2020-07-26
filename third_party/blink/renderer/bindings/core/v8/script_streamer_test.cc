@@ -45,7 +45,6 @@ namespace {
 
 class TestResourceClient final : public GarbageCollected<TestResourceClient>,
                                  public ResourceClient {
-  USING_GARBAGE_COLLECTED_MIXIN(TestResourceClient);
 
  public:
   TestResourceClient() : finished_(false) {}

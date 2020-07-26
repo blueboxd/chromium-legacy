@@ -32,8 +32,6 @@ class SecurityOrigin;
 // instances are created lazily by calling FileSystemDispatcher::From().
 class FileSystemDispatcher : public GarbageCollected<FileSystemDispatcher>,
                              public Supplement<ExecutionContext> {
-  USING_GARBAGE_COLLECTED_MIXIN(FileSystemDispatcher);
-
  public:
   using StatusCallback = base::OnceCallback<void(base::File::Error error)>;
   using WriteCallback =

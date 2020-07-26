@@ -17,8 +17,6 @@ namespace blink {
 class DocumentParserTiming final
     : public GarbageCollected<DocumentParserTiming>,
       public Supplement<Document> {
-  USING_GARBAGE_COLLECTED_MIXIN(DocumentParserTiming);
-
  public:
   static const char kSupplementName[];
 

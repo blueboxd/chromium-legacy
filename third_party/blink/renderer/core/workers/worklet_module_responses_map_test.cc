@@ -40,8 +40,6 @@ class WorkletModuleResponsesMapTest : public testing::Test {
 
   class ClientImpl final : public GarbageCollected<ClientImpl>,
                            public ModuleScriptFetcher::Client {
-    USING_GARBAGE_COLLECTED_MIXIN(ClientImpl);
-
    public:
     enum class Result { kInitial, kOK, kFailed };
 

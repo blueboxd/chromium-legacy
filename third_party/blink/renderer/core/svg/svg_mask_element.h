@@ -31,7 +31,6 @@ namespace blink {
 
 class SVGMaskElement final : public SVGElement, public SVGTests {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGMaskElement);
 
  public:
   explicit SVGMaskElement(Document&);

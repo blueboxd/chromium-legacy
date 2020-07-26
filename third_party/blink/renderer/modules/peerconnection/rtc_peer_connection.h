@@ -115,7 +115,6 @@ class MODULES_EXPORT RTCPeerConnection final
       public ExecutionContextLifecycleObserver,
       public MediaStreamObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(RTCPeerConnection);
   USING_PRE_FINALIZER(RTCPeerConnection, Dispose);
 
  public:

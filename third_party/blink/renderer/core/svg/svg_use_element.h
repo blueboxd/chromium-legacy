@@ -37,7 +37,6 @@ class SVGUseElement final : public SVGGraphicsElement,
                             public SVGURIReference,
                             public SVGExternalDocumentCache::Client {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGUseElement);
 
  public:
   explicit SVGUseElement(Document&);

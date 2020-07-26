@@ -59,8 +59,6 @@ bool VerifyCustomHandlerURLSyntax(const KURL& full_url,
 class MODULES_EXPORT NavigatorContentUtils final
     : public GarbageCollected<NavigatorContentUtils>,
       public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorContentUtils);
-
  public:
   static const char kSupplementName[];
 

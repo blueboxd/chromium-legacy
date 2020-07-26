@@ -54,8 +54,6 @@ class WebMouseEvent;
 class CORE_EXPORT DragController final
     : public GarbageCollected<DragController>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(DragController);
-
  public:
   explicit DragController(Page*);
 

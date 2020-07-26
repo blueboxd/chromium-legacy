@@ -15,8 +15,6 @@ class Ink;
 
 class NavigatorInk : public GarbageCollected<NavigatorInk>,
                      public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorInk);
-
  public:
   static const char kSupplementName[];
   static Ink* ink(Navigator& navigator);

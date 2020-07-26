@@ -43,8 +43,6 @@ class CORE_EXPORT InteractiveDetector
       public Supplement<Document>,
       public ExecutionContextLifecycleObserver,
       public LongTaskObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(InteractiveDetector);
-
  public:
   static const char kSupplementName[];
 

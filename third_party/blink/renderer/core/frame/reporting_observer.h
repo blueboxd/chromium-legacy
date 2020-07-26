@@ -22,7 +22,6 @@ class CORE_EXPORT ReportingObserver final
     : public ScriptWrappable,
       public ActiveScriptWrappable<ReportingObserver>,
       public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ReportingObserver);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

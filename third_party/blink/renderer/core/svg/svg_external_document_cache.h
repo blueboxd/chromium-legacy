@@ -37,8 +37,6 @@ class ExecutionContext;
 class CORE_EXPORT SVGExternalDocumentCache
     : public GarbageCollected<SVGExternalDocumentCache>,
       public Supplement<Document> {
-  USING_GARBAGE_COLLECTED_MIXIN(SVGExternalDocumentCache);
-
  public:
   static const char kSupplementName[];
   static SVGExternalDocumentCache* From(Document&);
@@ -52,8 +50,6 @@ class CORE_EXPORT SVGExternalDocumentCache
 
   class CORE_EXPORT Entry final : public GarbageCollected<Entry>,
                                   public ResourceClient {
-    USING_GARBAGE_COLLECTED_MIXIN(Entry);
-
    public:
     explicit Entry(ExecutionContext* context) : context_(context) {}
     ~Entry() override = default;

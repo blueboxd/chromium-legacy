@@ -66,7 +66,6 @@ class XRSession final
       public device::mojom::blink::XRInputSourceButtonListener,
       public ActiveScriptWrappable<XRSession> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(XRSession);
 
  public:
   // Error strings used outside of XRSession:

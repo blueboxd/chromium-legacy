@@ -42,8 +42,6 @@ namespace blink {
 class TextFieldInputType : public InputType,
                            public InputTypeView,
                            protected SpinButtonElement::SpinButtonOwner {
-  USING_GARBAGE_COLLECTED_MIXIN(TextFieldInputType);
-
  public:
   void Trace(Visitor*) const override;
   using InputType::GetElement;

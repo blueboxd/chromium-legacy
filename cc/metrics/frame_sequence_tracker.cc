@@ -89,7 +89,9 @@ FrameSequenceTracker::FrameSequenceTracker(
   metrics_->SetCustomReporter(std::move(custom_reporter));
 }
 
-FrameSequenceTracker::~FrameSequenceTracker() = default;
+FrameSequenceTracker::~FrameSequenceTracker() {
+  CleanUp();
+}
 
 void FrameSequenceTracker::ScheduleTerminate() {
   // If the last frame has ended and there is no frame awaiting presentation,
@@ -697,6 +699,11 @@ std::unique_ptr<FrameSequenceMetrics> FrameSequenceTracker::TakeMetrics() {
       << frame_sequence_trace_.str().substr(ignored_trace_char_count_);
 #endif
   return std::move(metrics_);
+}
+
+void FrameSequenceTracker::CleanUp() {
+  if (metrics_)
+    metrics_->ReportLeftoverData();
 }
 
 FrameSequenceTracker::CheckerboardingData::CheckerboardingData() = default;

@@ -35,7 +35,6 @@ class SVGFEImageElement final : public SVGFilterPrimitiveStandardAttributes,
                                 public SVGURIReference,
                                 public ImageResourceObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGFEImageElement);
   // Pre-finalize to promptly remove as a ImageResource client.
   USING_PRE_FINALIZER(SVGFEImageElement, Dispose);
 

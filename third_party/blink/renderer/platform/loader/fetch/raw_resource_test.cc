@@ -61,8 +61,6 @@ class RawResourceTest : public testing::Test {
   class NoopResponseBodyLoaderClient
       : public GarbageCollected<NoopResponseBodyLoaderClient>,
         public ResponseBodyLoaderClient {
-    USING_GARBAGE_COLLECTED_MIXIN(NoopResponseBodyLoaderClient);
-
    public:
     ~NoopResponseBodyLoaderClient() override {}
     void DidReceiveData(base::span<const char>) override {}
@@ -99,8 +97,6 @@ TEST_F(RawResourceTest, DontIgnoreAcceptForCacheReuse) {
 
 class DummyClient final : public GarbageCollected<DummyClient>,
                           public RawResourceClient {
-  USING_GARBAGE_COLLECTED_MIXIN(DummyClient);
-
  public:
   DummyClient() : called_(false), number_of_redirects_received_(0) {}
   ~DummyClient() override = default;
@@ -138,8 +134,6 @@ class DummyClient final : public GarbageCollected<DummyClient>,
 // This client adds another client when notified.
 class AddingClient final : public GarbageCollected<AddingClient>,
                            public RawResourceClient {
-  USING_GARBAGE_COLLECTED_MIXIN(AddingClient);
-
  public:
   AddingClient(DummyClient* client, Resource* resource)
       : dummy_client_(client), resource_(resource) {}
@@ -195,8 +189,6 @@ TEST_F(RawResourceTest, AddClientDuringCallback) {
 // This client removes another client when notified.
 class RemovingClient : public GarbageCollected<RemovingClient>,
                        public RawResourceClient {
-  USING_GARBAGE_COLLECTED_MIXIN(RemovingClient);
-
  public:
   explicit RemovingClient(DummyClient* client) : dummy_client_(client) {}
 

@@ -16,8 +16,6 @@ class HID;
 
 class NavigatorHID final : public GarbageCollected<NavigatorHID>,
                            public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorHID);
-
  public:
   static const char kSupplementName[];
 

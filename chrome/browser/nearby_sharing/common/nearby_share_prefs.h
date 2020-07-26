@@ -20,6 +20,8 @@ extern const char kNearbySharingDeviceIdPrefName[];
 extern const char kNearbySharingDeviceNamePrefName[];
 extern const char kNearbySharingFullNamePrefName[];
 extern const char kNearbySharingIconUrlPrefName[];
+extern const char kNearbySharingSchedulerDownloadDeviceDataPrefName[];
+extern const char kNearbySharingSchedulerUploadDeviceNamePrefName[];
 }  // namespace prefs
 
 void RegisterNearbySharingPrefs(user_prefs::PrefRegistrySyncable* registry);

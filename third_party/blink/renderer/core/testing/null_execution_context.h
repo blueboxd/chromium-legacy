@@ -18,8 +18,6 @@ namespace blink {
 
 class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
                              public ExecutionContext {
-  USING_GARBAGE_COLLECTED_MIXIN(NullExecutionContext);
-
  public:
   NullExecutionContext();
   ~NullExecutionContext() override;

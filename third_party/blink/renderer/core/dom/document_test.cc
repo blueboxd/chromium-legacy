@@ -111,8 +111,6 @@ namespace {
 class TestSynchronousMutationObserver
     : public GarbageCollected<TestSynchronousMutationObserver>,
       public SynchronousMutationObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(TestSynchronousMutationObserver);
-
  public:
   struct MergeTextNodesRecord : GarbageCollected<MergeTextNodesRecord> {
     Member<const Text> node_;
@@ -281,8 +279,6 @@ void TestSynchronousMutationObserver::Trace(Visitor* visitor) const {
 class MockDocumentValidationMessageClient
     : public GarbageCollected<MockDocumentValidationMessageClient>,
       public ValidationMessageClient {
-  USING_GARBAGE_COLLECTED_MIXIN(MockDocumentValidationMessageClient);
-
  public:
   MockDocumentValidationMessageClient() { Reset(); }
   void Reset() {

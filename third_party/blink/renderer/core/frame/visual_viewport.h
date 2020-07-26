@@ -96,8 +96,6 @@ struct PaintPropertyTreeBuilderFragmentContext;
 //
 class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
                                    public ScrollableArea {
-  USING_GARBAGE_COLLECTED_MIXIN(VisualViewport);
-
  public:
   explicit VisualViewport(Page&);
   ~VisualViewport() override;

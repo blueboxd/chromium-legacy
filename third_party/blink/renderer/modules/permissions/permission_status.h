@@ -25,7 +25,6 @@ class PermissionStatus final : public EventTargetWithInlineData,
                                public ActiveScriptWrappable<PermissionStatus>,
                                public ExecutionContextLifecycleStateObserver,
                                public mojom::blink::PermissionObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(PermissionStatus);
   DEFINE_WRAPPERTYPEINFO();
 
   using MojoPermissionDescriptor = mojom::blink::PermissionDescriptorPtr;

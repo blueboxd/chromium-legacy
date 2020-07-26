@@ -45,7 +45,6 @@ DECLARE_SVG_ENUM_MAP(SVGSpreadMethodType);
 
 class SVGGradientElement : public SVGElement, public SVGURIReference {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGGradientElement);
 
  public:
   SVGAnimatedTransformList* gradientTransform() const {

@@ -48,7 +48,6 @@ enum class ShadowRootType { V0, kOpen, kClosed, kUserAgent };
 
 class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(ShadowRoot);
 
  public:
   ShadowRoot(Document&, ShadowRootType);

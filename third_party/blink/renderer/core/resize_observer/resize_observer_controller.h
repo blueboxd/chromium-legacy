@@ -24,8 +24,6 @@ class ResizeObserver;
 class CORE_EXPORT ResizeObserverController final
     : public GarbageCollected<ResizeObserverController>,
       public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(ResizeObserverController);
-
  public:
   static const size_t kDepthBottom = 4096;
 

@@ -36,7 +36,6 @@ class CORE_EXPORT WorkletGlobalScope
     : public WorkerOrWorkletGlobalScope,
       public ActiveScriptWrappable<WorkletGlobalScope> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(WorkletGlobalScope);
 
  public:
   ~WorkletGlobalScope() override;

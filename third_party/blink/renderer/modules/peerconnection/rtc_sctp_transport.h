@@ -27,7 +27,6 @@ class MODULES_EXPORT RTCSctpTransport final
       public ExecutionContextClient,
       public SctpTransportProxy::Delegate {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(RTCSctpTransport);
 
  public:
   RTCSctpTransport(

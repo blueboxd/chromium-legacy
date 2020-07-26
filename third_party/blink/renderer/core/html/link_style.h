@@ -26,8 +26,6 @@ struct LinkLoadParameters;
 // changing @rel makes it harder to move such a design so we are
 // sticking current way so far.
 class LinkStyle final : public LinkResource, ResourceClient {
-  USING_GARBAGE_COLLECTED_MIXIN(LinkStyle);
-
  public:
   explicit LinkStyle(HTMLLinkElement* owner);
   ~LinkStyle() override;

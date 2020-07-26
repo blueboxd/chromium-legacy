@@ -33,7 +33,6 @@ class BeforeInstallPromptEvent final
       public ActiveScriptWrappable<BeforeInstallPromptEvent>,
       public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(BeforeInstallPromptEvent);
 
  public:
   BeforeInstallPromptEvent(const AtomicString& name,

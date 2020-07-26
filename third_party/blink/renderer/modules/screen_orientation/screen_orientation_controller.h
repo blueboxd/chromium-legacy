@@ -29,8 +29,6 @@ class MODULES_EXPORT ScreenOrientationController final
       public ExecutionContextLifecycleObserver,
       public PageVisibilityObserver,
       public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationController);
-
  public:
   explicit ScreenOrientationController(LocalDOMWindow&);
   ~ScreenOrientationController();

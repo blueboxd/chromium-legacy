@@ -64,8 +64,6 @@ class CORE_EXPORT WorkerClassicScriptLoader final
     : public GarbageCollected<WorkerClassicScriptLoader>,
       public ThreadableLoaderClient,
       public WorkerMainScriptLoaderClient {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerClassicScriptLoader);
-
  public:
   WorkerClassicScriptLoader();
 

@@ -26,7 +26,6 @@ class ScriptPromiseResolver;
 class MODULES_EXPORT NDEFReader : public EventTargetWithInlineData,
                                   public ActiveScriptWrappable<NDEFReader>,
                                   public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(NDEFReader);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

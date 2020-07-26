@@ -50,7 +50,6 @@ class MODULES_EXPORT RTCDataChannel final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<RTCDataChannel>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(RTCDataChannel);
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(RTCDataChannel, Dispose);
 

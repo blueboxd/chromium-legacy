@@ -35,8 +35,6 @@ class MODULES_EXPORT PictureInPictureControllerImpl
       public PageVisibilityObserver,
       public ExecutionContextClient,
       public blink::mojom::blink::PictureInPictureSessionObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(PictureInPictureControllerImpl);
-
  public:
   explicit PictureInPictureControllerImpl(Document&);
   ~PictureInPictureControllerImpl() override = default;

@@ -17,8 +17,6 @@ class SecurityContext;
 class ExecutionContextCSPDelegate final
     : public GarbageCollected<ExecutionContextCSPDelegate>,
       public ContentSecurityPolicyDelegate {
-  USING_GARBAGE_COLLECTED_MIXIN(ExecutionContextCSPDelegate);
-
  public:
   explicit ExecutionContextCSPDelegate(ExecutionContext&);
 

@@ -30,8 +30,6 @@ using Result = BytesConsumer::Result;
 class BlobBytesConsumerTestClient final
     : public GarbageCollected<BlobBytesConsumerTestClient>,
       public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(BlobBytesConsumerTestClient);
-
  public:
   void OnStateChange() override { ++num_on_state_change_called_; }
   String DebugName() const override { return "BlobBytesConsumerTestClient"; }

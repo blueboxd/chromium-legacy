@@ -19,8 +19,6 @@ constexpr size_t ResponseBodyLoader::kMaxNumConsumedBytesInTask;
 class ResponseBodyLoader::DelegatingBytesConsumer final
     : public BytesConsumer,
       public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(DelegatingBytesConsumer);
-
  public:
   DelegatingBytesConsumer(
       BytesConsumer& bytes_consumer,

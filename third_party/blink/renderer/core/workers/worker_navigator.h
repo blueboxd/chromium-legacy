@@ -54,7 +54,6 @@ class CORE_EXPORT WorkerNavigator final
       public NavigatorUA,
       public Supplementable<WorkerNavigator> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigator);
 
  public:
   WorkerNavigator(const String& user_agent,

@@ -45,8 +45,6 @@ class CORE_EXPORT ColorChooserUIController
     : public GarbageCollected<ColorChooserUIController>,
       public mojom::blink::ColorChooserClient,
       public ColorChooser {
-  USING_GARBAGE_COLLECTED_MIXIN(ColorChooserUIController);
-
  public:
   ColorChooserUIController(LocalFrame*, blink::ColorChooserClient*);
   ~ColorChooserUIController() override;

@@ -58,8 +58,6 @@ double NowTicksInSeconds(const base::TestMockTimeTaskRunner* task_runner) {
 class MockScrollableAreaForAnimatorTest
     : public GarbageCollected<MockScrollableAreaForAnimatorTest>,
       public ScrollableArea {
-  USING_GARBAGE_COLLECTED_MIXIN(MockScrollableAreaForAnimatorTest);
-
  public:
   explicit MockScrollableAreaForAnimatorTest(bool scroll_animator_enabled,
                                              const ScrollOffset& min_offset,

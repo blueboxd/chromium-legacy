@@ -43,7 +43,6 @@ class SpeechSynthesisUtterance final
       public ExecutionContextClient,
       public mojom::blink::SpeechSynthesisClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesisUtterance);
 
  public:
   static SpeechSynthesisUtterance* Create(ExecutionContext*);

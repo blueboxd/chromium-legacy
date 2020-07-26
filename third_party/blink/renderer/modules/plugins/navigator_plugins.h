@@ -17,8 +17,6 @@ class Navigator;
 
 class NavigatorPlugins final : public GarbageCollected<NavigatorPlugins>,
                                public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorPlugins);
-
  public:
   static const char kSupplementName[];
 

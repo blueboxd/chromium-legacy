@@ -32,8 +32,6 @@ KURL mock_path_as_kurl() {
 
 class TestableFileWriter : public GarbageCollected<TestableFileWriter>,
                            public FileWriterBase {
-  USING_GARBAGE_COLLECTED_MIXIN(TestableFileWriter);
-
  public:
   explicit TestableFileWriter() { reset(); }
 

@@ -24,8 +24,6 @@ class CORE_EXPORT BytesUploader
     : public GarbageCollected<BytesUploader>,
       public BytesConsumer::Client,
       public network::mojom::blink::ChunkedDataPipeGetter {
-  USING_GARBAGE_COLLECTED_MIXIN(BytesUploader);
-
  public:
   BytesUploader(
       BytesConsumer* consumer,

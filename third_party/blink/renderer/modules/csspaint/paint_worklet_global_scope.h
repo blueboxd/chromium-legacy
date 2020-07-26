@@ -22,7 +22,6 @@ class WorkerReportingProxy;
 
 class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(PaintWorkletGlobalScope);
 
  public:
   // Creates a main-thread bound PaintWorkletGlobalScope.

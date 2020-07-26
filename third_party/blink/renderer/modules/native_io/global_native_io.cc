@@ -25,8 +25,6 @@ namespace {
 template <typename T>
 class GlobalNativeIOImpl final : public GarbageCollected<GlobalNativeIOImpl<T>>,
                                  public Supplement<T> {
-  USING_GARBAGE_COLLECTED_MIXIN(GlobalNativeIOImpl);
-
  public:
   static const char kSupplementName[];
 

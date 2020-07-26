@@ -24,8 +24,6 @@ namespace {
 
 class FakeContextNotifier final : public GarbageCollected<FakeContextNotifier>,
                                   public ContextLifecycleNotifier {
-  USING_GARBAGE_COLLECTED_MIXIN(FakeContextNotifier);
-
  public:
   FakeContextNotifier() = default;
 

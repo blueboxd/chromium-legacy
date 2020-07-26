@@ -38,7 +38,6 @@ class CORE_EXPORT SVGImageElement final
       public SVGURIReference,
       public ActiveScriptWrappable<SVGImageElement> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGImageElement);
 
  public:
   explicit SVGImageElement(Document&);

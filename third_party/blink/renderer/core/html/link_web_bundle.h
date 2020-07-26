@@ -21,8 +21,6 @@ class WebBundleLoader;
 // A <link rel="webbundle" ...> element creates LinkWebBundle.
 class CORE_EXPORT LinkWebBundle final : public LinkResource,
                                         public SubresourceWebBundle {
-  USING_GARBAGE_COLLECTED_MIXIN(LinkWebBundle);
-
  public:
   explicit LinkWebBundle(HTMLLinkElement* owner);
   ~LinkWebBundle() override;

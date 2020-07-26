@@ -32,8 +32,6 @@ using device::FakeSensorProvider;
 class MockDeviceOrientationController final
     : public GarbageCollected<MockDeviceOrientationController>,
       public PlatformEventController {
-  USING_GARBAGE_COLLECTED_MIXIN(MockDeviceOrientationController);
-
  public:
   explicit MockDeviceOrientationController(
       DeviceOrientationEventPump* orientation_pump,

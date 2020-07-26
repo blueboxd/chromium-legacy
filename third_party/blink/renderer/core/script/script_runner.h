@@ -46,8 +46,6 @@ class CORE_EXPORT ScriptRunner final
     : public GarbageCollected<ScriptRunner>,
       public ExecutionContextLifecycleStateObserver,
       public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ScriptRunner);
-
  public:
   explicit ScriptRunner(Document*);
 

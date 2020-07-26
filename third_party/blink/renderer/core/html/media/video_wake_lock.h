@@ -33,8 +33,6 @@ class CORE_EXPORT VideoWakeLock final
       public PageVisibilityObserver,
       public RemotePlaybackObserver,
       public ExecutionContextLifecycleStateObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(VideoWakeLock);
-
  public:
   explicit VideoWakeLock(HTMLVideoElement&);
 

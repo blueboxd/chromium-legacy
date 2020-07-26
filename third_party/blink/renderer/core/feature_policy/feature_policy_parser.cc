@@ -39,8 +39,6 @@ using FeaturePolicyNode = Vector<FeaturePolicyDeclarationNode>;
 class ParsedFeaturePolicies final
     : public GarbageCollected<ParsedFeaturePolicies>,
       public Supplement<ExecutionContext> {
-  USING_GARBAGE_COLLECTED_MIXIN(ParsedFeaturePolicies);
-
  public:
   static const char kSupplementName[];
 

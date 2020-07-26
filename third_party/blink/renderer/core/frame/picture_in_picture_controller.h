@@ -23,8 +23,6 @@ class ScriptPromiseResolver;
 class CORE_EXPORT PictureInPictureController
     : public GarbageCollected<PictureInPictureController>,
       public Supplement<Document> {
-  USING_GARBAGE_COLLECTED_MIXIN(PictureInPictureController);
-
  public:
   static const char kSupplementName[];
 

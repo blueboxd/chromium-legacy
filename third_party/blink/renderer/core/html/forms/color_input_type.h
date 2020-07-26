@@ -42,8 +42,6 @@ class ColorChooser;
 class ColorInputType final : public InputType,
                              public KeyboardClickableInputTypeView,
                              public ColorChooserClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ColorInputType);
-
  public:
   explicit ColorInputType(HTMLInputElement&);
   ~ColorInputType() override;

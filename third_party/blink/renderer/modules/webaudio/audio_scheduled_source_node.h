@@ -177,7 +177,6 @@ class AudioScheduledSourceHandler
 class AudioScheduledSourceNode
     : public AudioNode,
       public ActiveScriptWrappable<AudioScheduledSourceNode> {
-  USING_GARBAGE_COLLECTED_MIXIN(AudioScheduledSourceNode);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

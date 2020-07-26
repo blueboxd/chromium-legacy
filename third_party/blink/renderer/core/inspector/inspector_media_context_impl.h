@@ -29,8 +29,6 @@ class CORE_EXPORT MediaInspectorContextImpl final
     : public GarbageCollected<MediaInspectorContextImpl>,
       public Supplement<LocalDOMWindow>,
       public MediaInspectorContext {
-  USING_GARBAGE_COLLECTED_MIXIN(MediaInspectorContextImpl);
-
  public:
   static const char kSupplementName[];
 

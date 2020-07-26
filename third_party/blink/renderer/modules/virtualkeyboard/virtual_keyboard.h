@@ -27,7 +27,6 @@ class VirtualKeyboard final : public EventTargetWithInlineData,
                               public ExecutionContextClient,
                               public VirtualKeyboardOverlayChangedObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(VirtualKeyboard);
 
  public:
   explicit VirtualKeyboard(LocalFrame*);

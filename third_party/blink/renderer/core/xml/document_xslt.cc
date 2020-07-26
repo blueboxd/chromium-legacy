@@ -25,8 +25,6 @@ namespace blink {
 class DOMContentLoadedListener final
     : public NativeEventListener,
       public ProcessingInstruction::DetachableEventListener {
-  USING_GARBAGE_COLLECTED_MIXIN(DOMContentLoadedListener);
-
  public:
   explicit DOMContentLoadedListener(ProcessingInstruction* pi)
       : processing_instruction_(pi) {}

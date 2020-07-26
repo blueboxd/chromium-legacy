@@ -395,6 +395,9 @@ TEST_F('ChromeVoxCursorsTest', 'SingleDocSelection', function() {
     <p>end of text</p>
   `,
       function(root) {
+        // For some reason, Blink fails if we don't first select something on
+        // the page.
+        ChromeVoxState.instance.currentRange.select();
         const link = root.find({role: RoleType.LINK});
         const p1 = root.find({role: RoleType.PARAGRAPH});
         const p2 = p1.nextSibling;

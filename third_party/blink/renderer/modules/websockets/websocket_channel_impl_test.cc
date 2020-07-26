@@ -47,8 +47,6 @@ typedef testing::StrictMock<testing::MockFunction<void(int)>> Checkpoint;
 class MockWebSocketChannelClient
     : public GarbageCollected<MockWebSocketChannelClient>,
       public WebSocketChannelClient {
-  USING_GARBAGE_COLLECTED_MIXIN(MockWebSocketChannelClient);
-
  public:
   static MockWebSocketChannelClient* Create() {
     return MakeGarbageCollected<

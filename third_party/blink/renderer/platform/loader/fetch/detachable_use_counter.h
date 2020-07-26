@@ -12,8 +12,6 @@ namespace blink {
 class DetachableUseCounter final
     : public GarbageCollected<DetachableUseCounter>,
       public UseCounter {
-  USING_GARBAGE_COLLECTED_MIXIN(DetachableUseCounter);
-
  public:
   // |use_counter| can be null, and in that case |this| is already detached.
   explicit DetachableUseCounter(UseCounter* use_counter)

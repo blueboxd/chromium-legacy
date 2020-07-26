@@ -20,8 +20,6 @@ namespace {
 class MockFormValidationMessageClient
     : public GarbageCollected<MockFormValidationMessageClient>,
       public ValidationMessageClient {
-  USING_GARBAGE_COLLECTED_MIXIN(MockFormValidationMessageClient);
-
  public:
   void ShowValidationMessage(const Element& anchor,
                              const String&,

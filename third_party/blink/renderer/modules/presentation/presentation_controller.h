@@ -31,8 +31,6 @@ class MODULES_EXPORT PresentationController
     : public GarbageCollected<PresentationController>,
       public Supplement<LocalDOMWindow>,
       public mojom::blink::PresentationController {
-  USING_GARBAGE_COLLECTED_MIXIN(PresentationController);
-
  public:
   static const char kSupplementName[];
 

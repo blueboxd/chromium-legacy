@@ -48,8 +48,6 @@ class CORE_EXPORT ScriptedAnimationController
     : public GarbageCollected<ScriptedAnimationController>,
       public ExecutionContextLifecycleStateObserver,
       public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ScriptedAnimationController);
-
  public:
   explicit ScriptedAnimationController(LocalDOMWindow*);
   ~ScriptedAnimationController() override = default;

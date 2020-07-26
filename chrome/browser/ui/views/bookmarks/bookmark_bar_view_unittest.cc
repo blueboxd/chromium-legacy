@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
@@ -42,18 +43,27 @@ namespace {
 class BookmarkBarViewBaseTest : public ChromeViewsTestBase {
  public:
   BookmarkBarViewBaseTest() {
+    TestingProfile::Builder profile_builder;
+    profile_builder.AddTestingFactory(
+        TemplateURLServiceFactory::GetInstance(),
+        base::BindRepeating(
+            &BookmarkBarViewBaseTest::CreateTemplateURLService));
+    profile_builder.AddTestingFactory(
+        BookmarkModelFactory::GetInstance(),
+        BookmarkModelFactory::GetDefaultFactory());
+    profile_builder.AddTestingFactory(
+        ManagedBookmarkServiceFactory::GetInstance(),
+        ManagedBookmarkServiceFactory::GetDefaultFactory());
+    profile_ = profile_builder.Build();
+
     Browser::CreateParams params(profile(), true);
     params.window = &browser_window_;
     browser_ = std::make_unique<Browser>(params);
-
-    TemplateURLServiceFactory::GetInstance()->SetTestingFactory(
-        &profile_, base::BindRepeating(
-                       &BookmarkBarViewBaseTest::CreateTemplateURLService));
   }
 
   virtual BookmarkBarView* bookmark_bar_view() = 0;
 
-  TestingProfile* profile() { return &profile_; }
+  TestingProfile* profile() { return profile_.get(); }
   Browser* browser() { return browser_.get(); }
 
  protected:
@@ -105,7 +115,6 @@ class BookmarkBarViewBaseTest : public ChromeViewsTestBase {
   // Creates the model, blocking until it loads, then creates the
   // BookmarkBarView.
   std::unique_ptr<BookmarkBarView> CreateBookmarkModelAndBookmarkBarView() {
-    profile_.CreateBookmarkModel(true);
     WaitForBookmarkModelToLoad();
 
     auto bookmark_bar_view =
@@ -115,7 +124,7 @@ class BookmarkBarViewBaseTest : public ChromeViewsTestBase {
     return bookmark_bar_view;
   }
 
-  TestingProfile profile_;
+  std::unique_ptr<TestingProfile> profile_;
   TestBrowserWindow browser_window_;
   std::unique_ptr<Browser> browser_;
   std::unique_ptr<BookmarkBarViewTestHelper> test_helper_;

@@ -69,7 +69,6 @@ class HTMLCollectionIterator {
 class CORE_EXPORT HTMLCollection : public ScriptWrappable,
                                    public LiveNodeListBase {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLCollection);
 
  public:
   enum ItemAfterOverrideType {

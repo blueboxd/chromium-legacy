@@ -21,7 +21,6 @@ class PictureInPictureWindow
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<PictureInPictureWindow>,
       public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(PictureInPictureWindow);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

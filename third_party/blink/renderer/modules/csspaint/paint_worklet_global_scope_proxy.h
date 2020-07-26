@@ -22,8 +22,6 @@ class WorkletModuleResponsesMap;
 class MODULES_EXPORT PaintWorkletGlobalScopeProxy
     : public GarbageCollected<PaintWorkletGlobalScopeProxy>,
       public WorkletGlobalScopeProxy {
-  USING_GARBAGE_COLLECTED_MIXIN(PaintWorkletGlobalScopeProxy);
-
  public:
   static PaintWorkletGlobalScopeProxy* From(WorkletGlobalScopeProxy*);
 

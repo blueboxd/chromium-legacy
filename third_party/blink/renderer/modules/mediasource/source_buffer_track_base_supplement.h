@@ -16,8 +16,6 @@ class SourceBuffer;
 class SourceBufferTrackBaseSupplement
     : public GarbageCollected<SourceBufferTrackBaseSupplement>,
       public Supplement<TrackBase> {
-  USING_GARBAGE_COLLECTED_MIXIN(SourceBufferTrackBaseSupplement);
-
  public:
   static const char kSupplementName[];
 

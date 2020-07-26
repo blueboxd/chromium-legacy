@@ -78,7 +78,6 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
                              public ActiveScriptWrappable<XMLHttpRequest>,
                              public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequest);
 
  public:
   static XMLHttpRequest* Create(ScriptState*);

@@ -43,7 +43,6 @@ namespace blink {
 class SVGAnimatedNumberList final : public ScriptWrappable,
                                     public SVGAnimatedProperty<SVGNumberList> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedNumberList);
 
  public:
   SVGAnimatedNumberList(SVGElement* context_element,

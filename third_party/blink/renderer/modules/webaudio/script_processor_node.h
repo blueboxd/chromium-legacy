@@ -121,7 +121,6 @@ class ScriptProcessorNode final
     : public AudioNode,
       public ActiveScriptWrappable<ScriptProcessorNode> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(ScriptProcessorNode);
 
  public:
   // bufferSize must be one of the following values: 256, 512, 1024, 2048,

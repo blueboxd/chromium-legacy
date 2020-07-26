@@ -29,8 +29,6 @@ class ServiceWorkerRegistration;
 
 class PushMessagingClient final : public GarbageCollected<PushMessagingClient>,
                                   public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(PushMessagingClient);
-
  public:
   static const char kSupplementName[];
 

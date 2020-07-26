@@ -51,8 +51,6 @@ namespace blink {
 class MutationObserver::V8DelegateImpl final
     : public MutationObserver::Delegate,
       public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(V8DelegateImpl);
-
  public:
   static V8DelegateImpl* Create(V8MutationCallback* callback,
                                 ExecutionContext* execution_context) {

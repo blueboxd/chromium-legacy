@@ -18,8 +18,6 @@ class HTMLVideoElement;
 class CORE_EXPORT VideoFrameCallbackRequester
     : public GarbageCollected<VideoFrameCallbackRequester>,
       public Supplement<HTMLVideoElement> {
-  USING_GARBAGE_COLLECTED_MIXIN(VideoFrameCallbackRequester);
-
  public:
   static const char kSupplementName[];
 

@@ -41,7 +41,6 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
                                         public CompositorAnimationDelegate,
                                         public AnimationEffectOwner {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(WorkletAnimation);
   USING_PRE_FINALIZER(WorkletAnimation, Dispose);
 
  public:

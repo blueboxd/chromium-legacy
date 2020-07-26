@@ -17,8 +17,6 @@ class WorkerGlobalScope;
 class CORE_EXPORT InstalledServiceWorkerModuleScriptFetcher final
     : public GarbageCollected<InstalledServiceWorkerModuleScriptFetcher>,
       public ModuleScriptFetcher {
-  USING_GARBAGE_COLLECTED_MIXIN(InstalledServiceWorkerModuleScriptFetcher);
-
  public:
   InstalledServiceWorkerModuleScriptFetcher(WorkerGlobalScope*,
                                             util::PassKey<ModuleScriptLoader>);

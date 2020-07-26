@@ -46,8 +46,6 @@ class DraggedIsolatedFileSystemImpl final
     : public GarbageCollected<DraggedIsolatedFileSystemImpl>,
       public DraggedIsolatedFileSystem,
       public Supplement<DataObject> {
-  USING_GARBAGE_COLLECTED_MIXIN(DraggedIsolatedFileSystemImpl);
-
  public:
   static const char kSupplementName[];
 

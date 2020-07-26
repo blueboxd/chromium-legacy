@@ -23,8 +23,6 @@ namespace blink {
 class WebPepperSocketChannelClientProxy final
     : public GarbageCollected<WebPepperSocketChannelClientProxy>,
       public WebSocketChannelClient {
-  USING_GARBAGE_COLLECTED_MIXIN(WebPepperSocketChannelClientProxy);
-
  public:
   explicit WebPepperSocketChannelClientProxy(WebPepperSocketImpl* impl)
       : impl_(impl) {}

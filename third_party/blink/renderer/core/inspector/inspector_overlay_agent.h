@@ -127,8 +127,6 @@ class CORE_EXPORT Hinge final : public GarbageCollected<Hinge> {
 class CORE_EXPORT InspectorOverlayAgent final
     : public InspectorBaseAgent<protocol::Overlay::Metainfo>,
       public InspectorOverlayHost::Delegate {
-  USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlayAgent);
-
  public:
   static std::unique_ptr<InspectorGridHighlightConfig> ToGridHighlightConfig(
       protocol::Overlay::GridHighlightConfig*);

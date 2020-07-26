@@ -32,7 +32,6 @@ class MODULES_EXPORT MediaSession final
     : public ScriptWrappable,
       public ExecutionContextClient,
       public blink::mojom::blink::MediaSessionClient {
-  USING_GARBAGE_COLLECTED_MIXIN(MediaSession);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

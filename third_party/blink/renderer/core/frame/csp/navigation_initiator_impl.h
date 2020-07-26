@@ -21,8 +21,6 @@ class NavigationInitiatorImpl
     : public GarbageCollected<NavigationInitiatorImpl>,
       public Supplement<LocalDOMWindow>,
       public mojom::blink::NavigationInitiator {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigationInitiatorImpl);
-
  public:
   static const char kSupplementName[];
   static NavigationInitiatorImpl& From(LocalDOMWindow&);

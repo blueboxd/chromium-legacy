@@ -53,8 +53,6 @@ class ResolveURICallbacks;
 class LocalFileSystem final : public GarbageCollected<LocalFileSystem>,
                               public Supplement<ExecutionContext>,
                               public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(LocalFileSystem);
-
  public:
   enum SynchronousType { kAsynchronous, kSynchronous };
 

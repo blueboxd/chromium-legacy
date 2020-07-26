@@ -13,8 +13,6 @@ namespace blink {
 
 class DummyCacheClient : public GarbageCollected<DummyCacheClient>,
                          public SVGExternalDocumentCache::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(DummyCacheClient);
-
  public:
   DummyCacheClient() = default;
   void NotifyFinished(Document*) override {}

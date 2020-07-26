@@ -29,8 +29,6 @@ class ExternalDateTimeChooserTest : public testing::Test {
 class TestDateTimeChooserClient final
     : public GarbageCollected<TestDateTimeChooserClient>,
       public DateTimeChooserClient {
-  USING_GARBAGE_COLLECTED_MIXIN(TestDateTimeChooserClient);
-
  public:
   explicit TestDateTimeChooserClient(Element* element) : element_(element) {}
   ~TestDateTimeChooserClient() override {}

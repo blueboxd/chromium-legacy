@@ -126,8 +126,6 @@ struct LayoutTextSelectionStatus {
 class CORE_EXPORT FrameSelection final
     : public GarbageCollected<FrameSelection>,
       public SynchronousMutationObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(FrameSelection);
-
  public:
   explicit FrameSelection(LocalFrame&);
   ~FrameSelection();

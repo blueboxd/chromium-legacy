@@ -101,8 +101,6 @@ void HTTPRequestHeaderValidator::VisitHeader(const WebString& name,
 class WebAssociatedURLLoaderImpl::ClientAdapter final
     : public GarbageCollected<ClientAdapter>,
       public ThreadableLoaderClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ClientAdapter);
-
  public:
   ClientAdapter(WebAssociatedURLLoaderImpl*,
                 WebAssociatedURLLoaderClient*,
@@ -317,8 +315,6 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::NotifyError(TimerBase* timer) {
 class WebAssociatedURLLoaderImpl::Observer final
     : public GarbageCollected<Observer>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(Observer);
-
  public:
   Observer(WebAssociatedURLLoaderImpl* parent, ExecutionContext* context)
       : ExecutionContextLifecycleObserver(context), parent_(parent) {}

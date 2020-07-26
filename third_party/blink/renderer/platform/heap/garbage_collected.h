@@ -57,44 +57,14 @@ struct TraceDescriptor {
   TraceCallback callback;
 };
 
-// The GarbageCollectedMixin interface and helper macro
-// USING_GARBAGE_COLLECTED_MIXIN can be used to automatically define
-// TraceTrait/ObjectAliveTrait on non-leftmost deriving classes
-// which need to be garbage collected.
-//
-// Consider the following case:
-// class B {};
-// class A : public GarbageCollected, public B {};
-//
-// We can't correctly handle "Member<B> p = &a" as we can't compute addr of
-// object header statically. This can be solved by using GarbageCollectedMixin:
-// class B : public GarbageCollectedMixin {};
-// class A : public GarbageCollected, public B {
-//   USING_GARBAGE_COLLECTED_MIXIN(A);
-// };
-//
-// The classes involved and the helper macros allow for properly handling
-// definitions for Member<B> and friends. The mechanisms for handling Member<B>
-// involve dynamic dispatch. Note that for Member<A> all methods and pointers
-// are statically computed and no dynamic dispatch is involved.
-//
-// Note that garbage collections are allowed during mixin construction as
-// conservative scanning of objects does not rely on the Trace method but rather
-// scans the object field by field.
+// The GarbageCollectedMixin interface can be used to automatically define
+// TraceTrait/ObjectAliveTrait on non-leftmost deriving classes which need
+// to be garbage collected.
 class PLATFORM_EXPORT GarbageCollectedMixin {
  public:
   typedef int IsGarbageCollectedMixinMarker;
   virtual void Trace(Visitor*) const {}
 };
-
-// The Oilpan GC plugin checks for proper usages of the
-// USING_GARBAGE_COLLECTED_MIXIN macro using a typedef marker.
-#define USING_GARBAGE_COLLECTED_MIXIN(TYPE)       \
- public:                                          \
-  typedef int HasUsingGarbageCollectedMixinMacro; \
-                                                  \
- private:                                         \
-  friend class ::WTF::internal::__thisIsHereToForceASemicolonAfterThisMacro
 
 // Base class for objects allocated in the Blink garbage-collected heap.
 //

@@ -16,8 +16,6 @@ class StorageArea;
 
 class DOMWindowStorage final : public GarbageCollected<DOMWindowStorage>,
                                public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(DOMWindowStorage);
-
  public:
   static const char kSupplementName[];
 

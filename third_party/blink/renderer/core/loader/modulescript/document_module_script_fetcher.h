@@ -18,8 +18,6 @@ namespace blink {
 class CORE_EXPORT DocumentModuleScriptFetcher final
     : public GarbageCollected<DocumentModuleScriptFetcher>,
       public ModuleScriptFetcher {
-  USING_GARBAGE_COLLECTED_MIXIN(DocumentModuleScriptFetcher);
-
  public:
   explicit DocumentModuleScriptFetcher(util::PassKey<ModuleScriptLoader>);
 

@@ -29,8 +29,6 @@ class OffscreenCanvas;
 class CORE_EXPORT WorkerAnimationFrameProvider
     : public GarbageCollected<WorkerAnimationFrameProvider>,
       public BeginFrameProviderClient {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerAnimationFrameProvider);
-
  public:
   WorkerAnimationFrameProvider(
       ExecutionContext* context,

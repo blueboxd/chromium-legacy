@@ -16,8 +16,6 @@ class GPU;
 
 class NavigatorGPU final : public GarbageCollected<NavigatorGPU>,
                            public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorGPU);
-
  public:
   static const char kSupplementName[];
 

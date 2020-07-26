@@ -84,7 +84,6 @@ class NetworkResourcesData final
  public:
   class ResourceData final : public GarbageCollected<ResourceData>,
                              public FontResourceClearDataObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(ResourceData);
     friend class NetworkResourcesData;
 
    public:

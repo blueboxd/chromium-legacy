@@ -144,8 +144,6 @@ class CORE_EXPORT LocalFrame final
       public mojom::blink::LocalFrame,
       public mojom::blink::LocalMainFrame,
       public mojom::blink::HighPriorityLocalFrame {
-  USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
-
  public:
   // Returns the LocalFrame instance for the given |frame_token|.
   static LocalFrame* FromFrameToken(const base::UnguessableToken& frame_token);

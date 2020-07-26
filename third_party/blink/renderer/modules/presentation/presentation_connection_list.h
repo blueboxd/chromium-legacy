@@ -20,7 +20,6 @@ class MODULES_EXPORT PresentationConnectionList final
     : public EventTargetWithInlineData,
       public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(PresentationConnectionList);
 
  public:
   explicit PresentationConnectionList(ExecutionContext*);

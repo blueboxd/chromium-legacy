@@ -315,8 +315,6 @@ TEST_F(ResourceLoaderTest, LoadDataURL_AsyncAndNonStream) {
 class TestRawResourceClient final
     : public GarbageCollected<TestRawResourceClient>,
       public RawResourceClient {
-  USING_GARBAGE_COLLECTED_MIXIN(TestRawResourceClient);
-
  public:
   TestRawResourceClient() = default;
 

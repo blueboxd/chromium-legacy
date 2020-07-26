@@ -17,8 +17,6 @@ class ProcessingInstruction;
 
 class DocumentXSLT final : public GarbageCollected<DocumentXSLT>,
                            public Supplement<Document> {
-  USING_GARBAGE_COLLECTED_MIXIN(DocumentXSLT);
-
  public:
   static const char kSupplementName[];
 

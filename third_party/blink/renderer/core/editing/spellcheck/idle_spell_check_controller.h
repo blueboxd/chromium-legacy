@@ -31,7 +31,6 @@ class CORE_EXPORT IdleSpellCheckController final
     : public GarbageCollected<IdleSpellCheckController>,
       public ExecutionContextLifecycleObserver {
   DISALLOW_COPY_AND_ASSIGN(IdleSpellCheckController);
-  USING_GARBAGE_COLLECTED_MIXIN(IdleSpellCheckController);
 
  public:
   explicit IdleSpellCheckController(LocalDOMWindow&, SpellCheckRequester&);

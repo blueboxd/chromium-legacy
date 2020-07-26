@@ -19,8 +19,6 @@ class ServiceWorkerRegistration;
 class PaymentAppServiceWorkerRegistration final
     : public GarbageCollected<PaymentAppServiceWorkerRegistration>,
       public Supplement<ServiceWorkerRegistration> {
-  USING_GARBAGE_COLLECTED_MIXIN(PaymentAppServiceWorkerRegistration);
-
  public:
   static const char kSupplementName[];
 

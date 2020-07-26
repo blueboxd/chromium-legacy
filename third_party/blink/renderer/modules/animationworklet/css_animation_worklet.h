@@ -18,8 +18,6 @@ class MODULES_EXPORT CSSAnimationWorklet final
     : public GarbageCollected<CSSAnimationWorklet>,
       public Supplement<LocalDOMWindow>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(CSSAnimationWorklet);
-
  public:
   static const char kSupplementName[];
 

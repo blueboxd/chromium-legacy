@@ -58,7 +58,6 @@ class MODULES_EXPORT RTCQuicTransport final
       public ExecutionContextClient,
       public QuicTransportProxy::Delegate {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(RTCQuicTransport);
 
  public:
   enum class CloseReason {

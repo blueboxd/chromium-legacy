@@ -44,7 +44,6 @@ class SVGAnimatedTransformList final
     : public ScriptWrappable,
       public SVGAnimatedProperty<SVGTransformList> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedTransformList);
 
  public:
   SVGAnimatedTransformList(SVGElement* context_element,

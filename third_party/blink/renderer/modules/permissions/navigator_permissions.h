@@ -17,8 +17,6 @@ class Permissions;
 class NavigatorPermissions final
     : public GarbageCollected<NavigatorPermissions>,
       public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorPermissions);
-
  public:
   static const char kSupplementName[];
 

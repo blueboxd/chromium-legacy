@@ -17,8 +17,6 @@ class WorkerNavigator;
 
 class WorkerNavigatorUSB final : public GarbageCollected<WorkerNavigatorUSB>,
                                  public Supplement<WorkerNavigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorUSB);
-
  public:
   static const char kSupplementName[];
 

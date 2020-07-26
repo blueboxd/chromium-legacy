@@ -28,7 +28,6 @@ class LocalFrame;
 // document.
 class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
                                       public Supplement<Document> {
-  USING_GARBAGE_COLLECTED_MIXIN(PaintTiming);
   friend class FirstMeaningfulPaintDetector;
   using ReportTimeCallback =
       WTF::CrossThreadOnceFunction<void(WebSwapResult, base::TimeTicks)>;

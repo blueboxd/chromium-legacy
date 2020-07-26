@@ -99,7 +99,9 @@ FrameSequenceMetrics::FrameSequenceMetrics(FrameSequenceTrackerType type,
     : type_(type), throughput_ukm_reporter_(ukm_reporter) {
 }
 
-FrameSequenceMetrics::~FrameSequenceMetrics() {
+FrameSequenceMetrics::~FrameSequenceMetrics() = default;
+
+void FrameSequenceMetrics::ReportLeftoverData() {
   if (HasDataLeftForReporting()) {
     // Do this before ReportMetrics() which clears the throughput data.
     // TODO(xidachen): Find a way to make ThroughputUkmReporter to directly talk

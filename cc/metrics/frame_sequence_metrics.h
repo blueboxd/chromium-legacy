@@ -120,6 +120,9 @@ class CC_EXPORT FrameSequenceMetrics {
     return throughput_ukm_reporter_;
   }
 
+  // Must be called before destructor.
+  void ReportLeftoverData();
+
   void AdoptTrace(FrameSequenceMetrics* adopt_from);
   void AdvanceTrace(base::TimeTicks timestamp);
 

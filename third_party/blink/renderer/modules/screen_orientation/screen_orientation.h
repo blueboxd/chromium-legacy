@@ -26,7 +26,6 @@ class ScreenOrientationController;
 class MODULES_EXPORT ScreenOrientation final : public EventTargetWithInlineData,
                                                public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientation);
 
  public:
   static ScreenOrientation* Create(LocalDOMWindow*);

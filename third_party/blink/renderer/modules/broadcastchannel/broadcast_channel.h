@@ -24,7 +24,6 @@ class BroadcastChannel final : public EventTargetWithInlineData,
                                public ExecutionContextLifecycleObserver,
                                public mojom::blink::BroadcastChannelClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(BroadcastChannel);
   USING_PRE_FINALIZER(BroadcastChannel, Dispose);
 
  public:

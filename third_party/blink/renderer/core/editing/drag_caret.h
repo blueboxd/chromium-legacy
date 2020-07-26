@@ -42,8 +42,6 @@ struct PaintInvalidatorContext;
 
 class DragCaret final : public GarbageCollected<DragCaret>,
                         public SynchronousMutationObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(DragCaret);
-
  public:
   DragCaret();
   virtual ~DragCaret();

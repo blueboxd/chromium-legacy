@@ -24,8 +24,6 @@ using Result = BytesConsumer::Result;
 class BytesConsumerTestClient final
     : public GarbageCollected<BytesConsumerTestClient>,
       public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(BytesConsumerTestClient);
-
  public:
   void OnStateChange() override { ++num_on_state_change_called_; }
   String DebugName() const override { return "BytesConsumerTestClient"; }

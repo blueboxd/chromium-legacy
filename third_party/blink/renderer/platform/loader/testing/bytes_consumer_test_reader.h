@@ -18,8 +18,6 @@ class FakeTaskRunner;
 class BytesConsumerTestReader final
     : public GarbageCollected<BytesConsumerTestReader>,
       public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(BytesConsumerTestReader);
-
  public:
   // |consumer| must not have a client when called.
   explicit BytesConsumerTestReader(BytesConsumer* /* consumer */);

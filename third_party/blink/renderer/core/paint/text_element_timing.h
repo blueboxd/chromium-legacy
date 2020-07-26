@@ -25,8 +25,6 @@ class TextRecord;
 class CORE_EXPORT TextElementTiming final
     : public GarbageCollected<TextElementTiming>,
       public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(TextElementTiming);
-
  public:
   static const char kSupplementName[];
 

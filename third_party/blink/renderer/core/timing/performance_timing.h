@@ -57,7 +57,6 @@ class ScriptValue;
 class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
                                             public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(PerformanceTiming);
 
  public:
   struct BackForwardCacheRestoreTiming {

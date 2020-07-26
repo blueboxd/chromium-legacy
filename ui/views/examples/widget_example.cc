@@ -55,7 +55,8 @@ WidgetDialogExample::WidgetDialogExample() {
       MdTextButton::Create(nullptr, GetStringUTF16(IDS_WIDGET_EXTRA_BUTTON)));
   SetFootnoteView(
       std::make_unique<Label>(GetStringUTF16(IDS_WIDGET_FOOTNOTE_LABEL)));
-  AddChildView(new Label(GetStringUTF16(IDS_WIDGET_DIALOG_CONTENTS_LABEL)));
+  AddChildView(std::make_unique<Label>(
+      GetStringUTF16(IDS_WIDGET_DIALOG_CONTENTS_LABEL)));
 }
 
 WidgetDialogExample::~WidgetDialogExample() = default;
@@ -89,11 +90,11 @@ void WidgetExample::CreateExampleView(View* container) {
 void WidgetExample::BuildButton(View* container,
                                 const base::string16& label,
                                 int tag) {
-  LabelButton* button = new LabelButton(this, label);
+  LabelButton* button =
+      container->AddChildView(std::make_unique<LabelButton>(this, label));
   button->SetFocusForPlatform();
   button->set_request_focus_on_press(true);
   button->set_tag(tag);
-  container->AddChildView(button);
 }
 
 void WidgetExample::ShowWidget(View* sender, Widget::InitParams params) {
@@ -102,18 +103,18 @@ void WidgetExample::ShowWidget(View* sender, Widget::InitParams params) {
   params.bounds =
       gfx::Rect(sender->GetBoundsInScreen().CenterPoint(), gfx::Size(300, 200));
 
+  // A widget handles its own lifetime.
   Widget* widget = new Widget();
   widget->Init(std::move(params));
 
   // If the Widget has no contents by default, add a view with a 'Close' button.
   if (!widget->GetContentsView()) {
-    View* contents = new View();
+    View* contents = widget->SetContentsView(std::make_unique<View>());
     contents->SetLayoutManager(
         std::make_unique<BoxLayout>(BoxLayout::Orientation::kHorizontal));
     contents->SetBackground(CreateSolidBackground(SK_ColorGRAY));
     BuildButton(contents, GetStringUTF16(IDS_WIDGET_CLOSE_BUTTON_LABEL),
                 CLOSE_WIDGET);
-    widget->SetContentsView(contents);
   }
 
   widget->Show();
@@ -125,12 +126,16 @@ void WidgetExample::ButtonPressed(Button* sender, const ui::Event& event) {
       ShowWidget(sender, Widget::InitParams(Widget::InitParams::TYPE_POPUP));
       break;
     case DIALOG: {
+      // WidgetDialogExample will be destroyed by the widget when the created
+      // widget is destroyed.
       DialogDelegate::CreateDialogWidget(new WidgetDialogExample(), nullptr,
                                          sender->GetWidget()->GetNativeView())
           ->Show();
       break;
     }
     case MODAL_DIALOG: {
+      // ModalDialogExample will be destroyed by the widget when the created
+      // widget is destroyed.
       DialogDelegate::CreateDialogWidget(new ModalDialogExample(), nullptr,
                                          sender->GetWidget()->GetNativeView())
           ->Show();

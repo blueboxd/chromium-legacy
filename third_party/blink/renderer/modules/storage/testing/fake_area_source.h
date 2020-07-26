@@ -13,8 +13,6 @@ namespace blink {
 
 class FakeAreaSource : public GarbageCollected<FakeAreaSource>,
                        public CachedStorageArea::Source {
-  USING_GARBAGE_COLLECTED_MIXIN(FakeAreaSource);
-
  public:
   explicit FakeAreaSource(const KURL& page_url) : page_url_(page_url) {}
 

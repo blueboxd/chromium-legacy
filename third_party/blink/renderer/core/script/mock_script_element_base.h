@@ -14,8 +14,6 @@ namespace blink {
 
 class MockScriptElementBase : public GarbageCollected<MockScriptElementBase>,
                               public ScriptElementBase {
-  USING_GARBAGE_COLLECTED_MIXIN(MockScriptElementBase);
-
  public:
   static MockScriptElementBase* Create() {
     return MakeGarbageCollected<testing::StrictMock<MockScriptElementBase>>();

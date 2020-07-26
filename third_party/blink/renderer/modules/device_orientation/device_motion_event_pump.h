@@ -19,8 +19,6 @@ class PlatformEventController;
 class MODULES_EXPORT DeviceMotionEventPump
     : public GarbageCollected<DeviceMotionEventPump>,
       public DeviceSensorEventPump {
-  USING_GARBAGE_COLLECTED_MIXIN(DeviceMotionEventPump);
-
  public:
   explicit DeviceMotionEventPump(LocalFrame&);
   ~DeviceMotionEventPump() override;

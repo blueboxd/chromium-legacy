@@ -33,8 +33,6 @@ class ServiceWorkerRegistrationNotifications final
     : public GarbageCollected<ServiceWorkerRegistrationNotifications>,
       public Supplement<ServiceWorkerRegistration>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistrationNotifications);
-
  public:
   static const char kSupplementName[];
 

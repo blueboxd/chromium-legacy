@@ -45,8 +45,6 @@ namespace blink {
 class CORE_EXPORT CSSSelectorWatch final
     : public GarbageCollected<CSSSelectorWatch>,
       public Supplement<Document> {
-  USING_GARBAGE_COLLECTED_MIXIN(CSSSelectorWatch);
-
  public:
   static const char kSupplementName[];
 

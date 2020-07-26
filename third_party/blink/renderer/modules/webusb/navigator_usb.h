@@ -16,8 +16,6 @@ class USB;
 
 class NavigatorUSB final : public GarbageCollected<NavigatorUSB>,
                            public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorUSB);
-
  public:
   static const char kSupplementName[];
 

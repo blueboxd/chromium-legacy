@@ -35,7 +35,6 @@ class WakeLockManager;
 class MODULES_EXPORT WakeLock final : public ScriptWrappable,
                                       public ExecutionContextLifecycleObserver,
                                       public PageVisibilityObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(WakeLock);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

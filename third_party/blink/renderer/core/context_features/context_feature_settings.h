@@ -19,8 +19,6 @@ class ExecutionContext;
 class CORE_EXPORT ContextFeatureSettings final
     : public GarbageCollected<ContextFeatureSettings>,
       public Supplement<ExecutionContext> {
-  USING_GARBAGE_COLLECTED_MIXIN(ContextFeatureSettings);
-
  public:
   static const char kSupplementName[];
 

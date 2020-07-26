@@ -39,8 +39,6 @@ namespace blink {
 class SVGAnimatedPointList final
     : public GarbageCollected<SVGAnimatedPointList>,
       public SVGAnimatedProperty<SVGPointList> {
-  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedPointList);
-
  public:
   SVGAnimatedPointList(SVGElement* context_element,
                        const QualifiedName& attribute_name,

@@ -50,7 +50,6 @@ class PrerenderClient;
 class PrerenderHandle final : public GarbageCollected<PrerenderHandle>,
                               public ExecutionContextLifecycleObserver,
                               public mojom::blink::PrerenderHandleClient {
-  USING_GARBAGE_COLLECTED_MIXIN(PrerenderHandle);
   USING_PRE_FINALIZER(PrerenderHandle, Dispose);
 
  public:

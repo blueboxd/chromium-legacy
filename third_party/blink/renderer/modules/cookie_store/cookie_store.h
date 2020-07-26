@@ -33,7 +33,6 @@ class CookieStore final : public EventTargetWithInlineData,
                           public ExecutionContextLifecycleObserver,
                           public network::mojom::blink::CookieChangeListener {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(CookieStore);
 
  public:
   CookieStore(

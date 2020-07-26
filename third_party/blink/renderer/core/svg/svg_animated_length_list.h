@@ -42,7 +42,6 @@ namespace blink {
 class SVGAnimatedLengthList final : public ScriptWrappable,
                                     public SVGAnimatedProperty<SVGLengthList> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedLengthList);
 
  public:
   SVGAnimatedLengthList(SVGElement* context_element,

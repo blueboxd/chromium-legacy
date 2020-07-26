@@ -32,8 +32,6 @@ namespace {
 
 class FetchDataLoaderAsBlobHandle final : public FetchDataLoader,
                                           public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(FetchDataLoaderAsBlobHandle);
-
  public:
   explicit FetchDataLoaderAsBlobHandle(const String& mime_type)
       : mime_type_(mime_type) {}
@@ -121,8 +119,6 @@ class FetchDataLoaderAsBlobHandle final : public FetchDataLoader,
 
 class FetchDataLoaderAsArrayBuffer final : public FetchDataLoader,
                                            public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(FetchDataLoaderAsArrayBuffer);
-
  public:
   void Start(BytesConsumer* consumer,
              FetchDataLoader::Client* client) override {
@@ -226,8 +222,6 @@ class FetchDataLoaderAsArrayBuffer final : public FetchDataLoader,
 
 class FetchDataLoaderAsFailure final : public FetchDataLoader,
                                        public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(FetchDataLoaderAsFailure);
-
  public:
   void Start(BytesConsumer* consumer,
              FetchDataLoader::Client* client) override {
@@ -281,8 +275,6 @@ class FetchDataLoaderAsFailure final : public FetchDataLoader,
 class FetchDataLoaderAsFormData final : public FetchDataLoader,
                                         public BytesConsumer::Client,
                                         public MultipartParser::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(FetchDataLoaderAsFormData);
-
  public:
   explicit FetchDataLoaderAsFormData(const String& multipart_boundary)
       : multipart_boundary_(multipart_boundary) {}
@@ -456,8 +448,6 @@ class FetchDataLoaderAsFormData final : public FetchDataLoader,
 
 class FetchDataLoaderAsString final : public FetchDataLoader,
                                       public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(FetchDataLoaderAsString);
-
  public:
   explicit FetchDataLoaderAsString(const TextResourceDecoderOptions& options)
       : decoder_options_(options) {}
@@ -525,7 +515,6 @@ class FetchDataLoaderAsString final : public FetchDataLoader,
 
 class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
                                         public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(FetchDataLoaderAsDataPipe);
   USING_PRE_FINALIZER(FetchDataLoaderAsDataPipe, Dispose);
 
  public:

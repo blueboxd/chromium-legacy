@@ -41,8 +41,6 @@ class LocalDOMWindow;
 
 class DOMWindowQuota final : public GarbageCollected<DOMWindowQuota>,
                              public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(DOMWindowQuota);
-
  public:
   static const char kSupplementName[];
 

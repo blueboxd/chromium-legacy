@@ -68,7 +68,6 @@ class MODULES_EXPORT DOMWebSocket
       public ExecutionContextLifecycleStateObserver,
       public WebSocketChannelClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(DOMWebSocket);
 
  public:
   // These definitions are required by V8DOMWebSocket.

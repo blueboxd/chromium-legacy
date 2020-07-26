@@ -42,8 +42,6 @@ namespace blink {
 class MockAnimationEffectOwner
     : public GarbageCollected<MockAnimationEffectOwner>,
       public AnimationEffectOwner {
-  USING_GARBAGE_COLLECTED_MIXIN(MockAnimationEffectOwner);
-
  public:
   MOCK_CONST_METHOD0(SequenceNumber, unsigned());
   MOCK_CONST_METHOD0(Playing, bool());

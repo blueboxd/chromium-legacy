@@ -33,7 +33,6 @@ class MODULES_EXPORT PaintWorkletProxyClient
     : public GarbageCollected<PaintWorkletProxyClient>,
       public Supplement<WorkerClients>,
       public PaintWorkletPainter {
-  USING_GARBAGE_COLLECTED_MIXIN(PaintWorkletProxyClient);
   DISALLOW_COPY_AND_ASSIGN(PaintWorkletProxyClient);
 
  public:

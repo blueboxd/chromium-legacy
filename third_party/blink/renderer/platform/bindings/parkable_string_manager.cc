@@ -54,8 +54,6 @@ bool CompressionEnabled() {
 
 class OnPurgeMemoryListener : public GarbageCollected<OnPurgeMemoryListener>,
                               public MemoryPressureListener {
-  USING_GARBAGE_COLLECTED_MIXIN(OnPurgeMemoryListener);
-
   void OnPurgeMemory() override {
     if (!CompressionEnabled()) {
       return;

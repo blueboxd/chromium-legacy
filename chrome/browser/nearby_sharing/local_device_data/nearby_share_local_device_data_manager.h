@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/span.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/optional.h"
@@ -41,9 +40,6 @@ class NearbyShareLocalDeviceDataManager {
   void Start();
   void Stop();
   bool is_running() { return is_running_; }
-
-  // Clears all local-device-related data.
-  virtual void ClearAllData() = 0;
 
   // Returns the immutable ID generated for the local device, used to
   // differentiate a user's devices when communicating with the Nearby server.
@@ -79,17 +75,15 @@ class NearbyShareLocalDeviceDataManager {
   // selected-contacts visibility mode. This should only be invoked by the
   // contact manager, and the contact manager should handle scheduling, failure
   // retry, etc.
-  virtual void UploadContacts(
-      base::Optional<std::vector<nearbyshare::proto::Contact>> contacts,
-      UploadCompleteCallback callback) = 0;
+  virtual void UploadContacts(std::vector<nearbyshare::proto::Contact> contacts,
+                              UploadCompleteCallback callback) = 0;
 
   // Uses the UpdateDevice RPC to send the local device's public certificates to
   // the Nearby Share server. This should only be invoked by the certificate
   // manager, and the certificate manager should handle scheduling, failure
   // retry, etc.
   virtual void UploadCertificates(
-      base::Optional<std::vector<nearbyshare::proto::PublicCertificate>>
-          certificates,
+      std::vector<nearbyshare::proto::PublicCertificate> certificates,
       UploadCompleteCallback callback) = 0;
 
  protected:

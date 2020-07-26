@@ -29,7 +29,6 @@ class Serial final : public EventTargetWithInlineData,
                      public ExecutionContextLifecycleObserver,
                      public mojom::blink::SerialServiceClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Serial);
 
  public:
   explicit Serial(ExecutionContext&);

@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "chrome/updater/prefs.h"
@@ -60,6 +61,7 @@ void ClearPrefs() {
 
 class AppServerTestCase : public testing::Test {
  public:
+  AppServerTestCase() : main_task_executor_(base::MessagePumpType::UI) {}
   ~AppServerTestCase() override = default;
 
   void SetUp() override {
@@ -71,6 +73,9 @@ class AppServerTestCase : public testing::Test {
     base::ThreadPoolInstance::Get()->JoinForTesting();
     base::ThreadPoolInstance::Set(nullptr);
   }
+
+ private:
+  base::SingleThreadTaskExecutor main_task_executor_;
 };
 
 }  // namespace
@@ -88,8 +93,6 @@ TEST_F(AppServerTestCase, SimpleQualify) {
 
 TEST_F(AppServerTestCase, SelfUninstall) {
   {
-    base::SingleThreadTaskExecutor main_task_executor(
-        base::MessagePumpType::UI);
     std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
     global_prefs->SetActiveVersion("9999999");
     PrefsCommitPendingWrites(global_prefs->GetPrefService());
@@ -109,8 +112,6 @@ TEST_F(AppServerTestCase, SelfUninstall) {
 
 TEST_F(AppServerTestCase, SelfPromote) {
   {
-    base::SingleThreadTaskExecutor main_task_executor(
-        base::MessagePumpType::UI);
     std::unique_ptr<LocalPrefs> local_prefs = CreateLocalPrefs();
     local_prefs->SetQualified(true);
     PrefsCommitPendingWrites(local_prefs->GetPrefService());
@@ -129,8 +130,6 @@ TEST_F(AppServerTestCase, SelfPromote) {
 
 TEST_F(AppServerTestCase, SelfPromoteFails) {
   {
-    base::SingleThreadTaskExecutor main_task_executor(
-        base::MessagePumpType::UI);
     std::unique_ptr<LocalPrefs> local_prefs = CreateLocalPrefs();
     local_prefs->SetQualified(true);
     PrefsCommitPendingWrites(local_prefs->GetPrefService());
@@ -149,8 +148,6 @@ TEST_F(AppServerTestCase, SelfPromoteFails) {
 
 TEST_F(AppServerTestCase, ActiveDutyAlready) {
   {
-    base::SingleThreadTaskExecutor main_task_executor(
-        base::MessagePumpType::UI);
     std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
     global_prefs->SetActiveVersion(UPDATER_VERSION_STRING);
     PrefsCommitPendingWrites(global_prefs->GetPrefService());
@@ -172,8 +169,6 @@ TEST_F(AppServerTestCase, ActiveDutyAlready) {
 
 TEST_F(AppServerTestCase, StateDirty) {
   {
-    base::SingleThreadTaskExecutor main_task_executor(
-        base::MessagePumpType::UI);
     std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
     global_prefs->SetActiveVersion(UPDATER_VERSION_STRING);
     global_prefs->SetSwapping(true);
@@ -197,8 +192,6 @@ TEST_F(AppServerTestCase, StateDirty) {
 
 TEST_F(AppServerTestCase, StateDirtySwapFails) {
   {
-    base::SingleThreadTaskExecutor main_task_executor(
-        base::MessagePumpType::UI);
     std::unique_ptr<GlobalPrefs> global_prefs = CreateGlobalPrefs();
     global_prefs->SetActiveVersion(UPDATER_VERSION_STRING);
     global_prefs->SetSwapping(true);

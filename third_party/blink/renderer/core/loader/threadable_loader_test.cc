@@ -55,8 +55,6 @@ constexpr char kFileName[] = "fox-null-terminated.html";
 class MockThreadableLoaderClient final
     : public GarbageCollected<MockThreadableLoaderClient>,
       public ThreadableLoaderClient {
-  USING_GARBAGE_COLLECTED_MIXIN(MockThreadableLoaderClient);
-
  public:
   MockThreadableLoaderClient() = default;
   MOCK_METHOD2(DidSendData, void(uint64_t, uint64_t));

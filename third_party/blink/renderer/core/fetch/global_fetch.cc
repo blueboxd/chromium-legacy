@@ -37,8 +37,6 @@ template <typename T>
 class GlobalFetchImpl final : public GarbageCollected<GlobalFetchImpl<T>>,
                               public GlobalFetch::ScopedFetcher,
                               public Supplement<T> {
-  USING_GARBAGE_COLLECTED_MIXIN(GlobalFetchImpl);
-
  public:
   static const char kSupplementName[];
 

@@ -18,8 +18,6 @@ class Event;
 class MODULES_EXPORT DeviceOrientationController
     : public DeviceSingleWindowEventController,
       public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(DeviceOrientationController);
-
  public:
   static const char kSupplementName[];
 

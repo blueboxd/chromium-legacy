@@ -25,8 +25,6 @@ class SensorProviderProxy;
 class MODULES_EXPORT SensorProxy : public GarbageCollected<SensorProxy>,
                                    public PageVisibilityObserver,
                                    public FocusChangedObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(SensorProxy);
-
  public:
   class Observer : public GarbageCollectedMixin {
    public:

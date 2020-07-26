@@ -10,8 +10,6 @@ namespace blink {
 class MockPaintTimingCallbackManager final
     : public GarbageCollected<MockPaintTimingCallbackManager>,
       public PaintTimingCallbackManager {
-  USING_GARBAGE_COLLECTED_MIXIN(MockPaintTimingCallbackManager);
-
  public:
   ~MockPaintTimingCallbackManager() {}
   void RegisterCallback(

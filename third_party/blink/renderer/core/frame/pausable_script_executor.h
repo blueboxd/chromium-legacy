@@ -24,8 +24,6 @@ class WebScriptExecutionCallback;
 class CORE_EXPORT PausableScriptExecutor final
     : public GarbageCollected<PausableScriptExecutor>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(PausableScriptExecutor);
-
  public:
   enum BlockingOption { kNonBlocking, kOnloadBlocking };
 

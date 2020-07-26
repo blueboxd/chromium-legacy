@@ -110,8 +110,6 @@ AtomicString CreateAccessControlRequestHeadersHeader(
 class ThreadableLoader::DetachedClient final
     : public GarbageCollected<DetachedClient>,
       public ThreadableLoaderClient {
-  USING_GARBAGE_COLLECTED_MIXIN(DetachedClient);
-
  public:
   explicit DetachedClient(ThreadableLoader* loader)
       : self_keep_alive_(PERSISTENT_FROM_HERE, this), loader_(loader) {}

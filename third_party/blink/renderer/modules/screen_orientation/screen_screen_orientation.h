@@ -17,8 +17,6 @@ class Screen;
 class ScreenScreenOrientation final
     : public GarbageCollected<ScreenScreenOrientation>,
       public Supplement<Screen> {
-  USING_GARBAGE_COLLECTED_MIXIN(ScreenScreenOrientation);
-
  public:
   static const char kSupplementName[];
 

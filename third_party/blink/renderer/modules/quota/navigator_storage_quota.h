@@ -44,8 +44,6 @@ class StorageManager;
 class NavigatorStorageQuota final
     : public GarbageCollected<NavigatorStorageQuota>,
       public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorStorageQuota);
-
  public:
   static const char kSupplementName[];
 

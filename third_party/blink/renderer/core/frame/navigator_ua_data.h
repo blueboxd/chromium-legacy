@@ -19,7 +19,6 @@ class ScriptState;
 
 class NavigatorUAData : public ScriptWrappable, ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorUAData);
 
  public:
   static NavigatorUAData* Create(ExecutionContext* context) {

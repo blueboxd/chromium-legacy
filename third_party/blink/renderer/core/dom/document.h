@@ -290,7 +290,6 @@ class CORE_EXPORT Document : public ContainerNode,
                              public UseCounter,
                              public Supplementable<Document> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Document);
 
  public:
   // Factory for web-exposed Document constructor. The argument document must be

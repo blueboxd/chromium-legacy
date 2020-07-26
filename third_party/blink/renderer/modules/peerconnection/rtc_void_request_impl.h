@@ -48,8 +48,6 @@ class RTCPeerConnection;
 // shared code as to not repeat the majority of the implementations.
 class RTCVoidRequestImpl final : public RTCVoidRequest,
                                  public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(RTCVoidRequestImpl);
-
  public:
   RTCVoidRequestImpl(ExecutionContext*,
                      base::Optional<RTCSetSessionDescriptionOperation>,

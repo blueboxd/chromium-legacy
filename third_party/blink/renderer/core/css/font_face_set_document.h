@@ -45,8 +45,6 @@ class Font;
 
 class CORE_EXPORT FontFaceSetDocument final : public FontFaceSet,
                                               public Supplement<Document> {
-  USING_GARBAGE_COLLECTED_MIXIN(FontFaceSetDocument);
-
  public:
   static const char kSupplementName[];
 

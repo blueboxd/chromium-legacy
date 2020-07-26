@@ -28,7 +28,6 @@ class SegmentReader;
 class MODULES_EXPORT ImageDecoderExternal final : public ScriptWrappable,
                                                   public BytesConsumer::Client {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(ImageDecoderExternal);
 
  public:
   static ImageDecoderExternal* Create(ScriptState*,

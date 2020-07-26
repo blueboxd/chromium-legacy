@@ -18,8 +18,6 @@ class WorkerNavigator;
 class WorkerNavigatorMediaCapabilities final
     : public GarbageCollected<WorkerNavigatorMediaCapabilities>,
       public Supplement<WorkerNavigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorMediaCapabilities);
-
  public:
   static const char kSupplementName[];
 

@@ -29,8 +29,6 @@ using device::FakeSensorProvider;
 class MockDeviceMotionController final
     : public GarbageCollected<MockDeviceMotionController>,
       public PlatformEventController {
-  USING_GARBAGE_COLLECTED_MIXIN(MockDeviceMotionController);
-
  public:
   explicit MockDeviceMotionController(DeviceMotionEventPump* motion_pump,
                                       LocalDOMWindow& window)

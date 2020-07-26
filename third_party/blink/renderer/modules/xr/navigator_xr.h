@@ -17,8 +17,6 @@ class XRSystem;
 
 class MODULES_EXPORT NavigatorXR final : public GarbageCollected<NavigatorXR>,
                                          public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorXR);
-
  public:
   static const char kSupplementName[];
 

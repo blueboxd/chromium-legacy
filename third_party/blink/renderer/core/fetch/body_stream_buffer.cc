@@ -32,8 +32,6 @@ class BodyStreamBuffer::LoaderClient final
     : public GarbageCollected<LoaderClient>,
       public ExecutionContextLifecycleObserver,
       public FetchDataLoader::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(LoaderClient);
-
  public:
   LoaderClient(ExecutionContext* execution_context,
                BodyStreamBuffer* buffer,

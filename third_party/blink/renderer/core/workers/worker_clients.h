@@ -44,8 +44,6 @@ namespace blink {
 // worklets.
 class CORE_EXPORT WorkerClients final : public GarbageCollected<WorkerClients>,
                                         public Supplementable<WorkerClients> {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerClients);
-
  public:
   WorkerClients() = default;
 

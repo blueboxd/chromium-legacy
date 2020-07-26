@@ -54,8 +54,6 @@ const char* TextTransformToString(ETextTransform transform) {
 
 class PopupMenuCSSFontSelector : public CSSFontSelector,
                                  private FontSelectorClient {
-  USING_GARBAGE_COLLECTED_MIXIN(PopupMenuCSSFontSelector);
-
  public:
   PopupMenuCSSFontSelector(Document*, CSSFontSelector*);
   ~PopupMenuCSSFontSelector() override;

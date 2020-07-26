@@ -55,7 +55,6 @@ enum class DataTransferAccessPolicy;
 // https://w3c.github.io/clipboard-apis/
 class CORE_EXPORT DataTransfer final : public ScriptWrappable,
                                        public DataObject::Observer {
-  USING_GARBAGE_COLLECTED_MIXIN(DataTransfer);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

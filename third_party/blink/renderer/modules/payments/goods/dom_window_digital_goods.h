@@ -18,8 +18,6 @@ class Visitor;
 class DOMWindowDigitalGoods final
     : public GarbageCollected<DOMWindowDigitalGoods>,
       public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(DOMWindowDigitalGoods);
-
  public:
   static const char kSupplementName[];
 

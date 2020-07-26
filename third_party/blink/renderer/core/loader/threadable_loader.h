@@ -69,8 +69,6 @@ class ThreadableLoaderClient;
 class CORE_EXPORT ThreadableLoader final
     : public GarbageCollected<ThreadableLoader>,
       private RawResourceClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ThreadableLoader);
-
  public:
   // ThreadableLoaderClient methods are never called before Start() call.
   //

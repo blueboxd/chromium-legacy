@@ -48,7 +48,6 @@ class TreeScope;
 class CORE_EXPORT DOMSelection final : public ScriptWrappable,
                                        public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(DOMSelection);
 
  public:
   explicit DOMSelection(const TreeScope*);

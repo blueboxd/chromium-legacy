@@ -68,7 +68,6 @@ class CORE_EXPORT WorkerGlobalScope
       public ActiveScriptWrappable<WorkerGlobalScope>,
       public Supplementable<WorkerGlobalScope> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScope);
 
  public:
   ~WorkerGlobalScope() override;

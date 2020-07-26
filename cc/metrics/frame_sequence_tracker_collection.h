@@ -134,6 +134,10 @@ class CC_EXPORT FrameSequenceTrackerCollection {
   // Destroy the trackers that are ready to be terminated.
   void DestroyTrackers();
 
+  // Ask all trackers to report their metrics if there is any, must be the first
+  // thing in the destructor.
+  void CleanUp();
+
   // Adds collected metrics data for |custom_sequence_id| to be picked up via
   // TakeCustomTrackerResults() below.
   void AddCustomTrackerResult(

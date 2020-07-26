@@ -55,7 +55,6 @@ class WebContentDecryptionModule;
 class MediaKeys : public ScriptWrappable,
                   public ActiveScriptWrappable<MediaKeys>,
                   public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(MediaKeys);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

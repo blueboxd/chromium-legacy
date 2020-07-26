@@ -35,7 +35,6 @@ class ExceptionState;
 
 class TreeWalker final : public ScriptWrappable, public NodeIteratorBase {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(TreeWalker);
 
  public:
   TreeWalker(Node*, unsigned what_to_show, V8NodeFilter*);

@@ -49,18 +49,16 @@ class DialogExample::Delegate : public virtual DialogType {
 
   void InitDelegate() {
     this->SetLayoutManager(std::make_unique<FillLayout>());
-    Label* body = new Label(parent_->body_->GetText());
+    auto body = std::make_unique<Label>(parent_->body_->GetText());
     body->SetMultiLine(true);
     body->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    this->AddChildView(body);
+    // Give the example code a way to change the body text.
+    parent_->last_body_label_ = this->AddChildView(std::move(body));
 
     if (parent_->has_extra_button_->GetChecked()) {
       DialogDelegate::SetExtraView(MdTextButton::Create(
           nullptr, parent_->extra_button_label_->GetText()));
     }
-
-    // Give the example code a way to change the body text.
-    parent_->last_body_label_ = body;
   }
 
  protected:
@@ -247,10 +245,12 @@ void DialogExample::ResizeDialog() {
 void DialogExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == show_) {
     if (bubble_->GetChecked()) {
+      // |bubble| will be destroyed by its widget when the widget is destroyed.
       Bubble* bubble = new Bubble(this, sender);
       last_dialog_ = bubble;
       BubbleDialogDelegateView::CreateBubble(bubble);
     } else {
+      // |dialog| will be destroyed by its widget when the widget is destroyed.
       Dialog* dialog = new Dialog(this);
       last_dialog_ = dialog;
       dialog->InitDelegate();

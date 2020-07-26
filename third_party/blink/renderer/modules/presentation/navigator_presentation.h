@@ -17,8 +17,6 @@ class Presentation;
 class NavigatorPresentation final
     : public GarbageCollected<NavigatorPresentation>,
       public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorPresentation);
-
  public:
   static const char kSupplementName[];
 

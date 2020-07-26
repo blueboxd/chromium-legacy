@@ -18,8 +18,6 @@ class LocalDOMWindow;
 class CORE_EXPORT DOMWindowPerformance final
     : public GarbageCollected<DOMWindowPerformance>,
       public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(DOMWindowPerformance);
-
  public:
   static const char kSupplementName[];
 

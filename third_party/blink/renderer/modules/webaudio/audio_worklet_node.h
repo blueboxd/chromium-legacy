@@ -102,7 +102,6 @@ class AudioWorkletHandler final
 class AudioWorkletNode final : public AudioNode,
                                public ActiveScriptWrappable<AudioWorkletNode> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(AudioWorkletNode);
 
  public:
   static AudioWorkletNode* Create(ScriptState*,

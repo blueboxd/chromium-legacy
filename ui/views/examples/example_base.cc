@@ -11,9 +11,8 @@ namespace examples {
 
 ExampleBase::~ExampleBase() = default;
 
-ExampleBase::ExampleBase(const char* title) : example_title_(title) {
-  container_ = new View();
-}
+ExampleBase::ExampleBase(const char* title)
+    : example_title_(title), container_(std::make_unique<View>()) {}
 
 }  // namespace examples
 }  // namespace views

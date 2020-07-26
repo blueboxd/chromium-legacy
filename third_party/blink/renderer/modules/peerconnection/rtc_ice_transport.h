@@ -45,7 +45,6 @@ class MODULES_EXPORT RTCIceTransport final
       public ExecutionContextLifecycleObserver,
       public IceTransportProxy::Delegate {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(RTCIceTransport);
   USING_PRE_FINALIZER(RTCIceTransport, Dispose);
 
  public:

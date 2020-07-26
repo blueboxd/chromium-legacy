@@ -47,7 +47,6 @@ class CORE_EXPORT Screen final : public ScriptWrappable,
                                  public ExecutionContextClient,
                                  public Supplementable<Screen> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Screen);
 
  public:
   explicit Screen(LocalFrame*);

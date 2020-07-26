@@ -16,8 +16,6 @@ class MediaControlsImpl;
 // floating UI.
 class MODULES_EXPORT MediaControlDivElement : public HTMLDivElement,
                                               public MediaControlElementBase {
-  USING_GARBAGE_COLLECTED_MIXIN(MediaControlDivElement);
-
  public:
   // Implements MediaControlElementBase.
   void SetOverflowElementIsWanted(bool) final;

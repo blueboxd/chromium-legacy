@@ -88,7 +88,6 @@ class CORE_EXPORT HTMLMediaElement
       public ExecutionContextLifecycleStateObserver,
       private WebMediaPlayerClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElement);
   USING_PRE_FINALIZER(HTMLMediaElement, Dispose);
 
  public:

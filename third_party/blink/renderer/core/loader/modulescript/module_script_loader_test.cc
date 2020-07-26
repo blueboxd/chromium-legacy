@@ -47,8 +47,6 @@ namespace {
 class TestModuleScriptLoaderClient final
     : public GarbageCollected<TestModuleScriptLoaderClient>,
       public ModuleScriptLoaderClient {
-  USING_GARBAGE_COLLECTED_MIXIN(TestModuleScriptLoaderClient);
-
  public:
   TestModuleScriptLoaderClient() = default;
   ~TestModuleScriptLoaderClient() override = default;

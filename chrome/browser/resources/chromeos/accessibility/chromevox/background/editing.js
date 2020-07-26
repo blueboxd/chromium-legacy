@@ -119,7 +119,8 @@ editing.TextEditHandler = class {
                       this.node_, Dir.FORWARD, AutomationPredicate.object,
                       {skipInitialSubtree: true}) ||
         this.node_;
-    ChromeVoxState.instance.navigateToRange(cursors.Range.fromNode(after));
+    ChromeVoxState.instance.navigateToRange(
+        cursors.Range.fromNode(after), true, {}, true);
   }
 
   /**

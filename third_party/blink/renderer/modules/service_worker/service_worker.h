@@ -54,7 +54,6 @@ class MODULES_EXPORT ServiceWorker final
       public ActiveScriptWrappable<ServiceWorker>,
       public mojom::blink::ServiceWorkerObject {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(ServiceWorker);
 
  public:
   static ServiceWorker* From(ExecutionContext*,

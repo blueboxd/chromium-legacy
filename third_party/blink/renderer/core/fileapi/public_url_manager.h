@@ -48,8 +48,6 @@ class URLRegistrable;
 class CORE_EXPORT PublicURLManager final
     : public GarbageCollected<PublicURLManager>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(PublicURLManager);
-
  public:
   explicit PublicURLManager(ExecutionContext*);
 

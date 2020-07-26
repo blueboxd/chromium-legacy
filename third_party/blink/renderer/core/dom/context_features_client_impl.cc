@@ -41,8 +41,6 @@ namespace blink {
 class ContextFeaturesCache final
     : public GarbageCollected<ContextFeaturesCache>,
       public Supplement<Document> {
-  USING_GARBAGE_COLLECTED_MIXIN(ContextFeaturesCache);
-
  public:
   static const char kSupplementName[];
 

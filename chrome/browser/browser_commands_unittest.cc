@@ -27,13 +27,25 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 
-typedef BrowserWithTestWindowTest BrowserCommandsTest;
+namespace {
 
 using bookmarks::BookmarkModel;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
 using zoom::ZoomController;
+
+class BrowserCommandsTest : public BrowserWithTestWindowTest {
+ public:
+  BrowserCommandsTest() = default;
+  ~BrowserCommandsTest() override = default;
+
+  // BrowserWithTestWindowTest overrides.
+  TestingProfile::TestingFactories GetTestingFactories() override {
+    return {{BookmarkModelFactory::GetInstance(),
+             BookmarkModelFactory::GetDefaultFactory()}};
+  }
+};
 
 // Tests IDC_SELECT_TAB_0, IDC_SELECT_NEXT_TAB, IDC_SELECT_PREVIOUS_TAB and
 // IDC_SELECT_LAST_TAB.
@@ -155,9 +167,6 @@ TEST_F(BrowserCommandsTest, ViewSource) {
 }
 
 TEST_F(BrowserCommandsTest, BookmarkCurrentTab) {
-  // We use profile() here, since it's a TestingProfile.
-  profile()->CreateBookmarkModel(true);
-
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
   bookmarks::test::WaitForBookmarkModelToLoad(model);
 
@@ -427,3 +436,5 @@ TEST_F(BrowserCommandsTest, OnDefaultZoomLevelChanged) {
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ZOOM_NORMAL));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ZOOM_MINUS));
 }
+
+}  // namespace

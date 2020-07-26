@@ -120,8 +120,6 @@ struct LifecycleData {
 class CORE_EXPORT LocalFrameView final
     : public GarbageCollected<LocalFrameView>,
       public FrameView {
-  USING_GARBAGE_COLLECTED_MIXIN(LocalFrameView);
-
   friend class PaintControllerPaintTestBase;
   friend class Internals;
 

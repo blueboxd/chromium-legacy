@@ -27,7 +27,6 @@ class NativeFileSystemDirectoryIterator final
       public ExecutionContextClient,
       public mojom::blink::NativeFileSystemDirectoryEntriesListener {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(NativeFileSystemDirectoryIterator);
 
  public:
   // Should this iterator returns keys, values or both?

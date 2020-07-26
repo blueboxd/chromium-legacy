@@ -114,8 +114,6 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
 
   class FontResourceHelper : public GarbageCollected<FontResourceHelper>,
                              public FontResourceClient {
-    USING_GARBAGE_COLLECTED_MIXIN(FontResourceHelper);
-
    public:
     FontResourceHelper(FontResource* resource,
                        base::SingleThreadTaskRunner* task_runner) {

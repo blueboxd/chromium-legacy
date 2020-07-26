@@ -27,24 +27,6 @@ TEST(FrameSequenceMetricsTest, AggregatedThroughputClearedAfterReport) {
   EXPECT_EQ(first.aggregated_throughput().frames_produced, 0u);
 }
 
-// Test that ThroughputUkmReporter::ComputeUniversalThroughput is called when
-// an object of FrameSequenceMetrics is destroyed.
-TEST(FrameSequenceMetricsTest, ComputeUniversalThroughputAtDestruction) {
-  auto recorder = std::make_unique<ukm::TestUkmRecorder>();
-  auto ukm_manager = std::make_unique<UkmManager>(std::move(recorder));
-  ThroughputUkmReporter reporter(ukm_manager.get());
-  auto metric = std::make_unique<FrameSequenceMetrics>(
-      FrameSequenceTrackerType::kUniversal, &reporter);
-
-  metric->impl_throughput().frames_expected = 200u;
-  metric->impl_throughput().frames_produced = 190u;
-  metric->aggregated_throughput().frames_expected = 170u;
-  metric->aggregated_throughput().frames_produced = 150u;
-
-  metric = nullptr;
-  EXPECT_EQ(reporter.TakeLastAggregatedPercent(), 12);
-}
-
 // Test that ThroughputUkmReporter::ReportThroughputUkm isn't called for the
 // kUniversal tracker.
 TEST(FrameSequenceMetricsTest, UniversalNotReportUkmAtRenderer) {

@@ -17,8 +17,6 @@ class MediaControlsImpl;
 // buttons and sliders.
 class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
                                                 public MediaControlElementBase {
-  USING_GARBAGE_COLLECTED_MIXIN(MediaControlInputElement);
-
  public:
   static bool ShouldRecordDisplayStates(const HTMLMediaElement&);
 

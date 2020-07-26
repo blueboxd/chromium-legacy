@@ -39,7 +39,6 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
-    profile()->CreateBookmarkModel(true);
     BookmarkModel* bookmark_model =
         BookmarkModelFactory::GetForBrowserContext(profile());
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
@@ -53,6 +52,11 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
     bubble_.reset();
 
     BrowserWithTestWindowTest::TearDown();
+  }
+
+  TestingProfile::TestingFactories GetTestingFactories() override {
+    return {{BookmarkModelFactory::GetInstance(),
+             BookmarkModelFactory::GetDefaultFactory()}};
   }
 
  protected:

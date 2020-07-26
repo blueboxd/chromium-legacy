@@ -42,8 +42,6 @@ class ResourceResponse;
 class CORE_EXPORT ImageResourceContent final
     : public GarbageCollected<ImageResourceContent>,
       public ImageObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(ImageResourceContent);
-
  public:
   // Used for loading.
   // Returned content will be associated immediately later with ImageResource.

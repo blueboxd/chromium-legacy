@@ -53,8 +53,6 @@ enum class PasteMode;
 // of and is not specific to a platform.
 class CORE_EXPORT DataObject : public GarbageCollected<DataObject>,
                                public Supplementable<DataObject> {
-  USING_GARBAGE_COLLECTED_MIXIN(DataObject);
-
  public:
   struct CORE_EXPORT Observer : public GarbageCollectedMixin {
     // Called whenever |item_list_| is modified. Note it can be called multiple

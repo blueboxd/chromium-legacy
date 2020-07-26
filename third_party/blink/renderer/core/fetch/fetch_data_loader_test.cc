@@ -68,8 +68,6 @@ class FetchDataLoaderTest : public testing::Test {
  protected:
   struct PipingClient : public GarbageCollected<PipingClient>,
                         public FetchDataLoader::Client {
-    USING_GARBAGE_COLLECTED_MIXIN(PipingClient);
-
    public:
     explicit PipingClient(
         scoped_refptr<base::SingleThreadTaskRunner> task_runner)

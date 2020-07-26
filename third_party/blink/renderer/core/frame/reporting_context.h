@@ -26,8 +26,6 @@ class CORE_EXPORT ReportingContext final
     : public GarbageCollected<ReportingContext>,
       public mojom::blink::ReportingObserver,
       public Supplement<ExecutionContext> {
-  USING_GARBAGE_COLLECTED_MIXIN(ReportingContext);
-
  public:
   static const char kSupplementName[];
 

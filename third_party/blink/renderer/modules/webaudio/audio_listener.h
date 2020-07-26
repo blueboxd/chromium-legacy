@@ -44,7 +44,6 @@ class PannerHandler;
 // defined in the OpenAL specification.
 
 class AudioListener : public ScriptWrappable, public InspectorHelperMixin {
-  USING_GARBAGE_COLLECTED_MIXIN(AudioListener);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

@@ -32,8 +32,6 @@ using ::testing::StrictMock;
 
 class MockClient : public GarbageCollected<MockClient>,
                    public OutgoingStream::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(MockClient);
-
  public:
   MOCK_METHOD0(SendFin, void());
   MOCK_METHOD0(OnOutgoingStreamAbort, void());

@@ -112,8 +112,6 @@ class LocalSVGResource final : public SVGResource {
 // External resource reference (see SVGResource.)
 class ExternalSVGResource final : public SVGResource,
                                   private SVGExternalDocumentCache::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(ExternalSVGResource);
-
  public:
   explicit ExternalSVGResource(const KURL&);
 

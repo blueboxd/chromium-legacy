@@ -382,8 +382,6 @@ class Cache::BarrierCallbackForPut final
 class Cache::BlobHandleCallbackForPut final
     : public GarbageCollected<BlobHandleCallbackForPut>,
       public FetchDataLoader::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(BlobHandleCallbackForPut);
-
  public:
   BlobHandleCallbackForPut(wtf_size_t index,
                            BarrierCallbackForPut* barrier_callback,
@@ -428,8 +426,6 @@ class Cache::BlobHandleCallbackForPut final
 class Cache::CodeCacheHandleCallbackForPut final
     : public GarbageCollected<CodeCacheHandleCallbackForPut>,
       public FetchDataLoader::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(CodeCacheHandleCallbackForPut);
-
  public:
   CodeCacheHandleCallbackForPut(ScriptState* script_state,
                                 wtf_size_t index,

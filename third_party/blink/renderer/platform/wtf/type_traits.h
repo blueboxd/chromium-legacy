@@ -212,7 +212,6 @@ class IsGarbageCollectedTypeInternal {
   // IsGarbageCollectedType<B> over:
   //
   //    class A : public GarbageCollected<A>, public GarbageCollectedMixin {
-  //        USING_GARBAGE_COLLECTED_MIXIN(A);
   //        ...
   //    };
   //    class B : public A, public GarbageCollectedMixin { ... };

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/examples/login_bubble_dialog.h"
+#include "ui/views/examples/login_bubble_dialog_example.h"
 
 #include <memory>
 #include <utility>
@@ -50,6 +50,8 @@ Textfield* AddFormRow(LoginBubbleDialogView* bubble,
 void LoginBubbleDialogView::Show(View* anchor_view,
                                  BubbleBorder::Arrow anchor_position,
                                  OnSubmitCallback accept_callback) {
+  // LoginBubbleDialogView will be destroyed by the widget when the created
+  // widget is destroyed.
   BubbleDialogDelegateView::CreateBubble(
       new LoginBubbleDialogView(anchor_view, anchor_position,
                                 std::move(accept_callback)))

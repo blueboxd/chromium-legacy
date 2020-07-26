@@ -52,7 +52,6 @@ class FileWriter final : public EventTargetWithInlineData,
                          public ActiveScriptWrappable<FileWriter>,
                          public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(FileWriter);
   USING_PRE_FINALIZER(FileWriter, Dispose);
 
  public:

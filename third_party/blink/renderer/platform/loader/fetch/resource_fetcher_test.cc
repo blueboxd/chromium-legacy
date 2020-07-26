@@ -384,8 +384,6 @@ TEST_F(ResourceFetcherTest, VaryResource) {
 class RequestSameResourceOnComplete
     : public GarbageCollected<RequestSameResourceOnComplete>,
       public RawResourceClient {
-  USING_GARBAGE_COLLECTED_MIXIN(RequestSameResourceOnComplete);
-
  public:
   RequestSameResourceOnComplete(WebURLLoaderMockFactory* mock_factory,
                                 FetchParameters& params,
@@ -478,8 +476,6 @@ TEST_F(ResourceFetcherTest, MAYBE_DontReuseMediaDataUrl) {
 class ServeRequestsOnCompleteClient final
     : public GarbageCollected<ServeRequestsOnCompleteClient>,
       public RawResourceClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ServeRequestsOnCompleteClient);
-
  public:
   explicit ServeRequestsOnCompleteClient(WebURLLoaderMockFactory* mock_factory)
       : mock_factory_(mock_factory) {}

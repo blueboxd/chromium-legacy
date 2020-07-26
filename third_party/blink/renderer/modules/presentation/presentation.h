@@ -22,7 +22,6 @@ class PresentationRequest;
 // details.
 class Presentation final : public ScriptWrappable,
                            public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(Presentation);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

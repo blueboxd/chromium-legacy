@@ -17,8 +17,6 @@ class Navigator;
 class NavigatorCredentials final
     : public GarbageCollected<NavigatorCredentials>,
       public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorCredentials);
-
  public:
   static const char kSupplementName[];
 

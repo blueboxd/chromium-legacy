@@ -24,8 +24,6 @@ namespace {
 
 class NoopClient final : public GarbageCollected<NoopClient>,
                          public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(NoopClient);
-
  public:
   void OnStateChange() override {}
   String DebugName() const override { return "NoopClient"; }
@@ -33,8 +31,6 @@ class NoopClient final : public GarbageCollected<NoopClient>,
 
 class TeeHelper final : public GarbageCollected<TeeHelper>,
                         public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(TeeHelper);
-
  public:
   TeeHelper(ExecutionContext* execution_context, BytesConsumer* consumer)
       : src_(consumer),

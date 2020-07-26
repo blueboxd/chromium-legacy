@@ -56,6 +56,17 @@ Polymer({
       type: String,
       value: null,
     },
+
+    /**
+     * The currently selected share target set by the nearby-discovery-page
+     * component when the user selects a device.
+     * @type {?nearbyShare.mojom.ShareTarget}
+     * @private
+     */
+    selectedShareTarget_: {
+      type: Object,
+      value: null,
+    },
   },
 
   listeners: {'change-page': 'onChangePage_'},

@@ -50,6 +50,10 @@ bool ClipboardData::operator==(const ClipboardData& that) const {
                      : !that.source());
 }
 
+bool ClipboardData::operator!=(const ClipboardData& that) const {
+  return !(*this == that);
+}
+
 void ClipboardData::SetBitmapData(const SkBitmap& bitmap) {
   if (!skia::SkBitmapToN32OpaqueOrPremul(bitmap, &bitmap_)) {
     NOTREACHED() << "Unable to convert bitmap for clipboard";

@@ -45,8 +45,6 @@ class SVGElement;
 // this is never animated.
 class SVGStaticStringList final : public GarbageCollected<SVGStaticStringList>,
                                   public SVGAnimatedPropertyBase {
-  USING_GARBAGE_COLLECTED_MIXIN(SVGStaticStringList);
-
  public:
   template <char list_delimiter>
   static SVGStaticStringList* Create(SVGElement* context_element,

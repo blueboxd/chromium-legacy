@@ -26,8 +26,6 @@ class MODULES_EXPORT RemoteObjectGatewayImpl
     : public GarbageCollected<RemoteObjectGatewayImpl>,
       public Supplement<LocalFrame>,
       public mojom::blink::RemoteObjectGateway {
-  USING_GARBAGE_COLLECTED_MIXIN(RemoteObjectGatewayImpl);
-
  public:
   static const char kSupplementName[];
 

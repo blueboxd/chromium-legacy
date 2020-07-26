@@ -43,7 +43,6 @@ class StorageArea final : public ScriptWrappable,
                           public ExecutionContextClient,
                           public CachedStorageArea::Source {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(StorageArea);
 
  public:
   enum class StorageType { kLocalStorage, kSessionStorage };

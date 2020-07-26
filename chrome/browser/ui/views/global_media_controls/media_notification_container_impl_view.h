@@ -88,6 +88,8 @@ class MediaNotificationContainerImplView
   // MediaNotificationContainerImpl:
   void AddObserver(MediaNotificationContainerObserver* observer) override;
   void RemoveObserver(MediaNotificationContainerObserver* observer) override;
+  // Called when an audio device has been selected for output.
+  void OnAudioSinkChosen(const std::string& sink_id) override;
 
   // Sets up the notification to be ready to display in an overlay instead of
   // the dialog.
@@ -97,9 +99,6 @@ class MediaNotificationContainerImplView
   void OnOverlayNotificationShown(OverlayMediaNotificationView* overlay);
 
   const base::string16& GetTitle();
-
-  // Called when an audio device has been selected for output.
-  void OnAudioSinkChosen(const std::string& sink_id);
 
   views::ImageButton* GetDismissButtonForTesting();
 

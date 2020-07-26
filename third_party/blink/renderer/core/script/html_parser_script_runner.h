@@ -56,8 +56,6 @@ class HTMLParserScriptRunner final
     : public GarbageCollected<HTMLParserScriptRunner>,
       public PendingScriptClient,
       public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLParserScriptRunner);
-
  public:
   static HTMLParserScriptRunner* Create(HTMLParserReentryPermit* reentry_permit,
                                         Document* document,

@@ -22,8 +22,6 @@ namespace blink {
 class CORE_EXPORT ParentExecutionContextTaskRunners final
     : public GarbageCollected<ParentExecutionContextTaskRunners>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(ParentExecutionContextTaskRunners);
-
  public:
   // Returns task runners associated with a given context. This must be called
   // on the context's context thread, that is, the thread where the context was

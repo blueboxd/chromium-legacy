@@ -36,7 +36,6 @@ class WebString;
 class PresentationConnection : public EventTargetWithInlineData,
                                public ExecutionContextLifecycleStateObserver,
                                public mojom::blink::PresentationConnection {
-  USING_GARBAGE_COLLECTED_MIXIN(PresentationConnection);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

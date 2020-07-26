@@ -118,6 +118,9 @@ suite('cr_lottie_test', function() {
   /** @type {Promise} */
   let waitForPlayingEvent;
 
+  /** @type {Promise} */
+  let waitForResizeEvent;
+
   setup(function(done) {
     mockController = new MockController();
 
@@ -148,6 +151,8 @@ suite('cr_lottie_test', function() {
         test_util.eventToPromise('cr-lottie-initialized', crLottieElement);
     waitForPlayingEvent =
         test_util.eventToPromise('cr-lottie-playing', crLottieElement);
+    waitForResizeEvent =
+        test_util.eventToPromise('cr-lottie-resized', crLottieElement);
 
     container = document.createElement('div');
     container.style.width = '300px';
@@ -168,14 +173,16 @@ suite('cr_lottie_test', function() {
     await waitForPlayingEvent;
   });
 
-  test('TestResize', async () => {
+  // TODO(crbug.com/1021474): flaky.
+  test.skip('TestResize', async () => {
     createLottieElement();
     await waitForInitializeEvent;
     await waitForPlayingEvent;
+    await waitForResizeEvent;
 
     const newHeight = 300;
     const newWidth = 400;
-    const waitForResizeEvent =
+    waitForResizeEvent =
         test_util.eventToPromise('cr-lottie-resized', crLottieElement)
             .then(function(e) {
               assertEquals(e.detail.height, newHeight);
@@ -218,58 +225,27 @@ suite('cr_lottie_test', function() {
     await waitForPlayingEvent;
   });
 
-  test('TestRenderFrame', async () => {
-    // TODO(crbug.com/1108915): Offscreen canvas has a race issue when used in
-    // this test framework. To ensure that we capture a frame from the animation
-    // and not an empty frame, we delay the capture by 2 seconds.
+  // TODO(crbug.com/1021474): flaky.
+  test.skip('TestRenderFrame', async () => {
+    createLottieElement();
+    // Offscreen canvas has a race issue when used in this test framework. To
+    // ensure that we capture a frame from the animation and not an empty frame,
+    // we delay the capture by 2 seconds.
     // Note: This issue is only observed in tests.
     const kRaceTimeout = 2000;
-
-    createLottieElement();
-    await waitForInitializeEvent;
-    await waitForPlayingEvent;
-
-    const waitForFrameRender = new Promise(function(resolve) {
-      setTimeout(resolve, kRaceTimeout);
-    });
-
-    await waitForFrameRender;
-
-    const actualFrame =
-        crLottieElement.canvasElement_.toDataURL('image/jpeg', 0.5);
-    assertEquals(actualFrame, EXPECTED_FRAME_GREEN);
-  });
-
-  test('TestChangeAnimationUrl', async () => {
-    // TODO(crbug.com/1108915): Offscreen canvas has a race issue when used in
-    // this test framework. To ensure that we capture a frame from the animation
-    // and not an empty frame, we delay the capture by 2 seconds.
-    // Note: This issue is only observed in tests.
-    const kRaceTimeout = 2000;
-
-    createLottieElement();
-    await waitForInitializeEvent;
-    await waitForPlayingEvent;
-
-    waitForInitializeEvent =
-        test_util.eventToPromise('cr-lottie-initialized', crLottieElement);
-    waitForPlayingEvent =
-        test_util.eventToPromise('cr-lottie-playing', crLottieElement);
-
-    crLottieElement.animationUrl = SAMPLE_LOTTIE_BLUE;
 
     await waitForInitializeEvent;
     await waitForPlayingEvent;
 
     const waitForFrameRender = new Promise(function(resolve) {
-      setTimeout(resolve, kRaceTimeout);
+                                 setTimeout(resolve, kRaceTimeout);
+                               }).then(function() {
+      const actualFrame =
+          crLottieElement.canvasElement_.toDataURL('image/jpeg', 0.5);
+      assertEquals(actualFrame, EXPECTED_FRAME_GREEN);
     });
 
     await waitForFrameRender;
-
-    const actualFrame =
-        crLottieElement.canvasElement_.toDataURL('image/jpeg', 0.5);
-    assertEquals(actualFrame, EXPECTED_FRAME_BLUE);
   });
 
   test('TestHidden', async () => {

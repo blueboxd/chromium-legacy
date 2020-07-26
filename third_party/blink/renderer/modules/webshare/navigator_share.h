@@ -28,8 +28,6 @@ class ShareData;
 class MODULES_EXPORT NavigatorShare final
     : public GarbageCollected<NavigatorShare>,
       public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorShare);
-
  public:
   static const char kSupplementName[];
 

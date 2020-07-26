@@ -75,8 +75,6 @@ class TextTrack;
 // HTMLMediaElement.
 class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
                                                public MediaControls {
-  USING_GARBAGE_COLLECTED_MIXIN(MediaControlsImpl);
-
  public:
   static MediaControlsImpl* Create(HTMLMediaElement&, ShadowRoot&);
 

@@ -45,7 +45,6 @@ class SVGAnimatedNumberOptionalNumber;
 class SVGAnimatedNumber : public ScriptWrappable,
                           public SVGAnimatedProperty<SVGNumber> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedNumber);
 
  public:
   SVGAnimatedNumber(SVGElement* context_element,

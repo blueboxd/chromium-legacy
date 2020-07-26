@@ -65,8 +65,6 @@ class SharedWorker;
 class CORE_EXPORT SharedWorkerClientHolder final
     : public GarbageCollected<SharedWorkerClientHolder>,
       public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(SharedWorkerClientHolder);
-
  public:
   static const char kSupplementName[];
   static SharedWorkerClientHolder* From(LocalDOMWindow&);

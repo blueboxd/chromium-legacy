@@ -72,7 +72,6 @@ class CORE_EXPORT WebPluginContainerImpl final
       public EmbeddedContentView,
       public WebPluginContainer,
       public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(WebPluginContainerImpl);
   USING_PRE_FINALIZER(WebPluginContainerImpl, PreFinalize);
 
  public:

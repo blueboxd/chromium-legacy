@@ -44,5 +44,6 @@
 .header-from-previous,
 .header-provider-done,
 .header-duplicates {
+  font-size: .75rem;
   width: 18px;
 }

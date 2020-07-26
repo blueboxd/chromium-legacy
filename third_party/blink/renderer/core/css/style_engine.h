@@ -86,8 +86,6 @@ using StyleSheetKey = AtomicString;
 class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
                                       public FontSelectorClient,
                                       public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(StyleEngine);
-
  public:
 
   class DOMRemovalScope {

@@ -25,7 +25,6 @@ class QuicTransport;
 class MODULES_EXPORT ReceiveStream final : public ScriptWrappable,
                                            public WebTransportStream {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(ReceiveStream);
 
  public:
   // ReceiveStream doesn't have a JavaScript constructor. It is only

@@ -21,8 +21,6 @@ class ScriptPromiseResolver;
 
 class KeyboardLock final : public GarbageCollected<KeyboardLock>,
                            public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(KeyboardLock);
-
  public:
   explicit KeyboardLock(ExecutionContext*);
   ~KeyboardLock();

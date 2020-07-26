@@ -51,8 +51,6 @@ class ExecutionContext;
 class CORE_EXPORT AbstractWorker
     : public EventTargetWithInlineData,
       public ExecutionContextLifecycleStateObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(AbstractWorker);
-
  public:
   // EventTarget APIs
   ExecutionContext* GetExecutionContext() const final {

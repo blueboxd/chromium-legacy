@@ -18,8 +18,6 @@ namespace blink {
 // WebBundleLoader is responsible for loading a WebBundle resource.
 class WebBundleLoader : public GarbageCollected<WebBundleLoader>,
                         public ThreadableLoaderClient {
-  USING_GARBAGE_COLLECTED_MIXIN(WebBundleLoader);
-
  public:
   WebBundleLoader(LinkWebBundle& link_web_bundle,
                   ExecutionContext& execution_context,

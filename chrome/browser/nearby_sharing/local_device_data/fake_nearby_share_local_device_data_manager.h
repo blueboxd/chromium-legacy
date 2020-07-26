@@ -1,0 +1,131 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_NEARBY_SHARING_LOCAL_DEVICE_DATA_FAKE_NEARBY_SHARE_LOCAL_DEVICE_DATA_MANAGER_H_
+#define CHROME_BROWSER_NEARBY_SHARING_LOCAL_DEVICE_DATA_FAKE_NEARBY_SHARE_LOCAL_DEVICE_DATA_MANAGER_H_
+
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "base/optional.h"
+#include "chrome/browser/nearby_sharing/local_device_data/nearby_share_local_device_data_manager.h"
+#include "chrome/browser/nearby_sharing/local_device_data/nearby_share_local_device_data_manager_impl.h"
+#include "chrome/browser/nearby_sharing/proto/rpc_resources.pb.h"
+
+class NearbyShareClientFactory;
+class PrefService;
+
+// A fake implementation of NearbyShareLocalDeviceDataManager, along with a fake
+// factory, to be used in tests.
+class FakeNearbyShareLocalDeviceDataManager
+    : public NearbyShareLocalDeviceDataManager {
+ public:
+  // Factory that creates FakeNearbyShareLocalDeviceDataManager instances. Use
+  // in NearbyShareLocalDeviceDataManagerImpl::Factory::SetFactoryForTesting()
+  // in unit tests.
+  class Factory : public NearbyShareLocalDeviceDataManagerImpl::Factory {
+   public:
+    Factory();
+    ~Factory() override;
+
+    // Returns all FakeNearbyShareLocalDeviceDataManager instances created by
+    // CreateInstance().
+    std::vector<FakeNearbyShareLocalDeviceDataManager*>& instances() {
+      return instances_;
+    }
+
+    PrefService* latest_pref_service() const { return latest_pref_service_; }
+
+    NearbyShareClientFactory* latest_http_client_factory() const {
+      return latest_http_client_factory_;
+    }
+
+   protected:
+    std::unique_ptr<NearbyShareLocalDeviceDataManager> CreateInstance(
+        PrefService* pref_service,
+        NearbyShareClientFactory* http_client_factory) override;
+
+   private:
+    std::vector<FakeNearbyShareLocalDeviceDataManager*> instances_;
+    PrefService* latest_pref_service_ = nullptr;
+    NearbyShareClientFactory* latest_http_client_factory_ = nullptr;
+  };
+
+  struct UploadContactsCall {
+    UploadContactsCall(std::vector<nearbyshare::proto::Contact> contacts,
+                       UploadCompleteCallback callback);
+    UploadContactsCall(UploadContactsCall&&);
+    ~UploadContactsCall();
+
+    std::vector<nearbyshare::proto::Contact> contacts;
+    UploadCompleteCallback callback;
+  };
+
+  struct UploadCertificatesCall {
+    UploadCertificatesCall(
+        std::vector<nearbyshare::proto::PublicCertificate> certificates,
+        UploadCompleteCallback callback);
+    UploadCertificatesCall(UploadCertificatesCall&&);
+    ~UploadCertificatesCall();
+
+    std::vector<nearbyshare::proto::PublicCertificate> certificates;
+    UploadCompleteCallback callback;
+  };
+
+  FakeNearbyShareLocalDeviceDataManager();
+  ~FakeNearbyShareLocalDeviceDataManager() override;
+
+  // NearbyShareLocalDeviceDataManager:
+  std::string GetId() override;
+  base::Optional<std::string> GetDeviceName() const override;
+  base::Optional<std::string> GetFullName() const override;
+  base::Optional<std::string> GetIconUrl() const override;
+  void SetDeviceName(const std::string& name) override;
+  void DownloadDeviceData() override;
+  void UploadContacts(std::vector<nearbyshare::proto::Contact> contacts,
+                      UploadCompleteCallback callback) override;
+  void UploadCertificates(
+      std::vector<nearbyshare::proto::PublicCertificate> certificates,
+      UploadCompleteCallback callback) override;
+
+  // Make protected observer-notification methods from base class public in this
+  // fake class.
+  using NearbyShareLocalDeviceDataManager::NotifyLocalDeviceDataChanged;
+
+  void SetId(const std::string& id) { id_ = id; }
+  void SetFullName(const base::Optional<std::string>& full_name) {
+    full_name_ = full_name;
+  }
+  void SetIconUrl(const base::Optional<std::string>& icon_url) {
+    icon_url_ = icon_url;
+  }
+
+  size_t num_download_device_data_calls() const {
+    return num_download_device_data_calls_;
+  }
+
+  std::vector<UploadContactsCall>& upload_contacts_calls() {
+    return upload_contacts_calls_;
+  }
+
+  std::vector<UploadCertificatesCall>& upload_certificates_calls() {
+    return upload_certificates_calls_;
+  }
+
+ private:
+  // NearbyShareLocalDeviceDataManager:
+  void OnStart() override;
+  void OnStop() override;
+
+  std::string id_;
+  base::Optional<std::string> device_name_;
+  base::Optional<std::string> full_name_;
+  base::Optional<std::string> icon_url_;
+  size_t num_download_device_data_calls_ = 0;
+  std::vector<UploadContactsCall> upload_contacts_calls_;
+  std::vector<UploadCertificatesCall> upload_certificates_calls_;
+};
+
+#endif  // CHROME_BROWSER_NEARBY_SHARING_LOCAL_DEVICE_DATA_FAKE_NEARBY_SHARE_LOCAL_DEVICE_DATA_MANAGER_H_

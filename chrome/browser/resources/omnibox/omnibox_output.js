@@ -1052,22 +1052,22 @@ const COLUMNS = [
       ],
       OutputAnswerProperty),
   new Column(
-      ['S'], '', 'swapContentsAndDescription', false,
+      ['sw'], '', 'swapContentsAndDescription', false,
       'Swap Contents and Description', ['swapContentsAndDescription'],
       OutputBooleanProperty),
   new Column(
-      ['D'], '', 'allowedToBeDefaultMatch', true,
+      ['df'], '', 'allowedToBeDefaultMatch', true,
       'Can be Default\nA green checkmark indicates that the result can be ' +
           'the default match (i.e., can be the match that pressing enter ' +
           'in the omnibox navigates to).',
       ['allowedToBeDefaultMatch'], OutputBooleanProperty),
   new Column(
-      ['S'], '', 'starred', false,
-      'Starred\nA green checkmark indicates that the result has been ' +
+      ['bk'], '', 'starred', false,
+      'Bookmarked\nA green checkmark indicates that the result has been ' +
           'bookmarked.',
       ['starred'], OutputBooleanProperty),
   new Column(
-      ['T'], '', 'hasTabMatch', false,
+      ['tb'], '', 'hasTabMatch', false,
       'Has Tab Match\nA green checkmark indicates that the result URL ' +
           'matches an open tab.',
       ['hasTabMatch'], OutputBooleanProperty),
@@ -1084,12 +1084,12 @@ const COLUMNS = [
           'selection following the cursor, if this match is shown inline.',
       ['fillIntoEdit', 'inlineAutocompletion'], OutputOverlappingPairProperty),
   new Column(
-      ['D'], '', 'deletable', false,
+      ['dl'], '', 'deletable', false,
       'Deletable\nA green checkmark indicates that the result can be ' +
           'deleted from the visit history.',
       ['deletable'], OutputBooleanProperty),
   new Column(
-      ['P'], '', 'fromPrevious', false,
+      ['pr'], '', 'fromPrevious', false,
       'From Previous\nTrue if this match is from a previous result.',
       ['fromPrevious'], OutputBooleanProperty),
   new Column(
@@ -1099,7 +1099,7 @@ const COLUMNS = [
       'transition', false, 'Transition\nHow the user got to the result.',
       ['transition'], OutputTextProperty),
   new Column(
-      ['D'], '', 'providerDone', false,
+      ['dn'], '', 'providerDone', false,
       'Done\nA green checkmark indicates that the provider is done looking ' +
           'for more results.',
       ['providerDone'], OutputBooleanProperty),
@@ -1113,7 +1113,7 @@ const COLUMNS = [
       'Keyword\nThe keyword of the search engine to be used.', ['keyword'],
       OutputTextProperty),
   new Column(
-      ['D'], '', 'duplicates', false,
+      ['dp'], '', 'duplicates', false,
       'Duplicates\nThe number of matches that have been marked as ' +
           'duplicates of this match.',
       ['duplicates'], OutputTextProperty),

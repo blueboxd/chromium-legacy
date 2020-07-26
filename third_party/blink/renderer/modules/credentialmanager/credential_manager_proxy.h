@@ -33,8 +33,6 @@ class ScriptState;
 class MODULES_EXPORT CredentialManagerProxy
     : public GarbageCollected<CredentialManagerProxy>,
       public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(CredentialManagerProxy);
-
  public:
   static const char kSupplementName[];
 

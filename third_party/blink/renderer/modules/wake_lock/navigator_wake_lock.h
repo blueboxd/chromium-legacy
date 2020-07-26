@@ -15,8 +15,6 @@ class WakeLock;
 
 class NavigatorWakeLock final : public GarbageCollected<NavigatorWakeLock>,
                                 public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorWakeLock);
-
  public:
   static const char kSupplementName[];
 

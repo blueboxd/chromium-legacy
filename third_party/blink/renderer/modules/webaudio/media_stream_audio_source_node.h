@@ -82,7 +82,6 @@ class MediaStreamAudioSourceNode final
       public AudioSourceProviderClient,
       public ActiveScriptWrappable<MediaStreamAudioSourceNode> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(MediaStreamAudioSourceNode);
 
  public:
   static MediaStreamAudioSourceNode* Create(AudioContext&,

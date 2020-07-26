@@ -30,7 +30,6 @@ class XRTargetRaySpace;
 
 class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(XRInputSource);
 
  public:
   static XRInputSource* CreateOrUpdateFrom(

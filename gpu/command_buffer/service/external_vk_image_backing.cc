@@ -431,7 +431,7 @@ bool ExternalVkImageBacking::BeginAccess(
         GrBackendSurfaceMutableState(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                      VK_QUEUE_FAMILY_EXTERNAL));
     auto semaphore = external_semaphore_pool()->GetOrCreateSemaphore();
-    VkSemaphore vk_semaphore = semaphore.TakeVkSemaphore();
+    VkSemaphore vk_semaphore = semaphore.GetVkSemaphore();
     GrBackendSemaphore backend_semaphore;
     backend_semaphore.initVulkan(vk_semaphore);
     GrFlushInfo flush_info = {
@@ -444,12 +444,6 @@ bool ExternalVkImageBacking::BeginAccess(
     DCHECK_EQ(flush_result, GrSemaphoresSubmitted::kYes);
     gr_context->submit();
     external_semaphores->push_back(std::move(semaphore));
-    // We're done with the vk_semaphore, enqueue deferred cleanup.
-    // Reusing the |vk_semaphore| will cause vulkan device lost and hangs with
-    // NVIDIA GPU. so have to release |vk_end_access_semaphore| and not reuse
-    // it.
-    // TODO(penghuang): reuse |vk_semaphore|. https://crbug.com/1107558
-    fence_helper()->EnqueueSemaphoreCleanupForSubmittedWork(vk_semaphore);
   }
 
   if (readonly) {
@@ -503,6 +497,10 @@ void ExternalVkImageBacking::EndAccess(bool readonly,
       ExternalVkImageGLRepresentationShared::AcquireTexture(
           &semaphore, texture_id, info.fImageLayout);
     }
+    // |external_semaphores| has been waited on a GL context, so it can not be
+    // reused until a vulkan GPU work depends on the following GL task is over.
+    // So add it to the pending semaphores list, and they will be returned to
+    // external semaphores pool when the next skia access is over.
     AddSemaphoresToPendingListOrRelease(std::move(external_semaphores));
   }
 }
@@ -857,21 +855,15 @@ bool ExternalVkImageBacking::WritePixelsWithCallback(
   }
 
   auto end_access_semaphore = external_semaphore_pool()->GetOrCreateSemaphore();
-  VkSemaphore vk_end_access_semaphore = end_access_semaphore.TakeVkSemaphore();
+  VkSemaphore vk_end_access_semaphore = end_access_semaphore.GetVkSemaphore();
   command_buffer->Submit(begin_access_semaphores.size(),
                          begin_access_semaphores.data(), 1,
                          &vk_end_access_semaphore);
 
-  // Reusing the |vk_end_access_semaphore| will cause vulkan device lost and
-  // hangs with NVIDIA GPU. so have to release |vk_end_access_semaphore| and not
-  // reuse it.
-  // TODO(penghuang): reuse |vk_end_access_semaphore|. https://crbug.com/1107558
-  fence_helper()->EnqueueSemaphoreCleanupForSubmittedWork(
-      vk_end_access_semaphore);
+  EndAccessInternal(false /* readonly */, std::move(end_access_semaphore));
   // |external_semaphores| have been waited on and can be reused when submitted
   // GPU work is done.
-  AddSemaphoresToPendingListOrRelease(std::move(external_semaphores));
-  EndAccessInternal(false /* readonly */, std::move(end_access_semaphore));
+  ReturnPendingSemaphoresWithFenceHelper(std::move(external_semaphores));
 
   fence_helper()->EnqueueVulkanObjectCleanupForSubmittedWork(
       std::move(command_buffer));
@@ -914,7 +906,7 @@ bool ExternalVkImageBacking::WritePixelsWithData(
                                    VK_QUEUE_FAMILY_EXTERNAL));
 
   auto end_access_semaphore = external_semaphore_pool()->GetOrCreateSemaphore();
-  VkSemaphore vk_end_access_semaphore = end_access_semaphore.TakeVkSemaphore();
+  VkSemaphore vk_end_access_semaphore = end_access_semaphore.GetVkSemaphore();
   GrBackendSemaphore end_access_backend_semaphore;
   end_access_backend_semaphore.initVulkan(vk_end_access_semaphore);
   GrFlushInfo flush_info = {
@@ -926,16 +918,10 @@ bool ExternalVkImageBacking::WritePixelsWithData(
   // Submit so the |end_access_semaphore| is ready for waiting.
   gr_context->submit();
 
-  // Reusing the |vk_end_access_semaphore| will cause vulkan device lost and
-  // hangs with NVIDIA GPU. so have to release |vk_end_access_semaphore| and not
-  // reuse it.
-  // TODO(penghuang): reuse |vk_end_access_semaphore|. https://crbug.com/1107558
-  fence_helper()->EnqueueSemaphoreCleanupForSubmittedWork(
-      vk_end_access_semaphore);
+  EndAccessInternal(false /* readonly */, std::move(end_access_semaphore));
   // |external_semaphores| have been waited on and can be reused when submitted
   // GPU work is done.
-  AddSemaphoresToPendingListOrRelease(std::move(external_semaphores));
-  EndAccessInternal(false /* readonly */, std::move(end_access_semaphore));
+  ReturnPendingSemaphoresWithFenceHelper(std::move(external_semaphores));
   return true;
 }
 

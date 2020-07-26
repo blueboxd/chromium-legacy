@@ -72,7 +72,6 @@ class MediaKeySession final
       public ExecutionContextLifecycleObserver,
       private WebContentDecryptionModuleSession::Client {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(MediaKeySession);
   USING_PRE_FINALIZER(MediaKeySession, Dispose);
 
  public:

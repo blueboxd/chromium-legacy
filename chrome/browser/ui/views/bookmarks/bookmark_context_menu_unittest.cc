@@ -67,8 +67,14 @@ class BookmarkContextMenuTest : public testing::Test {
   BookmarkContextMenuTest() : model_(nullptr) {}
 
   void SetUp() override {
-    profile_ = std::make_unique<TestingProfile>();
-    profile_->CreateBookmarkModel(true);
+    TestingProfile::Builder profile_builder;
+    profile_builder.AddTestingFactory(
+        BookmarkModelFactory::GetInstance(),
+        BookmarkModelFactory::GetDefaultFactory());
+    profile_builder.AddTestingFactory(
+        ManagedBookmarkServiceFactory::GetInstance(),
+        ManagedBookmarkServiceFactory::GetDefaultFactory());
+    profile_ = profile_builder.Build();
 
     model_ = BookmarkModelFactory::GetForBrowserContext(profile_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(model_);

@@ -55,8 +55,6 @@ namespace {
 class OutsideSettingsCSPDelegate final
     : public GarbageCollected<OutsideSettingsCSPDelegate>,
       public ContentSecurityPolicyDelegate {
-  USING_GARBAGE_COLLECTED_MIXIN(OutsideSettingsCSPDelegate);
-
  public:
   OutsideSettingsCSPDelegate(
       const FetchClientSettingsObject& outside_settings_object,

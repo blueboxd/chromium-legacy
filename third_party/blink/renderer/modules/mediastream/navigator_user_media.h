@@ -16,8 +16,6 @@ class MediaDevices;
 
 class NavigatorUserMedia final : public GarbageCollected<NavigatorUserMedia>,
                                  public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorUserMedia);
-
  public:
   static const char kSupplementName[];
 

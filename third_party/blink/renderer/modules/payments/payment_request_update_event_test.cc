@@ -23,8 +23,6 @@ namespace {
 
 class MockPaymentRequest : public GarbageCollected<MockPaymentRequest>,
                            public PaymentRequestDelegate {
-  USING_GARBAGE_COLLECTED_MIXIN(MockPaymentRequest);
-
  public:
   MockPaymentRequest() = default;
   ~MockPaymentRequest() override = default;

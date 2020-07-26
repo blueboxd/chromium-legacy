@@ -68,7 +68,6 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
                                   public ActiveScriptWrappable<IDBRequest>,
                                   public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(IDBRequest);
 
  public:
   using Source = IDBObjectStoreOrIDBIndexOrIDBCursor;

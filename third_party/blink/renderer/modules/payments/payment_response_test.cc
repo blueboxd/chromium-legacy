@@ -27,8 +27,6 @@ namespace {
 class MockPaymentStateResolver final
     : public GarbageCollected<MockPaymentStateResolver>,
       public PaymentStateResolver {
-  USING_GARBAGE_COLLECTED_MIXIN(MockPaymentStateResolver);
-
  public:
   MockPaymentStateResolver() {
     ON_CALL(*this, Complete(testing::_, testing::_, testing::_))

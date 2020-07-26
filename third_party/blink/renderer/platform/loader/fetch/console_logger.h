@@ -41,8 +41,6 @@ class PLATFORM_EXPORT ConsoleLogger : public GarbageCollectedMixin {
 class PLATFORM_EXPORT DetachableConsoleLogger final
     : public GarbageCollected<DetachableConsoleLogger>,
       public ConsoleLogger {
-  USING_GARBAGE_COLLECTED_MIXIN(DetachableConsoleLogger);
-
  public:
   DetachableConsoleLogger() : DetachableConsoleLogger(nullptr) {}
   DetachableConsoleLogger(ConsoleLogger* logger) : logger_(logger) {}

@@ -61,7 +61,6 @@ class MODULES_EXPORT Geolocation final
       public ExecutionContextLifecycleObserver,
       public PageVisibilityObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Geolocation);
 
  public:
   static Geolocation* Create(ExecutionContext*);

@@ -53,8 +53,6 @@ enum class TypingContinuation;
 class CORE_EXPORT InputMethodController final
     : public GarbageCollected<InputMethodController>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(InputMethodController);
-
  public:
   enum ConfirmCompositionBehavior {
     kDoNotKeepSelection,

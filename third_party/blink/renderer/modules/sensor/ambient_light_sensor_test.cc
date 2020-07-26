@@ -20,8 +20,6 @@ namespace {
 class MockSensorProxyObserver
     : public GarbageCollected<MockSensorProxyObserver>,
       public SensorProxy::Observer {
-  USING_GARBAGE_COLLECTED_MIXIN(MockSensorProxyObserver);
-
  public:
   virtual ~MockSensorProxyObserver() = default;
 

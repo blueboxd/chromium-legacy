@@ -21,8 +21,6 @@ class ScriptState;
 class CORE_EXPORT FetchManager final
     : public GarbageCollected<FetchManager>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(FetchManager);
-
  public:
   explicit FetchManager(ExecutionContext*);
 

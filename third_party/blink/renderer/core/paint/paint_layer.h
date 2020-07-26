@@ -1132,6 +1132,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
 
  private:
+  bool PaintsWithDirectReasonIntoOwnBacking(GlobalPaintFlags) const;
+
   void SetNeedsCompositingInputsUpdateInternal();
 
   void Update3DTransformedDescendantStatus();

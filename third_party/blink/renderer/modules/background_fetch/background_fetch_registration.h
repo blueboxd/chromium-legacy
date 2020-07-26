@@ -34,7 +34,6 @@ class BackgroundFetchRegistration final
       public ActiveScriptWrappable<BackgroundFetchRegistration>,
       public blink::mojom::blink::BackgroundFetchRegistrationObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(BackgroundFetchRegistration);
 
  public:
   BackgroundFetchRegistration(

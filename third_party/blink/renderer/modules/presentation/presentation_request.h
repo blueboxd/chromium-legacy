@@ -26,7 +26,6 @@ class MODULES_EXPORT PresentationRequest final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<PresentationRequest>,
       public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(PresentationRequest);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

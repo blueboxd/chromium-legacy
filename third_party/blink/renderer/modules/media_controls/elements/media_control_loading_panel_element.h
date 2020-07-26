@@ -21,8 +21,6 @@ class MediaControlsImpl;
 class MODULES_EXPORT MediaControlLoadingPanelElement final
     : public MediaControlDivElement,
       public MediaControlAnimationEventListener::Observer {
-  USING_GARBAGE_COLLECTED_MIXIN(MediaControlLoadingPanelElement);
-
  public:
   explicit MediaControlLoadingPanelElement(MediaControlsImpl&);
 

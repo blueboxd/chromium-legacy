@@ -45,7 +45,6 @@ class Settings;
 
 class InternalSettings final : public InternalSettingsGenerated,
                                public InternalSettingsPageSupplementBase {
-  USING_GARBAGE_COLLECTED_MIXIN(InternalSettings);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

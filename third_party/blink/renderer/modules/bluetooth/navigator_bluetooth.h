@@ -16,8 +16,6 @@ class Navigator;
 
 class NavigatorBluetooth final : public GarbageCollected<NavigatorBluetooth>,
                                  public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorBluetooth);
-
  public:
   static const char kSupplementName[];
 

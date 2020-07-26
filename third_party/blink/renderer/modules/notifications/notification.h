@@ -62,7 +62,6 @@ class MODULES_EXPORT Notification final
       public ActiveScriptWrappable<Notification>,
       public ExecutionContextLifecycleObserver,
       public mojom::blink::NonPersistentNotificationListener {
-  USING_GARBAGE_COLLECTED_MIXIN(Notification);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

@@ -50,8 +50,6 @@ class RTCSessionDescriptionPlatform;
 class RTCSessionDescriptionRequestImpl final
     : public RTCSessionDescriptionRequest,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(RTCSessionDescriptionRequestImpl);
-
  public:
   static RTCSessionDescriptionRequestImpl* Create(
       ExecutionContext*,

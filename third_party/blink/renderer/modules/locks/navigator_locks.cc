@@ -19,8 +19,6 @@ template <typename T>
 class NavigatorLocksImpl final : public GarbageCollected<NavigatorLocksImpl<T>>,
                                  public Supplement<T>,
                                  public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorLocksImpl);
-
  public:
   static const char kSupplementName[];
 

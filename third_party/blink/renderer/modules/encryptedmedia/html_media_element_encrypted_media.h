@@ -31,8 +31,6 @@ class MODULES_EXPORT HTMLMediaElementEncryptedMedia final
     : public GarbageCollected<HTMLMediaElementEncryptedMedia>,
       public Supplement<HTMLMediaElement>,
       public WebMediaPlayerEncryptedMediaClient {
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementEncryptedMedia);
-
  public:
   static const char kSupplementName[];
 

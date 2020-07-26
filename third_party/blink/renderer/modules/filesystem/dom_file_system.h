@@ -50,7 +50,6 @@ class MODULES_EXPORT DOMFileSystem final
       public ActiveScriptWrappable<DOMFileSystem>,
       public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(DOMFileSystem);
 
  public:
   // Creates a new isolated file system for the given filesystemId.

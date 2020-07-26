@@ -40,7 +40,6 @@ class BluetoothDevice final
       public ActiveScriptWrappable<BluetoothDevice>,
       public mojom::blink::WebBluetoothAdvertisementClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(BluetoothDevice);
 
  public:
   BluetoothDevice(ExecutionContext*,

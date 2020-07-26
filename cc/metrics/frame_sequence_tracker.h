@@ -5,6 +5,7 @@
 #ifndef CC_METRICS_FRAME_SEQUENCE_TRACKER_H_
 #define CC_METRICS_FRAME_SEQUENCE_TRACKER_H_
 
+#include <memory>
 #include <sstream>
 
 #include "base/containers/circular_deque.h"
@@ -102,6 +103,10 @@ class CC_EXPORT FrameSequenceTracker {
   int custom_sequence_id() const { return custom_sequence_id_; }
 
   std::unique_ptr<FrameSequenceMetrics> TakeMetrics();
+
+  // Called by the destructor of FrameSequenceTrackerCollection, asking its
+  // |metrics_| to report.
+  void CleanUp();
 
  private:
   friend class FrameSequenceTrackerCollection;

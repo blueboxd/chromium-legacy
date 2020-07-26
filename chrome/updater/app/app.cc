@@ -8,9 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
-#include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_restrictions.h"
 
@@ -27,7 +25,6 @@ void App::InitializeThreadPool() {
 
 int App::Run() {
   InitializeThreadPool();
-  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
   Initialize();
   int exit_code = 0;
   {

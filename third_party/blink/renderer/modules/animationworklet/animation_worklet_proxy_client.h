@@ -29,7 +29,6 @@ class MODULES_EXPORT AnimationWorkletProxyClient
     : public GarbageCollected<AnimationWorkletProxyClient>,
       public Supplement<WorkerClients>,
       public AnimationWorkletMutator {
-  USING_GARBAGE_COLLECTED_MIXIN(AnimationWorkletProxyClient);
   DISALLOW_COPY_AND_ASSIGN(AnimationWorkletProxyClient);
 
  public:

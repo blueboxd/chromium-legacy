@@ -21,8 +21,6 @@ template <typename T>
 class NavigatorFontsImpl final : public GarbageCollected<NavigatorFontsImpl<T>>,
                                  public Supplement<T>,
                                  public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorFontsImpl);
-
  public:
   static const char kSupplementName[];
 

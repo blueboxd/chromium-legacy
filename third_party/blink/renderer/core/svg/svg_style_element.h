@@ -29,7 +29,6 @@ namespace blink {
 
 class SVGStyleElement final : public SVGElement, public StyleElement {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGStyleElement);
 
  public:
   SVGStyleElement(Document&, const CreateElementFlags);

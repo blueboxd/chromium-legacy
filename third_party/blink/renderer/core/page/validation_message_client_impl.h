@@ -45,8 +45,6 @@ class CORE_EXPORT ValidationMessageClientImpl final
     : public GarbageCollected<ValidationMessageClientImpl>,
       public ValidationMessageClient,
       private PopupOpeningObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(ValidationMessageClientImpl);
-
  public:
   explicit ValidationMessageClientImpl(Page&);
   ~ValidationMessageClientImpl() override;

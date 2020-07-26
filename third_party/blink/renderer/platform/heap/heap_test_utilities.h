@@ -110,8 +110,6 @@ class ObjectWithMixinWithCallbackBeforeInitializer
     : public GarbageCollected<ObjectWithMixinWithCallbackBeforeInitializer<T>>,
       public BoolMixin,
       public MixinWithCallbackBeforeInitializer<T> {
-  USING_GARBAGE_COLLECTED_MIXIN(ObjectWithMixinWithCallbackBeforeInitializer);
-
  public:
   using Mixin = MixinWithCallbackBeforeInitializer<T>;
 

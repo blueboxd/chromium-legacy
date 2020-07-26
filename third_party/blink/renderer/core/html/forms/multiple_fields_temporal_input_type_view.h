@@ -50,8 +50,6 @@ class MultipleFieldsTemporalInputTypeView final
       protected PickerIndicatorElement::PickerIndicatorOwner,
       protected SpinButtonElement::SpinButtonOwner,
       protected ClearButtonElement::ClearButtonOwner {
-  USING_GARBAGE_COLLECTED_MIXIN(MultipleFieldsTemporalInputTypeView);
-
  public:
   MultipleFieldsTemporalInputTypeView(HTMLInputElement&,
                                       BaseTemporalInputType&);

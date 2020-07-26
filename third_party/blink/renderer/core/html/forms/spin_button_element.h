@@ -36,8 +36,6 @@ namespace blink {
 
 class CORE_EXPORT SpinButtonElement final : public HTMLDivElement,
                                             public PopupOpeningObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(SpinButtonElement);
-
  public:
   enum UpDownState {
     kDown,

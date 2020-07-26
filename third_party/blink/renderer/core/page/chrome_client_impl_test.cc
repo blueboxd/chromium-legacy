@@ -115,8 +115,6 @@ class FakeColorChooserClient : public GarbageCollected<FakeColorChooserClient>,
     ColorChooserClient::Trace(visitor);
   }
 
-  USING_GARBAGE_COLLECTED_MIXIN(FakeColorChooserClient);
-
   // ColorChooserClient
   void DidChooseColor(const Color& color) override {}
   void DidEndChooser() override {}
@@ -144,8 +142,6 @@ class FakeDateTimeChooserClient
     visitor->Trace(owner_element_);
     DateTimeChooserClient::Trace(visitor);
   }
-
-  USING_GARBAGE_COLLECTED_MIXIN(FakeDateTimeChooserClient);
 
   // DateTimeChooserClient
   Element& OwnerElement() const override { return *owner_element_; }
@@ -237,8 +233,6 @@ TEST_F(PagePopupSuppressionTest, SuppressDateTimeChooser) {
 // A FileChooserClient which makes FileChooser::OpenFileChooser() success.
 class MockFileChooserClient : public GarbageCollected<MockFileChooserClient>,
                               public FileChooserClient {
-  USING_GARBAGE_COLLECTED_MIXIN(MockFileChooserClient);
-
  public:
   explicit MockFileChooserClient(LocalFrame* frame) : frame_(frame) {}
   void Trace(Visitor* visitor) const override {

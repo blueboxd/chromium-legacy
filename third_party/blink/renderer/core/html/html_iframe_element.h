@@ -40,7 +40,6 @@ class CORE_EXPORT HTMLIFrameElement final
     : public HTMLFrameElementBase,
       public Supplementable<HTMLIFrameElement> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLIFrameElement);
 
  public:
   void Trace(Visitor*) const override;

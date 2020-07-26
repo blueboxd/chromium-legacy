@@ -58,7 +58,6 @@ class MODULES_EXPORT EventSource final
       public ExecutionContextLifecycleObserver,
       public EventSourceParser::Client {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(EventSource);
 
  public:
   static EventSource* Create(ExecutionContext*,

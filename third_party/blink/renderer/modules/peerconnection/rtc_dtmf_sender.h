@@ -40,7 +40,6 @@ class RtcDtmfSenderHandler;
 class RTCDTMFSender final : public EventTargetWithInlineData,
                             public RtcDtmfSenderHandler::Client,
                             public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(RTCDTMFSender);
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(RTCDTMFSender, Dispose);
 

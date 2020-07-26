@@ -28,7 +28,6 @@ class CORE_EXPORT PerformanceObserver final
       public ActiveScriptWrappable<PerformanceObserver>,
       public ExecutionContextLifecycleStateObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(PerformanceObserver);
   friend class Performance;
   friend class PerformanceTest;
   friend class PerformanceObserverTest;

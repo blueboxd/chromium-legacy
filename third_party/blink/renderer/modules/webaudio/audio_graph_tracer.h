@@ -24,8 +24,6 @@ class Page;
 class MODULES_EXPORT AudioGraphTracer final
     : public GarbageCollected<AudioGraphTracer>,
       public Supplement<Page> {
-  USING_GARBAGE_COLLECTED_MIXIN(AudioGraphTracer);
-
  public:
   static const char kSupplementName[];
 

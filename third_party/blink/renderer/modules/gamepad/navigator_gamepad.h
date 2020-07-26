@@ -55,8 +55,6 @@ class MODULES_EXPORT NavigatorGamepad final
       public PlatformEventController,
       public LocalDOMWindow::EventListenerObserver,
       public Gamepad::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorGamepad);
-
  public:
   static const char kSupplementName[];
 

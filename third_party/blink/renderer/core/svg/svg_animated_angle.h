@@ -41,7 +41,6 @@ namespace blink {
 class SVGAnimatedAngle final : public ScriptWrappable,
                                public SVGAnimatedProperty<SVGAngle> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedAngle);
 
  public:
   explicit SVGAnimatedAngle(SVGElement* context_element);

@@ -62,8 +62,6 @@ class PluginParameters {
 class CORE_EXPORT HTMLPlugInElement
     : public HTMLFrameOwnerElement,
       public ActiveScriptWrappable<HTMLPlugInElement> {
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLPlugInElement);
-
  public:
   ~HTMLPlugInElement() override;
   void Trace(Visitor*) const override;

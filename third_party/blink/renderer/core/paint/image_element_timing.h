@@ -28,8 +28,6 @@ class StyleFetchedImage;
 class CORE_EXPORT ImageElementTiming final
     : public GarbageCollected<ImageElementTiming>,
       public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(ImageElementTiming);
-
  public:
   static const char kSupplementName[];
 

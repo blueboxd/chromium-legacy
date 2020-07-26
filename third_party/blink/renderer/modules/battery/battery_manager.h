@@ -21,7 +21,6 @@ class BatteryManager final : public EventTargetWithInlineData,
                              public ExecutionContextLifecycleStateObserver,
                              public PlatformEventController {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(BatteryManager);
 
  public:
   static BatteryManager* Create(ExecutionContext*);

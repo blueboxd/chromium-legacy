@@ -38,7 +38,6 @@ class DOMPluginArray final : public ScriptWrappable,
                              public ExecutionContextLifecycleObserver,
                              public PluginsChangedObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(DOMPluginArray);
 
  public:
   explicit DOMPluginArray(LocalFrame*);

@@ -43,7 +43,6 @@ class SourceBuffer;
 class SourceBufferList final : public EventTargetWithInlineData,
                                public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SourceBufferList);
 
  public:
   SourceBufferList(ExecutionContext*, EventQueue*);

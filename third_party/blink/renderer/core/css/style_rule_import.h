@@ -67,8 +67,6 @@ class StyleRuleImport : public StyleRuleBase {
   class ImportedStyleSheetClient final
       : public GarbageCollected<ImportedStyleSheetClient>,
         public ResourceClient {
-    USING_GARBAGE_COLLECTED_MIXIN(ImportedStyleSheetClient);
-
    public:
     ImportedStyleSheetClient(StyleRuleImport* owner_rule)
         : owner_rule_(owner_rule) {}

@@ -328,7 +328,6 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
 class MODULES_EXPORT AudioNode : public EventTargetWithInlineData,
                                  public InspectorHelperMixin {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(AudioNode);
   USING_PRE_FINALIZER(AudioNode, Dispose);
 
  public:

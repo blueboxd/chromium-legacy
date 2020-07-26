@@ -33,7 +33,6 @@ class CORE_EXPORT ModuleRecordResolverImpl final
         modulator_(modulator) {}
 
   void Trace(Visitor*) const override;
-  USING_GARBAGE_COLLECTED_MIXIN(ModuleRecordResolverImpl);
 
  private:
   // Implements ModuleRecordResolver:

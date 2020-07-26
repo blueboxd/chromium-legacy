@@ -29,7 +29,6 @@ class CacheStorage final : public ScriptWrappable,
                            public ActiveScriptWrappable<CacheStorage>,
                            public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(CacheStorage);
 
  public:
   CacheStorage(ExecutionContext*, GlobalFetch::ScopedFetcher*);

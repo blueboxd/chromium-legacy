@@ -32,8 +32,6 @@ class MODULES_EXPORT InstalledAppController final
     : public GarbageCollected<InstalledAppController>,
       public Supplement<LocalDOMWindow>,
       public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(InstalledAppController);
-
  public:
   static const char kSupplementName[];
 

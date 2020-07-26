@@ -38,6 +38,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardData {
   ~ClipboardData();
 
   bool operator==(const ClipboardData& that) const;
+  bool operator!=(const ClipboardData& that) const;
 
   // Bitmask of ClipboardInternalFormat types.
   int format() const { return format_; }

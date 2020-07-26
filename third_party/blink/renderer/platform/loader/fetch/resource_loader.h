@@ -67,7 +67,6 @@ class PLATFORM_EXPORT ResourceLoader final
       protected WebURLLoaderClient,
       protected mojom::blink::ProgressClient,
       private ResponseBodyLoaderClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ResourceLoader);
   USING_PRE_FINALIZER(ResourceLoader, Dispose);
 
  public:

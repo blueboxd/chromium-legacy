@@ -19,7 +19,6 @@ namespace blink {
 class ModuleMap::Entry final : public GarbageCollected<Entry>,
                                public NameClient,
                                public ModuleScriptLoaderClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ModuleMap::Entry);
 
  public:
   explicit Entry(ModuleMap*);

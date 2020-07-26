@@ -26,8 +26,6 @@ class ResponseBodyLoaderTest : public testing::Test {
   using Result = BytesConsumer::Result;
   class TestClient final : public GarbageCollected<TestClient>,
                            public ResponseBodyLoaderClient {
-    USING_GARBAGE_COLLECTED_MIXIN(TestClient);
-
    public:
     enum class Option {
       kNone,
@@ -89,8 +87,6 @@ class ResponseBodyLoaderTest : public testing::Test {
 
   class ReadingClient final : public GarbageCollected<ReadingClient>,
                               public BytesConsumer::Client {
-    USING_GARBAGE_COLLECTED_MIXIN(ReadingClient);
-
    public:
     ReadingClient(BytesConsumer& bytes_consumer,
                   TestClient& test_response_body_loader_client)

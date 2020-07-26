@@ -34,7 +34,6 @@ class MODULES_EXPORT MediaDevices final
       public ActiveScriptWrappable<MediaDevices>,
       public ExecutionContextLifecycleObserver,
       public mojom::blink::MediaDevicesListener {
-  USING_GARBAGE_COLLECTED_MIXIN(MediaDevices);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

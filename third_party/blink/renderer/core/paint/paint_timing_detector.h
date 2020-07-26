@@ -60,8 +60,6 @@ class PaintTimingCallbackManager : public GarbageCollectedMixin {
 class PaintTimingCallbackManagerImpl final
     : public GarbageCollected<PaintTimingCallbackManagerImpl>,
       public PaintTimingCallbackManager {
-  USING_GARBAGE_COLLECTED_MIXIN(PaintTimingCallbackManagerImpl);
-
  public:
   PaintTimingCallbackManagerImpl(LocalFrameView* frame_view)
       : frame_view_(frame_view),

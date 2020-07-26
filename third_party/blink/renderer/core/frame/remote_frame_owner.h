@@ -24,8 +24,6 @@ namespace blink {
 class CORE_EXPORT RemoteFrameOwner final
     : public GarbageCollected<RemoteFrameOwner>,
       public FrameOwner {
-  USING_GARBAGE_COLLECTED_MIXIN(RemoteFrameOwner);
-
  public:
   RemoteFrameOwner(
       const FramePolicy&,

@@ -26,8 +26,6 @@ extern DocumentLayoutDefinition* const kInvalidDocumentLayoutDefinition;
 // global scopes.
 class CORE_EXPORT LayoutWorklet : public Worklet,
                                   public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(LayoutWorklet);
-
  public:
   static const char kSupplementName[];
 

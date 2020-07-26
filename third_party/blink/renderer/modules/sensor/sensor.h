@@ -32,7 +32,6 @@ class MODULES_EXPORT Sensor : public EventTargetWithInlineData,
                               public ActiveScriptWrappable<Sensor>,
                               public ExecutionContextLifecycleObserver,
                               public SensorProxy::Observer {
-  USING_GARBAGE_COLLECTED_MIXIN(Sensor);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

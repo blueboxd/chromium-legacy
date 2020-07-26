@@ -21,8 +21,6 @@ class DataObjectTest : public testing::Test {
 
 class DataObjectObserver : public GarbageCollected<DataObjectObserver>,
                            public DataObject::Observer {
-  USING_GARBAGE_COLLECTED_MIXIN(DataObjectObserver);
-
  public:
   DataObjectObserver() : call_count_(0) {}
   void OnItemListChanged() override { call_count_++; }

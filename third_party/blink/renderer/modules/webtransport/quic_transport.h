@@ -47,7 +47,6 @@ class MODULES_EXPORT QuicTransport final
       public network::mojom::blink::QuicTransportClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(QuicTransport, Dispose);
-  USING_GARBAGE_COLLECTED_MIXIN(QuicTransport);
 
  public:
   using PassKey = util::PassKey<QuicTransport>;

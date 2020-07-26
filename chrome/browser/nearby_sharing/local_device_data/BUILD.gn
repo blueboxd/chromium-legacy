@@ -10,12 +10,17 @@ source_set("local_device_data") {
     "nearby_share_device_data_updater_impl.h",
     "nearby_share_local_device_data_manager.cc",
     "nearby_share_local_device_data_manager.h",
+    "nearby_share_local_device_data_manager_impl.cc",
+    "nearby_share_local_device_data_manager_impl.h",
   ]
 
   deps = [
     "//base",
     "//chrome/browser/nearby_sharing/client",
+    "//chrome/browser/nearby_sharing/common",
     "//chrome/browser/nearby_sharing/proto",
+    "//chrome/browser/nearby_sharing/scheduling",
+    "//components/prefs",
   ]
 }
 
@@ -25,6 +30,8 @@ source_set("test_support") {
   sources = [
     "fake_nearby_share_device_data_updater.cc",
     "fake_nearby_share_device_data_updater.h",
+    "fake_nearby_share_local_device_data_manager.cc",
+    "fake_nearby_share_local_device_data_manager.h",
   ]
 
   deps = [
@@ -37,15 +44,23 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [ "nearby_share_device_data_updater_impl_unittest.cc" ]
+  sources = [
+    "nearby_share_device_data_updater_impl_unittest.cc",
+    "nearby_share_local_device_data_manager_impl_unittest.cc",
+  ]
 
   deps = [
     ":local_device_data",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//chrome/browser/nearby_sharing/client",
     "//chrome/browser/nearby_sharing/client:test_support",
+    "//chrome/browser/nearby_sharing/common",
     "//chrome/browser/nearby_sharing/proto",
+    "//chrome/browser/nearby_sharing/scheduling",
+    "//chrome/browser/nearby_sharing/scheduling:test_support",
+    "//components/sync_preferences:test_support",
     "//testing/gtest",
   ]
 }

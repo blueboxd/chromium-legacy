@@ -68,8 +68,6 @@ class SVGImageTest : public testing::Test, private ScopedMockOverlayScrollbars {
   class PauseControlImageObserver
       : public GarbageCollected<PauseControlImageObserver>,
         public ImageObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(PauseControlImageObserver);
-
    public:
     PauseControlImageObserver(bool should_pause)
         : should_pause_(should_pause) {}

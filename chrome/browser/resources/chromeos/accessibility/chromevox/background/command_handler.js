@@ -361,25 +361,29 @@ CommandHandler.onCommand = function(command) {
   let skipSync = false;
   let didNavigate = false;
   let tryScrolling = true;
-  let skipSettingSelection = false;
+  let shouldSetSelection = false;
   let skipInitialAncestry = true;
   switch (command) {
     case 'nextCharacter':
+      shouldSetSelection = true;
       didNavigate = true;
       speechProps['phoneticCharacters'] = true;
       current = current.move(cursors.Unit.CHARACTER, Dir.FORWARD);
       break;
     case 'previousCharacter':
+      shouldSetSelection = true;
       dir = Dir.BACKWARD;
       didNavigate = true;
       speechProps['phoneticCharacters'] = true;
       current = current.move(cursors.Unit.CHARACTER, dir);
       break;
     case 'nextWord':
+      shouldSetSelection = true;
       didNavigate = true;
       current = current.move(cursors.Unit.WORD, Dir.FORWARD);
       break;
     case 'previousWord':
+      shouldSetSelection = true;
       dir = Dir.BACKWARD;
       didNavigate = true;
       current = current.move(cursors.Unit.WORD, dir);
@@ -449,12 +453,10 @@ CommandHandler.onCommand = function(command) {
       dir = Dir.BACKWARD;
       pred = AutomationPredicate.image;
       predErrorMsg = 'no_previous_graphic';
-      skipSettingSelection = true;
       break;
     case 'nextGraphic':
       pred = AutomationPredicate.image;
       predErrorMsg = 'no_next_graphic';
-      skipSettingSelection = true;
       break;
     case 'nextHeading':
       pred = AutomationPredicate.heading;
@@ -813,6 +815,7 @@ CommandHandler.onCommand = function(command) {
       output.withString(target.docUrl || '').go();
       return false;
     case 'toggleSelection':
+      shouldSetSelection = true;
       if (!ChromeVoxState.instance.pageSel_) {
         ChromeVoxState.instance.pageSel_ = ChromeVoxState.instance.currentRange;
         DesktopAutomationHandler.instance.ignoreDocumentSelectionFromAction(
@@ -1263,7 +1266,7 @@ CommandHandler.onCommand = function(command) {
 
   if (current) {
     ChromeVoxState.instance.navigateToRange(
-        current, undefined, speechProps, skipSettingSelection);
+        current, undefined, speechProps, shouldSetSelection);
   }
 
   CommandHandler.onFinishCommand();

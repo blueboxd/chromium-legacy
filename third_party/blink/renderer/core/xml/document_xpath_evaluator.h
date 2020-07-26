@@ -39,8 +39,6 @@ class XPathResult;
 class CORE_EXPORT DocumentXPathEvaluator final
     : public GarbageCollected<DocumentXPathEvaluator>,
       public Supplement<Document> {
-  USING_GARBAGE_COLLECTED_MIXIN(DocumentXPathEvaluator);
-
  public:
   static const char kSupplementName[];
 

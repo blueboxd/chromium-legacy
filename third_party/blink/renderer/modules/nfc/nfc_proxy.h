@@ -26,8 +26,6 @@ class NDEFWriter;
 class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
                                       public Supplement<LocalDOMWindow>,
                                       public device::mojom::blink::NFCClient {
-  USING_GARBAGE_COLLECTED_MIXIN(NFCProxy);
-
  public:
   static const char kSupplementName[];
   static NFCProxy* From(LocalDOMWindow&);

@@ -37,8 +37,6 @@
 namespace blink {
 
 class HiddenInputType final : public InputType, private InputTypeView {
-  USING_GARBAGE_COLLECTED_MIXIN(HiddenInputType);
-
  public:
   HiddenInputType(HTMLInputElement& element)
       : InputType(element), InputTypeView(element) {}

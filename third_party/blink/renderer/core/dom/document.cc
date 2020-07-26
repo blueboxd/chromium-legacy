@@ -618,7 +618,6 @@ class Document::NetworkStateObserver final
     : public GarbageCollected<Document::NetworkStateObserver>,
       public NetworkStateNotifier::NetworkStateObserver,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(Document::NetworkStateObserver);
 
  public:
   explicit NetworkStateObserver(ExecutionContext* context)

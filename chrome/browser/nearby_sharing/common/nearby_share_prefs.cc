@@ -23,6 +23,10 @@ const char prefs::kNearbySharingDeviceNamePrefName[] =
     "nearby_sharing.device_name";
 const char prefs::kNearbySharingFullNamePrefName[] = "nearby_sharing.full_name";
 const char prefs::kNearbySharingIconUrlPrefName[] = "nearby_sharing.icon_url";
+const char prefs::kNearbySharingSchedulerDownloadDeviceDataPrefName[] =
+    "nearby_sharing.scheduler.download_device_data";
+const char prefs::kNearbySharingSchedulerUploadDeviceNamePrefName[] =
+    "nearby_sharing.scheduler.upload_device_name";
 
 void RegisterNearbySharingPrefs(user_prefs::PrefRegistrySyncable* registry) {
   // These prefs are not synced across devices on purpose.
@@ -45,6 +49,10 @@ void RegisterNearbySharingPrefs(user_prefs::PrefRegistrySyncable* registry) {
                                /*default_value=*/std::string());
   registry->RegisterStringPref(prefs::kNearbySharingIconUrlPrefName,
                                /*default_value=*/std::string());
+  registry->RegisterDictionaryPref(
+      prefs::kNearbySharingSchedulerDownloadDeviceDataPrefName);
+  registry->RegisterDictionaryPref(
+      prefs::kNearbySharingSchedulerUploadDeviceNamePrefName);
 }
 
 void RegisterNearbySharingLocalPrefs(PrefRegistrySimple* local_state) {

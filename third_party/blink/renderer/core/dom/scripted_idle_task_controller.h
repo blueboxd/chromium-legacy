@@ -27,8 +27,6 @@ class CORE_EXPORT ScriptedIdleTaskController
     : public GarbageCollected<ScriptedIdleTaskController>,
       public ExecutionContextLifecycleStateObserver,
       public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ScriptedIdleTaskController);
-
  public:
   static ScriptedIdleTaskController* Create(ExecutionContext* context) {
     ScriptedIdleTaskController* controller =

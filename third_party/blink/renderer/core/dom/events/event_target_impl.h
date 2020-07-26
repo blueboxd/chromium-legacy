@@ -22,8 +22,6 @@ namespace blink {
 // decrease.
 class CORE_EXPORT EventTargetImpl final : public EventTargetWithInlineData,
                                           public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(EventTargetImpl);
-
  public:
   explicit EventTargetImpl(ScriptState*);
   ~EventTargetImpl() override = default;

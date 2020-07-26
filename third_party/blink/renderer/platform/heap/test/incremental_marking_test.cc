@@ -413,8 +413,6 @@ class ClassWithVirtual {
 class Child : public GarbageCollected<Child>,
               public ClassWithVirtual,
               public Mixin {
-  USING_GARBAGE_COLLECTED_MIXIN(Child);
-
  public:
   Child() : ClassWithVirtual(), Mixin() {}
   ~Child() override {}
@@ -1380,8 +1378,6 @@ class RegisteringMixin : public GarbageCollectedMixin {
 
 class RegisteringObject : public GarbageCollected<RegisteringObject>,
                           public RegisteringMixin {
-  USING_GARBAGE_COLLECTED_MIXIN(RegisteringObject);
-
  public:
   explicit RegisteringObject(ObjectRegistry* registry)
       : RegisteringMixin(registry) {}

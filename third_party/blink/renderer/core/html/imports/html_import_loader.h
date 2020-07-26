@@ -50,8 +50,6 @@ class HTMLImportsController;
 class HTMLImportLoader final : public GarbageCollected<HTMLImportLoader>,
                                public RawResourceClient,
                                public DocumentParserClient {
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLImportLoader);
-
  public:
   enum State {
     kStateLoading,

@@ -120,8 +120,6 @@ class FrameSwapScope {
 class CORE_EXPORT DummyFrameOwner final
     : public GarbageCollected<DummyFrameOwner>,
       public FrameOwner {
-  USING_GARBAGE_COLLECTED_MIXIN(DummyFrameOwner);
-
  public:
   void Trace(Visitor* visitor) const override { FrameOwner::Trace(visitor); }
 

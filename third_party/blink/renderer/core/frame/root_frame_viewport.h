@@ -29,8 +29,6 @@ struct PhysicalRect;
 class CORE_EXPORT RootFrameViewport final
     : public GarbageCollected<RootFrameViewport>,
       public ScrollableArea {
-  USING_GARBAGE_COLLECTED_MIXIN(RootFrameViewport);
-
  public:
   RootFrameViewport(ScrollableArea& visual_viewport,
                     ScrollableArea& layout_viewport);

@@ -18,8 +18,6 @@ namespace {
 class PromiseActivationDelegate
     : public GarbageCollected<PromiseActivationDelegate>,
       public PortalActivationDelegate {
-  USING_GARBAGE_COLLECTED_MIXIN(PromiseActivationDelegate);
-
  public:
   PromiseActivationDelegate(ScriptPromiseResolver* resolver,
                             const ExceptionState& exception_state)
@@ -68,8 +66,6 @@ namespace {
 class ConsoleActivationDelegate
     : public GarbageCollected<ConsoleActivationDelegate>,
       public PortalActivationDelegate {
-  USING_GARBAGE_COLLECTED_MIXIN(ConsoleActivationDelegate);
-
  public:
   explicit ConsoleActivationDelegate(ConsoleLogger* logger) : logger_(logger) {}
 

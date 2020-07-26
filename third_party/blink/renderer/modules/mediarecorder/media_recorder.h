@@ -25,7 +25,6 @@ class MODULES_EXPORT MediaRecorder
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<MediaRecorder>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(MediaRecorder);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

@@ -16,8 +16,6 @@ class Scheduling;
 class CORE_EXPORT NavigatorScheduling final
     : public GarbageCollected<NavigatorScheduling>,
       public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorScheduling);
-
  public:
   static const char kSupplementName[];
 

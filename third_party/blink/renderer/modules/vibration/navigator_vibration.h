@@ -51,8 +51,6 @@ class MODULES_EXPORT NavigatorVibration final
     : public GarbageCollected<NavigatorVibration>,
       public Supplement<Navigator>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorVibration);
-
  public:
   static const char kSupplementName[];
 

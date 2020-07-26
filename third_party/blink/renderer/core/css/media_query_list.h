@@ -47,7 +47,6 @@ class CORE_EXPORT MediaQueryList final
       public ActiveScriptWrappable<MediaQueryList>,
       public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(MediaQueryList);
 
  public:
   MediaQueryList(ExecutionContext*,

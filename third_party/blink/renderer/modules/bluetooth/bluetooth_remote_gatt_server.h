@@ -29,7 +29,6 @@ class BluetoothRemoteGATTServer
     : public ScriptWrappable,
       public mojom::blink::WebBluetoothServerClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(BluetoothRemoteGATTServer);
 
  public:
   BluetoothRemoteGATTServer(ExecutionContext*, BluetoothDevice*);

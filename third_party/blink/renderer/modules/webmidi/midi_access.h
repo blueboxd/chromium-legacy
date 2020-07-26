@@ -55,7 +55,6 @@ class MIDIAccess final : public EventTargetWithInlineData,
                          public ExecutionContextLifecycleObserver,
                          public MIDIDispatcher::Client {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(MIDIAccess);
   USING_PRE_FINALIZER(MIDIAccess, Dispose);
 
  public:

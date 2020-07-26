@@ -44,8 +44,6 @@ class LocalFrame;
 class CORE_EXPORT SelectionController final
     : public GarbageCollected<SelectionController>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(SelectionController);
-
  public:
   explicit SelectionController(LocalFrame&);
   virtual ~SelectionController();

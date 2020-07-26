@@ -29,7 +29,6 @@ class IdleDetector final : public EventTargetWithInlineData,
                            public ActiveScriptWrappable<IdleDetector>,
                            public ExecutionContextClient,
                            public mojom::blink::IdleMonitor {
-  USING_GARBAGE_COLLECTED_MIXIN(IdleDetector);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

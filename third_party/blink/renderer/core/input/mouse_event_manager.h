@@ -34,8 +34,6 @@ enum class DragInitiator;
 class CORE_EXPORT MouseEventManager final
     : public GarbageCollected<MouseEventManager>,
       public SynchronousMutationObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(MouseEventManager);
-
  public:
   MouseEventManager(LocalFrame&, ScrollManager&);
   virtual ~MouseEventManager();

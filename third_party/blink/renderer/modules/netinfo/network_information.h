@@ -22,7 +22,6 @@ class NetworkInformation final
       public ActiveScriptWrappable<NetworkInformation>,
       public ExecutionContextLifecycleObserver,
       public NetworkStateNotifier::NetworkStateObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(NetworkInformation);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

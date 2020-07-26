@@ -17,8 +17,6 @@ class Navigator;
 
 class NavigatorBattery final : public GarbageCollected<NavigatorBattery>,
                                public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorBattery);
-
  public:
   static const char kSupplementName[];
 

@@ -17,8 +17,6 @@ class Serial;
 class WorkerNavigatorSerial final
     : public GarbageCollected<WorkerNavigatorSerial>,
       public Supplement<WorkerNavigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorSerial);
-
  public:
   static const char kSupplementName[];
 

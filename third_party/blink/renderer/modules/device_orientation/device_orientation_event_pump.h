@@ -19,8 +19,6 @@ class PlatformEventController;
 class MODULES_EXPORT DeviceOrientationEventPump
     : public GarbageCollected<DeviceOrientationEventPump>,
       public DeviceSensorEventPump {
-  USING_GARBAGE_COLLECTED_MIXIN(DeviceOrientationEventPump);
-
  public:
   // Angle threshold beyond which two orientation events are considered
   // sufficiently different.

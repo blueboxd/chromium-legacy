@@ -24,7 +24,6 @@ class MODULES_EXPORT BidirectionalStream final : public ScriptWrappable,
                                                  public WebTransportStream,
                                                  public OutgoingStream::Client {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(BidirectionalStream);
 
  public:
   // BidirectionalStream doesn't have a JavaScript constructor. It is only

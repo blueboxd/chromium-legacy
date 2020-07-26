@@ -62,7 +62,6 @@ class MODULES_EXPORT ServiceWorkerContainer final
       public ExecutionContextLifecycleObserver,
       public WebServiceWorkerProviderClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainer);
 
  public:
   using RegistrationCallbacks =

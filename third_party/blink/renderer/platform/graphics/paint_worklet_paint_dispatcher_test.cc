@@ -50,8 +50,6 @@ class PaintWorkletPaintDispatcherAsyncTest : public ::testing::Test {
 class MockPaintWorkletPainter
     : public GarbageCollected<MockPaintWorkletPainter>,
       public PaintWorkletPainter {
-  USING_GARBAGE_COLLECTED_MIXIN(MockPaintWorkletPainter);
-
  public:
   MockPaintWorkletPainter(int worklet_id) {
     ON_CALL(*this, GetWorkletId).WillByDefault(Return(worklet_id));

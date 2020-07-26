@@ -91,7 +91,6 @@ enum PageTransitionEventPersistence {
 class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
                                          public ExecutionContext,
                                          public Supplementable<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(LocalDOMWindow);
   USING_PRE_FINALIZER(LocalDOMWindow, Dispose);
 
  public:
@@ -435,7 +434,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   Member<DOMVisualViewport> visualViewport_;
 
   bool should_print_when_finished_loading_;
-  bool has_load_event_fired_ = false;
 
   mutable Member<Screen> screen_;
   mutable Member<History> history_;

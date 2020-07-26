@@ -18,8 +18,6 @@ class WorkerNavigator;
 class WorkerNavigatorNetworkInformation final
     : public GarbageCollected<WorkerNavigatorNetworkInformation>,
       public Supplement<WorkerNavigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorNetworkInformation);
-
  public:
   static const char kSupplementName[];
 

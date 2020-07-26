@@ -118,6 +118,7 @@ void BubbleExample::ButtonPressed(Button* sender, const ui::Event& event) {
   else if (event.IsAltDown())
     arrow = BubbleBorder::FLOAT;
 
+  // |bubble| will be destroyed by its widget when the widget is destroyed.
   ExampleBubble* bubble = new ExampleBubble(sender, arrow);
   bubble->set_color(colors[(color_index++) % base::size(colors)]);
 
@@ -135,9 +136,8 @@ void BubbleExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == persistent_)
     bubble->set_close_on_deactivate(false);
 
-  BubbleDialogDelegateView::CreateBubble(bubble);
+  BubbleDialogDelegateView::CreateBubble(bubble)->Show();
 
-  bubble->GetWidget()->Show();
   LogStatus(
       "Click with optional modifiers: [Ctrl] for set_arrow(NONE), "
       "[Alt] for set_arrow(FLOAT), or [Shift] to reverse the arrow iteration.");

@@ -505,8 +505,6 @@ class RegisteredMixin : public GarbageCollectedMixin {
 class GCedWithRegisteredMixin
     : public GarbageCollected<GCedWithRegisteredMixin>,
       public RegisteredMixin {
-  USING_GARBAGE_COLLECTED_MIXIN(GCedWithRegisteredMixin);
-
  public:
   GCedWithRegisteredMixin(CollectsMixins* collector)
       : RegisteredMixin(collector) {}

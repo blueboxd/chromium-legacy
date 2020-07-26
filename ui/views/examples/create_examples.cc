@@ -18,7 +18,7 @@
 #include "ui/views/examples/flex_layout_example.h"
 #include "ui/views/examples/label_example.h"
 #include "ui/views/examples/link_example.h"
-#include "ui/views/examples/login_bubble_dialog.h"
+#include "ui/views/examples/login_bubble_dialog_example.h"
 #include "ui/views/examples/menu_example.h"
 #include "ui/views/examples/message_box_example.h"
 #include "ui/views/examples/multiline_example.h"

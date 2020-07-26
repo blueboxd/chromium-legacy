@@ -50,8 +50,6 @@ class ResourceClient;
 // prerender.
 class CORE_EXPORT LinkLoader final : public SingleModuleClient,
                                      public PrerenderClient {
-  USING_GARBAGE_COLLECTED_MIXIN(LinkLoader);
-
  public:
   LinkLoader(LinkLoaderClient*, scoped_refptr<base::SingleThreadTaskRunner>);
   ~LinkLoader() override;

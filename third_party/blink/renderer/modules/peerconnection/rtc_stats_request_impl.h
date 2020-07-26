@@ -40,8 +40,6 @@ class RTCPeerConnection;
 
 class RTCStatsRequestImpl final : public RTCStatsRequest,
                                   public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(RTCStatsRequestImpl);
-
  public:
   RTCStatsRequestImpl(ExecutionContext*,
                       RTCPeerConnection*,

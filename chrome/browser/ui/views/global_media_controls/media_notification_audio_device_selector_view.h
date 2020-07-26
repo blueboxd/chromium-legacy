@@ -10,14 +10,18 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/layout/box_layout.h"
 
-class MediaNotificationContainerImplView;
+namespace views {
+class Button;
+}  // namespace views
+
+class MediaNotificationContainerImpl;
 class MediaNotificationService;
 
 class MediaNotificationAudioDeviceSelectorView : public views::View,
                                                  public views::ButtonListener {
  public:
   MediaNotificationAudioDeviceSelectorView(
-      MediaNotificationContainerImplView* container,
+      MediaNotificationContainerImpl* container,
       MediaNotificationService* service,
       gfx::Size size);
   MediaNotificationAudioDeviceSelectorView(
@@ -36,12 +40,14 @@ class MediaNotificationAudioDeviceSelectorView : public views::View,
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaNotificationAudioDeviceSelectorViewTest,
                            DeviceButtonsCreated);
+  FRIEND_TEST_ALL_PREFIXES(MediaNotificationAudioDeviceSelectorViewTest,
+                           DeviceButtonClickNotifiesContainer);
 
   void CreateDeviceButton(
       const media::AudioDeviceDescription& device_description);
 
   // The parent container
-  MediaNotificationContainerImplView* const container_;
+  MediaNotificationContainerImpl* const container_;
 
   MediaNotificationService* const service_;
 
@@ -54,6 +60,9 @@ class MediaNotificationAudioDeviceSelectorView : public views::View,
 
   views::View* expand_button_container_ = nullptr;
   views::ToggleImageButton* expand_button_ = nullptr;
+
+  // Maps button pointers to the string ID of the audio sink they represent.
+  std::map<views::Button*, std::string> sink_id_map_;
 
   base::WeakPtrFactory<MediaNotificationAudioDeviceSelectorView>
       weak_ptr_factory_{this};

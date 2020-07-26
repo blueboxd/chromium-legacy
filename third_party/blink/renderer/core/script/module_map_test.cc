@@ -106,8 +106,6 @@ class ModuleMapTestModulator final : public DummyModulator {
   class TestModuleScriptFetcher final
       : public GarbageCollected<TestModuleScriptFetcher>,
         public ModuleScriptFetcher {
-    USING_GARBAGE_COLLECTED_MIXIN(TestModuleScriptFetcher);
-
    public:
     TestModuleScriptFetcher(ModuleMapTestModulator* modulator,
                             util::PassKey<ModuleScriptLoader> pass_key)

@@ -65,8 +65,6 @@ class CORE_EXPORT InspectorCSSAgent final
     : public InspectorBaseAgent<protocol::CSS::Metainfo>,
       public InspectorDOMAgent::DOMListener,
       public InspectorStyleSheetBase::Listener {
-  USING_GARBAGE_COLLECTED_MIXIN(InspectorCSSAgent);
-
  public:
   enum MediaListSource {
     kMediaListSourceLinkedSheet,

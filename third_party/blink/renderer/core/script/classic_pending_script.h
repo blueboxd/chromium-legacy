@@ -26,8 +26,6 @@ namespace blink {
 class CORE_EXPORT ClassicPendingScript final : public PendingScript,
                                                public ResourceClient,
                                                public MemoryPressureListener {
-  USING_GARBAGE_COLLECTED_MIXIN(ClassicPendingScript);
-
  public:
   // https://html.spec.whatwg.org/C/#fetch-a-classic-script
   //

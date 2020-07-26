@@ -46,7 +46,6 @@ class MODULES_EXPORT PaymentRequest final
       public ExecutionContextLifecycleObserver,
       public ActiveScriptWrappable<PaymentRequest> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(PaymentRequest);
   // TODO(chikamune): remove this line after code freeze.
   USING_PRE_FINALIZER(PaymentRequest, ClearResolversAndCloseMojoConnection);
 

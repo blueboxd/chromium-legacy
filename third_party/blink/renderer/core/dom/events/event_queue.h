@@ -38,8 +38,6 @@ class ExecutionContext;
 
 class CORE_EXPORT EventQueue final : public GarbageCollected<EventQueue>,
                                      public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(EventQueue);
-
  public:
   EventQueue(ExecutionContext*, TaskType);
   ~EventQueue();

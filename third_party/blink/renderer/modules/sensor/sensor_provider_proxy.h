@@ -24,8 +24,6 @@ class SensorProxy;
 class MODULES_EXPORT SensorProviderProxy final
     : public GarbageCollected<SensorProviderProxy>,
       public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(SensorProviderProxy);
-
  public:
   static const char kSupplementName[];
 

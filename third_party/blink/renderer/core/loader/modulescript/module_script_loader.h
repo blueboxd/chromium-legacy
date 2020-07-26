@@ -33,8 +33,6 @@ enum class ModuleGraphLevel;
 class CORE_EXPORT ModuleScriptLoader final
     : public GarbageCollected<ModuleScriptLoader>,
       public ModuleScriptFetcher::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(ModuleScriptLoader);
-
   enum class State {
     kInitial,
     // FetchParameters is being processed, and ModuleScriptLoader hasn't

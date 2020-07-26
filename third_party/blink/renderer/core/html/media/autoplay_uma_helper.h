@@ -38,8 +38,6 @@ class IntersectionObserverEntry;
 
 class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
                                       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(AutoplayUmaHelper);
-
  public:
   explicit AutoplayUmaHelper(HTMLMediaElement*);
   ~AutoplayUmaHelper() override;

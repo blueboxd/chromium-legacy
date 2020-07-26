@@ -55,7 +55,6 @@ class MediaSourceImpl final : public EventTargetWithInlineData,
                               public ActiveScriptWrappable<MediaSourceImpl>,
                               public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(MediaSourceImpl);
 
  public:
   static const AtomicString& OpenKeyword();

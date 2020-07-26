@@ -30,7 +30,6 @@ class MojoInterfaceInterceptor final
       public ActiveScriptWrappable<MojoInterfaceInterceptor>,
       public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(MojoInterfaceInterceptor);
 
  public:
   static MojoInterfaceInterceptor* Create(ExecutionContext*,

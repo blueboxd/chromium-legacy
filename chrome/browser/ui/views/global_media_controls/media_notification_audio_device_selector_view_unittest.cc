@@ -7,12 +7,16 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
+#include "chrome/browser/ui/global_media_controls/media_notification_container_impl.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_device_provider.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "media/audio/audio_device_description.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/views/controls/button/label_button.h"
+
+class MediaNotificationContainerObserver;
 
 namespace {
 
@@ -35,6 +39,23 @@ class MockMediaNotificationDeviceProvider
   }
 
   media::AudioDeviceDescriptions device_descriptions;
+};
+
+class MockMediaNotificationContainerImpl
+    : public MediaNotificationContainerImpl {
+ public:
+  MOCK_METHOD(void,
+              AddObserver,
+              (MediaNotificationContainerObserver * observer),
+              (override));
+  MOCK_METHOD(void,
+              RemoveObserver,
+              (MediaNotificationContainerObserver * observer),
+              (override));
+  MOCK_METHOD(void,
+              OnAudioSinkChosen,
+              (const std::string& sink_id),
+              (override));
 };
 
 }  // anonymous namespace
@@ -89,4 +110,29 @@ TEST_F(MediaNotificationAudioDeviceSelectorViewTest, DeviceButtonsCreated) {
       });
   EXPECT_THAT(button_texts, testing::UnorderedElementsAre(
                                 "Speaker", "Headphones", "Earbuds"));
+}
+
+TEST_F(MediaNotificationAudioDeviceSelectorViewTest,
+       DeviceButtonClickNotifiesContainer) {
+  // When buttons are clicked the media notification container should be
+  // informed.
+  provider_->AddDevice("Speaker", "1");
+  provider_->AddDevice("Headphones", "2");
+  provider_->AddDevice("Earbuds", "3");
+  service_->set_device_provider_for_testing(std::move(provider_));
+
+  MockMediaNotificationContainerImpl container;
+  EXPECT_CALL(container, OnAudioSinkChosen("1")).Times(1);
+  EXPECT_CALL(container, OnAudioSinkChosen("2")).Times(1);
+  EXPECT_CALL(container, OnAudioSinkChosen("3")).Times(1);
+
+  view_ = std::make_unique<MediaNotificationAudioDeviceSelectorView>(
+      &container, service_.get(), gfx::Size());
+
+  for (views::View* child : view_->device_button_container_->children()) {
+    view_->ButtonPressed(
+        static_cast<views::Button*>(child),
+        ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                       ui::EventTimeForNow(), 0, 0));
+  }
 }

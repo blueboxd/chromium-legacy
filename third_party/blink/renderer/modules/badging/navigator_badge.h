@@ -18,8 +18,6 @@ class WorkerNavigator;
 
 class NavigatorBadge final : public GarbageCollected<NavigatorBadge>,
                              public Supplement<ExecutionContext> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorBadge);
-
  public:
   static const char kSupplementName[];
 

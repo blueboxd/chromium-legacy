@@ -56,7 +56,6 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
                                      public ExecutionContextLifecycleObserver,
                                      public FileReaderLoaderClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(FileReader);
 
  public:
   static FileReader* Create(ExecutionContext*);

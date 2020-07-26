@@ -94,7 +94,6 @@ class MODULES_EXPORT BaseAudioContext
       public ActiveScriptWrappable<BaseAudioContext>,
       public ExecutionContextLifecycleStateObserver,
       public InspectorHelperMixin {
-  USING_GARBAGE_COLLECTED_MIXIN(BaseAudioContext);
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(BaseAudioContext, Dispose);
 

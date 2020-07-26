@@ -45,8 +45,6 @@ class FontPreloadFinishObserver final : public ResourceFinishObserver {
 class ImperativeFontLoadFinishedCallback final
     : public GarbageCollected<ImperativeFontLoadFinishedCallback>,
       public FontFace::LoadFontCallback {
-  USING_GARBAGE_COLLECTED_MIXIN(ImperativeFontLoadFinishedCallback);
-
  public:
   explicit ImperativeFontLoadFinishedCallback(Document& document)
       : document_(document) {}

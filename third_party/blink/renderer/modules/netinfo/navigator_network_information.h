@@ -18,8 +18,6 @@ class NavigatorNetworkInformation final
     : public GarbageCollected<NavigatorNetworkInformation>,
       public Supplement<Navigator>,
       public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorNetworkInformation);
-
  public:
   static const char kSupplementName[];
 

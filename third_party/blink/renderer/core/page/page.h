@@ -93,7 +93,6 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
                                public Supplementable<Page>,
                                public SettingsDelegate,
                                public PageScheduler::Delegate {
-  USING_GARBAGE_COLLECTED_MIXIN(Page);
   friend class Settings;
 
  public:

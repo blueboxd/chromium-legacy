@@ -43,8 +43,6 @@ class WorkerGlobalScope;
 class WorkerGlobalScopeCrypto final
     : public GarbageCollected<WorkerGlobalScopeCrypto>,
       public Supplement<WorkerGlobalScope> {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeCrypto);
-
  public:
   static const char kSupplementName[];
 

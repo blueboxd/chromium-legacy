@@ -67,7 +67,6 @@ class CORE_EXPORT MutationObserver final
       public ActiveScriptWrappable<MutationObserver>,
       public ExecutionContextLifecycleStateObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(MutationObserver);
   // Using CancelInspectorAsyncTasks as pre-finalizer to cancel async tasks.
   USING_PRE_FINALIZER(MutationObserver, CancelInspectorAsyncTasks);
 

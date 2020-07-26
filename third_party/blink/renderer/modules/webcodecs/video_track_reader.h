@@ -21,7 +21,6 @@ class MODULES_EXPORT VideoTrackReader final
       public ExecutionContextLifecycleObserver,
       public MediaStreamVideoSink {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(VideoTrackReader);
 
  public:
   static VideoTrackReader* Create(ScriptState*,

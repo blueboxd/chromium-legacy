@@ -107,7 +107,7 @@ class CORE_EXPORT PaintLayerCompositor {
 
   // Issue paint invalidations of the appropriate layers when the given Layer
   // starts or stops being composited.
-  static void PaintInvalidationOnCompositingChange(PaintLayer*);
+  void PaintInvalidationOnCompositingChange(PaintLayer*);
 
   void FullyInvalidatePaint();
 

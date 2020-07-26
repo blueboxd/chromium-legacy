@@ -34,7 +34,6 @@ class MODULES_EXPORT HIDDevice
       public ExecutionContextLifecycleObserver,
       public device::mojom::blink::HidConnectionClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(HIDDevice);
 
  public:
   HIDDevice(HID* parent,

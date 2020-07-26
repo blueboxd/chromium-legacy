@@ -20,7 +20,6 @@ class FontCustomPlatformData;
 class RemoteFontFaceSource final : public CSSFontFaceSource,
                                    public FontResourceClient {
   USING_PRE_FINALIZER(RemoteFontFaceSource, Dispose);
-  USING_GARBAGE_COLLECTED_MIXIN(RemoteFontFaceSource);
 
  public:
   enum Phase { kNoLimitExceeded, kShortLimitExceeded, kLongLimitExceeded };

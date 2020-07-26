@@ -21,7 +21,6 @@ class ScriptState;
 
 class Clipboard : public EventTargetWithInlineData,
                   public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(Clipboard);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

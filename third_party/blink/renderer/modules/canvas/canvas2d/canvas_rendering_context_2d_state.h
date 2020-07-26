@@ -27,8 +27,6 @@ class Element;
 class CanvasRenderingContext2DState final
     : public GarbageCollected<CanvasRenderingContext2DState>,
       public FontSelectorClient {
-  USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext2DState);
-
  public:
   enum ClipListCopyMode { kCopyClipList, kDontCopyClipList };
 

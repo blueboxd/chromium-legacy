@@ -70,6 +70,7 @@
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -254,10 +255,6 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
   views::InstallRectHighlightPathGenerator(this);
   model_->AddObserver(this);
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  font_list_ = rb.GetFontListWithDelta(1);
-  status_font_list_ = rb.GetFontListWithDelta(-2);
-
   // TODO(pkasting): Use bespoke file-scope subclasses for some of these child
   // views to localize functionality and simplify this class.
 
@@ -265,15 +262,12 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
   open_button->set_context_menu_controller(this);
   open_button_ = AddChildView(std::move(open_button));
 
-  int file_name_style = views::style::STYLE_PRIMARY;
-#if !defined(OS_LINUX)
-  if (UseNewWarnings())
-    file_name_style = STYLE_EMPHASIZED;
-#endif
-  auto file_name_label = std::make_unique<views::Label>(
-      ElidedFilename(), CONTEXT_DOWNLOAD_SHELF, file_name_style);
-  file_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  auto file_name_label =
+      std::make_unique<views::StyledLabel>(base::string16(), nullptr);
+  file_name_label->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
   file_name_label->GetViewAccessibility().OverrideIsIgnored(true);
+  const base::string16 filename = ElidedFilename(*file_name_label);
+  file_name_label->SetText(filename);
   file_name_label_ = AddChildView(std::move(file_name_label));
 
   auto status_label = std::make_unique<views::Label>(
@@ -385,26 +379,26 @@ void DownloadItemView::Layout() {
           gfx::Rect(child_origin, open_now_button_->GetPreferredSize()));
     }
   } else {
-    int mirrored_x = GetMirroredXWithWidthInView(
+    const int mirrored_x = GetMirroredXWithWidthInView(
         kStartPadding + kProgressIndicatorSize + kProgressTextPadding,
         kTextWidth);
 
-    int text_height = font_list_.GetHeight();
+    int text_height = file_name_label_->GetLineHeight();
     if (!status_label_->GetText().empty())
-      text_height += status_font_list_.GetHeight();
-    int file_name_y = CenterY(text_height);
-    file_name_label_->SetBoundsRect(
-        gfx::Rect(mirrored_x, file_name_y, kTextWidth, font_list_.GetHeight()));
+      text_height += status_label_->GetLineHeight();
+    const int file_name_y = CenterY(text_height);
+    file_name_label_->SetBounds(mirrored_x, file_name_y, kTextWidth,
+                                file_name_label_->GetPreferredSize().height());
 
-    int status_y = file_name_y + font_list_.GetHeight();
-    bool should_expand_for_status_text =
+    const int status_y = file_name_y + file_name_label_->GetLineHeight();
+    const bool should_expand_for_status_text =
         (model_->GetDangerType() ==
          download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE);
-    int status_width = should_expand_for_status_text
-                           ? status_label_->GetPreferredSize().width()
-                           : kTextWidth;
-    status_label_->SetBoundsRect(gfx::Rect(mirrored_x, status_y, status_width,
-                                           status_font_list_.GetHeight()));
+    const gfx::Size status_size = status_label_->GetPreferredSize();
+    const int status_width =
+        should_expand_for_status_text ? status_size.width() : kTextWidth;
+    status_label_->SetBoundsRect(
+        gfx::Rect(mirrored_x, status_y, status_width, status_size.height()));
   }
 
   if (mode_ != Mode::kDangerous) {
@@ -545,26 +539,19 @@ void DownloadItemView::OnDownloadUpdated() {
 }
 
 void DownloadItemView::OnDownloadOpened() {
-  file_name_label_->SetTextStyle(views::style::STYLE_DISABLED);
-  // First, Calculate the download status opening string width.
-  base::string16 status_string =
-      l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING, base::string16());
-  int status_string_width = gfx::GetStringWidth(status_string, font_list_);
-  // Then, elide the file name.
-  base::string16 filename_string =
-      gfx::ElideFilename(model_->GetFileNameToReportUser(), font_list_,
-                         kTextWidth - status_string_width);
-  // Last, concat the whole string to be set on the label.
+  file_name_label_->SetDefaultTextStyle(views::style::STYLE_DISABLED);
+  const base::string16 filename = ElidedFilename(*file_name_label_);
   file_name_label_->SetText(
-      l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING, filename_string));
+      l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING, filename));
 
   SetEnabled(false);
   const auto reenable = [](base::WeakPtr<DownloadItemView> view) {
     if (!view)
       return;
     auto* label = view->file_name_label_;
-    label->SetTextStyle(views::style::STYLE_PRIMARY);
-    label->SetText(view->ElidedFilename());
+    label->SetDefaultTextStyle(views::style::STYLE_PRIMARY);
+    const base::string16 filename = view->ElidedFilename(*label);
+    label->SetText(filename);
     view->SetEnabled(true);
   };
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -597,7 +584,8 @@ void DownloadItemView::MaybeSubmitDownloadToFeedbackService(
 gfx::Size DownloadItemView::CalculatePreferredSize() const {
   int width = 0;
   // We set the height to the height of two rows or text plus margins.
-  int child_height = font_list_.GetHeight() + status_font_list_.GetHeight();
+  int child_height =
+      file_name_label_->GetLineHeight() + status_label_->GetLineHeight();
 
   if (has_warning_label(mode_)) {
     // Width.
@@ -759,7 +747,7 @@ void DownloadItemView::OnThemeChanged() {
 
   SkColor background_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF);
-  file_name_label_->SetBackgroundColor(background_color);
+  file_name_label_->SetDisplayedOnBackgroundColor(background_color);
   status_label_->SetBackgroundColor(background_color);
 
   shelf_->ConfigureButtonForTheme(open_now_button_);
@@ -866,7 +854,7 @@ void DownloadItemView::UpdateLabels() {
 
   warning_label_->SetVisible(has_warning_label(mode_));
   if (warning_label_->GetVisible()) {
-    const base::string16 filename = ElidedFilename();
+    const base::string16 filename = ElidedFilename(*warning_label_);
     size_t filename_offset;
     warning_label_->SetText(model_->GetWarningText(filename, &filename_offset));
     StyleFilename(*warning_label_, filename_offset, filename.length());
@@ -880,7 +868,7 @@ void DownloadItemView::UpdateLabels() {
                         model_->download()))
                        ? IDS_PROMPT_DEEP_SCANNING_DOWNLOAD
                        : IDS_PROMPT_DEEP_SCANNING_APP_DOWNLOAD;
-    const base::string16 filename = ElidedFilename();
+    const base::string16 filename = ElidedFilename(*deep_scanning_label_);
     size_t filename_offset;
     deep_scanning_label_->SetText(
         l10n_util::GetStringFUTF16(id, filename, &filename_offset));
@@ -1171,8 +1159,11 @@ gfx::Size DownloadItemView::GetButtonSize() const {
   return size;
 }
 
-base::string16 DownloadItemView::ElidedFilename() {
-  return gfx::ElideFilename(model_->GetFileNameToReportUser(), font_list_,
+base::string16 DownloadItemView::ElidedFilename(
+    const views::StyledLabel& label) const {
+  const gfx::FontList& font_list =
+      views::style::GetFont(CONTEXT_DOWNLOAD_SHELF, GetFilenameStyle(label));
+  return gfx::ElideFilename(model_->GetFileNameToReportUser(), font_list,
                             kTextWidth);
 }
 
@@ -1230,7 +1221,7 @@ void DownloadItemView::ShowOpenDialog(content::WebContents* web_contents) {
         web_contents);
   } else {
     safe_browsing::PromptForScanningModalDialog::ShowForWebContents(
-        web_contents, ElidedFilename(),
+        web_contents, model_->GetFileNameToReportUser().LossyDisplayName(),
         base::BindOnce(&DownloadItemView::ExecuteCommand,
                        weak_ptr_factory_.GetWeakPtr(),
                        DownloadCommands::DEEP_SCAN),

@@ -18,8 +18,6 @@ class BackgroundFetchManager;
 class ServiceWorkerRegistrationBackgroundFetch final
     : public GarbageCollected<ServiceWorkerRegistrationBackgroundFetch>,
       public Supplement<ServiceWorkerRegistration> {
-  USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistrationBackgroundFetch);
-
  public:
   static const char kSupplementName[];
 

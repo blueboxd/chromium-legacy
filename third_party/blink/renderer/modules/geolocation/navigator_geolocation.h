@@ -34,8 +34,6 @@ class NavigatorGeolocation final
     : public GarbageCollected<NavigatorGeolocation>,
       public Supplement<Navigator>,
       public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorGeolocation);
-
  public:
   static const char kSupplementName[];
 

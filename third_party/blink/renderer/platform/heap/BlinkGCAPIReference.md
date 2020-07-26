@@ -82,7 +82,6 @@ public:
 ### GarbageCollectedMixin
 
 A non-leftmost base class of a garbage-collected class should derive from `GarbageCollectedMixin`.
-If a child class of `GarbageCollected<T>` has a non-leftmost base class deriving from `GarbageCollectedMixin`, the garbage-collected class must declare the `USING_GARBAGE_COLLECTED_MIXIN(ClassName)` macro in its class declaration.
 
 A class deriving from `GarbageCollectedMixin` can be treated similarly as garbage-collected classes.
 Specifically, it can have `Member<T>`s and `WeakMember<T>`s, and a tracing method.
@@ -100,16 +99,13 @@ class P : public GarbageCollectedMixin {
 };
 
 class A final : public GarbageCollected<A>, public P {
-  USING_GARBAGE_COLLECTED_MIXIN(A);
  public:
   // Delegating call for P is needed.
   virtual void Trace(Visitor* visitor) const { P::Trace(visitor); }
 };
 ```
 
-Internally, `GarbageCollectedMixin` defines pure virtual functions, and `USING_GARBAGE_COLLECTED_MIXIN(ClassName)` implements these virtual functions.
-Therefore, you cannot instantiate a class that is a descendant of `GarbageCollectedMixin` but not a descendant of `GarbageCollected<T>`.
-Two or more base classes inheritng from `GarbageCollectedMixin` can be resolved with a single `USING_GARBAGE_COLLECTED_MIXIN(ClassName)` declaration.
+You cannot instantiate a class that is a descendant of `GarbageCollectedMixin` but not a descendant of `GarbageCollected<T>`.
 
 ```c++
 class P : public GarbageCollectedMixin { };
@@ -117,12 +113,10 @@ class Q : public GarbageCollectedMixin { };
 class R : public Q { };
 
 class A : public GarbageCollected<A>, public P, public R {
-  USING_GARBAGE_COLLECTED_MIXIN(A);
   // OK: Resolving pure virtual functions of P and R.
 };
 
 class B : public GarbageCollected<B>, public P {
-  USING_GARBAGE_COLLECTED_MIXIN(B);
   // OK: Different garbage-collected classes may inherit from the same mixin (P).
 };
 
@@ -133,13 +127,6 @@ void foo() {
 ```
 
 ## Class properties
-
-### USING_GARBAGE_COLLECTED_MIXIN
-
-`USING_GARBAGE_COLLECTED_MIXIN(ClassName)` is a macro that must be declared in a garbage-collected class, if any of
-its base classes is a descendant of `GarbageCollectedMixin`.
-
-See [GarbageCollectedMixin](#GarbageCollectedMixin) for the use of `GarbageCollectedMixin` and this macro.
 
 ### USING_PRE_FINALIZER
 

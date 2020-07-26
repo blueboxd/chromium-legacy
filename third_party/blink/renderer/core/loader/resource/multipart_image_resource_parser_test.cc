@@ -24,8 +24,6 @@ String ToString(const Vector<char>& data) {
 
 class MockClient final : public GarbageCollected<MockClient>,
                          public MultipartImageResourceParser::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(MockClient);
-
  public:
   void OnePartInMultipartReceived(const ResourceResponse& response) override {
     responses_.push_back(response);

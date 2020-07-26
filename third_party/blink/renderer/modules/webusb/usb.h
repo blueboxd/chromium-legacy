@@ -31,7 +31,6 @@ class USB final : public EventTargetWithInlineData,
                   public ExecutionContextLifecycleObserver,
                   public device::mojom::blink::UsbDeviceManagerClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(USB);
 
  public:
   explicit USB(ExecutionContext&);

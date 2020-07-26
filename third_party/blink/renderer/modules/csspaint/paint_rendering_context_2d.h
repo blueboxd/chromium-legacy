@@ -29,7 +29,6 @@ class Color;
 class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
                                                public BaseRenderingContext2D {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(PaintRenderingContext2D);
 
  public:
   PaintRenderingContext2D(const IntSize& container_size,
@@ -111,10 +110,6 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
   // paint worklet canvas needs to handle device scale factor and browser zoom,
   // and this is designed for that purpose.
   const float effective_zoom_;
-  // On platforms where zoom_for_dsf is enabled, the |effective_zoom_|
-  // accounts for the device scale factor. For platforms where the feature is
-  // not enabled (currently Mac only), we need this extra variable.
-  const float device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintRenderingContext2D);
 };

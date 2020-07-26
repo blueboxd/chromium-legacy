@@ -39,8 +39,6 @@ namespace blink {
 
 class PickerIndicatorElement final : public HTMLDivElement,
                                      public DateTimeChooserClient {
-  USING_GARBAGE_COLLECTED_MIXIN(PickerIndicatorElement);
-
  public:
   // PickerIndicatorOwner implementer must call removePickerIndicatorOwner when
   // it doesn't handle event, e.g. at destruction.

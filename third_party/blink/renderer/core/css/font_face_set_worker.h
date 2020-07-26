@@ -23,8 +23,6 @@ class Font;
 class CORE_EXPORT FontFaceSetWorker final
     : public FontFaceSet,
       public Supplement<WorkerGlobalScope> {
-  USING_GARBAGE_COLLECTED_MIXIN(FontFaceSetWorker);
-
  public:
   static const char kSupplementName[];
 

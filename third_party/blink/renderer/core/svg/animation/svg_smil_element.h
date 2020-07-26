@@ -77,8 +77,6 @@ class CORE_EXPORT SMILInstanceTimeList {
 
 // This class implements SMIL interval timing model as needed for SVG animation.
 class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
-  USING_GARBAGE_COLLECTED_MIXIN(SVGSMILElement);
-
  public:
   SVGSMILElement(const QualifiedName&, Document&);
   ~SVGSMILElement() override;

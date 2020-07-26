@@ -42,7 +42,6 @@ class SVGAnimatedPreserveAspectRatio
     : public ScriptWrappable,
       public SVGAnimatedProperty<SVGPreserveAspectRatio> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedPreserveAspectRatio);
 
  public:
   SVGAnimatedPreserveAspectRatio(SVGElement* context_element,

@@ -30,8 +30,6 @@ class ScriptState;
 
 class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
                                            public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(BodyStreamBuffer);
-
  public:
   using PassKey = util::PassKey<BodyStreamBuffer>;
 

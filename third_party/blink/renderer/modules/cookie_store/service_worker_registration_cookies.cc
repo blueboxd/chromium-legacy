@@ -17,8 +17,6 @@ namespace {
 class ServiceWorkerRegistrationCookiesImpl final
     : public GarbageCollected<ServiceWorkerRegistrationCookiesImpl>,
       public Supplement<ServiceWorkerRegistration> {
-  USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistrationCookiesImpl);
-
  public:
   static const char kSupplementName[];
 

@@ -17,8 +17,6 @@ class ResizeObserver;
 // MediaControlInputElement with additional logic for sliders.
 class MODULES_EXPORT MediaControlSliderElement
     : public MediaControlInputElement {
-  USING_GARBAGE_COLLECTED_MIXIN(MediaControlSliderElement);
-
  public:
   void Trace(Visitor*) const override;
 

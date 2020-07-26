@@ -54,8 +54,6 @@ const char kNotImplementedString[] =
 class ScopedFetcherForTests final
     : public GarbageCollected<ScopedFetcherForTests>,
       public GlobalFetch::ScopedFetcher {
-  USING_GARBAGE_COLLECTED_MIXIN(ScopedFetcherForTests);
-
  public:
   ScopedFetcherForTests() : fetch_count_(0), expected_url_(nullptr) {}
 

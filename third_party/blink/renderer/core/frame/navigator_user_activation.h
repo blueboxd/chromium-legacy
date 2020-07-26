@@ -16,8 +16,6 @@ class UserActivation;
 class CORE_EXPORT NavigatorUserActivation final
     : public GarbageCollected<NavigatorUserActivation>,
       public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorUserActivation);
-
  public:
   static const char kSupplementName[];
 

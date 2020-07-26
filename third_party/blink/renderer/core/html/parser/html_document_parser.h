@@ -75,7 +75,6 @@ size_t CORE_EXPORT GetDiscardedTokenCountForTesting();
 
 class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
                                        private HTMLParserScriptRunnerHost {
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLDocumentParser);
   USING_PRE_FINALIZER(HTMLDocumentParser, Dispose);
 
  public:

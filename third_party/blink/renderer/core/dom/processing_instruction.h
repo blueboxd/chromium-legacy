@@ -36,7 +36,6 @@ class EventListener;
 class CORE_EXPORT ProcessingInstruction final : public CharacterData,
                                                 private ResourceClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(ProcessingInstruction);
 
  public:
   ProcessingInstruction(Document&, const String& target, const String& data);

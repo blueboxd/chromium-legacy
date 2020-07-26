@@ -877,8 +877,6 @@ class RTCPeerConnectionHandler::Observer
     : public GarbageCollected<RTCPeerConnectionHandler::Observer>,
       public PeerConnectionObserver,
       public RtcEventLogOutputSink {
-  USING_GARBAGE_COLLECTED_MIXIN(Observer);
-
  public:
   Observer(const base::WeakPtr<RTCPeerConnectionHandler>& handler,
            scoped_refptr<base::SingleThreadTaskRunner> task_runner)

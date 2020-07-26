@@ -31,8 +31,6 @@ using PublicState = BytesConsumer::PublicState;
 
 class MockClient : public GarbageCollected<MockClient>,
                    public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(MockClient);
-
  public:
   MockClient() = default;
 

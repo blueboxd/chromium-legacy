@@ -24,8 +24,6 @@ class PortalContents;
 // a contents, it is also tracked by this object.
 class DocumentPortals final : public GarbageCollected<DocumentPortals>,
                               public Supplement<Document> {
-  USING_GARBAGE_COLLECTED_MIXIN(DocumentPortals);
-
  public:
   static const char kSupplementName[];
   static DocumentPortals& From(Document&);

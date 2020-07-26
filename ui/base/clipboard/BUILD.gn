@@ -231,6 +231,10 @@ source_set("clipboard_test") {
     ]
   }
 
+  if (use_aura && !use_x11 && !is_win) {
+    sources += [ "clipboard_data_unittest.cc" ]
+  }
+
   deps = [
     ":clipboard_test_support",
     "//base/test:test_support",

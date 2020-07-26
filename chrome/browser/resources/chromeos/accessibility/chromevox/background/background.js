@@ -254,10 +254,9 @@ Background = class extends ChromeVoxState {
   /**
    * @override
    */
-  navigateToRange(range, opt_focus, opt_speechProps, opt_skipSettingSelection) {
+  navigateToRange(range, opt_focus, opt_speechProps, opt_shouldSetSelection) {
     opt_focus = opt_focus === undefined ? true : opt_focus;
     opt_speechProps = opt_speechProps || {};
-    opt_skipSettingSelection = opt_skipSettingSelection || false;
     const prevRange = this.currentRange_;
 
     // Specialization for math output.
@@ -277,8 +276,7 @@ Background = class extends ChromeVoxState {
     let selectedRange;
     let msg;
 
-    if (this.pageSel_ && this.pageSel_.isValid() && range.isValid() &&
-        !opt_skipSettingSelection) {
+    if (this.pageSel_ && this.pageSel_.isValid() && range.isValid()) {
       // Suppress hints.
       o.withoutHints();
 
@@ -321,7 +319,7 @@ Background = class extends ChromeVoxState {
           this.pageSel_.select();
         }
       }
-    } else if (!opt_skipSettingSelection) {
+    } else if (opt_shouldSetSelection) {
       // Ensure we don't select the editable when we first encounter it.
       let lca = null;
       if (range.start.node && prevRange.start.node) {

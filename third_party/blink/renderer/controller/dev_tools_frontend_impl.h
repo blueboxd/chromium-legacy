@@ -54,8 +54,6 @@ class DevToolsFrontendImpl final
       public Supplement<LocalFrame>,
       public mojom::blink::DevToolsFrontend,
       public InspectorFrontendClient {
-  USING_GARBAGE_COLLECTED_MIXIN(DevToolsFrontendImpl);
-
  public:
   static const char kSupplementName[];
 

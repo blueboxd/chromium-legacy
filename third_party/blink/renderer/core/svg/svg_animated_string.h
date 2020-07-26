@@ -43,7 +43,6 @@ class StringOrTrustedScriptURL;
 class SVGAnimatedString : public ScriptWrappable,
                           public SVGAnimatedProperty<SVGString> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedString);
 
  public:
   SVGAnimatedString(SVGElement* context_element,

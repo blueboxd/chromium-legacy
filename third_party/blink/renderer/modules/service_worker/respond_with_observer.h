@@ -27,8 +27,6 @@ class WaitUntilObserver;
 class MODULES_EXPORT RespondWithObserver
     : public GarbageCollected<RespondWithObserver>,
       public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(RespondWithObserver);
-
  public:
   virtual ~RespondWithObserver() = default;
 

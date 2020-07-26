@@ -40,7 +40,6 @@ namespace blink {
 class SVGAnimatedRect : public ScriptWrappable,
                         public SVGAnimatedProperty<SVGRect> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedRect);
 
  public:
   SVGAnimatedRect(SVGElement* context_element,

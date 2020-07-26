@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_EXAMPLES_LOGIN_BUBBLE_DIALOG_H_
-#define UI_VIEWS_EXAMPLES_LOGIN_BUBBLE_DIALOG_H_
+#ifndef UI_VIEWS_EXAMPLES_LOGIN_BUBBLE_DIALOG_EXAMPLE_H_
+#define UI_VIEWS_EXAMPLES_LOGIN_BUBBLE_DIALOG_EXAMPLE_H_
 
 #include "base/strings/string16.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -70,4 +70,4 @@ class LoginBubbleDialogExample : public ExampleBase, public ButtonListener {
 }  // namespace examples
 }  // namespace views
 
-#endif  // UI_VIEWS_EXAMPLES_LOGIN_BUBBLE_DIALOG_H_
+#endif  // UI_VIEWS_EXAMPLES_LOGIN_BUBBLE_DIALOG_EXAMPLE_H_

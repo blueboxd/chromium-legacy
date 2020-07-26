@@ -982,7 +982,6 @@ class PreFinalizerMixin : public GarbageCollectedMixin {
 };
 
 class PreFinalizerSubClass : public PreFinalizerBase, public PreFinalizerMixin {
-  USING_GARBAGE_COLLECTED_MIXIN(PreFinalizerSubClass);
   USING_PRE_FINALIZER(PreFinalizerSubClass, Dispose);
 
  public:
@@ -1173,8 +1172,6 @@ class Mixin : public GarbageCollectedMixin {
 };
 
 class UseMixin : public SimpleObject, public Mixin {
-  USING_GARBAGE_COLLECTED_MIXIN(UseMixin);
-
  public:
   UseMixin() {
     // Verify that WTF::IsGarbageCollectedType<> works as expected for mixins.
@@ -1519,9 +1516,7 @@ TEST(HeapDeathTest, DiesOnResurrectedHeapHashSetWeakMember) {
 #endif  // DCHECK_IS_ON()
 
 class LargeMixin : public GarbageCollected<LargeMixin>, public Mixin {
-  USING_GARBAGE_COLLECTED_MIXIN(LargeMixin);
-
- private:
+ protected:
   char data[65536];
 };
 
@@ -4328,8 +4323,6 @@ class MixinB : public GarbageCollectedMixin {
 class MultipleMixins : public GarbageCollected<MultipleMixins>,
                        public MixinA,
                        public MixinB {
-  USING_GARBAGE_COLLECTED_MIXIN(MultipleMixins);
-
  public:
   MultipleMixins() : obj_(MakeGarbageCollected<IntWrapper>(102)) {}
   void Trace(Visitor* visitor) const override {
@@ -4407,8 +4400,6 @@ TEST_F(HeapTest, DerivedMultipleMixins) {
 class MixinInstanceWithoutTrace
     : public GarbageCollected<MixinInstanceWithoutTrace>,
       public MixinA {
-  USING_GARBAGE_COLLECTED_MIXIN(MixinInstanceWithoutTrace);
-
  public:
   MixinInstanceWithoutTrace() = default;
 };
@@ -5045,8 +5036,6 @@ TEST_F(HeapTest, HeapVectorPartObjects) {
 
 class TestMixinAllocationA : public GarbageCollected<TestMixinAllocationA>,
                              public GarbageCollectedMixin {
-  USING_GARBAGE_COLLECTED_MIXIN(TestMixinAllocationA);
-
  public:
   TestMixinAllocationA() = default;
 
@@ -5054,8 +5043,6 @@ class TestMixinAllocationA : public GarbageCollected<TestMixinAllocationA>,
 };
 
 class TestMixinAllocationB : public TestMixinAllocationA {
-  USING_GARBAGE_COLLECTED_MIXIN(TestMixinAllocationB);
-
  public:
   TestMixinAllocationB()
       // Construct object during a mixin construction.
@@ -5071,8 +5058,6 @@ class TestMixinAllocationB : public TestMixinAllocationA {
 };
 
 class TestMixinAllocationC final : public TestMixinAllocationB {
-  USING_GARBAGE_COLLECTED_MIXIN(TestMixinAllocationC);
-
  public:
   TestMixinAllocationC() { DCHECK(!ThreadState::Current()->IsGCForbidden()); }
 

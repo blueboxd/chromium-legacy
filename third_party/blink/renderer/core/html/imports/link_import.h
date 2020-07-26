@@ -45,8 +45,6 @@ class HTMLImportChild;
 // A LinkResource subclasss used for @rel=import.
 //
 class LinkImport final : public LinkResource, public HTMLImportChildClient {
-  USING_GARBAGE_COLLECTED_MIXIN(LinkImport);
-
  public:
   explicit LinkImport(HTMLLinkElement* owner);
   ~LinkImport() final;

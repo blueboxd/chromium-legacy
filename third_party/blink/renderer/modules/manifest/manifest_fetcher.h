@@ -27,7 +27,6 @@ class TextResourceDecoder;
 // If the fetch fails, the callback will be called with two empty objects.
 class ManifestFetcher final : public GarbageCollected<ManifestFetcher>,
                               public ThreadableLoaderClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ManifestFetcher);
   // This will be called asynchronously after the URL has been fetched,
   // successfully or not.  If there is a failure, response and data will both be
   // empty.  |response| and |data| are both valid until the ManifestFetcher

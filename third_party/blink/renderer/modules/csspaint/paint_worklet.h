@@ -25,8 +25,6 @@ class CSSPaintImageGeneratorImpl;
 // https://drafts.css-houdini.org/css-paint-api/#dom-css-paintworklet
 class MODULES_EXPORT PaintWorklet : public Worklet,
                                     public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(PaintWorklet);
-
  public:
   static const char kSupplementName[];
 

@@ -21,7 +21,6 @@ class ValidityStateFlags;
 class CORE_EXPORT ElementInternals : public ScriptWrappable,
                                      public ListedElement {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(ElementInternals);
 
  public:
   ElementInternals(HTMLElement& target);

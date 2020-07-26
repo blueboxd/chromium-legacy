@@ -46,7 +46,6 @@ class MODULES_EXPORT FetchEvent final
       public ActiveScriptWrappable<FetchEvent>,
       public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(FetchEvent);
 
  public:
   using PreloadResponseProperty =

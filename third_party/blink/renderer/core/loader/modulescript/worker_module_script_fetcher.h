@@ -23,8 +23,6 @@ class CORE_EXPORT WorkerModuleScriptFetcher final
     : public GarbageCollected<WorkerModuleScriptFetcher>,
       public ModuleScriptFetcher,
       public WorkerMainScriptLoaderClient {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerModuleScriptFetcher);
-
  public:
   WorkerModuleScriptFetcher(WorkerGlobalScope*,
                             util::PassKey<ModuleScriptLoader>);

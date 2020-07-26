@@ -121,8 +121,6 @@ class BitmapImageTest : public testing::Test {
  public:
   class FakeImageObserver : public GarbageCollected<FakeImageObserver>,
                             public ImageObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(FakeImageObserver);
-
    public:
     FakeImageObserver()
         : last_decoded_size_(0), last_decoded_size_changed_delta_(0) {}

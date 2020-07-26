@@ -21,8 +21,6 @@ class XMLParserScriptRunnerHost;
 class XMLParserScriptRunner final
     : public GarbageCollected<XMLParserScriptRunner>,
       public PendingScriptClient {
-  USING_GARBAGE_COLLECTED_MIXIN(XMLParserScriptRunner);
-
  public:
   explicit XMLParserScriptRunner(XMLParserScriptRunnerHost*);
   ~XMLParserScriptRunner() override;

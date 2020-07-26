@@ -17,8 +17,6 @@ class TestLongTaskObserver :
     // GarbageCollectedMixin.
     public GarbageCollected<TestLongTaskObserver>,
     public LongTaskObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(TestLongTaskObserver);
-
  public:
   base::TimeTicks last_long_task_start;
   base::TimeTicks last_long_task_end;

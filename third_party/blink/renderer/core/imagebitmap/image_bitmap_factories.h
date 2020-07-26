@@ -61,8 +61,6 @@ class CORE_EXPORT ImageBitmapFactories final
     : public GarbageCollected<ImageBitmapFactories>,
       public Supplement<ExecutionContext>,
       public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ImageBitmapFactories);
-
  public:
   static const char kSupplementName[];
 
@@ -95,8 +93,6 @@ class CORE_EXPORT ImageBitmapFactories final
   class ImageBitmapLoader final : public GarbageCollected<ImageBitmapLoader>,
                                   public ExecutionContextLifecycleObserver,
                                   public FileReaderLoaderClient {
-    USING_GARBAGE_COLLECTED_MIXIN(ImageBitmapLoader);
-
    public:
     static ImageBitmapLoader* Create(ImageBitmapFactories& factory,
                                      base::Optional<IntRect> crop_rect,

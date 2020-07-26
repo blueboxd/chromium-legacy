@@ -40,8 +40,6 @@ class SecurityOrigin;
 
 class DatabaseContext final : public GarbageCollected<DatabaseContext>,
                               public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(DatabaseContext);
-
  public:
   friend class DatabaseManager;
 

@@ -50,8 +50,6 @@ class UserMediaController;
 class MODULES_EXPORT UserMediaRequest final
     : public GarbageCollected<UserMediaRequest>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(UserMediaRequest);
-
  public:
   enum class Error {
     kNotSupported,

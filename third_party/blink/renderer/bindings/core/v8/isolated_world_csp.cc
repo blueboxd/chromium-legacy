@@ -29,7 +29,6 @@ namespace {
 class IsolatedWorldCSPDelegate final
     : public GarbageCollected<IsolatedWorldCSPDelegate>,
       public ContentSecurityPolicyDelegate {
-  USING_GARBAGE_COLLECTED_MIXIN(IsolatedWorldCSPDelegate);
 
  public:
   IsolatedWorldCSPDelegate(LocalDOMWindow& window,

@@ -23,7 +23,6 @@ class WindowPostMessageOptions;
 class CORE_EXPORT PortalHost : public EventTargetWithInlineData,
                                public Supplement<LocalDOMWindow> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(PortalHost);
 
  public:
   explicit PortalHost(LocalDOMWindow& window);

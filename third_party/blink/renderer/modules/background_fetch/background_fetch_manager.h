@@ -33,7 +33,6 @@ class ServiceWorkerRegistration;
 class MODULES_EXPORT BackgroundFetchManager final
     : public ScriptWrappable,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(BackgroundFetchManager);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

@@ -24,8 +24,6 @@ using ::testing::_;
 
 class MockUseCounter : public GarbageCollected<MockUseCounter>,
                        public UseCounter {
-  USING_GARBAGE_COLLECTED_MIXIN(MockUseCounter);
-
  public:
   static MockUseCounter* Create() {
     return MakeGarbageCollected<testing::StrictMock<MockUseCounter>>();
@@ -36,8 +34,6 @@ class MockUseCounter : public GarbageCollected<MockUseCounter>,
 
 class MockConsoleLogger : public GarbageCollected<MockConsoleLogger>,
                           public ConsoleLogger {
-  USING_GARBAGE_COLLECTED_MIXIN(MockConsoleLogger);
-
  public:
   MOCK_METHOD4(AddConsoleMessageImpl,
                void(mojom::ConsoleMessageSource,

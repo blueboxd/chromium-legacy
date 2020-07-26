@@ -53,8 +53,6 @@ class SuggestionMarkerProperties;
 class CORE_EXPORT DocumentMarkerController final
     : public GarbageCollected<DocumentMarkerController>,
       public SynchronousMutationObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(DocumentMarkerController);
-
  public:
   explicit DocumentMarkerController(Document&);
 

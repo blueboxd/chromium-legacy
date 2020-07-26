@@ -20,7 +20,6 @@ class WorkletModuleResponsesMap;
 class CORE_EXPORT LayoutWorkletGlobalScopeProxy
     : public GarbageCollected<LayoutWorkletGlobalScopeProxy>,
       public WorkletGlobalScopeProxy {
-  USING_GARBAGE_COLLECTED_MIXIN(LayoutWorkletGlobalScopeProxy);
 
  public:
   static LayoutWorkletGlobalScopeProxy* From(WorkletGlobalScopeProxy*);

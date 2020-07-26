@@ -24,8 +24,6 @@ class ScriptPromiseResolver;
 class BarcodeDetectorStatics final
     : public GarbageCollected<BarcodeDetectorStatics>,
       public Supplement<ExecutionContext> {
-  USING_GARBAGE_COLLECTED_MIXIN(BarcodeDetectorStatics);
-
  public:
   static const char kSupplementName[];
 

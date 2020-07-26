@@ -47,8 +47,6 @@ class Page;
 
 class MODULES_EXPORT DatabaseClient : public GarbageCollected<DatabaseClient>,
                                       public Supplement<Page> {
-  USING_GARBAGE_COLLECTED_MIXIN(DatabaseClient);
-
  public:
   static const char kSupplementName[];
 

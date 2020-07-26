@@ -38,7 +38,6 @@ class MODULES_EXPORT WebSocketStream final
       public ExecutionContextLifecycleObserver,
       public WebSocketChannelClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(WebSocketStream);
 
  public:
   // IDL constructors

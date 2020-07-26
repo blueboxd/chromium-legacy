@@ -55,7 +55,6 @@ class CORE_EXPORT HTMLImageElement final
       public ActiveScriptWrappable<HTMLImageElement>,
       public FormAssociated {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLImageElement);
 
  public:
   class ViewportChangeListener;

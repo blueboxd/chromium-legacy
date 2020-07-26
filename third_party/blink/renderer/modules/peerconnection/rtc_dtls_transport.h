@@ -35,7 +35,6 @@ class MODULES_EXPORT RTCDtlsTransport final
       public ExecutionContextClient,
       public DtlsTransportProxy::Delegate {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(RTCDtlsTransport);
 
  public:
   RTCDtlsTransport(

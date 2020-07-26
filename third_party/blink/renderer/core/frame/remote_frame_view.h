@@ -26,8 +26,6 @@ class RemoteFrame;
 
 class RemoteFrameView final : public GarbageCollected<RemoteFrameView>,
                               public FrameView {
-  USING_GARBAGE_COLLECTED_MIXIN(RemoteFrameView);
-
  public:
   explicit RemoteFrameView(RemoteFrame*);
   ~RemoteFrameView() override;

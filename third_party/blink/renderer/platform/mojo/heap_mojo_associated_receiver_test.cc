@@ -19,8 +19,6 @@ namespace {
 
 class MockContext final : public GarbageCollected<MockContext>,
                           public ContextLifecycleNotifier {
-  USING_GARBAGE_COLLECTED_MIXIN(MockContext);
-
  public:
   void AddContextLifecycleObserver(
       ContextLifecycleObserver* observer) override {

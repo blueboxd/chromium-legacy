@@ -65,7 +65,6 @@ class XRSystem final : public EventTargetWithInlineData,
                        public device::mojom::blink::VRServiceClient,
                        public FocusChangedObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(XRSystem);
 
  public:
   // TODO(crbug.com/976796): Fix lint errors.

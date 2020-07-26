@@ -38,8 +38,6 @@ namespace {
 class MockLinkLoaderClient final
     : public GarbageCollected<MockLinkLoaderClient>,
       public LinkLoaderClient {
-  USING_GARBAGE_COLLECTED_MIXIN(MockLinkLoaderClient);
-
  public:
   explicit MockLinkLoaderClient(bool should_load) : should_load_(should_load) {}
 

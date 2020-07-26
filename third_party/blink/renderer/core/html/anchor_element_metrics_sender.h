@@ -27,8 +27,6 @@ class CORE_EXPORT AnchorElementMetricsSender final
     : public GarbageCollected<AnchorElementMetricsSender>,
       public LocalFrameView::LifecycleNotificationObserver,
       public Supplement<Document> {
-  USING_GARBAGE_COLLECTED_MIXIN(AnchorElementMetricsSender);
-
  public:
   static const char kSupplementName[];
 

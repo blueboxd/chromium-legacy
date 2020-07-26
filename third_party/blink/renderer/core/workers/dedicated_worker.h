@@ -49,7 +49,6 @@ class CORE_EXPORT DedicatedWorker final
       public ActiveScriptWrappable<DedicatedWorker>,
       public WebDedicatedWorker {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(DedicatedWorker);
   // Pre-finalization is needed to notify the parent object destruction of the
   // GC-managed messaging proxy and to initiate worker termination.
   USING_PRE_FINALIZER(DedicatedWorker, Dispose);

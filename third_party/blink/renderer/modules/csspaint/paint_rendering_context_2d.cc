@@ -16,8 +16,7 @@ PaintRenderingContext2D::PaintRenderingContext2D(
     float device_scale_factor)
     : container_size_(container_size),
       context_settings_(context_settings),
-      effective_zoom_(zoom),
-      device_scale_factor_(device_scale_factor) {
+      effective_zoom_(zoom) {
   InitializePaintRecorder();
 
   clip_antialiasing_ = kAntiAliased;
@@ -37,9 +36,6 @@ void PaintRenderingContext2D::InitializePaintRecorder() {
   // and clip.
   canvas->save();
 
-  // No need to apply |device_scale_factor_| here. On the platform where the
-  // zoom_for_dsf is not enabled (currently Mac), the recording methods (e.g.
-  // setTransform) have their own logic to account for the device scale factor.
   scale(effective_zoom_, effective_zoom_);
 
   did_record_draw_commands_in_paint_recorder_ = false;

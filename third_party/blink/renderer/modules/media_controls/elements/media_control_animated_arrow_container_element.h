@@ -37,8 +37,6 @@ class MODULES_EXPORT MediaControlAnimatedArrowContainerElement final
   class MODULES_EXPORT AnimatedArrow final
       : public HTMLDivElement,
         public MediaControlAnimationEventListener::Observer {
-    USING_GARBAGE_COLLECTED_MIXIN(AnimatedArrow);
-
    public:
     AnimatedArrow(const AtomicString& id, Document& document);
 

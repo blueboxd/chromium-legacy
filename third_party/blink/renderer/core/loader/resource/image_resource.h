@@ -52,8 +52,6 @@ class ResourceFetcher;
 class CORE_EXPORT ImageResource final
     : public Resource,
       public MultipartImageResourceParser::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(ImageResource);
-
  public:
   // Use ImageResourceContent::Fetch() unless ImageResource is required.
   // TODO(hiroshige): Make Fetch() private.

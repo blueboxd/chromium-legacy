@@ -25,7 +25,6 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
     : public CanvasRenderingContext,
       public BaseRenderingContext2D {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(OffscreenCanvasRenderingContext2D);
 
  public:
   class Factory : public CanvasRenderingContextFactory {

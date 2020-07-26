@@ -241,8 +241,6 @@ class FilterData final : public GarbageCollected<FilterData> {
 class SVGElementResourceClient final
     : public GarbageCollected<SVGElementResourceClient>,
       public SVGResourceClient {
-  USING_GARBAGE_COLLECTED_MIXIN(SVGElementResourceClient);
-
  public:
   explicit SVGElementResourceClient(SVGElement*);
 

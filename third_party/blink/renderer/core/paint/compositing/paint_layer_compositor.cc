@@ -367,7 +367,24 @@ void PaintLayerCompositor::UpdateIfNeeded(
   for (auto* layer : layers_needing_paint_invalidation) {
     // We need to repaint all containing paint subsequences, because parts of
     // them may have changed composited layer backings.
-    PaintInvalidationOnCompositingChange(layer);
+    layer->SetNeedsRepaint();
+    // We need to cause CompositingLayerPropertyUpdater::Update to run on
+    // |layer|. This currently happens in the PrePaintTreeWalk, which is
+    // triggered by SetNeedsPaintPropertyUpdate(); that is the reason for
+    // calling SetNeedsPaintPropertyUpdate().
+    layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
+    // We need to check for raster invalidations due to content changing
+    // composited layer backings.
+    switch (layer->GetCompositingState()) {
+      case kPaintsIntoOwnBacking:
+        layer->GetCompositedLayerMapping()->SetNeedsCheckRasterInvalidation();
+        break;
+      case kPaintsIntoGroupedBacking:
+        layer->GroupedMapping()->SetNeedsCheckRasterInvalidation();
+        break;
+      case kNotComposited:
+        break;
+    }
   }
 
   Lifecycle().AdvanceTo(DocumentLifecycle::kCompositingClean);
@@ -452,29 +469,17 @@ void PaintLayerCompositor::PaintInvalidationOnCompositingChange(
     PaintLayer* layer) {
   // If the layoutObject is not attached yet, no need to issue paint
   // invalidations.
-  if (layer->GetLayoutObject().IsLayoutView() &&
+  if (&layer->GetLayoutObject() != layout_view_ &&
       !layer->GetLayoutObject().Parent())
     return;
 
-  layer->SetNeedsRepaint();
-  // We need to cause CompositingLayerPropertyUpdater::Update to run on
-  // |layer|. This currently happens in the PrePaintTreeWalk, which is
-  // triggered by SetNeedsPaintPropertyUpdate(); that is the reason for
-  // calling SetNeedsPaintPropertyUpdate().
-  layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
-  // We need to check for raster invalidations due to content changing
-  // composited layer backings.
-  DisableCompositingQueryAsserts compositing_disabler;
-  switch (layer->GetCompositingState()) {
-    case kPaintsIntoOwnBacking:
-      layer->GetCompositedLayerMapping()->SetNeedsCheckRasterInvalidation();
-      break;
-    case kPaintsIntoGroupedBacking:
-      layer->GroupedMapping()->SetNeedsCheckRasterInvalidation();
-      break;
-    case kNotComposited:
-      break;
-  }
+  // For querying Layer::compositingState()
+  // Eager invalidation here is correct, since we are invalidating with respect
+  // to the previous frame's compositing state when changing the compositing
+  // backing of the layer.
+  DisableCompositingQueryAsserts disabler;
+  ObjectPaintInvalidator(layer->GetLayoutObject())
+      .InvalidatePaintIncludingNonCompositingDescendants();
 }
 
 PaintLayerCompositor* PaintLayerCompositor::FrameContentsCompositor(

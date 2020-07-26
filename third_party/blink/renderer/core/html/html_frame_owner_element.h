@@ -47,8 +47,6 @@ class WebPluginContainerImpl;
 
 class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
                                           public FrameOwner {
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLFrameOwnerElement);
-
  public:
   ~HTMLFrameOwnerElement() override;
 

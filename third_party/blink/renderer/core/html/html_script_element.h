@@ -40,7 +40,6 @@ class ExceptionState;
 class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
                                             public ScriptElementBase {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLScriptElement);
 
  public:
   HTMLScriptElement(Document&, const CreateElementFlags);

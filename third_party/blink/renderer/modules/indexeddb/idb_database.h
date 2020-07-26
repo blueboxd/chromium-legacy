@@ -62,7 +62,6 @@ class MODULES_EXPORT IDBDatabase final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<IDBDatabase>,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(IDBDatabase);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

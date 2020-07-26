@@ -24,10 +24,10 @@ WebViewExample::WebViewExample(content::BrowserContext* browser_context)
 WebViewExample::~WebViewExample() = default;
 
 void WebViewExample::CreateExampleView(View* container) {
-  webview_ = new WebView(browser_context_);
+  webview_ =
+      container->AddChildView(std::make_unique<WebView>(browser_context_));
   webview_->GetWebContents()->SetDelegate(this);
   container->SetLayoutManager(std::make_unique<FillLayout>());
-  container->AddChildView(webview_);
 
   webview_->LoadInitialURL(GURL("http://www.google.com/"));
   webview_->GetWebContents()->Focus();

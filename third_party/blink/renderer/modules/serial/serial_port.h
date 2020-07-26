@@ -38,7 +38,6 @@ class SerialPort final : public ScriptWrappable,
                          public ActiveScriptWrappable<SerialPort>,
                          public device::mojom::blink::SerialPortClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SerialPort);
 
  public:
   explicit SerialPort(Serial* parent, mojom::blink::SerialPortInfoPtr info);

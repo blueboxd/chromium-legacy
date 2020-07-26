@@ -50,8 +50,6 @@ class Modulator;
 class CORE_EXPORT ScriptLoader final : public GarbageCollected<ScriptLoader>,
                                        public PendingScriptClient,
                                        public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ScriptLoader);
-
  public:
   ScriptLoader(ScriptElementBase*, const CreateElementFlags);
   ~ScriptLoader() override;

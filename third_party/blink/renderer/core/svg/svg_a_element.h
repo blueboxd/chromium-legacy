@@ -31,7 +31,6 @@ namespace blink {
 class CORE_EXPORT SVGAElement final : public SVGGraphicsElement,
                                       public SVGURIReference {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGAElement);
 
  public:
   SVGAnimatedString* svgTarget() { return svg_target_.Get(); }

@@ -25,7 +25,6 @@ class ScriptState;
 class Lock final : public ScriptWrappable,
                    public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Lock);
 
  public:
   Lock(ScriptState*,

@@ -33,7 +33,6 @@ class CORE_EXPORT Request final : public ScriptWrappable,
                                   public ActiveScriptWrappable<Request>,
                                   public Body {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Request);
 
  public:
   using ForServiceWorkerFetchEvent =

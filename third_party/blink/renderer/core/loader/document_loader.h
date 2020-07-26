@@ -112,8 +112,6 @@ enum class GlobalObjectReusePolicy { kCreateNew, kUseExisting };
 class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
                                    public UseCounter,
                                    public WebNavigationBodyLoader::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(DocumentLoader);
-
  public:
   DocumentLoader(LocalFrame*,
                  WebNavigationType navigation_type,

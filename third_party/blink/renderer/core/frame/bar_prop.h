@@ -39,7 +39,6 @@ class LocalFrame;
 
 class BarProp final : public ScriptWrappable, public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(BarProp);
 
  public:
   enum Type {

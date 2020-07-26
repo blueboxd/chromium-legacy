@@ -23,8 +23,6 @@ class ConsoleMessageStorage;
 class CORE_EXPORT InspectorLogAgent
     : public InspectorBaseAgent<protocol::Log::Metainfo>,
       public PerformanceMonitor::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(InspectorLogAgent);
-
  public:
   InspectorLogAgent(ConsoleMessageStorage*,
                     PerformanceMonitor*,

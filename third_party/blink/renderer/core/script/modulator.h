@@ -98,8 +98,6 @@ enum class ModuleScriptCustomFetchType {
 class CORE_EXPORT Modulator : public GarbageCollected<Modulator>,
                               public V8PerContextData::Data,
                               public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(Modulator);
-
  public:
   static Modulator* From(ScriptState*);
   virtual ~Modulator();

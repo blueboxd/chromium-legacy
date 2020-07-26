@@ -26,7 +26,6 @@ class MODULES_EXPORT WakeLockSentinel final
       public ActiveScriptWrappable<WakeLockSentinel>,
       public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(WakeLockSentinel);
 
  public:
   WakeLockSentinel(ScriptState* script_state,

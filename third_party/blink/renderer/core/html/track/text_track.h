@@ -48,7 +48,6 @@ class TextTrackList;
 class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
                               public TrackBase {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(TextTrack);
 
  public:
   enum TextTrackType { kTrackElement, kAddTrack, kInBand };

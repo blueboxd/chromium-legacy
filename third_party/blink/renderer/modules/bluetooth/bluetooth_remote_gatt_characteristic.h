@@ -40,7 +40,6 @@ class BluetoothRemoteGATTCharacteristic final
       public ExecutionContextLifecycleObserver,
       public mojom::blink::WebBluetoothCharacteristicClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(BluetoothRemoteGATTCharacteristic);
 
  public:
   explicit BluetoothRemoteGATTCharacteristic(

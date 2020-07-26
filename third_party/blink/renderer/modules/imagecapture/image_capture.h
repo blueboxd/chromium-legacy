@@ -37,7 +37,6 @@ class MODULES_EXPORT ImageCapture final
       public ActiveScriptWrappable<ImageCapture>,
       public ExecutionContextLifecycleObserver,
       public mojom::blink::PermissionObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(ImageCapture);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

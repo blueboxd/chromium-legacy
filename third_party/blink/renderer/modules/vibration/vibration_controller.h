@@ -40,8 +40,6 @@ class MODULES_EXPORT VibrationController final
     : public GarbageCollected<VibrationController>,
       public ExecutionContextLifecycleObserver,
       public PageVisibilityObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(VibrationController);
-
  public:
   using VibrationPattern = Vector<unsigned>;
 

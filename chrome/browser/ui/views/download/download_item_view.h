@@ -23,7 +23,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/animation/slide_animation.h"
-#include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -170,8 +169,8 @@ class DownloadItemView : public views::View,
   gfx::Size GetButtonSize() const;
 
   // Returns the file name to report to user. It might be elided to fit into
-  // the text width.
-  base::string16 ElidedFilename();
+  // the text width. |label| dictates the default text style.
+  base::string16 ElidedFilename(const views::StyledLabel& label) const;
 
   // Returns the Y coordinate that centers |element_height| within the current
   // height().
@@ -218,12 +217,6 @@ class DownloadItemView : public views::View,
   // The download shelf that owns us.
   DownloadShelfView* shelf_;
 
-  // The font list used to print the file name and warning text.
-  gfx::FontList font_list_;
-
-  // The font list used to print the status text below the file name.
-  gfx::FontList status_font_list_;
-
   // Mode of the download item view.
   Mode mode_;
 
@@ -250,7 +243,7 @@ class DownloadItemView : public views::View,
   // used, so that we can detect a change in the path and reload the icon.
   base::FilePath file_path_;
 
-  views::Label* file_name_label_;
+  views::StyledLabel* file_name_label_;
   views::Label* status_label_;
   views::StyledLabel* warning_label_;
   views::StyledLabel* deep_scanning_label_;

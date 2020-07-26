@@ -50,7 +50,6 @@ struct LinkLoadParameters;
 class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
                                           public LinkLoaderClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLLinkElement);
 
  public:
   HTMLLinkElement(Document&, const CreateElementFlags);

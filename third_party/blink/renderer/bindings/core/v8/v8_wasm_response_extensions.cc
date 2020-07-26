@@ -39,7 +39,6 @@ static const int kWasmModuleTag = 1;
 // received bytes get forwarded to the V8 API class |WasmStreaming|.
 class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
                                               public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(FetchDataLoaderForWasmStreaming);
 
  public:
   FetchDataLoaderForWasmStreaming(std::shared_ptr<v8::WasmStreaming> streaming,
@@ -161,7 +160,6 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
 class WasmDataLoaderClient final
     : public GarbageCollected<WasmDataLoaderClient>,
       public FetchDataLoader::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(WasmDataLoaderClient);
 
  public:
   explicit WasmDataLoaderClient(FetchDataLoaderForWasmStreaming* loader)

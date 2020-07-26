@@ -71,8 +71,6 @@ class XMLParserContext : public RefCounted<XMLParserContext> {
 
 class XMLDocumentParser final : public ScriptableDocumentParser,
                                 public XMLParserScriptRunnerHost {
-  USING_GARBAGE_COLLECTED_MIXIN(XMLDocumentParser);
-
  public:
   explicit XMLDocumentParser(Document&, LocalFrameView* = nullptr);
   XMLDocumentParser(DocumentFragment*, Element*, ParserContentPolicy);

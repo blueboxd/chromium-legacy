@@ -47,7 +47,6 @@ class ScriptState;
 class CORE_EXPORT History final : public ScriptWrappable,
                                   public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(History);
 
  public:
   explicit History(LocalFrame*);

@@ -6,8 +6,8 @@
 
 #include "base/strings/string16.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/global_media_controls/media_notification_container_impl.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
-#include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl_view.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
@@ -42,7 +42,7 @@ constexpr gfx::Insets kDeviceButtonInsets = gfx::Insets(5);
 
 MediaNotificationAudioDeviceSelectorView::
     MediaNotificationAudioDeviceSelectorView(
-        MediaNotificationContainerImplView* container,
+        MediaNotificationContainerImpl* container,
         MediaNotificationService* service,
         gfx::Size size)
     : container_(container), service_(service) {
@@ -107,6 +107,7 @@ MediaNotificationAudioDeviceSelectorView::
 
 void MediaNotificationAudioDeviceSelectorView::UpdateAvailableAudioDevices(
     const media::AudioDeviceDescriptions& device_descriptions) {
+  sink_id_map_.clear();
   device_button_container_->RemoveAllChildViews(true);
   for (auto description : device_descriptions) {
     CreateDeviceButton(description);
@@ -115,7 +116,12 @@ void MediaNotificationAudioDeviceSelectorView::UpdateAvailableAudioDevices(
 
 void MediaNotificationAudioDeviceSelectorView::ButtonPressed(
     views::Button* sender,
-    const ui::Event& event) {}
+    const ui::Event& event) {
+  auto it = sink_id_map_.find(sender);
+  if (it != sink_id_map_.end()) {
+    container_->OnAudioSinkChosen(it->second);
+  }
+}
 
 void MediaNotificationAudioDeviceSelectorView::CreateDeviceButton(
     const media::AudioDeviceDescription& device_description) {
@@ -133,6 +139,7 @@ void MediaNotificationAudioDeviceSelectorView::CreateDeviceButton(
   border->set_color(SK_ColorLTGRAY);
   button->SetBorder(std::move(border));
 
+  sink_id_map_[button.get()] = device_description.unique_id;
   device_button_container_->AddChildView(std::move(button));
   device_button_container_->Layout();
 }

@@ -35,8 +35,6 @@ class MODULES_EXPORT ManifestManager
       public Supplement<LocalDOMWindow>,
       public mojom::blink::ManifestManager,
       public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(ManifestManager);
-
  public:
   static const char kSupplementName[];
 

@@ -32,7 +32,6 @@ class SVGViewElement final : public SVGElement,
                              public SVGFitToViewBox,
                              public SVGZoomAndPan {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGViewElement);
 
  public:
   explicit SVGViewElement(Document&);

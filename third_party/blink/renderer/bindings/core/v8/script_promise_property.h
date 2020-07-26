@@ -30,7 +30,6 @@ class ScriptPromiseProperty final
     : public GarbageCollected<
           ScriptPromiseProperty<ResolvedType, RejectedType>>,
       public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ScriptPromiseProperty);
 
  public:
   enum State {

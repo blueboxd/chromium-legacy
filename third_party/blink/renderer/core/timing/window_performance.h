@@ -51,7 +51,6 @@ class IntSize;
 class CORE_EXPORT WindowPerformance final : public Performance,
                                             public PerformanceMonitor::Client,
                                             public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(WindowPerformance);
   friend class WindowPerformanceTest;
 
  public:

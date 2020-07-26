@@ -56,7 +56,6 @@ class WorkerMainScriptLoaderTest : public testing::Test {
 
   class TestClient final : public GarbageCollected<TestClient>,
                            public WorkerMainScriptLoaderClient {
-    USING_GARBAGE_COLLECTED_MIXIN(TestClient);
 
    public:
     // Implements WorkerMainScriptLoaderClient.

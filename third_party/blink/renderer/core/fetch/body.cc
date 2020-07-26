@@ -35,8 +35,6 @@ namespace {
 
 class BodyConsumerBase : public GarbageCollected<BodyConsumerBase>,
                          public FetchDataLoader::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(BodyConsumerBase);
-
  public:
   explicit BodyConsumerBase(ScriptPromiseResolver* resolver)
       : resolver_(resolver),

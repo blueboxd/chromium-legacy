@@ -19,8 +19,6 @@ class VirtualKeyboard;
 class NavigatorVirtualKeyboard final
     : public GarbageCollected<NavigatorVirtualKeyboard>,
       public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorVirtualKeyboard);
-
  public:
   static const char kSupplementName[];
   static VirtualKeyboard* virtualKeyboard(Navigator&);

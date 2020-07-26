@@ -32,7 +32,6 @@ class MODULES_EXPORT PaymentResponse final
       public ExecutionContextClient,
       public ActiveScriptWrappable<PaymentResponse> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(PaymentResponse);
 
  public:
   PaymentResponse(ScriptState* script_state,

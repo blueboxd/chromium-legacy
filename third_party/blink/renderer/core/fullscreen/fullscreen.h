@@ -54,8 +54,6 @@ class ScriptPromiseResolver;
 class CORE_EXPORT Fullscreen final : public GarbageCollected<Fullscreen>,
                                      public Supplement<LocalDOMWindow>,
                                      public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(Fullscreen);
-
  public:
   static const char kSupplementName[];
 

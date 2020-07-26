@@ -34,6 +34,7 @@ FrameSequenceTrackerCollection::FrameSequenceTrackerCollection(
           compositor_frame_reporting_controller) {}
 
 FrameSequenceTrackerCollection::~FrameSequenceTrackerCollection() {
+  CleanUp();
   frame_trackers_.clear();
   removal_trackers_.clear();
   custom_frame_trackers_.clear();
@@ -79,6 +80,18 @@ FrameSequenceTracker* FrameSequenceTrackerCollection::StartScrollSequence(
     FrameSequenceMetrics::ThreadType scrolling_thread) {
   DCHECK(IsScrollType(type));
   return StartSequenceInternal(type, scrolling_thread);
+}
+
+void FrameSequenceTrackerCollection::CleanUp() {
+  for (auto& tracker : frame_trackers_)
+    tracker.second->CleanUp();
+  for (auto& tracker : custom_frame_trackers_)
+    tracker.second->CleanUp();
+  for (auto& tracker : removal_trackers_)
+    tracker->CleanUp();
+  for (auto& metric : accumulated_metrics_)
+    metric.second->ReportLeftoverData();
+  throughput_ukm_reporter_ = nullptr;
 }
 
 void FrameSequenceTrackerCollection::StopSequence(
@@ -289,9 +302,10 @@ void FrameSequenceTrackerCollection::DestroyTrackers() {
       // For kCustom typed trackers, |metrics| invokes AddCustomTrackerResult
       // on its destruction, which add its data to |custom_tracker_results_|
       // to be picked up by caller.
-      auto metrics = tracker->TakeMetrics();
-      if (metrics->type() == FrameSequenceTrackerType::kCustom)
+      if (tracker->metrics() &&
+          tracker->type() == FrameSequenceTrackerType::kCustom)
         continue;
+      auto metrics = tracker->TakeMetrics();
 
       auto key = std::make_pair(metrics->type(), metrics->GetEffectiveThread());
       if (accumulated_metrics_.contains(key)) {

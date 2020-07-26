@@ -57,7 +57,6 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
                                 public ActiveScriptWrappable<MessagePort>,
                                 public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(MessagePort);
 
  public:
   explicit MessagePort(ExecutionContext&);

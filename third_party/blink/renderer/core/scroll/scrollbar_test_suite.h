@@ -38,8 +38,6 @@ class MockPlatformChromeClient : public EmptyChromeClient {
 
 class MockScrollableArea : public GarbageCollected<MockScrollableArea>,
                            public ScrollableArea {
-  USING_GARBAGE_COLLECTED_MIXIN(MockScrollableArea);
-
  public:
   static MockScrollableArea* Create() {
     return MakeGarbageCollected<MockScrollableArea>();

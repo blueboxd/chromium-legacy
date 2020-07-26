@@ -26,8 +26,6 @@ class FontSelector;
 // synchronously and a relayout is triggered.
 class LocalFontFaceSource final : public CSSFontFaceSource,
                                   public GarbageCollectedMixin {
-  USING_GARBAGE_COLLECTED_MIXIN(LocalFontFaceSource);
-
  public:
   LocalFontFaceSource(CSSFontFace*, FontSelector*, const String& font_name);
   ~LocalFontFaceSource() override;

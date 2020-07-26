@@ -43,8 +43,6 @@ class HTMLFormElement;
 class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
                                            public ListedElement,
                                            public FormAssociated {
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLFormControlElement);
-
  public:
   ~HTMLFormControlElement() override;
   void Trace(Visitor*) const override;

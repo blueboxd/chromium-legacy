@@ -29,7 +29,6 @@ class CORE_EXPORT ResizeObserver final
     : public ScriptWrappable,
       public ActiveScriptWrappable<ResizeObserver>,
       public ExecutionContextClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ResizeObserver);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

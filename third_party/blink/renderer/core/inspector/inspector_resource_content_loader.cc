@@ -31,8 +31,6 @@ namespace blink {
 class InspectorResourceContentLoader::ResourceClient final
     : public GarbageCollected<InspectorResourceContentLoader::ResourceClient>,
       private RawResourceClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ResourceClient);
-
  public:
   explicit ResourceClient(InspectorResourceContentLoader* loader)
       : loader_(loader) {}

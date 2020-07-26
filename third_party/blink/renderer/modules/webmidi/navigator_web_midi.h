@@ -44,8 +44,6 @@ class Navigator;
 
 class NavigatorWebMIDI final : public GarbageCollected<NavigatorWebMIDI>,
                                public Supplement<Navigator> {
-  USING_GARBAGE_COLLECTED_MIXIN(NavigatorWebMIDI);
-
  public:
   static const char kSupplementName[];
 

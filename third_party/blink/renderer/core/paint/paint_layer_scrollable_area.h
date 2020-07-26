@@ -122,7 +122,6 @@ struct CORE_EXPORT PaintLayerScrollableAreaRareData {
 class CORE_EXPORT PaintLayerScrollableArea final
     : public GarbageCollected<PaintLayerScrollableArea>,
       public ScrollableArea {
-  USING_GARBAGE_COLLECTED_MIXIN(PaintLayerScrollableArea);
   friend class Internals;
 
  private:

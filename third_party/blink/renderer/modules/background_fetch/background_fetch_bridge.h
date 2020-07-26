@@ -27,8 +27,6 @@ class BackgroundFetchRegistration;
 class BackgroundFetchBridge final
     : public GarbageCollected<BackgroundFetchBridge>,
       public Supplement<ServiceWorkerRegistration> {
-  USING_GARBAGE_COLLECTED_MIXIN(BackgroundFetchBridge);
-
  public:
   static const char kSupplementName[];
 

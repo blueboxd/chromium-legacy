@@ -40,8 +40,6 @@ class Page;
 
 class ContextFeatures final : public GarbageCollected<ContextFeatures>,
                               public Supplement<Page> {
-  USING_GARBAGE_COLLECTED_MIXIN(ContextFeatures);
-
  public:
   static const char kSupplementName[];
 

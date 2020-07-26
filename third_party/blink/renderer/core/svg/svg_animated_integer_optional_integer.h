@@ -46,8 +46,6 @@ namespace blink {
 class SVGAnimatedIntegerOptionalInteger
     : public GarbageCollected<SVGAnimatedIntegerOptionalInteger>,
       public SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger> {
-  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedIntegerOptionalInteger);
-
  public:
   SVGAnimatedIntegerOptionalInteger(SVGElement* context_element,
                                     const QualifiedName& attribute_name,

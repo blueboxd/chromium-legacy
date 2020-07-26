@@ -45,8 +45,6 @@ class SpeechGrammarList;
 class SpeechRecognitionController final
     : public GarbageCollected<SpeechRecognitionController>,
       public Supplement<LocalDOMWindow> {
-  USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognitionController);
-
  public:
   static const char kSupplementName[];
 

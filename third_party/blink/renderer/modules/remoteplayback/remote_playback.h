@@ -48,7 +48,6 @@ class MODULES_EXPORT RemotePlayback final
       public mojom::blink::PresentationConnection,
       public RemotePlaybackController {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(RemotePlayback);
 
  public:
   // Result of WatchAvailabilityInternal that means availability is not

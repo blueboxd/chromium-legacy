@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -28,8 +29,6 @@ class BookmarkMenuDelegateTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
-    profile()->CreateBookmarkModel(true);
-
     model_ = BookmarkModelFactory::GetForBrowserContext(profile());
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
 
@@ -40,6 +39,13 @@ class BookmarkMenuDelegateTest : public BrowserWithTestWindowTest {
     DestroyDelegate();
 
     BrowserWithTestWindowTest::TearDown();
+  }
+
+  TestingProfile::TestingFactories GetTestingFactories() override {
+    return {{BookmarkModelFactory::GetInstance(),
+             BookmarkModelFactory::GetDefaultFactory()},
+            {ManagedBookmarkServiceFactory::GetInstance(),
+             ManagedBookmarkServiceFactory::GetDefaultFactory()}};
   }
 
  protected:

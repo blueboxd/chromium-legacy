@@ -76,7 +76,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
       public BaseRenderingContext2D,
       public SVGResourceClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext2D);
 
  public:
   class Factory : public CanvasRenderingContextFactory {

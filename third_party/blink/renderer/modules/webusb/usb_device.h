@@ -25,7 +25,6 @@ class USBControlTransferParameters;
 
 class USBDevice : public ScriptWrappable,
                   public ExecutionContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(USBDevice);
   DEFINE_WRAPPERTYPEINFO();
 
  public:

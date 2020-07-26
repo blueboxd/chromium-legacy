@@ -54,7 +54,6 @@ class CORE_EXPORT HTMLInputElement
     : public TextControlElement,
       public ActiveScriptWrappable<HTMLInputElement> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(HTMLInputElement);
 
  public:
   HTMLInputElement(Document&, const CreateElementFlags);

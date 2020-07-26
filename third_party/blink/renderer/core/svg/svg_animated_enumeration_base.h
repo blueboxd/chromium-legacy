@@ -40,7 +40,6 @@ namespace blink {
 class SVGAnimatedEnumerationBase : public ScriptWrappable,
                                    public SVGAnimatedProperty<SVGEnumeration> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedEnumerationBase);
 
  public:
   ~SVGAnimatedEnumerationBase() override;

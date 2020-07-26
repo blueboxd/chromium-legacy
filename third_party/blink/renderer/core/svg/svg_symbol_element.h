@@ -28,7 +28,6 @@ namespace blink {
 
 class SVGSymbolElement final : public SVGElement, public SVGFitToViewBox {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGSymbolElement);
 
  public:
   explicit SVGSymbolElement(Document&);

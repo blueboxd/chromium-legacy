@@ -25,8 +25,6 @@ class ResourceFetcher;
 class CORE_EXPORT WorkletModuleScriptFetcher final
     : public GarbageCollected<WorkletModuleScriptFetcher>,
       public ModuleScriptFetcher {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkletModuleScriptFetcher);
-
  public:
   WorkletModuleScriptFetcher(WorkletModuleResponsesMap*,
                              util::PassKey<ModuleScriptLoader>);

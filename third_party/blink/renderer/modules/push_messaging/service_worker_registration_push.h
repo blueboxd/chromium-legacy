@@ -18,8 +18,6 @@ class ServiceWorkerRegistration;
 class ServiceWorkerRegistrationPush final
     : public GarbageCollected<ServiceWorkerRegistrationPush>,
       public Supplement<ServiceWorkerRegistration> {
-  USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistrationPush);
-
  public:
   static const char kSupplementName[];
 

@@ -41,7 +41,6 @@ namespace blink {
 class SVGAnimatedBoolean final : public ScriptWrappable,
                                  public SVGAnimatedProperty<SVGBoolean> {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedBoolean);
 
  public:
   SVGAnimatedBoolean(SVGElement* context_element,

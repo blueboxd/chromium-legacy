@@ -22,8 +22,6 @@ class IntersectionObserverController
     : public GarbageCollected<IntersectionObserverController>,
       public ExecutionContextClient,
       public NameClient {
-  USING_GARBAGE_COLLECTED_MIXIN(IntersectionObserverController);
-
  public:
   explicit IntersectionObserverController(ExecutionContext*);
   virtual ~IntersectionObserverController();

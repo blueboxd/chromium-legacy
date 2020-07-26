@@ -20,8 +20,6 @@ class HTMLVideoElement;
 // Extends HTMLVideoElement via the VideoFrameCallbackRequester interface.
 class MODULES_EXPORT VideoFrameCallbackRequesterImpl final
     : public VideoFrameCallbackRequester {
-  USING_GARBAGE_COLLECTED_MIXIN(VideoFrameCallbackRequesterImpl);
-
  public:
   static VideoFrameCallbackRequesterImpl& From(HTMLVideoElement&);
 

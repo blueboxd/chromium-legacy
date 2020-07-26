@@ -42,7 +42,6 @@ enum class SecureContextMode;
 class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable,
                                         public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(CSSStyleDeclaration);
 
  public:
   ~CSSStyleDeclaration() override = default;

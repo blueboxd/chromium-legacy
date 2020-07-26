@@ -69,7 +69,6 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
                               public CompositorAnimationClient,
                               public AnimationEffectOwner {
   DEFINE_WRAPPERTYPEINFO();
-  USING_GARBAGE_COLLECTED_MIXIN(Animation);
   USING_PRE_FINALIZER(Animation, Dispose);
 
  public:

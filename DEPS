@@ -199,7 +199,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '5cdec88a9e3e230528eeb9c34c68437a24db4b89',
+  'v8_revision': '74b3eb7ac17f1391c84d7d7351a6f64bbb8ff41c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '4ceefeb36e0e63ad75834e9a921249d389aa1658',
+  'devtools_frontend_revision': 'e490afec61daa882ee22b574793183993c454b9a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1476,7 +1476,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '82e85676c3b35e721e8e61a1d089f4a0eca4750c',
+    Var('webrtc_git') + '/src.git' + '@' + '60cbf70944cf845781c14ee176cec26c61aa502a',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1548,7 +1548,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@96de0520b55009a0ec518530c954124f3ac31d5e',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@cba20b21bdac1df2601b5b3027901bc389982ab1',
     'condition': 'checkout_src_internal',
   },
 

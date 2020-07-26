@@ -11,10 +11,13 @@
 
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "ui/accessibility/ax_tree.h"
+
+using testing::UnorderedElementsAre;
 
 namespace ui {
 
@@ -466,6 +469,161 @@ TEST_F(AXTreeSerializerTest, ResetWorksWithNewRootId) {
   // The update should unserialize without errors.
   AXTree dst_tree(treedata0_);
   EXPECT_TRUE(dst_tree.Unserialize(update)) << dst_tree.error();
+}
+
+// Wraps an AXTreeSource and provides access to the results of the
+// SerializerClearedNode callback.
+class AXTreeSourceTestWrapper
+    : public AXTreeSource<const AXNode*, AXNodeData, AXTreeData> {
+ public:
+  explicit AXTreeSourceTestWrapper(
+      AXTreeSource<const AXNode*, AXNodeData, AXTreeData>* tree_source)
+      : tree_source_(tree_source) {}
+  ~AXTreeSourceTestWrapper() override = default;
+
+  // Override SerializerClearedNode and provide a way to access it.
+  void SerializerClearedNode(int32_t node_id) override {
+    cleared_node_ids_.insert(node_id);
+  }
+
+  void ClearClearedNodeIds() { cleared_node_ids_.clear(); }
+  std::set<int32_t>& cleared_node_ids() { return cleared_node_ids_; }
+
+  // The rest of the AXTreeSource implementation just calls through to
+  // tree_source_.
+  bool GetTreeData(AXTreeData* data) const override {
+    return tree_source_->GetTreeData(data);
+  }
+  const AXNode* GetRoot() const override { return tree_source_->GetRoot(); }
+  const AXNode* GetFromId(int32_t id) const override {
+    return tree_source_->GetFromId(id);
+  }
+  int32_t GetId(const AXNode* node) const override {
+    return tree_source_->GetId(node);
+  }
+  void GetChildren(const AXNode* node,
+                   std::vector<const AXNode*>* out_children) const override {
+    return tree_source_->GetChildren(node, out_children);
+  }
+  const AXNode* GetParent(const AXNode* node) const override {
+    return tree_source_->GetParent(node);
+  }
+  bool IsIgnored(const AXNode* node) const override {
+    return tree_source_->IsIgnored(node);
+  }
+  bool IsValid(const AXNode* node) const override {
+    return tree_source_->IsValid(node);
+  }
+  bool IsEqual(const AXNode* node1, const AXNode* node2) const override {
+    return tree_source_->IsEqual(node1, node2);
+  }
+  const AXNode* GetNull() const override { return tree_source_->GetNull(); }
+  void SerializeNode(const AXNode* node, AXNodeData* out_data) const override {
+    tree_source_->SerializeNode(node, out_data);
+  }
+
+ private:
+  AXTreeSource<const AXNode*, AXNodeData, AXTreeData>* tree_source_;
+  std::set<int32_t> cleared_node_ids_;
+};
+
+TEST_F(AXTreeSerializerTest, TestClearedNodesWhenUpdatingRoot) {
+  // (1 (2 (3 (4))))
+  treedata0_.root_id = 1;
+  treedata0_.nodes.resize(4);
+  treedata0_.nodes[0].id = 1;
+  treedata0_.nodes[0].child_ids.push_back(2);
+  treedata0_.nodes[1].id = 2;
+  treedata0_.nodes[1].child_ids.push_back(3);
+  treedata0_.nodes[2].id = 3;
+  treedata0_.nodes[2].child_ids.push_back(4);
+  treedata0_.nodes[3].id = 4;
+
+  // (5 (2 (3 (4))))
+  treedata1_.root_id = 5;
+  treedata1_.nodes.resize(4);
+  treedata1_.nodes[0].id = 5;
+  treedata1_.nodes[0].child_ids.push_back(2);
+  treedata1_.nodes[1].id = 2;
+  treedata1_.nodes[1].child_ids.push_back(3);
+  treedata1_.nodes[2].id = 3;
+  treedata1_.nodes[2].child_ids.push_back(4);
+  treedata1_.nodes[3].id = 4;
+
+  // Similar sequence to CreateTreeSerializer, but using
+  // AXTreeSourceTestWrapper instead.
+  tree0_ = std::make_unique<AXSerializableTree>(treedata0_);
+  tree1_ = std::make_unique<AXSerializableTree>(treedata1_);
+  tree0_source_.reset(tree0_->CreateTreeSource());
+  AXTreeSourceTestWrapper tree0_source_wrapper(tree0_source_.get());
+  serializer_ = std::make_unique<BasicAXTreeSerializer>(&tree0_source_wrapper);
+  AXTreeUpdate unused_update;
+  ASSERT_TRUE(serializer_->SerializeChanges(tree0_->root(), &unused_update));
+  tree1_source_.reset(tree1_->CreateTreeSource());
+  AXTreeSourceTestWrapper tree1_source_wrapper(tree1_source_.get());
+  serializer_->ChangeTreeSourceForTesting(&tree1_source_wrapper);
+  ASSERT_EQ(4U, serializer_->ClientTreeNodeCount());
+
+  // If we swap out the root, all of the node IDs should have
+  // SerializerClearedNode called on them.
+  tree1_source_wrapper.ClearClearedNodeIds();
+  ASSERT_TRUE(serializer_->SerializeChanges(tree1_->root(), &unused_update));
+  EXPECT_THAT(tree1_source_wrapper.cleared_node_ids(),
+              UnorderedElementsAre(1, 2, 3, 4));
+
+  // Destroy the serializer first so that the AXTreeSources it points to
+  // don't go out of scope first.
+  serializer_.reset();
+}
+
+TEST_F(AXTreeSerializerTest, TestClearedNodesWhenUpdatingBranch) {
+  // (1 (2 (3 (4))))
+  treedata0_.root_id = 1;
+  treedata0_.nodes.resize(4);
+  treedata0_.nodes[0].id = 1;
+  treedata0_.nodes[0].child_ids.push_back(2);
+  treedata0_.nodes[1].id = 2;
+  treedata0_.nodes[1].child_ids.push_back(3);
+  treedata0_.nodes[2].id = 3;
+  treedata0_.nodes[2].child_ids.push_back(4);
+  treedata0_.nodes[3].id = 4;
+
+  // (1 (2 (5 (6))))
+  treedata1_.root_id = 1;
+  treedata1_.nodes.resize(4);
+  treedata1_.nodes[0].id = 1;
+  treedata1_.nodes[0].child_ids.push_back(2);
+  treedata1_.nodes[1].id = 2;
+  treedata1_.nodes[1].child_ids.push_back(5);
+  treedata1_.nodes[2].id = 5;
+  treedata1_.nodes[2].child_ids.push_back(6);
+  treedata1_.nodes[3].id = 6;
+
+  // Similar sequence to CreateTreeSerializer, but using
+  // AXTreeSourceTestWrapper instead.
+  tree0_ = std::make_unique<AXSerializableTree>(treedata0_);
+  tree1_ = std::make_unique<AXSerializableTree>(treedata1_);
+  tree0_source_.reset(tree0_->CreateTreeSource());
+  AXTreeSourceTestWrapper tree0_source_wrapper(tree0_source_.get());
+  serializer_ = std::make_unique<BasicAXTreeSerializer>(&tree0_source_wrapper);
+  AXTreeUpdate unused_update;
+  ASSERT_TRUE(serializer_->SerializeChanges(tree0_->root(), &unused_update));
+  tree1_source_.reset(tree1_->CreateTreeSource());
+  AXTreeSourceTestWrapper tree1_source_wrapper(tree1_source_.get());
+  serializer_->ChangeTreeSourceForTesting(&tree1_source_wrapper);
+  ASSERT_EQ(4U, serializer_->ClientTreeNodeCount());
+
+  // If we replace one branch with another, we should get calls to
+  // SerializerClearedNode with all of the node IDs no longer in the tree.
+  tree1_source_wrapper.ClearClearedNodeIds();
+  ASSERT_TRUE(
+      serializer_->SerializeChanges(tree1_->GetFromId(2), &unused_update));
+  EXPECT_THAT(tree1_source_wrapper.cleared_node_ids(),
+              UnorderedElementsAre(3, 4));
+
+  // Destroy the serializer first so that the AXTreeSources it points to
+  // don't go out of scope first.
+  serializer_.reset();
 }
 
 }  // namespace ui

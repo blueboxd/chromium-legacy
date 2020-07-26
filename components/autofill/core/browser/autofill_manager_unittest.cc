@@ -7750,6 +7750,7 @@ TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_AddressOnly) {
           HasSubstr("Autofill.FormEvents.Address.AddressPlusEmailPlusPhone"),
           HasSubstr("Autofill.FormEvents.Address.AddressPlusPhone"),
           HasSubstr("Autofill.FormEvents.Address.ContactOnly"),
+          HasSubstr("Autofill.FormEvents.Address.PhoneOnly"),
           HasSubstr("Autofill.FormEvents.Address.Other"))));
 }
 
@@ -7794,6 +7795,7 @@ TEST_F(AutofillManagerTest,
           HasSubstr("Autofill.FormEvents.Address.AddressPlusEmailPlusPhone"),
           HasSubstr("Autofill.FormEvents.Address.AddressPlusPhone"),
           HasSubstr("Autofill.FormEvents.Address.ContactOnly"),
+          HasSubstr("Autofill.FormEvents.Address.PhoneOnly"),
           HasSubstr("Autofill.FormEvents.Address.Other"))));
 }
 
@@ -7836,6 +7838,7 @@ TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_ContactOnly) {
           HasSubstr("Autofill.FormEvents.Address.AddressPlusEmailPlusPhone"),
           HasSubstr("Autofill.FormEvents.Address.AddressPlusPhone"),
           HasSubstr("Autofill.FormEvents.Address.AddressOnly"),
+          HasSubstr("Autofill.FormEvents.Address.PhoneOnly"),
           HasSubstr("Autofill.FormEvents.Address.Other"))));
 }
 
@@ -7879,6 +7882,50 @@ TEST_F(AutofillManagerTest,
           HasSubstr("Autofill.FormEvents.Address.AddressPlusEmailPlusPhone"),
           HasSubstr("Autofill.FormEvents.Address.AddressPlusPhone"),
           HasSubstr("Autofill.FormEvents.Address.AddressOnly"),
+          HasSubstr("Autofill.FormEvents.Address.PhoneOnly"),
+          HasSubstr("Autofill.FormEvents.Address.Other"))));
+}
+
+TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_PhoneOnly) {
+  // Create a form with phone field.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.button_titles = {
+      std::make_pair(ASCIIToUTF16("Submit"),
+                     mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
+  form.url = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+  form.main_frame_origin =
+      url::Origin::Create(GURL("https://myform_root.com/form.html"));
+  form.submission_event = SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
+
+  FormFieldData field;
+  test::CreateTestFormField("Phone Number", "phonenumber", "", "tel", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Phone Number", "phonenumber", "", "tel", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Phone Number", "phonenumber", "", "tel", &field);
+  form.fields.push_back(field);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->DidShowSuggestions(/*has_autofill_suggestions=*/true, form,
+                                        form.fields[0]);
+  histogram_tester.ExpectBucketCount("Autofill.FormEvents.Address.PhoneOnly",
+                                     FORM_EVENT_SUGGESTIONS_SHOWN, 1);
+  histogram_tester.ExpectBucketCount("Autofill.FormEvents.Address.PhoneOnly",
+                                     FORM_EVENT_SUGGESTIONS_SHOWN_ONCE, 1);
+
+  // Logging is not done for other types of address forms.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusEmailPlusPhone"),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusEmail"),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusPhone"),
+          HasSubstr("Autofill.FormEvents.Address.AddressPlusContact"),
+          HasSubstr("Autofill.FormEvents.Address.AddressOnly"),
+          HasSubstr("Autofill.FormEvents.Address.ContactOnly"),
           HasSubstr("Autofill.FormEvents.Address.Other"))));
 }
 
@@ -7921,6 +7968,7 @@ TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_Other) {
           HasSubstr("Autofill.FormEvents.Address.AddressPlusEmailPlusPhone"),
           HasSubstr("Autofill.FormEvents.Address.AddressPlusPhone"),
           HasSubstr("Autofill.FormEvents.Address.AddressOnly"),
+          HasSubstr("Autofill.FormEvents.Address.PhoneOnly"),
           HasSubstr("Autofill.FormEvents.Address.ContactOnly"))));
 }
 
@@ -7972,6 +8020,7 @@ TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_AddressPlusEmail) {
           HasSubstr("Autofill.FormEvents.Address.AddressPlusPhone"),
           HasSubstr("Autofill.FormEvents.Address.AddressOnly"),
           HasSubstr("Autofill.FormEvents.Address.ContactOnly"),
+          HasSubstr("Autofill.FormEvents.Address.PhoneOnly"),
           HasSubstr("Autofill.FormEvents.Address.Other"))));
 }
 
@@ -8022,6 +8071,7 @@ TEST_F(AutofillManagerTest,
           HasSubstr("Autofill.FormEvents.Address.AddressPlusPhone"),
           HasSubstr("Autofill.FormEvents.Address.AddressOnly"),
           HasSubstr("Autofill.FormEvents.Address.ContactOnly"),
+          HasSubstr("Autofill.FormEvents.Address.PhoneOnly"),
           HasSubstr("Autofill.FormEvents.Address.Other"))));
 }
 
@@ -8073,6 +8123,7 @@ TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_AddressPlusPhone) {
           HasSubstr("Autofill.FormEvents.Address.AddressPlusEmail "),
           HasSubstr("Autofill.FormEvents.Address.AddressOnly"),
           HasSubstr("Autofill.FormEvents.Address.ContactOnly"),
+          HasSubstr("Autofill.FormEvents.Address.PhoneOnly"),
           HasSubstr("Autofill.FormEvents.Address.Other"))));
 }
 
@@ -8123,6 +8174,7 @@ TEST_F(AutofillManagerTest,
           HasSubstr("Autofill.FormEvents.Address.AddressPlusEmail "),
           HasSubstr("Autofill.FormEvents.Address.AddressOnly"),
           HasSubstr("Autofill.FormEvents.Address.ContactOnly"),
+          HasSubstr("Autofill.FormEvents.Address.PhoneOnly"),
           HasSubstr("Autofill.FormEvents.Address.Other"))));
 }
 
@@ -8176,6 +8228,7 @@ TEST_F(AutofillManagerTest,
                 HasSubstr("Autofill.FormEvents.Address.AddressPlusEmail "),
                 HasSubstr("Autofill.FormEvents.Address.AddressOnly"),
                 HasSubstr("Autofill.FormEvents.Address.ContactOnly"),
+                HasSubstr("Autofill.FormEvents.Address.PhoneOnly"),
                 HasSubstr("Autofill.FormEvents.Address.Other"))));
 }
 
@@ -8225,6 +8278,7 @@ TEST_F(AutofillManagerTest,
                 HasSubstr("Autofill.FormEvents.Address.AddressPlusEmail "),
                 HasSubstr("Autofill.FormEvents.Address.AddressOnly"),
                 HasSubstr("Autofill.FormEvents.Address.ContactOnly"),
+                HasSubstr("Autofill.FormEvents.Address.PhoneOnly"),
                 HasSubstr("Autofill.FormEvents.Address.Other"))));
 }
 

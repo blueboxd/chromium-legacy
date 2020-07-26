@@ -15,13 +15,15 @@ namespace web_app {
 
 class TestOsIntegrationManager : public OsIntegrationManager {
  public:
-  TestOsIntegrationManager();
+  explicit TestOsIntegrationManager(Profile* profile);
   ~TestOsIntegrationManager() override;
 
+  // OsIntegrationManager:
   void InstallOsHooks(const AppId& app_id,
                       InstallOsHooksCallback callback,
                       std::unique_ptr<WebApplicationInfo> web_app_info,
                       InstallOsHooksOptions options) override;
+  void UninstallOsHooks(const AppId& app_id) override;
 
   size_t num_create_shortcuts_calls() const {
     return num_create_shortcuts_calls_;

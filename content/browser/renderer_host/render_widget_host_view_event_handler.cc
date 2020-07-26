@@ -923,16 +923,6 @@ bool RenderWidgetHostViewEventHandler::MatchesSynthesizedMovePosition(
 }
 
 void RenderWidgetHostViewEventHandler::SetKeyboardFocus() {
-#if defined(OS_WIN)
-  if (window_ && window_->delegate()->CanFocus()) {
-    aura::WindowTreeHost* host = window_->GetHost();
-    if (host) {
-      gfx::AcceleratedWidget hwnd = host->GetAcceleratedWidget();
-      if (!(::GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_NOACTIVATE))
-        ::SetFocus(hwnd);
-    }
-  }
-#endif
   // TODO(wjmaclean): can host_ ever be null?
   if (host_ && set_focus_on_mouse_down_or_key_event_) {
     set_focus_on_mouse_down_or_key_event_ = false;

@@ -82,7 +82,8 @@ FlexItem::FlexItem(const FlexLayoutAlgorithm* algorithm,
                    base::Optional<MinMaxSizes> min_max_cross_sizes,
                    LayoutUnit main_axis_border_padding,
                    LayoutUnit cross_axis_border_padding,
-                   NGPhysicalBoxStrut physical_margins)
+                   NGPhysicalBoxStrut physical_margins,
+                   NGBoxStrut scrollbars)
     : algorithm(algorithm),
       line_number(0),
       box(box),
@@ -95,6 +96,7 @@ FlexItem::FlexItem(const FlexLayoutAlgorithm* algorithm,
       main_axis_border_padding(main_axis_border_padding),
       cross_axis_border_padding(cross_axis_border_padding),
       physical_margins(physical_margins),
+      scrollbars(scrollbars),
       frozen(false),
       needs_relayout_for_stretch(false),
       ng_input_node(/* LayoutBox* */ nullptr) {

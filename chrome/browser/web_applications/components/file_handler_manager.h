@@ -135,7 +135,6 @@ class FileHandlerManager : public AppRegistrarObserver {
   int CleanupAfterOriginTrials();
 
   // AppRegistrarObserver:
-  void OnWebAppUninstalled(const AppId& app_id) override;
   void OnWebAppProfileWillBeDeleted(const AppId& app_id) override;
   void OnAppRegistrarDestroyed() override;
 

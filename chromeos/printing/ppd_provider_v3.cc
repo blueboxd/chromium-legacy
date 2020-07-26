@@ -47,6 +47,10 @@ constexpr net::BackoffEntry::Policy kBackoffPolicy{
     /*entry_lifetime_ms=*/-1LL,
     /*always_use_initial_delay=*/true};
 
+// Age limit for time-sensitive API calls. Typically denotes "Please
+// respond with data no older than kMaxDataAge." Arbitrarily chosen.
+constexpr base::TimeDelta kMaxDataAge = base::TimeDelta::FromMinutes(30LL);
+
 // Helper struct for PpdProviderImpl. Allows PpdProviderImpl to defer
 // its public method calls, which PpdProviderImpl will do when the
 // PpdMetadataManager is not ready to deal with locale-sensitive PPD
@@ -160,7 +164,7 @@ class PpdProviderImpl : public PpdProvider {
       return;
     }
 
-    // TODO(crbug.com/888189): implement this.
+    metadata_manager_->GetManufacturers(kMaxDataAge, std::move(cb));
   }
 
   void ResolvePrinters(const std::string& manufacturer,

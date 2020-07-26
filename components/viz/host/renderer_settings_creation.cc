@@ -4,6 +4,8 @@
 
 #include "components/viz/host/renderer_settings_creation.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -59,8 +61,6 @@ RendererSettings CreateRendererSettings() {
 #elif defined(OS_CHROMEOS)
   renderer_settings.auto_resize_output_surface = false;
 #endif
-  renderer_settings.show_aggregated_damage =
-      command_line->HasSwitch(switches::kShowAggregatedDamage);
   renderer_settings.allow_antialiasing =
       !command_line->HasSwitch(switches::kDisableCompositedAntialiasing);
   renderer_settings.use_skia_renderer = features::IsUsingSkiaRenderer();
@@ -109,6 +109,8 @@ DebugRendererSettings CreateDefaultDebugRendererSettings() {
       command_line->HasSwitch(switches::kShowOverdrawFeedback);
   result.show_dc_layer_debug_borders =
       command_line->HasSwitch(switches::kShowDCLayerDebugBorders);
+  result.show_aggregated_damage =
+      command_line->HasSwitch(switches::kShowAggregatedDamage);
   return result;
 }
 

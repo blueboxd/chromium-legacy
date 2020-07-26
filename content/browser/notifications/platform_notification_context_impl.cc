@@ -60,6 +60,38 @@ void LogNotificationTriggerUMA(const NotificationDatabaseData& data) {
                               show_trigger_delay.InDays(), 1, 365, 50);
 }
 
+// Returns if the notification described by |data| is currently visible.
+bool IsVisibleNotification(base::Time start_time,
+                           const std::set<std::string>& displayed_notifications,
+                           bool supports_synchronization,
+                           const NotificationDatabaseData& data) {
+  // If a notification can be triggered it has not been shown yet.
+  if (CanTrigger(data))
+    return false;
+
+  // We can't rely on |displayed_notifications| if the platform does not support
+  // synchronization or the notification got added after we got the list of
+  // visible notifications. In that case just assume it is visible.
+  if (!supports_synchronization || data.creation_time_millis > start_time)
+    return true;
+
+  return displayed_notifications.count(data.notification_id);
+}
+
+// Checks if the notification described by |data| is currently visible and
+// increments |count| by one if so.
+void CountVisibleNotifications(
+    base::Time start_time,
+    const std::set<std::string>& displayed_notifications,
+    bool supports_synchronization,
+    int* count,
+    const NotificationDatabaseData& data) {
+  if (IsVisibleNotification(start_time, displayed_notifications,
+                            supports_synchronization, data)) {
+    *count = *count + 1;
+  }
+}
+
 }  // namespace
 
 PlatformNotificationContextImpl::PlatformNotificationContextImpl(
@@ -301,11 +333,12 @@ void PlatformNotificationContextImpl::CheckPermissionsAndDeleteBlocked(
 
   LazyInitialize(base::BindOnce(
       &PlatformNotificationContextImpl::DoDeleteAllNotificationDataForOrigins,
-      this, std::move(origins), std::move(callback)));
+      this, std::move(origins), /* tag= */ std::string(), std::move(callback)));
 }
 
 void PlatformNotificationContextImpl::DoDeleteAllNotificationDataForOrigins(
     std::set<GURL> origins,
+    const std::string& tag,
     DeleteAllResultCallback callback,
     bool initialized) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -320,7 +353,7 @@ void PlatformNotificationContextImpl::DoDeleteAllNotificationDataForOrigins(
   NotificationDatabase::Status status = NotificationDatabase::STATUS_OK;
   for (const auto& origin : origins) {
     status = database_->DeleteAllNotificationDataForOrigin(
-        origin, /* tag= */ "", &deleted_notification_ids);
+        origin, tag, &deleted_notification_ids);
     if (status != NotificationDatabase::STATUS_OK)
       break;
   }
@@ -346,6 +379,17 @@ void PlatformNotificationContextImpl::DoDeleteAllNotificationDataForOrigins(
   GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), success,
                                 deleted_notification_ids.size()));
+}
+
+void PlatformNotificationContextImpl::DeleteAllNotificationDataWithTag(
+    const std::string& tag,
+    const GURL& origin,
+    DeleteAllResultCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  std::set<GURL> origins = {origin};
+  LazyInitialize(base::BindOnce(
+      &PlatformNotificationContextImpl::DoDeleteAllNotificationDataForOrigins,
+      this, std::move(origins), tag, std::move(callback)));
 }
 
 void PlatformNotificationContextImpl::ReadNotificationDataAndRecordInteraction(
@@ -628,28 +672,18 @@ void PlatformNotificationContextImpl::DoReadNotificationResources(
                                 blink::NotificationResources()));
 }
 
-void PlatformNotificationContextImpl::
-    SynchronizeDisplayedNotificationsForServiceWorkerRegistration(
-        base::Time start_time,
-        const GURL& origin,
-        int64_t service_worker_registration_id,
-        ReadAllResultCallback callback,
-        std::set<std::string> notification_ids,
-        bool supports_synchronization) {
+void PlatformNotificationContextImpl::OnGetDisplayedNotifications(
+    InitializeGetDisplayedCallback callback,
+    std::set<std::string> notification_ids,
+    bool supports_synchronization) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  LazyInitialize(
-      base::BindOnce(&PlatformNotificationContextImpl::
-                         DoReadAllNotificationDataForServiceWorkerRegistration,
-                     this, start_time, origin, service_worker_registration_id,
-                     std::move(callback), std::move(notification_ids),
-                     supports_synchronization));
+  LazyInitialize(base::BindOnce(std::move(callback),
+                                std::move(notification_ids),
+                                supports_synchronization));
 }
 
-void PlatformNotificationContextImpl::
-    ReadAllNotificationDataForServiceWorkerRegistration(
-        const GURL& origin,
-        int64_t service_worker_registration_id,
-        ReadAllResultCallback callback) {
+void PlatformNotificationContextImpl::TryGetDisplayedNotifications(
+    InitializeGetDisplayedCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   PlatformNotificationService* service =
@@ -659,16 +693,41 @@ void PlatformNotificationContextImpl::
   if (!service) {
     // Rely on the database only
     std::set<std::string> notification_ids;
-    SynchronizeDisplayedNotificationsForServiceWorkerRegistration(
-        base::Time::Now(), origin, service_worker_registration_id,
-        std::move(callback), std::move(notification_ids),
-        /* supports_synchronization= */ false);
+    OnGetDisplayedNotifications(std::move(callback),
+                                std::move(notification_ids),
+                                /* supports_synchronization= */ false);
     return;
   }
 
   service->GetDisplayedNotifications(base::BindOnce(
+      &PlatformNotificationContextImpl::OnGetDisplayedNotifications, this,
+      std::move(callback)));
+}
+
+void PlatformNotificationContextImpl::
+    ReadAllNotificationDataForServiceWorkerRegistration(
+        const GURL& origin,
+        int64_t service_worker_registration_id,
+        ReadAllResultCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  TryGetDisplayedNotifications(
+      base::BindOnce(&PlatformNotificationContextImpl::
+                         DoReadAllNotificationDataForServiceWorkerRegistration,
+                     this, base::Time::Now(), origin,
+                     service_worker_registration_id, std::move(callback)));
+}
+
+void PlatformNotificationContextImpl::
+    CountVisibleNotificationsForServiceWorkerRegistration(
+        const GURL& origin,
+        int64_t service_worker_registration_id,
+        CountResultCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  TryGetDisplayedNotifications(base::BindOnce(
       &PlatformNotificationContextImpl::
-          SynchronizeDisplayedNotificationsForServiceWorkerRegistration,
+          DoCountVisibleNotificationsForServiceWorkerRegistration,
       this, base::Time::Now(), origin, service_worker_registration_id,
       std::move(callback)));
 }
@@ -735,6 +794,41 @@ void PlatformNotificationContextImpl::
   GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), /* success= */ false,
                                 std::vector<NotificationDatabaseData>()));
+}
+
+void PlatformNotificationContextImpl::
+    DoCountVisibleNotificationsForServiceWorkerRegistration(
+        base::Time start_time,
+        const GURL& origin,
+        int64_t service_worker_registration_id,
+        CountResultCallback callback,
+        std::set<std::string> displayed_notifications,
+        bool supports_synchronization,
+        bool initialized) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (!initialized) {
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), /* success= */ false,
+                                  /* count= */ 0));
+    return;
+  }
+
+  int notification_count = 0;
+  NotificationDatabase::Status status =
+      database_->ForEachNotificationDataForServiceWorkerRegistration(
+          origin, service_worker_registration_id,
+          base::BindRepeating(&CountVisibleNotifications, start_time,
+                              displayed_notifications, supports_synchronization,
+                              &notification_count));
+
+  // Blow away the database if reading data failed due to corruption.
+  if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED)
+    DestroyDatabase();
+
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                status == NotificationDatabase::STATUS_OK,
+                                notification_count));
 }
 
 void PlatformNotificationContextImpl::WriteNotificationData(
@@ -1016,7 +1110,8 @@ void PlatformNotificationContextImpl::OpenDatabase(
     return;
   }
 
-  database_.reset(new NotificationDatabase(GetDatabasePath(), ukm_callback_));
+  database_ =
+      std::make_unique<NotificationDatabase>(GetDatabasePath(), ukm_callback_);
   NotificationDatabase::Status status =
       database_->Open(/* create_if_missing= */ true);
 
@@ -1027,8 +1122,8 @@ void PlatformNotificationContextImpl::OpenDatabase(
   // away the contents of the directory and try re-opening the database.
   if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED) {
     if (DestroyDatabase()) {
-      database_.reset(
-          new NotificationDatabase(GetDatabasePath(), ukm_callback_));
+      database_ = std::make_unique<NotificationDatabase>(GetDatabasePath(),
+                                                         ukm_callback_);
       status = database_->Open(/* create_if_missing= */ true);
 
       UMA_HISTOGRAM_ENUMERATION(

@@ -1018,7 +1018,6 @@ PhysicalRect FrameSelection::AbsoluteUnclippedBounds() const {
   if (!view || !layout_view)
     return PhysicalRect();
 
-  view->UpdateLifecycleToLayoutClean(DocumentUpdateReason::kSelection);
   return PhysicalRect(layout_selection_->AbsoluteSelectionBounds());
 }
 

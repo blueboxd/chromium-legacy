@@ -58,6 +58,9 @@ public class DownloadLaterDialogView extends ScrollView implements OnCheckedChan
             } else if (propertyKey == DownloadLaterDialogProperties.DONT_SHOW_AGAIN_SELECTION) {
                 view.setCheckbox(
                         model.get(DownloadLaterDialogProperties.DONT_SHOW_AGAIN_SELECTION));
+            } else if (propertyKey == DownloadLaterDialogProperties.DONT_SHOW_AGAIN_DISABLED) {
+                view.setCheckboxEnabled(
+                        !model.get(DownloadLaterDialogProperties.DONT_SHOW_AGAIN_DISABLED));
             } else if (propertyKey == DownloadLaterDialogProperties.LOCATION_TEXT) {
                 view.setShowEditLocation(model.get(DownloadLaterDialogProperties.LOCATION_TEXT));
             }
@@ -124,8 +127,12 @@ public class DownloadLaterDialogView extends ScrollView implements OnCheckedChan
         mCheckBox.setChecked(checked);
     }
 
+    void setCheckboxEnabled(boolean enabled) {
+        mCheckBox.setEnabled(enabled);
+    }
+
     Integer getPromptStatus() {
-        if (mCheckBox.getVisibility() == View.GONE) return null;
+        if (mCheckBox.getVisibility() == View.GONE || !mCheckBox.isEnabled()) return null;
 
         return mCheckBox.isChecked() ? DownloadLaterPromptStatus.DONT_SHOW
                                      : DownloadLaterPromptStatus.SHOW_PREFERENCE;

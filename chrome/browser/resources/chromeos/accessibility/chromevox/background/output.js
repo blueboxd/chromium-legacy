@@ -2551,10 +2551,6 @@ Output.RULES = {
       speak: `$name $node(activeDescendant) $value $state $restriction $role
           $if($selected, @aria_selected_true) $description`
     },
-    rowHeader: {
-      speak: `$nameOrTextContent $description $roleDescription
-        $state $if($selected, @aria_selected_true)`
-    },
     staticText: {speak: `$name= $description`},
     switch: {
       speak: `$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF))

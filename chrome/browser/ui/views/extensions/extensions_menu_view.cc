@@ -134,7 +134,11 @@ void ExtensionsMenuView::Populate() {
 
   auto extension_buttons = CreateExtensionButtonsContainer();
 
-  constexpr int kMaxExtensionButtonsHeightDp = 600;
+  // This is set so that the extensions menu doesn't fall outside the monitor in
+  // a maximized window in 1024x768. See https://crbug.com/1096630.
+  // TODO(pbos): Consider making this dynamic and handled by views. Ideally we
+  // wouldn't ever pop up so that they pop outside the screen.
+  constexpr int kMaxExtensionButtonsHeightDp = 448;
   auto scroll_view = std::make_unique<views::ScrollView>();
   scroll_view->ClipHeightTo(0, kMaxExtensionButtonsHeightDp);
   scroll_view->SetDrawOverflowIndicator(false);

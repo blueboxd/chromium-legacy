@@ -195,6 +195,10 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // correct for the current background.
   void ResetLabelEnabledColor();
 
+  // Returns the state whose image is shown for |for_state|, by falling back to
+  // STATE_NORMAL when |for_state|'s image is empty.
+  ButtonState ImageStateForState(ButtonState for_state) const;
+
   // The image and label shown in the button.
   ImageView* image_;
   LabelButtonLabel* label_;

@@ -23,7 +23,6 @@ class GURL;
 class Profile;
 
 namespace content {
-struct NotificationDatabaseData;
 class WebContents;
 }  // namespace content
 
@@ -62,12 +61,12 @@ class PushMessagingNotificationManager {
       PushMessagingNotificationManagerTest,
       SkipEnforceUserVisibleOnlyRequirementsForAndroidMessages);
 
-  void DidGetNotificationsFromDatabase(
+  void DidCountVisibleNotifications(
       const GURL& origin,
       int64_t service_worker_registration_id,
       EnforceRequirementsCallback message_handled_callback,
       bool success,
-      const std::vector<content::NotificationDatabaseData>& data);
+      int notification_count);
 
   // Checks whether |profile| is the one owning this instance,
   // |active_web_contents| exists and its main frame is visible, and the URL

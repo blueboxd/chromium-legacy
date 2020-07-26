@@ -122,10 +122,13 @@ class CONTENT_EXPORT NotificationDatabase {
   // calls |callback| with each notification data. Returns the status code.
   Status ForEachNotificationData(ReadAllNotificationsCallback callback) const;
 
-  // Reads all notification data for all origins from the database, and appends
-  // the data to |notification_data_vector|. Returns the status code.
-  Status ReadAllNotificationData(
-      std::vector<NotificationDatabaseData>* notification_data_vector) const;
+  // Iterates over all notification data for |service_worker_registration_id|
+  // belonging to |origin| from the database, and calls |callback| with each
+  // notification data. Returns the status code.
+  Status ForEachNotificationDataForServiceWorkerRegistration(
+      const GURL& origin,
+      int64_t service_worker_registration_id,
+      ReadAllNotificationsCallback callback) const;
 
   // Reads all notification data associated with |origin| from the database, and
   // appends the data to |notification_data_vector|. Returns the status code.

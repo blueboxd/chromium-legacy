@@ -100,7 +100,8 @@ class WebAppInstallTaskTest : public WebAppTest {
         std::make_unique<WebAppInstallFinalizer>(profile(), icon_manager_.get(),
                                                  /*legacy_finalizer=*/nullptr);
     shortcut_manager_ = std::make_unique<TestAppShortcutManager>(profile());
-    os_integration_manager_ = std::make_unique<TestOsIntegrationManager>();
+    os_integration_manager_ =
+        std::make_unique<TestOsIntegrationManager>(profile());
 
     install_finalizer_->SetSubsystems(
         &registrar(), ui_manager_.get(),

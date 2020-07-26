@@ -313,6 +313,8 @@ std::string GetSuffixForProfileFormType(uint32_t bitmask) {
     case kName | kEmail:
     case kName | kPhone:
       return ".ContactOnly";
+    case kPhone:
+      return ".PhoneOnly";
     default:
       return ".Other";
   }

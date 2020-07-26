@@ -20,6 +20,7 @@ bool StructTraits<viz::mojom::DebugRendererSettingsDataView,
   out->tint_composited_content = data.tint_composited_content();
   out->show_overdraw_feedback = data.show_overdraw_feedback();
   out->show_dc_layer_debug_borders = data.show_dc_layer_debug_borders();
+  out->show_aggregated_damage = data.show_aggregated_damage();
   return true;
 }
 
@@ -34,7 +35,6 @@ bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
   out->should_clear_root_render_pass = data.should_clear_root_render_pass();
   out->release_overlay_resources_after_gpu_query =
       data.release_overlay_resources_after_gpu_query();
-  out->show_aggregated_damage = data.show_aggregated_damage();
   out->highp_threshold_min = data.highp_threshold_min();
   out->slow_down_compositing_scale_factor =
       data.slow_down_compositing_scale_factor();

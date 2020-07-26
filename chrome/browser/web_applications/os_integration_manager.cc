@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/optional.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
@@ -41,7 +42,8 @@ class OsHooksBarrierInfo {
   InstallOsHooksCallback done_callback_;
 };
 
-OsIntegrationManager::OsIntegrationManager() = default;
+OsIntegrationManager::OsIntegrationManager(Profile* profile)
+    : profile_(profile) {}
 
 OsIntegrationManager::~OsIntegrationManager() = default;
 
@@ -97,6 +99,34 @@ void OsIntegrationManager::InstallOsHooks(
                        std::move(web_app_info), std::move(options), barrier,
                        /*shortcuts_created=*/false));
   }
+}
+
+void OsIntegrationManager::UninstallOsHooks(const AppId& app_id) {
+  if (suppress_os_hooks_for_testing_)
+    return;
+
+  if (ShouldRegisterShortcutsMenuWithOs())
+    UnregisterShortcutsMenuWithOs(app_id, profile_->GetPath());
+
+  std::unique_ptr<ShortcutInfo> shortcut_info =
+      shortcut_manager_->BuildShortcutInfo(app_id);
+  base::FilePath shortcut_data_dir =
+      internals::GetShortcutDataDir(*shortcut_info);
+
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin)) {
+    internals::GetShortcutIOTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&internals::UnregisterRunOnOsLogin,
+                       shortcut_info->profile_path, shortcut_info->title));
+  }
+
+  internals::PostShortcutIOTask(
+      base::BindOnce(&internals::DeletePlatformShortcuts, shortcut_data_dir),
+      std::move(shortcut_info));
+
+  file_handler_manager_->DisableAndUnregisterOsFileHandlers(app_id);
+
+  shortcut_manager_->DeleteSharedAppShims(app_id);
 }
 
 void OsIntegrationManager::OnShortcutsCreated(

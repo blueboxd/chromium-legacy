@@ -30,6 +30,7 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/build_info.h"
 #include "components/download/internal/common/android/download_collection_bridge.h"
 #include "components/download/public/common/download_path_reservation_tracker.h"
 #endif
@@ -574,8 +575,8 @@ void InProgressDownloadManager::OnDBInitialized(
     bool success,
     std::unique_ptr<std::vector<DownloadDBEntry>> entries) {
 #if defined(OS_ANDROID)
-  if (entries->size() > 0 &&
-      DownloadCollectionBridge::NeedToRetrieveDisplayNames()) {
+  // Retrieve display names for all downloads from media store if needed.
+  if (base::android::BuildInfo::GetInstance()->is_at_least_q()) {
     DownloadCollectionBridge::GetDisplayNamesCallback callback =
         base::BindOnce(&InProgressDownloadManager::OnDownloadNamesRetrieved,
                        weak_factory_.GetWeakPtr(), std::move(entries));

@@ -240,10 +240,17 @@ class PpdProviderTest : public ::testing::Test {
   std::vector<std::pair<std::string, std::string>> server_contents() const {
     // Use brace initialization to express the desired server contents as "url",
     // "contents" pairs.
-    return {{"metadata_v2/locales.json",
-             R"(["en",
-             "es-mx",
-             "en-gb"])"},
+    return {{"metadata_v3/locales.json",
+             R"({
+              "locales": [ "de", "en", "es" ]
+             })"},
+            {"metadata_v3/manufacturers-en.json",
+             R"({
+                  "filesMap": {
+                    "Manufacturer A": "manufacturer_a-en.json",
+                    "Manufacturer B": "manufacturer_b-en.json"
+                  }
+                 })"},
             {"metadata_v2/index-01.json",
              R"([
              ["printer_a_ref", "printer_a.ppd", {"license": "fake_license"}]
@@ -274,21 +281,6 @@ class PpdProviderTest : public ::testing::Test {
             ])"},
             {"metadata_v2/usb-03f0.json", ""},
             {"metadata_v2/usb-1234.json", ""},
-            {"metadata_v2/manufacturers-en.json",
-             R"([
-            ["manufacturer_a_en", "manufacturer_a.json"],
-            ["manufacturer_b_en", "manufacturer_b.json"]
-            ])"},
-            {"metadata_v2/manufacturers-en-gb.json",
-             R"([
-            ["manufacturer_a_en-gb", "manufacturer_a.json"],
-            ["manufacturer_b_en-gb", "manufacturer_b.json"]
-            ])"},
-            {"metadata_v2/manufacturers-es-mx.json",
-             R"([
-            ["manufacturer_a_es-mx", "manufacturer_a.json"],
-            ["manufacturer_b_es-mx", "manufacturer_b.json"]
-            ])"},
             {"metadata_v2/manufacturer_a.json",
              R"([
             ["printer_a", "printer_a_ref"],
@@ -471,15 +463,25 @@ TEST_F(PpdProviderTest, ManufacturersFetch) {
       CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
                       PropagateLocaleToMetadataManager::kDoNotPropagate});
   StartFakePpdServer();
+
+  // The provider attempted to get a metadata locale as soon as it was
+  // constructed. The pending task on the sequence is a callback from
+  // the FakePrinterConfigCache indicating that it failed to get a
+  // metadata locale. We'll let that fail harmelssly; having called
+  // StartFakePpdServer(), the retry attempt will allow the provider to
+  // successfully obtain a metadata locale.
+  ASSERT_EQ(1UL, task_environment_.GetPendingMainThreadTaskCount());
+  task_environment_.FastForwardUntilNoTasksRemain();
+
   // Issue two requests at the same time, both should be resolved properly.
   provider->ResolveManufacturers(base::BindOnce(
       &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
   provider->ResolveManufacturers(base::BindOnce(
       &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
-  task_environment_.RunUntilIdle();
+  task_environment_.FastForwardUntilNoTasksRemain();
   ASSERT_EQ(2UL, captured_resolve_manufacturers_.size());
   std::vector<std::string> expected_result(
-      {"manufacturer_a_en", "manufacturer_b_en"});
+      {"Manufacturer A", "Manufacturer B"});
   EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_manufacturers_[0].first);
   EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_manufacturers_[1].first);
   EXPECT_TRUE(captured_resolve_manufacturers_[0].second == expected_result);
@@ -493,12 +495,28 @@ TEST_F(PpdProviderTest, ManufacturersFetchNoServer) {
   auto provider =
       CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
                       PropagateLocaleToMetadataManager::kDoNotPropagate});
-  // Issue two requests at the same time, both should be resolved properly.
+
+  // Unlike the above, there is no breaking out of the failure loop in
+  // which the provider attempts to fetch a metadata locale and the
+  // fake server indicates that none are forthcoming.
+  //
+  // Since the provider never stops trying to get the metadata locale,
+  // it's not appropriate to use things like RunUntilIdle() or
+  // FastForwardUntilNoTasksRemain().
+  base::RunLoop run_loop;
+
+  // Issue two requests at the same time, both should resolve properly
+  // (though they will fail).
   provider->ResolveManufacturers(base::BindOnce(
       &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
-  provider->ResolveManufacturers(base::BindOnce(
-      &PpdProviderTest::CaptureResolveManufacturers, base::Unretained(this)));
-  task_environment_.RunUntilIdle();
+  provider->ResolveManufacturers(base::BindLambdaForTesting(
+      [this, &run_loop](PpdProvider::CallbackResultCode code,
+                        const std::vector<std::string>& empty_manufacturers) {
+        this->CaptureResolveManufacturers(code, empty_manufacturers);
+        run_loop.QuitClosure().Run();
+      }));
+  run_loop.Run();
+
   ASSERT_EQ(2UL, captured_resolve_manufacturers_.size());
   EXPECT_EQ(PpdProvider::SERVER_ERROR,
             captured_resolve_manufacturers_[0].first);

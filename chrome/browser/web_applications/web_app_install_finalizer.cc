@@ -23,7 +23,9 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_shortcuts_menu.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
@@ -380,11 +382,9 @@ void WebAppInstallFinalizer::Shutdown() {
 void WebAppInstallFinalizer::UninstallWebApp(const AppId& app_id,
                                              UninstallWebAppCallback callback) {
   registrar().NotifyWebAppUninstalled(app_id);
-
-  // TODO(https://crbug.com/1069306): We should do UnregisterShortcutsMenuWithOs
-  // on local uninstall as well.
-  if (ShouldRegisterShortcutsMenuWithOs())
-    UnregisterShortcutsMenuWithOs(app_id, profile_->GetPath());
+  WebAppProviderBase::GetProviderBase(profile_)
+      ->os_integration_manager()
+      .UninstallOsHooks(app_id);
 
   ScopedRegistryUpdate update(registry_controller().AsWebAppSyncBridge());
   update->DeleteApp(app_id);

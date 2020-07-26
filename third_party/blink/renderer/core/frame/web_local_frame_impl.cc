@@ -1693,6 +1693,8 @@ void WebLocalFrameImpl::PrintPagesForTesting(
 }
 
 WebRect WebLocalFrameImpl::GetSelectionBoundsRectForTesting() const {
+  GetFrame()->View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kSelection);
   return HasSelection()
              ? WebRect(PixelSnappedIntRect(
                    GetFrame()->Selection().AbsoluteUnclippedBounds()))

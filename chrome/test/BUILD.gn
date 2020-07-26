@@ -3340,6 +3340,7 @@ test("unit_tests") {
     "../browser/performance_manager/observers/isolation_context_metrics_unittest.cc",
     "../browser/performance_manager/observers/metrics_collector_unittest.cc",
     "../browser/performance_manager/policies/dynamic_tcmalloc_policy_chromeos_unittest.cc",
+    "../browser/performance_manager/policies/userspace_swap_policy_chromeos_unittest.cc",
     "../browser/performance_manager/policies/working_set_trimmer_policy_chromeos_unittest.cc",
     "../browser/performance_manager/policies/working_set_trimmer_policy_unittest.cc",
     "../browser/performance_manager/test_support/page_aggregator.cc",
@@ -3704,6 +3705,7 @@ test("unit_tests") {
   }
   if (is_chromeos) {
     sources += [
+      "../../chromeos/memory/userspace_swap/userspace_swap.cc",
       "../browser/device_identity/chromeos/device_oauth2_token_store_chromeos_unittest.cc",
       "../browser/ui/webui/certificate_provisioning_ui_handler_unittest.cc",
       "../browser/ui/webui/chromeos/add_supervision/add_supervision_handler_utils_unittest.cc",

@@ -189,7 +189,7 @@ void WebAppProvider::CreateCommonSubsystems(Profile* profile) {
   external_web_app_manager_ = std::make_unique<ExternalWebAppManager>(profile);
   system_web_app_manager_ = std::make_unique<SystemWebAppManager>(profile);
   web_app_policy_manager_ = std::make_unique<WebAppPolicyManager>(profile);
-  os_integration_manager_ = std::make_unique<OsIntegrationManager>();
+  os_integration_manager_ = std::make_unique<OsIntegrationManager>(profile);
 }
 
 void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {

@@ -2880,6 +2880,8 @@ DOMRect* Internals::selectionBounds(ExceptionState& exception_state) {
     return nullptr;
   }
 
+  GetFrame()->View()->UpdateLifecycleToLayoutClean(
+      DocumentUpdateReason::kSelection);
   return DOMRect::FromFloatRect(
       FloatRect(GetFrame()->Selection().AbsoluteUnclippedBounds()));
 }

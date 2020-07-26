@@ -200,9 +200,8 @@ class BASE_EXPORT TimeDelta {
 
   // Returns the magnitude (absolute value) of this TimeDelta.
   constexpr TimeDelta magnitude() const {
-    // Some toolchains provide an incomplete C++11 implementation and lack an
-    // int64_t overload for std::abs().  The following is a simple branchless
-    // implementation:
+    // std::abs() is not currently constexpr.  The following is a simple
+    // branchless implementation:
     const int64_t mask = delta_ >> (sizeof(delta_) * 8 - 1);
     return TimeDelta((delta_ + mask) ^ mask);
   }
@@ -217,6 +216,7 @@ class BASE_EXPORT TimeDelta {
   constexpr bool is_min() const {
     return delta_ == std::numeric_limits<int64_t>::min();
   }
+  constexpr bool is_inf() const { return is_min() || is_max(); }
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
   struct timespec ToTimeSpec() const;
@@ -266,13 +266,9 @@ class BASE_EXPORT TimeDelta {
     return *this = (*this - other);
   }
   constexpr TimeDelta operator-() const {
-    if (is_max()) {
-      return Min();
-    }
-    if (is_min()) {
-      return Max();
-    }
-    return TimeDelta(-delta_);
+    if (!is_inf())
+      return TimeDelta(-delta_);
+    return (delta_ < 0) ? Max() : Min();
   }
 
   // Computations with numeric types.
@@ -282,10 +278,7 @@ class BASE_EXPORT TimeDelta {
     rv *= a;
     if (rv.IsValid())
       return TimeDelta(rv.ValueOrDie());
-    // Matched sign overflows. Mismatched sign underflows.
-    if ((delta_ < 0) ^ (a < 0))
-      return TimeDelta(std::numeric_limits<int64_t>::min());
-    return TimeDelta(std::numeric_limits<int64_t>::max());
+    return ((delta_ < 0) == (a < 0)) ? Max() : Min();
   }
   template <typename T>
   constexpr TimeDelta operator/(T a) const {
@@ -293,11 +286,7 @@ class BASE_EXPORT TimeDelta {
     rv /= a;
     if (rv.IsValid())
       return TimeDelta(rv.ValueOrDie());
-    // Matched sign overflows. Mismatched sign underflows.
-    // Special case to catch divide by zero.
-    if ((delta_ < 0) ^ (a <= 0))
-      return TimeDelta(std::numeric_limits<int64_t>::min());
-    return TimeDelta(std::numeric_limits<int64_t>::max());
+    return ((delta_ < 0) == (a < 0)) ? Max() : Min();
   }
   template <typename T>
   constexpr TimeDelta& operator*=(T a) {
@@ -309,33 +298,15 @@ class BASE_EXPORT TimeDelta {
   }
 
   constexpr int64_t operator/(TimeDelta a) const {
-    if (a.delta_ == 0) {
-      return delta_ < 0 ? std::numeric_limits<int64_t>::min()
-                        : std::numeric_limits<int64_t>::max();
-    }
-    if (is_max()) {
-      if (a.delta_ < 0) {
-        return std::numeric_limits<int64_t>::min();
-      }
-      return std::numeric_limits<int64_t>::max();
-    }
-    if (is_min()) {
-      if (a.delta_ > 0) {
-        return std::numeric_limits<int64_t>::min();
-      }
-      return std::numeric_limits<int64_t>::max();
-    }
-    if (a.is_max()) {
-      return 0;
-    }
-    return delta_ / a.delta_;
+    if (!is_inf() && !a.is_zero())
+      return delta_ / a.delta_;
+    return ((delta_ < 0) == (a.delta_ < 0))
+               ? std::numeric_limits<int64_t>::max()
+               : std::numeric_limits<int64_t>::min();
   }
 
   constexpr TimeDelta operator%(TimeDelta a) const {
-    if (a.is_min() || a.is_max()) {
-      return TimeDelta(delta_);
-    }
-    return TimeDelta(delta_ % a.delta_);
+    return TimeDelta(a.is_inf() ? delta_ : (delta_ % a.delta_));
   }
   TimeDelta& operator%=(TimeDelta other) { return *this = (*this % other); }
 
@@ -370,11 +341,10 @@ class BASE_EXPORT TimeDelta {
   // FromSeconds, FromMilliseconds, etc. instead.
   constexpr explicit TimeDelta(int64_t delta_us) : delta_(delta_us) {}
 
-  // Private method to build a delta from a double.
   static constexpr TimeDelta FromDouble(double value);
 
-  // Private method to build a delta from the product of a user-provided value
-  // and a known-positive value.
+  // Builds a delta from the product of a user-provided value and a
+  // known-positive value.
   static constexpr TimeDelta FromProduct(int64_t value, int64_t positive_value);
 
   // Delta in microseconds.
@@ -395,31 +365,22 @@ BASE_EXPORT std::ostream& operator<<(std::ostream& os, TimeDelta time_delta);
 namespace time_internal {
 
 constexpr int64_t SaturatedAdd(int64_t value, TimeDelta delta) {
-  // Treat Min/Max() as +/- infinity (additions involving two infinities are
-  // only valid if signs match).
-  if (delta.is_max()) {
-    CHECK_GT(value, std::numeric_limits<int64_t>::min());
-    return std::numeric_limits<int64_t>::max();
-  } else if (delta.is_min()) {
-    CHECK_LT(value, std::numeric_limits<int64_t>::max());
-    return std::numeric_limits<int64_t>::min();
-  }
+  if (!delta.is_inf())
+    return base::ClampAdd(value, delta.delta_);
 
-  return base::ClampAdd(value, delta.delta_);
+  // Additions involving two infinities are only valid if signs match.
+  CHECK(!TimeDelta(value).is_inf() || (value == delta.delta_));
+  return delta.delta_;
 }
 
 constexpr int64_t SaturatedSub(int64_t value, TimeDelta delta) {
-  // Treat Min/Max() as +/- infinity (subtractions involving two infinities are
-  // only valid if signs are opposite).
-  if (delta.is_max()) {
-    CHECK_LT(value, std::numeric_limits<int64_t>::max());
-    return std::numeric_limits<int64_t>::min();
-  } else if (delta.is_min()) {
-    CHECK_GT(value, std::numeric_limits<int64_t>::min());
-    return std::numeric_limits<int64_t>::max();
-  }
+  if (!delta.is_inf())
+    return base::ClampSub(value, delta.delta_);
 
-  return base::ClampSub(value, delta.delta_);
+  // Subtractions involving two infinities are only valid if signs differ.
+  CHECK_NE(value, delta.delta_);
+  return (delta.delta_ < 0) ? std::numeric_limits<int64_t>::max()
+                            : std::numeric_limits<int64_t>::min();
 }
 
 // TimeBase--------------------------------------------------------------------
@@ -936,12 +897,12 @@ constexpr TimeDelta TimeDelta::FromDouble(double value) {
 // static
 constexpr TimeDelta TimeDelta::FromProduct(int64_t value,
                                            int64_t positive_value) {
-  DCHECK(positive_value > 0);  // NOLINT, DCHECK_GT isn't constexpr.
-  return value > std::numeric_limits<int64_t>::max() / positive_value
-             ? Max()
-             : value < std::numeric_limits<int64_t>::min() / positive_value
-                   ? Min()
-                   : TimeDelta(value * positive_value);
+  DCHECK_GT(positive_value, 0);
+  if (value > (std::numeric_limits<int64_t>::max() / positive_value))
+    return Max();
+  return (value < (std::numeric_limits<int64_t>::min() / positive_value))
+             ? Min()
+             : TimeDelta(value * positive_value);
 }
 
 // For logging use only.

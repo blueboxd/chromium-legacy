@@ -4,7 +4,6 @@
 
 import {getFilenameFromURL, PDFViewerElement} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer.js';
 import {shouldIgnoreKeyEvents} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer_utils.js';
-import {$} from 'chrome://resources/js/util.m.js';
 import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 
 const tests = [
@@ -94,13 +93,13 @@ const tests = [
 
     dropdown.$.button.click();
     chrome.test.assertTrue(dropdown.dropdownOpen);
-    pressAndReleaseKeyOn(document, ESC_KEY, '', 'Escape');
+    pressAndReleaseKeyOn(document.documentElement, ESC_KEY, '', 'Escape');
     chrome.test.assertFalse(
         dropdown.dropdownOpen, 'Escape key closes dropdown');
     chrome.test.assertTrue(
         toolbar.opened, 'First escape key does not close toolbar');
 
-    pressAndReleaseKeyOn(document, ESC_KEY, '', 'Escape');
+    pressAndReleaseKeyOn(document.documentElement, ESC_KEY, '', 'Escape');
     chrome.test.assertFalse(toolbar.opened, 'Second escape key closes toolbar');
 
     chrome.test.succeed();

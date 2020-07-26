@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "content/public/browser/notification_database_data.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -84,12 +85,10 @@ class NotificationDatabaseTest : public ::testing::Test {
   // their origin and Service Worker registration id.
   void PopulateDatabaseWithExampleData(NotificationDatabase* database) {
     std::string notification_id;
-    for (size_t i = 0; i < base::size(kExampleNotificationData); ++i) {
+    for (const auto& notification_data : kExampleNotificationData) {
       ASSERT_NO_FATAL_FAILURE(CreateAndWriteNotification(
-          database, GURL(kExampleNotificationData[i].origin),
-          kExampleNotificationData[i].tag,
-          kExampleNotificationData[i].service_worker_registration_id,
-          &notification_id));
+          database, GURL(notification_data.origin), notification_data.tag,
+          notification_data.service_worker_registration_id, &notification_id));
     }
   }
 
@@ -655,30 +654,26 @@ TEST_F(NotificationDatabaseTest, DeleteNotificationResources) {
                                                 &notification_resources));
 }
 
-TEST_F(NotificationDatabaseTest, ReadAllNotificationData) {
+TEST_F(NotificationDatabaseTest,
+       ForEachNotificationDataForServiceWorkerRegistration) {
   std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
             database->Open(true /* create_if_missing */));
 
   ASSERT_NO_FATAL_FAILURE(PopulateDatabaseWithExampleData(database.get()));
 
-  std::vector<NotificationDatabaseData> notifications;
-  ASSERT_EQ(NotificationDatabase::STATUS_OK,
-            database->ReadAllNotificationData(&notifications));
-
-  EXPECT_EQ(base::size(kExampleNotificationData), notifications.size());
-}
-
-TEST_F(NotificationDatabaseTest, ReadAllNotificationDataEmpty) {
-  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
-  ASSERT_EQ(NotificationDatabase::STATUS_OK,
-            database->Open(true /* create_if_missing */));
+  GURL origin("https://example.com:443");
 
   std::vector<NotificationDatabaseData> notifications;
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
-            database->ReadAllNotificationData(&notifications));
+            database->ForEachNotificationDataForServiceWorkerRegistration(
+                origin, kExampleServiceWorkerRegistrationId,
+                base::BindLambdaForTesting(
+                    [&notifications](const NotificationDatabaseData& data) {
+                      notifications.push_back(data);
+                    })));
 
-  EXPECT_EQ(0u, notifications.size());
+  EXPECT_EQ(2u, notifications.size());
 }
 
 TEST_F(NotificationDatabaseTest, ReadAllNotificationDataForOrigin) {

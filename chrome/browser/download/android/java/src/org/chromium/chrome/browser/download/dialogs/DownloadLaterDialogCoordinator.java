@@ -168,17 +168,17 @@ public class DownloadLaterDialogCoordinator implements ModalDialogProperties.Con
 
     private void notifyComplete(long time) {
         assert mController != null;
-        updatePromptStatus();
+        maybeUpdatePromptStatus();
         mController.onDownloadLaterDialogComplete(mDownloadLaterChoice, time);
     }
 
     private void notifyCancel() {
         assert mController != null;
-        updatePromptStatus();
+        maybeUpdatePromptStatus();
         mController.onDownloadLaterDialogCanceled();
     }
 
-    private void updatePromptStatus() {
+    private void maybeUpdatePromptStatus() {
         assert mCustomView != null;
         assert mPrefService != null;
         Integer promptStatus = mCustomView.getPromptStatus();
@@ -241,7 +241,27 @@ public class DownloadLaterDialogCoordinator implements ModalDialogProperties.Con
     }
 
     @Override
-    public void onCheckedChanged(int choice) {
+    public void onCheckedChanged(@DownloadLaterDialogChoice int choice) {
+        @DownloadLaterDialogChoice
+        int previousChoice = mDownloadLaterChoice;
         mDownloadLaterChoice = choice;
+
+        // Change the positive button text and disable the checkbox if the user select download
+        // later option.
+        if (previousChoice != DownloadLaterDialogChoice.DOWNLOAD_LATER
+                && choice == DownloadLaterDialogChoice.DOWNLOAD_LATER) {
+            mDialogModel.set(ModalDialogProperties.POSITIVE_BUTTON_TEXT,
+                    mContext.getResources().getString(
+                            R.string.download_date_time_picker_next_text));
+            mDownloadLaterDialogModel.set(
+                    DownloadLaterDialogProperties.DONT_SHOW_AGAIN_DISABLED, true);
+        } else if (previousChoice == DownloadLaterDialogChoice.DOWNLOAD_LATER
+                && choice != DownloadLaterDialogChoice.DOWNLOAD_LATER) {
+            mDialogModel.set(ModalDialogProperties.POSITIVE_BUTTON_TEXT,
+                    mContext.getResources().getString(
+                            R.string.duplicate_download_infobar_download_button));
+            mDownloadLaterDialogModel.set(
+                    DownloadLaterDialogProperties.DONT_SHOW_AGAIN_DISABLED, false);
+        }
     }
 }

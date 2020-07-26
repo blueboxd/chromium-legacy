@@ -15,7 +15,9 @@
 #include "base/optional.h"
 #include "base/util/type_safety/pass_key.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
@@ -507,8 +509,12 @@ void WebAppSyncBridge::ApplySyncChangesToRegistrar(
 
   // Notify observers that web apps will be uninstalled. |apps_to_delete| are
   // still registered at this stage.
-  for (const AppId& app_id : update_local_data->apps_to_delete)
+  for (const AppId& app_id : update_local_data->apps_to_delete) {
     registrar_->NotifyWebAppUninstalled(app_id);
+    WebAppProviderBase::GetProviderBase(profile())
+        ->os_integration_manager()
+        .UninstallOsHooks(app_id);
+  }
 
   std::vector<WebApp*> apps_to_install;
   for (const auto& web_app : update_local_data->apps_to_create)

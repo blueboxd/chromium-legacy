@@ -275,11 +275,13 @@ NotificationDatabase::Status NotificationDatabase::ForEachNotificationData(
       std::move(callback));
 }
 
-NotificationDatabase::Status NotificationDatabase::ReadAllNotificationData(
-    std::vector<NotificationDatabaseData>* notification_data_vector) const {
-  return ReadAllNotificationDataInternal(
-      GURL() /* origin */, blink::mojom::kInvalidServiceWorkerRegistrationId,
-      notification_data_vector);
+NotificationDatabase::Status
+NotificationDatabase::ForEachNotificationDataForServiceWorkerRegistration(
+    const GURL& origin,
+    int64_t service_worker_registration_id,
+    ReadAllNotificationsCallback callback) const {
+  return ForEachNotificationDataInternal(origin, service_worker_registration_id,
+                                         std::move(callback));
 }
 
 NotificationDatabase::Status

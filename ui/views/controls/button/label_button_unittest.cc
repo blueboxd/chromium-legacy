@@ -690,6 +690,36 @@ TEST_F(LabelButtonTest, ImageOrLabelGetClipped) {
   EXPECT_GE(button_->label()->height(), image_size);
 }
 
+TEST_F(LabelButtonTest, UpdateImageAfterSettingImageModel) {
+  auto is_showing_image = [&](const gfx::ImageSkia& image) {
+    return button_->image()->GetImage().BackedBySameObjectAs(image);
+  };
+
+  auto normal_image = CreateTestImage(16, 16);
+  button_->SetImageModel(Button::STATE_NORMAL,
+                         ui::ImageModel::FromImageSkia(normal_image));
+  EXPECT_TRUE(is_showing_image(normal_image));
+
+  // When the button has no specific disabled image, changing the normal image
+  // while the button is disabled should update the currently-visible image.
+  normal_image = CreateTestImage(16, 16);
+  button_->SetState(Button::STATE_DISABLED);
+  button_->SetImageModel(Button::STATE_NORMAL,
+                         ui::ImageModel::FromImageSkia(normal_image));
+  EXPECT_TRUE(is_showing_image(normal_image));
+
+  // Any specific disabled image should take precedence over the normal image.
+  auto disabled_image = CreateTestImage(16, 16);
+  button_->SetImageModel(Button::STATE_DISABLED,
+                         ui::ImageModel::FromImageSkia(disabled_image));
+  EXPECT_TRUE(is_showing_image(disabled_image));
+
+  // Removing the disabled image should result in falling back to the normal
+  // image again.
+  button_->SetImageModel(Button::STATE_DISABLED, ui::ImageModel());
+  EXPECT_TRUE(is_showing_image(normal_image));
+}
+
 // Test fixture for a LabelButton that has an ink drop configured.
 class InkDropLabelButtonTest : public ViewsTestBase {
  public:

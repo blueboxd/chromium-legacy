@@ -439,15 +439,10 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     base::Optional<MinMaxSizesResult> min_max_sizes;
     auto MinMaxSizesFunc = [&](MinMaxSizesType type) -> MinMaxSizesResult {
       if (!min_max_sizes) {
-        NGConstraintSpace child_space = BuildSpaceForIntrinsicBlockSize(child);
-        if (child_style.OverflowBlockDirection() == EOverflow::kAuto) {
-          // Ensure this child has been laid out so its auto scrollbars are
-          // included in its intrinsic sizes.
-          child.Layout(child_space);
-        }
         // We want the child's intrinsic inline sizes in its writing mode, so
         // pass child's writing mode as the first parameter, which is nominally
         // |container_writing_mode|.
+        NGConstraintSpace child_space = BuildSpaceForIntrinsicBlockSize(child);
         MinMaxSizesInput input(ChildAvailableSize().block_size, type);
         min_max_sizes = child.ComputeMinMaxSizes(child_style.GetWritingMode(),
                                                  input, &child_space);
@@ -734,12 +729,13 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     DCHECK_GE(min_max_sizes_in_main_axis_direction.min_size, 0);
     DCHECK_GE(min_max_sizes_in_main_axis_direction.max_size, 0);
 
+    NGBoxStrut scrollbars = ComputeScrollbarsForNonAnonymous(child);
     algorithm_
         ->emplace_back(nullptr, child.Style(), flex_base_content_size,
                        min_max_sizes_in_main_axis_direction,
                        min_max_sizes_in_cross_axis_direction,
                        main_axis_border_padding, cross_axis_border_padding,
-                       physical_child_margins)
+                       physical_child_margins, scrollbars)
         .ng_input_node = child;
   }
 }
@@ -788,6 +784,29 @@ NGFlexLayoutAlgorithm::AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
 }
 
 scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
+  if (auto result = LayoutInternal())
+    return result;
+
+  // We may have aborted layout due to a child changing scrollbars, relayout
+  // with the new scrollbar information.
+  return RelayoutIgnoringChildScrollbarChanges();
+}
+
+scoped_refptr<const NGLayoutResult>
+NGFlexLayoutAlgorithm::RelayoutIgnoringChildScrollbarChanges() {
+  DCHECK(!ignore_child_scrollbar_changes_);
+  // Freezing the scrollbars for the sub-tree shouldn't be strictly necessary,
+  // but we do this just in case we trigger an unstable layout.
+  PaintLayerScrollableArea::FreezeScrollbarsScope freeze_scrollbars;
+  NGLayoutAlgorithmParams params(
+      Node(), container_builder_.InitialFragmentGeometry(), ConstraintSpace(),
+      BreakToken(), /* early_break */ nullptr);
+  NGFlexLayoutAlgorithm algorithm(params);
+  algorithm.ignore_child_scrollbar_changes_ = true;
+  return algorithm.Layout();
+}
+
+scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::LayoutInternal() {
   PaintLayerScrollableArea::DelayScrollOffsetClampScope delay_clamp_scope;
   ConstructAndAppendFlexItems();
 
@@ -926,7 +945,9 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
   container_builder_.SetFragmentsTotalBlockSize(block_size);
 
-  GiveLinesAndItemsFinalPositionAndSize();
+  bool success = GiveLinesAndItemsFinalPositionAndSize();
+  if (!success)
+    return nullptr;
 
   NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
 
@@ -969,7 +990,7 @@ void NGFlexLayoutAlgorithm::ApplyStretchAlignmentToChild(FlexItem& flex_item) {
       flex_item.ng_input_node.Layout(child_space, /* break_token */ nullptr);
 }
 
-void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
+bool NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
   Vector<FlexLine>& line_contexts = algorithm_->FlexLines();
   const LayoutUnit cross_axis_start_edge =
       line_contexts.IsEmpty() ? LayoutUnit()
@@ -1004,6 +1025,7 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
 
   base::Optional<LayoutUnit> fallback_baseline;
 
+  bool success = true;
   LayoutUnit overflow_block_size;
   for (FlexLine& line_context : line_contexts) {
     for (wtf_size_t child_number = 0;
@@ -1045,6 +1067,17 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
       overflow_block_size =
           std::max(overflow_block_size,
                    location.Y() + fragment.BlockSize() + margin_block_end);
+
+      // Detect if the flex-item had its scrollbar state change. If so we need
+      // to relayout as the input to the flex algorithm is incorrect.
+      if (!ignore_child_scrollbar_changes_) {
+        if (flex_item.scrollbars !=
+            ComputeScrollbarsForNonAnonymous(flex_item.ng_input_node))
+          success = false;
+      } else {
+        DCHECK_EQ(flex_item.scrollbars,
+                  ComputeScrollbarsForNonAnonymous(flex_item.ng_input_node));
+      }
     }
   }
 
@@ -1055,6 +1088,9 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
   // baseline alignment.
   if (!container_builder_.Baseline() && fallback_baseline)
     container_builder_.SetBaseline(*fallback_baseline);
+
+  // Signal if we need to relayout with new child scrollbar information.
+  return success;
 }
 
 void NGFlexLayoutAlgorithm::PropagateBaselineFromChild(

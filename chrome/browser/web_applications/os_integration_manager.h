@@ -14,6 +14,8 @@
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/common/web_application_info.h"
 
+class Profile;
+
 namespace web_app {
 
 class AppShortcutManager;
@@ -42,7 +44,7 @@ using InstallOsHooksCallback =
 // care of inter-dependencies among them.
 class OsIntegrationManager {
  public:
-  OsIntegrationManager();
+  explicit OsIntegrationManager(Profile* profile);
   virtual ~OsIntegrationManager();
 
   void SetSubsystems(AppShortcutManager* shortcut_manager,
@@ -58,6 +60,11 @@ class OsIntegrationManager {
                               std::unique_ptr<WebApplicationInfo> web_app_info,
                               InstallOsHooksOptions options);
 
+  // Uninstall all OS hooks for the web app.
+  // TODO(https://crbug.com/1108109) we should record uninstall result and allow
+  // callback. virtual for testing
+  virtual void UninstallOsHooks(const AppId& app_id);
+
   void SuppressOsHooksForTesting();
 
  protected:
@@ -70,6 +77,8 @@ class OsIntegrationManager {
                           base::RepeatingCallback<void(OsHookType::Type os_hook,
                                                        bool created)> callback,
                           bool shortcuts_created);
+
+  Profile* const profile_;
 
   AppShortcutManager* shortcut_manager_ = nullptr;
   FileHandlerManager* file_handler_manager_ = nullptr;

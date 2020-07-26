@@ -232,10 +232,6 @@ int FileHandlerManager::CleanupAfterOriginTrials() {
   return cleaned_up_count;
 }
 
-void FileHandlerManager::OnWebAppUninstalled(const AppId& app_id) {
-  DisableAndUnregisterOsFileHandlers(app_id);
-}
-
 void FileHandlerManager::OnWebAppProfileWillBeDeleted(const AppId& app_id) {
   DisableAndUnregisterOsFileHandlers(app_id);
 }

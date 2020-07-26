@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/paint/block_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -1254,7 +1255,7 @@ void LayoutFlexibleBox::ConstructAndAppendFlexItem(
   algorithm->emplace_back(
       &child, child.StyleRef(), child_inner_flex_base_size, sizes,
       /* min_max_cross_sizes */ base::nullopt, main_axis_border_padding,
-      cross_axis_border_padding, physical_margins);
+      cross_axis_border_padding, physical_margins, /* unused */ NGBoxStrut());
 }
 
 void LayoutFlexibleBox::SetOverrideMainAxisContentSizeForChild(FlexItem& item) {

@@ -288,7 +288,8 @@ class PendingAppInstallTaskTest : public ChromeRenderViewHostTestHarness {
     auto install_manager = std::make_unique<WebAppInstallManager>(profile());
     install_manager_ = install_manager.get();
 
-    auto os_integration_manager = std::make_unique<TestOsIntegrationManager>();
+    auto os_integration_manager =
+        std::make_unique<TestOsIntegrationManager>(profile());
     os_integration_manager_ = os_integration_manager.get();
 
     auto ui_manager = std::make_unique<TestWebAppUiManager>();

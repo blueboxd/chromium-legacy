@@ -58,10 +58,7 @@ LabelButton::LabelButton(ButtonListener* listener,
 LabelButton::~LabelButton() = default;
 
 gfx::ImageSkia LabelButton::GetImage(ButtonState for_state) const {
-  if (for_state != STATE_NORMAL &&
-      button_state_image_models_[for_state].IsEmpty()) {
-    for_state = STATE_NORMAL;
-  }
+  for_state = ImageStateForState(for_state);
 
   const auto& image_model = button_state_image_models_[for_state];
   if (image_model.IsImage())
@@ -84,9 +81,12 @@ void LabelButton::SetImageModel(ButtonState for_state,
   if (button_state_image_models_[for_state] == image_model)
     return;
 
+  const auto old_image_state = ImageStateForState(GetVisualState());
+
   button_state_image_models_[for_state] = image_model;
 
-  if (GetVisualState() == for_state)
+  if (for_state == old_image_state ||
+      for_state == ImageStateForState(GetVisualState()))
     UpdateImage();
 }
 
@@ -582,6 +582,12 @@ void LabelButton::ResetLabelEnabledColor() {
   const SkColor color = button_state_colors_[GetState()];
   if (GetState() != STATE_DISABLED && label_->GetEnabledColor() != color)
     label_->SetEnabledColor(color);
+}
+
+Button::ButtonState LabelButton::ImageStateForState(
+    ButtonState for_state) const {
+  return button_state_image_models_[for_state].IsEmpty() ? STATE_NORMAL
+                                                         : for_state;
 }
 
 BEGIN_METADATA(LabelButton)

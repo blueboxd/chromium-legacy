@@ -62,11 +62,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadCollectionBridge {
   static bool RenameDownloadUri(const base::FilePath& download_uri,
                                 const base::FilePath& new_display_name);
 
-  // Whether download display names needs to be retrieved.
-  // TODO(qinmin): move display names to history and in-progress DB.
-  // Can be called on any thread.
-  static bool NeedToRetrieveDisplayNames();
-
   using GetDisplayNamesCallback =
       base::OnceCallback<void(InProgressDownloadManager::DisplayNames)>;
   // Gets the display name for all downloads.

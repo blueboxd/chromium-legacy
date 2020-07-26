@@ -85,7 +85,9 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
 
   bool NotifySurfaceDamageAndCheckForDisplayDamage(const SurfaceId& surface_id);
 
+  bool HasFrameAnnotator() const;
   void SetFrameAnnotator(std::unique_ptr<FrameAnnotator> frame_annotator);
+  void DestroyFrameAnnotator();
 
  private:
   struct ClipData;

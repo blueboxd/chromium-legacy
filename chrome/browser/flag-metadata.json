@@ -1880,7 +1880,7 @@
   {
     "name": "enable-pointer-lock-options",
     "owners": [ "eirage", "nzolghadr", "input-dev" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 87
   },
   {
     "name": "enable-portals",

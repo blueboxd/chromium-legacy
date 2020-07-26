@@ -32,6 +32,7 @@ source_set("extensions") {
 
   deps = [
     "//base",
+    "//chrome/browser/web_applications:common",
     "//chrome/browser/web_applications:web_app_group",
     "//chrome/browser/web_applications/components",
     "//chrome/common",

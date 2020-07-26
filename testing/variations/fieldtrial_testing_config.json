@@ -4884,6 +4884,21 @@
             ]
         }
     ],
+    "OmniboxTabSwitchSuggestions": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OmniboxTabSwitchSuggestions"
+                    ]
+                }
+            ]
+        }
+    ],
     "OutOfBlinkCors": [
         {
             "platforms": [

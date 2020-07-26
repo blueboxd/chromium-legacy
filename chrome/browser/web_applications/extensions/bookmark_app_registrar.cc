@@ -12,7 +12,9 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_display_mode_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -77,6 +79,9 @@ void BookmarkAppRegistrar::OnExtensionUninstalled(
     bookmark_app_being_observed_ = extension;
 
     NotifyWebAppUninstalled(extension->id());
+    web_app::WebAppProviderBase::GetProviderBase(profile())
+        ->os_integration_manager()
+        .UninstallOsHooks(extension->id());
 
     bookmark_app_being_observed_ = nullptr;
   }

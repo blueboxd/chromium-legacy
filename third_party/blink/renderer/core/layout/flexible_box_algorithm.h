@@ -128,7 +128,8 @@ class FlexItem {
            base::Optional<MinMaxSizes> min_max_cross_sizes,
            LayoutUnit main_axis_border_padding,
            LayoutUnit cross_axis_border_padding,
-           NGPhysicalBoxStrut physical_margins);
+           NGPhysicalBoxStrut physical_margins,
+           NGBoxStrut scrollbars);
 
   LayoutUnit HypotheticalMainAxisMarginBoxSize() const {
     return hypothetical_main_content_size + main_axis_border_padding +
@@ -199,6 +200,7 @@ class FlexItem {
   const LayoutUnit main_axis_border_padding;
   const LayoutUnit cross_axis_border_padding;
   NGPhysicalBoxStrut physical_margins;
+  const NGBoxStrut scrollbars;
 
   LayoutUnit flexed_content_size;
 

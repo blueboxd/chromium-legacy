@@ -108,6 +108,11 @@ class AXTreeSerializer {
   void ChangeTreeSourceForTesting(
       AXTreeSource<AXSourceNode, AXNodeData, AXTreeData>* new_tree);
 
+  // Returns the number of nodes in the client tree. After a serialization
+  // operation this should be an accurate representation of the tree source
+  // as explored by the serializer.
+  size_t ClientTreeNodeCount() const;
+
  private:
   // Return the least common ancestor of a node in the source tree
   // and a node in the client tree, or nullptr if there is no such node.
@@ -221,6 +226,9 @@ AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::AXTreeSerializer(
 
 template <typename AXSourceNode, typename AXNodeData, typename AXTreeData>
 AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::~AXTreeSerializer() {
+  // Clear |tree_| to prevent any additional calls to the tree source
+  // during teardown.
+  tree_ = nullptr;
   Reset();
 }
 
@@ -238,8 +246,11 @@ void AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::InternalReset() {
   // but Reset() needs to work even if the tree is in a broken state.
   // Instead, iterate over |client_id_map_| to ensure we clear all nodes and
   // start from scratch.
-  for (auto&& item : client_id_map_)
+  for (auto&& item : client_id_map_) {
+    if (tree_)
+      tree_->SerializerClearedNode(item.first);
     delete item.second;
+  }
   client_id_map_.clear();
   client_root_ = nullptr;
 }
@@ -249,6 +260,13 @@ void AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
     ChangeTreeSourceForTesting(
         AXTreeSource<AXSourceNode, AXNodeData, AXTreeData>* new_tree) {
   tree_ = new_tree;
+}
+
+template <typename AXSourceNode, typename AXNodeData, typename AXTreeData>
+size_t
+AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::ClientTreeNodeCount()
+    const {
+  return client_id_map_.size();
 }
 
 template <typename AXSourceNode, typename AXNodeData, typename AXTreeData>
@@ -483,6 +501,7 @@ void AXTreeSerializer<AXSourceNode, AXNodeData, AXTreeData>::
     Reset();  // Do not try to reuse a bad root later.
   } else {
     DeleteDescendants(client_node);
+    tree_->SerializerClearedNode(client_node->id);
     client_id_map_.erase(client_node->id);
     delete client_node;
   }

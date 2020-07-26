@@ -33,6 +33,10 @@ struct StructTraits<viz::mojom::DebugRendererSettingsDataView,
     return input.show_dc_layer_debug_borders;
   }
 
+  static bool show_aggregated_damage(const viz::DebugRendererSettings& input) {
+    return input.show_aggregated_damage;
+  }
+
   static bool Read(viz::mojom::DebugRendererSettingsDataView data,
                    viz::DebugRendererSettings* out);
 };
@@ -64,10 +68,6 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
   static bool release_overlay_resources_after_gpu_query(
       const viz::RendererSettings& input) {
     return input.release_overlay_resources_after_gpu_query;
-  }
-
-  static bool show_aggregated_damage(const viz::RendererSettings& input) {
-    return input.show_aggregated_damage;
   }
 
   static int highp_threshold_min(const viz::RendererSettings& input) {

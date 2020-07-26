@@ -565,8 +565,6 @@ void Display::InitializeRenderer(bool enable_shared_images) {
   aggregator_ = std::make_unique<SurfaceAggregator>(
       surface_manager_, resource_provider_.get(), output_partial_list,
       overlay_processor_->NeedsSurfaceOccludingDamageRect());
-  if (settings_.show_aggregated_damage)
-    aggregator_->SetFrameAnnotator(std::make_unique<DamageFrameAnnotator>());
 
   aggregator_->set_output_is_secure(output_is_secure_);
   aggregator_->SetDisplayColorSpaces(display_color_spaces_);
@@ -597,6 +595,14 @@ void Display::OnContextLost() {
 
 bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
   TRACE_EVENT0("viz", "Display::DrawAndSwap");
+  if (debug_settings_->show_aggregated_damage !=
+      aggregator_->HasFrameAnnotator()) {
+    if (debug_settings_->show_aggregated_damage) {
+      aggregator_->SetFrameAnnotator(std::make_unique<DamageFrameAnnotator>());
+    } else {
+      aggregator_->DestroyFrameAnnotator();
+    }
+  }
   gpu::ScopedAllowScheduleGpuTask allow_schedule_gpu_task;
 
   if (!current_surface_id_.is_valid()) {

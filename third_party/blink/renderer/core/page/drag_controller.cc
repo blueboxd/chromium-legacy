@@ -1043,6 +1043,7 @@ FloatRect DragController::ClippedSelection(const LocalFrame& frame) {
 }
 
 static IntPoint DragLocationForSelectionDrag(const LocalFrame& frame) {
+  frame.View()->UpdateLifecycleToLayoutClean(DocumentUpdateReason::kSelection);
   IntRect dragging_rect =
       EnclosingIntRect(DragController::ClippedSelection(frame));
   int xpos = dragging_rect.MaxX();

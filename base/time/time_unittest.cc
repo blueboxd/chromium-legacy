@@ -1784,7 +1784,7 @@ TEST(TimeDelta, TimeDeltaOperators) {
 }
 
 TEST(TimeDelta, Overflows) {
-  // Some sanity checks. static_assert's used were possible to verify constexpr
+  // Some sanity checks. static_asserts used where possible to verify constexpr
   // evaluation at the same time.
   static_assert(TimeDelta::Max().is_max(), "");
   static_assert(-TimeDelta::Max() < TimeDelta(), "");
@@ -1814,25 +1814,64 @@ TEST(TimeDelta, Overflows) {
   EXPECT_TRUE((kLargeDelta / 0.5).is_max());
   EXPECT_TRUE((kLargeDelta / -0.5).is_min());
 
-  EXPECT_EQ(TimeDelta::FromSeconds(1) / TimeDelta::FromSeconds(0),
-            std::numeric_limits<int64_t>::max());
+  static_assert(TimeDelta::Max() / TimeDelta::FromSeconds(10) ==
+                    std::numeric_limits<int64_t>::max(),
+                "");
+  static_assert(TimeDelta::Max() / TimeDelta::FromSeconds(-10) ==
+                    std::numeric_limits<int64_t>::min(),
+                "");
+  static_assert(TimeDelta::Min() / TimeDelta::FromSeconds(10) ==
+                    std::numeric_limits<int64_t>::min(),
+                "");
+  static_assert(TimeDelta::Min() / TimeDelta::FromSeconds(-10) ==
+                    std::numeric_limits<int64_t>::max(),
+                "");
 
-  EXPECT_EQ(TimeDelta::Max() / TimeDelta::FromSeconds(10),
-            std::numeric_limits<int64_t>::max());
-  EXPECT_EQ(TimeDelta::Max() / TimeDelta::FromSeconds(-10),
-            std::numeric_limits<int64_t>::min());
-  EXPECT_EQ(TimeDelta::Min() / TimeDelta::FromSeconds(10),
-            std::numeric_limits<int64_t>::min());
-  EXPECT_EQ(TimeDelta::Min() / TimeDelta::FromSeconds(-10),
-            std::numeric_limits<int64_t>::max());
+  // Division by zero.
+  static_assert((TimeDelta::FromSeconds(1) / 0).is_max(), "");
+  static_assert((TimeDelta() / 0).is_max(), "");
+  static_assert((TimeDelta::FromSeconds(-1) / 0).is_min(), "");
+  static_assert((TimeDelta::Max() / 0).is_max(), "");
+  static_assert((TimeDelta::Min() / 0).is_min(), "");
+  static_assert(TimeDelta::FromSeconds(1) / TimeDelta() ==
+                    std::numeric_limits<int64_t>::max(),
+                "");
+  static_assert(
+      TimeDelta() / TimeDelta() == std::numeric_limits<int64_t>::max(), "");
+  static_assert(TimeDelta::FromSeconds(-1) / TimeDelta() ==
+                    std::numeric_limits<int64_t>::min(),
+                "");
+  static_assert(
+      TimeDelta::Max() / TimeDelta() == std::numeric_limits<int64_t>::max(),
+      "");
+  static_assert(
+      TimeDelta::Min() / TimeDelta() == std::numeric_limits<int64_t>::min(),
+      "");
 
-  EXPECT_EQ(TimeDelta::FromSeconds(10) / TimeDelta::Min(), 0);
-  EXPECT_EQ(TimeDelta::FromSeconds(10) / TimeDelta::Max(), 0);
+  // Division by infinity.
+  static_assert(kLargeDelta / TimeDelta::Min() == 0, "");
+  static_assert(kLargeDelta / TimeDelta::Max() == 0, "");
+  static_assert(kLargeNegative / TimeDelta::Min() == 0, "");
+  static_assert(kLargeNegative / TimeDelta::Max() == 0, "");
+  static_assert(TimeDelta::Min() / TimeDelta::Min() ==
+                    std::numeric_limits<int64_t>::max(),
+                "");
+  static_assert(TimeDelta::Min() / TimeDelta::Max() ==
+                    std::numeric_limits<int64_t>::min(),
+                "");
+  static_assert(TimeDelta::Max() / TimeDelta::Min() ==
+                    std::numeric_limits<int64_t>::min(),
+                "");
+  static_assert(TimeDelta::Max() / TimeDelta::Max() ==
+                    std::numeric_limits<int64_t>::max(),
+                "");
 
-  EXPECT_EQ(TimeDelta::FromSeconds(10) % TimeDelta::Min(),
-            TimeDelta::FromSeconds(10));
-  EXPECT_EQ(TimeDelta::FromSeconds(10) % TimeDelta::Max(),
-            TimeDelta::FromSeconds(10));
+  static_assert(TimeDelta::FromSeconds(10) % TimeDelta::Min() ==
+                    TimeDelta::FromSeconds(10),
+                "");
+  static_assert(TimeDelta::FromSeconds(10) % TimeDelta::Max() ==
+                    TimeDelta::FromSeconds(10),
+                "");
 
   // Test that double conversions overflow to infinity.
   EXPECT_EQ((kLargeDelta + kOneSecond).InSecondsF(),

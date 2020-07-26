@@ -7858,6 +7858,30 @@ TEST_F(AutofillMetricsTest, AddressWillSubmitFormEvents) {
   }
 }
 
+// Test that we log the phone field.
+TEST_F(AutofillMetricsTest, RecordStandalonePhoneField) {
+  // Set up our form data.
+  FormData form;
+  form.unique_renderer_id = MakeFormRendererId();
+  form.name = ASCIIToUTF16("TestForm");
+  form.url = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("Phone", "phone", "", "tel", &field);
+  form.fields.push_back(field);
+  field_types.push_back(PHONE_HOME_NUMBER);
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnQueryFormFieldAutofill(
+      0, form, field, gfx::RectF(), /*autoselect_first_suggestion=*/false);
+  histogram_tester.ExpectBucketCount("Autofill.FormEvents.Address.PhoneOnly",
+                                     FORM_EVENT_INTERACTED_ONCE, 1);
+}
+
 // Test that we log interacted form event for credit cards only once.
 TEST_F(AutofillMetricsTest, CreditCardFormEventsAreSegmented) {
   // Set up our form data.
@@ -10068,6 +10092,7 @@ TEST_F(AutofillMetricsTest, LogUserHappinessByProfileFormType_AddressOnly) {
           HasSubstr("Autofill.UserHappiness.Address.AddressPlusEmailPlusPhone"),
           HasSubstr("Autofill.UserHappiness.Address.AddressPlusPhone"),
           HasSubstr("Autofill.UserHappiness.Address.ContactOnly"),
+          HasSubstr("Autofill.UserHappiness.Address.PhoneOnly"),
           HasSubstr("Autofill.UserHappiness.Address.Other"))));
 }
 
@@ -10095,6 +10120,7 @@ TEST_F(AutofillMetricsTest, LogUserHappinessByProfileFormType_ContactOnly) {
           HasSubstr("Autofill.UserHappiness.Address.AddressPlusEmailPlusPhone"),
           HasSubstr("Autofill.UserHappiness.Address.AddressPlusPhone"),
           HasSubstr("Autofill.UserHappiness.Address.AddressOnly"),
+          HasSubstr("Autofill.UserHappiness.Address.PhoneOnly"),
           HasSubstr("Autofill.UserHappiness.Address.Other"))));
 }
 
@@ -10127,6 +10153,7 @@ TEST_F(AutofillMetricsTest,
           HasSubstr("Autofill.UserHappiness.Address.AddressPlusEmailPlusPhone"),
           HasSubstr("Autofill.UserHappiness.Address.ContactOnly"),
           HasSubstr("Autofill.UserHappiness.Address.AddressOnly"),
+          HasSubstr("Autofill.UserHappiness.Address.PhoneOnly"),
           HasSubstr("Autofill.UserHappiness.Address.Other"))));
 }
 
@@ -10158,6 +10185,7 @@ TEST_F(AutofillMetricsTest,
           HasSubstr("Autofill.UserHappiness.Address.AddressPlusEmailPlusPhone"),
           HasSubstr("Autofill.UserHappiness.Address.ContactOnly"),
           HasSubstr("Autofill.UserHappiness.Address.AddressOnly"),
+          HasSubstr("Autofill.UserHappiness.Address.PhoneOnly"),
           HasSubstr("Autofill.UserHappiness.Address.Other"))));
 }
 
@@ -10189,6 +10217,7 @@ TEST_F(AutofillMetricsTest,
                 HasSubstr("Autofill.UserHappiness.Address.AddressPlusEmail "),
                 HasSubstr("Autofill.UserHappiness.Address.ContactOnly"),
                 HasSubstr("Autofill.UserHappiness.Address.AddressOnly"),
+                HasSubstr("Autofill.UserHappiness.Address.PhoneOnly"),
                 HasSubstr("Autofill.UserHappiness.Address.Other"))));
 }
 
@@ -10215,8 +10244,36 @@ TEST_F(AutofillMetricsTest, LogUserHappinessByProfileFormType_Other) {
           HasSubstr("Autofill.UserHappiness.Address.AddressPlusEmail "),
           HasSubstr("Autofill.UserHappiness.Address.ContactOnly"),
           HasSubstr("Autofill.UserHappiness.Address.AddressOnly"),
+          HasSubstr("Autofill.UserHappiness.Address.PhoneOnly"),
           HasSubstr(
               "Autofill.UserHappiness.Address.AddressPlusEmailPlusPhone"))));
+}
+
+TEST_F(AutofillMetricsTest, LogUserHappinessByProfileFormType_PhoneOnly) {
+  base::HistogramTester histogram_tester;
+  AutofillMetrics::LogUserHappinessMetric(
+      AutofillMetrics::USER_DID_TYPE, {FormType::ADDRESS_FORM},
+      security_state::SecurityLevel::NONE,
+      data_util::DetermineGroups({PHONE_HOME_NUMBER}));
+
+  histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Address.PhoneOnly",
+                                     AutofillMetrics::USER_DID_TYPE, 1);
+
+  // Logging is not done for other types of address forms.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(
+      histograms,
+      Not(AnyOf(
+          HasSubstr("Autofill.UserHappiness.CreditCard"),
+          HasSubstr("Autofill.UserHappiness.Password"),
+          HasSubstr("Autofill.UserHappiness.Unknown"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusPhone"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusEmailPlusPhone"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusContact"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressPlusEmail"),
+          HasSubstr("Autofill.UserHappiness.Address.ContactOnly"),
+          HasSubstr("Autofill.UserHappiness.Address.AddressOnly"),
+          HasSubstr("Autofill.UserHappiness.Address.Other"))));
 }
 
 TEST_F(AutofillMetricsTest,
@@ -10241,6 +10298,7 @@ TEST_F(AutofillMetricsTest,
           HasSubstr("Autofill.UserHappiness.Address.AddressPlusEmail "),
           HasSubstr("Autofill.UserHappiness.Address.ContactOnly"),
           HasSubstr("Autofill.UserHappiness.Address.AddressOnly"),
+          HasSubstr("Autofill.UserHappiness.Address.PhoneOnly"),
           HasSubstr(
               "Autofill.UserHappiness.Address.AddressPlusEmailPlusPhone"))));
 }

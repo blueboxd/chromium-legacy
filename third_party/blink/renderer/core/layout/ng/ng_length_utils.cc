@@ -937,10 +937,9 @@ NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
   return padding;
 }
 
-NGBoxStrut ComputeScrollbars(const NGConstraintSpace& constraint_space,
-                             const NGLayoutInputNode node) {
+NGBoxStrut ComputeScrollbarsForNonAnonymous(const NGBlockNode& node) {
   const ComputedStyle& style = node.Style();
-  if (constraint_space.IsAnonymous() || style.IsOverflowVisible())
+  if (style.IsOverflowVisible())
     return NGBoxStrut();
   NGPhysicalBoxStrut sizes;
   const LayoutBox* layout_box = node.GetLayoutBox();

@@ -49,7 +49,6 @@ class AppShortcutManager : public AppRegistrarObserver {
   void OnWebAppInstalled(const AppId& app_id) override;
   void OnWebAppManifestUpdated(const web_app::AppId& app_id,
                                base::StringPiece old_name) override;
-  void OnWebAppUninstalled(const AppId& app_id) override;
   void OnWebAppProfileWillBeDeleted(const AppId& app_id) override;
 
   // Tells the AppShortcutManager that no shortcuts should actually be written
@@ -88,6 +87,8 @@ class AppShortcutManager : public AppRegistrarObserver {
 
   void UnregisterShortcutsMenuWithOs(const AppId& app_id);
 
+  void DeleteSharedAppShims(const AppId& app_id);
+
   // Builds initial ShortcutInfo without |ShortcutInfo::favicon| being read.
   virtual std::unique_ptr<ShortcutInfo> BuildShortcutInfo(
       const AppId& app_id) = 0;
@@ -105,7 +106,6 @@ class AppShortcutManager : public AppRegistrarObserver {
   static void SetShortcutUpdateCallbackForTesting(ShortcutCallback callback);
 
  protected:
-  void DeleteSharedAppShims(const AppId& app_id);
   void OnShortcutsCreated(const AppId& app_id,
                           CreateShortcutsCallback callback,
                           bool success);

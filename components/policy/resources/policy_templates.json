@@ -5875,15 +5875,17 @@
       'tags': ['website-sharing'],
       'desc': '''Setting the policy lets you make a list of URL patterns that specify sites for which Chrome can automatically select a client certificate. The value is an array of stringified JSON dictionaries, each with the form <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE">{ "pattern": "$URL_PATTERN", "filter" : $FILTER }</ph>, where <ph name="URL_PATTERN_PLACEHOLDER">$URL_PATTERN</ph> is a content setting pattern. <ph name="FILTER_PLACEHOLDER">$FILTER</ph> restricts the client certificates the browser automatically selects from. Independent of the filter, only certificates that match the server's certificate request are selected.
 
-      For example, if <ph name="FILTER_PLACEHOLDER">$FILTER</ph> has:
+      Examples for the usage of the <ph name="FILTER_PLACEHOLDER">$FILTER</ph> section:
 
-      * <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE">{ "ISSUER": { "CN": "$ISSUER_CN" } }</ph>, only client certificates issued by a certificate with the CommonName <ph name="ISSUER_CN_PLACEHOLDER">$ISSUER_CN</ph>are selected.
+      * When <ph name="FILTER_PLACEHOLDER">$FILTER</ph> is set to <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE">{ "ISSUER": { "CN": "$ISSUER_CN" } }</ph>, only client certificates issued by a certificate with the CommonName <ph name="ISSUER_CN_PLACEHOLDER">$ISSUER_CN</ph> are selected.
 
-      * <ph name="ISSUER_STRING_VALUE">"ISSUER"</ph> and <ph name="SUBJECT_STRING_VALUE">"SUBJECT"</ph> sections, only matching client certificates are selected.
+      * When <ph name="FILTER_PLACEHOLDER">$FILTER</ph> contains both the <ph name="ISSUER_STRING_VALUE">"ISSUER"</ph> and the <ph name="SUBJECT_STRING_VALUE">"SUBJECT"</ph> sections, only client certificates that satisfy both conditions are selected.
 
-      * ("O"), a certificate needs at least one organization matching the specified value to be selected. * ("OU"), a certificate needs at least one organizational unit matching the specified value to be selected.
+      * When <ph name="FILTER_PLACEHOLDER">$FILTER</ph> contains a <ph name="SUBJECT_STRING_VALUE">"SUBJECT"</ph> section with the <ph name="FILTER_STRING_ORGANIZATION">"O"</ph> value, a certificate needs at least one organization matching the specified value to be selected.
 
-      * <ph name="EMPTY_DICTIONARY">{}</ph>, the selection of client certificates is not additionally restricted.
+      * When <ph name="FILTER_PLACEHOLDER">$FILTER</ph> contains a <ph name="SUBJECT_STRING_VALUE">"SUBJECT"</ph> section with a <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT">"OU"</ph> value, a certificate needs at least one organizational unit matching the specified value to be selected.
+
+      * When <ph name="FILTER_PLACEHOLDER">$FILTER</ph> is set to <ph name="EMPTY_DICTIONARY">{}</ph>, the selection of client certificates is not additionally restricted. Note that filters provided by the web server still apply.
 
       Leaving the policy unset means there's no autoselection for any site.''',
     },
@@ -5926,7 +5928,21 @@
       'tags': ['website-sharing'],
       'desc': '''Allows you to specify a list of url patterns that specify sites for which a client certificate is automatically selected on the sign-in screen in the frame hosting the SAML flow, if the site requests a certificate. An example usage is to configure a device-wide certificate to be presented to the SAML IdP.
 
-      The value must be an array of stringified JSON dictionaries. Each dictionary must have the form <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE">'{ "pattern": "$URL_PATTERN", "filter" : $FILTER }'</ph>, where <ph name="URL_PATTERN_PLACEHOLDER">$URL_PATTERN</ph> is a content setting pattern. <ph name="FILTER_PLACEHOLDER">$FILTER</ph> restricts from which client certificates the browser will automatically select. Independent of the filter, only certificates will be selected that match the server's certificate request. If <ph name="FILTER_PLACEHOLDER">$FILTER</ph> has the form <ph name="JSON_DICTIONARY_EXAMPLE">'{ "ISSUER": { "CN": "$ISSUER_CN" } }'</ph>, additionally only client certificates are selected that are issued by a certificate with the CommonName <ph name="ISSUER_CN_PLACEHOLDER">$ISSUER_CN</ph>. If <ph name="FILTER_PLACEHOLDER">$FILTER</ph> is the empty dictionary {}, the selection of client certificates is not additionally restricted.
+      The value is an array of stringified JSON dictionaries, each with the form <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE">{ "pattern": "$URL_PATTERN", "filter" : $FILTER }</ph>, where <ph name="URL_PATTERN_PLACEHOLDER">$URL_PATTERN</ph> is a content setting pattern. <ph name="FILTER_PLACEHOLDER">$FILTER</ph> restricts the client certificates the browser automatically selects from. Independent of the filter, only certificates that match the server's certificate request are selected.
+
+      Examples for the usage of the <ph name="FILTER_PLACEHOLDER">$FILTER</ph> section:
+
+      * When <ph name="FILTER_PLACEHOLDER">$FILTER</ph> is set to <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE">{ "ISSUER": { "CN": "$ISSUER_CN" } }</ph>, only client certificates issued by a certificate with the CommonName <ph name="ISSUER_CN_PLACEHOLDER">$ISSUER_CN</ph> are selected.
+
+      * When <ph name="FILTER_PLACEHOLDER">$FILTER</ph> contains both the <ph name="ISSUER_STRING_VALUE">"ISSUER"</ph> and the <ph name="SUBJECT_STRING_VALUE">"SUBJECT"</ph> sections, only client certificates that satisfy both conditions are selected.
+
+      * When <ph name="FILTER_PLACEHOLDER">$FILTER</ph> contains a <ph name="SUBJECT_STRING_VALUE">"SUBJECT"</ph> section with the <ph name="FILTER_STRING_ORGANIZATION">"O"</ph> value, a certificate needs at least one organization matching the specified value to be selected.
+
+      * When <ph name="FILTER_PLACEHOLDER">$FILTER</ph> contains a <ph name="SUBJECT_STRING_VALUE">"SUBJECT"</ph> section with a <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT">"OU"</ph> value, a certificate needs at least one organizational unit matching the specified value to be selected.
+
+      * When <ph name="FILTER_PLACEHOLDER">$FILTER</ph> is set to <ph name="EMPTY_DICTIONARY">{}</ph>, the selection of client certificates is not additionally restricted. Note that filters provided by the web server still apply.
+
+
 
       If this policy is left not set, no auto-selection will be done for any site.
 
@@ -9674,7 +9690,6 @@
       'id': 299,
       'caption': '''Allow users to opt in to Safe Browsing extended reporting''',
       'tags': [],
-      'deprecated': True,
       'desc': '''This policy is deprecated in M82 and removed in M85, use <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME">SafeBrowsingExtendedReportingEnabled</ph> instead. Disabling <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME">SafeBrowsingExtendedReportingOptInAllowed</ph> is equivalent to disabling <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME">SafeBrowsingExtendedReportingEnabled</ph>. Enabling <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME">SafeBrowsingExtendedReportingOptInAllowed</ph> or leaving this setting unset is equivalent to leaving <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME">SafeBrowsingExtendedReportingEnabled</ph> unset.
 
       Setting this policy to false stops users from choosing to send some system information and page content to Google servers. If this setting is true or not configured, then users will be allowed to send some system information and page content to Safe Browsing to help detect dangerous apps and sites.

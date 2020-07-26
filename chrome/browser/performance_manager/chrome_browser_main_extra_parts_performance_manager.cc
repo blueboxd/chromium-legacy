@@ -35,10 +35,13 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/allocator/buildflags.h"
+#include "chrome/browser/performance_manager/policies/userspace_swap_policy_chromeos.h"
+
 #if BUILDFLAG(USE_TCMALLOC)
 #include "chrome/browser/performance_manager/policies/dynamic_tcmalloc_policy_chromeos.h"
 #include "chrome/common/performance_manager/mojom/tcmalloc.mojom.h"
 #endif  // BUILDFLAG(USE_TCMALLOC)
+
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
@@ -91,6 +94,12 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
   }
 
 #if defined(OS_CHROMEOS)
+  if (performance_manager::policies::UserspaceSwapPolicy::
+          UserspaceSwapSupportedAndEnabled()) {
+    graph->PassToGraph(
+        std::make_unique<performance_manager::policies::UserspaceSwapPolicy>());
+  }
+
 #if BUILDFLAG(USE_TCMALLOC)
   if (base::FeatureList::IsEnabled(
           performance_manager::features::kDynamicTcmallocTuning)) {

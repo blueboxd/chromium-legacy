@@ -23,6 +23,10 @@ public class DownloadLaterDialogProperties {
     public static final PropertyModel.ReadableIntPropertyKey DONT_SHOW_AGAIN_SELECTION =
             new PropertyModel.ReadableIntPropertyKey();
 
+    /** Whether the don't show again checkbox is disabled. */
+    public static final PropertyModel.WritableBooleanPropertyKey DONT_SHOW_AGAIN_DISABLED =
+            new PropertyModel.WritableBooleanPropertyKey();
+
     /**
      * The string representing the download location. If null, no download location edit text will
      * be shown.
@@ -30,6 +34,7 @@ public class DownloadLaterDialogProperties {
     public static final PropertyModel.WritableObjectPropertyKey<String> LOCATION_TEXT =
             new PropertyModel.WritableObjectPropertyKey<>();
 
-    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {
-            CONTROLLER, DOWNLOAD_TIME_INITIAL_SELECTION, DONT_SHOW_AGAIN_SELECTION, LOCATION_TEXT};
+    public static final PropertyKey[] ALL_KEYS =
+            new PropertyKey[] {CONTROLLER, DOWNLOAD_TIME_INITIAL_SELECTION,
+                    DONT_SHOW_AGAIN_SELECTION, DONT_SHOW_AGAIN_DISABLED, LOCATION_TEXT};
 }

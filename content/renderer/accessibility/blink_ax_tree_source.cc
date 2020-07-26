@@ -442,6 +442,27 @@ void BlinkAXTreeSource::PopulateAXRelativeBounds(WebAXObject obj,
   }
 }
 
+bool BlinkAXTreeSource::HasCachedBoundingBox(int32_t id) const {
+  return base::Contains(cached_bounding_boxes_, id);
+}
+
+const ui::AXRelativeBounds& BlinkAXTreeSource::GetCachedBoundingBox(
+    int32_t id) const {
+  auto iter = cached_bounding_boxes_.find(id);
+  DCHECK(iter != cached_bounding_boxes_.end());
+  return iter->second;
+}
+
+void BlinkAXTreeSource::SetCachedBoundingBox(
+    int32_t id,
+    const ui::AXRelativeBounds& bounds) {
+  cached_bounding_boxes_[id] = bounds;
+}
+
+size_t BlinkAXTreeSource::GetCachedBoundingBoxCount() const {
+  return cached_bounding_boxes_.size();
+}
+
 bool BlinkAXTreeSource::GetTreeData(ui::AXTreeData* tree_data) const {
   CHECK(frozen_);
   tree_data->doctype = "html";
@@ -572,6 +593,10 @@ std::string BlinkAXTreeSource::GetDebugString(blink::WebAXObject node) const {
   return node.ToString(true).Utf8();
 }
 
+void BlinkAXTreeSource::SerializerClearedNode(int32_t node_id) {
+  cached_bounding_boxes_.erase(node_id);
+}
+
 void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                                       ui::AXNodeData* dst) const {
 #if DCHECK_IS_ON()
@@ -613,6 +638,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   }
 
   SerializeBoundingBoxAttributes(src, dst);
+  cached_bounding_boxes_[dst->id] = dst->relative_bounds;
 
   SerializeSparseAttributes(src, dst);
   SerializeValueAttributes(src, dst);

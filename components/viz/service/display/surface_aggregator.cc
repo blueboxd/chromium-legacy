@@ -1841,10 +1841,19 @@ bool SurfaceAggregator::NotifySurfaceDamageAndCheckForDisplayDamage(
   return false;
 }
 
+bool SurfaceAggregator::HasFrameAnnotator() const {
+  return !!frame_annotator_;
+}
+
 void SurfaceAggregator::SetFrameAnnotator(
     std::unique_ptr<FrameAnnotator> frame_annotator) {
   DCHECK(!frame_annotator_);
   frame_annotator_ = std::move(frame_annotator);
+}
+
+void SurfaceAggregator::DestroyFrameAnnotator() {
+  DCHECK(frame_annotator_);
+  frame_annotator_.reset();
 }
 
 bool SurfaceAggregator::IsRootSurface(const Surface* surface) const {

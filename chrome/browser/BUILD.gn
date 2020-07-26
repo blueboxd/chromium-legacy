@@ -3916,6 +3916,8 @@ static_library("browser") {
       "notifications/web_page_notifier_controller.h",
       "performance_manager/mechanisms/working_set_trimmer_chromeos.cc",
       "performance_manager/mechanisms/working_set_trimmer_chromeos.h",
+      "performance_manager/policies/userspace_swap_policy_chromeos.cc",
+      "performance_manager/policies/userspace_swap_policy_chromeos.h",
       "performance_manager/policies/working_set_trimmer_policy_chromeos.cc",
       "performance_manager/policies/working_set_trimmer_policy_chromeos.h",
       "platform_util_chromeos.cc",

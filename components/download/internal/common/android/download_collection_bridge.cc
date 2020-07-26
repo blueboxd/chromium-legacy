@@ -169,12 +169,6 @@ void DownloadCollectionBridge::GetDisplayNamesForDownloads(
 }
 
 // static
-bool DownloadCollectionBridge::NeedToRetrieveDisplayNames() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_DownloadCollectionBridge_needToRetrieveDisplayNames(env);
-}
-
-// static
 base::FilePath DownloadCollectionBridge::GetDisplayName(
     const base::FilePath& download_uri) {
   JNIEnv* env = base::android::AttachCurrentThread();

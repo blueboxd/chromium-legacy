@@ -9,8 +9,8 @@
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 
 namespace web_app {
-
-TestOsIntegrationManager::TestOsIntegrationManager() = default;
+TestOsIntegrationManager::TestOsIntegrationManager(Profile* profile)
+    : OsIntegrationManager(profile) {}
 
 TestOsIntegrationManager::~TestOsIntegrationManager() = default;
 
@@ -55,6 +55,10 @@ void TestOsIntegrationManager::InstallOsHooks(
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), std::move(os_hooks_results)));
+}
+
+void TestOsIntegrationManager::UninstallOsHooks(const AppId& app_id) {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace web_app

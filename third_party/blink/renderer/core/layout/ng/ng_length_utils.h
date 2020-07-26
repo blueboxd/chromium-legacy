@@ -486,8 +486,15 @@ inline NGLineBoxStrut ComputeLinePadding(
                         style.IsFlippedLinesWritingMode());
 }
 
-CORE_EXPORT NGBoxStrut ComputeScrollbars(const NGConstraintSpace&,
-                                         const NGLayoutInputNode);
+CORE_EXPORT NGBoxStrut ComputeScrollbarsForNonAnonymous(const NGBlockNode&);
+
+inline NGBoxStrut ComputeScrollbars(const NGConstraintSpace& space,
+                                    const NGBlockNode& node) {
+  if (space.IsAnonymous())
+    return NGBoxStrut();
+
+  return ComputeScrollbarsForNonAnonymous(node);
+}
 
 // Return true if we need to know the inline size of the fragment in order to
 // calculate its line-left offset. This is the case when we have auto margins,

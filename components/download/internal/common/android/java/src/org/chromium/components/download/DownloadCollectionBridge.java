@@ -263,14 +263,6 @@ public class DownloadCollectionBridge {
     }
 
     /**
-     * @return  Whether download display names needs to be retrieved.
-     */
-    @CalledByNative
-    private static boolean needToRetrieveDisplayNames() {
-        return isAtLeastQ();
-    }
-
-    /**
      * Gets the display names for all downloads
      * @return an array of download Uri and display name pair.
      */

@@ -95,6 +95,12 @@ class CONTENT_EXPORT BlinkAXTreeSource
                                 ui::AXRelativeBounds* bounds,
                                 bool* clips_children = nullptr) const;
 
+  // Cached bounding boxes.
+  bool HasCachedBoundingBox(int32_t id) const;
+  const ui::AXRelativeBounds& GetCachedBoundingBox(int32_t id) const;
+  void SetCachedBoundingBox(int32_t id, const ui::AXRelativeBounds& bounds);
+  size_t GetCachedBoundingBoxCount() const;
+
   // AXTreeSource implementation.
   bool GetTreeData(ui::AXTreeData* tree_data) const override;
   blink::WebAXObject GetRoot() const override;
@@ -112,6 +118,7 @@ class CONTENT_EXPORT BlinkAXTreeSource
                blink::WebAXObject node2) const override;
   blink::WebAXObject GetNull() const override;
   std::string GetDebugString(blink::WebAXObject node) const override;
+  void SerializerClearedNode(int32_t node_id) override;
 
   blink::WebDocument GetMainDocument() const;
 
@@ -210,6 +217,9 @@ class CONTENT_EXPORT BlinkAXTreeSource
   // Used to ensure that the tutor message that explains to screen reader users
   // how to turn on automatic image labels is provided only once.
   mutable base::Optional<int32_t> first_unlabeled_image_id_ = base::nullopt;
+
+  // Current bounding box of every object, so we can detect when it moves.
+  mutable std::unordered_map<int, ui::AXRelativeBounds> cached_bounding_boxes_;
 
   // These are updated when calling |Freeze|.
   bool frozen_ = false;

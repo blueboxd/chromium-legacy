@@ -83,25 +83,6 @@ void AppShortcutManager::OnWebAppManifestUpdated(const AppId& app_id,
                   weak_ptr_factory_.GetWeakPtr(), base::UTF8ToUTF16(old_name)));
 }
 
-void AppShortcutManager::OnWebAppUninstalled(const AppId& app_id) {
-  std::unique_ptr<ShortcutInfo> shortcut_info = BuildShortcutInfo(app_id);
-  base::FilePath shortcut_data_dir =
-      internals::GetShortcutDataDir(*shortcut_info);
-
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin)) {
-    internals::GetShortcutIOTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&internals::UnregisterRunOnOsLogin,
-                       shortcut_info->profile_path, shortcut_info->title));
-  }
-
-  internals::PostShortcutIOTask(
-      base::BindOnce(&internals::DeletePlatformShortcuts, shortcut_data_dir),
-      std::move(shortcut_info));
-
-  DeleteSharedAppShims(app_id);
-}
-
 void AppShortcutManager::OnWebAppProfileWillBeDeleted(const AppId& app_id) {
   DeleteSharedAppShims(app_id);
 }
@@ -109,20 +90,6 @@ void AppShortcutManager::OnWebAppProfileWillBeDeleted(const AppId& app_id) {
 void AppShortcutManager::SetShortcutUpdateCallbackForTesting(
     base::OnceCallback<void(const ShortcutInfo*)> callback) {
   GetShortcutUpdateCallbackForTesting() = std::move(callback);
-}
-
-void AppShortcutManager::DeleteSharedAppShims(const AppId& app_id) {
-#if defined(OS_MACOSX)
-  bool delete_multi_profile_shortcuts =
-      AppShimRegistry::Get()->OnAppUninstalledForProfile(app_id,
-                                                         profile_->GetPath());
-  if (delete_multi_profile_shortcuts) {
-    web_app::internals::GetShortcutIOTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&web_app::internals::DeleteMultiProfileShortcutsForApp,
-                       app_id));
-  }
-#endif
 }
 
 bool AppShortcutManager::CanCreateShortcuts() const {
@@ -197,6 +164,20 @@ void AppShortcutManager::UnregisterShortcutsMenuWithOs(const AppId& app_id) {
     return;
 
   web_app::UnregisterShortcutsMenuWithOs(app_id, profile_->GetPath());
+}
+
+void AppShortcutManager::DeleteSharedAppShims(const AppId& app_id) {
+#if defined(OS_MACOSX)
+  bool delete_multi_profile_shortcuts =
+      AppShimRegistry::Get()->OnAppUninstalledForProfile(app_id,
+                                                         profile_->GetPath());
+  if (delete_multi_profile_shortcuts) {
+    web_app::internals::GetShortcutIOTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&web_app::internals::DeleteMultiProfileShortcutsForApp,
+                       app_id));
+  }
+#endif
 }
 
 void AppShortcutManager::OnShortcutsCreated(const AppId& app_id,

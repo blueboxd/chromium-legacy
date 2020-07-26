@@ -926,13 +926,8 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     if (plugin_tree_source_)
       AddPluginTreeToUpdate(&update, invalidate_plugin_subtree);
 
-    // For each node in the update, set the location in our map from
-    // ids to locations.
-    for (auto& node : update.nodes) {
-      ui::AXRelativeBounds& dst = locations_[node.id];
-      dst = node.relative_bounds;
+    for (auto& node : update.nodes)
       already_serialized_ids.insert(node.id);
-    }
 
     updates.push_back(update);
 
@@ -981,7 +976,6 @@ void RenderAccessibilityImpl::SendLocationChanges() {
     return;
 
   // Do a breadth-first explore of the whole blink AX tree.
-  std::unordered_map<int, ui::AXRelativeBounds> new_locations;
   base::queue<WebAXObject> objs_to_explore;
   objs_to_explore.push(root);
   while (objs_to_explore.size()) {
@@ -991,18 +985,17 @@ void RenderAccessibilityImpl::SendLocationChanges() {
     // See if we had a previous location. If not, this whole subtree must
     // be new, so don't continue to explore this branch.
     int id = obj.AxID();
-    auto iter = locations_.find(id);
-    if (iter == locations_.end())
+    if (!tree_source_->HasCachedBoundingBox(id))
       continue;
 
     // If the location has changed, append it to the IPC message.
     ui::AXRelativeBounds new_location;
     tree_source_->PopulateAXRelativeBounds(obj, &new_location);
-    if (iter->second != new_location)
+    if (new_location != tree_source_->GetCachedBoundingBox(id))
       changes.push_back(mojom::LocationChanges::New(id, new_location));
 
     // Save the new location.
-    new_locations[id] = new_location;
+    tree_source_->SetCachedBoundingBox(id, new_location);
 
     // Explore children of this object.
     std::vector<WebAXObject> children;
@@ -1010,7 +1003,14 @@ void RenderAccessibilityImpl::SendLocationChanges() {
     for (WebAXObject& child : children)
       objs_to_explore.push(child);
   }
-  locations_.swap(new_locations);
+
+  // Ensure that the number of cached bounding boxes doesn't exceed the
+  // number of nodes in the tree, that would indicate the cache could
+  // grow without bounds. Calls from the serializer to
+  // BlinkAXTreeSerializer::SerializerClearedNode are supposed to keep the
+  // cache trimmed to only actual nodes in the tree.
+  DCHECK_LE(tree_source_->GetCachedBoundingBoxCount(),
+            serializer_->ClientTreeNodeCount());
 
   render_accessibility_manager_->HandleLocationChanges(std::move(changes));
 }

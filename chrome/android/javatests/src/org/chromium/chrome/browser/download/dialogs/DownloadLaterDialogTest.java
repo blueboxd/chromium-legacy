@@ -6,7 +6,9 @@ package org.chromium.chrome.browser.download.dialogs;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -16,6 +18,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.view.View;
+
+import androidx.test.espresso.NoMatchingViewException;
 import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -160,6 +165,11 @@ public class DownloadLaterDialogTest {
             Assert.assertNotNull(downloadLaterButton);
             downloadLaterButton.setChecked(true);
             getDownloadLaterDialogView().onCheckedChanged(null, -1);
+        });
+
+        onView(withId(org.chromium.chrome.R.id.positive_button)).check(matches(withText("Next")));
+        onView(withId(R.id.show_again_checkbox)).check((View view, NoMatchingViewException e) -> {
+            Assert.assertFalse(view.isEnabled());
         });
 
         clickPositiveButton();

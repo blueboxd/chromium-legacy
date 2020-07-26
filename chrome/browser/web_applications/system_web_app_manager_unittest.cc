@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/pending_app_manager_impl.h"
 #include "chrome/browser/web_applications/test/test_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
@@ -194,10 +195,11 @@ class SystemWebAppManagerTest : public WebAppTest {
         std::make_unique<TestPendingAppManagerImpl>(profile());
     test_shortcut_manager_ =
         std::make_unique<TestAppShortcutManager>(profile());
+    test_os_integration_manager_ =
+        std::make_unique<TestOsIntegrationManager>(profile());
     test_system_web_app_manager_ =
         std::make_unique<TestSystemWebAppManager>(profile());
     test_ui_manager_ = std::make_unique<TestWebAppUiManager>();
-    test_os_integration_manager_ = std::make_unique<TestOsIntegrationManager>();
 
     install_finalizer().SetSubsystems(&controller().registrar(), &ui_manager(),
                                       &controller().sync_bridge());
@@ -222,6 +224,12 @@ class SystemWebAppManagerTest : public WebAppTest {
 
     install_manager().Start();
     install_finalizer().Start();
+
+    // TODO(https://crbug.com/1108611) we should use a single
+    // TestOsIntegrationManager
+    WebAppProviderBase::GetProviderBase(profile())
+        ->os_integration_manager()
+        .SuppressOsHooksForTesting();
   }
 
   void TearDown() override {
@@ -233,6 +241,7 @@ class SystemWebAppManagerTest : public WebAppTest {
     // The reverse order of creation:
     test_ui_manager_.reset();
     test_system_web_app_manager_.reset();
+    test_os_integration_manager_.reset();
     test_shortcut_manager_.reset();
     test_pending_app_manager_impl_.reset();
     install_manager_.reset();

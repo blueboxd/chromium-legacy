@@ -64,10 +64,8 @@ class CAPTURE_EXPORT CameraHalDelegate final
           task_runner_for_screen_observer,
       const VideoCaptureDeviceDescriptor& device_descriptor,
       CameraAppDeviceBridgeImpl* app_device_bridge);
-  void GetSupportedFormats(
-      const VideoCaptureDeviceDescriptor& device_descriptor,
-      VideoCaptureFormats* supported_formats);
-  void GetDeviceDescriptors(VideoCaptureDeviceDescriptors* device_descriptors);
+  void GetDevicesInfo(
+      VideoCaptureDeviceFactory::GetDevicesInfoCallback callback);
 
   // Asynchronous method to open the camera device designated by |camera_id|.
   // This method may be called on any thread; |callback| will run on
@@ -94,6 +92,9 @@ class CAPTURE_EXPORT CameraHalDelegate final
   friend class base::RefCountedThreadSafe<CameraHalDelegate>;
 
   ~CameraHalDelegate() final;
+
+  void GetSupportedFormats(int camera_id,
+                           VideoCaptureFormats* supported_formats);
 
   void SetCameraModuleOnIpcThread(
       mojo::PendingRemote<cros::mojom::CameraModule> camera_module);

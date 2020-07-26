@@ -16,7 +16,7 @@
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/examples/examples_window.h"
 #include "ui/views/examples/grit/views_examples_resources.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 
 using l10n_util::GetStringUTF16;
@@ -39,25 +39,21 @@ RadioButtonExample::RadioButtonExample()
 RadioButtonExample::~RadioButtonExample() = default;
 
 void RadioButtonExample::CreateExampleView(View* container) {
-  GridLayout* layout =
-      container->SetLayoutManager(std::make_unique<views::GridLayout>());
-  ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0f,
-                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
+  container->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(BoxLayout::Orientation::kVertical));
+
   const int group = 1;
   for (size_t i = 0; i < 3; ++i) {
-    layout->StartRow(0, 0);
-    radio_buttons_.push_back(layout->AddView(std::make_unique<RadioButton>(
-        base::UTF8ToUTF16(base::StringPrintf("Radio %d in group %d",
-                                             static_cast<int>(i) + 1, group)),
-        group)));
+    radio_buttons_.push_back(
+        container->AddChildView(std::make_unique<RadioButton>(
+            base::UTF8ToUTF16(base::StringPrintf(
+                "Radio %d in group %d", static_cast<int>(i) + 1, group)),
+            group)));
   }
 
-  layout->StartRow(0, 0);
-  select_ = layout->AddView(std::make_unique<LabelButton>(
+  select_ = container->AddChildView(std::make_unique<LabelButton>(
       this, GetStringUTF16(IDS_RADIO_BUTTON_SELECT_BUTTON_LABEL)));
-  layout->StartRow(0, 0);
-  status_ = layout->AddView(std::make_unique<LabelButton>(
+  status_ = container->AddChildView(std::make_unique<LabelButton>(
       this, GetStringUTF16(IDS_RADIO_BUTTON_STATUS_LABEL)));
 }
 

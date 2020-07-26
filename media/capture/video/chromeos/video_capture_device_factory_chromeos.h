@@ -34,11 +34,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryChromeOS final
   // VideoCaptureDeviceFactory interface implementations.
   std::unique_ptr<VideoCaptureDevice> CreateDevice(
       const VideoCaptureDeviceDescriptor& device_descriptor) final;
-  void GetSupportedFormats(
-      const VideoCaptureDeviceDescriptor& device_descriptor,
-      VideoCaptureFormats* supported_formats) final;
-  void GetDeviceDescriptors(
-      VideoCaptureDeviceDescriptors* device_descriptors) final;
+  void GetDevicesInfo(GetDevicesInfoCallback callback) override;
 
   bool IsSupportedCameraAppDeviceBridge() override;
 

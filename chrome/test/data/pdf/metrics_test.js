@@ -115,6 +115,8 @@ chrome.test.runTests(function() {
       PDFMetrics.recordZoomAction(/*isZoomIn=*/ true);
       PDFMetrics.recordZoomAction(/*isZoomIn=*/ false);
       PDFMetrics.recordZoomAction(/*isZoomIn=*/ true);
+      PDFMetrics.record(PDFMetrics.UserAction.ZOOM_CUSTOM);
+      PDFMetrics.record(PDFMetrics.UserAction.ZOOM_CUSTOM);
 
       chrome.test.assertEq(
           {
@@ -122,7 +124,9 @@ chrome.test.runTests(function() {
             [PDFMetrics.UserAction.ZOOM_IN_FIRST]: 1,
             [PDFMetrics.UserAction.ZOOM_IN]: 3,
             [PDFMetrics.UserAction.ZOOM_OUT_FIRST]: 1,
-            [PDFMetrics.UserAction.ZOOM_OUT]: 2
+            [PDFMetrics.UserAction.ZOOM_OUT]: 2,
+            [PDFMetrics.UserAction.ZOOM_CUSTOM_FIRST]: 1,
+            [PDFMetrics.UserAction.ZOOM_CUSTOM]: 2
           },
           chrome.metricsPrivate.actionCounter);
       chrome.test.succeed();

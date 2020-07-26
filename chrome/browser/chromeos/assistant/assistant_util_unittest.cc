@@ -78,7 +78,7 @@ class ScopedLogIn {
         identity_test_env_(identity_test_env),
         account_id_(account_id) {
     PreventAccessToDBus();
-    RunSanityChecks(user_type);
+    RunValidityChecks(user_type);
     AddUser(user_type);
 
     fake_user_manager_->LoginUser(account_id_);
@@ -109,9 +109,10 @@ class ScopedLogIn {
     }
   }
 
-  // Run sanity checks ensuring the account id is valid for the given user type.
-  // If these checks go off your test is testing something that can not happen.
-  void RunSanityChecks(user_manager::UserType user_type) const {
+  // Run validity checks ensuring the account id is valid for the given user
+  // type. If these checks go off your test is testing something that can not
+  // happen.
+  void RunValidityChecks(user_manager::UserType user_type) const {
     switch (user_type) {
       case user_manager::USER_TYPE_REGULAR:
       case user_manager::USER_TYPE_CHILD:

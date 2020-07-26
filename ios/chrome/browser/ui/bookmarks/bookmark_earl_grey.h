@@ -55,6 +55,10 @@ const GURL GetFrenchUrl();
 // GREYAssert is induced if the folder doesn't exist or the count doesn't match.
 - (void)verifyChildCount:(int)count inFolderWithName:(NSString*)name;
 
+// Programmatically adds a bookmark with the given title and URL. GREYAssert is
+// induced if the bookmark cannot be added.
+- (void)addBookmarkWithTitle:(NSString*)title URL:(NSString*)url;
+
 // Removes programmatically the first bookmark with the given title. GREYAssert
 // is induced if the bookmark can't be removed.
 - (void)removeBookmarkWithTitle:(NSString*)title;

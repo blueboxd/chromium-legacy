@@ -185,7 +185,7 @@
     // Ensure the list is scrolled to the top by selecting the first item.
     treeItem.children[0].selected = true;
     document.body.dispatchEvent(
-        new CustomEvent('certificate-fields-updated-for-tesing'));
+        new CustomEvent('certificate-fields-updated-for-testing'));
   }
 
   /**

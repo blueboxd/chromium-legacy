@@ -18,6 +18,10 @@
 #include "media/capture/video/video_capture_system.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
+namespace media {
+class FakeVideoCaptureDeviceFactory;
+}  // namespace media
+
 namespace content {
 
 struct DesktopMediaID;
@@ -93,9 +97,16 @@ class InProcessVideoCaptureDeviceLauncher : public VideoCaptureDeviceLauncher {
       std::unique_ptr<media::VideoCaptureDeviceClient> client,
       ReceiveDeviceCallback result_callback);
 
+  void OnFakeDevicesEnumerated(
+      const media::VideoCaptureParams& params,
+      std::unique_ptr<media::VideoCaptureDeviceClient> device_client,
+      ReceiveDeviceCallback result_callback,
+      std::vector<media::VideoCaptureDeviceInfo> devices_info);
+
   const scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
   media::VideoCaptureSystem* const video_capture_system_;
   State state_;
+  std::unique_ptr<media::FakeVideoCaptureDeviceFactory> fake_device_factory_;
 };
 
 }  // namespace content

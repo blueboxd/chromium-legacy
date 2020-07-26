@@ -1066,7 +1066,7 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   }
   PaintLayerScrollableArea* scrollable_area =
       Layer()->AncestorOverflowLayer()->GetScrollableArea();
-  scrollable_area->GetStickyConstraintsMap().Set(Layer(), constraints);
+  scrollable_area->AddStickyConstraints(Layer(), constraints);
 }
 
 bool LayoutBoxModelObject::IsSlowRepaintConstrainedObject() const {
@@ -1125,19 +1125,20 @@ PhysicalOffset LayoutBoxModelObject::StickyPositionOffset() const {
   if (!ancestor_overflow_layer || !ancestor_overflow_layer->GetScrollableArea())
     return PhysicalOffset();
 
-  StickyConstraintsMap& constraints_map =
-      ancestor_overflow_layer->GetScrollableArea()->GetStickyConstraintsMap();
-  auto it = constraints_map.find(Layer());
-  if (it == constraints_map.end())
+  auto* constraints =
+      ancestor_overflow_layer->GetScrollableArea()->GetStickyConstraints(
+          Layer());
+  if (!constraints)
     return PhysicalOffset();
-  StickyPositionScrollingConstraints* constraints = &it->value;
 
   // The sticky offset is physical, so we can just return the delta computed in
   // absolute coords (though it may be wrong with transforms).
   PhysicalRect constraining_rect = ComputeStickyConstrainingRect();
   constraining_rect.Move(PhysicalOffset::FromFloatPointRound(
       ancestor_overflow_layer->GetScrollableArea()->ScrollPosition()));
-  return constraints->ComputeStickyOffset(constraining_rect, constraints_map);
+  return constraints->ComputeStickyOffset(
+      constraining_rect,
+      ancestor_overflow_layer->GetScrollableArea()->GetStickyConstraintsMap());
 }
 
 PhysicalOffset LayoutBoxModelObject::AdjustedPositionRelativeTo(

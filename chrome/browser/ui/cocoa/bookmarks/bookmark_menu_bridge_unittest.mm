@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
@@ -32,7 +33,6 @@ class BookmarkMenuBridgeTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
-    profile()->CreateBookmarkModel(true);
     bookmarks::test::WaitForBookmarkModelToLoad(
         BookmarkModelFactory::GetForBrowserContext(profile()));
     menu_.reset([[NSMenu alloc] initWithTitle:@"test"]);
@@ -43,6 +43,13 @@ class BookmarkMenuBridgeTest : public BrowserWithTestWindowTest {
   void TearDown() override {
     bridge_ = nullptr;
     BrowserWithTestWindowTest::TearDown();
+  }
+
+  TestingProfile::TestingFactories GetTestingFactories() override {
+    return {{BookmarkModelFactory::GetInstance(),
+             BookmarkModelFactory::GetDefaultFactory()},
+            {ManagedBookmarkServiceFactory::GetInstance(),
+             ManagedBookmarkServiceFactory::GetDefaultFactory()}};
   }
 
   void UpdateRootMenu() { bridge_->UpdateMenu(menu_, nullptr); }

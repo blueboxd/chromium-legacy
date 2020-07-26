@@ -45,6 +45,85 @@ bool GetOnlineState() {
   return false;
 }
 
+// Helper method to convert InstallStageTracker::FailureReason to the failure
+// reason proto.
+em::ExtensionInstallReportLogEvent_FailureReason ConvertFailureReasonToProto(
+    extensions::InstallStageTracker::FailureReason failure_reason) {
+  switch (failure_reason) {
+    case extensions::InstallStageTracker::FailureReason::UNKNOWN:
+      return em::ExtensionInstallReportLogEvent::UNKNOWN;
+    case extensions::InstallStageTracker::FailureReason::INVALID_ID:
+      return em::ExtensionInstallReportLogEvent::INVALID_ID;
+    case extensions::InstallStageTracker::FailureReason::
+        MALFORMED_EXTENSION_SETTINGS:
+      return em::ExtensionInstallReportLogEvent::MALFORMED_EXTENSION_SETTINGS;
+    case extensions::InstallStageTracker::FailureReason::REPLACED_BY_ARC_APP:
+      return em::ExtensionInstallReportLogEvent::REPLACED_BY_ARC_APP;
+    case extensions::InstallStageTracker::FailureReason::
+        MALFORMED_EXTENSION_DICT:
+      return em::ExtensionInstallReportLogEvent::MALFORMED_EXTENSION_DICT;
+    case extensions::InstallStageTracker::FailureReason::
+        NOT_SUPPORTED_EXTENSION_DICT:
+      return em::ExtensionInstallReportLogEvent::NOT_SUPPORTED_EXTENSION_DICT;
+    case extensions::InstallStageTracker::FailureReason::
+        MALFORMED_EXTENSION_DICT_FILE_PATH:
+      return em::ExtensionInstallReportLogEvent::
+          MALFORMED_EXTENSION_DICT_FILE_PATH;
+    case extensions::InstallStageTracker::FailureReason::
+        MALFORMED_EXTENSION_DICT_VERSION:
+      return em::ExtensionInstallReportLogEvent::
+          MALFORMED_EXTENSION_DICT_VERSION;
+    case extensions::InstallStageTracker::FailureReason::
+        MALFORMED_EXTENSION_DICT_UPDATE_URL:
+      return em::ExtensionInstallReportLogEvent::
+          MALFORMED_EXTENSION_DICT_UPDATE_URL;
+    case extensions::InstallStageTracker::FailureReason::LOCALE_NOT_SUPPORTED:
+      return em::ExtensionInstallReportLogEvent::LOCALE_NOT_SUPPORTED;
+    case extensions::InstallStageTracker::FailureReason::
+        NOT_PERFORMING_NEW_INSTALL:
+      return em::ExtensionInstallReportLogEvent::NOT_PERFORMING_NEW_INSTALL;
+    case extensions::InstallStageTracker::FailureReason::TOO_OLD_PROFILE:
+      return em::ExtensionInstallReportLogEvent::TOO_OLD_PROFILE;
+    case extensions::InstallStageTracker::FailureReason::
+        DO_NOT_INSTALL_FOR_ENTERPRISE:
+      return em::ExtensionInstallReportLogEvent::DO_NOT_INSTALL_FOR_ENTERPRISE;
+    case extensions::InstallStageTracker::FailureReason::ALREADY_INSTALLED:
+      return em::ExtensionInstallReportLogEvent::ALREADY_INSTALLED;
+    case extensions::InstallStageTracker::FailureReason::CRX_FETCH_FAILED:
+      return em::ExtensionInstallReportLogEvent::CRX_FETCH_FAILED;
+    case extensions::InstallStageTracker::FailureReason::MANIFEST_FETCH_FAILED:
+      return em::ExtensionInstallReportLogEvent::MANIFEST_FETCH_FAILED;
+    case extensions::InstallStageTracker::FailureReason::MANIFEST_INVALID:
+      return em::ExtensionInstallReportLogEvent::MANIFEST_INVALID;
+    case extensions::InstallStageTracker::FailureReason::NO_UPDATE:
+      return em::ExtensionInstallReportLogEvent::NO_UPDATE;
+    case extensions::InstallStageTracker::FailureReason::
+        CRX_INSTALL_ERROR_DECLINED:
+      return em::ExtensionInstallReportLogEvent::CRX_INSTALL_ERROR_DECLINED;
+    case extensions::InstallStageTracker::FailureReason::
+        CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE:
+      return em::ExtensionInstallReportLogEvent::
+          CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE;
+    case extensions::InstallStageTracker::FailureReason::
+        CRX_INSTALL_ERROR_OTHER:
+      return em::ExtensionInstallReportLogEvent::CRX_INSTALL_ERROR_OTHER;
+    case extensions::InstallStageTracker::FailureReason::NO_UPDATE_URL:
+      return em::ExtensionInstallReportLogEvent::NO_UPDATE_URL;
+    case extensions::InstallStageTracker::FailureReason::PENDING_ADD_FAILED:
+      return em::ExtensionInstallReportLogEvent::PENDING_ADD_FAILED;
+    case extensions::InstallStageTracker::FailureReason::DOWNLOADER_ADD_FAILED:
+      return em::ExtensionInstallReportLogEvent::DOWNLOADER_ADD_FAILED;
+    case extensions::InstallStageTracker::FailureReason::IN_PROGRESS:
+      return em::ExtensionInstallReportLogEvent::IN_PROGRESS;
+    case extensions::InstallStageTracker::FailureReason::CRX_FETCH_URL_EMPTY:
+      return em::ExtensionInstallReportLogEvent::CRX_FETCH_URL_EMPTY;
+    case extensions::InstallStageTracker::FailureReason::CRX_FETCH_URL_INVALID:
+      return em::ExtensionInstallReportLogEvent::CRX_FETCH_URL_INVALID;
+    default:
+      NOTREACHED();
+  }
+}
+
 }  // namespace
 
 ExtensionInstallEventLogCollector::ExtensionInstallEventLogCollector(
@@ -124,6 +203,7 @@ void ExtensionInstallEventLogCollector::OnExtensionInstallationFailed(
   auto event = std::make_unique<em::ExtensionInstallReportLogEvent>();
   event->set_event_type(
       em::ExtensionInstallReportLogEvent::INSTALLATION_FAILED);
+  event->set_failure_reason(ConvertFailureReasonToProto(reason));
   delegate_->Add(extension_id, true /* gather_disk_space_info */,
                  std::move(event));
   delegate_->OnExtensionInstallationFinished(extension_id);

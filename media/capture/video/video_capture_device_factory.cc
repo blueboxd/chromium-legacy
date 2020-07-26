@@ -20,12 +20,6 @@ VideoCaptureDeviceFactory::VideoCaptureDeviceFactory() {
 
 VideoCaptureDeviceFactory::~VideoCaptureDeviceFactory() = default;
 
-void VideoCaptureDeviceFactory::GetCameraLocationsAsync(
-    std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors,
-    DeviceDescriptorsCallback result_callback) {
-  NOTIMPLEMENTED();
-}
-
 #if defined(OS_CHROMEOS)
 bool VideoCaptureDeviceFactory::IsSupportedCameraAppDeviceBridge() {
   return false;

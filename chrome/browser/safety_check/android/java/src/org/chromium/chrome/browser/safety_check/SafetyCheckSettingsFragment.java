@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -34,6 +35,8 @@ public class SafetyCheckSettingsFragment extends PreferenceFragmentCompat {
 
     /** The "Check" button at the bottom that needs to be added after the View is inflated. */
     private ButtonCompat mCheckButton;
+
+    private TextView mTimestampTextView;
 
     public static CharSequence getSafetyCheckSettingsElementTitle(Context context) {
         SharedPreferencesManager preferenceManager = SharedPreferencesManager.getInstance();
@@ -77,16 +80,26 @@ public class SafetyCheckSettingsFragment extends PreferenceFragmentCompat {
         LinearLayout view =
                 (LinearLayout) super.onCreateView(inflater, container, savedInstanceState);
         // Add a button to the bottom of the preferences view.
-        mCheckButton = (ButtonCompat) inflater.inflate(R.layout.safety_check_button, view, false);
-        view.addView(mCheckButton);
+        LinearLayout bottomView =
+                (LinearLayout) inflater.inflate(R.layout.safety_check_bottom_elements, view, false);
+        mCheckButton = (ButtonCompat) bottomView.findViewById(R.id.safety_check_button);
+        mTimestampTextView = (TextView) bottomView.findViewById(R.id.safety_check_timestamp);
+        view.addView(bottomView);
         return view;
     }
 
     /**
      * @return A {@link ButtonCompat} object for the Check button.
      */
-    public ButtonCompat getCheckButton() {
+    ButtonCompat getCheckButton() {
         return mCheckButton;
+    }
+
+    /**
+     * @return A {@link TextView} object for the last run timestamp.
+     */
+    TextView getTimestampTextView() {
+        return mTimestampTextView;
     }
 
     /**

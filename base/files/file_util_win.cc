@@ -390,10 +390,6 @@ bool DeletePathRecursively(const FilePath& path) {
   return DeleteFileAndRecordMetrics(path, /*recursive=*/true);
 }
 
-bool DeleteFile(const FilePath& path, bool recursive) {
-  return DeleteFileAndRecordMetrics(path, recursive);
-}
-
 bool DeleteFileAfterReboot(const FilePath& path) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
 

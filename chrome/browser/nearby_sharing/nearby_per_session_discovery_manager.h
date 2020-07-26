@@ -39,7 +39,7 @@ class NearbyPerSessionDiscoveryManager
   void StartDiscovery(
       mojo::PendingRemote<nearby_share::mojom::ShareTargetListener> listener,
       StartDiscoveryCallback callback) override;
-  void SelectShareTarget(nearby_share::mojom::ShareTargetPtr share_target,
+  void SelectShareTarget(const base::UnguessableToken& share_target_id,
                          SelectShareTargetCallback callback) override;
 
  private:
@@ -48,8 +48,10 @@ class NearbyPerSessionDiscoveryManager
   // multiple times as the transfer progresses.
   void OnSend(NearbySharingService::StatusCodes status);
 
+  // Unregisters this class from the NearbySharingService.
+  void UnregisterSendSurface();
+
   NearbySharingService* nearby_sharing_service_;
-  bool is_registered_ = false;
   mojo::Remote<nearby_share::mojom::ShareTargetListener> share_target_listener_;
   SelectShareTargetCallback select_share_target_callback_;
 

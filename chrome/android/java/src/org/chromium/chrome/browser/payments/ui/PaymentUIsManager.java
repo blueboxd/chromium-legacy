@@ -14,11 +14,28 @@ import org.chromium.chrome.browser.payments.AutofillPaymentAppFactory;
 import org.chromium.chrome.browser.payments.CardEditor;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl;
 import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
+import org.chromium.components.autofill.EditableOption;
+import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentAppType;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentRequestLifecycleObserver;
 import org.chromium.components.payments.PaymentRequestParams;
+import org.chromium.payments.mojom.PaymentCurrencyAmount;
+import org.chromium.payments.mojom.PaymentDetails;
+import org.chromium.payments.mojom.PaymentDetailsModifier;
+import org.chromium.payments.mojom.PaymentItem;
+import org.chromium.payments.mojom.PaymentShippingOption;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This class manages all of the UIs related to payment. The UI logic of {@link PaymentRequestImpl}
@@ -26,13 +43,17 @@ import org.chromium.components.payments.PaymentRequestParams;
  */
 public class PaymentUIsManager
         implements SettingsAutofillAndPaymentsObserver.Observer, PaymentRequestLifecycleObserver {
+    private SectionInformation mUiShippingOptions;
+    private final Map<String, CurrencyFormatter> mCurrencyFormatterMap;
     private final Delegate mDelegate;
     private final AddressEditor mAddressEditor;
     private final CardEditor mCardEditor;
     private final PaymentUisShowStateReconciler mPaymentUisShowStateReconciler;
+    private final PaymentRequestParams mParams;
 
     private PaymentRequestUI mPaymentRequestUI;
 
+    private ShoppingCart mUiShoppingCart;
     private Boolean mMerchantSupportsAutofillCards;
     private SectionInformation mPaymentMethodsSection;
     private SectionInformation mShippingAddressesSection;
@@ -104,18 +125,21 @@ public class PaymentUIsManager
     /**
      * Create PaymentUIsManager.
      * @param delegate The delegate of this class.
+     * @param params The parameters of the payment request specified by the merchant.
      * @param addressEditor The AddressEditor of the PaymentRequest UI.
      * @param cardEditor The CardEditor of the PaymentRequest UI.
      */
     // TODO(crbug.com/1107102): AddressEditor and CardEditor should be initialized in this
     // constructor instead of the caller of the constructor, once CardEditor's "ForTest" symbols
     // have been removed from the production code.
-    public PaymentUIsManager(
-            Delegate delegate, AddressEditor addressEditor, CardEditor cardEditor) {
+    public PaymentUIsManager(Delegate delegate, PaymentRequestParams params,
+            AddressEditor addressEditor, CardEditor cardEditor) {
         mDelegate = delegate;
+        mParams = params;
         mAddressEditor = addressEditor;
         mCardEditor = cardEditor;
         mPaymentUisShowStateReconciler = new PaymentUisShowStateReconciler();
+        mCurrencyFormatterMap = new HashMap<>();
     }
 
     /** @return The PaymentRequestUI. */
@@ -184,11 +208,6 @@ public class PaymentUIsManager
         mContactSection = contactSection;
     }
 
-    /** Get the AutofillPaymentAppCreator. */
-    public AutofillPaymentAppCreator getAutofillPaymentAppCreator() {
-        return mAutofillPaymentAppCreator;
-    }
-
     /** Set the AutofillPaymentAppCreator. */
     public void setAutofillPaymentAppCreator(AutofillPaymentAppCreator autofillPaymentAppCreator) {
         mAutofillPaymentAppCreator = autofillPaymentAppCreator;
@@ -198,6 +217,40 @@ public class PaymentUIsManager
     public boolean canUserAddCreditCard() {
         assert mCanUserAddCreditCard != null;
         return mCanUserAddCreditCard;
+    }
+
+    /**
+     * The UI model of the shopping cart, including the total. Each item includes a label and a
+     * price string. This data is passed to the UI.
+     */
+    public ShoppingCart getUiShoppingCart() {
+        return mUiShoppingCart;
+    }
+
+    /** Set the shopping cart on the PaymentRequest UI. */
+    public void setUiShoppingCart(ShoppingCart uiShoppingCart) {
+        mUiShoppingCart = uiShoppingCart;
+    }
+
+    /** @return Get a map of currency code to CurrencyFormatter. */
+    public Map<String, CurrencyFormatter> getCurrencyFormatterMap() {
+        return mCurrencyFormatterMap;
+    }
+
+    /**
+     * The UI model for the shipping options. Includes the label and sublabel for each shipping
+     * option. Also keeps track of the selected shipping option. This data is passed to the UI.
+     */
+    public SectionInformation getUiShippingOptions() {
+        return mUiShippingOptions;
+    }
+
+    /**
+     * Set the shipping options for the Payment Request UI.
+     * @param uiShippingOptions A shipping options to be displayed on the Payment Request UI.
+     */
+    public void setUiShippingOptions(SectionInformation uiShippingOptions) {
+        mUiShippingOptions = uiShippingOptions;
     }
 
     // Implement SettingsAutofillAndPaymentsObserver.Observer:
@@ -288,5 +341,168 @@ public class PaymentUIsManager
         return mPaymentMethodsSection != null && mPaymentMethodsSection.getSelectedItem() != null
                 ? ((PaymentApp) mPaymentMethodsSection.getSelectedItem()).getPaymentAppType()
                 : PaymentAppType.UNDEFINED;
+    }
+
+    /** Sets the modifier for the order summary based on the given app, if any. */
+    public void updateOrderSummary(@Nullable PaymentApp app) {
+        if (!PaymentFeatureList.isEnabled(PaymentFeatureList.WEB_PAYMENTS_MODIFIERS)) return;
+
+        PaymentDetailsModifier modifier = getModifier(app);
+        PaymentItem total = modifier == null ? null : modifier.total;
+        if (total == null) total = mParams.getRawTotal();
+
+        CurrencyFormatter formatter = getOrCreateCurrencyFormatter(total.amount);
+        mUiShoppingCart.setTotal(new LineItem(total.label, formatter.getFormattedCurrencyCode(),
+                formatter.format(total.amount.value), false /* isPending */));
+        mUiShoppingCart.setAdditionalContents(modifier == null
+                        ? null
+                        : getLineItems(Arrays.asList(modifier.additionalDisplayItems)));
+        if (mPaymentRequestUI != null) {
+            mPaymentRequestUI.updateOrderSummarySection(mUiShoppingCart);
+        }
+    }
+
+    /** @return The first modifier that matches the given app, or null. */
+    @Nullable
+    public PaymentDetailsModifier getModifier(@Nullable PaymentApp app) {
+        if (mParams.getModifiers() == null || app == null) return null;
+        // Makes a copy to ensure it is modifiable.
+        Set<String> methodNames = new HashSet<>(app.getInstrumentMethodNames());
+        methodNames.retainAll(mParams.getModifiers().keySet());
+        if (methodNames.isEmpty()) return null;
+
+        for (String methodName : methodNames) {
+            PaymentDetailsModifier modifier = mParams.getModifiers().get(methodName);
+            if (app.isValidForPaymentMethodData(methodName, modifier.methodData)) {
+                return modifier;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets currency formatter for a given PaymentCurrencyAmount,
+     * creates one if no existing instance is found.
+     *
+     * @param amount The given payment amount.
+     */
+    public CurrencyFormatter getOrCreateCurrencyFormatter(PaymentCurrencyAmount amount) {
+        String key = amount.currency;
+        CurrencyFormatter formatter = mCurrencyFormatterMap.get(key);
+        if (formatter == null) {
+            formatter = new CurrencyFormatter(amount.currency, Locale.getDefault());
+            mCurrencyFormatterMap.put(key, formatter);
+        }
+        return formatter;
+    }
+
+    /**
+     * Converts a list of payment items and returns their parsed representation.
+     *
+     * @param items The payment items to parse. Can be null.
+     * @return A list of valid line items.
+     */
+    public List<LineItem> getLineItems(@Nullable List<PaymentItem> items) {
+        // Line items are optional.
+        if (items == null) return new ArrayList<>();
+
+        List<LineItem> result = new ArrayList<>(items.size());
+        for (int i = 0; i < items.size(); i++) {
+            PaymentItem item = items.get(i);
+            CurrencyFormatter formatter = getOrCreateCurrencyFormatter(item.amount);
+            result.add(new LineItem(item.label,
+                    isMixedOrChangedCurrency() ? formatter.getFormattedCurrencyCode() : "",
+                    formatter.format(item.amount.value), item.pending));
+        }
+
+        return Collections.unmodifiableList(result);
+    }
+
+    private boolean isMixedOrChangedCurrency() {
+        return mCurrencyFormatterMap.size() > 1;
+    }
+
+    /**
+     * Load required currency formatter for a given PaymentDetails.
+     *
+     * Note that the cache (mCurrencyFormatterMap) is not cleared for
+     * updated payment details so as to indicate the currency has been changed.
+     *
+     * @param details The given payment details.
+     */
+    public void loadCurrencyFormattersForPaymentDetails(PaymentDetails details) {
+        if (details.total != null) {
+            getOrCreateCurrencyFormatter(details.total.amount);
+        }
+
+        if (details.displayItems != null) {
+            for (PaymentItem item : details.displayItems) {
+                getOrCreateCurrencyFormatter(item.amount);
+            }
+        }
+
+        if (details.shippingOptions != null) {
+            for (PaymentShippingOption option : details.shippingOptions) {
+                getOrCreateCurrencyFormatter(option.amount);
+            }
+        }
+
+        if (details.modifiers != null) {
+            for (PaymentDetailsModifier modifier : details.modifiers) {
+                if (modifier.total != null) getOrCreateCurrencyFormatter(modifier.total.amount);
+                for (PaymentItem displayItem : modifier.additionalDisplayItems) {
+                    getOrCreateCurrencyFormatter(displayItem.amount);
+                }
+            }
+        }
+    }
+
+    /**
+     * Converts a list of shipping options and returns their parsed representation.
+     *
+     * @param options The raw shipping options to parse. Can be null.
+     * @return The UI representation of the shipping options.
+     */
+    public SectionInformation getShippingOptions(@Nullable PaymentShippingOption[] options) {
+        // Shipping options are optional.
+        if (options == null || options.length == 0) {
+            return new SectionInformation(PaymentRequestUI.DataType.SHIPPING_OPTIONS);
+        }
+
+        List<EditableOption> result = new ArrayList<>();
+        int selectedItemIndex = SectionInformation.NO_SELECTION;
+        for (int i = 0; i < options.length; i++) {
+            PaymentShippingOption option = options[i];
+            CurrencyFormatter formatter = getOrCreateCurrencyFormatter(option.amount);
+            String currencyPrefix = isMixedOrChangedCurrency()
+                    ? formatter.getFormattedCurrencyCode() + "\u0020"
+                    : "";
+            result.add(new EditableOption(option.id, option.label,
+                    currencyPrefix + formatter.format(option.amount.value), null));
+            if (option.selected) selectedItemIndex = i;
+        }
+
+        return new SectionInformation(PaymentRequestUI.DataType.SHIPPING_OPTIONS, selectedItemIndex,
+                Collections.unmodifiableList(result));
+    }
+
+    /** Destroy the currency formatters. */
+    public void destroyCurrencyFormatters() {
+        for (CurrencyFormatter formatter : mCurrencyFormatterMap.values()) {
+            assert formatter != null;
+            // Ensures the native implementation of currency formatter does not leak.
+            formatter.destroy();
+        }
+        mCurrencyFormatterMap.clear();
+    }
+
+    /**
+     * Notifies the UI about the changes in selected payment method.
+     */
+    public void onSelectedPaymentMethodUpdated() {
+        mPaymentRequestUI.selectedPaymentMethodUpdated(
+                new PaymentInformation(mUiShoppingCart, mShippingAddressesSection,
+                        mUiShippingOptions, mContactSection, mPaymentMethodsSection));
     }
 }

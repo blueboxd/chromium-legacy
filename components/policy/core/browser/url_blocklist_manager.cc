@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/policy/core/browser/url_blacklist_manager.h"
+#include "components/policy/core/browser/url_blocklist_manager.h"
 
 #include <stdint.h>
 
@@ -27,7 +27,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/policy/core/browser/url_blacklist_policy_handler.h"
+#include "components/policy/core/browser/url_blocklist_policy_handler.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"

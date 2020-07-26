@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
@@ -146,13 +147,21 @@ class CameraDeviceDelegateTest : public ::testing::Test {
   void AllocateDevice() {
     ASSERT_FALSE(device_delegate_thread_.IsRunning());
     ASSERT_FALSE(camera_device_delegate_);
-    VideoCaptureDeviceDescriptors descriptors;
-    camera_hal_delegate_->GetDeviceDescriptors(&descriptors);
-    ASSERT_EQ(descriptors.size(), 1u);
+
+    std::vector<VideoCaptureDeviceInfo> devices_info;
+    base::RunLoop run_loop;
+    camera_hal_delegate_->GetDevicesInfo(base::BindLambdaForTesting(
+        [&devices_info, &run_loop](std::vector<VideoCaptureDeviceInfo> result) {
+          devices_info = std::move(result);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+
+    ASSERT_EQ(devices_info.size(), 1u);
     device_delegate_thread_.Start();
 
     camera_device_delegate_ = std::make_unique<CameraDeviceDelegate>(
-        descriptors[0], camera_hal_delegate_,
+        devices_info[0].descriptor, camera_hal_delegate_,
         device_delegate_thread_.task_runner(), nullptr);
   }
 

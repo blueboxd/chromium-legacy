@@ -407,11 +407,6 @@ class CORE_EXPORT LocalFrame final
   void SetOpener(Frame* opener) override;
 
   // See viewport_intersection_state.h for more info on these methods.
-  gfx::Point RemoteViewportOffset() const {
-    gfx::Point p;
-    intersection_state_.main_frame_transform.TransformPointReverse(&p);
-    return gfx::Point(-p.x(), -p.y());
-  }
   IntRect RemoteViewportIntersection() const {
     return intersection_state_.viewport_intersection;
   }

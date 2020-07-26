@@ -57,7 +57,7 @@
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/page_load_metrics/browser/metrics_navigation_throttle.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
-#include "components/policy/content/policy_blacklist_navigation_throttle.h"
+#include "components/policy/content/policy_blocklist_navigation_throttle.h"
 #include "components/policy/core/browser/browser_policy_connector_base.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/browser/browser_url_loader_throttle.h"

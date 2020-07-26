@@ -77,7 +77,9 @@ bool RestorePermissionInfo(const FilePath& path, void* info, size_t length) {
 bool DieFileDie(const FilePath& file, bool recurse) {
   // There is no need to workaround Windows problems on POSIX.
   // Just pass-through.
-  return DeleteFile(file, recurse);
+  if (recurse)
+    return DeletePathRecursively(file);
+  return DeleteFile(file);
 }
 
 void SyncPageCacheToDisk() {

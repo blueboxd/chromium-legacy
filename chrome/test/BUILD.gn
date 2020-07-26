@@ -2839,6 +2839,7 @@ if (!is_android) {
         "//components/paint_preview/browser",
         "//components/paint_preview/browser:test_support",
         "//components/paint_preview/common",
+        "//components/paint_preview/common:test_utils",
         "//components/services/paint_preview_compositor/public/mojom",
       ]
     }
@@ -3668,8 +3669,6 @@ test("unit_tests") {
       "../browser/nearby_sharing/nearby_per_session_discovery_manager_unittest.cc",
       "../browser/nearby_sharing/nearby_process_manager_unittest.cc",
       "../browser/nearby_sharing/nearby_sharing_service_impl_unittest.cc",
-      "../browser/nearby_sharing/share_target_builder.cc",
-      "../browser/nearby_sharing/share_target_builder.h",
       "../browser/nearby_sharing/transfer_metadata_builder.cc",
       "../browser/nearby_sharing/transfer_metadata_builder.h",
       "../browser/nearby_sharing/webrtc_signaling_messenger_unittest.cc",

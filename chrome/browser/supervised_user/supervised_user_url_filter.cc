@@ -28,7 +28,6 @@
 #include "chrome/browser/supervised_user/kids_management_url_checker_client.h"
 #include "chrome/browser/supervised_user/supervised_user_blacklist.h"
 #include "chrome/common/chrome_features.h"
-#include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/policy/core/browser/url_util.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/url_matcher/url_matcher.h"

@@ -33,6 +33,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
+import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.url.GURL;
@@ -172,6 +173,13 @@ public class AndroidPaymentAppFinderTest
     @Override
     public Map<String, PaymentMethodData> getMethodData() {
         return mMethodData;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public PaymentItem getRawTotal() {
+        // This test doesn't need this value.
+        return null;
     }
 
     // PaymentAppFactoryParams implementation.

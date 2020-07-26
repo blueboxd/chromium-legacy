@@ -68,7 +68,7 @@
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/browser/configuration_policy_handler_parameters.h"
 #include "components/policy/core/browser/proxy_policy_handler.h"
-#include "components/policy/core/browser/url_blacklist_policy_handler.h"
+#include "components/policy/core/browser/url_blocklist_policy_handler.h"
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_pref_names.h"

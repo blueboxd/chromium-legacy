@@ -111,8 +111,9 @@ void PaintPreviewDemoService::OnCaptured(
     FinishedSuccessfullyCallback callback,
     const DirectoryKey& key,
     PaintPreviewBaseService::CaptureStatus status,
-    std::unique_ptr<PaintPreviewProto> proto) {
-  if (status != PaintPreviewBaseService::CaptureStatus::kOk || !proto) {
+    std::unique_ptr<CaptureResult> result) {
+  if (status != PaintPreviewBaseService::CaptureStatus::kOk ||
+      !result->capture_success) {
     std::move(callback).Run(false);
     return;
   }
@@ -120,7 +121,7 @@ void PaintPreviewDemoService::OnCaptured(
   GetTaskRunner()->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&FileManager::SerializePaintPreviewProto, GetFileManager(),
-                     key, *proto, true),
+                     key, result->proto, true),
       base::BindOnce(&PaintPreviewDemoService::OnSerializationFinished,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

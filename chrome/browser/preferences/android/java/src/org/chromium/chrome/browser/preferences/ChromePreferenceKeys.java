@@ -593,6 +593,10 @@ public final class ChromePreferenceKeys {
             "org.chromium.chrome.browser.settings.privacy."
             + "PREF_OTHER_FORMS_OF_HISTORY_DIALOG_SHOWN";
 
+    /** Stores the timestamp of the last performed Safety check. */
+    public static final String SETTINGS_SAFETY_CHECK_LAST_RUN_TIMESTAMP =
+            "Chrome.SafetyCheck.LastRunTimestamp";
+
     /** Stores the number of times the user has performed Safety check. */
     public static final String SETTINGS_SAFETY_CHECK_RUN_COUNTER = "Chrome.SafetyCheck.RunCounter";
 
@@ -800,6 +804,7 @@ public final class ChromePreferenceKeys {
                 HOMEPAGE_USE_CHROME_NTP,
                 PROMO_IS_DISMISSED.pattern(),
                 PROMO_TIMES_SEEN.pattern(),
+                SETTINGS_SAFETY_CHECK_LAST_RUN_TIMESTAMP,
                 SETTINGS_SAFETY_CHECK_RUN_COUNTER,
                 TWA_DISCLOSURE_SEEN_PACKAGES
         );

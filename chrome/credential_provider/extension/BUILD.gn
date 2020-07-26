@@ -31,9 +31,22 @@ grit("extension_resources") {
   ]
 }
 
+source_set("common") {
+  sources = [
+    "extension_strings.cc",
+    "extension_strings.h",
+    "os_service_manager.cc",
+    "os_service_manager.h",
+    "scoped_handle.h",
+  ]
+  deps = [ "//base:base" ]
+  configs += [ "//build/config/win:windowed" ]
+}
+
 executable("gcpw_extension") {
   sources = [ "extension_main.cc" ]
   deps = [
+    ":common",
     ":extension_resources",
     ":version",
     "../eventlog:gcp_eventlog_messages",

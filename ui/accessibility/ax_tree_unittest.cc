@@ -4400,6 +4400,58 @@ TEST(AXTreeTest, SetSizePosInSetHidden) {
   EXPECT_OPTIONAL_EQ(4, option4->GetSetSize());
 }
 
+// Tests that we get the correct PosInSet and SetSize values when using an
+// aria-controls relationship.
+TEST(AXTreeTest, SetSizePosInSetControls) {
+  std::vector<int32_t> three;
+  three.push_back(3);
+  std::vector<int32_t> hundred;
+  hundred.push_back(100);
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(7);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].role = ax::mojom::Role::kGenericContainer;
+  tree_update.nodes[0].child_ids = {2, 3, 7};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].role = ax::mojom::Role::kPopUpButton;  // SetSize = 3
+  tree_update.nodes[1].AddIntListAttribute(
+      ax::mojom::IntListAttribute::kControlsIds, three);
+  tree_update.nodes[1].SetHasPopup(ax::mojom::HasPopup::kMenu);
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].role = ax::mojom::Role::kMenu;  // SetSize = 3
+  tree_update.nodes[2].child_ids = {4, 5, 6};
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].role = ax::mojom::Role::kMenuItem;  // 1 of 3
+  tree_update.nodes[4].id = 5;
+  tree_update.nodes[4].role = ax::mojom::Role::kMenuItem;  // 2 of 3
+  tree_update.nodes[5].id = 6;
+  tree_update.nodes[5].role = ax::mojom::Role::kMenuItem;  // 3 of 3
+  tree_update.nodes[6].id = 7;
+  tree_update.nodes[6].role =
+      ax::mojom::Role::kPopUpButton;  // Test an invalid controls id.
+  tree_update.nodes[6].AddIntListAttribute(
+      ax::mojom::IntListAttribute::kControlsIds, hundred);
+  AXTree tree(tree_update);
+
+  AXNode* button = tree.GetFromId(2);
+  EXPECT_OPTIONAL_EQ(3, button->GetSetSize());
+  EXPECT_FALSE(button->GetPosInSet());
+  AXNode* menu = tree.GetFromId(3);
+  EXPECT_OPTIONAL_EQ(3, menu->GetSetSize());
+  AXNode* item = tree.GetFromId(4);
+  EXPECT_OPTIONAL_EQ(1, item->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(3, item->GetSetSize());
+  item = tree.GetFromId(5);
+  EXPECT_OPTIONAL_EQ(2, item->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(3, item->GetSetSize());
+  item = tree.GetFromId(6);
+  EXPECT_OPTIONAL_EQ(3, item->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(3, item->GetSetSize());
+  button = tree.GetFromId(7);
+  EXPECT_OPTIONAL_EQ(0, button->GetSetSize());
+}
+
 TEST(AXTreeTest, OnNodeWillBeDeletedHasValidUnignoredParent) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;

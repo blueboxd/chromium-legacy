@@ -33,6 +33,9 @@
 + (NSError*)verifyBookmarksWithTitle:(NSString*)title
                        expectedCount:(NSUInteger)expectedCount;
 
+// Programmatically adds a bookmark with the given title and URL.
++ (NSError*)addBookmarkWithTitle:(NSString*)title URL:(NSString*)url;
+
 // Removes programmatically the first bookmark with the given title.
 + (NSError*)removeBookmarkWithTitle:(NSString*)title;
 

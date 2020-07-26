@@ -9,6 +9,8 @@
 #include <errno.h>
 #include <stddef.h>
 #include <string.h>
+#include <sys/sysctl.h>
+#include <sys/types.h>
 #include <sys/utsname.h>
 #include <sys/xattr.h>
 
@@ -23,6 +25,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace mac {
@@ -349,6 +352,29 @@ int MacOSVersion() {
 }
 
 }  // namespace internal
+
+#if defined(ARCH_CPU_X86_64)
+namespace {
+// https://developer.apple.com/documentation/apple_silicon/about_the_rosetta_translation_environment#3616845
+bool ProcessIsTranslated() {
+  int ret = 0;
+  size_t size = sizeof(ret);
+  if (sysctlbyname("sysctl.proc_translated", &ret, &size, nullptr, 0) == -1)
+    return false;
+  return ret;
+}
+}  // namespace
+#endif  // ARCH_CPU_X86_64
+
+CPUType GetCPUType() {
+#if defined(ARCH_CPU_ARM64)
+  return CPUType::kArm;
+#elif defined(ARCH_CPU_X86_64)
+  return ProcessIsTranslated() ? CPUType::kTranslatedIntel : CPUType::kIntel;
+#else
+#error Time for another chip transition?
+#endif  // ARCH_CPU_*
+}
 
 std::string GetModelIdentifier() {
   std::string return_string;

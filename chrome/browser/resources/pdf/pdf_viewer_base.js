@@ -610,6 +610,7 @@ export class PDFViewerBaseElement extends PolymerElement {
    */
   onZoomChanged(e) {
     this.viewport_.setZoom(e.detail / 100);
+    PDFMetrics.record(PDFMetrics.UserAction.ZOOM_CUSTOM);
   }
 
   /** @protected */

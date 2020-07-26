@@ -18,37 +18,34 @@
 
 namespace media {
 
-class VideoCaptureDeviceFactoryFuchsia::DeviceInfoFetcher {
+// Helper class that calls GetIdentifier() and GetConfigurations() for a
+// fuchsia::camera3::Device instance and stores the results afterwards.
+class VideoCaptureDeviceFactoryFuchsia::DeviceConfigFetcher {
  public:
-  DeviceInfoFetcher(uint64_t device_id, fuchsia::camera3::DevicePtr device)
+  DeviceConfigFetcher(uint64_t device_id, fuchsia::camera3::DevicePtr device)
       : device_id_(device_id), device_(std::move(device)) {
     device_.set_error_handler(
-        fit::bind_member(this, &DeviceInfoFetcher::OnError));
+        fit::bind_member(this, &DeviceConfigFetcher::OnError));
+  }
+
+  void Fetch(base::OnceClosure on_fetched_callback) {
+    DCHECK(device_);
+    DCHECK(!have_results());
+    DCHECK(!on_fetched_callback_);
+
+    on_fetched_callback_ = std::move(on_fetched_callback);
     device_->GetIdentifier(
-        fit::bind_member(this, &DeviceInfoFetcher::OnDescription));
+        fit::bind_member(this, &DeviceConfigFetcher::OnDescription));
     device_->GetConfigurations(
-        fit::bind_member(this, &DeviceInfoFetcher::OnConfigurations));
+        fit::bind_member(this, &DeviceConfigFetcher::OnConfigurations));
   }
 
-  ~DeviceInfoFetcher() = default;
+  ~DeviceConfigFetcher() = default;
 
-  DeviceInfoFetcher(const DeviceInfoFetcher&) = delete;
-  const DeviceInfoFetcher& operator=(const DeviceInfoFetcher&) = delete;
+  DeviceConfigFetcher(const DeviceConfigFetcher&) = delete;
+  const DeviceConfigFetcher& operator=(const DeviceConfigFetcher&) = delete;
 
-  void WaitResults() {
-    DCHECK(!wait_results_run_loop_);
-
-    if (have_results())
-      return;
-
-    if (!device_)
-      return;
-
-    wait_results_run_loop_.emplace();
-    wait_results_run_loop_->Run();
-    wait_results_run_loop_.reset();
-  }
-
+  bool is_pending() const { return !!device_; }
   bool have_results() const { return description_ && formats_; }
   bool is_usable() const { return device_ || have_results(); }
 
@@ -60,8 +57,8 @@ class VideoCaptureDeviceFactoryFuchsia::DeviceInfoFetcher {
   void OnError(zx_status_t status) {
     ZX_LOG(ERROR, status) << "fuchsia.camera3.Device disconnected";
 
-    if (wait_results_run_loop_)
-      wait_results_run_loop_->Quit();
+    if (on_fetched_callback_)
+      std::move(on_fetched_callback_).Run();
   }
 
   void OnDescription(fidl::StringPtr identifier) {
@@ -97,15 +94,14 @@ class VideoCaptureDeviceFactoryFuchsia::DeviceInfoFetcher {
 
     device_.Unbind();
 
-    if (wait_results_run_loop_)
-      wait_results_run_loop_->Quit();
+    std::move(on_fetched_callback_).Run();
   }
 
   uint64_t device_id_;
   fuchsia::camera3::DevicePtr device_;
   base::Optional<std::string> description_;
   base::Optional<VideoCaptureFormats> formats_;
-  base::Optional<base::RunLoop> wait_results_run_loop_;
+  base::OnceClosure on_fetched_callback_;
 };
 
 VideoCaptureDeviceFactoryFuchsia::VideoCaptureDeviceFactoryFuchsia() {
@@ -138,61 +134,27 @@ VideoCaptureDeviceFactoryFuchsia::CreateDevice(
   return std::make_unique<VideoCaptureDeviceFuchsia>(std::move(device));
 }
 
-void VideoCaptureDeviceFactoryFuchsia::GetDeviceDescriptors(
-    VideoCaptureDeviceDescriptors* device_descriptors) {
+void VideoCaptureDeviceFactoryFuchsia::GetDevicesInfo(
+    GetDevicesInfoCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  device_descriptors->clear();
+  // If the list hasn't been received, then wait until it's received.
+  if (!devices_ || num_pending_device_info_requests_) {
+    pending_devices_info_requests_.push_back(std::move(callback));
 
-  if (!device_watcher_)
-    Initialize();
+    if (!device_watcher_)
+      Initialize();
 
-  // Even if |device_watcher_| was already connected, we may need need to wait
-  // for the first WatchDevices() response.
-  if (!received_first_update_) {
-    DCHECK(!first_update_run_loop_);
-
-    // The RunLoop will quit when either we've received the first WatchDevices()
-    // response or DeviceWatcher fails. |devices_| will be empty in case of a
-    // failure.
-    first_update_run_loop_.emplace();
-    first_update_run_loop_->Run();
-    first_update_run_loop_.reset();
+    return;
   }
 
-  for (auto& d : devices_) {
-    d.second->WaitResults();
-    if (d.second->is_usable()) {
-      device_descriptors->push_back(VideoCaptureDeviceDescriptor(
-          d.second->description(), base::NumberToString(d.first),
-          VideoCaptureApi::FUCHSIA_CAMERA3));
-    }
-  }
-}
-
-void VideoCaptureDeviceFactoryFuchsia::GetSupportedFormats(
-    const VideoCaptureDeviceDescriptor& device,
-    VideoCaptureFormats* capture_formats) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  uint64_t device_id;
-  bool converted = base::StringToUint64(device.device_id, &device_id);
-  DCHECK(converted);
-
-  auto it = devices_.find(device_id);
-  if (it == devices_.end()) {
-    capture_formats->clear();
-  } else {
-    it->second->WaitResults();
-    *capture_formats = it->second->formats();
-  }
+  std::move(callback).Run(MakeDevicesInfo());
 }
 
 void VideoCaptureDeviceFactoryFuchsia::Initialize() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!device_watcher_);
-  DCHECK(devices_.empty());
-  DCHECK(!received_first_update_);
+  DCHECK(!devices_);
 
   base::ComponentContextForProcess()->svc()->Connect(
       device_watcher_.NewRequest());
@@ -213,16 +175,13 @@ void VideoCaptureDeviceFactoryFuchsia::OnDeviceWatcherDisconnected(
   if (status != ZX_ERR_UNAVAILABLE)
     ZX_LOG(ERROR, status) << "fuchsia.camera3.DeviceWatcher disconnected.";
 
-  // Clear the list of devices and reset |received_first_update_| so we
-  // don't report any camera devices while DeviceWatcher is disconnected. We
-  // will try connecting DeviceWatcher again when GetDeviceDescriptors() is
-  // called.
-  devices_.clear();
+  // Clear the list of devices, so we don't report any camera devices while
+  // DeviceWatcher is disconnected. We will try connecting DeviceWatcher again
+  // when GetDevicesInfo() is called.
+  devices_ = base::nullopt;
+  num_pending_device_info_requests_ = 0;
 
-  received_first_update_ = false;
-
-  if (first_update_run_loop_)
-    first_update_run_loop_->Quit();
+  MaybeResolvePendingDeviceInfoCallbacks();
 }
 
 void VideoCaptureDeviceFactoryFuchsia::WatchDevices() {
@@ -236,27 +195,37 @@ void VideoCaptureDeviceFactoryFuchsia::OnWatchDevicesResult(
     std::vector<fuchsia::camera3::WatchDevicesEvent> events) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  if (!devices_)
+    devices_.emplace();
+
   for (auto& e : events) {
     if (e.is_removed()) {
-      int erased = devices_.erase(e.removed());
-      if (!erased) {
+      auto it = devices_->find(e.removed());
+      if (it == devices_->end()) {
         LOG(WARNING) << "Received device removed event for a device that "
                         "wasn't previously registered.";
+        continue;
       }
+      if (it->second->is_pending()) {
+        // If the device info request was still pending then consider it
+        // complete now.
+        OnDeviceInfoFetched();
+      }
+      devices_->erase(it);
       continue;
     }
 
     uint64_t id;
     if (e.is_added()) {
       id = e.added();
-      if (devices_.find(id) != devices_.end()) {
+      if (devices_->find(id) != devices_->end()) {
         LOG(WARNING) << "Received device added event for a device that was "
                         "previously registered.";
         continue;
       }
     } else {
       id = e.existing();
-      if (devices_.find(id) != devices_.end()) {
+      if (devices_->find(id) != devices_->end()) {
         continue;
       }
       LOG(WARNING) << "Received device exists event for a device that wasn't "
@@ -265,17 +234,65 @@ void VideoCaptureDeviceFactoryFuchsia::OnWatchDevicesResult(
 
     fuchsia::camera3::DevicePtr device;
     device_watcher_->ConnectToDevice(id, device.NewRequest());
-    devices_.emplace(
-        id, std::make_unique<DeviceInfoFetcher>(id, std::move(device)));
+
+    auto fetcher = std::make_unique<DeviceConfigFetcher>(id, std::move(device));
+
+    // base::Unretained() is safe because the |fetcher| is owned by |this|.
+    fetcher->Fetch(
+        base::BindOnce(&VideoCaptureDeviceFactoryFuchsia::OnDeviceInfoFetched,
+                       base::Unretained(this)));
+    num_pending_device_info_requests_++;
+
+    devices_->emplace(id, std::move(fetcher));
   }
-
-  received_first_update_ = true;
-
-  if (first_update_run_loop_)
-    first_update_run_loop_->Quit();
 
   // Watch for further updates.
   WatchDevices();
+
+  // Calls callbacks, which may delete |this|.
+  MaybeResolvePendingDeviceInfoCallbacks();
+}
+
+void VideoCaptureDeviceFactoryFuchsia::OnDeviceInfoFetched() {
+  DCHECK_GT(num_pending_device_info_requests_, 0U);
+  num_pending_device_info_requests_--;
+  MaybeResolvePendingDeviceInfoCallbacks();
+}
+
+std::vector<VideoCaptureDeviceInfo>
+VideoCaptureDeviceFactoryFuchsia::MakeDevicesInfo() {
+  std::vector<VideoCaptureDeviceInfo> devices_info;
+  // Leave the list empty if |devices_| isn't set (e.g. after DeviceWatcher
+  // has disconnected).
+  if (devices_) {
+    for (auto& device : devices_.value()) {
+      DCHECK(!device.second->is_pending());
+      if (device.second->is_usable()) {
+        devices_info.emplace_back(VideoCaptureDeviceDescriptor(
+            device.second->description(), base::NumberToString(device.first),
+            VideoCaptureApi::FUCHSIA_CAMERA3));
+        devices_info.back().supported_formats = device.second->formats();
+      }
+    }
+  }
+  return devices_info;
+}
+
+void VideoCaptureDeviceFactoryFuchsia::
+    MaybeResolvePendingDeviceInfoCallbacks() {
+  if (num_pending_device_info_requests_ > 0)
+    return;
+
+  std::vector<GetDevicesInfoCallback> callbacks;
+  callbacks.swap(pending_devices_info_requests_);
+
+  auto weak_this = weak_factory_.GetWeakPtr();
+  for (auto& c : callbacks) {
+    auto devices_info = MakeDevicesInfo();
+    std::move(c).Run(devices_info);
+    if (!weak_this)
+      return;
+  }
 }
 
 }  // namespace media

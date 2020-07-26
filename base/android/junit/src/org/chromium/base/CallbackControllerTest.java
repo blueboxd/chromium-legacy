@@ -4,11 +4,13 @@
 
 package org.chromium.base;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -19,95 +21,88 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class CallbackControllerTest {
-    private boolean mExecutionCompleted;
-
-    @Test
-    public void testInstanceCallback() {
-        CallbackController mCallbackController = new CallbackController();
-        Callback<Boolean> wrapped = mCallbackController.makeCancelable(this::setExecutionCompleted);
-        mExecutionCompleted = false;
-        wrapped.onResult(true);
-        assertTrue(mExecutionCompleted);
-
-        // Execution possible multiple times.
-        mExecutionCompleted = false;
-        wrapped.onResult(true);
-        assertTrue(mExecutionCompleted);
-
-        // Won't trigger after CallbackController is destroyed.
-        mExecutionCompleted = false;
-        mCallbackController.destroy();
-        wrapped.onResult(true);
-        assertFalse(mExecutionCompleted);
+    /**
+     * Callbacks in this test act on {@code CallbackTarget}.
+     */
+    private static class CallbackTarget {
+        public void runnableTarget() {}
+        public void callbackTarget(boolean arg) {}
     }
 
     @Test
-    public void testlInstanceRunnable() {
-        CallbackController mCallbackController = new CallbackController();
-        Runnable wrapped = mCallbackController.makeCancelable(this::completeExection);
-        mExecutionCompleted = false;
-        wrapped.run();
-        assertTrue(mExecutionCompleted);
+    public void testInstanceCallback() {
+        CallbackController callbackController = new CallbackController();
+        CallbackTarget target = Mockito.mock(CallbackTarget.class);
+        Callback<Boolean> wrapped = callbackController.makeCancelable(target::callbackTarget);
+
+        wrapped.onResult(true);
+        verify(target).callbackTarget(true);
 
         // Execution possible multiple times.
-        mExecutionCompleted = false;
-        wrapped.run();
-        assertTrue(mExecutionCompleted);
+        wrapped.onResult(true);
+        verify(target, times(2)).callbackTarget(true);
 
         // Won't trigger after CallbackController is destroyed.
-        mExecutionCompleted = false;
-        mCallbackController.destroy();
+        callbackController.destroy();
+        wrapped.onResult(true);
+        verifyNoMoreInteractions(target);
+    }
+
+    @Test
+    public void testInstanceRunnable() {
+        CallbackController callbackController = new CallbackController();
+        CallbackTarget target = Mockito.mock(CallbackTarget.class);
+        Runnable wrapped = callbackController.makeCancelable(target::runnableTarget);
+
         wrapped.run();
-        assertFalse(mExecutionCompleted);
+        verify(target).runnableTarget();
+
+        // Execution possible multiple times.
+        wrapped.run();
+        verify(target, times(2)).runnableTarget();
+
+        // Won't trigger after CallbackController is destroyed.
+        callbackController.destroy();
+        wrapped.run();
+        verifyNoMoreInteractions(target);
     }
 
     @Test
     public void testLambdaCallback() {
-        CallbackController mCallbackController = new CallbackController();
+        CallbackController callbackController = new CallbackController();
+        CallbackTarget target = Mockito.mock(CallbackTarget.class);
         Callback<Boolean> wrapped =
-                mCallbackController.makeCancelable(value -> setExecutionCompleted(value));
-        mExecutionCompleted = false;
+                callbackController.makeCancelable(value -> target.callbackTarget(value));
+
         wrapped.onResult(true);
-        assertTrue(mExecutionCompleted);
+        verify(target).callbackTarget(true);
 
         // Execution possible multiple times.
-        mExecutionCompleted = false;
         wrapped.onResult(true);
-        assertTrue(mExecutionCompleted);
+        verify(target, times(2)).callbackTarget(true);
 
         // Won't trigger after CallbackController is destroyed.
-        mExecutionCompleted = false;
-        mCallbackController.destroy();
+        callbackController.destroy();
         wrapped.onResult(true);
-        assertFalse(mExecutionCompleted);
+        verifyNoMoreInteractions(target);
     }
 
     @Test
     public void testLambdaRunnable() {
-        Runnable runnable = () -> setExecutionCompleted(true);
-        CallbackController mCallbackController = new CallbackController();
-        Runnable wrapped = mCallbackController.makeCancelable(() -> completeExection());
-        mExecutionCompleted = false;
+        CallbackController callbackController = new CallbackController();
+        CallbackTarget target = Mockito.mock(CallbackTarget.class);
+        Runnable wrapped = callbackController.makeCancelable(() -> target.runnableTarget());
+
         wrapped.run();
-        assertTrue(mExecutionCompleted);
+        verify(target).runnableTarget();
 
         // Execution possible multiple times.
-        mExecutionCompleted = false;
         wrapped.run();
-        assertTrue(mExecutionCompleted);
+        verify(target, times(2)).runnableTarget();
 
         // Won't trigger after CallbackController is destroyed.
-        mExecutionCompleted = false;
-        mCallbackController.destroy();
+        callbackController.destroy();
         wrapped.run();
-        assertFalse(mExecutionCompleted);
-    }
-
-    private void completeExection() {
-        setExecutionCompleted(true);
-    }
-
-    private void setExecutionCompleted(boolean completed) {
-        mExecutionCompleted = completed;
+        verifyNoMoreInteractions(target);
     }
 }

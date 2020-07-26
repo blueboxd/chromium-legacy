@@ -100,7 +100,7 @@ android_library("junit") {
 
 android_resources("java_resources") {
   sources = [
-    "java/res/layout/safety_check_button.xml",
+    "java/res/layout/safety_check_bottom_elements.xml",
     "java/res/layout/safety_check_status.xml",
     "java/res/values/dimens.xml",
     "java/res/xml/safety_check_preferences.xml",

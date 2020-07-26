@@ -35,6 +35,7 @@
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/webui/version_ui.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/grit/chromium_strings.h"
@@ -1221,9 +1222,7 @@ std::string PolicyUIHandler::GetPoliciesAsJson() const {
                                    : IDS_VERSION_UI_UNOFFICIAL)
           .c_str(),
       (channel_name.empty() ? "" : " " + channel_name).c_str(),
-      l10n_util::GetStringUTF8(sizeof(void*) == 8 ? IDS_VERSION_UI_64BIT
-                                                  : IDS_VERSION_UI_32BIT)
-          .c_str(),
+      l10n_util::GetStringUTF8(VersionUI::VersionProcessorVariation()).c_str(),
       cohort_name.c_str());
   chrome_metadata.SetKey("version", base::Value(version));
 

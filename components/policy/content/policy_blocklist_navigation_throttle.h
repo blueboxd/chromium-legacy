@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_POLICY_CONTENT_POLICY_BLACKLIST_NAVIGATION_THROTTLE_H_
-#define COMPONENTS_POLICY_CONTENT_POLICY_BLACKLIST_NAVIGATION_THROTTLE_H_
+#ifndef COMPONENTS_POLICY_CONTENT_POLICY_BLOCKLIST_NAVIGATION_THROTTLE_H_
+#define COMPONENTS_POLICY_CONTENT_POLICY_BLOCKLIST_NAVIGATION_THROTTLE_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -57,4 +57,4 @@ class PolicyBlocklistNavigationThrottle : public content::NavigationThrottle {
   DISALLOW_COPY_AND_ASSIGN(PolicyBlocklistNavigationThrottle);
 };
 
-#endif  // COMPONENTS_POLICY_CONTENT_POLICY_BLACKLIST_NAVIGATION_THROTTLE_H_
+#endif  // COMPONENTS_POLICY_CONTENT_POLICY_BLOCKLIST_NAVIGATION_THROTTLE_H_

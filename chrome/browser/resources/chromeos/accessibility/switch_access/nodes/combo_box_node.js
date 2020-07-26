@@ -9,12 +9,13 @@
 class ComboBoxNode extends NodeWrapper {
   /** @override */
   get actions() {
-    return [SwitchAccessMenuAction.INCREMENT, SwitchAccessMenuAction.DECREMENT];
-  }
-
-  /** @override */
-  doDefaultAction() {
-    this.performAction(SwitchAccessMenuAction.INCREMENT);
+    const actions = super.actions;
+    if (!actions.includes(SwitchAccessMenuAction.INCREMENT) &&
+        !actions.includes(SwitchAccessMenuAction.DECREMENT)) {
+      actions.push(
+          SwitchAccessMenuAction.INCREMENT, SwitchAccessMenuAction.DECREMENT);
+    }
+    return actions;
   }
 
   /** @override */
@@ -26,8 +27,8 @@ class ComboBoxNode extends NodeWrapper {
   /** @override */
   performAction(action) {
     // The box of options that typically pops up with combo boxes is not
-    // currently represented in the automation tree, so we work around that by
-    // selecting a value without opening the pop-up, using the up and down
+    // currently given a location in the automation tree, so we work around that
+    // by selecting a value without opening the pop-up, using the up and down
     // arrows.
     switch (action) {
       case SwitchAccessMenuAction.DECREMENT:
@@ -37,6 +38,6 @@ class ComboBoxNode extends NodeWrapper {
         EventHelper.simulateKeyPress(EventHelper.KeyCode.DOWN_ARROW);
         return SAConstants.ActionResponse.REMAIN_OPEN;
     }
-    return SAConstants.ActionResponse.NO_ACTION_TAKEN;
+    return super.performAction(action);
   }
 }

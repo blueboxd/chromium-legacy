@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_POLICY_CORE_BROWSER_URL_BLACKLIST_MANAGER_H_
-#define COMPONENTS_POLICY_CORE_BROWSER_URL_BLACKLIST_MANAGER_H_
+#ifndef COMPONENTS_POLICY_CORE_BROWSER_URL_BLOCKLIST_MANAGER_H_
+#define COMPONENTS_POLICY_CORE_BROWSER_URL_BLOCKLIST_MANAGER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -27,7 +27,7 @@ class PrefService;
 namespace base {
 class ListValue;
 class SequencedTaskRunner;
-}
+}  // namespace base
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -69,7 +69,6 @@ class POLICY_EXPORT URLBlocklist {
   size_t Size() const;
 
  private:
-
   // Returns true if |lhs| takes precedence over |rhs|.
   static bool FilterTakesPrecedence(const url_util::FilterComponents& lhs,
                                     const url_util::FilterComponents& rhs);
@@ -137,4 +136,4 @@ class POLICY_EXPORT URLBlocklistManager {
 
 }  // namespace policy
 
-#endif  // COMPONENTS_POLICY_CORE_BROWSER_URL_BLACKLIST_MANAGER_H_
+#endif  // COMPONENTS_POLICY_CORE_BROWSER_URL_BLOCKLIST_MANAGER_H_

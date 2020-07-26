@@ -174,6 +174,7 @@ void MediaNotificationService::Session::SetController(
   if (controller.is_bound()) {
     observer_receiver_.reset();
     controller->AddObserver(observer_receiver_.BindNewPipeAndPassRemote());
+    controller_ = std::move(controller);
   }
 }
 
@@ -219,6 +220,8 @@ void MediaNotificationService::Session::OnSessionOverlayStateChanged(
 bool MediaNotificationService::Session::IsPlaying() {
   return is_playing_;
 }
+
+void MediaNotificationService::Session::SetAudioSinkId(const std::string& id) {}
 
 // static
 void MediaNotificationService::Session::RecordDismissReason(
@@ -555,6 +558,13 @@ void MediaNotificationService::OnContainerDraggedOut(const std::string& id,
 
   for (auto& observer : observers_)
     observer.OnNotificationListChanged();
+}
+
+void MediaNotificationService::OnAudioSinkChosen(const std::string& id,
+                                                 const std::string& sink_id) {
+  auto it = sessions_.find(id);
+  DCHECK(it != sessions_.end());
+  it->second.SetAudioSinkId(sink_id);
 }
 
 void MediaNotificationService::Shutdown() {

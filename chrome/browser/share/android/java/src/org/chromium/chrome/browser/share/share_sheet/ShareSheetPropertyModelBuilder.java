@@ -17,6 +17,7 @@ import androidx.annotation.IntDef;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.share.ShareParams;
@@ -43,14 +44,15 @@ import java.util.Set;
 // TODO(crbug/1022172): Should be package-protected once modularization is complete.
 public class ShareSheetPropertyModelBuilder {
     @IntDef({ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE, ContentType.TEXT,
-            ContentType.IMAGE, ContentType.OTHER_FILE_TYPE})
+            ContentType.IMAGE, ContentType.OTHER_FILE_TYPE, ContentType.HIGHLIGHTED_TEXT})
     @Retention(RetentionPolicy.SOURCE)
     @interface ContentType {
         int LINK_PAGE_VISIBLE = 0;
         int LINK_PAGE_NOT_VISIBLE = 1;
         int TEXT = 2;
         int IMAGE = 3;
-        int OTHER_FILE_TYPE = 4;
+        int HIGHLIGHTED_TEXT = 4;
+        int OTHER_FILE_TYPE = 5;
     }
 
     private static final int MAX_NUM_APPS = 7;
@@ -58,9 +60,9 @@ public class ShareSheetPropertyModelBuilder {
     // Variations parameter name for the comma-separated list of third-party activity names.
     private static final String PARAM_SHARING_HUB_THIRD_PARTY_APPS = "sharing-hub-third-party-apps";
 
-    static final HashSet<Integer> ALL_CONTENT_TYPES = new HashSet<>(
-            Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE,
-                    ContentType.TEXT, ContentType.IMAGE, ContentType.OTHER_FILE_TYPE));
+    static final HashSet<Integer> ALL_CONTENT_TYPES = new HashSet<>(Arrays.asList(
+            ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE, ContentType.TEXT,
+            ContentType.IMAGE, ContentType.HIGHLIGHTED_TEXT, ContentType.OTHER_FILE_TYPE));
     private static final ArrayList<String> FALLBACK_ACTIVITIES =
             new ArrayList<>(Arrays.asList("com.whatsapp.ContactPicker",
                     "com.facebook.composer.shareintent.ImplicitShareIntentHandlerDefaultAlias",
@@ -99,17 +101,18 @@ public class ShareSheetPropertyModelBuilder {
      *     <li>If a URL is present, {@code isUrlOfVisiblePage} determines whether to add
      *     {@link ContentType.LINK_PAGE_VISIBLE} or {@link ContentType.LINK_PAGE_NOT_VISIBLE}.
      *     <li>If the text being shared is not the same as the URL, add {@link ContentType.TEXT}
-     *     <li>If the share contains files and the {@code fileContentType} is an image, add
+           <li>If text is highlighted by user, add {@link ContentType.HIGHLIGHTED_TEXT}.
+           <li>If the share contains files and the {@code fileContentType} is an image, add
      *     {@link ContentType.IMAGE}. Otherwise, add {@link ContentType.OTHER_FILE_TYPE}.
      * </ul>
      */
-    static Set<Integer> getContentTypes(ShareParams params, boolean isUrlOfVisiblePage) {
+    static Set<Integer> getContentTypes(ShareParams params, ChromeShareExtras chromeShareExtras) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB_V15)) {
             return ALL_CONTENT_TYPES;
         }
         Set<Integer> contentTypes = new HashSet<>();
         if (!TextUtils.isEmpty(params.getUrl())) {
-            if (isUrlOfVisiblePage) {
+            if (chromeShareExtras.isUrlOfVisiblePage()) {
                 contentTypes.add(ContentType.LINK_PAGE_VISIBLE);
             } else {
                 contentTypes.add(ContentType.LINK_PAGE_NOT_VISIBLE);
@@ -117,7 +120,11 @@ public class ShareSheetPropertyModelBuilder {
         }
         if (!TextUtils.isEmpty(params.getText())
                 && !TextUtils.equals(params.getUrl(), params.getText())) {
-            contentTypes.add(ContentType.TEXT);
+            if (chromeShareExtras.isUserHighlightedText()) {
+                contentTypes.add(ContentType.HIGHLIGHTED_TEXT);
+            } else {
+                contentTypes.add(ContentType.TEXT);
+            }
         }
         if (params.getFileUris() != null) {
             if (!TextUtils.isEmpty(params.getFileContentType())

@@ -80,7 +80,10 @@ class InstallStageTracker : public KeyedService {
 
   // Enum used for UMA. Do NOT reorder or remove entries. Don't forget to
   // update enums.xml (name: ExtensionInstallationFailureReason) when adding new
-  // entries.
+  // entries. Don't forget to update device_management_backend.proto (name:
+  // ExtensionInstallReportLogEvent::FailureReason) when adding new entries.
+  // Don't forget to update ConvertFailureReasonToProto method in
+  // ExtensionInstallEventLogCollector.
   enum class FailureReason {
     // Reason for the failure is not reported. Typically this should not happen,
     // because if we know that we need to install an extension, it should

@@ -591,6 +591,14 @@ class AdsPageLoadMetricsObserverTest
     tester()->SimulateTimingUpdate(timing_, frame);
   }
 
+  void SimulateFirstContentfulPaint(
+      RenderFrameHost* frame,
+      base::Optional<base::TimeDelta> first_contentful_paint) {
+    SimulateFirstEligibleToPaintOrFirstContentfulPaint(
+        frame, first_contentful_paint /* first_eligible_to_paint */,
+        first_contentful_paint /* first_contentful_paint */);
+  }
+
   // Given |creative_origin_test|, creates nested frames in the order given in
   // |creative_origin_test.urls|, causes the frame with index
   // |creative_origin_test.creative_index| to paint text first, and verifies
@@ -1901,39 +1909,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsShortTimeframes) {
       100 * 1500 / 30000);
 }
 
-TEST_F(AdsPageLoadMetricsObserverTest, AdFrameLoadTiming) {
-  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
-  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
-
-  // Load bytes in frame to record ukm event.
-  ResourceDataUpdate(ad_frame, ResourceCached::kNotCached, 10);
-
-  page_load_metrics::mojom::PageLoadTiming subframe_timing;
-  page_load_metrics::InitPageLoadTimingForTest(&subframe_timing);
-  subframe_timing.navigation_start = base::Time::FromDoubleT(2);
-  subframe_timing.paint_timing->first_contentful_paint =
-      base::TimeDelta::FromMilliseconds(0);
-  PopulateRequiredTimingFields(&subframe_timing);
-  tester()->SimulateTimingUpdate(subframe_timing, ad_frame);
-
-  // Send an updated timing that should be recorded.
-  page_load_metrics::InitPageLoadTimingForTest(&subframe_timing);
-  subframe_timing.navigation_start = base::Time::FromDoubleT(2);
-  subframe_timing.paint_timing->first_contentful_paint =
-      base::TimeDelta::FromMilliseconds(5);
-  PopulateRequiredTimingFields(&subframe_timing);
-  tester()->SimulateTimingUpdate(subframe_timing, ad_frame);
-
-  // Navigate again to trigger histograms.
-  NavigateFrame(kNonAdUrl, main_frame);
-  auto entries = test_ukm_recorder().GetEntriesByName(
-      ukm::builders::AdFrameLoad::kEntryName);
-  EXPECT_EQ(1u, entries.size());
-  test_ukm_recorder().ExpectEntryMetric(
-      entries.front(),
-      ukm::builders::AdFrameLoad::kTiming_FirstContentfulPaintName, 5);
-}
-
 // Tests that creative origin status is computed as intended, i.e. as the origin
 // status of the frame in the ad frame tree that has its first contentful paint
 // occur first.
@@ -2844,7 +2819,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, NoFirstContentfulPaint_NotRecorded) {
   NavigateFrame(kNonAdUrl, main_frame);
 
   histogram_tester().ExpectTotalCount(
-      "AdPaintTiming.NavigationToFirstContentfulPaint", 0);
+      "AdPaintTiming.NavigationToFirstContentfulPaint2", 0);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, FirstContentfulPaint_Recorded) {
@@ -2855,14 +2830,116 @@ TEST_F(AdsPageLoadMetricsObserverTest, FirstContentfulPaint_Recorded) {
   ResourceDataUpdate(ad_frame, ResourceCached::kNotCached, 100);
 
   // Set FirstContentfulPaint.
-  SimulateFirstEligibleToPaintOrFirstContentfulPaint(
-      ad_frame, base::TimeDelta::FromMilliseconds(90),
-      base::TimeDelta::FromMilliseconds(100));
+  SimulateFirstContentfulPaint(ad_frame,
+                               base::TimeDelta::FromMilliseconds(100));
 
   // Navigate away and check the histogram.
   NavigateFrame(kNonAdUrl, main_frame);
 
   histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("AdPaintTiming.NavigationToFirstContentfulPaint"), 100,
+      SuffixedHistogram("AdPaintTiming.NavigationToFirstContentfulPaint2"), 100,
       1);
+
+  auto entries = test_ukm_recorder().GetEntriesByName(
+      ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  test_ukm_recorder().ExpectEntryMetric(
+      entries.front(),
+      ukm::builders::AdFrameLoad::kTiming_FirstContentfulPaintName, 100);
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest,
+       MultipleFirstContentfulPaintsInAdWithInOrderIPCs_EarliestUsed) {
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+  RenderFrameHost* sub_frame = CreateAndNavigateSubFrame(kAdUrl, ad_frame);
+
+  // Load some bytes so that the frame is recorded.
+  ResourceDataUpdate(ad_frame, ResourceCached::kNotCached, 100);
+
+  // Set FirstContentfulPaint for nested subframe. Assume that it paints first.
+  SimulateFirstContentfulPaint(sub_frame,
+                               base::TimeDelta::FromMilliseconds(90));
+
+  // Set FirstContentfulPaint for root ad frame.
+  SimulateFirstContentfulPaint(ad_frame,
+                               base::TimeDelta::FromMilliseconds(100));
+
+  // Navigate away and check the histogram.
+  NavigateFrame(kNonAdUrl, main_frame);
+
+  // The histogram value should be that of the earliest FCP recorded.
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("AdPaintTiming.NavigationToFirstContentfulPaint2"), 90,
+      1);
+
+  auto entries = test_ukm_recorder().GetEntriesByName(
+      ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  test_ukm_recorder().ExpectEntryMetric(
+      entries.front(),
+      ukm::builders::AdFrameLoad::kTiming_FirstContentfulPaintName, 90);
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest,
+       MultipleFirstContentfulPaintsInAdWithOutOfOrderIPCs_EarliestUsed) {
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+  RenderFrameHost* sub_frame = CreateAndNavigateSubFrame(kAdUrl, ad_frame);
+
+  // Load some bytes so that the frame is recorded.
+  ResourceDataUpdate(ad_frame, ResourceCached::kNotCached, 100);
+
+  // Set FirstContentfulPaint for root ad frame.
+  SimulateFirstContentfulPaint(ad_frame,
+                               base::TimeDelta::FromMilliseconds(100));
+
+  // Set FirstContentfulPaint for inner subframe. Simulate the nested
+  // frame painting first but having its IPCs received second.
+  SimulateFirstContentfulPaint(sub_frame,
+                               base::TimeDelta::FromMilliseconds(90));
+
+  // Navigate away and check the histogram.
+  NavigateFrame(kNonAdUrl, main_frame);
+
+  // The histogram value should be that of the earliest FCP recorded.
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("AdPaintTiming.NavigationToFirstContentfulPaint2"), 90,
+      1);
+
+  auto entries = test_ukm_recorder().GetEntriesByName(
+      ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  test_ukm_recorder().ExpectEntryMetric(
+      entries.front(),
+      ukm::builders::AdFrameLoad::kTiming_FirstContentfulPaintName, 90);
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest,
+       FirstContentfulPaintNoAdRootPainted_Recorded) {
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+  RenderFrameHost* sub_frame = CreateAndNavigateSubFrame(kAdUrl, ad_frame);
+
+  // Load some bytes so that the frame is recorded.
+  ResourceDataUpdate(ad_frame, ResourceCached::kNotCached, 100);
+
+  // Set FirstContentfulPaint for nested subframe. It is the only frame painted.
+  SimulateFirstContentfulPaint(sub_frame,
+                               base::TimeDelta::FromMilliseconds(90));
+
+  // Navigate away and check the histogram.
+  NavigateFrame(kNonAdUrl, main_frame);
+
+  // The histogram value should be that of the earliest FCP recorded.
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("AdPaintTiming.NavigationToFirstContentfulPaint2"), 90,
+      1);
+
+  auto entries = test_ukm_recorder().GetEntriesByName(
+      ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  test_ukm_recorder().ExpectEntryMetric(
+      entries.front(),
+      ukm::builders::AdFrameLoad::kTiming_FirstContentfulPaintName, 90);
 }

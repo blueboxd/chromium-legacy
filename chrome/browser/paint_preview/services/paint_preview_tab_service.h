@@ -113,7 +113,7 @@ class PaintPreviewTabService : public PaintPreviewBaseService {
                   int frame_tree_node_id,
                   FinishedCallback callback,
                   PaintPreviewBaseService::CaptureStatus status,
-                  std::unique_ptr<PaintPreviewProto>);
+                  std::unique_ptr<CaptureResult> result);
 
   void OnFinished(int tab_id, FinishedCallback callback, bool success);
 

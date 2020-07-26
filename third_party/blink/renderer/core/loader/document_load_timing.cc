@@ -83,6 +83,16 @@ base::TimeDelta DocumentLoadTiming::MonotonicTimeToZeroBasedDocumentTime(
   return monotonic_time - reference_monotonic_time_;
 }
 
+int64_t DocumentLoadTiming::ZeroBasedDocumentTimeToMonotonicTime(
+    double dom_event_time) const {
+  if (reference_monotonic_time_.is_null())
+    return 0;
+  base::TimeTicks monotonic_time =
+      reference_monotonic_time_ +
+      base::TimeDelta::FromMillisecondsD(dom_event_time);
+  return monotonic_time.since_origin().InMilliseconds();
+}
+
 base::TimeDelta DocumentLoadTiming::MonotonicTimeToPseudoWallTime(
     base::TimeTicks monotonic_time) const {
   if (monotonic_time.is_null() || reference_monotonic_time_.is_null())

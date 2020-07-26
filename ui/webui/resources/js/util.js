@@ -100,12 +100,13 @@
 }
 
 /**
- * Disables text selection and dragging, with optional whitelist callbacks.
+ * Disables text selection and dragging, with optional callbacks to specify
+ * overrides.
  * @param {function(Event):boolean=} opt_allowSelectStart Unless this function
  *    is defined and returns true, the onselectionstart event will be
- *    surpressed.
+ *    suppressed.
  * @param {function(Event):boolean=} opt_allowDragStart Unless this function
- *    is defined and returns true, the ondragstart event will be surpressed.
+ *    is defined and returns true, the ondragstart event will be suppressed.
  */
 /* #export */ function disableTextSelectAndDrag(
     opt_allowSelectStart, opt_allowDragStart) {

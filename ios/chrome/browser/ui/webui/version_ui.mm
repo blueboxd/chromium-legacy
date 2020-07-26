@@ -72,7 +72,7 @@ web::WebUIIOSDataSource* CreateVersionUIDataSource() {
                                       ? IDS_VERSION_UI_OFFICIAL
                                       : IDS_VERSION_UI_UNOFFICIAL);
   html_source->AddLocalizedString(
-      version_ui::kVersionBitSize,
+      version_ui::kVersionProcessorVariation,
       sizeof(void*) == 8 ? IDS_VERSION_UI_64BIT : IDS_VERSION_UI_32BIT);
   html_source->AddLocalizedString(version_ui::kUserAgentName,
                                   IDS_VERSION_UI_USER_AGENT);

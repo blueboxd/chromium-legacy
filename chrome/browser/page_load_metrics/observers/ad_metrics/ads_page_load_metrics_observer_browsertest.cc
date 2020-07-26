@@ -927,14 +927,15 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
 
   histogram_tester.ExpectTotalCount(
-      "PageLoad.Clients.Ads.AdPaintTiming.NavigationToFirstContentfulPaint", 1);
+      "PageLoad.Clients.Ads.AdPaintTiming.NavigationToFirstContentfulPaint2",
+      1);
   histogram_tester.ExpectTotalCount(
       "PageLoad.Clients.Ads.Visible.AdPaintTiming."
-      "NavigationToFirstContentfulPaint",
+      "NavigationToFirstContentfulPaint2",
       1);
   histogram_tester.ExpectTotalCount(
       "PageLoad.Clients.Ads.NonVisible.AdPaintTiming."
-      "NavigationToFirstContentfulPaint",
+      "NavigationToFirstContentfulPaint2",
       0);
 }
 
@@ -1663,14 +1664,30 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   EXPECT_EQ(4u, console_observer.messages().size());
 }
 
+class NoHostThresholdHeavyAdsBrowserTest
+    : public AdsPageLoadMetricsObserverResourceBrowserTest {
+ public:
+  NoHostThresholdHeavyAdsBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kHeavyAdPrivacyMitigations, {{"host-threshold", "100"}});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 // Verifies that the frame is navigated to the intervention page when a
 // heavy ad intervention triggers.
-IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+IN_PROC_BROWSER_TEST_F(NoHostThresholdHeavyAdsBrowserTest,
                        HeavyAdInterventionEnabled_ErrorPageLoaded) {
   base::HistogramTester histogram_tester;
   auto incomplete_resource_response =
       std::make_unique<net::test_server::ControllableHttpResponse>(
           embedded_test_server(), "/ads_observer/incomplete_resource.js",
+          true /*relative_url_is_prefix*/);
+  auto incomplete_resource_response2 =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/ads_observer/incomplete_resource2.js",
           true /*relative_url_is_prefix*/);
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1703,6 +1720,25 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   histogram_tester.ExpectBucketCount(
       "Blink.UseCounter.Features",
       blink::mojom::WebFeature::kHeavyAdIntervention, 1);
+
+  // Test that subsequent navigations to the error page can still trigger heavy
+  // ads (crbug.com/1099014).
+  EXPECT_TRUE(content::ExecJs(web_contents, "advanceSrcdoc();",
+                              content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+
+  // Load a resource large enough to trigger the intervention.
+  LoadLargeResource(incomplete_resource_response2.get(),
+                    kMaxHeavyAdNetworkSize);
+
+  // Wait for the resource update to be received for the large resource.
+  waiter->AddMinimumNetworkBytesExpectation(2 * kMaxHeavyAdNetworkSize);
+  waiter->Wait();
+
+  // We can't check whether the navigation didn't occur because the error page
+  // load is not synchronous. Instead check that we didn't log intervention UMA
+  // that is always recorded when the intervention occurs. Both
+  // interventions should have been logged.
+  histogram_tester.ExpectTotalCount(kHeavyAdInterventionTypeHistogramId, 2);
 }
 
 class AdsPageLoadMetricsObserverResourceBrowserTestWithoutHeavyAdIntervention

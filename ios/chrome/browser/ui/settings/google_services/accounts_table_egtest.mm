@@ -7,7 +7,6 @@
 #import "base/test/scoped_feature_list.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
-#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils_app_interface.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller_constants.h"
@@ -195,8 +194,7 @@ id<GREYMatcher> NoBookmarksLabel() {
   // Add a bookmark after sync is initialized.
   [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:kSyncOperationTimeout];
   [ChromeEarlGrey waitForBookmarksToFinishLoading];
-  [SigninEarlGreyUtilsAppInterface addBookmark:@"http://youtube.com"
-                                     withTitle:@"cats"];
+  [BookmarkEarlGrey setupStandardBookmarks];
 
   // Sign out.
   [SigninEarlGreyUI
@@ -206,9 +204,9 @@ id<GREYMatcher> NoBookmarksLabel() {
   [BookmarkEarlGreyUI openBookmarks];
   [BookmarkEarlGreyUI openMobileBookmarks];
 
-  // Assert that the 'cats' bookmark is displayed.
-  [[EarlGrey selectElementWithMatcher:grey_text(@"cats")]
-      assertWithMatcher:grey_notNil()];
+  // Assert that the no bookmarks label is not present.
+  [[EarlGrey selectElementWithMatcher:NoBookmarksLabel()]
+      assertWithMatcher:grey_nil()];
 }
 
 // Tests that selecting sign-out and clear data from a non-managed user account
@@ -222,8 +220,7 @@ id<GREYMatcher> NoBookmarksLabel() {
   // Add a bookmark after sync is initialized.
   [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:kSyncOperationTimeout];
   [ChromeEarlGrey waitForBookmarksToFinishLoading];
-  [SigninEarlGreyUtilsAppInterface addBookmark:@"http://youtube.com"
-                                     withTitle:@"cats"];
+  [BookmarkEarlGrey setupStandardBookmarks];
 
   // Sign out.
   [SigninEarlGreyUI signOutWithSignOutConfirmation:
@@ -248,8 +245,7 @@ id<GREYMatcher> NoBookmarksLabel() {
   // Add a bookmark after sync is initialized.
   [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:kSyncOperationTimeout];
   [ChromeEarlGrey waitForBookmarksToFinishLoading];
-  [SigninEarlGreyUtilsAppInterface addBookmark:@"http://youtube.com"
-                                     withTitle:@"cats"];
+  [BookmarkEarlGrey setupStandardBookmarks];
 
   // Sign out.
   [SigninEarlGreyUI

@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_factory.h"
 #include "chrome/browser/password_manager/bulk_leak_check_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/version_ui.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
@@ -486,8 +487,7 @@ base::string16 SafetyCheckHandler::GetStringForUpdates(UpdateStatus status) {
                                         ? IDS_VERSION_UI_OFFICIAL
                                         : IDS_VERSION_UI_UNOFFICIAL),
           base::UTF8ToUTF16(chrome::GetChannelName()),
-          l10n_util::GetStringUTF16(sizeof(void*) == 8 ? IDS_VERSION_UI_64BIT
-                                                       : IDS_VERSION_UI_32BIT));
+          l10n_util::GetStringUTF16(VersionUI::VersionProcessorVariation()));
   }
 }
 

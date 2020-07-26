@@ -12,16 +12,16 @@
 #include "base/unguessable_token.h"
 #include "chrome/browser/nearby_sharing/file_attachment.h"
 #include "chrome/browser/nearby_sharing/text_attachment.h"
+#include "chrome/browser/ui/webui/nearby_share/nearby_share.mojom-shared.h"
 #include "url/gurl.h"
 
 // A remote device.
-class ShareTarget {
+struct ShareTarget {
  public:
-  enum class Type { kUnknown, kPhone, kTablet, kLaptop, kMaxValue = kLaptop };
-
+  ShareTarget();
   ShareTarget(std::string device_name,
               GURL image_url,
-              Type type,
+              nearby_share::mojom::ShareTargetType type,
               std::vector<TextAttachment> text_attachments,
               std::vector<FileAttachment> file_attachments,
               bool is_incoming,
@@ -33,36 +33,18 @@ class ShareTarget {
   ShareTarget& operator=(ShareTarget&&);
   ~ShareTarget();
 
-  base::UnguessableToken id() const { return id_; }
-  const std::string& device_name() const { return device_name_; }
-
-  // Returns a Uri that points to an image of the ShareTarget, if one exists.
-  const base::Optional<GURL>& image_url() const { return image_url_; }
-
-  Type type() const { return type_; }
-  const std::vector<TextAttachment>& text_attachments() const {
-    return text_attachments_;
-  }
-  const std::vector<FileAttachment>& file_attachments() const {
-    return file_attachments_;
-  }
-  bool is_incoming() const { return is_incoming_; }
-  const base::Optional<std::string>& full_name() const { return full_name_; }
-
-  // Returns True if local device has the PublicCertificate the remote device is
-  // advertising.
-  bool is_known() const { return is_known_; }
-
- private:
-  base::UnguessableToken id_;
-  std::string device_name_;
-  base::Optional<GURL> image_url_;
-  Type type_;
-  std::vector<TextAttachment> text_attachments_;
-  std::vector<FileAttachment> file_attachments_;
-  bool is_incoming_;
-  base::Optional<std::string> full_name_;
-  bool is_known_;
+  base::UnguessableToken id = base::UnguessableToken::Create();
+  std::string device_name;
+  // Uri that points to an image of the ShareTarget, if one exists.
+  base::Optional<GURL> image_url;
+  nearby_share::mojom::ShareTargetType type =
+      nearby_share::mojom::ShareTargetType::kUnknown;
+  std::vector<TextAttachment> text_attachments;
+  std::vector<FileAttachment> file_attachments;
+  bool is_incoming = false;
+  base::Optional<std::string> full_name;
+  // True if local device has the PublicCertificate this target is advertising.
+  bool is_known = false;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_SHARE_TARGET_H_

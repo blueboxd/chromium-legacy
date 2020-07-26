@@ -59,7 +59,7 @@ ContentAutofillDriver::ContentAutofillDriver(
   }
 }
 
-ContentAutofillDriver::~ContentAutofillDriver() {}
+ContentAutofillDriver::~ContentAutofillDriver() = default;
 
 // static
 ContentAutofillDriver* ContentAutofillDriver::GetForRenderFrameHost(
@@ -293,19 +293,31 @@ void ContentAutofillDriver::SelectFieldOptionsDidChange(const FormData& form) {
 
 void ContentAutofillDriver::DidNavigateFrame(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsSameDocument())
+  if (navigation_handle->IsSameDocument()) {
+    // On page refresh, reset the rate limiter for fetching authentication
+    // details for credit card unmasking.
+    if (autofill_manager_) {
+      autofill_manager_->credit_card_access_manager()
+          ->SignalCanFetchUnmaskDetails();
+    }
     return;
+  }
 
   autofill_handler_->Reset();
 }
 
 void ContentAutofillDriver::SetAutofillManager(
     std::unique_ptr<AutofillManager> manager) {
-  CHECK(autofill_manager_);
   autofill_handler_ = std::move(manager);
   autofill_manager_ = static_cast<AutofillManager*>(autofill_handler_.get());
   autofill_manager_->SetExternalDelegate(autofill_external_delegate_.get());
 }
+
+ContentAutofillDriver::ContentAutofillDriver()
+    : render_frame_host_(nullptr),
+      autofill_manager_(nullptr),
+      key_press_handler_manager_(this),
+      log_manager_(nullptr) {}
 
 const mojo::AssociatedRemote<mojom::AutofillAgent>&
 ContentAutofillDriver::GetAutofillAgent() {

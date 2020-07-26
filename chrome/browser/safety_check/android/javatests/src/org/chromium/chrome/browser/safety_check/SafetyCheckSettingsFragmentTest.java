@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 
 import androidx.preference.Preference;
@@ -36,6 +37,11 @@ public class SafetyCheckSettingsFragmentTest {
     private static final String PASSWORDS = "passwords";
     private static final String SAFE_BROWSING = "safe_browsing";
     private static final String UPDATES = "updates";
+    private static final long S_TO_MS = 1000;
+    private static final long MIN_TO_MS = 60 * S_TO_MS;
+    private static final long H_TO_MS = 60 * MIN_TO_MS;
+    private static final long DAY_TO_MS = 24 * H_TO_MS;
+
     @Rule
     public SettingsActivityTestRule<SafetyCheckSettingsFragment> mSettingsActivityTestRule =
             new SettingsActivityTestRule<>(SafetyCheckSettingsFragment.class);
@@ -77,10 +83,38 @@ public class SafetyCheckSettingsFragmentTest {
         assertFalse(title.contains("New"));
     }
 
+    @Test
+    @SmallTest
+    public void testLastRunTimestampStrings() {
+        long t0 = 12345;
+        Context context = InstrumentationRegistry.getTargetContext();
+        // Start time not set - returns an empty string.
+        assertEquals("", SafetyCheckViewBinder.getLastRunTimestampText(context, 0, 123));
+        assertEquals("Checked just now",
+                SafetyCheckViewBinder.getLastRunTimestampText(context, t0, t0 + 10 * S_TO_MS));
+        assertEquals("Checked 1 minute ago",
+                SafetyCheckViewBinder.getLastRunTimestampText(context, t0, t0 + MIN_TO_MS));
+        assertEquals("Checked 17 minutes ago",
+                SafetyCheckViewBinder.getLastRunTimestampText(context, t0, t0 + 17 * MIN_TO_MS));
+        assertEquals("Checked 1 hour ago",
+                SafetyCheckViewBinder.getLastRunTimestampText(context, t0, t0 + H_TO_MS));
+        assertEquals("Checked 13 hours ago",
+                SafetyCheckViewBinder.getLastRunTimestampText(context, t0, t0 + 13 * H_TO_MS));
+        assertEquals("Checked yesterday",
+                SafetyCheckViewBinder.getLastRunTimestampText(context, t0, t0 + DAY_TO_MS));
+        assertEquals("Checked yesterday",
+                SafetyCheckViewBinder.getLastRunTimestampText(context, t0, t0 + 2 * DAY_TO_MS - 1));
+        assertEquals("Checked 2 days ago",
+                SafetyCheckViewBinder.getLastRunTimestampText(context, t0, t0 + 2 * DAY_TO_MS));
+        assertEquals("Checked 315 days ago",
+                SafetyCheckViewBinder.getLastRunTimestampText(context, t0, t0 + 315 * DAY_TO_MS));
+    }
+
     private void createFragmentAndModel() {
         mSettingsActivityTestRule.startSettingsActivity();
         mFragment = (SafetyCheckSettingsFragment) mSettingsActivityTestRule.getFragment();
-        mModel = SafetyCheckCoordinator.createModelAndMcp(mFragment);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mModel = SafetyCheckCoordinator.createModelAndMcp(mFragment); });
     }
 
     @Test

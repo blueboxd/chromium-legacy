@@ -1015,11 +1015,19 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
         SkBitmap sk_bitmap;
         sk_bitmap.installPixels(info, software_resource->pixels(),
                                 info.minRowBytes());
+        // This is software path, so |canvas| and |video_frame| are always
+        // backed by software.
         cc::SkiaPaintCanvas canvas(sk_bitmap);
+        cc::PaintFlags flags;
+        flags.setBlendMode(SkBlendMode::kSrc);
+        flags.setFilterQuality(kLow_SkFilterQuality);
 
-        // This is software path, so canvas and video_frame are always backed
-        // by software.
-        video_renderer_->Copy(video_frame, &canvas, nullptr);
+        // Note that PaintCanvasVideoRenderer::Copy would copy to the origin,
+        // not |video_frame->visible_rect|, so call Paint instead.
+        // https://crbug.com/1090435
+        video_renderer_->Paint(video_frame, &canvas,
+                               gfx::RectF(video_frame->visible_rect()), flags,
+                               media::kNoTransformation, nullptr);
       } else {
         HardwarePlaneResource* hardware_resource = plane_resource->AsHardware();
         size_t bytes_per_row = viz::ResourceSizes::CheckedWidthInBytes<size_t>(

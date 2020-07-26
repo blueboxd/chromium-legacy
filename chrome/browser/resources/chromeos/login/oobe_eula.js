@@ -162,6 +162,7 @@ Polymer({
   onAdditionalTermsClicked_() {
     chrome.send('login.EulaScreen.userActed', ['show-additional-tos']);
     this.$['additional-tos'].showModal();
+    this.$['close-additional-tos'].focus();
   },
 
   /**

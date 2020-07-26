@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_POLICY_CORE_BROWSER_URL_BLACKLIST_POLICY_HANDLER_H_
-#define COMPONENTS_POLICY_CORE_BROWSER_URL_BLACKLIST_POLICY_HANDLER_H_
+#ifndef COMPONENTS_POLICY_CORE_BROWSER_URL_BLOCKLIST_POLICY_HANDLER_H_
+#define COMPONENTS_POLICY_CORE_BROWSER_URL_BLOCKLIST_POLICY_HANDLER_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -38,4 +38,4 @@ class POLICY_EXPORT URLBlocklistPolicyHandler
 
 }  // namespace policy
 
-#endif  // COMPONENTS_POLICY_CORE_BROWSER_URL_BLACKLIST_POLICY_HANDLER_H_
+#endif  // COMPONENTS_POLICY_CORE_BROWSER_URL_BLOCKLIST_POLICY_HANDLER_H_

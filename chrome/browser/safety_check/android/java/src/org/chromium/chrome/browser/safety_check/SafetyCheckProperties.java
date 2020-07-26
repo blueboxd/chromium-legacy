@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.password_check.BulkLeakCheckServiceState;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
+import org.chromium.ui.modelutil.PropertyModel.WritableLongPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 import java.lang.annotation.Retention;
@@ -25,6 +26,8 @@ class SafetyCheckProperties {
     /** Listener for Safety check button click events. */
     static final WritableObjectPropertyKey SAFETY_CHECK_BUTTON_CLICK_LISTENER =
             new WritableObjectPropertyKey();
+    /** Timestamp of the last run, a Long object. */
+    static final WritableLongPropertyKey LAST_RUN_TIMESTAMP = new WritableLongPropertyKey();
 
     @IntDef({PasswordsState.UNCHECKED, PasswordsState.CHECKING, PasswordsState.SAFE,
             PasswordsState.COMPROMISED_EXIST, PasswordsState.OFFLINE, PasswordsState.NO_PASSWORDS,
@@ -112,13 +115,14 @@ class SafetyCheckProperties {
     }
 
     static final PropertyKey[] ALL_KEYS = new PropertyKey[] {PASSWORDS_STATE, SAFE_BROWSING_STATE,
-            UPDATES_STATE, SAFETY_CHECK_BUTTON_CLICK_LISTENER};
+            UPDATES_STATE, SAFETY_CHECK_BUTTON_CLICK_LISTENER, LAST_RUN_TIMESTAMP};
 
     static PropertyModel createSafetyCheckModel() {
         return new PropertyModel.Builder(ALL_KEYS)
                 .with(PASSWORDS_STATE, PasswordsState.UNCHECKED)
                 .with(SAFE_BROWSING_STATE, SafeBrowsingState.UNCHECKED)
                 .with(UPDATES_STATE, UpdatesState.UNCHECKED)
+                .with(LAST_RUN_TIMESTAMP, 0)
                 .build();
     }
 }

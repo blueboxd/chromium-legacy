@@ -48,11 +48,9 @@ Polymer({
   /** @private */
   onNextTap_() {
     // TODO(knollr): Use the selected device after discovering it.
-    const shareTarget = {
-      id: /** @type {!mojoBase.mojom.UnguessableToken} */ ({high: 0, low: 17}),
-    };
+    const shareTargetId = {high: 0, low: 17};
 
-    getDiscoveryManager().selectShareTarget(shareTarget).then(response => {
+    getDiscoveryManager().selectShareTarget(shareTargetId).then(response => {
       const {result, token, confirmationManager} = response;
       if (result !== nearbyShare.mojom.SelectShareTargetResult.kOk) {
         // TODO(knollr): Show error.

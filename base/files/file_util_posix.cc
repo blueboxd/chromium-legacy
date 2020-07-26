@@ -375,10 +375,6 @@ bool DeletePathRecursively(const FilePath& path) {
   return DoDeleteFile(path, /*recursive=*/true);
 }
 
-bool DeleteFile(const FilePath& path, bool recursive) {
-  return DoDeleteFile(path, recursive);
-}
-
 bool ReplaceFile(const FilePath& from_path,
                  const FilePath& to_path,
                  File::Error* error) {

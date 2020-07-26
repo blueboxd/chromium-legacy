@@ -16,7 +16,7 @@ const base::Feature kCBCMPolicyInvalidations{"CBCMPolicyInvalidations",
 
 #if defined(OS_MACOSX)
 const base::Feature kIgnoreSensitivePoliciesOnUnmanagedMac{
-    "IgnoreSensitivePoliciesOnUnmanagedMac", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IgnoreSensitivePoliciesOnUnmanagedMac", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 }  // namespace features

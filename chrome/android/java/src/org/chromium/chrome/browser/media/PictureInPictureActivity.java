@@ -138,6 +138,7 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
     }
 
     @Override
+    @SuppressLint("NewAPI") // Picture-in-Picture API will not be enabled for oldver versions.
     public void onStart() {
         super.onStart();
 

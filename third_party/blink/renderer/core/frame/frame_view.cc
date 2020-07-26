@@ -150,7 +150,7 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
     if (owner_layout_object) {
       owner_layout_object->MapAncestorToLocal(
           nullptr, child_frame_to_root_frame,
-          kTraverseDocumentBoundaries | kApplyMainFrameTransform);
+          kTraverseDocumentBoundaries | kApplyRemoteMainFrameTransform);
       child_frame_to_root_frame.Move(
           owner_layout_object->PhysicalContentBoxOffset());
     }

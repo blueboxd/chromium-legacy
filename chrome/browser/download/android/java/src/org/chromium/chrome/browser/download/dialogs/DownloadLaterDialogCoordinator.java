@@ -132,6 +132,7 @@ public class DownloadLaterDialogCoordinator implements ModalDialogProperties.Con
                 .with(ModalDialogProperties.CUSTOM_VIEW, mCustomView)
                 .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, context.getResources(),
                         R.string.duplicate_download_infobar_download_button)
+                .with(ModalDialogProperties.PRIMARY_BUTTON_FILLED, true)
                 .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, context.getResources(),
                         R.string.cancel)
                 .build();

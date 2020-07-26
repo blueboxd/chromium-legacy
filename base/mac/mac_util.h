@@ -180,6 +180,15 @@ inline bool IsOSLaterThan11_DontCallThis() {
   return !IsAtMostOS11();
 }
 
+enum class CPUType {
+  kIntel,
+  kTranslatedIntel,  // Rosetta
+  kArm,
+};
+
+// Returns the type of CPU this is being executed on.
+BASE_EXPORT CPUType GetCPUType();
+
 // Retrieve the system's model identifier string from the IOKit registry:
 // for example, "MacPro4,1", "MacBookPro6,1". Returns empty string upon
 // failure.

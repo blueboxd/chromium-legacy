@@ -6,6 +6,7 @@
 
 #include "base/fuchsia/test_component_context_for_process.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "media/fuchsia/camera/fake_fuchsia_camera.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,6 +15,18 @@ namespace media {
 
 class VideoCaptureDeviceFactoryFuchsiaTest : public testing::Test {
  protected:
+  std::vector<VideoCaptureDeviceInfo> GetDevicesInfo() {
+    std::vector<VideoCaptureDeviceInfo> devices_info;
+    base::RunLoop run_loop;
+    device_factory_.GetDevicesInfo(base::BindLambdaForTesting(
+        [&devices_info, &run_loop](std::vector<VideoCaptureDeviceInfo> result) {
+          devices_info = std::move(result);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+    return devices_info;
+  }
+
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   base::TestComponentContextForProcess test_context_;
@@ -25,19 +38,15 @@ class VideoCaptureDeviceFactoryFuchsiaTest : public testing::Test {
 };
 
 TEST_F(VideoCaptureDeviceFactoryFuchsiaTest, EnumerateDevices) {
-  media::VideoCaptureDeviceDescriptors device_descriptors;
-  device_factory_.GetDeviceDescriptors(&device_descriptors);
+  auto devices_info = GetDevicesInfo();
 
-  EXPECT_EQ(device_descriptors.size(), 1U);
+  EXPECT_EQ(devices_info.size(), 1U);
 }
 
 TEST_F(VideoCaptureDeviceFactoryFuchsiaTest, EnumerateDevicesAfterDisconnect) {
-  media::VideoCaptureDeviceDescriptors device_descriptors;
-  device_factory_.GetDeviceDescriptors(&device_descriptors);
-
-  EXPECT_EQ(device_descriptors.size(), 1U);
-
-  device_descriptors.clear();
+  auto devices_info = GetDevicesInfo();
+  EXPECT_EQ(devices_info.size(), 1U);
+  devices_info.clear();
 
   // Disconnect DeviceWatcher and run the run loop so |device_factory_| can
   // handle the disconnect.
@@ -45,9 +54,9 @@ TEST_F(VideoCaptureDeviceFactoryFuchsiaTest, EnumerateDevicesAfterDisconnect) {
   base::RunLoop().RunUntilIdle();
 
   // Try enumerating devices again. DeviceWatcher is expected to be reconnected.
-  device_factory_.GetDeviceDescriptors(&device_descriptors);
+  devices_info = GetDevicesInfo();
 
-  EXPECT_EQ(device_descriptors.size(), 1U);
+  EXPECT_EQ(devices_info.size(), 1U);
 }
 
 }  // namespace media

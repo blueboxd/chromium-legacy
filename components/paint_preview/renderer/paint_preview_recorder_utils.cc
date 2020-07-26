@@ -33,12 +33,8 @@ void ParseGlyphs(const cc::PaintOpBuffer* buffer,
 bool SerializeAsSkPicture(sk_sp<const cc::PaintRecord> record,
                           PaintPreviewTracker* tracker,
                           const gfx::Rect& dimensions,
-                          base::File file,
-                          size_t max_size,
-                          size_t* serialized_size) {
+                          SkWStream* out_stream) {
   TRACE_EVENT0("paint_preview", "SerializeAsSkPicture");
-  if (!file.IsValid())
-    return false;
 
   // base::Unretained is safe as |tracker| outlives the usage of
   // |custom_callback|.
@@ -54,13 +50,10 @@ bool SerializeAsSkPicture(sk_sp<const cc::PaintRecord> record,
   TypefaceSerializationContext typeface_context(tracker->GetTypefaceUsageMap());
   auto serial_procs = MakeSerialProcs(tracker->GetPictureSerializationContext(),
                                       &typeface_context);
-  FileWStream stream(std::move(file), max_size);
-  skp->serialize(&stream, &serial_procs);
-  stream.flush();
-  stream.Close();
-  DCHECK(serialized_size);
-  *serialized_size = stream.ActualBytesWritten();
-  return !stream.DidWriteFail();
+
+  skp->serialize(out_stream, &serial_procs);
+  out_stream->flush();
+  return true;
 }
 
 void BuildResponse(PaintPreviewTracker* tracker,
@@ -77,6 +70,45 @@ void BuildResponse(PaintPreviewTracker* tracker,
   }
 
   tracker->MoveLinks(&response->links);
+}
+
+bool SerializeAsSkPictureToFile(sk_sp<const cc::PaintRecord> recording,
+                                const gfx::Rect& bounds,
+                                PaintPreviewTracker* tracker,
+                                base::File file,
+                                size_t max_capture_size,
+                                size_t* serialized_size) {
+  if (!file.IsValid())
+    return false;
+
+  FileWStream file_stream(std::move(file), max_capture_size);
+  if (!SerializeAsSkPicture(recording, tracker, bounds, &file_stream))
+    return false;
+
+  file_stream.Close();
+  *serialized_size = file_stream.ActualBytesWritten();
+  return !file_stream.DidWriteFail();
+}
+
+bool SerializeAsSkPictureToMemoryBuffer(sk_sp<const cc::PaintRecord> recording,
+                                        const gfx::Rect& bounds,
+                                        PaintPreviewTracker* tracker,
+                                        mojo_base::BigBuffer* buffer,
+                                        size_t max_capture_size,
+                                        size_t* serialized_size) {
+  SkDynamicMemoryWStream memory_stream;
+  if (!SerializeAsSkPicture(recording, tracker, bounds, &memory_stream))
+    return false;
+
+  // |0| indicates "no size limit".
+  if (max_capture_size == 0)
+    max_capture_size = SIZE_MAX;
+
+  sk_sp<SkData> data = memory_stream.detachAsData();
+  *serialized_size = std::min(data->size(), max_capture_size);
+  *buffer = mojo_base::BigBuffer(
+      base::span<const uint8_t>(data->bytes(), *serialized_size));
+  return data->size() <= max_capture_size;
 }
 
 }  // namespace paint_preview

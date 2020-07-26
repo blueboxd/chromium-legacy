@@ -7,7 +7,6 @@
 #include "base/test/mock_callback.h"
 #include "chrome/browser/nearby_sharing/mock_nearby_sharing_service.h"
 #include "chrome/browser/nearby_sharing/share_target.h"
-#include "chrome/browser/nearby_sharing/share_target_builder.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,12 +20,14 @@ class NearbyConfirmationManagerTest : public testing::Test {
 
   MockNearbySharingService& sharing_service() { return sharing_service_; }
 
+  const ShareTarget& share_target() const { return share_target_; }
+
   NearbyConfirmationManager& manager() { return manager_; }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
   MockNearbySharingService sharing_service_;
-  ShareTarget share_target_ = ShareTargetBuilder().build();
+  ShareTarget share_target_;
   NearbyConfirmationManager manager_{&sharing_service_, share_target_};
 };
 
@@ -35,8 +36,9 @@ class NearbyConfirmationManagerTest : public testing::Test {
 TEST_F(NearbyConfirmationManagerTest, Accept_Success) {
   EXPECT_CALL(sharing_service(), Accept(testing::_, testing::_))
       .WillOnce(testing::Invoke(
-          [](const ShareTarget&,
-             NearbySharingService::StatusCodesCallback callback) {
+          [&](const ShareTarget& target,
+              NearbySharingService::StatusCodesCallback callback) {
+            EXPECT_EQ(share_target().id, target.id);
             std::move(callback).Run(NearbySharingService::StatusCodes::kOk);
           }));
   base::MockCallback<NearbyConfirmationManager::AcceptCallback> callback;
@@ -48,8 +50,9 @@ TEST_F(NearbyConfirmationManagerTest, Accept_Success) {
 TEST_F(NearbyConfirmationManagerTest, Accept_Error) {
   EXPECT_CALL(sharing_service(), Accept(testing::_, testing::_))
       .WillOnce(testing::Invoke(
-          [](const ShareTarget&,
-             NearbySharingService::StatusCodesCallback callback) {
+          [&](const ShareTarget& target,
+              NearbySharingService::StatusCodesCallback callback) {
+            EXPECT_EQ(share_target().id, target.id);
             std::move(callback).Run(NearbySharingService::StatusCodes::kError);
           }));
   base::MockCallback<NearbyConfirmationManager::AcceptCallback> callback;
@@ -61,8 +64,9 @@ TEST_F(NearbyConfirmationManagerTest, Accept_Error) {
 TEST_F(NearbyConfirmationManagerTest, Reject_Success) {
   EXPECT_CALL(sharing_service(), Reject(testing::_, testing::_))
       .WillOnce(testing::Invoke(
-          [](const ShareTarget&,
-             NearbySharingService::StatusCodesCallback callback) {
+          [&](const ShareTarget& target,
+              NearbySharingService::StatusCodesCallback callback) {
+            EXPECT_EQ(share_target().id, target.id);
             std::move(callback).Run(NearbySharingService::StatusCodes::kOk);
           }));
   base::MockCallback<NearbyConfirmationManager::RejectCallback> callback;
@@ -74,8 +78,9 @@ TEST_F(NearbyConfirmationManagerTest, Reject_Success) {
 TEST_F(NearbyConfirmationManagerTest, Reject_Error) {
   EXPECT_CALL(sharing_service(), Reject(testing::_, testing::_))
       .WillOnce(testing::Invoke(
-          [](const ShareTarget&,
-             NearbySharingService::StatusCodesCallback callback) {
+          [&](const ShareTarget& target,
+              NearbySharingService::StatusCodesCallback callback) {
+            EXPECT_EQ(share_target().id, target.id);
             std::move(callback).Run(NearbySharingService::StatusCodes::kError);
           }));
   base::MockCallback<NearbyConfirmationManager::RejectCallback> callback;

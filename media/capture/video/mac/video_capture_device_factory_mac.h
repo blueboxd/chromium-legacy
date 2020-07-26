@@ -19,16 +19,12 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryMac
   VideoCaptureDeviceFactoryMac();
   ~VideoCaptureDeviceFactoryMac() override;
 
-  static void SetGetDeviceDescriptorsRetryCount(int count);
-  static int GetGetDeviceDescriptorsRetryCount();
+  static void SetGetDevicesInfoRetryCount(int count);
+  static int GetGetDevicesInfoRetryCount();
 
   std::unique_ptr<VideoCaptureDevice> CreateDevice(
       const VideoCaptureDeviceDescriptor& device_descriptor) override;
-  void GetDeviceDescriptors(
-      VideoCaptureDeviceDescriptors* device_descriptors) override;
-  void GetSupportedFormats(
-      const VideoCaptureDeviceDescriptor& device_descriptor,
-      VideoCaptureFormats* supported_formats) override;
+  void GetDevicesInfo(GetDevicesInfoCallback callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceFactoryMac);
 };

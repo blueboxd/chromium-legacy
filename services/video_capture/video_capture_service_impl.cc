@@ -143,7 +143,7 @@ void VideoCaptureServiceImpl::ConnectToVideoSourceProvider(
 
 void VideoCaptureServiceImpl::SetRetryCount(int32_t count) {
 #if defined(OS_MACOSX)
-  media::VideoCaptureDeviceFactoryMac::SetGetDeviceDescriptorsRetryCount(count);
+  media::VideoCaptureDeviceFactoryMac::SetGetDevicesInfoRetryCount(count);
 #endif
 }
 

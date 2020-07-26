@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "components/policy/core/browser/android/android_combined_policy_provider.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
-#include "components/policy/core/browser/url_blacklist_policy_handler.h"
+#include "components/policy/core/browser/url_blocklist_policy_handler.h"
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/policy_constants.h"

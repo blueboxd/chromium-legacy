@@ -86,7 +86,7 @@ ALWAYS_INLINE int GetMinSaturatedSetResultForTesting() {
 
 // TODO(thakis): Remove these two lines once http://llvm.org/PR26504 is resolved
 class PLATFORM_EXPORT LayoutUnit;
-constexpr inline bool operator<(const LayoutUnit&, const LayoutUnit&);
+constexpr bool operator<(const LayoutUnit&, const LayoutUnit&);
 
 class LayoutUnit {
   DISALLOW_NEW();
@@ -588,11 +588,11 @@ inline LayoutUnit operator+(const IntegerType a, const LayoutUnit& b) {
   return LayoutUnit(a) + b;
 }
 
-constexpr inline float operator+(const float a, const LayoutUnit& b) {
+constexpr float operator+(const float a, const LayoutUnit& b) {
   return a + b.ToFloat();
 }
 
-constexpr inline double operator+(const double a, const LayoutUnit& b) {
+constexpr double operator+(const double a, const LayoutUnit& b) {
   return a + b.ToDouble();
 }
 

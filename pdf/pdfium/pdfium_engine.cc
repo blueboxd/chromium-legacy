@@ -18,6 +18,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
@@ -1932,6 +1933,13 @@ bool PDFiumEngine::SelectFindResult(bool forward) {
   // If the result is not in view, scroll to it.
   pp::Rect bounding_rect;
   pp::Rect visible_rect = GetVisibleRect();
+
+  // TODO(crbug.com/1108574): Remove after fixing the issue.
+  size_t find_results_size = find_results_.size();
+  base::debug::Alias(&find_results_size);
+  size_t current_find_index_value = current_find_index_.value();
+  base::debug::Alias(&current_find_index_value);
+
   // Use zoom of 1.0 since |visible_rect| is without zoom.
   const std::vector<pp::Rect>& rects =
       find_results_[current_find_index_.value()].GetScreenRects(

@@ -4488,8 +4488,6 @@ String LocalFrameView::MainThreadScrollingReasonsAsText() {
   return String(cc::MainThreadScrollingReason::AsText(reasons).c_str());
 }
 
-// TODO(https://crbug/1088483): Replace viewport offset usage with main frame
-// transform and remove viewport_offset field from intersection state.
 bool LocalFrameView::MapToVisualRectInRemoteRootFrame(
     PhysicalRect& rect,
     bool apply_overflow_clip) {
@@ -4500,18 +4498,14 @@ bool LocalFrameView::MapToVisualRectInRemoteRootFrame(
   bool result = rect.InclusiveIntersect(PhysicalRect(
       apply_overflow_clip ? frame_->RemoteViewportIntersection()
                           : frame_->RemoteMainFrameIntersection()));
-  if (result)
-    rect.Move(PhysicalOffset(GetFrame().RemoteViewportOffset()));
+  if (result) {
+    if (LayoutView* layout_view = GetLayoutView()) {
+      rect = layout_view->LocalToAncestorRect(
+          rect, nullptr,
+          kTraverseDocumentBoundaries | kApplyRemoteMainFrameTransform);
+    }
+  }
   return result;
-}
-
-void LocalFrameView::MapLocalToRemoteRootFrame(
-    TransformState& transform_state) {
-  DCHECK(frame_->IsLocalRoot());
-  // This is the top-level frame, so no mapping necessary.
-  if (frame_->IsMainFrame())
-    return;
-  transform_state.Move(PhysicalOffset(GetFrame().RemoteViewportOffset()));
 }
 
 void LocalFrameView::MapLocalToRemoteMainFrame(

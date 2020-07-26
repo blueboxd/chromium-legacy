@@ -49,11 +49,23 @@ class ProfileWriterTest : public testing::Test {
     DCHECK(profile_dir_.CreateUniqueTempDir());
     TestingProfile::Builder profile_builder;
     profile_builder.SetPath(profile_dir_.GetPath());
+    profile_builder.AddTestingFactory(
+        BookmarkModelFactory::GetInstance(),
+        BookmarkModelFactory::GetDefaultFactory());
+    profile_builder.AddTestingFactory(
+        HistoryServiceFactory::GetInstance(),
+        HistoryServiceFactory::GetDefaultFactory());
     profile_ = profile_builder.Build();
 
     DCHECK(second_profile_dir_.CreateUniqueTempDir());
     TestingProfile::Builder second_profile_builder;
     second_profile_builder.SetPath(second_profile_dir_.GetPath());
+    second_profile_builder.AddTestingFactory(
+        BookmarkModelFactory::GetInstance(),
+        BookmarkModelFactory::GetDefaultFactory());
+    second_profile_builder.AddTestingFactory(
+        HistoryServiceFactory::GetInstance(),
+        HistoryServiceFactory::GetDefaultFactory());
     second_profile_ = second_profile_builder.Build();
   }
 
@@ -165,15 +177,11 @@ class ProfileWriterTest : public testing::Test {
 
 // Add bookmarks via ProfileWriter to profile1 when profile2 also exists.
 TEST_F(ProfileWriterTest, CheckBookmarksWithMultiProfile) {
-  second_profile()->CreateBookmarkModel(true);
-
   BookmarkModel* bookmark_model2 =
       BookmarkModelFactory::GetForBrowserContext(second_profile());
   bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model2);
   bookmarks::AddIfNotBookmarked(
       bookmark_model2, GURL("http://www.bing.com"), base::ASCIIToUTF16("Bing"));
-
-  profile()->CreateBookmarkModel(true);
 
   CreateImportedBookmarksEntries();
   BookmarkModel* bookmark_model1 =
@@ -196,8 +204,6 @@ TEST_F(ProfileWriterTest, CheckBookmarksWithMultiProfile) {
 
 // Verify that bookmarks are duplicated when added twice.
 TEST_F(ProfileWriterTest, CheckBookmarksAfterWritingDataTwice) {
-  profile()->CreateBookmarkModel(true);
-
   CreateImportedBookmarksEntries();
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile());
@@ -232,7 +238,6 @@ std::unique_ptr<TemplateURL> ProfileWriterTest::CreateTemplateURL(
 
 // Verify that history entires are not duplicated when added twice.
 TEST_F(ProfileWriterTest, CheckHistoryAfterWritingDataTwice) {
-  ASSERT_TRUE(profile()->CreateHistoryService(true, false));
   profile()->BlockUntilHistoryProcessesPendingRequests();
 
   CreateHistoryPageEntries();
@@ -249,7 +254,6 @@ TEST_F(ProfileWriterTest, CheckHistoryAfterWritingDataTwice) {
 }
 
 TEST_F(ProfileWriterTest, AddKeywords) {
-  ASSERT_TRUE(profile()->CreateHistoryService(true, false));
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       profile(),
       base::BindRepeating(&TemplateURLServiceFactory::BuildInstanceFor));

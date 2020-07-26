@@ -2262,6 +2262,22 @@ base::Optional<int> AXTree::GetSetSize(const AXNode& node) {
   if (!ordered_set)
     return base::nullopt;
 
+  // For popup buttons that control a single element, inherit the controlled
+  // item's SetSize.
+  if (node.data().role == ax::mojom::Role::kPopUpButton) {
+    const auto& controls_ids = node.data().GetIntListAttribute(
+        ax::mojom::IntListAttribute::kControlsIds);
+    if (controls_ids.size() == 1 && GetFromId(controls_ids[0])) {
+      const AXNode& controlled_item = *GetFromId(controls_ids[0]);
+
+      base::Optional<int> controlled_item_set_size =
+          GetSetSize(controlled_item);
+      node_set_size_pos_in_set_info_map_[node.id()].set_size =
+          controlled_item_set_size;
+      return controlled_item_set_size;
+    }
+  }
+
   // Compute, cache, then return.
   ComputeSetSizePosInSetAndCache(node, ordered_set);
   base::Optional<int> set_size =

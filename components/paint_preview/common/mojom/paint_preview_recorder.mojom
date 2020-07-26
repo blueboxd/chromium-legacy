@@ -4,6 +4,7 @@
 
 module paint_preview.mojom;
 
+import "mojo/public/mojom/base/big_buffer.mojom";
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
@@ -36,7 +37,24 @@ enum PaintPreviewStatus {
   kFailed,
 };
 
+// Enumation of strategies to store artifacts of an operation.
+enum Persistence {
+  // Store artifacts in the file system. This strategy can be robust to browser
+  // restarts, since the lifetime of the files can outlive the browser process.
+  kFileSystem,
+
+  // Store artifacts in memory buffers returned from or passed to capture or
+  // compositing methods. On low-memory devices, there is a higher risk of
+  // out-of-memory issues.
+  kMemoryBuffer,
+};
+
+// The collection of parameters needed for a recording of a render frame.
 struct PaintPreviewCaptureParams {
+  // The strategy for where to store the serialized SkPictures resulting from
+  // this capture.
+  Persistence persistence;
+
   // GUID for the Paint Preview (used to associate subframes to main frame).
   mojo_base.mojom.UnguessableToken guid;
 
@@ -52,7 +70,9 @@ struct PaintPreviewCaptureParams {
 
   // File to write the SkPicture to (write-only). A separate file should be
   // created for each RenderFrame.
-  mojo_base.mojom.File file;
+  //
+  // null if not |Persistence::FileSystem|.
+  mojo_base.mojom.File? file;
 
   // The maximum allowed size of a capture that can be produced. A value of
   // 0 means the size is unrestricted.
@@ -85,6 +105,15 @@ struct PaintPreviewCaptureResponse {
 
   // Scroll offsets of the frame at capture time.
   gfx.mojom.Size scroll_offsets;
+
+  // The serialized skia picture. It should be deserialized with the
+  // |SkDeserialProcs| that correspond with the |SkSerialProcs| it was
+  // serialized with.
+  //
+  // It is not safe to deserialize this in the browser process.
+  //
+  // null if not |Persistence::MemoryBuffer|.
+  mojo_base.mojom.BigBuffer? skp;
 };
 
 // Service for capturing a paint preview of a RenderFrame's contents. This

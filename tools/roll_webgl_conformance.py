@@ -97,8 +97,9 @@ def _ParseDepsFile(filename):
 def _ParseDepsDict(deps_content):
   local_scope = {}
   global_scope = {
-    'Var': _VarLookup(local_scope),
-    'deps_os': {},
+      'Str': lambda arg: str(arg),
+      'Var': _VarLookup(local_scope),
+      'deps_os': {},
   }
   exec(deps_content, global_scope, local_scope)
   return local_scope

@@ -80,6 +80,10 @@ class SafetyCheckMediator implements SafetyCheckCommonObserver {
         // Set the listener for clicking the Check button.
         mModel.set(SafetyCheckProperties.SAFETY_CHECK_BUTTON_CLICK_LISTENER,
                 (View.OnClickListener) (v) -> performSafetyCheck());
+        // Get the timestamp of the last run.
+        mModel.set(SafetyCheckProperties.LAST_RUN_TIMESTAMP,
+                mPreferenceManager.readLong(
+                        ChromePreferenceKeys.SETTINGS_SAFETY_CHECK_LAST_RUN_TIMESTAMP, 0));
     }
 
     /** Triggers all safety check child checks. */
@@ -89,6 +93,11 @@ class SafetyCheckMediator implements SafetyCheckCommonObserver {
         cancelCallbacks();
         // Record the start time for tracking 1 second checking delay in the UI.
         mCheckStartTime = SystemClock.elapsedRealtime();
+        // Record the absolute start time for showing when the last Safety check was performed.
+        long currentTime = System.currentTimeMillis();
+        mModel.set(SafetyCheckProperties.LAST_RUN_TIMESTAMP, currentTime);
+        mPreferenceManager.writeLong(
+                ChromePreferenceKeys.SETTINGS_SAFETY_CHECK_LAST_RUN_TIMESTAMP, currentTime);
         // Increment the stored number of Safety check starts.
         mPreferenceManager.incrementInt(ChromePreferenceKeys.SETTINGS_SAFETY_CHECK_RUN_COUNTER);
         // Set the checking state for all elements.

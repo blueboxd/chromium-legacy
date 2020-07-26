@@ -617,7 +617,6 @@ class CORE_EXPORT LocalFrameView final
   bool MapToVisualRectInRemoteRootFrame(PhysicalRect& rect,
                                         bool apply_overflow_clip = true);
 
-  void MapLocalToRemoteRootFrame(TransformState&);
   void MapLocalToRemoteMainFrame(TransformState&);
 
   void CrossOriginToMainFrameChanged();

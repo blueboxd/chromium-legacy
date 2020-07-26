@@ -7,7 +7,6 @@
 #include "base/test/mock_callback.h"
 #include "chrome/browser/nearby_sharing/mock_nearby_sharing_service.h"
 #include "chrome/browser/nearby_sharing/share_target.h"
-#include "chrome/browser/nearby_sharing/share_target_builder.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata_builder.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share.mojom.h"
@@ -21,7 +20,7 @@ namespace {
 using testing::_;
 
 MATCHER_P(MatchesTarget, target, "") {
-  return arg->id == target.id();
+  return arg.id == target.id;
 }
 
 class MockShareTargetListener
@@ -35,14 +34,8 @@ class MockShareTargetListener
   }
 
   // nearby_share::mojom::ShareTargetListener:
-  MOCK_METHOD(void,
-              OnShareTargetDiscovered,
-              (nearby_share::mojom::ShareTargetPtr),
-              (override));
-  MOCK_METHOD(void,
-              OnShareTargetLost,
-              (nearby_share::mojom::ShareTargetPtr),
-              (override));
+  MOCK_METHOD(void, OnShareTargetDiscovered, (const ShareTarget&), (override));
+  MOCK_METHOD(void, OnShareTargetLost, (const ShareTarget&), (override));
 
  private:
   mojo::Receiver<ShareTargetListener> receiver_{this};
@@ -112,7 +105,7 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, OnShareTargetDiscovered) {
   MockShareTargetListener listener;
   manager().StartDiscovery(listener.Bind(), base::DoNothing());
 
-  ShareTarget share_target = ShareTargetBuilder().build();
+  ShareTarget share_target;
 
   base::RunLoop run_loop;
   EXPECT_CALL(listener, OnShareTargetDiscovered(MatchesTarget(share_target)))
@@ -127,7 +120,7 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, OnShareTargetLost) {
   MockShareTargetListener listener;
   manager().StartDiscovery(listener.Bind(), base::DoNothing());
 
-  ShareTarget share_target = ShareTargetBuilder().build();
+  ShareTarget share_target;
 
   base::RunLoop run_loop;
   EXPECT_CALL(listener, OnShareTargetLost(MatchesTarget(share_target)))
@@ -145,15 +138,14 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, SelectShareTarget_Invalid) {
       Run(nearby_share::mojom::SelectShareTargetResult::kInvalidShareTarget,
           testing::Eq(base::nullopt), testing::IsFalse()));
 
-  auto share_target = nearby_share::mojom::ShareTarget::New();
-  manager().SelectShareTarget(std::move(share_target), callback.Get());
+  manager().SelectShareTarget({}, callback.Get());
 }
 
 TEST_F(NearbyPerSessionDiscoveryManagerTest, SelectShareTarget_SendSuccess) {
   // Setup share target
   MockShareTargetListener listener;
   manager().StartDiscovery(listener.Bind(), base::DoNothing());
-  ShareTarget share_target = ShareTargetBuilder().build();
+  ShareTarget share_target;
   manager().OnShareTargetDiscovered(share_target);
 
   // We don't expect the callback to be called until OnTransferUpdate().
@@ -165,19 +157,18 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, SelectShareTarget_SendSuccess) {
       .WillOnce(testing::Invoke(
           [&share_target](const ShareTarget& target, std::string text,
                           NearbySharingService::StatusCodesCallback callback) {
-            EXPECT_EQ(share_target.id(), target.id());
+            EXPECT_EQ(share_target.id, target.id);
             std::move(callback).Run(NearbySharingService::StatusCodes::kOk);
           }));
 
-  manager().SelectShareTarget(
-      nearby_share::mojom::ShareTarget::New(share_target.id()), callback.Get());
+  manager().SelectShareTarget(share_target.id, callback.Get());
 }
 
 TEST_F(NearbyPerSessionDiscoveryManagerTest, SelectShareTarget_SendError) {
   // Setup share target
   MockShareTargetListener listener;
   manager().StartDiscovery(listener.Bind(), base::DoNothing());
-  ShareTarget share_target = ShareTargetBuilder().build();
+  ShareTarget share_target;
   manager().OnShareTargetDiscovered(share_target);
 
   // Expect an error if NearbySharingService::Send*() fails.
@@ -191,19 +182,18 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, SelectShareTarget_SendError) {
       .WillOnce(testing::Invoke(
           [&share_target](const ShareTarget& target, std::string text,
                           NearbySharingService::StatusCodesCallback callback) {
-            EXPECT_EQ(share_target.id(), target.id());
+            EXPECT_EQ(share_target.id, target.id);
             std::move(callback).Run(NearbySharingService::StatusCodes::kError);
           }));
 
-  manager().SelectShareTarget(
-      nearby_share::mojom::ShareTarget::New(share_target.id()), callback.Get());
+  manager().SelectShareTarget(share_target.id, callback.Get());
 }
 
 TEST_F(NearbyPerSessionDiscoveryManagerTest, OnTransferUpdate_WaitRemote) {
   // Setup share target
   MockShareTargetListener listener;
   manager().StartDiscovery(listener.Bind(), base::DoNothing());
-  ShareTarget share_target = ShareTargetBuilder().build();
+  ShareTarget share_target;
   manager().OnShareTargetDiscovered(share_target);
 
   // Expect success without confirmation manager and token.
@@ -211,8 +201,7 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, OnTransferUpdate_WaitRemote) {
   EXPECT_CALL(callback, Run(nearby_share::mojom::SelectShareTargetResult::kOk,
                             testing::Eq(base::nullopt), testing::IsFalse()));
 
-  manager().SelectShareTarget(
-      nearby_share::mojom::ShareTarget::New(share_target.id()), callback.Get());
+  manager().SelectShareTarget(share_target.id, callback.Get());
 
   auto metadata =
       TransferMetadataBuilder()
@@ -225,7 +214,7 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, OnTransferUpdate_WaitLocal) {
   // Setup share target
   MockShareTargetListener listener;
   manager().StartDiscovery(listener.Bind(), base::DoNothing());
-  ShareTarget share_target = ShareTargetBuilder().build();
+  ShareTarget share_target;
   manager().OnShareTargetDiscovered(share_target);
 
   std::string token = "Test Token";
@@ -235,8 +224,7 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, OnTransferUpdate_WaitLocal) {
   EXPECT_CALL(callback, Run(nearby_share::mojom::SelectShareTargetResult::kOk,
                             testing::Eq(token), testing::IsTrue()));
 
-  manager().SelectShareTarget(
-      nearby_share::mojom::ShareTarget::New(share_target.id()), callback.Get());
+  manager().SelectShareTarget(share_target.id, callback.Get());
 
   auto metadata =
       TransferMetadataBuilder()

@@ -32,11 +32,13 @@
 
 namespace {
 
+using HandleType = content::NativeFileSystemPermissionContext::HandleType;
+
 void ShowNativeFileSystemRestrictedDirectoryDialogOnUIThread(
     content::GlobalFrameRoutingId frame_id,
     const url::Origin& origin,
     const base::FilePath& path,
-    content::NativeFileSystemPermissionContext::HandleType handle_type,
+    HandleType handle_type,
     base::OnceCallback<
         void(ChromeNativeFileSystemPermissionContext::SensitiveDirectoryResult)>
         callback) {
@@ -66,6 +68,12 @@ void ShowNativeFileSystemRestrictedDirectoryDialogOnUIThread(
 // the struct below.
 constexpr const int kNoBasePathKey = -1;
 
+enum BlockType {
+  kBlockAllChildren,
+  kBlockNestedDirectories,
+  kDontBlockChildren
+};
+
 const struct {
   // base::BasePathKey value (or one of the platform specific extensions to it)
   // for a path that should be blocked. Specify kNoBasePathKey if |path| should
@@ -77,72 +85,84 @@ const struct {
   // |path| is treated relative to the path |base_path_key| resolves to.
   const base::FilePath::CharType* path;
 
-  // If this is set to true not only is the given path blocked, all the children
-  // are blocked as well. When this is set to false only the path and its
-  // parents are blocked. If a blocked path is a descendent of another blocked
-  // path, then it may override the child-blocking policy of its ancestor. For
-  // example, if /home blocks all children, but /home/downloads does not, then
-  // /home/downloads/file.ext should *not* be blocked.
-  bool block_all_children;
+  // If this is set to kDontBlockChildren, only the given path and its parents
+  // are blocked. If this is set to kBlockAllChildren, all children of the given
+  // path are blocked as well. Finally if this is set to kBlockNestedDirectories
+  // access is allowed to individual files in the directory, but nested
+  // directories are still blocked.
+  // The BlockType of the nearest ancestor of a path to check is what ultimately
+  // determines if a path is blocked or not. If a blocked path is a descendent
+  // of another blocked path, then it may override the child-blocking policy of
+  // its ancestor. For example, if /home blocks all children, but
+  // /home/downloads does not, then /home/downloads/file.ext will *not* be
+  // blocked.
+  BlockType type;
 } kBlockedPaths[] = {
     // Don't allow users to share their entire home directory, entire desktop or
     // entire documents folder, but do allow sharing anything inside those
     // directories not otherwise blocked.
-    {base::DIR_HOME, nullptr, false},
-    {base::DIR_USER_DESKTOP, nullptr, false},
-    {chrome::DIR_USER_DOCUMENTS, nullptr, false},
+    {base::DIR_HOME, nullptr, kDontBlockChildren},
+    {base::DIR_USER_DESKTOP, nullptr, kDontBlockChildren},
+    {chrome::DIR_USER_DOCUMENTS, nullptr, kDontBlockChildren},
     // Similar restrictions for the downloads directory.
-    {chrome::DIR_DEFAULT_DOWNLOADS, nullptr, false},
-    {chrome::DIR_DEFAULT_DOWNLOADS_SAFE, nullptr, false},
+    {chrome::DIR_DEFAULT_DOWNLOADS, nullptr, kDontBlockChildren},
+    {chrome::DIR_DEFAULT_DOWNLOADS_SAFE, nullptr, kDontBlockChildren},
     // The Chrome installation itself should not be modified by the web.
-    {chrome::DIR_APP, nullptr, true},
+    {chrome::DIR_APP, nullptr, kBlockAllChildren},
     // And neither should the configuration of at least the currently running
     // Chrome instance (note that this does not take --user-data-dir command
     // line overrides into account).
-    {chrome::DIR_USER_DATA, nullptr, true},
+    {chrome::DIR_USER_DATA, nullptr, kBlockAllChildren},
     // ~/.ssh is pretty sensitive on all platforms, so block access to that.
-    {base::DIR_HOME, FILE_PATH_LITERAL(".ssh"), true},
+    {base::DIR_HOME, FILE_PATH_LITERAL(".ssh"), kBlockAllChildren},
     // And limit access to ~/.gnupg as well.
-    {base::DIR_HOME, FILE_PATH_LITERAL(".gnupg"), true},
+    {base::DIR_HOME, FILE_PATH_LITERAL(".gnupg"), kBlockAllChildren},
 #if defined(OS_WIN)
     // Some Windows specific directories to block, basically all apps, the
     // operating system itself, as well as configuration data for apps.
-    {base::DIR_PROGRAM_FILES, nullptr, true},
-    {base::DIR_PROGRAM_FILESX86, nullptr, true},
-    {base::DIR_PROGRAM_FILES6432, nullptr, true},
-    {base::DIR_WINDOWS, nullptr, true},
-    {base::DIR_APP_DATA, nullptr, true},
-    {base::DIR_LOCAL_APP_DATA, nullptr, true},
-    {base::DIR_COMMON_APP_DATA, nullptr, true},
+    {base::DIR_PROGRAM_FILES, nullptr, kBlockAllChildren},
+    {base::DIR_PROGRAM_FILESX86, nullptr, kBlockAllChildren},
+    {base::DIR_PROGRAM_FILES6432, nullptr, kBlockAllChildren},
+    {base::DIR_WINDOWS, nullptr, kBlockAllChildren},
+    {base::DIR_APP_DATA, nullptr, kBlockAllChildren},
+    {base::DIR_LOCAL_APP_DATA, nullptr, kBlockAllChildren},
+    {base::DIR_COMMON_APP_DATA, nullptr, kBlockAllChildren},
+    // Opening a file from an MTP device, such as a smartphone or a camera, is
+    // implemented by Windows as opening a file in the temporary internet files
+    // directory. To support that, allow opening files in that directory, but
+    // not whole directories.
+    {base::DIR_IE_INTERNET_CACHE, nullptr, kBlockNestedDirectories},
 #endif
 #if defined(OS_MACOSX)
     // Similar Mac specific blocks.
-    {base::DIR_APP_DATA, nullptr, true},
-    {base::DIR_HOME, FILE_PATH_LITERAL("Library"), true},
+    {base::DIR_APP_DATA, nullptr, kBlockAllChildren},
+    {base::DIR_HOME, FILE_PATH_LITERAL("Library"), kBlockAllChildren},
 #endif
 #if defined(OS_LINUX)
     // On Linux also block access to devices via /dev, as well as security
     // sensitive data in /sys and /proc.
-    {kNoBasePathKey, FILE_PATH_LITERAL("/dev"), true},
-    {kNoBasePathKey, FILE_PATH_LITERAL("/sys"), true},
-    {kNoBasePathKey, FILE_PATH_LITERAL("/proc"), true},
+    {kNoBasePathKey, FILE_PATH_LITERAL("/dev"), kBlockAllChildren},
+    {kNoBasePathKey, FILE_PATH_LITERAL("/sys"), kBlockAllChildren},
+    {kNoBasePathKey, FILE_PATH_LITERAL("/proc"), kBlockAllChildren},
     // And block all of ~/.config, matching the similar restrictions on mac
     // and windows.
-    {base::DIR_HOME, FILE_PATH_LITERAL(".config"), true},
+    {base::DIR_HOME, FILE_PATH_LITERAL(".config"), kBlockAllChildren},
     // Block ~/.dbus as well, just in case, although there probably isn't much a
     // website can do with access to that directory and its contents.
-    {base::DIR_HOME, FILE_PATH_LITERAL(".dbus"), true},
+    {base::DIR_HOME, FILE_PATH_LITERAL(".dbus"), kBlockAllChildren},
 #endif
     // TODO(https://crbug.com/984641): Refine this list, for example add
     // XDG_CONFIG_HOME when it is not set ~/.config?
 };
 
-bool ShouldBlockAccessToPath(const base::FilePath& check_path) {
+bool ShouldBlockAccessToPath(const base::FilePath& check_path,
+                             HandleType handle_type) {
   DCHECK(!check_path.empty());
   DCHECK(check_path.IsAbsolute());
 
   base::FilePath nearest_ancestor;
-  bool nearest_ancestor_blocks_all_children = false;
+  int nearest_ancestor_path_key = kNoBasePathKey;
+  BlockType nearest_ancestor_block_type = kDontBlockChildren;
   for (const auto& block : kBlockedPaths) {
     base::FilePath blocked_path;
     if (block.base_path_key != kNoBasePathKey) {
@@ -155,17 +175,39 @@ bool ShouldBlockAccessToPath(const base::FilePath& check_path) {
       blocked_path = base::FilePath(block.path);
     }
 
-    if (check_path == blocked_path || check_path.IsParent(blocked_path))
+    if (check_path == blocked_path || check_path.IsParent(blocked_path)) {
+      VLOG(1) << "Blocking access to " << check_path
+              << " because it is a parent of " << blocked_path << " ("
+              << block.base_path_key << ")";
       return true;
+    }
 
     if (blocked_path.IsParent(check_path) &&
         (nearest_ancestor.empty() || nearest_ancestor.IsParent(blocked_path))) {
       nearest_ancestor = blocked_path;
-      nearest_ancestor_blocks_all_children = block.block_all_children;
+      nearest_ancestor_path_key = block.base_path_key;
+      nearest_ancestor_block_type = block.type;
     }
   }
 
-  return !nearest_ancestor.empty() && nearest_ancestor_blocks_all_children;
+  // The path we're checking is not in a potentially blocked directory, or the
+  // nearest ancestor does not block access to its children. Grant access.
+  if (nearest_ancestor.empty() ||
+      nearest_ancestor_block_type == kDontBlockChildren) {
+    return false;
+  }
+
+  // The path we're checking is a file, and the nearest ancestor only blocks
+  // access to directories. Grant access.
+  if (handle_type == HandleType::kFile &&
+      nearest_ancestor_block_type == kBlockNestedDirectories) {
+    return false;
+  }
+
+  // The nearest ancestor blocks access to its children, so block access.
+  VLOG(1) << "Blocking access to " << check_path << " because it is inside "
+          << nearest_ancestor << " (" << nearest_ancestor_path_key << ")";
+  return true;
 }
 
 // Returns a callback that calls the passed in |callback| by posting a task to
@@ -317,7 +359,7 @@ void ChromeNativeFileSystemPermissionContext::ConfirmSensitiveDirectoryAccess(
   // directory.
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&ShouldBlockAccessToPath, paths[0]),
+      base::BindOnce(&ShouldBlockAccessToPath, paths[0], handle_type),
       base::BindOnce(&ChromeNativeFileSystemPermissionContext::
                          DidConfirmSensitiveDirectoryAccess,
                      GetWeakPtr(), origin, paths, handle_type, frame_id,

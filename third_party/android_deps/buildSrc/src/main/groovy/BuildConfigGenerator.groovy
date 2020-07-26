@@ -445,6 +445,27 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  # Ignore the dependency to org.apache.http.legacy. See crbug.com/1084879.\n')
                 sb.append('  ignore_manifest = true\n')
                 break
+            case 'com_google_protobuf_protobuf_javalite':
+                sb.append('  # Prebuilt protos in the runtime library.\n')
+                sb.append('  # If you want to use these protos, you should create a proto_java_library\n')
+                sb.append('  # target for them. See crbug.com/1103399 for discussion.\n')
+                sb.append('  jar_excluded_patterns = [\n')
+                sb.append('    "com/google/protobuf/Any*",\n')
+                sb.append('    "com/google/protobuf/Api*",\n')
+                sb.append('    "com/google/protobuf/Duration*",\n')
+                sb.append('    "com/google/protobuf/Empty*",\n')
+                sb.append('    "com/google/protobuf/FieldMask*",\n')
+                sb.append('    "com/google/protobuf/SourceContext*",\n')
+                sb.append('    "com/google/protobuf/Struct\\\\\\$1.class",\n')
+                sb.append('    "com/google/protobuf/Struct\\\\\\$Builder.class",\n')
+                sb.append('    "com/google/protobuf/Struct.class",\n')
+                sb.append('    "com/google/protobuf/StructOrBuilder.class",\n')
+                sb.append('    "com/google/protobuf/StructProto.class",\n')
+                sb.append('    "com/google/protobuf/Timestamp*",\n')
+                sb.append('    "com/google/protobuf/Type*",\n')
+                sb.append('    "com/google/protobuf/Wrappers*",\n')
+                sb.append('  ]')
+                break
         }
     }
 

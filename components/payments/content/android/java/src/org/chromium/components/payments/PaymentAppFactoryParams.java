@@ -8,10 +8,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.url.Origin;
-
-import java.util.Map;
 
 /** Interface for providing information to a payment app factory. */
 public interface PaymentAppFactoryParams extends PaymentRequestParams {
@@ -57,15 +54,6 @@ public interface PaymentAppFactoryParams extends PaymentRequestParams {
      */
     @Nullable
     default byte[][] getCertificateChain() {
-        return null;
-    }
-
-    /**
-     * @return The unmodifiable mapping of method names to modifiers, which include modified totals
-     * and additional line items. Used to display modified totals for each payment app, modified
-     * total in order summary, and additional line items in order summary. Should not be null.
-     */
-    default Map<String, PaymentDetailsModifier> getModifiers() {
         return null;
     }
 

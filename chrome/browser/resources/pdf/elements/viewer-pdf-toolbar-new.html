@@ -42,7 +42,9 @@
   }
 
   #end {
+    padding-inline-start: 20px;
     text-align: end;
+    white-space: nowrap;
   }
 
   #zoom-controls {
@@ -51,6 +53,13 @@
     margin-inline-end: 12px;
     margin-inline-start: 21px;
     padding: 0 6px;
+  }
+
+  @media(max-width: 600px) {
+    #title,
+    #zoom-controls input {
+      display: none;
+    }
   }
 
   viewer-page-selector {

@@ -15,7 +15,8 @@ cr.define('settings', function() {
     constructor() {
       const methodNames = [];
       if (cr.isChromeOS || cr.isWindows) {
-        methodNames.push('getProspectiveUILanguage');
+        methodNames.push(
+            'getProspectiveUILanguage', 'setProspectiveUILanguage');
       }
 
       super(methodNames);
@@ -49,6 +50,12 @@ cr.define('settings', function() {
     TestLanguagesBrowserProxy.prototype.getProspectiveUILanguage = function() {
       this.methodCalled('getProspectiveUILanguage');
       return Promise.resolve('en-US');
+    };
+
+    /** @override */
+    TestLanguagesBrowserProxy.prototype.setProspectiveUILanguage = function(
+        language) {
+      this.methodCalled('setProspectiveUILanguage', language);
     };
   }
 

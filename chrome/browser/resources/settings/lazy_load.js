@@ -69,6 +69,9 @@ export {DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_prox
 export {IncompatibleApplication, IncompatibleApplicationsBrowserProxyImpl} from './incompatible_applications_page/incompatible_applications_browser_proxy.js';
 // </if>
 export {LanguagesBrowserProxyImpl} from './languages_page/languages_browser_proxy.m.js';
+// <if expr="chromeos">
+export {LanguagesMetricsProxy, LanguagesMetricsProxyImpl, LanguagesPageInteraction} from './languages_page/languages_metrics_proxy.js';
+// </if>
 export {kMenuCloseDelay} from './languages_page/languages_page.js';
 // <if expr="not chromeos">
 export {ImportDataBrowserProxyImpl, ImportDataStatus} from './people_page/import_data_browser_proxy.js';

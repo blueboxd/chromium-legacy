@@ -34,7 +34,6 @@ VkSemaphore ImportVkSemaphoreHandle(VkDevice vk_device,
   VkResult result = vkCreateSemaphore(vk_device, &info, nullptr, &semaphore);
   if (result != VK_SUCCESS)
     return VK_NULL_HANDLE;
-
   base::ScopedFD fd = handle.TakeHandle();
   const auto is_sync_fd =
       handle_type == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT;
@@ -48,6 +47,7 @@ VkSemaphore ImportVkSemaphoreHandle(VkDevice vk_device,
 
   result = vkImportSemaphoreFdKHR(vk_device, &import);
   if (result != VK_SUCCESS) {
+    DLOG(ERROR) << "vkImportSemaphoreFdKHR failed: " << result;
     vkDestroySemaphore(vk_device, semaphore, nullptr);
     return VK_NULL_HANDLE;
   }
@@ -78,7 +78,7 @@ SemaphoreHandle GetVkSemaphoreHandle(
   int fd = -1;
   VkResult result = vkGetSemaphoreFdKHR(vk_device, &info, &fd);
   if (result != VK_SUCCESS) {
-    LOG(ERROR) << "vkGetSemaphoreFdKHR failed : " << result;
+    DLOG(ERROR) << "vkGetSemaphoreFdKHR failed: " << result;
     return SemaphoreHandle();
   }
 

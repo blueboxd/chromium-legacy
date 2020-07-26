@@ -88,6 +88,11 @@ const GURL GetFrenchUrl() {
       inFolderWithName:name]);
 }
 
+- (void)addBookmarkWithTitle:(NSString*)title URL:(NSString*)url {
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [BookmarkEarlGreyAppInterface addBookmarkWithTitle:title URL:url]);
+}
+
 - (void)removeBookmarkWithTitle:(NSString*)title {
   EG_TEST_HELPER_ASSERT_NO_ERROR(
       [BookmarkEarlGreyAppInterface removeBookmarkWithTitle:title]);

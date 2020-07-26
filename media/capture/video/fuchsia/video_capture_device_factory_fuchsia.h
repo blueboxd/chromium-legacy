@@ -11,7 +11,6 @@
 
 #include "base/containers/small_map.h"
 #include "base/optional.h"
-#include "base/run_loop.h"
 #include "media/capture/video/video_capture_device_factory.h"
 
 namespace media {
@@ -30,14 +29,11 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryFuchsia
   // VideoCaptureDeviceFactory implementation.
   std::unique_ptr<VideoCaptureDevice> CreateDevice(
       const VideoCaptureDeviceDescriptor& device_descriptor) override;
-  void GetDeviceDescriptors(
-      VideoCaptureDeviceDescriptors* device_descriptors) override;
-  void GetSupportedFormats(const VideoCaptureDeviceDescriptor& device,
-                           VideoCaptureFormats* supported_formats) override;
+  void GetDevicesInfo(GetDevicesInfoCallback callback) override;
 
  private:
   // Helper class used to fetch per-device information.
-  class DeviceInfoFetcher;
+  class DeviceConfigFetcher;
 
   void Initialize();
 
@@ -47,19 +43,24 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryFuchsia
   void OnWatchDevicesResult(
       std::vector<fuchsia::camera3::WatchDevicesEvent> events);
 
+  void OnDeviceInfoFetched();
+
+  std::vector<VideoCaptureDeviceInfo> MakeDevicesInfo();
+  void MaybeResolvePendingDeviceInfoCallbacks();
+
   fuchsia::camera3::DeviceWatcherPtr device_watcher_;
-  base::small_map<std::map<uint64_t, std::unique_ptr<DeviceInfoFetcher>>>
+
+  // Current list of devices. Set to nullopt if the list hasn't been received
+  // yet.
+  base::Optional<
+      base::small_map<std::map<uint64_t, std::unique_ptr<DeviceConfigFetcher>>>>
       devices_;
 
-  // Indicates whether the first update has been received from
-  // |device_watcher_|.
-  bool received_first_update_ = false;
+  size_t num_pending_device_info_requests_ = 0;
 
-  // RunLoop used to wait for the first WatchDevices() response. Currently
-  // required because GetDeviceDescriptors() is synchronous.
-  // TODO(crbug.com/1072932) Refactor interface to allow asynchronous
-  // enumeration and remove this hack.
-  base::Optional<base::RunLoop> first_update_run_loop_;
+  std::vector<GetDevicesInfoCallback> pending_devices_info_requests_;
+
+  base::WeakPtrFactory<VideoCaptureDeviceFactoryFuchsia> weak_factory_{this};
 };
 
 }  // namespace media

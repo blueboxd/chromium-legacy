@@ -119,14 +119,33 @@ VersionUI::VersionUI(content::WebUI* web_ui)
 VersionUI::~VersionUI() {}
 
 // static
+int VersionUI::VersionProcessorVariation() {
+#if defined(OS_MACOSX)
+  switch (base::mac::GetCPUType()) {
+    case base::mac::CPUType::kIntel:
+      return IDS_VERSION_UI_64BIT_INTEL;
+    case base::mac::CPUType::kTranslatedIntel:
+      return IDS_VERSION_UI_64BIT_TRANSLATED_INTEL;
+    case base::mac::CPUType::kArm:
+      return IDS_VERSION_UI_64BIT_ARM;
+  }
+#elif defined(ARCH_CPU_64_BITS)
+  return IDS_VERSION_UI_64BIT;
+#elif defined(ARCH_CPU_32_BITS)
+  return IDS_VERSION_UI_32BIT;
+#else
+#error Update for a processor that is neither 32-bit nor 64-bit.
+#endif
+}
+
+// static
 void VersionUI::AddVersionDetailStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(version_ui::kOfficial,
                                   version_info::IsOfficialBuild()
                                       ? IDS_VERSION_UI_OFFICIAL
                                       : IDS_VERSION_UI_UNOFFICIAL);
-  html_source->AddLocalizedString(
-      version_ui::kVersionBitSize,
-      sizeof(void*) == 8 ? IDS_VERSION_UI_64BIT : IDS_VERSION_UI_32BIT);
+  html_source->AddLocalizedString(version_ui::kVersionProcessorVariation,
+                                  VersionProcessorVariation());
 
   // Data strings.
   html_source->AddString(version_ui::kVersion,

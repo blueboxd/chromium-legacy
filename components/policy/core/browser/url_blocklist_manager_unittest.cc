@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/policy/core/browser/url_blacklist_manager.h"
+#include "components/policy/core/browser/url_blocklist_manager.h"
 
 #include <stdint.h>
 #include <memory>
@@ -192,8 +192,7 @@ TEST_F(URLBlocklistManagerTest, Filtering) {
 
   // Filter only a certain path prefix and scheme.
   EXPECT_TRUE(IsMatch("https://s.aaa.com/path", "https://s.aaa.com/path"));
-  EXPECT_TRUE(
-      IsMatch("https://s.aaa.com/path", "https://s.aaa.com/path/bbb"));
+  EXPECT_TRUE(IsMatch("https://s.aaa.com/path", "https://s.aaa.com/path/bbb"));
   EXPECT_FALSE(IsMatch("https://s.aaa.com/path", "http://s.aaa.com/path"));
   EXPECT_FALSE(IsMatch("https://s.aaa.com/path", "https://aaa.com/path"));
   EXPECT_FALSE(IsMatch("https://s.aaa.com/path", "https://x.aaa.com/path"));
@@ -591,8 +590,7 @@ TEST_F(URLBlocklistManagerTest, BlocklistBasicCoverage) {
 
   // user:pass fields can be included but will be ignored
   // (e.g. http://user:pass@ftp.example.com/pub/bigfile.iso).
-  EXPECT_TRUE(
-      IsMatch("host.com/path", "http://user:pass@host.com:8080/path"));
+  EXPECT_TRUE(IsMatch("host.com/path", "http://user:pass@host.com:8080/path"));
   EXPECT_TRUE(
       IsMatch("ftp://host.com/path", "ftp://user:pass@host.com:8080/path"));
 

@@ -44,6 +44,8 @@ class MockMediaNotificationContainerObserver
   MOCK_METHOD1(OnContainerDestroyed, void(const std::string& id));
   MOCK_METHOD2(OnContainerDraggedOut,
                void(const std::string& id, gfx::Rect bounds));
+  MOCK_METHOD2(OnAudioSinkChosen,
+               void(const std::string& id, const std::string& sink_id));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaNotificationContainerObserver);
@@ -400,6 +402,13 @@ TEST_F(MediaNotificationContainerImplViewTest, SendsClicks) {
   // It should also notify its observers when the header is clicked.
   EXPECT_CALL(observer(), OnContainerClicked(kTestNotificationId));
   SimulateHeaderClicked();
+}
+
+TEST_F(MediaNotificationContainerImplViewTest, SendsSinkUpdates) {
+  // The container should notify its observers when an audio output device has
+  // been chosen.
+  EXPECT_CALL(observer(), OnAudioSinkChosen(kTestNotificationId, "foobar"));
+  notification_container()->OnAudioSinkChosen("foobar");
 }
 
 TEST_F(MediaNotificationContainerImplViewOverlayControlsTest,

@@ -10,6 +10,7 @@
 #include "base/ios/block_types.h"
 
 @protocol ApplicationCommands;
+class Browser;
 
 // DiscoverFeedProvider allows embedders to provide functionality for a Discover
 // Feed.
@@ -24,8 +25,14 @@ class DiscoverFeedProvider {
   // Returns true if the Discover Feed is enabled.
   virtual bool IsDiscoverFeedEnabled();
   // Returns the Discover Feed ViewController.
+  // Deprecated - use the below NewFeedViewController(Browser* browser) instead.
+  // TODO(crbug.com/1085419): Remove this interface after rolling the downstream
+  // change.
   virtual UIViewController* NewFeedViewController(
       id<ApplicationCommands> handler) NS_RETURNS_RETAINED;
+  // Returns the Discover Feed ViewController.
+  virtual UIViewController* NewFeedViewController(Browser* browser)
+      NS_RETURNS_RETAINED;
   // Updates the feed's theme to match the user's theme (light/dark).
   virtual void UpdateTheme();
   // Refreshes the Discover Feed with completion.

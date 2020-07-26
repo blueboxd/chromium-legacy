@@ -1268,6 +1268,25 @@ TEST_P(PaintLayerScrollableAreaTest, CompositedStickyDescendant) {
                                   ->Translation2D());
 }
 
+TEST_P(PaintLayerScrollableAreaTest, StickyPositionUseCounter) {
+  SetBodyInnerHTML(R"HTML(
+    <div style="overflow: scroll; width: 500px; height: 300px;">
+      <div id=test></div>
+      <div id=forcescroll style="width: 10px; height: 700px;"></div>
+    </div>
+  )HTML");
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kPositionSticky));
+
+  auto* test = GetElementById("test");
+  test->setAttribute(html_names::kStyleAttr, "position: sticky;");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kPositionSticky));
+
+  test->setAttribute(html_names::kStyleAttr, "top: 0; position: sticky;");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kPositionSticky));
+}
+
 // Delayed scroll offset clamping should not crash. https://crbug.com/842495
 TEST_P(PaintLayerScrollableAreaTest, IgnoreDelayedScrollOnDestroyedLayer) {
   SetBodyInnerHTML(R"HTML(

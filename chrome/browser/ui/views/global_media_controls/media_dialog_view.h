@@ -49,6 +49,8 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   void OnContainerDestroyed(const std::string& id) override;
   void OnContainerDraggedOut(const std::string& id, gfx::Rect bounds) override {
   }
+  void OnAudioSinkChosen(const std::string& id,
+                         const std::string& sink_id) override {}
 
   void AddObserver(MediaDialogViewObserver* observer);
   void RemoveObserver(MediaDialogViewObserver* observer);

@@ -36,12 +36,16 @@ public class ChromeShareExtras {
      */
     private final String mImageSrcUrl;
 
+    /** Indicates if text property is highlighted by user. */
+    private final boolean mIsUserHighlightedText;
+
     private ChromeShareExtras(boolean saveLastUsed, boolean shareDirectly,
-            boolean isUrlOfVisiblePage, String imageSrcUrl) {
+            boolean isUrlOfVisiblePage, String imageSrcUrl, boolean isUserHighlightedText) {
         mSaveLastUsed = saveLastUsed;
         mShareDirectly = shareDirectly;
         mIsUrlOfVisiblePage = isUrlOfVisiblePage;
         mImageSrcUrl = imageSrcUrl;
+        mIsUserHighlightedText = isUserHighlightedText;
     }
 
     /**
@@ -74,6 +78,13 @@ public class ChromeShareExtras {
     }
 
     /**
+     * @return Whether the URL is of the current visible page.
+     */
+    public boolean isUserHighlightedText() {
+        return mIsUserHighlightedText;
+    }
+
+    /**
      * The builder for {@link ChromeShareExtras} objects.
      */
     public static class Builder {
@@ -81,6 +92,7 @@ public class ChromeShareExtras {
         private boolean mShareDirectly;
         private boolean mIsUrlOfVisiblePage;
         private String mImageSrcUrl;
+        private boolean mIsUserHighlightedText;
 
         /**
          * Sets whether to save the chosen activity for future direct sharing.
@@ -115,9 +127,17 @@ public class ChromeShareExtras {
             return this;
         }
 
+        /**
+         * Sets whether text property is highlighted by user.
+         */
+        public Builder setIsUserHighlightedText(boolean isUserHighlightedText) {
+            mIsUserHighlightedText = isUserHighlightedText;
+            return this;
+        }
+
         public ChromeShareExtras build() {
-            return new ChromeShareExtras(
-                    mSaveLastUsed, mShareDirectly, mIsUrlOfVisiblePage, mImageSrcUrl);
+            return new ChromeShareExtras(mSaveLastUsed, mShareDirectly, mIsUrlOfVisiblePage,
+                    mImageSrcUrl, mIsUserHighlightedText);
         }
     }
 }

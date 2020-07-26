@@ -134,4 +134,5 @@ void MediaNotificationAudioDeviceSelectorView::CreateDeviceButton(
   button->SetBorder(std::move(border));
 
   device_button_container_->AddChildView(std::move(button));
+  device_button_container_->Layout();
 }

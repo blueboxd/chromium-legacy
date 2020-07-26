@@ -54,6 +54,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_ui.h"
@@ -207,6 +208,15 @@ class SiteSettingsHandlerTest : public testing::Test {
     handler()->set_web_ui(web_ui());
     handler()->AllowJavascript();
     web_ui()->ClearTrackedCalls();
+  }
+
+  void TearDown() override {
+    if (profile_) {
+      auto* partition =
+          content::BrowserContext::GetDefaultStoragePartition(profile_.get());
+      if (partition)
+        partition->WaitForDeletionTasksForTesting();
+    }
   }
 
   TestingProfile* profile() { return profile_.get(); }
@@ -548,12 +558,7 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetDefault) {
 }
 
 // Flaky on CrOS and Linux. https://crbug.com/930481
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
-#define MAYBE_GetAllSites DISABLED_GetAllSites
-#else
-#define MAYBE_GetAllSites GetAllSites
-#endif
-TEST_F(SiteSettingsHandlerTest, MAYBE_GetAllSites) {
+TEST_F(SiteSettingsHandlerTest, GetAllSites) {
   base::ListValue get_all_sites_args;
   get_all_sites_args.AppendString(kCallbackId);
   base::Value category_list(base::Value::Type::LIST);

@@ -94,7 +94,7 @@ void MaybeWriteUma(int number_of_devices, int number_of_suspended_devices) {
   const int attempt_count_since_process_start =
       ++attempt_since_process_start_counter;
   const int retry_count =
-      media::VideoCaptureDeviceFactoryMac::GetGetDeviceDescriptorsRetryCount();
+      media::VideoCaptureDeviceFactoryMac::GetGetDevicesInfoRetryCount();
   const int device_count = number_of_devices + number_of_suspended_devices;
   UMA_HISTOGRAM_COUNTS_1M("Media.VideoCapture.MacBook.NumberOfDevices",
                           device_count);

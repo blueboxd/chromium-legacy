@@ -82,7 +82,7 @@ const char kUserAgentName[] = "user_agent_name";
 const char kVariationsCmdName[] = "variations_cmd_name";
 const char kVariationsName[] = "variations_name";
 const char kVersion[] = "version";
-const char kVersionBitSize[] = "version_bitsize";
 const char kVersionModifier[] = "version_modifier";
+const char kVersionProcessorVariation[] = "version_processor_variation";
 
 }  // namespace version_ui

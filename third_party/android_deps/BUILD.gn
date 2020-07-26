@@ -1519,6 +1519,26 @@ java_prebuilt("com_google_protobuf_protobuf_javalite_java") {
       "libs/com_google_protobuf_protobuf_javalite/protobuf-javalite-3.12.2.jar"
   output_name = "com_google_protobuf_protobuf_javalite"
   supports_android = true
+
+  # Prebuilt protos in the runtime library.
+  # If you want to use these protos, you should create a proto_java_library
+  # target for them. See crbug.com/1103399 for discussion.
+  jar_excluded_patterns = [
+    "com/google/protobuf/Any*",
+    "com/google/protobuf/Api*",
+    "com/google/protobuf/Duration*",
+    "com/google/protobuf/Empty*",
+    "com/google/protobuf/FieldMask*",
+    "com/google/protobuf/SourceContext*",
+    "com/google/protobuf/Struct\$1.class",
+    "com/google/protobuf/Struct\$Builder.class",
+    "com/google/protobuf/Struct.class",
+    "com/google/protobuf/StructOrBuilder.class",
+    "com/google/protobuf/StructProto.class",
+    "com/google/protobuf/Timestamp*",
+    "com/google/protobuf/Type*",
+    "com/google/protobuf/Wrappers*",
+  ]
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

@@ -18,6 +18,8 @@ import org.chromium.components.payments.PaymentAppFactoryParams;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.payments.mojom.PaymentDetailsModifier;
+import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.payments.mojom.PaymentOptions;
 
@@ -84,7 +86,6 @@ public class AutofillPaymentAppFactory implements PaymentAppFactoryInterface {
         public PaymentApp createPaymentAppForCard(CreditCard card) {
             if (!mCanMakePayment) return null;
 
-            String methodName = null;
             if (!mNetworks.contains(card.getBasicCardIssuerNetwork())) return null;
 
             AutofillProfile billingAddress = TextUtils.isEmpty(card.getBillingAddressId())
@@ -127,7 +128,7 @@ public class AutofillPaymentAppFactory implements PaymentAppFactoryInterface {
      * @param methodData The payment methods and their corresponding data.
      * @return Whether there's a usable Autofill card on file.
      */
-    public static boolean hasUsableAutofillCard(
+    static boolean hasUsableAutofillCard(
             WebContents webContents, Map<String, PaymentMethodData> methodData) {
         PaymentAppFactoryParams params = new PaymentAppFactoryParams() {
             @Override
@@ -136,19 +137,36 @@ public class AutofillPaymentAppFactory implements PaymentAppFactoryInterface {
             }
 
             @Override
+            public Map<String, PaymentMethodData> getMethodData() {
+                return methodData;
+            }
+
+            @Override
             public RenderFrameHost getRenderFrameHost() {
                 // AutofillPaymentAppFactory.Creator doesn't need RenderFrameHost.
+                assert false : "getRenderFrameHost() should not be called";
                 return null;
             }
 
             @Override
             public PaymentOptions getPaymentOptions() {
+                // AutofillPaymentAppFactory.Creator doesn't need PaymentOptions.
+                assert false : "getPaymentOptions() should not be called";
                 return null;
             }
 
             @Override
-            public Map<String, PaymentMethodData> getMethodData() {
-                return methodData;
+            public PaymentItem getRawTotal() {
+                // AutofillPaymentAppFactory.Creator doesn't need raw totals.
+                assert false : "getRawTotals() should not be called";
+                return null;
+            }
+
+            @Override
+            public Map<String, PaymentDetailsModifier> getModifiers() {
+                // AutofillPaymentAppFactory.Creator doesn't need modifiers.
+                assert false : "getModifiers() should not be called";
+                return null;
             }
         };
         final class UsableCardFinder implements PaymentAppFactoryDelegate {

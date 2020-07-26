@@ -150,7 +150,8 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.CHROME_SHARING_HUB_V15})
+    @Features.EnableFeatures({ChromeFeatureList.CHROME_SHARING_HUB_V15,
+            ChromeFeatureList.CHROME_SHARE_HIGHLIGHTS_ANDROID})
     @Features.DisableFeatures(
             {ChromeFeatureList.CHROME_SHARE_SCREENSHOT, ChromeFeatureList.CHROME_SHARE_QRCODE,
                     ChromeFeatureList.CHROME_SHARE_HIGHLIGHTS_ANDROID})
@@ -233,7 +234,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
         setUpChromeProvidedSharingOptionsProviderTest(/*printingEnabled=*/false);
         List<PropertyModel> propertyModels =
                 mChromeProvidedSharingOptionsProvider.getPropertyModels(
-                        ImmutableSet.of(ContentType.TEXT));
+                        ImmutableSet.of(ContentType.HIGHLIGHTED_TEXT));
 
         Assert.assertEquals("Incorrect number of property models.", 2, propertyModels.size());
         assertModelsAreInTheRightOrder(propertyModels,

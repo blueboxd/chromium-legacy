@@ -78,23 +78,24 @@ void PaintPreviewBaseService::CapturePaintPreview(
     OnCapturedCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (policy_ && !policy_->SupportedForContents(web_contents)) {
-    std::move(callback).Run(kContentUnsupported, nullptr);
+    std::move(callback).Run(kContentUnsupported, {});
     return;
   }
 
   PaintPreviewClient::CreateForWebContents(web_contents);  // Is a singleton.
   auto* client = PaintPreviewClient::FromWebContents(web_contents);
   if (!client) {
-    std::move(callback).Run(kClientCreationFailed, nullptr);
+    std::move(callback).Run(kClientCreationFailed, {});
     return;
   }
 
-  PaintPreviewClient::PaintPreviewParams params;
-  params.document_guid = base::UnguessableToken::Create();
-  params.clip_rect = clip_rect;
-  params.is_main_frame = (render_frame_host == web_contents->GetMainFrame());
+  PaintPreviewClient::PaintPreviewParams params(
+      mojom::Persistence::kFileSystem);
   params.root_dir = root_dir;
-  params.max_per_capture_size = max_per_capture_size;
+  params.inner.clip_rect = clip_rect;
+  params.inner.is_main_frame =
+      (render_frame_host == web_contents->GetMainFrame());
+  params.inner.max_per_capture_size = max_per_capture_size;
 
   // TODO(crbug/1064253): Consider moving to client so that this always happens.
   // Although, it is harder to get this right in the client due to its
@@ -142,7 +143,7 @@ void PaintPreviewBaseService::OnCaptured(
     OnCapturedCallback callback,
     base::UnguessableToken guid,
     mojom::PaintPreviewStatus status,
-    std::unique_ptr<PaintPreviewProto> proto) {
+    std::unique_ptr<CaptureResult> result) {
   auto* web_contents =
       content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
   if (web_contents)
@@ -150,15 +151,15 @@ void PaintPreviewBaseService::OnCaptured(
 
   if (!(status == mojom::PaintPreviewStatus::kOk ||
         status == mojom::PaintPreviewStatus::kPartialSuccess) ||
-      !proto) {
+      !result->capture_success) {
     DVLOG(1) << "ERROR: Paint Preview failed to capture for document "
              << guid.ToString() << " with error " << status;
-    std::move(callback).Run(kCaptureFailed, nullptr);
+    std::move(callback).Run(kCaptureFailed, {});
     return;
   }
   base::UmaHistogramTimes("Browser.PaintPreview.Capture.TotalCaptureDuration",
                           base::TimeTicks::Now() - start_time);
-  std::move(callback).Run(kOk, std::move(proto));
+  std::move(callback).Run(kOk, std::move(result));
 }
 
 }  // namespace paint_preview

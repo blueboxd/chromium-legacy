@@ -7,7 +7,9 @@ package org.chromium.weblayer_private;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
+import android.util.Size;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -25,6 +27,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
+import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
@@ -61,6 +64,9 @@ public class ContentViewRenderView extends RelativeLayout {
 
     // The native side of this object.
     private long mNativeContentViewRenderView;
+
+    // An invisible view that notifies observers of changes to window insets and safe area.
+    private InsetObserverView mInsetObserverView;
 
     private WindowAndroid mWindowAndroid;
     private WebContents mWebContents;
@@ -617,6 +623,20 @@ public class ContentViewRenderView extends RelativeLayout {
         addView(mSurfaceParent,
                 new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         setBackgroundColor(Color.WHITE);
+
+        mInsetObserverView = InsetObserverView.create(context);
+        addView(mInsetObserverView);
+        mInsetObserverView.addObserver(new InsetObserverView.WindowInsetObserver() {
+            @Override
+            public void onInsetChanged(int left, int top, int right, int bottom) {
+                if (mWebContents != null && mWebContents.isFullscreenForCurrentTab()) {
+                    updateWebContentsSize();
+                }
+            }
+
+            @Override
+            public void onSafeAreaChanged(Rect area) {}
+        });
     }
 
     /**
@@ -665,7 +685,21 @@ public class ContentViewRenderView extends RelativeLayout {
 
     private void updateWebContentsSize() {
         if (mWebContents == null) return;
-        mWebContents.setSize(getWidth(), getHeight() - mWebContentsHeightDelta);
+        Size size = getViewportSize();
+        mWebContents.setSize(size.getWidth(), size.getHeight() - mWebContentsHeightDelta);
+    }
+
+    /** {@link CompositorViewHolder#getViewportSize()} for explanation. */
+    private Size getViewportSize() {
+        if (mWebContents.isFullscreenForCurrentTab()
+                && mWindowAndroid.getKeyboardDelegate().isKeyboardShowing(getContext(), this)) {
+            Rect visibleRect = new Rect();
+            getWindowVisibleDisplayFrame(visibleRect);
+            return new Size(Math.min(visibleRect.width(), getWidth()),
+                    Math.min(visibleRect.height(), getHeight()));
+        }
+
+        return new Size(getWidth(), getHeight());
     }
 
     @Override

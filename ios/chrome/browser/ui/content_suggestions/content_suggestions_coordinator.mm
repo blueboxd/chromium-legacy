@@ -167,11 +167,9 @@
       ReadingListModelFactory::GetForBrowserState(
           self.browser->GetBrowserState());
 
-  self.discoverFeedViewController =
-      ios::GetChromeBrowserProvider()
-          ->GetDiscoverFeedProvider()
-          ->NewFeedViewController(static_cast<id<ApplicationCommands>>(
-              self.browser->GetCommandDispatcher()));
+  self.discoverFeedViewController = ios::GetChromeBrowserProvider()
+                                        ->GetDiscoverFeedProvider()
+                                        ->NewFeedViewController(self.browser);
 
   // TODO(crbug.com/1085419): Once the CollectionView is cleanly exposed, remove
   // this loop.

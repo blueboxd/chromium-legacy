@@ -6,6 +6,7 @@
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils_app_interface.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -65,7 +66,7 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
 // Tests that a bookmark added on the client (before Sync is enabled) is
 // uploaded to the Sync server once Sync is turned on.
 - (void)testSyncUploadBookmarkOnFirstSync {
-  [self addBookmark:@"https://www.foo.com" withTitle:@"foo"];
+  [BookmarkEarlGrey addBookmarkWithTitle:@"foo" URL:@"https://www.foo.com"];
 
   // Sign in to sync, after a bookmark has been added.
   FakeChromeIdentity* fakeIdentity =
@@ -87,14 +88,14 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
 
   // Add a bookmark after sync is initialized.
   [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:kSyncOperationTimeout];
-  [self addBookmark:@"https://www.goo.com" withTitle:@"goo"];
+  [BookmarkEarlGrey addBookmarkWithTitle:@"goo" URL:@"https://www.goo.com"];
   AssertNumberOfEntities(1, syncer::BOOKMARKS);
 }
 
 // Tests that a bookmark injected in the FakeServer is synced down to the
 // client.
 - (void)testSyncDownloadBookmark {
-  [[self class] assertBookmarksWithTitle:@"hoo" expectedCount:0];
+  [BookmarkEarlGrey verifyBookmarksWithTitle:@"hoo" expectedCount:0];
   const GURL URL = web::test::HttpServer::MakeUrl("http://www.hoo.com");
   [ChromeEarlGrey addFakeSyncServerBookmarkWithURL:URL title:"hoo"];
 
@@ -104,7 +105,7 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
   [SigninEarlGreyUtilsAppInterface addFakeIdentity:fakeIdentity];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
   [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:kSyncOperationTimeout];
-  [[self class] assertBookmarksWithTitle:@"hoo" expectedCount:1];
+  [BookmarkEarlGrey verifyBookmarksWithTitle:@"hoo" expectedCount:1];
 }
 
 // Tests that the local cache guid does not change when sync is restarted.
@@ -460,8 +461,8 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
   NSString* title1 = @"title1";
   NSString* title2 = @"title2";
 
-  [[self class] assertBookmarksWithTitle:title1 expectedCount:0];
-  [[self class] assertBookmarksWithTitle:title2 expectedCount:0];
+  [BookmarkEarlGrey verifyBookmarksWithTitle:title1 expectedCount:0];
+  [BookmarkEarlGrey verifyBookmarksWithTitle:title2 expectedCount:0];
 
   // Mimic the creation of two bookmarks from two different devices, with the
   // same client item ID.
@@ -482,30 +483,8 @@ void AssertNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
 
   [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:kSyncOperationTimeout];
 
-  [[self class] assertBookmarksWithTitle:title1 expectedCount:1];
-  [[self class] assertBookmarksWithTitle:title2 expectedCount:1];
-}
-
-#pragma mark - Test Utilities
-
-// Adds a bookmark with the given |url| and |title| into the Mobile Bookmarks
-// folder.
-// TODO(crbug.com/646164): This is copied from bookmarks_egtest.mm and should
-// move to common location.
-- (void)addBookmark:(NSString*)urlString withTitle:(NSString*)title {
-  [ChromeEarlGrey waitForBookmarksToFinishLoading];
-  [SigninEarlGreyUtilsAppInterface addBookmark:urlString withTitle:title];
-}
-
-// Asserts that |expectedCount| bookmarks exist with the corresponding |title|
-// using the BookmarkModel.
-// TODO(crbug.com/646164): This is copied from bookmarks_egtest.mm and should
-// move to common location.
-+ (void)assertBookmarksWithTitle:(NSString*)title
-                   expectedCount:(NSUInteger)expectedCount {
-  GREYAssertEqual(expectedCount,
-                  [SigninEarlGreyUtilsAppInterface bookmarkCount:title],
-                  @"Unexpected number of bookmarks");
+  [BookmarkEarlGrey verifyBookmarksWithTitle:title1 expectedCount:1];
+  [BookmarkEarlGrey verifyBookmarksWithTitle:title2 expectedCount:1];
 }
 
 @end

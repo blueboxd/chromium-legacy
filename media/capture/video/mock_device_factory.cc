@@ -71,22 +71,14 @@ std::unique_ptr<media::VideoCaptureDevice> MockDeviceFactory::CreateDevice(
       devices_[device_descriptor]);
 }
 
-void MockDeviceFactory::GetDeviceDescriptors(
-    media::VideoCaptureDeviceDescriptors* device_descriptors) {
-  for (const auto& entry : devices_)
-    device_descriptors->push_back(entry.first);
-}
+void MockDeviceFactory::GetDevicesInfo(GetDevicesInfoCallback callback) {
+  std::vector<media::VideoCaptureDeviceInfo> result;
+  for (const auto& entry : devices_) {
+    result.emplace_back(entry.first);
+    result.back().supported_formats.push_back(kSupportedFormat);
+  }
 
-void MockDeviceFactory::GetSupportedFormats(
-    const media::VideoCaptureDeviceDescriptor& device_descriptor,
-    media::VideoCaptureFormats* supported_formats) {
-  supported_formats->push_back(kSupportedFormat);
-}
-
-void MockDeviceFactory::GetCameraLocationsAsync(
-    std::unique_ptr<media::VideoCaptureDeviceDescriptors> device_descriptors,
-    DeviceDescriptorsCallback result_callback) {
-  std::move(result_callback).Run(std::move(device_descriptors));
+  std::move(callback).Run(std::move(result));
 }
 
 }  // namespace media

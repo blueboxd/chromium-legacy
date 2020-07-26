@@ -655,7 +655,7 @@ void NearbySharingServiceImpl::OnIncomingTransferUpdate(
 
 IncomingShareTargetInfo& NearbySharingServiceImpl::GetIncomingShareTargetInfo(
     const ShareTarget& share_target) {
-  return incoming_share_target_info_map_[share_target.id()];
+  return incoming_share_target_info_map_[share_target.id];
 }
 
 NearbyConnection* NearbySharingServiceImpl::GetIncomingConnection(
@@ -665,7 +665,7 @@ NearbyConnection* NearbySharingServiceImpl::GetIncomingConnection(
 
 OutgoingShareTargetInfo& NearbySharingServiceImpl::GetOutgoingShareTargetInfo(
     ShareTarget share_target) {
-  return outgoing_share_target_info_map_[share_target.id()];
+  return outgoing_share_target_info_map_[share_target.id];
 }
 
 void NearbySharingServiceImpl::ClearOutgoingShareTargetInfoMap() {

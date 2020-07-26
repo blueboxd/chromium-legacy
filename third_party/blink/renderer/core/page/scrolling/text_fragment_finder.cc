@@ -234,15 +234,12 @@ void TextFragmentFinder::FindMatch(Document& document) {
       match_metrics.text = PlainText(match);
     }
 
-    client_.DidFindMatch(match, match_metrics);
-
     // Continue searching to see if we have an ambiguous selector.
     // TODO(crbug.com/919204): This is temporary and only for measuring
     // ambiguous matching during prototyping.
     EphemeralRangeInFlatTree ambiguous_match =
         FindMatchFromPosition(document, match.EndPosition());
-    if (ambiguous_match.IsNotNull())
-      client_.DidFindAmbiguousMatch();
+    client_.DidFindMatch(match, match_metrics, ambiguous_match.IsNull());
   }
 }
 

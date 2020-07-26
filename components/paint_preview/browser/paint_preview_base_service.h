@@ -20,6 +20,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/paint_preview/browser/file_manager.h"
 #include "components/paint_preview/browser/paint_preview_policy.h"
+#include "components/paint_preview/common/capture_result.h"
 #include "components/paint_preview/common/file_utils.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
@@ -49,8 +50,7 @@ class PaintPreviewBaseService : public KeyedService {
   };
 
   using OnCapturedCallback =
-      base::OnceCallback<void(CaptureStatus,
-                              std::unique_ptr<PaintPreviewProto>)>;
+      base::OnceCallback<void(CaptureStatus, std::unique_ptr<CaptureResult>)>;
 
   using OnReadProtoCallback =
       base::OnceCallback<void(std::unique_ptr<PaintPreviewProto>)>;
@@ -136,7 +136,7 @@ class PaintPreviewBaseService : public KeyedService {
                   OnCapturedCallback callback,
                   base::UnguessableToken guid,
                   mojom::PaintPreviewStatus status,
-                  std::unique_ptr<PaintPreviewProto> proto);
+                  std::unique_ptr<CaptureResult> result);
 
   std::unique_ptr<PaintPreviewPolicy> policy_ = nullptr;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

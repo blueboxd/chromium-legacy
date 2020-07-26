@@ -100,8 +100,8 @@ public class ShareSheetCoordinator
         mBottomSheet = new ShareSheetBottomSheetContent(activity, this);
 
         mShareStartTime = shareStartTime;
-        Set<Integer> contentTypes = ShareSheetPropertyModelBuilder.getContentTypes(
-                params, chromeShareExtras.isUrlOfVisiblePage());
+        Set<Integer> contentTypes =
+                ShareSheetPropertyModelBuilder.getContentTypes(params, chromeShareExtras);
         List<PropertyModel> chromeFeatures =
                 createTopRowPropertyModels(activity, params, chromeShareExtras, contentTypes);
         List<PropertyModel> thirdPartyApps = createBottomRowPropertyModels(

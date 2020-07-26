@@ -1891,6 +1891,62 @@ TEST_F(ExtensionServiceTest,
   EXPECT_EQ(tabs_permission_set, get_active_permissions()->apis());
 }
 
+// Tests that updating incognito to not_allowed revokes extension's permission
+// to run in incognito.
+TEST_F(ExtensionServiceTest, UpdateIncognitoMode) {
+  InitializeEmptyExtensionService();
+
+  // Borrow a PEM for consistent IDs.
+  const base::FilePath path = data_dir().AppendASCII("permissions/update.pem");
+  ASSERT_TRUE(base::PathExists(path));
+
+  constexpr char kManifestTemplate[] =
+      R"({
+           "name": "Test",
+           "description": "Test incognito mode update flow",
+           "manifest_version": 2,
+           "version": "%s",
+           "incognito": "%s"
+         })";
+
+  // Install version 1, which has incognito set to split.
+  TestExtensionDir version1;
+  version1.WriteManifest(base::StringPrintf(kManifestTemplate, "1", "split"));
+
+  const Extension* extension =
+      PackAndInstallCRX(version1.UnpackedPath(), path, INSTALL_NEW);
+  ASSERT_TRUE(extension);
+
+  const std::string id = extension->id();
+
+  EXPECT_EQ(0u, GetErrors().size());
+  ASSERT_TRUE(registry()->enabled_extensions().Contains(id));
+  util::SetIsIncognitoEnabled(id, profile(), true);
+
+  EXPECT_TRUE(util::IsIncognitoEnabled(id, profile()));
+
+  // Version 2 updates the incognito mode to not_allowed. This should revoke its
+  // permissions, i.e., the extension should not be allowed to run in incognito.
+  TestExtensionDir version2;
+  version2.WriteManifest(
+      base::StringPrintf(kManifestTemplate, "2", "not_allowed"));
+
+  PackCRXAndUpdateExtension(id, version2.UnpackedPath(), path, ENABLED);
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
+  EXPECT_FALSE(util::IsIncognitoEnabled(id, profile()));
+
+  // Version 3 updates the incognito mode to split. The extension should not
+  // have the permissions.
+  TestExtensionDir version3;
+  version3.WriteManifest(base::StringPrintf(kManifestTemplate, "3", "split"));
+
+  service()->EnableExtension(id);
+  PackCRXAndUpdateExtension(id, version3.UnpackedPath(), path, ENABLED);
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
+
+  EXPECT_FALSE(util::IsIncognitoEnabled(id, profile()));
+}
+
 #if !defined(OS_CHROMEOS)
 // This tests that the granted permissions preferences are correctly set for
 // default apps.

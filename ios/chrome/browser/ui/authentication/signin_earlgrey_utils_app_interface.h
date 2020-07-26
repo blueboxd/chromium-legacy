@@ -40,17 +40,11 @@
 // Removes |fakeIdentity| from the fake identity service.
 + (void)removeFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
 
-// Returns the current number of bookmarks from BookmarkModel.
-+ (NSUInteger)bookmarkCount:(NSString*)title;
-
 // Checks if any identity is currently authenticated.
 + (BOOL)isAuthenticated;
 
 // Signs out the current user.
 + (void)signOut;
-
-// Adds the new bookmark with URL and title to the |BookmarkModel|.
-+ (void)addBookmark:(NSString*)urlString withTitle:(NSString*)title;
 
 @end
 

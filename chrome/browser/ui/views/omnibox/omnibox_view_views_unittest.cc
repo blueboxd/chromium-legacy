@@ -2254,12 +2254,24 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
   // On a same-document navigation before the URL has been simplified, the URL
   // should remain unsimplified.
   {
+    // Set a longer URL to ensure that the full URL stays visible even if it's
+    // longer than the previous URL.
+    const base::string16 kUrlSuffix = base::ASCIIToUTF16("/foobar");
+    location_bar_model()->set_url(GURL(base::ASCIIToUTF16("https://") +
+                                       kSimplifiedDomainDisplayUrl +
+                                       kUrlSuffix));
+    location_bar_model()->set_url_for_display(kSimplifiedDomainDisplayUrl +
+                                              kUrlSuffix);
+    omnibox_view()->model()->ResetDisplayTexts();
+    omnibox_view()->RevertAll();
+
     content::MockNavigationHandle navigation;
     navigation.set_is_same_document(true);
     omnibox_view()->DidFinishNavigation(&navigation);
     ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-        render_text, gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
-                                kSimplifiedDomainDisplayUrl.size())));
+        render_text,
+        gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                   kSimplifiedDomainDisplayUrl.size() + kUrlSuffix.size())));
     OmniboxViewViews::ElideAnimation* elide_animation =
         omnibox_view()->GetElideAfterInteractionAnimationForTesting();
     EXPECT_FALSE(elide_animation);
@@ -2275,6 +2287,12 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
   // On a cross-document main-frame navigation, the unsimplified URL should
   // remain visible.
   {
+    location_bar_model()->set_url(
+        GURL(base::ASCIIToUTF16("https://") + kSimplifiedDomainDisplayUrl));
+    location_bar_model()->set_url_for_display(kSimplifiedDomainDisplayUrl);
+    omnibox_view()->model()->ResetDisplayTexts();
+    omnibox_view()->RevertAll();
+
     content::MockNavigationHandle navigation;
     navigation.set_is_same_document(false);
     omnibox_view()->DidFinishNavigation(&navigation);

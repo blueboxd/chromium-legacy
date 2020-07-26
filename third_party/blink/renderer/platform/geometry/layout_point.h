@@ -164,15 +164,15 @@ constexpr bool operator!=(const LayoutPoint& a, const LayoutPoint& b) {
   return !(a == b);
 }
 
-constexpr inline LayoutPoint ToPoint(const LayoutSize& size) {
+constexpr LayoutPoint ToPoint(const LayoutSize& size) {
   return LayoutPoint(size.Width(), size.Height());
 }
 
-constexpr inline LayoutPoint ToLayoutPoint(const LayoutSize& p) {
+constexpr LayoutPoint ToLayoutPoint(const LayoutSize& p) {
   return LayoutPoint(p.Width(), p.Height());
 }
 
-constexpr inline LayoutSize ToSize(const LayoutPoint& a) {
+constexpr LayoutSize ToSize(const LayoutPoint& a) {
   return LayoutSize(a.X(), a.Y());
 }
 

@@ -3932,6 +3932,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kDoubleTapToZoomInTabletMode)},
 #endif  // defined(OS_CHROMEOS)
 
+    {"read-later", flag_descriptions::kReadLaterName,
+     flag_descriptions::kReadLaterDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kReadLater)},
+
     {"tab-groups", flag_descriptions::kTabGroupsName,
      flag_descriptions::kTabGroupsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabGroups)},

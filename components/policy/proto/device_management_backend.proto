@@ -2787,6 +2787,65 @@ message ExtensionInstallReportLogEvent {
     RESUME = 4;
   }
 
+  // Possible failure reasons. See InstallStageTracker::FailureReason for more
+  // details. InstallStageTracker::FailureReason is the main enum and this is
+  // a copy used for reporting purposes.
+  enum FailureReason {
+    UNKNOWN = 0;
+
+    INVALID_ID = 1;
+
+    MALFORMED_EXTENSION_SETTINGS = 2;
+
+    REPLACED_BY_ARC_APP = 3;
+
+    MALFORMED_EXTENSION_DICT = 4;
+
+    NOT_SUPPORTED_EXTENSION_DICT = 5;
+
+    MALFORMED_EXTENSION_DICT_FILE_PATH = 6;
+
+    MALFORMED_EXTENSION_DICT_VERSION = 7;
+
+    MALFORMED_EXTENSION_DICT_UPDATE_URL = 8;
+
+    LOCALE_NOT_SUPPORTED = 9;
+
+    NOT_PERFORMING_NEW_INSTALL = 10;
+
+    TOO_OLD_PROFILE = 11;
+
+    DO_NOT_INSTALL_FOR_ENTERPRISE = 12;
+
+    ALREADY_INSTALLED = 13;
+
+    CRX_FETCH_FAILED = 14;
+
+    MANIFEST_FETCH_FAILED = 15;
+
+    MANIFEST_INVALID = 16;
+
+    NO_UPDATE = 17;
+
+    CRX_INSTALL_ERROR_DECLINED = 18;
+
+    CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE = 19;
+
+    CRX_INSTALL_ERROR_OTHER = 20;
+
+    NO_UPDATE_URL = 21;
+
+    PENDING_ADD_FAILED = 22;
+
+    DOWNLOADER_ADD_FAILED = 23;
+
+    IN_PROGRESS = 24;
+
+    CRX_FETCH_URL_EMPTY = 25;
+
+    CRX_FETCH_URL_INVALID = 26;
+  };
+
   // Timestamp, in microseconds since epoch. Set for all log
   // events.
   optional int64 timestamp = 1;
@@ -2805,6 +2864,9 @@ message ExtensionInstallReportLogEvent {
 
   // Type of session state change. Set for event type SESSION_STATE_CHANGE.
   optional SessionStateChangeType session_state_change_type = 6;
+
+  // Type of failure reason. Set for event type INSTALLATION_FAILED.
+  optional FailureReason failure_reason = 7;
 }
 
 // A single entry in the push-install log for an app.

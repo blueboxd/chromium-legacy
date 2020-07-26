@@ -7,6 +7,8 @@ import("//testing/test.gni")
 if (!is_ios) {
   static_library("common") {
     sources = [
+      "capture_result.cc",
+      "capture_result.h",
       "file_stream.cc",
       "file_stream.h",
       "file_utils.cc",
@@ -37,9 +39,13 @@ if (!is_ios) {
   source_set("test_utils") {
     testonly = true
 
-    sources = [ "test_utils.h" ]
+    sources = [
+      "test_utils.cc",
+      "test_utils.h",
+    ]
 
     deps = [
+      "//components/paint_preview/common/mojom",
       "//testing/gmock",
       "//testing/gtest",
     ]
@@ -58,6 +64,7 @@ if (!is_ios) {
 
     deps = [
       ":common",
+      ":test_utils",
       "//base",
       "//base/test:test_support",
       "//skia",

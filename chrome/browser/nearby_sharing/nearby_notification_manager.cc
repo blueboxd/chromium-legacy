@@ -95,25 +95,25 @@ int GetTextAttachmentsStringId(const std::vector<TextAttachment>& texts) {
 }
 
 base::string16 GetAttachmentsString(const ShareTarget& share_target) {
-  size_t file_count = share_target.file_attachments().size();
-  size_t text_count = share_target.text_attachments().size();
+  size_t file_count = share_target.file_attachments.size();
+  size_t text_count = share_target.text_attachments.size();
   int resource_id = IDS_NEARBY_UNKNOWN_ATTACHMENTS;
 
   if (file_count > 0 && text_count == 0)
-    resource_id = GetFileAttachmentsStringId(share_target.file_attachments());
+    resource_id = GetFileAttachmentsStringId(share_target.file_attachments);
 
   if (text_count > 0 && file_count == 0)
-    resource_id = GetTextAttachmentsStringId(share_target.text_attachments());
+    resource_id = GetTextAttachmentsStringId(share_target.text_attachments);
 
   return l10n_util::GetPluralStringFUTF16(resource_id, text_count + file_count);
 }
 
 base::string16 GetProgressNotificationTitle(const ShareTarget& share_target) {
-  int resource_id = share_target.is_incoming()
+  int resource_id = share_target.is_incoming
                         ? IDS_NEARBY_NOTIFICATION_RECEIVE_PROGRESS_TITLE
                         : IDS_NEARBY_NOTIFICATION_SEND_PROGRESS_TITLE;
   base::string16 attachments = GetAttachmentsString(share_target);
-  base::string16 device_name = base::ASCIIToUTF16(share_target.device_name());
+  base::string16 device_name = base::ASCIIToUTF16(share_target.device_name);
 
   return l10n_util::GetStringFUTF16(resource_id, attachments, device_name);
 }
@@ -121,7 +121,7 @@ base::string16 GetProgressNotificationTitle(const ShareTarget& share_target) {
 base::string16 GetConnectionRequestNotificationMessage(
     const ShareTarget& share_target) {
   base::string16 attachments = GetAttachmentsString(share_target);
-  base::string16 device_name = base::ASCIIToUTF16(share_target.device_name());
+  base::string16 device_name = base::ASCIIToUTF16(share_target.device_name);
 
   return l10n_util::GetStringFUTF16(
       IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_MESSAGE, device_name,

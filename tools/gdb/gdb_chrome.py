@@ -454,6 +454,17 @@ pp_set.add_printer('content::RenderProcessHostImpl',
                    '^content::RenderProcessHostImpl$',
                    RenderProcessHostImplPrinter)
 
+
+class AtomicPrinter(Printer):
+  typename = 'atomic'
+
+  def to_string(self):
+    return self.val['__a_']['__a_value']
+
+
+pp_set.add_printer('std::__Cr::atomic', '^std::__Cr::atomic<.*>$',
+                   AtomicPrinter)
+
 gdb.printing.register_pretty_printer(gdb, pp_set, replace=_DEBUGGING)
 """Implementations of inlined libc++ std container functions."""
 

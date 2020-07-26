@@ -1928,8 +1928,12 @@ IntRect Element::VisibleBoundsInVisualViewport() const {
   // expect the result to be in the coordinate system of the local root frame.
   // Either the method should be renamed to something which communicates that,
   // or callers should be updated to expect actual top-level frame coordinates.
-  rect.Move(-PhysicalOffset(IntPoint(
-      GetDocument().GetFrame()->LocalFrameRoot().RemoteViewportOffset())));
+  rect = GetDocument()
+             .GetFrame()
+             ->LocalFrameRoot()
+             .ContentLayoutObject()
+             ->AbsoluteToLocalRect(rect, kTraverseDocumentBoundaries |
+                                             kApplyRemoteMainFrameTransform);
 
   IntRect visible_rect = PixelSnappedIntRect(rect);
   // If the rect is in the coordinates of the main frame, then it should

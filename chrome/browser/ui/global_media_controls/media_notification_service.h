@@ -78,6 +78,8 @@ class MediaNotificationService
   void OnContainerDismissed(const std::string& id) override;
   void OnContainerDestroyed(const std::string& id) override;
   void OnContainerDraggedOut(const std::string& id, gfx::Rect bounds) override;
+  void OnAudioSinkChosen(const std::string& id,
+                         const std::string& sink_id) override;
 
   // KeyedService implementation.
   void Shutdown() override;
@@ -197,6 +199,8 @@ class MediaNotificationService
 
     bool IsPlaying();
 
+    void SetAudioSinkId(const std::string& id);
+
    private:
     static void RecordDismissReason(GlobalMediaControlsDismissReason reason);
 
@@ -232,6 +236,9 @@ class MediaNotificationService
     // Used to receive updates to the Media Session playback state.
     mojo::Receiver<media_session::mojom::MediaControllerObserver>
         observer_receiver_{this};
+
+    // Used to request audio output be routed to a different device
+    mojo::Remote<media_session::mojom::MediaController> controller_;
 
     base::WeakPtr<media_router::WebContentsPresentationManager>
         presentation_manager_;

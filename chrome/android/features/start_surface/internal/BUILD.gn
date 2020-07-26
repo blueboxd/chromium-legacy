@@ -28,6 +28,7 @@ android_resources("java_resources") {
     "java/res/drawable-xxxhdpi/ic_explore.png",
     "java/res/drawable-xxxhdpi/ic_home.png",
     "java/res/drawable/feed_loading_image_placeholder.xml",
+    "java/res/drawable/hairline_border_card_background_light.xml",
     "java/res/layout/feed_loading_layout.xml",
     "java/res/layout/ss_bottom_bar_layout.xml",
     "java/res/layout/ss_explore_button.xml",

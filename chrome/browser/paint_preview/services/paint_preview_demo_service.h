@@ -60,7 +60,7 @@ class PaintPreviewDemoService : public PaintPreviewBaseService {
   void OnCaptured(FinishedSuccessfullyCallback callback,
                   const DirectoryKey& key,
                   PaintPreviewBaseService::CaptureStatus status,
-                  std::unique_ptr<PaintPreviewProto> proto);
+                  std::unique_ptr<CaptureResult> result);
 
   void OnSerializationFinished(FinishedSuccessfullyCallback callback,
                                bool success);

@@ -122,6 +122,11 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // TODO(crbug/949269): Add a rate limiter to counter spam clicking.
   void OnSettingsPageFIDOAuthToggled(bool opt_in);
 
+  // Resets the rate limiter for fetching unmask deatils. Used with
+  // PostTaskWithDelay() with a timeout, and also called by AutofillDriver on
+  // page refresh.
+  void SignalCanFetchUnmaskDetails();
+
   // Caches CreditCard and corresponding CVC for unmasked card so that
   // card info can later be filled without attempting to auth again.
   // TODO(crbug/1069929): Add browsertests for this.
@@ -136,6 +141,8 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
  private:
   FRIEND_TEST_ALL_PREFIXES(CreditCardAccessManagerBrowserTest,
                            NavigateFromPage_UnmaskedCardCacheResets);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardAccessManagerTest,
+                           PreflightCallRateLimited);
   friend class AutofillAssistantTest;
   friend class AutofillManagerTest;
   friend class AutofillMetricsTest;
@@ -225,10 +232,6 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // the Webauthn offer dialog or verify pending dialog.
   void HandleDialogUserResponse(WebauthnDialogCallbackType type);
 #endif
-
-  // Used with PostTaskWithDelay() to signal |can_fetch_unmask_details_| event
-  // after a timeout.
-  void SignalCanFetchUnmaskDetails();
 
   // Additionlly authorizes the card with FIDO. It also delays the form filling.
   // It should only be called when registering a new card or opting-in from

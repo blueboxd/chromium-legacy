@@ -5,6 +5,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "media/capture/video/mac/video_capture_device_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,18 +32,31 @@ void RunTestCase(base::OnceClosure test_case) {
   run_loop.Run();
 }
 
+void GetDevicesInfo(VideoCaptureDeviceFactoryMac* video_capture_device_factory,
+                    std::vector<VideoCaptureDeviceInfo>* descriptors) {
+  base::RunLoop run_loop;
+  video_capture_device_factory->GetDevicesInfo(base::BindLambdaForTesting(
+      [descriptors, &run_loop](std::vector<VideoCaptureDeviceInfo> result) {
+        *descriptors = std::move(result);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
 TEST(VideoCaptureDeviceFactoryMacTest, ListDevicesAVFoundation) {
   RunTestCase(base::BindOnce([]() {
     VideoCaptureDeviceFactoryMac video_capture_device_factory;
 
-    VideoCaptureDeviceDescriptors descriptors;
-    video_capture_device_factory.GetDeviceDescriptors(&descriptors);
-    if (descriptors.empty()) {
+    std::vector<VideoCaptureDeviceInfo> devices_info;
+    GetDevicesInfo(&video_capture_device_factory, &devices_info);
+    if (devices_info.empty()) {
       DVLOG(1) << "No camera available. Exiting test.";
       return;
     }
-    for (const auto& descriptor : descriptors)
-      EXPECT_EQ(VideoCaptureApi::MACOSX_AVFOUNDATION, descriptor.capture_api);
+    for (const auto& device : devices_info) {
+      EXPECT_EQ(VideoCaptureApi::MACOSX_AVFOUNDATION,
+                device.descriptor.capture_api);
+    }
   }));
 }
 
@@ -50,14 +64,14 @@ TEST(VideoCaptureDeviceFactoryMacTest, ListDevicesWithNoPanTiltZoomSupport) {
   RunTestCase(base::BindOnce([]() {
     VideoCaptureDeviceFactoryMac video_capture_device_factory;
 
-    VideoCaptureDeviceDescriptors descriptors;
-    video_capture_device_factory.GetDeviceDescriptors(&descriptors);
-    if (descriptors.empty()) {
+    std::vector<VideoCaptureDeviceInfo> devices_info;
+    GetDevicesInfo(&video_capture_device_factory, &devices_info);
+    if (devices_info.empty()) {
       DVLOG(1) << "No camera available. Exiting test.";
       return;
     }
-    for (const auto& descriptor : descriptors)
-      EXPECT_FALSE(descriptor.pan_tilt_zoom_supported());
+    for (const auto& device : devices_info)
+      EXPECT_FALSE(device.descriptor.pan_tilt_zoom_supported());
   }));
 }
 

@@ -16,7 +16,9 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/examples/examples_window.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
+#include "ui/views/view_class_properties.h"
 
 using base::ASCIIToUTF16;
 
@@ -44,8 +46,8 @@ TableExample::~TableExample() {
 }
 
 void TableExample::CreateExampleView(View* container) {
-  GridLayout* layout =
-      container->SetLayoutManager(std::make_unique<views::GridLayout>());
+  container->SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(LayoutOrientation::kVertical);
 
   std::vector<ui::TableColumn> columns;
   columns.push_back(TestTableColumn(0, "Fruit"));
@@ -54,35 +56,26 @@ void TableExample::CreateExampleView(View* container) {
   columns.push_back(TestTableColumn(2, "Origin"));
   columns.push_back(TestTableColumn(3, "Price"));
   columns.back().alignment = ui::TableColumn::RIGHT;
+
+  auto full_flex = FlexSpecification(MinimumFlexSizeRule::kScaleToZero,
+                                     MaximumFlexSizeRule::kUnbounded)
+                       .WithWeight(1);
+
+  // Make table
   auto table = std::make_unique<TableView>(this, columns, ICON_AND_TEXT, true);
   table->SetGrouper(this);
   table->set_observer(this);
-  icon1_.allocN32Pixels(16, 16);
-  SkCanvas canvas1(icon1_);
-  canvas1.drawColor(SK_ColorRED);
-
-  icon2_.allocN32Pixels(16, 16);
-  SkCanvas canvas2(icon2_);
-  canvas2.drawColor(SK_ColorBLUE);
-
-  ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  layout->StartRow(1 /* expand */, 0);
   table_ = table.get();
-  layout->AddView(TableView::CreateScrollViewWithTable(std::move(table)));
+  container
+      ->AddChildView(TableView::CreateScrollViewWithTable(std::move(table)))
+      ->SetProperty(views::kFlexBehaviorKey, full_flex);
 
-  column_set = layout->AddColumnSet(1);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0.5f,
-                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0.5f,
-                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0.5f,
-                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0.5f,
-                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
+  icon1_.allocN32Pixels(16, 16);
+  icon2_.allocN32Pixels(16, 16);
 
-  layout->StartRow(0 /* no expand */, 1);
+  SkCanvas canvas1(icon1_), canvas2(icon2_);
+  canvas1.drawColor(SK_ColorRED);
+  canvas2.drawColor(SK_ColorBLUE);
 
   auto make_checkbox =
       [this](base::string16 text) -> std::unique_ptr<Checkbox> {
@@ -91,14 +84,21 @@ void TableExample::CreateExampleView(View* container) {
     return result;
   };
 
-  column1_visible_checkbox_ =
-      layout->AddView(make_checkbox(ASCIIToUTF16("Fruit column visible")));
-  column2_visible_checkbox_ =
-      layout->AddView(make_checkbox(ASCIIToUTF16("Color column visible")));
-  column3_visible_checkbox_ =
-      layout->AddView(make_checkbox(ASCIIToUTF16("Origin column visible")));
-  column4_visible_checkbox_ =
-      layout->AddView(make_checkbox(ASCIIToUTF16("Price column visible")));
+  // Make buttons
+  auto* button_panel = container->AddChildView(std::make_unique<View>());
+  button_panel->SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(LayoutOrientation::kHorizontal);
+  column1_visible_checkbox_ = button_panel->AddChildView(
+      make_checkbox(ASCIIToUTF16("Fruit column visible")));
+  column2_visible_checkbox_ = button_panel->AddChildView(
+      make_checkbox(ASCIIToUTF16("Color column visible")));
+  column3_visible_checkbox_ = button_panel->AddChildView(
+      make_checkbox(ASCIIToUTF16("Origin column visible")));
+  column4_visible_checkbox_ = button_panel->AddChildView(
+      make_checkbox(ASCIIToUTF16("Price column visible")));
+
+  for (View* child : button_panel->children())
+    child->SetProperty(views::kFlexBehaviorKey, full_flex);
 }
 
 int TableExample::RowCount() {

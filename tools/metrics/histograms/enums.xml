@@ -9539,6 +9539,8 @@ histogram as enum -->
   <int value="40" label="ZoomIn"/>
   <int value="41" label="ZoomOutFirst"/>
   <int value="42" label="ZoomOut"/>
+  <int value="43" label="ZoomCustomFirst"/>
+  <int value="44" label="ZoomCustom"/>
 </enum>
 
 <enum name="ChromePDFViewerAnnotationType">
@@ -28541,6 +28543,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3352" label="V8PointerEvent_AltitudeAngle_AttributeGetter"/>
   <int value="3353"
       label="CrossBrowsingContextGroupMainFrameNulledNonEmptyNameAccessed"/>
+  <int value="3354" label="PositionSticky"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -40276,6 +40279,7 @@ from previous Chrome versions.
   <int value="-1532014193" label="disable-encryption-migration"/>
   <int value="-1530711962" label="PrivacyElevatedAndroid:disabled"/>
   <int value="-1529907580" label="ImeServiceConnectable:disabled"/>
+  <int value="-1529140321" label="ReadLater:enabled"/>
   <int value="-1528455406" label="OmniboxPedalSuggestions:enabled"/>
   <int value="-1525129540"
       label="OmniboxUIExperimentRevealSteadyStateUrlPathQueryAndRefOnHover:disabled"/>
@@ -41539,6 +41543,7 @@ from previous Chrome versions.
       label="AutofillEnforceMinRequiredFieldsForHeuristics:enabled"/>
   <int value="-181279574" label="NativeFilesystemAPI:enabled"/>
   <int value="-181093956" label="ScrollAnchoring:enabled"/>
+  <int value="-180658998" label="ReadLater:disabled"/>
   <int value="-180481252" label="CompositorThreadedScrollbarScrolling:enabled"/>
   <int value="-179580377" label="CrossOriginOpenerPolicy:enabled"/>
   <int value="-178364053" label="TerminalSystemAppLegacySettings:enabled"/>
@@ -63251,6 +63256,12 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Timeout">
     The timer fired before a change to the protocol registry key was detected.
   </int>
+</enum>
+
+<enum name="SettingsLanguagesPageBrowserInteraction">
+  <int value="0" label="Switch system language"/>
+  <int value="1" label="Restart"/>
+  <int value="2" label="Open custom spell check"/>
 </enum>
 
 <enum name="SettingsLanguagesPageInteraction">

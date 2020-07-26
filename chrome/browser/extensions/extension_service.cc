@@ -99,6 +99,7 @@
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -2076,6 +2077,13 @@ void ExtensionService::OnUpgradeRecommended() {
 
 void ExtensionService::PreAddExtension(const Extension* extension,
                                        const Extension* old_extension) {
+  // An extension may have updated to no longer support incognito. When this
+  // is the case, we don't show the toggle in the chrome://extensions page.
+  // In order to ensure an extension doesn't keep an unrevokable permission,
+  // reset the stored pref.
+  if (old_extension && !IncognitoInfo::IsIncognitoAllowed(extension))
+    extension_prefs_->SetIsIncognitoEnabled(extension->id(), false);
+
   // Check if the extension's privileges have changed and mark the
   // extension disabled if necessary.
   CheckPermissionsIncrease(extension, !!old_extension);

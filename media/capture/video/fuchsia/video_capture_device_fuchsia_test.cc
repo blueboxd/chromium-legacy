@@ -5,6 +5,7 @@
 #include "media/capture/video/fuchsia/video_capture_device_fuchsia.h"
 
 #include "base/fuchsia/test_component_context_for_process.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "media/capture/video/fuchsia/video_capture_device_factory_fuchsia.h"
 #include "media/fuchsia/camera/fake_fuchsia_camera.h"
@@ -198,11 +199,22 @@ class VideoCaptureDeviceFuchsiaTest : public testing::Test {
       device_->StopAndDeAllocate();
   }
 
+  std::vector<VideoCaptureDeviceInfo> GetDevicesInfo() {
+    std::vector<VideoCaptureDeviceInfo> devices_info;
+    base::RunLoop run_loop;
+    device_factory_.GetDevicesInfo(base::BindLambdaForTesting(
+        [&devices_info, &run_loop](std::vector<VideoCaptureDeviceInfo> result) {
+          devices_info = std::move(result);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+    return devices_info;
+  }
+
   void CreateDevice() {
-    VideoCaptureDeviceDescriptors device_descriptors;
-    device_factory_.GetDeviceDescriptors(&device_descriptors);
-    ASSERT_EQ(device_descriptors.size(), 1U);
-    device_ = device_factory_.CreateDevice(device_descriptors[0]);
+    auto devices_info = GetDevicesInfo();
+    ASSERT_EQ(devices_info.size(), 1U);
+    device_ = device_factory_.CreateDevice(devices_info[0].descriptor);
   }
 
   void StartCapturer() {
@@ -338,9 +350,8 @@ TEST_F(VideoCaptureDeviceFuchsiaTest, MidStreamResolutionChange) {
 
 TEST_F(VideoCaptureDeviceFuchsiaTest,
        CreateDeviceAfterDeviceWatcherDisconnect) {
-  VideoCaptureDeviceDescriptors device_descriptors;
-  device_factory_.GetDeviceDescriptors(&device_descriptors);
-  ASSERT_EQ(device_descriptors.size(), 1U);
+  auto devices_info = GetDevicesInfo();
+  ASSERT_EQ(devices_info.size(), 1U);
 
   // Disconnect DeviceWatcher and run the run loop so |device_factory_| can
   // handle the disconnect.
@@ -348,7 +359,7 @@ TEST_F(VideoCaptureDeviceFuchsiaTest,
   base::RunLoop().RunUntilIdle();
 
   // The factory is expected to reconnect DeviceWatcher.
-  device_ = device_factory_.CreateDevice(device_descriptors[0]);
+  device_ = device_factory_.CreateDevice(devices_info[0].descriptor);
 
   StartCapturer();
 

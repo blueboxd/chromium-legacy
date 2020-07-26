@@ -18,7 +18,6 @@
 #include "cc/paint/paint_recorder.h"
 #include "components/paint_preview/renderer/paint_preview_recorder_utils.h"
 #include "content/public/renderer/render_frame.h"
-#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
@@ -46,6 +45,7 @@ FinishedRecording FinishRecording(
     sk_sp<const cc::PaintRecord> recording,
     const gfx::Rect& bounds,
     std::unique_ptr<PaintPreviewTracker> tracker,
+    mojom::Persistence persistence,
     base::File skp_file,
     size_t max_capture_size,
     mojom::PaintPreviewCaptureResponsePtr response) {
@@ -61,9 +61,24 @@ FinishedRecording FinishRecording(
   ParseGlyphs(recording.get(), tracker.get());
   TRACE_EVENT_END0("paint_preview", "ParseGlyphs");
   size_t serialized_size = 0;
-  if (!SerializeAsSkPicture(recording, tracker.get(), bounds,
-                            std::move(skp_file), max_capture_size,
-                            &serialized_size)) {
+
+  bool success = false;
+  switch (persistence) {
+    case mojom::Persistence::kFileSystem:
+      success = SerializeAsSkPictureToFile(recording, bounds, tracker.get(),
+                                           std::move(skp_file),
+                                           max_capture_size, &serialized_size);
+      break;
+    case mojom::Persistence::kMemoryBuffer:
+      mojo_base::BigBuffer buffer;
+      success = SerializeAsSkPictureToMemoryBuffer(
+          recording, bounds, tracker.get(), &buffer, max_capture_size,
+          &serialized_size);
+      out.response->skp.emplace(std::move(buffer));
+      break;
+  }
+
+  if (!success) {
     out.status = mojom::PaintPreviewStatus::kCaptureFailed;
     return out;
   }
@@ -215,7 +230,8 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
   // image.
   FinishedRecording recording = FinishRecording(
       recorder.finishRecordingAsPicture(), bounds, std::move(tracker),
-      std::move(params->file), params->max_capture_size, std::move(response));
+      params->persistence, std::move(params->file), params->max_capture_size,
+      std::move(response));
   std::move(callback).Run(recording.status, std::move(recording.response));
 }
 

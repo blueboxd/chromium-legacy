@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/policy/content/policy_blacklist_navigation_throttle.h"
+#include "components/policy/content/policy_blocklist_navigation_throttle.h"
 
 #include "base/bind.h"
 #include "base/check_op.h"
-#include "components/policy/content/policy_blacklist_service.h"
-#include "components/policy/core/browser/url_blacklist_manager.h"
-#include "components/policy/core/browser/url_blacklist_policy_handler.h"
+#include "components/policy/content/policy_blocklist_service.h"
+#include "components/policy/core/browser/url_blocklist_manager.h"
+#include "components/policy/core/browser/url_blocklist_policy_handler.h"
 #include "components/policy/core/browser/url_util.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_service.h"

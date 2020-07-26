@@ -604,7 +604,7 @@ base::Optional<ui::Cursor> EventHandler::SelectCursor(
             frame_->ContentLayoutObject()->LocalToAncestorPoint(
                 location.Point(),
                 nullptr,  // no ancestor maps all the way up the hierarchy
-                kTraverseDocumentBoundaries | kApplyMainFrameTransform) -
+                kTraverseDocumentBoundaries | kApplyRemoteMainFrameTransform) -
             PhysicalOffset(hot_spot);
         PhysicalRect cursor_rect(cursor_offset, LayoutSize(size));
         if (!PhysicalRect(page->GetVisualViewport().VisibleContentRect())

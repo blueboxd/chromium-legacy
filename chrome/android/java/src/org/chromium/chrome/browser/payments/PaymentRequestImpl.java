@@ -94,7 +94,6 @@ import org.chromium.payments.mojom.PayerDetail;
 import org.chromium.payments.mojom.PayerErrors;
 import org.chromium.payments.mojom.PaymentAddress;
 import org.chromium.payments.mojom.PaymentComplete;
-import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetails;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentErrorReason;
@@ -118,7 +117,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -361,18 +359,6 @@ public class PaymentRequestImpl
      */
     private Map<String, PaymentDetailsModifier> mModifiers;
 
-    /**
-     * The UI model of the shopping cart, including the total. Each item includes a label and a
-     * price string. This data is passed to the UI.
-     */
-    private ShoppingCart mUiShoppingCart;
-
-    /**
-     * The UI model for the shipping options. Includes the label and sublabel for each shipping
-     * option. Also keeps track of the selected shipping option. This data is passed to the UI.
-     */
-    private SectionInformation mUiShippingOptions;
-
     private PaymentRequestSpec mSpec;
     private String mId;
     private Map<String, PaymentMethodData> mMethodData;
@@ -388,7 +374,6 @@ public class PaymentRequestImpl
     private ContactEditor mContactEditor;
     private boolean mHasRecordedAbortReason;
     private boolean mWaitForUpdatedDetails;
-    private Map<String, CurrencyFormatter> mCurrencyFormatterMap;
     private TabModelSelector mObservedTabModelSelector;
     private TabModel mObservedTabModel;
     private OverviewModeBehavior mOverviewModeBehavior;
@@ -499,12 +484,12 @@ public class PaymentRequestImpl
                 mWebContents, addressEditor, /*includeOrgLabel=*/false, sObserverForTest);
 
         mJourneyLogger = new JourneyLogger(mIsOffTheRecord, mWebContents);
-        mCurrencyFormatterMap = new HashMap<>();
 
         mSkipUiForNonUrlPaymentMethodIdentifiers = mDelegate.skipUiForBasicCard();
 
         if (sObserverForTest != null) sObserverForTest.onPaymentRequestCreated(this);
-        mPaymentUIsManager = new PaymentUIsManager(/*delegate=*/this, addressEditor, cardEditor);
+        mPaymentUIsManager = new PaymentUIsManager(/*delegate=*/this,
+                /*params=*/this, addressEditor, cardEditor);
         mPaymentAppComparator = new PaymentAppComparator(/*params=*/this);
     }
 
@@ -873,7 +858,8 @@ public class PaymentRequestImpl
         // not require a shipping address to calculate shipping costs.
         boolean hasCompleteShippingAddress = !addresses.isEmpty() && addresses.get(0).isComplete();
         int firstCompleteAddressIndex = SectionInformation.NO_SELECTION;
-        if (mUiShippingOptions.getSelectedItem() != null && hasCompleteShippingAddress) {
+        if (mPaymentUIsManager.getUiShippingOptions().getSelectedItem() != null
+                && hasCompleteShippingAddress) {
             firstCompleteAddressIndex = 0;
 
             // The initial label for the selected shipping address should not include the
@@ -1042,9 +1028,9 @@ public class PaymentRequestImpl
         if (mMinimalUi.show(chromeActivity,
                     BottomSheetControllerProvider.from(chromeActivity.getWindowAndroid()),
                     (PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem(),
-                    mCurrencyFormatterMap.get(mRawTotal.amount.currency),
-                    mUiShoppingCart.getTotal(), this::onMinimalUIReady, this::onMinimalUiConfirmed,
-                    this::onMinimalUiDismissed)) {
+                    mPaymentUIsManager.getCurrencyFormatterMap().get(mRawTotal.amount.currency),
+                    mPaymentUIsManager.getUiShoppingCart().getTotal(), this::onMinimalUIReady,
+                    this::onMinimalUiConfirmed, this::onMinimalUiDismissed)) {
             mDidRecordShowEvent = true;
             mJourneyLogger.setEventOccurred(Event.SHOWN);
             return;
@@ -1343,7 +1329,8 @@ public class PaymentRequestImpl
         }
 
         if (shouldShowShippingSection()
-                && (mUiShippingOptions.isEmpty() || !TextUtils.isEmpty(details.error))
+                && (mPaymentUIsManager.getUiShippingOptions().isEmpty()
+                        || !TextUtils.isEmpty(details.error))
                 && mPaymentUIsManager.getShippingAddressesSection().getSelectedItem() != null) {
             mPaymentUIsManager.getShippingAddressesSection().getSelectedItem().setInvalid();
             mPaymentUIsManager.getShippingAddressesSection().setSelectedItemIndex(
@@ -1427,10 +1414,12 @@ public class PaymentRequestImpl
                 && mPaymentUIsManager.getPaymentMethodsSection() != null) {
             providePaymentInformation();
         } else {
-            mPaymentUIsManager.getPaymentRequestUI().updateOrderSummarySection(mUiShoppingCart);
+            mPaymentUIsManager.getPaymentRequestUI().updateOrderSummarySection(
+                    mPaymentUIsManager.getUiShoppingCart());
             if (shouldShowShippingSection()) {
                 mPaymentUIsManager.getPaymentRequestUI().updateSection(
-                        PaymentRequestUI.DataType.SHIPPING_OPTIONS, mUiShippingOptions);
+                        PaymentRequestUI.DataType.SHIPPING_OPTIONS,
+                        mPaymentUIsManager.getUiShippingOptions());
             }
         }
     }
@@ -1461,19 +1450,21 @@ public class PaymentRequestImpl
                             : new ArrayList<>());
         }
 
-        loadCurrencyFormattersForPaymentDetails(details);
+        mPaymentUIsManager.loadCurrencyFormattersForPaymentDetails(details);
 
         // Total is never pending.
-        CurrencyFormatter formatter = getOrCreateCurrencyFormatter(mRawTotal.amount);
+        CurrencyFormatter formatter =
+                mPaymentUIsManager.getOrCreateCurrencyFormatter(mRawTotal.amount);
         LineItem uiTotal = new LineItem(mRawTotal.label, formatter.getFormattedCurrencyCode(),
                 formatter.format(mRawTotal.amount.value), /* isPending */ false);
 
-        List<LineItem> uiLineItems = getLineItems(mRawLineItems);
+        List<LineItem> uiLineItems = mPaymentUIsManager.getLineItems(mRawLineItems);
 
-        mUiShoppingCart = new ShoppingCart(uiTotal, uiLineItems);
+        mPaymentUIsManager.setUiShoppingCart(new ShoppingCart(uiTotal, uiLineItems));
 
-        if (mUiShippingOptions == null || details.shippingOptions != null) {
-            mUiShippingOptions = getShippingOptions(details.shippingOptions);
+        if (mPaymentUIsManager.getUiShippingOptions() == null || details.shippingOptions != null) {
+            mPaymentUIsManager.setUiShippingOptions(
+                    mPaymentUIsManager.getShippingOptions(details.shippingOptions));
         }
 
         if (mSkipToGPayHelper != null && !mSkipToGPayHelper.setShippingOption(details)) {
@@ -1515,159 +1506,15 @@ public class PaymentRequestImpl
 
         for (int i = 0; i < mPaymentUIsManager.getPaymentMethodsSection().getSize(); i++) {
             PaymentApp app = (PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getItem(i);
-            PaymentDetailsModifier modifier = getModifier(app);
+            PaymentDetailsModifier modifier = mPaymentUIsManager.getModifier(app);
             app.setModifiedTotal(modifier == null || modifier.total == null
                             ? null
-                            : getOrCreateCurrencyFormatter(modifier.total.amount)
+                            : mPaymentUIsManager.getOrCreateCurrencyFormatter(modifier.total.amount)
                                       .format(modifier.total.amount.value));
         }
 
-        updateOrderSummary(
+        mPaymentUIsManager.updateOrderSummary(
                 (PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem());
-    }
-
-    /** Sets the modifier for the order summary based on the given app, if any. */
-    private void updateOrderSummary(@Nullable PaymentApp app) {
-        if (!PaymentFeatureList.isEnabled(PaymentFeatureList.WEB_PAYMENTS_MODIFIERS)) return;
-
-        PaymentDetailsModifier modifier = getModifier(app);
-        PaymentItem total = modifier == null ? null : modifier.total;
-        if (total == null) total = mRawTotal;
-
-        CurrencyFormatter formatter = getOrCreateCurrencyFormatter(total.amount);
-        mUiShoppingCart.setTotal(new LineItem(total.label, formatter.getFormattedCurrencyCode(),
-                formatter.format(total.amount.value), false /* isPending */));
-        mUiShoppingCart.setAdditionalContents(modifier == null
-                        ? null
-                        : getLineItems(Arrays.asList(modifier.additionalDisplayItems)));
-        if (mPaymentUIsManager.getPaymentRequestUI() != null) {
-            mPaymentUIsManager.getPaymentRequestUI().updateOrderSummarySection(mUiShoppingCart);
-        }
-    }
-
-    /** @return The first modifier that matches the given app, or null. */
-    @Nullable
-    private PaymentDetailsModifier getModifier(@Nullable PaymentApp app) {
-        if (mModifiers == null || app == null) return null;
-        // Makes a copy to ensure it is modifiable.
-        Set<String> methodNames = new HashSet<>(app.getInstrumentMethodNames());
-        methodNames.retainAll(mModifiers.keySet());
-        if (methodNames.isEmpty()) return null;
-
-        for (String methodName : methodNames) {
-            PaymentDetailsModifier modifier = mModifiers.get(methodName);
-            if (app.isValidForPaymentMethodData(methodName, modifier.methodData)) {
-                return modifier;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Converts a list of payment items and returns their parsed representation.
-     *
-     * @param items The payment items to parse. Can be null.
-     * @return A list of valid line items.
-     */
-    private List<LineItem> getLineItems(@Nullable List<PaymentItem> items) {
-        // Line items are optional.
-        if (items == null) return new ArrayList<>();
-
-        List<LineItem> result = new ArrayList<>(items.size());
-        for (int i = 0; i < items.size(); i++) {
-            PaymentItem item = items.get(i);
-            CurrencyFormatter formatter = getOrCreateCurrencyFormatter(item.amount);
-            result.add(new LineItem(item.label,
-                    isMixedOrChangedCurrency() ? formatter.getFormattedCurrencyCode() : "",
-                    formatter.format(item.amount.value), item.pending));
-        }
-
-        return Collections.unmodifiableList(result);
-    }
-
-    /**
-     * Converts a list of shipping options and returns their parsed representation.
-     *
-     * @param options The raw shipping options to parse. Can be null.
-     * @return The UI representation of the shipping options.
-     */
-    private SectionInformation getShippingOptions(@Nullable PaymentShippingOption[] options) {
-        // Shipping options are optional.
-        if (options == null || options.length == 0) {
-            return new SectionInformation(PaymentRequestUI.DataType.SHIPPING_OPTIONS);
-        }
-
-        List<EditableOption> result = new ArrayList<>();
-        int selectedItemIndex = SectionInformation.NO_SELECTION;
-        for (int i = 0; i < options.length; i++) {
-            PaymentShippingOption option = options[i];
-            CurrencyFormatter formatter = getOrCreateCurrencyFormatter(option.amount);
-            String currencyPrefix = isMixedOrChangedCurrency()
-                    ? formatter.getFormattedCurrencyCode() + "\u0020"
-                    : "";
-            result.add(new EditableOption(option.id, option.label,
-                    currencyPrefix + formatter.format(option.amount.value), null));
-            if (option.selected) selectedItemIndex = i;
-        }
-
-        return new SectionInformation(PaymentRequestUI.DataType.SHIPPING_OPTIONS, selectedItemIndex,
-                Collections.unmodifiableList(result));
-    }
-
-    /**
-     * Load required currency formatter for a given PaymentDetails.
-     *
-     * Note that the cache (mCurrencyFormatterMap) is not cleared for
-     * updated payment details so as to indicate the currency has been changed.
-     *
-     * @param details The given payment details.
-     */
-    private void loadCurrencyFormattersForPaymentDetails(PaymentDetails details) {
-        if (details.total != null) {
-            getOrCreateCurrencyFormatter(details.total.amount);
-        }
-
-        if (details.displayItems != null) {
-            for (PaymentItem item : details.displayItems) {
-                getOrCreateCurrencyFormatter(item.amount);
-            }
-        }
-
-        if (details.shippingOptions != null) {
-            for (PaymentShippingOption option : details.shippingOptions) {
-                getOrCreateCurrencyFormatter(option.amount);
-            }
-        }
-
-        if (details.modifiers != null) {
-            for (PaymentDetailsModifier modifier : details.modifiers) {
-                if (modifier.total != null) getOrCreateCurrencyFormatter(modifier.total.amount);
-                for (PaymentItem displayItem : modifier.additionalDisplayItems) {
-                    getOrCreateCurrencyFormatter(displayItem.amount);
-                }
-            }
-        }
-    }
-
-    private boolean isMixedOrChangedCurrency() {
-        return mCurrencyFormatterMap.size() > 1;
-    }
-
-    /**
-     * Gets currency formatter for a given PaymentCurrencyAmount,
-     * creates one if no existing instance is found.
-     *
-     * @amount The given payment amount.
-     */
-    private CurrencyFormatter getOrCreateCurrencyFormatter(PaymentCurrencyAmount amount) {
-        String key = amount.currency;
-        CurrencyFormatter formatter = mCurrencyFormatterMap.get(key);
-        if (formatter == null) {
-            formatter = new CurrencyFormatter(amount.currency, Locale.getDefault());
-            mCurrencyFormatterMap.put(key, formatter);
-        }
-        return formatter;
     }
 
     /**
@@ -1696,9 +1543,10 @@ public class PaymentRequestImpl
                 .setDisplaySelectedItemSummaryInSingleLineInNormalMode(
                         mPaymentUIsManager.getSelectedPaymentAppType()
                         != PaymentAppType.SERVICE_WORKER_APP);
-        mPaymentInformationCallback.onResult(new PaymentInformation(mUiShoppingCart,
-                mPaymentUIsManager.getShippingAddressesSection(), mUiShippingOptions,
-                mPaymentUIsManager.getContactSection(),
+        mPaymentInformationCallback.onResult(new PaymentInformation(
+                mPaymentUIsManager.getUiShoppingCart(),
+                mPaymentUIsManager.getShippingAddressesSection(),
+                mPaymentUIsManager.getUiShippingOptions(), mPaymentUIsManager.getContactSection(),
                 mPaymentUIsManager.getPaymentMethodsSection()));
         mPaymentInformationCallback = null;
 
@@ -1718,7 +1566,7 @@ public class PaymentRequestImpl
 
     @Override
     public void getShoppingCart(final Callback<ShoppingCart> callback) {
-        mHandler.post(callback.bind(mUiShoppingCart));
+        mHandler.post(callback.bind(mPaymentUIsManager.getUiShoppingCart()));
     }
 
     @Override
@@ -1730,7 +1578,7 @@ public class PaymentRequestImpl
                 result = mPaymentUIsManager.getShippingAddressesSection();
                 break;
             case PaymentRequestUI.DataType.SHIPPING_OPTIONS:
-                result = mUiShippingOptions;
+                result = mPaymentUIsManager.getUiShippingOptions();
                 break;
             case PaymentRequestUI.DataType.CONTACT_DETAILS:
                 result = mPaymentUIsManager.getContactSection();
@@ -1764,7 +1612,7 @@ public class PaymentRequestImpl
             return PaymentRequestUI.SelectionResult.ASYNCHRONOUS_VALIDATION;
         } else if (optionType == PaymentRequestUI.DataType.SHIPPING_OPTIONS) {
             // This may update the line items.
-            mUiShippingOptions.setSelectedItem(option);
+            mPaymentUIsManager.getUiShippingOptions().setSelectedItem(option);
             client.onShippingOptionChange(option.getIdentifier());
             mPaymentInformationCallback = callback;
             return PaymentRequestUI.SelectionResult.ASYNCHRONOUS_VALIDATION;
@@ -1795,11 +1643,7 @@ public class PaymentRequestImpl
                 mPaymentUIsManager.setContactSection(new ContactDetailsSection(
                         activity, mAutofillProfiles, mContactEditor, mJourneyLogger));
             }
-            mPaymentUIsManager.getPaymentRequestUI().selectedPaymentMethodUpdated(
-                    new PaymentInformation(mUiShoppingCart,
-                            mPaymentUIsManager.getShippingAddressesSection(), mUiShippingOptions,
-                            mPaymentUIsManager.getContactSection(),
-                            mPaymentUIsManager.getPaymentMethodsSection()));
+            mPaymentUIsManager.onSelectedPaymentMethodUpdated();
             PaymentApp paymentApp = (PaymentApp) option;
             if (paymentApp instanceof AutofillPaymentInstrument) {
                 AutofillPaymentInstrument card = (AutofillPaymentInstrument) paymentApp;
@@ -1812,7 +1656,7 @@ public class PaymentRequestImpl
             // Log the change of payment method.
             mJourneyLogger.incrementSelectionChanges(Section.PAYMENT_METHOD);
 
-            updateOrderSummary(paymentApp);
+            mPaymentUIsManager.updateOrderSummary(paymentApp);
             mPaymentUIsManager.getPaymentMethodsSection().setSelectedItem(option);
         }
 
@@ -2495,6 +2339,12 @@ public class PaymentRequestImpl
 
     // PaymentAppFactoryParams implementation.
     @Override
+    public PaymentItem getRawTotal() {
+        return mRawTotal;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
     public boolean getMayCrawl() {
         return !mPaymentUIsManager.canUserAddCreditCard()
                 || PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(
@@ -2956,11 +2806,7 @@ public class PaymentRequestImpl
         SettingsAutofillAndPaymentsObserver.getInstance().unregisterObserver(mPaymentUIsManager);
 
         // Destroy native objects.
-        for (CurrencyFormatter formatter : mCurrencyFormatterMap.values()) {
-            assert formatter != null;
-            // Ensures the native implementation of currency formatter does not leak.
-            formatter.destroy();
-        }
+        mPaymentUIsManager.destroyCurrencyFormatters();
         mJourneyLogger.destroy();
 
         if (mPaymentHandlerHost != null) {

@@ -1089,6 +1089,9 @@ extern const char kQuietNotificationPromptsDescription[];
 extern const char kRawClipboardName[];
 extern const char kRawClipboardDescription[];
 
+extern const char kReadLaterName[];
+extern const char kReadLaterDescription[];
+
 extern const char kReducedReferrerGranularityName[];
 extern const char kReducedReferrerGranularityDescription[];
 

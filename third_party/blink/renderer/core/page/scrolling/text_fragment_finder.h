@@ -24,8 +24,8 @@ class CORE_EXPORT TextFragmentFinder final {
    public:
     virtual void DidFindMatch(
         const EphemeralRangeInFlatTree& range,
-        const TextFragmentAnchorMetrics::Match match_metrics) = 0;
-    virtual void DidFindAmbiguousMatch() = 0;
+        const TextFragmentAnchorMetrics::Match match_metrics,
+        bool is_unique) = 0;
   };
 
   // Client must outlive the finder.

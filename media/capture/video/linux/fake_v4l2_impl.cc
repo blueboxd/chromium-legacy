@@ -25,6 +25,12 @@ static const int kInvalidId = -1;
 static const int kSuccessReturnValue = 0;
 static const int kErrorReturnValue = -1;
 static const uint32_t kMaxBufferCount = 5;
+static const int kDefaultWidth = 640;
+static const int kDefaultHeight = 480;
+
+// 20 fps.
+static const int kDefaultFrameInternvalNumerator = 50;
+static const int kDefaultFrameInternvalDenominator = 1000;
 
 __u32 RoundUpToMultipleOfPageSize(__u32 size) {
   CHECK(base::bits::IsPowerOfTwo(getpagesize()));
@@ -56,8 +62,6 @@ class FakeV4L2Impl::OpenedDevice {
         wait_for_outgoing_queue_event_(
             base::WaitableEvent::ResetPolicy::AUTOMATIC),
         frame_production_thread_("FakeV4L2Impl FakeProductionThread") {
-    static const int kDefaultWidth = 640;
-    static const int kDefaultHeight = 480;
     selected_format_.width = kDefaultWidth;
     selected_format_.height = kDefaultHeight;
     selected_format_.pixelformat = V4L2_PIX_FMT_YUV420;
@@ -68,9 +72,8 @@ class FakeV4L2Impl::OpenedDevice {
     selected_format_.colorspace = V4L2_COLORSPACE_REC709;
     selected_format_.priv = 0;
 
-    // 20 fps
-    timeperframe_.numerator = 50;
-    timeperframe_.denominator = 1000;
+    timeperframe_.numerator = kDefaultFrameInternvalNumerator;
+    timeperframe_.denominator = kDefaultFrameInternvalDenominator;
   }
 
   const std::string& device_id() const { return config_.descriptor.device_id; }
@@ -299,6 +302,28 @@ class FakeV4L2Impl::OpenedDevice {
     return kSuccessReturnValue;
   }
 
+  int enum_framesizes(v4l2_frmsizeenum* frame_size) {
+    if (frame_size->index > 0)
+      return -1;
+
+    frame_size->type = V4L2_FRMSIZE_TYPE_DISCRETE;
+    frame_size->discrete.width = kDefaultWidth;
+    frame_size->discrete.height = kDefaultHeight;
+    return 0;
+  }
+
+  int enum_frameintervals(v4l2_frmivalenum* frame_interval) {
+    if (frame_interval->index > 0 || frame_interval->width != kDefaultWidth ||
+        frame_interval->height != kDefaultWidth) {
+      return -1;
+    }
+
+    frame_interval->type = V4L2_FRMIVAL_TYPE_DISCRETE;
+    frame_interval->discrete.numerator = kDefaultFrameInternvalNumerator;
+    frame_interval->discrete.denominator = kDefaultFrameInternvalDenominator;
+    return 0;
+  }
+
  private:
   void RunFrameProductionLoop() {
     while (!should_quit_frame_production_loop_.IsSet()) {
@@ -416,6 +441,13 @@ int FakeV4L2Impl::ioctl(int fd, int request, void* argp) {
       return opened_device->streamon(reinterpret_cast<int*>(argp));
     case VIDIOC_STREAMOFF:
       return opened_device->streamoff(reinterpret_cast<int*>(argp));
+    case VIDIOC_ENUM_FRAMESIZES:
+      return opened_device->enum_framesizes(
+          reinterpret_cast<v4l2_frmsizeenum*>(argp));
+    case VIDIOC_ENUM_FRAMEINTERVALS:
+      return opened_device->enum_frameintervals(
+          reinterpret_cast<v4l2_frmivalenum*>(argp));
+
     case VIDIOC_CROPCAP:
     case VIDIOC_DBG_G_REGISTER:
     case VIDIOC_DBG_S_REGISTER:
@@ -423,8 +455,6 @@ int FakeV4L2Impl::ioctl(int fd, int request, void* argp) {
     case VIDIOC_TRY_ENCODER_CMD:
     case VIDIOC_ENUMAUDIO:
     case VIDIOC_ENUMAUDOUT:
-    case VIDIOC_ENUM_FRAMESIZES:
-    case VIDIOC_ENUM_FRAMEINTERVALS:
     case VIDIOC_ENUMINPUT:
     case VIDIOC_ENUMOUTPUT:
     case VIDIOC_ENUMSTD:

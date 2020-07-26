@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "media/capture/video/chromeos/mock_camera_module.h"
 #include "media/capture/video/chromeos/mock_vendor_tag_ops.h"
@@ -224,22 +225,6 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
       .WillOnce(
           Return(static_cast<int32_t>(cros::mojom::EntryType::TYPE_BYTE)));
 
-  VideoCaptureDeviceDescriptors descriptors;
-  camera_hal_delegate_->GetDeviceDescriptors(&descriptors);
-
-  ASSERT_EQ(3u, descriptors.size());
-  // We have workaround to always put front camera at first.
-  ASSERT_EQ("1", descriptors[0].device_id);
-  ASSERT_EQ(VideoFacingMode::MEDIA_VIDEO_FACING_USER, descriptors[0].facing);
-  ASSERT_EQ("0", descriptors[1].device_id);
-  ASSERT_EQ(VideoFacingMode::MEDIA_VIDEO_FACING_ENVIRONMENT,
-            descriptors[1].facing);
-  ASSERT_EQ(kFakeDevicePath, descriptors[2].device_id);
-  ASSERT_EQ(VideoFacingMode::MEDIA_VIDEO_FACING_NONE, descriptors[2].facing);
-
-  // TODO(shik): Test external camera. Check the fields |display_name| and
-  // |model_id| are set properly according to the vendor tags.
-
   EXPECT_CALL(mock_gpu_memory_buffer_manager_,
               CreateGpuMemoryBuffer(
                   _, gfx::BufferFormat::YUV_420_BIPLANAR,
@@ -249,8 +234,32 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
       .WillOnce(Invoke(&unittest_internal::MockGpuMemoryBufferManager::
                            CreateFakeGpuMemoryBuffer));
 
-  VideoCaptureFormats supported_formats;
-  camera_hal_delegate_->GetSupportedFormats(descriptors[0], &supported_formats);
+  std::vector<VideoCaptureDeviceInfo> devices_info;
+  base::RunLoop run_loop;
+  camera_hal_delegate_->GetDevicesInfo(base::BindLambdaForTesting(
+      [&devices_info, &run_loop](std::vector<VideoCaptureDeviceInfo> result) {
+        devices_info = std::move(result);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  ASSERT_EQ(3u, devices_info.size());
+  // We have workaround to always put front camera at first.
+  ASSERT_EQ("1", devices_info[0].descriptor.device_id);
+  ASSERT_EQ(VideoFacingMode::MEDIA_VIDEO_FACING_USER,
+            devices_info[0].descriptor.facing);
+  ASSERT_EQ("0", devices_info[1].descriptor.device_id);
+  ASSERT_EQ(VideoFacingMode::MEDIA_VIDEO_FACING_ENVIRONMENT,
+            devices_info[1].descriptor.facing);
+  ASSERT_EQ(kFakeDevicePath, devices_info[2].descriptor.device_id);
+  ASSERT_EQ(VideoFacingMode::MEDIA_VIDEO_FACING_NONE,
+            devices_info[2].descriptor.facing);
+
+  // TODO(shik): Test external camera. Check the fields |display_name| and
+  // |model_id| are set properly according to the vendor tags.
+
+  const VideoCaptureFormats& supported_formats =
+      devices_info[0].supported_formats;
 
   // IMPLEMENTATION_DEFINED format should be filtered; currently YCbCr_420_888
   // format corresponds to NV12 in Chrome.

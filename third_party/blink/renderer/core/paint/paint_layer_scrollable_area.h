@@ -529,9 +529,11 @@ class CORE_EXPORT PaintLayerScrollableArea final
     had_vertical_scrollbar_before_relayout_ = val;
   }
 
-  StickyConstraintsMap& GetStickyConstraintsMap() {
+  const StickyConstraintsMap& GetStickyConstraintsMap() {
     return EnsureRareData().sticky_constraints_map_;
   }
+  StickyPositionScrollingConstraints* GetStickyConstraints(PaintLayer*);
+  void AddStickyConstraints(PaintLayer*, StickyPositionScrollingConstraints);
 
   void InvalidateAllStickyConstraints();
   void InvalidateStickyConstraintsFor(PaintLayer*);

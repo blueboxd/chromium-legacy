@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/policy/content/policy_blacklist_service.h"
+#include "components/policy/content/policy_blocklist_service.h"
 
 #include <utility>
 

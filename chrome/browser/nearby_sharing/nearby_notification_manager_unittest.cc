@@ -12,7 +12,6 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/nearby_sharing/share_target.h"
-#include "chrome/browser/nearby_sharing/share_target_builder.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata_builder.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
@@ -114,7 +113,7 @@ class NearbyNotificationManagerProgressNotificationTest
 }  // namespace
 
 TEST_F(NearbyNotificationManagerTest, ShowProgress_ShowsNotification) {
-  ShareTarget share_target = ShareTargetBuilder().build();
+  ShareTarget share_target;
   TransferMetadata transfer_metadata = TransferMetadataBuilder().build();
 
   manager()->ShowProgress(share_target, transfer_metadata);
@@ -145,7 +144,7 @@ TEST_F(NearbyNotificationManagerTest, ShowProgress_ShowsNotification) {
 TEST_F(NearbyNotificationManagerTest, ShowProgress_ShowsProgress) {
   double progress = 0.75;
 
-  ShareTarget share_target = ShareTargetBuilder().build();
+  ShareTarget share_target;
   TransferMetadata transfer_metadata =
       TransferMetadataBuilder().set_progress(progress).build();
 
@@ -160,7 +159,7 @@ TEST_F(NearbyNotificationManagerTest, ShowProgress_ShowsProgress) {
 }
 
 TEST_F(NearbyNotificationManagerTest, ShowProgress_UpdatesProgress) {
-  ShareTarget share_target = ShareTargetBuilder().build();
+  ShareTarget share_target;
   TransferMetadataBuilder transfer_metadata_builder;
   transfer_metadata_builder.set_progress(0.75);
 
@@ -183,17 +182,16 @@ TEST_P(NearbyNotificationManagerProgressNotificationTest, Test) {
   bool is_incoming = std::get<1>(GetParam());
 
   std::string device_name = "device";
-  ShareTargetBuilder share_target_builder;
-  share_target_builder.set_device_name(device_name);
-  share_target_builder.set_is_incoming(is_incoming);
+  ShareTarget share_target;
+  share_target.device_name = device_name;
+  share_target.is_incoming = is_incoming;
 
   for (TextAttachment::Type type : param.text_attachments)
-    share_target_builder.add_attachment(CreateTextAttachment(type));
+    share_target.text_attachments.push_back(CreateTextAttachment(type));
 
   for (FileAttachment::Type type : param.file_attachments)
-    share_target_builder.add_attachment(CreateFileAttachment(type));
+    share_target.file_attachments.push_back(CreateFileAttachment(type));
 
-  ShareTarget share_target = share_target_builder.build();
   TransferMetadata transfer_metadata = TransferMetadataBuilder().build();
   manager()->ShowProgress(share_target, transfer_metadata);
 
@@ -222,11 +220,10 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_F(NearbyNotificationManagerTest, ShowConnectionRequest_ShowsNotification) {
   std::string device_name = "device";
-  ShareTargetBuilder share_target_builder;
-  share_target_builder.set_device_name(device_name);
-  share_target_builder.add_attachment(
+  ShareTarget share_target;
+  share_target.device_name = device_name;
+  share_target.file_attachments.push_back(
       CreateFileAttachment(FileAttachment::Type::kImage));
-  ShareTarget share_target = share_target_builder.build();
 
   manager()->ShowConnectionRequest(share_target);
 

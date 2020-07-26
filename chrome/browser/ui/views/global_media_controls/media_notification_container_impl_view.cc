@@ -340,6 +340,13 @@ void MediaNotificationContainerImplView::OnHeaderClicked() {
   ContainerClicked();
 }
 
+void MediaNotificationContainerImplView::OnAudioSinkChosen(
+    const std::string& sink_id) {
+  for (auto& observer : observers_) {
+    observer.OnAudioSinkChosen(id_, sink_id);
+  }
+}
+
 ui::Layer* MediaNotificationContainerImplView::GetSlideOutLayer() {
   return swipeable_container_->layer();
 }

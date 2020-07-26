@@ -16,7 +16,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/paint_preview/browser/paint_preview_client.h"
 #include "components/paint_preview/common/file_stream.h"
+#include "components/paint_preview/common/mojom/paint_preview_recorder.mojom-shared.h"
+#include "components/paint_preview/common/proto/paint_preview.pb.h"
 #include "components/paint_preview/common/serial_utils.h"
+#include "components/paint_preview/common/test_utils.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
@@ -25,6 +28,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/core/SkStream.h"
 #include "url/gurl.h"
 
 namespace paint_preview {
@@ -42,16 +46,32 @@ base::FilePath ProtoPathToFilePath(const base::StringPiece& proto_path) {
 // Check that |path| points to a valid SkPicture. Don't bother checking the
 // contents as this is non-trivial and could change. Instead check that
 // the SkPicture can be read correctly and has a cull rect of at least |size|.
-void EnsureSkPictureIsValid(const base::FilePath& path,
-                            size_t expected_subframe_count,
-                            const gfx::Size& size = gfx::Size(1, 1)) {
+void EnsureSkPictureIsValid(
+    const PaintPreviewClient::PaintPreviewParams& params,
+    const CaptureResult* const result,
+    const PaintPreviewFrameProto& frame_proto,
+    size_t expected_subframe_count,
+    const gfx::Size& size = gfx::Size(1, 1)) {
   base::ScopedAllowBlockingForTesting scoped_blocking;
-  EXPECT_TRUE(base::PathExists(path));
-  FileRStream rstream(
-      base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ));
+
+  std::unique_ptr<SkStream> stream;
+  if (params.persistence == mojom::Persistence::kFileSystem) {
+    base::FilePath path = ProtoPathToFilePath(frame_proto.file_path());
+    EXPECT_TRUE(base::PathExists(path));
+    stream = std::make_unique<FileRStream>(
+        base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ));
+  } else {
+    base::UnguessableToken frame_guid = base::UnguessableToken::Deserialize(
+        frame_proto.embedding_token_high(), frame_proto.embedding_token_low());
+    const mojo_base::BigBuffer& buffer = result->serialized_skps.at(frame_guid);
+    EXPECT_TRUE(buffer.size() > 0);
+    stream = std::make_unique<SkMemoryStream>(buffer.data(), buffer.size(),
+                                              /*copy_data=*/false);
+  }
+
   DeserializationContext ctx;
   auto deserial_procs = MakeDeserialProcs(&ctx);
-  auto skp = SkPicture::MakeFromStream(&rstream, &deserial_procs);
+  auto skp = SkPicture::MakeFromStream(stream.get(), &deserial_procs);
   EXPECT_NE(skp, nullptr);
   EXPECT_GE(skp->cullRect().width(), 0);
   EXPECT_GE(skp->cullRect().height(), 0);
@@ -64,7 +84,9 @@ void EnsureSkPictureIsValid(const base::FilePath& path,
 // - Each RenderFrame has an instance of PaintPreviewRecorder attached.
 // - Each WebContents has an instance of PaintPreviewClient attached.
 // This permits end-to-end testing of the flow of paint previews.
-class PaintPreviewBrowserTest : public InProcessBrowserTest {
+class PaintPreviewBrowserTest
+    : public InProcessBrowserTest,
+      public testing::WithParamInterface<mojom::Persistence> {
  protected:
   PaintPreviewBrowserTest() = default;
   ~PaintPreviewBrowserTest() override = default;
@@ -107,11 +129,10 @@ class PaintPreviewBrowserTest : public InProcessBrowserTest {
   }
 
   PaintPreviewClient::PaintPreviewParams MakeParams() const {
-    PaintPreviewClient::PaintPreviewParams params;
-    params.document_guid = base::UnguessableToken::Create();
-    params.is_main_frame = true;
+    PaintPreviewClient::PaintPreviewParams params(GetParam());
+    params.inner.is_main_frame = true;
     params.root_dir = temp_dir_.GetPath();
-    params.max_per_capture_size = 0;
+    params.inner.max_per_capture_size = 0;
     return params;
   }
 
@@ -137,7 +158,7 @@ class PaintPreviewBrowserTest : public InProcessBrowserTest {
   PaintPreviewBrowserTest& operator=(const PaintPreviewBrowserTest&) = delete;
 };
 
-IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest, CaptureFrame) {
+IN_PROC_BROWSER_TEST_P(PaintPreviewBrowserTest, CaptureFrame) {
   LoadPage(http_server_.GetURL("a.com", "/cross_site_iframe_factory.html?a"));
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   auto params = MakeParams();
@@ -150,21 +171,23 @@ IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest, CaptureFrame) {
   client->CapturePaintPreview(
       params, GetWebContents()->GetMainFrame(),
       base::BindOnce(
-          [](base::RepeatingClosure quit, base::UnguessableToken expected_guid,
+          [](base::RepeatingClosure quit,
+             const PaintPreviewClient::PaintPreviewParams& params,
              base::UnguessableToken guid, mojom::PaintPreviewStatus status,
-             std::unique_ptr<PaintPreviewProto> proto) {
-            EXPECT_EQ(guid, expected_guid);
+             std::unique_ptr<CaptureResult> result) {
+            EXPECT_EQ(guid, params.inner.document_guid);
             EXPECT_EQ(status, mojom::PaintPreviewStatus::kOk);
-            EXPECT_TRUE(proto->has_root_frame());
-            EXPECT_EQ(proto->subframes_size(), 0);
-            EXPECT_EQ(proto->root_frame().content_id_to_embedding_tokens_size(),
+            EXPECT_TRUE(result->proto.has_root_frame());
+            EXPECT_EQ(result->proto.subframes_size(), 0);
+            EXPECT_EQ(result->proto.root_frame()
+                          .content_id_to_embedding_tokens_size(),
                       0);
-            EXPECT_TRUE(proto->root_frame().is_main_frame());
-            EnsureSkPictureIsValid(
-                ProtoPathToFilePath(proto->root_frame().file_path()), 0);
+            EXPECT_TRUE(result->proto.root_frame().is_main_frame());
+            EnsureSkPictureIsValid(params, result.get(),
+                                   result->proto.root_frame(), 0);
             quit.Run();
           },
-          loop.QuitClosure(), params.document_guid));
+          loop.QuitClosure(), params));
   loop.Run();
 
   auto entries = ukm_recorder.GetEntriesByName(
@@ -172,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest, CaptureFrame) {
   EXPECT_EQ(1u, entries.size());
 }
 
-IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest,
+IN_PROC_BROWSER_TEST_P(PaintPreviewBrowserTest,
                        CaptureMainFrameWithCrossProcessSubframe) {
   LoadPage(
       http_server_.GetURL("a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -186,30 +209,33 @@ IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest,
   client->CapturePaintPreview(
       params, GetWebContents()->GetMainFrame(),
       base::BindOnce(
-          [](base::RepeatingClosure quit, base::UnguessableToken expected_guid,
+          [](base::RepeatingClosure quit,
+             const PaintPreviewClient::PaintPreviewParams& params,
              base::UnguessableToken guid, mojom::PaintPreviewStatus status,
-             std::unique_ptr<PaintPreviewProto> proto) {
-            EXPECT_EQ(guid, expected_guid);
+             std::unique_ptr<CaptureResult> result) {
+            EXPECT_EQ(guid, params.inner.document_guid);
             EXPECT_EQ(status, mojom::PaintPreviewStatus::kOk);
-            EXPECT_TRUE(proto->has_root_frame());
-            EXPECT_EQ(proto->subframes_size(), 1);
-            EXPECT_EQ(proto->root_frame().content_id_to_embedding_tokens_size(),
+            EXPECT_TRUE(result->proto.has_root_frame());
+            EXPECT_EQ(result->proto.subframes_size(), 1);
+            EXPECT_EQ(result->proto.root_frame()
+                          .content_id_to_embedding_tokens_size(),
                       1);
-            EXPECT_TRUE(proto->root_frame().is_main_frame());
-            EXPECT_EQ(proto->subframes(0).content_id_to_embedding_tokens_size(),
+            EXPECT_TRUE(result->proto.root_frame().is_main_frame());
+            EXPECT_EQ(result->proto.subframes(0)
+                          .content_id_to_embedding_tokens_size(),
                       0);
-            EXPECT_FALSE(proto->subframes(0).is_main_frame());
-            EnsureSkPictureIsValid(
-                ProtoPathToFilePath(proto->root_frame().file_path()), 1);
-            EnsureSkPictureIsValid(
-                ProtoPathToFilePath(proto->subframes(0).file_path()), 0);
+            EXPECT_FALSE(result->proto.subframes(0).is_main_frame());
+            EnsureSkPictureIsValid(params, result.get(),
+                                   result->proto.root_frame(), 1);
+            EnsureSkPictureIsValid(params, result.get(),
+                                   result->proto.subframes(0), 0);
             quit.Run();
           },
-          loop.QuitClosure(), params.document_guid));
+          loop.QuitClosure(), params));
   loop.Run();
 }
 
-IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest,
+IN_PROC_BROWSER_TEST_P(PaintPreviewBrowserTest,
                        CaptureMainFrameWithScrollableSameProcessSubframe) {
   std::string html = R"(<html>
                           <iframe
@@ -234,31 +260,34 @@ IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest,
   client->CapturePaintPreview(
       params, GetWebContents()->GetMainFrame(),
       base::BindOnce(
-          [](base::RepeatingClosure quit, base::UnguessableToken expected_guid,
+          [](base::RepeatingClosure quit,
+             const PaintPreviewClient::PaintPreviewParams& params,
              base::UnguessableToken guid, mojom::PaintPreviewStatus status,
-             std::unique_ptr<PaintPreviewProto> proto) {
-            EXPECT_EQ(guid, expected_guid);
+             std::unique_ptr<CaptureResult> result) {
+            EXPECT_EQ(guid, params.inner.document_guid);
             EXPECT_EQ(status, mojom::PaintPreviewStatus::kOk);
-            EXPECT_TRUE(proto->has_root_frame());
-            EXPECT_EQ(proto->subframes_size(), 1);
-            EXPECT_EQ(proto->root_frame().content_id_to_embedding_tokens_size(),
+            EXPECT_TRUE(result->proto.has_root_frame());
+            EXPECT_EQ(result->proto.subframes_size(), 1);
+            EXPECT_EQ(result->proto.root_frame()
+                          .content_id_to_embedding_tokens_size(),
                       1);
-            EXPECT_TRUE(proto->root_frame().is_main_frame());
-            EXPECT_EQ(proto->subframes(0).content_id_to_embedding_tokens_size(),
+            EXPECT_TRUE(result->proto.root_frame().is_main_frame());
+            EXPECT_EQ(result->proto.subframes(0)
+                          .content_id_to_embedding_tokens_size(),
                       0);
-            EXPECT_FALSE(proto->subframes(0).is_main_frame());
-            EnsureSkPictureIsValid(
-                ProtoPathToFilePath(proto->root_frame().file_path()), 1);
-            EnsureSkPictureIsValid(
-                ProtoPathToFilePath(proto->subframes(0).file_path()), 0,
-                gfx::Size(300, 300));
+            EXPECT_FALSE(result->proto.subframes(0).is_main_frame());
+            EnsureSkPictureIsValid(params, result.get(),
+                                   result->proto.root_frame(), 1);
+            EnsureSkPictureIsValid(params, result.get(),
+                                   result->proto.subframes(0), 0,
+                                   gfx::Size(300, 300));
             quit.Run();
           },
-          loop.QuitClosure(), params.document_guid));
+          loop.QuitClosure(), params));
   loop.Run();
 }
 
-IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest,
+IN_PROC_BROWSER_TEST_P(PaintPreviewBrowserTest,
                        CaptureMainFrameWithNonScrollableSameProcessSubframe) {
   std::string html = R"(<html>
                           <iframe
@@ -283,22 +312,30 @@ IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest,
   client->CapturePaintPreview(
       params, GetWebContents()->GetMainFrame(),
       base::BindOnce(
-          [](base::RepeatingClosure quit, base::UnguessableToken expected_guid,
+          [](base::RepeatingClosure quit,
+             const PaintPreviewClient::PaintPreviewParams& params,
              base::UnguessableToken guid, mojom::PaintPreviewStatus status,
-             std::unique_ptr<PaintPreviewProto> proto) {
-            EXPECT_EQ(guid, expected_guid);
+             std::unique_ptr<CaptureResult> result) {
+            EXPECT_EQ(guid, params.inner.document_guid);
             EXPECT_EQ(status, mojom::PaintPreviewStatus::kOk);
-            EXPECT_TRUE(proto->has_root_frame());
-            EXPECT_EQ(proto->subframes_size(), 0);
-            EXPECT_EQ(proto->root_frame().content_id_to_embedding_tokens_size(),
+            EXPECT_TRUE(result->proto.has_root_frame());
+            EXPECT_EQ(result->proto.subframes_size(), 0);
+            EXPECT_EQ(result->proto.root_frame()
+                          .content_id_to_embedding_tokens_size(),
                       0);
-            EXPECT_TRUE(proto->root_frame().is_main_frame());
-            EnsureSkPictureIsValid(
-                ProtoPathToFilePath(proto->root_frame().file_path()), 0);
+            EXPECT_TRUE(result->proto.root_frame().is_main_frame());
+            EnsureSkPictureIsValid(params, result.get(),
+                                   result->proto.root_frame(), 0);
             quit.Run();
           },
-          loop.QuitClosure(), params.document_guid));
+          loop.QuitClosure(), params));
   loop.Run();
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         PaintPreviewBrowserTest,
+                         testing::Values(mojom::Persistence::kFileSystem,
+                                         mojom::Persistence::kMemoryBuffer),
+                         PersistenceParamToString);
 
 }  // namespace paint_preview

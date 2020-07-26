@@ -14,13 +14,18 @@
 #include "services/network/test/test_url_loader_factory.h"
 
 #if !defined(OS_IOS)
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/payments/internal_authenticator.h"
 #endif
 
 namespace autofill {
 
 // This class is only for easier writing of tests.
+#if defined(OS_IOS)
 class TestAutofillDriver : public AutofillDriver {
+#else
+class TestAutofillDriver : public ContentAutofillDriver {
+#endif
  public:
   TestAutofillDriver();
   ~TestAutofillDriver() override;

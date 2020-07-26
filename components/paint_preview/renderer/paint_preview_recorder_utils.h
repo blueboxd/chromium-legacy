@@ -8,7 +8,9 @@
 #include "base/files/file.h"
 #include "cc/paint/paint_record.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom-forward.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkStream.h"
 #include "ui/gfx/geometry/rect.h"
 
 // These utilities are used by the PaintPreviewRecorderImpl. They are separate
@@ -23,23 +25,48 @@ class PaintPreviewTracker;
 // them to |tracker|.
 void ParseGlyphs(const cc::PaintOpBuffer* buffer, PaintPreviewTracker* tracker);
 
-// Serializes |record| to |file| as an SkPicture of size |dimensions|. |tracker|
-// supplies metadata required during serialization. |max_size| is a limit on the
-// total serialized size although 0 means the size is unrestricted. If
-// |max_size| is exceeded the serialization will fail. The size of the
-// serialized output is set as |serialized_size|.
+// Serializes |record| to |out_stream| as an SkPicture of size |dimensions|.
+// |tracker| supplies metadata required during serialization.
 bool SerializeAsSkPicture(sk_sp<const cc::PaintRecord> record,
                           PaintPreviewTracker* tracker,
                           const gfx::Rect& dimensions,
-                          base::File file,
-                          size_t max_size,
-                          size_t* serialized_size);
+                          SkWStream* out_stream);
 
 // Builds a mojom::PaintPreviewCaptureResponse |response| using the data
 // contained in |tracker|.
 // NOTE: |tracker| is effectively const here despite being passed by pointer.
 void BuildResponse(PaintPreviewTracker* tracker,
                    mojom::PaintPreviewCaptureResponse* response);
+
+// Utility function that wraps |SerializeAsSkPicture| to serialize and write
+// |recording| to |file|.
+//
+// |max_size| is a limit on the total serialized size although 0 means the size
+// is unrestricted. If |max_size| is exceeded the serialization will fail.
+// |serialized_size| will contain the size of the serialized output.
+//
+// Returns |true| on success.
+bool SerializeAsSkPictureToFile(sk_sp<const cc::PaintRecord> recording,
+                                const gfx::Rect& bounds,
+                                PaintPreviewTracker* tracker,
+                                base::File file,
+                                size_t max_capture_size,
+                                size_t* serialized_size);
+
+// Utility function that wraps |SerializeAsSkPicture| to serialize and write
+// |recording| to |buffer|.
+//
+// |max_size| is a limit on the total serialized size although 0 means the size
+// is unrestricted. If |max_size| is exceeded the serialization will fail.
+// |serialized_size| will contain the size of the serialized output.
+//
+// Returns |true| on success.
+bool SerializeAsSkPictureToMemoryBuffer(sk_sp<const cc::PaintRecord> recording,
+                                        const gfx::Rect& bounds,
+                                        PaintPreviewTracker* tracker,
+                                        mojo_base::BigBuffer* buffer,
+                                        size_t max_capture_size,
+                                        size_t* serialized_size);
 
 }  // namespace paint_preview
 

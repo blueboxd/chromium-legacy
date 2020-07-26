@@ -388,6 +388,32 @@ bool ExternalVkImageBacking::BeginAccess(
       UpdateContent(kInGLTexture);
   }
 
+  if (gl_reads_in_progress_ && need_synchronization()) {
+    // To avoid concurrent read access from both GL and vulkan, if there is
+    // unfinished GL read access, we will release the GL texture temporarily.
+    // And when this vulkan access is over, we will acquire the GL texture to
+    // resume the GL access.
+    DCHECK(!is_gl);
+    DCHECK(readonly);
+    DCHECK(texture_passthrough_ || texture_);
+
+    GLuint texture_id = texture_passthrough_
+                            ? texture_passthrough_->service_id()
+                            : texture_->service_id();
+    context_state()->MakeCurrent(/*gl_surface=*/nullptr, /*needs_gl=*/true);
+
+    GrVkImageInfo info;
+    auto result = backend_texture_.getVkImageInfo(&info);
+    DCHECK(result);
+    DCHECK_EQ(info.fCurrentQueueFamily, VK_QUEUE_FAMILY_EXTERNAL);
+    DCHECK_NE(info.fImageLayout, VK_IMAGE_LAYOUT_UNDEFINED);
+    DCHECK_NE(info.fImageLayout, VK_IMAGE_LAYOUT_PREINITIALIZED);
+    auto release_semaphore =
+        ExternalVkImageGLRepresentationShared::ReleaseTexture(
+            external_semaphore_pool(), texture_id, info.fImageLayout);
+    EndAccessInternal(readonly, std::move(release_semaphore));
+  }
+
   if (!BeginAccessInternal(readonly, external_semaphores))
     return false;
 
@@ -452,6 +478,33 @@ void ExternalVkImageBacking::EndAccess(bool readonly,
       latest_content_ = kInVkImage | kInGLTexture;
     }
   }
+
+  if (gl_reads_in_progress_ && need_synchronization()) {
+    // When vulkan read access is finished, if there is unfinished GL read
+    // access, we need to resume GL read access.
+    DCHECK(!is_gl);
+    DCHECK(readonly);
+    DCHECK(texture_passthrough_ || texture_);
+    GLuint texture_id = texture_passthrough_
+                            ? texture_passthrough_->service_id()
+                            : texture_->service_id();
+    context_state()->MakeCurrent(/*gl_surface=*/nullptr, /*needs_gl=*/true);
+    std::vector<ExternalSemaphore> external_semaphores;
+    BeginAccessInternal(true, &external_semaphores);
+    DCHECK_LE(external_semaphores.size(), 1u);
+
+    for (auto& semaphore : external_semaphores) {
+      GrVkImageInfo info;
+      auto result = backend_texture_.getVkImageInfo(&info);
+      DCHECK(result);
+      DCHECK_EQ(info.fCurrentQueueFamily, VK_QUEUE_FAMILY_EXTERNAL);
+      DCHECK_NE(info.fImageLayout, VK_IMAGE_LAYOUT_UNDEFINED);
+      DCHECK_NE(info.fImageLayout, VK_IMAGE_LAYOUT_PREINITIALIZED);
+      ExternalVkImageGLRepresentationShared::AcquireTexture(
+          &semaphore, texture_id, info.fImageLayout);
+    }
+    AddSemaphoresToPendingListOrRelease(std::move(external_semaphores));
+  }
 }
 
 void ExternalVkImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
@@ -470,19 +523,28 @@ bool ExternalVkImageBacking::ProduceLegacyMailbox(
 
 void ExternalVkImageBacking::AddSemaphoresToPendingListOrRelease(
     std::vector<ExternalSemaphore> semaphores) {
-  constexpr size_t kMaxPendingSemaphores = 8;
+  constexpr size_t kMaxPendingSemaphores = 4;
   DCHECK_LE(pending_semaphores_.size(), kMaxPendingSemaphores);
 
 #if DCHECK_IS_ON()
   for (auto& semaphore : semaphores)
     DCHECK(semaphore);
 #endif
-
-  std::move(semaphores.begin(),
-            semaphores.begin() +
-                std::min(semaphores.size(),
-                         kMaxPendingSemaphores - pending_semaphores_.size()),
-            std::back_inserter(pending_semaphores_));
+  while (pending_semaphores_.size() < kMaxPendingSemaphores &&
+         !semaphores.empty()) {
+    pending_semaphores_.push_back(std::move(semaphores.back()));
+    semaphores.pop_back();
+  }
+  if (!semaphores.empty()) {
+    // |semaphores| may contain VkSemephores which are submitted to queue for
+    // signalling but have not been signalled. In that case, we have to release
+    // them via fence helper to make sure all submitted GPU works is finished
+    // before releasing them.
+    fence_helper()->EnqueueCleanupTaskForSubmittedWork(
+        base::BindOnce([](std::vector<ExternalSemaphore>,
+                          VulkanDeviceQueue* device_queue, bool device_lost) {},
+                       std::move(semaphores)));
+  }
 }
 
 void ExternalVkImageBacking::ReturnPendingSemaphoresWithFenceHelper(

@@ -4,6 +4,8 @@
 
 package org.chromium.components.payments;
 
+import org.chromium.payments.mojom.PaymentDetailsModifier;
+import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.payments.mojom.PaymentOptions;
 
@@ -17,8 +19,21 @@ public interface PaymentRequestParams {
     PaymentOptions getPaymentOptions();
 
     /**
+     * @return The unmodifiable mapping of method names to modifiers, which include modified totals
+     * and additional line items. Used to display modified totals for each payment app, modified
+     * total in order summary, and additional line items in order summary. Should not be null.
+     */
+    Map<String, PaymentDetailsModifier> getModifiers();
+
+    /**
      * @return The unmodifiable mapping of payment method identifier to the method-specific data in
      * the payment request.
      */
     Map<String, PaymentMethodData> getMethodData();
+
+    /**
+     * @return The raw total amount being charged - the total property of the PaymentDetails of
+     * payment request.
+     */
+    PaymentItem getRawTotal();
 }

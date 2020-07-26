@@ -134,10 +134,13 @@ class ContentAutofillDriver : public AutofillDriver,
 
   void SetAutofillProviderForTesting(AutofillProvider* provider);
 
- protected:
   // Sets the manager to |manager| and sets |manager|'s external delegate
   // to |autofill_external_delegate_|. Takes ownership of |manager|.
   void SetAutofillManager(std::unique_ptr<AutofillManager> manager);
+
+ protected:
+  // Constructor for tests.
+  ContentAutofillDriver();
 
  private:
   // KeyPressHandlerManager::Delegate:

@@ -400,11 +400,8 @@ void FrameLoader::FinishedParsing() {
 // does not do anything when navigation is in progress, or when loading
 // has finished already. We should call it at the right times.
 void FrameLoader::DidFinishNavigation(NavigationFinishState state) {
-  // We should have either finished the provisional or committed navigation if
-  // this is called. Only delcare the whole frame finished if neither is in
-  // progress.
-  DCHECK((document_loader_ && document_loader_->SentDidFinishLoad()) ||
-         !HasProvisionalNavigation());
+  // Only declare the whole frame finished if the committed navigation is done
+  // and there is no provisional navigation in progress.
   if ((document_loader_ && !document_loader_->SentDidFinishLoad()) ||
       HasProvisionalNavigation()) {
     return;

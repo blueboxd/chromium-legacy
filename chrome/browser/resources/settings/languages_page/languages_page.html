@@ -210,7 +210,11 @@
           </div>
           <settings-toggle-button id="offerTranslateOtherLanguages"
               pref="{{prefs.translate.enabled}}"
-              label="$i18n{offerToEnableTranslate}">
+              label="$i18n{offerToEnableTranslate}"
+          <if expr="chromeos">
+              on-settings-boolean-control-change="onTranslateToggleChange_"
+          </if>
+          >
           </settings-toggle-button>
         </iron-collapse>
         <settings-toggle-button
@@ -219,7 +223,11 @@
             label="$i18n{spellCheckTitle}"
             sub-label="[[getSpellCheckSubLabel_(spellCheckLanguages_)]]"
             pref="{{prefs.browser.enable_spellchecking}}"
-            disabled="[[!spellCheckLanguages_.length]]">
+            disabled="[[!spellCheckLanguages_.length]]"
+        <if expr="chromeos">
+            on-settings-boolean-control-change="onSpellcheckToggleChange_"
+        </if>
+        >
         </settings-toggle-button>
 <if expr="_google_chrome or not is_macosx">
         <iron-collapse id="spellCheckCollapse"

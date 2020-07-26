@@ -13,7 +13,9 @@
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/examples/examples_window.h"
 #include "ui/views/examples/grit/views_examples_resources.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
+#include "ui/views/view_class_properties.h"
 
 using l10n_util::GetStringUTF16;
 using l10n_util::GetStringUTF8;
@@ -36,15 +38,15 @@ void TabbedPaneExample::CreateExampleView(View* container) {
   auto select_at = std::make_unique<LabelButton>(
       this, GetStringUTF16(IDS_TABBED_PANE_SELECT_1_LABEL));
 
-  GridLayout* layout =
-      container->SetLayoutManager(std::make_unique<views::GridLayout>());
+  container->SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(LayoutOrientation::kVertical);
 
-  const int tabbed_pane_column = 0;
-  ColumnSet* column_set = layout->AddColumnSet(tabbed_pane_column);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0f,
-                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  layout->StartRow(1 /* expand */, tabbed_pane_column);
-  tabbed_pane_ = layout->AddView(std::move(tabbed_pane));
+  auto full_flex = FlexSpecification(MinimumFlexSizeRule::kScaleToZero,
+                                     MaximumFlexSizeRule::kUnbounded)
+                       .WithWeight(1);
+
+  tabbed_pane_ = container->AddChildView(std::move(tabbed_pane));
+  tabbed_pane_->SetProperty(views::kFlexBehaviorKey, full_flex);
 
   // Create a few tabs with a button first.
   AddButton(GetStringUTF16(IDS_TABBED_PANE_TAB_1_LABEL));
@@ -52,17 +54,14 @@ void TabbedPaneExample::CreateExampleView(View* container) {
   AddButton(GetStringUTF16(IDS_TABBED_PANE_TAB_3_LABEL));
 
   // Add control buttons horizontally.
-  const int button_column = 1;
-  column_set = layout->AddColumnSet(button_column);
-  for (size_t i = 0; i < 3; i++) {
-    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0f,
-                          GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  }
+  auto* button_panel = container->AddChildView(std::make_unique<View>());
+  button_panel->SetLayoutManager(std::make_unique<views::FlexLayout>());
+  add_ = button_panel->AddChildView(std::move(add));
+  add_at_ = button_panel->AddChildView(std::move(add_at));
+  select_at_ = button_panel->AddChildView(std::move(select_at));
 
-  layout->StartRow(0 /* no expand */, button_column);
-  add_ = layout->AddView(std::move(add));
-  add_at_ = layout->AddView(std::move(add_at));
-  select_at_ = layout->AddView(std::move(select_at));
+  for (View* view : button_panel->children())
+    view->SetProperty(views::kFlexBehaviorKey, full_flex);
 }
 
 void TabbedPaneExample::ButtonPressed(Button* sender, const ui::Event& event) {

@@ -377,6 +377,10 @@ void CreditCardAccessManager::OnSettingsPageFIDOAuthToggled(bool opt_in) {
 #endif
 }
 
+void CreditCardAccessManager::SignalCanFetchUnmaskDetails() {
+  can_fetch_unmask_details_.Signal();
+}
+
 void CreditCardAccessManager::CacheUnmaskedCardInfo(const CreditCard& card,
                                                     const base::string16& cvc) {
   DCHECK_EQ(card.record_type(), CreditCard::FULL_SERVER_CARD);
@@ -721,10 +725,6 @@ void CreditCardAccessManager::HandleDialogUserResponse(
   }
 }
 #endif
-
-void CreditCardAccessManager::SignalCanFetchUnmaskDetails() {
-  can_fetch_unmask_details_.Signal();
-}
 
 void CreditCardAccessManager::AdditionallyPerformFidoAuth(
     const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response,

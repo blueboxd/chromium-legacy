@@ -79,18 +79,6 @@
       ->RemoveIdentity(fakeIdentity);
 }
 
-+ (NSUInteger)bookmarkCount:(NSString*)title {
-  bookmarks::BookmarkModel* bookmarkModel =
-      ios::BookmarkModelFactory::GetForBrowserState(
-          chrome_test_util::GetOriginalBrowserState());
-
-  base::string16 matchString = base::SysNSStringToUTF16(title);
-  std::vector<bookmarks::TitledUrlMatch> matches;
-  bookmarkModel->GetBookmarksMatching(matchString, 50, &matches);
-  const size_t count = matches.size();
-  return count;
-}
-
 + (BOOL)isAuthenticated {
   ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
@@ -106,15 +94,6 @@
       AuthenticationServiceFactory::GetForBrowserState(browser_state);
   authentication_service->SignOut(signin_metrics::SIGNOUT_TEST,
                                   /*force_clear_browsing_data=*/false, nil);
-}
-
-+ (void)addBookmark:(NSString*)urlString withTitle:(NSString*)title {
-  GURL bookmarkURL = GURL(base::SysNSStringToUTF8(urlString));
-  bookmarks::BookmarkModel* bookmark_model =
-      ios::BookmarkModelFactory::GetForBrowserState(
-          chrome_test_util::GetOriginalBrowserState());
-  bookmark_model->AddURL(bookmark_model->mobile_node(), 0,
-                         base::SysNSStringToUTF16(title), bookmarkURL);
 }
 
 @end

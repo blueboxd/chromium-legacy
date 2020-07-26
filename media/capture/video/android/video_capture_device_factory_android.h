@@ -29,10 +29,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryAndroid
 
   std::unique_ptr<VideoCaptureDevice> CreateDevice(
       const VideoCaptureDeviceDescriptor& device_descriptor) override;
-  void GetDeviceDescriptors(
-      VideoCaptureDeviceDescriptors* device_descriptors) override;
-  void GetSupportedFormats(const VideoCaptureDeviceDescriptor& device,
-                           VideoCaptureFormats* supported_formats) override;
+  void GetDevicesInfo(GetDevicesInfoCallback callback) override;
 
   static bool IsLegacyOrDeprecatedDevice(const std::string& device_id);
 
@@ -40,6 +37,9 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryAndroid
   void ConfigureForTesting() { test_mode_ = true; }
 
  private:
+  VideoCaptureFormats GetSupportedFormats(int device_id,
+                                          const std::string& display_name);
+
   // Switch to indicate that all created Java capturers will be in test mode.
   bool test_mode_;
 

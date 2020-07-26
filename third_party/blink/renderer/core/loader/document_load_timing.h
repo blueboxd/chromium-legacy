@@ -49,6 +49,7 @@ class CORE_EXPORT DocumentLoadTiming final {
   explicit DocumentLoadTiming(DocumentLoader&);
 
   base::TimeDelta MonotonicTimeToZeroBasedDocumentTime(base::TimeTicks) const;
+  int64_t ZeroBasedDocumentTimeToMonotonicTime(double dom_event_time) const;
   base::TimeDelta MonotonicTimeToPseudoWallTime(base::TimeTicks) const;
 
   void MarkNavigationStart();

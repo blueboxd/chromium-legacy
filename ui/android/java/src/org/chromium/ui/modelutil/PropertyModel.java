@@ -151,6 +151,42 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
         }
     }
 
+    /** The key type for read-only long model properties. */
+    public static class ReadableLongPropertyKey extends NamedPropertyKey {
+        /**
+         * Constructs a new unnamed read-only long property key.
+         */
+        public ReadableLongPropertyKey() {
+            this(null);
+        }
+
+        /**
+         * Constructs a new named read-only long property key, e.g. for use in debugging.
+         * @param name The optional name of the property.
+         */
+        public ReadableLongPropertyKey(@Nullable String name) {
+            super(name);
+        }
+    }
+
+    /** The key type for mutable int model properties. */
+    public static final class WritableLongPropertyKey extends ReadableLongPropertyKey {
+        /**
+         * Constructs a new unnamed writable long property key.
+         */
+        public WritableLongPropertyKey() {
+            this(null);
+        }
+
+        /**
+         * Constructs a new named writable long property key, e.g. for use in debugging.
+         * @param name The optional name of the property.
+         */
+        public WritableLongPropertyKey(@Nullable String name) {
+            super(name);
+        }
+    }
+
     /**
      * The key type for read-only Object model properties.
      *
@@ -297,6 +333,32 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
     }
 
     /**
+     * Get the current value from the long based key.
+     */
+    public long get(ReadableLongPropertyKey key) {
+        validateKey(key);
+        LongContainer container = (LongContainer) mData.get(key);
+        return container == null ? 0 : container.value;
+    }
+
+    /**
+     * Set the value for the long based key.
+     */
+    public void set(WritableLongPropertyKey key, long value) {
+        validateKey(key);
+        LongContainer container = (LongContainer) mData.get(key);
+        if (container == null) {
+            container = new LongContainer();
+            mData.put(key, container);
+        } else if (container.value == value) {
+            return;
+        }
+
+        container.value = value;
+        notifyPropertyChanged(key);
+    }
+
+    /**
      * Get the current value from the boolean based key.
      */
     public boolean get(ReadableBooleanPropertyKey key) {
@@ -425,6 +487,14 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
             return this;
         }
 
+        public Builder with(ReadableLongPropertyKey key, long value) {
+            validateKey(key);
+            LongContainer container = new LongContainer();
+            container.value = value;
+            mData.put(key, container);
+            return this;
+        }
+
         public Builder with(ReadableBooleanPropertyKey key, boolean value) {
             validateKey(key);
             BooleanContainer container = new BooleanContainer();
@@ -522,6 +592,21 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
         public boolean equals(Object other) {
             return other != null && other instanceof IntContainer
                     && ((IntContainer) other).value == value;
+        }
+    }
+
+    private static class LongContainer extends ValueContainer {
+        public long value;
+
+        @Override
+        public String toString() {
+            return value + " in " + super.toString();
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            return other != null && other instanceof LongContainer
+                    && ((LongContainer) other).value == value;
         }
     }
 

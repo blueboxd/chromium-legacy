@@ -352,6 +352,8 @@ TEST_F(ExtensionInstallEventLogCollectorTest, ExtensionInstallFailed) {
   EXPECT_EQ(kExtensionId1, delegate()->last_request().extension_id);
   EXPECT_EQ(em::ExtensionInstallReportLogEvent::INSTALLATION_FAILED,
             delegate()->last_request().event.event_type());
+  EXPECT_EQ(em::ExtensionInstallReportLogEvent::CRX_FETCH_URL_EMPTY,
+            delegate()->last_request().event.failure_reason());
 }
 
 TEST_F(ExtensionInstallEventLogCollectorTest, InstallExtension) {

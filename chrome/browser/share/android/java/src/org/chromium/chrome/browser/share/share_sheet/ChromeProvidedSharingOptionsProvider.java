@@ -189,7 +189,8 @@ class ChromeProvidedSharingOptionsProvider {
                 },
                 /*isFirstParty=*/true);
         return new FirstPartyOption(propertyModel,
-                Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.TEXT, ContentType.IMAGE));
+                Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.TEXT,
+                        ContentType.HIGHLIGHTED_TEXT, ContentType.IMAGE));
     }
 
     private FirstPartyOption createCopyLinkFirstPartyOption() {
@@ -232,7 +233,8 @@ class ChromeProvidedSharingOptionsProvider {
                     Toast.makeText(mActivity, R.string.text_copied, Toast.LENGTH_SHORT).show();
                 },
                 /*isFirstParty=*/true);
-        return new FirstPartyOption(propertyModel, Collections.singleton(ContentType.TEXT));
+        return new FirstPartyOption(
+                propertyModel, Arrays.asList(ContentType.TEXT, ContentType.HIGHLIGHTED_TEXT));
     }
 
     private FirstPartyOption createSendTabToSelfFirstPartyOption() {
@@ -313,7 +315,8 @@ class ChromeProvidedSharingOptionsProvider {
                     // TODO(1102382): Init and call link-to-text feature.
                 },
                 /*isFirstParty=*/true);
-        return new FirstPartyOption(propertyModel, Collections.singleton(ContentType.TEXT));
+        return new FirstPartyOption(
+                propertyModel, Collections.singleton(ContentType.HIGHLIGHTED_TEXT));
     }
 
     /**

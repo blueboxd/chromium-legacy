@@ -15,6 +15,9 @@ class VersionUI : public content::WebUIController {
   explicit VersionUI(content::WebUI* web_ui);
   ~VersionUI() override;
 
+  // Returns the IDS_* string id for the variation of the processor.
+  static int VersionProcessorVariation();
+
   // Loads a data source with many named details comprising version info.
   // The keys are from version_ui_constants.
   static void AddVersionDetailStrings(content::WebUIDataSource* html_source);

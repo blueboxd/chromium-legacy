@@ -1874,6 +1874,11 @@ const char kRawClipboardDescription[] =
     "Allows raw / unsanitized clipboard content to be read and written. "
     "See https://github.com/WICG/raw-clipboard-access.";
 
+const char kReadLaterName[] = "Read Later";
+const char kReadLaterDescription[] =
+    "Allow users to save tabs for later. Enables a new button and menu for "
+    "accessing tabs saved for later.";
+
 const char kReducedReferrerGranularityName[] =
     "Reduce default 'referer' header granularity.";
 const char kReducedReferrerGranularityDescription[] =

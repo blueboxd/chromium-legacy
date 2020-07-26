@@ -13,7 +13,8 @@
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/examples/examples_window.h"
 #include "ui/views/examples/grit/views_examples_resources.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/flex_layout.h"
 #include "ui/views/view.h"
 
 using l10n_util::GetStringUTF16;
@@ -28,33 +29,22 @@ MessageBoxExample::MessageBoxExample()
 MessageBoxExample::~MessageBoxExample() = default;
 
 void MessageBoxExample::CreateExampleView(View* container) {
-  GridLayout* layout =
-      container->SetLayoutManager(std::make_unique<views::GridLayout>());
+  container->SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::Orientation::kVertical));
 
-  auto message_box_view = std::make_unique<MessageBoxView>(
-      MessageBoxView::InitParams(GetStringUTF16(IDS_MESSAGE_INTRO_LABEL)));
-  message_box_view->SetCheckBoxLabel(
+  message_box_view_ = container->AddChildView(std::make_unique<MessageBoxView>(
+      MessageBoxView::InitParams(GetStringUTF16(IDS_MESSAGE_INTRO_LABEL))));
+  message_box_view_->SetCheckBoxLabel(
       GetStringUTF16(IDS_MESSAGE_CHECK_BOX_LABEL));
 
-  const int message_box_column = 0;
-  ColumnSet* column_set = layout->AddColumnSet(message_box_column);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  layout->StartRow(1 /* expand */, message_box_column);
-  message_box_view_ = layout->AddView(std::move(message_box_view));
+  View* button_panel = container->AddChildView(std::make_unique<View>());
+  button_panel->SetLayoutManager(std::make_unique<FlexLayout>())
+      ->SetOrientation(LayoutOrientation::kHorizontal)
+      .SetMainAxisAlignment(LayoutAlignment::kStart);
 
-  const int button_column = 1;
-  column_set = layout->AddColumnSet(button_column);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0.5f,
-                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0.5f,
-                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
-
-  layout->StartRow(0 /* no expand */, button_column);
-
-  status_ = layout->AddView(std::make_unique<LabelButton>(
+  status_ = button_panel->AddChildView(std::make_unique<LabelButton>(
       this, GetStringUTF16(IDS_MESSAGE_STATUS_LABEL)));
-  toggle_ = layout->AddView(std::make_unique<LabelButton>(
+  toggle_ = button_panel->AddChildView(std::make_unique<LabelButton>(
       this, GetStringUTF16(IDS_MESSAGE_TOGGLE_LABEL)));
 }
 

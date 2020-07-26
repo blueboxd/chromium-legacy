@@ -36,10 +36,10 @@ jumbo_source_set("internal") {
     "policy_error_map.h",
     "proxy_policy_handler.cc",
     "proxy_policy_handler.h",
-    "url_blacklist_manager.cc",
-    "url_blacklist_manager.h",
-    "url_blacklist_policy_handler.cc",
-    "url_blacklist_policy_handler.h",
+    "url_blocklist_manager.cc",
+    "url_blocklist_manager.h",
+    "url_blocklist_policy_handler.cc",
+    "url_blocklist_policy_handler.h",
     "url_util.cc",
     "url_util.h",
   ]
@@ -126,8 +126,8 @@ source_set("unit_tests") {
     "configuration_policy_handler_unittest.cc",
     "configuration_policy_pref_store_unittest.cc",
     "proxy_policy_handler_unittest.cc",
-    "url_blacklist_manager_unittest.cc",
-    "url_blacklist_policy_handler_unittest.cc",
+    "url_blocklist_manager_unittest.cc",
+    "url_blocklist_policy_handler_unittest.cc",
     "url_util_unittest.cc",
   ]
   deps = [

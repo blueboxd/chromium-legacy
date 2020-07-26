@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
@@ -115,14 +116,20 @@ class WrappedDeviceFactory : public media::FakeVideoCaptureDeviceFactory {
         FakeVideoCaptureDeviceFactory::CreateDevice(device_descriptor), this);
   }
 
-  void GetDeviceDescriptors(
-      media::VideoCaptureDeviceDescriptors* device_descriptors) override {
-    media::FakeVideoCaptureDeviceFactory::GetDeviceDescriptors(
-        device_descriptors);
-    for (auto& descriptor : *device_descriptors) {
-      if (descriptor.facing == media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE)
-        descriptor.facing = DEFAULT_FACING;
-    }
+  void GetDevicesInfo(GetDevicesInfoCallback callback) override {
+    media::FakeVideoCaptureDeviceFactory::GetDevicesInfo(
+        base::BindLambdaForTesting(
+            [callback =
+                 std::move(callback)](std::vector<media::VideoCaptureDeviceInfo>
+                                          devices_info) mutable {
+              for (auto& device : devices_info) {
+                if (device.descriptor.facing ==
+                    media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE) {
+                  device.descriptor.facing = DEFAULT_FACING;
+                }
+              }
+              std::move(callback).Run(std::move(devices_info));
+            }));
   }
 
   MOCK_METHOD0(WillSuspendDevice, void());

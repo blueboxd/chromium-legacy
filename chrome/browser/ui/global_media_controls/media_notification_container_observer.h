@@ -32,6 +32,10 @@ class MediaNotificationContainerObserver : public base::CheckedObserver {
   virtual void OnContainerDraggedOut(const std::string& id,
                                      gfx::Rect bounds) = 0;
 
+  // Called when the audio output device for the container should change
+  virtual void OnAudioSinkChosen(const std::string& id,
+                                 const std::string& sink_id) = 0;
+
  protected:
   ~MediaNotificationContainerObserver() override = default;
 };

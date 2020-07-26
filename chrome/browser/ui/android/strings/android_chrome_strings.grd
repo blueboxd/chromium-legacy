@@ -925,6 +925,27 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_SAFETY_CHECK_UPDATES_ERROR" desc="Text to display when the updates check failed for some reason.">
         Chrome can’t check for updates
       </message>
+      <message name="IDS_SAFETY_CHECK_TIMESTAMP_AFTER" desc="A message shown on the safety check page, explaining to the user that it ran a moment ago.">
+        Checked just now
+      </message>
+      <message name="IDS_SAFETY_CHECK_TIMESTAMP_AFTER_MINS" desc="A message shown on the safety check page, explaining to the user that it ran minutes ago.">
+        {NUM_MINS, plural,
+        =1 {Checked 1 minute ago}
+        other {Checked # minutes ago}}
+      </message>
+      <message name="IDS_SAFETY_CHECK_TIMESTAMP_AFTER_HOURS" desc="A message shown on the safety check page, explaining to the user that it ran hours ago.">
+        {NUM_HOURS, plural,
+        =1 {Checked 1 hour ago}
+        other {Checked # hours ago}}
+      </message>
+      <message name="IDS_SAFETY_CHECK_TIMESTAMP_AFTER_YESTERDAY" desc="A message shown on the safety check page, showing to the user that it ran yesterday.">
+        Checked yesterday
+      </message>
+      <message name="IDS_SAFETY_CHECK_TIMESTAMP_AFTER_DAYS" desc="A message shown on the safety check page, showing to the user how many days ago it ran.">
+        {NUM_DAYS, plural,
+        =1 {Checked 1 day ago}
+        other {Checked # days ago}}
+      </message>
 
        <!-- Security preferences -->
       <message name="IDS_PREFS_SECURITY_TITLE" desc="Title for the Security preferences. [CHAR-LIMIT=32]">

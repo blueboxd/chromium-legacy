@@ -195,22 +195,22 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureMainFrame) {
              PaintPreviewBaseService::CaptureStatus expected_status,
              const base::FilePath& expected_path,
              PaintPreviewBaseService::CaptureStatus status,
-             std::unique_ptr<PaintPreviewProto> proto) {
+             std::unique_ptr<CaptureResult> result) {
             EXPECT_EQ(status, expected_status);
-            EXPECT_TRUE(proto->has_root_frame());
-            EXPECT_EQ(proto->subframes_size(), 0);
-            EXPECT_TRUE(proto->root_frame().is_main_frame());
+            EXPECT_TRUE(result->proto.has_root_frame());
+            EXPECT_EQ(result->proto.subframes_size(), 0);
+            EXPECT_TRUE(result->proto.root_frame().is_main_frame());
             auto token = base::UnguessableToken::Deserialize(
-                proto->root_frame().embedding_token_high(),
-                proto->root_frame().embedding_token_low());
+                result->proto.root_frame().embedding_token_high(),
+                result->proto.root_frame().embedding_token_low());
 #if defined(OS_WIN)
             base::FilePath path = base::FilePath(
-                base::UTF8ToUTF16(proto->root_frame().file_path()));
+                base::UTF8ToUTF16(result->proto.root_frame().file_path()));
             base::FilePath name(
                 base::UTF8ToUTF16(base::StrCat({token.ToString(), ".skp"})));
 #else
             base::FilePath path =
-                base::FilePath(proto->root_frame().file_path());
+                base::FilePath(result->proto.root_frame().file_path());
             base::FilePath name(base::StrCat({token.ToString(), ".skp"}));
 #endif
             EXPECT_EQ(path.DirName(), expected_path);
@@ -248,9 +248,9 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureFailed) {
           [](base::OnceClosure quit_closure,
              PaintPreviewBaseService::CaptureStatus expected_status,
              PaintPreviewBaseService::CaptureStatus status,
-             std::unique_ptr<PaintPreviewProto> proto) {
+             std::unique_ptr<CaptureResult> result) {
             EXPECT_EQ(status, expected_status);
-            EXPECT_EQ(proto, nullptr);
+            EXPECT_EQ(result, nullptr);
             std::move(quit_closure).Run();
           },
           loop.QuitClosure(),
@@ -283,9 +283,9 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureDisallowed) {
           [](base::OnceClosure quit_closure,
              PaintPreviewBaseService::CaptureStatus expected_status,
              PaintPreviewBaseService::CaptureStatus status,
-             std::unique_ptr<PaintPreviewProto> proto) {
+             std::unique_ptr<CaptureResult> result) {
             EXPECT_EQ(status, expected_status);
-            EXPECT_EQ(proto, nullptr);
+            EXPECT_EQ(result, nullptr);
             std::move(quit_closure).Run();
           },
           loop.QuitClosure(),

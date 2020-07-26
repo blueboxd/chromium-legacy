@@ -170,7 +170,10 @@ public class ChromeActionModeHandler {
                         new ShareParams.Builder(mTab.getWindowAndroid(), /*url=*/"", /*title=*/"")
                                 .setText(sanitizeTextForShare(mHelper.getSelectedText()))
                                 .build(),
-                        new ChromeShareExtras.Builder().setSaveLastUsed(true).build());
+                        new ChromeShareExtras.Builder()
+                                .setSaveLastUsed(true)
+                                .setIsUserHighlightedText(true)
+                                .build());
             } else {
                 return mHelper.onActionItemClicked(mode, item);
             }

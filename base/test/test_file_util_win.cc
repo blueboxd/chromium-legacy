@@ -98,7 +98,12 @@ bool DieFileDie(const FilePath& file, bool recurse) {
   // into short chunks, so that if a try succeeds, we won't delay the test
   // for too long.
   for (int i = 0; i < kIterations; ++i) {
-    if (DeleteFile(file, recurse))
+    bool success;
+    if (recurse)
+      success = DeletePathRecursively(file);
+    else
+      success = DeleteFile(file);
+    if (success)
       return true;
     PlatformThread::Sleep(kTimeout);
   }

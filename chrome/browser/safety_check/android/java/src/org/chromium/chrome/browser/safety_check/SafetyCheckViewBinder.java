@@ -4,7 +4,10 @@
 
 package org.chromium.chrome.browser.safety_check;
 
+import android.content.Context;
 import android.view.View;
+
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.PasswordsState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.SafeBrowsingState;
@@ -16,6 +19,9 @@ class SafetyCheckViewBinder {
     private static final String PASSWORDS_KEY = "passwords";
     private static final String SAFE_BROWSING_KEY = "safe_browsing";
     private static final String UPDATES_KEY = "updates";
+    private static final long MIN_TO_MS = 60 * 1000;
+    private static final long H_TO_MS = 60 * MIN_TO_MS;
+    private static final long DAY_TO_MS = 24 * H_TO_MS;
 
     private static int getStringForPasswords(@PasswordsState int state) {
         switch (state) {
@@ -142,6 +148,42 @@ class SafetyCheckViewBinder {
         return 0;
     }
 
+    /**
+     * Generates a String representing how long ago the Safety check was performed last time.
+     * @param context A {@link Context} instance to extract the strings.
+     * @param lastRunTime A long representing the last run timestamp in milliseconds.
+     * @param currentTime A long representing current time in milliseconds.
+     * @return A string to display in the UI for the last run timestamp.
+     */
+    @VisibleForTesting
+    static String getLastRunTimestampText(Context context, long lastRunTime, long currentTime) {
+        if (lastRunTime == 0) {
+            return "";
+        }
+        long timeDiff = currentTime - lastRunTime;
+        if (timeDiff < MIN_TO_MS) {
+            return context.getString(R.string.safety_check_timestamp_after);
+        } else if (timeDiff < H_TO_MS) {
+            int minutes = (int) (timeDiff / MIN_TO_MS);
+            return context.getResources().getQuantityString(
+                    R.plurals.safety_check_timestamp_after_mins, minutes, minutes);
+        } else if (timeDiff < DAY_TO_MS) {
+            int hours = (int) (timeDiff / H_TO_MS);
+            return context.getResources().getQuantityString(
+                    R.plurals.safety_check_timestamp_after_hours, hours, hours);
+        } else if (timeDiff < 2 * DAY_TO_MS) {
+            return context.getString(R.string.safety_check_timestamp_after_yesterday);
+        } else {
+            int days = (int) (timeDiff / DAY_TO_MS);
+            return context.getResources().getQuantityString(
+                    R.plurals.safety_check_timestamp_after_days, days, days);
+        }
+    }
+
+    private static void clearTimestampText(SafetyCheckSettingsFragment fragment) {
+        fragment.getTimestampTextView().setText("");
+    }
+
     static void bind(
             PropertyModel model, SafetyCheckSettingsFragment fragment, PropertyKey propertyKey) {
         if (SafetyCheckProperties.PASSWORDS_STATE == propertyKey) {
@@ -149,10 +191,12 @@ class SafetyCheckViewBinder {
             int state = model.get(SafetyCheckProperties.PASSWORDS_STATE);
             fragment.updateElementStatus(PASSWORDS_KEY, getStringForPasswords(state));
             SafetyCheckElementPreference preference = fragment.findPreference(PASSWORDS_KEY);
+            preference.setEnabled(true);
             if (state == PasswordsState.UNCHECKED) {
                 preference.clearStatusIndicator();
                 preference.setEnabled(true);
             } else if (state == PasswordsState.CHECKING) {
+                clearTimestampText(fragment);
                 preference.showProgressBar();
                 preference.setEnabled(false);
             } else {
@@ -164,10 +208,12 @@ class SafetyCheckViewBinder {
             int state = model.get(SafetyCheckProperties.SAFE_BROWSING_STATE);
             fragment.updateElementStatus(SAFE_BROWSING_KEY, getStringForSafeBrowsing(state));
             SafetyCheckElementPreference preference = fragment.findPreference(SAFE_BROWSING_KEY);
+            preference.setEnabled(true);
             if (state == SafeBrowsingState.UNCHECKED) {
                 preference.clearStatusIndicator();
                 preference.setEnabled(true);
             } else if (state == SafeBrowsingState.CHECKING) {
+                clearTimestampText(fragment);
                 preference.showProgressBar();
                 preference.setEnabled(false);
             } else {
@@ -179,10 +225,12 @@ class SafetyCheckViewBinder {
             int state = model.get(SafetyCheckProperties.UPDATES_STATE);
             fragment.updateElementStatus(UPDATES_KEY, getStringForUpdates(state));
             SafetyCheckElementPreference preference = fragment.findPreference(UPDATES_KEY);
+            preference.setEnabled(true);
             if (state == UpdatesState.UNCHECKED) {
                 preference.clearStatusIndicator();
                 preference.setEnabled(true);
             } else if (state == UpdatesState.CHECKING) {
+                clearTimestampText(fragment);
                 preference.showProgressBar();
                 preference.setEnabled(false);
             } else {
@@ -192,6 +240,11 @@ class SafetyCheckViewBinder {
         } else if (SafetyCheckProperties.SAFETY_CHECK_BUTTON_CLICK_LISTENER == propertyKey) {
             fragment.getCheckButton().setOnClickListener((View.OnClickListener) model.get(
                     SafetyCheckProperties.SAFETY_CHECK_BUTTON_CLICK_LISTENER));
+        } else if (SafetyCheckProperties.LAST_RUN_TIMESTAMP == propertyKey) {
+            long lastRunTime = model.get(SafetyCheckProperties.LAST_RUN_TIMESTAMP);
+            long currentTime = System.currentTimeMillis();
+            fragment.getTimestampTextView().setText(
+                    getLastRunTimestampText(fragment.getContext(), lastRunTime, currentTime));
         } else {
             assert false : "Unhandled property detected in SafetyCheckViewBinder!";
         }

@@ -27,16 +27,8 @@
 namespace base {
 
 #if !defined(OS_NACL_NONSFI)
-namespace {
-
-void DeleteFileHelper(const FilePath& path) {
-  DeleteFile(path, /*recursive=*/false);
-}
-
-}  // namespace
-
 OnceCallback<void(const FilePath&)> GetDeleteFileCallback() {
-  return BindOnce(&DeleteFileHelper);
+  return BindOnce(IgnoreResult(&DeleteFile));
 }
 
 OnceCallback<void(const FilePath&)> GetDeletePathRecursivelyCallback() {

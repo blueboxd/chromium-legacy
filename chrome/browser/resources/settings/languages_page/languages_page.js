@@ -50,6 +50,10 @@ import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
 import {routes} from '../route.js';
 import {Route, Router} from '../router.m.js';
 
+// <if expr="chromeos">
+import {LanguagesMetricsProxy, LanguagesMetricsProxyImpl, LanguagesPageInteraction} from './languages_metrics_proxy.js';
+// </if>
+
 /**
  * @type {number} Millisecond delay that can be used when closing an action
  *      menu to keep it briefly on-screen.
@@ -157,6 +161,16 @@ Polymer({
     // </if>
   },
 
+  // <if expr="chromeos">
+  /** @private {?LanguagesMetricsProxy} */
+  languagesMetricsProxy_: null,
+
+  /** @override */
+  created() {
+    this.languagesMetricsProxy_ = LanguagesMetricsProxyImpl.getInstance();
+  },
+  // </if>
+
   // <if expr="not is_macosx">
   observers: [
     'updateSpellcheckLanguages_(languages.enabled.*, ' +
@@ -193,6 +207,9 @@ Polymer({
    */
   onAddLanguagesTap_(e) {
     e.preventDefault();
+    // <if expr="chromeos">
+    this.languagesMetricsProxy_.recordAddLanguages();
+    // </if>
     this.showAddLanguagesDialog_ = true;
   },
 
@@ -316,6 +333,22 @@ Polymer({
       menu.querySelector('#uiLanguageItem').hidden = true;
     }
   },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onTranslateToggleChange_(e) {
+    this.languagesMetricsProxy_.recordToggleTranslate(e.target.checked);
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onSpellcheckToggleChange_(e) {
+    this.languagesMetricsProxy_.recordToggleSpellCheck(e.target.checked);
+  },
   // </if>
 
   // <if expr="chromeos or is_win">
@@ -400,6 +433,10 @@ Polymer({
     // We don't support unchecking this checkbox. TODO(michaelpg): Ask for a
     // simpler widget.
     assert(e.target.checked);
+    // <if expr="chromeos">
+    this.languagesMetricsProxy_.recordInteraction(
+        LanguagesPageInteraction.SWITCH_SYSTEM_LANGUAGE);
+    // </if>
     this.isChangeInProgress_ = true;
     this.languageHelper.setProspectiveUILanguage(
         this.detailLanguage_.language.code);
@@ -438,6 +475,8 @@ Polymer({
    */
   onRestartTap_() {
     // <if expr="chromeos">
+    this.languagesMetricsProxy_.recordInteraction(
+        LanguagesPageInteraction.RESTART);
     LifetimeBrowserProxyImpl.getInstance().signOutAndRestart();
     // </if>
     // <if expr="is_win">
@@ -662,6 +701,10 @@ Polymer({
    * @private
    */
   onEditDictionaryTap_() {
+    // <if expr="chromeos">
+    this.languagesMetricsProxy_.recordInteraction(
+        LanguagesPageInteraction.OPEN_CUSTOM_SPELL_CHECK);
+    // </if>
     Router.getInstance().navigateTo(
         /** @type {!Route} */ (routes.EDIT_DICTIONARY));
   },

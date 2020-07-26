@@ -404,6 +404,49 @@ class UserInteractionObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(UserInteractionObserver);
 };
 
+// Supports waiting until a WebContents notifies its observers that the visible
+// security state changed, and a test-specific condition is true at that time.
+class VisibleSecurityStateObserver : public WebContentsObserver {
+ public:
+  // Invoked at Wait() start and when the visible security state changes.
+  // If the callback returns true, stops waiting.
+  using ConditionCallback = base::RepeatingCallback<bool(WebContents*)>;
+
+  // Creates a VisibleSecurityStateObserver which will wait until
+  // a visible security state change is announced by |web_contents| and
+  // |condition_callback| returns true (unless |condition_callback| returns true
+  // in Wait() already, when it will not wait at all).
+  VisibleSecurityStateObserver(WebContents* web_contents,
+                               ConditionCallback condition_callback)
+      : WebContentsObserver(web_contents),
+        condition_callback_(condition_callback) {}
+  ~VisibleSecurityStateObserver() override = default;
+
+  VisibleSecurityStateObserver(const VisibleSecurityStateObserver& other) =
+      delete;
+  VisibleSecurityStateObserver& operator=(
+      const VisibleSecurityStateObserver& other) = delete;
+
+  // If the |condition_callback| passed to the constructor returns true, this
+  // returns immediately. Otherwise, blocks until the |web_contents| passed to
+  // the constructor notifies about a visible security state change and the
+  // |condition_callback| evaluates to true.
+  void Wait() {
+    if (condition_callback_.Run(web_contents()))
+      return;
+    run_loop_.Run();
+  }
+
+  void DidChangeVisibleSecurityState() override {
+    if (condition_callback_.Run(web_contents()))
+      run_loop_.Quit();
+  }
+
+ private:
+  ConditionCallback condition_callback_;
+  base::RunLoop run_loop_;
+};
+
 // Helper function to focus a frame by sending it a mouse click and then
 // waiting for it to become focused.
 void FocusFrame(FrameTreeNode* frame) {
@@ -7062,7 +7105,22 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessIgnoreCertErrorsBrowserTest,
   GURL url(https_server.GetURL(
       "example.test",
       "/mixed-content/non-redundant-cert-error-in-iframe.html"));
+
+  // The update of the security state can happen asynchronously after the
+  // navigation finished, see https://crbug.com/1105145.
+  VisibleSecurityStateObserver displayed_content_with_cert_errors_observer(
+      shell()->web_contents(),
+      base::BindRepeating([](WebContents* web_contents) {
+        NavigationEntry* entry =
+            web_contents->GetController().GetLastCommittedEntry();
+        // The image that the iframe loaded had certificate errors also, so
+        // the page should be marked as having displayed subresources with
+        // cert errors.
+        return entry && (entry->GetSSL().content_status &
+                         SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS) != 0;
+      }));
   EXPECT_TRUE(NavigateToURL(shell(), url));
+  displayed_content_with_cert_errors_observer.Wait();
 
   NavigationEntry* entry =
       shell()->web_contents()->GetController().GetLastCommittedEntry();
@@ -7070,12 +7128,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessIgnoreCertErrorsBrowserTest,
 
   // The main page was loaded with certificate errors.
   EXPECT_TRUE(net::IsCertStatusError(entry->GetSSL().cert_status));
-
-  // The image that the iframe loaded had certificate errors also, so
-  // the page should be marked as having displayed subresources with
-  // cert errors.
-  EXPECT_TRUE(!!(entry->GetSSL().content_status &
-                 SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS));
 }
 
 // Test setting a cross-origin iframe to display: none.

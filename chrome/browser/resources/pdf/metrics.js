@@ -178,7 +178,11 @@ PDFMetrics.UserAction = {
   ZOOM_OUT_FIRST: 41,
   ZOOM_OUT: 42,
 
-  NUMBER_OF_ACTIONS: 43,
+  // Recorded when the custom zoom input field is modified.
+  ZOOM_CUSTOM_FIRST: 43,
+  ZOOM_CUSTOM: 44,
+
+  NUMBER_OF_ACTIONS: 45,
 };
 
 // Map from UserAction to the 'FIRST' action. These metrics are recorded
@@ -268,5 +272,9 @@ PDFMetrics.firstMap_ = new Map([
   [
     PDFMetrics.UserAction.ZOOM_OUT,
     PDFMetrics.UserAction.ZOOM_OUT_FIRST,
+  ],
+  [
+    PDFMetrics.UserAction.ZOOM_CUSTOM,
+    PDFMetrics.UserAction.ZOOM_CUSTOM_FIRST,
   ],
 ]);

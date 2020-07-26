@@ -4,6 +4,7 @@
 
 #include "components/paint_preview/renderer/paint_preview_recorder_utils.h"
 
+#include <memory>
 #include <string>
 
 #include "base/containers/flat_map.h"
@@ -11,13 +12,18 @@
 #include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/read_only_shared_memory_region.h"
+#include "base/notreached.h"
+#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_recorder.h"
 #include "components/paint_preview/common/file_stream.h"
+#include "components/paint_preview/common/mojom/paint_preview_recorder.mojom-shared.h"
 #include "components/paint_preview/common/paint_preview_tracker.h"
 #include "components/paint_preview/common/serial_utils.h"
+#include "components/paint_preview/common/test_utils.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkFont.h"
@@ -64,18 +70,80 @@ TEST(PaintPreviewRecorderUtilsTest, TestParseGlyphs) {
       (*usage_map)[typeface->uniqueID()]->IsSet(typeface->unicharToGlyph('g')));
 }
 
-TEST(PaintPreviewRecorderUtilsTest, TestSerializeAsSkPicture) {
-  PaintPreviewTracker tracker(base::UnguessableToken::Create(),
-                              base::UnguessableToken::Create(), true);
+class PaintPreviewRecorderUtilsSerializeAsSkPictureTest
+    : public testing::TestWithParam<mojom::Persistence> {
+ public:
+  PaintPreviewRecorderUtilsSerializeAsSkPictureTest()
+      : tracker(base::UnguessableToken::Create(),
+                base::UnguessableToken::Create(),
+                true),
+        dimensions(100, 100),
+        recorder() {}
 
-  gfx::Rect dimensions(100, 100);
+  ~PaintPreviewRecorderUtilsSerializeAsSkPictureTest() override = default;
+
+ protected:
+  void SetUp() override {
+    canvas = recorder.beginRecording(dimensions.width(), dimensions.width());
+    cc::PaintFlags flags;
+    canvas->drawRect(SkRect::MakeWH(dimensions.width(), dimensions.height()),
+                     flags);
+  }
+
+  base::Optional<std::unique_ptr<SkStream>> SerializeAsSkPicture(
+      base::Optional<size_t> max_capture_size,
+      size_t* serialized_size) {
+    auto record = recorder.finishRecordingAsPicture();
+    canvas = nullptr;
+
+    switch (GetParam()) {
+      case mojom::Persistence::kFileSystem: {
+        base::ScopedTempDir temp_dir;
+        if (!temp_dir.CreateUniqueTempDir())
+          return base::nullopt;
+
+        base::FilePath file_path = temp_dir.GetPath().AppendASCII("test_file");
+        base::File write_file(
+            file_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+        if (!SerializeAsSkPictureToFile(
+                record, dimensions, &tracker, std::move(write_file),
+                max_capture_size.value_or(0), serialized_size))
+          return base::nullopt;
+
+        base::File read_file(file_path, base::File::FLAG_OPEN |
+                                            base::File::FLAG_READ |
+                                            base::File::FLAG_EXCLUSIVE_READ);
+        return {std::make_unique<FileRStream>(std::move(read_file))};
+      } break;
+
+      case mojom::Persistence::kMemoryBuffer: {
+        mojo_base::BigBuffer memory_buffer;
+
+        if (!SerializeAsSkPictureToMemoryBuffer(
+                record, dimensions, &tracker, &memory_buffer,
+                max_capture_size.value_or(0), serialized_size))
+          return base::nullopt;
+
+        bool copy_data = true;
+        return {std::make_unique<SkMemoryStream>(
+            memory_buffer.data(), memory_buffer.size(), copy_data)};
+      } break;
+    }
+
+    NOTREACHED();
+    return base::nullopt;
+  }
+
+  PaintPreviewTracker tracker;
+
+  gfx::Rect dimensions;
   cc::PaintRecorder recorder;
-  cc::PaintCanvas* canvas =
-      recorder.beginRecording(dimensions.width(), dimensions.width());
-  cc::PaintFlags flags;
-  canvas->drawRect(SkRect::MakeWH(dimensions.width(), dimensions.height()),
-                   flags);
 
+  // Valid after SetUp() until SerializeAsSkPicture() is called.
+  cc::PaintCanvas* canvas{};
+};
+
+TEST_P(PaintPreviewRecorderUtilsSerializeAsSkPictureTest, Roundtrip) {
   base::flat_set<uint32_t> ctx;
   uint32_t content_id = tracker.CreateContentForRemoteFrame(
       gfx::Rect(10, 10), base::UnguessableToken::Create());
@@ -86,20 +154,10 @@ TEST(PaintPreviewRecorderUtilsTest, TestSerializeAsSkPicture) {
   canvas->recordCustomData(content_id);
   ctx.insert(content_id);
 
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath file_path = temp_dir.GetPath().AppendASCII("test_file");
-  base::File write_file(
-      file_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-
-  auto record = recorder.finishRecordingAsPicture();
   size_t out_size = 0;
-  EXPECT_TRUE(SerializeAsSkPicture(record, &tracker, dimensions,
-                                   std::move(write_file), 0, &out_size));
-  base::File read_file(file_path, base::File::FLAG_OPEN |
-                                      base::File::FLAG_READ |
-                                      base::File::FLAG_EXCLUSIVE_READ);
-  FileRStream rstream(std::move(read_file));
+  auto rstream = SerializeAsSkPicture(base::nullopt, &out_size);
+  ASSERT_TRUE(rstream.has_value());
+
   SkDeserialProcs procs;
   procs.fPictureProc = [](const void* data, size_t length, void* ctx) {
     uint32_t content_id;
@@ -112,34 +170,22 @@ TEST(PaintPreviewRecorderUtilsTest, TestSerializeAsSkPicture) {
     return MakeEmptyPicture();
   };
   procs.fPictureCtx = &ctx;
-  SkPicture::MakeFromStream(&rstream, &procs);
+  SkPicture::MakeFromStream(rstream.value().get(), &procs);
   EXPECT_TRUE(ctx.empty());
 }
 
-TEST(PaintPreviewRecorderUtilsTest, TestSerializeAsSkPictureFail) {
-  PaintPreviewTracker tracker(base::UnguessableToken::Create(),
-                              base::UnguessableToken::Create(), true);
-
-  gfx::Rect dimensions(100, 100);
-  cc::PaintRecorder recorder;
-  cc::PaintCanvas* canvas =
-      recorder.beginRecording(dimensions.width(), dimensions.width());
-  cc::PaintFlags flags;
-  canvas->drawRect(SkRect::MakeWH(dimensions.width(), dimensions.height()),
-                   flags);
-
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath file_path = temp_dir.GetPath().AppendASCII("test_file");
-  base::File write_file(
-      file_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-
-  auto record = recorder.finishRecordingAsPicture();
+TEST_P(PaintPreviewRecorderUtilsSerializeAsSkPictureTest, FailIfExceedMaxSize) {
   size_t out_size = 2;
-  EXPECT_FALSE(SerializeAsSkPicture(record, &tracker, dimensions,
-                                    std::move(write_file), 1, &out_size));
+  auto rstream = SerializeAsSkPicture({1}, &out_size);
+  EXPECT_FALSE(rstream.has_value());
   EXPECT_LE(out_size, 1U);
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         PaintPreviewRecorderUtilsSerializeAsSkPictureTest,
+                         testing::Values(mojom::Persistence::kFileSystem,
+                                         mojom::Persistence::kMemoryBuffer),
+                         PersistenceParamToString);
 
 TEST(PaintPreviewRecorderUtilsTest, TestBuildResponse) {
   auto token = base::UnguessableToken::Create();

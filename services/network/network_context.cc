@@ -2067,6 +2067,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
     if (params_->reporting_delivery_interval) {
       reporting_policy->delivery_interval =
           *params_->reporting_delivery_interval;
+      reporting_policy->endpoint_backoff_policy.initial_delay_ms =
+          params_->reporting_delivery_interval->InMilliseconds();
     }
     builder.set_reporting_policy(std::move(reporting_policy));
   } else {

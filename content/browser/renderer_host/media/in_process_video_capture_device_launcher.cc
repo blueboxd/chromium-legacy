@@ -416,7 +416,7 @@ void InProcessVideoCaptureDeviceLauncher::
   DCHECK(device_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(DesktopMediaID::kFakeId, desktop_id.id);
 
-  auto fake_device_factory =
+  fake_device_factory_ =
       std::make_unique<media::FakeVideoCaptureDeviceFactory>();
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -428,17 +428,30 @@ void InProcessVideoCaptureDeviceLauncher::
             command_line->GetSwitchValueASCII(
                 switches::kUseFakeDeviceForMediaStream),
             &config);
-    fake_device_factory->SetToCustomDevicesConfig(config);
+    fake_device_factory_->SetToCustomDevicesConfig(config);
   }
-  media::VideoCaptureDeviceDescriptors device_descriptors;
-  fake_device_factory->GetDeviceDescriptors(&device_descriptors);
-  if (device_descriptors.empty()) {
+
+  // base::Unretained() is safe because |this| owns |fake_device_factory_|.
+  fake_device_factory_->GetDevicesInfo(base::BindOnce(
+      &InProcessVideoCaptureDeviceLauncher::OnFakeDevicesEnumerated,
+      base::Unretained(this), params, std::move(device_client),
+      std::move(result_callback)));
+}
+
+void InProcessVideoCaptureDeviceLauncher::OnFakeDevicesEnumerated(
+    const media::VideoCaptureParams& params,
+    std::unique_ptr<media::VideoCaptureDeviceClient> device_client,
+    ReceiveDeviceCallback result_callback,
+    std::vector<media::VideoCaptureDeviceInfo> devices_info) {
+  DCHECK(device_task_runner_->BelongsToCurrentThread());
+
+  if (devices_info.empty()) {
     LOG(ERROR) << "Cannot start with no fake device config";
     std::move(result_callback).Run(nullptr);
     return;
   }
   auto video_capture_device =
-      fake_device_factory->CreateDevice(device_descriptors.front());
+      fake_device_factory_->CreateDevice(devices_info.front().descriptor);
   video_capture_device->AllocateAndStart(params, std::move(device_client));
   std::move(result_callback).Run(std::move(video_capture_device));
 }

@@ -119,9 +119,6 @@ const SwitchAccessPredicate = {
     if (node.state[StateType.INVISIBLE]) {
       return false;
     }
-    if (AutomationPredicate.comboBox(node)) {
-      return false;
-    }
 
     if (node.role === chrome.automation.RoleType.KEYBOARD) {
       return true;

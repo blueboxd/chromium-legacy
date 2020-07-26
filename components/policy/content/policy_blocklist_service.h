@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_POLICY_CONTENT_POLICY_BLACKLIST_SERVICE_H_
-#define COMPONENTS_POLICY_CONTENT_POLICY_BLACKLIST_SERVICE_H_
+#ifndef COMPONENTS_POLICY_CONTENT_POLICY_BLOCKLIST_SERVICE_H_
+#define COMPONENTS_POLICY_CONTENT_POLICY_BLOCKLIST_SERVICE_H_
 
 #include <memory>
 
@@ -12,7 +12,7 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/policy/core/browser/url_blacklist_manager.h"
+#include "components/policy/core/browser/url_blocklist_manager.h"
 
 namespace safe_search_api {
 class URLChecker;
@@ -73,4 +73,4 @@ class PolicyBlocklistFactory : public BrowserContextKeyedServiceFactory {
   DISALLOW_COPY_AND_ASSIGN(PolicyBlocklistFactory);
 };
 
-#endif  // COMPONENTS_POLICY_CONTENT_POLICY_BLACKLIST_SERVICE_H_
+#endif  // COMPONENTS_POLICY_CONTENT_POLICY_BLOCKLIST_SERVICE_H_

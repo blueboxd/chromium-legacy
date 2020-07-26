@@ -81,23 +81,6 @@ BASE_EXPORT bool DeleteFile(const FilePath& path);
 // WARNING: USING THIS EQUIVALENT TO "rm -rf", SO USE WITH CAUTION.
 BASE_EXPORT bool DeletePathRecursively(const FilePath& path);
 
-// DEPRECATED. Please use the functions immediately above.
-// https://crbug.com/1009837
-//
-// Deletes the given path, whether it's a file or a directory.
-// If it's a directory, it's perfectly happy to delete all of the
-// directory's contents.  Passing true to recursively delete
-// subdirectories and their contents as well.
-// Returns true if successful, false otherwise. It is considered successful
-// to attempt to delete a file that does not exist.
-//
-// In POSIX environment and if |path| is a symbolic link, this deletes only
-// the symlink. (even if the symlink points to a non-existent file)
-//
-// WARNING: USING THIS WITH recursive==true IS EQUIVALENT
-//          TO "rm -rf", SO USE WITH CAUTION.
-BASE_EXPORT bool DeleteFile(const FilePath& path, bool recursive);
-
 // Simplified way to get a callback to do DeleteFile(path) and ignore the
 // DeleteFile() result.
 BASE_EXPORT OnceCallback<void(const FilePath&)> GetDeleteFileCallback();

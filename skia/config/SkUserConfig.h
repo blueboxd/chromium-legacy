@@ -151,6 +151,13 @@ SK_API void SkDebugf_FileLine(const char* file,
                               const char* format,
                               ...);
 
+#define SK_ABORT(format, ...) SkAbort_FileLine(__FILE__, __LINE__, \
+                                               format,##__VA_ARGS__)
+[[noreturn]] SK_API void SkAbort_FileLine(const char* file,
+                                          int line,
+                                          const char* format,
+                                          ...);
+
 #if !defined(ANDROID)   // On Android, we use the skia default settings.
 #define SK_A32_SHIFT    24
 #define SK_R32_SHIFT    16

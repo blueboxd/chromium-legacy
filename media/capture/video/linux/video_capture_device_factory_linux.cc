@@ -187,10 +187,10 @@ VideoCaptureDeviceFactoryLinux::CreateDevice(
   return self;
 }
 
-void VideoCaptureDeviceFactoryLinux::GetDeviceDescriptors(
-    VideoCaptureDeviceDescriptors* device_descriptors) {
+void VideoCaptureDeviceFactoryLinux::GetDevicesInfo(
+    GetDevicesInfoCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(device_descriptors->empty());
+  std::vector<VideoCaptureDeviceInfo> devices_info;
   std::vector<std::string> filepaths;
   device_provider_->GetDeviceIds(&filepaths);
   for (auto& unique_id : filepaths) {
@@ -215,39 +215,26 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceDescriptors(
           device_provider_->GetDeviceDisplayName(unique_id);
       if (display_name.empty())
         display_name = reinterpret_cast<char*>(cap.card);
-      device_descriptors->emplace_back(
+
+      VideoFacingMode facing_mode =
+#if defined(OS_CHROMEOS)
+          device_provider_->GetCameraFacing(unique_id, model_id);
+#else
+          VideoFacingMode::MEDIA_VIDEO_FACING_NONE;
+#endif
+
+      devices_info.emplace_back(VideoCaptureDeviceDescriptor(
           display_name, unique_id, model_id,
           VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE,
           IsPanTiltZoomSupported(fd.get()),
-          VideoCaptureTransportType::OTHER_TRANSPORT,
-#if defined(OS_CHROMEOS)
-          device_provider_->GetCameraFacing(unique_id, model_id)
-#else
-          VideoFacingMode::MEDIA_VIDEO_FACING_NONE
-#endif
-      );
+          VideoCaptureTransportType::OTHER_TRANSPORT, facing_mode));
+
+      GetSupportedFormatsForV4L2BufferType(
+          fd.get(), &devices_info.back().supported_formats);
     }
   }
-  // Since JS doesn't have API to get camera facing, we sort the list to make
-  // sure apps use the front camera by default.
-  // TODO(henryhsu): remove this after JS API completed (crbug.com/543997).
-  std::sort(device_descriptors->begin(), device_descriptors->end());
-}
 
-void VideoCaptureDeviceFactoryLinux::GetSupportedFormats(
-    const VideoCaptureDeviceDescriptor& device,
-    VideoCaptureFormats* supported_formats) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (device.device_id.empty())
-    return;
-  ScopedV4L2DeviceFD fd(v4l2_.get(), HANDLE_EINTR(v4l2_->open(
-                                         device.device_id.c_str(), O_RDONLY)));
-  if (!fd.is_valid())  // Failed to open this device.
-    return;
-  supported_formats->clear();
-
-  DCHECK_NE(device.capture_api, VideoCaptureApi::UNKNOWN);
-  GetSupportedFormatsForV4L2BufferType(fd.get(), supported_formats);
+  std::move(callback).Run(std::move(devices_info));
 }
 
 int VideoCaptureDeviceFactoryLinux::DoIoctl(int fd, int request, void* argp) {
@@ -346,6 +333,7 @@ void VideoCaptureDeviceFactoryLinux::GetSupportedFormatsForV4L2BufferType(
                  frame_size.type == V4L2_FRMSIZE_TYPE_CONTINUOUS) {
         // TODO(mcasas): see http://crbug.com/249953, support these devices.
         NOTIMPLEMENTED_LOG_ONCE();
+        continue;
       }
 
       const std::vector<float> frame_rates = GetFrameRateList(

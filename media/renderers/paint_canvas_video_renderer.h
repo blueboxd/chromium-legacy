@@ -61,7 +61,9 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
              VideoTransformation video_transformation,
              viz::RasterContextProvider* raster_context_provider);
 
-  // Paints |video_frame| scaled to its visible size on |canvas|.
+  // Paints |video_frame|, scaled to its |video_frame->visible_rect().size()|
+  // on |canvas|. Note that the origin of |video_frame->visible_rect()| is
+  // ignored -- the copy is done to the origin of |canvas|.
   //
   // If the format of |video_frame| is PIXEL_FORMAT_NATIVE_TEXTURE, |context_3d|
   // and |context_support| must be provided.

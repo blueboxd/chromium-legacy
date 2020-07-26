@@ -1,0 +1,20 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_CREDENTIAL_PROVIDER_EXTENSION_EXTENSION_STRINGS_H_
+#define CHROME_CREDENTIAL_PROVIDER_EXTENSION_EXTENSION_STRINGS_H_
+
+namespace credential_provider {
+namespace extension {
+
+// Name of the GCPW extension service.
+extern const wchar_t kGCPWExtensionServiceName[];
+
+// Description of the GCPW extension service.
+extern const wchar_t kGCPWExtensionServiceDescription[];
+
+}  // namespace extension
+}  // namespace credential_provider
+
+#endif  // CHROME_CREDENTIAL_PROVIDER_EXTENSION_EXTENSION_STRINGS_H_

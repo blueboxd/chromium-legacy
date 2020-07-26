@@ -3651,6 +3651,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "read-later",
+    "owners": [ "chrome-desktop-ui-seattle@google.com", "corising" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "reader-mode-heuristics",
     "owners": [ "mdjones", "wychen" ],
     // This flag is a utility for testing Reader Mode heuristics or force

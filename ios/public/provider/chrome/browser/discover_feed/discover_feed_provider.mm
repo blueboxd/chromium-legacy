@@ -17,6 +17,11 @@ UIViewController* DiscoverFeedProvider::NewFeedViewController(
   return nil;
 }
 
+UIViewController* DiscoverFeedProvider::NewFeedViewController(
+    Browser* browser) {
+  return nil;
+}
+
 void DiscoverFeedProvider::UpdateTheme() {}
 
 void DiscoverFeedProvider::RefreshFeedWithCompletion(

@@ -252,9 +252,8 @@ Still reading?
     <ignore regexp="components/content_capture/android/java/src/org/chromium/components/content_capture"/>
     <!-- 1: TODO(crbug.com/1085487): Fix -->
     <ignore regexp="chrome/android/javatests/src/org/chromium/chrome/browser/directactions/DirectActionTestRule.java"/>
-    <!-- 2: TODO(wnwen): File bugs to fix -->
+    <!-- 1: TODO(wnwen): File bugs to fix -->
     <ignore regexp="android_webview/support_library/boundary_interfaces/src/org/chromium/support_lib_boundary/util/BoundaryInterfaceReflectionUtil.java"/>
-    <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/media/PictureInPictureActivity.java"/>
     <!-- Endnote: Please specify number of suppressions when adding more -->
   </issue>
   <!-- This warning just adds a lot of false positives. -->

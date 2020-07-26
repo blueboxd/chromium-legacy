@@ -37,14 +37,15 @@ public class FeedLoadingLayout extends LinearLayout {
     private static final int PLACEHOLDER_CARD_PADDING_DP = 15;
     private static final int IMAGE_PLACEHOLDER_BOTTOM_PADDING_DP = 48;
     private static final int IMAGE_PLACEHOLDER_BOTTOM_PADDING_DENSE_DP = 72;
-    private static final int TEXT_PLACEHOLDER_WIDTH_DP = 150;
-    private static final int TEXT_PLACEHOLDER_WIDTH_LANDSCAPE_DP = 300;
+    private static final int IMAGE_PLACEHOLDER_WIDTH_DP = 107;
     private static final int TEXT_PLACEHOLDER_HEIGHT_DP = 25;
-    private static final int TEXT_PLACEHOLDER_RADIUS_DP = 11;
+    private static final int TEXT_PLACEHOLDER_RADIUS_DP = 12;
 
-    private Context mContext;
-    private Resources mResources;
+    private final Context mContext;
+    private final Resources mResources;
     private long mLayoutInflationCompleteMs;
+    private int mScreenWidthDp;
+    private int mPaddingPx;
 
     public FeedLoadingLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -93,20 +94,18 @@ public class FeedLoadingLayout extends LinearLayout {
         setPadding();
         boolean isLandscape = getResources().getConfiguration().orientation
                 == Configuration.ORIENTATION_LANDSCAPE;
-        LinearLayout cardsParentView = (LinearLayout) findViewById(R.id.placeholders_layout);
         // If it's in landscape mode, the placeholder should always show in dense mode. Otherwise,
         // whether the placeholder is dense depends on whether the first article card of Feed is
         // dense.
-        setPlaceholders(cardsParentView,
-                isLandscape || StartSurfaceConfiguration.isFeedPlaceholderDense(), isLandscape);
+        setPlaceholders(isLandscape || StartSurfaceConfiguration.isFeedPlaceholderDense());
     }
 
-    private void setPlaceholders(
-            LinearLayout cardsParentView, boolean isDense, boolean isLandscape) {
+    private void setPlaceholders(boolean isDense) {
+        LinearLayout cardsParentView = findViewById(R.id.placeholders_layout);
         cardsParentView.removeAllViews();
+        int cardHeight = isDense ? dpToPx(CARD_HEIGHT_DENSE_DP) : dpToPx(CARD_HEIGHT_DP);
         LinearLayout.LayoutParams cardLp =
-                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                        isDense ? dpToPx(CARD_HEIGHT_DENSE_DP) : dpToPx(CARD_HEIGHT_DP));
+                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, cardHeight);
         cardLp.setMargins(0, 0, 0, dpToPx(CARD_MARGIN_DP));
         LinearLayout.LayoutParams textPlaceholderLp =
                 new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1);
@@ -116,13 +115,14 @@ public class FeedLoadingLayout extends LinearLayout {
             // The card container.
             LinearLayout container = new LinearLayout(mContext);
             container.setLayoutParams(cardLp);
-            container.setBackgroundResource(R.drawable.hairline_border_card_background);
+            container.setBackgroundResource(R.drawable.hairline_border_card_background_light);
             container.setOrientation(HORIZONTAL);
 
             // The placeholder of suggestion titles, context and publisher.
             ImageView textPlaceholder = new ImageView(mContext);
-            textPlaceholder.setImageDrawable(setTextPlaceholder(isDense, isLandscape));
+            textPlaceholder.setImageDrawable(setTextPlaceholder(cardHeight));
             textPlaceholder.setLayoutParams(textPlaceholderLp);
+            textPlaceholder.setScaleType(ImageView.ScaleType.FIT_XY);
             container.addView(textPlaceholder);
 
             // The placeholder of image and menu icon.
@@ -145,15 +145,12 @@ public class FeedLoadingLayout extends LinearLayout {
         return layerDrawable;
     }
 
-    private LayerDrawable setTextPlaceholder(boolean isDense, boolean isLandscape) {
-        int cardHeight = isDense ? dpToPx(CARD_HEIGHT_DENSE_DP) : dpToPx(CARD_HEIGHT_DP);
+    private LayerDrawable setTextPlaceholder(int cardHeight) {
         int top = dpToPx(PLACEHOLDER_CARD_PADDING_DP);
-        int bottom = top;
-        int left = top;
+        int left = top / 2;
         int right = top;
-        int width = isLandscape ? dpToPx(TEXT_PLACEHOLDER_WIDTH_LANDSCAPE_DP)
-                                : dpToPx(TEXT_PLACEHOLDER_WIDTH_DP);
         int height = dpToPx(TEXT_PLACEHOLDER_HEIGHT_DP);
+        int width = dpToPx(mScreenWidthDp) - mPaddingPx * 2 - dpToPx(IMAGE_PLACEHOLDER_WIDTH_DP);
         GradientDrawable[] placeholders = new GradientDrawable[3];
         for (int i = 0; i < placeholders.length; i++) {
             placeholders[i] = new GradientDrawable();
@@ -166,10 +163,10 @@ public class FeedLoadingLayout extends LinearLayout {
         // Title Placeholder
         layerDrawable.setLayerInset(0, left, top, right, cardHeight - top - height);
         // Content Placeholder
-        layerDrawable.setLayerInset(1, left, (cardHeight + top - bottom - height) / 2, right,
-                (cardHeight - top + bottom - height) / 2);
+        layerDrawable.setLayerInset(
+                1, left, (cardHeight - height) / 2, right, (cardHeight - height) / 2);
         // Publisher Placeholder
-        layerDrawable.setLayerInset(2, left, cardHeight - bottom - height, right * 10, bottom);
+        layerDrawable.setLayerInset(2, left, cardHeight - top - height, right * 7, top);
         return layerDrawable;
     }
 
@@ -183,28 +180,27 @@ public class FeedLoadingLayout extends LinearLayout {
      * is resized by {@link ViewResizer} in {@link FeedLoadingCoordinator}
      */
     private void setPadding() {
-        int padding;
         int defaultPadding =
                 mResources.getDimensionPixelSize(R.dimen.content_suggestions_card_modern_margin);
         UiConfig uiConfig = new UiConfig(this);
-
-        if (uiConfig.getCurrentDisplayStyle().horizontal == HorizontalDisplayStyle.WIDE) {
-            padding = computePadding(uiConfig);
-        } else {
-            padding = defaultPadding;
-        }
-        setPaddingRelative(padding, 0, padding, 0);
-    }
-
-    private int computePadding(UiConfig uiConfig) {
         // mUiConfig.getContext().getResources() is used here instead of mView.getResources()
         // because lemon compression, somehow, causes the resources to return a different
         // configuration.
-        int widePadding = mResources.getDimensionPixelSize(R.dimen.ntp_wide_card_lateral_margins);
         Resources resources = uiConfig.getContext().getResources();
-        int screenWidthDp = resources.getConfiguration().screenWidthDp;
+        mScreenWidthDp = resources.getConfiguration().screenWidthDp;
+
+        if (uiConfig.getCurrentDisplayStyle().horizontal == HorizontalDisplayStyle.WIDE) {
+            mPaddingPx = computePadding();
+        } else {
+            mPaddingPx = defaultPadding;
+        }
+        setPaddingRelative(mPaddingPx, 0, mPaddingPx, 0);
+    }
+
+    private int computePadding() {
+        int widePadding = mResources.getDimensionPixelSize(R.dimen.ntp_wide_card_lateral_margins);
         int padding =
-                dpToPx((int) ((screenWidthDp - UiConfig.WIDE_DISPLAY_STYLE_MIN_WIDTH_DP) / 2.f));
+                dpToPx((int) ((mScreenWidthDp - UiConfig.WIDE_DISPLAY_STYLE_MIN_WIDTH_DP) / 2.f));
         padding = Math.max(widePadding, padding);
 
         return padding;

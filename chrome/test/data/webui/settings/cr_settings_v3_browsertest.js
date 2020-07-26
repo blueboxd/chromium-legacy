@@ -565,7 +565,8 @@ TEST_F('CrSettingsAdvancedPageV3Test', 'MAYBE_Load', function() {
 ].forEach(test => registerTest(...test));
 
 GEN('#if defined(OS_CHROMEOS)');
-[['PasswordsSectionCros', 'passwords_section_test_cros.js'],
+[['LanguagesPageMetricsChromeOS', 'languages_page_metrics_test_cros.js'],
+ ['PasswordsSectionCros', 'passwords_section_test_cros.js'],
  ['PeoplePageChromeOS', 'people_page_test_cros.js'],
  // Copied from Polymer 2 test. TODO(crbug.com/929455): flaky, fix.
  ['SiteListChromeOS', 'site_list_tests_cros.js', 'DISABLED_AndroidSmsInfo'],

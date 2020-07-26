@@ -19,13 +19,7 @@ NearbyPerSessionDiscoveryManager::NearbyPerSessionDiscoveryManager(
     : nearby_sharing_service_(nearby_sharing_service) {}
 
 NearbyPerSessionDiscoveryManager::~NearbyPerSessionDiscoveryManager() {
-  if (!is_registered_)
-    return;
-
-  NearbySharingService::StatusCodes result =
-      nearby_sharing_service_->UnregisterSendSurface(this, this);
-  if (result != NearbySharingService::StatusCodes::kOk)
-    NS_LOG(WARNING) << "Failed to unregister send surface";
+  UnregisterSendSurface();
 }
 
 void NearbyPerSessionDiscoveryManager::OnTransferUpdate(
@@ -56,46 +50,44 @@ void NearbyPerSessionDiscoveryManager::OnTransferUpdate(
 
 void NearbyPerSessionDiscoveryManager::OnShareTargetDiscovered(
     ShareTarget share_target) {
-  base::UnguessableToken share_target_id = share_target.id();
-  auto target = nearby_share::mojom::ShareTarget::New(share_target_id);
-
-  base::InsertOrAssign(discovered_share_targets_, share_target_id,
-                       std::move(share_target));
-  share_target_listener_->OnShareTargetDiscovered(std::move(target));
+  base::InsertOrAssign(discovered_share_targets_, share_target.id,
+                       share_target);
+  share_target_listener_->OnShareTargetDiscovered(share_target);
 }
 
 void NearbyPerSessionDiscoveryManager::OnShareTargetLost(
     ShareTarget share_target) {
-  base::UnguessableToken share_target_id = share_target.id();
-  auto target = nearby_share::mojom::ShareTarget::New(share_target.id());
-
-  discovered_share_targets_.erase(share_target_id);
-  share_target_listener_->OnShareTargetLost(std::move(target));
+  discovered_share_targets_.erase(share_target.id);
+  share_target_listener_->OnShareTargetLost(share_target);
 }
 
 void NearbyPerSessionDiscoveryManager::StartDiscovery(
     mojo::PendingRemote<nearby_share::mojom::ShareTargetListener> listener,
     StartDiscoveryCallback callback) {
-  DCHECK(!is_registered_);
-  NearbySharingService::StatusCodes result =
-      nearby_sharing_service_->RegisterSendSurface(this, this);
-  if (result != NearbySharingService::StatusCodes::kOk) {
+  DCHECK(!share_target_listener_.is_bound());
+
+  if (nearby_sharing_service_->RegisterSendSurface(this, this) !=
+      NearbySharingService::StatusCodes::kOk) {
     NS_LOG(WARNING) << "Failed to register send surface";
     std::move(callback).Run(/*success=*/false);
     return;
   }
 
-  is_registered_ = true;
   share_target_listener_.Bind(std::move(listener));
+  // |share_target_listener_| owns the callbacks and is guaranteed to be
+  // destroyed before |this|, therefore making base::Unretained() safe to use.
+  share_target_listener_.set_disconnect_handler(
+      base::BindOnce(&NearbyPerSessionDiscoveryManager::UnregisterSendSurface,
+                     base::Unretained(this)));
+
   std::move(callback).Run(/*success=*/true);
 }
 
 void NearbyPerSessionDiscoveryManager::SelectShareTarget(
-    nearby_share::mojom::ShareTargetPtr share_target,
+    const base::UnguessableToken& share_target_id,
     SelectShareTargetCallback callback) {
   DCHECK(!select_share_target_callback_);
 
-  base::UnguessableToken share_target_id = share_target->id;
   auto iter = discovered_share_targets_.find(share_target_id);
   if (iter == discovered_share_targets_.end()) {
     NS_LOG(VERBOSE) << "Unknown share target selected: id=" << share_target_id;
@@ -124,4 +116,16 @@ void NearbyPerSessionDiscoveryManager::OnSend(
   std::move(select_share_target_callback_)
       .Run(nearby_share::mojom::SelectShareTargetResult::kError,
            /*token=*/base::nullopt, mojo::NullRemote());
+}
+
+void NearbyPerSessionDiscoveryManager::UnregisterSendSurface() {
+  if (!share_target_listener_.is_bound())
+    return;
+
+  share_target_listener_.reset();
+
+  if (nearby_sharing_service_->UnregisterSendSurface(this, this) !=
+      NearbySharingService::StatusCodes::kOk) {
+    NS_LOG(WARNING) << "Failed to unregister send surface";
+  }
 }

@@ -135,7 +135,7 @@ class WTFStringImplPrinter(StringPrinter):
             self.get_length())
 
     def is_8bit(self):
-        return self.val['is_8bit_']
+        return int(str(self.val['hash_and_flags_'])) % 2
 
 
 class WTFStringPrinter(StringPrinter):

@@ -35,14 +35,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
 
   std::unique_ptr<VideoCaptureDevice> CreateDevice(
       const VideoCaptureDeviceDescriptor& device_descriptor) override;
-  void GetDeviceDescriptors(
-      VideoCaptureDeviceDescriptors* device_descriptors) override;
-  void GetSupportedFormats(
-      const VideoCaptureDeviceDescriptor& device_descriptor,
-      VideoCaptureFormats* supported_formats) override;
-  void GetCameraLocationsAsync(
-      std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors,
-      DeviceDescriptorsCallback result_callback) override;
+  void GetDevicesInfo(GetDevicesInfoCallback callback) override;
 
   void set_use_media_foundation_for_testing(bool use) {
     use_media_foundation_ = use;
@@ -66,34 +59,26 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
       Microsoft::WRL::ComPtr<IMFAttributes> attributes,
       IMFActivate*** devices,
       UINT32* count);
-  virtual void GetSupportedFormatsDirectShow(
-      const VideoCaptureDeviceDescriptor& device_descriptor,
-      VideoCaptureFormats* supported_formats);
-  virtual void GetSupportedFormatsMediaFoundation(
-      const VideoCaptureDeviceDescriptor& device_descriptor,
-      VideoCaptureFormats* supported_formats);
+  virtual VideoCaptureFormats GetSupportedFormatsDirectShow(
+      Microsoft::WRL::ComPtr<IBaseFilter> capture_filter,
+      const std::string& display_name);
+  virtual VideoCaptureFormats GetSupportedFormatsMediaFoundation(
+      Microsoft::WRL::ComPtr<IMFMediaSource> source,
+      const std::string& display_name);
 
  private:
-  void EnumerateDevicesUWP(
-      std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors,
-      DeviceDescriptorsCallback result_callback);
+  void EnumerateDevicesUWP(std::vector<VideoCaptureDeviceInfo> devices_info,
+                           GetDevicesInfoCallback result_callback);
   void FoundAllDevicesUWP(
-      std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors,
-      DeviceDescriptorsCallback result_callback,
+      std::vector<VideoCaptureDeviceInfo> devices_info,
+      GetDevicesInfoCallback result_callback,
       IAsyncOperation<DeviceInformationCollection*>* operation);
-  void DeviceInfoReady(
-      std::unique_ptr<VideoCaptureDeviceDescriptors> device_descriptors,
-      DeviceDescriptorsCallback result_callback);
-  void GetDeviceDescriptorsMediaFoundation(
-      VideoCaptureDeviceDescriptors* device_descriptors);
-  void AugmentDescriptorListWithDirectShowOnlyDevices(
-      VideoCaptureDeviceDescriptors* device_descriptors);
-  void GetDeviceDescriptorsDirectShow(
-      VideoCaptureDeviceDescriptors* device_descriptors);
-  int GetNumberOfSupportedFormats(const VideoCaptureDeviceDescriptor& device);
-  void GetApiSpecificSupportedFormats(
-      const VideoCaptureDeviceDescriptor& device,
-      VideoCaptureFormats* formats);
+  void DeviceInfoReady(std::vector<VideoCaptureDeviceInfo> devices_info,
+                       GetDevicesInfoCallback result_callback);
+  std::vector<VideoCaptureDeviceInfo> GetDevicesInfoMediaFoundation();
+  void AugmentDevicesListWithDirectShowOnlyDevices(
+      std::vector<VideoCaptureDeviceInfo>* devices_info);
+  std::vector<VideoCaptureDeviceInfo> GetDevicesInfoDirectShow();
 
   bool use_media_foundation_;
   MFSessionLifetime session_;

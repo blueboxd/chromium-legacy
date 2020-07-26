@@ -2102,6 +2102,21 @@ void PaintLayerScrollableArea::UpdateResizerStyle(
   }
 }
 
+StickyPositionScrollingConstraints*
+PaintLayerScrollableArea::GetStickyConstraints(PaintLayer* layer) {
+  auto it = EnsureRareData().sticky_constraints_map_.find(layer);
+  if (it == EnsureRareData().sticky_constraints_map_.end())
+    return nullptr;
+  return &it->value;
+}
+
+void PaintLayerScrollableArea::AddStickyConstraints(
+    PaintLayer* layer,
+    StickyPositionScrollingConstraints constraints) {
+  UseCounter::Count(GetLayoutBox()->GetDocument(), WebFeature::kPositionSticky);
+  EnsureRareData().sticky_constraints_map_.Set(layer, constraints);
+}
+
 void PaintLayerScrollableArea::InvalidateAllStickyConstraints() {
   if (PaintLayerScrollableAreaRareData* d = RareData()) {
     for (PaintLayer* sticky_layer : d->sticky_constraints_map_.Keys()) {

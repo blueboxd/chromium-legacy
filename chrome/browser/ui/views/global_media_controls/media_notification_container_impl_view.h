@@ -98,6 +98,9 @@ class MediaNotificationContainerImplView
 
   const base::string16& GetTitle();
 
+  // Called when an audio device has been selected for output.
+  void OnAudioSinkChosen(const std::string& sink_id);
+
   views::ImageButton* GetDismissButtonForTesting();
 
   media_message_center::MediaNotificationViewImpl* view_for_testing() {

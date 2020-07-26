@@ -1745,33 +1745,41 @@ void OmniboxViewViews::DidFinishNavigation(
     return;
   }
 
-  if (navigation->IsSameDocument() || !navigation->IsInMainFrame()) {
-    // Handling same-document or non-main-frame navigations is a bit tricky
-    // because they shouldn't change the current elision/unelision state:
-    // - If the user hadn't interacted with the previous page, then we don't
-    // need to do anything: the URL is currently unelided and we're waiting for
-    // a user interaction to animate it to the simplified domain.
-    // - If the user interacted with the page, and we are currently animating to
-    // the simplified domain as a result, we want to let the animation run
-    // undisturbed, eventually ending up in the elided state.
+  // Non-main-frame navigations don't change the visible URL, so no action is
+  // necessary for simplified domain elisions.
+  if (!navigation->IsInMainFrame())
+    return;
+
+  if (navigation->IsSameDocument()) {
+    if (!IsURLEligibleForSimplifiedDomainEliding())
+      return;
+
+    // Handling same-document navigations is a bit tricky because they shouldn't
+    // change the current elision/unelision state:
     // - If the user interacted with the page, and we have already finished
     // animating to the simplified domain, then make sure we stay in the elided
     // state, showing only the simplified domain. This is an abrupt elision,
     // rather than an animation, because we don't want there to be any visible
     // change in the URL from the user's perspective.
+    // - If the user interacted with the page, and we are currently animating to
+    // the simplified domain as a result, we want to let the animation run
+    // undisturbed, eventually ending up in the elided state.
+    // - If the user hadn't interacted with the previous page, then we need to
+    // ensure the full URL (without scheme and trivial subdomain) is showing;
+    // this is done by falling through to ResetToHideOnInteraction() below.
     //
     // |elide_after_interaction_animation_| is only created after the user
     // interacts with the page (in DidGetUserInteraction()), so we use its
     // existence to determine whether the user has interacted with the page yet
     // or not.
-    if (IsURLEligibleForSimplifiedDomainEliding() &&
-        elide_after_interaction_animation_ &&
-        !elide_after_interaction_animation_->IsAnimating()) {
-      ElideURL();
+    if (elide_after_interaction_animation_) {
+      if (!elide_after_interaction_animation_->IsAnimating())
+        ElideURL();
+      return;
     }
-    return;
   }
-  // Once a cross-document navigation finishes, unelide and reset state so
+
+  // Once a navigation finishes, unelide and reset state so
   // that we'll show the simplified domain on interaction.
   ResetToHideOnInteraction();
 }

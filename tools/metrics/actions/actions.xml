@@ -4359,6 +4359,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ChromeOS.Settings.Languages.Browser">
+  <owner>myy@chromium.org</owner>
+  <owner>essential-inputs-team@google.com</owner>
+  <description>
+    Records when users select a specific element in the Chrome OS's Languages
+    browser settings page.
+  </description>
+</action>
+
 <action name="ChromeOS.Settings.SmartInputs.EmojiSuggestions.Open">
   <owner>myy@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
@@ -26546,6 +26555,7 @@ should be able to be added at any place in this file.
   <suffix name="ManageInputMethods"
       label="Users tapped 'Manage Input Methods'"/>
   <affected-action name="ChromeOS.Settings.Languages"/>
+  <affected-action name="ChromeOS.Settings.Languages.Browser"/>
 </action-suffix>
 
 </actions>

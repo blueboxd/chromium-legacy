@@ -174,7 +174,7 @@ class AssistantPageViewTest : public AssistantAshTestBase {
   gfx::Point GetPointInAppListOutsideAssistantUi() {
     gfx::Point result = GetPointOutside(page_view());
 
-    // Sanity check
+    // Validity check
     EXPECT_TRUE(app_list_view()->bounds().Contains(result));
     EXPECT_FALSE(page_view()->bounds().Contains(result));
 
@@ -372,7 +372,7 @@ TEST_F(AssistantPageViewTest, FocusShouldRemainInAssistantViewWhenPressingTab) {
         << "Focus advanced to view '" << focused_view->GetClassName()
         << "' which is not a part of the Assistant UI";
 
-    // Sanity check to ensure we do not loop forever
+    // Validity check to ensure we do not loop forever
     num_views++;
     ASSERT_LT(num_views, kMaxIterations);
   } while (focused_view != initial_focused_view);
@@ -402,7 +402,7 @@ TEST_F(AssistantPageViewTest,
   int num_iterations = 0;
   while (GetFocusedView() != onboarding_suggestions.at(0)) {
     PressKeyAndWait(ui::VKEY_TAB);
-    ASSERT_LE(++num_iterations, kMaxIterations);  // Sanity check.
+    ASSERT_LE(++num_iterations, kMaxIterations);  // Validity check.
   }
 
   // Verify we can cycle through them.
@@ -415,7 +415,7 @@ TEST_F(AssistantPageViewTest,
   num_iterations = 0;
   while (GetFocusedView() != first_focused_view) {
     PressKeyAndWait(ui::VKEY_TAB);
-    ASSERT_LE(++num_iterations, kMaxIterations);  // Sanity check.
+    ASSERT_LE(++num_iterations, kMaxIterations);  // Validity check.
   }
 }
 

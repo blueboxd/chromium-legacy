@@ -87,8 +87,8 @@ extern const char kUserAgentName[];
 extern const char kVariationsCmdName[];
 extern const char kVariationsName[];
 extern const char kVersion[];
-extern const char kVersionBitSize[];
 extern const char kVersionModifier[];
+extern const char kVersionProcessorVariation[];
 
 }  // namespace version_ui
 

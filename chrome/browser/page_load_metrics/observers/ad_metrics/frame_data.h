@@ -135,7 +135,8 @@ class FrameData {
 
   // Update the metadata of this frame if it is being navigated.
   void UpdateForNavigation(content::RenderFrameHost* render_frame_host,
-                           bool frame_navigated);
+                           bool frame_navigated,
+                           bool record_frame_metrics);
 
   // Updates the number of bytes loaded in the frame given a resource load.
   void ProcessResourceLoadInFrame(
@@ -250,16 +251,6 @@ class FrameData {
     media_status_ = media_status;
   }
 
-  void set_timing(page_load_metrics::mojom::PageLoadTimingPtr timing) {
-    timing_ = std::move(timing);
-  }
-
-  base::Optional<base::TimeDelta> FirstContentfulPaint() const {
-    if (!timing_ || timing_->paint_timing.is_null())
-      return base::nullopt;
-    return timing_->paint_timing->first_contentful_paint;
-  }
-
   void set_creative_origin_status(OriginStatus creative_origin_status) {
     creative_origin_status_ = creative_origin_status;
   }
@@ -299,9 +290,6 @@ class FrameData {
   // The frame tree node id of root frame of the subtree that |this| is
   // tracking information for.
   const FrameTreeNodeId root_frame_tree_node_id_;
-
-  // The most recently updated timing received for this frame.
-  page_load_metrics::mojom::PageLoadTimingPtr timing_;
 
   // Number of resources loaded by the frame (both complete and incomplete).
   int num_resources_ = 0;
@@ -384,6 +372,12 @@ class FrameData {
 
   // Number of bytes of noise that should be added to the network threshold.
   const int heavy_ad_network_threshold_noise_;
+
+  // |record_metrics| indicates whether metrics should be logged for this frame.
+  // This may be false in cases where we are tracking a frame, but do not want
+  // to log metrics until a subsequent navigation, e.g. if a frame is currently
+  // navigated to the heavy ads error page.
+  bool record_metrics_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(FrameData);
 };

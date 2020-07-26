@@ -78,8 +78,10 @@ FrameData::FrameData(FrameTreeNodeId root_frame_tree_node_id,
 FrameData::~FrameData() = default;
 
 void FrameData::UpdateForNavigation(content::RenderFrameHost* render_frame_host,
-                                    bool frame_navigated) {
+                                    bool frame_navigated,
+                                    bool record_metrics) {
   frame_navigated_ = frame_navigated;
+  record_metrics_ = record_metrics;
   if (!render_frame_host)
     return;
 
@@ -237,7 +239,7 @@ void FrameData::MaybeUpdateFrameDepth(
 }
 
 bool FrameData::ShouldRecordFrameForMetrics() const {
-  return bytes() != 0 || !GetTotalCpuUsage().is_zero();
+  return record_metrics_ && (bytes() != 0 || !GetTotalCpuUsage().is_zero());
 }
 
 void FrameData::RecordAdFrameLoadUkmEvent(ukm::SourceId source_id) const {
@@ -283,10 +285,8 @@ void FrameData::RecordAdFrameLoadUkmEvent(ukm::SourceId source_id) const {
 
   builder.SetFrameDepth(frame_depth_);
 
-  if (timing_ && !timing_->paint_timing.is_null() &&
-      timing_->paint_timing->first_contentful_paint) {
-    builder.SetTiming_FirstContentfulPaint(
-        timing_->paint_timing->first_contentful_paint->InMilliseconds());
+  if (auto earliest_fcp = earliest_first_contentful_paint()) {
+    builder.SetTiming_FirstContentfulPaint(earliest_fcp->InMilliseconds());
   }
   builder.Record(ukm_recorder->Get());
 }
@@ -334,7 +334,7 @@ void FrameData::SetFirstEligibleToPaint(
 
 bool FrameData::SetEarliestFirstContentfulPaint(
     base::Optional<base::TimeDelta> time_stamp) {
-  if (!time_stamp.has_value())
+  if (!time_stamp.has_value() || time_stamp.value().is_zero())
     return false;
 
   if (earliest_first_contentful_paint_.has_value() &&

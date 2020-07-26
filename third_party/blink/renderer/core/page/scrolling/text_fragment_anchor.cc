@@ -282,9 +282,13 @@ void TextFragmentAnchor::Trace(Visitor* visitor) const {
 
 void TextFragmentAnchor::DidFindMatch(
     const EphemeralRangeInFlatTree& range,
-    const TextFragmentAnchorMetrics::Match match_metrics) {
+    const TextFragmentAnchorMetrics::Match match_metrics,
+    bool is_unique) {
   if (search_finished_)
     return;
+
+  if (!is_unique)
+    metrics_->DidFindAmbiguousMatch();
 
   // TODO(nburris): Determine what we should do with overlapping text matches.
   // This implementation drops a match if it overlaps a previous match, since
@@ -393,10 +397,6 @@ void TextFragmentAnchor::DidFindMatch(
   // start the search to find the next focusable element from this element.
   frame_->GetDocument()->SetSequentialFocusNavigationStartingPoint(
       range.StartPosition().NodeAsRangeFirstNode());
-}
-
-void TextFragmentAnchor::DidFindAmbiguousMatch() {
-  metrics_->DidFindAmbiguousMatch();
 }
 
 void TextFragmentAnchor::DidFinishSearch() {

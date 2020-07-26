@@ -239,14 +239,15 @@ void PaintPreviewTabService::OnCaptured(
     int frame_tree_node_id,
     FinishedCallback callback,
     PaintPreviewBaseService::CaptureStatus status,
-    std::unique_ptr<PaintPreviewProto> proto) {
+    std::unique_ptr<CaptureResult> result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto* web_contents =
       content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
   if (web_contents)
     web_contents->DecrementCapturerCount(true);
 
-  if (status != PaintPreviewBaseService::CaptureStatus::kOk || !proto) {
+  if (status != PaintPreviewBaseService::CaptureStatus::kOk ||
+      !result->capture_success) {
     std::move(callback).Run(Status::kCaptureFailed);
     return;
   }
@@ -254,7 +255,7 @@ void PaintPreviewTabService::OnCaptured(
   GetTaskRunner()->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&FileManager::SerializePaintPreviewProto, GetFileManager(),
-                     key, *proto, true),
+                     key, result->proto, true),
       base::BindOnce(&PaintPreviewTabService::OnFinished,
                      weak_ptr_factory_.GetWeakPtr(), tab_id,
                      std::move(callback)));

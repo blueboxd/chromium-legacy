@@ -14,13 +14,19 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
-typedef BrowserWithTestWindowTest BookmarkTest;
+class BookmarkTest : public BrowserWithTestWindowTest {
+ public:
+  TestingProfile::TestingFactories GetTestingFactories() override {
+    return {{BookmarkModelFactory::GetInstance(),
+             BookmarkModelFactory::GetDefaultFactory()}};
+  }
+};
 
 TEST_F(BookmarkTest, NonEmptyBookmarkBarShownOnNTP) {
-  profile()->CreateBookmarkModel(true);
   bookmarks::BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile());
   bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
+
   bookmarks::AddIfNotBookmarked(bookmark_model, GURL("https://www.test.com"),
                                 base::string16());
 
@@ -29,6 +35,10 @@ TEST_F(BookmarkTest, NonEmptyBookmarkBarShownOnNTP) {
 }
 
 TEST_F(BookmarkTest, EmptyBookmarkBarNotShownOnNTP) {
+  bookmarks::BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForBrowserContext(profile());
+  bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
+
   AddTab(browser(), GURL(chrome::kChromeUINewTabURL));
   EXPECT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
 }

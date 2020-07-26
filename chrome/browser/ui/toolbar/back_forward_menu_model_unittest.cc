@@ -67,6 +67,13 @@ class FaviconDelegate : public ui::MenuModelDelegate {
 
 class BackFwdMenuModelTest : public ChromeRenderViewHostTestHarness {
  public:
+  TestingProfile::TestingFactories GetTestingFactories() const override {
+    return {{HistoryServiceFactory::GetInstance(),
+             HistoryServiceFactory::GetDefaultFactory()},
+            {FaviconServiceFactory::GetInstance(),
+             FaviconServiceFactory::GetDefaultFactory()}};
+  }
+
   void ValidateModel(BackForwardMenuModel* model, int history_items,
                      int chapter_stops) {
     int h = std::min(BackForwardMenuModel::kMaxHistoryItems, history_items);
@@ -494,8 +501,6 @@ TEST_F(BackFwdMenuModelTest, EscapeLabel) {
 
 // Test asynchronous loading of favicon from history service.
 TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
-  ASSERT_TRUE(profile()->CreateHistoryService(true, false));
-  profile()->CreateFaviconService();
   Browser::CreateParams native_params(profile(), true);
   std::unique_ptr<Browser> browser(
       CreateBrowserWithTestWindowForParams(&native_params));

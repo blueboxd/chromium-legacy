@@ -25,8 +25,7 @@ namespace base {
 namespace bits {
 
 // Returns true iff |value| is a power of 2.
-template <typename T,
-          typename = typename std::enable_if<std::is_integral<T>::value>>
+template <typename T, typename = std::enable_if_t<std::is_integral<T>::value>>
 constexpr bool IsPowerOfTwo(T value) {
   // From "Hacker's Delight": Section 2.1 Manipulating Rightmost Bits.
   //

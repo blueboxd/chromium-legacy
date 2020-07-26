@@ -70,10 +70,11 @@ void SysInfo::OperatingSystemVersionNumbers(int32_t* major_version,
   // isn't lied about, and therefore the values returned by this function and
   // those functions are inconsistent. Therefore, unlie about these values.
 
-  if (*major_version == 10 && *minor_version >= 16) {
-    *major_version = *minor_version - 5;
-    *minor_version = *bugfix_version;
-    *bugfix_version = 0;
+    if (*major_version == 10 && *minor_version >= 16) {
+      *major_version = *minor_version - 5;
+      *minor_version = *bugfix_version;
+      *bugfix_version = 0;
+    }
   } else {
     Gestalt(gestaltSystemVersionMajor,
             reinterpret_cast<SInt32*>(major_version));

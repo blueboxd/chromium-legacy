@@ -72,6 +72,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
+#include "chrome/browser/media/audio_service_util.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
@@ -137,7 +138,6 @@
 #include "components/user_prefs/user_prefs.h"
 #include "components/variations/service/variations_service.h"
 #include "components/version_info/version_info.h"
-#include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -2603,6 +2603,15 @@ class AudioSandboxEnabledTest
  private:
   policy::MockConfigurationPolicyProvider policy_provider_;
 };
+
+IN_PROC_BROWSER_TEST_P(AudioSandboxEnabledTest, IsRespected) {
+  base::Optional<bool> enable_sandbox_via_policy = GetParam();
+  bool is_sandbox_enabled_by_default =
+      base::FeatureList::IsEnabled(features::kAudioServiceSandbox);
+
+  ASSERT_EQ(enable_sandbox_via_policy.value_or(is_sandbox_enabled_by_default),
+            IsAudioServiceSandboxEnabled());
+}
 
 INSTANTIATE_TEST_SUITE_P(
     Enabled,

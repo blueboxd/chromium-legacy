@@ -43,13 +43,14 @@ class ChangePasswordUrlServiceImpl
  private:
   // Callback for the the request to gstatic.
   void OnFetchComplete(std::unique_ptr<std::string> response_body);
-  // Retrieves the url override from the |change_password_url_map| for a given
-  // origin. It uses eTLD+1 for the lookup but also checks if overrides for
-  // eTLD+1+N exist.
+  // Retrieves the url override from the |change_password_url_map_| for a given
+  // origin using eTLD+1. The origin is returned when no override is available.
   GURL ChangePasswordUrlFor(const url::Origin& origin);
 
   // Stores if the request is already started to only fetch once.
   bool started_fetching_ = false;
+  // True when the gstatic response arrived.
+  bool fetch_complete_ = false;
   // Stores the JSON result for the url overrides.
   base::flat_map<std::string, GURL> change_password_url_map_;
   // Stores the callbacks that are waiting for the request to finish.

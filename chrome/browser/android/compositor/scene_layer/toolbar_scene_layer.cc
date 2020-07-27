@@ -38,7 +38,8 @@ void ToolbarSceneLayer::UpdateToolbarLayer(
     jint url_bar_resource_id,
     jint url_bar_color,
     jfloat content_offset,
-    bool show_shadow) {
+    bool show_shadow,
+    bool visible) {
   // If the toolbar layer has not been created yet, create it.
   if (!toolbar_layer_) {
     ui::ResourceManager* resource_manager =
@@ -47,6 +48,10 @@ void ToolbarSceneLayer::UpdateToolbarLayer(
     toolbar_layer_->layer()->SetHideLayerAndSubtree(true);
     layer_->AddChild(toolbar_layer_->layer());
   }
+
+  toolbar_layer_->layer()->SetHideLayerAndSubtree(!visible);
+  if (!visible)
+    return;
 
   toolbar_layer_->PushResource(toolbar_resource_id, toolbar_background_color,
                                false, url_bar_color, url_bar_resource_id,

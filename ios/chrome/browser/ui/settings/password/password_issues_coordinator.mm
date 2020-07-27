@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/password/password_issues_coordinator.h"
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_issue_with_form.h"
@@ -13,6 +14,7 @@
 #import "ios/chrome/browser/ui/settings/password/password_issues_presenter.h"
 #import "ios/chrome/browser/ui/settings/password/password_issues_table_view_controller.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -42,9 +44,11 @@
 
 - (instancetype)initWithBaseNavigationController:
                     (UINavigationController*)navigationController
+                                         browser:(Browser*)browser
                             passwordCheckManager:
                                 (IOSChromePasswordCheckManager*)manager {
-  self = [super initWithBaseViewController:navigationController browser:nil];
+  self = [super initWithBaseViewController:navigationController
+                                   browser:browser];
   if (self) {
     _baseNavigationController = navigationController;
     _manager = manager;
@@ -66,6 +70,13 @@
 
   self.mediator =
       [[PasswordIssuesMediator alloc] initWithPasswordCheckManager:_manager];
+  // If reauthentication module was not provided, coordinator will create its
+  // own.
+  if (!self.reauthModule) {
+    self.reauthModule = [[ReauthenticationModule alloc]
+        initWithSuccessfulReauthTimeAccessor:self.mediator];
+  }
+
   self.mediator.consumer = self.viewController;
   self.viewController.presenter = self;
 
@@ -95,9 +106,11 @@
   DCHECK(!self.passwordDetails);
   self.passwordDetails = [[PasswordDetailsCoordinator alloc]
       initWithBaseNavigationController:self.baseNavigationController
+                               browser:self.browser
                               password:form
-                  passwordCheckManager:_manager
-                            dispatcher:self.dispatcher];
+                          reauthModule:self.reauthModule
+                  passwordCheckManager:_manager];
+  self.passwordDetails.dispatcher = self.dispatcher;
   self.passwordDetails.delegate = self;
   [self.passwordDetails start];
 }

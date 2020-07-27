@@ -16,21 +16,64 @@
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_class_properties.h"
 
+class OmniboxSuggestionRowButton : public views::MdTextButton {
+ public:
+  OmniboxSuggestionRowButton(views::ButtonListener* listener,
+                             const base::string16& text)
+      : MdTextButton(listener, CONTEXT_OMNIBOX_PRIMARY) {
+    SetText(text);
+    set_ink_drop_highlight_opacity(CalculateInkDropHighlightOpacity());
+  }
+
+  OmniboxSuggestionRowButton(const OmniboxSuggestionRowButton&) = delete;
+  OmniboxSuggestionRowButton& operator=(const OmniboxSuggestionRowButton&) =
+      delete;
+
+  ~OmniboxSuggestionRowButton() override = default;
+
+  SkColor GetInkDropBaseColor() const override {
+    return color_utils::GetColorWithMaxContrast(background()->get_color());
+  }
+
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override {
+    // MdTextButton uses custom colors when creating ink drop highlight.
+    // We need the base implementation that uses GetInkDropBaseColor for
+    // highlight.
+    return views::InkDropHostView::CreateInkDropHighlight();
+  }
+
+ private:
+  float CalculateInkDropHighlightOpacity() {
+    // Ink drop highlight opacity is result of mixing a layer with hovered
+    // opacity and a layer with selected opacity. OmniboxPartState::SELECTED
+    // opacity gets the same color as the selected omnibox row background (the
+    // button would be the same color as the row) and overlaying it with
+    // OmniboxPartState::HOVERED opacity makes the hovered button easily visible
+    // in the selected or hovered row.
+    return 1 - (1 - GetOmniboxStateOpacity(OmniboxPartState::HOVERED)) *
+                   (1 - GetOmniboxStateOpacity(OmniboxPartState::SELECTED));
+  }
+};
+
 namespace {
 
-views::MdTextButton* CreatePillButton(
+OmniboxSuggestionRowButton* CreatePillButton(
     OmniboxSuggestionButtonRowView* button_row,
     const char* message) {
-  views::MdTextButton* button =
-      button_row->AddChildView(views::MdTextButton::Create(
-          button_row, base::ASCIIToUTF16(message), CONTEXT_OMNIBOX_PRIMARY));
+  OmniboxSuggestionRowButton* button =
+      button_row->AddChildView(std::make_unique<OmniboxSuggestionRowButton>(
+          button_row, base::ASCIIToUTF16(message)));
   button->SetVisible(false);
   button->SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
@@ -62,9 +105,9 @@ OmniboxSuggestionButtonRowView::OmniboxSuggestionButtonRowView(
           gfx::Insets(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
                              views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
 
+  // TODO(orinj): Use the real translated string table values here instead.
   keyword_button_ = CreatePillButton(this, "Keyword search");
   pedal_button_ = CreatePillButton(this, "Pedal");
-  // TODO(orinj): Use the real translated string table values here instead.
   tab_switch_button_ = CreatePillButton(this, "Switch to this tab");
 
   const auto make_predicate = [=](auto state) {

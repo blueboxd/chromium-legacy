@@ -126,7 +126,7 @@ if (is_chromeos) {
   # 32-bit builds (https://bugs.llvm.org/show_bug.cgi?id=18505) so disable them
   # there to avoid the unnecessary overhead.
   enable_frame_pointers = current_cpu != "arm"
-} else if (is_mac || is_ios || is_linux) {
+} else if (is_apple || is_linux) {
   enable_frame_pointers = true
 } else if (is_win) {
   # 64-bit Windows ABI doesn't support frame pointers.

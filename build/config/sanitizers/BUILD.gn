@@ -89,7 +89,7 @@ if ((is_mac || is_win || (is_ios && !use_xcode_clang)) && is_asan) {
     }
   }
 
-  if (is_mac || is_ios) {
+  if (is_apple) {
     bundle_data("asan_runtime_bundle_data") {
       sources = get_target_outputs(":copy_asan_runtime")
       outputs = [ "{{bundle_executable_dir}}/{{source_file_part}}" ]
@@ -99,7 +99,7 @@ if ((is_mac || is_win || (is_ios && !use_xcode_clang)) && is_asan) {
 }
 
 config("sanitizer_options_link_helper") {
-  if (is_mac || is_ios) {
+  if (is_apple) {
     ldflags = [ "-Wl,-U,_sanitizer_options_link_helper" ]
   } else if (!is_win) {
     ldflags = [ "-Wl,-u_sanitizer_options_link_helper" ]

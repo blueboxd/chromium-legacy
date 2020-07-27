@@ -165,14 +165,13 @@ void ScopedSVGPaintState::ApplyPaintPropertyState(
   if (object_.IsSVGRoot())
     return;
 
-  // MaskClip() implies Effect(), thus we don't need to check MaskClip().
-  if (!properties.Effect() && !properties.ClipPathClip())
-    return;
-
   auto& paint_controller = GetPaintInfo().context.GetPaintController();
   auto state = paint_controller.CurrentPaintChunkProperties();
-  if (const auto* effect = properties.Effect())
+  if (const auto* filter = properties.Filter())
+    state.SetEffect(*filter);
+  else if (const auto* effect = properties.Effect())
     state.SetEffect(*effect);
+
   if (const auto* mask_clip = properties.MaskClip())
     state.SetClip(*mask_clip);
   else if (const auto* clip_path_clip = properties.ClipPathClip())

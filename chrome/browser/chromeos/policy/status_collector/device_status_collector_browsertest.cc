@@ -188,6 +188,10 @@ constexpr uint16_t kFakeOemid = 274;
 constexpr uint64_t kFakePnm = 8321204;
 constexpr uint8_t kFakePrv = 5;
 constexpr uint64_t kFakeFwrev = 1704189236;
+constexpr cros_healthd::StorageDevicePurpose kFakeMojoPurpose =
+    cros_healthd::StorageDevicePurpose::kBootDevice;
+constexpr em::DiskInfo::DevicePurpose kFakeProtoPurpose =
+    em::DiskInfo::PURPOSE_BOOT;
 // Timezone test values:
 constexpr char kPosixTimezone[] = "MST7MDT,M3.2.0,M11.1.0";
 constexpr char kTimezoneRegion[] = "America/Denver";
@@ -501,7 +505,7 @@ cros_healthd::NonRemovableBlockDeviceResultPtr CreateBlockDeviceResult() {
       cros_healthd::BlockDeviceRevision::NewEmmcPrv(kFakePrv), kFakeStorageName,
       kFakeStorageSize,
       cros_healthd::BlockDeviceFirmware::NewEmmcFwrev(kFakeFwrev),
-      kFakeStorageType, kFakeStoragePath, kFakeStorageManfid,
+      kFakeStorageType, kFakeMojoPurpose, kFakeStoragePath, kFakeStorageManfid,
       kFakeStorageSerial));
   return cros_healthd::NonRemovableBlockDeviceResult::NewBlockDeviceInfo(
       std::move(storage_vector));
@@ -3147,6 +3151,7 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   EXPECT_EQ(disk.emmc_hardware_rev(), kFakePrv);
   ASSERT_TRUE(disk.has_emmc_firmware_rev());
   EXPECT_EQ(disk.emmc_firmware_rev(), kFakeFwrev);
+  EXPECT_EQ(disk.purpose(), kFakeProtoPurpose);
 
   // Verify the system info.
   ASSERT_TRUE(device_status_.has_system_status());

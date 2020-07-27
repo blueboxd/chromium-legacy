@@ -198,6 +198,14 @@ union BlockDeviceFirmware {
   uint16 other;
 };
 
+// Purpose of the storage device.
+[Extensible]
+enum StorageDevicePurpose {
+  kUnknown,
+  kBootDevice,
+  kSwapDevice,
+};
+
 // Information related to a specific non-removable block device.
 struct NonRemovableBlockDeviceInfo {
   // IO statistics
@@ -234,6 +242,8 @@ struct NonRemovableBlockDeviceInfo {
   BlockDeviceFirmware firmware_version;
   // Storage type, could be MMC / NVMe / ATA, based on udev subsystem.
   string type;
+  // Purpose of the device e.g. "boot", "swap".
+  StorageDevicePurpose purpose;
 
   // Additional identification.
 

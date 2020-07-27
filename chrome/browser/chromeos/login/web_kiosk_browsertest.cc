@@ -187,7 +187,9 @@ IN_PROC_BROWSER_TEST_F(WebKioskTest, AlreadyInstalledOffline) {
 // Presses a network configure dialog accelerator during app launch which will
 // interrupt the startup. We expect this dialog not to require network since the
 // app have not yet been installed.
-IN_PROC_BROWSER_TEST_F(WebKioskTest, LaunchWithConfigureAcceleratorPressed) {
+// TODO(https://crbug.com/1109651) Flaky test.
+IN_PROC_BROWSER_TEST_F(WebKioskTest,
+                       DISABLED_LaunchWithConfigureAcceleratorPressed) {
   SetOnline(true);
   PrepareAppLaunch();
   LaunchApp();

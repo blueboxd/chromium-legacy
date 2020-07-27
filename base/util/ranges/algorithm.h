@@ -19,6 +19,15 @@ namespace ranges {
 
 namespace internal {
 
+// Helper to express preferences in an overload set. If more than one overload
+// are available for a given set of parameters the overload with the higher
+// priority will be chosen.
+template <size_t I>
+struct priority_tag : priority_tag<I - 1> {};
+
+template <>
+struct priority_tag<0> {};
+
 // Returns a transformed version of the unary predicate `pred` applying `proj`
 // to its argument before invoking `pred` on it.
 // Ensures that the return type of `invoke(pred, ...)` is convertible to bool.
@@ -31,15 +40,97 @@ constexpr auto ProjectedUnaryPredicate(Pred& pred, Proj& proj) noexcept {
 
 // Returns a transformed version of the binary predicate `pred` applying `proj1`
 // and `proj2` to its arguments before invoking `pred` on them.
+//
+// Provides an opt-in to considers all four permutations of projections and
+// argument types. This is sometimes necessary to allow usage with legacy
+// non-ranges std:: algorithms that don't support projections.
+//
+// These permutations are assigned different priorities to break ambiguities in
+// case several permutations are possible, e.g. when Proj1 and Proj2 are the
+// same type.
+//
+// Note that even when opting in to using all permutations of projections,
+// calling code should still ensure that the canonical mapping of {Proj1, Proj2}
+// to {LHS, RHS} compiles for all members of the range. This can be done by
+// adding the following constraint:
+//
+//   typename = indirect_result_t<Pred&,
+//                                projected<iterator_t<Range1>, Proj1>,
+//                                projected<iterator_t<Range2>, Proj2>>
+//
 // Ensures that the return type of `invoke(pred, ...)` is convertible to bool.
+template <typename Pred, typename Proj1, typename Proj2, bool kPermute = false>
+class BinaryPredicateProjector {
+ public:
+  constexpr BinaryPredicateProjector(Pred& pred, Proj1& proj1, Proj2& proj2)
+      : pred_(pred), proj1_(proj1), proj2_(proj2) {}
+
+ private:
+  template <typename ProjT, typename ProjU, typename T, typename U>
+  using InvokeResult = invoke_result_t<Pred&,
+                                       invoke_result_t<ProjT&, T&&>,
+                                       invoke_result_t<ProjU&, U&&>>;
+
+  template <typename T, typename U, typename = InvokeResult<Proj1, Proj2, T, U>>
+  constexpr std::pair<Proj1&, Proj2&> GetProjs(priority_tag<3>) const {
+    return {proj1_, proj2_};
+  }
+
+  template <typename T,
+            typename U,
+            bool LazyPermute = kPermute,
+            typename = std::enable_if_t<LazyPermute>,
+            typename = InvokeResult<Proj2, Proj1, T, U>>
+  constexpr std::pair<Proj2&, Proj1&> GetProjs(priority_tag<2>) const {
+    return {proj2_, proj1_};
+  }
+
+  template <typename T,
+            typename U,
+            bool LazyPermute = kPermute,
+            typename = std::enable_if_t<LazyPermute>,
+            typename = InvokeResult<Proj1, Proj1, T, U>>
+  constexpr std::pair<Proj1&, Proj1&> GetProjs(priority_tag<1>) const {
+    return {proj1_, proj1_};
+  }
+
+  template <typename T,
+            typename U,
+            bool LazyPermute = kPermute,
+            typename = std::enable_if_t<LazyPermute>,
+            typename = InvokeResult<Proj2, Proj2, T, U>>
+  constexpr std::pair<Proj2&, Proj2&> GetProjs(priority_tag<0>) const {
+    return {proj2_, proj2_};
+  }
+
+ public:
+  template <typename T, typename U>
+  constexpr bool operator()(T&& lhs, U&& rhs) const {
+    auto projs = GetProjs<T, U>(priority_tag<3>());
+    return invoke(pred_, invoke(projs.first, std::forward<T>(lhs)),
+                  invoke(projs.second, std::forward<U>(rhs)));
+  }
+
+ private:
+  Pred& pred_;
+  Proj1& proj1_;
+  Proj2& proj2_;
+};
+
+// Small wrappers around BinaryPredicateProjector to make the calling side more
+// readable.
 template <typename Pred, typename Proj1, typename Proj2>
 constexpr auto ProjectedBinaryPredicate(Pred& pred,
                                         Proj1& proj1,
                                         Proj2& proj2) noexcept {
-  return [&pred, &proj1, &proj2](auto&& lhs, auto&& rhs) -> bool {
-    return invoke(pred, invoke(proj1, std::forward<decltype(lhs)>(lhs)),
-                  invoke(proj2, std::forward<decltype(rhs)>(rhs)));
-  };
+  return BinaryPredicateProjector<Pred, Proj1, Proj2>(pred, proj1, proj2);
+}
+
+template <typename Pred, typename Proj1, typename Proj2>
+constexpr auto PermutedProjectedBinaryPredicate(Pred& pred,
+                                                Proj1& proj1,
+                                                Proj2& proj2) noexcept {
+  return BinaryPredicateProjector<Pred, Proj1, Proj2, true>(pred, proj1, proj2);
 }
 
 // This alias is used below to restrict iterator based APIs to types for which
@@ -397,7 +488,10 @@ template <typename ForwardIterator1,
           typename Proj1 = identity,
           typename Proj2 = identity,
           typename = internal::iterator_category_t<ForwardIterator1>,
-          typename = internal::iterator_category_t<ForwardIterator2>>
+          typename = internal::iterator_category_t<ForwardIterator2>,
+          typename = indirect_result_t<Pred&,
+                                       projected<ForwardIterator1, Proj1>,
+                                       projected<ForwardIterator2, Proj2>>>
 constexpr auto find_end(ForwardIterator1 first1,
                         ForwardIterator1 last1,
                         ForwardIterator2 first2,
@@ -433,7 +527,10 @@ template <typename Range1,
           typename Proj1 = identity,
           typename Proj2 = identity,
           typename = internal::range_category_t<Range1>,
-          typename = internal::range_category_t<Range2>>
+          typename = internal::range_category_t<Range2>,
+          typename = indirect_result_t<Pred&,
+                                       projected<iterator_t<Range1>, Proj1>,
+                                       projected<iterator_t<Range2>, Proj2>>>
 constexpr auto find_end(Range1&& range1,
                         Range2&& range2,
                         Pred pred = {},
@@ -466,7 +563,10 @@ template <typename ForwardIterator1,
           typename Proj1 = identity,
           typename Proj2 = identity,
           typename = internal::iterator_category_t<ForwardIterator1>,
-          typename = internal::iterator_category_t<ForwardIterator2>>
+          typename = internal::iterator_category_t<ForwardIterator2>,
+          typename = indirect_result_t<Pred&,
+                                       projected<ForwardIterator1, Proj1>,
+                                       projected<ForwardIterator2, Proj2>>>
 constexpr auto find_first_of(ForwardIterator1 first1,
                              ForwardIterator1 last1,
                              ForwardIterator2 first2,
@@ -498,7 +598,10 @@ template <typename Range1,
           typename Proj1 = identity,
           typename Proj2 = identity,
           typename = internal::range_category_t<Range1>,
-          typename = internal::range_category_t<Range2>>
+          typename = internal::range_category_t<Range2>,
+          typename = indirect_result_t<Pred&,
+                                       projected<iterator_t<Range1>, Proj1>,
+                                       projected<iterator_t<Range2>, Proj2>>>
 constexpr auto find_first_of(Range1&& range1,
                              Range2&& range2,
                              Pred pred = {},
@@ -661,7 +764,10 @@ template <typename ForwardIterator1,
           typename Proj1 = identity,
           typename Proj2 = identity,
           typename = internal::iterator_category_t<ForwardIterator1>,
-          typename = internal::iterator_category_t<ForwardIterator2>>
+          typename = internal::iterator_category_t<ForwardIterator2>,
+          typename = indirect_result_t<Pred&,
+                                       projected<ForwardIterator1, Proj1>,
+                                       projected<ForwardIterator2, Proj2>>>
 constexpr auto mismatch(ForwardIterator1 first1,
                         ForwardIterator1 last1,
                         ForwardIterator2 first2,
@@ -692,7 +798,10 @@ template <typename Range1,
           typename Proj1 = identity,
           typename Proj2 = identity,
           typename = internal::range_category_t<Range1>,
-          typename = internal::range_category_t<Range2>>
+          typename = internal::range_category_t<Range2>,
+          typename = indirect_result_t<Pred&,
+                                       projected<iterator_t<Range1>, Proj1>,
+                                       projected<iterator_t<Range2>, Proj2>>>
 constexpr auto mismatch(Range1&& range1,
                         Range2&& range2,
                         Pred pred = {},
@@ -726,7 +835,10 @@ template <typename ForwardIterator1,
           typename Proj1 = identity,
           typename Proj2 = identity,
           typename = internal::iterator_category_t<ForwardIterator1>,
-          typename = internal::iterator_category_t<ForwardIterator2>>
+          typename = internal::iterator_category_t<ForwardIterator2>,
+          typename = indirect_result_t<Pred&,
+                                       projected<ForwardIterator1, Proj1>,
+                                       projected<ForwardIterator2, Proj2>>>
 constexpr bool equal(ForwardIterator1 first1,
                      ForwardIterator1 last1,
                      ForwardIterator2 first2,
@@ -760,7 +872,10 @@ template <typename Range1,
           typename Proj1 = identity,
           typename Proj2 = identity,
           typename = internal::range_category_t<Range1>,
-          typename = internal::range_category_t<Range2>>
+          typename = internal::range_category_t<Range2>,
+          typename = indirect_result_t<Pred&,
+                                       projected<iterator_t<Range1>, Proj1>,
+                                       projected<iterator_t<Range2>, Proj2>>>
 constexpr bool equal(Range1&& range1,
                      Range2&& range2,
                      Pred pred = {},
@@ -788,30 +903,30 @@ constexpr bool equal(Range1&& range1,
 // return true;
 // otherwise, at worst `O(N^2)`, where `N` has the value `last1 - first1`.
 //
-// Note: While std::ranges::is_permutation supports different projections for
-// the first and second range, this is currently not supported due to
-// dispatching to std::is_permutation, which demands that `pred` is an
-// equivalence relation.
-// TODO(https://crbug.com/1071094): Consider supporting different projections in
-// the future.
-//
 // Reference:
 // https://wg21.link/alg.is.permutation#:~:text=ranges::is_permutation(I1
 template <typename ForwardIterator1,
           typename ForwardIterator2,
           typename Pred = ranges::equal_to,
-          typename Proj = identity,
+          typename Proj1 = identity,
+          typename Proj2 = identity,
           typename = internal::iterator_category_t<ForwardIterator1>,
-          typename = internal::iterator_category_t<ForwardIterator2>>
+          typename = internal::iterator_category_t<ForwardIterator2>,
+          typename = indirect_result_t<Pred&,
+                                       projected<ForwardIterator1, Proj1>,
+                                       projected<ForwardIterator2, Proj2>>>
 constexpr bool is_permutation(ForwardIterator1 first1,
                               ForwardIterator1 last1,
                               ForwardIterator2 first2,
                               ForwardIterator2 last2,
                               Pred pred = {},
-                              Proj proj = {}) {
+                              Proj1 proj1 = {},
+                              Proj2 proj2 = {}) {
+  // Needs to opt-in to all permutations, since std::is_permutation expects
+  // pred(proj1(lhs), proj1(rhs)) to compile.
   return std::is_permutation(
       first1, last1, first2, last2,
-      internal::ProjectedBinaryPredicate(pred, proj, proj));
+      internal::PermutedProjectedBinaryPredicate(pred, proj1, proj2));
 }
 
 // Returns: If `size(range1) != size(range2)`, return `false`. Otherwise return
@@ -827,28 +942,26 @@ constexpr bool is_permutation(ForwardIterator1 first1,
 // `ranges::equal(range1, range2, pred, proj, proj)` would return true;
 // otherwise, at worst `O(N^2)`, where `N` has the value `size(range1)`.
 //
-// Note: While std::ranges::is_permutation supports different projections for
-// the first and second range, this is currently not supported due to
-// dispatching to std::is_permutation, which demands that `pred` is an
-// equivalence relation.
-// TODO(https://crbug.com/1071094): Consider supporing different projections in
-// the future.
-//
 // Reference:
 // https://wg21.link/alg.is.permutation#:~:text=ranges::is_permutation(R1
 template <typename Range1,
           typename Range2,
           typename Pred = ranges::equal_to,
-          typename Proj = identity,
+          typename Proj1 = identity,
+          typename Proj2 = identity,
           typename = internal::range_category_t<Range1>,
-          typename = internal::range_category_t<Range2>>
+          typename = internal::range_category_t<Range2>,
+          typename = indirect_result_t<Pred&,
+                                       projected<iterator_t<Range1>, Proj1>,
+                                       projected<iterator_t<Range2>, Proj2>>>
 constexpr bool is_permutation(Range1&& range1,
                               Range2&& range2,
                               Pred pred = {},
-                              Proj proj = {}) {
-  return ranges::is_permutation(ranges::begin(range1), ranges::end(range1),
-                                ranges::begin(range2), ranges::end(range2),
-                                std::move(pred), std::move(proj));
+                              Proj1 proj1 = {},
+                              Proj2 proj2 = {}) {
+  return ranges::is_permutation(
+      ranges::begin(range1), ranges::end(range1), ranges::begin(range2),
+      ranges::end(range2), std::move(pred), std::move(proj1), std::move(proj2));
 }
 
 // [alg.search] Search
@@ -873,7 +986,10 @@ template <typename ForwardIterator1,
           typename Proj1 = identity,
           typename Proj2 = identity,
           typename = internal::iterator_category_t<ForwardIterator1>,
-          typename = internal::iterator_category_t<ForwardIterator2>>
+          typename = internal::iterator_category_t<ForwardIterator2>,
+          typename = indirect_result_t<Pred&,
+                                       projected<ForwardIterator1, Proj1>,
+                                       projected<ForwardIterator2, Proj2>>>
 constexpr auto search(ForwardIterator1 first1,
                       ForwardIterator1 last1,
                       ForwardIterator2 first2,
@@ -904,7 +1020,10 @@ template <typename Range1,
           typename Proj1 = identity,
           typename Proj2 = identity,
           typename = internal::range_category_t<Range1>,
-          typename = internal::range_category_t<Range2>>
+          typename = internal::range_category_t<Range2>,
+          typename = indirect_result_t<Pred&,
+                                       projected<iterator_t<Range1>, Proj1>,
+                                       projected<iterator_t<Range2>, Proj2>>>
 constexpr auto search(Range1&& range1,
                       Range2&& range2,
                       Pred pred = {},
@@ -2635,29 +2754,28 @@ constexpr auto partial_sort(Range&& range,
 //
 // Reference:
 // https://wg21.link/partial.sort.copy#:~:text=ranges::partial_sort_copy(I1
-//
-// Note: Currently different projections are not supported due to some
-// incompatible validation logic within libc++.
-// TODO(https://crbug.com/1071094): Consider supporting different projections in
-// the future.
 template <typename InputIterator,
           typename RandomAccessIterator,
           typename Comp = ranges::less,
-          typename Proj = identity,
+          typename Proj1 = identity,
+          typename Proj2 = identity,
           typename = internal::iterator_category_t<InputIterator>,
           typename = internal::iterator_category_t<RandomAccessIterator>,
           typename = indirect_result_t<Comp&,
-                                       projected<InputIterator, Proj>,
-                                       projected<RandomAccessIterator, Proj>>>
+                                       projected<InputIterator, Proj1>,
+                                       projected<RandomAccessIterator, Proj2>>>
 constexpr auto partial_sort_copy(InputIterator first,
                                  InputIterator last,
                                  RandomAccessIterator result_first,
                                  RandomAccessIterator result_last,
                                  Comp comp = {},
-                                 Proj proj = {}) {
+                                 Proj1 proj1 = {},
+                                 Proj2 proj2 = {}) {
+  // Needs to opt-in to all permutations, since std::partial_sort_copy expects
+  // comp(proj2(lhs), proj1(rhs)) to compile.
   return std::partial_sort_copy(
       first, last, result_first, result_last,
-      internal::ProjectedBinaryPredicate(comp, proj, proj));
+      internal::PermutedProjectedBinaryPredicate(comp, proj1, proj2));
 }
 
 // Let `N` be `min(size(range), size(result_range))`.
@@ -2679,27 +2797,25 @@ constexpr auto partial_sort_copy(InputIterator first,
 //
 // Reference:
 // https://wg21.link/partial.sort.copy#:~:text=ranges::partial_sort_copy(R1
-//
-// Note: Currently different projections are not supported due to some
-// incompatible validation logic within libc++.
-// TODO(https://crbug.com/1071094): Consider supporting different projections in
-// the future.
 template <typename Range1,
           typename Range2,
           typename Comp = ranges::less,
-          typename Proj = identity,
+          typename Proj1 = identity,
+          typename Proj2 = identity,
           typename = internal::range_category_t<Range1>,
           typename = internal::range_category_t<Range2>,
           typename = indirect_result_t<Comp&,
-                                       projected<iterator_t<Range1>, Proj>,
-                                       projected<iterator_t<Range2>, Proj>>>
+                                       projected<iterator_t<Range1>, Proj1>,
+                                       projected<iterator_t<Range2>, Proj2>>>
 constexpr auto partial_sort_copy(Range1&& range,
                                  Range2&& result_range,
                                  Comp comp = {},
-                                 Proj proj = {}) {
-  return ranges::partial_sort_copy(
-      ranges::begin(range), ranges::end(range), ranges::begin(result_range),
-      ranges::end(result_range), std::move(comp), std::move(proj));
+                                 Proj1 proj1 = {},
+                                 Proj2 proj2 = {}) {
+  return ranges::partial_sort_copy(ranges::begin(range), ranges::end(range),
+                                   ranges::begin(result_range),
+                                   ranges::end(result_range), std::move(comp),
+                                   std::move(proj1), std::move(proj2));
 }
 
 // [is.sorted] is_sorted

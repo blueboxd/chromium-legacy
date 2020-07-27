@@ -36,7 +36,7 @@ static_library("libevent") {
 
   defines = [ "HAVE_CONFIG_H" ]
 
-  if (is_mac || is_ios) {
+  if (is_apple) {
     sources += [
       "kqueue.c",
       "mac/config.h",

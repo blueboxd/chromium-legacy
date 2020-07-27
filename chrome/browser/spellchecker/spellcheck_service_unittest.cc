@@ -201,7 +201,9 @@ class SpellcheckServiceHybridUnitTestBase
   void RunDictionaryMappingTest(
       const std::string full_tag,
       const std::string expected_accept_language,
-      const std::string expected_tag_passed_to_spellcheck);
+      const std::string expected_tag_passed_to_spellcheck,
+      const std::string expected_accept_language_generic,
+      const std::string expected_tag_passed_to_spellcheck_generic);
 
   // Used for faking the presence of Windows spellcheck dictionaries.
   static const std::vector<std::string>
@@ -239,43 +241,59 @@ void SpellcheckServiceHybridUnitTestBase::RunGetDictionariesTest(
 void SpellcheckServiceHybridUnitTestBase::RunDictionaryMappingTest(
     const std::string full_tag,
     const std::string expected_accept_language,
-    const std::string expected_tag_passed_to_spellcheck) {
+    const std::string expected_tag_passed_to_spellcheck,
+    const std::string expected_accept_language_generic,
+    const std::string expected_tag_passed_to_spellcheck_generic) {
   if (!spellcheck::WindowsVersionSupportsSpellchecker())
     return;
 
   InitializeSpellcheckService({full_tag});
 
-  std::string supported_accept_language =
-      SpellcheckService::GetSupportedAcceptLanguageCode(full_tag);
+  std::string supported_dictionary;
+  if (!expected_accept_language.empty()) {
+    supported_dictionary =
+        spellcheck_service_->GetSupportedWindowsDictionaryLanguage(
+            expected_accept_language);
+    EXPECT_FALSE(supported_dictionary.empty());
+    EXPECT_EQ(full_tag, supported_dictionary);
+    EXPECT_EQ(expected_tag_passed_to_spellcheck,
+              SpellcheckService::GetTagToPassToWindowsSpellchecker(
+                  expected_accept_language, full_tag));
 
-  EXPECT_EQ(expected_accept_language, supported_accept_language);
+    // Special case for Serbian. The "sr" accept language is interpreted as
+    // using Cyrillic script. There should be an extra entry in the windows
+    // dictionary map if Cyrillic windows dictionary is installed.
+    if (base::EqualsCaseInsensitiveASCII(
+            "sr-Cyrl", SpellcheckService::GetLanguageAndScriptTag(
+                           full_tag,
+                           /* include_script_tag= */ true))) {
+      EXPECT_EQ(
+          full_tag,
+          spellcheck_service_->GetSupportedWindowsDictionaryLanguage("sr"));
+    } else {
+      EXPECT_TRUE(
+          spellcheck_service_->GetSupportedWindowsDictionaryLanguage("sr")
+              .empty());
+    }
 
-  if (!supported_accept_language.empty()) {
-    EXPECT_EQ(full_tag,
-              spellcheck_service_->GetSupportedWindowsDictionaryLanguage(
-                  expected_accept_language));
+    if (!expected_accept_language_generic.empty()) {
+      supported_dictionary =
+          spellcheck_service_->GetSupportedWindowsDictionaryLanguage(
+              expected_accept_language_generic);
+      EXPECT_FALSE(supported_dictionary.empty());
+      EXPECT_EQ(expected_accept_language_generic, supported_dictionary);
+      EXPECT_EQ(expected_tag_passed_to_spellcheck_generic,
+                SpellcheckService::GetTagToPassToWindowsSpellchecker(
+                    expected_accept_language_generic, supported_dictionary));
+    } else {
+      // Should only be one entry in the map.
+      EXPECT_EQ(1u,
+                spellcheck_service_->windows_spellcheck_dictionary_map_.size());
+    }
   } else {
     // Unsupported language--should not be in map.
-    ASSERT_TRUE(
+    EXPECT_TRUE(
         spellcheck_service_->windows_spellcheck_dictionary_map_.empty());
-  }
-
-  EXPECT_EQ(expected_tag_passed_to_spellcheck,
-            SpellcheckService::GetTagToPassToWindowsSpellchecker(
-                expected_accept_language, full_tag));
-
-  // Special case for Serbian. The "sr" accept language is interpreted as using
-  // Cyrillic script. There should be an extra entry in the windows dictionary
-  // map if Cyrillic windows dictionary is installed.
-  if (base::EqualsCaseInsensitiveASCII(
-          "sr-Cyrl", SpellcheckService::GetLanguageAndScriptTag(
-                         full_tag,
-                         /* include_script_tag */ true))) {
-    EXPECT_EQ(full_tag,
-              spellcheck_service_->GetSupportedWindowsDictionaryLanguage("sr"));
-  } else {
-    EXPECT_TRUE(spellcheck_service_->GetSupportedWindowsDictionaryLanguage("sr")
-                    .empty());
   }
 }
 
@@ -289,6 +307,8 @@ const std::vector<std::string> SpellcheckServiceHybridUnitTestBase::
                    // dictionary.
         "fi-FI",   // (Finnish) Has only Windows support, no Hunspell
                    // dictionary.
+        "it-IT",   // Has both Windows and Hunspell support.
+        "pt-BR",   // Has both Windows and Hunspell support.
         "haw-US",  // (Hawaiian) No Hunspell dictionary. Note that first two
                    // letters of language code are "ha," the same as Hausa.
         "ast",     // (Asturian) Has only Windows support, no Hunspell
@@ -313,12 +333,14 @@ static const TestCase kHybridGetDictionariesParams[] = {
     // Galician (gl) has only Windows support, no Hunspell dictionary. Croatian
     // (hr) has only Hunspell support, no local Windows dictionary. First
     // language is supported by windows and should be spellchecked.
-    TestCase("gl", {}, {"gl"}, {"gl"}), TestCase("gl", {"gl"}, {"gl"}, {"gl"}),
+    TestCase("gl", {}, {"gl"}, {"gl"}),
+    TestCase("gl", {"gl"}, {"gl"}, {"gl"}),
     TestCase("gl,hr", {}, {"gl", "hr"}, {"gl"}),
     TestCase("gl,hr", {"gl"}, {"gl", "hr"}, {"gl"}),
     TestCase("gl,hr", {"hr"}, {"gl", "hr"}, {"gl", "hr"}),
     TestCase("gl,hr", {"gl", "hr"}, {"gl", "hr"}, {"gl", "hr"}),
-    TestCase("hr", {}, {"hr"}, {"hr"}), TestCase("hr", {"hr"}, {"hr"}, {"hr"}),
+    TestCase("hr", {}, {"hr"}, {"hr"}),
+    TestCase("hr", {"hr"}, {"hr"}, {"hr"}),
     TestCase("hr,gl", {"hr"}, {"hr", "gl"}, {"hr"}),
     // Cebuano (ceb) is a language with neither Windows or Hunspell support,
     // should be unset if was enabled during simulated "first run" scenario.
@@ -346,7 +368,15 @@ static const TestCase kHybridGetDictionariesParams[] = {
     TestCase("st", {"st"}, {}, {}),
     // User chose generic Serbian in languages preferences (which uses
     // Cyrillic script).
-    TestCase("sr,sr-Latn-RS", {"sr", "sr-Latn-RS"}, {"sr"}, {"sr"})};
+    TestCase("sr,sr-Latn-RS", {"sr", "sr-Latn-RS"}, {"sr"}, {"sr"}),
+    // If there is platform spellcheck support for a regional variation of
+    // a language, the generic version should also be toggleable in spellcheck
+    // settings. There is no Hunspell dictionary for generic Portuguese (pt);
+    // there is Hunspell support for generic Italian (it) but the platform
+    // dictionary should be used instead.
+    TestCase("pt,pt-BR", {"pt", "pt-BR"}, {"pt", "pt-BR"}, {"pt", "pt-BR"}),
+    TestCase("it,it-IT", {"it", "it-IT"}, {"it", "it-IT"}, {"it", "it-IT"}),
+};
 
 INSTANTIATE_TEST_SUITE_P(TestCases,
                          SpellcheckServiceHybridUnitTest,
@@ -362,6 +392,8 @@ struct DictionaryMappingTestCase {
   std::string full_tag;
   std::string expected_accept_language;
   std::string expected_tag_passed_to_spellcheck;
+  std::string expected_accept_language_generic;
+  std::string expected_tag_passed_to_spellcheck_generic;
 };
 
 std::ostream& operator<<(std::ostream& out,
@@ -369,7 +401,11 @@ std::ostream& operator<<(std::ostream& out,
   out << "full_tag=" << test_case.full_tag
       << ", expected_accept_language=" << test_case.expected_accept_language
       << ", expected_tag_passed_to_spellcheck="
-      << test_case.expected_tag_passed_to_spellcheck;
+      << test_case.expected_tag_passed_to_spellcheck
+      << ", expected_accept_language_generic="
+      << test_case.expected_accept_language_generic
+      << ", expected_tag_passed_to_spellcheck_generic="
+      << test_case.expected_tag_passed_to_spellcheck_generic;
 
   return out;
 }
@@ -379,28 +415,38 @@ class SpellcheckServiceWindowsDictionaryMappingUnitTest
       public testing::WithParamInterface<DictionaryMappingTestCase> {};
 
 static const DictionaryMappingTestCase kHybridDictionaryMappingsParams[] = {
-    DictionaryMappingTestCase({"en-CA", "en-CA", "en-CA"}),
-    DictionaryMappingTestCase({"en-PH", "en", "en"}),
-    DictionaryMappingTestCase({"es-MX", "es-MX", "es-MX"}),
-    DictionaryMappingTestCase({"ar-SA", "ar", "ar"}),
+    DictionaryMappingTestCase({"en-CA", "en-CA", "en-CA", "en", "en"}),
+    DictionaryMappingTestCase({"en-PH", "en", "en", "", ""}),
+    DictionaryMappingTestCase({"es-MX", "es-MX", "es-MX", "es", "es"}),
+    DictionaryMappingTestCase({"ar-SA", "ar", "ar", "", ""}),
     // Konkani not supported in Chromium.
-    DictionaryMappingTestCase({"kok-Deva-IN", "", "kok-Deva"}),
-    DictionaryMappingTestCase({"sr-Cyrl-RS", "sr", "sr-Cyrl"}),
-    DictionaryMappingTestCase({"sr-Cyrl-ME", "sr", "sr-Cyrl"}),
+    DictionaryMappingTestCase({"kok-Deva-IN", "", "kok-Deva", "", ""}),
+    DictionaryMappingTestCase({"sr-Cyrl-RS", "sr", "sr-Cyrl", "", ""}),
+    DictionaryMappingTestCase({"sr-Cyrl-ME", "sr", "sr-Cyrl", "", ""}),
     // Only sr with Cyrillic implied supported in Chromium.
-    DictionaryMappingTestCase({"sr-Latn-RS", "", "sr-Latn"}),
-    DictionaryMappingTestCase({"sr-Latn-ME", "", "sr-Latn"}),
-    DictionaryMappingTestCase({"ca-ES", "ca", "ca"}),
-    DictionaryMappingTestCase({"ca-ES-valencia", "ca", "ca"})};
+    DictionaryMappingTestCase({"sr-Latn-RS", "", "sr-Latn", "", ""}),
+    DictionaryMappingTestCase({"sr-Latn-ME", "", "sr-Latn", "", ""}),
+    DictionaryMappingTestCase({"ca-ES", "ca", "ca", "", ""}),
+    DictionaryMappingTestCase({"ca-ES-valencia", "ca", "ca", "", ""}),
+    // If there is platform spellcheck support for a regional variation of
+    // a language, the generic version should also be toggleable in spellcheck
+    // settings. There is no Hunspell dictionary for generic Portuguese (pt);
+    // there is Hunspell support for generic Italian (it) but the platform
+    // dictionary should be used instead.
+    DictionaryMappingTestCase({"it-IT", "it-IT", "it-IT", "it", "it"}),
+    DictionaryMappingTestCase({"pt-BR", "pt-BR", "pt-BR", "pt", "pt"}),
+};
 
 INSTANTIATE_TEST_SUITE_P(TestCases,
                          SpellcheckServiceWindowsDictionaryMappingUnitTest,
                          testing::ValuesIn(kHybridDictionaryMappingsParams));
 
 TEST_P(SpellcheckServiceWindowsDictionaryMappingUnitTest, CheckMappings) {
-  RunDictionaryMappingTest(GetParam().full_tag,
-                           GetParam().expected_accept_language,
-                           GetParam().expected_tag_passed_to_spellcheck);
+  RunDictionaryMappingTest(
+      GetParam().full_tag, GetParam().expected_accept_language,
+      GetParam().expected_tag_passed_to_spellcheck,
+      GetParam().expected_accept_language_generic,
+      GetParam().expected_tag_passed_to_spellcheck_generic);
 }
 
 class SpellcheckServiceHybridUnitTestDelayInitBase
@@ -488,8 +534,10 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(SpellcheckServiceWindowsDictionaryMappingUnitTestDelayInit,
        CheckMappings) {
-  RunDictionaryMappingTest(GetParam().full_tag,
-                           GetParam().expected_accept_language,
-                           GetParam().expected_tag_passed_to_spellcheck);
+  RunDictionaryMappingTest(
+      GetParam().full_tag, GetParam().expected_accept_language,
+      GetParam().expected_tag_passed_to_spellcheck,
+      GetParam().expected_accept_language_generic,
+      GetParam().expected_tag_passed_to_spellcheck_generic);
 }
 #endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)

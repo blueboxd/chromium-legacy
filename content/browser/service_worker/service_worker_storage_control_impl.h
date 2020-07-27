@@ -60,7 +60,7 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
                              const base::Optional<GURL>& origin,
                              FindRegistrationForIdCallback callback) override;
   void GetRegistrationsForOrigin(
-      const GURL& origin,
+      const url::Origin& origin,
       GetRegistrationsForOriginCallback callback) override;
   void GetUsageForOrigin(const url::Origin& origin,
                          GetUsageForOriginCallback callback) override;

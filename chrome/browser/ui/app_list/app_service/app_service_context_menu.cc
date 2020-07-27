@@ -256,9 +256,10 @@ void AppServiceContextMenu::OnGetMenuModel(
   if (build_extension_menu_before_default)
     BuildExtensionAppShortcutsMenu(menu_model.get());
 
-  // Create default items.
+  // Create default items for non-Remote apps.
   if (app_id() != extension_misc::kChromeAppId &&
-      app_type_ != apps::mojom::AppType::kUnknown) {
+      app_type_ != apps::mojom::AppType::kUnknown &&
+      app_type_ != apps::mojom::AppType::kRemote) {
     app_list::AppContextMenu::BuildMenu(menu_model.get());
   }
 

@@ -8,8 +8,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.MenuItem;
 
-import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 import androidx.preference.PreferenceFragmentCompat;
 
 /**
@@ -19,29 +17,17 @@ public class PasswordCheckFragmentView extends PreferenceFragmentCompat {
     private PasswordCheckComponentUi mComponentDelegate;
 
     /**
-     * The factory used to create components that connect to this fragment and provide data. It
-     * defaults to the {@link PasswordCheckComponentUiFactory} but can be replaced in tests.
+     * Set the delegate that handles view events which affect the state of the component.
+     * @param componentDelegate The {@link PasswordCheckComponentUi} delegate.
      */
-    interface ComponentFactory {
-        /**
-         * Returns a component that is connected to the given fragment and manipulates its data.
-         * @param fragmentView The fragment (usually {@code this}).
-         * @return A non-null {@link PasswordCheckComponentUi}.
-         */
-        PasswordCheckComponentUi create(PreferenceFragmentCompat fragmentView);
+    void setComponentDelegate(PasswordCheckComponentUi componentDelegate) {
+        mComponentDelegate = componentDelegate;
     }
-    private static ComponentFactory sComponentFactory = PasswordCheckComponentUiFactory::create;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         getActivity().setTitle(R.string.passwords_check_title);
         setPreferenceScreen(getPreferenceManager().createPreferenceScreen(getStyledContext()));
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        mComponentDelegate = sComponentFactory.create(this);
     }
 
     @Override
@@ -53,8 +39,4 @@ public class PasswordCheckFragmentView extends PreferenceFragmentCompat {
         return getPreferenceManager().getContext();
     }
 
-    @VisibleForTesting
-    static void setComponentFactory(ComponentFactory factory) {
-        sComponentFactory = factory;
-    }
 }

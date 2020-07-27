@@ -944,6 +944,61 @@ void UpgradeInsecureRequest(GURL* url) {
   *url = url->ReplaceComponents(replacements);
 }
 
+bool IsValidRequiredCSPAttr(
+    const std::vector<mojom::ContentSecurityPolicyPtr>& policy,
+    const mojom::ContentSecurityPolicy* context,
+    std::string& error_message) {
+  DCHECK(policy.size() == 1);
+  if (!policy[0]->parsing_errors.empty()) {
+    error_message =
+        "Parsing the csp attribute into a Content-Security-Policy returned one "
+        "or more parsing errors: " +
+        base::JoinString(policy[0]->parsing_errors, " ");
+    return false;
+  }
+
+  if (!policy[0]->report_endpoints.empty()) {
+    error_message =
+        "The csp attribute cannot contain the directives 'report-to' or "
+        "'report-uri'.";
+    return false;
+  }
+
+  if (context && !Subsumes(*context, policy)) {
+    error_message =
+        "The csp attribute Content-Security-Policy is not subsumed by the "
+        "frame's parent csp attribute Content-Security-Policy.";
+    return false;
+  }
+
+  return true;
+}
+
+bool Subsumes(const mojom::ContentSecurityPolicy& policy_a,
+              const std::vector<mojom::ContentSecurityPolicyPtr>& policies_b) {
+  if (policy_a.directives.empty())
+    return true;
+
+  if (policy_a.header->type == mojom::ContentSecurityPolicyType::kReport)
+    return true;
+
+  // TODO(antoniosartori): Complete the implementation of this function
+  return util::ranges::all_of(
+      policy_a.directives, [&policies_b](const auto& directive_a) {
+        return util::ranges::any_of(
+            policies_b, [&directive_a](const auto& policy_b) {
+              if (policy_b->header->type ==
+                  mojom::ContentSecurityPolicyType::kReport) {
+                return false;
+              }
+
+              auto value_b = policy_b->directives.find(directive_a.first);
+              return value_b != policy_b->directives.end() &&
+                     value_b->second == directive_a.second;
+            });
+      });
+}
+
 CSPDirectiveName ToCSPDirectiveName(const std::string& name) {
   if (name == "base-uri")
     return CSPDirectiveName::BaseURI;

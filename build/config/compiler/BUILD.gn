@@ -11,6 +11,7 @@ import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/coverage/coverage.gni")
 import("//build/config/dcheck_always_on.gni")
+import("//build/config/gclient_args.gni")
 import("//build/config/host_byteorder.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
@@ -293,7 +294,7 @@ config("compiler") {
     if (fatal_linker_warnings && !is_mac && !is_ios && current_os != "aix") {
       ldflags += [ "-Wl,--fatal-warnings" ]
     }
-    if (fatal_linker_warnings && (is_mac || is_ios)) {
+    if (fatal_linker_warnings && is_apple) {
       ldflags += [ "-Wl,-fatal_warnings" ]
     }
   } else {
@@ -312,7 +313,7 @@ config("compiler") {
 
   # Non-Mac Posix and Fuchsia compiler flags setup.
   # -----------------------------------
-  if ((is_posix && !(is_mac || is_ios)) || is_fuchsia) {
+  if ((is_posix && !is_apple) || is_fuchsia) {
     if (enable_profiling) {
       if (!is_debug) {
         cflags += [ "-g" ]
@@ -724,7 +725,7 @@ config("compiler_cpu_abi") {
   ldflags = []
   defines = []
 
-  if ((is_posix && !(is_mac || is_ios)) || is_fuchsia) {
+  if ((is_posix && !is_apple) || is_fuchsia) {
     # CPU architecture. We may or may not be doing a cross compile now, so for
     # simplicity we always explicitly set the architecture.
     if (current_cpu == "x64") {
@@ -1179,7 +1180,7 @@ config("compiler_arm_fpu") {
 
 config("compiler_arm_thumb") {
   if (current_cpu == "arm" && arm_use_thumb && is_posix &&
-      !(is_mac || is_ios || is_nacl)) {
+      !(is_apple || is_nacl)) {
     cflags = [ "-mthumb" ]
   }
 }
@@ -1411,7 +1412,7 @@ config("default_warnings") {
       ]
     }
   } else {
-    if ((is_mac || is_ios) && !is_nacl) {
+    if (is_apple && !is_nacl) {
       # When compiling Objective-C, warns if a method is used whose
       # availability is newer than the deployment target.
       cflags += [ "-Wunguarded-availability" ]
@@ -1925,7 +1926,7 @@ if (is_win) {
     }
   }
 
-  if (is_mac || is_ios) {
+  if (is_apple) {
     if (symbol_level == 2) {
       # Mac dead code stripping requires symbols.
       common_optimize_on_ldflags += [ "-Wl,-dead_strip" ]
@@ -2439,7 +2440,7 @@ config("strip_debug") {
   ldflags += [ "-Wl,--strip-debug" ]
 }
 
-if (is_ios || is_mac) {
+if (is_apple) {
   # On Mac and iOS, this enables support for ARC (automatic ref-counting).
   # See http://clang.llvm.org/docs/AutomaticReferenceCounting.html.
   config("enable_arc") {

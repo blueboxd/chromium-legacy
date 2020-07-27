@@ -39,6 +39,8 @@ namespace {
 
 bool InitializeVisuals() {
 #if defined(USE_X11)
+  if (features::IsUsingOzonePlatform())
+    return false;
   bool has_compositing_manager = false;
   uint8_t depth = 0;
   bool using_argb_visual;

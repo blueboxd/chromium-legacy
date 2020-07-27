@@ -22,12 +22,18 @@ class BookmarkCounterTest : public testing::Test {
  public:
   BookmarkCounterTest() {
     run_loop_.reset(new base::RunLoop());
-    profile_.CreateBookmarkModel(true);
+
+    TestingProfile::Builder profile_builder;
+    profile_builder.AddTestingFactory(
+        BookmarkModelFactory::GetInstance(),
+        BookmarkModelFactory::GetDefaultFactory());
+    profile_ = profile_builder.Build();
+
     model_ =
         BookmarkModelFactory::GetInstance()->GetForBrowserContext(profile());
   }
 
-  Profile* profile() { return &profile_; }
+  Profile* profile() { return profile_.get(); }
 
   bookmarks::BookmarkModel* model() { return model_; }
 
@@ -58,7 +64,7 @@ class BookmarkCounterTest : public testing::Test {
 
  private:
   content::BrowserTaskEnvironment task_environment_;
-  TestingProfile profile_;
+  std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   bookmarks::BookmarkModel* model_;

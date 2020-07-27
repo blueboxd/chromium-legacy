@@ -5,7 +5,9 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_view_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
@@ -19,6 +21,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -28,6 +31,9 @@
 #endif
 
 namespace {
+
+using password_manager::metrics_util::LogPasswordSettingsReauthResult;
+using password_manager::metrics_util::ReauthResult;
 
 // Padding used between the image and the text labels.
 const CGFloat kWarningIconSize = 20;
@@ -43,6 +49,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypePassword,
   ItemTypeChangePasswordButton,
   ItemTypeChangePasswordRecommendation,
+};
+
+typedef NS_ENUM(NSInteger, ReauthenticationReason) {
+  ReauthenticationReasonShow = 0,
+  ReauthenticationReasonCopy,
+  ReauthenticationReasonEdit,
 };
 
 }  // namespace
@@ -78,8 +90,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - ChromeTableViewController
 
 - (void)editButtonPressed {
-  // TODO:(crbug.com/1075494) - Request reauth if user clicked edit and password
-  // was not shown.
+  // Request reauthentication before revealing password during editing.
+  // Editing mode will be entered on successful reauth.
+  if (!self.tableView.editing && !self.isPasswordShown) {
+    [self attemptToShowPasswordFor:ReauthenticationReasonEdit];
+    return;
+  }
+
   [super editButtonPressed];
 
   if (!self.tableView.editing) {
@@ -88,13 +105,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                           didEditPasswordDetails:self.password];
   }
 
-  [self loadModel];
-  [self reconfigureCellsForItems:
-            [self.tableViewModel
-                itemsInSectionWithIdentifier:SectionIdentifierPassword]];
-  [self reconfigureCellsForItems:
-            [self.tableViewModel
-                itemsInSectionWithIdentifier:SectionIdentifierCompromisedInfo]];
+  [self reloadData];
 }
 
 - (void)loadModel {
@@ -314,20 +325,134 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return newImage;
 }
 
+// Shows reauthentication dialog if needed. If the reauthentication is
+// successful reveals the password.
+- (void)attemptToShowPasswordFor:(ReauthenticationReason)reason {
+  // If password was already shown (before editing or copying) we don't need to
+  // request reauth again.
+  if (self.isPasswordShown) {
+    [self showPasswordFor:reason];
+    return;
+  }
+
+  if ([self.reauthModule canAttemptReauth]) {
+    __weak __typeof(self) weakSelf = self;
+    void (^showPasswordHandler)(ReauthenticationResult) =
+        ^(ReauthenticationResult result) {
+          PasswordDetailsViewController* strongSelf = weakSelf;
+          if (!strongSelf)
+            return;
+          [strongSelf logPasswordSettingsReauthResult:result];
+
+          if (result == ReauthenticationResult::kFailure)
+            return;
+
+          [strongSelf showPasswordFor:reason];
+        };
+
+    [self.reauthModule
+        attemptReauthWithLocalizedReason:[self getLocalizedStringFor:reason]
+                    canReusePreviousAuth:YES
+                                 handler:showPasswordHandler];
+  } else {
+    [self.handler showPasscodeDialog];
+  }
+}
+
+// Reveals password to the user.
+- (void)showPasswordFor:(ReauthenticationReason)reason {
+  switch (reason) {
+    case ReauthenticationReasonShow:
+      self.passwordShown = YES;
+      self.passwordTextItem.textFieldValue = self.password.password;
+      self.passwordTextItem.identifyingIcon =
+          [[UIImage imageNamed:@"infobar_hide_password_icon"]
+              imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      [self reconfigureCellsForItems:@[ self.passwordTextItem ]];
+      break;
+    case ReauthenticationReasonCopy:
+      // TODO:(crbug.com/1075494) - Implement copy password functionality.
+      break;
+    case ReauthenticationReasonEdit:
+      // Called super because we want to update only |tableView.editing|.
+      [super editButtonPressed];
+      [self reloadData];
+      break;
+  }
+  [self logPasswordAccessWith:reason];
+}
+
+// Returns localized reason for reauthentication dialog.
+- (NSString*)getLocalizedStringFor:(ReauthenticationReason)reason {
+  switch (reason) {
+    case ReauthenticationReasonShow:
+      return l10n_util::GetNSString(
+          IDS_IOS_SETTINGS_PASSWORD_REAUTH_REASON_SHOW);
+    case ReauthenticationReasonCopy:
+      return l10n_util::GetNSString(
+          IDS_IOS_SETTINGS_PASSWORD_REAUTH_REASON_COPY);
+    case ReauthenticationReasonEdit:
+      // TODO:(crbug.com/1075494) - Add custom string for edit.
+      return l10n_util::GetNSString(
+          IDS_IOS_SETTINGS_PASSWORD_REAUTH_REASON_SHOW);
+  }
+}
+
 #pragma mark - Actions
 
 // Called when the user tapped on the show/hide button near password.
 - (void)didTapShowHideButton:(UIButton*)buttonView {
-  // TODO:(crbug.com/1075494) - Request reauth before revealing the password.
-  self.passwordShown = !self.passwordShown;
-  self.passwordTextItem.textFieldValue =
-      [self isPasswordShown] ? self.password.password : kMaskedPassword;
-  NSString* image = self.isPasswordShown ? @"infobar_hide_password_icon"
-                                         : @"infobar_reveal_password_icon";
-  self.passwordTextItem.identifyingIcon = [[UIImage imageNamed:image]
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  if (self.isPasswordShown) {
+    self.passwordShown = NO;
+    self.passwordTextItem.textFieldValue = kMaskedPassword;
+    self.passwordTextItem.identifyingIcon =
+        [[UIImage imageNamed:@"infobar_reveal_password_icon"]
+            imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    [self reconfigureCellsForItems:@[ self.passwordTextItem ]];
+  } else {
+    [self attemptToShowPasswordFor:ReauthenticationReasonShow];
+  }
+}
 
-  [self reconfigureCellsForItems:@[ self.passwordTextItem ]];
+#pragma mark - Metrics
+
+// Logs metrics for the given reauthentication |result| (success, failure or
+// skipped).
+- (void)logPasswordSettingsReauthResult:(ReauthenticationResult)result {
+  switch (result) {
+    case ReauthenticationResult::kSuccess:
+      LogPasswordSettingsReauthResult(ReauthResult::kSuccess);
+      break;
+    case ReauthenticationResult::kFailure:
+      LogPasswordSettingsReauthResult(ReauthResult::kFailure);
+      break;
+    case ReauthenticationResult::kSkipped:
+      LogPasswordSettingsReauthResult(ReauthResult::kSkipped);
+      break;
+  }
+}
+
+- (void)logPasswordAccessWith:(ReauthenticationReason)reason {
+  switch (reason) {
+    case ReauthenticationReasonShow:
+      UMA_HISTOGRAM_ENUMERATION(
+          "PasswordManager.AccessPasswordInSettings",
+          password_manager::metrics_util::ACCESS_PASSWORD_VIEWED,
+          password_manager::metrics_util::ACCESS_PASSWORD_COUNT);
+      break;
+    case ReauthenticationReasonCopy:
+      UMA_HISTOGRAM_ENUMERATION(
+          "PasswordManager.AccessPasswordInSettings",
+          password_manager::metrics_util::ACCESS_PASSWORD_COPIED,
+          password_manager::metrics_util::ACCESS_PASSWORD_COUNT);
+      break;
+    case ReauthenticationReasonEdit:
+      UMA_HISTOGRAM_ENUMERATION(
+          "PasswordManager.AccessPasswordInSettings",
+          password_manager::metrics_util::ACCESS_PASSWORD_EDITED,
+          password_manager::metrics_util::ACCESS_PASSWORD_COUNT);
+      break;
+  }
 }
 
 @end

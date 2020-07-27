@@ -55,6 +55,10 @@ SkBitmap GenerateBitmap(SquareSizePx output_size,
                         SkColor color,
                         base::char16 icon_letter);
 
+// Returns the first letter from |app_url| that will be painted on the generated
+// icon.
+base::char16 GenerateIconLetterFromUrl(const GURL& app_url);
+
 // Returns the first letter from |app_name| that will be painted on the
 // generated icon.
 base::char16 GenerateIconLetterFromAppName(const base::string16& app_name);

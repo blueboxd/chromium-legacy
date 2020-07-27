@@ -141,8 +141,8 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
   }
 }
 
-- (void)viewWillDisappear:(BOOL)animated {
-  [super viewWillDisappear:animated];
+- (void)willMoveToParentViewController:(UIViewController*)parent {
+  [super willMoveToParentViewController:parent];
   [self.navigationController setToolbarHidden:YES animated:YES];
 }
 

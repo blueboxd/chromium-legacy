@@ -22,6 +22,13 @@ The bot provides analysis using:
 
 ## Checks:
 
+- All monitored differences will be displayed below your CL on gerrit's CL
+  review page (in the Binary Size section).
+- Non-bordered changes are small changes below the failure limit.
+- Red-bordered changes are above the limit and are failing the tryjob.
+- Green-bordered changes are positive changes in the opposite direction (good
+  job making chrome smaller).
+
 ### Binary Size Increase
 
 - **What:** Checks that [normalized apk size] increases by no more than 16kb.
@@ -115,15 +122,23 @@ For more information on when to use `const char *` vs `const char[]`, see
 
 ### Added Symbols named “ForTest”
 
-- **What:** This checks that we don't have symbols with “ForTest” in their name
-  in an optimized release binary.
+- **What:** This checks that we don't have java symbols with “ForTest” in their
+  name in an optimized release APK.
 - **Why:** To prevent shipping unused test-only code to end-users.
 
 #### What to do if the Check Fails?
 
-- Make sure your ForTest methods are not called in non-test code.
-- Unfortunately, clang is unable to remove unused virtual methods, so try and
-  make sure your ForTest methods are not virtual.
+- Make sure your ForTest methods are not called and your ForTest variables are
+  not set, in non-test code.
+- The check does not care for annotations, it is literally looking at the final
+  release APK searching for symbols with "ForTest" in the name. If your method
+  is verifiably unreachable from any code, R8 should be able to remove it and
+  the check should not fail.
+- If your check is failing this could mean that R8 was not able to determine
+  that it cannot be called (i.e. your testing infrastructure is being shipped to
+  our users). For example if a method marked as @CalledByNative calls your
+  ForTest method, the check may fail since R8 cannot remove anything reachable
+  from a @CalledByNative method.
 
 ### Uncompressed Pak Entry
 

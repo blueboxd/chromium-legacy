@@ -1,0 +1,6 @@
+specific_include_rules = {
+  "remote_apps_manager_browsertest\.cc": [
+    "+ash/app_list",
+    "+ash/shell.h",
+  ],
+}

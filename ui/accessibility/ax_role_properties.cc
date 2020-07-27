@@ -403,6 +403,16 @@ bool IsPresentational(const ax::mojom::Role role) {
   }
 }
 
+bool IsRadio(const ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kRadioButton:
+    case ax::mojom::Role::kMenuItemRadio:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool IsRangeValueSupported(const ax::mojom::Role role) {
   // https://www.w3.org/TR/wai-aria-1.1/#aria-valuenow
   // https://www.w3.org/TR/wai-aria-1.1/#aria-valuetext

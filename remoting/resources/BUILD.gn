@@ -98,7 +98,7 @@ action("copy_locales") {
           [ "$root_gen_dir/remoting/resources/{{source_name_part}}.pak" ])
 
   # Likewise, process the outputs in the same way as the inputs.
-  if (is_mac || is_ios) {
+  if (is_apple) {
     # On mac, use underscores instead of hyphens and put the files in a
     # different place.
     outputs = process_file_template(

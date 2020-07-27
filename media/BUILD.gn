@@ -118,7 +118,7 @@ component("media") {
   ]
 
   # This must be included here since it actually depends on //media/base.
-  if (is_mac || is_ios) {
+  if (is_apple) {
     public_deps += [ "//media/base/mac" ]
   }
 }

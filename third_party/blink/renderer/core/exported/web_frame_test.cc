@@ -165,6 +165,7 @@
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/fake_local_frame_host.h"
 #include "third_party/blink/renderer/core/testing/fake_remote_frame_host.h"
+#include "third_party/blink/renderer/core/testing/fake_remote_main_frame_host.h"
 #include "third_party/blink/renderer/core/testing/mock_clipboard_host.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -9592,25 +9593,50 @@ TEST_F(WebFrameSwapTest, WindowOpenOnRemoteFrame) {
   Reset();
 }
 
-class RemoteWindowCloseClient : public frame_test_helpers::TestWebViewClient {
+// blink::mojom::RemoteMainFrameHost instance that intecepts CloseWindowSoon()
+// mojo calls and provides a getter to know if it was ever called.
+class TestRemoteMainFrameHostForWindowClose : public FakeRemoteMainFrameHost {
  public:
-  // WebViewClient implementation.
-  void CloseWindowSoon() override { closed_ = true; }
+  TestRemoteMainFrameHostForWindowClose() = default;
+  ~TestRemoteMainFrameHostForWindowClose() override = default;
 
-  bool Closed() const { return closed_; }
+  // FakeRemoteMainFrameHost:
+  void RouteCloseEvent() override { remote_window_closed_ = true; }
+
+  bool remote_window_closed() const { return remote_window_closed_; }
 
  private:
-  bool closed_ = false;
+  bool remote_window_closed_ = false;
 };
 
-TEST_F(WebFrameTest, WindowOpenRemoteClose) {
+class RemoteWindowCloseTest : public WebFrameTest {
+ public:
+  RemoteWindowCloseTest() {
+    remote_main_frame_host_.Init(
+        remote_frame_client_.GetRemoteAssociatedInterfaces());
+  }
+
+  ~RemoteWindowCloseTest() override = default;
+
+  frame_test_helpers::TestWebRemoteFrameClient* remote_frame_client() {
+    return &remote_frame_client_;
+  }
+
+  bool Closed() const { return remote_main_frame_host_.remote_window_closed(); }
+
+ private:
+  TestRemoteMainFrameHostForWindowClose remote_main_frame_host_;
+  frame_test_helpers::TestWebRemoteFrameClient remote_frame_client_;
+};
+
+TEST_F(RemoteWindowCloseTest, WindowOpenRemoteClose) {
   frame_test_helpers::WebViewHelper main_web_view;
   main_web_view.Initialize();
 
   // Create a remote window that will be closed later in the test.
-  RemoteWindowCloseClient client;
   frame_test_helpers::WebViewHelper popup;
-  popup.InitializeRemote(nullptr, nullptr, &client);
+  popup.InitializeRemote(remote_frame_client(), nullptr, nullptr);
+  popup.GetWebView()->DidAttachRemoteMainFrame();
   popup.RemoteMainFrame()->SetOpener(main_web_view.LocalMainFrame());
 
   LocalFrame* local_frame = main_web_view.LocalMainFrame()->GetFrame();
@@ -9623,12 +9649,16 @@ TEST_F(WebFrameTest, WindowOpenRemoteClose) {
   v8::Context::BackupIncumbentScope incumbent_context_scope(
       local_script_state->GetContext());
   remote_frame->DomWindow()->close(local_script_state->GetIsolate());
-  EXPECT_FALSE(client.Closed());
+  EXPECT_FALSE(Closed());
 
   // Marking it as opened by a script should now allow it to be closed.
   remote_frame->GetPage()->SetOpenedByDOM();
   remote_frame->DomWindow()->close(local_script_state->GetIsolate());
-  EXPECT_TRUE(client.Closed());
+
+  // The request to close the remote window is not immediately sent to make sure
+  // that the JS finishes executing, so we need to wait for pending tasks first.
+  RunPendingTasks();
+  EXPECT_TRUE(Closed());
 }
 
 TEST_F(WebFrameTest, NavigateRemoteToLocalWithOpener) {

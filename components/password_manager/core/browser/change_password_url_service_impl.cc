@@ -6,6 +6,8 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/json/json_reader.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -30,15 +32,32 @@ void ChangePasswordUrlServiceImpl::Initialize() {
 void ChangePasswordUrlServiceImpl::GetChangePasswordUrl(
     const url::Origin& origin,
     UrlCallback callback) {
-  // TODO(crbug.com/1086141): call callback if response available, otherwise
-  // save callback.
-  url_callbacks_.emplace_back(std::make_pair(origin, std::move(callback)));
+  DCHECK(started_fetching_) << "Call Initialize() before.";
+  if (fetch_complete_) {
+    std::move(callback).Run(ChangePasswordUrlFor(origin));
+  } else {
+    url_callbacks_.emplace_back(origin, std::move(callback));
+  }
 }
 
 void ChangePasswordUrlServiceImpl::OnFetchComplete(
     std::unique_ptr<std::string> response_body) {
-  // TODO(crbug.com/1086141): handle response and convert JSON.
-  change_password_url_map_ = {};
+  fetch_complete_ = true;
+  // TODO(crbug.com/1086141): Log error codes in histograms.
+  if (response_body) {
+    base::Optional<base::Value> data = base::JSONReader::Read(*response_body);
+    if (data && data->is_dict()) {
+      for (auto&& url_pair : data->DictItems()) {
+        if (url_pair.second.is_string()) {
+          GURL url = GURL(url_pair.second.GetString());
+          if (url.is_valid()) {
+            change_password_url_map_.try_emplace(change_password_url_map_.end(),
+                                                 url_pair.first, url);
+          }
+        }
+      }
+    }
+  }
 
   for (auto& url_callback : std::exchange(url_callbacks_, {})) {
     GURL url = ChangePasswordUrlFor(url_callback.first);
@@ -48,9 +67,14 @@ void ChangePasswordUrlServiceImpl::OnFetchComplete(
 
 GURL ChangePasswordUrlServiceImpl::ChangePasswordUrlFor(
     const url::Origin& origin) {
-  // TODO(crbug.com/1086141): lookup url override from map.
-
-  // Fallback if no change-password url available or request failed
+  std::string domain_and_registry =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          origin, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  auto it = change_password_url_map_.find(domain_and_registry);
+  if (it != change_password_url_map_.end()) {
+    return it->second;
+  }
+  // Fallback if no valid change-password url available or request failed.
   return origin.GetURL();
 }
 

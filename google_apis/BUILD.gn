@@ -153,7 +153,7 @@ template("google_apis_tmpl") {
       deps += invoker.deps
     }
 
-    if (is_mac || is_ios) {
+    if (is_apple) {
       set_sources_assignment_filter([])
       sources += [
         "google_api_keys_mac.h",
@@ -252,7 +252,7 @@ test("google_apis_unittests") {
     deps += [ "//google_apis/drive:drive_unittests" ]
   }
 
-  if (is_mac || is_ios) {
+  if (is_apple) {
     set_sources_assignment_filter([])
     sources += [ "google_api_keys_mac_unittest.mm" ]
     set_sources_assignment_filter(sources_assignment_filter)

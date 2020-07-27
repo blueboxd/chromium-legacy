@@ -413,6 +413,17 @@ void IDBRequest::HandleResponse(std::unique_ptr<IDBKey> key,
                 WrapPersistent(transaction_.Get()))));
 }
 
+void IDBRequest::HandleResponse(
+    bool key_only,
+    mojo::PendingReceiver<mojom::blink::IDBDatabaseGetAllResultSink> receiver) {
+  DCHECK(transit_blob_handles_.IsEmpty());
+  DCHECK(transaction_);
+  transaction_->EnqueueResult(std::make_unique<IDBRequestQueueItem>(
+      this, key_only, std::move(receiver),
+      WTF::Bind(&IDBTransaction::OnResultReady,
+                WrapPersistent(transaction_.Get()))));
+}
+
 void IDBRequest::EnqueueResponse(DOMException* error) {
   IDB_TRACE("IDBRequest::EnqueueResponse(DOMException)");
   if (!ShouldEnqueueEvent()) {

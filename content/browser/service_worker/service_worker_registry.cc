@@ -280,7 +280,7 @@ void ServiceWorkerRegistry::GetRegistrationsForOrigin(
     const url::Origin& origin,
     GetRegistrationsCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  storage()->GetRegistrationsForOrigin(
+  GetRemoteStorageControl()->GetRegistrationsForOrigin(
       origin,
       base::BindOnce(&ServiceWorkerRegistry::DidGetRegistrationsForOrigin,
                      weak_factory_.GetWeakPtr(), std::move(callback), origin));
@@ -1004,8 +1004,8 @@ void ServiceWorkerRegistry::DidGetRegistrationsForOrigin(
     GetRegistrationsCallback callback,
     const url::Origin& origin_filter,
     storage::mojom::ServiceWorkerDatabaseStatus database_status,
-    std::unique_ptr<RegistrationList> registration_data_list,
-    std::unique_ptr<std::vector<ResourceList>> resources_list) {
+    std::vector<storage::mojom::SerializedServiceWorkerRegistrationPtr>
+        serialized_registrations) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   blink::ServiceWorkerStatusCode status =
@@ -1019,17 +1019,13 @@ void ServiceWorkerRegistry::DidGetRegistrationsForOrigin(
     return;
   }
 
-  DCHECK(registration_data_list);
-  DCHECK(resources_list);
-
   // Add all stored registrations.
   std::set<int64_t> registration_ids;
   std::vector<scoped_refptr<ServiceWorkerRegistration>> registrations;
-  size_t index = 0;
-  for (const auto& registration_data : *registration_data_list) {
-    registration_ids.insert(registration_data->registration_id);
-    registrations.push_back(GetOrCreateRegistration(
-        *registration_data, resources_list->at(index++)));
+  for (const auto& entry : serialized_registrations) {
+    registration_ids.insert(entry->registration_data->registration_id);
+    registrations.push_back(
+        GetOrCreateRegistration(*entry->registration_data, entry->resources));
   }
 
   // Add unstored registrations that are being installed.

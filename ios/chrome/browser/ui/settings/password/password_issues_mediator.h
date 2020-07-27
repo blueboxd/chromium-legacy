@@ -7,11 +7,13 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
+
 class IOSChromePasswordCheckManager;
 @protocol PasswordIssuesConsumer;
 
 // This mediator fetches and organises the credentials for its consumer.
-@interface PasswordIssuesMediator : NSObject
+@interface PasswordIssuesMediator : NSObject <SuccessfulReauthTimeAccessor>
 
 - (instancetype)initWithPasswordCheckManager:
     (IOSChromePasswordCheckManager*)manager NS_DESIGNATED_INITIALIZER;

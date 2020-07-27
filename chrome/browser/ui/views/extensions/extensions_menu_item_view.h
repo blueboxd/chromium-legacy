@@ -61,6 +61,10 @@ class ExtensionsMenuItemView : public views::View,
   views::ImageButton* pin_button_for_testing() { return pin_button_; }
 
  private:
+  // Maybe adjust |icon_color| to assure high enough contrast with the
+  // background.
+  SkColor GetAdjustedIconColor(SkColor icon_color) const;
+
   ExtensionsMenuButton* const primary_action_button_;
 
   std::unique_ptr<ToolbarActionViewController> controller_;

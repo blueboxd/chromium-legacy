@@ -26,6 +26,7 @@
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gl/init/gl_factory.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -34,7 +35,6 @@
 #endif
 
 #if defined(USE_OZONE)
-#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -204,15 +204,20 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
 #if BUILDFLAG(ENABLE_VULKAN)
     bool use_swiftshader = gpu_preferences.use_vulkan ==
                            gpu::VulkanImplementationName::kSwiftshader;
+    bool is_non_ozone_x11 = false;
+#if defined(USE_X11)
+    is_non_ozone_x11 = !features::IsUsingOzonePlatform();
+#endif  // defined(USE_X11)
 
-#if !defined(USE_X11)
-    // TODO(samans): Support Swiftshader on more platforms.
-    // https://crbug.com/963988
-    LOG_IF(ERROR, use_swiftshader)
-        << "Unable to use Vulkan Swiftshader on this platform. Falling back to "
-           "GPU.";
-    use_swiftshader = false;
-#endif  // !defined(USE_X11)
+    if (!is_non_ozone_x11) {
+      // TODO(samans): Support Swiftshader on more platforms.
+      // https://crbug.com/963988
+      LOG_IF(ERROR, use_swiftshader) << "Unable to use Vulkan Swiftshader on "
+                                        "this platform. Falling back to "
+                                        "GPU.";
+      use_swiftshader = false;
+    }
+
     vulkan_implementation_ = gpu::CreateVulkanImplementation(use_swiftshader);
     if (!vulkan_implementation_ ||
         !vulkan_implementation_->InitializeVulkanInstance(

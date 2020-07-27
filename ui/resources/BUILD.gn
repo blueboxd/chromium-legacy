@@ -66,7 +66,7 @@ if (!is_mac) {
 
 # On iOS and Mac the string resources need to go into a locale subfolder, which
 # introduces an extra dependency.
-if (is_ios || is_mac) {
+if (is_apple) {
   group("ui_test_pak") {
     public_deps = [
       ":repack_ui_test_mac_locale_pack",

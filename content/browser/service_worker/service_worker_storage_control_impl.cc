@@ -20,6 +20,13 @@ void DidGetRegistrationsForOrigin(
         registration_data_list,
     std::unique_ptr<std::vector<ServiceWorkerStorage::ResourceList>>
         resources_list) {
+  if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk) {
+    std::move(callback).Run(
+        status,
+        std::vector<storage::mojom::SerializedServiceWorkerRegistrationPtr>());
+    return;
+  }
+
   DCHECK_EQ(registration_data_list->size(), resources_list->size());
 
   std::vector<storage::mojom::SerializedServiceWorkerRegistrationPtr>
@@ -161,10 +168,10 @@ void ServiceWorkerStorageControlImpl::FindRegistrationForId(
 }
 
 void ServiceWorkerStorageControlImpl::GetRegistrationsForOrigin(
-    const GURL& origin,
+    const url::Origin& origin,
     GetRegistrationsForOriginCallback callback) {
   storage_->GetRegistrationsForOrigin(
-      url::Origin::Create(origin),
+      origin,
       base::BindOnce(&DidGetRegistrationsForOrigin, std::move(callback)));
 }
 

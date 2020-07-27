@@ -226,7 +226,7 @@ component("chromium_sqlite3") {
     ":sqlite_warnings",
   ]
 
-  if (is_mac || is_ios) {
+  if (is_apple) {
     frameworks = [ "CoreFoundation.framework" ]
     if (!is_ios) {
       frameworks += [ "CoreServices.framework" ]
@@ -305,7 +305,7 @@ component("dev_sqlite3") {
     ":sqlite_warnings",
   ]
 
-  if (is_mac || is_ios) {
+  if (is_apple) {
     frameworks = [ "CoreFoundation.framework" ]
     if (!is_ios) {
       frameworks += [ "CoreServices.framework" ]

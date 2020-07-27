@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom-blink-forward.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
@@ -87,6 +88,9 @@ class MODULES_EXPORT IDBValue final {
   // the IndexedDB value sent to the backing store. Conversely, removing the
   // last Blob from an IDBValue is used when unwrapping values.
   scoped_refptr<BlobDataHandle> TakeLastBlob();
+
+  static std::unique_ptr<IDBValue> ConvertReturnValue(
+      const mojom::blink::IDBReturnValuePtr& input);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IDBValue);

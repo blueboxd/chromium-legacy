@@ -219,7 +219,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 - (void)unifiedConsentCoordinatorNeedPrimaryButtonUpdate:
     (UnifiedConsentCoordinator*)coordinator {
   DCHECK_EQ(self.unifiedConsentCoordinator, coordinator);
-  [self.viewController updatePrimaryButtonStyle];
+  [self.viewController setConfirmationButtonProperties];
 }
 
 #pragma mark - UserSigninViewControllerDelegate
@@ -330,7 +330,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   [self.unifiedConsentCoordinator resetSettingLinkTapped];
   self.unifiedConsentCoordinator.uiDisabled = NO;
   [self.viewController signinDidStop];
-  [self.viewController updatePrimaryButtonStyle];
+  [self.viewController setConfirmationButtonProperties];
 }
 
 #pragma mark - Private

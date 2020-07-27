@@ -28,6 +28,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace gpu {
+class GpuMemoryBufferFactory;
+}  // namespace gpu
+
 namespace media {
 namespace test {
 class Video;
@@ -189,14 +193,20 @@ class AlignedAllocator : public std::allocator<T> {
 };
 
 // Helper to align data and extract frames from raw video streams.
-// TODO(crbug.com/1045825): Reduces number of data copies performed.
+// GetNextFrame() returns VideoFrames with a specified |storage_type|. The
+// VideoFrames are aligned by the specified |alignment| in the case of
+// MojoSharedBuffer VideoFrame. On the other hand, GpuMemoryBuffer based
+// VideoFrame is determined by the GpuMemoryBuffer allocation backend.
 class AlignedDataHelper {
  public:
-  AlignedDataHelper(const std::vector<uint8_t>& stream,
-                    uint32_t num_frames,
-                    VideoPixelFormat pixel_format,
-                    const gfx::Rect& visible_area,
-                    const gfx::Size& coded_size);
+  AlignedDataHelper(
+      const std::vector<uint8_t>& stream,
+      uint32_t num_frames,
+      VideoPixelFormat pixel_format,
+      const gfx::Rect& visible_area,
+      const gfx::Size& coded_size,
+      VideoFrame::StorageType storage_type,
+      gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory);
   ~AlignedDataHelper();
 
   // Compute and return the next frame to be sent to the encoder.
@@ -224,11 +234,19 @@ class AlignedDataHelper {
   void InitializeAlignedMemoryFrames(const std::vector<uint8_t>& stream,
                                      const VideoPixelFormat pixel_format,
                                      const gfx::Size& coded_size);
+  // Create GpuMemoryBuffer VideoFrame whose alignments is determined by
+  // a GpuMemoryBuffer allocation backend (e.g. minigbm).
+  void InitializeGpuMemoryBufferFrames(const std::vector<uint8_t>& stream,
+                                       const VideoPixelFormat pixel_format,
+                                       const gfx::Size& coded_size);
 
   // The index of VideoFrame to be read next.
   uint32_t frame_index_ = 0;
   // The number of frames in the video stream.
   const uint32_t num_frames_;
+
+  const VideoFrame::StorageType storage_type_;
+  gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
 
   // The layout of VideoFrames returned by GetNextFrame().
   base::Optional<VideoFrameLayout> layout_;

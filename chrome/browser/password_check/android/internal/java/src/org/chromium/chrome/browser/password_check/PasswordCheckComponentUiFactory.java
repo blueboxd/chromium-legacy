@@ -4,12 +4,26 @@
 
 package org.chromium.chrome.browser.password_check;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.preference.PreferenceFragmentCompat;
 
 /**
  * Use {@link #create()} to instantiate a {@link PasswordCheckComponentUi}.
  */
-class PasswordCheckComponentUiFactory {
+public class PasswordCheckComponentUiFactory {
+    /**
+     * The factory used to create components that connect to this fragment and provide data.
+     */
+    interface CreationStrategy {
+        /**
+         * Returns a component that connects to the given fragment and manipulates its data.
+         * @param fragmentView A {@link PasswordCheckFragmentView}.
+         * @return A non-null {@link PasswordCheckComponentUi}.
+         */
+        PasswordCheckComponentUi create(PasswordCheckFragmentView fragmentView);
+    }
+    private static CreationStrategy sCreationStrategy = PasswordCheckCoordinator::new;
+
     private PasswordCheckComponentUiFactory() {}
 
     /**
@@ -18,6 +32,11 @@ class PasswordCheckComponentUiFactory {
      * @return A {@link PasswordCheckComponentUi}.
      */
     public static PasswordCheckComponentUi create(PreferenceFragmentCompat fragmentView) {
-        return new PasswordCheckCoordinator((PasswordCheckFragmentView) fragmentView);
+        return sCreationStrategy.create((PasswordCheckFragmentView) fragmentView);
+    }
+
+    @VisibleForTesting
+    static void setCreationStrategy(CreationStrategy creationStrategy) {
+        sCreationStrategy = creationStrategy;
     }
 }

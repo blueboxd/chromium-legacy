@@ -89,9 +89,12 @@ source_set("eg2_tests") {
   testonly = true
   sources = [ "prerender_egtest.mm" ]
   deps = [
+    "//components/version_info",
+    "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/common:user_agent",
     "//net:test_support",
   ]
   frameworks = [ "UIKit.framework" ]

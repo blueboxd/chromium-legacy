@@ -5,10 +5,10 @@
 import {browserProxy} from '../browser_proxy/browser_proxy.js';
 import {Intent} from '../intent.js';  // eslint-disable-line no-unused-vars
 import * as Comlink from '../lib/comlink.js';
-
 import {AsyncWriter} from './async_writer.js';
-import {createPrivateTempVideoFile} from './filesystem.js';
-import {getFileWriter} from './filesystem.js';
+import {createPrivateTempVideoFile} from './file_system.js';
+// eslint-disable-next-line no-unused-vars
+import {AbstractFileEntry} from './file_system_entry.js';
 
 const VideoProcessor = (() => {
   const url = browserProxy.isMp4RecordingEnabled() ?
@@ -27,19 +27,6 @@ async function createVideoProcesoor(output) {
 }
 
 /**
- * @param {!FileEntry} file
- * @return {!Promise<!AsyncWriter>}
- */
-async function createWriterForFile(file) {
-  const fileWriter = await getFileWriter(file);
-  const doWrite = (blob) => new Promise((resolve) => {
-    fileWriter.onwriteend = resolve;
-    fileWriter.write(blob);
-  });
-  return new AsyncWriter(doWrite);
-}
-
-/**
  * @param {!Intent} intent
  * @return {!AsyncWriter}
  */
@@ -55,12 +42,12 @@ function createWriterForIntent(intent) {
  */
 export class VideoSaver {
   /**
-   * @param {!FileEntry} file
+   * @param {!AbstractFileEntry} file
    * @param {!AsyncWriter} processor
    */
   constructor(file, processor) {
     /**
-     * @const {!FileEntry}
+     * @const {!AbstractFileEntry}
      */
     this.file_ = file;
 
@@ -80,7 +67,7 @@ export class VideoSaver {
 
   /**
    * Finishes the write of video data parts and returns result video file.
-   * @return {!Promise<!FileEntry>} Result video file.
+   * @return {!Promise<!AbstractFileEntry>} Result video file.
    */
   async endWrite() {
     await this.processor_.close();
@@ -89,11 +76,11 @@ export class VideoSaver {
 
   /**
    * Creates video saver for the given file.
-   * @param {!FileEntry} file
+   * @param {!AbstractFileEntry} file
    * @return {!Promise<!VideoSaver>}
    */
   static async createForFile(file) {
-    const writer = await createWriterForFile(file);
+    const writer = await file.getWriter();
     const processor = await createVideoProcesoor(writer);
     return new VideoSaver(file, processor);
   }
@@ -105,7 +92,7 @@ export class VideoSaver {
    */
   static async createForIntent(intent) {
     const file = await createPrivateTempVideoFile();
-    const fileWriter = await createWriterForFile(file);
+    const fileWriter = await file.getWriter();
     const intentWriter = createWriterForIntent(intent);
     const writer = AsyncWriter.combine(fileWriter, intentWriter);
     const processor = await createVideoProcesoor(writer);

@@ -23,7 +23,7 @@ declare_args() {
   disable_brotli_filter = false
 
   # Multicast DNS.
-  enable_mdns = is_win || is_linux || is_fuchsia || is_mac || is_ios
+  enable_mdns = is_win || is_linux || is_fuchsia || is_apple
 
   # Reporting not used on iOS.
   enable_reporting = !is_ios

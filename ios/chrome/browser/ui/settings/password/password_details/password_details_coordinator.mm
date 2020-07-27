@@ -6,12 +6,19 @@
 
 #include "base/mac/foundation_util.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_handler.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_view_controller.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
+#include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -31,8 +38,12 @@
 // Main mediator for this coordinator.
 @property(nonatomic, strong) PasswordDetailsMediator* mediator;
 
-// Dispatcher.
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+// Module containing the reauthentication mechanism for viewing and copying
+// passwords.
+@property(nonatomic, weak) ReauthenticationModule* reauthenticationModule;
+
+// Modal alert for interactions with password.
+@property(nonatomic, strong) AlertCoordinator* alertCoordinator;
 
 @end
 
@@ -43,19 +54,20 @@
 - (instancetype)
     initWithBaseNavigationController:
         (UINavigationController*)navigationController
+                             browser:(Browser*)browser
                             password:(const autofill::PasswordForm&)password
-                passwordCheckManager:(IOSChromePasswordCheckManager*)manager
-                          dispatcher:(id<ApplicationCommands>)dispatcher {
-  self = [super initWithBaseViewController:navigationController browser:nil];
+                        reauthModule:(ReauthenticationModule*)reauthModule
+                passwordCheckManager:(IOSChromePasswordCheckManager*)manager {
+  self = [super initWithBaseViewController:navigationController
+                                   browser:browser];
   if (self) {
     DCHECK(navigationController);
     DCHECK(manager);
-    DCHECK(dispatcher);
 
     _baseNavigationController = navigationController;
     _password = password;
     _manager = manager;
-    _dispatcher = dispatcher;
+    _reauthenticationModule = reauthModule;
   }
   return self;
 }
@@ -73,6 +85,7 @@
   self.mediator.consumer = self.viewController;
   self.viewController.handler = self;
   self.viewController.commandsDispatcher = self.dispatcher;
+  self.viewController.reauthModule = self.reauthenticationModule;
 
   [self.baseNavigationController pushViewController:self.viewController
                                            animated:YES];
@@ -88,6 +101,36 @@
 
 - (void)passwordDetailsViewControllerDidDisappear {
   [self.delegate passwordDetailsCoordinatorDidRemove:self];
+}
+
+- (void)showPasscodeDialog {
+  NSString* title =
+      l10n_util::GetNSString(IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_TITLE);
+  NSString* message =
+      l10n_util::GetNSString(IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_CONTENT);
+  self.alertCoordinator = [[AlertCoordinator alloc]
+      initWithBaseViewController:self.baseViewController
+                         browser:self.browser
+                           title:title
+                         message:message];
+
+  __weak __typeof(self) weakSelf = self;
+  OpenNewTabCommand* command =
+      [OpenNewTabCommand commandWithURLFromChrome:GURL(kPasscodeArticleURL)];
+
+  [self.alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_OK)
+                                   action:nil
+                                    style:UIAlertActionStyleCancel];
+
+  [self.alertCoordinator
+      addItemWithTitle:l10n_util::GetNSString(
+                           IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_LEARN_HOW)
+                action:^{
+                  [weakSelf.dispatcher closeSettingsUIAndOpenURL:command];
+                }
+                 style:UIAlertActionStyleDefault];
+
+  [self.alertCoordinator start];
 }
 
 @end

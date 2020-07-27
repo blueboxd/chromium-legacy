@@ -91,11 +91,12 @@ class VideoEncoderTest : public ::testing::Test {
  public:
   std::unique_ptr<VideoEncoder> CreateVideoEncoder(
       Video* video,
-      VideoEncoderClientConfig config) {
+      const VideoEncoderClientConfig& config) {
     LOG_ASSERT(video);
 
     auto video_encoder =
-        VideoEncoder::Create(config, CreateBitstreamProcessors(video, config));
+        VideoEncoder::Create(config, g_env->GetGpuMemoryBufferFactory(),
+                             CreateBitstreamProcessors(video, config));
     LOG_ASSERT(video_encoder);
 
     if (!video_encoder->Initialize(video))
@@ -107,7 +108,7 @@ class VideoEncoderTest : public ::testing::Test {
  private:
   std::vector<std::unique_ptr<BitstreamProcessor>> CreateBitstreamProcessors(
       Video* video,
-      VideoEncoderClientConfig config) {
+      const VideoEncoderClientConfig& config) {
     std::vector<std::unique_ptr<BitstreamProcessor>> bitstream_processors;
     if (!g_env->IsBitstreamValidatorEnabled()) {
       return bitstream_processors;
@@ -250,7 +251,8 @@ TEST_F(VideoEncoderTest, Initialize) {
 // are triggered upon destroying.
 TEST_F(VideoEncoderTest, DestroyBeforeInitialize) {
   VideoEncoderClientConfig config(g_env->Video(), g_env->Profile());
-  auto video_encoder = VideoEncoder::Create(config);
+  auto video_encoder =
+      VideoEncoder::Create(config, g_env->GetGpuMemoryBufferFactory());
 
   EXPECT_NE(video_encoder, nullptr);
 }
@@ -347,6 +349,23 @@ TEST_F(VideoEncoderTest, DynamicFramerateChange) {
 
   EXPECT_EQ(encoder->GetFlushDoneCount(), 1u);
   EXPECT_EQ(encoder->GetFrameReleasedCount(), config.num_frames_to_encode);
+  EXPECT_TRUE(encoder->WaitForBitstreamProcessors());
+}
+
+TEST_F(VideoEncoderTest, FlushAtEndOfStream_NV12Dmabuf) {
+  auto nv12_video = g_env->Video()->ConvertToNV12();
+  ASSERT_TRUE(nv12_video);
+
+  VideoEncoderClientConfig config(nv12_video.get(), g_env->Profile());
+  config.input_storage_type =
+      VideoEncodeAccelerator::Config::StorageType::kDmabuf;
+
+  auto encoder = CreateVideoEncoder(nv12_video.get(), config);
+
+  encoder->Encode();
+  EXPECT_TRUE(encoder->WaitForFlushDone());
+  EXPECT_EQ(encoder->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(encoder->GetFrameReleasedCount(), nv12_video->NumFrames());
   EXPECT_TRUE(encoder->WaitForBitstreamProcessors());
 }
 }  // namespace test

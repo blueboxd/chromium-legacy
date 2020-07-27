@@ -48,6 +48,7 @@ struct TestParams {
 };
 
 static const char kVideoCaptureHtmlFile[] = "/media/video_capture_test.html";
+static const char kRequestDevicePermission[] = "requestDevicePermission()";
 static const char kEnumerateVideoCaptureDevicesAndVerify[] =
     "enumerateVideoCaptureDevicesAndVerifyCount(%d)";
 static const char kRegisterForDeviceChangeEvent[] =
@@ -170,6 +171,15 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
     video_source_provider_.reset();
   }
 
+  void RequestDevicePermission() {
+    const std::string javascript_to_execute =
+        base::StringPrintf(kRequestDevicePermission);
+    std::string result;
+    ASSERT_TRUE(
+        ExecuteScriptAndExtractString(shell(), javascript_to_execute, &result));
+    ASSERT_EQ("OK", result);
+  }
+
   void EnumerateDevicesInRendererAndVerifyDeviceCount(
       int expected_device_count) {
     const std::string javascript_to_execute = base::StringPrintf(
@@ -249,6 +259,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcVideoCaptureServiceEnumerationBrowserTest,
   ConnectToService();
 
   // Exercise
+  EnumerateDevicesInRendererAndVerifyDeviceCount(0);
   AddVirtualDevice("test");
   EnumerateDevicesInRendererAndVerifyDeviceCount(1);
 
@@ -263,6 +274,9 @@ IN_PROC_BROWSER_TEST_P(WebRtcVideoCaptureServiceEnumerationBrowserTest,
   ConnectToService();
 
   AddVirtualDevice("test_1");
+  // Request permission using getUserMedia() after adding the first device.
+  // Otherwise, getUserMedia() will fail with NotFoundError.
+  RequestDevicePermission();
   AddVirtualDevice("test_2");
   EnumerateDevicesInRendererAndVerifyDeviceCount(2);
   RemoveVirtualDevice("test_1");

@@ -71,6 +71,22 @@ bool ShouldTreatAsPublicAddress(
 COMPONENT_EXPORT(NETWORK_CPP)
 void UpgradeInsecureRequest(GURL* url);
 
+// Checks whether |policy| is a valid required CSP attribute according to
+// https://w3c.github.io/webappsec-cspee/#iframe-csp-valid-attribute-value.
+// |policy| must be a vector containing exactly one entry.
+// The context can be null.
+COMPONENT_EXPORT(NETWORK_CPP)
+bool IsValidRequiredCSPAttr(
+    const std::vector<mojom::ContentSecurityPolicyPtr>& policy,
+    const mojom::ContentSecurityPolicy* context,
+    std::string& error_message);
+
+// Checks whether |policy_a| subsumes the policy list |policies_b| according to
+// the algorithm https://w3c.github.io/webappsec-cspee/#subsume-policy-list.
+COMPONENT_EXPORT(NETWORK_CPP)
+bool Subsumes(const mojom::ContentSecurityPolicy& policy_a,
+              const std::vector<mojom::ContentSecurityPolicyPtr>& policies_b);
+
 COMPONENT_EXPORT(NETWORK_CPP)
 mojom::CSPDirectiveName ToCSPDirectiveName(const std::string& name);
 

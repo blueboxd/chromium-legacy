@@ -102,9 +102,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // The page is trying to move the RenderView's representation in the client.
   virtual void RequestSetBounds(const gfx::Rect& new_bounds) {}
 
-  // The page wants to close the active view in this tab.
-  virtual void RouteCloseEvent(RenderViewHost* rvh) {}
-
   // Return a dummy RendererPreferences object that will be used by the renderer
   // associated with the owning RenderViewHost.
   virtual blink::mojom::RendererPreferences GetRendererPrefs(

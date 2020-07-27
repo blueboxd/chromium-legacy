@@ -116,3 +116,15 @@ export function promisify(func) {
                }
              }));
 }
+
+/**
+ * Wraps a function with completion callback and error callback as a Promise.
+ * @param {function(...?): ?} func The last two parameters of the function
+ *     should be a completion callback and an error callback.
+ * @return {function(...?): !Promise}
+ */
+export function promisifyWithError(func) {
+  return (...args) => new Promise(
+             (resolve, reject) => func(
+                 ...args, (val) => resolve(val), (error) => reject(error)));
+}

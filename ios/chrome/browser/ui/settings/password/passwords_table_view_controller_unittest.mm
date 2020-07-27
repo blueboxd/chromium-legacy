@@ -18,7 +18,7 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/passwords/ios_chrome_bulk_leak_check_service_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
@@ -90,18 +90,17 @@ class PasswordsTableViewControllerTest
           password_manager::features::kPasswordCheck);
     }
 
-    TestChromeBrowserState::Builder test_cbs_builder;
-    chrome_browser_state_ = test_cbs_builder.Build();
+    browser_ = std::make_unique<TestBrowser>();
     ChromeTableViewControllerTest::SetUp();
     IOSChromePasswordStoreFactory::GetInstance()->SetTestingFactory(
-        chrome_browser_state_.get(),
+        browser_->GetBrowserState(),
         base::BindRepeating(
             &password_manager::BuildPasswordStore<web::BrowserState,
                                                   TestPasswordStore>));
 
     IOSChromeBulkLeakCheckServiceFactory::GetInstance()
         ->SetTestingFactoryAndUse(
-            chrome_browser_state_.get(),
+            browser_->GetBrowserState(),
             base::BindLambdaForTesting([](web::BrowserState*) {
               return std::unique_ptr<KeyedService>(
                   std::make_unique<MockBulkLeakCheckService>());
@@ -129,19 +128,19 @@ class PasswordsTableViewControllerTest
   TestPasswordStore& GetTestStore() {
     return *static_cast<TestPasswordStore*>(
         IOSChromePasswordStoreFactory::GetForBrowserState(
-            chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS)
+            browser_->GetBrowserState(), ServiceAccessType::EXPLICIT_ACCESS)
             .get());
   }
 
   MockBulkLeakCheckService& GetMockPasswordCheckService() {
     return *static_cast<MockBulkLeakCheckService*>(
         IOSChromeBulkLeakCheckServiceFactory::GetForBrowserState(
-            chrome_browser_state_.get()));
+            browser_->GetBrowserState()));
   }
 
   ChromeTableViewController* InstantiateController() override {
-    return [[PasswordsTableViewController alloc]
-        initWithBrowserState:chrome_browser_state_.get()];
+    return
+        [[PasswordsTableViewController alloc] initWithBrowser:browser_.get()];
   }
 
   void ChangePasswordCheckState(PasswordCheckUIState state) {
@@ -275,7 +274,7 @@ class PasswordsTableViewControllerTest
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   web::WebTaskEnvironment task_environment_;
-  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  std::unique_ptr<TestBrowser> browser_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 

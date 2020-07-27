@@ -11,7 +11,9 @@
 
   <cr-lazy-render id="profileTypeChoice">
     <template>
-      <profile-type-choice slot="view"></profile-type-choice>
+      <profile-type-choice slot="view"
+          profile-theme-info="[[newProfileThemeInfo]]">
+      </profile-type-choice>
     </template>
   </cr-lazy-render>
 </cr-view-manager>

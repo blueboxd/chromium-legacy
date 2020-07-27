@@ -201,6 +201,11 @@ class SafetyCheckHandlerTest : public ChromeRenderViewHostTestHarness {
   void VerifyDisplayString(const base::DictionaryValue* event,
                            const std::string& expected);
 
+  // Replaces any instances of browser name (e.g. Google Chrome, Chromium,
+  // etc) with "browser" to make sure tests work both on Chromium and
+  // Google Chrome.
+  void ReplaceBrowserName(base::string16* s);
+
  protected:
   safety_check::TestUpdateCheckHelper* update_helper_ = nullptr;
   TestVersionUpdater* version_updater_ = nullptr;
@@ -211,12 +216,6 @@ class SafetyCheckHandlerTest : public ChromeRenderViewHostTestHarness {
   content::TestWebUI test_web_ui_;
   std::unique_ptr<TestingSafetyCheckHandler> safety_check_;
   base::HistogramTester histogram_tester_;
-
- private:
-  // Replaces any instances of browser name (e.g. Google Chrome, Chromium,
-  // etc) with "browser" to make sure tests work both on Chromium and
-  // Google Chrome.
-  void ReplaceBrowserName(base::string16* s);
 };
 
 void SafetyCheckHandlerTest::SetUp() {
@@ -1136,6 +1135,79 @@ TEST_F(SafetyCheckHandlerTest, CheckParentRanDisplayString) {
     EXPECT_EQ(base::UTF8ToUTF16(std::get<0>(tuple)), display_string);
   }
 }
+
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+TEST_F(SafetyCheckHandlerTest, CheckChromeCleanerRanDisplayString) {
+  // Test string without timestamp.
+  base::Time null_time;
+  base::string16 display_string =
+      safety_check_->GetStringForChromeCleanerRan(null_time, null_time);
+  ReplaceBrowserName(&display_string);
+  EXPECT_EQ(
+      display_string,
+      base::UTF8ToUTF16("Browser checks for unwanted software once a week"));
+  // Test strings with timestamp.
+  // 1 second before midnight Dec 31st 2020, so that -(24h-1s) is still on the
+  // same day. This test time is hard coded to prevent DST flakiness, see
+  // crbug.com/1066576.
+  const base::Time system_time =
+      base::Time::FromDoubleT(1609459199).LocalMidnight() -
+      base::TimeDelta::FromSeconds(1);
+  // Display strings for given time deltas in seconds.
+  std::vector<std::tuple<std::string, int>> tuples{
+      std::make_tuple("Browser checks for unwanted software once a week. Last "
+                      "checked: a moment ago.",
+                      1),
+      std::make_tuple("Browser checks for unwanted software once a week. Last "
+                      "checked: a moment ago.",
+                      59),
+      std::make_tuple("Browser checks for unwanted software once a week. Last "
+                      "checked: 1 minute ago.",
+                      60),
+      std::make_tuple("Browser checks for unwanted software once a week. Last "
+                      "checked: 2 minutes ago.",
+                      60 * 2),
+      std::make_tuple("Browser checks for unwanted software once a week. Last "
+                      "checked: 59 minutes ago.",
+                      60 * 60 - 1),
+      std::make_tuple("Browser checks for unwanted software once a week. Last "
+                      "checked: 1 hour ago.",
+                      60 * 60),
+      std::make_tuple("Browser checks for unwanted software once a week. Last "
+                      "checked: 2 hours ago.",
+                      60 * 60 * 2),
+      std::make_tuple("Browser checks for unwanted software once a week. Last "
+                      "checked: 23 hours ago.",
+                      60 * 60 * 23),
+      std::make_tuple("Browser checks for unwanted software once a week. Last "
+                      "checked: yesterday.",
+                      60 * 60 * 24),
+      std::make_tuple("Browser checks for unwanted software once a week. Last "
+                      "checked: yesterday.",
+                      60 * 60 * 24 * 2 - 1),
+      std::make_tuple("Browser checks for unwanted software once a week. Last "
+                      "checked: 2 days ago.",
+                      60 * 60 * 24 * 2),
+      std::make_tuple("Browser checks for unwanted software once a week. Last "
+                      "checked: 2 days ago.",
+                      60 * 60 * 24 * 3 - 1),
+      std::make_tuple("Browser checks for unwanted software once a week. Last "
+                      "checked: 3 days ago.",
+                      60 * 60 * 24 * 3),
+      std::make_tuple("Browser checks for unwanted software once a week. Last "
+                      "checked: 3 days ago.",
+                      60 * 60 * 24 * 4 - 1)};
+  // Test that above time deltas produce the corresponding display strings.
+  for (auto tuple : tuples) {
+    const base::Time time =
+        system_time - base::TimeDelta::FromSeconds(std::get<1>(tuple));
+    display_string =
+        safety_check_->GetStringForChromeCleanerRan(time, system_time);
+    ReplaceBrowserName(&display_string);
+    EXPECT_EQ(base::UTF8ToUTF16(std::get<0>(tuple)), display_string);
+  }
+}
+#endif
 
 TEST_F(SafetyCheckHandlerTest, CheckSafetyCheckStartedWebUiEvents) {
   safety_check_->SendSafetyCheckStartedWebUiUpdates();

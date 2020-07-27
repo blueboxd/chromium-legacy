@@ -29,6 +29,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.password_check.PasswordCheckComponentUiFactory;
+import org.chromium.chrome.browser.password_check.PasswordCheckFragmentView;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
 import org.chromium.chrome.browser.safety_check.SafetyCheckCoordinator;
@@ -279,7 +281,9 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
             framentSettingsLauncher.setSettingsLauncher(mSettingsLauncher);
         } else if (fragment instanceof SafetyCheckSettingsFragment) {
             SafetyCheckCoordinator.create((SafetyCheckSettingsFragment) fragment,
-                    new SafetyCheckUpdatesDelegateImpl(this));
+                    new SafetyCheckUpdatesDelegateImpl(this), new SettingsLauncherImpl());
+        } else if (fragment instanceof PasswordCheckFragmentView) {
+            PasswordCheckComponentUiFactory.create((PasswordCheckFragmentView) fragment);
         }
     }
 

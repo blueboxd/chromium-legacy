@@ -47,6 +47,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 #include "url/origin.h"
 
 using base::test::RunOnceCallback;
@@ -607,10 +608,16 @@ TEST_F(DownloadManagerTest, StartDownload) {
   EXPECT_CALL(GetMockDownloadManagerDelegate(), GetNextId_(_))
       .WillOnce(RunOnceCallback<0>(local_id));
 
-#if !defined(USE_X11)
-  // Doing nothing will set the default download directory to null.
-  EXPECT_CALL(GetMockDownloadManagerDelegate(), GetSaveDir(_, _, _));
+  // TODO(https://crbug.com/1109690): figure out what to do for Ozone/Linux.
+  // Probably, this can be removed.
+  bool should_call_get_save_dir = true;
+#if defined(USE_X11)
+  should_call_get_save_dir = features::IsUsingOzonePlatform();
 #endif
+  if (should_call_get_save_dir) {
+    // Doing nothing will set the default download directory to null.
+    EXPECT_CALL(GetMockDownloadManagerDelegate(), GetSaveDir(_, _, _));
+  }
   EXPECT_CALL(GetMockDownloadManagerDelegate(),
               ApplicationClientIdForFileScanning())
       .WillRepeatedly(Return("client-id"));
@@ -643,10 +650,16 @@ TEST_F(DownloadManagerTest, StartDownloadWithoutHistoryDB) {
   EXPECT_CALL(GetMockDownloadManagerDelegate(), GetNextId_(_))
       .WillOnce(RunOnceCallback<0>(download::DownloadItem::kInvalidId));
 
-#if !defined(USE_X11)
-  // Doing nothing will set the default download directory to null.
-  EXPECT_CALL(GetMockDownloadManagerDelegate(), GetSaveDir(_, _, _));
+  // TODO(https://crbug.com/1109690): figure out what to do for Ozone/Linux.
+  // Probably, this can be removed.
+  bool should_call_get_save_dir = true;
+#if defined(USE_X11)
+  should_call_get_save_dir = features::IsUsingOzonePlatform();
 #endif
+  if (should_call_get_save_dir) {
+    // Doing nothing will set the default download directory to null.
+    EXPECT_CALL(GetMockDownloadManagerDelegate(), GetSaveDir(_, _, _));
+  }
   EXPECT_CALL(GetMockDownloadManagerDelegate(),
               ApplicationClientIdForFileScanning())
       .WillRepeatedly(Return("client-id"));

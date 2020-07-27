@@ -21,9 +21,12 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.password_check.BulkLeakCheckServiceState;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.PasswordsState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.SafeBrowsingState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.UpdatesState;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.ref.WeakReference;
@@ -35,6 +38,8 @@ public class SafetyCheckMediatorTest {
     @Mock
     private SafetyCheckUpdatesDelegate mUpdatesDelegate;
     @Mock
+    private SettingsLauncher mSettingsLauncher;
+    @Mock
     private SafetyCheckBridge mBridge;
     @Mock
     private Handler mHandler;
@@ -45,7 +50,8 @@ public class SafetyCheckMediatorTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mModel = SafetyCheckProperties.createSafetyCheckModel();
-        mMediator = new SafetyCheckMediator(mModel, mUpdatesDelegate, mBridge, mHandler);
+        mMediator = new SafetyCheckMediator(
+                mModel, mUpdatesDelegate, mSettingsLauncher, mBridge, mHandler);
         // Execute any delayed tasks immediately.
         doAnswer(invocation -> {
             Runnable runnable = (Runnable) (invocation.getArguments()[0]);
@@ -171,5 +177,173 @@ public class SafetyCheckMediatorTest {
         mMediator.performSafetyCheck();
         assertEquals(PasswordsState.COMPROMISED_EXIST,
                 mModel.get(SafetyCheckProperties.PASSWORDS_STATE));
+    }
+
+    @Test
+    public void testNullStateLessThan10MinsPasswordsSafeState() {
+        // Ran just now.
+        SharedPreferencesManager preferenceManager = SharedPreferencesManager.getInstance();
+        preferenceManager.writeLong(ChromePreferenceKeys.SETTINGS_SAFETY_CHECK_LAST_RUN_TIMESTAMP,
+                System.currentTimeMillis());
+        // Safe Browsing: on.
+        doAnswer(invocation -> {
+            mMediator.onSafeBrowsingCheckResult(SafeBrowsingStatus.ENABLED_STANDARD);
+            return null;
+        })
+                .when(mBridge)
+                .checkSafeBrowsing();
+        // Passwords: safe state.
+        when(mBridge.savedPasswordsExist()).thenReturn(true);
+        when(mBridge.getNumberOfPasswordLeaksFromLastCheck()).thenReturn(0);
+        // Updates: outdated.
+        doAnswer(invocation -> {
+            Callback<Integer> callback =
+                    ((WeakReference<Callback<Integer>>) invocation.getArguments()[0]).get();
+            callback.onResult(UpdatesState.OUTDATED);
+            return null;
+        })
+                .when(mUpdatesDelegate)
+                .checkForUpdates(any(WeakReference.class));
+        mMediator.setInitialState();
+        // Verify the states.
+        assertEquals(SafeBrowsingState.ENABLED_STANDARD,
+                mModel.get(SafetyCheckProperties.SAFE_BROWSING_STATE));
+        assertEquals(PasswordsState.SAFE, mModel.get(SafetyCheckProperties.PASSWORDS_STATE));
+        assertEquals(UpdatesState.OUTDATED, mModel.get(SafetyCheckProperties.UPDATES_STATE));
+    }
+
+    @Test
+    public void testNullStateLessThan10MinsNoSavedPasswords() {
+        // Ran just now.
+        SharedPreferencesManager preferenceManager = SharedPreferencesManager.getInstance();
+        preferenceManager.writeLong(ChromePreferenceKeys.SETTINGS_SAFETY_CHECK_LAST_RUN_TIMESTAMP,
+                System.currentTimeMillis());
+        // Safe Browsing: disabled by admin.
+        doAnswer(invocation -> {
+            mMediator.onSafeBrowsingCheckResult(SafeBrowsingStatus.DISABLED_BY_ADMIN);
+            return null;
+        })
+                .when(mBridge)
+                .checkSafeBrowsing();
+        // Passwords: no passwords.
+        when(mBridge.savedPasswordsExist()).thenReturn(false);
+        when(mBridge.getNumberOfPasswordLeaksFromLastCheck()).thenReturn(0);
+        // Updates: offline.
+        doAnswer(invocation -> {
+            Callback<Integer> callback =
+                    ((WeakReference<Callback<Integer>>) invocation.getArguments()[0]).get();
+            callback.onResult(UpdatesState.OFFLINE);
+            return null;
+        })
+                .when(mUpdatesDelegate)
+                .checkForUpdates(any(WeakReference.class));
+        mMediator.setInitialState();
+        // Verify the states.
+        assertEquals(SafeBrowsingState.DISABLED_BY_ADMIN,
+                mModel.get(SafetyCheckProperties.SAFE_BROWSING_STATE));
+        assertEquals(
+                PasswordsState.NO_PASSWORDS, mModel.get(SafetyCheckProperties.PASSWORDS_STATE));
+        assertEquals(UpdatesState.OFFLINE, mModel.get(SafetyCheckProperties.UPDATES_STATE));
+    }
+
+    @Test
+    public void testNullStateLessThan10MinsPasswordsUnsafeState() {
+        // Ran just now.
+        SharedPreferencesManager preferenceManager = SharedPreferencesManager.getInstance();
+        preferenceManager.writeLong(ChromePreferenceKeys.SETTINGS_SAFETY_CHECK_LAST_RUN_TIMESTAMP,
+                System.currentTimeMillis());
+        // Safe Browsing: off.
+        doAnswer(invocation -> {
+            mMediator.onSafeBrowsingCheckResult(SafeBrowsingStatus.DISABLED);
+            return null;
+        })
+                .when(mBridge)
+                .checkSafeBrowsing();
+        // Passwords: compromised state.
+        when(mBridge.savedPasswordsExist()).thenReturn(true);
+        when(mBridge.getNumberOfPasswordLeaksFromLastCheck()).thenReturn(18);
+        // Updates: updated.
+        doAnswer(invocation -> {
+            Callback<Integer> callback =
+                    ((WeakReference<Callback<Integer>>) invocation.getArguments()[0]).get();
+            callback.onResult(UpdatesState.UPDATED);
+            return null;
+        })
+                .when(mUpdatesDelegate)
+                .checkForUpdates(any(WeakReference.class));
+        mMediator.setInitialState();
+        // Verify the states.
+        assertEquals(
+                SafeBrowsingState.DISABLED, mModel.get(SafetyCheckProperties.SAFE_BROWSING_STATE));
+        assertEquals(PasswordsState.COMPROMISED_EXIST,
+                mModel.get(SafetyCheckProperties.PASSWORDS_STATE));
+        assertEquals(UpdatesState.UPDATED, mModel.get(SafetyCheckProperties.UPDATES_STATE));
+    }
+
+    @Test
+    public void testNullStateMoreThan10MinsPasswordsSafeState() {
+        // Ran 20 mins ago.
+        SharedPreferencesManager preferenceManager = SharedPreferencesManager.getInstance();
+        preferenceManager.writeLong(ChromePreferenceKeys.SETTINGS_SAFETY_CHECK_LAST_RUN_TIMESTAMP,
+                System.currentTimeMillis() - (20 * 60 * 1000));
+        // Safe Browsing: on.
+        doAnswer(invocation -> {
+            mMediator.onSafeBrowsingCheckResult(SafeBrowsingStatus.ENABLED_STANDARD);
+            return null;
+        })
+                .when(mBridge)
+                .checkSafeBrowsing();
+        // Passwords: safe state.
+        when(mBridge.savedPasswordsExist()).thenReturn(true);
+        when(mBridge.getNumberOfPasswordLeaksFromLastCheck()).thenReturn(0);
+        // Updates: outdated.
+        doAnswer(invocation -> {
+            Callback<Integer> callback =
+                    ((WeakReference<Callback<Integer>>) invocation.getArguments()[0]).get();
+            callback.onResult(UpdatesState.OUTDATED);
+            return null;
+        })
+                .when(mUpdatesDelegate)
+                .checkForUpdates(any(WeakReference.class));
+        mMediator.setInitialState();
+        // Verify the states.
+        assertEquals(
+                SafeBrowsingState.UNCHECKED, mModel.get(SafetyCheckProperties.SAFE_BROWSING_STATE));
+        assertEquals(PasswordsState.UNCHECKED, mModel.get(SafetyCheckProperties.PASSWORDS_STATE));
+        assertEquals(UpdatesState.UNCHECKED, mModel.get(SafetyCheckProperties.UPDATES_STATE));
+    }
+
+    @Test
+    public void testNullStateMoreThan10MinsPasswordsUnsafeState() {
+        // Ran 20 mins ago.
+        SharedPreferencesManager preferenceManager = SharedPreferencesManager.getInstance();
+        preferenceManager.writeLong(ChromePreferenceKeys.SETTINGS_SAFETY_CHECK_LAST_RUN_TIMESTAMP,
+                System.currentTimeMillis() - (20 * 60 * 1000));
+        // Safe Browsing: off.
+        doAnswer(invocation -> {
+            mMediator.onSafeBrowsingCheckResult(SafeBrowsingStatus.DISABLED);
+            return null;
+        })
+                .when(mBridge)
+                .checkSafeBrowsing();
+        // Passwords: compromised state.
+        when(mBridge.savedPasswordsExist()).thenReturn(true);
+        when(mBridge.getNumberOfPasswordLeaksFromLastCheck()).thenReturn(18);
+        // Updates: updated.
+        doAnswer(invocation -> {
+            Callback<Integer> callback =
+                    ((WeakReference<Callback<Integer>>) invocation.getArguments()[0]).get();
+            callback.onResult(UpdatesState.UPDATED);
+            return null;
+        })
+                .when(mUpdatesDelegate)
+                .checkForUpdates(any(WeakReference.class));
+        mMediator.setInitialState();
+        // Verify the states.
+        assertEquals(
+                SafeBrowsingState.UNCHECKED, mModel.get(SafetyCheckProperties.SAFE_BROWSING_STATE));
+        assertEquals(PasswordsState.COMPROMISED_EXIST,
+                mModel.get(SafetyCheckProperties.PASSWORDS_STATE));
+        assertEquals(UpdatesState.UNCHECKED, mModel.get(SafetyCheckProperties.UPDATES_STATE));
     }
 }

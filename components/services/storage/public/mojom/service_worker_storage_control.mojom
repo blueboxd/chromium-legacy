@@ -131,7 +131,7 @@ interface ServiceWorkerStorageControl {
       (ServiceWorkerFindRegistrationResult result);
 
   // Returns all stored registrations for a given origin.
-  GetRegistrationsForOrigin(url.mojom.Url origin) =>
+  GetRegistrationsForOrigin(url.mojom.Origin origin) =>
       (ServiceWorkerDatabaseStatus status,
        array<SerializedServiceWorkerRegistration> registrations);
 

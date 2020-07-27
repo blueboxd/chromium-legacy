@@ -222,7 +222,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
       const blink::SessionStorageNamespaceId& session_storage_namespace_id)
       override;
   blink::WebPagePopup* CreatePopup(blink::WebLocalFrame* creator) override;
-  void CloseWindowSoon() override;
   base::StringPiece GetSessionStorageNamespaceId() override;
   void PrintPage(blink::WebLocalFrame* frame) override;
   void SetValidationMessageDirection(base::string16* main_text,
@@ -338,8 +337,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
     CONNECTION_ERROR,
   };
 
-  static scoped_refptr<base::SingleThreadTaskRunner> GetCleanupTaskRunner();
-
   // Initialize() is separated out from the constructor because it is possible
   // to accidentally call virtual functions. All RenderViewImpl creation is
   // fronted by the Create() method which ensures Initialize() is always called
@@ -410,10 +407,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // and put it in the same position in the .cc file.
 
   // Misc private functions ----------------------------------------------------
-
-  // Request the window to close from the renderer by sending the request to the
-  // browser.
-  void DoDeferredClose();
 
 #if defined(OS_ANDROID)
   // Make the video capture devices (e.g. webcam) stop/resume delivering video

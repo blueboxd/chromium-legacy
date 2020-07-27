@@ -103,9 +103,12 @@ class SpellcheckService : public KeyedService,
   // Get the best match of a supported accept language code for the provided
   // language tag. Returns an empty string if no match is found. Method cannot
   // be defined in spellcheck_common.h as it depends on l10n_util, and code
-  // under components cannot depend on ui/base.
+  // under components cannot depend on ui/base. If |generic_only| is true,
+  // then only return the language subtag (first part of the full BCP47 tag)
+  // if the generic accept language is supported by the browser.
   static std::string GetSupportedAcceptLanguageCode(
-      const std::string& supported_language_full_tag);
+      const std::string& supported_language_full_tag,
+      bool generic_only = false);
 
 #if defined(OS_WIN)
   // Since Windows platform dictionary support is determined asynchronously,
@@ -216,12 +219,18 @@ class SpellcheckService : public KeyedService,
   static std::string GetLanguageAndScriptTag(const std::string& full_tag,
                                              bool include_script_tag);
 
+#if defined(OS_WIN)
+  // Returns the language subtag (first part of the full BCP47 tag)
+  // if the generic accept language is supported by the browser.
+  static std::string GetSupportedAcceptLanguageCodeGenericOnly(
+      const std::string& supported_language_full_tag,
+      const std::vector<std::string>& accept_languages);
+
   // Returns true if full BCP47 language tag contains private use subtag (e.g in
   // the tag "ja-Latn-JP-x-ext"), indicating the tag is only for use by private
   // agreement.
   static bool HasPrivateUseSubTag(const std::string& full_tag);
 
-#if defined(OS_WIN)
   // Returns the BCP47 language tag to pass to the Windows spellcheck API, based
   // on the accept language and full tag, with special logic for languages that
   // can be written in different scripts.

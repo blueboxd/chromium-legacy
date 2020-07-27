@@ -28,6 +28,7 @@ js_library("camera") {
     "..:chrome_util",
     "..:metrics",
     "..:type",
+    "../models:file_system_entry",
     "../models:result_saver",
     "camera:layout",
     "camera:modes",
@@ -44,6 +45,7 @@ js_library("camera_intent") {
   deps = [
     ":camera",
     "..:chrome_util",
+    "../models:file_system_entry",
     "../models:video_saver",
     "camera:review_result",
   ]

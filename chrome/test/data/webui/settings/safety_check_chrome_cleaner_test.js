@@ -117,7 +117,10 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
             page: page,
             iconStatus: SafetyCheckIconStatus.SAFE,
             label: 'Device software',
+            buttonLabel: 'More',
+            buttonAriaLabel: 'Show details of the device software check',
           });
+          expectChromeCleanerRouteButtonClickActions();
           break;
         default:
           // Not covered by this test.

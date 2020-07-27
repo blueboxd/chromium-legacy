@@ -237,12 +237,18 @@ bool SpellcheckService::SignalStatusEvent(
 
 // static
 std::string SpellcheckService::GetSupportedAcceptLanguageCode(
-    const std::string& supported_language_full_tag) {
+    const std::string& supported_language_full_tag,
+    bool generic_only) {
   // Default to accept language in hardcoded list of Hunspell dictionaries
   // (kSupportedSpellCheckerLanguages).
   std::string supported_accept_language =
       spellcheck::GetCorrespondingSpellCheckLanguage(
           supported_language_full_tag);
+  if (generic_only) {
+    supported_accept_language = SpellcheckService::GetLanguageAndScriptTag(
+        supported_accept_language,
+        /* include_script_tag= */ false);
+  }
 
 #if defined(OS_WIN)
   if (!spellcheck::UseBrowserSpellChecker())
@@ -257,6 +263,11 @@ std::string SpellcheckService::GetSupportedAcceptLanguageCode(
   // languages settings page.
   std::vector<std::string> accept_languages;
   l10n_util::GetAcceptLanguages(&accept_languages);
+
+  if (generic_only) {
+    return GetSupportedAcceptLanguageCodeGenericOnly(
+        supported_language_full_tag, accept_languages);
+  }
 
   // First try exact match. Per BCP47, tags are in ASCII and should be treated
   // as case-insensitive (although there are conventions for the capitalization
@@ -284,10 +295,10 @@ std::string SpellcheckService::GetSupportedAcceptLanguageCode(
                      return base::EqualsCaseInsensitiveASCII(
                          SpellcheckService::GetLanguageAndScriptTag(
                              supported_language_full_tag,
-                             /* include_script_tag */ true),
+                             /* include_script_tag= */ true),
                          SpellcheckService::GetLanguageAndScriptTag(
                              accept_language,
-                             /* include_script_tag */ true));
+                             /* include_script_tag= */ true));
                    });
 
   if (iter != accept_languages.end())
@@ -297,30 +308,8 @@ std::string SpellcheckService::GetSupportedAcceptLanguageCode(
   // kok as an accept language, but if the Konkani language pack is
   // installed the Windows spellcheck API reports kok-Deva-IN for the
   // dictionary name.
-  iter =
-      std::find_if(accept_languages.begin(), accept_languages.end(),
-                   [supported_language_full_tag](const auto& accept_language) {
-                     return base::EqualsCaseInsensitiveASCII(
-                         SpellcheckService::GetLanguageAndScriptTag(
-                             supported_language_full_tag,
-                             /* include_script_tag */ false),
-                         SpellcheckService::GetLanguageAndScriptTag(
-                             accept_language,
-                             /* include_script_tag */ false));
-                   });
-
-  if (iter != accept_languages.end()) {
-    // Special case for Serbian--"sr" implies Cyrillic script. Don't mark it as
-    // supported for sr-Latn*.
-    if (base::EqualsCaseInsensitiveASCII(
-            SpellcheckService::GetLanguageAndScriptTag(
-                supported_language_full_tag,
-                /* include_script_tag */ true),
-            "sr-Latn")) {
-      return "";
-    }
-    return *iter;
-  }
+  return GetSupportedAcceptLanguageCodeGenericOnly(supported_language_full_tag,
+                                                   accept_languages);
 
 #endif  // defined(OS_WIN)
 
@@ -615,7 +604,7 @@ void SpellcheckService::InitWindowsDictionaryLanguages(
   for (const auto& windows_spellcheck_language : windows_spellcheck_languages) {
     std::string accept_language =
         SpellcheckService::GetSupportedAcceptLanguageCode(
-            windows_spellcheck_language);
+            windows_spellcheck_language, /* generic_only */ false);
     AddWindowsSpellcheckDictionary(accept_language,
                                    windows_spellcheck_language);
 
@@ -627,9 +616,25 @@ void SpellcheckService::InitWindowsDictionaryLanguages(
     if (base::EqualsCaseInsensitiveASCII(
             "sr-Cyrl", SpellcheckService::GetLanguageAndScriptTag(
                            windows_spellcheck_language,
-                           /* include_script_tag */ true))) {
+                           /* include_script_tag= */ true))) {
       AddWindowsSpellcheckDictionary("sr", windows_spellcheck_language);
     }
+
+    // Add the generic language with the region subtag removed too if it exists
+    // in the list of accept languages, and use it when calling the Windows
+    // spellcheck APIs. For example, if the preferred language settings include
+    // just generic Portuguese (pt), but the Portuguese (Brazil) platform
+    // language pack (pt-BR) is installed, we want an entry for it so that the
+    // generic Portuguese language can be enabled for spellchecking. The Windows
+    // platform spellcheck API has logic to load the pt-BR dictionary if only pt
+    // is specified as the BCP47 language tag. The use of a map in
+    // AddWindowsSpellcheckDictionary ensures there won't be duplicate entries
+    // if a generic language was already added above (ar-SA would already be
+    // mapped to ar since the accept language ar-SA is not recognized by the
+    // browser e.g.).
+    accept_language = SpellcheckService::GetSupportedAcceptLanguageCode(
+        windows_spellcheck_language, /* generic_only */ true);
+    AddWindowsSpellcheckDictionary(accept_language, accept_language);
   }
 
   // A user may have removed a language pack for a non-Hunspell language after
@@ -671,6 +676,9 @@ void SpellcheckService::OverrideBinderForTesting(SpellCheckerBinder binder) {
 std::string SpellcheckService::GetLanguageAndScriptTag(
     const std::string& full_tag,
     bool include_script_tag) {
+  if (full_tag.empty())
+    return "";
+
   std::string language_and_script_tag;
 
   std::vector<std::string> subtags = base::SplitString(
@@ -694,6 +702,39 @@ std::string SpellcheckService::GetLanguageAndScriptTag(
   return language_and_script_tag;
 }
 
+#if defined(OS_WIN)
+// static
+std::string SpellcheckService::GetSupportedAcceptLanguageCodeGenericOnly(
+    const std::string& supported_language_full_tag,
+    const std::vector<std::string>& accept_languages) {
+  auto iter =
+      std::find_if(accept_languages.begin(), accept_languages.end(),
+                   [supported_language_full_tag](const auto& accept_language) {
+                     return base::EqualsCaseInsensitiveASCII(
+                         SpellcheckService::GetLanguageAndScriptTag(
+                             supported_language_full_tag,
+                             /* include_script_tag= */ false),
+                         SpellcheckService::GetLanguageAndScriptTag(
+                             accept_language,
+                             /* include_script_tag= */ false));
+                   });
+
+  if (iter != accept_languages.end()) {
+    // Special case for Serbian--"sr" implies Cyrillic script. Don't mark it as
+    // supported for sr-Latn*.
+    if (base::EqualsCaseInsensitiveASCII(
+            SpellcheckService::GetLanguageAndScriptTag(
+                supported_language_full_tag,
+                /* include_script_tag= */ true),
+            "sr-Latn")) {
+      return "";
+    }
+    return *iter;
+  }
+
+  return "";
+}
+
 // static
 bool SpellcheckService::HasPrivateUseSubTag(const std::string& full_tag) {
   std::vector<std::string> subtags = base::SplitString(
@@ -704,7 +745,6 @@ bool SpellcheckService::HasPrivateUseSubTag(const std::string& full_tag) {
   return base::Contains(subtags, "x");
 }
 
-#if defined(OS_WIN)
 // static
 std::string SpellcheckService::GetTagToPassToWindowsSpellchecker(
     const std::string& accept_language,
@@ -733,7 +773,7 @@ std::string SpellcheckService::GetTagToPassToWindowsSpellchecker(
 
   return SpellcheckService::GetLanguageAndScriptTag(
       supported_language_full_tag,
-      /* include_script_tag */ true);
+      /* include_script_tag= */ true);
 }
 
 #endif  // defined(OS_WIN)

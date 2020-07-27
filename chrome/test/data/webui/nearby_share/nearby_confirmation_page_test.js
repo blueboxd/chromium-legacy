@@ -49,17 +49,4 @@ suite('ConfirmatonPageTest', function() {
         confirmationPageElement.$$('#confirmation-token').textContent;
     assertTrue(renderedToken.includes(token));
   });
-
-  test('renders share target name', function() {
-    const name = 'Device Name';
-    confirmationPageElement.shareTarget = {
-      id: {high: 0, low: 0},
-      name,
-      type: nearbyShare.mojom.ShareTargetType.kPhone,
-    };
-    const renderedName = confirmationPageElement.$$('nearby-progress')
-                             .$$('#device-name')
-                             .textContent;
-    assertEquals(name, renderedName);
-  });
 });

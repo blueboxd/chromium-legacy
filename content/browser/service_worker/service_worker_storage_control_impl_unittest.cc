@@ -243,7 +243,7 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
   }
 
   GetRegistrationsForOriginResult GetRegistrationsForOrigin(
-      const GURL& origin) {
+      const url::Origin& origin) {
     GetRegistrationsForOriginResult result;
     base::RunLoop loop;
     storage()->GetRegistrationsForOrigin(
@@ -934,7 +934,7 @@ TEST_F(ServiceWorkerStorageControlImplTest, GetRegistrationsForOrigin) {
 
   // Get registrations for the origin.
   {
-    const GURL& origin = kScope1.GetOrigin();
+    const url::Origin origin = url::Origin::Create(kScope1);
     std::vector<storage::mojom::SerializedServiceWorkerRegistrationPtr>
         registrations;
 
@@ -943,7 +943,8 @@ TEST_F(ServiceWorkerStorageControlImplTest, GetRegistrationsForOrigin) {
     EXPECT_EQ(result.registrations.size(), 2UL);
 
     for (auto& registration : result.registrations) {
-      EXPECT_EQ(registration->registration_data->scope.GetOrigin(), origin);
+      EXPECT_EQ(registration->registration_data->scope.GetOrigin(),
+                origin.GetURL());
       EXPECT_EQ(registration->registration_data->resources_total_size_bytes,
                 kScriptSize);
     }
@@ -952,7 +953,8 @@ TEST_F(ServiceWorkerStorageControlImplTest, GetRegistrationsForOrigin) {
   // Getting registrations for another origin should succeed but shouldn't find
   // anything.
   {
-    const GURL& origin = GURL("https://www.example.test/");
+    const url::Origin origin =
+        url::Origin::Create(GURL("https://www.example.test/"));
     std::vector<storage::mojom::SerializedServiceWorkerRegistrationPtr>
         registrations;
 

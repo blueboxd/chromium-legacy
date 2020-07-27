@@ -928,4 +928,8 @@ interface LocalMainFrameHost {
 interface RemoteMainFrameHost {
   // Asks the browser process to activate the page associated to the main frame.
   FocusPage();
+
+  // Sent from an inactive renderer for the browser to route to the active
+  // renderer, instructing it to close.
+  RouteCloseEvent();
 };

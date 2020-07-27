@@ -6,21 +6,49 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
-    ":filenamer",
-    ":filesystem",
+    ":chrome_file_system_entry",
+    ":file_namer",
+    ":file_system",
+    ":file_system_entry",
+    ":file_util",
     ":result_saver",
     ":video_saver",
   ]
 }
 
-js_library("filenamer") {
+js_library("async_writer") {
+  deps = [
+    "..:async_job_queue",
+    "..:chrome_util",
+  ]
 }
 
-js_library("filesystem") {
+js_library("chrome_file_system_entry") {
   deps = [
-    ":filenamer",
+    ":async_writer",
+    ":file_system_entry",
+    ":file_util",
+    "..:waitable_event",
+  ]
+}
+
+js_library("file_namer") {
+}
+
+js_library("file_system") {
+  deps = [
+    ":chrome_file_system_entry",
+    ":file_namer",
+    ":file_system_entry",
     "../browser_proxy:browser_proxy",
   ]
+}
+
+js_library("file_system_entry") {
+  deps = [ ":async_writer" ]
+}
+
+js_library("file_util") {
 }
 
 js_library("result_saver") {
@@ -28,12 +56,13 @@ js_library("result_saver") {
 
 js_library("video_saver") {
   sources = [
-    "async_writer.js",
     "mp4_video_processor.js",
     "nop_video_processor.js",
     "video_saver.js",
   ]
   deps = [
+    ":async_writer",
+    ":file_system_entry",
     "..:async_job_queue",
     "..:intent",
     "..:waitable_event",

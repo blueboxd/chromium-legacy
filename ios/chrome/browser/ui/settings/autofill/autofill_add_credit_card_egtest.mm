@@ -265,6 +265,10 @@ id<GREYMatcher> CardNumberIconView(NSString* icon_type) {
 // and the new card number appears on the Autofill Credit Card 'Payment Methods'
 // screen with the nickname.
 - (void)testAddButtonOnValidNickname {
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    // TODO(crbug.com/1109663): Enable the test on iPhone once the bug is fixed.
+    EARL_GREY_TEST_DISABLED(@"Disabled for iPhone.");
+  }
   [AutofillAppInterface clearCreditCardStore];
   [[EarlGrey selectElementWithMatcher:CardNumberTextField()]
       performAction:grey_typeText(@"4111111111111111")];

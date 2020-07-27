@@ -18,13 +18,7 @@ function NOTIMPLEMENTED() {
  */
 class WebUIBrowserProxy {
   /** @override */
-  async getVolumeList() {
-    NOTIMPLEMENTED();
-    return null;
-  }
-
-  /** @override */
-  async requestFileSystem(options) {
+  async getExternalDir() {
     NOTIMPLEMENTED();
     return null;
   }

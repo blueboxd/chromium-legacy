@@ -25,7 +25,7 @@ config("grpc_internal_config") {
 config("nanopb_config") {
   include_dirs = [ "src/third_party/nanopb" ]
   defines = [ "PB_FIELD_32BIT=1" ]
-  if (is_mac || is_ios) {
+  if (is_apple) {
     defines += [ "PB_NO_PACKED_STRUCTS=1" ]
   }
 }

@@ -16,7 +16,7 @@ group("common") {
     ":crash_key_utils",
   ]
 
-  if (is_mac || is_ios) {
+  if (is_apple) {
     public_deps += [ ":zombies" ]
   }
 
@@ -129,7 +129,7 @@ static_library("crash_key_utils") {
   ]
 }
 
-if (is_mac || is_ios) {
+if (is_apple) {
   component("zombies") {
     visibility = [ ":common" ]
 
@@ -176,7 +176,7 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 
-  if (is_mac || is_ios) {
+  if (is_apple) {
     sources += [ "objc_zombie_unittest.mm" ]
   }
 

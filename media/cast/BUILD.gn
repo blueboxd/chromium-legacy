@@ -165,7 +165,7 @@ jumbo_source_set("sender") {
   ]
 
   # iOS and OS X encoders
-  if (is_ios || is_mac) {
+  if (is_apple) {
     sources += [
       "sender/h264_vt_encoder.cc",
       "sender/h264_vt_encoder.h",
@@ -358,7 +358,7 @@ test("cast_unittests") {
     ]
   }
 
-  if (is_ios || is_mac) {
+  if (is_apple) {
     sources += [ "sender/h264_vt_encoder_unittest.cc" ]
 
     deps += [ "//third_party/ffmpeg" ]

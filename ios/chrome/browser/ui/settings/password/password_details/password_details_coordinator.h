@@ -8,8 +8,10 @@
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 @protocol ApplicationCommands;
+class Browser;
 class IOSChromePasswordCheckManager;
 @protocol PasswordDetailsCoordinatorDelegate;
+@class ReauthenticationModule;
 
 namespace autofill {
 struct PasswordForm;
@@ -21,9 +23,10 @@ struct PasswordForm;
 - (instancetype)
     initWithBaseNavigationController:
         (UINavigationController*)navigationController
+                             browser:(Browser*)browser
                             password:(const autofill::PasswordForm&)password
+                        reauthModule:(ReauthenticationModule*)reauthModule
                 passwordCheckManager:(IOSChromePasswordCheckManager*)manager
-                          dispatcher:(id<ApplicationCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
@@ -31,6 +34,9 @@ struct PasswordForm;
 
 // Delegate.
 @property(nonatomic, weak) id<PasswordDetailsCoordinatorDelegate> delegate;
+
+// Dispatcher.
+@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 
 @end
 

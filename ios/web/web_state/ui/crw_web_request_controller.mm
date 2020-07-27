@@ -28,6 +28,7 @@
 #import "ios/web/web_state/user_interaction_state.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "net/base/mac/url_conversions.h"
+#include "net/base/url_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -324,9 +325,12 @@ enum class BackForwardNavigationType {
     // redirects can not change the origin. It is possible to have more than one
     // pending navigations, so the redirect does not necesserily belong to the
     // pending navigation item.
+    // Do not do it for localhost address as this is needed to have
+    // pre-rendering in tests.
     if ((base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) ||
          !placeholderNavigation) &&
-        item->GetURL().GetOrigin() == requestURL.GetOrigin()) {
+        item->GetURL().GetOrigin() == requestURL.GetOrigin() &&
+        !net::IsLocalhost(requestURL)) {
       self.navigationManagerImpl->UpdatePendingItemUrl(requestURL);
     }
   } else {

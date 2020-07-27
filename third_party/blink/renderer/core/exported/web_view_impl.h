@@ -130,6 +130,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void DidAttachRemoteMainFrame() override;
   void DidDetachRemoteMainFrame() override;
   void SetPrerendererClient(WebPrerendererClient*) override;
+  void CloseWindowSoon() override;
   WebSettings* GetSettings() override;
   WebString PageEncoding() const override;
   bool TabsToLinks() const override;
@@ -494,6 +495,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   void UpdateBaseBackgroundColor();
 
+  // Request the window to close from the renderer by sending the request to the
+  // browser.
+  void DoDeferredCloseWindowSoon();
+
   WebViewImpl(
       WebViewClient*,
       mojom::blink::PageVisibilityState visibility,
@@ -728,6 +733,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   mojom::blink::PageLifecycleStatePtr lifecycle_state_;
   mojo::AssociatedReceiver<mojom::blink::PageBroadcast> receiver_;
+
+  base::WeakPtrFactory<WebViewImpl> weak_ptr_factory_{this};
 };
 
 }  // namespace blink

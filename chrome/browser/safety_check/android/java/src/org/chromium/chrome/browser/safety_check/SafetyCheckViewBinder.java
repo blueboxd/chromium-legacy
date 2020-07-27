@@ -8,6 +8,7 @@ import android.content.Context;
 import android.view.View;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.preference.Preference;
 
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.PasswordsState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.SafeBrowsingState;
@@ -237,6 +238,18 @@ class SafetyCheckViewBinder {
                 preference.showStatusIcon(getStatusIconForPasswords(state));
                 preference.setEnabled(true);
             }
+        } else if (SafetyCheckProperties.PASSWORDS_CLICK_LISTENER == propertyKey) {
+            fragment.findPreference(PASSWORDS_KEY)
+                    .setOnPreferenceClickListener((Preference.OnPreferenceClickListener) model.get(
+                            SafetyCheckProperties.PASSWORDS_CLICK_LISTENER));
+        } else if (SafetyCheckProperties.SAFE_BROWSING_CLICK_LISTENER == propertyKey) {
+            fragment.findPreference(SAFE_BROWSING_KEY)
+                    .setOnPreferenceClickListener((Preference.OnPreferenceClickListener) model.get(
+                            SafetyCheckProperties.SAFE_BROWSING_CLICK_LISTENER));
+        } else if (SafetyCheckProperties.UPDATES_CLICK_LISTENER == propertyKey) {
+            fragment.findPreference(UPDATES_KEY)
+                    .setOnPreferenceClickListener((Preference.OnPreferenceClickListener) model.get(
+                            SafetyCheckProperties.UPDATES_CLICK_LISTENER));
         } else if (SafetyCheckProperties.SAFETY_CHECK_BUTTON_CLICK_LISTENER == propertyKey) {
             fragment.getCheckButton().setOnClickListener((View.OnClickListener) model.get(
                     SafetyCheckProperties.SAFETY_CHECK_BUTTON_CLICK_LISTENER));

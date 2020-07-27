@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -642,6 +643,13 @@ void GuestOsRegistryService::RequestIcon(
     const std::string& app_id,
     ui::ScaleFactor scale_factor,
     base::OnceCallback<void(std::string)> callback) {
+  if (!GetRegistration(app_id)) {
+    // App isn't registered (e.g. a GUI app launched from within Crostini
+    // that doesn't have a .desktop file). Can't get an icon for that case so
+    // return an empty icon.
+    std::move(callback).Run({});
+    return;
+  }
   // First check to see if this request is in the retry list. If so return
   // immediately with an empty icon.
   const auto retry_iter = retry_icon_requests_.find(app_id);
@@ -878,8 +886,9 @@ void GuestOsRegistryService::RequestContainerAppIcon(
   // Ignore requests for app_id that isn't registered.
   base::Optional<GuestOsRegistryService::Registration> registration =
       GetRegistration(app_id);
+  DCHECK(registration);
   if (!registration) {
-    VLOG(2) << "Request to load icon for non-registered app: " << app_id;
+    LOG(ERROR) << "Request to load icon for non-registered app: " << app_id;
     return;
   }
   VLOG(1) << "Request to load icon for app: " << app_id;

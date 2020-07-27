@@ -135,10 +135,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_ShowWidget,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowFullscreenWidget,
                     int /* route_id */)
 
-// Sent from an inactive renderer for the browser to route to the active
-// renderer, instructing it to close.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_RouteCloseEvent)
-
 // Notifies the browser that we want to show a destination url for a potential
 // action (e.g. when the user is hovering over a link).
 IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateTargetURL,

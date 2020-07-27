@@ -35,10 +35,11 @@ export class AsyncWriter {
   /**
    * Writes the blob asynchronously with |doWrite|.
    * @param {!Blob} blob
+   * @return {!Promise} Resolved when the data is written.
    */
-  write(blob) {
+  async write(blob) {
     assert(!this.closed_);
-    this.queue_.push(() => this.doWrite_(blob));
+    await this.queue_.push(() => this.doWrite_(blob));
   }
 
   /**

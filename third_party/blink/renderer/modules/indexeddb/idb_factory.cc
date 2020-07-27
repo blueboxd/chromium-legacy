@@ -178,6 +178,13 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
     NOTREACHED();
   }
 
+  void ReceiveGetAllResults(
+      bool key_only,
+      mojo::PendingReceiver<mojom::blink::IDBDatabaseGetAllResultSink> receiver)
+      override {
+    NOTREACHED();
+  }
+
   void Blocked(int64_t old_version) override { NOTREACHED(); }
 
   void UpgradeNeeded(

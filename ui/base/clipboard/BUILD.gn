@@ -32,7 +32,7 @@ jumbo_component("clipboard_types") {
     sources += [ "clipboard_format_type_mac.mm" ]
   }
 
-  if (is_mac || is_ios) {
+  if (is_apple) {
     sources += [ "clipboard_constants_mac.mm" ]
   }
 
@@ -51,7 +51,7 @@ jumbo_component("clipboard_types") {
   deps = [ "//base" ]
 
   frameworks = []
-  if (is_mac || is_ios) {
+  if (is_apple) {
     frameworks += [ "Foundation.framework" ]
   }
   if (is_mac) {

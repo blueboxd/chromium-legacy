@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {
+  AbstractDirectoryEntry,   // eslint-disable-line no-unused-vars
+  AbstractFileEntry,        // eslint-disable-line no-unused-vars
+  AbstractFileSystemEntry,  // eslint-disable-line no-unused-vars
+} from '../models/file_system_entry.js';
+
 /**
  * The abstract interface for the CCA's interaction with the browser.
  * @interface
  */
 export class BrowserProxy {
   /**
-   * @return {!Promise<?Array<!chrome.fileSystem.Volume>>}
+   * @return {!Promise<?AbstractDirectoryEntry>}
    * @abstract
    */
-  async getVolumeList() {}
-
-  /**
-   * @param {!chrome.fileSystem.RequestFileSystemOptions} options
-   * @return {!Promise<?FileSystem>}
-   * @abstract
-   */
-  async requestFileSystem(options) {}
+  async getExternalDir() {}
 
   /**
    * @param {(string|!Array<string>|!Object)} keys
@@ -62,7 +61,7 @@ export class BrowserProxy {
   async isCrashReportingEnabled() {}
 
   /**
-   * @param {!FileEntry} file
+   * @param {!AbstractFileEntry} file
    * @return {!Promise}
    * @abstract
    */

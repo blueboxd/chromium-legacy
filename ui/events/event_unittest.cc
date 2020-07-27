@@ -14,6 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -43,11 +44,14 @@ TEST(EventTest, NativeEvent) {
   MSG native_event = {nullptr, WM_KEYUP, VKEY_A, 0};
   KeyEvent keyev(native_event);
   EXPECT_TRUE(keyev.HasNativeEvent());
-#elif defined(USE_X11)
-  ScopedXI2Event event;
-  event.InitKeyEvent(ET_KEY_RELEASED, VKEY_A, EF_NONE);
-  auto keyev = ui::BuildKeyEventFromXEvent(*event);
-  EXPECT_FALSE(keyev->HasNativeEvent());
+#endif
+#if defined(USE_X11)
+  if (!features::IsUsingOzonePlatform()) {
+    ScopedXI2Event event;
+    event.InitKeyEvent(ET_KEY_RELEASED, VKEY_A, EF_NONE);
+    auto keyev = ui::BuildKeyEventFromXEvent(*event);
+    EXPECT_FALSE(keyev->HasNativeEvent());
+  }
 #endif
 }
 
@@ -62,15 +66,17 @@ TEST(EventTest, GetCharacter) {
   EXPECT_EQ(13, keyev2.GetCharacter());
 
 #if defined(USE_X11)
-  // For X11, test the functions with native_event() as well. crbug.com/107837
-  ScopedXI2Event event;
-  event.InitKeyEvent(ET_KEY_PRESSED, VKEY_RETURN, EF_CONTROL_DOWN);
-  auto keyev3 = ui::BuildKeyEventFromXEvent(*event);
-  EXPECT_EQ(10, keyev3->GetCharacter());
+  if (!features::IsUsingOzonePlatform()) {
+    // For X11, test the functions with native_event() as well. crbug.com/107837
+    ScopedXI2Event event;
+    event.InitKeyEvent(ET_KEY_PRESSED, VKEY_RETURN, EF_CONTROL_DOWN);
+    auto keyev3 = ui::BuildKeyEventFromXEvent(*event);
+    EXPECT_EQ(10, keyev3->GetCharacter());
 
-  event.InitKeyEvent(ET_KEY_PRESSED, VKEY_RETURN, EF_NONE);
-  auto keyev4 = ui::BuildKeyEventFromXEvent(*event);
-  EXPECT_EQ(13, keyev4->GetCharacter());
+    event.InitKeyEvent(ET_KEY_PRESSED, VKEY_RETURN, EF_NONE);
+    auto keyev4 = ui::BuildKeyEventFromXEvent(*event);
+    EXPECT_EQ(13, keyev4->GetCharacter());
+  }
 #endif
 
   // Check if expected Unicode character was returned for a key combination
@@ -291,37 +297,39 @@ TEST(EventTest, KeyEventDirectUnicode) {
 
 TEST(EventTest, NormalizeKeyEventFlags) {
 #if defined(USE_X11)
-  // Normalize flags when KeyEvent is created from XEvent.
-  ScopedXI2Event event;
-  {
-    event.InitKeyEvent(ET_KEY_PRESSED, VKEY_SHIFT, EF_SHIFT_DOWN);
-    auto keyev = ui::BuildKeyEventFromXEvent(*event);
-    EXPECT_EQ(EF_SHIFT_DOWN, keyev->flags());
-  }
-  {
-    event.InitKeyEvent(ET_KEY_RELEASED, VKEY_SHIFT, EF_SHIFT_DOWN);
-    auto keyev = ui::BuildKeyEventFromXEvent(*event);
-    EXPECT_EQ(EF_NONE, keyev->flags());
-  }
-  {
-    event.InitKeyEvent(ET_KEY_PRESSED, VKEY_CONTROL, EF_CONTROL_DOWN);
-    auto keyev = ui::BuildKeyEventFromXEvent(*event);
-    EXPECT_EQ(EF_CONTROL_DOWN, keyev->flags());
-  }
-  {
-    event.InitKeyEvent(ET_KEY_RELEASED, VKEY_CONTROL, EF_CONTROL_DOWN);
-    auto keyev = ui::BuildKeyEventFromXEvent(*event);
-    EXPECT_EQ(EF_NONE, keyev->flags());
-  }
-  {
-    event.InitKeyEvent(ET_KEY_PRESSED, VKEY_MENU, EF_ALT_DOWN);
-    auto keyev = ui::BuildKeyEventFromXEvent(*event);
-    EXPECT_EQ(EF_ALT_DOWN, keyev->flags());
-  }
-  {
-    event.InitKeyEvent(ET_KEY_RELEASED, VKEY_MENU, EF_ALT_DOWN);
-    auto keyev = ui::BuildKeyEventFromXEvent(*event);
-    EXPECT_EQ(EF_NONE, keyev->flags());
+  if (!features::IsUsingOzonePlatform()) {
+    // Normalize flags when KeyEvent is created from XEvent.
+    ScopedXI2Event event;
+    {
+      event.InitKeyEvent(ET_KEY_PRESSED, VKEY_SHIFT, EF_SHIFT_DOWN);
+      auto keyev = ui::BuildKeyEventFromXEvent(*event);
+      EXPECT_EQ(EF_SHIFT_DOWN, keyev->flags());
+    }
+    {
+      event.InitKeyEvent(ET_KEY_RELEASED, VKEY_SHIFT, EF_SHIFT_DOWN);
+      auto keyev = ui::BuildKeyEventFromXEvent(*event);
+      EXPECT_EQ(EF_NONE, keyev->flags());
+    }
+    {
+      event.InitKeyEvent(ET_KEY_PRESSED, VKEY_CONTROL, EF_CONTROL_DOWN);
+      auto keyev = ui::BuildKeyEventFromXEvent(*event);
+      EXPECT_EQ(EF_CONTROL_DOWN, keyev->flags());
+    }
+    {
+      event.InitKeyEvent(ET_KEY_RELEASED, VKEY_CONTROL, EF_CONTROL_DOWN);
+      auto keyev = ui::BuildKeyEventFromXEvent(*event);
+      EXPECT_EQ(EF_NONE, keyev->flags());
+    }
+    {
+      event.InitKeyEvent(ET_KEY_PRESSED, VKEY_MENU, EF_ALT_DOWN);
+      auto keyev = ui::BuildKeyEventFromXEvent(*event);
+      EXPECT_EQ(EF_ALT_DOWN, keyev->flags());
+    }
+    {
+      event.InitKeyEvent(ET_KEY_RELEASED, VKEY_MENU, EF_ALT_DOWN);
+      auto keyev = ui::BuildKeyEventFromXEvent(*event);
+      EXPECT_EQ(EF_NONE, keyev->flags());
+    }
   }
 #endif
 
@@ -394,7 +402,7 @@ TEST(EventTest, KeyEventCode) {
     EXPECT_EQ(kCodeForSpace, key.GetCodeString());
   }
 #if defined(USE_X11)
-  {
+  if (!features::IsUsingOzonePlatform()) {
     // KeyEvent converts from the native keycode (XKB) to the code.
     ScopedXI2Event xevent;
     xevent.InitKeyEvent(ET_KEY_PRESSED, VKEY_SPACE, kNativeCodeSpace);
@@ -449,6 +457,8 @@ void AdvanceKeyEventTimestamp(x11::Event* event) {
 }  // namespace
 
 TEST(EventTest, AutoRepeat) {
+  if (features::IsUsingOzonePlatform())
+    return;
   const uint16_t kNativeCodeA =
       ui::KeycodeConverter::DomCodeToNativeKeycode(DomCode::US_A);
   const uint16_t kNativeCodeB =
@@ -786,6 +796,8 @@ TEST(EventTest, MouseWheelEventLatencyUIComponentExists) {
 // and TOUCH_RELEASED histograms are computed properly.
 #if defined(USE_X11)
 TEST(EventTest, EventLatencyOSTouchHistograms) {
+  if (features::IsUsingOzonePlatform())
+    return;
   base::HistogramTester histogram_tester;
   ScopedXI2Event scoped_xevent;
 
@@ -815,7 +827,10 @@ TEST(EventTest, EventLatencyOSMouseWheelHistogram) {
   MSG event = {nullptr, WM_MOUSEWHEEL, 0, 0};
   MouseWheelEvent mouseWheelEvent(event);
   histogram_tester.ExpectTotalCount("Event.Latency.OS.MOUSE_WHEEL", 1);
-#elif defined(USE_X11)
+#endif
+#if defined(USE_X11)
+  if (features::IsUsingOzonePlatform())
+    return;
   base::HistogramTester histogram_tester;
   DeviceDataManagerX11::CreateInstance();
 

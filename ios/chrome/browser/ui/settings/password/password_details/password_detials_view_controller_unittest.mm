@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/mac/foundation_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -17,8 +18,10 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/chrome/test/app/password_test_util.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -37,6 +40,9 @@
 
 // Called when the view controller was dismissed.
 - (void)passwordDetailsViewControllerDidDisappear {
+}
+
+- (void)showPasscodeDialog {
 }
 
 @end
@@ -62,6 +68,8 @@ class PasswordDetailsViewControllerTest : public ChromeTableViewControllerTest {
   PasswordDetailsViewControllerTest() {
     handler_ = [[FakePasswordDetailsHandler alloc] init];
     delegate_ = [[FakePasswordDetailsDelegate alloc] init];
+    reauthentication_module_ = [[MockReauthenticationModule alloc] init];
+    reauthentication_module_.expectedResult = ReauthenticationResult::kSuccess;
   }
 
   ChromeTableViewController* InstantiateController() override {
@@ -70,10 +78,11 @@ class PasswordDetailsViewControllerTest : public ChromeTableViewControllerTest {
             initWithStyle:UITableViewStylePlain];
     controller.handler = handler_;
     controller.delegate = delegate_;
+    controller.reauthModule = reauthentication_module_;
     return controller;
   }
 
-  void ShowPassword(bool isCompromised = false) {
+  void SetPassword(bool isCompromised = false) {
     auto form = autofill::PasswordForm();
     form.url = GURL("http://www.example.com/");
     form.action = GURL("http://www.example.com/accounts/Login");
@@ -111,10 +120,12 @@ class PasswordDetailsViewControllerTest : public ChromeTableViewControllerTest {
 
   FakePasswordDetailsHandler* handler() { return handler_; }
   FakePasswordDetailsDelegate* delegate() { return delegate_; }
+  MockReauthenticationModule* reauth() { return reauthentication_module_; }
 
  private:
   FakePasswordDetailsHandler* handler_;
   FakePasswordDetailsDelegate* delegate_;
+  MockReauthenticationModule* reauthentication_module_;
 };
 
 // Tests PasswordDetailsViewController is set up with appropriate items
@@ -129,7 +140,7 @@ TEST_F(PasswordDetailsViewControllerTest, TestModel) {
 
 // Tests that password is displayed properly.
 TEST_F(PasswordDetailsViewControllerTest, TestPassword) {
-  ShowPassword();
+  SetPassword();
   EXPECT_EQ(1, NumberOfSections());
   EXPECT_EQ(3, NumberOfItemsInSection(0));
 
@@ -141,7 +152,7 @@ TEST_F(PasswordDetailsViewControllerTest, TestPassword) {
 
 // Tests that compromised password is displayed properly.
 TEST_F(PasswordDetailsViewControllerTest, TestCompromisedPassword) {
-  ShowPassword(true);
+  SetPassword(true);
   EXPECT_EQ(2, NumberOfSections());
   EXPECT_EQ(3, NumberOfItemsInSection(0));
   EXPECT_EQ(2, NumberOfItemsInSection(1));
@@ -154,4 +165,73 @@ TEST_F(PasswordDetailsViewControllerTest, TestCompromisedPassword) {
   CheckTextCellTextWithId(IDS_IOS_CHANGE_COMPROMISED_PASSWORD, 1, 0);
   CheckDetailItemTextWithId(IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION, 1,
                             1);
+}
+
+// Tests that password is shown/hidden.
+TEST_F(PasswordDetailsViewControllerTest, TestShowHidePassword) {
+  SetPassword();
+
+  CheckEditCellText(kMaskedPassword, 0, 2);
+
+  NSIndexPath* indexOfPassword = [NSIndexPath indexPathForRow:2 inSection:0];
+  TableViewTextEditCell* textFieldCell =
+      base::mac::ObjCCastStrict<TableViewTextEditCell>(
+          [controller().tableView cellForRowAtIndexPath:indexOfPassword]);
+  [textFieldCell.identifyingIconButton
+      sendActionsForControlEvents:UIControlEventTouchUpInside];
+
+  CheckEditCellText(@"test", 0, 2);
+  EXPECT_NSEQ(
+      l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_REAUTH_REASON_SHOW),
+      reauth().localizedReasonForAuthentication);
+
+  [textFieldCell.identifyingIconButton
+      sendActionsForControlEvents:UIControlEventTouchUpInside];
+  CheckEditCellText(kMaskedPassword, 0, 2);
+}
+
+// Tests that passwords was not shown in case reauth failed.
+TEST_F(PasswordDetailsViewControllerTest, TestShowPasswordReauthFailed) {
+  SetPassword();
+
+  CheckEditCellText(kMaskedPassword, 0, 2);
+
+  reauth().expectedResult = ReauthenticationResult::kFailure;
+  NSIndexPath* indexOfPassword = [NSIndexPath indexPathForRow:2 inSection:0];
+  TableViewTextEditCell* textFieldCell =
+      base::mac::ObjCCastStrict<TableViewTextEditCell>(
+          [controller().tableView cellForRowAtIndexPath:indexOfPassword]);
+  [textFieldCell.identifyingIconButton
+      sendActionsForControlEvents:UIControlEventTouchUpInside];
+
+  CheckEditCellText(kMaskedPassword, 0, 2);
+}
+
+// Tests that password was revealed during editing.
+TEST_F(PasswordDetailsViewControllerTest, TestPasswordShownDuringEditing) {
+  SetPassword();
+  CheckEditCellText(kMaskedPassword, 0, 2);
+
+  PasswordDetailsViewController* passwordDetails =
+      base::mac::ObjCCastStrict<PasswordDetailsViewController>(controller());
+  [passwordDetails editButtonPressed];
+  EXPECT_TRUE(passwordDetails.tableView.editing);
+  CheckEditCellText(@"test", 0, 2);
+
+  [passwordDetails editButtonPressed];
+  EXPECT_FALSE(passwordDetails.tableView.editing);
+  CheckEditCellText(kMaskedPassword, 0, 2);
+}
+
+// Tests that editing mode was not entered because reauth failed.
+TEST_F(PasswordDetailsViewControllerTest, TestEditingReauthFailed) {
+  SetPassword();
+  CheckEditCellText(kMaskedPassword, 0, 2);
+
+  reauth().expectedResult = ReauthenticationResult::kFailure;
+  PasswordDetailsViewController* passwordDetails =
+      base::mac::ObjCCastStrict<PasswordDetailsViewController>(controller());
+  [passwordDetails editButtonPressed];
+  EXPECT_FALSE(passwordDetails.tableView.editing);
+  CheckEditCellText(kMaskedPassword, 0, 2);
 }

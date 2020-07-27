@@ -85,11 +85,6 @@ class WebViewClient {
 
   // Misc ----------------------------------------------------------------
 
-  // Called when the window for this WebView should be closed. The WebView
-  // and its frame tree will be closed asynchronously as a result of this
-  // request.
-  virtual void CloseWindowSoon() {}
-
   // Called when a region of the WebView needs to be re-painted. This is only
   // for non-composited WebViews that exist to contribute to a "parent" WebView
   // painting. Otherwise invalidations are transmitted to the compositor through

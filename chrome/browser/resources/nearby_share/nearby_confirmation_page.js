@@ -45,16 +45,6 @@ Polymer({
       type: String,
       value: null,
     },
-
-    /**
-     * The selected share target to confirm the transfer for. Expected to start
-     * as null, then change to a valid object before this component is shown.
-     * @type {?nearbyShare.mojom.ShareTarget}
-     */
-    shareTarget: {
-      type: Object,
-      value: null,
-    },
   },
 
   /** @private */

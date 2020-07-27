@@ -50,7 +50,7 @@ source_set("common") {
     deps += [ "//remoting/host/mac:permission_checking" ]
   }
 
-  if (is_mac || is_ios) {
+  if (is_apple) {
     deps += [ "//remoting/host/mac:constants" ]
   }
 

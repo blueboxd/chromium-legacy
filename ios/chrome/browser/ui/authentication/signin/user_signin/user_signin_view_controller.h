@@ -48,8 +48,10 @@
 // of the screen.
 - (void)markUnifiedConsentScreenReachedBottom;
 
-// Updates the primary button based on the user sign-in state.
-- (void)updatePrimaryButtonStyle;
+// Sets the title, styling, and other button properties for the confirmation
+// button based on the user consent text that is currently displayed on-screen
+// and the whether the user has previously been signed-in.
+- (void)setConfirmationButtonProperties;
 
 // Returns the supported orientations for the device type:
 // |UIInterfaceOrientationPortrait| orientation on iPhone and all other

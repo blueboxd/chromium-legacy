@@ -871,6 +871,11 @@ void TapEdit() {
 // Checks that attempts to copy the password via the context menu item provide
 // an appropriate feedback.
 - (void)testCopyPasswordMenuItem {
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    // TODO(crbug.com/1109644): Enable the test on iPhone once the bug is fixed.
+    EARL_GREY_TEST_DISABLED(@"Disabled for iPhone.");
+  }
+
   // Saving a form is needed for using the "password details" view.
   SaveExamplePasswordForm();
 
@@ -914,6 +919,11 @@ void TapEdit() {
 // Checks that attempts to show and hide the password via the context menu item
 // provide an appropriate feedback.
 - (void)testShowHidePasswordMenuItem {
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    // TODO(crbug.com/1109644): Enable the test on iPhone once the bug is fixed.
+    EARL_GREY_TEST_DISABLED(@"Disabled for iPhone.");
+  }
+
   // Saving a form is needed for using the "password details" view.
   SaveExamplePasswordForm();
 

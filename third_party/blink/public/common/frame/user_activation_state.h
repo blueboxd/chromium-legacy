@@ -7,7 +7,7 @@
 
 #include "base/time/time_override.h"
 #include "third_party/blink/public/common/common_export.h"
-#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-forward.h"
 
 namespace blink {
 
@@ -88,12 +88,14 @@ namespace blink {
 //   https://docs.google.com/document/d/1XL3vCedkqL65ueaGVD-kfB5RnnrnTaxLc7kmU91oerg
 class BLINK_COMMON_EXPORT UserActivationState {
  public:
+  UserActivationState();
+
   // Marks the user activation state as active, which sets the sticky state to
   // true and updates the transient state timestamp to "now".
   //
   // The |notification_type| parameter is used for histograms only.
-  void Activate(mojom::UserActivationNotificationType notification_type =
-                    mojom::UserActivationNotificationType::kNone);
+  void Activate(mojom::UserActivationNotificationType notification_type);
+  void Activate();
 
   void Clear();
 
@@ -124,8 +126,7 @@ class BLINK_COMMON_EXPORT UserActivationState {
   base::TimeTicks transient_state_expiry_time_;
 
   // Tracks the type of notification for UMA data.
-  mojom::UserActivationNotificationType notification_type_ =
-      mojom::UserActivationNotificationType::kNone;
+  mojom::UserActivationNotificationType notification_type_;
 };
 
 }  // namespace blink

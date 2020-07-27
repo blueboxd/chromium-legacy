@@ -48,12 +48,11 @@ export class FakeDiscoveryManagerRemote extends TestBrowserProxy {
   }
 
   /**
-   * @param {!mojoBase.mojom.UnguessableToken} shareTargetId
    * @suppress {checkTypes} FakeConfirmationManagerRemote does not extend
    * ConfirmationManagerRemote but implements ConfirmationManagerInterface.
    */
-  async selectShareTarget(shareTargetId) {
-    this.methodCalled('selectShareTarget', shareTargetId);
+  async selectShareTarget() {
+    this.methodCalled('selectShareTarget');
     return this.selectShareTargetResult;
   }
 

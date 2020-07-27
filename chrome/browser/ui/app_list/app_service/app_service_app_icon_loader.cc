@@ -143,8 +143,8 @@ void AppServiceAppIconLoader::CallLoadIcon(const std::string& app_id,
   if (crostini::IsUnmatchedCrostiniShelfAppId(app_id)) {
     apps::mojom::IconKeyPtr icon_key = apps::mojom::IconKey::New();
     proxy->LoadIconFromIconKey(
-        apps::mojom::AppType::kCrostini, std::string(), std::move(icon_key),
-        icon_type, icon_size_in_dip(), allow_placeholder_icon,
+        apps::mojom::AppType::kCrostini, app_id, std::move(icon_key), icon_type,
+        icon_size_in_dip(), allow_placeholder_icon,
         base::BindOnce(&AppServiceAppIconLoader::OnLoadIcon,
                        weak_ptr_factory_.GetWeakPtr(), app_id));
     return;

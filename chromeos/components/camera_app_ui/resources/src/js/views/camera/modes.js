@@ -11,8 +11,8 @@ import {
   PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
   VideoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
 } from '../../device/constraints_preferrer.js';
-import {Filenamer} from '../../models/filenamer.js';
-import * as filesystem from '../../models/filesystem.js';
+import {Filenamer} from '../../models/file_namer.js';
+import * as filesystem from '../../models/file_system.js';
 // eslint-disable-next-line no-unused-vars
 import {VideoSaver} from '../../models/video_saver.js';
 import {DeviceOperator, parseMetadata} from '../../mojo/device_operator.js';

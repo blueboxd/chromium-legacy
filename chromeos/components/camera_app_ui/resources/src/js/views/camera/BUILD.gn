@@ -31,14 +31,14 @@ js_library("layout") {
 js_library("modes") {
   deps = [
     ":recordtime",
-    "../../:async_job_queue",
+    "../..:async_job_queue",
     "../..:sound",
     "../..:toast",
     "../..:type",
     "../..:util",
     "../../device:constraints_preferrer",
-    "../../models:filenamer",
-    "../../models:filesystem",
+    "../../models:file_namer",
+    "../../models:file_system",
     "../../models:video_saver",
     "../../mojo:image_capture",
     "//media/capture/video/chromeos/mojom:cros_camera_js_library_for_compile",
@@ -70,6 +70,8 @@ js_library("review_result") {
   deps = [
     "../..:state",
     "../..:util",
+    "../../models:file_system",
+    "../../models:file_system_entry",
   ]
 }
 

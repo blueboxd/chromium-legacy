@@ -291,8 +291,8 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       GetRegistrationsCallback callback,
       const url::Origin& origin_filter,
       storage::mojom::ServiceWorkerDatabaseStatus database_status,
-      std::unique_ptr<RegistrationList> registration_data_list,
-      std::unique_ptr<std::vector<ResourceList>> resources_list);
+      std::vector<storage::mojom::SerializedServiceWorkerRegistrationPtr>
+          serialized_registrations);
   void DidGetAllRegistrations(
       GetRegistrationsInfosCallback callback,
       storage::mojom::ServiceWorkerDatabaseStatus database_status,

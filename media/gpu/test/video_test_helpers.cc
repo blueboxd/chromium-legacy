@@ -6,13 +6,18 @@
 
 #include <limits>
 
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/sys_byteorder.h"
+#include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#include "media/base/format_utils.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame_layout.h"
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/test/video.h"
 #include "media/gpu/test/video_frame_helpers.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
@@ -20,6 +25,10 @@
 #include "mojo/public/cpp/system/buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv/planar_functions.h"
+
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 namespace media {
 namespace test {
@@ -322,21 +331,39 @@ struct AlignedDataHelper::VideoFrameData {
   VideoFrameData() = default;
   VideoFrameData(mojo::ScopedSharedBufferHandle mojo_handle)
       : mojo_handle(std::move(mojo_handle)) {}
+  VideoFrameData(gfx::GpuMemoryBufferHandle gmb_handle)
+      : gmb_handle(std::move(gmb_handle)) {}
+
   VideoFrameData(VideoFrameData&&) = default;
   VideoFrameData& operator=(VideoFrameData&&) = default;
   VideoFrameData(const VideoFrameData&) = delete;
   VideoFrameData& operator=(const VideoFrameData&) = delete;
 
   mojo::ScopedSharedBufferHandle mojo_handle;
+  gfx::GpuMemoryBufferHandle gmb_handle;
 };
 
-AlignedDataHelper::AlignedDataHelper(const std::vector<uint8_t>& stream,
-                                     uint32_t num_frames,
-                                     VideoPixelFormat pixel_format,
-                                     const gfx::Rect& visible_area,
-                                     const gfx::Size& coded_size)
-    : num_frames_(num_frames), visible_area_(visible_area) {
-  InitializeAlignedMemoryFrames(stream, pixel_format, coded_size);
+AlignedDataHelper::AlignedDataHelper(
+    const std::vector<uint8_t>& stream,
+    uint32_t num_frames,
+    VideoPixelFormat pixel_format,
+    const gfx::Rect& visible_area,
+    const gfx::Size& coded_size,
+    VideoFrame::StorageType storage_type,
+    gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory)
+    : num_frames_(num_frames),
+      storage_type_(storage_type),
+      gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
+      visible_area_(visible_area) {
+  if (storage_type_ == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    LOG_ASSERT(gpu_memory_buffer_factory_ != nullptr);
+    InitializeGpuMemoryBufferFrames(stream, pixel_format, coded_size);
+  } else {
+    LOG_ASSERT(storage_type == VideoFrame::STORAGE_MOJO_SHARED_BUFFER);
+    InitializeAlignedMemoryFrames(stream, pixel_format, coded_size);
+  }
+  LOG_ASSERT(video_frame_data_.size() == num_frames_)
+      << "Failed to initialize VideoFrames";
 }
 
 AlignedDataHelper::~AlignedDataHelper() {}
@@ -355,26 +382,60 @@ bool AlignedDataHelper::AtEndOfStream() const {
 
 scoped_refptr<VideoFrame> AlignedDataHelper::GetNextFrame() {
   LOG_ASSERT(!AtEndOfStream());
-  const auto& mojo_handle = video_frame_data_[frame_index_++].mojo_handle;
-  auto dup_handle =
-      mojo_handle->Clone(mojo::SharedBufferHandle::AccessMode::READ_WRITE);
-  if (!dup_handle.is_valid()) {
-    LOG(ERROR) << "Failed duplicating mojo handle";
-    return nullptr;
-  }
+  if (storage_type_ == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    const auto& gmb_handle = video_frame_data_[frame_index_++].gmb_handle;
+    auto dup_handle = gmb_handle.Clone();
+    if (dup_handle.is_null()) {
+      LOG(ERROR) << "Failed duplicating GpuMemoryBufferHandle";
+      return nullptr;
+    }
 
-  std::vector<uint32_t> offsets(layout_->planes().size());
-  std::vector<int32_t> strides(layout_->planes().size());
-  for (size_t i = 0; i < layout_->planes().size(); i++) {
-    offsets[i] = layout_->planes()[i].offset;
-    strides[i] = layout_->planes()[i].stride;
+    base::Optional<gfx::BufferFormat> buffer_format =
+        VideoPixelFormatToGfxBufferFormat(layout_->format());
+    if (!buffer_format) {
+      LOG(ERROR) << "Unexpected format: " << layout_->format();
+      return nullptr;
+    }
+
+    // Create GpuMemoryBuffer from GpuMemoryBufferHandle.
+    gpu::GpuMemoryBufferSupport support;
+    auto gpu_memory_buffer = support.CreateGpuMemoryBufferImplFromHandle(
+        std::move(dup_handle), layout_->coded_size(), *buffer_format,
+        gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
+        base::DoNothing());
+    if (!gpu_memory_buffer) {
+      LOG(ERROR) << "Failed to create GpuMemoryBuffer from "
+                 << "GpuMemoryBufferHandle";
+      return nullptr;
+    }
+
+    gpu::MailboxHolder dummy_mailbox[media::VideoFrame::kMaxPlanes];
+    return media::VideoFrame::WrapExternalGpuMemoryBuffer(
+        visible_area_, visible_area_.size(), std::move(gpu_memory_buffer),
+        dummy_mailbox, base::DoNothing() /* mailbox_holder_release_cb_ */,
+        base::TimeTicks::Now().since_origin());
+  } else {
+    const auto& mojo_handle = video_frame_data_[frame_index_++].mojo_handle;
+    auto dup_handle =
+        mojo_handle->Clone(mojo::SharedBufferHandle::AccessMode::READ_WRITE);
+    if (!dup_handle.is_valid()) {
+      LOG(ERROR) << "Failed duplicating mojo handle";
+      return nullptr;
+    }
+
+    std::vector<uint32_t> offsets(layout_->planes().size());
+    std::vector<int32_t> strides(layout_->planes().size());
+    for (size_t i = 0; i < layout_->planes().size(); i++) {
+      offsets[i] = layout_->planes()[i].offset;
+      strides[i] = layout_->planes()[i].stride;
+    }
+    const size_t video_frame_size =
+        layout_->planes().back().offset + layout_->planes().back().size;
+    return MojoSharedBufferVideoFrame::Create(
+        layout_->format(), layout_->coded_size(), visible_area_,
+        visible_area_.size(), std::move(dup_handle), video_frame_size, offsets,
+        strides, base::TimeTicks::Now().since_origin());
   }
-  const size_t video_frame_size =
-      layout_->planes().back().offset + layout_->planes().back().size;
-  return MojoSharedBufferVideoFrame::Create(
-      layout_->format(), layout_->coded_size(), visible_area_,
-      visible_area_.size(), std::move(dup_handle), video_frame_size, offsets,
-      strides, base::TimeTicks::Now().since_origin());
 }
 
 void AlignedDataHelper::InitializeAlignedMemoryFrames(
@@ -426,6 +487,51 @@ void AlignedDataHelper::InitializeAlignedMemoryFrames(
     src_frame_ptr += src_video_frame_size;
     video_frame_data_[i] = VideoFrameData(std::move(handle));
   }
+}
+
+void AlignedDataHelper::InitializeGpuMemoryBufferFrames(
+    const std::vector<uint8_t>& stream,
+    const VideoPixelFormat pixel_format,
+    const gfx::Size& coded_size) {
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+  layout_ = GetPlatformVideoFrameLayout(
+      gpu_memory_buffer_factory_, pixel_format, visible_area_.size(),
+      gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE);
+  ASSERT_TRUE(layout_) << "Failed getting platform VideoFrameLayout";
+
+  std::vector<size_t> src_plane_rows;
+  size_t src_video_frame_size = 0;
+  auto src_layout = GetAlignedVideoFrameLayout(
+      pixel_format, visible_area_.size(), 1u /* alignment */, &src_plane_rows,
+      &src_video_frame_size);
+  LOG_ASSERT(stream.size() % src_video_frame_size == 0U)
+      << "Stream byte size is not a product of calculated frame byte size";
+
+  const size_t num_planes = VideoFrame::NumPlanes(pixel_format);
+  const uint8_t* src_frame_ptr = &stream[0];
+  for (size_t i = 0; i < num_frames_; i++) {
+    auto memory_frame =
+        VideoFrame::CreateFrame(pixel_format, coded_size, visible_area_,
+                                visible_area_.size(), base::TimeDelta());
+    LOG_ASSERT(!!memory_frame) << "Failed creating VideoFrame";
+    for (size_t i = 0; i < num_planes; i++) {
+      libyuv::CopyPlane(src_frame_ptr + src_layout.planes()[i].offset,
+                        src_layout.planes()[i].stride, memory_frame->data(i),
+                        memory_frame->stride(i), src_layout.planes()[i].stride,
+                        src_plane_rows[i]);
+    }
+    src_frame_ptr += src_video_frame_size;
+    auto frame = CloneVideoFrame(
+        gpu_memory_buffer_factory_, memory_frame.get(), *layout_,
+        VideoFrame::STORAGE_GPU_MEMORY_BUFFER,
+        gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE);
+    LOG_ASSERT(!!frame) << "Failed creating GpuMemoryBuffer VideoFrame";
+    auto gmb_handle = CreateGpuMemoryBufferHandle(frame.get());
+    LOG_ASSERT(!gmb_handle.is_null())
+        << "Failed creating GpuMemoryBufferHandle";
+    video_frame_data_.push_back(VideoFrameData(std::move(gmb_handle)));
+  }
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 }
 
 // static

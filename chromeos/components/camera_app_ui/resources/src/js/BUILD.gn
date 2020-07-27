@@ -60,7 +60,8 @@ js_library("intent") {
 js_library("gallerybutton") {
   deps = [
     ":chrome_util",
-    "models:filesystem",
+    "models:file_system",
+    "models:file_system_entry",
     "models:result_saver",
     "models:video_saver",
   ]

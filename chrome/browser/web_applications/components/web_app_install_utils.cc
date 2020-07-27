@@ -282,9 +282,10 @@ void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
   }
   FilterSquareIconsFromBitmaps(web_app_info->icon_bitmaps_any, &square_icons);
 
-  DCHECK(!web_app_info->title.empty());
-  base::char16 icon_letter = GenerateIconLetterFromAppName(web_app_info->title);
-
+  base::char16 icon_letter =
+      web_app_info->title.empty()
+          ? GenerateIconLetterFromUrl(web_app_info->app_url)
+          : GenerateIconLetterFromAppName(web_app_info->title);
   web_app_info->generated_icon_color = SK_ColorTRANSPARENT;
   // TODO(https://crbug.com/1029223): Don't resize before writing to disk, it's
   // not necessary and would simplify this code path to remove.

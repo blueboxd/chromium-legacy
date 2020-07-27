@@ -123,11 +123,29 @@ class SafetyCheckHandler
   // should only be called as a result of an explicit user action.
   void PerformSafetyCheck();
 
+  // Constructs a string depicting how much time passed since the completion of
+  // something from the corresponding timestamps and strings IDs.
+  base::string16 GetStringForTimePassed(base::Time completion_timestamp,
+                                        base::Time system_time,
+                                        int less_than_one_minute_ago_message_id,
+                                        int minutes_ago_message_id,
+                                        int hours_ago_message_id,
+                                        int yesterday_message_id,
+                                        int days_ago_message_id);
+
   // Constructs the 'safety check ran' display string by how long ago safety
   // check ran.
   base::string16 GetStringForParentRan(base::Time safety_check_completion_time);
   base::string16 GetStringForParentRan(base::Time safety_check_completion_time,
                                        base::Time system_time);
+
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Constructs the string for the Chrome cleaner 'safe' state which depicts
+  // how long ago its last check ran.
+  base::string16 GetStringForChromeCleanerRan();
+  base::string16 GetStringForChromeCleanerRan(base::Time cct_completion_time,
+                                              base::Time system_time);
+#endif
 
  protected:
   SafetyCheckHandler(

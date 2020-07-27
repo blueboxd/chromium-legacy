@@ -77,8 +77,9 @@ public class PasswordCheckViewTest {
     @Before
     public void setUp() throws InterruptedException {
         MockitoAnnotations.initMocks(this);
-        PasswordCheckFragmentView.setComponentFactory(fragmentView -> {
+        PasswordCheckComponentUiFactory.setCreationStrategy(fragmentView -> {
             mPasswordCheckView = (PasswordCheckFragmentView) fragmentView;
+            mPasswordCheckView.setComponentDelegate(mComponentUi);
             return mComponentUi;
         });
         mTestRule.startSettingsActivity();

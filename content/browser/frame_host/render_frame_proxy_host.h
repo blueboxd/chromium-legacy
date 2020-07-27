@@ -175,6 +175,7 @@ class CONTENT_EXPORT RenderFrameProxyHost
 
   // blink::mojom::RemoteMainFrameHost overrides:
   void FocusPage() override;
+  void RouteCloseEvent() override;
 
   // mojom::RenderFrameProxyHost:
   void OpenURL(mojom::OpenURLParamsPtr params) override;

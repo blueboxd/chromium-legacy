@@ -4,13 +4,19 @@
 
 package org.chromium.chrome.browser.safety_check;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.text.format.DateUtils;
 import android.view.View;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.preference.Preference;
 
+import org.chromium.base.BuildConfig;
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.password_check.BulkLeakCheckServiceState;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
@@ -18,6 +24,8 @@ import org.chromium.chrome.browser.safety_check.SafetyCheckBridge.SafetyCheckCom
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.PasswordsState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.SafeBrowsingState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.UpdatesState;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.ref.WeakReference;
@@ -25,6 +33,8 @@ import java.lang.ref.WeakReference;
 class SafetyCheckMediator implements SafetyCheckCommonObserver {
     /** The minimal amount of time to show the checking state. */
     private static final int CHECKING_MIN_DURATION_MS = 1000;
+    /** Time after which the null-states will be shown: 10 minutes. */
+    private static final long RESET_TO_NULL_AFTER_MS = 10 * DateUtils.MINUTE_IN_MILLIS;
 
     /** Bridge to the C++ side for the Safe Browsing and passwords checks. */
     private SafetyCheckBridge mSafetyCheckBridge;
@@ -58,25 +68,64 @@ class SafetyCheckMediator implements SafetyCheckCommonObserver {
     };
 
     /**
-     * Creates a new instance of the Safety check mediator given a model and an updates client.
+     * Creates a new instance given a model, an updates client, and a settings launcher.
      *
      * @param model A model instance.
      * @param client An updates client.
+     * @param settingsLauncher An instance of the {@link SettingsLauncher} implementation.
      */
-    public SafetyCheckMediator(PropertyModel model, SafetyCheckUpdatesDelegate client) {
-        this(model, client, null, new Handler());
+    public SafetyCheckMediator(PropertyModel model, SafetyCheckUpdatesDelegate client,
+            SettingsLauncher settingsLauncher) {
+        this(model, client, settingsLauncher, null, new Handler());
         // Have to initialize this after the constructor call, since a "this" instance is needed.
         mSafetyCheckBridge = new SafetyCheckBridge(SafetyCheckMediator.this);
+        // Determine and set the initial state.
+        setInitialState();
     }
 
     @VisibleForTesting
     SafetyCheckMediator(PropertyModel model, SafetyCheckUpdatesDelegate client,
-            SafetyCheckBridge bridge, Handler handler) {
+            SettingsLauncher settingsLauncher, SafetyCheckBridge bridge, Handler handler) {
         mModel = model;
         mUpdatesClient = client;
         mSafetyCheckBridge = bridge;
         mHandler = handler;
         mPreferenceManager = SharedPreferencesManager.getInstance();
+        // Set the listener for clicking the updates element.
+        mModel.set(SafetyCheckProperties.UPDATES_CLICK_LISTENER,
+                (Preference.OnPreferenceClickListener) (p) -> {
+                    if (!BuildConfig.IS_CHROME_BRANDED) {
+                        return true;
+                    }
+                    String chromeAppId = ContextUtils.getApplicationContext().getPackageName();
+                    // Open the Play Store page for the installed Chrome channel.
+                    p.getContext().startActivity(new Intent(Intent.ACTION_VIEW,
+                            Uri.parse(ContentUrlConstants.PLAY_STORE_URL_PREFIX + chromeAppId)));
+                    return true;
+                });
+        // Set the listener for clicking the Safe Browsing element.
+        mModel.set(SafetyCheckProperties.SAFE_BROWSING_CLICK_LISTENER,
+                (Preference.OnPreferenceClickListener) (p) -> {
+                    // Open the Sync and Services settings.
+                    // TODO(crbug.com/1070620): replace the hardcoded class name with an import and
+                    // ".class.getName()" once SyncAndServicesSettings is moved out of
+                    // //chrome/android.
+                    p.getContext().startActivity(settingsLauncher.createSettingsActivityIntent(
+                            p.getContext(),
+                            "org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings"));
+                    return true;
+                });
+        // Set the listener for clicking the passwords element.
+        mModel.set(SafetyCheckProperties.PASSWORDS_CLICK_LISTENER,
+                (Preference.OnPreferenceClickListener) (p) -> {
+                    // Open the Passwords settings.
+                    // TODO(crbug.com/1070620): replace the hardcoded class name with an import and
+                    // ".class.getName()" once PasswordSettings is moved out of //chrome/android.
+                    p.getContext().startActivity(settingsLauncher.createSettingsActivityIntent(
+                            p.getContext(),
+                            "org.chromium.chrome.browser.password_manager.settings.PasswordSettings"));
+                    return true;
+                });
         // Set the listener for clicking the Check button.
         mModel.set(SafetyCheckProperties.SAFETY_CHECK_BUTTON_CLICK_LISTENER,
                 (View.OnClickListener) (v) -> performSafetyCheck());
@@ -84,6 +133,44 @@ class SafetyCheckMediator implements SafetyCheckCommonObserver {
         mModel.set(SafetyCheckProperties.LAST_RUN_TIMESTAMP,
                 mPreferenceManager.readLong(
                         ChromePreferenceKeys.SETTINGS_SAFETY_CHECK_LAST_RUN_TIMESTAMP, 0));
+        if (mSafetyCheckBridge != null) {
+            // Determine and set the initial state.
+            setInitialState();
+        }
+    }
+
+    /**
+     * Determines the initial state to show, triggering any fast checks if necessary based on the
+     * last run timestamp.
+     */
+    public void setInitialState() {
+        long currentTime = System.currentTimeMillis();
+        long lastRun = mPreferenceManager.readLong(
+                ChromePreferenceKeys.SETTINGS_SAFETY_CHECK_LAST_RUN_TIMESTAMP, 0);
+        // Always show the passwords unsafe state.
+        if (mSafetyCheckBridge.getNumberOfPasswordLeaksFromLastCheck() != 0) {
+            mModel.set(SafetyCheckProperties.PASSWORDS_STATE, PasswordsState.COMPROMISED_EXIST);
+        }
+        if (currentTime - lastRun < RESET_TO_NULL_AFTER_MS) {
+            // Show the passwords safe state
+            if (!mSafetyCheckBridge.savedPasswordsExist()) {
+                mModel.set(SafetyCheckProperties.PASSWORDS_STATE, PasswordsState.NO_PASSWORDS);
+            } else if (mSafetyCheckBridge.getNumberOfPasswordLeaksFromLastCheck() == 0) {
+                mModel.set(SafetyCheckProperties.PASSWORDS_STATE, PasswordsState.SAFE);
+            }
+            // Rerun the updates and Safe Browsing checks.
+            mModel.set(SafetyCheckProperties.SAFE_BROWSING_STATE, SafeBrowsingState.CHECKING);
+            mModel.set(SafetyCheckProperties.UPDATES_STATE, UpdatesState.CHECKING);
+            mSafetyCheckBridge.checkSafeBrowsing();
+            mUpdatesClient.checkForUpdates(new WeakReference(mUpdatesCheckCallback));
+        } else {
+            // The unsafe state was already set above, so only set to unchecked if it is safe.
+            if (mSafetyCheckBridge.getNumberOfPasswordLeaksFromLastCheck() == 0) {
+                mModel.set(SafetyCheckProperties.PASSWORDS_STATE, PasswordsState.UNCHECKED);
+            }
+            mModel.set(SafetyCheckProperties.SAFE_BROWSING_STATE, SafeBrowsingState.UNCHECKED);
+            mModel.set(SafetyCheckProperties.UPDATES_STATE, UpdatesState.UNCHECKED);
+        }
     }
 
     /** Triggers all safety check child checks. */

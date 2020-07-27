@@ -24,7 +24,7 @@ jumbo_source_set("base") {
 
   # TODO(dalecurtis): Replace this with empty targets on non-mac so
   # we can just include //media/base/mac in media_subcomponent_deps.
-  if (is_ios || is_mac) {
+  if (is_apple) {
     visibility += [ "//media/base/mac" ]
   }
 
@@ -605,7 +605,7 @@ source_set("unit_tests") {
     "//ui/gfx",
   ]
 
-  if (is_mac || is_ios) {
+  if (is_apple) {
     deps += [ "//media/base/mac:unit_tests" ]
   }
 

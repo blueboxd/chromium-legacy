@@ -12,7 +12,7 @@
         android:title="@string/settings_secure_dns_title"
         android:summary="@string/settings_secure_dns_description" />
 
-    <org.chromium.chrome.browser.privacy.settings.SecureDnsProviderPreference
+    <org.chromium.chrome.browser.privacy.secure_dns.SecureDnsProviderPreference
         android:key="secure_dns_provider" />
 
 </PreferenceScreen>

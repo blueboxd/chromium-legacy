@@ -160,7 +160,9 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 }
 
 // Tests accessibility of the Find in Page screen.
-- (void)testAccessibilityOnFindInPage {
+//
+// Disabled due to https://crbug.com/1107877.
+- (void)DISABLED_testAccessibilityOnFindInPage {
   [self typeFindInPageText:@"find"];
   [self assertResultStringIsResult:1 outOfTotal:2];
 

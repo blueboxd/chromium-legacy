@@ -224,29 +224,44 @@ void DatabaseImpl::GetAll(int64_t transaction_id,
                           int64_t max_count,
                           blink::mojom::IDBDatabase::GetAllCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!connection_->IsConnected()) {
+    // TODO(enne): see note below.  It can be incorrect for result ordering to
+    // run the callback directly from this function.
+    mojo::Remote<blink::mojom::IDBDatabaseGetAllResultSink> result_sink;
+    auto receiver = result_sink.BindNewPipeAndPassReceiver();
+    std::move(callback).Run(std::move(receiver));
+
     IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                  "Not connected.");
-    std::move(callback).Run(
-        blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
-            blink::mojom::IDBError::New(error.code(), error.message())));
+    result_sink->OnError(
+        blink::mojom::IDBError::New(error.code(), error.message()));
     return;
   }
 
   IndexedDBTransaction* transaction =
       connection_->GetTransaction(transaction_id);
   if (!transaction) {
+    mojo::Remote<blink::mojom::IDBDatabaseGetAllResultSink> result_sink;
+    auto receiver = result_sink.BindNewPipeAndPassReceiver();
+    std::move(callback).Run(std::move(receiver));
+
     IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
                                  "Unknown transaction.");
-    std::move(callback).Run(
-        blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
-            blink::mojom::IDBError::New(error.code(), error.message())));
+    result_sink->OnError(
+        blink::mojom::IDBError::New(error.code(), error.message()));
     return;
   }
 
+  // Hypothetically, this could pass the receiver to the callback immediately.
+  // However, for result ordering issues, we need to PostTask to mimic
+  // all of the other operations.
+  // TODO(enne): Consider rewriting the renderer side to order results based
+  // on initial request ordering and not on when the results are returned.
   blink::mojom::IDBDatabase::GetAllCallback aborting_callback =
-      CreateCallbackAbortOnDestruct<blink::mojom::IDBDatabase::GetAllCallback,
-                                    blink::mojom::IDBDatabaseGetAllResultPtr>(
+      CreateCallbackAbortOnDestruct<
+          blink::mojom::IDBDatabase::GetAllCallback,
+          mojo::PendingReceiver<blink::mojom::IDBDatabaseGetAllResultSink>>(
           std::move(callback), transaction->AsWeakPtr());
 
   transaction->ScheduleTask(BindWeakOperation(

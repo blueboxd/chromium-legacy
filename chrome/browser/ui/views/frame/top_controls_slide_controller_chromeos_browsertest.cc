@@ -905,7 +905,9 @@ class BrowserViewLayoutWaiter : public views::ViewObserver {
   DISALLOW_COPY_AND_ASSIGN(BrowserViewLayoutWaiter);
 };
 
-IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, DisplayRotation) {
+// Flaky https://crbug.com/1106036.
+IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
+                       DISABLED_DisplayRotation) {
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
   EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());

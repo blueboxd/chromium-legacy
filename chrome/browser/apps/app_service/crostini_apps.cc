@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -280,9 +281,10 @@ void CrostiniApps::OnLoadIconFromVM(const std::string app_id,
                                     std::string compressed_icon_data) {
   if (compressed_icon_data.empty()) {
     auto registration = registry_->GetRegistration(app_id);
-    if (registration && registration->VmType() ==
-                            guest_os::GuestOsRegistryService::VmType::
-                                ApplicationList_VmType_TERMINA) {
+    if (crostini::IsUnmatchedCrostiniShelfAppId(app_id) ||
+        (registration && registration->VmType() ==
+                             guest_os::GuestOsRegistryService::VmType::
+                                 ApplicationList_VmType_TERMINA)) {
       // Load default penguin for crostini. We must set is_placeholder_icon to
       // false to stop endless recursive calls.
       LoadIconFromResource(

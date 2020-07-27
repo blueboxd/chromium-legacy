@@ -53,7 +53,7 @@ use_assembler = (is_win || is_linux) &&
 if (use_assembler) {
   asm_defines = []
   if (!is_component_build) {
-    if (is_mac || is_ios) {
+    if (is_apple) {
       asm_defines += [ "WELS_PRIVATE_EXTERN=private_extern" ]
     } else if (is_linux || is_android || is_fuchsia) {
       asm_defines += [ "WELS_PRIVATE_EXTERN=hidden" ]

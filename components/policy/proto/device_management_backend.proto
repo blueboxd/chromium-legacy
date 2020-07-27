@@ -1030,7 +1030,7 @@ message DiskLifetimeEstimation {
 }
 
 // Status of the single storage device
-// Next id: 26
+// Next id: 27
 message DiskInfo {
   optional string serial = 1;
   optional string manufacturer = 2;
@@ -1085,6 +1085,14 @@ message DiskInfo {
     uint64 emmc_firmware_rev = 24;
     uint32 other_firmware_rev = 25;
   }
+
+  // The purpose of the device on the system.
+  enum DevicePurpose {
+    PURPOSE_UNKNOWN = 0;
+    PURPOSE_BOOT = 1;
+    PURPOSE_SWAP = 2;
+  }
+  optional DevicePurpose purpose = 26;
 }
 
 // Status of the storage subsystem.

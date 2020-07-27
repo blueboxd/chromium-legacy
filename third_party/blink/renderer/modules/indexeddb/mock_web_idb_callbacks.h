@@ -78,6 +78,11 @@ class MockWebIDBCallbacks : public WebIDBCallbacks {
 
   MOCK_METHOD0(Success, void());
 
+  MOCK_METHOD2(
+      ReceiveGetAllResults,
+      void(bool,
+           mojo::PendingReceiver<mojom::blink::IDBDatabaseGetAllResultSink>));
+
   MOCK_METHOD1(Blocked, void(int64_t oldVersion));
 
   MOCK_METHOD5(UpgradeNeeded,

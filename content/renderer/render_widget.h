@@ -265,6 +265,7 @@ class CONTENT_EXPORT RenderWidget
   // blink::WebWidgetClient
   void ScheduleAnimation() override;
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
+  void CloseWidgetSoon() override;
   void ClosePopupWidgetSoon() override;
   void Show(blink::WebNavigationPolicy) override;
   blink::ScreenInfo GetScreenInfo() override;
@@ -338,9 +339,6 @@ class CONTENT_EXPORT RenderWidget
   float GetEmulatorScale() const override;
 
   void UpdateTextInputState();
-
-  // Sends a request to the browser to close this RenderWidget.
-  void CloseWidgetSoon();
 
   cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
   void SetHandlingInputEvent(bool handling_input_event);

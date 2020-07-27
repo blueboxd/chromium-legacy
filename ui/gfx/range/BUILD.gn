@@ -19,7 +19,7 @@ jumbo_component("range") {
     "range_f.h",
   ]
 
-  if (is_ios || is_mac) {
+  if (is_apple) {
     sources += [ "range_mac.mm" ]
   }
 

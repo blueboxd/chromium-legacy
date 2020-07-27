@@ -16,9 +16,11 @@ export class AsyncJobQueue {
   /**
    * Pushes the given job into queue.
    * @param {function(): !Promise} job
+   * @return {!Promise} Resolved when the job is finished.
    */
   push(job) {
     this.promise_ = this.promise_.then(() => job());
+    return this.promise_;
   }
 
   /**

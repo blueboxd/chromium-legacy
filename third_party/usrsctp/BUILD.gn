@@ -126,7 +126,7 @@ static_library("usrsctp") {
       "__Userspace_os_Linux",
       "_GNU_SOURCE",
     ]
-  } else if (is_mac || is_ios) {
+  } else if (is_apple) {
     defines += [
       "HAVE_SA_LEN",
       "HAVE_SCONN_LEN",

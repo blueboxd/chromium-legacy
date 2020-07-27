@@ -177,6 +177,27 @@ SkBitmap GenerateBitmap(SquareSizePx output_size,
   return dst;
 }
 
+base::char16 GenerateIconLetterFromUrl(const GURL& app_url) {
+  std::string app_url_part = " ";
+  const std::string domain_and_registry =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          app_url,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+
+  if (!domain_and_registry.empty()) {
+    app_url_part = domain_and_registry;
+  } else if (app_url.has_host()) {
+    app_url_part = app_url.host();
+  }
+
+  // Translate punycode into unicode before retrieving the first letter.
+  const base::string16 string_for_display =
+      url_formatter::IDNToUnicode(app_url_part);
+
+  base::char16 icon_letter = base::i18n::ToUpper(string_for_display)[0];
+  return icon_letter;
+}
+
 base::char16 GenerateIconLetterFromAppName(const base::string16& app_name) {
   CHECK(!app_name.empty());
   return base::i18n::ToUpper(app_name)[0];

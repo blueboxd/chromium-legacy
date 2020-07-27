@@ -955,6 +955,21 @@ class DeviceStatusCollectorState : public StatusCollectorState {
                 disk_info_out->set_other_firmware_rev(fw_version->get_other());
                 break;
             }
+
+            switch (storage->purpose) {
+              case chromeos::cros_healthd::mojom::StorageDevicePurpose::
+                  kUnknown:
+                disk_info_out->set_purpose(em::DiskInfo::PURPOSE_UNKNOWN);
+                break;
+              case chromeos::cros_healthd::mojom::StorageDevicePurpose::
+                  kBootDevice:
+                disk_info_out->set_purpose(em::DiskInfo::PURPOSE_BOOT);
+                break;
+              case chromeos::cros_healthd::mojom::StorageDevicePurpose::
+                  kSwapDevice:
+                disk_info_out->set_purpose(em::DiskInfo::PURPOSE_SWAP);
+                break;
+            }
           }
           break;
         }

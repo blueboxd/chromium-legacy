@@ -886,8 +886,8 @@ NSString* kDevViewSourceKey = @"DevViewSource";
     case ItemTypePasswords:
       base::RecordAction(
           base::UserMetricsAction("Options_ShowPasswordManager"));
-      controller = [[PasswordsTableViewController alloc]
-          initWithBrowserState:_browserState];
+      controller =
+          [[PasswordsTableViewController alloc] initWithBrowser:_browser];
       break;
     case ItemTypeAutofillCreditCard:
       base::RecordAction(base::UserMetricsAction("AutofillCreditCardsViewed"));

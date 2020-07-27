@@ -1372,34 +1372,6 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   return popup_web_widget;
 }
 
-void RenderViewImpl::DoDeferredClose() {
-  // The main widget is currently not active. The active main frame widget is
-  // in a different process.  Have the browser route the close request to the
-  // active widget instead, so that the correct unload handlers are run.
-  Send(new ViewHostMsg_RouteCloseEvent(GetRoutingID()));
-}
-
-void RenderViewImpl::CloseWindowSoon() {
-  DCHECK(RenderThread::IsMainThread());
-  if (!main_render_frame_) {
-    // Ask the RenderViewHost with a local main frame to initiate close.  We
-    // could be called from deep in Javascript.  If we ask the RenderViewHost to
-    // close now, the window could be closed before the JS finishes executing,
-    // thanks to nested message loops running and handling the resulting Close
-    // IPC. So instead, post a message back to the message loop, which won't run
-    // until the JS is complete, and then the Close request can be sent.
-    GetCleanupTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&RenderViewImpl::DoDeferredClose,
-                                  weak_ptr_factory_.GetWeakPtr()));
-    return;
-  }
-
-  // If the main frame is in this RenderView's frame tree, then the Close
-  // request gets routed through the RenderWidget since non-frame RenderWidgets
-  // share the code path.
-  main_render_frame_->GetLocalRootRenderWidget()->CloseWidgetSoon();
-}
-
 base::StringPiece RenderViewImpl::GetSessionStorageNamespaceId() {
   CHECK(!session_storage_namespace_id_.empty());
   return session_storage_namespace_id_;
@@ -1746,14 +1718,6 @@ void RenderViewImpl::SuspendVideoCaptureDevices(bool suspend) {
 
 unsigned RenderViewImpl::GetLocalSessionHistoryLengthForTesting() const {
   return history_list_length_;
-}
-
-// static
-scoped_refptr<base::SingleThreadTaskRunner>
-RenderViewImpl::GetCleanupTaskRunner() {
-  return RenderThreadImpl::current_blink_platform_impl()
-      ->main_thread_scheduler()
-      ->CleanupTaskRunner();
 }
 
 }  // namespace content

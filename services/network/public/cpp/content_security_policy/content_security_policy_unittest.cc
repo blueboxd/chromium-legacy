@@ -1134,4 +1134,78 @@ TEST(ContentSecurityPolicy, ParseSerializedSourceList) {
   }
 }
 
+TEST(ContentSecurityPolicy, IsValidRequiredCSPAttr) {
+  struct TestCase {
+    const char* csp;
+    bool expected;
+    std::string expected_error;
+  } cases[] = {{"script-src 'none'", true, ""},
+               {"script-src 'none'; invalid-directive", false,
+                "Parsing the csp attribute into a Content-Security-Policy "
+                "returned one or more parsing errors: Unrecognized "
+                "Content-Security-Policy directive 'invalid-directive'."},
+               {"script-src 'none'; report-uri https://www.example.com", false,
+                "The csp attribute cannot contain the directives 'report-to' "
+                "or 'report-uri'."}};
+
+  for (auto& test : cases) {
+    SCOPED_TRACE(test.csp);
+    std::vector<mojom::ContentSecurityPolicyPtr> csp;
+    auto required_csp_headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
+    required_csp_headers->SetHeader("Content-Security-Policy", test.csp);
+    AddContentSecurityPolicyFromHeaders(*required_csp_headers,
+                                        GURL("https://example.com/"), &csp);
+    std::string out;
+    EXPECT_EQ(test.expected, IsValidRequiredCSPAttr(csp, nullptr, out));
+    EXPECT_EQ(test.expected_error, out);
+  }
+}
+
+TEST(ContentSecurityPolicy, Subsumes) {
+  struct TestCase {
+    std::string name;
+    std::string required_csp;
+    std::string returned_csp;
+    bool expected;
+  } cases[] = {
+      {
+          "No required csp",
+          "",
+          "script-src 'none'",
+          true,
+      },
+      {
+          "Same CSPs",
+          "script-src 'none'",
+          "script-src 'none'",
+          true,
+      },
+  };
+
+  for (auto& test : cases) {
+    SCOPED_TRACE(test.name);
+    std::vector<mojom::ContentSecurityPolicyPtr> required_csp;
+    if (test.required_csp.empty()) {
+      required_csp.push_back(mojom::ContentSecurityPolicy::New());
+    } else {
+      auto required_csp_headers =
+          base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
+      required_csp_headers->SetHeader("Content-Security-Policy",
+                                      test.required_csp);
+      AddContentSecurityPolicyFromHeaders(
+          *required_csp_headers, GURL("https://example.com/"), &required_csp);
+    }
+
+    auto returned_csp_headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
+    returned_csp_headers->AddHeader("Content-Security-Policy",
+                                    test.returned_csp);
+    std::vector<mojom::ContentSecurityPolicyPtr> returned_csp;
+    AddContentSecurityPolicyFromHeaders(
+        *returned_csp_headers, GURL("https://example.com/"), &returned_csp);
+    EXPECT_EQ(test.expected, Subsumes(*required_csp[0], returned_csp));
+  }
+}
+
 }  // namespace network

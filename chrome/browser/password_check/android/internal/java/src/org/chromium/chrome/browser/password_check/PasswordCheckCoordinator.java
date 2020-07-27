@@ -7,6 +7,9 @@ package org.chromium.chrome.browser.password_check;
 import android.view.MenuItem;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
 
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -17,8 +20,9 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  * Creates the PasswordCheckComponentUi. This class is responsible for managing the UI for the check
  * of the leaked password.
  */
-class PasswordCheckCoordinator implements PasswordCheckComponentUi {
+class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObserver {
     private final PasswordCheckFragmentView mFragmentView;
+    private PropertyModel mModel;
 
     /**
      * Blueprint for a class that handles interactions with credentials.
@@ -33,10 +37,20 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi {
 
     PasswordCheckCoordinator(PasswordCheckFragmentView fragmentView) {
         mFragmentView = fragmentView;
-        PropertyModel model = PasswordCheckProperties.createDefaultModel();
-        PasswordCheckMediator mediator = new PasswordCheckMediator();
-        PasswordCheckCoordinator.setUpModelChangeProcessors(model, mFragmentView);
-        mediator.initialize(model, PasswordCheckFactory.create());
+        // TODO(crbug.com/1101256): If help is part of the view, make mediator the delegate.
+        mFragmentView.setComponentDelegate(this);
+        mFragmentView.getLifecycle().addObserver(this);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    public void connectToModelWhenViewIsReady() {
+        // In the rare case of a restarted activity, don't recreate the model and mediator.
+        if (mModel == null) {
+            mModel = PasswordCheckProperties.createDefaultModel();
+            PasswordCheckMediator mediator = new PasswordCheckMediator();
+            PasswordCheckCoordinator.setUpModelChangeProcessors(mModel, mFragmentView);
+            mediator.initialize(mModel, PasswordCheckFactory.create());
+        }
     }
 
     // TODO(crbug.com/1101256): Move to view code.

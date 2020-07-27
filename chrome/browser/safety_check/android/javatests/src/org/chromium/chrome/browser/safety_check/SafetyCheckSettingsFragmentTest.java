@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.SafeBrowsingState;
@@ -151,5 +152,52 @@ public class SafetyCheckSettingsFragmentTest {
         assertEquals(InstrumentationRegistry.getTargetContext().getString(
                              R.string.safety_check_updates_outdated),
                 updates.getSummary());
+    }
+
+    @Test
+    @MediumTest
+    public void testSafetyCheckElementsOnClick() {
+        createFragmentAndModel();
+        CallbackHelper passwordsClicked = new CallbackHelper();
+        CallbackHelper safeBrowsingClicked = new CallbackHelper();
+        CallbackHelper updatesClicked = new CallbackHelper();
+        // Set the listeners
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.set(SafetyCheckProperties.PASSWORDS_CLICK_LISTENER,
+                    (Preference.OnPreferenceClickListener) (p) -> {
+                        passwordsClicked.notifyCalled();
+                        return true;
+                    });
+            mModel.set(SafetyCheckProperties.SAFE_BROWSING_CLICK_LISTENER,
+                    (Preference.OnPreferenceClickListener) (p) -> {
+                        safeBrowsingClicked.notifyCalled();
+                        return true;
+                    });
+            mModel.set(SafetyCheckProperties.UPDATES_CLICK_LISTENER,
+                    (Preference.OnPreferenceClickListener) (p) -> {
+                        updatesClicked.notifyCalled();
+                        return true;
+                    });
+        });
+        Preference passwords = mFragment.findPreference(PASSWORDS);
+        Preference safeBrowsing = mFragment.findPreference(SAFE_BROWSING);
+        Preference updates = mFragment.findPreference(UPDATES);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Passwords state remains unchanged, should be clickable.
+            passwords.performClick();
+            // Safe browsing is in "checking", the element deactivates, not clickable.
+            mModel.set(SafetyCheckProperties.SAFE_BROWSING_STATE, SafeBrowsingState.CHECKING);
+            safeBrowsing.performClick();
+            // Updates goes through "checking" and ends up in "outdated".
+            // Checking: the element deactivates, clicks are not handled.
+            mModel.set(SafetyCheckProperties.UPDATES_STATE, UpdatesState.CHECKING);
+            // Final state: the element is reactivated and should handle clicks.
+            mModel.set(SafetyCheckProperties.UPDATES_STATE, UpdatesState.OUTDATED);
+            updates.performClick();
+        });
+        // Passwords and updates should get clicked, SB element is inactive.
+        assertEquals(1, passwordsClicked.getCallCount());
+        assertEquals(0, safeBrowsingClicked.getCallCount());
+        assertEquals(1, updatesClicked.getCallCount());
     }
 }

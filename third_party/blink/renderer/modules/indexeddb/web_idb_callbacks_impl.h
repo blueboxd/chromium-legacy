@@ -87,6 +87,11 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
       std::unique_ptr<IDBKey>,
       std::unique_ptr<IDBKey> primary_key,
       base::Optional<std::unique_ptr<IDBValue>>) override;
+  void ReceiveGetAllResults(
+      bool key_only,
+      mojo::PendingReceiver<mojom::blink::IDBDatabaseGetAllResultSink> receiver)
+      override;
+
   void Blocked(int64_t old_version) override;
   void UpgradeNeeded(
       mojo::PendingAssociatedRemote<mojom::blink::IDBDatabase> pending_database,

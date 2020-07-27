@@ -58,6 +58,10 @@ class WebIDBCallbacks : public mojom::blink::IDBCallbacks {
   virtual void SuccessArray(Vector<mojom::blink::IDBReturnValuePtr> values) = 0;
   virtual void SuccessValue(mojom::blink::IDBReturnValuePtr value) = 0;
   virtual void SuccessKey(std::unique_ptr<IDBKey> key) = 0;
+  virtual void ReceiveGetAllResults(
+      bool key_only,
+      mojo::PendingReceiver<mojom::blink::IDBDatabaseGetAllResultSink>
+          receiver) = 0;
 };
 
 }  // namespace blink

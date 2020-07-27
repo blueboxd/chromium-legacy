@@ -4,7 +4,11 @@
 
 import {browserProxy} from './browser_proxy/browser_proxy.js';
 import {assert, assertInstanceof} from './chrome_util.js';
-import * as filesystem from './models/filesystem.js';
+import * as filesystem from './models/file_system.js';
+import {
+  AbstractDirectoryEntry,  // eslint-disable-line no-unused-vars
+  AbstractFileEntry,       // eslint-disable-line no-unused-vars
+} from './models/file_system_entry.js';
 // eslint-disable-next-line no-unused-vars
 import {ResultSaver} from './models/result_saver.js';
 import {VideoSaver} from './models/video_saver.js';
@@ -30,12 +34,12 @@ const VIDEO_THUMBNAIL_SIZE_LIMIT = 32 << 20;
  */
 class CoverPhoto {
   /**
-   * @param {!FileEntry} file File entry of cover photo.
+   * @param {!AbstractFileEntry} file File entry of cover photo.
    * @param {!string} thumbnailUrl Url to its thumbnail.
    */
   constructor(file, thumbnailUrl) {
     /**
-     * @type {!FileEntry}
+     * @type {!AbstractFileEntry}
      * @const
      */
     this.file = file;
@@ -64,13 +68,13 @@ class CoverPhoto {
 
   /**
    * Creates CoverPhoto objects from photo file.
-   * @param {!FileEntry} file
+   * @param {!AbstractFileEntry} file
    * @return {!Promise<!CoverPhoto>}
    */
   static async create(file) {
     const isVideo = filesystem.hasVideoPrefix(file);
     const limit = isVideo ? VIDEO_THUMBNAIL_SIZE_LIMIT : Infinity;
-    const fileUrl = await filesystem.pictureURL(file, limit);
+    const fileUrl = await filesystem.pictureURL(file, {limit});
     const thumbnail =
         await util.scalePicture(fileUrl, isVideo, THUMBNAIL_WIDTH);
     URL.revokeObjectURL(fileUrl);
@@ -104,7 +108,7 @@ export class GalleryButton {
 
     /**
      * Directory holding saved pictures showing in gallery.
-     * @type {?DirectoryEntry}
+     * @type {?AbstractDirectoryEntry}
      * @private
      */
     this.directory_ = null;
@@ -122,8 +126,8 @@ export class GalleryButton {
 
   /**
    * Initializes the gallery button.
-   * @param {!DirectoryEntry} dir Directory holding saved pictures showing in
-   *     gallery.
+   * @param {!AbstractDirectoryEntry} dir Directory holding saved pictures
+   *     showing in gallery.
    */
   async initialize(dir) {
     this.directory_ = dir;
@@ -131,7 +135,7 @@ export class GalleryButton {
   }
 
   /**
-   * @param {?FileEntry} file File to be set as cover photo.
+   * @param {?AbstractFileEntry} file File to be set as cover photo.
    * @return {!Promise}
    * @private
    */
@@ -162,8 +166,7 @@ export class GalleryButton {
 
     // Checks existence of cached cover photo.
     if (this.cover_ !== null) {
-      const file =
-          await filesystem.getFile(dir, this.cover_.name, /* create */ false);
+      const file = await dir.getFile(this.cover_.name);
       if (file !== null) {
         return;
       }
@@ -178,7 +181,7 @@ export class GalleryButton {
     const filesWithTime = await Promise.all(
         files.map(async (file) => ({
                     file,
-                    time: (await filesystem.getMetadata(file)).modificationTime,
+                    time: (await file.getLastModificationTime()),
                   })));
     const lastFile =
         filesWithTime.reduce((last, cur) => last.time > cur.time ? last : cur)

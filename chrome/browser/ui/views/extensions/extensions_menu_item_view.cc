@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/controls/button/button.h"
@@ -121,7 +122,8 @@ const char* ExtensionsMenuItemView::GetClassName() const {
 void ExtensionsMenuItemView::OnThemeChanged() {
   views::View::OnThemeChanged();
   const SkColor icon_color =
-      GetNativeTheme()->GetSystemColor(ui::NativeTheme::kColorId_MenuIconColor);
+      GetAdjustedIconColor(GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_MenuIconColor));
 
   if (pin_button_)
     pin_button_->set_ink_drop_base_color(icon_color);
@@ -138,11 +140,12 @@ void ExtensionsMenuItemView::UpdatePinButton() {
       IsPinned() ? IDS_EXTENSIONS_MENU_UNPIN_BUTTON_TOOLTIP
                  : IDS_EXTENSIONS_MENU_PIN_BUTTON_TOOLTIP));
   SkColor unpinned_icon_color =
-      GetNativeTheme()->GetSystemColor(ui::NativeTheme::kColorId_MenuIconColor);
-  SkColor icon_color = IsPinned()
-                           ? GetNativeTheme()->GetSystemColor(
-                                 ui::NativeTheme::kColorId_ProminentButtonColor)
-                           : unpinned_icon_color;
+      GetAdjustedIconColor(GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_MenuIconColor));
+  SkColor icon_color =
+      IsPinned() ? GetAdjustedIconColor(GetNativeTheme()->GetSystemColor(
+                       ui::NativeTheme::kColorId_ProminentButtonColor))
+                 : unpinned_icon_color;
   views::SetImageFromVectorIconWithColor(
       pin_button_, IsPinned() ? views::kUnpinIcon : views::kPinIcon,
       kSecondaryIconSizeDp, icon_color);
@@ -162,4 +165,13 @@ bool ExtensionsMenuItemView::IsPinned() {
 ExtensionsMenuButton*
 ExtensionsMenuItemView::primary_action_button_for_testing() {
   return primary_action_button_;
+}
+
+SkColor ExtensionsMenuItemView::GetAdjustedIconColor(SkColor icon_color) const {
+  const SkColor background_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_BubbleBackground);
+  if (background_color != SK_ColorTRANSPARENT) {
+    return color_utils::BlendForMinContrast(icon_color, background_color).color;
+  }
+  return icon_color;
 }

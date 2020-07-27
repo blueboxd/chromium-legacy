@@ -7,6 +7,7 @@
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_error.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
@@ -129,33 +130,18 @@ void WebIDBDatabaseImpl::GetAll(int64_t transaction_id,
   mojom::blink::IDBKeyRangePtr key_range_ptr =
       mojom::blink::IDBKeyRange::From(key_range);
   callbacks->SetState(nullptr, transaction_id);
-  database_->GetAll(transaction_id, object_store_id, index_id,
-                    std::move(key_range_ptr), key_only, max_count,
-                    WTF::Bind(&WebIDBDatabaseImpl::GetAllCallback,
-                              WTF::Unretained(this), std::move(callbacks)));
+  database_->GetAll(
+      transaction_id, object_store_id, index_id, std::move(key_range_ptr),
+      key_only, max_count,
+      WTF::Bind(&WebIDBDatabaseImpl::GetAllCallback, WTF::Unretained(this),
+                std::move(callbacks), key_only));
 }
 
 void WebIDBDatabaseImpl::GetAllCallback(
     std::unique_ptr<WebIDBCallbacks> callbacks,
-    mojom::blink::IDBDatabaseGetAllResultPtr result) {
-  if (result->is_error_result()) {
-    callbacks->Error(result->get_error_result()->error_code,
-                     std::move(result->get_error_result()->error_message));
-    callbacks.reset();
-    return;
-  }
-
-  if (result->is_key()) {
-    callbacks->SuccessKey(std::move(result->get_key()));
-    callbacks.reset();
-    return;
-  }
-
-  if (result->is_values()) {
-    callbacks->SuccessArray(std::move(result->get_values()));
-    callbacks.reset();
-    return;
-  }
+    bool key_only,
+    mojo::PendingReceiver<mojom::blink::IDBDatabaseGetAllResultSink> receiver) {
+  callbacks->ReceiveGetAllResults(key_only, std::move(receiver));
 }
 
 void WebIDBDatabaseImpl::SetIndexKeys(int64_t transaction_id,

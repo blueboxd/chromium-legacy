@@ -16,7 +16,7 @@ import {DeviceInfoUpdater} from './device/device_info_updater.js';
 import * as error from './error.js';
 import {GalleryButton} from './gallerybutton.js';
 import * as metrics from './metrics.js';
-import * as filesystem from './models/filesystem.js';
+import * as filesystem from './models/file_system.js';
 import * as nav from './nav.js';
 import {PerfEvent} from './perf.js';
 import * as state from './state.js';

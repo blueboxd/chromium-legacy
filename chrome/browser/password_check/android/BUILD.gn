@@ -78,6 +78,7 @@ android_library("test_java") {
     ":public_java",
     ":public_ui_java",
     "internal:internal_java",
+    "internal:internal_ui_factory_java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",

@@ -275,6 +275,11 @@ TEST(RangesTest, IsPermutation) {
 
   EXPECT_TRUE(
       ranges::is_permutation(ints1, ints2, ranges::equal_to{}, &Int::value));
+
+  EXPECT_FALSE(ranges::is_permutation(array1, ints2, ranges::equal_to{}, {},
+                                      &Int::value));
+  EXPECT_TRUE(ranges::is_permutation(array3, ints2, ranges::equal_to{}, {},
+                                     &Int::value));
 }
 
 TEST(RangesTest, Search) {
@@ -816,14 +821,18 @@ TEST(RangesTest, PartialSortCopy) {
 
   Int ints[] = {3, 1, 2, 0, 4};
   Int outs[] = {0, 0, 0};
-  EXPECT_EQ(outs + 3, ranges::partial_sort_copy(ints, outs, {}, &Int::value));
+  EXPECT_EQ(outs + 3, ranges::partial_sort_copy(ints, outs, {}, &Int::value,
+                                                &Int::value));
   EXPECT_THAT(ints, ElementsAre(3, 1, 2, 0, 4));
   EXPECT_THAT(outs, ElementsAre(0, 1, 2));
 
   EXPECT_EQ(outs + 3, ranges::partial_sort_copy(ints, outs, ranges::greater(),
-                                                &Int::value));
+                                                &Int::value, &Int::value));
   EXPECT_THAT(ints, ElementsAre(3, 1, 2, 0, 4));
   EXPECT_THAT(outs, ElementsAre(4, 3, 2));
+
+  EXPECT_EQ(outs + 3,
+            ranges::partial_sort_copy(input, outs, {}, {}, &Int::value));
 }
 
 TEST(RangesTest, IsSorted) {
@@ -867,7 +876,7 @@ TEST(RangesTest, LowerBound) {
   EXPECT_EQ(ints + 4, ranges::lower_bound(ints, 2, {}, &Int::value));
   EXPECT_EQ(ints + 6, ranges::lower_bound(ints, 3, {}, &Int::value));
 
-  const auto proj = [](const auto& i) { return 2 - i.value; };
+  const auto proj = [](const Int& i) { return 2 - i.value; };
   EXPECT_EQ(ints, ranges::lower_bound(ints, 3, ranges::greater{}, proj));
   EXPECT_EQ(ints, ranges::lower_bound(ints, 2, ranges::greater{}, proj));
   EXPECT_EQ(ints + 2, ranges::lower_bound(ints, 1, ranges::greater{}, proj));

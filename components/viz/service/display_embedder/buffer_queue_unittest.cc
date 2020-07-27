@@ -110,9 +110,6 @@ class StubGpuMemoryBufferManager : public TestGpuMemoryBufferManager {
 #if defined(OS_WIN)
 const gpu::SurfaceHandle kFakeSurfaceHandle =
     reinterpret_cast<gpu::SurfaceHandle>(1);
-#elif defined(USE_X11)
-const gpu::SurfaceHandle kFakeSurfaceHandle =
-    static_cast<gpu::SurfaceHandle>(1);
 #else
 const gpu::SurfaceHandle kFakeSurfaceHandle = 1;
 #endif

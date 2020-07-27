@@ -253,9 +253,7 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
             site_instance_.get());
   }
 
-  int view_routing_id = frame_tree_node_->frame_tree()
-                            ->GetRenderViewHost(site_instance_.get())
-                            ->GetRoutingID();
+  int view_routing_id = GetRenderViewHost()->GetRoutingID();
   GetProcess()->GetRendererInterface()->CreateFrameProxy(
       routing_id_, view_routing_id, opener_frame_token, parent_routing_id,
       frame_tree_node_->current_replication_state(), frame_token_,
@@ -600,6 +598,18 @@ void RenderFrameProxyHost::PrintCrossProcessSubframe(const gfx::Rect& rect,
 
 void RenderFrameProxyHost::FocusPage() {
   frame_tree_node_->current_frame_host()->FocusPage();
+}
+
+void RenderFrameProxyHost::RouteCloseEvent() {
+  // Tell the active RenderViewHost to run unload handlers and close, as long
+  // as the request came from a RenderViewHost in the same BrowsingInstance.
+  // In most cases, we receive this from a swapped out RenderViewHost.
+  // It is possible to receive it from one that has just been swapped in,
+  // in which case we might as well deliver the message anyway.
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      frame_tree_node_->current_frame_host()->GetRenderViewHost());
+  if (GetSiteInstance()->IsRelatedSiteInstance(rvh->GetSiteInstance()))
+    rvh->ClosePage();
 }
 
 void RenderFrameProxyHost::OpenURL(mojom::OpenURLParamsPtr params) {

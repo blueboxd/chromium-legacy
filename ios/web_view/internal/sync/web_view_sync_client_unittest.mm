@@ -13,6 +13,7 @@
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
@@ -58,6 +59,8 @@ class WebViewSyncClientTest : public PlatformTest {
                 &invalidation_service_) {
     pref_service_.registry()->RegisterBooleanPref(
         prefs::kSavingBrowserHistoryDisabled, true);
+    pref_service_.registry()->RegisterDictionaryPref(
+        password_manager::prefs::kAccountStoragePerAccountSettings);
     profile_password_store_->Init(&pref_service_, base::DoNothing());
     if (account_password_store_) {
       account_password_store_->Init(&pref_service_, base::DoNothing());

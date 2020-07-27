@@ -877,6 +877,8 @@ INSTANTIATE_TEST_SUITE_P(All, MenuControllerTest, testing::Bool());
 // Tests that an event targeter which blocks events will be honored by the menu
 // event dispatcher.
 TEST_F(MenuControllerTest, EventTargeter) {
+  if (features::IsUsingOzonePlatform())
+    return;
   {
     // With the aura::NullWindowTargeter instantiated and assigned we expect
     // the menu to not handle the key event.
@@ -897,6 +899,8 @@ TEST_F(MenuControllerTest, EventTargeter) {
 // Tests that touch event ids are released correctly. See crbug.com/439051 for
 // details. When the ids aren't managed correctly, we get stuck down touches.
 TEST_F(MenuControllerTest, TouchIdsReleasedCorrectly) {
+  if (features::IsUsingOzonePlatform())
+    return;
   TestEventHandler test_event_handler;
   GetRootWindow(owner())->AddPreTargetHandler(&test_event_handler);
 

@@ -55,7 +55,7 @@ static_library("gtest") {
     sources += [ "../platform_test.h" ]
   }
 
-  if ((is_mac || is_ios) && gtest_include_objc_support) {
+  if (is_apple && gtest_include_objc_support) {
     if (is_ios) {
       set_sources_assignment_filter([])
     }

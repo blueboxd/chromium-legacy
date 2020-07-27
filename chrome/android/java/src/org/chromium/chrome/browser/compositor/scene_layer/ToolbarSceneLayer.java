@@ -112,6 +112,9 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
                 mContext.getResources(), mCurrentTab.get(), browserControlsBackgroundColor);
 
         int textBoxResourceId = R.drawable.modern_location_bar;
+        boolean isVisible =
+                !BrowserControlsUtils.areBrowserControlsOffScreen(mBrowserControlsStateProvider)
+                && mViewportModeSupplier.get() != ViewportMode.ALWAYS_FULLSCREEN;
         // The content offset is passed to the toolbar layer so that it can position itself at the
         // bottom of the space available for top controls. The main reason for using content offset
         // instead of top controls offset is that top controls can have a greater height than that
@@ -120,7 +123,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
         ToolbarSceneLayerJni.get().updateToolbarLayer(mNativePtr, ToolbarSceneLayer.this,
                 resourceManager, R.id.control_container, browserControlsBackgroundColor,
                 textBoxResourceId, textBoxColor, mBrowserControlsStateProvider.getContentOffset(),
-                showShadow);
+                showShadow, isVisible);
 
         if (mProgressBarDrawingInfo == null) return;
         ToolbarSceneLayerJni.get().updateProgressBar(mNativePtr, ToolbarSceneLayer.this,
@@ -177,8 +180,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
 
     @Override
     public boolean isSceneOverlayTreeShowing() {
-        return !BrowserControlsUtils.areBrowserControlsOffScreen(mBrowserControlsStateProvider)
-                && mViewportModeSupplier.get() != ViewportMode.ALWAYS_FULLSCREEN;
+        return true;
     }
 
     @Override
@@ -229,7 +231,8 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
                 long nativeToolbarSceneLayer, ToolbarSceneLayer caller, SceneLayer contentTree);
         void updateToolbarLayer(long nativeToolbarSceneLayer, ToolbarSceneLayer caller,
                 ResourceManager resourceManager, int resourceId, int toolbarBackgroundColor,
-                int urlBarResourceId, int urlBarColor, float contentOffset, boolean showShadow);
+                int urlBarResourceId, int urlBarColor, float contentOffset, boolean showShadow,
+                boolean visible);
         void updateProgressBar(long nativeToolbarSceneLayer, ToolbarSceneLayer caller,
                 int progressBarX, int progressBarY, int progressBarWidth, int progressBarHeight,
                 int progressBarColor, int progressBarBackgroundX, int progressBarBackgroundY,

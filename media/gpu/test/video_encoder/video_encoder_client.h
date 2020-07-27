@@ -20,7 +20,7 @@
 #include "media/video/video_encode_accelerator.h"
 
 namespace gpu {
-class gpu_memory_buffer_factory;
+class GpuMemoryBufferFactory;
 }
 
 namespace media {
@@ -51,6 +51,9 @@ struct VideoEncoderClientConfig {
   // frames in the video, and in which case the VideoEncoderClient loops the
   // video during encoding.
   size_t num_frames_to_encode = 0;
+  // The storage type of the input VideoFrames.
+  VideoEncodeAccelerator::Config::StorageType input_storage_type =
+      VideoEncodeAccelerator::Config::StorageType::kShmem;
 };
 
 struct VideoEncoderStats {
@@ -89,6 +92,7 @@ class VideoEncoderClient : public VideoEncodeAccelerator::Client {
   static std::unique_ptr<VideoEncoderClient> Create(
       const VideoEncoder::EventCallback& event_cb,
       std::vector<std::unique_ptr<BitstreamProcessor>> bitstream_processors,
+      gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory,
       const VideoEncoderClientConfig& config);
 
   // Initialize the video encode accelerator for the specified |video|.
@@ -136,6 +140,7 @@ class VideoEncoderClient : public VideoEncodeAccelerator::Client {
   VideoEncoderClient(
       const VideoEncoder::EventCallback& event_cb,
       std::vector<std::unique_ptr<BitstreamProcessor>> bitstream_processors,
+      gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory,
       const VideoEncoderClientConfig& config);
 
   // Destroy the video encoder client.
@@ -221,6 +226,8 @@ class VideoEncoderClient : public VideoEncodeAccelerator::Client {
 
   VideoEncoderStats current_stats_ GUARDED_BY(stats_lock_);
   mutable base::Lock stats_lock_;
+
+  gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
 
   SEQUENCE_CHECKER(test_sequence_checker_);
   SEQUENCE_CHECKER(encoder_client_sequence_checker_);

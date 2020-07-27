@@ -4,7 +4,7 @@
 
 import("//build/config/jumbo.gni")
 
-assert(is_mac || is_ios)
+assert(is_apple)
 
 jumbo_source_set("mac") {
   # Note: This source_set is depended on only by //media. In the component

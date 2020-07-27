@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as util from '../chrome_util.js';
+import {promisify} from '../chrome_util.js';
+import {ChromeDirectoryEntry} from '../models/chrome_file_system_entry.js';
 // eslint-disable-next-line no-unused-vars
 import {BrowserProxy} from './browser_proxy_interface.js';
 
@@ -12,49 +13,61 @@ import {BrowserProxy} from './browser_proxy_interface.js';
  */
 class ChromeAppBrowserProxy {
   /** @override */
-  async getVolumeList() {
+  async getExternalDir() {
+    let volumes;
     try {
-      // Await here to handle the case if it is rejected.
-      return await util.promisify(chrome.fileSystem.getVolumeList)();
+      volumes = await promisify(chrome.fileSystem.getVolumeList)();
     } catch (e) {
       console.error('Failed to get volume list', e);
       return null;
     }
-  }
 
-  /** @override */
-  async requestFileSystem(options) {
-    try {
-      // Await here to handle the case if it is rejected.
-      return await util.promisify(chrome.fileSystem.requestFileSystem)(options);
-    } catch (e) {
-      console.error('Failed to request file system', e);
-      return null;
+    const getFileSystemRoot = async (volume) => {
+      try {
+        const fs = await promisify(chrome.fileSystem.requestFileSystem)(volume);
+        return fs === null ? null : fs.root;
+      } catch (e) {
+        console.error('Failed to request file system', e);
+        return null;
+      }
+    };
+
+    for (const volume of volumes) {
+      if (!volume.volumeId.includes('downloads:MyFiles')) {
+        continue;
+      }
+      const root = await getFileSystemRoot(volume);
+      if (root === null) {
+        continue;
+      }
+
+      const rootEntry = new ChromeDirectoryEntry(root);
+      const entries = await rootEntry.getDirectories();
+      return entries.find((entry) => entry.name === 'Downloads') || null;
     }
+    return null;
   }
 
   /** @override */
   localStorageGet(keys) {
-    return util.promisify(chrome.storage.local.get.bind(chrome.storage.local))(
-        keys);
+    return promisify(chrome.storage.local.get.bind(chrome.storage.local))(keys);
   }
 
   /** @override */
   localStorageSet(items) {
-    return util.promisify(chrome.storage.local.set.bind(chrome.storage.local))(
+    return promisify(chrome.storage.local.set.bind(chrome.storage.local))(
         items);
   }
 
   /** @override */
   localStorageRemove(items) {
-    return util.promisify(
-        chrome.storage.local.remove.bind(chrome.storage.local))(items);
+    return promisify(chrome.storage.local.remove.bind(chrome.storage.local))(
+        items);
   }
 
   /** @override */
   async getBoard() {
-    const values =
-        await util.promisify(chrome.chromeosInfoPrivate.get)(['board']);
+    const values = await promisify(chrome.chromeosInfoPrivate.get)(['board']);
     return values['board'];
   }
 
@@ -65,15 +78,15 @@ class ChromeAppBrowserProxy {
 
   /** @override */
   isCrashReportingEnabled() {
-    return util.promisify(chrome.metricsPrivate.getIsCrashReportingEnabled)();
+    return promisify(chrome.metricsPrivate.getIsCrashReportingEnabled)();
   }
 
   /** @override */
   async openGallery(file) {
     const id = 'jhdjimmaggjajfjphpljagpgkidjilnj|web|open';
     try {
-      const result = await util.promisify(
-          chrome.fileManagerPrivate.executeTask)(id, [file]);
+      const result = await promisify(chrome.fileManagerPrivate.executeTask)(
+          id, [file.getRawEntry()]);
       if (result !== 'message_sent') {
         console.warn('Unable to open picture: ' + result);
       }

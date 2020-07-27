@@ -19,7 +19,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager.DohEntry;
+import org.chromium.chrome.browser.privacy.secure_dns.SecureDnsSettings;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
@@ -31,11 +31,8 @@ import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
-import org.chromium.net.SecureDnsMode;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
-
-import java.util.List;
 
 /**
  * Fragment to keep track of the all the privacy related preferences.
@@ -83,7 +80,7 @@ public class PrivacySettings
         networkPredictionPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         Preference secureDnsPref = findPreference(PREF_SECURE_DNS);
-        secureDnsPref.setVisible(privacyPrefManager.isDnsOverHttpsUiEnabled());
+        secureDnsPref.setVisible(SecureDnsSettings.isUiEnabled());
 
         Preference syncAndServicesLink = findPreference(PREF_SYNC_AND_SERVICES_LINK);
         NoUnderlineClickableSpan linkSpan = new NoUnderlineClickableSpan(getResources(), view -> {
@@ -138,27 +135,7 @@ public class PrivacySettings
 
         Preference secureDnsPref = findPreference(PREF_SECURE_DNS);
         if (secureDnsPref != null && secureDnsPref.isVisible()) {
-            PrivacyPreferencesManager manager = PrivacyPreferencesManager.getInstance();
-            @SecureDnsMode
-            int mode = manager.getSecureDnsMode();
-            if (mode == SecureDnsMode.OFF) {
-                secureDnsPref.setSummary(R.string.text_off);
-            } else if (mode == SecureDnsMode.AUTOMATIC) {
-                secureDnsPref.setSummary(R.string.settings_automatic_mode_summary);
-            } else {
-                String templateGroup = manager.getDnsOverHttpsTemplates();
-                List<DohEntry> providers = manager.getDohProviders();
-                String serverName = templateGroup;
-                for (int i = 0; i < providers.size(); i++) {
-                    DohEntry entry = providers.get(i);
-                    if (entry.template.equals(templateGroup)) {
-                        serverName = entry.name;
-                        break;
-                    }
-                }
-                secureDnsPref.setSummary(
-                        String.format("%s - %s", getString(R.string.text_on), serverName));
-            }
+            secureDnsPref.setSummary(SecureDnsSettings.getSummary(getContext()));
         }
 
         Preference usageStatsPref = findPreference(PREF_USAGE_STATS);

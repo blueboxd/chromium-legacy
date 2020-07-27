@@ -46,6 +46,7 @@
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
+#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -159,7 +160,6 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_lifecycle_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
 
 #include "ui/gfx/skia_util.h"
@@ -276,6 +276,39 @@ void WebViewImpl::SetPrerendererClient(
   ProvidePrerendererClientTo(*AsView().page,
                              MakeGarbageCollected<PrerendererClient>(
                                  *AsView().page, prerenderer_client));
+}
+
+void WebViewImpl::CloseWindowSoon() {
+  if (GetPage()->MainFrame()->IsLocalFrame()) {
+    // If the main frame is in this RenderView's frame tree, then the Close
+    // request gets routed through the RenderWidget since non-frame
+    // RenderWidgets share the code path.
+    WebWidgetClient* widget_client =
+        MainFrameImpl()->FrameWidgetImpl()->Client();
+    DCHECK(widget_client);
+    widget_client->CloseWidgetSoon();
+  } else {
+    // Ask the RenderViewHost with a local main frame to initiate close.  We
+    // could be called from deep in Javascript.  If we ask the RenderViewHost to
+    // close now, the window could be closed before the JS finishes executing,
+    // thanks to nested message loops running and handling the resulting Close
+    // IPC. So instead, post a message back to the message loop, which won't run
+    // until the JS is complete, and then the Close request can be sent.
+    if (auto* main_thread_scheduler =
+            scheduler::WebThreadScheduler::MainThreadScheduler()) {
+      main_thread_scheduler->CleanupTaskRunner()->PostTask(
+          FROM_HERE, WTF::Bind(&WebViewImpl::DoDeferredCloseWindowSoon,
+                               weak_ptr_factory_.GetWeakPtr()));
+    }
+  }
+}
+
+void WebViewImpl::DoDeferredCloseWindowSoon() {
+  // The main widget is currently not active. The active main frame widget is
+  // in a different process.  Have the browser route the close request to the
+  // active widget instead, so that the correct unload handlers are run.
+  DCHECK(remote_main_frame_host_remote_);
+  remote_main_frame_host_remote_->RouteCloseEvent();
 }
 
 WebViewImpl::WebViewImpl(

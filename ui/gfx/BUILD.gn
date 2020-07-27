@@ -793,7 +793,7 @@ test("gfx_unittests") {
 
   data_deps = [ "//ui/resources:ui_test_pak_data" ]
 
-  if (is_mac || is_ios) {
+  if (is_apple) {
     deps += [ "//ui/resources:ui_test_pak_bundle_data" ]
   }
 

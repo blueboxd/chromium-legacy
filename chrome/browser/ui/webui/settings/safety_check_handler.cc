@@ -637,17 +637,16 @@ base::string16 SafetyCheckHandler::GetStringForChromeCleaner(
 }
 #endif
 
-base::string16 SafetyCheckHandler::GetStringForParentRan(
-    base::Time safety_check_completion_time) {
-  return SafetyCheckHandler::GetStringForParentRan(safety_check_completion_time,
-                                                   base::Time::Now());
-}
-
-base::string16 SafetyCheckHandler::GetStringForParentRan(
-    base::Time safety_check_completion_time,
-    base::Time system_time) {
+base::string16 SafetyCheckHandler::GetStringForTimePassed(
+    base::Time completion_timestamp,
+    base::Time system_time,
+    int less_than_one_minute_ago_message_id,
+    int minutes_ago_message_id,
+    int hours_ago_message_id,
+    int yesterday_message_id,
+    int days_ago_message_id) {
   base::Time::Exploded completion_time_exploded;
-  safety_check_completion_time.LocalExplode(&completion_time_exploded);
+  completion_timestamp.LocalExplode(&completion_time_exploded);
 
   base::Time::Exploded system_time_exploded;
   system_time.LocalExplode(&system_time_exploded);
@@ -656,43 +655,82 @@ base::string16 SafetyCheckHandler::GetStringForParentRan(
   base::Time::Exploded time_yesterday_exploded;
   time_yesterday.LocalExplode(&time_yesterday_exploded);
 
-  const auto time_diff = system_time - safety_check_completion_time;
+  const auto time_diff = system_time - completion_timestamp;
   if (completion_time_exploded.year == system_time_exploded.year &&
       completion_time_exploded.month == system_time_exploded.month &&
       completion_time_exploded.day_of_month ==
           system_time_exploded.day_of_month) {
-    // Safety check ran today.
+    // The timestamp is today.
     const int time_diff_in_mins = time_diff.InMinutes();
     if (time_diff_in_mins == 0) {
-      return l10n_util::GetStringUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER);
+      return l10n_util::GetStringUTF16(less_than_one_minute_ago_message_id);
     } else if (time_diff_in_mins < 60) {
-      return l10n_util::GetPluralStringFUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER_MINS,
-          time_diff_in_mins);
+      return l10n_util::GetPluralStringFUTF16(minutes_ago_message_id,
+                                              time_diff_in_mins);
     } else {
-      return l10n_util::GetPluralStringFUTF16(
-          IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER_HOURS,
-          time_diff_in_mins / 60);
+      return l10n_util::GetPluralStringFUTF16(hours_ago_message_id,
+                                              time_diff_in_mins / 60);
     }
   } else if (completion_time_exploded.year == time_yesterday_exploded.year &&
              completion_time_exploded.month == time_yesterday_exploded.month &&
              completion_time_exploded.day_of_month ==
                  time_yesterday_exploded.day_of_month) {
-    // Safety check ran yesterday.
-    return l10n_util::GetStringUTF16(
-        IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER_YESTERDAY);
+    // The timestamp was yesterday.
+    return l10n_util::GetStringUTF16(yesterday_message_id);
   } else {
-    // Safety check ran longer ago than yesterday.
+    // The timestamp is longer ago than yesterday.
     // TODO(crbug.com/1015841): While a minor issue, this is not be the ideal
-    // way to calculate the days passed since safety check ran. For example,
+    // way to calculate the days passed since the timestamp. For example,
     // <48 h might still be 2 days ago.
     const int time_diff_in_days = time_diff.InDays();
-    return l10n_util::GetPluralStringFUTF16(
-        IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER_DAYS,
-        time_diff_in_days);
+    return l10n_util::GetPluralStringFUTF16(days_ago_message_id,
+                                            time_diff_in_days);
   }
 }
+
+base::string16 SafetyCheckHandler::GetStringForParentRan(
+    base::Time safety_check_completion_time,
+    base::Time system_time) {
+  return SafetyCheckHandler::GetStringForTimePassed(
+      safety_check_completion_time, system_time,
+      IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER,
+      IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER_MINS,
+      IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER_HOURS,
+      IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER_YESTERDAY,
+      IDS_SETTINGS_SAFETY_CHECK_PARENT_PRIMARY_LABEL_AFTER_DAYS);
+}
+
+base::string16 SafetyCheckHandler::GetStringForParentRan(
+    base::Time safety_check_completion_time) {
+  return SafetyCheckHandler::GetStringForParentRan(safety_check_completion_time,
+                                                   base::Time::Now());
+}
+
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+base::string16 SafetyCheckHandler::GetStringForChromeCleanerRan() {
+  base::Time cct_completion_time;
+  // TODO(crbug.com/1087263): If FOIL completion time exists in Windows Registry
+  // write it to |cct_completion_time|.
+  return SafetyCheckHandler::GetStringForChromeCleanerRan(cct_completion_time,
+                                                          base::Time::Now());
+}
+
+base::string16 SafetyCheckHandler::GetStringForChromeCleanerRan(
+    base::Time cct_completion_time,
+    base::Time system_time) {
+  if (cct_completion_time.is_null()) {
+    return l10n_util::GetStringUTF16(
+        IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_AFTER);
+  }
+  return SafetyCheckHandler::GetStringForTimePassed(
+      cct_completion_time, system_time,
+      IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_AFTER_SECONDS,
+      IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_AFTER_MINUTES,
+      IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_AFTER_HOURS,
+      IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_YESTERDAY,
+      IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_AFTER_DAYS);
+}
+#endif
 
 void SafetyCheckHandler::DetermineIfOfflineOrError(bool connected) {
   OnUpdateCheckResult(connected ? UpdateStatus::kFailed

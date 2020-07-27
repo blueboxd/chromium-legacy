@@ -15,7 +15,7 @@ declare_args() {
   # symbols are not exported.
   # TODO(thomasanderson): Set this to true by default once rL352899 is available
   # in MacOS's lldb.
-  libcxx_abi_unstable = !((is_mac || is_ios) && is_debug && is_component_build)
+  libcxx_abi_unstable = !(is_apple && is_debug && is_component_build)
 }
 
 # TODO(xiaohuic): https://crbug/917533 Crashes on internal ChromeOS build.

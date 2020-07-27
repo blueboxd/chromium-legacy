@@ -112,7 +112,7 @@ if (is_mac || is_win || is_linux || is_ios) {
 }
 
 # Mac and iOS want Title Case strings.
-use_titlecase_in_grd_files = is_mac || is_ios
+use_titlecase_in_grd_files = is_apple
 if (use_titlecase_in_grd_files) {
   grit_defines += [
     "-D",

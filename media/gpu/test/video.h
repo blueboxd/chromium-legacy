@@ -33,6 +33,9 @@ class Video {
         const base::FilePath& metadata_file_path);
   ~Video();
 
+  // Create a new Video instance by copying and converting |data_| to NV12.
+  std::unique_ptr<Video> ConvertToNV12() const;
+
   // Load the video file from disk.
   bool Load();
   // Returns true if the video file was loaded.

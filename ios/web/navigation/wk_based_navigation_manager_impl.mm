@@ -109,6 +109,20 @@ void WKBasedNavigationManagerImpl::OnNavigationStarted(const GURL& url) {
                           restoration_timer_->Elapsed());
       restoration_timer_.reset();
     }
+
+    // Get the last committed item directly because the restoration is in
+    // progress so the item returned by the last committed item is the
+    // last_committed_web_view_item_ as the origins mistmatch.
+    int index = GetLastCommittedItemIndexInCurrentOrRestoredSession();
+    DCHECK(index != -1 || 0 == GetItemCount());
+    if (index != -1 &&
+        restored_visible_item_->GetUserAgentType() != UserAgentType::NONE) {
+      NavigationItemImpl* last_committed_item =
+          GetNavigationItemImplAtIndex(static_cast<size_t>(index));
+      last_committed_item->SetUserAgentType(
+          restored_visible_item_->GetUserAgentType());
+    }
+
     FinalizeSessionRestore();
   }
 }
@@ -390,6 +404,12 @@ bool WKBasedNavigationManagerImpl::ShouldBlockUrlDuringRestore(
   // Abort restore.
   DiscardNonCommittedItems();
   last_committed_item_index_ = web_view_cache_.GetCurrentItemIndex();
+  if (restored_visible_item_->GetUserAgentType() != UserAgentType::NONE) {
+    NavigationItem* last_committed_item =
+        GetLastCommittedItemInCurrentOrRestoredSession();
+    last_committed_item->SetUserAgentType(
+        restored_visible_item_->GetUserAgentType());
+  }
   restored_visible_item_.reset();
   FinalizeSessionRestore();
   return true;

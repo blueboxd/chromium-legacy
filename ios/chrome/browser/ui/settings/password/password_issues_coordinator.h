@@ -8,8 +8,10 @@
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 @protocol ApplicationCommands;
+class Browser;
 class IOSChromePasswordCheckManager;
 @class PasswordIssuesCoordinator;
+@class ReauthenticationModule;
 
 // Delegate for PasswordIssuesCoordinator.
 @protocol PasswordIssuesCoordinatorDelegate
@@ -25,12 +27,16 @@ class IOSChromePasswordCheckManager;
 
 - (instancetype)initWithBaseNavigationController:
                     (UINavigationController*)navigationController
+                                         browser:(Browser*)browser
                             passwordCheckManager:
                                 (IOSChromePasswordCheckManager*)manager
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser NS_UNAVAILABLE;
+
+// Reauthentication module used by password details coordinator.
+@property(nonatomic, strong) ReauthenticationModule* reauthModule;
 
 @property(nonatomic, weak) id<PasswordIssuesCoordinatorDelegate> delegate;
 

@@ -9,6 +9,7 @@ import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -21,19 +22,20 @@ public class SafetyCheckCoordinator implements DefaultLifecycleObserver {
     private SafetyCheckMediator mMediator;
 
     /**
-     * Creates a new Coordinator instance given a settings fragment and an updates client.
+     * Creates a new instance given a settings fragment, an updates client, and a settings launcher.
      * There is no need to hold on to a reference since the settings fragment's lifecycle is
      * observed and a reference is retained there.
      * @param settingsFragment An instance of {SafetyCheckSettingsFragment} to observe.
      * @param updatesClient An instance implementing the {@SafetyCheckUpdatesDelegate} interface.
+     * @param settingsLauncher An instance implementing the {@SettingsLauncher} interface.
      */
     public static void create(SafetyCheckSettingsFragment settingsFragment,
-            SafetyCheckUpdatesDelegate updatesClient) {
-        new SafetyCheckCoordinator(settingsFragment, updatesClient);
+            SafetyCheckUpdatesDelegate updatesClient, SettingsLauncher settingsLauncher) {
+        new SafetyCheckCoordinator(settingsFragment, updatesClient, settingsLauncher);
     }
 
     private SafetyCheckCoordinator(SafetyCheckSettingsFragment settingsFragment,
-            SafetyCheckUpdatesDelegate updatesClient) {
+            SafetyCheckUpdatesDelegate updatesClient, SettingsLauncher settingsLauncher) {
         mSettingsFragment = settingsFragment;
         mUpdatesClient = updatesClient;
         // Create the model and the mediator once the view is created.
@@ -56,10 +58,19 @@ public class SafetyCheckCoordinator implements DefaultLifecycleObserver {
                             // The View is available, so now we can create the Model, MCP, and
                             // Mediator.
                             PropertyModel model = createModelAndMcp(mSettingsFragment);
-                            mMediator = new SafetyCheckMediator(model, mUpdatesClient);
+                            mMediator = new SafetyCheckMediator(
+                                    model, mUpdatesClient, settingsLauncher);
                         }
                     }
                 });
+        // Show the initial state every time the fragment is resumed (navigation from a different
+        // screen, app in the background, etc).
+        mSettingsFragment.getLifecycle().addObserver(new DefaultLifecycleObserver() {
+            @Override
+            public void onResume(LifecycleOwner lifecycleOwner) {
+                mMediator.setInitialState();
+            }
+        });
     }
 
     @VisibleForTesting

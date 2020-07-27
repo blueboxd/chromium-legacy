@@ -11,6 +11,10 @@
 // Called when the view controller was dismissed.
 - (void)passwordDetailsViewControllerDidDisappear;
 
+// Shows a dialog offering the user to set a passcode in order to see the
+// password.
+- (void)showPasscodeDialog;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_PASSWORD_DETAILS_PASSWORD_DETAILS_HANDLER_H_

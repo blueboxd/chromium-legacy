@@ -1001,6 +1001,10 @@ TEST_F(DesktopWidgetTest, GetWindowPlacement) {
   if (base::mac::IsOS10_10())
     return;  // Fails when swarmed. http://crbug.com/660582
 #endif
+#if defined(USE_X11)
+  if (features::IsUsingOzonePlatform())
+    return;  // TODO(https://crbug.com/1109112): Will be enabled later.
+#endif
 
   WidgetAutoclosePtr widget;
   widget.reset(CreateTopLevelNativeWidget());
@@ -3924,6 +3928,8 @@ class CompositingWidgetTest : public DesktopWidgetTest {
                 should_be_transparent);
 
 #if defined(USE_X11)
+      if (features::IsUsingOzonePlatform())
+        return;
       if (HasCompositingManager() &&
           (widget_type == Widget::InitParams::TYPE_DRAG ||
            widget_type == Widget::InitParams::TYPE_WINDOW)) {

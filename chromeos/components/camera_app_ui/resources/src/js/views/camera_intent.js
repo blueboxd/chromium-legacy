@@ -14,6 +14,8 @@ import {DeviceInfoUpdater} from '../device/device_info_updater.js';
 import {Intent} from '../intent.js';
 import * as metrics from '../metrics.js';
 // eslint-disable-next-line no-unused-vars
+import {AbstractFileEntry} from '../models/file_system_entry.js';
+// eslint-disable-next-line no-unused-vars
 import {ResultSaver} from '../models/result_saver.js';
 import {VideoSaver} from '../models/video_saver.js';
 // eslint-disable-next-line no-unused-vars
@@ -92,7 +94,7 @@ export class CameraIntent extends Camera {
     this.videoResult_ = null;
 
     /**
-     * @type {?FileEntry}
+     * @type {?AbstractFileEntry}
      * @private
      */
     this.videoResultFile_ = null;

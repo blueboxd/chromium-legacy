@@ -2453,6 +2453,7 @@ if (!is_android) {
         "../browser/chromeos/printing/test_printer_configurer.cc",
         "../browser/chromeos/printing/test_printer_configurer.h",
         "../browser/chromeos/profiles/profile_helper_browsertest.cc",
+        "../browser/chromeos/remote_apps/remote_apps_manager_browsertest.cc",
         "../browser/chromeos/shutdown_policy_browsertest.cc",
         "../browser/chromeos/startup_settings_cache_browsertest.cc",
         "../browser/chromeos/system/device_disabling_browsertest.cc",

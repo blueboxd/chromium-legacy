@@ -1282,7 +1282,7 @@ component("net") {
       ]
     }
 
-    if (is_ios || is_mac) {
+    if (is_apple) {
       sources += [
         "base/mac/url_conversions.h",
         "base/mac/url_conversions.mm",
@@ -4604,7 +4604,7 @@ test("net_unittests") {
     ]
   }
 
-  if (is_mac || is_ios) {
+  if (is_apple) {
     sources += [ "base/mac/url_conversions_unittest.mm" ]
   }
 

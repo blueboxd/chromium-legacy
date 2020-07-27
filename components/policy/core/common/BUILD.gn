@@ -257,7 +257,7 @@ jumbo_source_set("internal") {
       "cloud/user_cloud_policy_store.h",
     ]
   }
-  if (is_ios || is_mac) {
+  if (is_apple) {
     sources += [
       "mac_util.cc",
       "mac_util.h",
@@ -451,7 +451,7 @@ source_set("unit_tests") {
       "config_dir_policy_loader_unittest.cc",
     ]
   }
-  if (is_mac || is_ios) {
+  if (is_apple) {
     sources += [ "mac_util_unittest.cc" ]
 
     if (is_mac) {

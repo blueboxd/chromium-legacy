@@ -90,18 +90,22 @@ Polymer({
       case SafetyCheckChromeCleanerStatus.CLEANING_SUCCEEDED:
       case SafetyCheckChromeCleanerStatus.REPORTER_RUNNING:
       case SafetyCheckChromeCleanerStatus.SCANNING:
+        // Safe states.
         return SafetyCheckIconStatus.SAFE;
       case SafetyCheckChromeCleanerStatus.REPORTER_FAILED:
       case SafetyCheckChromeCleanerStatus.SCANNING_FAILED:
       case SafetyCheckChromeCleanerStatus.CLEANING_FAILED:
       case SafetyCheckChromeCleanerStatus.CLEANER_DOWNLOAD_FAILED:
+        // Error states.
       case SafetyCheckChromeCleanerStatus.CLEANING:
       case SafetyCheckChromeCleanerStatus.REBOOT_REQUIRED:
       case SafetyCheckChromeCleanerStatus.DISABLED_BY_ADMIN:
+        // Other states.
         return SafetyCheckIconStatus.INFO;
       case SafetyCheckChromeCleanerStatus.CONNECTION_LOST:
       case SafetyCheckChromeCleanerStatus.USER_DECLINED_CLEANUP:
       case SafetyCheckChromeCleanerStatus.INFECTED:
+        // Infected states.
         return SafetyCheckIconStatus.WARNING;
       default:
         assertNotReached();
@@ -114,15 +118,26 @@ Polymer({
    */
   getButtonLabel_: function() {
     switch (this.status_) {
+      case SafetyCheckChromeCleanerStatus.INITIAL:
+      case SafetyCheckChromeCleanerStatus.REPORTER_FOUND_NOTHING:
+      case SafetyCheckChromeCleanerStatus.SCANNING_FOUND_NOTHING:
+      case SafetyCheckChromeCleanerStatus.CLEANING_SUCCEEDED:
+      case SafetyCheckChromeCleanerStatus.REPORTER_RUNNING:
+      case SafetyCheckChromeCleanerStatus.SCANNING:
+        // Safe states.
+        return this.i18n('privacyPageMore');
       case SafetyCheckChromeCleanerStatus.REPORTER_FAILED:
       case SafetyCheckChromeCleanerStatus.SCANNING_FAILED:
       case SafetyCheckChromeCleanerStatus.CLEANING_FAILED:
       case SafetyCheckChromeCleanerStatus.CLEANER_DOWNLOAD_FAILED:
+        // Error states.
         return this.i18n('passwordViewDetails');
       case SafetyCheckChromeCleanerStatus.CONNECTION_LOST:
       case SafetyCheckChromeCleanerStatus.USER_DECLINED_CLEANUP:
       case SafetyCheckChromeCleanerStatus.INFECTED:
+        // Infected states.
       case SafetyCheckChromeCleanerStatus.CLEANING:
+        // Cleaning in progress.
         return this.i18n('safetyCheckReview');
       case SafetyCheckChromeCleanerStatus.REBOOT_REQUIRED:
         return this.i18n('chromeCleanupRestartButtonLabel');
@@ -137,15 +152,26 @@ Polymer({
    */
   getButtonAriaLabel_: function() {
     switch (this.status_) {
+      case SafetyCheckChromeCleanerStatus.INITIAL:
+      case SafetyCheckChromeCleanerStatus.REPORTER_FOUND_NOTHING:
+      case SafetyCheckChromeCleanerStatus.SCANNING_FOUND_NOTHING:
+      case SafetyCheckChromeCleanerStatus.CLEANING_SUCCEEDED:
+      case SafetyCheckChromeCleanerStatus.REPORTER_RUNNING:
+      case SafetyCheckChromeCleanerStatus.SCANNING:
+        // Safe states.
+        return this.i18n('safetyCheckChromeCleanerMoreButtonAriaLabel');
       case SafetyCheckChromeCleanerStatus.REPORTER_FAILED:
       case SafetyCheckChromeCleanerStatus.SCANNING_FAILED:
       case SafetyCheckChromeCleanerStatus.CLEANING_FAILED:
       case SafetyCheckChromeCleanerStatus.CLEANER_DOWNLOAD_FAILED:
+        // Error states.
         return this.i18n('safetyCheckReviewErrorDetails');
       case SafetyCheckChromeCleanerStatus.CONNECTION_LOST:
       case SafetyCheckChromeCleanerStatus.USER_DECLINED_CLEANUP:
       case SafetyCheckChromeCleanerStatus.INFECTED:
+        // Infected states.
       case SafetyCheckChromeCleanerStatus.CLEANING:
+        // Cleaning in progress.
         return this.i18n('safetyCheckChromeCleanerButtonAriaLabel');
       case SafetyCheckChromeCleanerStatus.REBOOT_REQUIRED:
         return this.i18n('chromeCleanupRestartButtonLabel');
@@ -175,14 +201,24 @@ Polymer({
     // TODO(crbug.com/1087263): Add metrics for safety check CCT child user
     // actions.
     switch (this.status_) {
+      case SafetyCheckChromeCleanerStatus.INITIAL:
+      case SafetyCheckChromeCleanerStatus.REPORTER_FOUND_NOTHING:
+      case SafetyCheckChromeCleanerStatus.SCANNING_FOUND_NOTHING:
+      case SafetyCheckChromeCleanerStatus.CLEANING_SUCCEEDED:
+      case SafetyCheckChromeCleanerStatus.REPORTER_RUNNING:
+      case SafetyCheckChromeCleanerStatus.SCANNING:
+        // Safe states.
       case SafetyCheckChromeCleanerStatus.REPORTER_FAILED:
       case SafetyCheckChromeCleanerStatus.SCANNING_FAILED:
       case SafetyCheckChromeCleanerStatus.CONNECTION_LOST:
-      case SafetyCheckChromeCleanerStatus.USER_DECLINED_CLEANUP:
       case SafetyCheckChromeCleanerStatus.CLEANING_FAILED:
+        // Error states.
+      case SafetyCheckChromeCleanerStatus.USER_DECLINED_CLEANUP:
       case SafetyCheckChromeCleanerStatus.CLEANER_DOWNLOAD_FAILED:
       case SafetyCheckChromeCleanerStatus.INFECTED:
+        // Infected states.
       case SafetyCheckChromeCleanerStatus.CLEANING:
+        // Cleaning in progress.
         Router.getInstance().navigateTo(
             routes.CHROME_CLEANUP,
             /* dynamicParams= */ null, /* removeSearch= */ true);

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "gpu/config/gpu_preferences.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/macros.h"
@@ -68,13 +69,15 @@ void VideoEncoderStats::Reset() {
 VideoEncoderClient::VideoEncoderClient(
     const VideoEncoder::EventCallback& event_cb,
     std::vector<std::unique_ptr<BitstreamProcessor>> bitstream_processors,
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     const VideoEncoderClientConfig& config)
     : event_cb_(event_cb),
       bitstream_processors_(std::move(bitstream_processors)),
       encoder_client_config_(config),
       encoder_client_thread_("VDAClientEncoderThread"),
       encoder_client_state_(VideoEncoderClientState::kUninitialized),
-      current_stats_(encoder_client_config_.framerate) {
+      current_stats_(encoder_client_config_.framerate),
+      gpu_memory_buffer_factory_(gpu_memory_buffer_factory) {
   DETACH_FROM_SEQUENCE(encoder_client_sequence_checker_);
 
   weak_this_ = weak_this_factory_.GetWeakPtr();
@@ -90,9 +93,11 @@ VideoEncoderClient::~VideoEncoderClient() {
 std::unique_ptr<VideoEncoderClient> VideoEncoderClient::Create(
     const VideoEncoder::EventCallback& event_cb,
     std::vector<std::unique_ptr<BitstreamProcessor>> bitstream_processors,
+    gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory,
     const VideoEncoderClientConfig& config) {
-  return base::WrapUnique(new VideoEncoderClient(
-      event_cb, std::move(bitstream_processors), config));
+  return base::WrapUnique(
+      new VideoEncoderClient(event_cb, std::move(bitstream_processors),
+                             gpu_memory_buffer_factory, config));
 }
 
 bool VideoEncoderClient::Initialize(const Video* video) {
@@ -192,7 +197,12 @@ void VideoEncoderClient::RequireBitstreamBuffers(
   // not starting at (0,0).
   aligned_data_helper_ = std::make_unique<AlignedDataHelper>(
       video_->Data(), video_->NumFrames(), video_->PixelFormat(),
-      gfx::Rect(video_->Resolution()), input_coded_size);
+      gfx::Rect(video_->Resolution()), input_coded_size,
+      encoder_client_config_.input_storage_type ==
+              VideoEncodeAccelerator::Config::StorageType::kDmabuf
+          ? VideoFrame::STORAGE_GPU_MEMORY_BUFFER
+          : VideoFrame::STORAGE_MOJO_SHARED_BUFFER,
+      gpu_memory_buffer_factory_);
 
   output_buffer_size_ = output_buffer_size;
 
@@ -297,7 +307,10 @@ void VideoEncoderClient::CreateEncoderTask(const Video* video,
   const VideoEncodeAccelerator::Config config(
       video_->PixelFormat(), video_->Resolution(),
       encoder_client_config_.output_profile, encoder_client_config_.bitrate,
-      encoder_client_config_.framerate);
+      encoder_client_config_.framerate, base::nullopt /* gop_length */,
+      base::nullopt /* h264_output_level*/, false /* is_constrained_h264 */,
+      encoder_client_config_.input_storage_type);
+
   encoder_ = GpuVideoEncodeAcceleratorFactory::CreateVEA(config, this,
                                                          gpu::GpuPreferences());
   *success = (encoder_ != nullptr);

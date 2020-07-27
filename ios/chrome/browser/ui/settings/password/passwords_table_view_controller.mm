@@ -32,6 +32,7 @@
 #include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
@@ -213,6 +214,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   password_manager::DuplicatesMap _savedPasswordDuplicates;
   // Map containing duplicates of blocked passwords.
   password_manager::DuplicatesMap _blockedPasswordDuplicates;
+  // The browser where the screen is being displayed.
+  Browser* _browser;
   // The current Chrome browser state.
   ChromeBrowserState* _browserState;
   // Authentication Service Observer.
@@ -252,14 +255,15 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 #pragma mark - Initialization
 
-- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
-  DCHECK(browserState);
+- (instancetype)initWithBrowser:(Browser*)browser {
+  DCHECK(browser);
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
                                : UITableViewStyleGrouped;
   self = [super initWithStyle:style];
   if (self) {
-    _browserState = browserState;
+    _browser = browser;
+    _browserState = browser->GetBrowserState();
     _reauthenticationModule = [[ReauthenticationModule alloc]
         initWithSuccessfulReauthTimeAccessor:self];
     _passwordExporter = [[PasswordExporter alloc]
@@ -1197,9 +1201,11 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   DCHECK(!_passwordIssuesCoordinator);
   _passwordIssuesCoordinator = [[PasswordIssuesCoordinator alloc]
       initWithBaseNavigationController:self.navigationController
+                               browser:_browser
                   passwordCheckManager:_passwordCheck.get()];
   _passwordIssuesCoordinator.delegate = self;
   _passwordIssuesCoordinator.dispatcher = self.dispatcher;
+  _passwordIssuesCoordinator.reauthModule = _reauthenticationModule;
   [_passwordIssuesCoordinator start];
 }
 

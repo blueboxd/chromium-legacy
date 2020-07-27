@@ -1275,7 +1275,8 @@ bool QuicChromiumClientSession::GetRemoteEndpoint(IPEndPoint* endpoint) {
 // we learn about SSL info (sync vs async vs cached).
 bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
   ssl_info->Reset();
-  if (!cert_verify_result_) {
+  if (!cert_verify_result_ || (connection()->version().UsesTls() &&
+                               !crypto_stream_->one_rtt_keys_available())) {
     return false;
   }
 
@@ -1296,7 +1297,7 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
 
   const auto& crypto_params = crypto_stream_->crypto_negotiated_params();
   uint16_t cipher_suite;
-  if (crypto_params.cipher_suite) {
+  if (connection()->version().UsesTls()) {
     cipher_suite = crypto_params.cipher_suite;
   } else {
     // Map QUIC AEADs to the corresponding TLS 1.3 cipher. OpenSSL's cipher
@@ -1320,7 +1321,7 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
                                 &ssl_connection_status);
   ssl_info->connection_status = ssl_connection_status;
 
-  if (crypto_params.cipher_suite) {
+  if (connection()->version().UsesTls()) {
     ssl_info->key_exchange_group = crypto_params.key_exchange_group;
     ssl_info->peer_signature_algorithm = crypto_params.peer_signature_algorithm;
     return true;
@@ -1340,10 +1341,6 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
   }
 
   // QUIC-Crypto always uses RSA-PSS or ECDSA with SHA-256.
-  //
-  // TODO(nharper): This will no longer be true in TLS 1.3. This logic, and
-  // likely the rest of this logic, will want some adjustments for QUIC with TLS
-  // 1.3.
   size_t unused;
   X509Certificate::PublicKeyType key_type;
   X509Certificate::GetPublicKeyInfo(ssl_info->cert->cert_buffer(), &unused,

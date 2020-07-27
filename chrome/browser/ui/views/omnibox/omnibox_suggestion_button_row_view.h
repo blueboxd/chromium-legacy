@@ -13,6 +13,7 @@
 #include "ui/views/view.h"
 
 class OmniboxPopupContentsView;
+class OmniboxSuggestionRowButton;
 
 // A view to contain the button row within a result view.
 class OmniboxSuggestionButtonRowView : public views::View,
@@ -49,9 +50,9 @@ class OmniboxSuggestionButtonRowView : public views::View,
   OmniboxPopupContentsView* const popup_contents_view_;
   size_t const model_index_;
 
-  views::MdTextButton* keyword_button_ = nullptr;
-  views::MdTextButton* pedal_button_ = nullptr;
-  views::MdTextButton* tab_switch_button_ = nullptr;
+  OmniboxSuggestionRowButton* keyword_button_ = nullptr;
+  OmniboxSuggestionRowButton* pedal_button_ = nullptr;
+  OmniboxSuggestionRowButton* tab_switch_button_ = nullptr;
   views::FocusRing* keyword_button_focus_ring_ = nullptr;
   views::FocusRing* pedal_button_focus_ring_ = nullptr;
   views::FocusRing* tab_switch_button_focus_ring_ = nullptr;

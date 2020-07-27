@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.privacy.settings;
+package org.chromium.chrome.browser.privacy.secure_dns;
 
 import android.content.Context;
 import android.text.Editable;
@@ -24,8 +24,7 @@ import androidx.preference.PreferenceViewHolder;
 
 import com.google.android.material.textfield.TextInputLayout;
 
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager.DohEntry;
+import org.chromium.chrome.browser.privacy.secure_dns.SecureDnsBridge.Entry;
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescription;
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescriptionLayout;
 
@@ -37,16 +36,16 @@ import java.util.List;
  * SecureDnsProviderPreference is the user interface that is shown when Secure DNS is enabled.
  * When Secure DNS is disabled, the SecureDnsProviderPreference is hidden.
  */
-public class SecureDnsProviderPreference
-        extends Preference implements RadioGroup.OnCheckedChangeListener,
-                                      AdapterView.OnItemSelectedListener, TextWatcher {
+class SecureDnsProviderPreference extends Preference implements RadioGroup.OnCheckedChangeListener,
+                                                                AdapterView.OnItemSelectedListener,
+                                                                TextWatcher {
     // UI strings, loaded from the context.
     private final String mPrivacyTemplate;
     private final String mInvalidWarning;
     private final String mProbeWarning;
 
     // Server menu entries.
-    private final List<DohEntry> mOptions;
+    private final List<Entry> mOptions;
 
     // UI elements.  These fields are assigned only once, in onBindViewHolder.
     private RadioButtonWithDescriptionLayout mGroup;
@@ -130,14 +129,14 @@ public class SecureDnsProviderPreference
         mOptions = makeOptions(context);
     }
 
-    private static List<DohEntry> makeOptions(Context context) {
-        List<DohEntry> entries = PrivacyPreferencesManager.getInstance().getDohProviders();
+    private static List<Entry> makeOptions(Context context) {
+        List<Entry> entries = SecureDnsBridge.getProviders();
 
         // The Spinner's options consist of an entry called "Custom", followed
         // by the providers in random order.
-        List<DohEntry> options = new ArrayList<>(entries.size() + 1);
+        List<Entry> options = new ArrayList<>(entries.size() + 1);
         String customEntryName = context.getString(R.string.settings_custom);
-        options.add(new DohEntry(customEntryName, "", ""));
+        options.add(new Entry(customEntryName, "", ""));
         Collections.shuffle(entries);
         options.addAll(entries);
 
@@ -156,7 +155,7 @@ public class SecureDnsProviderPreference
         mServerMenu = selectionContainer.findViewById(R.id.dropdown_spinner);
         mServerMenu.setOnItemSelectedListener(this);
         Context context = selectionContainer.getContext();
-        ArrayAdapter<DohEntry> adapter =
+        ArrayAdapter<Entry> adapter =
                 new ArrayAdapter<>(context, R.layout.secure_dns_provider_spinner_item, mOptions);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mServerMenu.setAdapter(adapter);
@@ -171,14 +170,14 @@ public class SecureDnsProviderPreference
         updateView();
     }
 
-    public void setState(State state) {
+    void setState(State state) {
         if (!state.equals(mState)) {
             mState = state;
             updateView();
         }
     }
 
-    public State getState() {
+    State getState() {
         return mState;
     }
 
@@ -186,7 +185,7 @@ public class SecureDnsProviderPreference
     // or 0 if none match (i.e. a custom template).
     private int matchingDropdownIndex() {
         for (int i = 1; i < mServerMenu.getCount(); ++i) {
-            DohEntry entry = (DohEntry) mServerMenu.getItemAtPosition(i);
+            Entry entry = (Entry) mServerMenu.getItemAtPosition(i);
             if (entry.template.equals(mState.template)) {
                 return i;
             }
@@ -219,7 +218,7 @@ public class SecureDnsProviderPreference
         // Position 0 is the custom server.  Other positions are actual server entries.
         if (position > 0) {
             // Selected server mode.
-            DohEntry entry = (DohEntry) mServerMenu.getSelectedItem();
+            Entry entry = (Entry) mServerMenu.getSelectedItem();
             String html = mPrivacyTemplate.replace("$1", entry.privacy);
             mPrivacyPolicy.setText(Html.fromHtml(html));
 
@@ -247,7 +246,7 @@ public class SecureDnsProviderPreference
             mPrivacyPolicy.setVisibility(View.GONE);
         }
 
-        PrivacyPreferencesManager.getInstance().updateDohValidationHistogram(mState.valid);
+        SecureDnsBridge.updateValidationHistogram(mState.valid);
     }
 
     private void startServerProbe() {
@@ -255,13 +254,12 @@ public class SecureDnsProviderPreference
         if (group.isEmpty() || !mState.valid || !mState.secure) {
             return;
         }
-        // probeDohServer() is a blocking network call that uses WaitableEvent, so it cannot run
+        // probeServer() is a blocking network call that uses WaitableEvent, so it cannot run
         // on the UI thread, nor via the Java PostTask bindings, which do not expose
         // base::WithBaseSyncPrimitives.  Instead, it runs on a fresh Java thread.
         new Thread(() -> {
-            PrivacyPreferencesManager manager = PrivacyPreferencesManager.getInstance();
-            for (String template : manager.splitDohTemplateGroup(group)) {
-                if (manager.probeDohServer(template)) {
+            for (String template : SecureDnsBridge.splitTemplateGroup(group)) {
+                if (SecureDnsBridge.probeServer(template)) {
                     return;
                 }
             }
@@ -291,11 +289,11 @@ public class SecureDnsProviderPreference
             // attaching an adapter triggers a spurious onItemSelected event.
             return;
         }
-        DohEntry oldEntry = (DohEntry) parent.getItemAtPosition(oldPos);
-        DohEntry entry = (DohEntry) parent.getItemAtPosition(pos);
+        Entry oldEntry = (Entry) parent.getItemAtPosition(oldPos);
+        Entry entry = (Entry) parent.getItemAtPosition(pos);
         tryUpdate(mState.withTemplate(entry.template));
 
-        PrivacyPreferencesManager.getInstance().updateDohDropdownHistograms(oldEntry, entry);
+        SecureDnsBridge.updateDropdownHistograms(oldEntry, entry);
     }
 
     @Override

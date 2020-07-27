@@ -135,6 +135,11 @@ class WebView {
   // Initializes the various client interfaces.
   virtual void SetPrerendererClient(WebPrerendererClient*) = 0;
 
+  // Called when some JS code has instructed the window associated to the main
+  // frame to close, which will result in a request to the browser to close the
+  // RenderWidget associated to it.
+  virtual void CloseWindowSoon() = 0;
+
   // Options -------------------------------------------------------------
 
   // The returned pointer is valid for the lifetime of the WebView.

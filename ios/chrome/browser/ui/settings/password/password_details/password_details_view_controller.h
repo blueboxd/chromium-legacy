@@ -11,6 +11,7 @@
 @protocol ApplicationCommands;
 @protocol PasswordDetailsHandler;
 @protocol PasswordDetailsViewControllerDelegate;
+@protocol ReauthenticationProtocol;
 
 // Screen which shows password details and allows to edit it.
 @interface PasswordDetailsViewController
@@ -24,6 +25,10 @@
 
 // Dispatcher for this ViewController.
 @property(nonatomic, weak) id<ApplicationCommands> commandsDispatcher;
+
+// Module containing the reauthentication mechanism for interections
+// with password.
+@property(nonatomic, weak) id<ReauthenticationProtocol> reauthModule;
 
 @end
 

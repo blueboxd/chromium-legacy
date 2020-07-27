@@ -271,6 +271,10 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   void HandleResponse(Vector<std::unique_ptr<IDBValue>>);
   void HandleResponse(int64_t);
   void HandleResponse();
+  void HandleResponse(
+      bool key_only,
+      mojo::PendingReceiver<mojom::blink::IDBDatabaseGetAllResultSink>
+          receiver);
 
   // Only used in webkitGetDatabaseNames(), which is deprecated and hopefully
   // going away soon.

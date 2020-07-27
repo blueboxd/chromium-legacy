@@ -82,18 +82,21 @@ def main():
         dispatch_table[task](task_queue=task_queue,
                              web_idl_database=web_idl_database)
 
-    def report_progress(total, done):
+    def print_to_console(message):
         out = sys.stdout
         if not out.isatty():
             return
-        if total == 0:
-            return
-        percentage = int(float(done) / float(total) * 100)
-        message = "Blink-V8 bindings generation: {}% done\r".format(percentage)
         out.write(message)
         out.flush()
 
+    def report_progress(total, done):
+        percentage = (int(float(done) / float(total) *
+                          100) if total != 0 else 100)
+        message = "Blink-V8 bindings generation: {}% done\r".format(percentage)
+        print_to_console(message)
+
     task_queue.run(report_progress)
+    print_to_console("\n")
 
 
 if __name__ == '__main__':

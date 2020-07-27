@@ -167,6 +167,8 @@ TestBookmarkPositions PositionsFromExpectations(
 class BookmarkProviderTest : public testing::Test {
  public:
   BookmarkProviderTest();
+  BookmarkProviderTest(const BookmarkProviderTest&) = delete;
+  BookmarkProviderTest& operator=(const BookmarkProviderTest&) = delete;
 
  protected:
   void SetUp() override;
@@ -175,9 +177,6 @@ class BookmarkProviderTest : public testing::Test {
   std::unique_ptr<BookmarkModel> model_;
   scoped_refptr<BookmarkProvider> provider_;
   TestSchemeClassifier classifier_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BookmarkProviderTest);
 };
 
 BookmarkProviderTest::BookmarkProviderTest() {

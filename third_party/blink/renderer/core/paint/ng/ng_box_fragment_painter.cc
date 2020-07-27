@@ -171,6 +171,10 @@ bool HitTestCulledInlineAncestors(
     const PhysicalOffset& physical_offset) {
   DCHECK(fragment.Parent());
   DCHECK(fragment.PhysicalFragment().IsInline());
+  // Ellipsis can appear under a different parent from the ellipsized object
+  // that it can confuse culled inline logic.
+  if (UNLIKELY(fragment.IsEllipsis()))
+    return false;
   const NGPaintFragment& parent = *fragment.Parent();
   // To be passed as |accumulated_offset| to LayoutInline::HitTestCulledInline,
   // where it equals the physical offset of the containing block in paint layer.
@@ -192,6 +196,10 @@ bool HitTestCulledInlineAncestors(
     const NGInlineCursorPosition& previous_sibling,
     const HitTestLocation& hit_test_location,
     const PhysicalOffset& physical_offset) {
+  // Ellipsis can appear under a different parent from the ellipsized object
+  // that it can confuse culled inline logic.
+  if (UNLIKELY(item.IsEllipsis()))
+    return false;
   // To be passed as |accumulated_offset| to LayoutInline::HitTestCulledInline,
   // where it equals the physical offset of the containing block in paint layer.
   const PhysicalOffset fallback_accumulated_offset =

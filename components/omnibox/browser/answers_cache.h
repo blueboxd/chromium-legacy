@@ -9,7 +9,6 @@
 
 #include <list>
 
-#include "base/macros.h"
 #include "base/strings/string16.h"
 
 struct AnswersQueryData {
@@ -24,6 +23,8 @@ class AnswersCache {
  public:
   explicit AnswersCache(size_t max_entries);
   ~AnswersCache();
+  AnswersCache(const AnswersCache&) = delete;
+  AnswersCache& operator=(const AnswersCache&) = delete;
 
   // Gets the top answer query completion for the query term. The query data
   // will contain empty query text and type if no matching data was found.
@@ -40,8 +41,6 @@ class AnswersCache {
   size_t max_entries_;
   typedef std::list<AnswersQueryData> Cache;
   Cache cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(AnswersCache);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_ANSWERS_CACHE_H_

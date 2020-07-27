@@ -344,14 +344,14 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   virtual google_apis::CancelCallback DeleteResource(
       const std::string& resource_id,
       const std::string& etag,
-      const google_apis::EntryActionCallback& callback) = 0;
+      google_apis::EntryActionCallback callback) = 0;
 
   // Trashes a resource identified by its |resource_id|.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
   virtual google_apis::CancelCallback TrashResource(
       const std::string& resource_id,
-      const google_apis::EntryActionCallback& callback) = 0;
+      google_apis::EntryActionCallback callback) = 0;
 
   // Makes a copy of a resource with |resource_id|.
   // The new resource will be put under a directory with |parent_resource_id|,
@@ -390,7 +390,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   virtual google_apis::CancelCallback AddResourceToDirectory(
       const std::string& parent_resource_id,
       const std::string& resource_id,
-      const google_apis::EntryActionCallback& callback) = 0;
+      google_apis::EntryActionCallback callback) = 0;
 
   // Removes a resource (document, file, collection) identified by its
   // |resource_id| from a collection represented by the |parent_resource_id|.
@@ -399,7 +399,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   virtual google_apis::CancelCallbackOnce RemoveResourceFromDirectory(
       const std::string& parent_resource_id,
       const std::string& resource_id,
-      const google_apis::EntryActionCallback& callback) = 0;
+      google_apis::EntryActionCallback callback) = 0;
 
   // Adds new collection with |directory_title| under parent directory
   // identified with |parent_resource_id|. |parent_resource_id| can be the
@@ -483,7 +483,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
       const std::string& resource_id,
       const std::string& email,
       google_apis::drive::PermissionRole role,
-      const google_apis::EntryActionCallback& callback) = 0;
+      google_apis::EntryActionCallback callback) = 0;
 
   // Starts batch request and returns |BatchRequestConfigurator|.
   virtual std::unique_ptr<BatchRequestConfiguratorInterface>

@@ -189,6 +189,8 @@ bool DCLayerTree::CommitAndClearPendingOverlays(
       } else {
         new_video_swap_chains.emplace_back(std::make_unique<SwapChainPresenter>(
             this, d3d11_device_, dcomp_device_));
+        if (frame_rate_ > 0)
+          new_video_swap_chains.back()->SetFrameRate(frame_rate_);
       }
     }
     video_swap_chains_.swap(new_video_swap_chains);
@@ -253,6 +255,12 @@ bool DCLayerTree::ScheduleDCLayer(const ui::DCRendererLayerParams& params) {
   pending_overlays_.push_back(
       std::make_unique<ui::DCRendererLayerParams>(params));
   return true;
+}
+
+void DCLayerTree::SetFrameRate(float frame_rate) {
+  frame_rate_ = frame_rate;
+  for (size_t ii = 0; ii < video_swap_chains_.size(); ++ii)
+    video_swap_chains_[ii]->SetFrameRate(frame_rate);
 }
 
 }  // namespace gl

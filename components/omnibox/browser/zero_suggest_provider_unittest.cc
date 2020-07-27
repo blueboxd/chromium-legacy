@@ -39,6 +39,8 @@ class FakeEmptyTopSites : public history::TopSites {
  public:
   FakeEmptyTopSites() {
   }
+  FakeEmptyTopSites(const FakeEmptyTopSites&) = delete;
+  FakeEmptyTopSites& operator=(const FakeEmptyTopSites&) = delete;
 
   // history::TopSites:
   void GetMostVisitedURLs(GetMostVisitedURLsCallback callback) override;
@@ -74,8 +76,6 @@ class FakeEmptyTopSites : public history::TopSites {
   std::list<GetMostVisitedURLsCallback> callbacks;
 
   ~FakeEmptyTopSites() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(FakeEmptyTopSites);
 };
 
 void FakeEmptyTopSites::GetMostVisitedURLs(
@@ -91,6 +91,10 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
     pref_service_.registry()->RegisterStringPref(
         omnibox::kZeroSuggestCachedResults, std::string());
   }
+  FakeAutocompleteProviderClient(const FakeAutocompleteProviderClient&) =
+      delete;
+  FakeAutocompleteProviderClient& operator=(
+      const FakeAutocompleteProviderClient&) = delete;
 
   bool SearchSuggestEnabled() const override { return true; }
 
@@ -127,8 +131,6 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
   scoped_refptr<history::TopSites> top_sites_;
   TestingPrefServiceSimple pref_service_;
   TestSchemeClassifier scheme_classifier_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAutocompleteProviderClient);
 };
 
 }  // namespace
@@ -137,6 +139,8 @@ class ZeroSuggestProviderTest : public testing::Test,
                                 public AutocompleteProviderListener {
  public:
   ZeroSuggestProviderTest() = default;
+  ZeroSuggestProviderTest(const ZeroSuggestProviderTest&) = delete;
+  ZeroSuggestProviderTest& operator=(const ZeroSuggestProviderTest&) = delete;
 
   void SetUp() override;
 
@@ -167,9 +171,6 @@ class ZeroSuggestProviderTest : public testing::Test,
     return RemoteSuggestionsService::EndpointUrl(
         search_terms_args, client_->GetTemplateURLService());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ZeroSuggestProviderTest);
 };
 
 void ZeroSuggestProviderTest::SetUp() {

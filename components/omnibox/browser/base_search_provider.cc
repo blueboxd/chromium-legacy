@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -48,6 +47,10 @@ class SuggestionDeletionHandler {
 
   ~SuggestionDeletionHandler();
 
+  SuggestionDeletionHandler(const SuggestionDeletionHandler&) = delete;
+  SuggestionDeletionHandler& operator=(const SuggestionDeletionHandler&) =
+      delete;
+
  private:
   // Callback from SimpleURLLoader
   void OnURLLoadComplete(const network::SimpleURLLoader* source,
@@ -55,8 +58,6 @@ class SuggestionDeletionHandler {
 
   std::unique_ptr<network::SimpleURLLoader> deletion_fetcher_;
   DeletionCompletedCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(SuggestionDeletionHandler);
 };
 
 SuggestionDeletionHandler::SuggestionDeletionHandler(

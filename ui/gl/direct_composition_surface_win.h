@@ -131,6 +131,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   // scheduled with ScheduleDCLayer, as it's automatically placed in the layer
   // tree at z-order 0.
   bool ScheduleDCLayer(const ui::DCRendererLayerParams& params) override;
+  void SetFrameRate(float frame_rate) override;
 
   // VSyncObserver implementation.
   void OnVSync(base::TimeTicks vsync_time, base::TimeDelta interval) override;

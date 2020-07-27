@@ -246,6 +246,9 @@ bool SupportsSetFrameRate(const OutputSurface* output_surface) {
 #if defined(OS_ANDROID)
   return output_surface->capabilities().supports_surfaceless &&
          gl::SurfaceControl::SupportsSetFrameRate();
+#elif defined(OS_WIN)
+  return output_surface->capabilities().supports_dc_layers &&
+         features::ShouldUseSetPresentDuration();
 #endif
   return false;
 }
@@ -1239,8 +1242,8 @@ void Display::RemoveOverdrawQuads(AggregatedFrame* frame) {
 
 void Display::SetPreferredFrameInterval(base::TimeDelta interval) {
   if (frame_rate_decider_->supports_set_frame_rate()) {
-    float frame_rate =
-        interval.InSecondsF() == 0 ? 0 : (1 / interval.InSecondsF());
+    float interval_s = interval.InSecondsF();
+    float frame_rate = interval_s == 0 ? 0 : (1 / interval_s);
     output_surface_->SetFrameRate(frame_rate);
     return;
   }

@@ -32,13 +32,4 @@ int MockPermissionManager::RequestPermissions(
   return PermissionController::kNoPendingOperation;
 }
 
-int MockPermissionManager::SubscribePermissionStatusChange(
-    PermissionType permission,
-    RenderFrameHost* render_frame_host,
-    const GURL& requesting_origin,
-    base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback) {
-  // Return a fake subscription_id.
-  return 0;
-}
-
 }  // namespace content

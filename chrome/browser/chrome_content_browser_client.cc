@@ -681,13 +681,8 @@ void HandleSSLErrorWrapper(
     SSLErrorHandler::BlockingPageReadyCallback blocking_page_ready_callback) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-
-  // This can happen if GetBrowserContext no longer exists by the time this
-  // gets called (e.g. the SSL error was in a webview that has since been
-  // destroyed); if that's the case we don't need to handle the error (and will
-  // crash if we attempt to).
-  if (!profile)
-    return;
+  // Profile should always outlive a WebContents
+  DCHECK(profile);
 
   captive_portal::CaptivePortalService* captive_portal_service = nullptr;
 

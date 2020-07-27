@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/web_applications/system_web_app_integration_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/system_web_app_manager_browsertest.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
@@ -107,6 +108,14 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2InAppMetrics) {
   EXPECT_EQ(nullptr,
             SandboxedWebUiAppTestBase::EvalJsInAppFrame(web_contents, kScript));
   EXPECT_EQ(1, user_action_tester.GetActionCount("Discover.Help.TabClicked"));
+}
+
+// Test that the Help App shortcut doesn't crash an incognito browser.
+IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2Incognito) {
+  WaitForTestSystemAppInstall();
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  EXPECT_NO_FATAL_FAILURE(
+      chrome::ShowHelp(incognito_browser, chrome::HELP_SOURCE_KEYBOARD));
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

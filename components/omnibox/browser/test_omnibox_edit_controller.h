@@ -11,6 +11,9 @@
 class TestOmniboxEditController : public OmniboxEditController {
  public:
   TestOmniboxEditController() {}
+  TestOmniboxEditController(const TestOmniboxEditController&) = delete;
+  TestOmniboxEditController& operator=(const TestOmniboxEditController&) =
+      delete;
 
   // OmniboxEditController:
   TestLocationBarModel* GetLocationBarModel() override;
@@ -20,8 +23,6 @@ class TestOmniboxEditController : public OmniboxEditController {
 
  private:
   TestLocationBarModel location_bar_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestOmniboxEditController);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_TEST_OMNIBOX_EDIT_CONTROLLER_H_

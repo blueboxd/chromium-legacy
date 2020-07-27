@@ -31,11 +31,9 @@ void DriveServiceWrapper::AddNewDirectory(
 void DriveServiceWrapper::DeleteResource(
     const std::string& resource_id,
     const std::string& etag,
-    const google_apis::EntryActionCallback& callback) {
+    google_apis::EntryActionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  drive_service_->DeleteResource(resource_id,
-                                 etag,
-                                 callback);
+  drive_service_->DeleteResource(resource_id, etag, std::move(callback));
 }
 
 void DriveServiceWrapper::DownloadFile(
@@ -119,10 +117,10 @@ void DriveServiceWrapper::GetFileListInDirectory(
 void DriveServiceWrapper::RemoveResourceFromDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
-    const google_apis::EntryActionCallback& callback) {
+    google_apis::EntryActionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  drive_service_->RemoveResourceFromDirectory(
-      parent_resource_id, resource_id, callback);
+  drive_service_->RemoveResourceFromDirectory(parent_resource_id, resource_id,
+                                              std::move(callback));
 }
 
 void DriveServiceWrapper::SearchByTitle(

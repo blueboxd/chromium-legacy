@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <map>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -118,6 +117,8 @@ class OmniboxPopupModel {
                     OmniboxEditModel* edit_model,
                     PrefService* pref_service);
   ~OmniboxPopupModel();
+  OmniboxPopupModel(const OmniboxPopupModel&) = delete;
+  OmniboxPopupModel& operator=(const OmniboxPopupModel&) = delete;
 
   // Computes the maximum width, in pixels, that can be allocated for the two
   // parts of an autocomplete result, i.e. the contents and the description.
@@ -274,8 +275,6 @@ class OmniboxPopupModel {
   base::ObserverList<OmniboxPopupModelObserver>::Unchecked observers_;
 
   base::WeakPtrFactory<OmniboxPopupModel> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(OmniboxPopupModel);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_POPUP_MODEL_H_

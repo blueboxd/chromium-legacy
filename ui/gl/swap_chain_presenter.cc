@@ -19,9 +19,11 @@
 #include "ui/gl/gl_image_dxgi.h"
 #include "ui/gl/gl_image_memory.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gl_utils.h"
 
 namespace gl {
 namespace {
+
 // Some drivers fail to correctly handle BT.709 video in overlays. This flag
 // converts them to BT.601 in the video processor.
 const base::Feature kFallbackBT709VideoToBT601{
@@ -611,6 +613,7 @@ bool SwapChainPresenter::PresentToDecodeSwapChain(
       return false;
     }
     DCHECK(decode_swap_chain_);
+    SetSwapChainPresentDuration();
 
     Microsoft::WRL::ComPtr<IDCompositionDesktopDevice> desktop_device;
     dcomp_device_.As(&desktop_device);
@@ -649,21 +652,23 @@ bool SwapChainPresenter::PresentToDecodeSwapChain(
   // internal color space state and do a better job.
   // Common color spaces have primaries and transfer function similar to BT 709
   // and there are no other choices anyway.
-  int flags = DXGI_MULTIPLANE_OVERLAY_YCbCr_FLAG_BT709;
+  int color_space_flags = DXGI_MULTIPLANE_OVERLAY_YCbCr_FLAG_BT709;
   // Proper Rec 709 and 601 have limited or nominal color range.
   if (color_space == gfx::ColorSpace::CreateREC709() ||
       color_space == gfx::ColorSpace::CreateREC601()) {
-    flags |= DXGI_MULTIPLANE_OVERLAY_YCbCr_FLAG_NOMINAL_RANGE;
+    color_space_flags |= DXGI_MULTIPLANE_OVERLAY_YCbCr_FLAG_NOMINAL_RANGE;
   }
   // xvYCC allows colors outside nominal range to encode negative colors that
   // allows for a wider gamut.
   if (color_space.FullRangeEncodedValues()) {
-    flags |= DXGI_MULTIPLANE_OVERLAY_YCbCr_FLAG_xvYCC;
+    color_space_flags |= DXGI_MULTIPLANE_OVERLAY_YCbCr_FLAG_xvYCC;
   }
   decode_swap_chain_->SetColorSpace(
-      static_cast<DXGI_MULTIPLANE_OVERLAY_YCbCr_FLAGS>(flags));
+      static_cast<DXGI_MULTIPLANE_OVERLAY_YCbCr_FLAGS>(color_space_flags));
 
-  HRESULT hr = decode_swap_chain_->PresentBuffer(nv12_image->level(), 1, 0);
+  UINT present_flags = DXGI_PRESENT_USE_DURATION;
+  HRESULT hr =
+      decode_swap_chain_->PresentBuffer(nv12_image->level(), 1, present_flags);
   // Ignore DXGI_STATUS_OCCLUDED since that's not an error but only indicates
   // that the window is occluded and we can stop rendering.
   if (FAILED(hr) && hr != DXGI_STATUS_OCCLUDED) {
@@ -823,8 +828,8 @@ bool SwapChainPresenter::PresentToSwapChain(
 
   if (first_present_) {
     first_present_ = false;
-
-    HRESULT hr = swap_chain_->Present(0, 0);
+    UINT flags = DXGI_PRESENT_USE_DURATION;
+    HRESULT hr = swap_chain_->Present(0, flags);
     // Ignore DXGI_STATUS_OCCLUDED since that's not an error but only indicates
     // that the window is occluded and we can stop rendering.
     if (FAILED(hr) && hr != DXGI_STATUS_OCCLUDED) {
@@ -864,6 +869,7 @@ bool SwapChainPresenter::PresentToSwapChain(
   const bool use_swap_chain_tearing =
       DirectCompositionSurfaceWin::AllowTearing();
   UINT flags = use_swap_chain_tearing ? DXGI_PRESENT_ALLOW_TEARING : 0;
+  flags |= DXGI_PRESENT_USE_DURATION;
   UINT interval = use_swap_chain_tearing ? 0 : 1;
   // Ignore DXGI_STATUS_OCCLUDED since that's not an error but only indicates
   // that the window is occluded and we can stop rendering.
@@ -875,6 +881,11 @@ bool SwapChainPresenter::PresentToSwapChain(
   frames_since_color_space_change_++;
   RecordPresentationStatistics();
   return true;
+}
+
+void SwapChainPresenter::SetFrameRate(float frame_rate) {
+  frame_rate_ = frame_rate;
+  SetSwapChainPresentDuration();
 }
 
 void SwapChainPresenter::RecordPresentationStatistics() {
@@ -902,16 +913,9 @@ void SwapChainPresenter::RecordPresentationStatistics() {
                        "SwapChain::Present", TRACE_EVENT_SCOPE_THREAD,
                        "PixelFormat", DxgiFormatToString(swap_chain_format),
                        "ZeroCopy", !!decode_swap_chain_);
-  HRESULT hr = 0;
-  Microsoft::WRL::ComPtr<IDXGISwapChainMedia> swap_chain_media;
-  if (decode_swap_chain_) {
-    hr = decode_swap_chain_.As(&swap_chain_media);
-  } else {
-    DCHECK(swap_chain_);
-    hr = swap_chain_.As(&swap_chain_media);
-  }
-  if (SUCCEEDED(hr)) {
-    DCHECK(swap_chain_media);
+  Microsoft::WRL::ComPtr<IDXGISwapChainMedia> swap_chain_media =
+      GetSwapChainMedia();
+  if (swap_chain_media) {
     DXGI_FRAME_STATISTICS_MEDIA stats = {};
     // GetFrameStatisticsMedia fails with DXGI_ERROR_FRAME_STATISTICS_DISJOINT
     // sometimes, which means an event (such as power cycle) interrupted the
@@ -924,6 +928,17 @@ void SwapChainPresenter::RecordPresentationStatistics() {
     if (SUCCEEDED(hr)) {
       base::UmaHistogramSparse("GPU.DirectComposition.CompositionMode",
                                stats.CompositionMode);
+      if (frame_rate_ != 0) {
+        // [1ms, 100ms] covers the fps between [10hz, 1000hz], but we also
+        // need to include 0, because that indicates the custom duration
+        // isn't approved.
+        UMA_HISTOGRAM_CUSTOM_TIMES(
+            "GPU.DirectComposition.ApprovedPresentDuration",
+            base::TimeDelta::FromMilliseconds(stats.ApprovedPresentDuration /
+                                              10000),
+            base::TimeDelta::FromMilliseconds(0),
+            base::TimeDelta::FromMilliseconds(100), 50);
+      }
       presentation_history_.AddSample(stats.CompositionMode);
       mode = stats.CompositionMode;
     }
@@ -1223,6 +1238,7 @@ bool SwapChainPresenter::ReallocateSwapChain(
       return false;
     }
   }
+  SetSwapChainPresentDuration();
   return true;
 }
 
@@ -1232,6 +1248,33 @@ void SwapChainPresenter::OnPowerStateChange(bool on_battery_power) {
 
 bool SwapChainPresenter::ShouldUseVideoProcessorScaling() {
   return (!is_on_battery_power_ && !layer_tree_->disable_vp_scaling());
+}
+
+void SwapChainPresenter::SetSwapChainPresentDuration() {
+  Microsoft::WRL::ComPtr<IDXGISwapChainMedia> swap_chain_media =
+      GetSwapChainMedia();
+  if (swap_chain_media) {
+    UINT duration_100ns = FrameRateToPresentDuration(frame_rate_);
+    HRESULT hr = swap_chain_media->SetPresentDuration(duration_100ns);
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "SetPresentDuration failed with error " << std::hex << hr;
+    }
+  }
+}
+
+Microsoft::WRL::ComPtr<IDXGISwapChainMedia>
+SwapChainPresenter::GetSwapChainMedia() const {
+  Microsoft::WRL::ComPtr<IDXGISwapChainMedia> swap_chain_media;
+  HRESULT hr = 0;
+  if (decode_swap_chain_) {
+    hr = decode_swap_chain_.As(&swap_chain_media);
+  } else {
+    DCHECK(swap_chain_);
+    hr = swap_chain_.As(&swap_chain_media);
+  }
+  if (SUCCEEDED(hr))
+    return swap_chain_media;
+  return nullptr;
 }
 
 }  // namespace gl

@@ -55,8 +55,9 @@ bool IsTabletMode() {
 }  // namespace
 
 AppListClientImpl::AppListClientImpl()
-    : app_list_notifier_(std::make_unique<AppListNotifierImpl>()),
-      app_list_controller_(ash::AppListController::Get()) {
+    : app_list_controller_(ash::AppListController::Get()),
+      app_list_notifier_(
+          std::make_unique<AppListNotifierImpl>(app_list_controller_)) {
   app_list_controller_->SetClient(this);
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 

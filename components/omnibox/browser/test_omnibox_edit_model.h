@@ -13,6 +13,8 @@ class TestOmniboxEditModel : public OmniboxEditModel {
  public:
   TestOmniboxEditModel(OmniboxView* view, OmniboxEditController* controller);
   ~TestOmniboxEditModel() override;
+  TestOmniboxEditModel(const TestOmniboxEditModel&) = delete;
+  TestOmniboxEditModel& operator=(const TestOmniboxEditModel&) = delete;
 
   // OmniboxEditModel:
   bool PopupIsOpen() const override;
@@ -25,8 +27,6 @@ class TestOmniboxEditModel : public OmniboxEditModel {
  private:
   bool popup_is_open_;
   std::unique_ptr<AutocompleteMatch> override_current_match_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestOmniboxEditModel);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_TEST_OMNIBOX_EDIT_MODEL_H_

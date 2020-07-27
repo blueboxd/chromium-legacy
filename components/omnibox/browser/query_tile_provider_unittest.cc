@@ -15,6 +15,8 @@ class QueryTileProviderTest : public testing::Test,
                               public AutocompleteProviderListener {
  public:
   QueryTileProviderTest();
+  QueryTileProviderTest(const QueryTileProviderTest&) = delete;
+  QueryTileProviderTest& operator=(const QueryTileProviderTest&) = delete;
 
   void SetUp() override {
     TemplateURLService* turl_model = client_->GetTemplateURLService();
@@ -45,9 +47,6 @@ class QueryTileProviderTest : public testing::Test,
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<QueryTileProvider> provider_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QueryTileProviderTest);
 };
 
 QueryTileProviderTest::QueryTileProviderTest()

@@ -44,12 +44,6 @@ class NfcHost implements WindowEventObserver {
     NfcHost(WebContents webContents, int contextId) {
         mWebContents = webContents;
 
-        // NFC will not work if there is no WindowEventObserverManager associated with the
-        // WebContents, and it will only be requested in contexts where there is one associated with
-        // the WebContents as far as we are aware. If the latter ever proves false, then we will
-        // need to simply drop any NFC request that comes in if there is no
-        // WindowEventObserverManager available.
-        assert WindowEventObserverManager.from(mWebContents) != null;
         mContextId = contextId;
         sContextHostsMap.put(mContextId, this);
     }
@@ -67,7 +61,12 @@ class NfcHost implements WindowEventObserver {
         assert mCallback == null : "Unexpected request to track activity changes";
         mCallback = callback;
 
-        WindowEventObserverManager.from(mWebContents).addObserver(this);
+        // This may be null in tests.
+        WindowEventObserverManager manager = WindowEventObserverManager.from(mWebContents);
+        if (manager != null) {
+            manager.addObserver(this);
+        }
+
         WindowAndroid window = mWebContents.getTopLevelNativeWindow();
         mCallback.onResult(window != null ? window.getActivity().get() : null);
     }
@@ -77,7 +76,13 @@ class NfcHost implements WindowEventObserver {
      */
     public void stopTrackingActivityChanges() {
         mCallback = null;
-        WindowEventObserverManager.from(mWebContents).removeObserver(this);
+
+        // This may be null in tests.
+        WindowEventObserverManager manager = WindowEventObserverManager.from(mWebContents);
+        if (manager != null) {
+            manager.removeObserver(this);
+        }
+
         sContextHostsMap.remove(mContextId);
     }
 

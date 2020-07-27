@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_LOCAL_HISTORY_ZERO_SUGGEST_PROVIDER_H_
 #define COMPONENTS_OMNIBOX_BROWSER_LOCAL_HISTORY_ZERO_SUGGEST_PROVIDER_H_
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -42,6 +41,10 @@ class LocalHistoryZeroSuggestProvider : public AutocompleteProvider {
   LocalHistoryZeroSuggestProvider(AutocompleteProviderClient* client,
                                   AutocompleteProviderListener* listener);
   ~LocalHistoryZeroSuggestProvider() override;
+  LocalHistoryZeroSuggestProvider(const LocalHistoryZeroSuggestProvider&) =
+      delete;
+  LocalHistoryZeroSuggestProvider& operator=(
+      const LocalHistoryZeroSuggestProvider&) = delete;
 
   // Queries the keyword search terms table of the in-memory URLDatabase for the
   // recent search terms submitted to the default search provider.
@@ -67,8 +70,6 @@ class LocalHistoryZeroSuggestProvider : public AutocompleteProvider {
   base::CancelableTaskTracker history_task_tracker_;
 
   base::WeakPtrFactory<LocalHistoryZeroSuggestProvider> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LocalHistoryZeroSuggestProvider);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_LOCAL_HISTORY_ZERO_SUGGEST_PROVIDER_H_

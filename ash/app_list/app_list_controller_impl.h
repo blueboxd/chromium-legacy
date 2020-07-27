@@ -82,6 +82,8 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   // AppListController:
   void SetClient(AppListClient* client) override;
   AppListClient* GetClient() override;
+  void AddObserver(AppListControllerObserver* observer) override;
+  void RemoveObserver(AppListControllerObserver* obsever) override;
   void AddItem(std::unique_ptr<AppListItemMetadata> app_item) override;
   void AddItemToFolder(std::unique_ptr<AppListItemMetadata> app_item,
                        const std::string& folder_id) override;
@@ -218,9 +220,6 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) override;
   int GetShelfSize() override;
   bool IsInTabletMode() override;
-
-  void AddObserver(AppListControllerObserver* observer);
-  void RemoveObserver(AppListControllerObserver* obsever);
 
   // Notifies observers of AppList visibility changes.
   void OnVisibilityChanged(bool visible, int64_t display_id);

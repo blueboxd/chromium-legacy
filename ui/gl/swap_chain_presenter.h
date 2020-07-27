@@ -42,6 +42,8 @@ class SwapChainPresenter : public base::PowerObserver {
     return clip_visual_;
   }
 
+  void SetFrameRate(float frame_rate);
+
  private:
   // Mapped to DirectCompositonVideoPresentationMode UMA enum.  Do not remove or
   // remap existing entries!
@@ -153,6 +155,14 @@ class SwapChainPresenter : public base::PowerObserver {
   // the upscaling because it produces better results.
   bool ShouldUseVideoProcessorScaling();
 
+  // This is called when a new swap chain is created, or when a new frame
+  // rate is received.
+  void SetSwapChainPresentDuration();
+
+  // Returns swap chain media for either |swap_chain_| or |decode_swap_chain_|,
+  // whichever is currently used.
+  Microsoft::WRL::ComPtr<IDXGISwapChainMedia> GetSwapChainMedia() const;
+
   // Layer tree instance that owns this swap chain presenter.
   DCLayerTree* layer_tree_ = nullptr;
 
@@ -230,6 +240,9 @@ class SwapChainPresenter : public base::PowerObserver {
   Microsoft::WRL::ComPtr<IDXGIDecodeSwapChain> decode_swap_chain_;
   Microsoft::WRL::ComPtr<IUnknown> decode_surface_;
   bool is_on_battery_power_;
+
+  // Number of frames per second.
+  float frame_rate_ = 0.f;
 
   DISALLOW_COPY_AND_ASSIGN(SwapChainPresenter);
 };

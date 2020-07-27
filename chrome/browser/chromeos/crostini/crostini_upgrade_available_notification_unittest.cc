@@ -31,35 +31,6 @@
 
 namespace crostini {
 
-class WebContentsWaiter : public content::WebContentsObserver {
- public:
-  enum Operation { LOAD };  // Add other operations as required.
-  explicit WebContentsWaiter(content::WebContents* contents,
-                             Operation operation)
-      : content::WebContentsObserver(contents), operation_(operation) {
-    LOG(INFO) << "Waiting for web contents";
-  }
-
-  ~WebContentsWaiter() override = default;
-
-  void Wait() {
-    LOG(INFO) << "And Waiting";
-    run_loop_.Run();
-  }
-
-  // content::WebContentsObserver:
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override {
-    if (operation_ == LOAD) {
-      run_loop_.Quit();
-    }
-  }
-
- private:
-  base::RunLoop run_loop_;
-  Operation operation_;
-};
-
 class CrostiniUpgradeAvailableNotificationTest
     : public BrowserWithTestWindowTest {
  public:
@@ -98,12 +69,6 @@ class CrostiniUpgradeAvailableNotificationTest
 
     if (!upgrader_dialog) {
       return;
-    }
-    // Make sure the WebUI has launches sufficiently. Closing immediately would
-    // miss breakages in the underlying plumbing.
-    if (upgrader_dialog->GetWebUIForTest()) {
-      auto* web_contents = upgrader_dialog->GetWebUIForTest()->GetWebContents();
-      WebContentsWaiter(web_contents, WebContentsWaiter::LOAD).Wait();
     }
 
     // Now there should be enough WebUI hooked up to close properly.

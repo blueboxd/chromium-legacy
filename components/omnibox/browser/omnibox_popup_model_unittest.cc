@@ -81,6 +81,8 @@ class OmniboxPopupModelTest : public ::testing::Test {
         popup_model_(&popup_view_, &model_, &pref_service_) {
     omnibox::RegisterProfilePrefs(pref_service_.registry());
   }
+  OmniboxPopupModelTest(const OmniboxPopupModelTest&) = delete;
+  OmniboxPopupModelTest& operator=(const OmniboxPopupModelTest&) = delete;
 
   TestingPrefServiceSimple* pref_service() { return &pref_service_; }
   TestOmniboxEditModel* model() { return &model_; }
@@ -95,8 +97,6 @@ class OmniboxPopupModelTest : public ::testing::Test {
   TestOmniboxEditModel model_;
   TestOmniboxPopupView popup_view_;
   OmniboxPopupModel popup_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(OmniboxPopupModelTest);
 };
 
 // This verifies that the new treatment of the user's selected match in

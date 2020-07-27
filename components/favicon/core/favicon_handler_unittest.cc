@@ -21,7 +21,6 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/favicon/core/favicon_driver.h"
-#include "components/favicon/core/features.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "skia/ext/image_operations.h"
 #include "testing/gmock/include/gmock/gmock.h"

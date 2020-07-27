@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/app_list/app_list_notifier_impl.h"
 
+#include "ash/public/cpp/app_list/app_list_controller.h"
+#include "base/check.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "ui/display/types/display_constants.h"
 
 namespace {
 
@@ -15,8 +18,18 @@ constexpr base::TimeDelta kImpressionTimer = base::TimeDelta::FromSeconds(1);
 
 }  // namespace
 
-AppListNotifierImpl::AppListNotifierImpl() = default;
-AppListNotifierImpl::~AppListNotifierImpl() = default;
+AppListNotifierImpl::AppListNotifierImpl(
+    ash::AppListController* app_list_controller)
+    : app_list_controller_(app_list_controller) {
+  DCHECK(app_list_controller_);
+  app_list_controller_->AddObserver(this);
+  OnAppListVisibilityWillChange(app_list_controller_->IsVisible(base::nullopt),
+                                display::kInvalidDisplayId);
+}
+
+AppListNotifierImpl::~AppListNotifierImpl() {
+  app_list_controller_->RemoveObserver(this);
+}
 
 void AppListNotifierImpl::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
@@ -75,7 +88,11 @@ void AppListNotifierImpl::NotifyUIStateChanged(ash::AppListViewState view) {
   //
   //  3. kPeeking to kFullscreenAllApps. This doesn't change the displayed
   //     chip results.
-  if (view_ == view ||
+  //
+  //  We should also ignore this if the call comes while the launcher is not
+  //  shown at all. This happens, for example, in the transition between
+  //  clamshell and tablet modes.
+  if (!shown_ || view_ == view ||
       (view_ == ash::AppListViewState::kHalf &&
        view == ash::AppListViewState::kFullscreenSearch) ||
       (view_ == ash::AppListViewState::kPeeking &&
@@ -98,6 +115,21 @@ void AppListNotifierImpl::NotifyUIStateChanged(ash::AppListViewState view) {
     DoStateTransition(Location::kChip, State::kShown);
   } else {
     DoStateTransition(Location::kChip, State::kNone);
+  }
+}
+
+void AppListNotifierImpl::OnAppListVisibilityWillChange(bool shown,
+                                                        int64_t display_id) {
+  if (shown_ == shown)
+    return;
+  shown_ = shown;
+
+  if (shown) {
+    DoStateTransition(Location::kChip, State::kShown);
+  } else {
+    DoStateTransition(Location::kChip, State::kNone);
+    DoStateTransition(Location::kList, State::kNone);
+    DoStateTransition(Location::kTile, State::kNone);
   }
 }
 

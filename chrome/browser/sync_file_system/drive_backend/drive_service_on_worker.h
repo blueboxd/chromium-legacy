@@ -47,7 +47,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
   google_apis::CancelCallback DeleteResource(
       const std::string& resource_id,
       const std::string& etag,
-      const google_apis::EntryActionCallback& callback) override;
+      google_apis::EntryActionCallback callback) override;
 
   google_apis::CancelCallbackOnce DownloadFile(
       const base::FilePath& local_cache_path,
@@ -97,7 +97,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
   google_apis::CancelCallbackOnce RemoveResourceFromDirectory(
       const std::string& parent_resource_id,
       const std::string& resource_id,
-      const google_apis::EntryActionCallback& callback) override;
+      google_apis::EntryActionCallback callback) override;
 
   google_apis::CancelCallbackOnce SearchByTitle(
       const std::string& title,
@@ -125,7 +125,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const google_apis::FileListCallback& callback) override;
   google_apis::CancelCallback TrashResource(
       const std::string& resource_id,
-      const google_apis::EntryActionCallback& callback) override;
+      google_apis::EntryActionCallback callback) override;
   google_apis::CancelCallback CopyResource(
       const std::string& resource_id,
       const std::string& parent_resource_id,
@@ -143,7 +143,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
   google_apis::CancelCallback AddResourceToDirectory(
       const std::string& parent_resource_id,
       const std::string& resource_id,
-      const google_apis::EntryActionCallback& callback) override;
+      google_apis::EntryActionCallback callback) override;
   google_apis::CancelCallback InitiateUploadNewFile(
       const std::string& content_type,
       int64_t content_length,
@@ -193,7 +193,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const std::string& resource_id,
       const std::string& email,
       google_apis::drive::PermissionRole role,
-      const google_apis::EntryActionCallback& callback) override;
+      google_apis::EntryActionCallback callback) override;
 
  private:
   base::WeakPtr<DriveServiceWrapper> wrapper_;

@@ -13,7 +13,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/threading/thread_checker.h"
@@ -109,6 +108,8 @@ struct HistoryURLProviderParams {
                            const TemplateURL* default_search_provider,
                            const SearchTermsData* search_terms_data);
   ~HistoryURLProviderParams();
+  HistoryURLProviderParams(const HistoryURLProviderParams&) = delete;
+  HistoryURLProviderParams& operator=(const HistoryURLProviderParams&) = delete;
 
   // Estimates dynamic memory usage.
   // See base/trace_event/memory_usage_estimator.h for more info.
@@ -180,9 +181,6 @@ struct HistoryURLProviderParams {
   // Similarly, we use a std::unique_ptr<SearchTermsData> so that we can store a
   // snapshot of the SearchTermsData accessible from the history thread.
   std::unique_ptr<SearchTermsData> search_terms_data;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HistoryURLProviderParams);
 };
 
 // This class is an autocomplete provider and is also a pseudo-internal
@@ -198,6 +196,9 @@ class HistoryURLProvider : public HistoryProvider {
 
   HistoryURLProvider(AutocompleteProviderClient* client,
                      AutocompleteProviderListener* listener);
+
+  HistoryURLProvider(const HistoryURLProvider&) = delete;
+  HistoryURLProvider& operator=(const HistoryURLProvider&) = delete;
 
   // HistoryProvider:
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
@@ -365,8 +366,6 @@ class HistoryURLProvider : public HistoryProvider {
   HUPScoringParams scoring_params_;
 
   base::ThreadChecker thread_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(HistoryURLProvider);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_HISTORY_URL_PROVIDER_H_

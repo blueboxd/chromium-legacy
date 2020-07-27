@@ -18,6 +18,7 @@
 namespace ash {
 
 class AppListClient;
+class AppListControllerObserver;
 
 // An interface implemented in Ash to handle calls from Chrome.
 // These include:
@@ -37,6 +38,9 @@ class ASH_PUBLIC_EXPORT AppListController {
 
   // Gets the client that handles calls from Ash.
   virtual AppListClient* GetClient() = 0;
+
+  virtual void AddObserver(AppListControllerObserver* observer) = 0;
+  virtual void RemoveObserver(AppListControllerObserver* obsever) = 0;
 
   // Adds an item to AppListModel.
   virtual void AddItem(std::unique_ptr<AppListItemMetadata> app_item) = 0;

@@ -30,6 +30,9 @@ GL_EXPORT bool PassthroughCommandDecoderSupported();
 
 #if defined(OS_WIN)
 GL_EXPORT bool AreOverlaysSupportedWin();
+
+// Calculates present during in 100 ns from number of frames per second.
+GL_EXPORT unsigned int FrameRateToPresentDuration(float frame_rate);
 #endif
 
 }  // namespace gl

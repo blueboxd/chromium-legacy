@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_ANDROID_NFC_HOST_H_
 
 #include "base/android/jni_android.h"
+#include "content/public/browser/permission_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -44,7 +45,7 @@ class NFCHost : public WebContentsObserver {
   mojo::Remote<device::mojom::NFCProvider> nfc_provider_;
 
   // Permission change subscription ID provided by |permission_controller_|.
-  int subscription_id_ = 0;
+  int subscription_id_ = PermissionController::kNoPendingOperation;
 
   DISALLOW_COPY_AND_ASSIGN(NFCHost);
 };

@@ -46,6 +46,9 @@ class WaitForURLsDeletedObserver : public history::HistoryServiceObserver {
  public:
   explicit WaitForURLsDeletedObserver(base::RunLoop* runner);
   ~WaitForURLsDeletedObserver() override;
+  WaitForURLsDeletedObserver(const WaitForURLsDeletedObserver&) = delete;
+  WaitForURLsDeletedObserver& operator=(const WaitForURLsDeletedObserver&) =
+      delete;
 
  private:
   // history::HistoryServiceObserver:
@@ -54,8 +57,6 @@ class WaitForURLsDeletedObserver : public history::HistoryServiceObserver {
 
   // Weak. Owned by our owner.
   base::RunLoop* runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(WaitForURLsDeletedObserver);
 };
 
 WaitForURLsDeletedObserver::WaitForURLsDeletedObserver(base::RunLoop* runner)
@@ -88,6 +89,8 @@ class GetURLTask : public history::HistoryDBTask {
       : result_storage_(result_storage),
         url_(url) {
   }
+  GetURLTask(const GetURLTask&) = delete;
+  GetURLTask& operator=(const GetURLTask&) = delete;
 
   bool RunOnDBThread(history::HistoryBackend* backend,
                      history::HistoryDatabase* db) override {
@@ -104,8 +107,6 @@ class GetURLTask : public history::HistoryDBTask {
 
   bool* result_storage_;
   const GURL url_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetURLTask);
 };
 
 }  // namespace
@@ -113,6 +114,8 @@ class GetURLTask : public history::HistoryDBTask {
 class HistoryQuickProviderTest : public testing::Test {
  public:
   HistoryQuickProviderTest() = default;
+  HistoryQuickProviderTest(const HistoryQuickProviderTest&) = delete;
+  HistoryQuickProviderTest& operator=(const HistoryQuickProviderTest&) = delete;
 
  protected:
   struct TestURLInfo {
@@ -186,8 +189,6 @@ class HistoryQuickProviderTest : public testing::Test {
   ACMatches ac_matches_;  // The resulting matches after running RunTest.
 
   scoped_refptr<HistoryQuickProvider> provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(HistoryQuickProviderTest);
 };
 
 void HistoryQuickProviderTest::SetUp() {
@@ -841,12 +842,11 @@ TEST_F(HistoryQuickProviderTest, CorrectAutocompleteWithTrailingSlash) {
 class HQPOrderingTest : public HistoryQuickProviderTest {
  public:
   HQPOrderingTest() = default;
+  HQPOrderingTest(const HQPOrderingTest&) = delete;
+  HQPOrderingTest& operator=(const HQPOrderingTest&) = delete;
 
  protected:
   std::vector<TestURLInfo> GetTestData() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HQPOrderingTest);
 };
 
 std::vector<HistoryQuickProviderTest::TestURLInfo>

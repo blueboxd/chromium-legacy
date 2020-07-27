@@ -13,7 +13,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/omnibox/browser/base_search_provider.h"
 #include "components/omnibox/browser/search_provider.h"
@@ -94,6 +93,9 @@ class ZeroSuggestProvider : public BaseSearchProvider {
                       AutocompleteProviderListener* listener);
 
   ~ZeroSuggestProvider() override;
+
+  ZeroSuggestProvider(const ZeroSuggestProvider&) = delete;
+  ZeroSuggestProvider& operator=(const ZeroSuggestProvider&) = delete;
 
   // ZeroSuggestProvider is processing one of the following type of results
   // at any time.
@@ -218,8 +220,6 @@ class ZeroSuggestProvider : public BaseSearchProvider {
 
   // For callbacks that may be run after destruction.
   base::WeakPtrFactory<ZeroSuggestProvider> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ZeroSuggestProvider);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_ZERO_SUGGEST_PROVIDER_H_

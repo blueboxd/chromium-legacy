@@ -18,7 +18,6 @@
 #include "base/files/file_util.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -90,6 +89,10 @@ class UpdateRecentVisitsFromHistoryDBTask : public history::HistoryDBTask {
   explicit UpdateRecentVisitsFromHistoryDBTask(
       URLIndexPrivateData* private_data,
       history::URLID url_id);
+  UpdateRecentVisitsFromHistoryDBTask(
+      const UpdateRecentVisitsFromHistoryDBTask&) = delete;
+  UpdateRecentVisitsFromHistoryDBTask& operator=(
+      const UpdateRecentVisitsFromHistoryDBTask&) = delete;
 
   bool RunOnDBThread(history::HistoryBackend* backend,
                      history::HistoryDatabase* db) override;
@@ -108,8 +111,6 @@ class UpdateRecentVisitsFromHistoryDBTask : public history::HistoryDBTask {
   // The awaited data that's shown to private_data_ for it to copy and
   // store.
   history::VisitVector recent_visits_;
-
-  DISALLOW_COPY_AND_ASSIGN(UpdateRecentVisitsFromHistoryDBTask);
 };
 
 UpdateRecentVisitsFromHistoryDBTask::UpdateRecentVisitsFromHistoryDBTask(

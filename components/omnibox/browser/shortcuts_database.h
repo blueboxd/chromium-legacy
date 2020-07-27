@@ -11,7 +11,6 @@
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "sql/database.h"
@@ -92,6 +91,9 @@ class ShortcutsDatabase : public base::RefCountedThreadSafe<ShortcutsDatabase> {
 
   explicit ShortcutsDatabase(const base::FilePath& database_path);
 
+  ShortcutsDatabase(const ShortcutsDatabase&) = delete;
+  ShortcutsDatabase& operator=(const ShortcutsDatabase&) = delete;
+
   bool Init();
 
   // Adds the ShortcutsProvider::Shortcut to the database.
@@ -136,8 +138,6 @@ class ShortcutsDatabase : public base::RefCountedThreadSafe<ShortcutsDatabase> {
   base::FilePath database_path_;
 
   sql::MetaTable meta_table_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShortcutsDatabase);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_SHORTCUTS_DATABASE_H_

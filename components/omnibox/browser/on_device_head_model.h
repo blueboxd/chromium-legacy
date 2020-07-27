@@ -12,8 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
-
 // On device head suggest feature uses an on device model which encodes some
 // top queries into a radix tree (https://en.wikipedia.org/wiki/Radix_tree), to
 // help users quickly get head suggestions when they are under poor network
@@ -128,13 +126,13 @@ class OnDeviceHeadModel {
 
    private:
     OnDeviceModelParams();
+    OnDeviceModelParams(const OnDeviceModelParams&) = delete;
+    OnDeviceModelParams& operator=(const OnDeviceModelParams&) = delete;
 
     std::ifstream model_filestream_;
     uint32_t score_size_;
     uint32_t address_size_;
     uint32_t max_num_matches_to_return_;
-
-    DISALLOW_COPY_AND_ASSIGN(OnDeviceModelParams);
   };
 
   static void InsertCandidateToQueue(const MatchCandidate& candidate,

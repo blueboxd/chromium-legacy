@@ -21,6 +21,8 @@ class OmniboxMetricsProvider : public metrics::MetricsProvider {
  public:
   OmniboxMetricsProvider();
   ~OmniboxMetricsProvider() override;
+  OmniboxMetricsProvider(const OmniboxMetricsProvider&) = delete;
+  OmniboxMetricsProvider& operator=(const OmniboxMetricsProvider&) = delete;
 
   // metrics::MetricsDataProvider:
   void OnRecordingEnabled() override;
@@ -43,8 +45,6 @@ class OmniboxMetricsProvider : public metrics::MetricsProvider {
   // Saved cache of generated Omnibox event protos, to be copied into the UMA
   // proto when ProvideCurrentSessionData() is called.
   metrics::ChromeUserMetricsExtension omnibox_events_cache;
-
-  DISALLOW_COPY_AND_ASSIGN(OmniboxMetricsProvider);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_METRICS_PROVIDER_H_

@@ -9,7 +9,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "components/security_state/core/security_state.h"
@@ -81,8 +80,8 @@ class LocationBarModel {
  protected:
   LocationBarModel() = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(LocationBarModel);
+  LocationBarModel(const LocationBarModel&) = delete;
+  LocationBarModel& operator=(const LocationBarModel&) = delete;
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_LOCATION_BAR_MODEL_H_

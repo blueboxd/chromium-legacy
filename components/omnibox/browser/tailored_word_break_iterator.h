@@ -15,6 +15,9 @@ class TailoredWordBreakIterator : public base::i18n::BreakIterator {
                             base::i18n::BreakIterator::BreakType break_type);
 
   ~TailoredWordBreakIterator();
+  TailoredWordBreakIterator(const TailoredWordBreakIterator&) = delete;
+  TailoredWordBreakIterator& operator=(const TailoredWordBreakIterator&) =
+      delete;
 
   bool Advance();
   bool IsWord() const;
@@ -35,8 +38,6 @@ class TailoredWordBreakIterator : public base::i18n::BreakIterator {
   size_t prev_, pos_;
   // Set if BreakIterator::GetStringPiece() contains '_', otherwise it's empty.
   base::StringPiece16 underscore_word_;
-
-  DISALLOW_COPY_AND_ASSIGN(TailoredWordBreakIterator);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_TAILORED_WORD_BREAK_ITERATOR_H_

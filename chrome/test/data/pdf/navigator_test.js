@@ -6,7 +6,7 @@ import {PdfNavigator} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/
 import {OpenPdfParamsParser} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/open_pdf_params_parser.js';
 import {PDFScriptingAPI} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_scripting_api.js';
 
-import {getZoomableViewport, MockDocumentDimensions, MockSizer, MockViewportChangedCallback, MockWindow} from './test_util.js';
+import {getZoomableViewport, MockDocumentDimensions, MockElement, MockSizer, MockViewportChangedCallback} from './test_util.js';
 
 class MockNavigatorDelegate {
   constructor() {
@@ -78,7 +78,7 @@ function doNavigationUrlTest(
  * tab, and a new window.
  */
 function doNavigationUrlTests(originalUrl, url, expectedResultUrl) {
-  const mockWindow = new MockWindow(100, 100);
+  const mockWindow = new MockElement(100, 100);
   const mockSizer = new MockSizer();
   const mockViewportChangedCallback = new MockViewportChangedCallback();
   const viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 0);
@@ -109,7 +109,7 @@ const tests = [
    * opening a url in a new tab.
    */
   function testNavigate() {
-    const mockWindow = new MockWindow(100, 100);
+    const mockWindow = new MockElement(100, 100);
     const mockSizer = new MockSizer();
     const mockCallback = new MockViewportChangedCallback();
     const viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 0);

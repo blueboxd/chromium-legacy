@@ -121,28 +121,6 @@ const GpuFeatureData GetGpuFeatureData(
      DisableInfo::Problem(
          "WebGL has been disabled via blocklist or the command line."),
      false},
-    {"flash_3d",
-     SafeGetFeatureStatus(gpu_feature_info, gpu::GPU_FEATURE_TYPE_FLASH3D),
-     command_line.HasSwitch(switches::kDisableFlash3d),
-     DisableInfo::Problem("Using 3d in flash has been disabled, either via "
-                          "blocklist, about:flags or the command line."),
-     true},
-    {"flash_stage3d",
-     SafeGetFeatureStatus(gpu_feature_info,
-                          gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D),
-     command_line.HasSwitch(switches::kDisableFlashStage3d),
-     DisableInfo::Problem(
-         "Using Stage3d in Flash has been disabled, either via blocklist, "
-         "about:flags or the command line."),
-     true},
-    {"flash_stage3d_baseline",
-     SafeGetFeatureStatus(gpu_feature_info,
-                          gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE),
-     command_line.HasSwitch(switches::kDisableFlashStage3d),
-     DisableInfo::Problem(
-         "Using Stage3d Baseline profile in Flash has been disabled, either "
-         "via blocklist, about:flags or the command line."),
-     true},
     {"protected_video_decode",
      SafeGetFeatureStatus(gpu_feature_info,
                           gpu::GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE),

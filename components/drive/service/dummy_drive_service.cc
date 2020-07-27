@@ -128,14 +128,16 @@ CancelCallback DummyDriveService::GetStartPageToken(
   return CancelCallback();
 }
 
-CancelCallback DummyDriveService::DeleteResource(
-    const std::string& resource_id,
-    const std::string& etag,
-    const EntryActionCallback& callback) { return CancelCallback(); }
+CancelCallback DummyDriveService::DeleteResource(const std::string& resource_id,
+                                                 const std::string& etag,
+                                                 EntryActionCallback callback) {
+  return CancelCallback();
+}
 
-CancelCallback DummyDriveService::TrashResource(
-    const std::string& resource_id,
-    const EntryActionCallback& callback) { return CancelCallback(); }
+CancelCallback DummyDriveService::TrashResource(const std::string& resource_id,
+                                                EntryActionCallback callback) {
+  return CancelCallback();
+}
 
 CancelCallbackOnce DummyDriveService::DownloadFile(
     const base::FilePath& local_cache_path,
@@ -169,12 +171,14 @@ CancelCallback DummyDriveService::UpdateResource(
 CancelCallback DummyDriveService::AddResourceToDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
-    const EntryActionCallback& callback) { return CancelCallback(); }
+    EntryActionCallback callback) {
+  return CancelCallback();
+}
 
 CancelCallbackOnce DummyDriveService::RemoveResourceFromDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
-    const EntryActionCallback& callback) {
+    EntryActionCallback callback) {
   return CancelCallback();
 }
 
@@ -251,7 +255,9 @@ CancelCallback DummyDriveService::AddPermission(
     const std::string& resource_id,
     const std::string& email,
     google_apis::drive::PermissionRole role,
-    const EntryActionCallback& callback) { return CancelCallback(); }
+    EntryActionCallback callback) {
+  return CancelCallback();
+}
 std::unique_ptr<BatchRequestConfiguratorInterface>
 DummyDriveService::StartBatchRequest() {
   return std::unique_ptr<BatchRequestConfiguratorInterface>();

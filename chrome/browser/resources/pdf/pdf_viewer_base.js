@@ -236,14 +236,23 @@ export class PDFViewerBaseElement extends PolymerElement {
       };
     }
 
+    // Determine the scrolling container.
+    const pdfViewerUpdateEnabled =
+        document.documentElement.hasAttribute('pdf-viewer-update-enabled');
+    const scrollContainer = pdfViewerUpdateEnabled ?
+        /** @type {!HTMLElement} */ (this.getSizer().offsetParent) :
+        document.documentElement;
+
     // Create the viewport.
     const defaultZoom =
         this.browserApi.getZoomBehavior() === BrowserApi.ZoomBehavior.MANAGE ?
         this.browserApi.getDefaultZoom() :
         1.0;
+
     this.viewport_ = new Viewport(
-        window, this.getSizer(), this.getContent(), getScrollbarWidth(),
-        defaultZoom, this.getToolbarHeight(), this.hasFixedToolbar());
+        scrollContainer, this.getSizer(), this.getContent(),
+        getScrollbarWidth(), defaultZoom, this.getToolbarHeight(),
+        this.hasFixedToolbar());
     this.viewport_.setViewportChangedCallback(() => this.viewportChanged_());
     this.viewport_.setBeforeZoomCallback(
         () => this.currentController.beforeZoom());

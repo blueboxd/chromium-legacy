@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -155,6 +154,9 @@ class AutocompleteProvider
   };
 
   explicit AutocompleteProvider(Type type);
+
+  AutocompleteProvider(const AutocompleteProvider&) = delete;
+  AutocompleteProvider& operator=(const AutocompleteProvider&) = delete;
 
   // Returns a string describing a particular AutocompleteProvider type.
   static const char* TypeToString(Type type);
@@ -334,9 +336,6 @@ class AutocompleteProvider
   bool done_;
 
   Type type_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteProvider);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_AUTOCOMPLETE_PROVIDER_H_

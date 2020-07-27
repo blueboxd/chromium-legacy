@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -33,6 +32,8 @@ class OmniboxController : public AutocompleteController::Observer {
   OmniboxController(OmniboxEditModel* omnibox_edit_model,
                     OmniboxClient* client);
   ~OmniboxController() override;
+  OmniboxController(const OmniboxController&) = delete;
+  OmniboxController& operator=(const OmniboxController&) = delete;
 
   // The |current_url| field of input is only set for mobile ports.
   void StartAutocomplete(const AutocompleteInput& input) const;
@@ -87,8 +88,6 @@ class OmniboxController : public AutocompleteController::Observer {
   AutocompleteMatch current_match_;
 
   base::WeakPtrFactory<OmniboxController> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(OmniboxController);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_CONTROLLER_H_

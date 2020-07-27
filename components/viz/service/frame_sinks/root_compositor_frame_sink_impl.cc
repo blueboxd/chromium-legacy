@@ -4,7 +4,9 @@
 
 #include "components/viz/service/frame_sinks/root_compositor_frame_sink_impl.h"
 
+#include <algorithm>
 #include <utility>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
@@ -87,6 +89,11 @@ RootCompositorFrameSinkImpl::Create(
               std::make_unique<DelayBasedTimeSource>(
                   base::ThreadTaskRunnerHandle::Get().get()));
     } else if (output_surface->capabilities().supports_gpu_vsync) {
+#if defined(OS_WIN)
+      hw_support_for_multiple_refresh_rates =
+          output_surface->capabilities().supports_dc_layers &&
+          params->set_present_duration_allowed;
+#endif
       // Vsync updates are required to update the FrameRateDecider with
       // supported refresh rates.
       wants_vsync_updates = params->use_preferred_interval_for_video;

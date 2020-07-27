@@ -29,6 +29,10 @@ class MockAutocompleteProviderClient
  public:
   MockAutocompleteProviderClient();
   ~MockAutocompleteProviderClient();
+  MockAutocompleteProviderClient(const MockAutocompleteProviderClient&) =
+      delete;
+  MockAutocompleteProviderClient& operator=(
+      const MockAutocompleteProviderClient&) = delete;
 
   // AutocompleteProviderClient:
   MOCK_METHOD0(GetPrefs, PrefService*());
@@ -137,8 +141,6 @@ class MockAutocompleteProviderClient
   std::unique_ptr<OmniboxPedalProvider> pedal_provider_;
   std::unique_ptr<TemplateURLService> template_url_service_;
   bool browser_update_available_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockAutocompleteProviderClient);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_MOCK_AUTOCOMPLETE_PROVIDER_CLIENT_H_

@@ -27,6 +27,8 @@ class OmniboxControllerEmitter : public KeyedService,
 
   OmniboxControllerEmitter();
   ~OmniboxControllerEmitter() override;
+  OmniboxControllerEmitter(const OmniboxControllerEmitter&) = delete;
+  OmniboxControllerEmitter& operator=(const OmniboxControllerEmitter&) = delete;
 
   // Add/remove observer.
   void AddObserver(AutocompleteController::Observer* observer);
@@ -40,8 +42,6 @@ class OmniboxControllerEmitter : public KeyedService,
 
  private:
   base::ObserverList<AutocompleteController::Observer> observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(OmniboxControllerEmitter);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_CONTROLLER_EMITTER_H_

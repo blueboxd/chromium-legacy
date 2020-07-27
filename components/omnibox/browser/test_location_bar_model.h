@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/omnibox/browser/location_bar_model.h"
 
@@ -24,6 +23,8 @@ class TestLocationBarModel : public LocationBarModel {
  public:
   TestLocationBarModel();
   ~TestLocationBarModel() override;
+  TestLocationBarModel(const TestLocationBarModel&) = delete;
+  TestLocationBarModel& operator=(const TestLocationBarModel&) = delete;
   base::string16 GetFormattedFullURL() const override;
   base::string16 GetURLForDisplay() const override;
   GURL GetURL() const override;
@@ -72,8 +73,6 @@ class TestLocationBarModel : public LocationBarModel {
   bool offline_page_ = false;
   base::string16 secure_display_text_ = base::string16();
   bool should_prevent_elision_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestLocationBarModel);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_TEST_LOCATION_BAR_MODEL_H_

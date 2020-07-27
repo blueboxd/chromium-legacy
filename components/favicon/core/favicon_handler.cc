@@ -18,7 +18,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "components/favicon/core/core_favicon_service.h"
-#include "components/favicon/core/features.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/favicon_base/select_favicon_frames.h"
 #include "skia/ext/image_operations.h"
@@ -591,8 +590,7 @@ void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
     // - The favicon in the database is expired.
     // AND
     // - Redownloading the favicon fails with a non-404 error code.
-    if (!delegate_->IsOffTheRecord() &&
-        base::FeatureList::IsEnabled(kAllowPropagationOfFaviconCacheHits)) {
+    if (!delegate_->IsOffTheRecord()) {
       service_->CloneFaviconMappingsForPages(last_page_url_, icon_types_,
                                              page_urls_);
     }

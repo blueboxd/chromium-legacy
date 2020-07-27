@@ -131,10 +131,10 @@ const char kTeamDrivesListFields[] =
     "nextPageToken,kind,items(kind,id,name,capabilities)";
 
 // Ignores the |entry|, and runs the |callback|.
-void EntryActionCallbackAdapter(const EntryActionCallback& callback,
+void EntryActionCallbackAdapter(EntryActionCallback callback,
                                 DriveApiErrorCode error,
                                 std::unique_ptr<FileResource> entry) {
-  callback.Run(error);
+  std::move(callback).Run(error);
 }
 
 // The resource ID for the root directory for Drive API is defined in the spec:
@@ -518,31 +518,29 @@ CancelCallbackOnce DriveAPIService::DownloadFile(
           download_action_callback, get_content_callback, progress_callback));
 }
 
-CancelCallback DriveAPIService::DeleteResource(
-    const std::string& resource_id,
-    const std::string& etag,
-    const EntryActionCallback& callback) {
+CancelCallback DriveAPIService::DeleteResource(const std::string& resource_id,
+                                               const std::string& etag,
+                                               EntryActionCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   std::unique_ptr<FilesDeleteRequest> request =
       std::make_unique<FilesDeleteRequest>(sender_.get(), url_generator_,
-                                           callback);
+                                           std::move(callback));
   request->set_file_id(resource_id);
   request->set_etag(etag);
   return sender_->StartRequestWithAuthRetry(std::move(request));
 }
 
-CancelCallback DriveAPIService::TrashResource(
-    const std::string& resource_id,
-    const EntryActionCallback& callback) {
+CancelCallback DriveAPIService::TrashResource(const std::string& resource_id,
+                                              EntryActionCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   std::unique_ptr<FilesTrashRequest> request =
       std::make_unique<FilesTrashRequest>(
           sender_.get(), url_generator_,
-          base::BindOnce(&EntryActionCallbackAdapter, callback));
+          base::BindOnce(&EntryActionCallbackAdapter, std::move(callback)));
   request->set_file_id(resource_id);
   request->set_fields(kFileResourceFields);
   return sender_->StartRequestWithAuthRetry(std::move(request));
@@ -627,13 +625,13 @@ CancelCallback DriveAPIService::UpdateResource(
 CancelCallback DriveAPIService::AddResourceToDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
-    const EntryActionCallback& callback) {
+    EntryActionCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   std::unique_ptr<ChildrenInsertRequest> request =
       std::make_unique<ChildrenInsertRequest>(sender_.get(), url_generator_,
-                                              callback);
+                                              std::move(callback));
   request->set_folder_id(parent_resource_id);
   request->set_id(resource_id);
   return sender_->StartRequestWithAuthRetry(std::move(request));
@@ -642,13 +640,13 @@ CancelCallback DriveAPIService::AddResourceToDirectory(
 CancelCallbackOnce DriveAPIService::RemoveResourceFromDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
-    const EntryActionCallback& callback) {
+    EntryActionCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   std::unique_ptr<ChildrenDeleteRequest> request =
       std::make_unique<ChildrenDeleteRequest>(sender_.get(), url_generator_,
-                                              callback);
+                                              std::move(callback));
   request->set_child_id(resource_id);
   request->set_folder_id(parent_resource_id);
   return sender_->StartRequestWithAuthRetry(std::move(request));
@@ -775,13 +773,13 @@ google_apis::CancelCallback DriveAPIService::AddPermission(
     const std::string& resource_id,
     const std::string& email,
     google_apis::drive::PermissionRole role,
-    const google_apis::EntryActionCallback& callback) {
+    google_apis::EntryActionCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   std::unique_ptr<google_apis::drive::PermissionsInsertRequest> request =
       std::make_unique<google_apis::drive::PermissionsInsertRequest>(
-          sender_.get(), url_generator_, callback);
+          sender_.get(), url_generator_, std::move(callback));
   request->set_id(resource_id);
   request->set_role(role);
   request->set_type(google_apis::drive::PERMISSION_TYPE_USER);

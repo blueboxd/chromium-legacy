@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
@@ -33,6 +32,11 @@ class SimpleURLLoader;
 
 class SearchSuggestionParser {
  public:
+  // Disallow implicit constructors.
+  SearchSuggestionParser() = delete;
+  SearchSuggestionParser(const SearchSuggestionParser&) = delete;
+  SearchSuggestionParser& operator=(const SearchSuggestionParser&) = delete;
+
   // Indicates a missing suggestion group Id.
   static const int kNoSuggestionGroupId;
 
@@ -288,6 +292,8 @@ class SearchSuggestionParser {
   struct Results {
     Results();
     ~Results();
+    Results(const Results&) = delete;
+    Results& operator=(const Results&) = delete;
 
     // Clears |suggest_results| and |navigation_results| and resets
     // |verbatim_relevance| to -1 (implies unset).
@@ -328,9 +334,6 @@ class SearchSuggestionParser {
 
     // The server supplied map of suggestion group Ids to headers.
     HeadersMap headers_map;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Results);
   };
 
   // Converts JSON loaded by a SimpleURLLoader into UTF-8 and returns the
@@ -362,8 +365,6 @@ class SearchSuggestionParser {
       int default_result_relevance,
       bool is_keyword_result,
       Results* results);
-
-  DISALLOW_COPY_AND_ASSIGN(SearchSuggestionParser);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_SEARCH_SUGGESTION_PARSER_H_

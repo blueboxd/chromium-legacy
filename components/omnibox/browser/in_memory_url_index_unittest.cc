@@ -97,6 +97,8 @@ void StringToTerms(const char* search_string,
 class CacheFileSaverObserver : public InMemoryURLIndex::SaveCacheObserver {
  public:
   explicit CacheFileSaverObserver(const base::RepeatingClosure& task);
+  CacheFileSaverObserver(const CacheFileSaverObserver&) = delete;
+  CacheFileSaverObserver& operator=(const CacheFileSaverObserver&) = delete;
 
   bool succeeded() { return succeeded_; }
 
@@ -106,8 +108,6 @@ class CacheFileSaverObserver : public InMemoryURLIndex::SaveCacheObserver {
 
   base::RepeatingClosure task_;
   bool succeeded_;
-
-  DISALLOW_COPY_AND_ASSIGN(CacheFileSaverObserver);
 };
 
 CacheFileSaverObserver::CacheFileSaverObserver(

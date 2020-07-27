@@ -13,7 +13,6 @@
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
@@ -57,6 +56,9 @@ class ShortcutsBackend : public RefcountedKeyedService,
                    history::HistoryService* history_service,
                    base::FilePath database_path,
                    bool suppress_db);
+
+  ShortcutsBackend(const ShortcutsBackend&) = delete;
+  ShortcutsBackend& operator=(const ShortcutsBackend&) = delete;
 
   // The interface is guaranteed to be called on the thread AddObserver()
   // was called.
@@ -176,8 +178,6 @@ class ShortcutsBackend : public RefcountedKeyedService,
 
   // For some unit-test only.
   bool no_db_access_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShortcutsBackend);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_SHORTCUTS_BACKEND_H_

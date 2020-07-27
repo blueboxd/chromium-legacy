@@ -193,6 +193,9 @@ class HistoryURLProviderTest : public testing::Test,
     HistoryQuickProvider::set_disabled(false);
   }
 
+  HistoryURLProviderTest(const HistoryURLProviderTest&) = delete;
+  HistoryURLProviderTest& operator=(const HistoryURLProviderTest&) = delete;
+
   // AutocompleteProviderListener:
   void OnProviderUpdate(bool updated_matches) override;
 
@@ -242,9 +245,6 @@ class HistoryURLProviderTest : public testing::Test,
   scoped_refptr<HistoryURLProvider> autocomplete_;
   // Should the matches be sorted and duplicates removed?
   bool sort_matches_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HistoryURLProviderTest);
 };
 
 class HistoryURLProviderTestNoDB : public HistoryURLProviderTest {

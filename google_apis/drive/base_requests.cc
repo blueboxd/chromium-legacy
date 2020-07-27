@@ -588,10 +588,10 @@ UrlFetchRequestBase::GetWeakPtr() {
 //============================ EntryActionRequest ============================
 
 EntryActionRequest::EntryActionRequest(RequestSender* sender,
-                                       const EntryActionCallback& callback)
+                                       EntryActionCallback callback)
     : UrlFetchRequestBase(sender, ProgressCallback(), ProgressCallback()),
-      callback_(callback) {
-  DCHECK(!callback_.is_null());
+      callback_(std::move(callback)) {
+  DCHECK(callback_);
 }
 
 EntryActionRequest::~EntryActionRequest() {}
@@ -600,12 +600,12 @@ void EntryActionRequest::ProcessURLFetchResults(
     const network::mojom::URLResponseHead* response_head,
     base::FilePath response_file,
     std::string response_body) {
-  callback_.Run(GetErrorCode());
+  std::move(callback_).Run(GetErrorCode());
   OnProcessURLFetchResultsComplete();
 }
 
 void EntryActionRequest::RunCallbackOnPrematureFailure(DriveApiErrorCode code) {
-  callback_.Run(code);
+  std::move(callback_).Run(code);
 }
 
 //========================= InitiateUploadRequestBase ========================

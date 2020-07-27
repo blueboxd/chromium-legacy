@@ -121,6 +121,8 @@ class AutocompleteResultTest : public testing::Test {
           static_cast<AutocompleteProvider::Type>(i)));
     }
   }
+  AutocompleteResultTest(const AutocompleteResultTest&) = delete;
+  AutocompleteResultTest& operator=(const AutocompleteResultTest&) = delete;
 
   void SetUp() override {
     template_url_service_.reset(new TemplateURLService(nullptr, 0));
@@ -173,8 +175,6 @@ class AutocompleteResultTest : public testing::Test {
 
   // For every provider mentioned in TestData, we need a mock provider.
   std::vector<scoped_refptr<FakeAutocompleteProvider>> mock_provider_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteResultTest);
 };
 
 void AutocompleteResultTest::PopulateAutocompleteMatch(

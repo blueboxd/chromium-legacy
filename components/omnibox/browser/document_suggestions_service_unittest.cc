@@ -57,6 +57,10 @@ class DocumentSuggestionsServiceTest : public testing::Test {
                                            kVariationID);
     base::FieldTrialList::CreateFieldTrial("trial name", "group name")->group();
   }
+  DocumentSuggestionsServiceTest(const DocumentSuggestionsServiceTest&) =
+      delete;
+  DocumentSuggestionsServiceTest& operator=(
+      const DocumentSuggestionsServiceTest&) = delete;
 
   base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -64,8 +68,6 @@ class DocumentSuggestionsServiceTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable prefs_;
   signin::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<DocumentSuggestionsService> document_suggestions_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(DocumentSuggestionsServiceTest);
 };
 
 TEST_F(DocumentSuggestionsServiceTest, VariationHeaders) {

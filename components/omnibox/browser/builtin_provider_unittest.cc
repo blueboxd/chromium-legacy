@@ -49,6 +49,10 @@ const char kSubpageThree[] = "three";
 class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
  public:
   FakeAutocompleteProviderClient() {}
+  FakeAutocompleteProviderClient(const FakeAutocompleteProviderClient&) =
+      delete;
+  FakeAutocompleteProviderClient& operator=(
+      const FakeAutocompleteProviderClient&) = delete;
 
   std::string GetEmbedderRepresentationOfAboutScheme() const override {
     return kEmbedderAboutScheme;
@@ -79,9 +83,6 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
     urls.push_back(ASCIIToUTF16(kDefaultURL3));
     return urls;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeAutocompleteProviderClient);
 };
 
 }  // namespace
@@ -95,6 +96,8 @@ class BuiltinProviderTest : public testing::Test {
 
   BuiltinProviderTest() : provider_(nullptr) {}
   ~BuiltinProviderTest() override {}
+  BuiltinProviderTest(const BuiltinProviderTest&) = delete;
+  BuiltinProviderTest& operator=(const BuiltinProviderTest&) = delete;
 
   void SetUp() override {
     client_.reset(new FakeAutocompleteProviderClient());
@@ -123,9 +126,6 @@ class BuiltinProviderTest : public testing::Test {
 
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<BuiltinProvider> provider_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BuiltinProviderTest);
 };
 
 TEST_F(BuiltinProviderTest, TypingScheme) {

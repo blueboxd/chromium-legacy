@@ -199,8 +199,11 @@ void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
     default:
       NOTREACHED() << "Unhandled help source" << source;
   }
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile);
+  // Use the original profile here, which is the same profile unless this is an
+  // OffTheRecord profile. The help app is not installed into the incognito /
+  // OffTheRecord profile.
+  apps::AppServiceProxy* proxy = apps::AppServiceProxyFactory::GetForProfile(
+      profile->GetOriginalProfile());
   DCHECK(proxy);
 
   const char* app_id =

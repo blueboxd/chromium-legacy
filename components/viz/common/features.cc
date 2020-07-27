@@ -79,6 +79,13 @@ const base::Feature kWebRtcLogCapturePipeline{
 const base::FeatureParam<int> kNumOfFramesToToggleInterval{
     &kUsePreferredIntervalForVideo, "NumOfFramesToToggleInterval", 60};
 
+#if defined(OS_WIN)
+// Enables swap chains to call SetPresentDuration to request DWM/OS to reduce
+// vsync.
+const base::Feature kUseSetPresentDuration{"UseSetPresentDuration",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // OS_WIN
+
 bool IsForcePreferredIntervalForVideoEnabled() {
   return base::FeatureList::IsEnabled(kForcePreferredIntervalForVideo);
 }
@@ -156,4 +163,9 @@ bool ShouldWebRtcLogCapturePipeline() {
   return base::FeatureList::IsEnabled(kWebRtcLogCapturePipeline);
 }
 
+#if defined(OS_WIN)
+bool ShouldUseSetPresentDuration() {
+  return base::FeatureList::IsEnabled(kUseSetPresentDuration);
+}
+#endif  // OS_WIN
 }  // namespace features

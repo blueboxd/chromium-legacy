@@ -30,10 +30,9 @@ class DriveServiceWrapper : public base::SupportsWeakPtr<DriveServiceWrapper> {
                        const drive::AddNewDirectoryOptions& options,
                        google_apis::FileResourceCallback callback);
 
-  void DeleteResource(
-      const std::string& resource_id,
-      const std::string& etag,
-      const google_apis::EntryActionCallback& callback);
+  void DeleteResource(const std::string& resource_id,
+                      const std::string& etag,
+                      google_apis::EntryActionCallback callback);
 
   void DownloadFile(
       const base::FilePath& local_cache_path,
@@ -71,10 +70,9 @@ class DriveServiceWrapper : public base::SupportsWeakPtr<DriveServiceWrapper> {
       const std::string& directory_resource_id,
       const google_apis::FileListCallback& callback);
 
-  void RemoveResourceFromDirectory(
-      const std::string& parent_resource_id,
-      const std::string& resource_id,
-      const google_apis::EntryActionCallback& callback);
+  void RemoveResourceFromDirectory(const std::string& parent_resource_id,
+                                   const std::string& resource_id,
+                                   google_apis::EntryActionCallback callback);
 
   void SearchByTitle(
       const std::string& title,

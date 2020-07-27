@@ -50,15 +50,15 @@ google_apis::CancelCallbackOnce DriveServiceOnWorker::AddNewDirectory(
 google_apis::CancelCallback DriveServiceOnWorker::DeleteResource(
     const std::string& resource_id,
     const std::string& etag,
-    const google_apis::EntryActionCallback& callback) {
+    google_apis::EntryActionCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&DriveServiceWrapper::DeleteResource, wrapper_,
-                     resource_id, etag,
-                     RelayCallbackToTaskRunner(worker_task_runner_.get(),
-                                               FROM_HERE, callback)));
+      base::BindOnce(
+          &DriveServiceWrapper::DeleteResource, wrapper_, resource_id, etag,
+          RelayCallbackToTaskRunner(worker_task_runner_.get(), FROM_HERE,
+                                    std::move(callback))));
 
   return google_apis::CancelCallback();
 }
@@ -231,15 +231,16 @@ google_apis::CancelCallbackOnce
 DriveServiceOnWorker::RemoveResourceFromDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
-    const google_apis::EntryActionCallback& callback) {
+    google_apis::EntryActionCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&DriveServiceWrapper::RemoveResourceFromDirectory,
-                     wrapper_, parent_resource_id, resource_id,
-                     RelayCallbackToTaskRunner(worker_task_runner_.get(),
-                                               FROM_HERE, callback)));
+      base::BindOnce(
+          &DriveServiceWrapper::RemoveResourceFromDirectory, wrapper_,
+          parent_resource_id, resource_id,
+          RelayCallbackToTaskRunner(worker_task_runner_.get(), FROM_HERE,
+                                    std::move(callback))));
 
   return google_apis::CancelCallbackOnce();
 }
@@ -323,7 +324,7 @@ google_apis::CancelCallback DriveServiceOnWorker::Search(
 
 google_apis::CancelCallback DriveServiceOnWorker::TrashResource(
     const std::string& resource_id,
-    const google_apis::EntryActionCallback& callback) {
+    google_apis::EntryActionCallback callback) {
   NOTREACHED();
   return google_apis::CancelCallback();
 }
@@ -353,7 +354,7 @@ google_apis::CancelCallback DriveServiceOnWorker::UpdateResource(
 google_apis::CancelCallback DriveServiceOnWorker::AddResourceToDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
-    const google_apis::EntryActionCallback& callback) {
+    google_apis::EntryActionCallback callback) {
   NOTREACHED();
   return google_apis::CancelCallback();
 }
@@ -436,7 +437,7 @@ google_apis::CancelCallback DriveServiceOnWorker::AddPermission(
     const std::string& resource_id,
     const std::string& email,
     google_apis::drive::PermissionRole role,
-    const google_apis::EntryActionCallback& callback) {
+    google_apis::EntryActionCallback callback) {
   NOTREACHED();
   return google_apis::CancelCallback();
 }

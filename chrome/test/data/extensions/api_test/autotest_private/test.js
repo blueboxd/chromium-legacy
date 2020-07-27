@@ -759,21 +759,29 @@ var defaultTests = [
                 newAccelerator('w', false /* shift */, true /* control */);
             chrome.autotestPrivate.activateAccelerator(
                 closeWindow,
-                function(success) {
+                async function(success) {
                   chrome.test.assertTrue(success);
+
                   // Actual window close might happen sometime later after the
                   // accelerator. So keep trying until window count drops to 1.
-                  var timer = window.setInterval(() => {
-                    chrome.autotestPrivate.getAppWindowList(function(list) {
-                      chrome.test.assertNoLastError();
+                  await new Promise(resolve => {
+                    function check() {
+                      chrome.autotestPrivate.getAppWindowList(function(list) {
+                        chrome.test.assertNoLastError();
 
-                      if (list.length != 1)
-                        return;
+                        if (list.length == 1) {
+                          resolve();
+                          return;
+                        }
 
-                      window.clearInterval(timer);
-                      chrome.test.succeed();
-                    });
-                  }, 100);
+                        window.setTimeout(check, 100);
+                      });
+                    };
+
+                    check();
+                  });
+
+                  chrome.test.succeed();
                 });
           });
         });

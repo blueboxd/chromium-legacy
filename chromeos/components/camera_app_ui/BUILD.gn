@@ -32,16 +32,14 @@ static_library("camera_app_ui") {
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/platform",
     "//mojo/public/js:resources_grit",
-    "//ui/resources:webui_resources_grd_grit",
+    "//services/network/public/mojom",
     "//ui/webui",
   ]
 }
 
 group("closure_compile") {
   testonly = true
-  deps = [
-    "resources:closure_compile",
-  ]
+  deps = [ "resources:closure_compile" ]
 }
 
 mojom("mojo_bindings") {

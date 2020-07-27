@@ -28,6 +28,8 @@ class ShortcutsBackendTest : public testing::Test,
                              public ShortcutsBackend::ShortcutsBackendObserver {
  public:
   ShortcutsBackendTest();
+  ShortcutsBackendTest(const ShortcutsBackendTest&) = delete;
+  ShortcutsBackendTest& operator=(const ShortcutsBackendTest&) = delete;
 
   ShortcutsDatabase::Shortcut::MatchCore MatchCoreForTesting(
       const std::string& url,
@@ -69,8 +71,6 @@ class ShortcutsBackendTest : public testing::Test,
 
   bool load_notified_;
   bool changed_notified_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShortcutsBackendTest);
 };
 
 ShortcutsBackendTest::ShortcutsBackendTest()

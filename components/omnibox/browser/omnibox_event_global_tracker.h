@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback_list.h"
-#include "base/macros.h"
 
 namespace base {
 template <typename T>
@@ -43,10 +42,11 @@ class OmniboxEventGlobalTracker {
 
   OmniboxEventGlobalTracker();
   ~OmniboxEventGlobalTracker();
+  OmniboxEventGlobalTracker(const OmniboxEventGlobalTracker&) = delete;
+  OmniboxEventGlobalTracker& operator=(const OmniboxEventGlobalTracker&) =
+      delete;
 
   base::CallbackList<void(OmniboxLog*)> on_url_opened_callback_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(OmniboxEventGlobalTracker);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EVENT_GLOBAL_TRACKER_H_

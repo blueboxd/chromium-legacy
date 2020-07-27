@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -25,6 +24,8 @@ struct ScoredHistoryMatch;
 class HistoryQuickProvider : public HistoryProvider {
  public:
   explicit HistoryQuickProvider(AutocompleteProviderClient* client);
+  HistoryQuickProvider(const HistoryQuickProvider&) = delete;
+  HistoryQuickProvider& operator=(const HistoryQuickProvider&) = delete;
 
   // AutocompleteProvider. |minimal_changes| is ignored since there is no asynch
   // completion performed.
@@ -75,8 +76,6 @@ class HistoryQuickProvider : public HistoryProvider {
 
   // This provider is disabled when true.
   static bool disabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(HistoryQuickProvider);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_HISTORY_QUICK_PROVIDER_H_

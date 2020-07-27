@@ -76,6 +76,8 @@ StringPieces AllPrefixes(const std::string& str) {
 class HQPPerfTestOnePopularURL : public testing::Test {
  protected:
   HQPPerfTestOnePopularURL() = default;
+  HQPPerfTestOnePopularURL(const HQPPerfTestOnePopularURL&) = delete;
+  HQPPerfTestOnePopularURL& operator=(const HQPPerfTestOnePopularURL&) = delete;
 
   void SetUp() override;
   void TearDown() override;
@@ -103,8 +105,6 @@ class HQPPerfTestOnePopularURL : public testing::Test {
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
 
   scoped_refptr<HistoryQuickProvider> provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(HQPPerfTestOnePopularURL);
 };
 
 void HQPPerfTestOnePopularURL::SetUp() {

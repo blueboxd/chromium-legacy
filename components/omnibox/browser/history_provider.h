@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/in_memory_url_index_types.h"
@@ -35,6 +34,9 @@ class HistoryProvider : public AutocompleteProvider {
 
   ~HistoryProvider() override;
 
+  HistoryProvider(const HistoryProvider&) = delete;
+  HistoryProvider& operator=(const HistoryProvider&) = delete;
+
   // Finds and removes the match from the current collection of matches and
   // backing data.
   void DeleteMatchFromMatches(const AutocompleteMatch& match);
@@ -43,8 +45,6 @@ class HistoryProvider : public AutocompleteProvider {
 
  private:
   AutocompleteProviderClient* client_;
-
-  DISALLOW_COPY_AND_ASSIGN(HistoryProvider);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_HISTORY_PROVIDER_H_

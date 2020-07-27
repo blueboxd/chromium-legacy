@@ -17,7 +17,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/keyword_extensions_delegate.h"
@@ -55,6 +54,8 @@ class KeywordProvider : public AutocompleteProvider {
  public:
   KeywordProvider(AutocompleteProviderClient* client,
                   AutocompleteProviderListener* listener);
+  KeywordProvider(const KeywordProvider&) = delete;
+  KeywordProvider& operator=(const KeywordProvider&) = delete;
 
   // Extracts the next whitespace-delimited token from input and returns it.
   // Sets |remaining_input| to everything after the first token (skipping over
@@ -173,8 +174,6 @@ class KeywordProvider : public AutocompleteProvider {
   // Delegate to handle the extensions-only logic for KeywordProvider.
   // NULL when extensions are not enabled. May be NULL for tests.
   std::unique_ptr<KeywordExtensionsDelegate> extensions_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(KeywordProvider);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_KEYWORD_PROVIDER_H_

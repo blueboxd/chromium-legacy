@@ -41,6 +41,10 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
     pref_service_.registry()->RegisterBooleanPref(
         omnibox::kDocumentSuggestEnabled, true);
   }
+  FakeAutocompleteProviderClient(const FakeAutocompleteProviderClient&) =
+      delete;
+  FakeAutocompleteProviderClient& operator=(
+      const FakeAutocompleteProviderClient&) = delete;
 
   bool SearchSuggestEnabled() const override { return true; }
 
@@ -57,8 +61,6 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
  private:
   std::unique_ptr<TemplateURLService> template_url_service_;
   TestingPrefServiceSimple pref_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAutocompleteProviderClient);
 };
 
 }  // namespace
@@ -67,6 +69,8 @@ class DocumentProviderTest : public testing::Test,
                              public AutocompleteProviderListener {
  public:
   DocumentProviderTest();
+  DocumentProviderTest(const DocumentProviderTest&) = delete;
+  DocumentProviderTest& operator=(const DocumentProviderTest&) = delete;
 
   void SetUp() override;
 
@@ -77,9 +81,6 @@ class DocumentProviderTest : public testing::Test,
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<DocumentProvider> provider_;
   TemplateURL* default_template_url_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DocumentProviderTest);
 };
 
 DocumentProviderTest::DocumentProviderTest() {}

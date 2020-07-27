@@ -457,6 +457,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     public void setTabModelSelector(TabModelSelector selector) {
         mTabModelSelector = selector;
         mTabModelSelectorSupplier.set(selector);
+        mCurrentTab = selector.getCurrentTab();
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelector) {
             @Override
             public void onShown(Tab tab, @TabSelectionType int type) {

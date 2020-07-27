@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_FRAME_RATE_DECIDER_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_FRAME_RATE_DECIDER_H_
 
+#include <vector>
+
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/time/time.h"
@@ -79,9 +81,7 @@ class VIZ_SERVICE_EXPORT FrameRateDecider : public SurfaceObserver {
   void EndAggregation();
   void UpdatePreferredFrameIntervalIfNeeded();
   void SetPreferredInterval(base::TimeDelta new_preferred_interval);
-  bool multiple_refresh_rates_supported() const {
-    return supported_intervals_.size() > 1u;
-  }
+  bool multiple_refresh_rates_supported() const;
 
   bool inside_surface_aggregation_ = false;
   base::flat_map<SurfaceId, uint64_t> current_surface_id_to_active_index_;

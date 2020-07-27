@@ -9,7 +9,6 @@
 
 #include <map>
 
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/match_compare.h"
@@ -42,6 +41,8 @@ class AutocompleteResult {
 
   AutocompleteResult();
   ~AutocompleteResult();
+  AutocompleteResult(const AutocompleteResult&) = delete;
+  AutocompleteResult& operator=(const AutocompleteResult&) = delete;
 
   // Moves matches from |old_matches| to provide a consistent result set.
   // |old_matches| is mutated during this, and should not be used afterwards.
@@ -259,8 +260,6 @@ class AutocompleteResult {
 
   // The map of suggestion group IDs to headers.
   SearchSuggestionParser::HeadersMap headers_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteResult);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_AUTOCOMPLETE_RESULT_H_

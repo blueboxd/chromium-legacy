@@ -6,7 +6,6 @@
 #define COMPONENTS_OMNIBOX_BROWSER_CLIPBOARD_PROVIDER_H_
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/history_url_provider.h"
 
@@ -21,6 +20,9 @@ class ClipboardProvider : public AutocompleteProvider {
                     AutocompleteProviderListener* listener,
                     HistoryURLProvider* history_url_provider,
                     ClipboardRecentContent* clipboard_content);
+
+  ClipboardProvider(const ClipboardProvider&) = delete;
+  ClipboardProvider& operator=(const ClipboardProvider&) = delete;
 
   // AutocompleteProvider implementation.
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
@@ -93,8 +95,6 @@ class ClipboardProvider : public AutocompleteProvider {
   // Used to cancel image construction callbacks if autocomplete Stop() is
   // called.
   base::WeakPtrFactory<ClipboardProvider> callback_weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ClipboardProvider);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_CLIPBOARD_PROVIDER_H_

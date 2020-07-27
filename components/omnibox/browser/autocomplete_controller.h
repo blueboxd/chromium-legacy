@@ -10,7 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
@@ -85,6 +84,8 @@ class AutocompleteController : public AutocompleteProviderListener,
       std::unique_ptr<AutocompleteProviderClient> provider_client,
       int provider_types);
   ~AutocompleteController() override;
+  AutocompleteController(const AutocompleteController&) = delete;
+  AutocompleteController& operator=(const AutocompleteController&) = delete;
 
   // UI elements that need to be notified when the results get updated should
   // be added as an |observer|. So far there is no need for a RemoveObserver
@@ -338,8 +339,6 @@ class AutocompleteController : public AutocompleteProviderListener,
   bool search_service_worker_signal_sent_;
 
   TemplateURLService* template_url_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteController);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_AUTOCOMPLETE_CONTROLLER_H_

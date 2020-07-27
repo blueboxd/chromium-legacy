@@ -64,6 +64,10 @@ class LocalHistoryZeroSuggestProviderTest
  public:
   LocalHistoryZeroSuggestProviderTest() = default;
   ~LocalHistoryZeroSuggestProviderTest() override = default;
+  LocalHistoryZeroSuggestProviderTest(
+      const LocalHistoryZeroSuggestProviderTest&) = delete;
+  LocalHistoryZeroSuggestProviderTest& operator=(
+      const LocalHistoryZeroSuggestProviderTest&) = delete;
 
  protected:
   // testing::Test
@@ -128,9 +132,6 @@ class LocalHistoryZeroSuggestProviderTest
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<LocalHistoryZeroSuggestProvider> provider_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LocalHistoryZeroSuggestProviderTest);
 };
 
 void LocalHistoryZeroSuggestProviderTest::SetZeroSuggestVariant(

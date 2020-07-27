@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
@@ -48,6 +47,7 @@ class OmniboxEditModel {
           const AutocompleteInput& autocomplete_input);
     State(const State& other);
     ~State();
+    State& operator=(const State&) = delete;
 
     bool user_input_in_progress;
     const base::string16 user_text;
@@ -58,14 +58,14 @@ class OmniboxEditModel {
     OmniboxFocusState focus_state;
     OmniboxFocusSource focus_source;
     const AutocompleteInput autocomplete_input;
-   private:
-    DISALLOW_ASSIGN(State);
   };
 
   OmniboxEditModel(OmniboxView* view,
                    OmniboxEditController* controller,
                    std::unique_ptr<OmniboxClient> client);
   virtual ~OmniboxEditModel();
+  OmniboxEditModel(const OmniboxEditModel&) = delete;
+  OmniboxEditModel& operator=(const OmniboxEditModel&) = delete;
 
   // TODO(jdonnelly): Remove this accessor when the AutocompleteController has
   //     completely moved to OmniboxController.
@@ -643,8 +643,6 @@ class OmniboxEditModel {
   // autocomplete query is started after a tab switch, it is possible for this
   // |input_| to differ from the one currently stored in AutocompleteController.
   AutocompleteInput input_;
-
-  DISALLOW_COPY_AND_ASSIGN(OmniboxEditModel);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EDIT_MODEL_H_

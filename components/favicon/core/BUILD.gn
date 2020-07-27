@@ -20,8 +20,6 @@ static_library("core") {
     "favicon_url.h",
     "favicon_util.cc",
     "favicon_util.h",
-    "features.cc",
-    "features.h",
     "history_ui_favicon_request_handler.h",
     "history_ui_favicon_request_handler_impl.cc",
     "history_ui_favicon_request_handler_impl.h",

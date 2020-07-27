@@ -43,6 +43,9 @@ class OnDeviceModelUpdateListener {
 
   OnDeviceModelUpdateListener();
   ~OnDeviceModelUpdateListener();
+  OnDeviceModelUpdateListener(const OnDeviceModelUpdateListener&) = delete;
+  OnDeviceModelUpdateListener& operator=(const OnDeviceModelUpdateListener&) =
+      delete;
 
   // The directory where the on device model resides.
   base::FilePath model_dir_;
@@ -58,8 +61,6 @@ class OnDeviceModelUpdateListener {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(OnDeviceModelUpdateListener);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_ON_DEVICE_MODEL_UPDATE_LISTENER_H_

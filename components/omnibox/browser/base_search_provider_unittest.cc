@@ -37,6 +37,8 @@ class TestBaseSearchProvider : public BaseSearchProvider {
   TestBaseSearchProvider(AutocompleteProvider::Type type,
                          AutocompleteProviderClient* client)
       : BaseSearchProvider(type, client) {}
+  TestBaseSearchProvider(const TestBaseSearchProvider&) = delete;
+  TestBaseSearchProvider& operator=(const TestBaseSearchProvider&) = delete;
   MOCK_METHOD1(DeleteMatch, void(const AutocompleteMatch& match));
   MOCK_CONST_METHOD1(AddProviderInfo, void(ProvidersInfo* provider_info));
   MOCK_CONST_METHOD1(GetTemplateURL, const TemplateURL*(bool is_keyword));
@@ -63,9 +65,6 @@ class TestBaseSearchProvider : public BaseSearchProvider {
 
  protected:
   ~TestBaseSearchProvider() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestBaseSearchProvider);
 };
 
 class BaseSearchProviderTest : public testing::Test {

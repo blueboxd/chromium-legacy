@@ -32,6 +32,9 @@ class DocumentSuggestionsService : public KeyedService {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   ~DocumentSuggestionsService() override;
+  DocumentSuggestionsService(const DocumentSuggestionsService&) = delete;
+  DocumentSuggestionsService& operator=(const DocumentSuggestionsService&) =
+      delete;
 
   using StartCallback = base::OnceCallback<void(
       std::unique_ptr<network::SimpleURLLoader> loader)>;
@@ -77,8 +80,6 @@ class DocumentSuggestionsService : public KeyedService {
   // Helper for fetching OAuth2 access tokens. Non-null when we have a token
   // available, or while a token fetch is in progress.
   std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher> token_fetcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(DocumentSuggestionsService);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_DOCUMENT_SUGGESTIONS_SERVICE_H_

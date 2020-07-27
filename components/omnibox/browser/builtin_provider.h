@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
@@ -20,6 +19,8 @@ class AutocompleteProviderClient;
 class BuiltinProvider : public AutocompleteProvider {
  public:
   explicit BuiltinProvider(AutocompleteProviderClient* client);
+  BuiltinProvider(const BuiltinProvider&) = delete;
+  BuiltinProvider& operator=(const BuiltinProvider&) = delete;
 
   // AutocompleteProvider:
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
@@ -42,8 +43,6 @@ class BuiltinProvider : public AutocompleteProvider {
 
   AutocompleteProviderClient* client_;
   Builtins builtins_;
-
-  DISALLOW_COPY_AND_ASSIGN(BuiltinProvider);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_BUILTIN_PROVIDER_H_

@@ -66,9 +66,9 @@ struct OnDeviceHeadProvider::OnDeviceHeadProviderParams {
       : request_id(request_id), input(input) {}
 
   ~OnDeviceHeadProviderParams() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OnDeviceHeadProviderParams);
+  OnDeviceHeadProviderParams(const OnDeviceHeadProviderParams&) = delete;
+  OnDeviceHeadProviderParams& operator=(const OnDeviceHeadProviderParams&) =
+      delete;
 };
 
 // static

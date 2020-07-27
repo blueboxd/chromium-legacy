@@ -767,6 +767,11 @@ bool DirectCompositionSurfaceWin::ScheduleDCLayer(
   return layer_tree_->ScheduleDCLayer(params);
 }
 
+void DirectCompositionSurfaceWin::SetFrameRate(float frame_rate) {
+  layer_tree_->SetFrameRate(frame_rate);
+  root_surface_->SetFrameRate(frame_rate);
+}
+
 bool DirectCompositionSurfaceWin::SetEnableDCLayers(bool enable) {
   return root_surface_->SetEnableDCLayers(enable);
 }

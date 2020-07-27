@@ -69,7 +69,7 @@ function vectorDelta(p1, p2) {
 
 export class Viewport {
   /**
-   * @param {!Window} window
+   * @param {!HTMLElement} scrollParent
    * @param {!HTMLDivElement} sizer The element which represents the size of the
    *     document in the viewport
    * @param {!HTMLDivElement} content The element which is the parent of the
@@ -82,10 +82,10 @@ export class Viewport {
    *     not automatically disappear in fit to page mode.
    */
   constructor(
-      window, sizer, content, scrollbarWidth, defaultZoom, topToolbarHeight,
-      topToolbarFixed) {
-    /** @private {!Window} */
-    this.window_ = window;
+      scrollParent, sizer, content, scrollbarWidth, defaultZoom,
+      topToolbarHeight, topToolbarFixed) {
+    /** @private {!HTMLElement} */
+    this.window_ = scrollParent;
 
     /** @private {!HTMLDivElement} */
     this.sizer_ = sizer;
@@ -191,8 +191,19 @@ export class Viewport {
     // Set to a default zoom manager - used in tests.
     this.setZoomManager(new InactiveZoomManager(this.getZoom.bind(this), 1));
 
-    window.addEventListener('scroll', this.updateViewport_.bind(this));
+    if (this.window_ === document.documentElement) {
+      window.addEventListener('scroll', this.updateViewport_.bind(this));
+      // The following line is only used in tests, since they expect
+      // |scrollCallback| to be called on the mock |window_| object (legacy).
+      this.window_.scrollCallback = this.updateViewport_.bind(this);
+    } else {
+      this.window_.addEventListener('scroll', this.updateViewport_.bind(this));
+    }
+
     window.addEventListener('resize', this.resizeWrapper_.bind(this));
+    // The following line is only used in tests, since they expect
+    // |resizeCallback| to be called on the mock |window_| object (legacy).
+    this.window_.resizeCallback = this.resizeWrapper_.bind(this);
 
     document.body.addEventListener(
         'change-zoom', e => this.setZoom(e.detail.zoom));
@@ -382,15 +393,15 @@ export class Viewport {
     // If scrollbars are required for one direction, expand the document in the
     // other direction to take the width of the scrollbars into account when
     // deciding whether the other direction needs scrollbars.
-    if (zoomedDimensions.width > this.window_.innerWidth) {
+    if (zoomedDimensions.width > this.window_.offsetWidth) {
       zoomedDimensions.height += this.scrollbarWidth_;
-    } else if (zoomedDimensions.height > this.window_.innerHeight) {
+    } else if (zoomedDimensions.height > this.window_.offsetHeight) {
       zoomedDimensions.width += this.scrollbarWidth_;
     }
     return {
-      horizontal: zoomedDimensions.width > this.window_.innerWidth,
+      horizontal: zoomedDimensions.width > this.window_.offsetWidth,
       vertical: zoomedDimensions.height + this.topToolbarHeight_ >
-          this.window_.innerHeight
+          this.window_.offsetHeight
     };
   }
 
@@ -468,8 +479,8 @@ export class Viewport {
   /** @return {!Point} The scroll position of the viewport. */
   get position() {
     return {
-      x: this.window_.pageXOffset,
-      y: this.window_.pageYOffset - this.topToolbarHeight_
+      x: this.window_.scrollLeft,
+      y: this.window_.scrollTop - this.topToolbarHeight_
     };
   }
 
@@ -488,8 +499,8 @@ export class Viewport {
     const scrollbarHeight =
         needsScrollbars.horizontal ? this.scrollbarWidth_ : 0;
     return {
-      width: this.window_.innerWidth - scrollbarWidth,
-      height: this.window_.innerHeight - scrollbarHeight
+      width: this.window_.offsetWidth - scrollbarWidth,
+      height: this.window_.offsetHeight - scrollbarHeight
     };
   }
 
@@ -804,12 +815,12 @@ export class Viewport {
             'true.');
 
     // First compute the zoom without scrollbars.
-    let height = this.window_.innerHeight;
+    let height = this.window_.offsetHeight;
     if (this.topToolbarFixed_) {
       height -= this.topToolbarHeight_;
     }
     let zoom = this.computeFittingZoomGivenDimensions_(
-        fitWidth, fitHeight, this.window_.innerWidth, height,
+        fitWidth, fitHeight, this.window_.offsetWidth, height,
         pageDimensions.width, pageDimensions.height);
 
     // Check if there needs to be any scrollbars.
@@ -825,17 +836,17 @@ export class Viewport {
     // Check if adding a scrollbar will result in needing the other scrollbar.
     const scrollbarWidth = this.scrollbarWidth_;
     if (needsScrollbars.horizontal &&
-        zoomedDimensions.height > this.window_.innerHeight - scrollbarWidth) {
+        zoomedDimensions.height > this.window_.offsetHeight - scrollbarWidth) {
       needsScrollbars.vertical = true;
     }
     if (needsScrollbars.vertical &&
-        zoomedDimensions.width > this.window_.innerWidth - scrollbarWidth) {
+        zoomedDimensions.width > this.window_.offsetWidth - scrollbarWidth) {
       needsScrollbars.horizontal = true;
     }
 
     // Compute available window space.
     const windowWithScrollbars = {
-      width: this.window_.innerWidth,
+      width: this.window_.offsetWidth,
       height: height,
     };
     if (needsScrollbars.horizontal) {
@@ -1309,8 +1320,8 @@ export class Viewport {
     spaceOnLeft = Math.max(spaceOnLeft, 0);
 
     return {
-      x: x * zoom + spaceOnLeft - this.window_.pageXOffset,
-      y: insetDimensions.y * zoom - this.window_.pageYOffset,
+      x: x * zoom + spaceOnLeft - this.window_.scrollLeft,
+      y: insetDimensions.y * zoom - this.window_.scrollTop,
       width: insetDimensions.width * zoom,
       height: insetDimensions.height * zoom
     };
@@ -1395,7 +1406,7 @@ export class Viewport {
     }
 
     this.sentPinchEvent_ = true;
-    this.window_.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
       this.sentPinchEvent_ = false;
       this.mightZoom_(() => {
         const {direction, center, startScaleRatio} = e.detail;
@@ -1423,8 +1434,8 @@ export class Viewport {
         // using the gesture center.
         if (!needsScrollbars.horizontal) {
           this.pinchCenter_ = {
-            x: this.window_.innerWidth / 2,
-            y: this.window_.innerHeight / 2
+            x: this.window_.offsetWidth / 2,
+            y: this.window_.offsetHeight / 2
           };
         } else if (this.keepContentCentered_) {
           this.oldCenterInContent_ =
@@ -1448,7 +1459,7 @@ export class Viewport {
   onPinchEnd_(e) {
     // Using rAF for pinch end prevents pinch updates scheduled by rAF getting
     // sent after the pinch end.
-    this.window_.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
       this.mightZoom_(() => {
         const {center, startScaleRatio} = e.detail;
         this.pinchPhase_ = Viewport.PinchPhase.PINCH_END;
@@ -1475,7 +1486,7 @@ export class Viewport {
   onPinchStart_(e) {
     // We also use rAF for pinch start, so that if there is a pinch end event
     // scheduled by rAF, this pinch start will be sent after.
-    this.window_.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
       this.pinchPhase_ = Viewport.PinchPhase.PINCH_START;
       this.prevScale_ = 1;
       this.oldCenterInContent_ =

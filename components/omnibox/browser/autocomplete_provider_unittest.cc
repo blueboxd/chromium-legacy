@@ -52,6 +52,8 @@ const char kTestTemplateURLKeyword[] = "t";
 class TestingSchemeClassifier : public AutocompleteSchemeClassifier {
  public:
   TestingSchemeClassifier() {}
+  TestingSchemeClassifier(const TestingSchemeClassifier&) = delete;
+  TestingSchemeClassifier& operator=(const TestingSchemeClassifier&) = delete;
 
   metrics::OmniboxInputType GetInputTypeForScheme(
       const std::string& scheme) const override {
@@ -60,9 +62,6 @@ class TestingSchemeClassifier : public AutocompleteSchemeClassifier {
                ? metrics::OmniboxInputType::URL
                : metrics::OmniboxInputType::EMPTY;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestingSchemeClassifier);
 };
 
 // AutocompleteProviderClient implementation that calls the specified closure
@@ -71,6 +70,10 @@ class AutocompleteProviderClientWithClosure
     : public MockAutocompleteProviderClient {
  public:
   AutocompleteProviderClientWithClosure() = default;
+  AutocompleteProviderClientWithClosure(
+      const AutocompleteProviderClientWithClosure&) = delete;
+  AutocompleteProviderClientWithClosure& operator=(
+      const AutocompleteProviderClientWithClosure&) = delete;
 
   void set_closure(const base::RepeatingClosure& closure) {
     closure_ = closure;
@@ -86,8 +89,6 @@ class AutocompleteProviderClientWithClosure
   }
 
   base::RepeatingClosure closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteProviderClientWithClosure);
 };
 
 }  // namespace
@@ -106,6 +107,8 @@ class TestProvider : public AutocompleteProvider {
         prefix_(prefix),
         match_keyword_(match_keyword),
         client_(client) {}
+  TestProvider(const TestProvider&) = delete;
+  TestProvider& operator=(const TestProvider&) = delete;
 
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
 
@@ -130,8 +133,6 @@ class TestProvider : public AutocompleteProvider {
   const base::string16 prefix_;
   const base::string16 match_keyword_;
   AutocompleteProviderClient* client_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestProvider);
 };
 
 void TestProvider::Start(const AutocompleteInput& input, bool minimal_changes) {
@@ -238,6 +239,8 @@ class AutocompleteProviderTest : public testing::Test {
  public:
   AutocompleteProviderTest();
   ~AutocompleteProviderTest() override;
+  AutocompleteProviderTest(const AutocompleteProviderTest&) = delete;
+  AutocompleteProviderTest& operator=(const AutocompleteProviderTest&) = delete;
 
  protected:
   struct KeywordTestData {
@@ -347,8 +350,6 @@ class AutocompleteProviderTest : public testing::Test {
   // Used to ensure that |client_| ownership has been passed to |controller_|
   // exactly once.
   bool client_owned_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteProviderTest);
 };
 
 AutocompleteProviderTest::AutocompleteProviderTest()

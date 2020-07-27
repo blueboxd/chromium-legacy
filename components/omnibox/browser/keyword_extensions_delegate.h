@@ -12,7 +12,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/strings/string16.h"
 
 class AutocompleteInput;
@@ -23,6 +22,9 @@ class KeywordExtensionsDelegate {
  public:
   explicit KeywordExtensionsDelegate(KeywordProvider* provider);
   virtual ~KeywordExtensionsDelegate();
+  KeywordExtensionsDelegate(const KeywordExtensionsDelegate&) = delete;
+  KeywordExtensionsDelegate& operator=(const KeywordExtensionsDelegate&) =
+      delete;
 
   // Increments the input ID used to identify if the suggest results from an
   // extension are current.
@@ -55,9 +57,6 @@ class KeywordExtensionsDelegate {
   // deletable.
   virtual void DeleteSuggestion(const TemplateURL* template_url,
                                 const base::string16& suggestion_text);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(KeywordExtensionsDelegate);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_KEYWORD_EXTENSIONS_DELEGATE_H_

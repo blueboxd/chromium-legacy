@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "mojo/public/js/grit/mojo_bindings_resources.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/webui/webui_allowlist.h"
 
 namespace chromeos {
@@ -65,6 +66,10 @@ content::WebUIDataSource* CreateCameraAppUIHTMLSource() {
   }
 
   source->UseStringsJs();
+
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::WorkerSrc,
+      std::string("worker-src 'self';"));
 
   return source;
 }

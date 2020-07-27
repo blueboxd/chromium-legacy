@@ -83,6 +83,8 @@ class DCLayerTree {
   Microsoft::WRL::ComPtr<IDXGISwapChain1> GetLayerSwapChainForTesting(
       size_t index) const;
 
+  void SetFrameRate(float frame_rate);
+
  private:
   const bool disable_nv12_dynamic_textures_;
   const bool disable_larger_than_screen_overlays_;
@@ -125,6 +127,9 @@ class DCLayerTree {
 
   // List of swap chain presenters for previous frame.
   std::vector<std::unique_ptr<SwapChainPresenter>> video_swap_chains_;
+
+  // Number of frames per second.
+  float frame_rate_ = 0.f;
 
   DISALLOW_COPY_AND_ASSIGN(DCLayerTree);
 };

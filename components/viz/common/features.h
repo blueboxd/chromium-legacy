@@ -29,6 +29,9 @@ VIZ_COMMON_EXPORT extern const base::Feature kUseSkiaOutputDeviceBufferQueue;
 #endif
 VIZ_COMMON_EXPORT extern const base::Feature kSplitPartiallyOccludedQuads;
 VIZ_COMMON_EXPORT extern const base::Feature kWebRtcLogCapturePipeline;
+#if defined(OS_WIN)
+VIZ_COMMON_EXPORT extern const base::Feature kUseSetPresentDuration;
+#endif  // OS_WIN
 
 VIZ_COMMON_EXPORT bool IsForcePreferredIntervalForVideoEnabled();
 VIZ_COMMON_EXPORT bool IsVizHitTestingDebugEnabled();
@@ -44,6 +47,9 @@ VIZ_COMMON_EXPORT int NumOfFramesToToggleInterval();
 VIZ_COMMON_EXPORT bool ShouldUseRealBuffersForPageFlipTest();
 VIZ_COMMON_EXPORT bool ShouldSplitPartiallyOccludedQuads();
 VIZ_COMMON_EXPORT bool ShouldWebRtcLogCapturePipeline();
+#if defined(OS_WIN)
+VIZ_COMMON_EXPORT bool ShouldUseSetPresentDuration();
+#endif  // OS_WIN
 
 }  // namespace features
 

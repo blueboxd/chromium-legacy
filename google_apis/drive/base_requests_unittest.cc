@@ -39,10 +39,10 @@ const char kInvalidJsonString[] = "$$$";
 class FakeUrlFetchRequest : public UrlFetchRequestBase {
  public:
   FakeUrlFetchRequest(RequestSender* sender,
-                      const EntryActionCallback& callback,
+                      EntryActionCallback callback,
                       const GURL& url)
       : UrlFetchRequestBase(sender, ProgressCallback(), ProgressCallback()),
-        callback_(callback),
+        callback_(std::move(callback)),
         url_(url) {}
 
   ~FakeUrlFetchRequest() override {}
@@ -53,10 +53,10 @@ class FakeUrlFetchRequest : public UrlFetchRequestBase {
       const network::mojom::URLResponseHead* response_head,
       base::FilePath response_file,
       std::string response_body) override {
-    callback_.Run(GetErrorCode());
+    std::move(callback_).Run(GetErrorCode());
   }
   void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override {
-    callback_.Run(code);
+    std::move(callback_).Run(code);
   }
 
   EntryActionCallback callback_;

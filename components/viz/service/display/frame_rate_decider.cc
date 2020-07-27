@@ -4,6 +4,9 @@
 
 #include "components/viz/service/display/frame_rate_decider.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
@@ -240,6 +243,10 @@ void FrameRateDecider::SetPreferredInterval(
     current_preferred_frame_interval_ = new_preferred_interval;
     client_->SetPreferredFrameInterval(new_preferred_interval);
   }
+}
+
+bool FrameRateDecider::multiple_refresh_rates_supported() const {
+  return supports_set_frame_rate_ || supported_intervals_.size() > 1u;
 }
 
 }  // namespace viz

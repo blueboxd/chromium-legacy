@@ -433,6 +433,10 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
       features::IsUsingPreferredIntervalForVideo();
   root_params->num_of_frames_to_toggle_interval =
       features::NumOfFramesToToggleInterval();
+#if defined(OS_WIN)
+  root_params->set_present_duration_allowed =
+      features::ShouldUseSetPresentDuration();
+#endif  // OS_WIN
 
   // Connects the viz process end of CompositorFrameSink message pipes. The
   // browser compositor may request a new CompositorFrameSink on context loss,

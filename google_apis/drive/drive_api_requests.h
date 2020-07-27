@@ -602,7 +602,7 @@ class FilesDeleteRequest : public EntryActionRequest {
  public:
   FilesDeleteRequest(RequestSender* sender,
                      const DriveApiUrlGenerator& url_generator,
-                     const EntryActionCallback& callback);
+                     EntryActionCallback callback);
   ~FilesDeleteRequest() override;
 
   // Required parameter.
@@ -764,7 +764,7 @@ class ChildrenInsertRequest : public EntryActionRequest {
  public:
   ChildrenInsertRequest(RequestSender* sender,
                         const DriveApiUrlGenerator& url_generator,
-                        const EntryActionCallback& callback);
+                        EntryActionCallback callback);
   ~ChildrenInsertRequest() override;
 
   // Required parameter.
@@ -802,7 +802,7 @@ class ChildrenDeleteRequest : public EntryActionRequest {
   // |callback| must not be null.
   ChildrenDeleteRequest(RequestSender* sender,
                         const DriveApiUrlGenerator& url_generator,
-                        const EntryActionCallback& callback);
+                        EntryActionCallback callback);
   ~ChildrenDeleteRequest() override;
 
   // Required parameter.
@@ -1121,7 +1121,7 @@ class PermissionsInsertRequest : public EntryActionRequest {
   // See https://developers.google.com/drive/v2/reference/permissions/insert.
   PermissionsInsertRequest(RequestSender* sender,
                            const DriveApiUrlGenerator& url_generator,
-                           const EntryActionCallback& callback);
+                           EntryActionCallback callback);
   ~PermissionsInsertRequest() override;
 
   void set_id(const std::string& id) { id_ = id; }

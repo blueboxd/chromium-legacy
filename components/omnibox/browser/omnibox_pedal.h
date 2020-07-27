@@ -54,6 +54,8 @@ class OmniboxPedal {
     SynonymGroup(bool required, bool match_once, size_t reserve_size);
     SynonymGroup(SynonymGroup&&);
     ~SynonymGroup();
+    SynonymGroup(const SynonymGroup&) = delete;
+    SynonymGroup& operator=(const SynonymGroup&) = delete;
     SynonymGroup& operator=(SynonymGroup&&);
 
     // Removes one or more matching synonyms from given |remaining| sequence if
@@ -85,8 +87,6 @@ class OmniboxPedal {
     // language, they are considered equivalent within the context of intention
     // to perform this Pedal's action.
     std::vector<Tokens> synonyms_;
-
-    DISALLOW_COPY_AND_ASSIGN(SynonymGroup);
   };
 
   // ExecutionContext provides the necessary structure for Pedal

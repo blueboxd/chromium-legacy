@@ -23,6 +23,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/scoped_make_current.h"
 
 #ifndef EGL_ANGLE_flexible_surface_compatibility
@@ -123,6 +124,7 @@ bool DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
       UINT interval =
           first_swap_ || !vsync_enabled_ || use_swap_chain_tearing ? 0 : 1;
       UINT flags = use_swap_chain_tearing ? DXGI_PRESENT_ALLOW_TEARING : 0;
+      flags |= DXGI_PRESENT_USE_DURATION;
       DXGI_PRESENT_PARAMETERS params = {};
       RECT dirty_rect = swap_rect_.ToRECT();
       params.DirtyRectsCount = 1;
@@ -349,6 +351,8 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
       DCHECK(SUCCEEDED(hr))
           << "SetColorSpace1 failed with error " << std::hex << hr;
     }
+
+    SetSwapChainPresentDuration();
   }
 
   swap_rect_ = rectangle;
@@ -471,6 +475,23 @@ bool DirectCompositionChildSurfaceWin::SetEnableDCLayers(bool enable) {
   swap_chain_.Reset();
   dcomp_surface_.Reset();
   return true;
+}
+
+void DirectCompositionChildSurfaceWin::SetFrameRate(float frame_rate) {
+  frame_rate_ = frame_rate;
+  SetSwapChainPresentDuration();
+}
+
+void DirectCompositionChildSurfaceWin::SetSwapChainPresentDuration() {
+  if (!swap_chain_)
+    return;
+  Microsoft::WRL::ComPtr<IDXGISwapChainMedia> swap_chain_media;
+  if (SUCCEEDED(swap_chain_.As(&swap_chain_media))) {
+    UINT duration_100ns = FrameRateToPresentDuration(frame_rate_);
+    HRESULT hr = swap_chain_media->SetPresentDuration(duration_100ns);
+    if (FAILED(hr))
+      DLOG(ERROR) << "SetPresentDuration failed with error " << std::hex << hr;
+  }
 }
 
 // static

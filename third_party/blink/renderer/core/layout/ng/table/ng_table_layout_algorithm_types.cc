@@ -167,7 +167,9 @@ NGTableTypes::Section NGTableTypes::CreateSection(
     wtf_size_t rows,
     LayoutUnit block_size) {
   const Length& section_css_block_size = section.Style().LogicalHeight();
-  bool is_constrained = section_css_block_size.IsSpecified();
+  // TODO(crbug.com/1105272): Decide what to do with |Length::IsCalculated()|.
+  bool is_constrained =
+      section_css_block_size.IsPercent() || section_css_block_size.IsFixed();
   base::Optional<float> percent;
   if (section_css_block_size.IsPercent())
     percent = section_css_block_size.Percent();

@@ -16,7 +16,6 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -41,6 +40,9 @@ class BaseSearchProvider : public AutocompleteProvider {
  public:
   BaseSearchProvider(AutocompleteProvider::Type type,
                      AutocompleteProviderClient* client);
+
+  BaseSearchProvider(const BaseSearchProvider&) = delete;
+  BaseSearchProvider& operator=(const BaseSearchProvider&) = delete;
 
   // Returns whether |match| is flagged as a query that should be prefetched.
   static bool ShouldPrefetch(const AutocompleteMatch& match);
@@ -272,8 +274,6 @@ class BaseSearchProvider : public AutocompleteProvider {
   // that a server delete a personalized suggestion. Making this a vector of
   // unique_ptr causes us to auto-cancel all such requests on shutdown.
   SuggestionDeletionHandlers deletion_handlers_;
-
-  DISALLOW_COPY_AND_ASSIGN(BaseSearchProvider);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_BASE_SEARCH_PROVIDER_H_

@@ -15,7 +15,6 @@
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -109,6 +108,8 @@ class InMemoryURLIndex : public KeyedService,
                    const base::FilePath& history_dir,
                    const SchemeSet& client_schemes_to_whitelist);
   ~InMemoryURLIndex() override;
+  InMemoryURLIndex(const InMemoryURLIndex&) = delete;
+  InMemoryURLIndex& operator=(const InMemoryURLIndex&) = delete;
 
   // Opens and prepares the index of historical URL visits. If the index private
   // data cannot be restored from its cache file then it is rebuilt from the
@@ -158,6 +159,10 @@ class InMemoryURLIndex : public KeyedService,
    public:
     explicit RebuildPrivateDataFromHistoryDBTask(
         InMemoryURLIndex* index, const SchemeSet& scheme_whitelist);
+    RebuildPrivateDataFromHistoryDBTask(
+        const RebuildPrivateDataFromHistoryDBTask&) = delete;
+    RebuildPrivateDataFromHistoryDBTask& operator=(
+        const RebuildPrivateDataFromHistoryDBTask&) = delete;
 
     bool RunOnDBThread(history::HistoryBackend* backend,
                        history::HistoryDatabase* db) override;
@@ -170,8 +175,6 @@ class InMemoryURLIndex : public KeyedService,
     SchemeSet scheme_whitelist_;  // Schemes to be indexed.
     bool succeeded_;  // Indicates if the rebuild was successful.
     scoped_refptr<URLIndexPrivateData> data_;  // The rebuilt private data.
-
-    DISALLOW_COPY_AND_ASSIGN(RebuildPrivateDataFromHistoryDBTask);
   };
 
   // Initializes all index data members in preparation for restoring the index
@@ -318,8 +321,6 @@ class InMemoryURLIndex : public KeyedService,
   bool listen_to_history_service_loaded_;
 
   base::ThreadChecker thread_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(InMemoryURLIndex);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_IN_MEMORY_URL_INDEX_H_

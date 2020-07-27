@@ -15,7 +15,6 @@
 #include "base/compiler_specific.h"
 #include "base/containers/mru_cache.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_debouncer.h"
@@ -118,6 +117,9 @@ class DocumentProvider : public AutocompleteProvider {
                    size_t cache_size);
 
   ~DocumentProvider() override;
+
+  DocumentProvider(const DocumentProvider&) = delete;
+  DocumentProvider& operator=(const DocumentProvider&) = delete;
 
   // Determines whether the profile/session/window meet the feature
   // prerequisites.
@@ -232,8 +234,6 @@ class DocumentProvider : public AutocompleteProvider {
 
   // For callbacks that may be run after destruction. Must be declared last.
   base::WeakPtrFactory<DocumentProvider> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DocumentProvider);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_DOCUMENT_PROVIDER_H_

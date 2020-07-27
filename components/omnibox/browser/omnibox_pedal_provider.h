@@ -21,6 +21,8 @@ class OmniboxPedalProvider {
  public:
   explicit OmniboxPedalProvider(AutocompleteProviderClient& client);
   ~OmniboxPedalProvider();
+  OmniboxPedalProvider(const OmniboxPedalProvider&) = delete;
+  OmniboxPedalProvider& operator=(const OmniboxPedalProvider&) = delete;
 
   // Returns the Pedal triggered by given |match_text| or nullptr if none
   // trigger.
@@ -67,8 +69,6 @@ class OmniboxPedalProvider {
   // This serves as an upper bound on the number of tokens we will accept from
   // text before giving up and treating it as non-match for all Pedals.
   size_t max_tokens_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(OmniboxPedalProvider);
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_PEDAL_PROVIDER_H_

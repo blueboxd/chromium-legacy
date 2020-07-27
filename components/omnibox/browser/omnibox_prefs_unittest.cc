@@ -15,6 +15,8 @@ using omnibox::ToggleSuggestionGroupIdVisibility;
 class OmniboxPrefsTest : public ::testing::Test {
  public:
   OmniboxPrefsTest() = default;
+  OmniboxPrefsTest(const OmniboxPrefsTest&) = delete;
+  OmniboxPrefsTest& operator=(const OmniboxPrefsTest&) = delete;
 
   void SetUp() override {
     omnibox::RegisterProfilePrefs(GetPrefs()->registry());
@@ -27,8 +29,6 @@ class OmniboxPrefsTest : public ::testing::Test {
  private:
   TestingPrefServiceSimple pref_service_;
   base::HistogramTester histogram_;
-
-  DISALLOW_COPY_AND_ASSIGN(OmniboxPrefsTest);
 };
 
 TEST_F(OmniboxPrefsTest, SuggestionGroupId) {

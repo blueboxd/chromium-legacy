@@ -102,6 +102,76 @@ export class MockWindow {
   }
 }
 
+export class MockElement {
+  /**
+   * @param {number} width
+   * @param {number} height
+   * @param {?HTMLDivElement} sizer
+   */
+  constructor(width, height, sizer) {
+    /** @type {number} */
+    this.offsetWidth = width;
+
+    /** @type {number} */
+    this.offsetHeight = height;
+
+    /** @type {?Element} */
+    this.sizer = sizer;
+
+    if (sizer) {
+      sizer.resizeCallback_ = () =>
+          this.scrollTo(this.scrollLeft, this.scrollTop);
+    }
+
+    /** @type {number} */
+    this.scrollLeft = 0;
+
+    /** @type {number} */
+    this.scrollTop = 0;
+
+    /** @type {?Function} */
+    this.scrollCallback = null;
+
+    /** @type {?Function} */
+    this.resizeCallback = null;
+  }
+
+  /**
+   * @param {string} e The event name
+   * @param {!Function} f The callback
+   */
+  addEventListener(e, f) {
+    if (e === 'scroll') {
+      this.scrollCallback = f;
+    }
+  }
+
+  /**
+   * @param {number} width
+   * @param {number} height
+   */
+  setSize(width, height) {
+    this.offsetWidth = width;
+    this.offsetHeight = height;
+    this.resizeCallback();
+  }
+
+  /**
+   * @param {number} x
+   * @param {number} y
+   */
+  scrollTo(x, y) {
+    if (this.sizer) {
+      x = Math.min(x, parseInt(this.sizer.style.width, 10) - this.offsetWidth);
+      y = Math.min(
+          y, parseInt(this.sizer.style.height, 10) - this.offsetHeight);
+    }
+    this.scrollLeft = Math.max(0, x);
+    this.scrollTop = Math.max(0, y);
+    this.scrollCallback();
+  }
+}
+
 export class MockSizer {
   constructor() {
     const sizer = this;
@@ -226,7 +296,7 @@ export function createBookmarksForTest() {
 
 /**
  * Create a viewport with basic default zoom values.
- * @param {!Window} window
+ * @param {!HTMLElement} scrollParent
  * @param {!Element} sizer The element which represents the size of the
  *     document in the viewport
  * @param {number} scrollbarWidth The width of scrollbars on the page
@@ -236,12 +306,13 @@ export function createBookmarksForTest() {
  * @return {!Viewport} The viewport object with zoom values set.
  */
 export function getZoomableViewport(
-    window, sizer, scrollbarWidth, defaultZoom, topToolbarHeight) {
+    scrollParent, sizer, scrollbarWidth, defaultZoom, topToolbarHeight) {
+  document.body.innerHTML = '';
   const dummyContent =
       /** @type {!HTMLDivElement} */ (document.createElement('div'));
   document.body.appendChild(dummyContent);
   const viewport = new Viewport(
-      window, /** @type {!HTMLDivElement} */ (sizer), dummyContent,
+      scrollParent, /** @type {!HTMLDivElement} */ (sizer), dummyContent,
       scrollbarWidth, defaultZoom, topToolbarHeight, false);
   viewport.setZoomFactorRange([0.25, 0.4, 0.5, 1, 2]);
   return viewport;

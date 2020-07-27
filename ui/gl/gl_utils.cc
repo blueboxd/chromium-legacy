@@ -105,5 +105,12 @@ bool PassthroughCommandDecoderSupported() {
 bool AreOverlaysSupportedWin() {
   return gl::DirectCompositionSurfaceWin::AreOverlaysSupported();
 }
-#endif
+
+unsigned int FrameRateToPresentDuration(float frame_rate) {
+  if (frame_rate == 0)
+    return 0u;
+  // Present duration unit is 100 ns.
+  return static_cast<unsigned int>(1.0E7 / frame_rate);
+}
+#endif  // OS_WIN
 }  // namespace gl
